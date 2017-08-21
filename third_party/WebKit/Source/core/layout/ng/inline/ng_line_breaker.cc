@@ -440,11 +440,12 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
   LayoutBox* layout_box = ToLayoutBox(item.GetLayoutObject());
   NGBlockNode node = NGBlockNode(layout_box);
   const ComputedStyle& style = node.Style();
-  NGConstraintSpaceBuilder constraint_space_builder(constraint_space_);
+
+  NGConstraintSpaceBuilder space_builder(*constraint_space_);
   // Request to compute baseline during the layout, except when we know the box
   // would synthesize box-baseline.
   if (NGBaseline::ShouldPropagateBaselines(layout_box)) {
-    constraint_space_builder.AddBaselineRequest(
+    space_builder.AddBaselineRequest(
         {line_info.UseFirstLineStyle()
              ? NGBaselineAlgorithmType::kAtomicInlineForFirstLine
              : NGBaselineAlgorithmType::kAtomicInline,
@@ -453,8 +454,11 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
              : FontBaseline::kIdeographicBaseline});
   }
   RefPtr<NGConstraintSpace> constraint_space =
-      constraint_space_builder.SetIsNewFormattingContext(true)
+      space_builder.SetIsNewFormattingContext(true)
           .SetIsShrinkToFit(true)
+          .SetAvailableSize(constraint_space_->AvailableSize())
+          .SetPercentageResolutionSize(
+              constraint_space_->PercentageResolutionSize())
           .SetTextDirection(style.Direction())
           .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
   item_result->layout_result = node.Layout(constraint_space.Get());
@@ -524,7 +528,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
       /* break_token */ nullptr);
 
   LayoutUnit inline_size = ComputeInlineSizeForUnpositionedFloat(
-      constraint_space_, unpositioned_float.Get());
+      *constraint_space_, unpositioned_float.Get());
 
   // We can only determine if our float will fit if we have an available_width
   // I.e. we may not have come across any text yet, in order to be able to
@@ -548,7 +552,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
 
     NGPositionedFloat positioned_float =
         PositionFloat(origin_block_offset, container_bfc_offset.block_offset,
-                      unpositioned_float.Get(), constraint_space_);
+                      unpositioned_float.Get(), *constraint_space_,
+                      constraint_space_->ExclusionSpace().get());
     container_builder_->AddChild(positioned_float.layout_result,
                                  positioned_float.logical_offset);
 

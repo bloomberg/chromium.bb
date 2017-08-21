@@ -41,10 +41,14 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
   NGInlineNode inline_node(block_flow);
+  NGLogicalSize size(LayoutUnit(50), LayoutUnit(20));
+
   RefPtr<NGConstraintSpace> constraint_space =
-      NGConstraintSpaceBuilder(NGWritingMode::kHorizontalTopBottom)
-          .SetAvailableSize({LayoutUnit(50), LayoutUnit(20)})
-          .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
+      NGConstraintSpaceBuilder(
+          kHorizontalTopBottom,
+          /* icb_size */ size.ConvertToPhysical(kHorizontalTopBottom))
+          .SetAvailableSize(size)
+          .ToConstraintSpace(kHorizontalTopBottom);
   RefPtr<NGLayoutResult> layout_result =
       inline_node.Layout(constraint_space.Get(), nullptr);
   auto* wrapper =
