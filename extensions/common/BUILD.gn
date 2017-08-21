@@ -148,6 +148,8 @@ if (enable_extensions) {
       "file_util.cc",
       "file_util.h",
       "guest_view/extensions_guest_view_messages.h",
+      "hashed_extension_id.cc",
+      "hashed_extension_id.h",
       "host_id.cc",
       "host_id.h",
       "image_util.cc",

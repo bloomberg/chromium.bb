@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/crx_file/id_util.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
@@ -134,6 +135,11 @@ Manifest::Manifest(Location location,
 Manifest::~Manifest() {
 }
 
+void Manifest::SetExtensionId(const ExtensionId& id) {
+  extension_id_ = id;
+  hashed_id_ = HashedExtensionId(id);
+}
+
 bool Manifest::ValidateManifest(
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
@@ -153,7 +159,7 @@ bool Manifest::ValidateManifest(
       continue;
 
     Feature::Availability result = map_entry.second->IsAvailableToManifest(
-        extension_id_, type_, location_, GetManifestVersion());
+        hashed_id_, type_, location_, GetManifestVersion());
     if (!result.is_available())
       warnings->push_back(InstallWarning(result.message(), map_entry.first));
   }
@@ -218,7 +224,7 @@ bool Manifest::GetList(
 Manifest* Manifest::DeepCopy() const {
   Manifest* manifest = new Manifest(
       location_, std::unique_ptr<base::DictionaryValue>(value_->DeepCopy()));
-  manifest->set_extension_id(extension_id_);
+  manifest->SetExtensionId(extension_id_);
   return manifest;
 }
 
@@ -252,8 +258,9 @@ bool Manifest::CanAccessKey(const std::string& key) const {
   if (!feature)
     return true;
 
-  return feature->IsAvailableToManifest(
-                      extension_id_, type_, location_, GetManifestVersion())
+  return feature
+      ->IsAvailableToManifest(hashed_id_, type_, location_,
+                              GetManifestVersion())
       .is_available();
 }
 
