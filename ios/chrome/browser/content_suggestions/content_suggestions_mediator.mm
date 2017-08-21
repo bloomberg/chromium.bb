@@ -112,6 +112,7 @@ const NSInteger kMaxNumMostVisitedTiles = 8;
 @synthesize headerProvider = _headerProvider;
 @synthesize faviconMediator = _faviconMediator;
 @synthesize learnMoreItem = _learnMoreItem;
+@synthesize readingListNeedsReload = _readingListNeedsReload;
 
 #pragma mark - Public
 
@@ -336,8 +337,15 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
   if (!self.sectionInformationByCategory[wrapper]) {
     [self addSectionInformationForCategory:category];
   }
+  BOOL forceReload = NO;
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST)) {
+    forceReload = self.readingListNeedsReload;
+    self.readingListNeedsReload = NO;
+  }
+
   [self.dataSink
-      dataAvailableForSection:self.sectionInformationByCategory[wrapper]];
+      dataAvailableForSection:self.sectionInformationByCategory[wrapper]
+                  forceReload:forceReload];
 }
 
 - (void)contentSuggestionsService:
@@ -358,7 +366,8 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
       [self addSectionInformationForCategory:category];
     }
     [self.dataSink
-        dataAvailableForSection:self.sectionInformationByCategory[wrapper]];
+        dataAvailableForSection:self.sectionInformationByCategory[wrapper]
+                    forceReload:NO];
   }
 }
 

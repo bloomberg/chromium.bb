@@ -193,11 +193,22 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 #pragma mark - ContentSuggestionsDataSink
 
 - (void)dataAvailableForSection:
-    (ContentSuggestionsSectionInformation*)sectionInfo {
+            (ContentSuggestionsSectionInformation*)sectionInfo
+                    forceReload:(BOOL)forceReload {
   SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
-
   CSCollectionViewModel* model =
       self.collectionViewController.collectionViewModel;
+
+  if (forceReload && [model hasSectionForSectionIdentifier:sectionIdentifier]) {
+    NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
+    NSInteger numberOfItem = [model numberOfItemsInSection:section];
+    for (NSInteger i = 0; i < numberOfItem; i++) {
+      [self.collectionViewController
+          dismissEntryAtIndexPath:[NSIndexPath indexPathForItem:0
+                                                      inSection:section]];
+    }
+  }
+
   if ([model hasSectionForSectionIdentifier:sectionIdentifier]) {
     NSArray<CSCollectionViewItem*>* items =
         [model itemsInSectionWithIdentifier:sectionIdentifier];
