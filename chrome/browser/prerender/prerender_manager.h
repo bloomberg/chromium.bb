@@ -34,7 +34,6 @@ class Profile;
 namespace base {
 class DictionaryValue;
 class ListValue;
-class SimpleTestClock;
 class SimpleTestTickClock;
 class TickClock;
 }
@@ -334,7 +333,6 @@ class PrerenderManager : public content::NotificationObserver,
   // testing.
   base::Time GetCurrentTime() const;
   base::TimeTicks GetCurrentTimeTicks() const;
-  void SetClockForTesting(std::unique_ptr<base::SimpleTestClock> clock);
   void SetTickClockForTesting(
       std::unique_ptr<base::SimpleTestTickClock> tick_clock);
 
@@ -370,10 +368,6 @@ class PrerenderManager : public content::NotificationObserver,
 
   void SetPrerenderContentsFactoryForTest(
       PrerenderContents::Factory* prerender_contents_factory);
-
-  bool IsPrerenderSilenceExperimentForTesting(Origin origin) const {
-    return IsPrerenderSilenceExperiment(origin);
-  }
 
   base::WeakPtr<PrerenderManager> AsWeakPtr();
 
@@ -461,10 +455,6 @@ class PrerenderManager : public content::NotificationObserver,
 
   // Time window for which we record old navigations, in milliseconds.
   static const int kNavigationRecordWindowMs = 5000;
-
-  // Returns whether adding new prerenders should be disabled because of the
-  // experiment running.
-  bool IsPrerenderSilenceExperiment(Origin origin) const;
 
   // Returns whether prerendering is currently enabled or the reason why it is
   // disabled.
@@ -640,7 +630,6 @@ class PrerenderManager : public content::NotificationObserver,
   using PrerenderProcessSet = std::set<content::RenderProcessHost*>;
   PrerenderProcessSet prerender_process_hosts_;
 
-  std::unique_ptr<base::Clock> clock_;
   std::unique_ptr<base::TickClock> tick_clock_;
 
   bool page_load_metric_observer_disabled_;
