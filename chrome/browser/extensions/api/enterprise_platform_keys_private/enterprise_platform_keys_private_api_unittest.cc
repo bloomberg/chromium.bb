@@ -233,7 +233,7 @@ class EPKPChallengeKeyTestBase : public BrowserWithTestWindowTest {
         return test_util::CreateEmptyExtension();
 
       case ProfileType::SIGNIN_PROFILE:
-        return test_util::BuildApp(ExtensionBuilder())
+        return ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
             .SetLocation(Manifest::Location::EXTERNAL_POLICY)
             .Build();
     }

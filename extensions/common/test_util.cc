@@ -22,24 +22,6 @@ ExtensionBuilder BuildExtension(ExtensionBuilder builder) {
   return builder;
 }
 
-ExtensionBuilder BuildApp(ExtensionBuilder builder) {
-  builder.SetManifest(
-      DictionaryBuilder()
-          .Set("name", "Test extension")
-          .Set("version", "1.0")
-          .Set("manifest_version", 2)
-          .Set("app", extensions::DictionaryBuilder()
-                          .Set("background",
-                               extensions::DictionaryBuilder()
-                                   .Set("scripts", extensions::ListBuilder()
-                                                       .Append("background.js")
-                                                       .Build())
-                                   .Build())
-                          .Build())
-          .Build());
-  return builder;
-}
-
 scoped_refptr<Extension> CreateEmptyExtension() {
   return ExtensionBuilder()
       .SetManifest(
