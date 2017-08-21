@@ -191,7 +191,7 @@ void AudioDestination::Start() {
   if (web_audio_device_ && !is_playing_) {
     TRACE_EVENT0("webaudio", "AudioDestination::Start");
     rendering_thread_ =
-        Platform::Current()->CreateThread("WebAudio Rendering Thread");
+        Platform::Current()->CreateWebAudioThread();
     web_audio_device_->Start();
     is_playing_ = true;
   }
