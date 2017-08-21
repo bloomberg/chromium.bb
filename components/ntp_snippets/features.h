@@ -123,6 +123,11 @@ constexpr int kNotificationsIgnoredDefaultLimit = 3;
 // have been fetched.
 extern const base::Feature kKeepPrefetchedContentSuggestions;
 
+// Whether remote categories (except articles) which are not present in the last
+// fetch response should be deleted. This feature implicitly depends on
+// kArticleSuggestionsFeature.
+extern const base::Feature kDeleteRemoteCategoriesNotPresentInLastFetch;
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_FEATURES_H_

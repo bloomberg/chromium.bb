@@ -302,6 +302,10 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
       CategoryContent* content,
       const std::string& id_within_category);
 
+  // Sets categories status to NOT_PROVIDED and deletes them (including their
+  // suggestions from the database).
+  void DeleteCategories(const std::vector<Category>& categories);
+
   // Removes expired dismissed suggestions from the service and the database.
   void ClearExpiredDismissedSuggestions();
 

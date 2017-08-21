@@ -593,6 +593,17 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         {kNotificationsFeature.name, kBreakingNewsPushFeature.name});
   }
 
+  void EnableDeletingRemoteCategoriesNotPresentInLastFetchResponse() {
+    // VariationParamsManager supports only one
+    // |SetVariationParamsWithFeatureAssociations| at a time, so we clear
+    // previous settings first to make this explicit.
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        kDeleteRemoteCategoriesNotPresentInLastFetch.name,
+        /*param_values=*/std::map<std::string, std::string>(),
+        {kDeleteRemoteCategoriesNotPresentInLastFetch.name});
+  }
+
  private:
   variations::testing::VariationParamsManager params_manager_;
   test::RemoteSuggestionsTestUtils utils_;
@@ -3613,6 +3624,169 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   ChangeRemoteSuggestionsStatus(RemoteSuggestionsStatus::ENABLED_AND_SIGNED_OUT,
                                 RemoteSuggestionsStatus::ENABLED_AND_SIGNED_IN);
   EXPECT_FALSE(fake_listener->IsListening());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldDeleteNotFetchedCategoryWhenDeletionEnabled) {
+  EnableDeletingRemoteCategoriesNotPresentInLastFetchResponse();
+
+  // Initialize the provider with two categories.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  std::vector<FetchedCategory> fetched_categories;
+  const FetchedCategoryBuilder articles_category_builder =
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://articles.com"));
+  fetched_categories.push_back(articles_category_builder.Build());
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(other_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://not_articles.com"))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  ASSERT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(other_category()));
+
+  // Fetch only one category - articles.
+  fetched_categories.push_back(articles_category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  // The other category must be gone, because it was not included in the last
+  // fetch and the deletion is enabled via feature params.
+  EXPECT_EQ(CategoryStatus::NOT_PROVIDED,
+            observer().StatusForCategory(other_category()));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldKeepFetchedCategoryWhenDeletionEnabled) {
+  EnableDeletingRemoteCategoriesNotPresentInLastFetchResponse();
+
+  // Initialize the provider with two categories.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  std::vector<FetchedCategory> fetched_categories;
+  const FetchedCategoryBuilder articles_category_builder =
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://articles.com"));
+  fetched_categories.push_back(articles_category_builder.Build());
+  const FetchedCategoryBuilder other_category_builder =
+      FetchedCategoryBuilder()
+          .SetCategory(other_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://not_articles.com"));
+  fetched_categories.push_back(other_category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  ASSERT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(other_category()));
+
+  // Fetch the same two categories again.
+  fetched_categories.push_back(articles_category_builder.Build());
+  fetched_categories.push_back(other_category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  // The other category must remain, because it was included in the last fetch.
+  EXPECT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(other_category()));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldKeepArticleCategoryEvenWhenNotFetchedAndDeletionEnabled) {
+  EnableDeletingRemoteCategoriesNotPresentInLastFetchResponse();
+
+  // Initialize the provider with two categories.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://articles.com"))
+          .Build());
+  const FetchedCategoryBuilder other_category_builder =
+      FetchedCategoryBuilder()
+          .SetCategory(other_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://not_articles.com"));
+  fetched_categories.push_back(other_category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  ASSERT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(articles_category()));
+
+  // Fetch only one other category.
+  fetched_categories.push_back(other_category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  // Articles category still must be provided (it is an exception) even though
+  // it was not included in the last fetch and the deletion is enabled via
+  // feature params.
+  EXPECT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(articles_category()));
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldKeepNotFetchedCategoryWhenDeletionDisabled) {
+  // Initialize the provider with two categories.
+  auto provider = MakeSuggestionsProvider(
+      /*use_mock_prefetched_pages_tracker=*/false,
+      /*use_fake_breaking_news_listener=*/false,
+      /*use_mock_remote_suggestions_status_service=*/false);
+  std::vector<FetchedCategory> fetched_categories;
+  const FetchedCategoryBuilder articles_category_builder =
+      FetchedCategoryBuilder()
+          .SetCategory(articles_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://articles.com"));
+  fetched_categories.push_back(articles_category_builder.Build());
+  fetched_categories.push_back(
+      FetchedCategoryBuilder()
+          .SetCategory(other_category())
+          .AddSuggestionViaBuilder(
+              RemoteSuggestionBuilder().SetUrl("http://not_articles.com"))
+          .Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  ASSERT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(other_category()));
+
+  // Fetch only one category - articles.
+  fetched_categories.push_back(articles_category_builder.Build());
+  FetchTheseSuggestions(provider.get(), /*interactive_request=*/true,
+                        Status::Success(), std::move(fetched_categories));
+  fetched_categories.clear();
+
+  // The other category still must be provided even though it was not included
+  // in the last fetch, because the deletion is disabled via feature params.
+  EXPECT_EQ(CategoryStatus::AVAILABLE,
+            observer().StatusForCategory(other_category()));
 }
 
 }  // namespace ntp_snippets
