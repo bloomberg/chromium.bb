@@ -117,8 +117,9 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
 
   void ReloadPluginOnAttributeChange(const QualifiedName&);
 
-  bool ShouldRegisterAsNamedItem() const override { return true; }
-  bool ShouldRegisterAsExtraNamedItem() const override { return true; }
+  NamedItemType GetNamedItemType() const override {
+    return NamedItemType::kNameOrId;
+  }
 
   String class_id_;
   bool use_fallback_content_ : 1;
