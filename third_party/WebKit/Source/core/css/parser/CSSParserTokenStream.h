@@ -89,6 +89,12 @@ class CORE_EXPORT CSSParserTokenStream {
         .MakeSubRange(tokens_begin + begin.index_, tokens_begin + end.index_);
   }
 
+  // TODO(shend): Only used by CSSParserObserverWrapper. Delete this when we get
+  // streaming to work with observers
+  CSSParserTokenRange MakeSubRangeAtCurrentPosition() {
+    return MakeSubRange(Position(), Position());
+  }
+
   Iterator Position() const {
     DCHECK_LE(next_index_, tokenizer_.CurrentSize());
     return Iterator(next_index_);
