@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_VOICE_INTERACTION_ARC_VOICE_INTERACTION_ARC_HOME_SERVICE_H_
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/arc/common/voice_interaction_arc_home.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -29,19 +31,30 @@ class ArcBridgeService;
 class ArcVoiceInteractionArcHomeService
     : public KeyedService,
       public mojom::VoiceInteractionArcHomeHost,
-      public InstanceHolder<mojom::VoiceInteractionArcHomeInstance>::Observer {
+      public InstanceHolder<mojom::VoiceInteractionArcHomeInstance>::Observer,
+      public ArcAppListPrefs::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcVoiceInteractionArcHomeService* GetForBrowserContext(
       content::BrowserContext* context);
 
+  static const char kAssistantPackageName[];
+
   ArcVoiceInteractionArcHomeService(content::BrowserContext* context,
                                     ArcBridgeService* bridge_service);
   ~ArcVoiceInteractionArcHomeService() override;
 
+  // Notifies that assistant flow has been started and we have to lock PAI.
+  void OnAssistantStarted();
+  // Notifies that assistant flow expects Android assistant app started.
+  void OnAssistantAppRequested();
+  // Notifies that assistant flow has been canceled.
+  void OnAssistantCanceled();
+
   // InstanceHolder<mojom::VoiceInteractionArcHomeInstance> overrides;
   void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
   // Gets view hierarchy from current focused app and send it to ARC.
   void GetVoiceInteractionStructure(
@@ -52,9 +65,46 @@ class ArcVoiceInteractionArcHomeService
   CreateVoiceInteractionStructureForTesting(
       const ui::AXSnapshotNodeAndroid& view_structure);
 
+  void set_assistant_started_timeout_for_testing(
+      const base::TimeDelta& timeout) {
+    assistant_started_timeout_ = timeout;
+  }
+
+  void set_wizard_completed_timeout_for_testing(
+      const base::TimeDelta& timeout) {
+    wizard_completed_timeout_ = timeout;
+  }
+
  private:
+  // ArcAppListPrefs::Observer:
+  void OnTaskCreated(int32_t task_id,
+                     const std::string& package_name,
+                     const std::string& activity,
+                     const std::string& intent) override;
+  void OnTaskDestroyed(int32_t task_id) override;
+
+  // Locks/Unlocks Play Auto Install.
+  void LockPai();
+  void UnlockPai();
+
+  // Resets all optional timeouts and observers.
+  void ResetTimeouts();
+  // Callback to handle timeout of waiting assistant Android app to start.
+  void OnAssistantStartTimeout();
+  // Callback to handle timeout of waiting wizard to complete.
+  void OnWizardCompleteTimeout();
+
   content::BrowserContext* const context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
+  int32_t assistant_task_id_ = -1;
+  // Waits until assistant is actually started.
+  base::OneShotTimer assistant_started_timer_;
+  base::TimeDelta assistant_started_timeout_;
+
+  // Waits for wizard completed notification.
+  base::OneShotTimer wizard_completed_timer_;
+  base::TimeDelta wizard_completed_timeout_;
 
   mojo::Binding<mojom::VoiceInteractionArcHomeHost> binding_;
 

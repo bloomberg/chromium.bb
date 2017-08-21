@@ -30,6 +30,7 @@ extern const char kArcPolicyComplianceReported[];
 extern const char kArcTermsAccepted[];
 extern const char kArcLocationServiceEnabled[];
 extern const char kArcPackages[];
+extern const char kArcPaiStarted[];
 extern const char kArcSetNotificationsEnabledDeferred[];
 extern const char kArcSignedIn[];
 extern const char kArcCompatibleFilesystemChosen[];

@@ -169,6 +169,7 @@ void ArcSessionManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kArcDataRemoveRequested, false);
   registry->RegisterBooleanPref(prefs::kArcEnabled, false);
   registry->RegisterBooleanPref(prefs::kArcSignedIn, false);
+  registry->RegisterBooleanPref(prefs::kArcPaiStarted, false);
   registry->RegisterBooleanPref(prefs::kArcTermsAccepted, false);
   registry->RegisterBooleanPref(prefs::kArcVoiceInteractionValuePropAccepted,
                                 false);
@@ -642,9 +643,9 @@ bool ArcSessionManager::RequestEnableImpl() {
     return false;
   }
 
-  if (!pai_starter_ && !profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) &&
-      IsPlayStoreAvailable()) {
-    pai_starter_ = base::MakeUnique<ArcPaiStarter>(profile_);
+  if (!pai_starter_ && IsPlayStoreAvailable()) {
+    pai_starter_ =
+        ArcPaiStarter::CreateIfNeeded(profile_, profile_->GetPrefs());
   }
 
   if (start_arc_directly) {
@@ -956,6 +957,7 @@ void ArcSessionManager::StopArc() {
   // management state is lost.
   if (!reenable_arc_ && state_ != State::STOPPED) {
     profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
+    profile_->GetPrefs()->SetBoolean(prefs::kArcPaiStarted, false);
     profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, false);
   }
   ShutdownSession();

@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 
+class PrefService;
+
 namespace content {
 class BrowserContext;
 }
@@ -18,8 +20,14 @@ namespace arc {
 // The Play Store app is ready and there is no lock for PAI flow.
 class ArcPaiStarter : public ArcAppListPrefs::Observer {
  public:
-  explicit ArcPaiStarter(content::BrowserContext* context);
+  ArcPaiStarter(content::BrowserContext* context, PrefService* pref_service);
   ~ArcPaiStarter() override;
+
+  // Creates PAI starter in case it has not been executed for the requested
+  // |context|.
+  static std::unique_ptr<ArcPaiStarter> CreateIfNeeded(
+      content::BrowserContext* context,
+      PrefService* pref_service);
 
   // Locks PAI to be run on the Play Store app is ready.
   void AcquireLock();
@@ -27,6 +35,9 @@ class ArcPaiStarter : public ArcAppListPrefs::Observer {
   // Unlocks PAI to be run on the Play Store app is ready. If the Play Store app
   // is ready at this moment then PAI is started immediately.
   void ReleaseLock();
+
+  // Returns true if lock was acquired.
+  bool locked() const { return locked_; }
 
   bool started() const { return started_; }
 
@@ -37,6 +48,7 @@ class ArcPaiStarter : public ArcAppListPrefs::Observer {
   void OnAppReadyChanged(const std::string& app_id, bool ready) override;
 
   content::BrowserContext* const context_;
+  PrefService* const pref_service_;
   bool locked_ = false;
   bool started_ = false;
 

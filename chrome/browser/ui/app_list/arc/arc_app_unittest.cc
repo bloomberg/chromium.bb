@@ -18,9 +18,11 @@
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_arc_home_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -41,6 +43,8 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -154,6 +158,11 @@ constexpr ArcState kUnmanagedArcStates[] = {
     ArcState::ARC_PLAY_STORE_UNMANAGED,
     ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
     ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE,
+};
+
+constexpr ArcState kUnmanagedArcStatesWithPlayStore[] = {
+    ArcState::ARC_PLAY_STORE_UNMANAGED,
+    ArcState::ARC_PERSISTENT_PLAY_STORE_UNMANAGED,
 };
 
 }  // namespace
@@ -594,6 +603,67 @@ class ArcDefaulAppForManagedUserTest : public ArcPlayStoreAppTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcDefaulAppForManagedUserTest);
+};
+
+class ArcVoiceInteractionTest : public ArcPlayStoreAppTest {
+ public:
+  ArcVoiceInteractionTest() = default;
+  ~ArcVoiceInteractionTest() override = default;
+
+  void SetUp() override {
+    ArcPlayStoreAppTest::SetUp();
+
+    arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
+    DCHECK(session_manager);
+
+    pai_starter_ = session_manager->pai_starter();
+    DCHECK(pai_starter_);
+    DCHECK(!pai_starter_->started());
+    DCHECK(!pai_starter_->locked());
+
+    voice_service_ = base::MakeUnique<arc::ArcVoiceInteractionArcHomeService>(
+        profile(), arc::ArcServiceManager::Get()->arc_bridge_service());
+    voice_service()->OnAssistantStarted();
+
+    SendPlayStoreApp();
+
+    DCHECK(!pai_starter_->started());
+    DCHECK(pai_starter_->locked());
+  }
+
+  void TearDown() override {
+    voice_service_.reset();
+    ArcPlayStoreAppTest::TearDown();
+  }
+
+ protected:
+  void SendAssistantAppStarted() {
+    arc::mojom::AppInfo app;
+    app.name = "Assistant";
+    app.package_name =
+        arc::ArcVoiceInteractionArcHomeService::kAssistantPackageName;
+    app.activity = "some_activity";
+
+    app_instance()->SendTaskCreated(1, app, std::string());
+  }
+
+  void SendAssistantAppStopped() { app_instance()->SendTaskDestroyed(1); }
+
+  void WaitForPaiStarted() {
+    while (!pai_starter()->started())
+      base::RunLoop().RunUntilIdle();
+  }
+
+  arc::ArcVoiceInteractionArcHomeService* voice_service() {
+    return voice_service_.get();
+  }
+  arc::ArcPaiStarter* pai_starter() { return pai_starter_; }
+
+ private:
+  arc::ArcPaiStarter* pai_starter_ = nullptr;
+  std::unique_ptr<arc::ArcVoiceInteractionArcHomeService> voice_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(ArcVoiceInteractionTest);
 };
 
 TEST_P(ArcAppModelBuilderTest, ArcPackagePref) {
@@ -1186,8 +1256,8 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
-  arc::ArcPaiStarter starter1(profile_.get());
-  arc::ArcPaiStarter starter2(profile_.get());
+  arc::ArcPaiStarter starter1(profile_.get(), profile_->GetPrefs());
+  arc::ArcPaiStarter starter2(profile_.get(), profile_->GetPrefs());
   EXPECT_FALSE(starter1.started());
   EXPECT_FALSE(starter2.started());
   EXPECT_EQ(app_instance()->start_pai_request_count(), 0);
@@ -1217,9 +1287,87 @@ TEST_P(ArcPlayStoreAppTest, PaiStarter) {
   EXPECT_TRUE(starter2.started());
   EXPECT_EQ(app_instance()->start_pai_request_count(), 3);
 
-  arc::ArcPaiStarter starter3(profile_.get());
+  arc::ArcPaiStarter starter3(profile_.get(), profile_->GetPrefs());
   EXPECT_TRUE(starter3.started());
   EXPECT_EQ(app_instance()->start_pai_request_count(), 4);
+}
+
+// Validates that PAI is started on the next session start if it was not started
+// during the previous sessions for some reason.
+TEST_P(ArcPlayStoreAppTest, StartPaiOnNextRun) {
+  if (GetParam() == ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE)
+    return;
+
+  arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
+  ASSERT_TRUE(session_manager);
+
+  arc::ArcPaiStarter* pai_starter = session_manager->pai_starter();
+  ASSERT_TRUE(pai_starter);
+  EXPECT_FALSE(pai_starter->started());
+
+  // Finish session with lock. This would prevent running PAI.
+  pai_starter->AcquireLock();
+  SendPlayStoreApp();
+  EXPECT_FALSE(pai_starter->started());
+  session_manager->Shutdown();
+
+  // Simulate ARC restart.
+  RestartArc();
+
+  // PAI was not started during the previous session due the lock status and
+  // should be available now.
+  session_manager = arc::ArcSessionManager::Get();
+  pai_starter = session_manager->pai_starter();
+  ASSERT_TRUE(pai_starter);
+  EXPECT_FALSE(pai_starter->locked());
+
+  SendPlayStoreApp();
+  EXPECT_TRUE(pai_starter->started());
+
+  // Simulate the next ARC restart.
+  RestartArc();
+
+  // PAI was started during the previous session and should not be available
+  // now.
+  session_manager = arc::ArcSessionManager::Get();
+  pai_starter = session_manager->pai_starter();
+  EXPECT_FALSE(pai_starter);
+}
+
+TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionNormalFlow) {
+  voice_service()->OnAssistantAppRequested();
+
+  SendAssistantAppStarted();
+  SendAssistantAppStopped();
+
+  voice_service()->OnVoiceInteractionOobeSetupComplete();
+
+  EXPECT_TRUE(pai_starter()->started());
+}
+
+TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionCancel) {
+  voice_service()->OnAssistantCanceled();
+  EXPECT_TRUE(pai_starter()->started());
+  EXPECT_FALSE(pai_starter()->locked());
+}
+
+TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionAppNotStarted) {
+  voice_service()->set_assistant_started_timeout_for_testing(
+      base::TimeDelta::FromMilliseconds(100));
+  voice_service()->OnAssistantAppRequested();
+
+  WaitForPaiStarted();
+}
+
+TEST_P(ArcVoiceInteractionTest, PaiStarterVoiceInteractionWizardNotComplete) {
+  voice_service()->set_wizard_completed_timeout_for_testing(
+      base::TimeDelta::FromMilliseconds(100));
+  voice_service()->OnAssistantAppRequested();
+
+  SendAssistantAppStarted();
+  SendAssistantAppStopped();
+
+  WaitForPaiStarted();
 }
 
 // Test that icon is correctly extracted for shelf group.
@@ -1889,6 +2037,9 @@ INSTANTIATE_TEST_CASE_P(,
 INSTANTIATE_TEST_CASE_P(,
                         ArcPlayStoreAppTest,
                         ::testing::ValuesIn(kUnmanagedArcStates));
+INSTANTIATE_TEST_CASE_P(,
+                        ArcVoiceInteractionTest,
+                        ::testing::ValuesIn(kUnmanagedArcStatesWithPlayStore));
 INSTANTIATE_TEST_CASE_P(,
                         ArcAppModelBuilderRecreate,
                         ::testing::ValuesIn(kUnmanagedArcStates));
