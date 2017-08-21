@@ -402,7 +402,7 @@ const base::Feature kAndroidAutofillAccessibility{
 
 // Enables hiding incorrectly-sized frames while in fullscreen.
 const base::Feature kHideIncorrectlySizedFullscreenFrames{
-    "HideIncorrectlySizedFullscreenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
+    "HideIncorrectlySizedFullscreenFrames", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Service worker based payment apps as defined by w3c here:
 // https://w3c.github.io/webpayments-payment-apps-api/
