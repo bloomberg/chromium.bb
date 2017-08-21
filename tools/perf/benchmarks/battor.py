@@ -33,7 +33,6 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
     return not possible_browser.platform.HasBattOrConnected()
 
 
-@benchmark.Enabled('mac')
 @benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrTrivialPages(_BattOrBenchmark):
 
@@ -48,11 +47,12 @@ class BattOrTrivialPages(_BattOrBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_MOBILE, story.expectations.ALL_LINUX,
+             story.expectations.ALL_WIN], 'Mac Benchmark')
     return StoryExpectations()
 
 
-@benchmark.Enabled('mac')
 @benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrSteadyStatePages(_BattOrBenchmark):
 
@@ -67,6 +67,9 @@ class BattOrSteadyStatePages(_BattOrBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_MOBILE, story.expectations.ALL_LINUX,
+             story.expectations.ALL_WIN], 'Mac Benchmark')
         self.DisableStory('http://abcnews.go.com/', [story.expectations.ALL],
                           'crbug.com/505990')
     return StoryExpectations()

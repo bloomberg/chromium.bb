@@ -14,7 +14,6 @@ from telemetry import story
 
 @benchmark.Owner(emails=['vovoy@chromium.org'],
                  component='OS>Performance')
-@benchmark.Enabled('has tabs')
 class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   """This test records the MPArch.RWH_TabSwitchPaintDuration histogram.
 

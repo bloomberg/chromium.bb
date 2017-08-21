@@ -12,7 +12,6 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
-@benchmark.Enabled('android')
 @benchmark.Owner(emails=['perezju@chromium.org'])
 class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power test."""
@@ -39,11 +38,11 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
     return StoryExpectations()
 
 
-@benchmark.Enabled('mac')
 @benchmark.Owner(emails=['erikchen@chromium.org'])
 class PowerScrollingTrivialPage(perf_benchmark.PerfBenchmark):
   """Measure power consumption for some very simple pages."""
@@ -57,11 +56,12 @@ class PowerScrollingTrivialPage(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        pass # Nothing disabled.
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_MOBILE, story.expectations.ALL_LINUX,
+             story.expectations.ALL_WIN], 'Mac Benchmark')
     return StoryExpectations()
 
 
-@benchmark.Enabled('mac')
 class PowerSteadyStatePages(perf_benchmark.PerfBenchmark):
   """Measure power consumption for real web sites in steady state (no user
   interactions)."""
@@ -75,6 +75,9 @@ class PowerSteadyStatePages(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
+        self.PermanentlyDisableBenchmark(
+            [story.expectations.ALL_MOBILE, story.expectations.ALL_LINUX,
+             story.expectations.ALL_WIN], 'Mac Benchmark')
         self.DisableStory('http://abcnews.go.com/', [story.expectations.ALL],
                           'crbug.com/505990')
     return StoryExpectations()
