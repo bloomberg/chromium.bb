@@ -277,6 +277,11 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
             final CancellationSignal cancellationSignal,
             final PrintDocumentAdapterWrapper.WriteResultCallbackWrapper callback) {
         // TODO(cimamoglu): Make use of CancellationSignal.
+        if (ranges == null || ranges.length == 0) {
+            callback.onWriteFailed(null);
+            return;
+        }
+
         mOnWriteCallback = callback;
 
         assert mPrintingState == PRINTING_STATE_READY;
