@@ -13,7 +13,7 @@
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_socket.h"
 #include "extensions/browser/api/bluetooth_socket/bluetooth_socket_api.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -40,7 +40,7 @@ class BluetoothSocketApiTest : public extensions::ShellApiTest {
 
   void SetUpOnMainThread() override {
     ShellApiTest::SetUpOnMainThread();
-    empty_extension_ = extensions::test_util::CreateEmptyExtension();
+    empty_extension_ = extensions::ExtensionBuilder("Test").Build();
     SetUpMockAdapter();
   }
 

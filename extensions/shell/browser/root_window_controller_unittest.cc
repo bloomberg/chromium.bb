@@ -12,7 +12,7 @@
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/shell/browser/root_window_controller.h"
 #include "extensions/shell/browser/shell_app_window_client.h"
 #include "extensions/shell/browser/shell_native_app_window_aura.h"
@@ -90,7 +90,7 @@ class RootWindowControllerTest : public ShellTestBaseAura {
     ShellTestBaseAura::SetUp();
 
     AppWindowClient::Set(&app_window_client_);
-    extension_ = test_util::CreateEmptyExtension();
+    extension_ = ExtensionBuilder("Test").Build();
 
     desktop_delegate_ =
         base::MakeUnique<FakeDesktopDelegate>(browser_context());

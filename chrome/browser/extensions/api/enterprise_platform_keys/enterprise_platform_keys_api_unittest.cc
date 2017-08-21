@@ -32,7 +32,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -126,7 +126,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
  protected:
   EPKChallengeKeyTestBase()
       : settings_helper_(false),
-        extension_(test_util::CreateEmptyExtension()),
+        extension_(ExtensionBuilder("Test").Build()),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
         fake_user_manager_(new chromeos::FakeChromeUserManager),
         user_manager_enabler_(fake_user_manager_) {

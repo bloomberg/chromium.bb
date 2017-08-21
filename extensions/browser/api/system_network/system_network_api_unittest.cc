@@ -5,7 +5,7 @@
 #include "extensions/browser/api/system_network/system_network_api.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 
 using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
 using extensions::api::SystemNetworkGetNetworkInterfacesFunction;
@@ -23,7 +23,7 @@ TEST_F(SystemNetworkApiUnitTest, GetNetworkInterfaces) {
   scoped_refptr<SystemNetworkGetNetworkInterfacesFunction> socket_function(
       new SystemNetworkGetNetworkInterfacesFunction());
   scoped_refptr<Extension> empty_extension(
-      extensions::test_util::CreateEmptyExtension());
+      extensions::ExtensionBuilder("Test").Build());
 
   socket_function->set_extension(empty_extension.get());
   socket_function->set_has_callback(true);

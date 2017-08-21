@@ -26,9 +26,9 @@
 #include "extensions/browser/test_management_policy.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/permission_set.h"
-#include "extensions/common/test_util.h"
 
 namespace extensions {
 
@@ -107,7 +107,7 @@ void ManagementApiUnitTest::TearDown() {
 
 // Test the basic parts of management.setEnabled.
 TEST_F(ManagementApiUnitTest, ManagementSetEnabled) {
-  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   service()->AddExtension(extension.get());
   std::string extension_id = extension->id();
   scoped_refptr<ManagementSetEnabledFunction> function(
@@ -149,7 +149,7 @@ TEST_F(ManagementApiUnitTest, ManagementSetEnabled) {
 
 // Tests management.uninstall.
 TEST_F(ManagementApiUnitTest, ManagementUninstall) {
-  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   service()->AddExtension(extension.get());
   std::string extension_id = extension->id();
 
@@ -225,7 +225,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstall) {
 
 // Tests uninstalling a blacklisted extension via management.uninstall.
 TEST_F(ManagementApiUnitTest, ManagementUninstallBlacklisted) {
-  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   service()->AddExtension(extension.get());
   std::string id = extension->id();
 
@@ -244,7 +244,7 @@ TEST_F(ManagementApiUnitTest, ManagementUninstallBlacklisted) {
 }
 
 TEST_F(ManagementApiUnitTest, ManagementEnableOrDisableBlacklisted) {
-  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   service()->AddExtension(extension.get());
   std::string id = extension->id();
 

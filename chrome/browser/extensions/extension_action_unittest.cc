@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -17,7 +17,7 @@ namespace {
 
 std::unique_ptr<ExtensionAction> CreateAction(ActionInfo::Type type,
                                               const ActionInfo& action_info) {
-  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   return base::MakeUnique<ExtensionAction>(*extension, type, action_info);
 }
 

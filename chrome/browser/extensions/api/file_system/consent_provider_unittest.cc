@@ -168,7 +168,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForNonKioskApps) {
   // asking for user consent.
   {
     scoped_refptr<Extension> non_component_extension(
-        test_util::CreateEmptyExtension());
+        ExtensionBuilder("Test").Build());
     TestingConsentProviderDelegate delegate;
     ConsentProvider provider(&delegate);
     EXPECT_FALSE(provider.IsGrantable(*non_component_extension));

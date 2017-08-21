@@ -11,7 +11,7 @@
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
@@ -55,7 +55,7 @@ class SocketsTcpServerApiTest : public ShellApiTest {
 IN_PROC_BROWSER_TEST_F(SocketsTcpServerApiTest, SocketTCPCreateGood) {
   scoped_refptr<api::SocketsTcpServerCreateFunction> socket_create_function(
       new api::SocketsTcpServerCreateFunction());
-  scoped_refptr<Extension> empty_extension(test_util::CreateEmptyExtension());
+  scoped_refptr<Extension> empty_extension(ExtensionBuilder("Test").Build());
 
   socket_create_function->set_extension(empty_extension.get());
   socket_create_function->set_has_callback(true);

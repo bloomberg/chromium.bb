@@ -17,7 +17,7 @@
 #include "device/bluetooth/test/mock_bluetooth_gatt_service.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_event_router.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -105,7 +105,7 @@ class BluetoothLowEnergyApiTest : public ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     ExtensionApiTest::SetUpOnMainThread();
-    empty_extension_ = extensions::test_util::CreateEmptyExtension();
+    empty_extension_ = extensions::ExtensionBuilder("Test").Build();
     SetUpMocks();
   }
 

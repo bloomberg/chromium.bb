@@ -15,7 +15,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "extensions/browser/api_test_utils.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 
 namespace extensions {
 
@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   scoped_refptr<extensions::WindowsGetLastFocusedFunction> function =
       new extensions::WindowsGetLastFocusedFunction();
   scoped_refptr<extensions::Extension> extension(
-      extensions::test_util::CreateEmptyExtension());
+      extensions::ExtensionBuilder("Test").Build());
   function->set_extension(extension.get());
   std::unique_ptr<base::DictionaryValue> result(
       utils::ToDictionary(utils::RunFunctionAndReturnSingleResult(
@@ -91,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, QueryLastFocusedWindowTabs) {
   scoped_refptr<extensions::TabsQueryFunction> function =
       new extensions::TabsQueryFunction();
   scoped_refptr<extensions::Extension> extension(
-      extensions::test_util::CreateEmptyExtension());
+      extensions::ExtensionBuilder("Test").Build());
   function->set_extension(extension.get());
   std::unique_ptr<base::ListValue> result(
       utils::ToList(utils::RunFunctionAndReturnSingleResult(

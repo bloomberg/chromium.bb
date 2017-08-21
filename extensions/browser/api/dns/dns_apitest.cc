@@ -14,7 +14,7 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/shell/test/shell_apitest.h"
 #include "net/base/net_errors.h"
 
@@ -47,7 +47,7 @@ class DnsApiTest : public ShellApiTest {
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
   scoped_refptr<DnsResolveFunction> resolve_function(new DnsResolveFunction());
-  scoped_refptr<Extension> empty_extension = test_util::CreateEmptyExtension();
+  scoped_refptr<Extension> empty_extension = ExtensionBuilder("Test").Build();
 
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);
@@ -68,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveIPLiteral) {
 
 IN_PROC_BROWSER_TEST_F(DnsApiTest, DnsResolveHostname) {
   scoped_refptr<DnsResolveFunction> resolve_function(new DnsResolveFunction());
-  scoped_refptr<Extension> empty_extension = test_util::CreateEmptyExtension();
+  scoped_refptr<Extension> empty_extension = ExtensionBuilder("Test").Build();
 
   resolve_function->set_extension(empty_extension.get());
   resolve_function->set_has_callback(true);

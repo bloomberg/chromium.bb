@@ -8,7 +8,7 @@
 
 #include "base/run_loop.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 
 using testing::_;
 using testing::Invoke;
@@ -155,7 +155,7 @@ void MediaRouterMojoTest::SetUp() {
   media_router_->set_instance_id_for_test(kInstanceId);
   ConnectProviderManagerService();
   media_router_->Initialize();
-  extension_ = extensions::test_util::CreateEmptyExtension();
+  extension_ = extensions::ExtensionBuilder("Test").Build();
   base::RunLoop().RunUntilIdle();
 }
 

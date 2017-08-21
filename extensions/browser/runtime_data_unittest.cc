@@ -11,7 +11,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +45,7 @@ class RuntimeDataTest : public testing::Test {
 
 TEST_F(RuntimeDataTest, IsBackgroundPageReady) {
   // An extension without a background page is always considered ready.
-  scoped_refptr<Extension> no_background = test_util::CreateEmptyExtension();
+  scoped_refptr<Extension> no_background = ExtensionBuilder("Test").Build();
   EXPECT_TRUE(runtime_data_.IsBackgroundPageReady(no_background.get()));
 
   // An extension with a background page is not ready until the flag is set.
@@ -62,7 +61,7 @@ TEST_F(RuntimeDataTest, IsBackgroundPageReady) {
 }
 
 TEST_F(RuntimeDataTest, IsBeingUpgraded) {
-  scoped_refptr<Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<Extension> extension = ExtensionBuilder("Test").Build();
 
   // An extension is not being upgraded until the flag is set.
   EXPECT_FALSE(runtime_data_.IsBeingUpgraded(extension->id()));

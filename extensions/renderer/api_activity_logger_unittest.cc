@@ -6,9 +6,9 @@
 
 #include "base/memory/ptr_util.h"
 #include "content/public/test/mock_render_thread.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"
-#include "extensions/common/test_util.h"
 #include "extensions/renderer/bindings/api_binding_test.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/script_context.h"
@@ -49,7 +49,7 @@ TEST_F(ActivityLoggerTest, DontCrashOnUnconvertedValues) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  scoped_refptr<const Extension> extension = test_util::CreateEmptyExtension();
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   extension_ids.insert(extension->id());
   const Feature::Context kContextType = Feature::BLESSED_EXTENSION_CONTEXT;
   script_context_set.AddForTesting(base::MakeUnique<ScriptContext>(
