@@ -90,10 +90,10 @@ enum class SnapshotViewOption {
   // weak.
   ios::ChromeBrowserState* _browserState;
   // weak.
-  id<TabSwitcherDelegate> _delegate;
+  __weak id<TabSwitcherDelegate> _delegate;
   // The model selected when the tab switcher was toggled.
   // weak.
-  TabModel* _onLoadActiveModel;
+  __weak TabModel* _onLoadActiveModel;
   // The view this controller manages.
   TabSwitcherView* _tabSwitcherView;
   // The list of panels controllers for distant sessions.
