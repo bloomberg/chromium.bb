@@ -12,7 +12,7 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
                       [expectations.ALL_WIN, expectations.ALL_MAC],
                       'crbug.com/676336')
     self.DisableStory('browse:search:google',
-                      [expectations.ALL_WIN, expectations.MAC_10_11],
+                      [expectations.ALL_WIN],
                       'win:crbug.com/673775, mac:crbug.com/756027')
     self.DisableStory('browse:tools:maps', [expectations.ALL],
                       'crbug.com/712694')
