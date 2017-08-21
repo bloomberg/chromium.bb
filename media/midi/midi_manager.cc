@@ -165,15 +165,26 @@ void MidiManager::StartSession(MidiManagerClient* client) {
   }
 }
 
-void MidiManager::EndSession(MidiManagerClient* client) {
+bool MidiManager::EndSession(MidiManagerClient* client) {
   ReportUsage(Usage::SESSION_ENDED);
 
   // At this point, |client| can be in the destruction process, and calling
   // any method of |client| is dangerous. Calls on clients *must* be protected
   // by |lock_| to prevent race conditions.
   base::AutoLock auto_lock(lock_);
+  if (clients_.find(client) == clients_.end() &&
+      pending_clients_.find(client) == pending_clients_.end()) {
+    return false;
+  }
+
   clients_.erase(client);
   pending_clients_.erase(client);
+  return true;
+}
+
+bool MidiManager::HasOpenSession() {
+  base::AutoLock auto_lock(lock_);
+  return clients_.size() != 0u;
 }
 
 void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
