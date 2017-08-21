@@ -76,6 +76,7 @@ source_set("tests") {
     "generic_sensor/orientation_test_data.h",
     "generic_sensor/platform_sensor_and_provider_unittest_win.cc",
     "generic_sensor/platform_sensor_provider_unittest_android.cc",
+    "generic_sensor/relative_orientation_euler_angles_fusion_algorithm_using_accelerometer_unittest.cc",
     "power_monitor/power_monitor_message_broadcaster_unittest.cc",
     "public/cpp/power_monitor/power_monitor_broadcast_source_unittest.cc",
     "vibration/vibration_manager_impl_unittest.cc",
