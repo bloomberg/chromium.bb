@@ -56,6 +56,13 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
 
   // Identical to self.view. Just casted to EAGLView.
   EAGLView* _hostView;
+
+  // A placeholder view for anchoring views and calculating visible area.
+  UIView* _keyboardPlaceholderView;
+
+  // A display link for animating host surface size change. Use the paused
+  // property to start or stop the animation.
+  CADisplayLink* _surfaceSizeAnimationLink;
 }
 @end
 
@@ -71,6 +78,12 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
     _hasPhysicalKeyboard = NO;
     _settings =
         [[RemotingPreferences instance] settingsForHost:client.hostInfo.hostId];
+    _surfaceSizeAnimationLink = [CADisplayLink
+        displayLinkWithTarget:self
+                     selector:@selector(animateHostSurfaceSize:)];
+    _surfaceSizeAnimationLink.paused = YES;
+    [_surfaceSizeAnimationLink addToRunLoop:NSRunLoop.currentRunLoop
+                                    forMode:NSDefaultRunLoopMode];
 
     if ([UIView userInterfaceLayoutDirectionForSemanticContentAttribute:
                     self.view.semanticContentAttribute] ==
@@ -94,6 +107,18 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   [super viewDidLoad];
   _hostView.displayTaskRunner =
       remoting::ChromotingClientRuntime::GetInstance()->display_task_runner();
+
+  _keyboardPlaceholderView = [[UIView alloc] initWithFrame:CGRectZero];
+  _keyboardPlaceholderView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.view addSubview:_keyboardPlaceholderView];
+  [NSLayoutConstraint activateConstraints:@[
+    [_keyboardPlaceholderView.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [_keyboardPlaceholderView.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor],
+    [_keyboardPlaceholderView.bottomAnchor
+        constraintEqualToAnchor:self.view.bottomAnchor],
+  ]];
 
   _floatingButton =
       [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
@@ -136,6 +161,10 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                           options:NSLayoutFormatDirectionLeftToRight
                           metrics:metrics
                             views:views];
+  [_floatingButton.bottomAnchor
+      constraintEqualToAnchor:_keyboardPlaceholderView.topAnchor
+                     constant:-kFabInset]
+      .active = YES;
 
   [self setKeyboardSize:CGSizeZero needsLayout:NO];
 }
@@ -203,11 +232,9 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   // Pass the actual size of the view to the renderer.
   [_client.displayHandler onSurfaceChanged:_hostView.bounds];
 
-  // Pass the size of the visible area to GestureInterpreter/DesktopViewport.
-  CGFloat visibleAreaHeight =
-      _hostView.bounds.size.height - _keyboardSize.height;
-  _client.gestureInterpreter->OnSurfaceSizeChanged(_hostView.bounds.size.width,
-                                                   visibleAreaHeight);
+  // Start the animation on the host's visible area.
+  _surfaceSizeAnimationLink.paused = NO;
+
   [self resizeHostToFitIfNeeded];
 
   [self updateFABConstraintsAnimated:NO];
@@ -343,6 +370,38 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   }
 }
 
+- (void)animateHostSurfaceSize:(CADisplayLink*)link {
+  // The method is called when the keyboard animation is in-progress. It
+  // calculates the intermediate visible area size during the animation and
+  // passes it to DesktopViewport.
+
+  // This method is called in sync with the refresh cycle, otherwise the frame
+  // rate will drop for some reason. Note that the actual rendering process is
+  // done on the display thread asynchronously, so unfortunately the animation
+  // will not be perfectly synchronized with the keyboard animation.
+
+  CGSize viewSize = _hostView.frame.size;
+  CGFloat targetVisibleHeight =
+      viewSize.height - _keyboardPlaceholderView.frame.size.height;
+  CALayer* kbPlaceholderLayer =
+      [_keyboardPlaceholderView.layer presentationLayer];
+  CGFloat currentVisibleHeight =
+      viewSize.height - kbPlaceholderLayer.frame.size.height;
+
+  _client.gestureInterpreter->OnSurfaceSizeChanged(viewSize.width,
+                                                   currentVisibleHeight);
+  if (currentVisibleHeight == targetVisibleHeight) {
+    // Animation is done.
+    _surfaceSizeAnimationLink.paused = YES;
+  }
+}
+
+- (void)disconnectFromHost {
+  [_client disconnectFromHost];
+  [_surfaceSizeAnimationLink invalidate];
+  _surfaceSizeAnimationLink = nil;
+}
+
 - (void)applyInputMode {
   switch (_settings.inputMode) {
     case ClientInputModeTrackpad:
@@ -415,8 +474,8 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
                  handler:switchInputModeHandler];
 
   void (^disconnectHandler)() = ^() {
-    [_client disconnectFromHost];
-    [self.navigationController popToRootViewControllerAnimated:YES];
+    [weakSelf disconnectFromHost];
+    [weakSelf.navigationController popToRootViewControllerAnimated:YES];
   };
   [self addActionToAlert:alert
                    title:IDS_DISCONNECT_MYSELF_BUTTON
@@ -516,10 +575,8 @@ static const CGFloat kMoveFABAnimationTime = 0.3;
   if (_keyboardHeightConstraint) {
     _keyboardHeightConstraint.active = NO;
   }
-  // Change FAB bottom constraint to adjust for the keyboard size.
-  _keyboardHeightConstraint = [_floatingButton.bottomAnchor
-      constraintEqualToAnchor:_hostView.bottomAnchor
-                     constant:-kFabInset - keyboardSize.height];
+  _keyboardHeightConstraint = [_keyboardPlaceholderView.heightAnchor
+      constraintEqualToConstant:keyboardSize.height];
   _keyboardHeightConstraint.active = YES;
 
   if (needsLayout) {

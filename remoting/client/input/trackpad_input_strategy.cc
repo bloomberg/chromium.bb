@@ -66,6 +66,11 @@ ViewMatrix::Point TrackpadInputStrategy::GetCursorPosition() const {
   return cursor_position_;
 }
 
+void TrackpadInputStrategy::FocusViewportOnCursor(
+    DesktopViewport* viewport) const {
+  viewport->SetViewportCenter(cursor_position_.x, cursor_position_.y);
+}
+
 ViewMatrix::Vector2D TrackpadInputStrategy::MapScreenVectorToDesktop(
     const ViewMatrix::Vector2D& delta,
     const DesktopViewport& viewport) const {
