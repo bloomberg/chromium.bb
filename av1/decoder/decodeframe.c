@@ -2685,14 +2685,17 @@ static void decode_restoration_mode(AV1_COMMON *cm,
   cm->rst_info[2].restoration_tilesize = cm->rst_info[1].restoration_tilesize;
 }
 
-static void read_wiener_filter(WienerInfo *wiener_info,
+static void read_wiener_filter(int wiener_win, WienerInfo *wiener_info,
                                WienerInfo *ref_wiener_info, aom_reader *rb) {
-  wiener_info->vfilter[0] = wiener_info->vfilter[WIENER_WIN - 1] =
-      aom_read_primitive_refsubexpfin(
-          rb, WIENER_FILT_TAP0_MAXV - WIENER_FILT_TAP0_MINV + 1,
-          WIENER_FILT_TAP0_SUBEXP_K,
-          ref_wiener_info->vfilter[0] - WIENER_FILT_TAP0_MINV, ACCT_STR) +
-      WIENER_FILT_TAP0_MINV;
+  if (wiener_win == WIENER_WIN)
+    wiener_info->vfilter[0] = wiener_info->vfilter[WIENER_WIN - 1] =
+        aom_read_primitive_refsubexpfin(
+            rb, WIENER_FILT_TAP0_MAXV - WIENER_FILT_TAP0_MINV + 1,
+            WIENER_FILT_TAP0_SUBEXP_K,
+            ref_wiener_info->vfilter[0] - WIENER_FILT_TAP0_MINV, ACCT_STR) +
+        WIENER_FILT_TAP0_MINV;
+  else
+    wiener_info->vfilter[0] = wiener_info->vfilter[WIENER_WIN - 1] = 0;
   wiener_info->vfilter[1] = wiener_info->vfilter[WIENER_WIN - 2] =
       aom_read_primitive_refsubexpfin(
           rb, WIENER_FILT_TAP1_MAXV - WIENER_FILT_TAP1_MINV + 1,
@@ -2710,12 +2713,15 @@ static void read_wiener_filter(WienerInfo *wiener_info,
       -2 * (wiener_info->vfilter[0] + wiener_info->vfilter[1] +
             wiener_info->vfilter[2]);
 
-  wiener_info->hfilter[0] = wiener_info->hfilter[WIENER_WIN - 1] =
-      aom_read_primitive_refsubexpfin(
-          rb, WIENER_FILT_TAP0_MAXV - WIENER_FILT_TAP0_MINV + 1,
-          WIENER_FILT_TAP0_SUBEXP_K,
-          ref_wiener_info->hfilter[0] - WIENER_FILT_TAP0_MINV, ACCT_STR) +
-      WIENER_FILT_TAP0_MINV;
+  if (wiener_win == WIENER_WIN)
+    wiener_info->hfilter[0] = wiener_info->hfilter[WIENER_WIN - 1] =
+        aom_read_primitive_refsubexpfin(
+            rb, WIENER_FILT_TAP0_MAXV - WIENER_FILT_TAP0_MINV + 1,
+            WIENER_FILT_TAP0_SUBEXP_K,
+            ref_wiener_info->hfilter[0] - WIENER_FILT_TAP0_MINV, ACCT_STR) +
+        WIENER_FILT_TAP0_MINV;
+  else
+    wiener_info->hfilter[0] = wiener_info->hfilter[WIENER_WIN - 1] = 0;
   wiener_info->hfilter[1] = wiener_info->hfilter[WIENER_WIN - 2] =
       aom_read_primitive_refsubexpfin(
           rb, WIENER_FILT_TAP1_MAXV - WIENER_FILT_TAP1_MINV + 1,
@@ -2779,7 +2785,8 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
             aom_read_tree(rb, av1_switchable_restore_tree,
                           cm->fc->switchable_restore_prob, ACCT_STR);
         if (rsi->restoration_type[i] == RESTORE_WIENER) {
-          read_wiener_filter(&rsi->wiener_info[i], &ref_wiener_info, rb);
+          read_wiener_filter(WIENER_WIN, &rsi->wiener_info[i], &ref_wiener_info,
+                             rb);
         } else if (rsi->restoration_type[i] == RESTORE_SGRPROJ) {
           read_sgrproj_filter(&rsi->sgrproj_info[i], &ref_sgrproj_info, rb);
         }
@@ -2788,7 +2795,8 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
       for (i = 0; i < ntiles; ++i) {
         if (aom_read(rb, RESTORE_NONE_WIENER_PROB, ACCT_STR)) {
           rsi->restoration_type[i] = RESTORE_WIENER;
-          read_wiener_filter(&rsi->wiener_info[i], &ref_wiener_info, rb);
+          read_wiener_filter(WIENER_WIN, &rsi->wiener_info[i], &ref_wiener_info,
+                             rb);
         } else {
           rsi->restoration_type[i] = RESTORE_NONE;
         }
@@ -2817,7 +2825,8 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
         else
           rsi->restoration_type[i] = RESTORE_WIENER;
         if (rsi->restoration_type[i] == RESTORE_WIENER) {
-          read_wiener_filter(&rsi->wiener_info[i], &ref_wiener_info, rb);
+          read_wiener_filter(WIENER_WIN_CHROMA, &rsi->wiener_info[i],
+                             &ref_wiener_info, rb);
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
