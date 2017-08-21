@@ -66,8 +66,10 @@ class SnippetsInternalsMessageHandler
   void HandleClearDismissedSuggestions(const base::ListValue* args);
   void HandleToggleDismissedSuggestions(const base::ListValue* args);
   void HandleClearClassification(const base::ListValue* args);
-  void HandleFetchRemoteSuggestionsInTheBackground(const base::ListValue* args);
+  void HandleFetchRemoteSuggestionsInTheBackgroundIn2Seconds(
+      const base::ListValue* args);
   void HandleFetchContextualSuggestions(const base::ListValue* args);
+  void HandleResetNotificationsState(const base::ListValue* args);
   void OnContextualSuggestionsFetched(
       ntp_snippets::Status status_code,
       const GURL& url,
@@ -82,6 +84,7 @@ class SnippetsInternalsMessageHandler
   void SendBoolean(const std::string& name, bool value);
   void SendString(const std::string& name, const std::string& value);
 
+  void FetchRemoteSuggestionsInTheBackground();
   void PushDummySuggestion();
 
   void OnDismissedSuggestionsLoaded(
@@ -111,6 +114,7 @@ class SnippetsInternalsMessageHandler
       dismissed_suggestions_;
 
   base::OneShotTimer suggestion_push_timer_;
+  base::OneShotTimer suggestions_fetch_timer_;
 
   base::WeakPtrFactory<SnippetsInternalsMessageHandler> weak_ptr_factory_;
 
