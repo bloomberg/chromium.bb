@@ -595,16 +595,6 @@ const FeatureEntry::Choice kV8CacheStrategiesForCacheStorageChoices[] = {
 };
 
 #if defined(OS_ANDROID)
-const FeatureEntry::Choice kProgressBarAnimationChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceDisabled,
-     switches::kProgressBarAnimation, "disabled"},
-    {flag_descriptions::kProgressBarAnimationLinear,
-     switches::kProgressBarAnimation, "smooth"},
-    {flag_descriptions::kProgressBarAnimationSmoothIndeterminate,
-     switches::kProgressBarAnimation, "smooth-indeterminate"},
-};
-
 const FeatureEntry::Choice kProgressBarCompletionChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kProgressBarCompletionLoadEvent,
@@ -2225,9 +2215,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kExperimentalKeyboardLockUiDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kExperimentalKeyboardLockUI)},
 #if defined(OS_ANDROID)
-    {"progress-bar-animation", flag_descriptions::kProgressBarAnimationName,
-     flag_descriptions::kProgressBarAnimationDescription, kOsAndroid,
-     MULTI_VALUE_TYPE(kProgressBarAnimationChoices)},
     {"progress-bar-completion", flag_descriptions::kProgressBarCompletionName,
      flag_descriptions::kProgressBarCompletionDescription, kOsAndroid,
      MULTI_VALUE_TYPE(kProgressBarCompletionChoices)},

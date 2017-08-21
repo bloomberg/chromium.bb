@@ -1846,15 +1846,6 @@ extern const char kPayWithGoogleV1Description[] =
     "Enable Pay with Google integration into Web Payments with API version "
     "'1'.";
 
-const char kProgressBarAnimationName[] =
-    "Android phone page loading progress bar animation";
-const char kProgressBarAnimationDescription[] =
-    "Configures Android phone page loading progress bar animation.";
-const char kProgressBarAnimationLinear[] = "Linear";
-const char kProgressBarAnimationSmooth[] = "Smooth";
-const char kProgressBarAnimationSmoothIndeterminate[] = "Smooth indeterminate";
-const char kProgressBarAnimationFastStart[] = "Fast start";
-
 const char kProgressBarCompletionName[] =
     "Android phone page load progress bar completion time.";
 const char kProgressBarCompletionDescription[] =
