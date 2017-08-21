@@ -98,7 +98,6 @@ class CORE_TEMPLATE_CLASS_EXPORT TextIteratorAlgorithm {
   int CopyTextTo(ForwardsTextBuffer* output,
                  int position,
                  int min_length) const;
-  // TODO(xiaochengh): Avoid default parameters.
   int CopyTextTo(ForwardsTextBuffer* output, int position = 0) const;
 
   // Computes the length of the given range using a text iterator according to
