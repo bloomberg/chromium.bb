@@ -30,7 +30,7 @@ class LogoutButtonTrayTest : public NoSessionAshTestBase {
   // NoSessionAshTestBase:
   void SetUp() override {
     NoSessionAshTestBase::SetUp();
-    GetSessionControllerClient()->AddUserSession(kUserEmail);
+    SimulateUserLogin(kUserEmail);
   }
 
   PrefService* pref_service() {
@@ -51,9 +51,6 @@ TEST_F(LogoutButtonTrayTest, Visibility) {
   EXPECT_FALSE(button->visible());
 
   // Button is not visible after simulated login.
-  TestSessionControllerClient* session = GetSessionControllerClient();
-  session->SetSessionState(session_manager::SessionState::ACTIVE);
-  session->SwitchActiveUser(AccountId::FromUserEmail(kUserEmail));
   EXPECT_FALSE(button->visible());
 
   // Setting the pref makes the button visible.
@@ -61,6 +58,7 @@ TEST_F(LogoutButtonTrayTest, Visibility) {
   EXPECT_TRUE(button->visible());
 
   // Locking the screen hides the button.
+  TestSessionControllerClient* const session = GetSessionControllerClient();
   session->RequestLockScreen();
   EXPECT_FALSE(button->visible());
 

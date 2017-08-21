@@ -141,7 +141,11 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   }
 
   void Initialize(LoginStatus status) {
-    SetUserLoggedIn(status != LoginStatus::NOT_LOGGED_IN);
+    if (status == LoginStatus::NOT_LOGGED_IN) {
+      ClearLogin();
+    } else {
+      CreateUserSessions(1);
+    }
   }
 
   void EnableTabletMode(bool enabled) {

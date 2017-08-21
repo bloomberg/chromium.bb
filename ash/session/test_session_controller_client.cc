@@ -93,6 +93,9 @@ void TestSessionControllerClient::CreatePredefinedUserSessions(int count) {
     AddUserSession(base::StringPrintf("user%d@tray", numbered_user_index));
   }
 
+  // Sets the first user as active.
+  SwitchActiveUser(controller_->GetUserSession(0)->user_info->account_id);
+
   // Updates session state after adding user sessions.
   SetSessionState(session_manager::SessionState::ACTIVE);
 }
@@ -115,12 +118,11 @@ void TestSessionControllerClient::AddUserSession(
   controller_->UpdateUserSession(std::move(session));
 
   if (provide_pref_service &&
-      !Shell::Get()->session_controller()->GetUserPrefServiceForUser(
-          account_id)) {
+      !controller_->GetUserPrefServiceForUser(account_id)) {
     auto pref_service = base::MakeUnique<TestingPrefServiceSimple>();
     Shell::RegisterProfilePrefs(pref_service->registry());
-    Shell::Get()->session_controller()->ProvideUserPrefServiceForTest(
-        account_id, std::move(pref_service));
+    controller_->ProvideUserPrefServiceForTest(account_id,
+                                               std::move(pref_service));
   }
 }
 

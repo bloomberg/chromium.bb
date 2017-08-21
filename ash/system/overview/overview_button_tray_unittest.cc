@@ -223,11 +223,10 @@ TEST_F(OverviewButtonTrayTest, SecondaryTrayCreatedVisible) {
 // regains visibility when a user logs back in.
 TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  SetUserLoggedIn(false);
+  ClearLogin();
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
   EXPECT_FALSE(GetTray()->visible());
-  SetUserLoggedIn(true);
-  SetSessionStarted(true);
+  CreateUserSessions(1);
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   EXPECT_TRUE(GetTray()->visible());
   SetUserAddingScreenRunning(true);

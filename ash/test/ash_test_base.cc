@@ -25,6 +25,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
 #include "ash/wm/window_positioner.h"
+#include "components/signin/core/account_id/account_id.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -48,6 +49,8 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+
+using session_manager::SessionState;
 
 namespace ash {
 namespace {
@@ -376,15 +379,21 @@ TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
   return ash_test_helper_->test_session_controller_client();
 }
 
-void AshTestBase::SetSessionStarted(bool session_started) {
-  if (session_started)
-    GetSessionControllerClient()->CreatePredefinedUserSessions(1);
-  else
-    GetSessionControllerClient()->Reset();
+void AshTestBase::CreateUserSessions(int n) {
+  GetSessionControllerClient()->CreatePredefinedUserSessions(n);
 }
 
-void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
-  SetSessionStarted(user_logged_in);
+void AshTestBase::SimulateUserLogin(const std::string& user_email) {
+  TestSessionControllerClient* const session_controller_client =
+      GetSessionControllerClient();
+  session_controller_client->AddUserSession(user_email);
+  session_controller_client->SwitchActiveUser(
+      AccountId::FromUserEmail(user_email));
+  session_controller_client->SetSessionState(SessionState::ACTIVE);
+}
+
+void AshTestBase::ClearLogin() {
+  GetSessionControllerClient()->Reset();
 }
 
 void AshTestBase::SetCanLockScreen(bool can_lock) {
@@ -397,19 +406,18 @@ void AshTestBase::SetShouldLockScreenAutomatically(bool should_lock) {
 
 void AshTestBase::SetUserAddingScreenRunning(bool user_adding_screen_running) {
   GetSessionControllerClient()->SetSessionState(
-      user_adding_screen_running
-          ? session_manager::SessionState::LOGIN_SECONDARY
-          : session_manager::SessionState::ACTIVE);
+      user_adding_screen_running ? SessionState::LOGIN_SECONDARY
+                                 : SessionState::ACTIVE);
 }
 
 void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
   switch (block_reason) {
     case BLOCKED_BY_LOCK_SCREEN:
-      SetSessionStarted(true);
+      CreateUserSessions(1);
       Shell::Get()->session_controller()->LockScreenAndFlushForTest();
       break;
     case BLOCKED_BY_LOGIN_SCREEN:
-      SetSessionStarted(false);
+      ClearLogin();
       break;
     case BLOCKED_BY_USER_ADDING_SCREEN:
       SetUserAddingScreenRunning(true);
@@ -421,7 +429,7 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
 }
 
 void AshTestBase::UnblockUserSession() {
-  SetSessionStarted(true);
+  CreateUserSessions(1);
   GetSessionControllerClient()->UnlockScreen();
 }
 

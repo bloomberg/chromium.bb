@@ -99,6 +99,9 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // nullptr if no user session is found for the index.
   const mojom::UserSession* GetUserSession(UserIndex index) const;
 
+  // Gets the primary user session.
+  const mojom::UserSession* GetPrimaryUserSession() const;
+
   // Returns true if the current user is supervised: has legacy supervised
   // account or kid account.
   bool IsUserSupervised() const;
@@ -205,6 +208,10 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // is managed by session manager code, starting at 1. 0u is an invalid id
   // to detect first active user session.
   uint32_t active_session_id_ = 0u;
+
+  // The user session id of the primary user session. The primary user session
+  // is the very first user session of the current ash session.
+  uint32_t primary_session_id_ = 0u;
 
   // Last known login status. Used to track login status changes.
   LoginStatus login_status_ = LoginStatus::NOT_LOGGED_IN;

@@ -44,8 +44,9 @@ class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
   void SetSessionState(session_manager::SessionState state);
 
   // Creates the |count| pre-defined user sessions. The users are named by
-  // numbers using "user%d@tray" template. Note that existing user sessions
-  // prior this call will be removed without sending out notifications.
+  // numbers using "user%d@tray" template. The first user is set as active user
+  // to be consistent with crash-and-restore scenario.  Note that existing user
+  // sessions prior this call will be removed without sending out notifications.
   void CreatePredefinedUserSessions(int count);
 
   // Adds a user session from a given display email. The display email will be

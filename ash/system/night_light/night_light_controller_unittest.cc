@@ -112,7 +112,7 @@ class TestDelegate : public NightLightController::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
-class NightLightTest : public AshTestBase {
+class NightLightTest : public NoSessionAshTestBase {
  public:
   NightLightTest() = default;
   ~NightLightTest() override = default;
@@ -135,7 +135,7 @@ class NightLightTest : public AshTestBase {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableNightLight);
 
-    AshTestBase::SetUp();
+    NoSessionAshTestBase::SetUp();
     CreateTestUserSessions();
 
     // Simulate user 1 login.
@@ -162,7 +162,6 @@ class NightLightTest : public AshTestBase {
   }
 
  private:
-
   TestDelegate* delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NightLightTest);

@@ -4,7 +4,6 @@
 
 #include "ash/shelf/app_list_button.h"
 
-#include "ash/public/interfaces/session_controller.mojom.h"
 #include "ash/session/session_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_view.h"
@@ -16,7 +15,6 @@
 #include "base/i18n/rtl.h"
 #include "base/test/scoped_command_line.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/user_manager/fake_user_manager.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/events/event_constants.h"
@@ -32,38 +30,13 @@ class AppListButtonTest : public AshTestBase {
   AppListButtonTest() {}
   ~AppListButtonTest() override {}
 
+  // AshTestBase:
   void SetUp() override {
     command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
     SetupCommandLine(command_line_->GetProcessCommandLine());
     AshTestBase::SetUp();
     app_list_button_ =
         GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
-
-    controller_ = base::MakeUnique<SessionController>(nullptr);
-    controller_->AddObserver(app_list_button_);
-    user_manager_ = base::MakeUnique<user_manager::FakeUserManager>();
-    user_manager_->Initialize();
-  }
-
-  void TearDown() override {
-    AshTestBase::TearDown();
-    controller_->RemoveObserver(app_list_button_);
-    user_manager_->Shutdown();
-    user_manager_->Destroy();
-  }
-
-  void UpdateSession(uint32_t session_id, const std::string& email) {
-    mojom::UserSessionPtr session = mojom::UserSession::New();
-    session->session_id = session_id;
-    session->user_info = mojom::UserInfo::New();
-    session->user_info->type = user_manager::USER_TYPE_REGULAR;
-    session->user_info->account_id = AccountId::FromUserEmail(email);
-    session->user_info->display_name = email;
-    session->user_info->display_email = email;
-
-    controller_->UpdateUserSession(std::move(session));
-    user_manager_->AddUser(AccountId::FromUserEmail(email));
-    user_manager_->UserLoggedIn(AccountId::FromUserEmail(email), "", false);
   }
 
   virtual void SetupCommandLine(base::CommandLine* command_line) {}
@@ -74,14 +47,10 @@ class AppListButtonTest : public AshTestBase {
 
   const AppListButton* app_list_button() const { return app_list_button_; }
 
- protected:
-  std::unique_ptr<SessionController> controller_;
-
  private:
   AppListButton* app_list_button_;
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-  std::unique_ptr<user_manager::FakeUserManager> user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButtonTest);
 };
@@ -91,10 +60,8 @@ TEST_F(AppListButtonTest, LongPressGestureWithoutVoiceInteractionFlag) {
   Shell::Get()->app_list()->SetAppListPresenter(
       test_app_list_presenter.CreateInterfacePtrAndBind());
 
-  UpdateSession(1u, "user1@test.com");
-  UpdateSession(2u, "user2@test.com");
-  std::vector<uint32_t> order = {1u, 2u};
-  controller_->SetUserSessionOrder(order);
+  // Simulate two user with primary user as active.
+  CreateUserSessions(2);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -124,10 +91,8 @@ TEST_F(VoiceInteractionAppListButtonTest,
   EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableVoiceInteraction));
 
-  UpdateSession(1u, "user1@test.com");
-  UpdateSession(2u, "user2@test.com");
-  std::vector<uint32_t> order = {1u, 2u};
-  controller_->SetUserSessionOrder(order);
+  // Simulate two user with primary user as active.
+  CreateUserSessions(2);
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
@@ -144,10 +109,9 @@ TEST_F(VoiceInteractionAppListButtonTest, LongPressGestureWithSecondaryUser) {
   EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableVoiceInteraction));
 
-  UpdateSession(1u, "user1@test.com");
-  UpdateSession(2u, "user2@test.com");
-  std::vector<uint32_t> order = {2u, 1u};
-  controller_->SetUserSessionOrder(order);
+  // Simulate two user with secondary user as active.
+  SimulateUserLogin("user1@test.com");
+  SimulateUserLogin("user2@test.com");
 
   ui::GestureEvent long_press =
       CreateGestureEvent(ui::GestureEventDetails(ui::ET_GESTURE_LONG_PRESS));
