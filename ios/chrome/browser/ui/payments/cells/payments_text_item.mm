@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 
+#import "ios/chrome/browser/ui/payments/cells/accessibility_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -179,12 +180,10 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 #pragma mark - NSObject(Accessibility)
 
 - (NSString*)accessibilityLabel {
-  NSString* accessibilityLabel = self.textLabel.text;
-  if (self.detailTextLabel.text) {
-    return [NSString stringWithFormat:@"%@, %@", accessibilityLabel,
-                                      self.detailTextLabel.text];
-  }
-  return accessibilityLabel;
+  AccessibilityLabelBuilder* builder = [[AccessibilityLabelBuilder alloc] init];
+  [builder appendItem:self.textLabel.text];
+  [builder appendItem:self.detailTextLabel.text];
+  return [builder buildAccessibilityLabel];
 }
 
 @end

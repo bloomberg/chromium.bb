@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/payments/cells/autofill_profile_item.h"
 
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#import "ios/chrome/browser/ui/payments/cells/accessibility_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -188,10 +189,13 @@ const CGFloat kVerticalSpacingBetweenLabels = 8;
 #pragma mark - NSObject(Accessibility)
 
 - (NSString*)accessibilityLabel {
-  return [NSString
-      stringWithFormat:@"%@, %@, %@, %@, %@", self.nameLabel.text,
-                       self.addressLabel.text, self.phoneNumberLabel.text,
-                       self.emailLabel.text, self.notificationLabel.text];
+  AccessibilityLabelBuilder* builder = [[AccessibilityLabelBuilder alloc] init];
+  [builder appendItem:self.nameLabel.text];
+  [builder appendItem:self.addressLabel.text];
+  [builder appendItem:self.phoneNumberLabel.text];
+  [builder appendItem:self.emailLabel.text];
+  [builder appendItem:self.notificationLabel.text];
+  return [builder buildAccessibilityLabel];
 }
 
 @end
