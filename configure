@@ -343,6 +343,7 @@ EXPERIMENT_LIST="
     hash_me
     colorspace_headers
     mfmv
+    jnt_comp
 "
 CONFIG_LIST="
     dependency_tracking
