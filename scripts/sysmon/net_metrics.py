@@ -51,6 +51,7 @@ def collect_net_info():
   _collect_net_io_duplex_counters()
   _collect_net_if_stats()
   _collect_fqdn()
+  _collect_net_if_addrs()
 
 
 # Network IO metrics to collect
@@ -115,6 +116,29 @@ def _collect_net_if_stats():
     fields = {'interface': nic}
     for metric, counter_name in _net_if_metrics:
       metric.set(getattr(stats, counter_name), fields=fields)
+
+
+_net_if_addrs_metrics = metrics.StringMetric(
+    'dev/net/address',
+    description='Network address of physical network interfaces.')
+_family_field_strings = {
+    psutil.AF_LINK: 'AF_LINK',
+    socket.AF_INET: 'AF_INET',
+    socket.AF_INET6: 'AF_INET6',
+}
+
+
+def _collect_net_if_addrs():
+  """Collects network addresses as metrics."""
+  for nic, addresses in psutil.net_if_addrs().iteritems():
+    if _is_virtual_netif(nic):
+      continue
+    for address in addresses:
+      fields = {
+          'interface': nic,
+          'family': _family_field_strings.get(address.family, 'UNKNOWN'),
+      }
+      _net_if_addrs_metrics.set(address.address, fields)
 
 
 def _is_virtual_netif(nic):
