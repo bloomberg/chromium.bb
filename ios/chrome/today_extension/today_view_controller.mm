@@ -174,8 +174,7 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
 
 // Opens Chrome with an x-callback-url with command "app-group-command". The
 // |command| and |parameter| are passed via a shared sandbox NSDictionary.
-- (void)sendToChromeCommand:(NSString*)command
-              withParameter:(NSString*)parameter;
+- (void)sendToChromeCommand:(NSString*)command withURL:(NSString*)URL;
 
 // Creates (or reuses) an autoreleased URLTableCell to contain the pasteboard
 // URL.
@@ -640,7 +639,7 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
 
   NSString* command =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupNewTabCommand);
-  [self sendToChromeCommand:command withParameter:nil];
+  [self sendToChromeCommand:command withURL:nil];
 }
 
 - (void)voiceSearch:(id)sender {
@@ -648,7 +647,7 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
       base::UserMetricsAction("TodayExtension.VoiceSearchPressed"));
   NSString* command =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupVoiceSearchCommand);
-  [self sendToChromeCommand:command withParameter:nil];
+  [self sendToChromeCommand:command withURL:nil];
 }
 
 - (void)openClipboardURLInChrome:(NSString*)url {
@@ -674,11 +673,10 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
   }
   NSString* command =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupOpenURLCommand);
-  [self sendToChromeCommand:command withParameter:url];
+  [self sendToChromeCommand:command withURL:url];
 }
 
-- (void)sendToChromeCommand:(NSString*)command
-              withParameter:(NSString*)parameter {
+- (void)sendToChromeCommand:(NSString*)command withURL:(NSString*)URL {
   base::scoped_nsobject<NSUserDefaults> sharedDefaults(
       [[NSUserDefaults alloc] initWithSuiteName:app_group::ApplicationGroup()]);
 
@@ -689,7 +687,7 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
          forKey:base::SysUTF8ToNSString(
                     app_group::kChromeAppGroupCommandTimePreference)];
   [commandDictionary
-      setObject:@"TodayExtension"
+      setObject:app_group::kOpenCommandSourceTodayExtension
          forKey:base::SysUTF8ToNSString(
                     app_group::kChromeAppGroupCommandAppPreference)];
 
@@ -698,11 +696,11 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
          forKey:base::SysUTF8ToNSString(
                     app_group::kChromeAppGroupCommandCommandPreference)];
 
-  if (parameter) {
+  if (URL) {
     [commandDictionary
-        setObject:parameter
+        setObject:URL
            forKey:base::SysUTF8ToNSString(
-                      app_group::kChromeAppGroupCommandParameterPreference)];
+                      app_group::kChromeAppGroupCommandURLPreference)];
   }
   [sharedDefaults setObject:commandDictionary
                      forKey:base::SysUTF8ToNSString(

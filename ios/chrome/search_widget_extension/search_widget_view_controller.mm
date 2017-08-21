@@ -39,12 +39,11 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
 - (BOOL)updateWidget;
 // Opens the main application with the given |command|.
 - (void)openAppWithCommand:(NSString*)command;
-// Opens the main application with the given |command| and |parameter|.
-- (void)openAppWithCommand:(NSString*)command parameter:(NSString*)parameter;
+// Opens the main application with the given |command| and |URL|.
+- (void)openAppWithCommand:(NSString*)command URL:(NSString*)URL;
 // Returns the dictionary of commands to pass via user defaults to open the main
-// application for a given |command| and |parameter|.
-+ (NSDictionary*)dictForCommand:(NSString*)command
-                      parameter:(NSString*)parameter;
+// application for a given |command| and optional |URL|.
++ (NSDictionary*)dictForCommand:(NSString*)command URL:(NSString*)URL;
 // Register a display of the widget in the app_group NSUserDefaults.
 // Metrics on the widget usage will be sent (if enabled) on the next Chrome
 // startup.
@@ -210,13 +209,13 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   DCHECK(self.copiedURL);
   [self openAppWithCommand:base::SysUTF8ToNSString(
                                app_group::kChromeAppGroupOpenURLCommand)
-                 parameter:self.copiedURL.absoluteString];
+                       URL:self.copiedURL.absoluteString];
 }
 
 #pragma mark - internal
 
 - (void)openAppWithCommand:(NSString*)command {
-  return [self openAppWithCommand:command parameter:nil];
+  return [self openAppWithCommand:command URL:nil];
 }
 
 - (void)registerWidgetDisplay {
@@ -227,13 +226,12 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
                       forKey:app_group::kSearchExtensionDisplayCount];
 }
 
-- (void)openAppWithCommand:(NSString*)command parameter:(NSString*)parameter {
+- (void)openAppWithCommand:(NSString*)command URL:(NSString*)URL {
   NSUserDefaults* sharedDefaults = app_group::GetGroupUserDefaults();
   NSString* defaultsKey =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandPreference);
   [sharedDefaults
-      setObject:[SearchWidgetViewController dictForCommand:command
-                                                 parameter:parameter]
+      setObject:[SearchWidgetViewController dictForCommand:command URL:URL]
          forKey:defaultsKey];
   [sharedDefaults synchronize];
 
@@ -253,8 +251,7 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   [self.extensionContext openURL:openURL completionHandler:nil];
 }
 
-+ (NSDictionary*)dictForCommand:(NSString*)command
-                      parameter:(NSString*)parameter {
++ (NSDictionary*)dictForCommand:(NSString*)command URL:(NSString*)URL {
   NSString* timePrefKey =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandTimePreference);
   NSString* appPrefKey =
@@ -262,19 +259,19 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
   NSString* commandPrefKey = base::SysUTF8ToNSString(
       app_group::kChromeAppGroupCommandCommandPreference);
 
-  if (parameter) {
-    NSString* paramPrefKey = base::SysUTF8ToNSString(
-        app_group::kChromeAppGroupCommandParameterPreference);
+  if (URL) {
+    NSString* URLPrefKey =
+        base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandURLPreference);
     return @{
       timePrefKey : [NSDate date],
-      appPrefKey : @"TodayExtension",
+      appPrefKey : app_group::kOpenCommandSourceSearchExtension,
       commandPrefKey : command,
-      paramPrefKey : parameter,
+      URLPrefKey : URL,
     };
   }
   return @{
     timePrefKey : [NSDate date],
-    appPrefKey : @"TodayExtension",
+    appPrefKey : app_group::kOpenCommandSourceSearchExtension,
     commandPrefKey : command,
   };
 }

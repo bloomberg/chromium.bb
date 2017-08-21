@@ -64,9 +64,13 @@ extern const char kChromeAppGroupQRScannerCommand[];
 // |kChromeAppGroupCommandAppPreference| issued the command.
 extern const char kChromeAppGroupCommandTimePreference[];
 
-// The key in kChromeAppGroupCommandPreference containing a parameter for the
-// command. The nature of the parameter depends on the command.
-extern const char kChromeAppGroupCommandParameterPreference[];
+// The key in kChromeAppGroupCommandPreference containing the URL to open for if
+// the command requires one.
+extern const char kChromeAppGroupCommandURLPreference[];
+
+// The key in kChromeAppGroupCommandPreference containing the index to open for
+// if the command requires one.
+extern const char kChromeAppGroupCommandIndexPreference[];
 
 // The key of a preference containing Chrome client ID reported in the metrics
 // client ID. If the user does not opt in, this value must be cleared from the
@@ -86,8 +90,14 @@ extern NSString* const kShareItemDate;
 extern NSString* const kShareItemCancel;
 extern NSString* const kShareItemType;
 
-// The value used by Chrome share extension in |kShareItemSource|.
-extern NSString* const kShareItemShareExtensionSource;
+// The value used by Chrome Share extension in |kShareItemSource|.
+extern NSString* const kShareItemSourceShareExtension;
+
+// The values used by Chrome extensions in
+// |kChromeAppGroupCommandAppPreference|.
+extern NSString* const kOpenCommandSourceTodayExtension;
+extern NSString* const kOpenCommandSourceContentExtension;
+extern NSString* const kOpenCommandSourceSearchExtension;
 
 // The value of the key for the sharedDefaults used by the Content Widget.
 extern NSString* const kSuggestedItems;

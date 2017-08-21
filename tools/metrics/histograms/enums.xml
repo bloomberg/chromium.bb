@@ -21086,6 +21086,15 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="SubframeBlocked"/>
 </enum>
 
+<enum name="IOSSearchExtensionAction">
+  <int value="0" label="No Action"/>
+  <int value="1" label="New Search"/>
+  <int value="2" label="New Incognito Search"/>
+  <int value="3" label="New Voice Search"/>
+  <int value="4" label="New QR Code Search"/>
+  <int value="5" label="Open URL"/>
+</enum>
+
 <enum name="IOSShareExtensionReceivedEntrySource">
   <int value="0" label="Unknown Application"/>
   <int value="1" label="Chrome share extension"/>

@@ -46,6 +46,17 @@ enum MobileSessionStartAction {
   MOBILE_SESSION_START_ACTION_COUNT,
 };
 
+// Values of the UMA iOS.SearchExtension.Action histogram.
+enum SearchExtensionAction {
+  ACTION_NO_ACTION,
+  ACTION_NEW_SEARCH,
+  ACTION_NEW_INCOGNITO_SEARCH,
+  ACTION_NEW_VOICE_SEARCH,
+  ACTION_NEW_QR_CODE_SEARCH,
+  ACTION_OPEN_URL,
+  SEARCH_EXTENSION_ACTION_COUNT,
+};
+
 }  // namespace
 
 @implementation ChromeAppStartupParameters {
@@ -195,10 +206,15 @@ enum MobileSessionStartAction {
   id commandTime = base::mac::ObjCCast<NSDate>(
       [commandDictionary objectForKey:commandTimePreference]);
 
-  NSString* commandParameterPreference = base::SysUTF8ToNSString(
-      app_group::kChromeAppGroupCommandParameterPreference);
-  NSString* commandParameter = base::mac::ObjCCast<NSString>(
-      [commandDictionary objectForKey:commandParameterPreference]);
+  NSString* commandURLPreference =
+      base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandURLPreference);
+  NSString* externalURL = base::mac::ObjCCast<NSString>(
+      [commandDictionary objectForKey:commandURLPreference]);
+
+  NSString* commandIndexPreference =
+      base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandIndexPreference);
+  NSNumber* index = base::mac::ObjCCast<NSNumber>(
+      [commandDictionary objectForKey:commandIndexPreference]);
 
   if (!commandCaller || !command || !commandTimePreference) {
     return nil;
@@ -212,94 +228,114 @@ enum MobileSessionStartAction {
     return nil;
   return [ChromeAppStartupParameters
       newAppStartupParametersForCommand:command
-                          withParameter:commandParameter
+                        withExternalURL:externalURL
+                              withIndex:index
                                 withURL:url
+
                   fromSourceApplication:appId
             fromSecureSourceApplication:commandCaller];
 }
 
 + (instancetype)newAppStartupParametersForCommand:(NSString*)command
-                                    withParameter:(id)parameter
+                                  withExternalURL:(NSString*)externalURL
+                                        withIndex:(NSNumber*)index
                                           withURL:(NSURL*)url
                             fromSourceApplication:(NSString*)appId
                       fromSecureSourceApplication:(NSString*)secureSourceApp {
+  SearchExtensionAction action = ACTION_NO_ACTION;
+  ChromeAppStartupParameters* params = nil;
+
   if ([command
           isEqualToString:base::SysUTF8ToNSString(
                               app_group::kChromeAppGroupVoiceSearchCommand)]) {
-    ChromeAppStartupParameters* params = [[ChromeAppStartupParameters alloc]
+    params = [[ChromeAppStartupParameters alloc]
         initWithExternalURL:GURL(kChromeUINewTabURL)
           declaredSourceApp:appId
             secureSourceApp:secureSourceApp
                 completeURL:url];
     [params setPostOpeningAction:START_VOICE_SEARCH];
-    return params;
+    action = ACTION_NEW_VOICE_SEARCH;
   }
 
   if ([command isEqualToString:base::SysUTF8ToNSString(
                                    app_group::kChromeAppGroupNewTabCommand)]) {
-    return [[ChromeAppStartupParameters alloc]
+    params = [[ChromeAppStartupParameters alloc]
         initWithExternalURL:GURL(kChromeUINewTabURL)
           declaredSourceApp:appId
             secureSourceApp:secureSourceApp
                 completeURL:url];
+    action = ACTION_NO_ACTION;
   }
 
   if ([command
           isEqualToString:base::SysUTF8ToNSString(
                               app_group::kChromeAppGroupFocusOmniboxCommand)]) {
-    ChromeAppStartupParameters* params = [[ChromeAppStartupParameters alloc]
+    params = [[ChromeAppStartupParameters alloc]
         initWithExternalURL:GURL(kChromeUINewTabURL)
           declaredSourceApp:appId
             secureSourceApp:secureSourceApp
                 completeURL:url];
     [params setPostOpeningAction:FOCUS_OMNIBOX];
-    return params;
+    action = ACTION_NEW_SEARCH;
   }
 
   if ([command isEqualToString:base::SysUTF8ToNSString(
                                    app_group::kChromeAppGroupOpenURLCommand)]) {
-    if (!parameter || ![parameter isKindOfClass:[NSString class]])
+    if (!externalURL || ![externalURL isKindOfClass:[NSString class]])
       return nil;
-    GURL externalURL(base::SysNSStringToUTF8(parameter));
-    if (!externalURL.is_valid() || !externalURL.SchemeIsHTTPOrHTTPS())
+    GURL externalGURL(base::SysNSStringToUTF8(externalURL));
+    if (!externalGURL.is_valid() || !externalGURL.SchemeIsHTTPOrHTTPS())
       return nil;
-    return
-        [[ChromeAppStartupParameters alloc] initWithExternalURL:externalURL
+    params =
+        [[ChromeAppStartupParameters alloc] initWithExternalURL:externalGURL
                                               declaredSourceApp:appId
                                                 secureSourceApp:secureSourceApp
                                                     completeURL:url];
+    action = ACTION_OPEN_URL;
   }
 
   if ([command
           isEqualToString:base::SysUTF8ToNSString(
                               app_group::kChromeAppGroupQRScannerCommand)]) {
-    ChromeAppStartupParameters* params = [[ChromeAppStartupParameters alloc]
+    params = [[ChromeAppStartupParameters alloc]
         initWithExternalURL:GURL(kChromeUINewTabURL)
           declaredSourceApp:appId
             secureSourceApp:secureSourceApp
                 completeURL:url];
     [params setPostOpeningAction:START_QR_CODE_SCANNER];
-    return params;
+    action = ACTION_NEW_QR_CODE_SEARCH;
   }
 
   if ([command isEqualToString:
                    base::SysUTF8ToNSString(
                        app_group::kChromeAppGroupIncognitoSearchCommand)]) {
-    ChromeAppStartupParameters* params = [[ChromeAppStartupParameters alloc]
+    params = [[ChromeAppStartupParameters alloc]
         initWithExternalURL:GURL(kChromeUINewTabURL)
           declaredSourceApp:appId
             secureSourceApp:secureSourceApp
                 completeURL:url];
     [params setLaunchInIncognito:YES];
     [params setPostOpeningAction:FOCUS_OMNIBOX];
-    return params;
+    action = ACTION_NEW_INCOGNITO_SEARCH;
   }
 
-  return nil;
+  if ([secureSourceApp
+          isEqualToString:app_group::kOpenCommandSourceSearchExtension]) {
+    UMA_HISTOGRAM_ENUMERATION("IOS.SearchExtension.Action", action,
+                              SEARCH_EXTENSION_ACTION_COUNT);
+  }
+  if ([secureSourceApp
+          isEqualToString:app_group::kOpenCommandSourceContentExtension] &&
+      index) {
+    UMA_HISTOGRAM_COUNTS_100("IOS.ContentExtension.Index",
+                             [index integerValue]);
+  }
+  return params;
 }
 
 - (MobileSessionCallerApp)callerApp {
-  if ([_secureSourceApp isEqualToString:@"TodayExtension"])
+  if ([_secureSourceApp
+          isEqualToString:app_group::kOpenCommandSourceTodayExtension])
     return CALLER_APP_GOOGLE_CHROME_TODAY_EXTENSION;
 
   if (![_declaredSourceApp length])
