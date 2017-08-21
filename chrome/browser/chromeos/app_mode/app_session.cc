@@ -115,31 +115,38 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
  private:
   // extensions::AppWindowRegistry::Observer overrides:
   void OnAppWindowAdded(AppWindow* app_window) override {
+    if (app_window->extension_id() != app_id_)
+      return;
+
     app_session_->OnAppWindowAdded(app_window);
+    app_window_created_ = true;
   }
 
   void OnAppWindowRemoved(AppWindow* app_window) override {
-    if (window_registry_->GetAppWindowsForApp(app_id_).empty()) {
-      if (DemoAppLauncher::IsDemoAppSession(user_manager::UserManager::Get()
-                                                ->GetActiveUser()
-                                                ->GetAccountId())) {
-        // If we were in demo mode, we disabled all our network technologies,
-        // re-enable them.
-        NetworkStateHandler* handler =
-            NetworkHandler::Get()->network_state_handler();
-        handler->SetTechnologyEnabled(
-            NetworkTypePattern::NonVirtual(),
-            true,
-            chromeos::network_handler::ErrorCallback());
-      }
-      app_session_->OnLastAppWindowClosed();
-      window_registry_->RemoveObserver(this);
+    if (!app_window_created_ ||
+        !window_registry_->GetAppWindowsForApp(app_id_).empty()) {
+      return;
     }
+
+    if (DemoAppLauncher::IsDemoAppSession(user_manager::UserManager::Get()
+                                              ->GetActiveUser()
+                                              ->GetAccountId())) {
+      // If we were in demo mode, we disabled all our network technologies,
+      // re-enable them.
+      NetworkStateHandler* handler =
+          NetworkHandler::Get()->network_state_handler();
+      handler->SetTechnologyEnabled(NetworkTypePattern::NonVirtual(), true,
+                                    chromeos::network_handler::ErrorCallback());
+    }
+
+    app_session_->OnLastAppWindowClosed();
+    window_registry_->RemoveObserver(this);
   }
 
   AppSession* const app_session_;
   AppWindowRegistry* window_registry_ = nullptr;
   std::string app_id_;
+  bool app_window_created_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowHandler);
 };
