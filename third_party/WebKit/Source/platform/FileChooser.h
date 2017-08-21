@@ -32,6 +32,7 @@
 
 #include "platform/FileMetadata.h"
 #include "platform/PlatformExport.h"
+#include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/RefCounted.h"
@@ -76,7 +77,7 @@ struct FileChooserSettings {
   Vector<String> PLATFORM_EXPORT AcceptTypes() const;
 };
 
-class PLATFORM_EXPORT FileChooserClient {
+class PLATFORM_EXPORT FileChooserClient : public GarbageCollectedMixin {
  public:
   virtual void FilesChosen(const Vector<FileChooserFileInfo>&) = 0;
   virtual ~FileChooserClient();
@@ -85,8 +86,6 @@ class PLATFORM_EXPORT FileChooserClient {
   FileChooser* NewFileChooser(const FileChooserSettings&);
 
  private:
-  void DiscardChooser();
-
   RefPtr<FileChooser> chooser_;
 };
 
@@ -107,7 +106,7 @@ class PLATFORM_EXPORT FileChooser : public RefCounted<FileChooser> {
  private:
   FileChooser(FileChooserClient*, const FileChooserSettings&);
 
-  FileChooserClient* client_;
+  WeakPersistent<FileChooserClient> client_;
   FileChooserSettings settings_;
 };
 
