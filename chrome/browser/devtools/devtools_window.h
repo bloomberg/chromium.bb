@@ -264,14 +264,15 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                                 const std::string& frontend_url,
                                 bool can_dock,
                                 const std::string& settings,
-                                const std::string& panel);
+                                const std::string& panel,
+                                bool has_other_clients);
   static GURL GetDevToolsURL(Profile* profile,
                              FrontendType frontend_type,
                              const std::string& frontend_url,
                              bool can_dock,
-                             const std::string& panel);
+                             const std::string& panel,
+                             bool has_other_clients);
 
-  static DevToolsWindow* CreateDevToolsWindowForWorker(Profile* profile);
   static void ToggleDevToolsWindow(
       content::WebContents* web_contents,
       bool force_open,

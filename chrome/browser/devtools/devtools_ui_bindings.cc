@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -391,7 +392,7 @@ std::string SanitizeFrontendQueryParam(
   // Convert boolean flags to true.
   if (key == "can_dock" || key == "debugFrontend" || key == "experiments" ||
       key == "isSharedWorker" || key == "v8only" || key == "remoteFrontend" ||
-      key == "nodeFrontend")
+      key == "nodeFrontend" || key == "hasOtherClients")
     return "true";
 
   // Pass connection endpoints as is.
@@ -659,6 +660,18 @@ void DevToolsUIBindings::SendMessageAck(int request_id,
   base::Value id_value(request_id);
   CallClientFunction("DevToolsAPI.embedderMessageAck",
                      &id_value, arg, nullptr);
+}
+
+void DevToolsUIBindings::InnerAttach() {
+  DCHECK(agent_host_.get());
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableDevToolsExperiments)) {
+    agent_host_->AttachMultiClient(this);
+  } else {
+    // DevToolsUIBindings terminates existing debugging connections and starts
+    // debugging.
+    agent_host_->ForceAttachClient(this);
+  }
 }
 
 // DevToolsEmbedderMessageDispatcher::Delegate implementation -----------------
@@ -1044,7 +1057,7 @@ void DevToolsUIBindings::ClearPreferences() {
 void DevToolsUIBindings::Reattach(const DispatchCallback& callback) {
   if (agent_host_.get()) {
     agent_host_->DetachClient(this);
-    agent_host_->AttachClient(this);
+    InnerAttach();
   }
   callback.Run(nullptr);
 }
@@ -1297,9 +1310,7 @@ void DevToolsUIBindings::AttachTo(
   if (agent_host_.get())
     Detach();
   agent_host_ = agent_host;
-  // DevToolsUIBindings terminates existing debugging connections and starts
-  // debugging.
-  agent_host_->ForceAttachClient(this);
+  InnerAttach();
 }
 
 void DevToolsUIBindings::Reload() {
@@ -1376,7 +1387,7 @@ void DevToolsUIBindings::DocumentAvailableInMainFrame() {
     return;
   reloading_ = false;
   if (agent_host_.get())
-    agent_host_->AttachClient(this);
+    InnerAttach();
 }
 
 void DevToolsUIBindings::DocumentOnLoadCompletedInMainFrame() {

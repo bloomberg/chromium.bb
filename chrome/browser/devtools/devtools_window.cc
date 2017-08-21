@@ -460,20 +460,14 @@ void DevToolsWindow::OpenDevToolsWindowForWorker(
     const scoped_refptr<DevToolsAgentHost>& worker_agent) {
   DevToolsWindow* window = FindDevToolsWindow(worker_agent.get());
   if (!window) {
-    window = DevToolsWindow::CreateDevToolsWindowForWorker(profile);
+    base::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
+    window = Create(profile, nullptr, kFrontendWorker, std::string(), false, "",
+                    "", worker_agent->IsAttached());
     if (!window)
       return;
     window->bindings_->AttachTo(worker_agent);
   }
   window->ScheduleShow(DevToolsToggleAction::Show());
-}
-
-// static
-DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
-    Profile* profile) {
-  base::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
-  return Create(profile, nullptr, kFrontendWorker, std::string(), false, "",
-                "");
 }
 
 // static
@@ -540,7 +534,7 @@ void DevToolsWindow::OpenDevToolsWindowForFrame(
   if (!window) {
     window = DevToolsWindow::Create(profile, nullptr, kFrontendDefault,
                                     std::string(), false, std::string(),
-                                    std::string());
+                                    std::string(), agent_host->IsAttached());
     if (!window)
       return;
     window->bindings_->AttachTo(agent_host);
@@ -574,7 +568,7 @@ void DevToolsWindow::OpenExternalFrontend(
   if (!window) {
     window = Create(profile, nullptr, frontend_type,
                     DevToolsUI::GetProxyURL(frontend_url).spec(), false,
-                    std::string(), std::string());
+                    std::string(), std::string(), agent_host->IsAttached());
     if (!window)
       return;
     window->bindings_->AttachTo(agent_host);
@@ -595,7 +589,7 @@ void DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
 
   DevToolsWindow* window =
       Create(profile, nullptr, kFrontendNode, std::string(), false,
-             std::string(), std::string());
+             std::string(), std::string(), false);
   if (!window)
     return;
   window->bindings_->AttachTo(DevToolsAgentHost::CreateForDiscovery());
@@ -632,7 +626,7 @@ void DevToolsWindow::ToggleDevToolsWindow(
         break;
     }
     window = Create(profile, inspected_web_contents, kFrontendDefault,
-                    std::string(), true, settings, panel);
+                    std::string(), true, settings, panel, agent->IsAttached());
     if (!window)
       return;
     window->bindings_->AttachTo(agent.get());
@@ -886,7 +880,8 @@ DevToolsWindow* DevToolsWindow::Create(
     const std::string& frontend_url,
     bool can_dock,
     const std::string& settings,
-    const std::string& panel) {
+    const std::string& panel,
+    bool has_other_clients) {
   if (profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return nullptr;
@@ -903,8 +898,8 @@ DevToolsWindow* DevToolsWindow::Create(
   }
 
   // Create WebContents with devtools.
-  GURL url(
-      GetDevToolsURL(profile, frontend_type, frontend_url, can_dock, panel));
+  GURL url(GetDevToolsURL(profile, frontend_type, frontend_url, can_dock, panel,
+                          has_other_clients));
   std::unique_ptr<WebContents> main_web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));
   main_web_contents->GetController().LoadURL(
@@ -925,7 +920,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     FrontendType frontend_type,
                                     const std::string& frontend_url,
                                     bool can_dock,
-                                    const std::string& panel) {
+                                    const std::string& panel,
+                                    bool has_other_clients) {
   std::string url(!frontend_url.empty() ? frontend_url
                                         : chrome::kChromeUIDevToolsURL);
   std::string url_string(url +
@@ -954,6 +950,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
     url_string += "&can_dock=true";
   if (panel.size())
     url_string += "&panel=" + panel;
+  if (has_other_clients)
+    url_string += "&hasOtherClients=true";
   return DevToolsUIBindings::SanitizeFrontendURL(GURL(url_string));
 }
 
