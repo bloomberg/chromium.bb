@@ -261,7 +261,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     // Called by |session_| for an asynchronous request when the stream
     // request has finished successfully.
-    void OnRequestCompleteSuccess(QuicChromiumClientStream* stream);
+    void OnRequestCompleteSuccess(
+        std::unique_ptr<QuicChromiumClientStream::Handle> stream);
 
     // Called by |session_| for an asynchronous request when the stream
     // request has finished with an error. Also called with ERR_ABORTED
@@ -271,7 +272,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     QuicChromiumClientSession::Handle* session_;
     const bool requires_confirmation_;
     CompletionCallback callback_;
-    QuicChromiumClientStream* stream_;
+    std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
     // For tracking how much time pending stream requests wait.
     base::TimeTicks pending_start_time_;
     State next_state_;
