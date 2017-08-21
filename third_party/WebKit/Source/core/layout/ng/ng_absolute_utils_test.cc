@@ -26,7 +26,9 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
     style_->SetBorderBottomStyle(EBorderStyle::kSolid);
     style_->SetBoxSizing(EBoxSizing::kBorderBox);
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
-    NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
+    NGConstraintSpaceBuilder builder(
+        kHorizontalTopBottom,
+        /* icb_size */ container_size_.ConvertToPhysical(kHorizontalTopBottom));
     builder.SetAvailableSize(container_size_);
     ltr_space_ = builder.SetTextDirection(TextDirection::kLtr)
                      .ToConstraintSpace(kHorizontalTopBottom);

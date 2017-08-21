@@ -50,17 +50,11 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
           container_builder_->Size().ConvertToPhysical(writing_mode),
           NGPhysicalSize());
 
-  NGLogicalSize space_size = container_builder_->Size();
-  space_size.block_size -= borders.BlockSum();
-  space_size.inline_size -= borders.InlineSum();
+  container_size_ = container_builder_->Size();
+  container_size_.inline_size -= borders.InlineSum();
+  container_size_.block_size -= borders.BlockSum();
 
-  // Initialize ConstraintSpace
-  NGConstraintSpaceBuilder space_builder(writing_mode);
-  space_builder.SetAvailableSize(space_size);
-  space_builder.SetPercentageResolutionSize(space_size);
-  space_builder.SetIsNewFormattingContext(true);
-  space_builder.SetTextDirection(container_style_.Direction());
-  container_space_ = space_builder.ToConstraintSpace(writing_mode);
+  icb_size_ = container_space.InitialContainingBlockSize();
 }
 
 void NGOutOfFlowLayoutPart::Run() {
@@ -95,6 +89,11 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
     NGLogicalOffset* offset) {
   DCHECK(descendant);
 
+  NGWritingMode container_writing_mode(
+      FromPlatformWritingMode(container_style_.GetWritingMode()));
+  NGWritingMode descendant_writing_mode(
+      FromPlatformWritingMode(descendant.Style().GetWritingMode()));
+
   // Adjust the static_position origin. The static_position coordinate origin is
   // relative to the container's border box, ng_absolute_utils expects it to be
   // relative to the container's padding box.
@@ -102,15 +101,15 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
 
   // The block estimate is in the descendant's writing mode.
   RefPtr<NGConstraintSpace> descendant_constraint_space =
-      NGConstraintSpaceBuilder(container_space_.Get())
-          .ToConstraintSpace(
-              FromPlatformWritingMode(descendant.Style().GetWritingMode()));
+      NGConstraintSpaceBuilder(container_writing_mode, icb_size_)
+          .SetTextDirection(container_style_.Direction())
+          .SetAvailableSize(container_size_)
+          .SetPercentageResolutionSize(container_size_)
+          .ToConstraintSpace(descendant_writing_mode);
   Optional<MinMaxSize> min_max_size;
   Optional<LayoutUnit> block_estimate;
 
   RefPtr<NGLayoutResult> layout_result = nullptr;
-  NGWritingMode descendant_writing_mode(
-      FromPlatformWritingMode(descendant.Style().GetWritingMode()));
 
   if (AbsoluteNeedsChildInlineSize(descendant.Style()) ||
       NeedMinMaxSize(descendant.Style())) {
@@ -119,8 +118,8 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
 
   Optional<NGLogicalSize> replaced_size;
   if (descendant.IsReplaced())
-    replaced_size =
-        ComputeReplacedSize(descendant, *container_space_, min_max_size);
+    replaced_size = ComputeReplacedSize(
+        descendant, *descendant_constraint_space, min_max_size);
 
   NGAbsolutePhysicalPosition node_position =
       ComputePartialAbsoluteWithChildInlineSize(
@@ -151,7 +150,7 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   // Compute logical offset, NGAbsolutePhysicalPosition is calculated relative
   // to the padding box so add back the container's borders.
   NGBoxStrut inset = node_position.inset.ConvertToLogical(
-      container_space_->WritingMode(), container_space_->Direction());
+      container_writing_mode, container_style_.Direction());
   offset->inline_offset =
       inset.inline_start + container_border_offset_.inline_offset;
   offset->block_offset =
@@ -173,10 +172,10 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   // the constraint space in the descendant's writing mode.
   NGWritingMode writing_mode(
       FromPlatformWritingMode(descendant.Style().GetWritingMode()));
-  NGLogicalSize container_size(
-      container_space_->AvailableSize()
-          .ConvertToPhysical(container_space_->WritingMode())
-          .ConvertToLogical(writing_mode));
+  NGLogicalSize container_size(container_size_
+                                   .ConvertToPhysical(FromPlatformWritingMode(
+                                       container_style_.GetWritingMode()))
+                                   .ConvertToLogical(writing_mode));
 
   LayoutUnit inline_size =
       node_position.size.ConvertToLogical(writing_mode).inline_size;
@@ -186,13 +185,14 @@ RefPtr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   NGLogicalSize available_size{inline_size, block_size};
 
   // TODO(atotic) will need to be adjusted for scrollbars.
-  NGConstraintSpaceBuilder builder(writing_mode);
-  builder.SetAvailableSize(available_size);
-  builder.SetPercentageResolutionSize(container_size);
+  NGConstraintSpaceBuilder builder(writing_mode, icb_size_);
+  builder.SetAvailableSize(available_size)
+      .SetTextDirection(descendant.Style().Direction())
+      .SetPercentageResolutionSize(container_size)
+      .SetIsNewFormattingContext(true)
+      .SetIsFixedSizeInline(true);
   if (block_estimate)
     builder.SetIsFixedSizeBlock(true);
-  builder.SetIsFixedSizeInline(true);
-  builder.SetIsNewFormattingContext(true);
   RefPtr<NGConstraintSpace> space = builder.ToConstraintSpace(writing_mode);
 
   return descendant.Layout(space.Get());
