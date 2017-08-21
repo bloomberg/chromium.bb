@@ -133,8 +133,8 @@ TEST_F(FileSystemApiConsentProviderTest, ForNonKioskApps) {
   // Component apps are not granted unless they are whitelisted.
   {
     scoped_refptr<Extension> component_extension(
-        test_util::BuildApp(
-            std::move(ExtensionBuilder().SetLocation(Manifest::COMPONENT)))
+        ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
+            .SetLocation(Manifest::COMPONENT)
             .Build());
     TestingConsentProviderDelegate delegate;
     ConsentProvider provider(&delegate);
@@ -145,8 +145,8 @@ TEST_F(FileSystemApiConsentProviderTest, ForNonKioskApps) {
   // user.
   {
     scoped_refptr<Extension> whitelisted_component_extension(
-        test_util::BuildApp(
-            std::move(ExtensionBuilder().SetLocation(Manifest::COMPONENT)))
+        ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
+            .SetLocation(Manifest::COMPONENT)
             .Build());
     TestingConsentProviderDelegate delegate;
     delegate.SetComponentWhitelist(whitelisted_component_extension->id());
@@ -180,7 +180,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
   // instantly without asking for user consent, but with a notification.
   {
     scoped_refptr<Extension> auto_launch_kiosk_app(
-        test_util::BuildApp(ExtensionBuilder())
+        ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
             .MergeManifest(DictionaryBuilder()
                                .SetBoolean("kiosk_enabled", true)
                                .SetBoolean("kiosk_only", true)
@@ -210,7 +210,7 @@ TEST_F(FileSystemApiConsentProviderTest, ForKioskApps) {
   // Non-component apps in manual-launch kiosk mode will be granted access after
   // receiving approval from the user.
   scoped_refptr<Extension> manual_launch_kiosk_app(
-      test_util::BuildApp(ExtensionBuilder())
+      ExtensionBuilder("Test", ExtensionBuilder::Type::PLATFORM_APP)
           .MergeManifest(DictionaryBuilder()
                              .SetBoolean("kiosk_enabled", true)
                              .SetBoolean("kiosk_only", true)
