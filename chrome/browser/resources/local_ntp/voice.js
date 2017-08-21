@@ -113,13 +113,40 @@ speech.messages = {
  * @private
  */
 speech.State_ = {
+  // Initial state of the controller. Is never re-entered.
+  // The only state from which the speech.init() method can be called.
+  // The UI overlay is hidden, recognition is inactive.
   UNINITIALIZED: -1,
+  // Represents a ready to be activated state. If voice search is unsuccessful
+  // for any reason, the controller will return to this state
+  // using |speech.reset_()|. The UI overlay is hidden, recognition is inactive.
   READY: 0,
+  // Indicates that speech recognition has started, but no audio has yet
+  // been captured. The UI overlay is visible, recognition is active.
   STARTED: 1,
+  // Indicates that audio is being captured by the Web Speech API, but no
+  // speech has yet been recognized. The UI overlay is visible and indicating
+  // that audio is being captured, recognition is active.
   AUDIO_RECEIVED: 2,
+  // Represents a state where speech has been recognized by the Web Speech API,
+  // but no resulting transcripts have yet been received back. The UI overlay is
+  // visible and indicating that audio is being captured, recognition is active.
   SPEECH_RECEIVED: 3,
+  // Controller state where speech has been successfully recognized and text
+  // transcripts have been reported back. The UI overlay is visible
+  // and displaying intermediate results, recognition is active.
+  // This state remains until recognition ends successfully or due to an error.
   RESULT_RECEIVED: 4,
+  // Indicates that speech recognition has failed due to an error
+  // (or a no match error) being received from the Web Speech API.
+  // A timeout may have occurred as well. The UI overlay is visible
+  // and displaying an error message, recognition is inactive.
   ERROR_RECEIVED: 5,
+  // Represents a state where speech recognition has been stopped
+  // (either on success or failure) and the UI has not yet reset/redirected.
+  // The UI overlay is displaying results or an error message with a timeout,
+  // after which the site will either get redirected to search results
+  // (successful) or back to the NTP by hiding the overlay (unsuccessful).
   STOPPED: 6
 };
 
@@ -244,18 +271,14 @@ speech.init = function(configData) {
   // Set translations map.
   speech.messages = {
     audioError: configData.translatedStrings.audioError,
-    // TODO(oskopek): Remove the details error message once
-    // permissions are automatically enabled for the local NTP.
-    details: 'Details',
+    details: configData.translatedStrings.details,
     languageError: configData.translatedStrings.languageError,
     learnMore: configData.translatedStrings.learnMore,
     listening: configData.translatedStrings.listening,
     networkError: configData.translatedStrings.networkError,
     noTranslation: configData.translatedStrings.noTranslation,
     noVoice: configData.translatedStrings.noVoice,
-    // TODO(oskopek): Remove the permission error message once
-    // permissions are automatically enabled for the local NTP.
-    permissionError: 'Voice search has been turned off.',
+    permissionError: configData.translatedStrings.permissionError,
     ready: configData.translatedStrings.ready,
     tryAgain: configData.translatedStrings.tryAgain,
     waiting: configData.translatedStrings.waiting,
@@ -303,9 +326,9 @@ speech.start_ = function() {
     speech.initWebkitSpeech_();
   }
 
-  // If |speech.start_| is called too soon after |speech.stop_| then the
+  // If |speech.start_()| is called too soon after |speech.stop_()| then the
   // recognition interface hasn't yet reset and an error occurs. In this case
-  // we need to hard-reset it and reissue the |recognition_.start| command.
+  // we need to hard-reset it and reissue the |recognition_.start()| command.
   // TODO(oskopek): Add tests + possibly fix the root cause.
   try {
     speech.recognition_.start();
@@ -335,7 +358,7 @@ speech.stop_ = function() {
 
 
 /**
- * Aborts speech recognition and calls |speech.stop_|.
+ * Aborts speech recognition and calls |speech.stop_()|.
  * @private
  */
 speech.abort_ = function() {
@@ -360,7 +383,7 @@ speech.reset_ = function() {
   speech.currentState_ = speech.State_.READY;
 
   // TODO(oskopek): Is this even needed? Avoid calling it twice
-  // on a |speech.abort_| call.
+  // on a |speech.abort_()| call.
   speech.recognition_.abort();
 };
 
@@ -733,7 +756,7 @@ speech.isRecognizing_ = function() {
 /**
  * Check if the controller is in a state where the UI is definitely hidden.
  * Since we show the UI for a few seconds after we receive an error from the
- * API, we need a separate definition to |speech.isRecognizing_| to indicate
+ * API, we need a separate definition to |speech.isRecognizing_()| to indicate
  * when the UI is hidden. <strong>Note:</strong> that if this function
  * returns false, it might not necessarily mean that the UI is visible.
  * @return {boolean} True if the UI is hidden.
