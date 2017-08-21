@@ -52,13 +52,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/browser/printing/print_preview_message_handler.h"
-#include "chrome/browser/printing/print_view_manager.h"
-#else
-#include "chrome/browser/printing/print_view_manager_basic.h"
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#endif  // BUILDFLAG(ENABLE_PRINTING)
+#include "chrome/browser/printing/printing_init.h"
+#endif
 
 namespace {
 
@@ -196,13 +191,8 @@ void ChromeAppDelegate::InitWebContents(content::WebContents* web_contents) {
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
 
 #if BUILDFLAG(ENABLE_PRINTING)
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  printing::PrintViewManager::CreateForWebContents(web_contents);
-  printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
-#else
-  printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#endif  // BUILDFLAG(ENABLE_PRINTING)
+  printing::InitializePrinting(web_contents);
+#endif
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_contents);
 
