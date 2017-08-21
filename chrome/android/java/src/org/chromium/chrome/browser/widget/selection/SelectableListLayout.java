@@ -204,6 +204,8 @@ public class SelectableListLayout<E>
         mToolbarShadow.init(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);
+        if (FeatureUtilities.isChromeHomeModernEnabled()) mToolbarShadow.setAlpha(0);
+
         mShowShadowOnSelection = showShadowOnSelection;
         delegate.addObserver(this);
         setToolbarShadowVisibility();
@@ -284,10 +286,6 @@ public class SelectableListLayout<E>
      */
     public SelectableListToolbar<E> detachToolbarView() {
         removeView(mToolbar);
-
-        // The top margin for shadow needs to be removed now that the toolbar has been removed.
-        ((MarginLayoutParams) mToolbarShadow.getLayoutParams()).topMargin = 0;
-
         return mToolbar;
     }
 

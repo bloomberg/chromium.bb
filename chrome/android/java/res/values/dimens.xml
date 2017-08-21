@@ -450,14 +450,21 @@
     <dimen name="dialog_text_size">14sp</dimen>
     <dimen name="separator_height">1dp</dimen>
 
-    <!-- Downloads dimensions. -->
-    <dimen name="downloads_item_icon_size">48dp</dimen>
+    <!-- Modern List Item dimensions -->
+    <dimen name="list_item_min_height">60dp</dimen>
+    <dimen name="list_item_default_margin">16dp</dimen>
+    <dimen name="list_item_top_bottom_padding">10dp</dimen>
+    <dimen name="list_item_start_icon_right_margin">20dp</dimen>
+    <dimen name="list_item_start_icon_width">36dp</dimen>
+    <dimen name="list_item_start_icon_corner_radius">18dp</dimen>
+    <dimen name="list_item_end_icon_width">56dp</dimen>
 
     <!-- SelectableListLayout dimensions -->
     <dimen name="selectable_list_layout_row_padding">16dp</dimen>
-    <dimen name="selectable_list_layout_start_icon_width">36dp</dimen>
-    <dimen name="selectable_list_layout_end_icon_width">56dp</dimen>
     <dimen name="toolbar_wide_display_start_offset">13dp</dimen>
+    <dimen name="toolbar_modern_search_view_start_offset">4dp</dimen>
+    <dimen name="search_toolbar_modern_bg_top_bottom_inset">10dp</dimen>
+    <dimen name="search_toolbar_modern_bg_lateral_inset">8dp</dimen>
 
     <!-- Bottom sheet dimensions -->
     <dimen name="bottom_sheet_help_bubble_inset">10dp</dimen>
@@ -482,7 +489,6 @@
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <dimen name="card_corner_radius">2dp</dimen>
-    <dimen name="list_item_default_margin">16dp</dimen>
     <dimen name="signin_and_sync_view_padding">16dp</dimen>
     <dimen name="sad_tab_bullet_gap">12dp</dimen>
     <dimen name="sad_tab_bullet_leading_offset">1dp</dimen>

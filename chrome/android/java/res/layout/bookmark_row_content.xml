@@ -10,44 +10,9 @@
 
     <LinearLayout
         android:id="@+id/bookmark_row"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/list_item_default_margin"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:orientation="horizontal" >
+        style="@style/ListItemContainer">
 
-        <ImageView
-            android:id="@+id/bookmark_image"
-            android:layout_width="@dimen/selectable_list_layout_start_icon_width"
-            android:layout_height="match_parent"
-            android:contentDescription="@null"
-            android:scaleType="center"/>
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingStart="20dp" >
-
-            <TextView
-                android:id="@+id/title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:textAppearance="@style/BlackTitle1"  />
-
-            <TextView
-                android:id="@+id/description"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:singleLine="true"
-                android:ellipsize="end"
-                android:textAppearance="@style/BlackBody" />
-
-        </LinearLayout>
+        <include layout="@layout/modern_list_item_view" />
 
         <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/more"
@@ -56,8 +21,8 @@
             android:visibility="gone"
             android:background="@null"
             android:contentDescription="@string/accessibility_bookmark_more_info"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
+            android:paddingEnd="@dimen/selectable_list_layout_row_padding"
+            android:paddingStart="@dimen/selectable_list_layout_row_padding"
             android:src="@drawable/btn_menu"
             chrome:chrometint="@color/dark_mode_tint" />
     </LinearLayout>

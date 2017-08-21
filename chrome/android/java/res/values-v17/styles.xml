@@ -595,18 +595,33 @@
         <item name="android:colorEdgeEffect">@color/google_grey_300</item>
     </style>
 
-    <!-- History UI -->
-    <style name="HistoryStartIcon">
-        <item name="android:layout_width">@dimen/selectable_list_layout_start_icon_width</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:scaleType">center</item>
+    <!-- Modern List Item -->
+    <style name="ListItemContainer">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/list_item_min_height</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_marginStart">@dimen/list_item_default_margin</item>
+        <item name="android:paddingTop">@dimen/list_item_top_bottom_padding</item>
+        <item name="android:paddingBottom">@dimen/list_item_top_bottom_padding</item>
     </style>
-    <style name="HistoryEndIcon">
-        <item name="android:layout_width">@dimen/selectable_list_layout_end_icon_width</item>
+    <style name="ListItemStartIcon">
+        <item name="android:layout_width">@dimen/list_item_start_icon_width</item>
+        <item name="android:layout_height">@dimen/list_item_start_icon_width</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_marginEnd">@dimen/list_item_start_icon_right_margin</item>
+        <item name="android:scaleType">center</item>
+        <item name="android:contentDescription">null</item>
+    </style>
+    <style name="ListItemEndIcon">
+        <item name="android:layout_width">@dimen/list_item_end_icon_width</item>
         <item name="android:layout_height">match_parent</item>
         <item name="android:background">@null</item>
         <item name="android:scaleType">center</item>
     </style>
+
+    <!-- History UI -->
     <style name="PrivacyDisclaimerText">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -638,15 +653,6 @@
         <item name="android:layout_marginEnd">@dimen/list_item_default_margin</item>
         <item name="android:textAppearance">@style/BlackDenseListText2</item>
     </style>
-    <style name="DownloadRowContainer">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginStart">16dp</item>
-        <item name="android:layout_marginTop">16dp</item>
-        <item name="android:layout_marginBottom">16dp</item>
-        <item name="android:gravity">center_vertical</item>
-        <item name="android:orientation">horizontal</item>
-    </style>
     <style name="DownloadTitleStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -654,8 +660,7 @@
         <item name="android:layout_alignParentStart">true</item>
         <item name="android:paddingEnd">16dp</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textColor">@color/default_text_color</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textAppearance">@style/BlackDenseListText1</item>
     </style>
     <style name="DownloadDescriptionStyle">
         <item name="android:layout_width">wrap_content</item>
@@ -665,9 +670,9 @@
         <item name="android:layout_marginEnd">16dp</item>
         <item name="android:layout_marginTop">0dp</item>
         <item name="android:textAlignment">viewStart</item>
-        <item name="android:textColor">@color/google_grey_600</item>
         <item name="android:ellipsize">start</item>
         <item name="android:singleLine">true</item>
+        <item name="android:textAppearance">@style/BlackDenseListText2</item>
     </style>
     <style name="DownloadFileSizeStyle">
         <item name="android:layout_width">wrap_content</item>
@@ -680,12 +685,7 @@
         <item name="android:textColor">@color/google_grey_600</item>
         <item name="android:singleLine">true</item>
     </style>
-    <style name="DownloadIconView">
-        <item name="android:layout_width">@dimen/downloads_item_icon_size</item>
-        <item name="android:layout_height">@dimen/downloads_item_icon_size</item>
-        <item name="android:layout_marginEnd">16dp</item>
-        <item name="android:contentDescription">@null</item>
-        <item name="android:scaleType">center</item>
+    <style name="DownloadIconView" parent="@style/ListItemStartIcon">
         <item name="android:background">@color/light_active_color</item>
     </style>
 

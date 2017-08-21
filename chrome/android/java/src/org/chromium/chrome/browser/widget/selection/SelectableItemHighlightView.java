@@ -13,6 +13,7 @@ import android.widget.Checkable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * Highlight overlay view for selectable items.
@@ -55,7 +56,7 @@ public class SelectableItemHighlightView extends View implements Checkable {
     @Override
     public int[] onCreateDrawableState(int extraSpace) {
         final int[] drawableState = super.onCreateDrawableState(extraSpace + 1);
-        if (mIsChecked) {
+        if (mIsChecked && !FeatureUtilities.isChromeHomeModernEnabled()) {
             mergeDrawableStates(drawableState, CHECKED_STATE_SET);
         }
         return drawableState;
