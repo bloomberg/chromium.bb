@@ -31,6 +31,7 @@ import android.view.accessibility.AccessibilityManager.AccessibilityStateChangeL
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
+import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
@@ -2191,29 +2192,26 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mSelectionPopupController.setSelectionClient(selectionClient);
     }
 
-    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     /**
      * Sets TextClassifier for Smart Text selection.
      */
-    public void setTextClassifier(Object textClassifier) {
+    public void setTextClassifier(TextClassifier textClassifier) {
         mSelectionPopupController.setTextClassifier(textClassifier);
     }
 
-    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     /**
      * Returns TextClassifier that is used for Smart Text selection. If the custom classifier
      * has been set with setTextClassifier, returns that object, otherwise returns the system
      * classifier.
      */
-    public Object getTextClassifier() {
+    public TextClassifier getTextClassifier() {
         return mSelectionPopupController.getTextClassifier();
     }
 
-    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     /**
      * Returns the TextClassifier which has been set with setTextClassifier(), or null.
      */
-    public Object getCustomTextClassifier() {
+    public TextClassifier getCustomTextClassifier() {
         return mSelectionPopupController.getCustomTextClassifier();
     }
 

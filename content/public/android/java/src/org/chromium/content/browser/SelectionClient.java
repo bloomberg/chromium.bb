@@ -4,6 +4,8 @@
 
 package org.chromium.content.browser;
 
+import android.view.textclassifier.TextClassifier;
+
 /**
  * Interface to a content layer client that can process and modify selection text.
  */
@@ -56,17 +58,17 @@ public interface SelectionClient {
      * Sets TextClassifier for the Smart Text selection. Pass null argument to use the system
      * classifier
      */
-    public void setTextClassifier(Object textClassifier);
+    public void setTextClassifier(TextClassifier textClassifier);
 
     /**
      * Gets TextClassifier that is used for the Smart Text selection. If the custom classifier
      * has been set with setTextClassifier, returns that object, otherwise returns the system
      * classifier.
      */
-    public Object getTextClassifier();
+    public TextClassifier getTextClassifier();
 
     /**
      * Returns the TextClassifier which has been set with setTextClassifier(), or null.
      */
-    public Object getCustomTextClassifier();
+    public TextClassifier getCustomTextClassifier();
 }
