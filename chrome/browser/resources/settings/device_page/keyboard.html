@@ -77,7 +77,7 @@
     </settings-toggle-button>
     <iron-collapse
         opened="[[prefs.settings.language.xkb_auto_repeat_enabled_r2.value]]">
-      <div class="settings-box continuation settings-checkbox-spacer">
+      <div class="settings-box continuation embedded">
         <div class="start" id="repeatDelayLabel">$i18n{keyRepeatDelay}</div>
         <settings-slider id="delaySlider"
             pref="{{prefs.settings.language.xkb_auto_repeat_delay_r2}}"
@@ -89,7 +89,7 @@
             label-max="$i18n{keyRepeatDelayShort}">
         </settings-slider>
       </div>
-      <div class="settings-box continuation settings-checkbox-spacer">
+      <div class="settings-box continuation embedded">
         <div class="start" id="repeatRateLabel">$i18n{keyRepeatRate}</div>
         <settings-slider id="repeatRateSlider"
             pref="{{

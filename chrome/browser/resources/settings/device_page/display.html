@@ -21,7 +21,7 @@
 <dom-module id="settings-display">
   <template>
     <style include="settings-shared md-select iron-flex iron-flex-alignment">
-     .settings-box.embedded {
+     .settings-box.indented {
        -webkit-margin-start: 20px;
        align-self: stretch;
        padding: 0;
@@ -91,7 +91,7 @@
 
       <template is="dom-if" if="[[showMirror_(unifiedDesktopMode_, displays)]]"
           restamp>
-        <div class="settings-box embedded two-line">
+        <div class="settings-box indented two-line">
           <div class="start">
             <div id="displayMirrorCheckboxLabel">$i18n{displayMirror}</div>
             <div class="secondary">[[getDisplayMirrorText_(displays)]]</div>
@@ -105,7 +105,7 @@
 
       <template is="dom-if" if="[[showUnifiedDesktop_(unifiedDesktopAvailable_,
           unifiedDesktopMode_, displays)]]" restamp>
-        <div class="settings-box embedded two-line">
+        <div class="settings-box indented two-line">
           <div class="start">
             <div id="displayUnifiedDesktopCheckboxLabel">
               $i18n{displayUnfiedDesktop}
@@ -123,7 +123,7 @@
 
       <template is="dom-if" restamp
           if="[[showDisplaySelectMenu_(displays, selectedDisplay)]]">
-        <div class="settings-box embedded">
+        <div class="settings-box indented">
           <div id="displayScreenTitle" class="start">
             $i18n{displayScreenTitle}
           </div>
@@ -140,7 +140,7 @@
         </div>
       </template>
 
-      <div class="settings-box embedded two-line">
+      <div class="settings-box indented two-line">
         <div class="start textarea layout vertical">
           <div>$i18n{displayResolutionTitle}</div>
           <div class="secondary layout self-start">
@@ -154,7 +154,7 @@
       </div>
 
       <template is="dom-if" if="[[!unifiedDesktopMode_]]" restamp>
-        <div class="settings-box embedded">
+        <div class="settings-box indented">
           <div id="displayOrientation" class="start textarea">
             $i18n{displayOrientation}
           </div>
@@ -172,7 +172,7 @@
         </div>
       </template>
 
-      <div id="overscan" class="settings-box embedded two-line"
+      <div id="overscan" class="settings-box indented two-line"
           on-tap="onOverscanTap_" hidden$="[[selectedDisplay.isInternal]]"
           actionable>
         <div class="start">
@@ -191,7 +191,7 @@
           on-close="onCloseOverscanDialog_">
       </settings-display-overscan-dialog>
 
-      <div class="settings-box embedded two-line"
+      <div class="settings-box indented two-line"
           on-tap="onTouchCalibrationTap_"
           hidden$="[[!showTouchCalibrationSetting_(selectedDisplay)]]"
           actionable>
@@ -218,7 +218,7 @@
       <div id="nightLightSettingsDiv"
           class="settings-box continuation start layout vertical">
         <!-- Color temperature slider -->
-        <div class="settings-box embedded continuation">
+        <div class="settings-box indented continuation">
           <div class="start textarea" id="colorTemperatureLabel">
             $i18n{displayNightLightTemperatureLabel}
           </div>
@@ -230,7 +230,7 @@
           </settings-slider>
         </div>
         <!-- Schedule settings -->
-        <div class="settings-box embedded">
+        <div class="settings-box indented">
           <div id="nightLightScheduleLabel" class="start textarea">
             $i18n{displayNightLightScheduleLabel}
           </div>
@@ -242,11 +242,11 @@
           </settings-dropdown-menu>
         </div>
         <!-- Custom schedule slider -->
-        <div class="settings-box embedded continuation">
+        <div class="settings-box indented continuation">
           <iron-collapse id="nightLightCustomScheduleCollapse"
               class="start textarea layout vertical"
               opened="[[shouldOpenCustomScheduleCollapse_]]">
-            <div class="settings-box embedded continuation">
+            <div class="settings-box indented continuation">
               <night-light-slider id="nightLightSlider" prefs="{{prefs}}">
               </night-light-slider>
             </div>
