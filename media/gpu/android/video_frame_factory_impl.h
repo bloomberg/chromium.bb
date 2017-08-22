@@ -13,6 +13,7 @@
 #include "media/gpu/android/codec_image.h"
 #include "media/gpu/android/codec_wrapper.h"
 #include "media/gpu/android/video_frame_factory.h"
+#include "media/gpu/gles2_decoder_helper.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/surface_texture_gl_owner.h"
@@ -77,9 +78,6 @@ class GpuVideoFrameFactory
       scoped_refptr<VideoFrame>* video_frame_out,
       scoped_refptr<gpu::gles2::TextureRef>* texture_ref_out);
 
-  // Removes |image| from |images_|.
-  void OnImageDestructed(CodecImage* image);
-
   void OnWillDestroyStub() override;
 
   // Clears |texture_refs_|. Makes the gl context current.
@@ -90,6 +88,9 @@ class GpuVideoFrameFactory
   // already passed by the time we get the callback.
   void DropTextureRef(gpu::gles2::TextureRef* ref, const gpu::SyncToken& token);
 
+  // Removes |image| from |images_|.
+  void OnImageDestructed(CodecImage* image);
+
   // Outstanding images that should be considered for early rendering.
   std::vector<CodecImage*> images_;
 
@@ -99,6 +100,9 @@ class GpuVideoFrameFactory
   std::map<gpu::gles2::TextureRef*, scoped_refptr<gpu::gles2::TextureRef>>
       texture_refs_;
   gpu::GpuCommandBufferStub* stub_;
+
+  // A helper for creating textures. Only valid while |stub_| is valid.
+  std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
   base::WeakPtrFactory<GpuVideoFrameFactory> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVideoFrameFactory);
