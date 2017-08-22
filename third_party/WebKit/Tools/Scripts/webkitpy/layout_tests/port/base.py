@@ -49,9 +49,8 @@ from webkitpy.common.path_finder import PathFinder
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system.path import abspath_to_uri
 from webkitpy.layout_tests.layout_package.bot_test_expectations import BotTestExpectationsFactory
-from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration
-from webkitpy.layout_tests.models.test_expectations import SKIP
+from webkitpy.layout_tests.models.test_expectations import TestExpectationParser
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import server_process
 from webkitpy.layout_tests.port.factory import PortFactory
@@ -892,30 +891,53 @@ class Port(object):
             return custom_layout_tests_dir
         return self._path_finder.layout_tests_dir()
 
-    def skips_test(self, test, generic_expectations, full_expectations):
+    def skips_test(self, test):
         """Checks whether the given test is skipped for this port.
 
-        This should return True if the test is skipped because the port
-        runs smoke tests only, or because the test is skipped in a file like
-        NeverFixTests (but not TestExpectations).
+        Returns True if the test is skipped because the port runs smoke tests
+        only or because the test is marked as WontFix, but *not* if the test
+        is only marked as Skip indicating a temporary skip.
         """
-        fs = self.host.filesystem
-        if self.default_smoke_test_only():
-            smoke_test_filename = self.path_to_smoke_tests_file()
-            if fs.exists(smoke_test_filename) and test not in fs.read_text_file(smoke_test_filename):
-                return True
+        return self.skipped_due_to_smoke_tests(test) or self.skipped_in_never_fix_tests(test)
 
-        # In general, Skip lines in the generic expectations file indicate
-        # that the test is temporarily skipped, whereas if the test is skipped
-        # in another file (e.g. WontFix in NeverFixTests), then the test may
-        # always be skipped for this port.
-        # TODO(qyearsley): Simplify this so that it doesn't rely on having
-        # two copies of the test expectations.
-        return (SKIP in full_expectations.get_expectations(test) and
-                SKIP not in generic_expectations.get_expectations(test))
+    def skipped_due_to_smoke_tests(self, test):
+        """Checks if the test is skipped based on the set of Smoke tests.
+
+        Returns True if this port runs only smoke tests, and the test is not
+        in the smoke tests file; returns False otherwise.
+        """
+        if not self.default_smoke_test_only():
+            return False
+        smoke_test_filename = self.path_to_smoke_tests_file()
+        return (self._filesystem.exists(smoke_test_filename) and
+                test not in self._filesystem.read_text_file(smoke_test_filename))
 
     def path_to_smoke_tests_file(self):
-        return self.host.filesystem.join(self.layout_tests_dir(), 'SmokeTests')
+        return self._filesystem.join(self.layout_tests_dir(), 'SmokeTests')
+
+    def skipped_in_never_fix_tests(self, test):
+        """Checks if the test is marked as WontFix for this port.
+
+        In general, WontFix expectations are allowed in NeverFixTests but
+        not in other files, and only WontFix lines are allowed in NeverFixTests.
+        Some lines in NeverFixTests are platform-specific.
+
+        Note: this will not work with skipped directories. See also the same
+        issue with update_all_test_expectations_files in test_importer.py.
+        """
+        # TODO(qyearsley): Extract parsing logic (reading the file,
+        # constructing a parser, etc.) from here and test_copier.py.
+        path = self.path_to_never_fix_tests_file()
+        contents = self._filesystem.read_text_file(path)
+        parser = TestExpectationParser(self, all_tests=(), is_lint_mode=False)
+        expectation_lines = parser.parse(path, contents)
+        for line in expectation_lines:
+            if line.name == test and self.test_configuration() in line.matching_configurations:
+                return True
+        return False
+
+    def path_to_never_fix_tests_file(self):
+        return self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests')
 
     def _tests_from_skipped_file_contents(self, skipped_file_contents):
         tests_to_skip = []
