@@ -12,6 +12,14 @@
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
 
+namespace features {
+
+#if defined(OS_WIN)
+UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
+#endif  // defined(OS_WIN)
+
+}  // namespace features
+
 namespace switches {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

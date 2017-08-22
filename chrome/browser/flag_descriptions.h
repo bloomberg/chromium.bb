@@ -1231,6 +1231,9 @@ extern const char kGoogleBrandedContextMenuDescription[];
 extern const char kCloudPrintXpsName[];
 extern const char kCloudPrintXpsDescription[];
 
+extern const char kDirectManipulationStylusName[];
+extern const char kDirectManipulationStylusDescription[];
+
 extern const char kDisablePostscriptPrinting[];
 extern const char kDisablePostscriptPrintingDescription[];
 

@@ -5,6 +5,16 @@
 #include "build/build_config.h"
 #include "ui/base/ui_base_switches.h"
 
+namespace features {
+
+#if defined(OS_WIN)
+// Enables stylus appearing as touch when in contact with digitizer.
+const base::Feature kDirectManipulationStylus = {
+    "DirectManipulationStylus", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_WIN)
+
+}  // namespace features
+
 namespace switches {
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)

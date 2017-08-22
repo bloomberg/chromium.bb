@@ -2012,6 +2012,10 @@ const char kCloudPrintXpsDescription[] =
     "Print with Chrome. Printers must be re-connected after changing this "
     "flag.";
 
+const char kDirectManipulationStylusName[] = "Direct Manipulation Stylus";
+const char kDirectManipulationStylusDescription[] =
+    "If enabled, Chrome will scroll web pages on stylus drag.";
+
 const char kDisablePostscriptPrinting[] = "Disable PostScript Printing";
 const char kDisablePostscriptPrintingDescription[] =
     "Disables PostScript generation when printing to PostScript capable "

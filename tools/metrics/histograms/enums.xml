@@ -22940,6 +22940,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1870961970" label="enable-filemanager-mtp"/>
   <int value="-1869845022" label="force-show-update-menu-item"/>
   <int value="-1868978829" label="spurious-power-button-accel-count"/>
+  <int value="-1868284723" label="DirectManipulationStylus:disabled"/>
   <int value="-1867382602" label="WebRTC-H264WithOpenH264FFmpeg:enabled"/>
   <int value="-1867342522" label="MaterialDesignHistory:enabled"/>
   <int value="-1861814223" label="MidiManagerDynamicInstantiation:enabled"/>
@@ -23476,6 +23477,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-138983372" label="DesktopPWAWindowing:disabled"/>
   <int value="-138773929" label="PassiveDocumentEventListeners:enabled"/>
   <int value="-122492389" label="enable-browser-task-scheduler"/>
+  <int value="-120521482" label="DirectManipulationStylus:enabled"/>
   <int value="-119055644" label="GenericSensor:enabled"/>
   <int value="-108881882" label="NTPCondensedTileLayout:enabled"/>
   <int value="-102537270" label="extension-content-verification"/>
