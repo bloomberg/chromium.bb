@@ -366,18 +366,16 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
 
   function checkFrequencyHintWorks(sensor) {
     let fastSensor = new sensorType({frequency: 30});
-    let slowSensor = new sensorType({frequency: 9});
+    let slowSensor = new sensorType({frequency: 5});
     slowSensor.start();
 
     let testPromise = sensor.mockSensorProvider.getCreatedSensor()
-        .then(mockSensor => {
-          return mockSensor.setUpdateSensorReadingFunction(updateReading);
-        })
+        .then(mockSensor =>
+              mockSensor.setUpdateSensorReadingFunction(updateReading))
         .then(mockSensor => {
           return new Promise((resolve, reject) => {
             let fastSensorNotifiedCounter = 0;
             let slowSensorNotifiedCounter = 0;
-            let readingUpdatesCounter = 0;
 
             let fastSensorWrapper = new CallbackWrapper(() => {
               fastSensorNotifiedCounter++;
@@ -387,13 +385,9 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
               slowSensorNotifiedCounter++;
               if (slowSensorNotifiedCounter == 1) {
                   fastSensor.start();
-                  readingUpdatesCounter = mockSensor.readingUpdatesCount();
-              } else if (slowSensorNotifiedCounter == 2) {
-                let elapsedUpdates = mockSensor.readingUpdatesCount() - readingUpdatesCounter;
-                // Approximation because 'slowSensor.onreading' is sometimes
-                // called before 'fastSensor.onreading', in this case
-                // 'fastSensorNotifiedCounter == elapsedUpdates - 1'.
-                assert_approx_equals(fastSensorNotifiedCounter, elapsedUpdates, 1);
+              } else if (slowSensorNotifiedCounter == 3) {
+                assert_true(fastSensorNotifiedCounter > 2,
+                            "Fast sensor overtakes the slow one");
                 fastSensor.stop();
                 slowSensor.stop();
                 resolve(mockSensor);
@@ -406,7 +400,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
             slowSensor.onerror = reject;
           });
         })
-        .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+        .then(mockSensor => mockSensor.removeConfigurationCalled());
 
     return testPromise;
   }

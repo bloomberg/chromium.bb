@@ -31,7 +31,6 @@ function sensorMocks() {
       this.reportingMode_ = reportingMode;
       this.sensorReadingTimerId_ = null;
       this.updateReadingFunction_ = null;
-      this.readingUpdatesCount_ = 0;
       this.suspendCalled_ = null;
       this.resumeCalled_ = null;
       this.addConfigurationCalled_ = null;
@@ -54,9 +53,6 @@ function sensorMocks() {
       return Promise.resolve({frequency: 5});
     }
 
-    readingUpdatesCount() {
-      return this.readingUpdatesCount_;
-    }
     // Adds configuration for the sensor and starts reporting fake data
     // through updateReadingFunction_ callback.
     addConfiguration(configuration) {
@@ -116,7 +112,6 @@ function sensorMocks() {
     reset() {
       this.stopReading();
 
-      this.readingUpdatesCount_ = 0;
       this.startShouldFail_ = false;
       this.updateReadingFunction_ = null;
       this.requestedFrequencies_ = [];
@@ -186,7 +181,6 @@ function sensorMocks() {
             // For all tests sensor reading should have monotonically
             // increasing timestamp in seconds.
             this.buffer_[1] = window.performance.now() * 0.001;
-            this.readingUpdatesCount_++;
           }
           if (this.reportingMode_ === device.mojom.ReportingMode.ON_CHANGE) {
             this.client_.sensorReadingChanged();
