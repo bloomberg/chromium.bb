@@ -48,3 +48,8 @@
 -ProcessUtilTest.DelayedTermination
 -ProcessUtilTest.ImmediateTermination
 -TraceCategoryTest.ThreadRaces
+
+# This test expects a task to complete no later than 250ms after it's expected
+# to, but that's easily a poor assumption when running on QEMU without hardware
+# virtualization.
+-*TaskSchedulerWorkerPoolImplTest.PostDelayedTask*
