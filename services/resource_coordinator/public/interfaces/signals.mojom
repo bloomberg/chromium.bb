@@ -7,6 +7,9 @@ module resource_coordinator.mojom;
 enum Event {
   kTestEvent,
   kAlertFired,
+  // Only care about non-persistent notifications, notifications launched from
+  // ServiceWorker are persistent and compatible with LifeCycle.
+  kNonPersistentNotificationCreated,
   kTitleUpdated,
 };
 

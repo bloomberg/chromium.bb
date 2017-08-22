@@ -81126,6 +81126,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="TabManager.Heuristics.FromBackgroundedToFirstNonPersistentNotificationCreated"
+    units="ms">
+  <owner>chrisha@chromium.org</owner>
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    Measures the time duration from when the tab is backgrounded to when a
+    non-persistent notification is created. Only recorded when the tab is in the
+    background.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Heuristics.FromBackgroundedToFirstTitleUpdated"
     units="ms">
   <owner>chrisha@chromium.org</owner>

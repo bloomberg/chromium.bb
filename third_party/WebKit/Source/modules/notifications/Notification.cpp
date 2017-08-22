@@ -52,6 +52,7 @@
 #include "modules/notifications/NotificationResourcesLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptState.h"
+#include "platform/instrumentation/resource_coordinator/FrameResourceCoordinator.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
@@ -119,6 +120,17 @@ Notification* Notification::Create(ExecutionContext* context,
   Notification* notification =
       new Notification(context, Type::kNonPersistent, data);
   notification->SchedulePrepareShow();
+
+  Document* document = context->IsDocument() ? ToDocument(context) : nullptr;
+  if (document && document->GetFrame()) {
+    if (auto* frame_resource_coordinator =
+            document->GetFrame()->GetFrameResourceCoordinator()) {
+      frame_resource_coordinator->SendEvent(
+          resource_coordinator::mojom::Event::
+              kNonPersistentNotificationCreated);
+    }
+  }
+
   return notification;
 }
 

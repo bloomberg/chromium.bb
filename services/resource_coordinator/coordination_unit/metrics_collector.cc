@@ -33,6 +33,9 @@ const char kTabFromBackgroundedToFirstAudioStartsUMA[] =
     "TabManager.Heuristics.FromBackgroundedToFirstAudioStarts";
 const char kTabFromBackgroundedToFirstTitleUpdatedUMA[] =
     "TabManager.Heuristics.FromBackgroundedToFirstTitleUpdated";
+const char kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[] =
+    "TabManager.Heuristics."
+    "FromBackgroundedToFirstNonPersistentNotificationCreated";
 
 // Gets the number of tabs that are co-resident in all of the render processes
 // associated with a |CoordinationUnitType::kWebContents| coordination unit.
@@ -141,8 +144,8 @@ void MetricsCollector::OnFrameEventReceived(
     const FrameCoordinationUnitImpl* frame_cu,
     const mojom::Event event) {
   if (event == mojom::Event::kAlertFired) {
-    // Only record metrics while it is backgrounded.
     auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
+    // Only record metrics while it is backgrounded.
     if (!web_contents_cu || web_contents_cu->IsVisible())
       return;
     auto now = clock_->NowTicks();
@@ -154,6 +157,25 @@ void MetricsCollector::OnFrameEventReceived(
       HEURISTICS_HISTOGRAM(kTabFromBackgroundedToFirstAlertFiredUMA,
                            now - web_contents_data.last_invisible_time);
       record.first_alert_fired_after_backgrounded_reported = true;
+    }
+  } else if (event == mojom::Event::kNonPersistentNotificationCreated) {
+    auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
+    // Only record metrics while it is backgrounded.
+    if (!web_contents_cu || web_contents_cu->IsVisible())
+      return;
+    auto now = clock_->NowTicks();
+    MetricsReportRecord& record =
+        metrics_report_record_map_[web_contents_cu->id()];
+    if (!record
+             .first_non_persistent_notification_created_after_backgrounded_reported) {
+      const WebContentsData web_contents_data =
+          web_contents_data_map_[web_contents_cu->id()];
+      HEURISTICS_HISTOGRAM(
+          kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA,
+          now - web_contents_data.last_invisible_time);
+      record
+          .first_non_persistent_notification_created_after_backgrounded_reported =
+          true;
     }
   }
 }
@@ -232,12 +254,15 @@ void MetricsCollector::ResetMetricsReportRecord(CoordinationUnitID cu_id) {
 MetricsCollector::MetricsReportRecord::MetricsReportRecord()
     : first_alert_fired_after_backgrounded_reported(false),
       first_audible_after_backgrounded_reported(false),
-      first_title_updated_after_backgrounded_reported(false) {}
+      first_title_updated_after_backgrounded_reported(false),
+      first_non_persistent_notification_created_after_backgrounded_reported(
+          false) {}
 
 void MetricsCollector::MetricsReportRecord::Reset() {
   first_alert_fired_after_backgrounded_reported = false;
   first_audible_after_backgrounded_reported = false;
   first_title_updated_after_backgrounded_reported = false;
+  first_non_persistent_notification_created_after_backgrounded_reported = false;
 }
 
 }  // namespace resource_coordinator
