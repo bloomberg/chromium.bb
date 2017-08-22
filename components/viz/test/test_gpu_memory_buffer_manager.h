@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_TEST_GPU_MEMORY_BUFFER_MANAGER_H_
-#define CC_TEST_TEST_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef COMPONENTS_VIZ_TEST_TEST_GPU_MEMORY_BUFFER_MANAGER_H_
+#define COMPONENTS_VIZ_TEST_TEST_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 
@@ -11,7 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
-namespace cc {
+namespace viz {
 
 class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
@@ -51,6 +51,6 @@ class TestGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   DISALLOW_COPY_AND_ASSIGN(TestGpuMemoryBufferManager);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_TEST_TEST_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // COMPONENTS_VIZ_TEST_TEST_GPU_MEMORY_BUFFER_MANAGER_H_

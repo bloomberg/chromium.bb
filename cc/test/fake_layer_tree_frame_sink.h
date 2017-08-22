@@ -17,10 +17,10 @@
 #include "cc/output/software_output_device.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_gles2_interface.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 
 namespace viz {
 class BeginFrameSource;
@@ -86,7 +86,7 @@ class FakeLayerTreeFrameSink : public LayerTreeFrameSink {
       scoped_refptr<viz::ContextProvider> context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider);
 
-  TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
+  viz::TestGpuMemoryBufferManager test_gpu_memory_buffer_manager_;
   TestSharedBitmapManager test_shared_bitmap_manager_;
 
   std::unique_ptr<CompositorFrame> last_sent_frame_;

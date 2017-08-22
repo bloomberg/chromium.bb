@@ -29,7 +29,7 @@ namespace cc {
 
 // static
 std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
-    TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    viz::TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
     TestImageFactory* image_factory,
     gpu::GLInProcessContext* shared_context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {

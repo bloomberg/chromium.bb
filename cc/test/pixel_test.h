@@ -17,6 +17,7 @@
 
 namespace viz {
 class CopyOutputResult;
+class TestGpuMemoryBufferManager;
 }
 
 namespace cc {
@@ -25,7 +26,6 @@ class DirectRenderer;
 class FakeOutputSurfaceClient;
 class OutputSurface;
 class SoftwareRenderer;
-class TestGpuMemoryBufferManager;
 class TestSharedBitmapManager;
 
 class PixelTest : public testing::Test {
@@ -64,7 +64,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;
   std::unique_ptr<OutputSurface> output_surface_;
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;

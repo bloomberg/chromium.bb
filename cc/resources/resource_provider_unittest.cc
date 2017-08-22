@@ -20,7 +20,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "cc/test/test_texture.h"
 #include "cc/test/test_web_graphics_context_3d.h"
@@ -30,6 +29,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/shared_bitmap_manager.h"
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -460,7 +460,8 @@ class ResourceProviderTest
     }
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager);
-    gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
+    gpu_memory_buffer_manager_ =
+        std::make_unique<viz::TestGpuMemoryBufferManager>();
     child_gpu_memory_buffer_manager_ =
         gpu_memory_buffer_manager_->CreateClientGpuMemoryBufferManager();
 
@@ -544,9 +545,10 @@ class ResourceProviderTest
   scoped_refptr<TestContextProvider> context_provider_;
   scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
-  std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<viz::TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<DisplayResourceProvider> resource_provider_;
-  std::unique_ptr<TestGpuMemoryBufferManager> child_gpu_memory_buffer_manager_;
+  std::unique_ptr<viz::TestGpuMemoryBufferManager>
+      child_gpu_memory_buffer_manager_;
   std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
 };
@@ -2661,11 +2663,12 @@ TEST_P(ResourceProviderTest, TextureMailbox_SharedMemory) {
 class ResourceProviderTestTextureMailboxGLFilters
     : public ResourceProviderTest {
  public:
-  static void RunTest(TestSharedBitmapManager* shared_bitmap_manager,
-                      TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
-                      BlockingTaskRunner* main_thread_task_runner,
-                      bool mailbox_nearest_neighbor,
-                      GLenum sampler_filter) {
+  static void RunTest(
+      TestSharedBitmapManager* shared_bitmap_manager,
+      viz::TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
+      BlockingTaskRunner* main_thread_task_runner,
+      bool mailbox_nearest_neighbor,
+      GLenum sampler_filter) {
     std::unique_ptr<TextureStateTrackingContext> context_owned(
         new TextureStateTrackingContext);
     TextureStateTrackingContext* context = context_owned.get();

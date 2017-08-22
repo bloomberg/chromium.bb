@@ -5,9 +5,9 @@
 #ifndef UI_COMPOSITOR_TEST_FAKE_CONTEXT_FACTORY_H_
 #define UI_COMPOSITOR_TEST_FAKE_CONTEXT_FACTORY_H_
 
-#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "components/viz/common/display/renderer_settings.h"
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "ui/compositor/compositor.h"
 
 namespace cc {
@@ -52,7 +52,7 @@ class FakeContextFactory : public ui::ContextFactory {
  private:
   cc::FakeLayerTreeFrameSink* frame_sink_ = nullptr;
   cc::TestTaskGraphRunner task_graph_runner_;
-  cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   viz::RendererSettings renderer_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeContextFactory);

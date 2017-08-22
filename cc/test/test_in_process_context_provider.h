@@ -11,9 +11,9 @@
 
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_image_factory.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 
 class GrContext;
 
@@ -29,7 +29,7 @@ namespace cc {
 
 std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext();
 std::unique_ptr<gpu::GLInProcessContext> CreateTestInProcessContext(
-    TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
+    viz::TestGpuMemoryBufferManager* gpu_memory_buffer_manager,
     TestImageFactory* image_factory,
     gpu::GLInProcessContext* shared_context,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -55,7 +55,7 @@ class TestInProcessContextProvider : public viz::ContextProvider {
   ~TestInProcessContextProvider() override;
 
  private:
-  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  viz::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
   TestImageFactory image_factory_;
   std::unique_ptr<gpu::GLInProcessContext> context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
