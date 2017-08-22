@@ -432,7 +432,6 @@ void ContentSecurityPolicy::FillInCSPHashValues(
     ContentSecurityPolicyHashAlgorithm csp_hash_algorithm;
     HashAlgorithm algorithm;
   } kAlgorithmMap[] = {
-      {kContentSecurityPolicyHashAlgorithmSha1, kHashAlgorithmSha1},
       {kContentSecurityPolicyHashAlgorithmSha256, kHashAlgorithmSha256},
       {kContentSecurityPolicyHashAlgorithmSha384, kHashAlgorithmSha384},
       {kContentSecurityPolicyHashAlgorithmSha512, kHashAlgorithmSha512}};

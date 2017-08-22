@@ -355,14 +355,13 @@ bool SourceListDirective::ParseHash(
     const char* prefix;
     ContentSecurityPolicyHashAlgorithm type;
   } kSupportedPrefixes[] = {
-      // FIXME: Drop support for SHA-1. It's not in the spec.
-      {"'sha1-", kContentSecurityPolicyHashAlgorithmSha1},
       {"'sha256-", kContentSecurityPolicyHashAlgorithmSha256},
       {"'sha384-", kContentSecurityPolicyHashAlgorithmSha384},
       {"'sha512-", kContentSecurityPolicyHashAlgorithmSha512},
       {"'sha-256-", kContentSecurityPolicyHashAlgorithmSha256},
       {"'sha-384-", kContentSecurityPolicyHashAlgorithmSha384},
-      {"'sha-512-", kContentSecurityPolicyHashAlgorithmSha512}};
+      {"'sha-512-", kContentSecurityPolicyHashAlgorithmSha512},
+      {"'ed25519-", kContentSecurityPolicyHashAlgorithmEd25519}};
 
   StringView prefix;
   hash_algorithm = kContentSecurityPolicyHashAlgorithmNone;

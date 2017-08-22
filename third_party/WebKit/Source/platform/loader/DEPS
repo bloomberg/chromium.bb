@@ -5,4 +5,5 @@ include_rules = [
     "+net/base/net_errors.h",  # for fetch/ResourceError.h
     "+net/http/http_util.h",  # for fetch/CrossOriginAccessControl.cpp
     "+services/network/public/interfaces",  # for Fetch API
+    "+third_party/boringssl/src/include/openssl/curve25519.h"  # for SubresourceIntegrity.cpp
 ]

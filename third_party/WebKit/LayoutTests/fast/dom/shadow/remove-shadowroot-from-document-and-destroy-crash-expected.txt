@@ -1,3 +1,1 @@
-CONSOLE ERROR: line 9: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'sha1-eYyYGmKWdhpUewohaXk9o8IaLSw='". Either the 'unsafe-inline' keyword, a hash ('sha256-47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU='), or a nonce ('nonce-...') is required to enable inline execution.
-
 PASS
