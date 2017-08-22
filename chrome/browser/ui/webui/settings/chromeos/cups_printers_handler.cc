@@ -363,11 +363,8 @@ void CupsPrintersHandler::OnPrinterInfo(const std::string& callback_id,
 void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   AllowJavascript();
 
-  std::string setup_method;
-  CHECK(args->GetString(0, &setup_method));
-
   const base::DictionaryValue* printer_dict = nullptr;
-  CHECK(args->GetDictionary(1, &printer_dict));
+  CHECK(args->GetDictionary(0, &printer_dict));
 
   std::string printer_id;
   std::string printer_name;
