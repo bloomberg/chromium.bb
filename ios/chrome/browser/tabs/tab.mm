@@ -1229,6 +1229,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (!_requireReloadAfterBecomingActive)
     return;
   if (_visible) {
+    PagePlaceholderTabHelper::FromWebState(self.webState)
+        ->AddPlaceholderForNextNavigation();
     self.webState->GetNavigationManager()->LoadIfNecessary();
   } else {
     _requireReloadOnDisplay = YES;
