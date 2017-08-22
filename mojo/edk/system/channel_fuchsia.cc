@@ -4,13 +4,16 @@
 
 #include "mojo/edk/system/channel.h"
 
+#include <magenta/processargs.h>
 #include <magenta/status.h>
 #include <magenta/syscalls.h>
+#include <mxio/limits.h>
 #include <mxio/util.h>
 #include <algorithm>
 #include <deque>
 
 #include "base/bind.h"
+#include "base/files/scoped_file.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -26,19 +29,82 @@ namespace {
 
 const size_t kMaxBatchReadCapacity = 256 * 1024;
 
-uint32_t UnwrapPlatformHandle(PlatformHandle* handle) {
-  if (!handle->is_valid_fd())
-    return 0;
+bool UnwrapPlatformHandle(ScopedPlatformHandle handle,
+                          Channel::Message::HandleInfoEntry* info_out,
+                          PlatformHandleVector* handles_out) {
+  DCHECK(handle.get().is_valid());
+
+  if (!handle.get().is_valid_fd()) {
+    *info_out = {0u, 0u};
+    handles_out->emplace_back(handle.release());
+    return true;
+  }
 
   // Each MXIO file descriptor is implemented using one or more native resources
   // and can be un-wrapped into a set of |handle| and |info| pairs, with |info|
   // consisting of an MXIO-defined type & arguments (see magenta/processargs.h).
-  mx_handle_t handles[3] = {};
-  uint32_t info[3] = {};
-  mx_status_t result = mxio_transfer_fd(handle->as_fd(), 0, handles, info);
-  CHECK_EQ(result, 1) << "mxio_transfer_fd: " << mx_status_get_string(result);
-  *handle = PlatformHandle::ForHandle(handles[0]);
-  return info[0];
+  mx_handle_t handles[MXIO_MAX_HANDLES] = {};
+  uint32_t info[MXIO_MAX_HANDLES] = {};
+  mx_status_t result = mxio_transfer_fd(handle.get().as_fd(), 0, handles, info);
+  DCHECK_LE(result, MXIO_MAX_HANDLES);
+  if (result <= 0) {
+    DLOG(ERROR) << "mxio_transfer_fd: " << mx_status_get_string(result);
+    return false;
+  }
+
+  // The supplied file-descriptor was released by mxio_transfer_fd().
+  ignore_result(handle.release());
+
+  // We assume here that only the |PA_HND_TYPE| of the |info| really matters,
+  // and that that is the same for all the underlying handles.
+  *info_out = {PA_HND_TYPE(info[0]), result};
+  for (int i = 0; i < result; ++i) {
+    DCHECK_EQ(PA_HND_TYPE(info[0]), PA_HND_TYPE(info[i]));
+    DCHECK_EQ(0u, PA_HND_SUBTYPE(info[i]));
+    handles_out->push_back(PlatformHandle::ForHandle(handles[i]));
+  }
+
+  return true;
+}
+
+ScopedPlatformHandle WrapPlatformHandles(
+    Channel::Message::HandleInfoEntry info,
+    std::deque<base::ScopedMxHandle>* handles) {
+  ScopedPlatformHandle out_handle;
+  if (!info.type) {
+    out_handle.reset(PlatformHandle::ForHandle(handles->front().release()));
+    handles->pop_front();
+  } else {
+    if (info.count > MXIO_MAX_HANDLES)
+      return ScopedPlatformHandle();
+
+    // Fetch the required number of handles from |handles| and set up type info.
+    mx_handle_t fd_handles[MXIO_MAX_HANDLES] = {};
+    uint32_t fd_infos[MXIO_MAX_HANDLES] = {};
+    for (int i = 0; i < info.count; ++i) {
+      fd_handles[i] = (*handles)[i].get();
+      fd_infos[i] = PA_HND(info.type, 0);
+    }
+
+    // Try to wrap the handles into an MXIO file descriptor.
+    base::ScopedFD out_fd;
+    mx_status_t result =
+        mxio_create_fd(fd_handles, fd_infos, info.count, out_fd.receive());
+    if (result != MX_OK) {
+      DLOG(ERROR) << "mxio_create_fd: " << mx_status_get_string(result);
+      return ScopedPlatformHandle();
+    }
+
+    // The handles are owned by MXIO now, so |release()| them before removing
+    // the entries from |handles|.
+    for (int i = 0; i < info.count; ++i) {
+      ignore_result(handles->front().release());
+      handles->pop_front();
+    }
+
+    out_handle.reset(PlatformHandle::ForFd(out_fd.release()));
+  }
+  return out_handle;
 }
 
 // A view over a Channel::Message object. The write queue uses these since
@@ -84,8 +150,17 @@ class MessageView {
       auto* handles_info = reinterpret_cast<Channel::Message::HandleInfoEntry*>(
           message_->mutable_extra_header());
       memset(handles_info, 0, message_->extra_header_size());
-      for (size_t i = 0; i < handles_->size(); i++) {
-        handles_info[i].info = UnwrapPlatformHandle(&(*handles_)[i]);
+
+      ScopedPlatformHandleVectorPtr in_handles(std::move(handles_));
+
+      handles_.reset(new PlatformHandleVector);
+      handles_->reserve(in_handles->size());
+      for (size_t i = 0; i < in_handles->size(); i++) {
+        ScopedPlatformHandle old_handle((*in_handles)[i]);
+        (*in_handles)[i] = PlatformHandle();
+        if (!UnwrapPlatformHandle(std::move(old_handle), &handles_info[i],
+                                  handles_.get()))
+          return nullptr;
       }
     }
     return std::move(handles_);
@@ -169,26 +244,25 @@ class ChannelFuchsia : public Channel,
     if (handles_info_size > extra_header_size)
       return false;
 
-    // Verify there are as many handles as expected.
-    if (incoming_handles_.size() < num_handles)
+    // Some caller-supplied handles may be MXIO file-descriptors, which were
+    // un-wrapped to more than one native platform resource handle for transfer.
+    // We may therefore need to expect more than |num_handles| handles to have
+    // been accumulated in |incoming_handles_|, based on the handle info.
+    size_t num_raw_handles = 0u;
+    for (size_t i = 0; i < num_handles; ++i)
+      num_raw_handles += handles_info[i].type ? handles_info[i].count : 1;
+
+    // If there are too few handles then we're not ready yet, so return true
+    // indicating things are OK, but leave |handles| empty.
+    if (incoming_handles_.size() < num_raw_handles)
       return true;
 
-    handles->reset(new PlatformHandleVector(num_handles));
+    handles->reset(new PlatformHandleVector);
+    (*handles)->reserve(num_handles);
     for (size_t i = 0; i < num_handles; ++i) {
-      mx_handle_t handle = incoming_handles_.front().release();
-      if (handles_info[i].info) {
-        int out_fd = -1;
-        mx_status_t result = mxio_create_fd(
-            &handle, const_cast<uint32_t*>(&handles_info[i].info), 1, &out_fd);
-        if (result != MX_OK)
-          return false;
-        (*handles)->at(i) = PlatformHandle::ForFd(out_fd);
-      } else {
-        (*handles)->at(i) = PlatformHandle::ForHandle(handle);
-      }
-      incoming_handles_.pop_front();
+      (*handles)->push_back(
+          WrapPlatformHandles(handles_info[i], &incoming_handles_).release());
     }
-
     return true;
   }
 
