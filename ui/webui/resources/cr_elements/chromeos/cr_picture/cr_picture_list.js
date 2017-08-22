@@ -127,6 +127,8 @@ Polymer({
    * @param {number=} imageIndex
    */
   setOldImageUrl(imageUrl, imageIndex) {
+    imageIndex = imageIndex || 0;
+
     if (imageUrl == CrPicture.kDefaultImageUrl || imageIndex === 0) {
       // Treat the default image as empty so it does not show in the list.
       this.oldImageUrl_ = '';

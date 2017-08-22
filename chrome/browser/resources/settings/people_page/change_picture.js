@@ -218,6 +218,8 @@ Polymer({
   /** @private */
   onDiscardImage_: function() {
     this.pictureList_.setOldImageUrl('');
+    // Revert to profile image as we don't know what last used default image is.
+    this.browserProxy_.selectProfileImage();
     announceAccessibleMessage(this.i18n('photoDiscardAccessibleText'));
   },
 
