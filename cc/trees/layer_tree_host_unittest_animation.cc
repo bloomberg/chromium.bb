@@ -1225,8 +1225,13 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
   scoped_refptr<Layer> layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
+SINGLE_THREAD_TEST_F(LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
+
+// The multi-thread test is flaky. See http://crbug.com/755965.
+using DISABLED_LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit =
+    LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit;
+MULTI_THREAD_TEST_F(
+    DISABLED_LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
 
 // When a layer with an animation is removed from the tree and later re-added,
 // the animation should resume.
