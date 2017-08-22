@@ -238,7 +238,8 @@ void RendererWebMediaPlayerDelegate::SetIdleCleanupParamsForTesting(
     base::TimeDelta idle_cleanup_interval,
     base::TickClock* tick_clock,
     bool is_jelly_bean) {
-  idle_cleanup_interval_ = idle_cleanup_interval, idle_timeout_ = idle_timeout;
+  idle_cleanup_interval_ = idle_cleanup_interval;
+  idle_timeout_ = idle_timeout;
   tick_clock_ = tick_clock;
   is_jelly_bean_ = is_jelly_bean;
 }
