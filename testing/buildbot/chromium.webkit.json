@@ -617,6 +617,28 @@
         "test": "wtf_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-10-10586"
+            }
+          ],
+          "shards": 5
+        }
+      }
+    ],
     "scripts": [
       {
         "name": "webkit_lint",
@@ -655,6 +677,28 @@
         "test": "wtf_unittests"
       }
     ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-7-SP1"
+            }
+          ],
+          "shards": 5
+        }
+      }
+    ],
     "scripts": [
       {
         "name": "webkit_lint",
@@ -691,6 +735,28 @@
           "can_use_on_swarming_builders": true
         },
         "test": "wtf_unittests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "args": [
+            "--verbose"
+          ],
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
+        },
+        "name": "webkit_layout_tests",
+        "results_handler": "layout tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Windows-7-SP1"
+            }
+          ],
+          "shards": 5
+        }
       }
     ],
     "scripts": [
