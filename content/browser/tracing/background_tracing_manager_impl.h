@@ -36,6 +36,9 @@ class BackgroundTracingManagerImpl : public BackgroundTracingManager {
     virtual void OnScenarioActivated(
         const BackgroundTracingConfigImpl* config) = 0;
 
+    // In case the scenario was aborted before or after tracing was enabled.
+    virtual void OnScenarioAborted() = 0;
+
     // Called after tracing is enabled on all processes because the rule was
     // triggered.
     virtual void OnTracingEnabled(
