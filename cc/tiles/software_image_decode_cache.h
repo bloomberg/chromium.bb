@@ -23,7 +23,7 @@
 #include "cc/cc_export.h"
 #include "cc/paint/draw_image.h"
 #include "cc/tiles/image_decode_cache.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 

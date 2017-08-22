@@ -16,7 +16,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/cc_export.h"
 #include "cc/tiles/image_decode_cache.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace viz {

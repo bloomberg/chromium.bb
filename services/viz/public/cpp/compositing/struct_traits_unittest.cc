@@ -18,7 +18,7 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"

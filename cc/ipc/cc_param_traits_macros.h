@@ -18,7 +18,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "components/viz/common/surfaces/surface_id.h"

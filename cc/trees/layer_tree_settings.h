@@ -16,7 +16,7 @@
 #include "cc/scheduler/scheduler_settings.h"
 #include "cc/tiles/tile_manager_settings.h"
 #include "components/viz/common/display/renderer_settings.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_settings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"

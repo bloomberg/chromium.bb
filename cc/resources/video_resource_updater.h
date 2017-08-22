@@ -18,8 +18,8 @@
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/resources/release_callback_impl.h"
-#include "components/viz/common/quads/resource_format.h"
 #include "components/viz/common/quads/texture_mailbox.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 

@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "third_party/skia/include/core/SkTypes.h"
 
 namespace viz {
