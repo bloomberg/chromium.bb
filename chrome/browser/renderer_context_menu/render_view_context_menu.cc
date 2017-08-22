@@ -1660,12 +1660,6 @@ bool RenderViewContextMenu::IsCommandIdChecked(int id) const {
   return false;
 }
 
-bool RenderViewContextMenu::IsCommandIdVisible(int id) const {
-  if (ContextMenuMatcher::IsExtensionsCustomCommandId(id))
-    return extension_items_.IsCommandIdVisible(id);
-  return RenderViewContextMenuBase::IsCommandIdVisible(id);
-}
-
 void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
   RenderViewContextMenuBase::ExecuteCommand(id, event_flags);
   if (command_executed_)

@@ -70,8 +70,7 @@ class MenuManagerTest : public testing::Test {
     const MenuItem::ExtensionKey key(extension->id());
     MenuItem::Id id(incognito, key);
     id.uid = next_id_++;
-    return base::MakeUnique<MenuItem>(id, "test", false, true, true, type,
-                                      contexts);
+    return base::MakeUnique<MenuItem>(id, "test", false, true, type, contexts);
   }
 
   // Returns a test item with the given string ID.
@@ -82,8 +81,7 @@ class MenuManagerTest : public testing::Test {
     const MenuItem::ExtensionKey key(extension->id());
     MenuItem::Id id(false, key);
     id.string_uid = string_id;
-    return base::MakeUnique<MenuItem>(id, "test", false, true, true, type,
-                                      contexts);
+    return base::MakeUnique<MenuItem>(id, "test", false, true, type, contexts);
   }
 
   // Creates and returns a test Extension. The caller does *not* own the return
@@ -227,7 +225,6 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   int type = MenuItem::CHECKBOX;
   std::string title("TITLE");
   bool checked = true;
-  bool visible = true;
   bool enabled = true;
   MenuItem::ContextList contexts;
   contexts.Add(MenuItem::PAGE);
@@ -249,7 +246,6 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   value.SetInteger("type", type);
   value.SetString("title", title);
   value.SetBoolean("checked", checked);
-  value.SetBoolean("visible", visible);
   value.SetBoolean("enabled", enabled);
   value.SetInteger("contexts", contexts_value);
   std::string error;
@@ -271,7 +267,6 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
   EXPECT_EQ(title, item->title());
   EXPECT_EQ(checked, item->checked());
   EXPECT_EQ(item->checked(), item->checked());
-  EXPECT_EQ(visible, item->visible());
   EXPECT_EQ(enabled, item->enabled());
   EXPECT_EQ(contexts, item->contexts());
 
