@@ -53,8 +53,12 @@ class PrefetchedPagesTrackerImpl
   bool initialized_;
   offline_pages::OfflinePageModel* offline_page_model_;
 
-  std::set<GURL> prefetched_urls_;
+  // Mapping from an offline id to a URL for all currently known prefetched
+  // offline pages.
   std::map<int64_t, GURL> offline_id_to_url_mapping_;
+  // The mapping above represented as a mapping from a URL to its count. It does
+  // not contain items with zero count.
+  std::map<GURL, int> prefetched_url_counts_;
 
   std::vector<base::OnceCallback<void()>> initialization_completed_callbacks_;
 
