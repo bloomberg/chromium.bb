@@ -231,7 +231,7 @@ inline int LayoutListItem::CalcValue() const {
     return ClampAdd(previous_item->Value(), value_step);
 
   if (o_list_element)
-    return o_list_element->start();
+    return o_list_element->StartConsideringItemCount();
 
   return 1;
 }

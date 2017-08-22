@@ -78,12 +78,12 @@ void HTMLOListElement::CollectStyleForPresentationAttribute(
 void HTMLOListElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == startAttr) {
-    int old_start = start();
+    int old_start = StartConsideringItemCount();
     int parsed_start = 0;
     bool can_parse = ParseHTMLInteger(params.new_value, parsed_start);
     has_explicit_start_ = can_parse;
     start_ = can_parse ? parsed_start : 0xBADBEEF;
-    if (old_start == start())
+    if (old_start == StartConsideringItemCount())
       return;
     UpdateItemValues();
   } else if (params.name == reversedAttr) {
@@ -95,20 +95,6 @@ void HTMLOListElement::ParseAttribute(
   } else {
     HTMLElement::ParseAttribute(params);
   }
-}
-
-int HTMLOListElement::start() const {
-  if (has_explicit_start_)
-    return start_;
-
-  if (is_reversed_) {
-    UseCounter::Count(
-        GetDocument(),
-        WebFeature::kHTMLOListElementStartGetterReversedWithoutStartAttribute);
-    return ItemCount();
-  }
-
-  return 1;
 }
 
 void HTMLOListElement::setStart(int start) {
