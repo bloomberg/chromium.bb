@@ -5,7 +5,6 @@
 #include "core/layout/ng/inline/ng_inline_node.h"
 
 #include "core/layout/BidiRun.h"
-#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
 #include "core/layout/LayoutTextFragment.h"
@@ -24,6 +23,7 @@
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/inline/ng_text_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
+#include "core/layout/ng/legacy_layout_tree_walking.h"
 #include "core/layout/ng/ng_box_fragment.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -261,10 +261,10 @@ void AppendTextTransformedOffsetMapping<NGOffsetMappingBuilder>(
 // for condition checking and branching.
 template <typename OffsetMappingBuilder>
 LayoutBox* CollectInlinesInternal(
-    LayoutBlockFlow* block,
+    LayoutNGBlockFlow* block,
     NGInlineItemsBuilderTemplate<OffsetMappingBuilder>* builder) {
   builder->EnterBlock(block->Style());
-  LayoutObject* node = block->FirstChild();
+  LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
   LayoutBox* next_box = nullptr;
   while (node) {
     if (node->IsText()) {
@@ -322,7 +322,7 @@ LayoutBox* CollectInlinesInternal(
         node = next;
         break;
       }
-      node = node->Parent();
+      node = GetLayoutObjectForParentNode(node);
       if (node == block) {
         // Set |node| to |nullptr| to break out of the outer loop.
         node = nullptr;
@@ -358,7 +358,7 @@ NGInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
 }
 
 void NGInlineNode::InvalidatePrepareLayout() {
-  ToLayoutNGBlockFlow(GetLayoutBlockFlow())->ResetNGInlineNodeData();
+  GetLayoutBlockFlow()->ResetNGInlineNodeData();
   DCHECK(!IsPrepareLayoutFinished());
 }
 
@@ -599,7 +599,7 @@ NGLayoutInputNode NGInlineNode::NextSibling() {
 void NGInlineNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     NGLayoutResult* layout_result) {
-  LayoutBlockFlow* block_flow = GetLayoutBlockFlow();
+  LayoutNGBlockFlow* block_flow = GetLayoutBlockFlow();
   block_flow->DeleteLineBoxTree();
 
   const Vector<NGInlineItem>& items = Data().items_;
