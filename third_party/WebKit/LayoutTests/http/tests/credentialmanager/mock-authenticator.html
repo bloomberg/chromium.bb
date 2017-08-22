@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="/gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="/gen/third_party/WebKit/public/platform/modules/webauth/authenticator.mojom.js"></script>
+<script src="resources/authenticator-helpers.js"></script>
+<script>
+
+'use strict';
+
+test(function(t) {
+	assert_true(mockAuthenticator instanceof Object);
+}, "Authenticator Mojo bindings and mock interfaces are available to tests.")
+</script>
