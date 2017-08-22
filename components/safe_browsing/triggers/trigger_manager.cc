@@ -17,25 +17,46 @@ namespace safe_browsing {
 
 namespace {
 
-bool CanStartDataCollection(const SBErrorOptions& error_display_options,
-                            const TriggerThrottler& throttler,
-                            const TriggerType trigger_type) {
-  // We start data collection as long as user is not incognito and is able to
-  // change the Extended Reporting opt-in, and the |trigger_type| has available
-  // quota. We don't require users to be opted-in to SBER to begin collecting
-  // data, since they may be able to change the setting while data collection is
-  // running (eg: on a security interstitial).
-  return !error_display_options.is_off_the_record &&
-         error_display_options.is_extended_reporting_opt_in_allowed &&
-         throttler.TriggerCanFire(trigger_type);
+bool TriggerNeedsScout(const TriggerType trigger_type) {
+  switch (trigger_type) {
+    case TriggerType::SECURITY_INTERSTITIAL:
+      // Security interstitials only need legacy SBER opt-in.
+      return false;
+    case TriggerType::AD_SAMPLE:
+      // Ad samples need Scout-level opt-in.
+      return true;
+  }
+  // By default, require Scout so we are more restrictive on data collection.
+  return true;
 }
 
-bool CanSendReport(const SBErrorOptions& error_display_options) {
+bool TriggerNeedsOptInForCollection(const TriggerType trigger_type) {
+  switch (trigger_type) {
+    case TriggerType::SECURITY_INTERSTITIAL:
+      // For security interstitials, users can change the opt-in while the
+      // trigger runs, so collection can begin without opt-in.
+      return false;
+    case TriggerType::AD_SAMPLE:
+      // Ad samples happen in the background so the user must already be opted
+      // in before the trigger is allowed to run.
+      return true;
+  }
+  // By default, require opt-in for all triggers.
+  return true;
+}
+
+bool CanSendReport(const SBErrorOptions& error_display_options,
+                   const TriggerType trigger_type) {
+  // Some triggers require that users are eligible for elevated Scout data
+  // collection in order to run.
+  bool scout_check_ok = !TriggerNeedsScout(trigger_type) ||
+                        error_display_options.is_scout_reporting_enabled;
+
   // Reports are only sent for non-incoginito users who are allowed to modify
   // the Extended Reporting setting and have opted-in to Extended Reporting.
   return !error_display_options.is_off_the_record &&
          error_display_options.is_extended_reporting_opt_in_allowed &&
-         error_display_options.is_extended_reporting_enabled;
+         error_display_options.is_extended_reporting_enabled && scout_check_ok;
 }
 
 }  // namespace
@@ -44,9 +65,13 @@ DataCollectorsContainer::DataCollectorsContainer() {}
 DataCollectorsContainer::~DataCollectorsContainer() {}
 
 TriggerManager::TriggerManager(BaseUIManager* ui_manager)
-    : ui_manager_(ui_manager) {}
+    : ui_manager_(ui_manager), trigger_throttler_(new TriggerThrottler()) {}
 
 TriggerManager::~TriggerManager() {}
+
+void TriggerManager::set_trigger_throttler(TriggerThrottler* throttler) {
+  trigger_throttler_.reset(throttler);
+}
 
 // static
 SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
@@ -56,10 +81,35 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
                         IsExtendedReportingOptInAllowed(pref_service),
                         web_contents.GetBrowserContext()->IsOffTheRecord(),
                         IsExtendedReportingEnabled(pref_service),
-                        /*is_scout_reporting_enabled=*/false,
+                        IsScout(pref_service),
                         /*is_proceed_anyway_disabled=*/false,
                         /*should_open_links_in_new_tab=*/false,
                         /*help_center_article_link=*/std::string());
+}
+
+bool TriggerManager::CanStartDataCollection(
+    const SBErrorOptions& error_display_options,
+    const TriggerType trigger_type) {
+  // Some triggers require that the user be opted-in to extended reporting in
+  // order to run, while others can run without opt-in (eg: because users are
+  // prompted for opt-in as part of the trigger).
+  bool optin_required_check_ok =
+      !TriggerNeedsOptInForCollection(trigger_type) ||
+      error_display_options.is_extended_reporting_enabled;
+
+  // Some triggers require that users are eligible for elevated Scout data
+  // collection in order to run.
+  bool scout_check_ok = !TriggerNeedsScout(trigger_type) ||
+                        error_display_options.is_scout_reporting_enabled;
+
+  // We start data collection as long as user is not incognito and is able to
+  // change the Extended Reporting opt-in, and the |trigger_type| has available
+  // quota. For some triggers we also require Scout or extended reporting opt-in
+  // in order to start data collection.
+  return !error_display_options.is_off_the_record &&
+         error_display_options.is_extended_reporting_opt_in_allowed &&
+         optin_required_check_ok && scout_check_ok &&
+         trigger_throttler_->TriggerCanFire(trigger_type);
 }
 
 bool TriggerManager::StartCollectingThreatDetails(
@@ -70,9 +120,7 @@ bool TriggerManager::StartCollectingThreatDetails(
     history::HistoryService* history_service,
     const SBErrorOptions& error_display_options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (!CanStartDataCollection(error_display_options, trigger_throttler_,
-                              trigger_type))
+  if (!CanStartDataCollection(error_display_options, trigger_type))
     return false;
 
   // Ensure we're not already collecting data on this tab.
@@ -83,9 +131,11 @@ bool TriggerManager::StartCollectingThreatDetails(
     return false;
 
   DataCollectorsContainer* collectors = &data_collectors_map_[web_contents];
-  collectors->threat_details = scoped_refptr<ThreatDetails>(
-      ThreatDetails::NewThreatDetails(ui_manager_, web_contents, resource,
-                                      request_context_getter, history_service));
+  bool should_trim_threat_details = trigger_type == TriggerType::AD_SAMPLE;
+  collectors->threat_details =
+      scoped_refptr<ThreatDetails>(ThreatDetails::NewThreatDetails(
+          ui_manager_, web_contents, resource, request_context_getter,
+          history_service, should_trim_threat_details));
   return true;
 }
 
@@ -97,7 +147,6 @@ bool TriggerManager::FinishCollectingThreatDetails(
     int num_visits,
     const SBErrorOptions& error_display_options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   // Make sure there's a data collector running on this tab.
   // TODO(lpz): this check should be more specific to check that the right type
   // of data collector is running on this tab (once additional data collectors
@@ -106,7 +155,7 @@ bool TriggerManager::FinishCollectingThreatDetails(
     return false;
 
   // Determine whether a report should be sent.
-  bool should_send_report = CanSendReport(error_display_options);
+  bool should_send_report = CanSendReport(error_display_options, trigger_type);
 
   DataCollectorsContainer* collectors = &data_collectors_map_[web_contents];
   // Find the data collector and tell it to finish collecting data, and then
@@ -122,7 +171,7 @@ bool TriggerManager::FinishCollectingThreatDetails(
         delay);
 
     // Record that this trigger fired and collected data.
-    trigger_throttler_.TriggerFired(trigger_type);
+    trigger_throttler_->TriggerFired(trigger_type);
   }
 
   // Regardless of whether the report got sent, clean up the data collector on

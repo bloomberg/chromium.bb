@@ -20,6 +20,7 @@ source_set("triggers") {
     "//components/prefs:prefs",
     "//components/safe_browsing:safe_browsing",
     "//components/safe_browsing/browser:browser",
+    "//net:net",
   ]
 }
 
@@ -39,6 +40,8 @@ source_set("ad_sampler_trigger") {
     "ad_sampler_trigger.h",
   ]
   deps = [
+    ":trigger_throttler",
+    ":triggers",
     "//base:base",
     "//components/safe_browsing:features",
     "//content/public/browser",
@@ -48,16 +51,21 @@ source_set("ad_sampler_trigger") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "ad_sampler_trigger_unittest.cc",
     "trigger_manager_unittest.cc",
     "trigger_throttler_unittest.cc",
   ]
   deps = [
+    ":ad_sampler_trigger",
     ":trigger_throttler",
     ":triggers",
     "//base",
+    "//base/test:test_support",
     "//components/prefs:test_support",
+    "//components/safe_browsing:features",
     "//components/safe_browsing/browser:browser",
     "//content/test:test_support",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }

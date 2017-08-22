@@ -74,6 +74,11 @@ class TriggerManager {
       const PrefService& pref_service,
       const content::WebContents& web_contents);
 
+  // Returns whether data collection can be started for the |trigger_type| based
+  // on the settings specified in |error_display_options| as well as quota.
+  bool CanStartDataCollection(const SBErrorOptions& error_display_options,
+                              const TriggerType trigger_type);
+
   // Begins collecting a ThreatDetails report on the specified |web_contents|.
   // |resource| is the unsafe resource that cause the collection to occur.
   // |request_context_getter| is used to retrieve data from the HTTP cache.
@@ -82,8 +87,8 @@ class TriggerManager {
   // preferences. We use this object for interop with WebView, in Chrome it
   // should be created by TriggerManager::GetSBErrorDisplayOptions().
   // Returns true if the collection began, or false if it didn't.
-  bool StartCollectingThreatDetails(
-      const TriggerType trigger_type,
+  virtual bool StartCollectingThreatDetails(
+      TriggerType trigger_type,
       content::WebContents* web_contents,
       const security_interstitials::UnsafeResource& resource,
       net::URLRequestContextGetter* request_context_getter,
@@ -100,8 +105,8 @@ class TriggerManager {
   // should be created by TriggerManager::GetSBErrorDisplayOptions().
   // Returns true if the report was completed and sent, or false otherwise (eg:
   // the user was not opted-in to extended reporting after collection began).
-  bool FinishCollectingThreatDetails(
-      const TriggerType trigger_type,
+  virtual bool FinishCollectingThreatDetails(
+      TriggerType trigger_type,
       content::WebContents* web_contents,
       const base::TimeDelta& delay,
       bool did_proceed,
@@ -111,6 +116,9 @@ class TriggerManager {
  private:
   friend class TriggerManagerTest;
 
+  // For testing only - allows injecting a mock Throttler.
+  void set_trigger_throttler(TriggerThrottler* throttler);
+
   // The UI manager is used to send reports to Google. Not owned.
   // TODO(lpz): we may only need a the PingManager here.
   BaseUIManager* ui_manager_;
@@ -119,7 +127,7 @@ class TriggerManager {
   DataCollectorsMap data_collectors_map_;
 
   // Keeps track of how often triggers fire and throttles them when needed.
-  TriggerThrottler trigger_throttler_;
+  std::unique_ptr<TriggerThrottler> trigger_throttler_;
 
   DISALLOW_COPY_AND_ASSIGN(TriggerManager);
 };

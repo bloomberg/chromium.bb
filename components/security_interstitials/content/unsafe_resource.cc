@@ -40,14 +40,19 @@ bool UnsafeResource::IsMainPageLoadBlocked() const {
   if (is_subresource)
     return false;
 
-  // Client-side phishing/malware detection and password protection phishing
-  // interstitials never block the main frame load, since they happen after the
-  // page is finished loading.
-  if (threat_type == safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
-      threat_type == safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
-      threat_type ==
-          safe_browsing::SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING) {
-    return false;
+  switch (threat_type) {
+    // Client-side phishing/malware detection and password protection phishing
+    // interstitials never block the main frame load, since they happen after
+    // the page is finished loading.
+    case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
+    case safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
+    case safe_browsing::SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
+    // Ad sampling happens in the background.
+    case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
+      return false;
+
+    default:
+      break;
   }
 
   return true;
