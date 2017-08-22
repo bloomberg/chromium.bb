@@ -114,27 +114,35 @@ TEST_F(UiSceneManagerTest, ToastStateTransitions) {
   // presentation.
   MakeManager(kNotInCct, kInWebVr);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   MakeManager(kNotInCct, kNotInWebVr);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetFullscreen(true);
   EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetWebVrMode(true, true);
-  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetWebVrMode(false, false);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetFullscreen(false);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetWebVrMode(true, false);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetWebVrMode(false, true);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 }
 
 TEST_F(UiSceneManagerTest, ToastTransience) {
@@ -149,12 +157,12 @@ TEST_F(UiSceneManagerTest, ToastTransience) {
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetWebVrMode(true, true);
-  EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
+  EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
   task_runner_->FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetWebVrMode(false, false);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 }
 
 TEST_F(UiSceneManagerTest, CloseButtonVisibleInCctFullscreen) {

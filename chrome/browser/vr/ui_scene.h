@@ -22,6 +22,10 @@ namespace cc {
 class Animation;
 }  // namespace cc
 
+namespace gfx {
+class Vector3dF;
+}  // namespace gfx
+
 namespace vr {
 
 class UiElement;
@@ -53,7 +57,8 @@ class UiScene {
   // Handles per-frame updates, giving each element the opportunity to update,
   // if necessary (eg, for animations). NB: |current_time| is the shared,
   // absolute begin frame time.
-  void OnBeginFrame(const base::TimeTicks& current_time);
+  void OnBeginFrame(const base::TimeTicks& current_time,
+                    const gfx::Vector3dF& look_at);
 
   // This function gets called just before rendering the elements in the
   // frame lifecycle. After this function, no element should be dirtied.
@@ -66,8 +71,7 @@ class UiScene {
 
   std::vector<const UiElement*> GetWorldElements() const;
   std::vector<const UiElement*> GetOverlayElements() const;
-  std::vector<const UiElement*> GetHeadLockedElements() const;
-  bool HasVisibleHeadLockedElements() const;
+  std::vector<const UiElement*> GetViewportAwareElements() const;
 
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }

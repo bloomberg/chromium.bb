@@ -273,6 +273,8 @@ void UiElement::LayOutChildren() {
   }
 }
 
+void UiElement::AdjustRotationForHeadPose(const gfx::Vector3dF& look_at) {}
+
 gfx::Transform UiElement::LocalTransform() const {
   return layout_offset_.Apply() * transform_operations_.Apply();
 }

@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "ui/gfx/transform.h"
 
 namespace vr {
 
@@ -47,7 +48,8 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
   element->animation_player().RemoveAnimation(animation_id);
 }
 
-void UiScene::OnBeginFrame(const base::TimeTicks& current_time) {
+void UiScene::OnBeginFrame(const base::TimeTicks& current_time,
+                           const gfx::Vector3dF& look_at) {
   for (const auto& element : ui_elements_) {
     // Process all animations before calculating object transforms.
     element->Animate(current_time);
@@ -55,6 +57,7 @@ void UiScene::OnBeginFrame(const base::TimeTicks& current_time) {
   }
   for (auto& element : ui_elements_) {
     element->LayOutChildren();
+    element->AdjustRotationForHeadPose(look_at);
   }
   for (auto& element : ui_elements_) {
     ApplyRecursiveTransforms(element.get());
@@ -89,7 +92,7 @@ UiElement* UiScene::GetUiElementByDebugId(UiElementDebugId debug_id) const {
 std::vector<const UiElement*> UiScene::GetWorldElements() const {
   std::vector<const UiElement*> elements;
   for (const auto& element : ui_elements_) {
-    if (element->IsVisible() && !element->lock_to_fov() &&
+    if (element->IsVisible() && !element->viewport_aware() &&
         !element->is_overlay()) {
       elements.push_back(element.get());
     }
@@ -107,18 +110,15 @@ std::vector<const UiElement*> UiScene::GetOverlayElements() const {
   return elements;
 }
 
-std::vector<const UiElement*> UiScene::GetHeadLockedElements() const {
+std::vector<const UiElement*> UiScene::GetViewportAwareElements() const {
   std::vector<const UiElement*> elements;
   for (const auto& element : ui_elements_) {
-    if (element->IsVisible() && element->lock_to_fov()) {
+    if (element->IsVisible() && element->viewport_aware() &&
+        element->parent()) {
       elements.push_back(element.get());
     }
   }
   return elements;
-}
-
-bool UiScene::HasVisibleHeadLockedElements() const {
-  return !GetHeadLockedElements().empty();
 }
 
 const std::vector<std::unique_ptr<UiElement>>& UiScene::GetUiElements() const {
@@ -138,7 +138,7 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
   gfx::Transform transform;
   transform.Scale(element->size().width(), element->size().height());
   element->set_computed_opacity(element->opacity());
-  element->set_computed_lock_to_fov(element->lock_to_fov());
+  element->set_computed_viewport_aware(element->viewport_aware());
 
   // Compute an inheritable transformation that can be applied to this element,
   // and it's children, if applicable.
@@ -150,7 +150,7 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
 
     element->set_computed_opacity(element->computed_opacity() *
                                   parent->opacity());
-    element->set_computed_lock_to_fov(parent->lock_to_fov());
+    element->set_computed_viewport_aware(parent->viewport_aware());
   }
 
   transform.ConcatTransform(inheritable);

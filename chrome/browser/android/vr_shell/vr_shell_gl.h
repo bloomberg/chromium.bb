@@ -202,8 +202,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   std::unique_ptr<gvr::GvrApi> gvr_api_;
   std::unique_ptr<gvr::BufferViewportList> buffer_viewport_list_;
   std::unique_ptr<gvr::BufferViewport> buffer_viewport_;
-  std::unique_ptr<gvr::BufferViewport> headlocked_left_viewport_;
-  std::unique_ptr<gvr::BufferViewport> headlocked_right_viewport_;
+  std::unique_ptr<gvr::BufferViewport> webvr_browser_ui_left_viewport_;
+  std::unique_ptr<gvr::BufferViewport> webvr_browser_ui_right_viewport_;
   std::unique_ptr<gvr::BufferViewport> webvr_left_viewport_;
   std::unique_ptr<gvr::BufferViewport> webvr_right_viewport_;
   std::unique_ptr<gvr::SwapChain> swap_chain_;
@@ -212,13 +212,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   std::queue<uint16_t> pending_frames_;
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
 
-  // Current sizes for the render buffers.
-  gfx::Size render_size_primary_;
-  gfx::Size render_size_headlocked_;
-
-  // Intended render_size_primary_ for use by VrShell, so that it
-  // can be restored after exiting WebVR mode.
-  gfx::Size render_size_vrshell_;
+  // The default size for the render buffers.
+  gfx::Size render_size_default_;
+  gfx::Size render_size_webvr_ui_;
 
   std::unique_ptr<vr::VrShellRenderer> vr_shell_renderer_;
 
@@ -275,7 +271,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   vr::ControllerInfo controller_info_;
   vr::RenderInfo render_info_primary_;
-  vr::RenderInfo render_info_headlocked_;
+  vr::RenderInfo render_info_webvr_browser_ui_;
 
   AndroidVSyncHelper vsync_helper_;
 
