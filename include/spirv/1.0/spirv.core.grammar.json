@@ -27,7 +27,7 @@
   "magic_number" : "0x07230203",
   "major_version" : 1,
   "minor_version" : 0,
-  "revision" : 11,
+  "revision" : 12,
   "instructions" : [
     {
       "opname" : "OpNop",
@@ -2410,7 +2410,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -2434,7 +2434,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -2446,7 +2446,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -2458,7 +2458,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -2470,7 +2470,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -3105,7 +3105,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -3129,7 +3129,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -3141,7 +3141,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -3153,7 +3153,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     },
@@ -3165,7 +3165,7 @@
         { "kind" : "IdResult" },
         { "kind" : "IdScope",        "name" : "'Execution'" },
         { "kind" : "GroupOperation", "name" : "'Operation'" },
-        { "kind" : "IdRef",          "name" : "X" }
+        { "kind" : "IdRef",          "name" : "'X'" }
       ],
       "capabilities" : [ "Groups" ]
     }
@@ -4826,7 +4826,7 @@
         {
           "enumerant" : "SampleMask",
           "value" : 20,
-          "capabilities" : [ "SampleRateShading" ]
+          "capabilities" : [ "Shader" ]
         },
         {
           "enumerant" : "FragDepth",
@@ -5004,6 +5004,11 @@
         {
           "enumerant" : "BaryCoordPullModelAMD",
           "value" : 4998
+        },
+        {
+          "enumerant" : "FragStencilRefEXT",
+          "value" : 5014,
+          "capabilities" : [ "StencilExportEXT" ]
         },
         {
           "enumerant" : "ViewportMaskNV",
@@ -5456,7 +5461,6 @@
         {
           "enumerant" : "SampleMaskPostDepthCoverage",
           "value" : 4447,
-          "capabilities" : [ "SampleRateShading" ],
           "extensions" : [ "SPV_KHR_post_depth_coverage" ]
         },
         {
@@ -5464,6 +5468,12 @@
           "value" : 5009,
           "capabilities" : [ "Shader" ],
           "extensions" : [ "SPV_AMD_texture_gather_bias_lod" ]
+        },
+        {
+          "enumerant" : "StencilExportEXT",
+          "value" : 5013,
+          "capabilities" : [ "Shader" ],
+          "extensions" : [ "SPV_EXT_shader_stencil_export" ]
         },
         {
           "enumerant" : "SampleMaskOverrideCoverageNV",

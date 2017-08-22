@@ -42,7 +42,7 @@
 spv = {
     MagicNumber = 0x07230203,
     Version = 0x00010200,
-    Revision = 1,
+    Revision = 2,
     OpCodeMask = 0xffff,
     WordCountShift = 16,
 
@@ -426,6 +426,7 @@ spv = {
         BaryCoordSmoothCentroidAMD = 4996,
         BaryCoordSmoothSampleAMD = 4997,
         BaryCoordPullModelAMD = 4998,
+        FragStencilRefEXT = 5014,
         ViewportMaskNV = 5253,
         SecondaryPositionNV = 5257,
         SecondaryViewportMaskNV = 5258,
@@ -619,6 +620,7 @@ spv = {
         AtomicStorageOps = 4445,
         SampleMaskPostDepthCoverage = 4447,
         ImageGatherBiasLodAMD = 5009,
+        StencilExportEXT = 5013,
         SampleMaskOverrideCoverageNV = 5249,
         GeometryShaderPassthroughNV = 5251,
         ShaderViewportIndexLayerEXT = 5254,

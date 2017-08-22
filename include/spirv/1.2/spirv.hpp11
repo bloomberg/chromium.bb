@@ -47,11 +47,11 @@ namespace spv {
 typedef unsigned int Id;
 
 #define SPV_VERSION 0x10200
-#define SPV_REVISION 1
+#define SPV_REVISION 2
 
 static const unsigned int MagicNumber = 0x07230203;
 static const unsigned int Version = 0x00010200;
-static const unsigned int Revision = 1;
+static const unsigned int Revision = 2;
 static const unsigned int OpCodeMask = 0xffff;
 static const unsigned int WordCountShift = 16;
 
@@ -454,6 +454,7 @@ enum class BuiltIn : unsigned {
     BaryCoordSmoothCentroidAMD = 4996,
     BaryCoordSmoothSampleAMD = 4997,
     BaryCoordPullModelAMD = 4998,
+    FragStencilRefEXT = 5014,
     ViewportMaskNV = 5253,
     SecondaryPositionNV = 5257,
     SecondaryViewportMaskNV = 5258,
@@ -657,6 +658,7 @@ enum class Capability : unsigned {
     AtomicStorageOps = 4445,
     SampleMaskPostDepthCoverage = 4447,
     ImageGatherBiasLodAMD = 5009,
+    StencilExportEXT = 5013,
     SampleMaskOverrideCoverageNV = 5249,
     GeometryShaderPassthroughNV = 5251,
     ShaderViewportIndexLayerEXT = 5254,
