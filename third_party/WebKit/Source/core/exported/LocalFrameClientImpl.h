@@ -125,10 +125,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void ProgressEstimateChanged(double progress_estimate) override;
   void DownloadURL(const ResourceRequest&,
                    const String& suggested_name) override;
-  void LoadURLExternally(const ResourceRequest&,
-                         NavigationPolicy,
-                         WebTriggeringEventInfo,
-                         bool should_replace_current_entry) override;
   void LoadErrorPage(int reason) override;
   bool NavigateBackForward(int offset) const override;
   void DidAccessInitialDocument() override;

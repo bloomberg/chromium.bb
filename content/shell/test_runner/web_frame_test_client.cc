@@ -397,19 +397,6 @@ void WebFrameTestClient::DownloadURL(const blink::WebURLRequest& request,
   }
 }
 
-void WebFrameTestClient::LoadURLExternally(
-    const blink::WebURLRequest& request,
-    blink::WebNavigationPolicy policy,
-    blink::WebTriggeringEventInfo triggering_event_info,
-    bool replaces_current_history_item) {
-  DCHECK_NE(policy, blink::kWebNavigationPolicyDownload);
-  if (test_runner()->shouldWaitUntilExternalURLLoad()) {
-    delegate_->PrintMessage(std::string("Loading URL externally - \"") +
-                            URLDescription(request.Url()) + "\"\n");
-    delegate_->TestFinished();
-  }
-}
-
 void WebFrameTestClient::LoadErrorPage(int reason) {
   if (test_runner()->shouldDumpFrameLoadCallbacks()) {
     delegate_->PrintMessage(base::StringPrintf(

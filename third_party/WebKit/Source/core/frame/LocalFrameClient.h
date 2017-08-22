@@ -153,10 +153,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void DownloadURL(const ResourceRequest&,
                            const String& suggested_name) = 0;
-  virtual void LoadURLExternally(const ResourceRequest&,
-                                 NavigationPolicy,
-                                 WebTriggeringEventInfo,
-                                 bool replaces_current_history_item) = 0;
   virtual void LoadErrorPage(int reason) = 0;
 
   virtual bool NavigateBackForward(int offset) const = 0;

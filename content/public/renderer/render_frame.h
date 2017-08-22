@@ -30,7 +30,6 @@ namespace blink {
 class WebFrame;
 class WebLocalFrame;
 class WebPlugin;
-class WebURLRequest;
 struct WebPluginParams;
 }
 
@@ -147,12 +146,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
       std::unique_ptr<PluginInstanceThrottler> throttler) = 0;
-
-  // The client should handle the navigation externally.
-  virtual void LoadURLExternally(
-      const blink::WebURLRequest& request,
-      blink::WebNavigationPolicy policy,
-      blink::WebTriggeringEventInfo triggering_event_info) = 0;
 
   // Execute a string of JavaScript in this frame's context.
   virtual void ExecuteJavaScript(const base::string16& javascript) = 0;
