@@ -70,6 +70,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // and |is_jelly_bean_| to |is_jelly_bean|. A zero cleanup interval
   // will cause the idle timer to run with each run of the message loop.
   void SetIdleCleanupParamsForTesting(base::TimeDelta idle_timeout,
+                                      base::TimeDelta idle_cleanup_interval,
                                       base::TickClock* tick_clock,
                                       bool is_jelly_bean);
   bool IsIdleCleanupTimerRunningForTesting() const;
