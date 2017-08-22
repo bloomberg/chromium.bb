@@ -1160,12 +1160,7 @@ static void ComputeGlyphOverflow(
       text->Start(), text->Len(), LayoutUnit(), text->Direction(), false,
       &fallback_fonts, &glyph_bounds);
   const Font& font = layout_text.Style()->GetFont();
-  const SimpleFontData* font_data = font.PrimaryFont();
-  DCHECK(font_data);
-  glyph_overflow.SetFromBounds(
-      glyph_bounds, font_data ? font_data->GetFontMetrics().FloatAscent() : 0,
-      font_data ? font_data->GetFontMetrics().FloatDescent() : 0,
-      measured_width);
+  glyph_overflow.SetFromBounds(glyph_bounds, font, measured_width);
   if (!fallback_fonts.IsEmpty()) {
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
         text_box_data_map
