@@ -4128,6 +4128,9 @@ TEST_P(ParameterizedWebFrameTest, CharacterIndexAtPointWithPinchZoom) {
 
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "sometext.html");
+  // TODO(kojii): This is needed to test consistently on machines without Ahem
+  // installed, but test expectations also need to be adjusted.
+  // web_view_helper.LoadAhem();
   web_view_helper.Resize(WebSize(640, 480));
 
   web_view_helper.WebView()->SetPageScaleFactor(2);

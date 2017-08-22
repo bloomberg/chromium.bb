@@ -77,6 +77,12 @@ class RenderingTest : public ::testing::Test {
 
   RenderingTest(LocalFrameClient* = nullptr);
 
+  // Load the 'Ahem' font to the LocalFrame.
+  // The 'Ahem' font is the only font whose font metrics is consistent across
+  // platforms, but it's not guaranteed to be available.
+  // See external/wpt/css/fonts/ahem/README for more about the 'Ahem' font.
+  static void LoadAhem(LocalFrame&);
+
  protected:
   void SetUp() override;
   void TearDown() override;

@@ -78,19 +78,23 @@ void RenderingTest::SetChildFrameHTML(const String& html) {
 }
 
 void RenderingTest::LoadAhem() {
+  LoadAhem(page_holder_->GetFrame());
+}
+
+void RenderingTest::LoadAhem(LocalFrame& frame) {
+  Document& document = *frame.DomWindow()->document();
   RefPtr<SharedBuffer> shared_buffer =
       testing::ReadFromFile(testing::CoreTestDataPath("Ahem.ttf"));
   StringOrArrayBufferOrArrayBufferView buffer =
       StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(
           DOMArrayBuffer::Create(shared_buffer));
   FontFace* ahem =
-      FontFace::Create(&GetDocument(), "Ahem", buffer, FontFaceDescriptors());
+      FontFace::Create(&document, "Ahem", buffer, FontFaceDescriptors());
 
-  ScriptState* script_state =
-      ToScriptStateForMainWorld(&page_holder_->GetFrame());
+  ScriptState* script_state = ToScriptStateForMainWorld(&frame);
   DummyExceptionStateForTesting exception_state;
-  FontFaceSetDocument::From(GetDocument())
-      ->addForBinding(script_state, ahem, exception_state);
+  FontFaceSetDocument::From(document)->addForBinding(script_state, ahem,
+                                                     exception_state);
 }
 
 }  // namespace blink

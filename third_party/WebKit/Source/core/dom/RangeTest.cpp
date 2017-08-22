@@ -22,6 +22,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/layout/LayoutTestHelper.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Compiler.h"
@@ -260,19 +261,7 @@ TEST_F(RangeTest, ToPosition) {
 }
 
 static void LoadAhem(DummyPageHolder& page_holder, Document& document) {
-  RefPtr<SharedBuffer> shared_buffer =
-      testing::ReadFromFile(testing::CoreTestDataPath("Ahem.ttf"));
-  StringOrArrayBufferOrArrayBufferView buffer =
-      StringOrArrayBufferOrArrayBufferView::fromArrayBuffer(
-          DOMArrayBuffer::Create(shared_buffer));
-  FontFace* ahem =
-      FontFace::Create(&document, "Ahem", buffer, FontFaceDescriptors());
-
-  ScriptState* script_state =
-      ToScriptStateForMainWorld(&page_holder.GetFrame());
-  DummyExceptionStateForTesting exception_state;
-  FontFaceSetDocument::From(document)->addForBinding(script_state, ahem,
-                                                     exception_state);
+  RenderingTest::LoadAhem(page_holder.GetFrame());
 }
 
 TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
