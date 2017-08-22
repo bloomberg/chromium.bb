@@ -104,3 +104,7 @@ Running test: testForegroundVideo
 Video behind text: should be empty array
 {"backgroundColors":[],"computedFontSize":"16px","computedFontWeight":"400","computedBodyFontSize":"16px"}
 
+Running test: testShadowDOM
+Background color in Shadow DOM: should be blue
+{"backgroundColors":["rgb(0, 0, 255)"],"computedFontSize":"16px","computedFontWeight":"400","computedBodyFontSize":"16px"}
+

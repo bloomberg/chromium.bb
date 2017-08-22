@@ -152,7 +152,20 @@ HeapVector<Member<Element>> ElementsFromRect(LayoutRect rect,
   HitTestResult result(request, center, top_padding, right_padding,
                        bottom_padding, left_padding);
   document.GetFrame()->ContentLayoutItem().HitTest(result);
-  return document.ElementsFromHitTestResult(result);
+  HeapVector<Member<Element>> elements;
+  Node* previous_node = nullptr;
+  for (const auto hit_test_result_node : result.ListBasedTestResult()) {
+    Node* node = hit_test_result_node.Get();
+    if (!node || node->IsDocumentNode())
+      continue;
+    if (node->IsPseudoElement() || node->IsTextNode())
+      node = node->ParentOrShadowHostNode();
+    if (!node || node == previous_node || !node->IsElementNode())
+      continue;
+    elements.push_back(ToElement(node));
+    previous_node = node;
+  }
+  return elements;
 }
 
 // Blends the colors from the given gradient with the existing colors.
