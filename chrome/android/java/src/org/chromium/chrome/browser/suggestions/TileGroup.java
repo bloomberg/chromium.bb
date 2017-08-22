@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
@@ -563,9 +564,9 @@ public class TileGroup implements MostVisitedSites.Observer {
         }
 
         @Override
-        public void onSuggestionOfflineIdChanged(Tile tile, @Nullable Long id) {
+        public void onSuggestionOfflineIdChanged(Tile tile, OfflinePageItem item) {
             boolean oldOfflineAvailable = tile.isOfflineAvailable();
-            tile.setOfflinePageOfflineId(id);
+            tile.setOfflinePageOfflineId(item == null ? null : item.getOfflineId());
 
             // Only notify to update the view if there will be a visible change.
             if (oldOfflineAvailable == tile.isOfflineAvailable()) return;
