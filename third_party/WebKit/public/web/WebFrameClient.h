@@ -319,13 +319,6 @@ class BLINK_EXPORT WebFrameClient {
   virtual void DownloadURL(const WebURLRequest&,
                            const WebString& download_name) {}
 
-  // The client should handle the navigation externally. Should not be used for
-  // processing the request as a download (See WebFrameClient::DownloadURL).
-  virtual void LoadURLExternally(const WebURLRequest&,
-                                 WebNavigationPolicy,
-                                 WebTriggeringEventInfo triggering_event_info,
-                                 bool should_replace_current_entry) {}
-
   // The client should load an error page in the current frame.
   virtual void LoadErrorPage(int reason) {}
 

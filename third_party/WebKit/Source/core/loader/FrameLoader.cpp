@@ -1367,21 +1367,11 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
       policy == kNavigationPolicyHandledByClient ||
       policy == kNavigationPolicyHandledByClientForInitialHistory) {
     return policy;
-  }
-
-  // TODO(csharrison,dcheng): The common idiom for the embedder is to process
-  // the navigation in DecidePolicyForNavigation and pass down
-  // kNavigationPolicyIgnore if the embedder wants to handle the navigation.
-  // This has become more common with PlzNavigate.
-  //
-  // It would be nice to standarize that idiom in the API and potentially remove
-  // LoadURLExternally. Additionally, we may be able to move the download logic
-  // here to that method as well.
-  if (policy == kNavigationPolicyDownload) {
+  } else if (policy == kNavigationPolicyDownload) {
+    // TODO(csharrison): Could probably move this logic into
+    // DecidePolicyForNavigation and handle it by the embedder, or deal with it
+    // earlier.
     Client()->DownloadURL(request, String());
-  } else {
-    Client()->LoadURLExternally(request, policy, triggering_event_info,
-                                replaces_current_history_item);
   }
   return kNavigationPolicyIgnore;
 }

@@ -633,21 +633,6 @@ void LocalFrameClientImpl::DownloadURL(const ResourceRequest& request,
                                     suggested_name);
 }
 
-void LocalFrameClientImpl::LoadURLExternally(
-    const ResourceRequest& request,
-    NavigationPolicy policy,
-    WebTriggeringEventInfo triggering_event_info,
-    bool should_replace_current_entry) {
-  DCHECK_NE(policy, NavigationPolicy::kNavigationPolicyDownload);
-  if (!web_frame_->Client())
-    return;
-  DCHECK(web_frame_->GetFrame()->GetDocument());
-  Fullscreen::FullyExitFullscreen(*web_frame_->GetFrame()->GetDocument());
-  web_frame_->Client()->LoadURLExternally(
-      WrappedResourceRequest(request), static_cast<WebNavigationPolicy>(policy),
-      triggering_event_info, should_replace_current_entry);
-}
-
 void LocalFrameClientImpl::LoadErrorPage(int reason) {
   if (web_frame_->Client())
     web_frame_->Client()->LoadErrorPage(reason);

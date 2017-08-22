@@ -152,7 +152,6 @@ class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
 class RenderWidgetFullscreenPepper;
-class ResourceRequestBody;
 class ScreenOrientationDispatcher;
 class SharedWorkerRepository;
 class UserMediaClientImpl;
@@ -428,10 +427,6 @@ class CONTENT_EXPORT RenderFrameImpl
       const WebPluginInfo& info,
       const blink::WebPluginParams& params,
       std::unique_ptr<PluginInstanceThrottler> throttler) override;
-  void LoadURLExternally(
-      const blink::WebURLRequest& request,
-      blink::WebNavigationPolicy policy,
-      blink::WebTriggeringEventInfo triggering_event_info) override;
   void ExecuteJavaScript(const base::string16& javascript) override;
   bool IsMainFrame() override;
   bool IsHidden() override;
@@ -557,10 +552,6 @@ class CONTENT_EXPORT RenderFrameImpl
                               const blink::WebString& stack_trace) override;
   void DownloadURL(const blink::WebURLRequest& request,
                    const blink::WebString& suggested_name) override;
-  void LoadURLExternally(const blink::WebURLRequest& request,
-                         blink::WebNavigationPolicy policy,
-                         blink::WebTriggeringEventInfo triggering_event_info,
-                         bool should_replace_current_entry) override;
   void LoadErrorPage(int reason) override;
   blink::WebNavigationPolicy DecidePolicyForNavigation(
       const NavigationPolicyInfo& info) override;
@@ -1025,15 +1016,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // |is_history_navigation_in_new_child| is true, the browser process should
   // look for a matching FrameNavigationEntry in the last committed entry to use
   // instead of |url|.
-  void OpenURL(const GURL& url,
-               bool uses_post,
-               const scoped_refptr<ResourceRequestBody>& resource_request_body,
-               const std::string& extra_headers,
-               const Referrer& referrer,
-               blink::WebNavigationPolicy policy,
-               bool should_replace_current_entry,
-               bool is_history_navigation_in_new_child,
-               blink::WebTriggeringEventInfo triggering_event_info);
+  void OpenURL(const NavigationPolicyInfo& info,
+               bool send_referrer,
+               bool is_history_navigation_in_new_child);
 
   // Performs a navigation in the frame. This provides a unified function for
   // the current code path and the browser-side navigation path (in
