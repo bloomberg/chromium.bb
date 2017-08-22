@@ -55,7 +55,7 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
   // TODO(ananta)
   // This applies only to the URLRequestJob at the moment. Look into taking
   // this knowledge out of this class.
-  using OnPrepareToRestartCallback = base::Closure;
+  using OnPrepareToRestartCallback = base::OnceClosure;
 
   // Factory function to create the AppCacheJob instance for the |request|
   // passed in. The |job_type| parameter controls the type of job which is
@@ -66,7 +66,7 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
       AppCacheStorage* storage,
       AppCacheRequest* request,
       net::NetworkDelegate* network_delegate,
-      const OnPrepareToRestartCallback& restart_callback,
+      OnPrepareToRestartCallback restart_callback,
       std::unique_ptr<SubresourceLoadInfo> subresource_load_info,
       URLLoaderFactoryGetter* loader_factory_getter);
 

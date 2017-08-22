@@ -35,7 +35,7 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   // Callback that will be invoked before the request is restarted. The caller
   // can use this opportunity to grab state from the AppCacheURLRequestJob to
   // determine how it should behave when the request is restarted.
-  using OnPrepareToRestartCallback = base::Closure;
+  using OnPrepareToRestartCallback = base::OnceClosure;
 
   ~AppCacheURLRequestJob() override;
 
@@ -74,7 +74,7 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
                         AppCacheStorage* storage,
                         AppCacheHost* host,
                         bool is_main_resource,
-                        const OnPrepareToRestartCallback& restart_callback_);
+                        OnPrepareToRestartCallback restart_callback_);
 
   // Returns true if one of the Deliver methods has been called.
   bool has_delivery_orders() const { return !IsWaiting(); }
@@ -133,7 +133,7 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   std::unique_ptr<AppCacheResponseReader> handler_source_reader_;
   scoped_refptr<AppCache> cache_;
   scoped_refptr<AppCacheGroup> group_;
-  const OnPrepareToRestartCallback on_prepare_to_restart_callback_;
+  OnPrepareToRestartCallback on_prepare_to_restart_callback_;
 };
 
 }  // namespace content
