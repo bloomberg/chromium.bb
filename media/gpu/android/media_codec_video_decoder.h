@@ -133,6 +133,12 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   bool QueueInput();
   bool DequeueOutput();
 
+  // Forwards |frame| via |output_cb_| if there hasn't been a Reset() since the
+  // frame was created (i.e., |reset_generation| matches |reset_generation_|).
+  void ForwardVideoFrame(int reset_generation,
+                         VideoFrameFactory::ReleaseMailboxCB release_cb,
+                         const scoped_refptr<VideoFrame>& frame);
+
   // Starts draining the codec by queuing an EOS if required. It skips the drain
   // if possible.
   void StartDrainingCodec(DrainType drain_type);
@@ -163,6 +169,9 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   // The current reset cb if a Reset() is in progress.
   base::Closure reset_cb_;
+
+  // A generation counter that's incremented every time Reset() is called.
+  int reset_generation_;
 
   // The EOS decode cb for an EOS currently being processed by the codec. Called
   // when the EOS is output.
