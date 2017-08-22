@@ -118,6 +118,10 @@ AV1_COMMON_SRCS-yes += common/cfl.h
 AV1_COMMON_SRCS-yes += common/cfl.c
 endif
 
+ifeq ($(CONFIG_MOTION_VAR),yes)
+AV1_COMMON_SRCS-yes += common/obmc.h
+endif
+
 ifeq ($(CONFIG_PVQ),yes)
 # PVQ from daala
 AV1_COMMON_SRCS-yes += common/pvq.c
