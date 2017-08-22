@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/test/scoped_task_environment.h"
 #include "ios/chrome/app/application_delegate/app_state.h"
 #include "ios/chrome/app/application_delegate/app_state_testing.h"
 #include "ios/chrome/app/application_delegate/mock_tab_opener.h"
@@ -151,6 +152,7 @@ class URLOpenerTest : public PlatformTest {
   }
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
   MainController* main_controller_;
 };
 

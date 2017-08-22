@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_constants.h"
@@ -120,7 +121,8 @@ base::FilePath CreateTempBrowserStateDir(base::ScopedTempDir* temp_dir) {
 
 TestChromeBrowserState::TestChromeBrowserState(
     TestChromeBrowserState* original_browser_state)
-    : testing_prefs_(nullptr),
+    : ChromeBrowserState(original_browser_state->GetIOTaskRunner()),
+      testing_prefs_(nullptr),
       otr_browser_state_(nullptr),
       original_browser_state_(original_browser_state) {
   // Not calling Init() here as the bi-directional link between original and
@@ -134,7 +136,9 @@ TestChromeBrowserState::TestChromeBrowserState(
     std::unique_ptr<sync_preferences::PrefServiceSyncable> prefs,
     const TestingFactories& testing_factories,
     const RefcountedTestingFactories& refcounted_testing_factories)
-    : state_path_(path),
+    : ChromeBrowserState(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
+      state_path_(path),
       prefs_(std::move(prefs)),
       testing_prefs_(nullptr),
       otr_browser_state_(nullptr),

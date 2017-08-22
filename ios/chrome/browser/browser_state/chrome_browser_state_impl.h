@@ -55,7 +55,9 @@ class ChromeBrowserStateImpl : public ios::ChromeBrowserState {
  private:
   friend class ChromeBrowserStateManagerImpl;
 
-  explicit ChromeBrowserStateImpl(const base::FilePath& path);
+  ChromeBrowserStateImpl(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+      const base::FilePath& path);
 
   // Sets the OffTheRecordChromeBrowserState.
   void SetOffTheRecordChromeBrowserState(

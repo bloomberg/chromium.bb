@@ -38,25 +38,8 @@ namespace {
 // Returns a bool indicating whether the necessary directories were able to be
 // created (or already existed).
 bool EnsureBrowserStateDirectoriesCreated(const base::FilePath& path,
-                                          const base::FilePath& otr_path) {
-  if (!base::PathExists(path) && !base::CreateDirectory(path))
-    return false;
-  // Create the directory for the OTR stash state now, even though it won't
-  // necessarily be needed: the OTR browser state itself is created
-  // synchronously on an as-needed basis on the UI thread, so creation of its
-  // stash state directory cannot easily be done at that point.
-  if (base::PathExists(otr_path))
-    return true;
-  if (!base::CreateDirectory(otr_path))
-    return false;
-  SetSkipSystemBackupAttributeToItem(otr_path, true);
-  return true;
-}
-
-// Creates the browser state directory synchronously.
-void CreateBrowserStateDirectory(
-    base::SequencedTaskRunner* sequenced_task_runner,
-    const base::FilePath& path) {
+                                          const base::FilePath& otr_path,
+                                          const base::FilePath& cache_path) {
   // Create the browser state directory synchronously otherwise we would need to
   // sequence every otherwise independent I/O operation inside the browser state
   // directory with this operation. base::CreateDirectory() should be a
@@ -65,8 +48,18 @@ void CreateBrowserStateDirectory(
   // thread.
   base::ThreadRestrictions::ScopedAllowIO allow_io_to_create_directory;
 
-  bool success = base::CreateDirectory(path);
-  DCHECK(success);
+  if (!base::PathExists(path) && !base::CreateDirectory(path))
+    return false;
+  // Create the directory for the OTR stash state now, even though it won't
+  // necessarily be needed: the OTR browser state itself is created
+  // synchronously on an as-needed basis on the UI thread, so creation of its
+  // stash state directory cannot easily be done at that point.
+  if (!base::PathExists(otr_path) && !base::CreateDirectory(otr_path))
+    return false;
+  SetSkipSystemBackupAttributeToItem(otr_path, true);
+  if (!base::PathExists(cache_path) && !base::CreateDirectory(cache_path))
+    return false;
+  return true;
 }
 
 base::FilePath GetCachePath(const base::FilePath& base) {
@@ -75,26 +68,32 @@ base::FilePath GetCachePath(const base::FilePath& base) {
 
 }  // namespace
 
-ChromeBrowserStateImpl::ChromeBrowserStateImpl(const base::FilePath& path)
-    : state_path_(path),
+ChromeBrowserStateImpl::ChromeBrowserStateImpl(
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    const base::FilePath& path)
+    : ChromeBrowserState(std::move(io_task_runner)),
+      state_path_(path),
       pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(new ChromeBrowserStateImplIOData::Handle(this)) {
   BrowserState::Initialize(this, state_path_);
 
   otr_state_path_ = state_path_.Append(FILE_PATH_LITERAL("OTR"));
 
-  bool directories_created =
-      EnsureBrowserStateDirectoriesCreated(state_path_, otr_state_path_);
+  // It would be nice to use PathService for fetching this directory, but
+  // the cache directory depends on the browser state stash directory, which
+  // isn't available to PathService.
+  base::FilePath base_cache_path;
+  ios::GetUserCacheDirectory(state_path_, &base_cache_path);
+
+  bool directories_created = EnsureBrowserStateDirectoriesCreated(
+      state_path_, otr_state_path_, base_cache_path);
   DCHECK(directories_created);
 
   RegisterBrowserStatePrefs(pref_registry_.get());
   BrowserStateDependencyManager::GetInstance()
       ->RegisterBrowserStatePrefsForServices(this, pref_registry_.get());
 
-  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(state_path_,
-                                          web::WebThread::GetBlockingPool());
-  prefs_ = CreateBrowserStatePrefs(state_path_, sequenced_task_runner.get(),
+  prefs_ = CreateBrowserStatePrefs(state_path_, GetIOTaskRunner().get(),
                                    pref_registry_);
   // Register on BrowserState.
   user_prefs::UserPrefs::Set(this, prefs_.get());
@@ -106,18 +105,6 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(const base::FilePath& path)
 
   BrowserStateDependencyManager::GetInstance()->CreateBrowserStateServices(
       this);
-
-  // It would be nice to use PathService for fetching this directory, but
-  // the cache directory depends on the browser state stash directory, which
-  // isn't available to PathService.
-  base::FilePath base_cache_path;
-  ios::GetUserCacheDirectory(state_path_, &base_cache_path);
-  // Always create the cache directory asynchronously.
-  scoped_refptr<base::SequencedTaskRunner> cache_sequenced_task_runner =
-      JsonPrefStore::GetTaskRunnerForFile(base_cache_path,
-                                          web::WebThread::GetBlockingPool());
-  CreateBrowserStateDirectory(cache_sequenced_task_runner.get(),
-                              base_cache_path);
 
   ssl_config_service_manager_.reset(
       ssl_config::SSLConfigServiceManager::CreateDefaultManager(
@@ -157,8 +144,8 @@ ChromeBrowserStateImpl::GetOriginalChromeBrowserState() {
 ios::ChromeBrowserState*
 ChromeBrowserStateImpl::GetOffTheRecordChromeBrowserState() {
   if (!otr_state_) {
-    otr_state_.reset(
-        new OffTheRecordChromeBrowserStateImpl(this, otr_state_path_));
+    otr_state_.reset(new OffTheRecordChromeBrowserStateImpl(
+        GetIOTaskRunner(), this, otr_state_path_));
   }
 
   return otr_state_.get();

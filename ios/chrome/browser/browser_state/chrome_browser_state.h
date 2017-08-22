@@ -131,12 +131,14 @@ class ChromeBrowserState : public web::BrowserState {
   net::URLRequestContextGetter* GetRequestContext() override;
 
  protected:
-  ChromeBrowserState();
+  explicit ChromeBrowserState(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
 
  private:
   friend class ::TestChromeBrowserState;
   friend class ::TestChromeBrowserStateManager;
 
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserState);

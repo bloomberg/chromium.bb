@@ -47,6 +47,7 @@ class OffTheRecordChromeBrowserStateImpl : public ios::ChromeBrowserState {
   // |original_chrome_browser_state_| is the non-incognito
   // ChromeBrowserState instance that owns this instance.
   OffTheRecordChromeBrowserStateImpl(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       ios::ChromeBrowserState* original_chrome_browser_state,
       const base::FilePath& otr_path);
 
