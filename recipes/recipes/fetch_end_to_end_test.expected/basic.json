@@ -81,6 +81,7 @@
     ],
     "cwd": "[TMP_BASE]/fetch_end_to_end_test_depot_tools_tmp_1",
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_UPDATE": "0"
     },
     "env_prefixes": {
@@ -101,6 +102,7 @@
       "[TMP_BASE]/fetch_end_to_end_test_depot_tools_tmp_1"
     ],
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_UPDATE": "0"
     },
     "env_prefixes": {
@@ -120,6 +122,7 @@
     ],
     "cwd": "[TMP_BASE]/fetch_end_to_end_test_infra_tmp_2",
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_UPDATE": "0"
     },
     "env_prefixes": {
@@ -140,6 +143,7 @@
       "[TMP_BASE]/fetch_end_to_end_test_infra_tmp_2"
     ],
     "env": {
+      "CHROME_HEADLESS": "1",
       "DEPOT_TOOLS_UPDATE": "0"
     },
     "env_prefixes": {

@@ -27,7 +27,7 @@ def RunSteps(api):
   # Try to run "fetch" for each of the configs. It's important to use
   # the checkout under test.
   with api.context(
-      env={'DEPOT_TOOLS_UPDATE': '0'},
+      env={'DEPOT_TOOLS_UPDATE': '0', 'CHROME_HEADLESS': '1'},
       env_prefixes={'PATH': [api.path['checkout']]}):
     with api.step.defer_results():
       for config_name in fetch_configs:
