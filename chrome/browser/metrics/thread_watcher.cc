@@ -164,6 +164,16 @@ void ThreadWatcher::OnPongMessage(uint64_t ping_sequence_number) {
   base::TimeDelta response_time = now - ping_time_;
   response_time_histogram_->AddTime(response_time);
 
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, we log when the response time is long on the UI thread as part
+  // of an effort to debug extreme jank reported by some users. This log message
+  // can be used to correlate the period of jank with other system logs.
+  if (response_time > base::TimeDelta::FromSeconds(1) &&
+      thread_id_ == BrowserThread::UI) {
+    LOG(WARNING) << "Long response time on the UI thread: " << response_time;
+  }
+#endif
+
   // Save the current time when we have got pong message.
   pong_time_ = now;
 
