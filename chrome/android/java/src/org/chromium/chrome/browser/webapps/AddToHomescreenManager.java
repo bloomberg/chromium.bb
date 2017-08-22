@@ -19,8 +19,11 @@ public class AddToHomescreenManager {
 
     /** Interface for tracking fetch of add-to-homescreen data. */
     public interface Observer {
-        /** Called when the title of the page is available. */
-        void onUserTitleAvailable(String title, boolean isTitleEditable);
+        /**
+         * Called when the homescreen icon title (and possibly information from the web manifest) is
+         * available.
+         */
+        void onUserTitleAvailable(String title, String url, boolean isTitleEditable);
 
         /**
          * Called once native has finished fetching the homescreen shortcut's data (like the Web
@@ -86,8 +89,8 @@ public class AddToHomescreenManager {
     }
 
     @CalledByNative
-    private void onUserTitleAvailable(String title, boolean isTitleEditable) {
-        mObserver.onUserTitleAvailable(title, isTitleEditable);
+    private void onUserTitleAvailable(String title, String url, boolean isTitleEditable) {
+        mObserver.onUserTitleAvailable(title, url, isTitleEditable);
     }
 
     @CalledByNative
