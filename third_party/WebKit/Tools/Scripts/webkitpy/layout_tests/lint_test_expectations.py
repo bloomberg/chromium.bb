@@ -54,16 +54,7 @@ def lint(host, options):
     for port_to_lint in ports_to_lint:
         expectations_dict = port_to_lint.all_expectations_dict()
 
-        # There are some TestExpectations files that are not loaded by default
-        # in any Port, and are instead passed via --additional-expectations on
-        # some builders. We also want to inspect these files if they're present.
-        extra_files = (
-            'ASANExpectations',
-            'LeakExpectations',
-            'MSANExpectations',
-        )
-        for name in extra_files:
-            path = port_to_lint.layout_tests_dir() + '/' + name
+        for path in port_to_lint.extra_expectations_files():
             if host.filesystem.exists(path):
                 expectations_dict[path] = host.filesystem.read_text_file(path)
 
@@ -73,9 +64,10 @@ def lint(host, options):
                 continue
 
             try:
-                test_expectations.TestExpectations(port_to_lint,
-                                                   expectations_dict={expectations_file: expectations_dict[expectations_file]},
-                                                   is_lint_mode=True)
+                test_expectations.TestExpectations(
+                    port_to_lint,
+                    expectations_dict={expectations_file: expectations_dict[expectations_file]},
+                    is_lint_mode=True)
             except test_expectations.ParseError as error:
                 _log.error('')
                 for warning in error.warnings:
