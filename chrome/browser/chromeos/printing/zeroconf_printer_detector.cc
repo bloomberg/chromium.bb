@@ -138,14 +138,14 @@ bool ConvertToPrinter(const ServiceDescription& service_description,
   printer.set_make_and_model(metadata.product);
   if (service_description.service_type() ==
       base::StringPiece(kIppServiceName)) {
-    printer.set_uri(base::StringPrintf("ipp://%s/%s",
-                                       service_description.service_name.c_str(),
-                                       metadata.rp.c_str()));
+    printer.set_uri(base::StringPrintf(
+        "ipp://%s/%s", service_description.address.ToString().c_str(),
+        metadata.rp.c_str()));
   } else if (service_description.service_type() ==
              base::StringPiece(kIppsServiceName)) {
-    printer.set_uri(base::StringPrintf("ipps://%s/%s",
-                                       service_description.service_name.c_str(),
-                                       metadata.rp.c_str()));
+    printer.set_uri(base::StringPrintf(
+        "ipps://%s/%s", service_description.address.ToString().c_str(),
+        metadata.rp.c_str()));
   } else {
     // Since we only register for these services, we should never get back
     // a service other than the ones above.
