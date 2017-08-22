@@ -38,7 +38,7 @@ class V8TestInheritedLegacyUnenumerableNamedProperties {
   MODULES_EXPORT static TestInheritedLegacyUnenumerableNamedProperties* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   MODULES_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->Trace(scriptWrappable->ToImpl<TestInheritedLegacyUnenumerableNamedProperties>());
+    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestInheritedLegacyUnenumerableNamedProperties>());
   }
   static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestInheritedLegacyUnenumerableNamedProperties>());

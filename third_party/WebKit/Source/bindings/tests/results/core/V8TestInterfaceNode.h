@@ -38,7 +38,7 @@ class V8TestInterfaceNode {
   CORE_EXPORT static TestInterfaceNode* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->Trace(scriptWrappable->ToImpl<TestInterfaceNode>());
+    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceNode>());
   }
   static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceNode>());

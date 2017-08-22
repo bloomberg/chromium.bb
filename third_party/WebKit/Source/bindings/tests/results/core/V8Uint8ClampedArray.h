@@ -35,7 +35,7 @@ class V8Uint8ClampedArray {
   CORE_EXPORT static TestUint8ClampedArray* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->Trace(scriptWrappable->ToImpl<TestUint8ClampedArray>());
+    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestUint8ClampedArray>());
   }
   static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestUint8ClampedArray>());

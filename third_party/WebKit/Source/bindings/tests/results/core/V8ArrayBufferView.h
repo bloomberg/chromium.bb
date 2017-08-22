@@ -32,7 +32,7 @@ class V8ArrayBufferView {
   CORE_EXPORT static TestArrayBufferView* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->Trace(scriptWrappable->ToImpl<TestArrayBufferView>());
+    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestArrayBufferView>());
   }
   static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestArrayBufferView>());
