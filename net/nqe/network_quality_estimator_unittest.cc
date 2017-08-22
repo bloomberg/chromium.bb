@@ -308,8 +308,6 @@ TEST(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
 
   // Verify that metrics are logged correctly on main-frame requests.
   histogram_tester.ExpectTotalCount("NQE.MainFrame.RTT.Percentile50", 1);
-  histogram_tester.ExpectTotalCount("NQE.WeightedAverage.MainFrame.RTT", 1);
-  histogram_tester.ExpectTotalCount("NQE.UnweightedAverage.MainFrame.RTT", 1);
   histogram_tester.ExpectTotalCount("NQE.MainFrame.RTT.Percentile50.Unknown",
                                     1);
   histogram_tester.ExpectTotalCount("NQE.MainFrame.TransportRTT.Percentile50",
@@ -636,22 +634,6 @@ TEST(NetworkQualityEstimatorTest, ComputedPercentiles) {
                     base::TimeTicks(), i),
                 estimator.GetDownlinkThroughputKbpsEstimateInternal(
                     base::TimeTicks(), i - 1));
-
-      // Weighted average statistic should be computed correctly.
-      EXPECT_NE(nqe::internal::InvalidRTT(),
-                estimator.GetRTTEstimateInternal(
-                    disallowed_observation_sources, base::TimeTicks(),
-                    NetworkQualityEstimator::STATISTIC_WEIGHTED_AVERAGE, i));
-
-      // Weighted average statistic should disregard the value of the percentile
-      // argument.
-      EXPECT_EQ(
-          estimator.GetRTTEstimateInternal(
-              disallowed_observation_sources, base::TimeTicks(),
-              NetworkQualityEstimator::STATISTIC_WEIGHTED_AVERAGE, i),
-          estimator.GetRTTEstimateInternal(
-              disallowed_observation_sources, base::TimeTicks(),
-              NetworkQualityEstimator::STATISTIC_WEIGHTED_AVERAGE, i - 1));
 
       // RTT percentiles are in increasing order.
       EXPECT_GE(
@@ -2530,20 +2512,6 @@ TEST(NetworkQualityEstimatorTest, MAYBE_RecordAccuracy) {
               rtt_sign_suffix_with_zero_samples + "." + interval_value +
               ".300_620",
           0);
-
-      // All samples are recorded in bucket 0 because recent HTTP RTT and
-      // HTTP RTT are equal when weighted or unweighted average algorithms are
-      // used.
-      histogram_tester.ExpectUniqueSample(
-          "NQE.WeightedAverage.Accuracy.HttpRTT.EstimatedObservedDiff."
-          "Positive." +
-              interval_value + ".300_620",
-          0, 1);
-      histogram_tester.ExpectUniqueSample(
-          "NQE.UnweightedAverage.Accuracy.HttpRTT.EstimatedObservedDiff."
-          "Positive." +
-              interval_value + ".300_620",
-          0, 1);
 
       histogram_tester.ExpectUniqueSample(
           "NQE.Accuracy.TransportRTT.EstimatedObservedDiff." +

@@ -78,32 +78,6 @@ class NET_EXPORT_PRIVATE ObservationBuffer {
       const std::vector<NetworkQualityObservationSource>&
           disallowed_observation_sources) const;
 
-  // Returns true iff the weighted average of the observations in this
-  // buffer is available. Sets |result| to the computed weighted average value
-  // of all observations made on or after |begin_timestamp|. If the value is
-  // unavailable, false is returned and |result| is not modified. The unweighted
-  // average value is unavailable if all the values in the observation buffer
-  // are older than |begin_timestamp|. |current_signal_strength| is the
-  // current signal strength. |result| must not be null.
-  base::Optional<int32_t> GetWeightedAverage(
-      base::TimeTicks begin_timestamp,
-      const base::Optional<int32_t>& current_signal_strength,
-      const std::vector<NetworkQualityObservationSource>&
-          disallowed_observation_sources) const;
-
-  // Returns true iff the unweighted average of the observations in this buffer
-  // is available. Sets |result| to the computed unweighted average value of
-  // all observations made on or after |begin_timestamp|. If the value is
-  // unavailable, false is returned and |result| is not modified. The weighted
-  // average value is unavailable if all the values in the observation buffer
-  // are older than |begin_timestamp|. |current_signal_strength| is the
-  // current signal strength. |result| must not be null.
-  base::Optional<int32_t> GetUnweightedAverage(
-      base::TimeTicks begin_timestamp,
-      const base::Optional<int32_t>& current_signal_strength,
-      const std::vector<NetworkQualityObservationSource>&
-          disallowed_observation_sources) const;
-
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock) {
     tick_clock_ = std::move(tick_clock);
   }

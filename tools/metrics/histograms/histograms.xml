@@ -48952,6 +48952,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NQE.UnweightedAverage.Accuracy.HttpRTT.EstimatedObservedDiff"
     units="ms">
+  <obsolete>
+    Obsoleted in August 2017.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -48965,6 +48968,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.UnweightedAverage.MainFrame.RTT" units="ms">
+  <obsolete>
+    Obsoleted in August 2017.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
@@ -48978,6 +48984,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="NQE.WeightedAverage.Accuracy.HttpRTT.EstimatedObservedDiff"
     units="ms">
+  <obsolete>
+    Obsoleted in August 2017.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -48990,6 +48999,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="NQE.WeightedAverage.MainFrame.RTT" units="ms">
+  <obsolete>
+    Obsoleted in August 2017.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>
