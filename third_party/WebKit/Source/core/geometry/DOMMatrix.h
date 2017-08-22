@@ -70,7 +70,7 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   }
   void setM33(double value) {
     matrix_->SetM33(value);
-    SetIs2D(value != 1);
+    SetIs2D(value == 1);
   }
   void setM34(double value) {
     matrix_->SetM34(value);
@@ -84,7 +84,7 @@ class CORE_EXPORT DOMMatrix : public DOMMatrixReadOnly {
   }
   void setM44(double value) {
     matrix_->SetM44(value);
-    SetIs2D(value != 1);
+    SetIs2D(value == 1);
   }
 
   DOMMatrix* multiplySelf(DOMMatrixInit&, ExceptionState&);
