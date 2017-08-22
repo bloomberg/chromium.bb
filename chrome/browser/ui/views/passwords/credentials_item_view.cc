@@ -148,7 +148,7 @@ gfx::Size CredentialsItemView::CalculatePreferredSize() const {
   const gfx::Insets insets(GetInsets());
   size.Enlarge(insets.width(), insets.height());
   size.Enlarge(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                   DISTANCE_RELATED_LABEL_HORIZONTAL),
+                   views::DISTANCE_RELATED_LABEL_HORIZONTAL),
                0);
 
   // Make the size at least as large as the minimum size needed by the border.
@@ -178,7 +178,7 @@ void CredentialsItemView::Layout() {
       (upper_size.height() + lower_size.height())) / 2;
   gfx::Point label_origin(image_origin.x() + image_size.width() +
                               ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                  DISTANCE_RELATED_LABEL_HORIZONTAL),
+                                  views::DISTANCE_RELATED_LABEL_HORIZONTAL),
                           child_area.origin().y() + y_offset);
   if (upper_label_)
     upper_label_->SetBoundsRect(gfx::Rect(label_origin, upper_size));

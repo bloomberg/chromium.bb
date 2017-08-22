@@ -60,7 +60,8 @@ void ConfirmInfoBar::Layout() {
   label_->SetPosition(gfx::Point(x, OffsetY(label_)));
   if (!label_->text().empty())
     x = label_->bounds().right() +
-        layout_provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL);
+        layout_provider->GetDistanceMetric(
+            views::DISTANCE_RELATED_LABEL_HORIZONTAL);
 
   if (ok_button_) {
     ok_button_->SetPosition(gfx::Point(x, OffsetY(ok_button_)));
@@ -153,8 +154,8 @@ ConfirmInfoBarDelegate* ConfirmInfoBar::GetDelegate() {
 int ConfirmInfoBar::NonLabelWidth() const {
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
-  const int label_spacing =
-      layout_provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL);
+  const int label_spacing = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_LABEL_HORIZONTAL);
   const int button_spacing = layout_provider->GetDistanceMetric(
       views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
 

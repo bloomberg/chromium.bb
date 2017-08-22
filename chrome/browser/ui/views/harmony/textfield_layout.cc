@@ -8,6 +8,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_provider.h"
 
 using views::GridLayout;
 
@@ -41,11 +42,12 @@ views::Textfield* AddFirstTextfieldRow(GridLayout* layout,
                                        const base::string16& label_text,
                                        int column_set_id) {
   views::Textfield* textfield = new views::Textfield();
-  layout->StartRow(
-      kFixed, column_set_id,
-      ChromeLayoutProvider::GetControlHeightForFont(textfield->GetFontList()));
-  views::Label* label = new views::Label(
-      label_text, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
+  constexpr int font_context = views::style::CONTEXT_LABEL;
+  constexpr int font_style = views::style::STYLE_PRIMARY;
+  layout->StartRow(kFixed, column_set_id,
+                   views::LayoutProvider::GetControlHeightForFont(
+                       font_context, font_style, textfield->GetFontList()));
+  views::Label* label = new views::Label(label_text, font_context, font_style);
   textfield->SetAccessibleName(label_text);
 
   layout->AddView(label);

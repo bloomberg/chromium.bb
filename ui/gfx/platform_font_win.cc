@@ -395,6 +395,11 @@ void PlatformFontWin::SetDirectWriteFactory(IDWriteFactory* factory) {
 }
 
 // static
+bool PlatformFontWin::IsDirectWriteEnabled() {
+  return direct_write_factory_ != nullptr;
+}
+
+// static
 void PlatformFontWin::GetTextMetricsForFont(HDC hdc,
                                             HFONT font,
                                             TEXTMETRIC* text_metrics) {
@@ -465,7 +470,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
     GetTextMetricsForFont(screen_dc, font, &font_metrics);
   }
 
-  if (direct_write_factory_)
+  if (IsDirectWriteEnabled())
     return CreateHFontRefFromSkia(font, font_metrics);
 
   return CreateHFontRefFromGDI(font, font_metrics);

@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "chrome/browser/ui/views/harmony/harmony_typography_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -19,17 +21,38 @@
 #include "base/mac/mac_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/gfx/win/direct_write.h"
+#endif
+
 namespace {
 
 // Constant from the Harmony spec.
 constexpr int kHarmonyTitleSize = 15;
 }  // namespace
 
+class LayoutProviderTest : public testing::Test {
+ public:
+  LayoutProviderTest() {}
+
+#if defined(OS_WIN)
+ protected:
+  static void SetUpTestCase() {
+    // The expected case is to have DirectWrite enabled; the fallback gives
+    // different font heights. But the tests should pass either way.
+    gfx::win::MaybeInitializeDirectWrite();
+  }
+#endif
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LayoutProviderTest);
+};
+
 // Check legacy font sizes. No new code should be using these constants, but if
 // these tests ever fail it probably means something in the old UI will have
 // changed by mistake.
 // Disabled since this relies on machine configuration. http://crbug.com/701241.
-TEST(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
+TEST_F(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
   ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::FontList label_font = rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
 
@@ -56,7 +79,7 @@ TEST(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
 #if defined(OS_WIN)
   EXPECT_EQ(15, title_font.GetFontSize());
   EXPECT_EQ(20, title_font.GetHeight());
-  EXPECT_EQ(16, title_font.GetBaseline());
+  EXPECT_EQ(17, title_font.GetBaseline());
   EXPECT_EQ(11, title_font.GetCapHeight());
 #elif defined(OS_MACOSX)
   EXPECT_EQ(14, title_font.GetFontSize());
@@ -117,7 +140,7 @@ TEST(LayoutProviderTest, DISABLED_LegacyFontSizeConstants) {
 // TypographyProvider must add 4 instead. We do this so that Chrome adapts
 // correctly to _non-standard_ system font configurations on user machines.
 // Disabled since this relies on machine configuration. http://crbug.com/701241.
-TEST(LayoutProviderTest, DISABLED_RequestFontBySize) {
+TEST_F(LayoutProviderTest, DISABLED_RequestFontBySize) {
 #if defined(OS_MACOSX)
   constexpr int kBase = 13;
 #else
@@ -157,7 +180,8 @@ TEST(LayoutProviderTest, DISABLED_RequestFontBySize) {
 #if defined(OS_MACOSX)
   EXPECT_EQ(25, headline_font.GetHeight());
 #elif defined(OS_WIN)
-  EXPECT_EQ(28, headline_font.GetHeight());
+  EXPECT_EQ(HarmonyTypographyProvider::GetPlatformFontHeight(CONTEXT_HEADLINE),
+            headline_font.GetHeight());
 #else
   EXPECT_EQ(24, headline_font.GetHeight());
 #endif
@@ -178,26 +202,42 @@ TEST(LayoutProviderTest, DISABLED_RequestFontBySize) {
 // Body1 font leading should be 20.
 #if defined(OS_MACOSX)
   EXPECT_EQ(16, body1_font.GetHeight());  // Add 4.
-#else  // Win and Linux.
+#elif defined(OS_WIN)
+  EXPECT_EQ(
+      HarmonyTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_LARGE),
+      body1_font.GetHeight());
+#else  // Linux.
   EXPECT_EQ(17, body1_font.GetHeight());  // Add 3.
 #endif
 
   EXPECT_EQ(kBody2, body2_font.GetFontSize());
 
   // Body2 font leading should be 20.
-  EXPECT_EQ(15, body2_font.GetHeight());  // All platforms: Add 5.
+#if defined(OS_WIN)
+  EXPECT_EQ(
+      HarmonyTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL),
+      body2_font.GetHeight());
+#else
+  EXPECT_EQ(15, body2_font.GetHeight());  // Other platforms: Add 5.
+#endif
 
   EXPECT_EQ(kButton, button_font.GetFontSize());
 
   // Button leading not specified (shouldn't be needed: no multiline buttons).
+#if defined(OS_WIN)
+  EXPECT_EQ(
+      HarmonyTypographyProvider::GetPlatformFontHeight(CONTEXT_BODY_TEXT_SMALL),
+      button_font.GetHeight());
+#else
   EXPECT_EQ(15, button_font.GetHeight());
+#endif
 }
 
 // Test that the default TypographyProvider correctly maps TextContexts relative
 // to the "base" font in the manner that legacy toolkit-views code expects. This
 // reads the base font configuration at runtime, and only tests font sizes, so
 // should be robust against platform changes.
-TEST(LayoutProviderTest, FontSizeRelativeToBase) {
+TEST_F(LayoutProviderTest, FontSizeRelativeToBase) {
   using views::style::GetFont;
 
   constexpr int kStyle = views::style::STYLE_PRIMARY;
@@ -246,7 +286,7 @@ TEST(LayoutProviderTest, FontSizeRelativeToBase) {
 // configuration. Generally, for a particular platform configuration, there
 // should be a consistent increase in line height when compared to the height of
 // a given font.
-TEST(LayoutProviderTest, TypographyLineHeight) {
+TEST_F(LayoutProviderTest, TypographyLineHeight) {
   constexpr int kStyle = views::style::STYLE_PRIMARY;
 
   // Only MD overrides the default line spacing.
@@ -262,9 +302,9 @@ TEST(LayoutProviderTest, TypographyLineHeight) {
     int min;
     int max;
   } kExpectedIncreases[] = {{CONTEXT_HEADLINE, 4, 8},
-                            {views::style::CONTEXT_DIALOG_TITLE, 2, 4},
-                            {CONTEXT_BODY_TEXT_LARGE, 3, 4},
-                            {CONTEXT_BODY_TEXT_SMALL, 5, 5}};
+                            {views::style::CONTEXT_DIALOG_TITLE, 1, 4},
+                            {CONTEXT_BODY_TEXT_LARGE, 2, 4},
+                            {CONTEXT_BODY_TEXT_SMALL, 4, 5}};
 
   for (size_t i = 0; i < arraysize(kExpectedIncreases); ++i) {
     SCOPED_TRACE(testing::Message() << "Testing index: " << i);
@@ -286,7 +326,7 @@ TEST(LayoutProviderTest, TypographyLineHeight) {
 // Ensure that line heights reported in a default bot configuration match the
 // Harmony spec. This test will only run if it detects that the current machine
 // has the default OS configuration.
-TEST(LayoutProviderTest, ExplicitTypographyLineHeight) {
+TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
   ui::test::MaterialDesignControllerTestAPI md_test_api(
       ui::MaterialDesignController::MATERIAL_NORMAL);
   md_test_api.SetSecondaryUiMaterial(true);
