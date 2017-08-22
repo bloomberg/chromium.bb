@@ -95,11 +95,15 @@ LoginStatus GetCurrentLoginStatus() {
 const gfx::VectorIcon& GetNotificationIcon(uint32_t enabled_accessibility) {
   if ((enabled_accessibility & A11Y_BRAILLE_DISPLAY_CONNECTED) &&
       (enabled_accessibility & A11Y_SPOKEN_FEEDBACK)) {
-    return kSystemMenuAccessibilityIcon;
+    return message_center::MessageCenter::IsNewStyleNotificationEnabled()
+               ? kNotificationAccessibilityIcon
+               : kSystemMenuAccessibilityIcon;
   }
   if (enabled_accessibility & A11Y_BRAILLE_DISPLAY_CONNECTED)
     return kNotificationAccessibilityBrailleIcon;
-  return kSystemMenuAccessibilityChromevoxIcon;
+  return message_center::MessageCenter::IsNewStyleNotificationEnabled()
+             ? kNotificationChromevoxIcon
+             : kSystemMenuAccessibilityChromevoxIcon;
 }
 
 }  // namespace
@@ -472,16 +476,26 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SPOKEN_FEEDBACK_ENABLED);
   }
 
-  std::unique_ptr<message_center::Notification> notification =
-      base::MakeUnique<message_center::Notification>(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title,
-          text,
-          gfx::Image(gfx::CreateVectorIcon(GetNotificationIcon(being_enabled),
-                                           kMenuIconSize, kMenuIconColor)),
-          base::string16(), GURL(),
-          message_center::NotifierId(message_center::NotifierId::APPLICATION,
-                                     system_notifier::kNotifierAccessibility),
-          message_center::RichNotificationData(), nullptr);
+  std::unique_ptr<message_center::Notification> notification;
+  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+    notification = message_center::Notification::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title, text,
+        gfx::Image(), base::string16(), GURL(),
+        message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                   system_notifier::kNotifierAccessibility),
+        message_center::RichNotificationData(), nullptr,
+        GetNotificationIcon(being_enabled),
+        message_center::SystemNotificationWarningLevel::NORMAL);
+  } else {
+    notification = base::MakeUnique<message_center::Notification>(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId, title, text,
+        gfx::Image(gfx::CreateVectorIcon(GetNotificationIcon(being_enabled),
+                                         kMenuIconSize, kMenuIconColor)),
+        base::string16(), GURL(),
+        message_center::NotifierId(message_center::NotifierId::APPLICATION,
+                                   system_notifier::kNotifierAccessibility),
+        message_center::RichNotificationData(), nullptr);
+  }
   message_center->AddNotification(std::move(notification));
 }
 
