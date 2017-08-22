@@ -25,10 +25,10 @@ enum ContentSecurityPolicyHeaderSource {
 
 enum ContentSecurityPolicyHashAlgorithm {
   kContentSecurityPolicyHashAlgorithmNone = 0,
-  kContentSecurityPolicyHashAlgorithmSha1 = 1 << 1,
   kContentSecurityPolicyHashAlgorithmSha256 = 1 << 2,
   kContentSecurityPolicyHashAlgorithmSha384 = 1 << 3,
-  kContentSecurityPolicyHashAlgorithmSha512 = 1 << 4
+  kContentSecurityPolicyHashAlgorithmSha512 = 1 << 4,
+  kContentSecurityPolicyHashAlgorithmEd25519 = 1 << 5,
 };
 
 PLATFORM_EXPORT bool IsCSPDirectiveNameCharacter(UChar);

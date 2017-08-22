@@ -46,7 +46,7 @@ enum class ResourceIntegrityDisposition : uint8_t {
   kPassed
 };
 
-enum class IntegrityAlgorithm : uint8_t { kSha256, kSha384, kSha512 };
+enum class IntegrityAlgorithm : uint8_t { kSha256, kSha384, kSha512, kEd25519 };
 
 }  // namespace blink
 

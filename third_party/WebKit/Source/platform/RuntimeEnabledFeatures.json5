@@ -989,6 +989,10 @@
       status: "stable",
     },
     {
+      name: "SignatureBasedIntegrity",
+      status: "experimental",
+    },
+    {
       name: "SkipCompositingSmallScrollers",
     },
     {
