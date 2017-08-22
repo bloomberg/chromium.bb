@@ -195,6 +195,13 @@ class CORE_EXPORT InspectorDOMAgent final
       int* out_node_id) override;
   protocol::Response getRelayoutBoundary(int node_id,
                                          int* out_node_id) override;
+  protocol::Response describeNode(
+      protocol::Maybe<int> node_id,
+      protocol::Maybe<int> backend_node_id,
+      protocol::Maybe<String> object_id,
+      protocol::Maybe<int> depth,
+      protocol::Maybe<bool> pierce,
+      std::unique_ptr<protocol::DOM::Node>*) override;
 
   bool Enabled() const;
   void ReleaseDanglingNodes();
