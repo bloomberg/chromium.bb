@@ -35,7 +35,7 @@ namespace {
 
 memory_instrumentation::CoordinatorImpl* g_coordinator_impl;
 
-// Returns the private memory footprint calcualted from given |os_dump|.
+// Returns the private memory footprint calculated from given |os_dump|.
 //
 // See design docs linked in the bugs for the rationale of the computation:
 // - Linux/Android: https://crbug.com/707019 .
@@ -444,7 +444,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     // In the former case (!OS_LINUX) we expect client processes to have
     // exactly one OS dump in their |response|, % the case when they
     // unexpectedly disconnect in the middle of a dump (e.g. because they
-    // crash). In the latter case (OS_LINUX) we epxect the full map to come
+    // crash). In the latter case (OS_LINUX) we expect the full map to come
     // from the browser process response.
     OSMemDumpMap& extra_os_dumps = response.second.os_dumps;
 #if defined(OS_LINUX)
@@ -502,7 +502,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   mojom::GlobalMemoryDumpPtr global_dump(mojom::GlobalMemoryDump::New());
   for (auto& pair : finalized_pmds) {
     // It's possible that the renderer has died but we still have an os_dump,
-    // because those were computed from the browser proces before the renderer
+    // because those were computed from the browser process before the renderer
     // died. We should skip these.
     mojom::ProcessMemoryDumpPtr& pmd = pair.second;
     if (!pmd || !pmd->chrome_dump)
