@@ -5,17 +5,10 @@
 #ifndef COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FORMAT_H_
 #define COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FORMAT_H_
 
-#include "base/logging.h"
-#include "ui/gfx/buffer_types.h"
-
-// TODO(prashant.n): Including third_party/khronos/GLES2/gl2.h causes
-// redefinition errors as macros/functions defined in it conflict with
-// macros/functions defined in ui/gl/gl_bindings.h. (http://crbug.com/512833).
-typedef unsigned int GLenum;
-
 namespace viz {
 
-// Keep in sync with arrays below.
+// If these values are modified, then it is likely that resource_format_utils.cc
+// has to be updated as well.
 enum ResourceFormat {
   RGBA_8888,
   RGBA_4444,

@@ -7,7 +7,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "gpu/GLES2/gl2extchromium.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 namespace viz {
 
