@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from collections import OrderedDict
+import optparse
 import unittest
 
 from webkitpy.common.host_mock import MockHost
@@ -368,9 +369,11 @@ Bug(test) failures/expected/timeout.html [ Timeout ]
 
 class SkippedTests(Base):
 
-    def check(self, expectations, overrides, skips, lint=False, expected_results=None):
+    def check(self, expectations, overrides, ignore_tests, lint=False, expected_results=None):
         expected_results = expected_results or [WONTFIX, SKIP, FAIL]
-        port = MockHost().port_factory.get('test-win-win7')
+        port = MockHost().port_factory.get(
+            'test-win-win7',
+            options=optparse.Values({'ignore_tests': ignore_tests}))
         port.host.filesystem.write_text_file(
             port.host.filesystem.join(
                 port.layout_tests_dir(), 'failures/expected/text.html'),
@@ -380,42 +383,39 @@ class SkippedTests(Base):
         if overrides:
             expectations_dict['overrides'] = overrides
         port.expectations_dict = lambda: expectations_dict
-        port.skipped_layout_tests = lambda tests: set(skips)
         expectations_to_lint = expectations_dict if lint else None
         exp = TestExpectations(port, ['failures/expected/text.html'], expectations_dict=expectations_to_lint, is_lint_mode=lint)
         self.assertEqual(exp.get_expectations('failures/expected/text.html'), set(expected_results))
-
-    def test_skipped_tests_work(self):
-        self.check(expectations='', overrides=None, skips=['failures/expected/text.html'], expected_results=[WONTFIX, SKIP])
 
     def test_duplicate_skipped_test_fails_lint(self):
         with self.assertRaises(ParseError):
             self.check(
                 expectations='Bug(x) failures/expected/text.html [ Failure ]\n',
-                overrides=None, skips=['failures/expected/text.html'], lint=True)
+                overrides=None, ignore_tests=['failures/expected/text.html'], lint=True)
 
     def test_skipped_file_overrides_expectations(self):
         self.check(expectations='Bug(x) failures/expected/text.html [ Failure ]\n', overrides=None,
-                   skips=['failures/expected/text.html'])
+                   ignore_tests=['failures/expected/text.html'])
 
     def test_skipped_dir_overrides_expectations(self):
         self.check(expectations='Bug(x) failures/expected/text.html [ Failure ]\n', overrides=None,
-                   skips=['failures/expected'])
+                   ignore_tests=['failures/expected'])
 
     def test_skipped_file_overrides_overrides(self):
         self.check(expectations='', overrides='Bug(x) failures/expected/text.html [ Failure ]\n',
-                   skips=['failures/expected/text.html'])
+                   ignore_tests=['failures/expected/text.html'])
 
     def test_skipped_dir_overrides_overrides(self):
         self.check(expectations='', overrides='Bug(x) failures/expected/text.html [ Failure ]\n',
-                   skips=['failures/expected'])
+                   ignore_tests=['failures/expected'])
 
     def test_skipped_entry_dont_exist(self):
-        port = MockHost().port_factory.get('test-win-win7')
+        port = MockHost().port_factory.get(
+            'test-win-win7',
+            options=optparse.Values({'ignore_tests': ['foo/bar/baz.html']}))
         expectations_dict = OrderedDict()
         expectations_dict['expectations'] = ''
         port.expectations_dict = lambda: expectations_dict
-        port.skipped_layout_tests = lambda tests: set(['foo/bar/baz.html'])
         capture = OutputCapture()
         capture.capture_output()
         TestExpectations(port)

@@ -895,10 +895,6 @@ class Port(object):
             return custom_layout_tests_dir
         return self._path_finder.layout_tests_dir()
 
-    def skipped_layout_tests(self, _):
-        # TODO(qyearsley): Remove this method.
-        return set()
-
     def skips_test(self, test, generic_expectations, full_expectations):
         """Checks whether the given test is skipped for this port.
 

@@ -196,7 +196,7 @@ layer at (0,0) size 800x34
               expected_image='tEXtchecksum\x00checksum_in_image-checksum')
     tests.add('passes/skipped/skip.html')
 
-    # Note that here the checksums don't match but the images do, so this test passes "unexpectedly".
+    # Note that here the checksums don't match/ but the images do, so this test passes "unexpectedly".
     # See https://bugs.webkit.org/show_bug.cgi?id=69444 .
     tests.add('failures/unexpected/checksum.html', actual_checksum='checksum_fail-checksum')
 
@@ -277,26 +277,29 @@ def add_unit_tests_to_mock_filesystem(filesystem):
     filesystem.maybe_make_directory(LAYOUT_TEST_DIR)
     if not filesystem.exists(LAYOUT_TEST_DIR + '/TestExpectations'):
         filesystem.write_text_file(LAYOUT_TEST_DIR + '/TestExpectations', """
+Bug(test) failures/expected/audio.html [ Failure ]
 Bug(test) failures/expected/crash.html [ Crash ]
 Bug(test) failures/expected/crash_then_text.html [ Failure ]
+Bug(test) failures/expected/device_failure.html [ Crash ]
+Bug(test) failures/expected/exception.html [ Crash ]
 Bug(test) failures/expected/image.html [ Failure ]
-Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
-Bug(test) failures/expected/audio.html [ Failure ]
 Bug(test) failures/expected/image_checksum.html [ Failure ]
+Bug(test) failures/expected/keyboard.html [ Crash ]
+Bug(test) failures/expected/leak.html [ Leak ]
 Bug(test) failures/expected/mismatch.html [ Failure ]
+Bug(test) failures/expected/needsmanualrebaseline.html [ NeedsManualRebaseline ]
 Bug(test) failures/expected/newlines_leading.html [ Failure ]
 Bug(test) failures/expected/newlines_trailing.html [ Failure ]
 Bug(test) failures/expected/newlines_with_excess_CR.html [ Failure ]
 Bug(test) failures/expected/reftest.html [ Failure ]
+Bug(test) failures/expected/skip_text.html [ Skip ]
 Bug(test) failures/expected/text.html [ Failure ]
 Bug(test) failures/expected/timeout.html [ Timeout ]
-Bug(test) failures/expected/keyboard.html [ Crash ]
-Bug(test) failures/expected/exception.html [ Crash ]
-Bug(test) failures/expected/device_failure.html [ Crash ]
-Bug(test) failures/expected/leak.html [ Leak ]
 Bug(test) failures/unexpected/pass.html [ Failure ]
+Bug(test) failures/unexpected/skip_pass.html [ Skip ]
 Bug(test) passes/skipped/skip.html [ Skip ]
 Bug(test) passes/text.html [ Pass ]
+Bug(test) virtual/skipped/failures/expected [ Skip ]
 """)
 
     if not filesystem.exists(LAYOUT_TEST_DIR + '/NeverFixTests'):
@@ -459,11 +462,6 @@ class TestPort(Port):
 
     def _perf_tests_dir(self):
         return PERF_TEST_DIR
-
-    def skipped_layout_tests(self, _):
-        return set(['failures/expected/skip_text.html',
-                    'failures/unexpected/skip_pass.html',
-                    'virtual/skipped/failures/expected'])
 
     def name(self):
         return self._name
