@@ -219,6 +219,14 @@ class VIEWS_EXPORT TableView
     ADVANCE_INCREMENT,
   };
 
+  // Returns the horizontal margin between the bounds of a cell and its
+  // contents.
+  int GetCellMargin() const;
+
+  // Returns the horizontal spacing between elements (grouper, icon, and text)
+  // in a cell.
+  int GetCellElementSpacing() const;
+
   // Invoked when the number of rows changes in some way.
   void NumRowsChanged();
 

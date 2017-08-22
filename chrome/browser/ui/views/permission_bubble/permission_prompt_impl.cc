@@ -131,7 +131,7 @@ PermissionsBubbleDialogDelegateView::PermissionsBubbleDialogDelegateView(
         provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT);
     label_container->SetLayoutManager(new views::BoxLayout(
         views::BoxLayout::kHorizontal, gfx::Insets(0, indent),
-        provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL)));
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
     views::ImageView* icon = new views::ImageView();
     const gfx::VectorIcon& vector_id = requests[index]->GetIconId();
     icon->SetImage(

@@ -138,7 +138,7 @@ void ConflictingModuleView::Init() {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
                            ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_RELATED_LABEL_HORIZONTAL)));
+                               views::DISTANCE_RELATED_LABEL_HORIZONTAL)));
 
   views::ImageView* icon = new views::ImageView();
   icon->SetImage(rb.GetImageSkiaNamed(IDR_INPUT_ALERT_MENU));

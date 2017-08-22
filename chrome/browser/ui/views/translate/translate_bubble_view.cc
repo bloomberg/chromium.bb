@@ -563,8 +563,8 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
                 GridLayout::USE_PREF, 0, 0);
   if (Use2016Q2UI()) {
     // Add padding between the icon and the text.
-    cs->AddPaddingColumn(
-        0, provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL));
+    cs->AddPaddingColumn(0, provider->GetDistanceMetric(
+                                views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   } else {
     // Add padding between the text and the link.
     cs->AddPaddingColumn(0, button_spacing);
@@ -689,8 +689,8 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
     cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                   views::GridLayout::USE_PREF, 0, 0);
     // Add padding between the icon and the text.
-    cs->AddPaddingColumn(
-        0, provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL));
+    cs->AddPaddingColumn(0, provider->GetDistanceMetric(
+                                views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   }
   cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                 GridLayout::USE_PREF, 0, 0);

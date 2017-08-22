@@ -71,6 +71,8 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // from skia and DirectWrite.
   static void SetDirectWriteFactory(IDWriteFactory* factory);
 
+  static bool IsDirectWriteEnabled();
+
   // Returns the GDI metrics for the font passed in.
   static void GetTextMetricsForFont(HDC hdc,
                                     HFONT font,

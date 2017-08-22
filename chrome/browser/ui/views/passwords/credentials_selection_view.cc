@@ -47,8 +47,8 @@ CredentialsSelectionView::CredentialsSelectionView(
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::FIXED, 0, 0);
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
-  const int inner_padding =
-      layout_provider->GetDistanceMetric(DISTANCE_RELATED_LABEL_HORIZONTAL);
+  const int inner_padding = layout_provider->GetDistanceMetric(
+      views::DISTANCE_RELATED_LABEL_HORIZONTAL);
   column_set->AddPaddingColumn(0, inner_padding);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::FIXED, 0, 0);

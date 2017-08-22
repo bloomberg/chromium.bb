@@ -41,6 +41,9 @@ enum TextContext {
   // Text to label a control, usually next to it. "Body 2". Usually 12pt.
   CONTEXT_LABEL,
 
+  // Text in a table row.
+  CONTEXT_TABLE_ROW,
+
   // An editable text field. Usually matches CONTROL_LABEL.
   CONTEXT_TEXTFIELD,
 

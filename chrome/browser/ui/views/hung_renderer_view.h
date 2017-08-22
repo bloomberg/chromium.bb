@@ -12,7 +12,6 @@
 #include "content/public/browser/web_contents_unresponsive_state.h"
 #include "ui/base/models/table_model.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/table/table_grouper.h"
 #include "ui/views/controls/table/table_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
@@ -25,7 +24,7 @@ class Label;
 }
 
 // Provides functionality to display information about a hung renderer.
-class HungPagesTableModel : public ui::TableModel, public views::TableGrouper {
+class HungPagesTableModel : public ui::TableModel {
  public:
   // The Delegate is notified any time a WebContents the model is listening to
   // is destroyed.
@@ -54,9 +53,6 @@ class HungPagesTableModel : public ui::TableModel, public views::TableGrouper {
   base::string16 GetText(int row, int column_id) override;
   gfx::ImageSkia GetIcon(int row) override;
   void SetObserver(ui::TableModelObserver* observer) override;
-
-  // Overridden from views::TableGrouper:
-  void GetGroupRange(int model_index, views::GroupRange* range) override;
 
  private:
   // Used to track a single WebContents. If the WebContents is destroyed
@@ -120,6 +116,7 @@ class HungRendererDialogView : public views::DialogDelegateView,
 
   // views::DialogDelegateView overrides:
   base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
@@ -146,9 +143,6 @@ class HungRendererDialogView : public views::DialogDelegateView,
   void Init();
 
   static void InitClass();
-
-  // An amusing icon image.
-  static gfx::ImageSkia* frozen_icon_;
 
   // The label describing the list.
   views::Label* info_label_;

@@ -6,12 +6,20 @@
 #define CHROME_BROWSER_UI_VIEWS_HARMONY_HARMONY_TYPOGRAPHY_PROVIDER_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "ui/views/style/typography_provider.h"
 
 // TypographyProvider implementing the Harmony spec.
 class HarmonyTypographyProvider : public views::TypographyProvider {
  public:
   HarmonyTypographyProvider() = default;
+
+#if defined(OS_WIN)
+  // Returns the expected platform font height for the current system
+  // configuration. Different configurations can produce slightly different
+  // results.
+  static int GetPlatformFontHeight(int font_context);
+#endif
 
   // TypographyProvider:
   const gfx::FontList& GetFont(int context, int style) const override;
