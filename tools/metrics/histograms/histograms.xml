@@ -62268,6 +62268,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="PurgeAndSuspend.Experimental.TimeToFirstActivePaint.AfterBackgrounded.5min"
+    units="ms">
+  <owner>tasak@google.com</owner>
+  <summary>
+    Time elapsed from when the renderer, which is kept backgrounded for more
+    than 5 minutes, is foregrounded until the renderer is painted. This is
+    recorded every time such renderer is foregrounded.
+  </summary>
+</histogram>
+
 <histogram name="PurgeAndSuspend.Memory.BlinkGCKB" units="KB">
   <obsolete>
     Deprecated April 2017.
