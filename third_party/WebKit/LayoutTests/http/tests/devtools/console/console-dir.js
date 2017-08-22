@@ -9,47 +9,42 @@
   await TestRunner.showPanel('console');
 
   await TestRunner.evaluateInPagePromise(`
-    function onload()
-    {
-        console.dir(["test1", "test2"]);
-        console.dir(document.childNodes);
-        console.dir(document.evaluate("//head", document, null, XPathResult.ANY_TYPE, null));
+    console.dir(["test1", "test2"]);
+    console.dir(document.childNodes);
+    console.dir(document.evaluate("//head", document, null, XPathResult.ANY_TYPE, null));
 
-        // Object with properties containing whitespaces
-        var obj = { $foo5_: 0 };
-        obj[" a b "] = " a b ";
-        obj["c d"] = "c d";
-        obj[""] = "";
-        obj["  "] = "  ";
-        obj["a\n\nb\nc"] = "a\n\nb\nc";
-        obj["negZero"] = -0;
-        console.dir(obj);
+    // Object with properties containing whitespaces
+    var obj = { $foo5_: 0 };
+    obj[" a b "] = " a b ";
+    obj["c d"] = "c d";
+    obj[""] = "";
+    obj["  "] = "  ";
+    obj["a\\n\\nb\\nc"] = "a\\n\\nb\\nc";
+    obj["negZero"] = -0;
+    console.dir(obj);
 
-        // This should correctly display information about the function.
-        console.dir(function() {});
+    // This should correctly display information about the function.
+    console.dir(function() {});
 
-        // Test function inferred name in prototype constructor.
-        var outer = { inner: function() {} };
-        console.dir(new outer.inner());
+    // Test function inferred name in prototype constructor.
+    var outer = { inner: function() {} };
+    console.dir(new outer.inner());
 
-        // Test "No Properties" placeholder.
-        console.dir({ __proto__: null });
-        console.dir({ foo: { __proto__: null }});
-        // Test "No Scopes" placeholder.
-        console.dir(Object.getOwnPropertyDescriptor(Object.prototype, "__proto__").get);
+    // Test "No Properties" placeholder.
+    console.dir({ __proto__: null });
+    console.dir({ foo: { __proto__: null }});
+    // Test "No Scopes" placeholder.
+    console.dir(Object.getOwnPropertyDescriptor(Object.prototype, "__proto__").get);
 
-        // Test big typed array: should be no crash or timeout.
-        var bigTypedArray = new Uint8Array(new ArrayBuffer(400 * 1000 * 1000));
-        bigTypedArray["FAIL"] = "FAIL: Object.getOwnPropertyNames() should not have been run";
-        console.dir(bigTypedArray);
+    // Test big typed array: should be no crash or timeout.
+    var bigTypedArray = new Uint8Array(new ArrayBuffer(400 * 1000 * 1000));
+    bigTypedArray["FAIL"] = "FAIL: Object.getOwnPropertyNames() should not have been run";
+    console.dir(bigTypedArray);
 
-        // document.createEvent("Event") has a special property "isTrusted" flagged "Unforgeable".
-        var event = document.createEvent("Event");
-        Object.defineProperty(event, "timeStamp", {value: 0})
-        console.dir(event);
-
-        runTest();
-    }
+    // document.createEvent("Event") has a special property "isTrusted" flagged "Unforgeable".
+    var event = document.createEvent("Event");
+    Object.defineProperty(event, "timeStamp", {value: 0})
+    console.dir(event);
     //# sourceURL=console-dir.js
   `);
 
