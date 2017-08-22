@@ -71987,7 +71987,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.StartWorker.InstalledScriptsSender.Status"
+<histogram
+    name="ServiceWorker.StartWorker.InstalledScriptsSender.FinishedReason"
     enum="ServiceWorkerInstalledScriptsManager.FinishedReason">
   <owner>shimazu@chromium.org</owner>
   <summary>
