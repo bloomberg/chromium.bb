@@ -88,7 +88,7 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadExtension(
   extension = extension_registry_->enabled_extensions().GetByID(extension_id_);
   if (!extension)
     return nullptr;
-  if (!CheckErrors(*extension))
+  if (!CheckInstallWarnings(*extension))
     return nullptr;
 
   base::RunLoop().RunUntilIdle();
@@ -225,7 +225,8 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadUnpacked(
   return extension;
 }
 
-bool ChromeTestExtensionLoader::CheckErrors(const Extension& extension) {
+bool ChromeTestExtensionLoader::CheckInstallWarnings(
+    const Extension& extension) {
   if (ignore_manifest_warnings_)
     return true;
   const std::vector<InstallWarning>& install_warnings =
