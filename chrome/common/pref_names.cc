@@ -1278,6 +1278,12 @@ const char kLocalDiscoveryNotificationsEnabled[] =
 // Enable vibration for web notifications.
 const char kNotificationsVibrateEnabled[] = "notifications.vibrate_enabled";
 
+// Boolean pref indicating whether notification permissions were migrated to
+// notification channels (on Android O+ we use channels to store notification
+// permission, so any existing permissions must be migrated).
+const char kMigratedToSiteNotificationChannels[] =
+    "notifications.migrated_to_channels";
+
 // Cached information about GPU driver.
 const char kGLExtensionsString[] = "gl_extensions_string";
 const char kGpuDriverInfoMaxSamples[] = "gpu_driver_info_max_samples";
