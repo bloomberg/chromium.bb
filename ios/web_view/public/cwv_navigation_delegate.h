@@ -27,8 +27,10 @@ CWV_EXPORT
 
 // Asks delegate if WebView should continue the load. WebView
 // will load the response if this method is not implemented.
+// |forMainFrame| indicates whether the frame being navigated is the main frame.
 - (BOOL)webView:(CWVWebView*)webView
-    shouldContinueLoadWithResponse:(NSURLResponse*)response;
+    shouldContinueLoadWithResponse:(NSURLResponse*)response
+                      forMainFrame:(BOOL)forMainFrame;
 
 // Notifies the delegate that main frame navigation has started.
 - (void)webViewDidStartProvisionalNavigation:(CWVWebView*)webView;

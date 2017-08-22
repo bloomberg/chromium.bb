@@ -103,8 +103,9 @@ class TestWebState : public web::TestWebState {
     EXPECT_EQ(decider_, decider);
     decider_ = nullptr;
   }
-  bool ShouldAllowResponse(NSURLResponse* response) {
-    return decider_ ? decider_->ShouldAllowResponse(response) : true;
+  bool ShouldAllowResponse(NSURLResponse* response, bool for_main_frame) {
+    return decider_ ? decider_->ShouldAllowResponse(response, for_main_frame)
+                    : true;
   }
   void WebStateDestroyed() {
     if (!decider_)
@@ -244,7 +245,8 @@ TEST_F(AccountConsistencyServiceTest, SignInSignOut) {
                                  HTTPVersion:@"HTTP/1.1"
                                 headerFields:headers];
   account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
-  EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
+  EXPECT_TRUE(
+      web_state_.ShouldAllowResponse(response, /* for_main_frame = */ true));
   web_state_.WebStateDestroyed();
 
   // Check that all domains are removed.
@@ -300,7 +302,8 @@ TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsNotOnGaia) {
        HTTPVersion:@"HTTP/1.1"
       headerFields:headers];
   account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
-  EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
+  EXPECT_TRUE(
+      web_state_.ShouldAllowResponse(response, /* for_main_frame = */ true));
   web_state_.WebStateDestroyed();
 
   EXPECT_OCMOCK_VERIFY(delegate);
@@ -319,7 +322,8 @@ TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsNoHeader) {
        HTTPVersion:@"HTTP/1.1"
       headerFields:headers];
   account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
-  EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
+  EXPECT_TRUE(
+      web_state_.ShouldAllowResponse(response, /* for_main_frame = */ true));
   web_state_.WebStateDestroyed();
 
   EXPECT_OCMOCK_VERIFY(delegate);
@@ -346,7 +350,8 @@ TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsDefault) {
   EXPECT_CALL(account_reconcilor_, OnReceivedManageAccountsResponse(
                                        signin::GAIA_SERVICE_TYPE_DEFAULT))
       .Times(1);
-  EXPECT_FALSE(web_state_.ShouldAllowResponse(response));
+  EXPECT_FALSE(
+      web_state_.ShouldAllowResponse(response, /* for_main_frame = */ true));
   web_state_.WebStateDestroyed();
 
   EXPECT_OCMOCK_VERIFY(delegate);
