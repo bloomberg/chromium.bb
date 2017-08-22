@@ -127,7 +127,7 @@ class RenderViewContextMenuTest : public testing::Test {
     MenuItem::Id id(incognito, key);
     id.uid = uid;
     return base::MakeUnique<MenuItem>(id, "Added by an extension", false, true,
-                                      type, contexts);
+                                      true, type, contexts);
   }
 
  protected:

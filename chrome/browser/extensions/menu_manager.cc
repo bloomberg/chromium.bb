@@ -60,6 +60,7 @@ const char kStringUIDKey[] = "string_uid";
 const char kTargetURLPatternsKey[] = "target_url_patterns";
 const char kTitleKey[] = "title";
 const char kTypeKey[] = "type";
+const char kVisibleKey[] = "visible";
 
 void SetIdKeyValue(base::DictionaryValue* properties,
                    const char* key,
@@ -123,6 +124,7 @@ bool GetStringList(const base::DictionaryValue& dict,
 MenuItem::MenuItem(const Id& id,
                    const std::string& title,
                    bool checked,
+                   bool visible,
                    bool enabled,
                    Type type,
                    const ContextList& contexts)
@@ -130,6 +132,7 @@ MenuItem::MenuItem(const Id& id,
       title_(title),
       type_(type),
       checked_(checked),
+      visible_(visible),
       enabled_(enabled),
       contexts_(contexts) {}
 
@@ -209,6 +212,7 @@ std::unique_ptr<base::DictionaryValue> MenuItem::ToValue() const {
   if (type_ == CHECKBOX || type_ == RADIO)
     value->SetBoolean(kCheckedKey, checked_);
   value->SetBoolean(kEnabledKey, enabled_);
+  value->SetBoolean(kVisibleKey, visible_);
   value->Set(kContextsKey, contexts_.ToValue());
   if (parent_id_) {
     DCHECK_EQ(0, parent_id_->uid);
@@ -242,6 +246,12 @@ std::unique_ptr<MenuItem> MenuItem::Populate(const std::string& extension_id,
       !value.GetBoolean(kCheckedKey, &checked)) {
     return nullptr;
   }
+  // The ability to toggle a menu item's visibility was introduced in M62, so it
+  // is expected that the kVisibleKey will not be present in older menu items in
+  // storage. Thus, we do not return nullptr if the kVisibleKey is not found.
+  // TODO(catmullings): Remove this in M65 when all prefs should be migrated.
+  bool visible = true;
+  value.GetBoolean(kVisibleKey, &visible);
   bool enabled = true;
   if (!value.GetBoolean(kEnabledKey, &enabled))
     return nullptr;
@@ -252,8 +262,8 @@ std::unique_ptr<MenuItem> MenuItem::Populate(const std::string& extension_id,
   if (!contexts.Populate(*contexts_value))
     return nullptr;
 
-  std::unique_ptr<MenuItem> result =
-      base::MakeUnique<MenuItem>(id, title, checked, enabled, type, contexts);
+  std::unique_ptr<MenuItem> result = base::MakeUnique<MenuItem>(
+      id, title, checked, visible, enabled, type, contexts);
 
   std::vector<std::string> document_url_patterns;
   if (!GetStringList(value, kDocumentURLPatternsKey, &document_url_patterns))
