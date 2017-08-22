@@ -136,10 +136,6 @@
       status: "experimental",
     },
     {
-      name: "CanMakePayment",
-      status: "stable",
-    },
-    {
       name: "Canvas2dFixedRenderingMode",
       status: "test",
     },
