@@ -7,7 +7,7 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
-#include "ash/app_list/test_app_list_view_presenter_impl.h"
+#include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/ash_switches.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/public/cpp/config.h"
@@ -966,19 +966,14 @@ TEST_F(WindowSelectorTest, FullscreenWindowTabletMode) {
 
 // Tests that beginning window selection hides the app list.
 TEST_F(WindowSelectorTest, SelectingHidesAppList) {
-  // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
 
   // The tested behavior relies on the app list presenter delegate.
-  TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListPresenterImpl app_list_presenter_impl;
 
-  app_list_presenter_impl.Show(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
   EXPECT_TRUE(app_list_presenter_impl.IsVisible());
 
   ToggleOverview();

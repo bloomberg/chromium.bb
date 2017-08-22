@@ -449,7 +449,7 @@ void ShelfLayoutManager::OnVirtualKeyboardStateChanged(
 
 void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
                                                     aura::Window* root_window) {
-  if (shelf_ != Shelf::ForWindow(root_window))
+  if (shelf_widget_->GetNativeWindow()->GetRootWindow() != root_window)
     return;
 
   is_app_list_visible_ = shown;

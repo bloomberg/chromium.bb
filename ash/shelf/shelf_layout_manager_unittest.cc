@@ -6,7 +6,7 @@
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accelerators/accelerator_table.h"
-#include "ash/app_list/test_app_list_view_presenter_impl.h"
+#include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -1097,7 +1097,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // The tested behavior relies on the app list presenter implementation.
-  TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListPresenterImpl app_list_presenter_impl;
 
   // Create a normal unmaximized window; the shelf should be visible.
   aura::Window* window = CreateTestWindow();
@@ -1106,17 +1106,13 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfVisibleState) {
   EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
-  // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Show the app list and the shelf stays visible.
-  app_list_presenter_impl.Show(GetPrimaryDisplayId());
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Hide the app list and the shelf stays visible.
-  app_list_presenter_impl.Dismiss();
+  app_list_presenter_impl.DismissAndRunLoop();
   EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 }
@@ -1128,7 +1124,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
 
   // The tested behavior relies on the app list presenter implementation.
-  TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListPresenterImpl app_list_presenter_impl;
 
   // Create a normal unmaximized window; the shelf should be hidden.
   aura::Window* window = CreateTestWindow();
@@ -1138,12 +1134,8 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
-  // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Show the app list and the shelf should be temporarily visible.
-  app_list_presenter_impl.Show(GetPrimaryDisplayId());
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
   // The shelf's auto hide state won't be changed until the timer fires, so
   // force it to update now.
   GetShelfLayoutManager()->UpdateVisibilityState();
@@ -1152,7 +1144,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
   // Hide the app list and the shelf should be hidden again.
-  app_list_presenter_impl.Dismiss();
+  app_list_presenter_impl.DismissAndRunLoop();
   EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
@@ -1195,7 +1187,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   wm::ActivateWindow(window_1);
 
   // The tested behavior relies on the app list presenter implementation.
-  TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListPresenterImpl app_list_presenter_impl;
 
   Shell::Get()->UpdateShelfVisibility();
   EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
@@ -1204,12 +1196,8 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_1->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
-  // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Show the app list; only the shelf on the same display should be shown.
-  app_list_presenter_impl.Show(GetPrimaryDisplayId());
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
   Shell::Get()->UpdateShelfVisibility();
   EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
@@ -1218,7 +1206,7 @@ TEST_F(ShelfLayoutManagerTest, DualDisplayOpenAppListWithShelfAutoHideState) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_2->GetAutoHideState());
 
   // Hide the app list, both shelves should be hidden.
-  app_list_presenter_impl.Dismiss();
+  app_list_presenter_impl.DismissAndRunLoop();
   Shell::Get()->UpdateShelfVisibility();
   EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf_1->GetVisibilityState());
@@ -1233,7 +1221,7 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   Shelf* shelf = GetPrimaryShelf();
 
   // The tested behavior relies on the app list presenter implementation.
-  TestAppListViewPresenterImpl app_list_presenter_impl;
+  TestAppListPresenterImpl app_list_presenter_impl;
 
   // Create a window and make it full screen; the shelf should be hidden.
   aura::Window* window = CreateTestWindow();
@@ -1244,17 +1232,13 @@ TEST_F(ShelfLayoutManagerTest, OpenAppListWithShelfHiddenState) {
   EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 
-  // TODO: fails in mash because of AppListPresenter. http://crbug.com/696028.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Show the app list and the shelf should be temporarily visible.
-  app_list_presenter_impl.Show(GetPrimaryDisplayId());
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplayId());
   EXPECT_TRUE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Hide the app list and the shelf should be hidden again.
-  app_list_presenter_impl.Dismiss();
+  app_list_presenter_impl.DismissAndRunLoop();
   EXPECT_FALSE(app_list_presenter_impl.GetTargetVisibility());
   EXPECT_EQ(SHELF_HIDDEN, shelf->GetVisibilityState());
 }

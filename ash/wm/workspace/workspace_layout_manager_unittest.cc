@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/accessibility_delegate.h"
-#include "ash/app_list/test_app_list_view_presenter_impl.h"
+#include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/config.h"
@@ -431,8 +431,7 @@ TEST_F(WorkspaceLayoutManagerTest, MaximizeWithEmptySize) {
           kShellWindowId_DefaultContainer);
   default_container->AddChild(window.get());
   window->Show();
-  gfx::Rect work_area(
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+  gfx::Rect work_area(GetPrimaryDisplay().work_area());
   EXPECT_EQ(work_area.ToString(), window->GetBoundsInScreen().ToString());
 }
 
@@ -509,8 +508,7 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
 // Verifies the size of a window is enforced to be smaller than the work area.
 TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
   // Normal window bounds shouldn't be changed.
-  gfx::Size work_area(
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area().size());
+  gfx::Size work_area(GetPrimaryDisplay().work_area().size());
   const gfx::Rect window_bounds(100, 101, work_area.width() + 1,
                                 work_area.height() + 2);
   std::unique_ptr<aura::Window> window(CreateTestWindow(window_bounds));
@@ -582,8 +580,7 @@ TEST_F(WorkspaceLayoutManagerTest,
   const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
   window_state->OnWMEvent(&snap_left);
   EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
-  const gfx::Rect kWorkAreaBounds =
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  const gfx::Rect kWorkAreaBounds = GetPrimaryDisplay().work_area();
   gfx::Rect expected_bounds =
       gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
                 kWorkAreaBounds.width() / 2, kWorkAreaBounds.height());
@@ -1134,8 +1131,7 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
   ShowTopWindowBackdropForContainer(default_container(), true);
   RunAllPendingInMessageLoop();
-  const gfx::Size fullscreen_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+  const gfx::Size fullscreen_size = GetPrimaryDisplay().size();
 
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
   window->Show();
@@ -1391,21 +1387,19 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
       app_list::features::kEnableFullscreenAppList);
   EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
 
-  // Show app list in primary display will not hide the backdrop in secondary
-  // display.
+  // Showing the app list on the primary display should not hide the backdrop on
+  // the secondary display.
   EXPECT_TRUE(primary_test_helper.GetBackdropWindow());
   EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
-  TestAppListViewPresenterImpl app_list_presenter_impl_;
-  app_list_presenter_impl_.Show(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
   EXPECT_FALSE(primary_test_helper.GetBackdropWindow());
   EXPECT_TRUE(secondary_test_helper.GetBackdropWindow());
 }
 
-// Fullscreen app list changes to visible should hide the backdrop, otherwise,
-// should show the backdrop.
+// The non-fullscreen app list should not affect the backdrop.
 TEST_F(WorkspaceLayoutManagerBackdropTest,
-       UpdateBackdropOnAppListVisibilityNotification) {
+       BackdropIgnoresNonFullscreenAppListVisibilityNotification) {
   WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
   WorkspaceControllerTestApi test_helper(wc);
 
@@ -1418,18 +1412,29 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
   EXPECT_TRUE(test_helper.GetBackdropWindow());
   EXPECT_FALSE(app_list::features::IsFullscreenAppListEnabled());
 
-  // Show the non-fullscreen app list should have no effect for the backdrop.
-  TestAppListViewPresenterImpl app_list_presenter_impl_;
-  app_list_presenter_impl_.Show(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  // Showing the non-fullscreen app list should have no effect for the backdrop.
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
-  // Tap shelf should dismiss the app list.
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  gfx::Rect work_area =
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
-  gfx::Point shelf_point(work_area.CenterPoint().x(), work_area.bottom() + 5);
-  generator.GestureTapAt(shelf_point);
+  // There should also be no change when the app list is hidden.
+  app_list_presenter_impl.DismissAndRunLoop();
+  EXPECT_TRUE(test_helper.GetBackdropWindow());
+}
+
+// Fullscreen app list changes to visible should hide the backdrop, otherwise,
+// should show the backdrop.
+TEST_F(WorkspaceLayoutManagerBackdropTest,
+       BackdropUpdatesOnFullscreenAppListVisibilityNotification) {
+  WorkspaceController* wc = ShellTestApi(Shell::Get()).workspace_controller();
+  WorkspaceControllerTestApi test_helper(wc);
+
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+  EXPECT_FALSE(test_helper.GetBackdropWindow());
+
+  // Turn the top window backdrop on.
+  ShowTopWindowBackdropForContainer(default_container(), true);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 
   // Enable fullscreen app list.
@@ -1438,13 +1443,12 @@ TEST_F(WorkspaceLayoutManagerBackdropTest,
       app_list::features::kEnableFullscreenAppList);
   EXPECT_TRUE(test_helper.GetBackdropWindow());
   EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
-  // Show the fullscreen app list should hide the backdrop.
-  app_list_presenter_impl_.Show(
-      display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  // Showing the fullscreen app list should hide the backdrop.
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
   EXPECT_FALSE(test_helper.GetBackdropWindow());
-  // Tap at shelf should dismiss the app list and backdrop should be shown
-  // again.
-  generator.GestureTapAt(shelf_point);
+  // Dismissing the app list should cause the backdrop to be shown again.
+  app_list_presenter_impl.DismissAndRunLoop();
   EXPECT_TRUE(test_helper.GetBackdropWindow());
 }
 
@@ -1511,8 +1515,7 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
 
   void ShowKeyboard() {
     layout_manager_->OnKeyboardBoundsChanging(keyboard_bounds_);
-    restore_work_area_insets_ =
-        display::Screen::GetScreen()->GetPrimaryDisplay().GetWorkAreaInsets();
+    restore_work_area_insets_ = GetPrimaryDisplay().GetWorkAreaInsets();
     Shell::Get()->SetDisplayWorkAreaInsets(
         Shell::GetPrimaryRootWindow(),
         gfx::Insets(0, 0, keyboard_bounds_.height(), 0));
@@ -1526,8 +1529,7 @@ class WorkspaceLayoutManagerKeyboardTest : public AshTestBase {
 
   // Initializes the keyboard bounds using the bottom half of the work area.
   void InitKeyboardBounds() {
-    gfx::Rect work_area(
-        display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+    gfx::Rect work_area(GetPrimaryDisplay().work_area());
     keyboard_bounds_.SetRect(work_area.x(),
                              work_area.y() + work_area.height() / 2,
                              work_area.width(), work_area.height() / 2);
@@ -1554,8 +1556,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
 
   InitKeyboardBounds();
 
-  gfx::Rect work_area(
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+  gfx::Rect work_area(GetPrimaryDisplay().work_area());
 
   std::unique_ptr<aura::Window> parent_window(
       CreateToplevelTestWindow(work_area));
@@ -1565,8 +1566,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, ChildWindowFocused) {
   wm::ActivateWindow(window.get());
 
   int available_height =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height() -
-      keyboard_bounds().height();
+      GetPrimaryDisplay().bounds().height() - keyboard_bounds().height();
 
   gfx::Rect initial_window_bounds(50, 50, 100, 500);
   parent_window->SetBounds(initial_window_bounds);
@@ -1587,8 +1587,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   // See comment at top of file for why this is needed.
   CustomFrameViewAshSizeLock min_size_lock;
   InitKeyboardBounds();
-  gfx::Rect work_area(
-      display::Screen::GetScreen()->GetPrimaryDisplay().work_area());
+  gfx::Rect work_area(GetPrimaryDisplay().work_area());
 
   std::unique_ptr<aura::Window> window(CreateToplevelTestWindow(work_area));
   // The additional SetBounds() is needed as the aura-mus case uses Widget,
@@ -1596,8 +1595,7 @@ TEST_F(WorkspaceLayoutManagerKeyboardTest, AdjustWindowForA11yKeyboard) {
   window->SetBounds(work_area);
 
   int available_height =
-      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height() -
-      keyboard_bounds().height();
+      GetPrimaryDisplay().bounds().height() - keyboard_bounds().height();
 
   wm::ActivateWindow(window.get());
 
