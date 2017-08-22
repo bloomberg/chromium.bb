@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/time/default_clock.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
@@ -25,6 +27,7 @@ WifiHotspotConnector::WifiHotspotConnector(
     : network_state_handler_(network_state_handler),
       network_connect_(network_connect),
       timer_(base::MakeUnique<base::OneShotTimer>()),
+      clock_(base::MakeUnique<base::DefaultClock>()),
       weak_ptr_factory_(this) {
   network_state_handler_->AddObserver(this, FROM_HERE);
 }
@@ -73,6 +76,7 @@ void WifiHotspotConnector::ConnectToWifiHotspot(
                 base::TimeDelta::FromSeconds(kConnectionTimeoutSeconds),
                 base::Bind(&WifiHotspotConnector::OnConnectionTimeout,
                            weak_ptr_factory_.GetWeakPtr()));
+  connection_attempt_start_time_ = clock_->Now();
 
   // If Wi-Fi is enabled, continue with creating the configuration of the
   // hotspot. Otherwise, request that Wi-Fi be enabled and wait; see
@@ -171,6 +175,16 @@ void WifiHotspotConnector::InvokeWifiConnectionCallback(
 
   timer_->Stop();
 
+  if (!wifi_network_guid_copy.empty()) {
+    // UMA_HISTOGRAM_MEDIUM_TIMES is used because UMA_HISTOGRAM_TIMES has a max
+    // of 10 seconds.
+    DCHECK(!connection_attempt_start_time_.is_null());
+    UMA_HISTOGRAM_MEDIUM_TIMES(
+        "InstantTethering.Performance.ConnectToHotspotDuration",
+        clock_->Now() - connection_attempt_start_time_);
+    connection_attempt_start_time_ = base::Time();
+  }
+
   callback_.Run(wifi_network_guid_copy);
   callback_.Reset();
 }
@@ -218,6 +232,11 @@ void WifiHotspotConnector::OnConnectionTimeout() {
 
 void WifiHotspotConnector::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
   timer_ = std::move(timer);
+}
+
+void WifiHotspotConnector::SetClockForTest(
+    std::unique_ptr<base::Clock> clock_for_test) {
+  clock_ = std::move(clock_for_test);
 }
 
 }  // namespace tether
