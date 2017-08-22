@@ -258,13 +258,12 @@ bool CompareNGLayoutOpportunitesByStartPoint(const NGLayoutOpportunity& lhs,
 }  // namespace
 
 NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
-    const NGExclusionSpace* exclusion_space,
+    const NGExclusionSpace& exclusion_space,
     const NGLogicalSize& available_size,
     const NGLogicalOffset& offset)
     : offset_(offset) {
-  DCHECK(exclusion_space);
-  DCHECK(std::is_sorted(exclusion_space->storage_.begin(),
-                        exclusion_space->storage_.end(),
+  DCHECK(std::is_sorted(exclusion_space.storage_.begin(),
+                        exclusion_space.storage_.end(),
                         &CompareNGExclusionsByTopAsc))
       << "Exclusions are expected to be sorted by TOP";
 
@@ -272,7 +271,7 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
       CreateInitialOpportunity(available_size, Offset());
 
   NGLayoutOpportunityTreeNode tree(initial_opportunity);
-  for (const auto& exclusion : exclusion_space->storage_) {
+  for (const auto& exclusion : exclusion_space.storage_) {
     InsertExclusion(&tree, &exclusion, opportunities_);
   }
   CollectAllOpportunities(&tree, opportunities_);

@@ -21,13 +21,13 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
  public:
   // Default constructor.
   //
-  // @param exclusions List of exclusions that should be avoided by this
-  //                   iterator while generating layout opportunities.
+  // @param exclusion_space The exclusion space to use for generating layout
+  //                        opportunities.
   // @param available_size Available size that represents a rectangle where this
   //                       iterator searches layout opportunities.
   // @param offset Offset used as a default starting point for layout
   //               opportunities.
-  NGLayoutOpportunityIterator(const NGExclusionSpace* exclusions,
+  NGLayoutOpportunityIterator(const NGExclusionSpace& exclusion_space,
                               const NGLogicalSize& available_size,
                               const NGLogicalOffset& offset);
 

@@ -159,10 +159,6 @@ Optional<LayoutUnit> NGConstraintSpace::ParentPercentageResolutionInlineSize()
       .inline_size;
 }
 
-void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) {
-  exclusion_space_->Add(exclusion);
-}
-
 NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
   return static_cast<NGFragmentationType>(block_direction_fragmentation_type_);
 }
