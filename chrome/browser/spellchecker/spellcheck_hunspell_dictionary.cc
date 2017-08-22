@@ -13,6 +13,9 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
@@ -40,7 +43,7 @@ namespace {
 
 // Close the file.
 void CloseDictionary(base::File file) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   file.Close();
 }
 
@@ -48,7 +51,7 @@ void CloseDictionary(base::File file) {
 // returns false.
 bool SaveDictionaryData(std::unique_ptr<std::string> data,
                         const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   size_t bytes_written =
       base::WriteFile(path, data->data(), data->length());
@@ -80,10 +83,6 @@ SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile() {
 }
 
 SpellcheckHunspellDictionary::DictionaryFile::~DictionaryFile() {
-  if (file.IsValid()) {
-    BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                            base::BindOnce(&CloseDictionary, Passed(&file)));
-  }
 }
 
 SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile(
@@ -91,8 +90,8 @@ SpellcheckHunspellDictionary::DictionaryFile::DictionaryFile(
     : path(other.path), file(std::move(other.file)) {}
 
 SpellcheckHunspellDictionary::DictionaryFile&
-    SpellcheckHunspellDictionary::DictionaryFile::
-    operator=(DictionaryFile&& other) {
+SpellcheckHunspellDictionary::DictionaryFile::operator=(
+    DictionaryFile&& other) {
   path = other.path;
   file = std::move(other.file);
   return *this;
@@ -102,15 +101,21 @@ SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
     const std::string& language,
     net::URLRequestContextGetter* request_context_getter,
     SpellcheckService* spellcheck_service)
-    : language_(language),
+    : task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      language_(language),
       use_browser_spellchecker_(false),
       request_context_getter_(request_context_getter),
       spellcheck_service_(spellcheck_service),
       download_status_(DOWNLOAD_NONE),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
+  if (dictionary_file_.file.IsValid()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&CloseDictionary, std::move(dictionary_file_.file)));
+  }
 }
 
 void SpellcheckHunspellDictionary::Load() {
@@ -133,9 +138,8 @@ void SpellcheckHunspellDictionary::Load() {
 // Mac falls back on hunspell if its platform spellchecker isn't available.
 // However, Android does not support hunspell.
 #if !defined(OS_ANDROID)
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE,
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
       base::Bind(&InitializeDictionaryLocation, language_),
       base::Bind(
           &SpellcheckHunspellDictionary::InitializeDictionaryLocationComplete,
@@ -221,11 +225,9 @@ void SpellcheckHunspellDictionary::OnURLFetchComplete(
   }
 #endif
 
-  BrowserThread::PostTaskAndReplyWithResult<bool>(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&SaveDictionaryData,
-                 base::Passed(&data),
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
+      base::Bind(&SaveDictionaryData, base::Passed(&data),
                  dictionary_file_.path),
       base::Bind(&SpellcheckHunspellDictionary::SaveDictionaryDataComplete,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -292,9 +294,11 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
 // For systemwide installations on Windows, the default directory may not
 // have permissions for download. In that case, the alternate directory for
 // download is chrome::DIR_USER_DATA.
+//
+// static
 SpellcheckHunspellDictionary::DictionaryFile
 SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   DictionaryFile dictionary;
 
 #if defined(OS_WIN)
@@ -338,13 +342,16 @@ SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
 
 // The default place where the spellcheck dictionary resides is
 // chrome::DIR_APP_DICTIONARIES.
+//
+// static
 SpellcheckHunspellDictionary::DictionaryFile
 SpellcheckHunspellDictionary::InitializeDictionaryLocation(
     const std::string& language) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
-  // Initialize the BDICT path. Initialization should be in the FILE thread
-  // because it checks if there is a "Dictionaries" directory and create it.
+  // Initialize the BDICT path. Initialization should be on the blocking
+  // sequence because it checks if there is a "Dictionaries" directory and
+  // create it.
   base::FilePath dict_dir;
   PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
   base::FilePath dict_path =
