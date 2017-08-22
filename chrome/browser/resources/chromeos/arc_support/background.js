@@ -40,16 +40,16 @@ var currentDeviceId = null;
 var lastFocusedElement = null;
 
 /**
- * Host window inner default width.
+ * Host window outer default width.
  * @const {number}
  */
-var INNER_WIDTH = 768;
+var OUTER_WIDTH = 768;
 
 /**
- * Host window inner default height.
+ * Host window outer default height.
  * @const {number}
  */
-var INNER_HEIGHT = 640;
+var OUTER_HEIGHT = 640;
 
 
 /**
@@ -514,6 +514,29 @@ function initialize(data, deviceId) {
   // Initialize the Active Directory SAML authentication page.
   activeDirectoryAuthPage =
       new ActiveDirectoryAuthPage(doc.getElementById('active-directory-auth'));
+
+  adjustTopMargin();
+}
+
+// With UI request to change inner window size to outer window size and reduce
+// top spacing, adjust top margin to negtive window top bar height.
+function adjustTopMargin() {
+  if (!appWindow)
+    return;
+
+  var decorationHeight =
+      appWindow.outerBounds.height - appWindow.innerBounds.height;
+
+  var doc = appWindow.contentWindow.document;
+  var headers = doc.getElementsByClassName('header');
+  for (var i = 0; i < headers.length; i++) {
+    headers[i].style.marginTop = -decorationHeight + 'px';
+  }
+
+  var authPages = doc.getElementsByClassName('section-active-directory-auth');
+  for (var i = 0; i < authPages.length; i++) {
+    authPages[i].style.marginTop = -decorationHeight + 'px';
+  }
 }
 
 /**
@@ -706,13 +729,8 @@ function setWindowBounds() {
     return;
   }
 
-  var decorationWidth =
-      appWindow.outerBounds.width - appWindow.innerBounds.width;
-  var decorationHeight =
-      appWindow.outerBounds.height - appWindow.innerBounds.height;
-
-  var outerWidth = INNER_WIDTH + decorationWidth;
-  var outerHeight = INNER_HEIGHT + decorationHeight;
+  var outerWidth = OUTER_WIDTH;
+  var outerHeight = OUTER_HEIGHT;
   if (outerWidth > screen.availWidth) {
     outerWidth = screen.availWidth;
   }
@@ -851,7 +869,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
     'resizable': false,
     'hidden': true,
     'frame': {type: 'chrome', color: '#ffffff'},
-    'innerBounds': {'width': INNER_WIDTH, 'height': INNER_HEIGHT}
+    'outerBounds': {'width': OUTER_WIDTH, 'height': OUTER_HEIGHT}
   };
   chrome.app.window.create('main.html', options, onWindowCreated);
 });

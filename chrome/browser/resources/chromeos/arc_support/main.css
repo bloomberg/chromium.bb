@@ -176,7 +176,7 @@ p.title {
 
 .section-active-directory-auth {
   align-content: left;
-  padding: 36px 0 0 64px;
+  padding: 64px 0 0 64px;
   text-align: left;
 }
 
@@ -184,7 +184,7 @@ p.title {
   border: 1px solid #e6e6e6;
   color: rgba(0, 0, 0, 0.54);
   flex: auto;
-  height: 333px;
+  height: 305px;
   margin: 40px 64px 0 auto;
   overflow: hidden;
 }
