@@ -43,6 +43,14 @@ class WallpaperPrivateGetSyncSettingFunction
 
   // ExtensionFunction:
   ResponseAction Run() override;
+
+ private:
+  // Periodically check the profile sync service status until the profile sync
+  // service has configured successfully or hit the retry limit.
+  void CheckProfileSyncServiceStatus();
+
+  // The retry number to check to profile sync service status.
+  int retry_number = 0;
 };
 
 class WallpaperPrivateSetWallpaperIfExistsFunction
