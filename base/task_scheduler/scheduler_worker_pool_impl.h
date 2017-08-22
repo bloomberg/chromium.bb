@@ -31,7 +31,6 @@ namespace base {
 
 class HistogramBase;
 class SchedulerWorkerPoolParams;
-class TaskTraits;
 
 namespace internal {
 
@@ -70,14 +69,7 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   ~SchedulerWorkerPoolImpl() override;
 
   // SchedulerWorkerPool:
-  scoped_refptr<TaskRunner> CreateTaskRunnerWithTraits(
-      const TaskTraits& traits) override;
-  scoped_refptr<SequencedTaskRunner> CreateSequencedTaskRunnerWithTraits(
-      const TaskTraits& traits) override;
-  bool PostTaskWithSequence(std::unique_ptr<Task> task,
-                            scoped_refptr<Sequence> sequence) override;
-  void PostTaskWithSequenceNow(std::unique_ptr<Task> task,
-                               scoped_refptr<Sequence> sequence) override;
+  void JoinForTesting() override;
 
   const HistogramBase* num_tasks_before_detach_histogram() const {
     return num_tasks_before_detach_histogram_;
@@ -97,13 +89,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // Waits until all workers are idle.
   void WaitForAllWorkersIdleForTesting();
 
-  // Joins all workers of this worker pool. Tasks that are already running are
-  // allowed to complete their execution. It is invalid to post a task after
-  // this is called. TaskTracker::Flush() can be called before this to complete
-  // existing tasks, which might otherwise post a task during JoinForTesting().
-  // This can only be called once.
-  void JoinForTesting();
-
   // Disallows worker cleanup. If the suggested reclaim time is not
   // TimeDelta::Max(), the test must call this before JoinForTesting() to reduce
   // the chance of thread detachment during the process of joining all of the
@@ -122,6 +107,9 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   SchedulerWorkerPoolImpl(const SchedulerWorkerPoolParams& params,
                           TaskTracker* task_tracker,
                           DelayedTaskManager* delayed_task_manager);
+
+  // SchedulerWorkerPool:
+  void ScheduleSequence(scoped_refptr<Sequence> sequence) override;
 
   // Wakes up the last worker from this worker pool to go idle, if any.
   void WakeUpOneWorker();
@@ -211,9 +199,6 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   // TaskScheduler.NumTasksBetweenWaits.[worker pool name] histogram.
   // Intentionally leaked.
   HistogramBase* const num_tasks_between_waits_histogram_;
-
-  TaskTracker* const task_tracker_;
-  DelayedTaskManager* const delayed_task_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerPoolImpl);
 };
