@@ -101,7 +101,7 @@ OutputE2ETest.prototype = {
   setUp: function() {
     window.Dir = AutomationUtil.Dir;
     window.RoleType = chrome.automation.RoleType;
-    this.forceContextualLastOutput();   
+    this.forceContextualLastOutput();
   }
 };
 
@@ -380,7 +380,7 @@ TEST_F('OutputE2ETest', 'List', function() {
 
 TEST_F('OutputE2ETest', 'Tree', function() {
   this.runWithLoadedTree(function() {/*!
-    <ul role="tree">
+    <ul role="tree" style="list-style-type:none">
       <li aria-expanded="true" role="treeitem">a
       <li role="treeitem">b
       <li aria-expanded="false" role="treeitem">c

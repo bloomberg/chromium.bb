@@ -342,7 +342,6 @@ AXObject::AXObject(AXObjectCacheImpl& ax_object_cache)
       cached_is_descendant_of_leaf_node_(false),
       cached_is_descendant_of_disabled_node_(false),
       cached_has_inherited_presentational_role_(false),
-      cached_is_presentational_child_(false),
       cached_ancestor_exposes_active_descendant_(false),
       cached_is_editable_root_(false),
       cached_live_region_root_(nullptr),
@@ -669,8 +668,6 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded() const {
   cached_is_descendant_of_disabled_node_ = (DisabledAncestor() != 0);
   cached_has_inherited_presentational_role_ =
       (InheritsPresentationalRoleFrom() != 0);
-  cached_is_presentational_child_ =
-      (AncestorForWhichThisIsAPresentationalChild() != 0);
   cached_is_ignored_ = ComputeAccessibilityIsIgnored();
   cached_is_editable_root_ =
       GetNode() ? IsNativeTextControl() || IsRootEditableElement(*GetNode())
@@ -701,15 +698,6 @@ AXObjectInclusion AXObject::DefaultObjectInclusion(
   if (IsInertOrAriaHidden()) {
     if (ignored_reasons)
       ComputeIsInertOrAriaHidden(ignored_reasons);
-    return kIgnoreObject;
-  }
-
-  if (IsPresentationalChild()) {
-    if (ignored_reasons) {
-      AXObject* ancestor = AncestorForWhichThisIsAPresentationalChild();
-      ignored_reasons->push_back(
-          IgnoredReason(kAXAncestorDisallowsChild, ancestor));
-    }
     return kIgnoreObject;
   }
 
@@ -925,11 +913,6 @@ bool AXObject::HasInheritedPresentationalRole() const {
   return cached_has_inherited_presentational_role_;
 }
 
-bool AXObject::IsPresentationalChild() const {
-  UpdateCachedAttributeValuesIfNeeded();
-  return cached_is_presentational_child_;
-}
-
 bool AXObject::CanReceiveAccessibilityFocus() const {
   const Element* elem = GetElement();
   if (!elem)
@@ -1035,6 +1018,26 @@ bool AXObject::IsSubWidget(AccessibilityRole role) {
     default:
       break;
   }
+  return false;
+}
+
+bool AXObject::SupportsSetSizeAndPosInSet() const {
+  switch (RoleValue()) {
+    case kListBoxOptionRole:
+    case kListItemRole:
+    case kMenuItemRole:
+    case kMenuItemRadioRole:
+    case kMenuItemCheckBoxRole:
+    case kMenuListOptionRole:
+    case kRadioButtonRole:
+    case kRowRole:
+    case kTabRole:
+    case kTreeItemRole:
+      return true;
+    default:
+      break;
+  }
+
   return false;
 }
 
@@ -1412,27 +1415,6 @@ bool AXObject::SupportsARIAAttributes() const {
 bool AXObject::SupportsRangeValue() const {
   return IsProgressIndicator() || IsMeter() || IsSlider() || IsScrollbar() ||
          IsSpinButton() || IsMoveableSplitter();
-}
-
-bool AXObject::SupportsSetSizeAndPosInSet() const {
-  AXObject* parent = ParentObjectUnignored();
-  if (!parent)
-    return false;
-
-  int role = RoleValue();
-  int parent_role = parent->RoleValue();
-
-  if ((role == kListBoxOptionRole && parent_role == kListBoxRole) ||
-      (role == kListItemRole && parent_role == kListRole) ||
-      (role == kMenuItemRole && parent_role == kMenuRole) ||
-      (role == kRadioButtonRole) ||
-      (role == kTabRole && parent_role == kTabListRole) ||
-      (role == kTreeItemRole && parent_role == kTreeRole) ||
-      (role == kTreeItemRole && parent_role == kTreeItemRole)) {
-    return true;
-  }
-
-  return false;
 }
 
 int AXObject::IndexInParent() const {

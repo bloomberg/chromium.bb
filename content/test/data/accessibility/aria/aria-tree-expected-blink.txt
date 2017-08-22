@@ -1,20 +1,28 @@
 rootWebArea
 ++tree
 ++++treeItem selectable name='Animals ' hierarchicalLevel=1 setSize=2 posInSet=1 checkedState=mixed
-++++++staticText name='Animals'
-++++++++inlineTextBox name='Animals'
-++++++treeItem selectable name='Domesticated ' hierarchicalLevel=2 setSize=2 posInSet=1
-++++++++staticText name='Domesticated'
-++++++++++inlineTextBox name='Domesticated'
-++++++++treeItem selectable name='Dog' hierarchicalLevel=3 setSize=2 posInSet=1 checkedState=true
-++++++++++staticText name='Dog'
-++++++++++++inlineTextBox name='Dog'
-++++++++treeItem selectable name='Cat' hierarchicalLevel=3 setSize=2 posInSet=2 checkedState=false
-++++++++++staticText name='Cat'
-++++++++++++inlineTextBox name='Cat'
-++++++treeItem selectable name='Wild' hierarchicalLevel=2 setSize=2 posInSet=2
-++++++++staticText name='Wild'
-++++++++++inlineTextBox name='Wild'
+++++++link name='Animals'
+++++++++staticText name='Animals'
+++++++++++inlineTextBox name='Animals'
+++++++group
+++++++++treeItem selectable name='Domesticated ' hierarchicalLevel=2 setSize=2 posInSet=1
+++++++++++link name='Domesticated'
+++++++++++++staticText name='Domesticated'
+++++++++++++++inlineTextBox name='Domesticated'
+++++++++++group
+++++++++++++treeItem selectable name='Dog' hierarchicalLevel=3 setSize=2 posInSet=1 checkedState=true
+++++++++++++++link name='Dog'
+++++++++++++++++staticText name='Dog'
+++++++++++++++++++inlineTextBox name='Dog'
+++++++++++++treeItem selectable name='Cat' hierarchicalLevel=3 setSize=2 posInSet=2 checkedState=false
+++++++++++++++link name='Cat'
+++++++++++++++++staticText name='Cat'
+++++++++++++++++++inlineTextBox name='Cat'
+++++++++treeItem selectable name='Wild' hierarchicalLevel=2 setSize=2 posInSet=2
+++++++++++link name='Wild'
+++++++++++++staticText name='Wild'
+++++++++++++++inlineTextBox name='Wild'
 ++++treeItem selectable name='Plants' hierarchicalLevel=1 setSize=2 posInSet=2
-++++++staticText name='Plants'
-++++++++inlineTextBox name='Plants'
+++++++link name='Plants'
+++++++++staticText name='Plants'
+++++++++++inlineTextBox name='Plants'
