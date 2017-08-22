@@ -5,17 +5,19 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_SCHEDULER_DEVICE_STATUS_LISTENER_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_SCHEDULER_DEVICE_STATUS_LISTENER_H_
 
+#include <memory>
+
 #include "base/power_monitor/power_observer.h"
 #include "base/timer/timer.h"
 #include "components/download/internal/scheduler/device_status.h"
+#include "components/download/internal/scheduler/network_status_listener.h"
 #include "net/base/network_change_notifier.h"
 
 namespace download {
 
 // Listens to network and battery status change and notifies the observer.
-class DeviceStatusListener
-    : public net::NetworkChangeNotifier::ConnectionTypeObserver,
-      public base::PowerObserver {
+class DeviceStatusListener : public NetworkStatusListener::Observer,
+                             public base::PowerObserver {
  public:
   class Observer {
    public:
@@ -23,7 +25,7 @@ class DeviceStatusListener
     virtual void OnDeviceStatusChanged(const DeviceStatus& device_status) = 0;
   };
 
-  DeviceStatusListener(const base::TimeDelta& delay);
+  explicit DeviceStatusListener(const base::TimeDelta& delay);
   ~DeviceStatusListener() override;
 
   // Returns the current device status for download scheduling.
@@ -35,6 +37,12 @@ class DeviceStatusListener
   virtual void Stop();
 
  protected:
+  // Creates the instance of |network_listener_|, visible for testing.
+  virtual void BuildNetworkStatusListener();
+
+  // Used to listen to network connectivity changes.
+  std::unique_ptr<NetworkStatusListener> network_listener_;
+
   // The current device status.
   DeviceStatus status_;
 
@@ -45,7 +53,7 @@ class DeviceStatusListener
   bool listening_;
 
  private:
-  // net::NetworkChangeNotifier::ConnectionTypeObserver implementation.
+  // NetworkStatusListener::Observer implementation.
   void OnConnectionTypeChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
 

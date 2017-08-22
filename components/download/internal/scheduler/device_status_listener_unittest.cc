@@ -51,14 +51,25 @@ class MockObserver : public DeviceStatusListener::Observer {
   MOCK_METHOD1(OnDeviceStatusChanged, void(const DeviceStatus&));
 };
 
+// Test target that only loads default implementation of NetworkStatusListener.
+class TestDeviceStatusListener : public DeviceStatusListener {
+ public:
+  explicit TestDeviceStatusListener(const base::TimeDelta& delay)
+      : DeviceStatusListener(delay) {}
+
+  void BuildNetworkStatusListener() override {
+    network_listener_ = base::MakeUnique<NetworkStatusListenerImpl>();
+  }
+};
+
 class DeviceStatusListenerTest : public testing::Test {
  public:
   void SetUp() override {
     power_monitor_ = base::MakeUnique<base::PowerMonitor>(
         base::MakeUnique<base::PowerMonitorTestSource>());
 
-    listener_ =
-        base::MakeUnique<DeviceStatusListener>(base::TimeDelta::FromSeconds(0));
+    listener_ = base::MakeUnique<TestDeviceStatusListener>(
+        base::TimeDelta::FromSeconds(0));
   }
 
   void TearDown() override { listener_.reset(); }
