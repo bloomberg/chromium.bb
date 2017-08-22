@@ -38,8 +38,8 @@ SadTabTabHelper::SadTabTabHelper(web::WebState* web_state)
 SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
                                  double repeat_failure_interval)
     : web::WebStateObserver(web_state),
-      repeat_failure_interval_(repeat_failure_interval) {
-}
+      repeat_failure_interval_(repeat_failure_interval),
+      is_visible_(false) {}
 
 SadTabTabHelper::~SadTabTabHelper() = default;
 
