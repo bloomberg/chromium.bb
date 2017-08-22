@@ -39,21 +39,36 @@ TouchAccessibilityEnabler::TouchAccessibilityEnabler(
     : root_window_(root_window),
       delegate_(delegate),
       state_(NO_FINGERS_DOWN),
-      tick_clock_(NULL) {
+      tick_clock_(nullptr),
+      weak_factory_(this) {
   DCHECK(root_window);
   DCHECK(delegate);
-  root_window_->AddPreTargetHandler(this);
+  AddEventHandler();
 }
 
 TouchAccessibilityEnabler::~TouchAccessibilityEnabler() {
-  root_window_->RemovePreTargetHandler(this);
+  RemoveEventHandler();
+}
+
+void TouchAccessibilityEnabler::RemoveEventHandler() {
+  if (event_handler_installed_) {
+    root_window_->RemovePreTargetHandler(this);
+    event_handler_installed_ = false;
+    ResetToNoFingersDown();
+  }
+}
+
+void TouchAccessibilityEnabler::AddEventHandler() {
+  if (!event_handler_installed_) {
+    root_window_->AddPreTargetHandler(this);
+    event_handler_installed_ = true;
+    ResetToNoFingersDown();
+  }
 }
 
 void TouchAccessibilityEnabler::OnTouchEvent(ui::TouchEvent* event) {
-  // Skip events rewritten by TouchExplorationController, it will hand
-  // us the unrewritten events directly.
-  if (!(event->flags() & ui::EF_TOUCH_ACCESSIBILITY))
-    HandleTouchEvent(*event);
+  DCHECK(!(event->flags() & ui::EF_TOUCH_ACCESSIBILITY));
+  HandleTouchEvent(*event);
 }
 
 void TouchAccessibilityEnabler::HandleTouchEvent(const ui::TouchEvent& event) {
@@ -113,6 +128,11 @@ void TouchAccessibilityEnabler::HandleTouchEvent(const ui::TouchEvent& event) {
   }
 }
 
+base::WeakPtr<TouchAccessibilityEnabler>
+TouchAccessibilityEnabler::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 base::TimeTicks TouchAccessibilityEnabler::Now() {
   if (tick_clock_) {
     // This is the same as what EventTimeForNow() does, but here we do it
@@ -156,6 +176,12 @@ void TouchAccessibilityEnabler::OnTimer() {
     delegate_->ToggleSpokenFeedback();
     state_ = WAIT_FOR_NO_FINGERS;
   }
+}
+
+void TouchAccessibilityEnabler::ResetToNoFingersDown() {
+  state_ = NO_FINGERS_DOWN;
+  touch_locations_.clear();
+  CancelTimer();
 }
 
 }  // namespace ui

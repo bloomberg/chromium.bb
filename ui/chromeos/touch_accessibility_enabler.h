@@ -6,6 +6,7 @@
 #define UI_CHROMEOS_TOUCH_ACCESSIBILITY_ENABLER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
@@ -63,7 +64,17 @@ class UI_CHROMEOS_EXPORT TouchAccessibilityEnabler : public ui::EventHandler {
   }
   void TriggerOnTimerForTesting() { OnTimer(); }
 
+  // When TouchExplorationController is running, it tells this class to
+  // remove its event handler so that it can pass it the unrewritten events
+  // directly. Otherwise, this class would only receive the rewritten events,
+  // which would require entirely separate logic.
+  void RemoveEventHandler();
+  void AddEventHandler();
   void HandleTouchEvent(const ui::TouchEvent& event);
+
+  // Expose a weak ptr so that TouchExplorationController can hold a reference
+  // to this object without worrying about destruction order during shutdown.
+  base::WeakPtr<TouchAccessibilityEnabler> GetWeakPtr();
 
  private:
   // Overridden from ui::EventHandler
@@ -72,6 +83,8 @@ class UI_CHROMEOS_EXPORT TouchAccessibilityEnabler : public ui::EventHandler {
   void StartTimer();
   void CancelTimer();
   void OnTimer();
+
+  void ResetToNoFingersDown();
 
   // Returns the current time of the tick clock.
   base::TimeTicks Now();
@@ -117,6 +130,12 @@ class UI_CHROMEOS_EXPORT TouchAccessibilityEnabler : public ui::EventHandler {
   // When touch_accessibility_enabler gets time relative to real time during
   // testing, this clock is set to the simulated clock and used.
   base::TickClock* tick_clock_;
+
+  // Whether or not we currently have an event handler installed. It can
+  // be removed when TouchExplorationController is running.
+  bool event_handler_installed_ = false;
+
+  base::WeakPtrFactory<TouchAccessibilityEnabler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchAccessibilityEnabler);
 };

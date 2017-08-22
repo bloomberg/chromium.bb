@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
+#include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gestures/gesture_provider_aura.h"
@@ -95,6 +96,34 @@ class TouchAccessibilityEnablerTest : public aura::test::AuraTestBase {
 };
 
 }  // namespace
+
+TEST_F(TouchAccessibilityEnablerTest, InteractsWithTouchExplorationController) {
+  // This test ensures that if TouchExplorationController starts and stops,
+  // TouchAccessibilityEnabler continues to work correctly. Because
+  // TouchExplorationController rewrites most touch events, it can screw up
+  // TouchAccessibilityEnabler if they don't explicitly coordinate.
+
+  std::unique_ptr<TouchExplorationController> controller(
+      new TouchExplorationController(root_window(), nullptr,
+                                     enabler_->GetWeakPtr()));
+
+  EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
+  generator_->set_current_location(gfx::Point(11, 12));
+  generator_->PressTouchId(1);
+
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
+
+  generator_->set_current_location(gfx::Point(22, 34));
+  generator_->PressTouchId(2);
+
+  EXPECT_TRUE(enabler_->IsInTwoFingersDownForTesting());
+
+  controller.reset();
+
+  generator_->ReleaseTouchId(1);
+  generator_->ReleaseTouchId(2);
+  EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
+}
 
 TEST_F(TouchAccessibilityEnablerTest, EntersOneFingerDownMode) {
   EXPECT_TRUE(enabler_->IsInNoFingersDownForTesting());
