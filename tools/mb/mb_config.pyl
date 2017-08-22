@@ -262,6 +262,7 @@
       'GPU Win Clang Builder (dbg)': 'gpu_fyi_tests_win_clang_debug_bot',
       'GPU Win x64 Builder': 'gpu_tests_deqp_gles_release_trybot',
       'GPU Win x64 Builder (dbg)': 'gpu_tests_deqp_gles_debug_trybot',
+      'GPU Win x64 dEQP Builder': 'gpu_tests_deqp_gles_release_trybot',
       'Linux ChromiumOS Builder': 'gpu_fyi_tests_chromeos_cros_release_trybot',
       # This is, confusingly, apparently not actually building ChromiumOS.
       'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',

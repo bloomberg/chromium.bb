@@ -537,24 +537,6 @@ FYI_WATERFALL = {
       'os_type': 'mac',
       'is_asan': True,
     },
-    'Mac dEQP Release': {
-      # This bot spawns jobs on multiple GPU types.
-      'swarming_dimensions': [
-        {
-          'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.5'
-        },
-        {
-          'gpu': '1002:6821',
-          'hidpi': '1',
-          'os': 'Mac'
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'mac',
-      'type': Types.DEQP,
-    },
     'Linux Release (NVIDIA)': {
       'swarming_dimensions': [
         {

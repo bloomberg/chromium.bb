@@ -10203,10 +10203,6 @@
       }
     ]
   },
-  "Mac dEQP Release": {
-    "gtest_tests": [],
-    "isolated_scripts": []
-  },
   "Optional Linux Release (NVIDIA)": {
     "gtest_tests": [
       {
