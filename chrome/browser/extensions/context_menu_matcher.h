@@ -64,7 +64,6 @@ class ContextMenuMatcher {
       const base::string16& selection_text);
 
   bool IsCommandIdChecked(int command_id) const;
-  bool IsCommandIdVisible(int command_id) const;
   bool IsCommandIdEnabled(int command_id) const;
   void ExecuteCommand(int command_id,
                       content::WebContents* web_contents,
@@ -73,7 +72,6 @@ class ContextMenuMatcher {
 
  private:
   friend class ::ExtensionContextMenuBrowserTest;
-  friend class ExtensionContextMenuApiTest;
 
   bool GetRelevantExtensionTopLevelItems(
       const MenuItem::ExtensionKey& extension_key,
