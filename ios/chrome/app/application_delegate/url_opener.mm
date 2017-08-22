@@ -58,9 +58,14 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
     // never be called. Open the requested URL immediately and return YES if
     // the parsed URL was valid.
     if (params) {
-      ProceduralBlock tabOpenedCompletion = [tabOpener
-          completionBlockForTriggeringAction:[params postOpeningAction]];
-      DCHECK(IsURLNtp([params externalURL]) || !tabOpenedCompletion);
+      // As applicationDidBecomeActive: will not be called again,
+      // _startupParameters will not include the command from openURL.
+      // Pass the startup parameters from here.
+      DCHECK(!startupInformation.startupParameters);
+      [startupInformation setStartupParameters:params];
+      ProceduralBlock tabOpenedCompletion = ^{
+        [startupInformation setStartupParameters:nil];
+      };
 
       [tabOpener
           dismissModalsAndOpenSelectedTabInMode:[params launchInIncognito]

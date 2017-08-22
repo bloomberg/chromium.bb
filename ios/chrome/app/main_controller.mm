@@ -401,9 +401,11 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // out if it is showing, the target BVC will become active, and the new tab will
 // be shown.
 // If the current tab in |targetMode| is a NTP, it can be reused to open URL.
+// |completion| is executed after the tab is opened.
 - (Tab*)openSelectedTabInMode:(ApplicationMode)targetMode
                       withURL:(const GURL&)url
-                   transition:(ui::PageTransition)transition;
+                   transition:(ui::PageTransition)transition
+                   completion:(ProceduralBlock)completion;
 // Checks the target BVC's current tab's URL. If this URL is chrome://newtab,
 // loads |url| in this tab. Otherwise, open |url| in a new tab in the target
 // BVC.
@@ -762,8 +764,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
     [self dismissModalsAndOpenSelectedTabInMode:ApplicationMode::NORMAL
                                         withURL:[_startupParameters externalURL]
                                      transition:ui::PAGE_TRANSITION_LINK
-                                     completion:nil];
-    _startupParameters = nil;
+                                     completion:^{
+                                       [self setStartupParameters:nil];
+                                     }];
   }
 }
 
@@ -2190,16 +2193,31 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (Tab*)openSelectedTabInMode:(ApplicationMode)targetMode
                       withURL:(const GURL&)url
-                   transition:(ui::PageTransition)transition {
+                   transition:(ui::PageTransition)transition
+                   completion:(ProceduralBlock)completion {
   BrowserViewController* targetBVC =
       targetMode == ApplicationMode::NORMAL ? self.mainBVC : self.otrBVC;
   NSUInteger tabIndex = NSNotFound;
 
-  ProceduralBlock tabOpenedCompletion =
+  ProceduralBlock startupCompletion =
       [self completionBlockForTriggeringAction:[_startupParameters
                                                    postOpeningAction]];
   // Commands are only allowed on NTP.
-  DCHECK(IsURLNtp(url) || !tabOpenedCompletion);
+  DCHECK(IsURLNtp(url) || !startupCompletion);
+
+  ProceduralBlock tabOpenedCompletion = nil;
+  if (startupCompletion && completion) {
+    tabOpenedCompletion = ^{
+      // Order is important here. |completion| may do cleaning tasks that will
+      // invalidate |startupCompletion|.
+      startupCompletion();
+      completion();
+    };
+  } else if (startupCompletion) {
+    tabOpenedCompletion = startupCompletion;
+  } else {
+    tabOpenedCompletion = completion;
+  }
 
   Tab* tab = nil;
   if (_tabSwitcherIsActive) {
@@ -2355,14 +2373,13 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
                                       withURL:(const GURL&)url
                                    transition:(ui::PageTransition)transition
-                                   completion:(ProceduralBlock)handler {
+                                   completion:(ProceduralBlock)completion {
   GURL copyOfURL = url;
   [self dismissModalDialogsWithCompletion:^{
     [self openSelectedTabInMode:targetMode
                         withURL:copyOfURL
-                     transition:transition];
-    if (handler)
-      handler();
+                     transition:transition
+                     completion:completion];
   }];
 }
 
