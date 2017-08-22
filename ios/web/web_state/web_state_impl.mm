@@ -500,9 +500,10 @@ bool WebStateImpl::ShouldAllowRequest(NSURLRequest* request,
   return true;
 }
 
-bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response) {
+bool WebStateImpl::ShouldAllowResponse(NSURLResponse* response,
+                                       bool for_main_frame) {
   for (auto& policy_decider : policy_deciders_) {
-    if (!policy_decider.ShouldAllowResponse(response))
+    if (!policy_decider.ShouldAllowResponse(response, for_main_frame))
       return false;
   }
   return true;

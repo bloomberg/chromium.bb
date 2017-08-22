@@ -431,7 +431,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 }
 
 - (BOOL)webView:(CWVWebView*)webView
-    shouldContinueLoadWithResponse:(NSURLResponse*)response {
+    shouldContinueLoadWithResponse:(NSURLResponse*)response
+                      forMainFrame:(BOOL)forMainFrame {
   NSLog(@"%@", NSStringFromSelector(_cmd));
   return YES;
 }

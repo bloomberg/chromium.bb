@@ -34,12 +34,14 @@ bool WebViewWebStatePolicyDecider::ShouldAllowRequest(
   return true;
 }
 
-bool WebViewWebStatePolicyDecider::ShouldAllowResponse(
-    NSURLResponse* response) {
+bool WebViewWebStatePolicyDecider::ShouldAllowResponse(NSURLResponse* response,
+                                                       bool for_main_frame) {
   id<CWVNavigationDelegate> delegate = web_view_.navigationDelegate;
   if ([delegate respondsToSelector:@selector
-                (webView:shouldContinueLoadWithResponse:)]) {
-    return [delegate webView:web_view_ shouldContinueLoadWithResponse:response];
+                (webView:shouldContinueLoadWithResponse:forMainFrame:)]) {
+    return [delegate webView:web_view_
+        shouldContinueLoadWithResponse:response
+                          forMainFrame:for_main_frame];
   }
   return true;
 }
