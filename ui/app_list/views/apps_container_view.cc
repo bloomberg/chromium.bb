@@ -366,7 +366,8 @@ int AppsContainerView::GetSearchBoxTopPaddingDuringDragging() const {
              std::ceil((searchbox_final_y - kSearchBoxPeekingTopPadding) *
                        (drag_amount - (kPeekingAppListHeight - kShelfSize)) /
                        peeking_to_fullscreen_height));
-    y = std::max(kSearchBoxPeekingTopPadding, y);
+    y = std::max(kSearchBoxPeekingTopPadding,
+                 std::min<int>(searchbox_final_y, y));
     return y;
   }
 }
