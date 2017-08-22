@@ -296,6 +296,15 @@ const int32_t kInitialSessionWindowSize = 64 * 1024 - 1;
 // The NPN string for HTTP2, "h2".
 extern const char* const kHttp2Npn;
 
+// Names of pseudo-headers defined for HTTP/2 requests.
+extern const char* const kHttp2AuthorityHeader;
+extern const char* const kHttp2MethodHeader;
+extern const char* const kHttp2PathHeader;
+extern const char* const kHttp2SchemeHeader;
+
+// Name of pseudo-header defined for HTTP/2 responses.
+extern const char* const kHttp2StatusHeader;
+
 // Variant type (i.e. tagged union) that is either a SPDY 3.x priority value,
 // or else an HTTP/2 stream dependency tuple {parent stream ID, weight,
 // exclusive bit}. Templated to allow for use by QUIC code; SPDY and HTTP/2
