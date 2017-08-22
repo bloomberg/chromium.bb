@@ -1542,7 +1542,6 @@ enum WebFeature {
   kUnitlessZeroAngleFilter = 2007,
   kUnitlessZeroAngleGradient = 2008,
   kUnitlessZeroAngleTransform = 2010,
-  kHTMLOListElementStartGetterReversedWithoutStartAttribute = 2011,
   kCredentialManagerPreventSilentAccess = 2012,
   kNetInfoEffectiveType = 2013,
   kV8SpeechRecognition_Start_Method = 2014,

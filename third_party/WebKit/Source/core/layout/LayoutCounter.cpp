@@ -190,7 +190,7 @@ static bool PlanCounter(LayoutObject& object,
     }
     if (Node* e = object.GetNode()) {
       if (isHTMLOListElement(*e)) {
-        value = toHTMLOListElement(e)->start();
+        value = toHTMLOListElement(e)->StartConsideringItemCount();
         is_reset = true;
         return true;
       }

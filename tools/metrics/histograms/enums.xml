@@ -16025,7 +16025,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2009" label="UnitlessZeroAngleOffsetRotate"/>
   <int value="2010" label="UnitlessZeroAngleTransform"/>
   <int value="2011"
-      label="HTMLOListElementStartGetterReversedWithoutStartAttribute"/>
+      label="OBSOLETE_HTMLOListElementStartGetterReversedWithoutStartAttribute"/>
   <int value="2012" label="CredentialManagerPreventSilentAccess"/>
   <int value="2013" label="NetInfoEffectiveType"/>
   <int value="2014" label="V8SpeechRecognition_Start_Method"/>
