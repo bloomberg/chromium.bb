@@ -44,6 +44,8 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/camera_buffer_factory.h"
+#include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/video_capture_device_arc_chromeos.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -267,8 +269,18 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
             base::Bind(&VideoCaptureDeviceTest::OnFrameCaptured,
                        base::Unretained(this)))),
         image_capture_client_(new MockImageCaptureClient()),
+#if defined(OS_CHROMEOS)
+        local_gpu_memory_buffer_manager_(new LocalGpuMemoryBufferManager()),
+#endif
         video_capture_device_factory_(VideoCaptureDeviceFactory::CreateFactory(
-            base::ThreadTaskRunnerHandle::Get())) {}
+            base::ThreadTaskRunnerHandle::Get(),
+#if defined(OS_CHROMEOS)
+            local_gpu_memory_buffer_manager_.get()
+#else
+            nullptr
+#endif
+                )) {
+  }
 
   void SetUp() override {
 #if defined(OS_ANDROID)
@@ -375,6 +387,10 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
   std::unique_ptr<MockVideoCaptureClient> video_capture_client_;
   const scoped_refptr<MockImageCaptureClient> image_capture_client_;
   VideoCaptureFormat last_format_;
+#if defined(OS_CHROMEOS)
+  const std::unique_ptr<LocalGpuMemoryBufferManager>
+      local_gpu_memory_buffer_manager_;
+#endif
   const std::unique_ptr<VideoCaptureDeviceFactory>
       video_capture_device_factory_;
 };
