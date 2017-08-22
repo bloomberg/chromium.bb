@@ -263,7 +263,7 @@ void FetchBlockedDocWriteScript(ScriptElementBase* element,
 
 void EmitWarningForDocWriteScripts(const String& url, Document& document) {
   String message =
-      "The Parser-blocking, cross site (i.e. different eTLD+1) "
+      "The parser-blocking, cross site (i.e. different eTLD+1) "
       "script, " +
       url +
       ", invoked via document.write was NOT BLOCKED on this page load, but MAY "

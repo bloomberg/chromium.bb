@@ -21,11 +21,11 @@ namespace {
 
 void EmitWarningForDocWriteScripts(const String& url, Document& document) {
   String message =
-      "A Parser-blocking, cross site (i.e. different eTLD+1) script, " + url +
+      "A parser-blocking, cross site (i.e. different eTLD+1) script, " + url +
       ", is invoked via document.write. The network request for this script "
       "MAY be blocked by the browser in this or a future page load due to poor "
       "network connectivity. If blocked in this page load, it will be "
-      "confirmed in a subsequent console message."
+      "confirmed in a subsequent console message. "
       "See https://www.chromestatus.com/feature/5718547946799104 "
       "for more details.";
   document.AddConsoleMessage(
