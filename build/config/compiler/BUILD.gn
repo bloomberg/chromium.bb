@@ -109,6 +109,11 @@ declare_args() {
   use_cxx11 = false
 }
 
+declare_args() {
+  # C++11 may not be an option if Android test infrastructure is used.
+  use_cxx11_on_android = use_cxx11
+}
+
 if (is_clang && !is_nacl) {
   update_args = [ "--print-revision" ]
   if (llvm_force_head_revision) {
@@ -455,12 +460,18 @@ config("compiler") {
   # C11/C++11 compiler flags setup.
   # ---------------------------
   if (is_linux || is_android || (is_nacl && is_clang) || current_os == "aix") {
+    if (is_android) {
+      cxx11_override = use_cxx11_on_android
+    } else {
+      cxx11_override = use_cxx11
+    }
+
     # gnu11/gnu++11 instead of c11/c++11 is needed because some code uses typeof()
     # (a GNU extension).
     # TODO(thakis): Eventually switch this to c++11 instead,
     # http://crbug.com/427584
     cflags_c += [ "-std=gnu11" ]
-    if (use_cxx11) {
+    if (cxx11_override) {
       # Override Chromium's default for projects that wish to stay on C++11.
       cflags_cc += [ "-std=gnu++11" ]
     } else {
