@@ -24,7 +24,6 @@
 
 namespace {
 const char* kNotifierId = "app.downloaded-notification";
-const char* kNotificationId = "EXTENSION_INSTALLED_NOTIFICATION";
 }  // anonymous namespace
 
 using content::BrowserThread;
@@ -54,7 +53,7 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
                                  kNotifierId),
       l10n_util::GetStringUTF16(IDS_EXTENSION_NOTIFICATION_DISPLAY_SOURCE),
       GURL(extension_urls::kChromeWebstoreBaseURL) /* origin_url */,
-      kNotificationId, optional_field, this));
+      extension_id_, optional_field, this));
   notification->set_accent_color(
       message_center::kSystemNotificationColorNormal);
   g_browser_process->notification_ui_manager()->Add(*notification, profile_);
@@ -79,5 +78,5 @@ void ExtensionInstalledNotification::Click() {
 }
 
 std::string ExtensionInstalledNotification::id() const {
-  return kNotificationId;
+  return extension_id_;
 }
