@@ -56,7 +56,6 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "extensions/common/permissions/permission_set.h"
-#include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -2566,18 +2565,9 @@ TEST_F(ExtensionServiceSyncTest, SyncExtensionHasAllhostsWithheld) {
   // Create an extension that needs all-hosts.
   const std::string kName("extension");
   scoped_refptr<const Extension> extension =
-      extensions::ExtensionBuilder()
+      extensions::ExtensionBuilder(kName)
           .SetLocation(Manifest::INTERNAL)
-          .SetManifest(
-              extensions::DictionaryBuilder()
-                  .Set("name", kName)
-                  .Set("description", "foo")
-                  .Set("manifest_version", 2)
-                  .Set("version", "1.0")
-                  .Set("permissions",
-                       extensions::ListBuilder().Append("*://*/*").Build())
-                  .Build())
-          .SetID(crx_file::id_util::GenerateId(kName))
+          .AddPermission("*://*/*")
           .Build();
 
   // Install and enable it.
