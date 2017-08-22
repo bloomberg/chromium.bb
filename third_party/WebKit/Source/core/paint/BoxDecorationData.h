@@ -12,6 +12,7 @@ namespace blink {
 
 class LayoutBox;
 class Document;
+class NGPhysicalFragment;
 class ComputedStyle;
 
 // Information extracted from ComputedStyle for box painting.
@@ -20,6 +21,7 @@ struct BoxDecorationData {
 
  public:
   BoxDecorationData(const LayoutBox&);
+  BoxDecorationData(const NGPhysicalFragment&);
 
   Color background_color;
   BackgroundBleedAvoidance bleed_avoidance;
@@ -32,6 +34,7 @@ struct BoxDecorationData {
       const Document&,
       const ComputedStyle&,
       bool background_should_always_be_clipped);
+  BoxDecorationData(const ComputedStyle&);
 };
 
 }  // namespace blink

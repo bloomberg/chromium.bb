@@ -33,6 +33,8 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
+  void PaintObject(const PaintInfo&, const LayoutPoint&) const override;
+
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
   // otherwise unavailable.
@@ -43,8 +45,8 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
                              NGBreakToken*,
                              RefPtr<NGLayoutResult>);
 
-  RefPtr<NGPhysicalBoxFragment> GetFragmentForTesting() const {
-    return physical_root_fragment_for_testing_;
+  RefPtr<const NGPhysicalBoxFragment> RootFragment() const {
+    return physical_root_fragment_;
   }
 
  private:
@@ -56,7 +58,7 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
 
   RefPtr<NGLayoutResult> cached_result_;
   RefPtr<NGConstraintSpace> cached_constraint_space_;
-  RefPtr<NGPhysicalBoxFragment> physical_root_fragment_for_testing_;
+  RefPtr<const NGPhysicalBoxFragment> physical_root_fragment_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, IsLayoutNGBlockFlow());

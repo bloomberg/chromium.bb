@@ -5,6 +5,7 @@
 #include "core/paint/BoxDecorationData.h"
 
 #include "core/layout/LayoutBox.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/paint/BoxPainter.h"
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
@@ -13,14 +14,8 @@
 
 namespace blink {
 
-BoxDecorationData::BoxDecorationData(const LayoutBox& layout_box) {
-  background_color =
-      layout_box.Style()->VisitedDependentColor(CSSPropertyBackgroundColor);
-  has_background =
-      background_color.Alpha() || layout_box.Style()->HasBackgroundImage();
-  DCHECK(has_background == layout_box.Style()->HasBackground());
-  has_border_decoration = layout_box.Style()->HasBorderDecoration();
-  has_appearance = layout_box.Style()->HasAppearance();
+BoxDecorationData::BoxDecorationData(const LayoutBox& layout_box)
+    : BoxDecorationData(layout_box.StyleRef()) {
   if (layout_box.IsDocumentElement()) {
     bleed_avoidance = kBackgroundBleedNone;
   } else {
@@ -28,6 +23,20 @@ BoxDecorationData::BoxDecorationData(const LayoutBox& layout_box) {
         layout_box.GetDocument(), layout_box.StyleRef(),
         layout_box.BackgroundShouldAlwaysBeClipped());
   }
+}
+
+BoxDecorationData::BoxDecorationData(const NGPhysicalFragment& fragment)
+    : BoxDecorationData(fragment.Style()) {
+  // TODO(layout-dev): Implement
+  bleed_avoidance = kBackgroundBleedClipLayer;
+}
+
+BoxDecorationData::BoxDecorationData(const ComputedStyle& style) {
+  background_color = style.VisitedDependentColor(CSSPropertyBackgroundColor);
+  has_background = background_color.Alpha() || style.HasBackgroundImage();
+  DCHECK(has_background == style.HasBackground());
+  has_border_decoration = style.HasBorderDecoration();
+  has_appearance = style.HasAppearance();
 }
 
 namespace {

@@ -9,6 +9,8 @@
 #include "core/layout/ng/geometry/ng_physical_offset.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_break_token.h"
+#include "core/loader/resource/ImageResourceObserver.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/wtf/RefPtr.h"
 
 namespace blink {
@@ -28,7 +30,18 @@ struct NGPixelSnappedPhysicalBoxStrut;
 // Layout code should only access geometry information through the
 // NGFragment wrapper classes which transforms information into the logical
 // coordinate system.
-class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
+//
+// NGPhysicalFragment is an ImageResourceObserver, which means that it gets
+// notified when associated images are changed.
+// This is used for 2 main use cases:
+// - reply to 'background-image' as we need to invalidate the background in this
+//   case.
+//   (See https://drafts.csswg.org/css-backgrounds-3/#the-background-image)
+// - image (<img>, svg <image>) or video (<video>) elements that are
+//   placeholders for displaying them.
+class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment>,
+                                       public DisplayItemClient,
+                                       public ImageResourceObserver {
  public:
   enum NGFragmentType {
     kFragmentBox = 0,
@@ -68,6 +81,16 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
   // GetLayoutObject should only be used when necessary for compatibility
   // with LegacyLayout.
   LayoutObject* GetLayoutObject() const { return layout_object_; }
+
+  // DisplayItemClient methods.
+  String DebugName() const override { return "NGPhysicalFragment"; }
+
+  // TODO(layout-dev): Implement when we have oveflow support.
+  bool HasOverflowClip() const { return false; }
+  LayoutRect VisualRect() const {
+    return LayoutRect(LayoutPoint(), LayoutSize(Size().width, Size().height));
+  }
+  LayoutRect VisualOverflowRect() const { return VisualRect(); }
 
   // Should only be used by the parent fragment's layout.
   void SetOffset(NGPhysicalOffset offset) {
