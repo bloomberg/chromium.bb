@@ -101,6 +101,27 @@ PASS abbr.className (<abbr class>): 32 tests
 PASS abbr.hidden: 33 tests
 PASS abbr.accessKey: 32 tests
 PASS abbr.tabIndex: 24 tests
+PASS ruby.title: 32 tests
+PASS ruby.lang: 32 tests
+PASS ruby.dir: 62 tests
+PASS ruby.className (<ruby class>): 32 tests
+PASS ruby.hidden: 33 tests
+PASS ruby.accessKey: 32 tests
+PASS ruby.tabIndex: 24 tests
+PASS rt.title: 32 tests
+PASS rt.lang: 32 tests
+PASS rt.dir: 62 tests
+PASS rt.className (<rt class>): 32 tests
+PASS rt.hidden: 33 tests
+PASS rt.accessKey: 32 tests
+PASS rt.tabIndex: 24 tests
+PASS rp.title: 32 tests
+PASS rp.lang: 32 tests
+PASS rp.dir: 62 tests
+PASS rp.className (<rp class>): 32 tests
+PASS rp.hidden: 33 tests
+PASS rp.accessKey: 32 tests
+PASS rp.tabIndex: 24 tests
 PASS data.title: 32 tests
 PASS data.lang: 32 tests
 PASS data.dir: 62 tests
@@ -187,27 +208,6 @@ PASS mark.className (<mark class>): 32 tests
 PASS mark.hidden: 33 tests
 PASS mark.accessKey: 32 tests
 PASS mark.tabIndex: 24 tests
-PASS ruby.title: 32 tests
-PASS ruby.lang: 32 tests
-PASS ruby.dir: 62 tests
-PASS ruby.className (<ruby class>): 32 tests
-PASS ruby.hidden: 33 tests
-PASS ruby.accessKey: 32 tests
-PASS ruby.tabIndex: 24 tests
-PASS rt.title: 32 tests
-PASS rt.lang: 32 tests
-PASS rt.dir: 62 tests
-PASS rt.className (<rt class>): 32 tests
-PASS rt.hidden: 33 tests
-PASS rt.accessKey: 32 tests
-PASS rt.tabIndex: 24 tests
-PASS rp.title: 32 tests
-PASS rp.lang: 32 tests
-PASS rp.dir: 62 tests
-PASS rp.className (<rp class>): 32 tests
-PASS rp.hidden: 33 tests
-PASS rp.accessKey: 32 tests
-PASS rp.tabIndex: 24 tests
 PASS bdi.title: 32 tests
 PASS bdi.lang: 32 tests
 PASS bdi.dir: 62 tests

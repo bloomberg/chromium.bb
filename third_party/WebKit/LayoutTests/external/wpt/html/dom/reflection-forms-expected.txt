@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 7074 tests; 6670 PASS, 404 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 7041 tests; 6721 PASS, 320 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS form.title: 32 tests
 PASS form.lang: 32 tests
 PASS form.dir: 62 tests
@@ -8,6 +8,9 @@ PASS form.hidden: 33 tests
 PASS form.accessKey: 32 tests
 PASS form.tabIndex: 24 tests
 PASS form.acceptCharset (<form accept-charset>): 32 tests
+PASS form.action: typeof IDL attribute 
+FAIL form.action: IDL get with DOM attribute unset assert_equals: expected "http://web-platform.test:8001/html/dom/reflection-forms.html" but got ""
+PASS form.action: 36 tests
 PASS form.autocomplete: 52 tests
 PASS form.enctype: 62 tests
 PASS form.encoding (<form enctype>): 62 tests
@@ -49,14 +52,17 @@ PASS input.accessKey: 32 tests
 PASS input.tabIndex: 24 tests
 PASS input.accept: 32 tests
 PASS input.alt: 32 tests
+PASS input.autocomplete: 17 tests
 PASS input.autofocus: 33 tests
 PASS input.defaultChecked (<input checked>): 33 tests
 PASS input.dirName: 32 tests
 PASS input.disabled: 33 tests
+PASS input.formAction: 38 tests
 PASS input.formEnctype: 62 tests
 PASS input.formMethod: 52 tests
 PASS input.formNoValidate: 33 tests
 PASS input.formTarget: 32 tests
+PASS input.height: 9 tests
 PASS input.inputMode: 3 tests
 FAIL input.inputMode: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
 FAIL input.inputMode: setAttribute() to undefined assert_equals: IDL get expected "" but got "undefined"
@@ -103,6 +109,12 @@ FAIL input.inputMode: setAttribute() to "kana\0" assert_equals: IDL get expected
 FAIL input.inputMode: setAttribute() to "ana" assert_equals: IDL get expected "" but got "ana"
 FAIL input.inputMode: setAttribute() to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
 FAIL input.inputMode: setAttribute() to "Kana" assert_equals: IDL get expected "" but got "Kana"
+PASS input.inputMode: setAttribute() to "kana-name" 
+FAIL input.inputMode: setAttribute() to "xkana-name" assert_equals: IDL get expected "" but got "xkana-name"
+FAIL input.inputMode: setAttribute() to "kana-name\0" assert_equals: IDL get expected "" but got "kana-name\0"
+FAIL input.inputMode: setAttribute() to "ana-name" assert_equals: IDL get expected "" but got "ana-name"
+FAIL input.inputMode: setAttribute() to "KANA-NAME" assert_equals: IDL get expected "kana-name" but got "KANA-NAME"
+FAIL input.inputMode: setAttribute() to "Kana-name" assert_equals: IDL get expected "" but got "Kana-name"
 PASS input.inputMode: setAttribute() to "katakana" 
 FAIL input.inputMode: setAttribute() to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
 FAIL input.inputMode: setAttribute() to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
@@ -175,6 +187,12 @@ FAIL input.inputMode: IDL set to "kana\0" assert_equals: IDL get expected "" but
 FAIL input.inputMode: IDL set to "ana" assert_equals: IDL get expected "" but got "ana"
 FAIL input.inputMode: IDL set to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
 FAIL input.inputMode: IDL set to "Kana" assert_equals: IDL get expected "" but got "Kana"
+PASS input.inputMode: IDL set to "kana-name" 
+FAIL input.inputMode: IDL set to "xkana-name" assert_equals: IDL get expected "" but got "xkana-name"
+FAIL input.inputMode: IDL set to "kana-name\0" assert_equals: IDL get expected "" but got "kana-name\0"
+FAIL input.inputMode: IDL set to "ana-name" assert_equals: IDL get expected "" but got "ana-name"
+FAIL input.inputMode: IDL set to "KANA-NAME" assert_equals: IDL get expected "kana-name" but got "KANA-NAME"
+FAIL input.inputMode: IDL set to "Kana-name" assert_equals: IDL get expected "" but got "Kana-name"
 PASS input.inputMode: IDL set to "katakana" 
 FAIL input.inputMode: IDL set to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
 FAIL input.inputMode: IDL set to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
@@ -204,6 +222,7 @@ FAIL input.inputMode: IDL set to "URL" assert_equals: IDL get expected "url" but
 PASS input.max: 32 tests
 PASS input.maxLength: 61 tests
 PASS input.min: 32 tests
+PASS input.minLength: 61 tests
 PASS input.multiple: 33 tests
 PASS input.name: 32 tests
 PASS input.pattern: 32 tests
@@ -215,15 +234,8 @@ FAIL input.size: IDL set to 2147483648 assert_equals: getAttribute() expected "2
 FAIL input.size: IDL set to 4294967295 assert_equals: getAttribute() expected "20" but got "0"
 PASS input.src: 38 tests
 PASS input.step: 32 tests
-PASS input.type: 52 tests
-FAIL input.type: setAttribute() to "datetime" assert_equals: IDL get expected "datetime" but got "text"
-PASS input.type: 3 tests
-FAIL input.type: setAttribute() to "DATETIME" assert_equals: IDL get expected "datetime" but got "text"
-PASS input.type: 127 tests
-FAIL input.type: IDL set to "datetime" assert_equals: IDL get expected "datetime" but got "text"
-PASS input.type: 3 tests
-FAIL input.type: IDL set to "DATETIME" assert_equals: IDL get expected "datetime" but got "text"
-PASS input.type: 77 tests
+PASS input.type: 256 tests
+PASS input.width: 9 tests
 PASS input.defaultValue (<input value>): 32 tests
 PASS input.align: 32 tests
 PASS input.useMap: 32 tests
@@ -236,6 +248,7 @@ PASS button.accessKey: 32 tests
 PASS button.tabIndex: 24 tests
 PASS button.autofocus: 33 tests
 PASS button.disabled: 33 tests
+PASS button.formAction: 38 tests
 PASS button.formEnctype: 62 tests
 PASS button.formMethod: 62 tests
 PASS button.formNoValidate: 33 tests
@@ -250,6 +263,23 @@ PASS select.className (<select class>): 32 tests
 PASS select.hidden: 33 tests
 PASS select.accessKey: 32 tests
 PASS select.tabIndex: 24 tests
+FAIL select.autocomplete: typeof IDL attribute assert_equals: expected "string" but got "undefined"
+FAIL select.autocomplete: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
+FAIL select.autocomplete: IDL set to "" assert_equals: getAttribute() expected (string) "" but got (object) null
+FAIL select.autocomplete: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (object) null
+FAIL select.autocomplete: IDL set to undefined assert_equals: getAttribute() expected (string) "undefined" but got (object) null
+FAIL select.autocomplete: IDL set to 7 assert_equals: getAttribute() expected (string) "7" but got (object) null
+FAIL select.autocomplete: IDL set to 1.5 assert_equals: getAttribute() expected (string) "1.5" but got (object) null
+FAIL select.autocomplete: IDL set to true assert_equals: getAttribute() expected (string) "true" but got (object) null
+FAIL select.autocomplete: IDL set to false assert_equals: getAttribute() expected (string) "false" but got (object) null
+FAIL select.autocomplete: IDL set to object "[object Object]" assert_equals: getAttribute() expected (string) "[object Object]" but got (object) null
+FAIL select.autocomplete: IDL set to NaN assert_equals: getAttribute() expected (string) "NaN" but got (object) null
+FAIL select.autocomplete: IDL set to Infinity assert_equals: getAttribute() expected (string) "Infinity" but got (object) null
+FAIL select.autocomplete: IDL set to -Infinity assert_equals: getAttribute() expected (string) "-Infinity" but got (object) null
+FAIL select.autocomplete: IDL set to "\0" assert_equals: getAttribute() expected (string) "\0" but got (object) null
+FAIL select.autocomplete: IDL set to null assert_equals: getAttribute() expected (string) "null" but got (object) null
+FAIL select.autocomplete: IDL set to object "test-toString" assert_equals: getAttribute() expected (string) "test-toString" but got (object) null
+FAIL select.autocomplete: IDL set to object "test-valueOf" assert_equals: getAttribute() expected (string) "test-valueOf" but got (object) null
 PASS select.autofocus: 33 tests
 PASS select.disabled: 33 tests
 PASS select.multiple: 33 tests
@@ -290,6 +320,23 @@ PASS textarea.className (<textarea class>): 32 tests
 PASS textarea.hidden: 33 tests
 PASS textarea.accessKey: 32 tests
 PASS textarea.tabIndex: 24 tests
+FAIL textarea.autocomplete: typeof IDL attribute assert_equals: expected "string" but got "undefined"
+FAIL textarea.autocomplete: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
+FAIL textarea.autocomplete: IDL set to "" assert_equals: getAttribute() expected (string) "" but got (object) null
+FAIL textarea.autocomplete: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (object) null
+FAIL textarea.autocomplete: IDL set to undefined assert_equals: getAttribute() expected (string) "undefined" but got (object) null
+FAIL textarea.autocomplete: IDL set to 7 assert_equals: getAttribute() expected (string) "7" but got (object) null
+FAIL textarea.autocomplete: IDL set to 1.5 assert_equals: getAttribute() expected (string) "1.5" but got (object) null
+FAIL textarea.autocomplete: IDL set to true assert_equals: getAttribute() expected (string) "true" but got (object) null
+FAIL textarea.autocomplete: IDL set to false assert_equals: getAttribute() expected (string) "false" but got (object) null
+FAIL textarea.autocomplete: IDL set to object "[object Object]" assert_equals: getAttribute() expected (string) "[object Object]" but got (object) null
+FAIL textarea.autocomplete: IDL set to NaN assert_equals: getAttribute() expected (string) "NaN" but got (object) null
+FAIL textarea.autocomplete: IDL set to Infinity assert_equals: getAttribute() expected (string) "Infinity" but got (object) null
+FAIL textarea.autocomplete: IDL set to -Infinity assert_equals: getAttribute() expected (string) "-Infinity" but got (object) null
+FAIL textarea.autocomplete: IDL set to "\0" assert_equals: getAttribute() expected (string) "\0" but got (object) null
+FAIL textarea.autocomplete: IDL set to null assert_equals: getAttribute() expected (string) "null" but got (object) null
+FAIL textarea.autocomplete: IDL set to object "test-toString" assert_equals: getAttribute() expected (string) "test-toString" but got (object) null
+FAIL textarea.autocomplete: IDL set to object "test-valueOf" assert_equals: getAttribute() expected (string) "test-valueOf" but got (object) null
 PASS textarea.autofocus: 33 tests
 PASS textarea.cols: 9 tests
 FAIL textarea.cols: setAttribute() to 2147483648 assert_equals: IDL get expected 20 but got 2147483648
@@ -345,6 +392,12 @@ FAIL textarea.inputMode: setAttribute() to "kana\0" assert_equals: IDL get expec
 FAIL textarea.inputMode: setAttribute() to "ana" assert_equals: IDL get expected "" but got "ana"
 FAIL textarea.inputMode: setAttribute() to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
 FAIL textarea.inputMode: setAttribute() to "Kana" assert_equals: IDL get expected "" but got "Kana"
+PASS textarea.inputMode: setAttribute() to "kana-name" 
+FAIL textarea.inputMode: setAttribute() to "xkana-name" assert_equals: IDL get expected "" but got "xkana-name"
+FAIL textarea.inputMode: setAttribute() to "kana-name\0" assert_equals: IDL get expected "" but got "kana-name\0"
+FAIL textarea.inputMode: setAttribute() to "ana-name" assert_equals: IDL get expected "" but got "ana-name"
+FAIL textarea.inputMode: setAttribute() to "KANA-NAME" assert_equals: IDL get expected "kana-name" but got "KANA-NAME"
+FAIL textarea.inputMode: setAttribute() to "Kana-name" assert_equals: IDL get expected "" but got "Kana-name"
 PASS textarea.inputMode: setAttribute() to "katakana" 
 FAIL textarea.inputMode: setAttribute() to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
 FAIL textarea.inputMode: setAttribute() to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
@@ -417,6 +470,12 @@ FAIL textarea.inputMode: IDL set to "kana\0" assert_equals: IDL get expected "" 
 FAIL textarea.inputMode: IDL set to "ana" assert_equals: IDL get expected "" but got "ana"
 FAIL textarea.inputMode: IDL set to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
 FAIL textarea.inputMode: IDL set to "Kana" assert_equals: IDL get expected "" but got "Kana"
+PASS textarea.inputMode: IDL set to "kana-name" 
+FAIL textarea.inputMode: IDL set to "xkana-name" assert_equals: IDL get expected "" but got "xkana-name"
+FAIL textarea.inputMode: IDL set to "kana-name\0" assert_equals: IDL get expected "" but got "kana-name\0"
+FAIL textarea.inputMode: IDL set to "ana-name" assert_equals: IDL get expected "" but got "ana-name"
+FAIL textarea.inputMode: IDL set to "KANA-NAME" assert_equals: IDL get expected "kana-name" but got "KANA-NAME"
+FAIL textarea.inputMode: IDL set to "Kana-name" assert_equals: IDL get expected "" but got "Kana-name"
 PASS textarea.inputMode: IDL set to "katakana" 
 FAIL textarea.inputMode: IDL set to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
 FAIL textarea.inputMode: IDL set to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
@@ -444,6 +503,7 @@ FAIL textarea.inputMode: IDL set to "url\0" assert_equals: IDL get expected "" b
 FAIL textarea.inputMode: IDL set to "rl" assert_equals: IDL get expected "" but got "rl"
 FAIL textarea.inputMode: IDL set to "URL" assert_equals: IDL get expected "url" but got "URL"
 PASS textarea.maxLength: 61 tests
+PASS textarea.minLength: 61 tests
 PASS textarea.name: 32 tests
 PASS textarea.placeholder: 32 tests
 PASS textarea.readOnly: 33 tests
@@ -455,166 +515,6 @@ PASS textarea.rows: 46 tests
 FAIL textarea.rows: IDL set to 2147483648 assert_equals: getAttribute() expected "2" but got "0"
 FAIL textarea.rows: IDL set to 4294967295 assert_equals: getAttribute() expected "2" but got "0"
 PASS textarea.wrap: 32 tests
-PASS keygen.title: 32 tests
-PASS keygen.lang: 32 tests
-PASS keygen.dir: 62 tests
-PASS keygen.className (<keygen class>): 32 tests
-PASS keygen.hidden: 33 tests
-PASS keygen.accessKey: 32 tests
-PASS keygen.tabIndex: 24 tests
-FAIL keygen.autofocus: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
-FAIL keygen.autofocus: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: setAttribute() to "autofocus" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.autofocus: IDL set to "" assert_equals: hasAttribute() expected false but got true
-FAIL keygen.autofocus: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
-FAIL keygen.autofocus: IDL set to undefined assert_equals: hasAttribute() expected false but got true
-FAIL keygen.autofocus: IDL set to null assert_equals: hasAttribute() expected false but got true
-FAIL keygen.autofocus: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
-FAIL keygen.autofocus: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
-PASS keygen.autofocus: IDL set to true 
-FAIL keygen.autofocus: IDL set to false assert_equals: hasAttribute() expected false but got true
-FAIL keygen.autofocus: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
-FAIL keygen.autofocus: IDL set to NaN assert_equals: hasAttribute() expected false but got true
-FAIL keygen.autofocus: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
-FAIL keygen.autofocus: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
-FAIL keygen.autofocus: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
-FAIL keygen.autofocus: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
-FAIL keygen.autofocus: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
-FAIL keygen.challenge: typeof IDL attribute assert_equals: expected "string" but got "undefined"
-FAIL keygen.challenge: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
-FAIL keygen.challenge: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
-FAIL keygen.challenge: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
-FAIL keygen.challenge: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
-FAIL keygen.challenge: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
-FAIL keygen.disabled: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
-FAIL keygen.disabled: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: setAttribute() to "disabled" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL keygen.disabled: IDL set to "" assert_equals: hasAttribute() expected false but got true
-FAIL keygen.disabled: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
-FAIL keygen.disabled: IDL set to undefined assert_equals: hasAttribute() expected false but got true
-FAIL keygen.disabled: IDL set to null assert_equals: hasAttribute() expected false but got true
-FAIL keygen.disabled: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
-FAIL keygen.disabled: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
-PASS keygen.disabled: IDL set to true 
-FAIL keygen.disabled: IDL set to false assert_equals: hasAttribute() expected false but got true
-FAIL keygen.disabled: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
-FAIL keygen.disabled: IDL set to NaN assert_equals: hasAttribute() expected false but got true
-FAIL keygen.disabled: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
-FAIL keygen.disabled: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
-FAIL keygen.disabled: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
-FAIL keygen.disabled: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
-FAIL keygen.disabled: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
-FAIL keygen.keytype: typeof IDL attribute assert_equals: expected "string" but got "undefined"
-FAIL keygen.keytype: setAttribute() to "rsa" assert_equals: IDL get expected (string) "rsa" but got (undefined) undefined
-FAIL keygen.keytype: setAttribute() to "RSA" assert_equals: IDL get expected (string) "rsa" but got (undefined) undefined
-FAIL keygen.keytype: IDL set to "" assert_equals: getAttribute() expected "" but got "RSA"
-FAIL keygen.keytype: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "RSA"
-FAIL keygen.keytype: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "RSA"
-FAIL keygen.keytype: IDL set to 7 assert_equals: getAttribute() expected "7" but got "RSA"
-FAIL keygen.keytype: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "RSA"
-FAIL keygen.keytype: IDL set to true assert_equals: getAttribute() expected "true" but got "RSA"
-FAIL keygen.keytype: IDL set to false assert_equals: getAttribute() expected "false" but got "RSA"
-FAIL keygen.keytype: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "RSA"
-FAIL keygen.keytype: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "RSA"
-FAIL keygen.keytype: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "RSA"
-FAIL keygen.keytype: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "RSA"
-FAIL keygen.keytype: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "RSA"
-PASS keygen.keytype: IDL set to null 
-FAIL keygen.keytype: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "RSA"
-FAIL keygen.keytype: IDL set to object "test-valueOf" assert_equals: getAttribute() expected "test-valueOf" but got "RSA"
-FAIL keygen.keytype: IDL set to "rsa" assert_equals: getAttribute() expected "rsa" but got "RSA"
-FAIL keygen.keytype: IDL set to "xrsa" assert_equals: getAttribute() expected "xrsa" but got "RSA"
-FAIL keygen.keytype: IDL set to "rsa\0" assert_equals: getAttribute() expected "rsa\0" but got "RSA"
-FAIL keygen.keytype: IDL set to "sa" assert_equals: getAttribute() expected "sa" but got "RSA"
-FAIL keygen.keytype: IDL set to "RSA" assert_equals: IDL get expected "rsa" but got "RSA"
-FAIL keygen.name: typeof IDL attribute assert_equals: expected "string" but got "undefined"
-FAIL keygen.name: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-FAIL keygen.name: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
-FAIL keygen.name: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
-FAIL keygen.name: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
-FAIL keygen.name: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
-FAIL keygen.name: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
-FAIL keygen.name: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
-FAIL keygen.name: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
-FAIL keygen.name: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
-FAIL keygen.name: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
-FAIL keygen.name: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
-FAIL keygen.name: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
-FAIL keygen.name: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
-FAIL keygen.name: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
-FAIL keygen.name: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
-FAIL keygen.name: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
-FAIL keygen.name: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
-FAIL keygen.name: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
 PASS output.title: 32 tests
 PASS output.lang: 32 tests
 PASS output.dir: 62 tests
@@ -637,5 +537,32 @@ PASS meter.className (<meter class>): 32 tests
 PASS meter.hidden: 33 tests
 PASS meter.accessKey: 32 tests
 PASS meter.tabIndex: 24 tests
+PASS meter.value: 2 tests
+FAIL meter.value: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+PASS meter.value: 4 tests
+FAIL meter.value: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+PASS meter.min: 2 tests
+FAIL meter.min: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+PASS meter.min: 4 tests
+FAIL meter.min: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+PASS meter.max: typeof IDL attribute 
+FAIL meter.max: IDL get with DOM attribute unset assert_equals: expected 0 but got 1
+FAIL meter.max: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+PASS meter.max: 4 tests
+FAIL meter.max: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+PASS meter.low: 2 tests
+FAIL meter.low: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+PASS meter.low: 4 tests
+FAIL meter.low: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+PASS meter.high: typeof IDL attribute 
+FAIL meter.high: IDL get with DOM attribute unset assert_equals: expected 0 but got 1
+FAIL meter.high: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+PASS meter.high: 4 tests
+FAIL meter.high: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+PASS meter.optimum: typeof IDL attribute 
+FAIL meter.optimum: IDL get with DOM attribute unset assert_equals: expected 0 but got 0.5
+FAIL meter.optimum: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+PASS meter.optimum: 4 tests
+FAIL meter.optimum: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
 Harness: the test ran to completion.
 

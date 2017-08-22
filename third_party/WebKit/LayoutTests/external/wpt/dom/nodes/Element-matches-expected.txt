@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 668 tests; 643 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 646 tests; 643 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selectors-API Level 2 Test Suite: HTML with Selectors Level 3 
 PASS Document should not support matches 
 PASS Detached Element supports matches 
@@ -194,12 +194,6 @@ PASS In-document Element.matches: Descendant combinator, matching element with c
 PASS In-document Element.matches: Descendant combinator, matching element with class that is a descendant of an element with class (with no refNodes): .descendant-div1 .descendant-div3 
 PASS In-document Element.matches: Descendant combinator, whitespace characters (with no refNodes): #descendant	\r
 #descendant-div2 
-FAIL In-document Element.matches: Descendant combinator '>>', matching element that is a descendant of an element with id (with no refNodes): #descendant>>div Failed to execute 'matches' on 'Element': '#descendant>>div' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element (with no refNodes): body>>#descendant-div1 Failed to execute 'matches' on 'Element': 'body>>#descendant-div1' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element (with no refNodes): div>>#descendant-div1 Failed to execute 'matches' on 'Element': 'div>>#descendant-div1' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element with id (with no refNodes): #descendant>>#descendant-div2 Failed to execute 'matches' on 'Element': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with class that is a descendant of an element with id (with no refNodes): #descendant>>.descendant-div2 Failed to execute 'matches' on 'Element': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with class that is a descendant of an element with class (with no refNodes): .descendant-div1>>.descendant-div3 Failed to execute 'matches' on 'Element': '.descendant-div1>>.descendant-div3' is not a valid selector.
 PASS In-document Element.matches: Child combinator, matching element that is a child of an element with id (with no refNodes): #child>div 
 PASS In-document Element.matches: Child combinator, matching element with id that is a child of an element (with no refNodes): div>#child-div1 
 PASS In-document Element.matches: Child combinator, matching element with id that is a child of an element with id (with no refNodes): #child>#child-div1 
@@ -357,11 +351,6 @@ PASS Detached Element.matches: Descendant combinator, matching element with clas
 PASS Detached Element.matches: Descendant combinator, matching element with class that is a descendant of an element with class (with no refNodes): .descendant-div1 .descendant-div3 
 PASS Detached Element.matches: Descendant combinator, whitespace characters (with no refNodes): #descendant	\r
 #descendant-div2 
-FAIL Detached Element.matches: Descendant combinator '>>', matching element that is a descendant of an element with id (with no refNodes): #descendant>>div Failed to execute 'matches' on 'Element': '#descendant>>div' is not a valid selector.
-FAIL Detached Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element (with no refNodes): div>>#descendant-div1 Failed to execute 'matches' on 'Element': 'div>>#descendant-div1' is not a valid selector.
-FAIL Detached Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element with id (with no refNodes): #descendant>>#descendant-div2 Failed to execute 'matches' on 'Element': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL Detached Element.matches: Descendant combinator '>>', matching element with class that is a descendant of an element with id (with no refNodes): #descendant>>.descendant-div2 Failed to execute 'matches' on 'Element': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL Detached Element.matches: Descendant combinator '>>', matching element with class that is a descendant of an element with class (with no refNodes): .descendant-div1>>.descendant-div3 Failed to execute 'matches' on 'Element': '.descendant-div1>>.descendant-div3' is not a valid selector.
 PASS Detached Element.matches: Child combinator, matching element that is a child of an element with id (with no refNodes): #child>div 
 PASS Detached Element.matches: Child combinator, matching element with id that is a child of an element (with no refNodes): div>#child-div1 
 PASS Detached Element.matches: Child combinator, matching element with id that is a child of an element with id (with no refNodes): #child>#child-div1 
@@ -519,11 +508,6 @@ PASS Fragment Element.matches: Descendant combinator, matching element with clas
 PASS Fragment Element.matches: Descendant combinator, matching element with class that is a descendant of an element with class (with no refNodes): .descendant-div1 .descendant-div3 
 PASS Fragment Element.matches: Descendant combinator, whitespace characters (with no refNodes): #descendant	\r
 #descendant-div2 
-FAIL Fragment Element.matches: Descendant combinator '>>', matching element that is a descendant of an element with id (with no refNodes): #descendant>>div Failed to execute 'matches' on 'Element': '#descendant>>div' is not a valid selector.
-FAIL Fragment Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element (with no refNodes): div>>#descendant-div1 Failed to execute 'matches' on 'Element': 'div>>#descendant-div1' is not a valid selector.
-FAIL Fragment Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element with id (with no refNodes): #descendant>>#descendant-div2 Failed to execute 'matches' on 'Element': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL Fragment Element.matches: Descendant combinator '>>', matching element with class that is a descendant of an element with id (with no refNodes): #descendant>>.descendant-div2 Failed to execute 'matches' on 'Element': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL Fragment Element.matches: Descendant combinator '>>', matching element with class that is a descendant of an element with class (with no refNodes): .descendant-div1>>.descendant-div3 Failed to execute 'matches' on 'Element': '.descendant-div1>>.descendant-div3' is not a valid selector.
 PASS Fragment Element.matches: Child combinator, matching element that is a child of an element with id (with no refNodes): #child>div 
 PASS Fragment Element.matches: Child combinator, matching element with id that is a child of an element (with no refNodes): div>#child-div1 
 PASS Fragment Element.matches: Child combinator, matching element with id that is a child of an element with id (with no refNodes): #child>#child-div1 
@@ -682,12 +666,6 @@ PASS In-document Element.matches: Descendant combinator, matching element with c
 PASS In-document Element.matches: Descendant combinator, matching element with class that is a descendant of an element with class (1) (with no refNodes): .descendant-div1 .descendant-div3 
 PASS In-document Element.matches: Descendant combinator, whitespace characters (1) (with no refNodes): #descendant	\r
 #descendant-div2 
-FAIL In-document Element.matches: Descendant combinator '>>', matching element that is a descendant of an element with id (1) (with no refNodes): #descendant>>div Failed to execute 'matches' on 'Element': '#descendant>>div' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element (1) (with no refNodes): body>>#descendant-div1 Failed to execute 'matches' on 'Element': 'body>>#descendant-div1' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element (1) (with no refNodes): div>>#descendant-div1 Failed to execute 'matches' on 'Element': 'div>>#descendant-div1' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with id that is a descendant of an element with id (1) (with no refNodes): #descendant>>#descendant-div2 Failed to execute 'matches' on 'Element': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator '>>', matching element with class that is a descendant of an element with id (1) (with no refNodes): #descendant>>.descendant-div2 Failed to execute 'matches' on 'Element': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL In-document Element.matches: Descendant combinator, '>>', matching element with class that is a descendant of an element with class (1) (with no refNodes): .descendant-div1>>.descendant-div3 Failed to execute 'matches' on 'Element': '.descendant-div1>>.descendant-div3' is not a valid selector.
 PASS In-document Element.matches: Child combinator, matching element that is a child of an element with id (1) (with no refNodes): #child>div 
 PASS In-document Element.matches: Child combinator, matching element with id that is a child of an element (1) (with no refNodes): div>#child-div1 
 PASS In-document Element.matches: Child combinator, matching element with id that is a child of an element with id (1) (with no refNodes): #child>#child-div1 
