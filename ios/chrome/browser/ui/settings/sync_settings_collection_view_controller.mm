@@ -35,7 +35,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
@@ -499,8 +499,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
           GetApplicationContext()->GetApplicationLocale());
       OpenUrlCommand* command =
           [[OpenUrlCommand alloc] initWithURLFromChrome:learnMoreUrl];
-      [command setTag:IDC_CLOSE_SETTINGS_AND_OPEN_URL];
-      [self chromeExecuteCommand:command];
+      [self.dispatcher closeSettingsUIAndOpenURL:command];
       break;
     }
     default:

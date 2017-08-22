@@ -738,7 +738,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
 
-  UIViewController* controller;
+  SettingsRootCollectionViewController* controller;
 
   switch (itemType) {
     case ItemTypeSignInButton:
@@ -749,8 +749,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
     case ItemTypeAccount:
       controller = [[AccountsCollectionViewController alloc]
                initWithBrowserState:_browserState
-          closeSettingsOnAddAccount:NO
-                         dispatcher:self.dispatcher];
+          closeSettingsOnAddAccount:NO];
       break;
     case ItemTypeSearchEngine:
       controller = [[SearchEngineSettingsCollectionViewController alloc]
@@ -799,6 +798,7 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   }
 
   if (controller) {
+    controller.dispatcher = self.dispatcher;
     [self.navigationController pushViewController:controller animated:YES];
   }
 }

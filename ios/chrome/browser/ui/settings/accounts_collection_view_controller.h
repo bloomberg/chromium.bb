@@ -33,11 +33,9 @@ class ChromeBrowserState;
 // |browserState| must not be nil.
 // If |closeSettingsOnAddAccount| is YES, then this account table view
 // controller will close the setting screen when an account is added.
-- (instancetype)
-     initWithBrowserState:(ios::ChromeBrowserState*)browserState
-closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount
-               dispatcher:(id<ApplicationCommands, ApplicationSettingsCommands>)
-                              dispatcher NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
+           closeSettingsOnAddAccount:(BOOL)closeSettingsOnAddAccount
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style
