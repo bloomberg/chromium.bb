@@ -7,6 +7,8 @@ import json
 import logging
 import os
 import pipes
+import posixpath
+import re
 import shlex
 import sys
 
@@ -155,6 +157,196 @@ def _RunMemUsage(devices, devices_obj, apk_package):
         print
 
 
+def _DuHelper(device, path_spec, run_as=None):
+  """Runs "du -s -k |path_spec|" on |device| and returns parsed result.
+
+  Args:
+    device: A DeviceUtils instance.
+    path_spec: The list of paths to run du on. May contain shell expansions
+        (will not be escaped).
+    run_as: Package name to run as, or None to run as shell user. If not None
+        and app is not android:debuggable (run-as fails), then command will be
+        run as root.
+
+  Returns:
+    A dict of path->size in kb containing all paths in |path_spec| that exist on
+    device. Paths that do not exist are silently ignored.
+  """
+  # Example output for: du -s -k /data/data/org.chromium.chrome/{*,.*}
+  # 144     /data/data/org.chromium.chrome/cache
+  # 8       /data/data/org.chromium.chrome/files
+  # <snip>
+  # du: .*: No such file or directory
+
+  # The -d flag works differently across android version, so use -s instead.
+  cmd_str = 'du -s -k ' + path_spec
+  lines = device.RunShellCommand(cmd_str, run_as=run_as, shell=True,
+                                 check_return=False)
+  output = '\n'.join(lines)
+  # run-as: Package 'com.android.chrome' is not debuggable
+  if output.startswith('run-as:'):
+    # check_return=False needed for when some paths in path_spec do not exist.
+    lines = device.RunShellCommand(cmd_str, as_root=True, shell=True,
+                                   check_return=False)
+  ret = {}
+  try:
+    for line in lines:
+      # du: .*: No such file or directory
+      if line.startswith('du:'):
+        continue
+      size, subpath = line.split(None, 1)
+      ret[subpath] = int(size)
+    return ret
+  except ValueError:
+    logging.error('Failed to parse du output:\n%s', output)
+
+
+def _RunDiskUsage(devices, devices_obj, apk_package, verbose):
+  # Measuring dex size is a bit complicated:
+  # https://source.android.com/devices/tech/dalvik/jit-compiler
+  #
+  # For KitKat and below:
+  #   dumpsys package contains:
+  #     dataDir=/data/data/org.chromium.chrome
+  #     codePath=/data/app/org.chromium.chrome-1.apk
+  #     resourcePath=/data/app/org.chromium.chrome-1.apk
+  #     nativeLibraryPath=/data/app-lib/org.chromium.chrome-1
+  #   To measure odex:
+  #     ls -l /data/dalvik-cache/data@app@org.chromium.chrome-1.apk@classes.dex
+  #
+  # For Android L and M (and maybe for N+ system apps):
+  #   dumpsys package contains:
+  #     codePath=/data/app/org.chromium.chrome-1
+  #     resourcePath=/data/app/org.chromium.chrome-1
+  #     legacyNativeLibraryDir=/data/app/org.chromium.chrome-1/lib
+  #   To measure odex:
+  #     # Option 1:
+  #  /data/dalvik-cache/arm/data@app@org.chromium.chrome-1@base.apk@classes.dex
+  #  /data/dalvik-cache/arm/data@app@org.chromium.chrome-1@base.apk@classes.vdex
+  #     ls -l /data/dalvik-cache/profiles/org.chromium.chrome
+  #         (these profiles all appear to be 0 bytes)
+  #     # Option 2:
+  #     ls -l /data/app/org.chromium.chrome-1/oat/arm/base.odex
+  #
+  # For Android N+:
+  #   dumpsys package contains:
+  #     dataDir=/data/user/0/org.chromium.chrome
+  #     codePath=/data/app/org.chromium.chrome-UuCZ71IE-i5sZgHAkU49_w==
+  #     resourcePath=/data/app/org.chromium.chrome-UuCZ71IE-i5sZgHAkU49_w==
+  #     legacyNativeLibraryDir=/data/app/org.chromium.chrome-GUID/lib
+  #     Instruction Set: arm
+  #       path: /data/app/org.chromium.chrome-UuCZ71IE-i5sZgHAkU49_w==/base.apk
+  #       status: /data/.../oat/arm/base.odex[status=kOatUpToDate, compilation_f
+  #       ilter=quicken]
+  #     Instruction Set: arm64
+  #       path: /data/app/org.chromium.chrome-UuCZ71IE-i5sZgHAkU49_w==/base.apk
+  #       status: /data/.../oat/arm64/base.odex[status=..., compilation_filter=q
+  #       uicken]
+  #   To measure odex:
+  #     ls -l /data/app/.../oat/arm/base.odex
+  #     ls -l /data/app/.../oat/arm/base.vdex (optional)
+  #   To measure the correct odex size:
+  #     cmd package compile -m speed org.chromium.chrome  # For webview
+  #     cmd package compile -m speed-profile org.chromium.chrome  # For others
+  def disk_usage_helper(d):
+    package_output = '\n'.join(d.RunShellCommand(
+        ['dumpsys', 'package', apk_package], check_return=True))
+    # Prints a message but does not return error when apk is not installed.
+    if 'Unable to find package:' in package_output:
+      return None
+    # Ignore system apks.
+    idx = package_output.find('Hidden system packages:')
+    if idx != -1:
+      package_output = package_output[:idx]
+
+    try:
+      data_dir = re.search(r'dataDir=(.*)', package_output).group(1)
+      code_path = re.search(r'codePath=(.*)', package_output).group(1)
+      lib_path = re.search(r'(?:legacyN|n)ativeLibrary(?:Dir|Path)=(.*)',
+                           package_output).group(1)
+    except AttributeError:
+      raise Exception('Error parsing dumpsys output: ' + package_output)
+    compilation_filters = set()
+    # Match "compilation_filter=value", where a line break can occur at any spot
+    # (refer to examples above).
+    awful_wrapping = r'\s*'.join('compilation_filter=')
+    for m in re.finditer(awful_wrapping + r'([\s\S]+?)[\],]', package_output):
+      compilation_filters.add(re.sub(r'\s+', '', m.group(1)))
+    compilation_filter = ','.join(sorted(compilation_filters))
+
+    data_dir_sizes = _DuHelper(d, '%s/{*,.*}' % data_dir, run_as=apk_package)
+    # Measure code_cache separately since it can be large.
+    code_cache_sizes = {}
+    code_cache_dir = next(
+        (k for k in data_dir_sizes if k.endswith('/code_cache')), None)
+    if code_cache_dir:
+      data_dir_sizes.pop(code_cache_dir)
+      code_cache_sizes = _DuHelper(d, '%s/{*,.*}' % code_cache_dir,
+                                   run_as=apk_package)
+
+    apk_path_spec = code_path
+    if not apk_path_spec.endswith('.apk'):
+      apk_path_spec += '/*.apk'
+    apk_sizes = _DuHelper(d, apk_path_spec)
+    if lib_path.endswith('/lib'):
+      # Shows architecture subdirectory.
+      lib_sizes = _DuHelper(d, '%s/{*,.*}' % lib_path)
+    else:
+      lib_sizes = _DuHelper(d, lib_path)
+
+    # Look at all possible locations for odex files.
+    odex_paths = []
+    for apk_path in apk_sizes:
+      mangled_apk_path = apk_path[1:].replace('/', '@')
+      apk_basename = posixpath.basename(apk_path)[:-4]
+      for ext in ('dex', 'odex', 'vdex', 'art'):
+        # Easier to check all architectures than to determine active ones.
+        for arch in ('arm', 'arm64', 'x86', 'x86_64', 'mips', 'mips64'):
+          odex_paths.append(
+              '%s/oat/%s/%s.%s' % (code_path, arch, apk_basename, ext))
+          # No app could possibly have more than 6 dex files.
+          for suffix in ('', '2', '3', '4', '5'):
+            odex_paths.append('/data/dalvik-cache/%s/%s@classes%s.%s' % (
+                arch, mangled_apk_path, suffix, ext))
+            # This path does not have |arch|, so don't repeat it for every arch.
+            if arch == 'arm':
+              odex_paths.append('/data/dalvik-cache/%s@classes%s.dex' % (
+                  mangled_apk_path, suffix))
+
+    odex_sizes = _DuHelper(d, ' '.join(pipes.quote(p) for p in odex_paths))
+
+    return (data_dir_sizes, code_cache_sizes, apk_sizes, lib_sizes, odex_sizes,
+            compilation_filter)
+
+  def print_sizes(desc, sizes):
+    print '%s: %dkb' % (desc, sum(sizes.itervalues()))
+    if verbose:
+      for path, size in sorted(sizes.iteritems()):
+        print '    %s: %skb' % (path, size)
+
+  all_results = devices_obj.pMap(disk_usage_helper).pGet(None)
+  for result in _PrintPerDeviceOutput(devices, all_results):
+    if not result:
+      print 'APK is not installed.'
+      continue
+
+    (data_dir_sizes, code_cache_sizes, apk_sizes, lib_sizes, odex_sizes,
+     compilation_filter) = result
+    total = sum(sum(sizes.itervalues()) for sizes in result[:-1])
+
+    print_sizes('Apk', apk_sizes)
+    print_sizes('App Data (non-code cache)', data_dir_sizes)
+    print_sizes('App Data (code cache)', code_cache_sizes)
+    print_sizes('Native Libs', lib_sizes)
+    show_warning = compilation_filter and 'speed' not in compilation_filter
+    compilation_filter = compilation_filter or 'n/a'
+    print_sizes('odex (compilation_filter=%s)' % compilation_filter, odex_sizes)
+    if show_warning:
+      logging.warning('For a more realistic odex size, run:')
+      logging.warning('    %s compile-dex [speed|speed-profile]', sys.argv[0])
+    print 'Total: %skb (%.1fmb)' % (total, total / 1024.0)
+
+
 def _RunPs(devices, devices_obj, apk_package):
   all_pids = devices_obj.GetPids(apk_package).pGet(None)
   for proc_map in _PrintPerDeviceOutput(devices, all_pids):
@@ -182,6 +374,15 @@ def _RunShell(devices, devices_obj, apk_package, cmd):
       print 'run-as', apk_package
       print
     os.execv(adb_path, cmd)
+
+
+def _RunCompileDex(devices, devices_obj, apk_package, compilation_filter):
+  cmd = ['cmd', 'package', 'compile', '-f', '-m', compilation_filter,
+         apk_package]
+  outputs = devices_obj.RunShellCommand(cmd).pGet(None)
+  for output in _PrintPerDeviceOutput(devices, outputs):
+    for line in output:
+      print line
 
 
 # TODO(Yipengw):add "--all" in the MultipleDevicesError message and use it here.
@@ -219,6 +420,16 @@ def _AddCommonOptions(parser):
                       dest='devices',
                       help='Target device for script to work on. Enter '
                            'multiple times for multiple devices.')
+  parser.add_argument('-v',
+                      '--verbose',
+                      action='count',
+                      default=0,
+                      dest='verbose_count',
+                      help='Verbose level (multiple times for more)')
+
+
+def _AddInstallOptions(parser):
+  parser = parser.add_argument_group('install arguments')
   parser.add_argument('--incremental',
                       action='store_true',
                       default=False,
@@ -227,12 +438,6 @@ def _AddCommonOptions(parser):
                       action='store_true',
                       default=False,
                       help='Always install a non-incremental apk.')
-  parser.add_argument('-v',
-                      '--verbose',
-                      action='count',
-                      default=0,
-                      dest='verbose_count',
-                      help='Verbose level (multiple times for more)')
 
 
 def _AddLaunchOptions(parser):
@@ -260,18 +465,18 @@ def _SelectApk(apk_path, incremental_install_json_path, parser, args):
       not os.path.exists(incremental_install_json_path)):
     incremental_install_json_path = None
 
-  if args.incremental and args.non_incremental:
-    parser.error('--incremental and --non-incremental cannot both be used.')
-  elif args.non_incremental:
-    if not apk_path:
-      parser.error('Apk has not been built.')
-    incremental_install_json_path = None
-  elif args.incremental:
-    if not incremental_install_json_path:
-      parser.error('Incremental apk has not been built.')
-    apk_path = None
-
   if args.command in ('install', 'run'):
+    if args.incremental and args.non_incremental:
+      parser.error('--incremental and --non-incremental cannot both be used.')
+    elif args.non_incremental:
+      if not apk_path:
+        parser.error('Apk has not been built.')
+      incremental_install_json_path = None
+    elif args.incremental:
+      if not incremental_install_json_path:
+        parser.error('Incremental apk has not been built.')
+      apk_path = None
+
     if apk_path and incremental_install_json_path:
       parser.error('Both incremental and non-incremental apks exist, please '
                    'use --incremental or --non-incremental to select one.')
@@ -317,6 +522,7 @@ def Run(output_directory, apk_path, incremental_install_json_path,
                                           dest='command')
   subp = command_parsers.add_parser('install', help='Install the apk.')
   _AddCommonOptions(subp)
+  _AddInstallOptions(subp)
 
   subp = command_parsers.add_parser('uninstall', help='Uninstall the apk.')
   _AddCommonOptions(subp)
@@ -331,6 +537,7 @@ def Run(output_directory, apk_path, incremental_install_json_path,
 
   subp = command_parsers.add_parser('run', help='Install and launch.')
   _AddCommonOptions(subp)
+  _AddInstallOptions(subp)
   _AddLaunchOptions(subp)
   _AddArgsOptions(subp)
 
@@ -355,6 +562,10 @@ def Run(output_directory, apk_path, incremental_install_json_path,
                                     help='Run the shell command "adb logcat".')
   _AddCommonOptions(subp)
 
+  subp = command_parsers.add_parser('disk-usage',
+      help='Display disk usage for the APK.')
+  _AddCommonOptions(subp)
+
   subp = command_parsers.add_parser('mem-usage',
       help='Display memory usage of currently running APK processes.')
   _AddCommonOptions(subp)
@@ -369,6 +580,19 @@ def Run(output_directory, apk_path, incremental_install_json_path,
   _AddCommonOptions(subp)
   group = subp.add_argument_group('shell arguments')
   group.add_argument('cmd', nargs=argparse.REMAINDER, help='Command to run.')
+
+  subp = command_parsers.add_parser('compile-dex',
+      help='Applicable only for Android N+. Forces .odex files to be compiled '
+           'with the given compilation filter. To see existing filter, use '
+           '"disk-usage" command.')
+  _AddCommonOptions(subp)
+  group = subp.add_argument_group('compile-dex arguments')
+  # Allow only the most useful subset of filters.
+  group.add_argument('compilation_filter',
+                     choices=['verify', 'quicken', 'space-profile', 'space',
+                              'speed-profile', 'speed'],
+                     help='For WebView/Monochrome, use "speed". '
+                          'For other apks, use "speed-profile".')
 
   # Show extended help when no command is passed.
   argv = sys.argv[1:]
@@ -391,7 +615,9 @@ def Run(output_directory, apk_path, incremental_install_json_path,
     if len(devices) > 1:
       if command in ('gdb', 'logcat') or command == 'shell' and not args.cmd:
         raise device_errors.MultipleDevicesError(devices)
-    if command in ('argv', 'stop', 'clear-data', 'ps') or len(args.devices) > 0:
+    default_all = command in ('argv', 'stop', 'clear-data', 'disk-usage',
+                              'mem-usage', 'ps', 'compile-dex')
+    if default_all or args.devices:
       args.all = True
     if len(devices) > 1 and not args.all:
       raise Exception(_GenerateMissingAllFlagMessage(devices, devices_obj))
@@ -449,10 +675,14 @@ def Run(output_directory, apk_path, incremental_install_json_path,
     os.execv(adb_path, cmd)
   elif command == 'mem-usage':
     _RunMemUsage(devices, devices_obj, apk_package)
+  elif command == 'disk-usage':
+    _RunDiskUsage(devices, devices_obj, apk_package, args.verbose_count)
   elif command == 'ps':
     _RunPs(devices, devices_obj, apk_package)
   elif command == 'shell':
     _RunShell(devices, devices_obj, apk_package, args.cmd)
+  elif command == 'compile-dex':
+    _RunCompileDex(devices, devices_obj, apk_package, args.compilation_filter)
 
   # Save back to the cache.
   _SaveDeviceCaches(devices)
