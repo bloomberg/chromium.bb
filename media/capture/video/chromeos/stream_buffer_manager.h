@@ -11,15 +11,14 @@
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace gfx {
+namespace base {
 
-class GpuMemoryBuffer;
+class SharedMemory;
 
 }  // namespace base
 
 namespace media {
 
-class CameraBufferFactory;
 class CameraDeviceContext;
 
 // StreamBufferManager is responsible for managing the buffers of the
@@ -33,7 +32,6 @@ class CAPTURE_EXPORT StreamBufferManager final
       arc::mojom::Camera3CallbackOpsRequest callback_ops_request,
       std::unique_ptr<StreamCaptureInterface> capture_interface,
       CameraDeviceContext* device_context,
-      std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
       scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
 
   ~StreamBufferManager() final;
@@ -108,8 +106,6 @@ class CAPTURE_EXPORT StreamBufferManager final
 
   CameraDeviceContext* device_context_;
 
-  std::unique_ptr<CameraBufferFactory> camera_buffer_factory_;
-
   // Where all the Mojo IPC calls takes place.
   const scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
 
@@ -130,7 +126,7 @@ class CAPTURE_EXPORT StreamBufferManager final
     // The request settings used in the capture request of this stream.
     arc::mojom::CameraMetadataPtr request_settings;
     // The allocated buffers of this stream.
-    std::vector<std::unique_ptr<gfx::GpuMemoryBuffer>> buffers;
+    std::vector<std::unique_ptr<base::SharedMemory>> buffers;
     // The free buffers of this stream.  The queue stores indices into the
     // |buffers| vector.
     std::queue<size_t> free_buffers;

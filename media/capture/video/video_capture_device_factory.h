@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "media/capture/video/video_capture_device.h"
 
 namespace media {
@@ -28,8 +27,7 @@ namespace media {
 class CAPTURE_EXPORT VideoCaptureDeviceFactory {
  public:
   static std::unique_ptr<VideoCaptureDeviceFactory> CreateFactory(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      gpu::GpuMemoryBufferManager* gpu_buffer_manager);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   VideoCaptureDeviceFactory();
   virtual ~VideoCaptureDeviceFactory();
@@ -58,8 +56,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactory {
 
  private:
   static VideoCaptureDeviceFactory* CreateVideoCaptureDeviceFactory(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      gpu::GpuMemoryBufferManager* gpu_buffer_manager);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureDeviceFactory);
 };

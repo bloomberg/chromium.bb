@@ -13,9 +13,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/strings/string_piece.h"
-#include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
+#include "media/capture/video/chromeos/pixel_format_utils.h"
 #include "media/capture/video/chromeos/video_capture_device_arc_chromeos.h"
 
 namespace media {
@@ -51,7 +51,6 @@ CameraHalDelegate::CameraHalDelegate(
           base::WaitableEvent::ResetPolicy::MANUAL,
           base::WaitableEvent::InitialState::NOT_SIGNALED),
       num_builtin_cameras_(0),
-      camera_buffer_factory_(new CameraBufferFactory()),
       ipc_task_runner_(std::move(ipc_task_runner)),
       camera_module_callbacks_(this) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -144,16 +143,15 @@ void CameraHalDelegate::GetSupportedFormats(
 
     DVLOG(1) << "[" << std::hex << format << " " << std::dec << width << " "
              << height << " " << duration << "]";
-    auto hal_format = static_cast<arc::mojom::HalPixelFormat>(format);
-    const ChromiumPixelFormat cr_format =
-        camera_buffer_factory_->ResolveStreamBufferFormat(hal_format);
-    if (cr_format.video_format == PIXEL_FORMAT_UNKNOWN) {
+    VideoPixelFormat cr_format =
+        PixFormatHalToChromium(static_cast<arc::mojom::HalPixelFormat>(format));
+    if (cr_format == PIXEL_FORMAT_UNKNOWN) {
       continue;
     }
     VLOG(1) << "Supported format: " << width << "x" << height
-            << " fps=" << max_fps << " format=" << cr_format.video_format;
+            << " fps=" << max_fps << " format=" << cr_format;
     supported_formats->emplace_back(gfx::Size(width, height), max_fps,
-                                    cr_format.video_format);
+                                    cr_format);
   }
 }
 

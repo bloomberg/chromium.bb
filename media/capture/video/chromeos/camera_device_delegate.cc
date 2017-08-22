@@ -10,10 +10,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
+#include "media/capture/video/chromeos/pixel_format_utils.h"
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
@@ -237,8 +237,7 @@ void CameraDeviceDelegate::Initialize() {
   stream_buffer_manager_ = base::MakeUnique<StreamBufferManager>(
       std::move(callback_ops_request),
       base::MakeUnique<StreamCaptureInterfaceImpl>(GetWeakPtr()),
-      device_context_.get(), base::MakeUnique<CameraBufferFactory>(),
-      ipc_task_runner_);
+      device_context_.get(), ipc_task_runner_);
   device_ops_->Initialize(
       std::move(callback_ops_ptr),
       base::Bind(&CameraDeviceDelegate::OnInitialized, GetWeakPtr()));
@@ -317,6 +316,10 @@ void CameraDeviceDelegate::OnConfiguredStreams(
     return;
   }
 
+  VideoCaptureFormat capture_format = chrome_capture_params_.requested_format;
+  // TODO(jcliang): Determine the best format from metadata.
+  capture_format.pixel_format = PIXEL_FORMAT_NV12;
+
   // The partial result count metadata is optional; defaults to 1 in case it
   // is not set in the static metadata.
   uint32_t partial_result_count = 1;
@@ -328,7 +331,7 @@ void CameraDeviceDelegate::OnConfiguredStreams(
         *reinterpret_cast<int32_t*>((*partial_count)->data.data());
   }
   stream_buffer_manager_->SetUpStreamAndBuffers(
-      chrome_capture_params_.requested_format, partial_result_count,
+      capture_format, partial_result_count,
       std::move(updated_config->streams[0]));
 
   device_context_->SetState(CameraDeviceContext::State::kStreamConfigured);

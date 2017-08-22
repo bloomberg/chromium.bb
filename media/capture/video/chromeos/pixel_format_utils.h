@@ -5,30 +5,18 @@
 #ifndef MEDIA_CAPTURE_VIDEO_CHROMEOS_PIXEL_FORMAT_UTILS_H_
 #define MEDIA_CAPTURE_VIDEO_CHROMEOS_PIXEL_FORMAT_UTILS_H_
 
-#include <vector>
-
 #include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
 #include "media/capture/video_capture_types.h"
-#include "ui/gfx/buffer_types.h"
 
 namespace media {
 
-// A collection of the various pixel formats we need to look up.  We need to
-// resolve the HAL pixel format to VideoPixelFormat for VideoCaptureDevice, and
-// to gfx::BufferFormat for gpu::GpuMemoryBufferManager.
-struct ChromiumPixelFormat {
-  VideoPixelFormat video_format;
-  gfx::BufferFormat gfx_format;
-};
-
 // Converts the HAL pixel format |from| to Chromium pixel format.  Returns
-// empty vector if |from| is not supported.
-std::vector<ChromiumPixelFormat> PixFormatHalToChromium(
-    arc::mojom::HalPixelFormat from);
+// PIXEL_FORMAT_UNKNOWN if |from| is not supported.
+VideoPixelFormat PixFormatHalToChromium(arc::mojom::HalPixelFormat from);
 
-// Converts the video pixel format |from| to DRM pixel format.  Returns 0
+// Converts the Chromium pixel format |from| to DRM pixel format.  Returns 0
 // if |from| is not supported.
-uint32_t PixFormatVideoToDrm(VideoPixelFormat from);
+uint32_t PixFormatChromiumToDrm(VideoPixelFormat from);
 
 }  // namespace media
 
