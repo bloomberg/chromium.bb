@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import static org.junit.Assert.assertNotEquals;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -1007,6 +1008,39 @@ public class SafeBrowsingTest {
         // Don't run the assert on the callback's thread, since the test runner loses the stack
         // trace unless on the instrumentation thread.
         Assert.assertTrue("Callback should run on UI Thread", mOnUiThread);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testInitSafeBrowsingUsesAppContext() throws Throwable {
+        MockContext ctx =
+                new MockContext(InstrumentationRegistry.getInstrumentation().getTargetContext());
+        CallbackHelper helper = new CallbackHelper();
+        int count = helper.getCallCount();
+
+        AwContentsStatics.initSafeBrowsing(ctx, b -> helper.notifyCalled());
+        helper.waitForCallback(count);
+        Assert.assertTrue(
+                "Should only use application context", ctx.wasGetApplicationContextCalled());
+    }
+
+    private static class MockContext extends ContextWrapper {
+        private boolean mGetApplicationContextWasCalled;
+
+        public MockContext(Context context) {
+            super(context);
+        }
+
+        public Context getApplicationContext() {
+            mGetApplicationContextWasCalled = true;
+            return super.getApplicationContext();
+        }
+
+        public boolean wasGetApplicationContextCalled() {
+            return mGetApplicationContextWasCalled;
+        }
     }
 
     @Test

@@ -565,8 +565,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                      */
                     // TODO(ntfschr): add @Override once next android SDK rolls
                     public void initSafeBrowsing(Context context, ValueCallback<Boolean> callback) {
-                        AwContentsStatics.initSafeBrowsing(
-                                context.getApplicationContext(), callback);
+                        AwContentsStatics.initSafeBrowsing(context, callback);
                     }
 
                     /**
