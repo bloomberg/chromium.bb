@@ -21,7 +21,7 @@ class LIBGTKUI_EXPORT NavButtonProviderGtk3 : public views::NavButtonProvider {
   ~NavButtonProviderGtk3() override;
 
   // views::NavButtonProvider:
-  void RedrawImages(int top_area_height, bool maximized) override;
+  void RedrawImages(int top_area_height, bool maximized, bool active) override;
   gfx::ImageSkia GetImage(chrome::FrameButtonDisplayType type,
                           views::Button::ButtonState state) const override;
   gfx::Insets GetNavButtonMargin(

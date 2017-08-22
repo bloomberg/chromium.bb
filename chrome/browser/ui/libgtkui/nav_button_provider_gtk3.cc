@@ -160,8 +160,12 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
  public:
   NavButtonImageSource(chrome::FrameButtonDisplayType type,
                        views::Button::ButtonState state,
+                       bool active,
                        gfx::Size button_size)
-      : type_(type), state_(state), button_size_(button_size) {}
+      : type_(type),
+        state_(state),
+        active_(active),
+        button_size_(button_size) {}
 
   ~NavButtonImageSource() override {}
 
@@ -176,6 +180,10 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
     gtk_style_context_add_class(button_context,
                                 ButtonStyleClassFromButtonType(type_));
     GtkStateFlags button_state = GtkStateFlagsFromButtonState(state_);
+    if (!active_) {
+      button_state =
+          static_cast<GtkStateFlags>(button_state | GTK_STATE_FLAG_BACKDROP);
+    }
     gtk_style_context_set_state(button_context, button_state);
 
     // Gtk doesn't support fractional scale factors, but chrome does.
@@ -225,6 +233,7 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
  private:
   chrome::FrameButtonDisplayType type_;
   views::Button::ButtonState state_;
+  bool active_;
   gfx::Size button_size_;
 };
 
@@ -234,7 +243,9 @@ NavButtonProviderGtk3::NavButtonProviderGtk3() {}
 
 NavButtonProviderGtk3::~NavButtonProviderGtk3() {}
 
-void NavButtonProviderGtk3::RedrawImages(int top_area_height, bool maximized) {
+void NavButtonProviderGtk3::RedrawImages(int top_area_height,
+                                         bool maximized,
+                                         bool active) {
   auto header_context =
       GetStyleContextFromCss("GtkHeaderBar#headerbar.header-bar.titlebar");
 
@@ -301,7 +312,8 @@ void NavButtonProviderGtk3::RedrawImages(int top_area_height, bool maximized) {
     for (size_t state = 0; state < views::Button::STATE_COUNT; state++) {
       button_images_[type][state] = gfx::ImageSkia(
           std::make_unique<NavButtonImageSource>(
-              type, static_cast<views::Button::ButtonState>(state), size),
+              type, static_cast<views::Button::ButtonState>(state), active,
+              size),
           size);
     }
   }

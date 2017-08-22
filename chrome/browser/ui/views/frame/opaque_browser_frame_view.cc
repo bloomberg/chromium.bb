@@ -284,7 +284,11 @@ void OpaqueBrowserFrameView::UpdateWindowTitle() {
     window_title_->SchedulePaint();
 }
 
-void OpaqueBrowserFrameView::SizeConstraintsChanged() {
+void OpaqueBrowserFrameView::SizeConstraintsChanged() {}
+
+void OpaqueBrowserFrameView::ActivationChanged(bool active) {
+  BrowserNonClientFrameView::ActivationChanged(active);
+  MaybeRedrawFrameButtons();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -693,7 +697,8 @@ views::ImageButton* OpaqueBrowserFrameView::GetButtonFromDisplayType(
 
 void OpaqueBrowserFrameView::MaybeRedrawFrameButtons() {
   if (ShouldRenderNativeNavButtons()) {
-    nav_button_provider_->RedrawImages(GetTopAreaHeight(), IsMaximized());
+    nav_button_provider_->RedrawImages(GetTopAreaHeight(), IsMaximized(),
+                                       ShouldPaintAsActive());
     for (auto type : {
              chrome::FrameButtonDisplayType::kMinimize,
              IsMaximized() ? chrome::FrameButtonDisplayType::kRestore

@@ -22,9 +22,13 @@ class NavButtonProvider {
  public:
   virtual ~NavButtonProvider() {}
 
-  // If |top_area_height| is different from the cached top area
-  // height, redraws all button images at the new size.
-  virtual void RedrawImages(int top_area_height, bool maximized) = 0;
+  // Redraws all images and updates all size state.  |top_area_height|
+  // is the total available height to render the buttons, and buttons
+  // may be drawn larger when more height is available.  |active|
+  // indicates if the window the buttons reside in has activation.
+  virtual void RedrawImages(int top_area_height,
+                            bool maximized,
+                            bool active) = 0;
 
   // Gets the cached button image corresponding to |type| and |state|.
   virtual gfx::ImageSkia GetImage(chrome::FrameButtonDisplayType type,

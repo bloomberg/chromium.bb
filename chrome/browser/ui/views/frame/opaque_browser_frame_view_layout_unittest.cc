@@ -130,7 +130,7 @@ class TestNavButtonProvider : public views::NavButtonProvider {
 
   ~TestNavButtonProvider() override {}
 
-  void RedrawImages(int top_area_height, bool maximized) override {
+  void RedrawImages(int top_area_height, bool maximized, bool active) override {
     ASSERT_EQ(false, maximized);  // This only tests the restored state.
   }
 
