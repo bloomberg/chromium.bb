@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
@@ -24,9 +23,7 @@
 #import "ios/chrome/browser/passwords/js_password_manager.h"
 #import "ios/chrome/browser/passwords/password_generation_offer_view.h"
 #import "ios/chrome/browser/passwords/passwords_ui_delegate.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
-#import "ios/testing/ocmock_complex_type_helper.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
@@ -45,9 +42,6 @@ NSString* const kAccountCreationFormName = @"create-foo-account";
 NSString* const kAccountCreationFieldName = @"password";
 NSString* const kAccountCreationOrigin = @"http://foo.com/login";
 NSString* const kEmailFieldName = @"email";
-
-// Static storage to access arguments passed to swizzled method of UIWindow.
-static id g_chrome_execute_command_sender = nil;
 
 }  // namespace
 
@@ -87,43 +81,7 @@ static id g_chrome_execute_command_sender = nil;
 
 @end
 
-// A donor class that provides a chromeExecuteCommand method that can be
-// swapped with UIWindow.
-@interface DonorWindow : NSObject
-
-- (void)chromeExecuteCommand:(id)sender;
-
-@end
-
-@implementation DonorWindow
-
-- (void)chromeExecuteCommand:(id)sender {
-  g_chrome_execute_command_sender = sender;
-}
-
-@end
-
 namespace {
-
-// A helper to swizzle chromeExecuteCommand method on UIWindow.
-class ScopedWindowSwizzler {
- public:
-  ScopedWindowSwizzler()
-      : class_swizzler_([UIWindow class],
-                        [DonorWindow class],
-                        @selector(chromeExecuteCommand:)) {
-    DCHECK(!g_chrome_execute_command_sender);
-  }
-
-  ~ScopedWindowSwizzler() {
-    g_chrome_execute_command_sender = nil;
-  }
-
- private:
-  base::mac::ScopedObjCClassSwizzler class_swizzler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedWindowSwizzler);
-};
 
 // Returns a form that should be marked as an account creation form by local
 // heuristics.
@@ -224,13 +182,15 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
         [OCMockObject niceMockForClass:[JsPasswordManager class]];
     mock_ui_delegate_ = [[MockPasswordsUiDelegate alloc] init];
     test_web_state_ = base::MakeUnique<web::TestWebState>();
+    dispatcher_ = OCMProtocolMock(@protocol(ApplicationCommands));
     agent_ = [[PasswordGenerationAgent alloc]
              initWithWebState:test_web_state_.get()
               passwordManager:nullptr
         passwordManagerDriver:nullptr
             JSPasswordManager:mock_js_password_manager_
           JSSuggestionManager:mock_js_suggestion_manager_
-          passwordsUiDelegate:mock_ui_delegate_];
+          passwordsUiDelegate:mock_ui_delegate_
+                   dispatcher:dispatcher_];
     @autoreleasepool {
       accessory_view_controller_ = [[FormInputAccessoryViewController alloc]
           initWithWebState:test_web_state_.get()
@@ -295,6 +255,9 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
     return accessory_view_controller_;
   }
 
+  // Returns the current dispatcher for the generation agent.
+  id dispatcher() { return dispatcher_; }
+
  private:
   // Test WebState.
   std::unique_ptr<web::TestWebState> test_web_state_;
@@ -313,6 +276,9 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
 
   // The current generation agent.
   PasswordGenerationAgent* agent_;
+
+  // Dispatcher for the generation agent.
+  id dispatcher_;
 };
 
 // Tests that local heuristics skip forms with GAIA realm.
@@ -501,7 +467,6 @@ TEST_F(PasswordGenerationAgentTest,
 // "show saved passwords".
 TEST_F(PasswordGenerationAgentTest,
        ShouldShowPasswordsAndDismissAlertWhenUserTapsShow) {
-  ScopedWindowSwizzler swizzler;
   LoadAccountCreationForm();
   // Focus the password field to start generation.
   SimulateFormActivity(kAccountCreationFormName, kAccountCreationFieldName,
@@ -511,11 +476,7 @@ TEST_F(PasswordGenerationAgentTest,
 
   [agent() showSavedPasswords:nil];
   EXPECT_EQ(NO, mock_ui_delegate().UIShown);
-
-  GenericChromeCommand* command = base::mac::ObjCCast<GenericChromeCommand>(
-      g_chrome_execute_command_sender);
-  EXPECT_TRUE(command);
-  EXPECT_EQ(IDC_SHOW_SAVE_PASSWORDS_SETTINGS, command.tag);
+  [[dispatcher() verify] showSavePasswordsSettings];
 }
 
 }  // namespace

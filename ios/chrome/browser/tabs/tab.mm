@@ -490,24 +490,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (experimental_flags::IsAutoReloadEnabled())
     _autoReloadBridge = [[AutoReloadBridge alloc] initWithTab:self];
 
-  id<PasswordsUiDelegate> passwordsUiDelegate =
-      [[PasswordsUiDelegateImpl alloc] init];
-  passwordController_ =
-      [[PasswordController alloc] initWithWebState:self.webState
-                               passwordsUiDelegate:passwordsUiDelegate];
-  password_manager::PasswordGenerationManager* passwordGenerationManager =
-      [passwordController_ passwordGenerationManager];
-  _autofillController =
-      [[AutofillController alloc] initWithBrowserState:_browserState
-                             passwordGenerationManager:passwordGenerationManager
-                                              webState:self.webState];
-  _suggestionController = [[FormSuggestionController alloc]
-      initWithWebState:self.webState
-             providers:[self suggestionProviders]];
-  _inputAccessoryViewController = [[FormInputAccessoryViewController alloc]
-      initWithWebState:self.webState
-             providers:[self accessoryViewProviders]];
-
   [self setShouldObserveFaviconChanges:YES];
 
   // Create the ReaderModeController immediately so it can register for
@@ -524,6 +506,25 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)attachDispatcherDependentTabHelpers {
   _printObserver =
       base::MakeUnique<PrintObserver>(self.webState, self.dispatcher);
+
+  id<PasswordsUiDelegate> passwordsUIDelegate =
+      [[PasswordsUiDelegateImpl alloc] init];
+  passwordController_ =
+      [[PasswordController alloc] initWithWebState:self.webState
+                               passwordsUiDelegate:passwordsUIDelegate
+                                        dispatcher:self.dispatcher];
+  password_manager::PasswordGenerationManager* passwordGenerationManager =
+      [passwordController_ passwordGenerationManager];
+  _autofillController =
+      [[AutofillController alloc] initWithBrowserState:_browserState
+                             passwordGenerationManager:passwordGenerationManager
+                                              webState:self.webState];
+  _suggestionController = [[FormSuggestionController alloc]
+      initWithWebState:self.webState
+             providers:[self suggestionProviders]];
+  _inputAccessoryViewController = [[FormInputAccessoryViewController alloc]
+      initWithWebState:self.webState
+             providers:[self accessoryViewProviders]];
 }
 
 - (NSArray*)accessoryViewProviders {

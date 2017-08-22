@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/passwords/passwords_ui_delegate.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
+@protocol ApplicationCommands;
 @class CRWWebController;
 @protocol FormInputAccessoryViewProvider;
 @class JsPasswordManager;
@@ -41,7 +42,8 @@ class PasswordManagerDriver;
      initWithWebState:(web::WebState*)webState
       passwordManager:(password_manager::PasswordManager*)passwordManager
 passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
-  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate;
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
+           dispatcher:(id<ApplicationCommands>)dispatcher;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -86,7 +88,8 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
 passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
     JSPasswordManager:(JsPasswordManager*)javaScriptPasswordManager
   JSSuggestionManager:(JsSuggestionManager*)suggestionManager
-  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate;
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
+           dispatcher:(id<ApplicationCommands>)dispatcher;
 
 // Clears all per-page state.
 - (void)clearState;
