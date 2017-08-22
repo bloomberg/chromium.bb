@@ -8,8 +8,6 @@
 #import <XCTest/XCTest.h>
 
 #import "base/ios/block_types.h"
-#include "base/ios/ios_util.h"
-#include "base/strings/sys_string_conversions.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
@@ -55,8 +53,7 @@ using testing::ElementToDismissContextMenu;
   [ShellEarlGrey waitForWebViewContainingText:linkText];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
-      performAction:web::LongPressElementForContextMenu(
-                        linkID, true /* menu should appear */)];
+      performAction:web::LongPressElementForContextMenu(linkID)];
 
   id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
 
@@ -69,84 +66,6 @@ using testing::ElementToDismissContextMenu;
       performAction:grey_tap()];
 
   // Context menu should go away after the tap.
-  [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
-}
-
-// Tests context menu on element that has WebkitTouchCallout set to none.
-- (void)testContextMenuWebkitTouchCalloutNone {
-  // TODO(crbug.com/753119): Re-enable this test on iOS 11 iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnIOS11OrLater() &&
-      UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
-  }
-
-  // Create map of canned responses and set up the test HTML server.
-  std::map<GURL, std::string> responses;
-  GURL initialURL =
-      web::test::HttpServer::MakeUrl("http://contextMenuDisabledByWebkit");
-  GURL destinationURL = web::test::HttpServer::MakeUrl("http://destination");
-  // The initial page contains a link to the destination URL that has an
-  // ancestor that disables the context menu via -webkit-touch-callout.
-  std::string linkID = "link";
-  std::string linkText = "no-callout link";
-  responses[initialURL] = "<body><a href='" + destinationURL.spec() +
-                          "' style='-webkit-touch-callout: none' id='" +
-                          linkID + "'>" + linkText +
-                          "</a>"
-                          "</body>";
-
-  web::test::SetUpSimpleHttpServer(responses);
-  [ShellEarlGrey loadURL:initialURL];
-  [ShellEarlGrey waitForWebViewContainingText:linkText];
-
-  [[EarlGrey selectElementWithMatcher:web::WebView()]
-      performAction:web::LongPressElementForContextMenu(
-                        linkID, false /* menu shouldn't appear */)];
-
-  id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
-
-  // Verify no context menu.
-  [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
-}
-
-// Tests context menu on element that has WebkitTouchCallout set to none from an
-// ancestor.
-- (void)testContextMenuWebkitTouchCalloutNoneFromAncestor {
-  // TODO(crbug.com/753119): Re-enable this test on iOS 11 iPad once the bug is
-  // fixed.
-  if (base::ios::IsRunningOnIOS11OrLater() &&
-      UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 11.");
-  }
-
-  // Create map of canned responses and set up the test HTML server.
-  std::map<GURL, std::string> responses;
-  GURL initialURL =
-      web::test::HttpServer::MakeUrl("http://contextMenuDisabledByWebkit");
-  GURL destinationURL = web::test::HttpServer::MakeUrl("http://destination");
-  // The initial page contains a link to the destination URL that has an
-  // ancestor that disables the context menu via -webkit-touch-callout.
-  std::string linkID = "link";
-  std::string linkText = "ancestor no-callout link";
-  responses[initialURL] =
-      "<body style='-webkit-touch-callout: none'>"
-      "<a href='" +
-      destinationURL.spec() + "' id='" + linkID + "'>" + linkText +
-      "</a>"
-      "</body>";
-
-  web::test::SetUpSimpleHttpServer(responses);
-  [ShellEarlGrey loadURL:initialURL];
-  [ShellEarlGrey waitForWebViewContainingText:linkText];
-
-  [[EarlGrey selectElementWithMatcher:web::WebView()]
-      performAction:web::LongPressElementForContextMenu(
-                        linkID, false /* menu shouldn't appear */)];
-
-  id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
-
-  // Verify no context menu.
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
 }
 
@@ -175,8 +94,7 @@ using testing::ElementToDismissContextMenu;
   [ShellEarlGrey waitForWebViewContainingText:linkText];
 
   [[EarlGrey selectElementWithMatcher:web::WebView()]
-      performAction:web::LongPressElementForContextMenu(
-                        linkID, true /* menu should appear */)];
+      performAction:web::LongPressElementForContextMenu(linkID)];
 
   id<GREYMatcher> copyItem = ButtonWithAccessibilityLabel(@"Copy Link");
 
