@@ -8,6 +8,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
@@ -86,13 +88,15 @@ bool GetInstalledFilesUsingMsiGuid(
 }
 
 // Checks if the registry key references an installed program in the Apps &
-// Features settings page.
+// Features settings page. Also keeps tracks of the memory used by all the
+// strings that are added to |programs_data| and adds it to |size_in_bytes|.
 void CheckRegistryKeyForInstalledProgram(
     HKEY hkey,
     const base::string16& key_path,
     const base::string16& key_name,
     const MsiUtil& msi_util,
-    InstalledPrograms::ProgramsData* programs_data) {
+    InstalledPrograms::ProgramsData* programs_data,
+    int* size_in_bytes) {
   base::win::RegKey candidate(
       hkey,
       base::StringPrintf(L"%ls\\%ls", key_path.c_str(), key_name.c_str())
@@ -127,20 +131,30 @@ void CheckRegistryKeyForInstalledProgram(
 
   base::FilePath install_path;
   if (GetInstallPathUsingInstallLocation(candidate, &install_path)) {
+    *size_in_bytes +=
+        display_name.length() * sizeof(base::string16::value_type);
     programs_data->program_names.push_back(std::move(display_name));
+
+    *size_in_bytes +=
+        install_path.value().length() * sizeof(base::FilePath::CharType);
     const size_t program_name_index = programs_data->program_names.size() - 1;
-    programs_data->install_directories.push_back(
-        std::make_pair(std::move(install_path), program_name_index));
+    programs_data->install_directories.emplace_back(std::move(install_path),
+                                                    program_name_index);
     return;
   }
 
   std::vector<base::FilePath> installed_files;
   if (GetInstalledFilesUsingMsiGuid(key_name, msi_util, &installed_files)) {
+    *size_in_bytes +=
+        display_name.length() * sizeof(base::string16::value_type);
     programs_data->program_names.push_back(std::move(display_name));
+
     const size_t program_name_index = programs_data->program_names.size() - 1;
     for (auto& installed_file : installed_files) {
-      programs_data->installed_files.push_back(
-          std::make_pair(std::move(installed_file), program_name_index));
+      *size_in_bytes +=
+          installed_file.value().length() * sizeof(base::FilePath::CharType);
+      programs_data->installed_files.emplace_back(std::move(installed_file),
+                                                  program_name_index);
     }
   }
 }
@@ -158,6 +172,8 @@ void SortByFilePaths(
 // Populates and returns a ProgramsData instance.
 std::unique_ptr<InstalledPrograms::ProgramsData> GetProgramsData(
     std::unique_ptr<MsiUtil> msi_util) {
+  SCOPED_UMA_HISTOGRAM_TIMER("ThirdPartyModules.InstalledPrograms.GetDataTime");
+
   auto programs_data = base::MakeUnique<InstalledPrograms::ProgramsData>();
 
   // Iterate over all the variants of the uninstall registry key.
@@ -166,12 +182,14 @@ std::unique_ptr<InstalledPrograms::ProgramsData> GetProgramsData(
       L"SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
   };
 
+  int size_in_bytes = 0;
   for (const wchar_t* uninstall_key_path : kUninstallKeyPaths) {
     for (HKEY hkey : {HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER}) {
       for (base::win::RegistryKeyIterator i(hkey, uninstall_key_path);
            i.Valid(); ++i) {
         CheckRegistryKeyForInstalledProgram(hkey, uninstall_key_path, i.Name(),
-                                            *msi_util, programs_data.get());
+                                            *msi_util, programs_data.get(),
+                                            &size_in_bytes);
       }
     }
   }
@@ -180,6 +198,20 @@ std::unique_ptr<InstalledPrograms::ProgramsData> GetProgramsData(
   // entries will be added anyways.
   SortByFilePaths(&programs_data->installed_files);
   SortByFilePaths(&programs_data->install_directories);
+
+  // Calculate the size taken by |programs_data|.
+  size_in_bytes +=
+      programs_data->program_names.capacity() * sizeof(base::string16);
+  size_in_bytes += programs_data->installed_files.capacity() *
+                   sizeof(std::pair<base::FilePath, size_t>);
+  size_in_bytes += programs_data->install_directories.capacity() *
+                   sizeof(std::pair<base::FilePath, size_t>);
+
+  // Using the function version of this UMA histogram because this will only be
+  // invoked once during a browser run so the caching that comes with the macro
+  // version is wasted resources.
+  base::UmaHistogramMemoryKB("ThirdPartyModules.InstalledPrograms.DataSize",
+                             size_in_bytes / 1024);
 
   return programs_data;
 }
