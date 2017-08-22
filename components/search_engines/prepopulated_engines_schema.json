@@ -32,7 +32,11 @@
     { "field": "new_tab_url", "type": "string", "optional": true },
     // If omitted, this engine does not support contextual search.
     { "field": "contextual_search_url", "type": "string", "optional": true },
+    // If omitted, this engine does not support a static logo.
     { "field": "logo_url", "type": "string", "optional": true },
+    // If omitted, this engine does not support doodles. Note: Only at most one
+    // of "doodle_url" and "logo_url" should be set.
+    { "field": "doodle_url", "type": "string", "optional": true },
     // The followings are post parameters for the corresponding search URL.
     // If omitted, a GET request will be sent when using the corresponding
     // search URL. Otherwise, a POST request will be sent.

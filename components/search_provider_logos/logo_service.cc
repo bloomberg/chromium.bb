@@ -12,6 +12,7 @@
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/search_provider_logos/features.h"
 #include "components/search_provider_logos/fixed_logo_api.h"
 #include "components/search_provider_logos/google_logo_api.h"
 #include "components/search_provider_logos/logo_tracker.h"
@@ -120,7 +121,9 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
     return;
   }
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
   GURL logo_url;
   if (command_line->HasSwitch(switches::kSearchProviderLogoURL)) {
     logo_url = GURL(
@@ -128,14 +131,33 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
   } else {
     logo_url = template_url->logo_url();
   }
-  const bool use_fixed_logo = logo_url.is_valid();
 
-  if (!template_url->url_ref().HasGoogleBaseURLs(
-          template_url_service_->search_terms_data()) &&
-      !use_fixed_logo) {
+  GURL base_url;
+  GURL doodle_url;
+  const bool is_google = template_url->url_ref().HasGoogleBaseURLs(
+      template_url_service_->search_terms_data());
+  if (is_google) {
+    // TODO(treib): After features::kUseDdljsonApi has launched, put the Google
+    // doodle URL into prepopulated_engines.json.
+    base_url =
+        GURL(template_url_service_->search_terms_data().GoogleBaseURLValue());
+    doodle_url = search_provider_logos::GetGoogleDoodleURL(base_url);
+  } else if (base::FeatureList::IsEnabled(features::kThirdPartyDoodles)) {
+    if (command_line->HasSwitch(switches::kThirdPartyDoodleURL)) {
+      doodle_url = GURL(
+          command_line->GetSwitchValueASCII(switches::kThirdPartyDoodleURL));
+    } else {
+      doodle_url = template_url->doodle_url();
+    }
+    base_url = doodle_url.GetOrigin();
+  }
+
+  if (!logo_url.is_valid() && !doodle_url.is_valid()) {
     observer->OnObserverRemoved();
     return;
   }
+
+  const bool use_fixed_logo = !doodle_url.is_valid();
 
   if (!logo_tracker_) {
     logo_tracker_ = base::MakeUnique<LogoTracker>(
@@ -147,16 +169,21 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
     logo_tracker_->SetServerAPI(
         logo_url, base::Bind(&search_provider_logos::ParseFixedLogoResponse),
         base::Bind(&search_provider_logos::UseFixedLogoUrl));
-  } else {
-    GURL google_base_url =
-        GURL(template_url_service_->search_terms_data().GoogleBaseURLValue());
-
+  } else if (is_google) {
+    // TODO(treib): Get rid of this Google special case after
+    // features::kUseDdljsonApi has launched.
     logo_tracker_->SetServerAPI(
-        search_provider_logos::GetGoogleDoodleURL(google_base_url),
-        search_provider_logos::GetGoogleParseLogoResponseCallback(
-            google_base_url),
+        doodle_url,
+        search_provider_logos::GetGoogleParseLogoResponseCallback(base_url),
         search_provider_logos::GetGoogleAppendQueryparamsCallback(
             use_gray_background_));
+  } else {
+    logo_tracker_->SetServerAPI(
+        doodle_url,
+        base::Bind(&search_provider_logos::GoogleNewParseLogoResponse,
+                   base_url),
+        base::Bind(&search_provider_logos::GoogleNewAppendQueryparamsToLogoURL,
+                   use_gray_background_));
   }
 
   logo_tracker_->GetLogo(observer);

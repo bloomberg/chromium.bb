@@ -38,6 +38,7 @@ struct TemplateURLData {
                   base::StringPiece new_tab_url,
                   base::StringPiece contextual_search_url,
                   base::StringPiece logo_url,
+                  base::StringPiece doodle_url,
                   base::StringPiece search_url_post_params,
                   base::StringPiece suggest_url_post_params,
                   base::StringPiece instant_url_post_params,
@@ -74,6 +75,9 @@ struct TemplateURLData {
 
   // Optional URL for the logo.
   GURL logo_url;
+
+  // Optional URL for the Doodle.
+  GURL doodle_url;
 
   // The following post_params are comma-separated lists used to specify the
   // post parameters for the corresponding URL.
