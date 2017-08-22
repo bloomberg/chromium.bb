@@ -701,4 +701,8 @@ void WebSettingsImpl::SetDoNotUpdateSelectionOnMutatingSelectionRange(
   settings_->SetDoNotUpdateSelectionOnMutatingSelectionRange(enabled);
 }
 
+void WebSettingsImpl::SetMediaDownloadInProductHelpEnabled(bool enabled) {
+  settings_->SetMediaDownloadInProductHelpEnabled(enabled);
+}
+
 }  // namespace blink

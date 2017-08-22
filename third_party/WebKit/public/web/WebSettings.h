@@ -298,6 +298,7 @@ class WebSettings {
   virtual void SetXSSAuditorEnabled(bool) = 0;
   virtual void SetMediaControlsEnabled(bool) = 0;
   virtual void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) = 0;
+  virtual void SetMediaDownloadInProductHelpEnabled(bool) = 0;
 
  protected:
   ~WebSettings() {}

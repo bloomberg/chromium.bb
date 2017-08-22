@@ -52,6 +52,7 @@
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 #include "modules/media_controls/MediaControlsRotateToFullscreenDelegate.h"
 #include "modules/media_controls/MediaControlsWindowEventListener.h"
+#include "modules/media_controls/MediaDownloadInProductHelpManager.h"
 #include "modules/media_controls/elements/MediaControlCastButtonElement.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
@@ -321,6 +322,16 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
             toHTMLVideoElement(media_element));
   }
 
+  // Initialize download in-product-help for video elements if enabled.
+  if (media_element.GetDocument().GetSettings() &&
+      media_element.GetDocument()
+          .GetSettings()
+          ->GetMediaDownloadInProductHelpEnabled() &&
+      media_element.IsHTMLVideoElement()) {
+    controls->download_iph_manager_ =
+        new MediaDownloadInProductHelpManager(*controls);
+  }
+
   shadow_root.AppendChild(controls);
   return controls;
 }
@@ -571,6 +582,8 @@ void MediaControlsImpl::MaybeShow() {
   // Only make the controls visible if they won't get hidden by OnTimeUpdate.
   if (MediaElement().paused() || !ShouldHideMediaControls())
     MakeOpaque();
+  if (download_iph_manager_)
+    download_iph_manager_->SetControlsVisibility(true);
 }
 
 void MediaControlsImpl::Hide() {
@@ -578,6 +591,8 @@ void MediaControlsImpl::Hide() {
   panel_->SetIsDisplayed(false);
   if (overlay_play_button_)
     overlay_play_button_->SetIsWanted(false);
+  if (download_iph_manager_)
+    download_iph_manager_->SetControlsVisibility(false);
 }
 
 bool MediaControlsImpl::IsVisible() const {
@@ -631,6 +646,10 @@ bool MediaControlsImpl::ShouldHideMediaControls(unsigned behavior_flags) const {
 
   // Don't hide the media controls when a panel is showing.
   if (text_track_list_->IsWanted() || overflow_list_->IsWanted())
+    return false;
+
+  // Don't hide the media controls while the in product help is showing.
+  if (download_iph_manager_ && download_iph_manager_->IsShowingInProductHelp())
     return false;
 
   return true;
@@ -816,8 +835,7 @@ void MediaControlsImpl::DefaultEventHandler(Event* event) {
       is_mouse_over_controls_ = true;
       if (!MediaElement().paused()) {
         MakeOpaque();
-        if (ShouldHideMediaControls())
-          StartHideMediaControlsTimer();
+        StartHideMediaControlsIfNecessary();
       }
     }
     return;
@@ -962,6 +980,9 @@ void MediaControlsImpl::OnPlay() {
   UpdatePlayState();
   timeline_->SetPosition(MediaElement().currentTime());
   UpdateCurrentTimeDisplay();
+
+  if (download_iph_manager_)
+    download_iph_manager_->SetIsPlaying(true);
 }
 
 void MediaControlsImpl::OnPlaying() {
@@ -977,6 +998,9 @@ void MediaControlsImpl::OnPause() {
   MakeOpaque();
 
   StopHideMediaControlsTimer();
+
+  if (download_iph_manager_)
+    download_iph_manager_->SetIsPlaying(false);
 }
 
 void MediaControlsImpl::OnTextTracksAddedOrRemoved() {
@@ -1212,6 +1236,24 @@ void MediaControlsImpl::HideAllMenus() {
     text_track_list_->SetVisible(false);
 }
 
+void MediaControlsImpl::StartHideMediaControlsIfNecessary() {
+  if (ShouldHideMediaControls())
+    StartHideMediaControlsTimer();
+}
+
+const MediaControlDownloadButtonElement& MediaControlsImpl::DownloadButton()
+    const {
+  return *download_button_;
+}
+
+void MediaControlsImpl::DidDismissDownloadInProductHelp() {
+  StartHideMediaControlsIfNecessary();
+}
+
+MediaDownloadInProductHelpManager* MediaControlsImpl::DownloadInProductHelp() {
+  return download_iph_manager_;
+}
+
 DEFINE_TRACE(MediaControlsImpl) {
   visitor->Trace(element_mutation_callback_);
   visitor->Trace(resize_observer_);
@@ -1237,6 +1279,7 @@ DEFINE_TRACE(MediaControlsImpl) {
   visitor->Trace(window_event_listener_);
   visitor->Trace(orientation_lock_delegate_);
   visitor->Trace(rotate_to_fullscreen_delegate_);
+  visitor->Trace(download_iph_manager_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }

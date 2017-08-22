@@ -1,0 +1,105 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "modules/media_controls/MediaDownloadInProductHelpManager.h"
+
+#include "core/frame/LocalFrameClient.h"
+#include "modules/media_controls/MediaControlsImpl.h"
+#include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+
+namespace blink {
+
+MediaDownloadInProductHelpManager::MediaDownloadInProductHelpManager(
+    MediaControlsImpl& controls)
+    : controls_(controls) {}
+
+MediaDownloadInProductHelpManager::~MediaDownloadInProductHelpManager() =
+    default;
+
+void MediaDownloadInProductHelpManager::SetControlsVisibility(bool can_show) {
+  if (controls_can_show_ == can_show)
+    return;
+
+  controls_can_show_ = can_show;
+  StateUpdated();
+}
+
+void MediaDownloadInProductHelpManager::SetDownloadButtonVisibility(
+    bool can_show) {
+  if (button_can_show_ == can_show)
+    return;
+
+  button_can_show_ = can_show;
+  StateUpdated();
+}
+
+void MediaDownloadInProductHelpManager::SetIsPlaying(bool is_playing) {
+  if (is_playing_ == is_playing)
+    return;
+
+  is_playing_ = is_playing;
+  StateUpdated();
+}
+
+bool MediaDownloadInProductHelpManager::IsShowingInProductHelp() const {
+  return media_in_product_help_.is_bound();
+}
+
+void MediaDownloadInProductHelpManager::
+    MaybeDispatchDownloadInProductHelpTrigger() {
+  // Only show in-product-help once for an element.
+  if (media_download_in_product_trigger_observed_)
+    return;
+
+  auto* frame = controls_->GetDocument().GetFrame();
+  if (!frame)
+    return;
+
+  // If the button is not in the viewport, don't show the in-product-help.
+  IntRect button_rect =
+      controls_->DownloadButton().VisibleBoundsInVisualViewport();
+  if (button_rect.IsEmpty())
+    return;
+
+  media_download_in_product_trigger_observed_ = true;
+  frame->Client()->GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&media_in_product_help_));
+  media_in_product_help_.set_connection_error_handler(ConvertToBaseCallback(
+      WTF::Bind(&MediaDownloadInProductHelpManager::DismissInProductHelp,
+                WrapWeakPersistent(this))));
+  DCHECK(media_in_product_help_.is_bound());
+
+  // MaybeShow should always make the controls visible since we early out if
+  // CanShow is false for the controls.
+  controls_->MaybeShow();
+  media_in_product_help_->ShowInProductHelpWidget(button_rect);
+}
+
+void MediaDownloadInProductHelpManager::StateUpdated() {
+  if (CanShowInProductHelp())
+    MaybeDispatchDownloadInProductHelpTrigger();
+  else
+    DismissInProductHelp();
+}
+
+bool MediaDownloadInProductHelpManager::CanShowInProductHelp() const {
+  // In-product help should only be shown if the controls can be made visible,
+  // the download button is wanted and the video is not paused.
+  return controls_can_show_ && button_can_show_ && is_playing_;
+}
+
+void MediaDownloadInProductHelpManager::DismissInProductHelp() {
+  if (!media_in_product_help_.is_bound())
+    return;
+
+  media_in_product_help_.reset();
+  controls_->DidDismissDownloadInProductHelp();
+}
+
+DEFINE_TRACE(MediaDownloadInProductHelpManager) {
+  visitor->Trace(controls_);
+}
+
+}  // namespace blink

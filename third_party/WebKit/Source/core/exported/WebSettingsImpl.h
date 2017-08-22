@@ -201,6 +201,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetXSSAuditorEnabled(bool) override;
   void SetMediaControlsEnabled(bool) override;
   void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) override;
+  void SetMediaDownloadInProductHelpEnabled(bool) override;
 
   bool ShowFPSCounter() const { return show_fps_counter_; }
   bool ShowPaintRects() const { return show_paint_rects_; }

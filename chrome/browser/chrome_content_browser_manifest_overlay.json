@@ -55,6 +55,7 @@
           "autofill::mojom::PasswordManagerDriver",
           "blink::mojom::BudgetService",
           "blink::mojom::InstalledAppProvider",
+          "blink::mojom::MediaDownloadInProductHelp",
           "blink::mojom::ShareService",
           "blink::mojom::TextSuggestionHost",
           "bluetooth::mojom::AdapterFactory",

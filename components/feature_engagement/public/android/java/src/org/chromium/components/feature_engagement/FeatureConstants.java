@@ -16,6 +16,8 @@ public final class FeatureConstants {
     public static final String DATA_SAVER_PREVIEW_FEATURE = "IPH_DataSaverPreview";
     public static final String DATA_SAVER_DETAIL_FEATURE = "IPH_DataSaverDetail";
 
+    public static final String MEDIA_DOWNLOAD_FEATURE = "IPH_MediaDownload";
+
     /**
      * Do not instantiate.
      */

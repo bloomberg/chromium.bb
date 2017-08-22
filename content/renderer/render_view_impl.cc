@@ -970,6 +970,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetEmbeddedMediaExperienceEnabled(
       prefs.embedded_media_experience_enabled);
   settings->SetPagePopupsSuppressed(prefs.page_popups_suppressed);
+  settings->SetMediaDownloadInProductHelpEnabled(
+      prefs.enable_media_download_in_product_help);
   settings->SetDoNotUpdateSelectionOnMutatingSelectionRange(
       prefs.do_not_update_selection_on_mutating_selection_range);
   WebRuntimeFeatures::EnableCSSHexAlphaColor(prefs.css_hex_alpha_color_enabled);

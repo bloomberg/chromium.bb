@@ -17,6 +17,8 @@ blink_modules_sources("media_controls") {
     "MediaControlsRotateToFullscreenDelegate.h",
     "MediaControlsWindowEventListener.cpp",
     "MediaControlsWindowEventListener.h",
+    "MediaDownloadInProductHelpManager.cpp",
+    "MediaDownloadInProductHelpManager.h",
     "elements/MediaControlCastButtonElement.cpp",
     "elements/MediaControlCastButtonElement.h",
     "elements/MediaControlCurrentTimeDisplayElement.cpp",

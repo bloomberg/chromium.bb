@@ -86,6 +86,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabReparentingParams;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.widget.textbubble.TextBubble;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -388,6 +389,11 @@ public class Tab
     private int mThemeColor;
 
     private ChromeDownloadDelegate mDownloadDelegate;
+
+    /**
+     * The Text bubble used to display In Product help widget for download feature on videos.
+     */
+    private TextBubble mDownloadIPHBubble;
 
     /** Whether or not the tab closing the tab can send the user back to the app that opened it. */
     private boolean mIsAllowedToReturnToExternalApp;
@@ -1870,6 +1876,8 @@ public class Tab
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
         mObservers.clear();
 
+        hideMediaDownloadInProductHelp();
+
         NativePage currentNativePage = mNativePage;
         mNativePage = null;
         destroyNativePageInternal(currentNativePage);
@@ -3121,6 +3129,47 @@ public class Tab
         nativeEnableEmbeddedMediaExperience(mNativeTabAndroid, enabled);
     }
 
+    @CalledByNative
+    private void showMediaDownloadInProductHelp(int x, int y, int width, int height) {
+        // If we are not currently showing the widget, ask the tracker if we can show it.
+        if (mDownloadIPHBubble == null) {
+            Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+            tracker.notifyEvent(EventConstants.MEDIA_DOWNLOAD_BUTTON_DISPLAYED);
+            if (!tracker.shouldTriggerHelpUI(FeatureConstants.MEDIA_DOWNLOAD_FEATURE)) {
+                // Inform native that the button was dismissed to notify the renderer that the
+                // request was rejected.
+                nativeMediaDownloadInProductHelpDismissed(mNativeTabAndroid);
+                return;
+            }
+
+            mDownloadIPHBubble = new TextBubble(getApplicationContext(),
+                    mContentViewCore.getContainerView(), R.string.iph_media_download_text,
+                    R.string.iph_media_download_accessibility_text);
+            mDownloadIPHBubble.setDismissOnTouchInteraction(true);
+            mDownloadIPHBubble.addOnDismissListener(new OnDismissListener() {
+                @Override
+                public void onDismiss() {
+                    hideMediaDownloadInProductHelp();
+                }
+            });
+        }
+
+        Rect rect = new Rect(x, y, x + width, y + height);
+        mDownloadIPHBubble.setAnchorRect(rect);
+        mDownloadIPHBubble.show();
+    }
+
+    @CalledByNative
+    private void hideMediaDownloadInProductHelp() {
+        if (mDownloadIPHBubble == null) return;
+
+        mDownloadIPHBubble.dismiss();
+        mDownloadIPHBubble = null;
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        tracker.dismissed(FeatureConstants.MEDIA_DOWNLOAD_FEATURE);
+        nativeMediaDownloadInProductHelpDismissed(mNativeTabAndroid);
+    }
+
     private native void nativeInit();
     private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
@@ -3155,4 +3204,5 @@ public class Tab
     private native void nativeSetWebappManifestScope(long nativeTabAndroid, String scope);
     private native void nativeEnableEmbeddedMediaExperience(long nativeTabAndroid, boolean enabled);
     private native void nativeAttachDetachedTab(long nativeTabAndroid);
+    private native void nativeMediaDownloadInProductHelpDismissed(long nativeTabAndroid);
 }
