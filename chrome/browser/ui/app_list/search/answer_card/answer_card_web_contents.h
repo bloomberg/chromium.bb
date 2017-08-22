@@ -51,18 +51,14 @@ class AnswerCardWebContents : public AnswerCardContents,
                              content::RenderViewHost* new_host) override;
 
  private:
-  bool HandleMouseEvent(const blink::WebMouseEvent& event);
   void AttachToHost(content::RenderWidgetHost* host);
   void DetachFromHost();
 
   // Web view for the web contents managed by this class.
-  const std::unique_ptr<views::WebView> web_view_;
+  std::unique_ptr<views::WebView> web_view_;
 
   // Web contents managed by this class.
   const std::unique_ptr<content::WebContents> web_contents_;
-
-  // Callbacks for mouse events in the web contents.
-  const content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
 
   // Current widget host.
   content::RenderWidgetHost* host_ = nullptr;
