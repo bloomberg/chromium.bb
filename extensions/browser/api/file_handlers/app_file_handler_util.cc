@@ -7,6 +7,8 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/task_scheduler/task_traits.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -76,7 +78,7 @@ bool FileHandlerCanHandleFileWithMimeType(const FileHandlerInfo& handler,
 
 bool PrepareNativeLocalFileForWritableApp(const base::FilePath& path,
                                           bool is_directory) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
 
   // Don't allow links.
   if (base::PathExists(path) && base::IsLink(path))
@@ -169,8 +171,8 @@ void WritableFileChecker::Check() {
       continue;
     }
 #endif
-    content::BrowserThread::PostTaskAndReplyWithResult(
-        content::BrowserThread::FILE, FROM_HERE,
+    base::PostTaskWithTraitsAndReplyWithResult(
+        FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
         base::Bind(&PrepareNativeLocalFileForWritableApp, path, is_directory),
         base::Bind(&WritableFileChecker::OnPrepareFileDone, this, path));
   }
