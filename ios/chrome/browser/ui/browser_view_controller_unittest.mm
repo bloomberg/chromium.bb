@@ -348,8 +348,18 @@ TEST_F(BrowserViewControllerTest, TestTabDeselected) {
 
 TEST_F(BrowserViewControllerTest, TestNativeContentController) {
   id<CRWNativeContent> controller =
-      [bvc_ controllerForURL:GURL(kChromeUINewTabURL)
+      [bvc_ controllerForURL:GURL(kChromeUIBookmarksURL)
                     webState:webStateImpl_.get()];
+  EXPECT_TRUE(controller != nil);
+  if (IsIPadIdiom()) {
+    EXPECT_TRUE([controller isMemberOfClass:[NewTabPageController class]]);
+  } else {
+    EXPECT_TRUE(
+        [controller isMemberOfClass:[PageNotAvailableController class]]);
+  }
+
+  controller = [bvc_ controllerForURL:GURL(kChromeUINewTabURL)
+                             webState:webStateImpl_.get()];
   EXPECT_TRUE(controller != nil);
   EXPECT_TRUE([controller isMemberOfClass:[NewTabPageController class]]);
 
