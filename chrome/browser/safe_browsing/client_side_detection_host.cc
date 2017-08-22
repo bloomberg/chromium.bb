@@ -25,6 +25,7 @@
 #include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/whitelist_checker_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -213,24 +214,43 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
 
   void CheckSafeBrowsingDatabase(const GURL& url) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    // We don't want to call the classification callbacks from the IO
-    // thread so we simply pass the results of this method to CheckCache()
-    // which is called on the UI thread;
     PreClassificationCheckFailures phishing_reason = NO_CLASSIFY_MAX;
     PreClassificationCheckFailures malware_reason = NO_CLASSIFY_MAX;
     if (!database_manager_.get()) {
       // We cannot check the Safe Browsing whitelists so we stop here
       // for safety.
-      malware_reason = phishing_reason = NO_CLASSIFY_NO_DATABASE_MANAGER;
-    } else {
-      if (database_manager_->MatchCsdWhitelistUrl(url)) {
-        DVLOG(1) << "Skipping phishing classification for URL: " << url
-                 << " because it matches the csd whitelist";
-        phishing_reason = NO_CLASSIFY_MATCH_CSD_WHITELIST;
-      }
-      if (database_manager_->IsMalwareKillSwitchOn()) {
-        malware_reason = NO_CLASSIFY_KILLSWITCH;
-      }
+      OnWhitelistCheckDoneOnIO(url, NO_CLASSIFY_NO_DATABASE_MANAGER,
+                               NO_CLASSIFY_NO_DATABASE_MANAGER,
+                               /*match_whitelist=*/false);
+      return;
+    }
+
+    if (database_manager_->IsMalwareKillSwitchOn()) {
+      malware_reason = NO_CLASSIFY_KILLSWITCH;
+    }
+
+    // Query the CSD Whitelist asynchronously. We're already on the IO thread so
+    // can call WhitelistCheckerClient directly.
+    base::Callback<void(bool)> result_callback =
+        base::Bind(&ClientSideDetectionHost::ShouldClassifyUrlRequest::
+                       OnWhitelistCheckDoneOnIO,
+                   this, url, phishing_reason, malware_reason);
+    WhitelistCheckerClient::StartCheckCsdWhitelist(database_manager_, url,
+                                                   result_callback);
+  }
+
+  void OnWhitelistCheckDoneOnIO(const GURL& url,
+                                PreClassificationCheckFailures phishing_reason,
+                                PreClassificationCheckFailures malware_reason,
+                                bool match_whitelist) {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    // We don't want to call the classification callbacks from the IO
+    // thread so we simply pass the results of this method to CheckCache()
+    // which is called on the UI thread;
+    if (match_whitelist) {
+      DVLOG(1) << "Skipping phishing classification for URL: " << url
+               << " because it matches the csd whitelist";
+      phishing_reason = NO_CLASSIFY_MATCH_CSD_WHITELIST;
     }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
