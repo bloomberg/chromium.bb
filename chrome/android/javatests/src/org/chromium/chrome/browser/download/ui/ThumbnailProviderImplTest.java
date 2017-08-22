@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.download.ui;
 
 import android.graphics.Bitmap;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.test.filters.MediumTest;
 
 import junit.framework.Assert;
@@ -25,6 +27,8 @@ import org.chromium.chrome.browser.download.ui.ThumbnailProvider.ThumbnailReques
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 /**
  * Instrumentation test for {@link ThumbnailProviderImpl}.
@@ -41,10 +45,13 @@ public class ThumbnailProviderImplTest {
 
     private ThumbnailProviderImpl mThumbnailProvider;
 
+    private static final long TIMEOUT_MS = 10000;
+    private static final long INTERVAL_MS = 500;
+
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mThumbnailProvider = new ThumbnailProviderImpl();
+        initializeOnUiThread();
         clearThumbnailCache();
     }
 
@@ -179,6 +186,20 @@ public class ThumbnailProviderImplTest {
         Assert.assertEquals(expectedHeight, request.getRetrievedThumbnail().getHeight());
     }
 
+    private void initializeOnUiThread() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mThumbnailProvider = new ThumbnailProviderImpl();
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mThumbnailProvider != null;
+            }
+        }, TIMEOUT_MS, INTERVAL_MS);
+    }
     private void clearThumbnailCache() {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
@@ -202,13 +223,17 @@ public class ThumbnailProviderImplTest {
         }
 
         @Override
-        public String getFilePath() {
+        public @Nullable String getFilePath() {
             return mTestFilePath;
         }
 
         @Override
-        public void onThumbnailRetrieved(String filePath, Bitmap thumbnail) {
-            Assert.assertEquals(mTestFilePath, filePath);
+        public @Nullable String getContentId() {
+            return "contentId"; // None-null value for ThumbnailProviderImpl to work
+        }
+
+        @Override
+        public void onThumbnailRetrieved(@NonNull String contentId, @Nullable Bitmap thumbnail) {
             mRetrievedThumbnail = thumbnail;
             mThumbnailRetrievedCallbackHelper.notifyCalled();
         }
