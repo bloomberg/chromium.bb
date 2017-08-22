@@ -24,6 +24,12 @@ DIR_SOURCE_ROOT = os.path.abspath(
 SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'fuchsia-sdk')
 SYMBOLIZATION_TIMEOUT_SECS = 10
 
+# The guest will get 192.168.3.9 from DHCP, while the host will be
+# accessible as 192.168.3.2 .
+GUEST_NET = '192.168.3.0/24'
+GUEST_IP_ADDRESS = '192.168.3.9'
+HOST_IP_ADDRESS = '192.168.3.2'
+
 
 def _RunAndCheck(dry_run, args):
   if dry_run:
@@ -338,11 +344,10 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
       '-kernel', kernel_path,
       '-initrd', bootfs,
 
-      # Configure virtual network. The guest will get 192.168.3.9 from
-      # DHCP, while the host will be accessible as 192.168.3.2 . The network
-      # is used in the tests to connect to testserver running on the host.
-      '-netdev', 'user,id=net0,net=192.168.3.0/24,dhcpstart=192.168.3.9,' +
-                 'host=192.168.3.2',
+      # Configure virtual network. It is used in the tests to connect to
+      # testserver running on the host.
+      '-netdev', 'user,id=net0,net=%s,dhcpstart=%s,host=%s' %
+          (GUEST_NET, GUEST_IP_ADDRESS, HOST_IP_ADDRESS),
       '-device', 'e1000,netdev=net0',
 
       # Use stdio for the guest OS only; don't attach the QEMU interactive
