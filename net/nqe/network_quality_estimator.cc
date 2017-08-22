@@ -286,9 +286,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
   // tools/metrics/histograms/histograms.xml.
   accuracy_recording_intervals_.push_back(base::TimeDelta::FromSeconds(15));
 
-  for (int i = 0; i < STATISTIC_LAST; ++i)
-    http_rtt_at_last_main_frame_[i] = nqe::internal::InvalidRTT();
-
   ComputeEffectiveConnectionType();
 }
 
@@ -359,13 +356,6 @@ void NetworkQualityEstimator::NotifyStartTransaction(
     ComputeEffectiveConnectionType();
     effective_connection_type_at_last_main_frame_ = effective_connection_type_;
     estimated_quality_at_last_main_frame_ = network_quality_;
-
-    // Record the HTTP at the last main frame for experimental statistics.
-    for (int i = 0; i < STATISTIC_LAST; ++i) {
-      http_rtt_at_last_main_frame_[i] = GetRTTEstimateInternal(
-          disallowed_observation_sources_for_http_, base::TimeTicks(),
-          static_cast<Statistic>(i), 50);
-    }
 
     // Post the tasks which will run in the future and record the estimation
     // accuracy based on the observations received between now and the time of
@@ -458,25 +448,6 @@ void NetworkQualityEstimator::RecordAccuracyAfterMainFrame(
     return;
 
   base::TimeDelta recent_http_rtt;
-
-  // Record the HTTP prediction accuracy for experimental statistics.
-  for (int i = 0; i < STATISTIC_LAST; ++i) {
-    recent_http_rtt = GetRTTEstimateInternal(
-        disallowed_observation_sources_for_http_, last_main_frame_request_,
-        static_cast<Statistic>(i), 50);
-    if (recent_http_rtt != nqe::internal::InvalidRTT() &&
-        http_rtt_at_last_main_frame_[i] != nqe::internal::InvalidRTT()) {
-      int estimated_observed_diff_milliseconds =
-          http_rtt_at_last_main_frame_[i].InMilliseconds() -
-          recent_http_rtt.InMilliseconds();
-
-      std::string histogram_name =
-          base::StringPrintf("NQE.%s.Accuracy.HttpRTT", GetNameForStatistic(i));
-      RecordRTTAccuracy(histogram_name, estimated_observed_diff_milliseconds,
-                        measuring_duration, recent_http_rtt);
-    }
-  }
-
   if (!GetRecentHttpRTT(last_main_frame_request_, &recent_http_rtt))
     recent_http_rtt = nqe::internal::InvalidRTT();
 
@@ -835,9 +806,6 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
     AddDefaultEstimates();
   estimated_quality_at_last_main_frame_ = nqe::internal::NetworkQuality();
 
-  for (int i = 0; i < STATISTIC_LAST; ++i)
-    http_rtt_at_last_main_frame_[i] = nqe::internal::InvalidRTT();
-
   throughput_analyzer_->OnConnectionTypeChanged();
   MaybeComputeEffectiveConnectionType();
 }
@@ -1012,16 +980,6 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
 
   effective_connection_type_histogram->Add(
       effective_connection_type_at_last_main_frame_);
-
-  // Record the HTTP RTT at the main frames for experimental statistics.
-  for (int i = 0; i < STATISTIC_LAST; ++i) {
-    if (http_rtt_at_last_main_frame_[i] != nqe::internal::InvalidRTT()) {
-      base::HistogramBase* rtt_histogram = base::Histogram::FactoryGet(
-          base::StringPrintf("NQE.%s.MainFrame.RTT", GetNameForStatistic(i)), 1,
-          10 * 1000, 50, base::HistogramBase::kUmaTargetedHistogramFlag);
-      rtt_histogram->Add(http_rtt_at_last_main_frame_[i].InMilliseconds());
-    }
-  }
 }
 
 void NetworkQualityEstimator::ComputeBandwidthDelayProduct() {
@@ -1527,12 +1485,6 @@ base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
     case STATISTIC_LAST:
       NOTREACHED();
       return nqe::internal::InvalidRTT();
-    case STATISTIC_WEIGHTED_AVERAGE:
-      rtt_ms = rtt_ms_observations_.GetWeightedAverage(
-          start_time, signal_strength_, disallowed_observation_sources);
-    case STATISTIC_UNWEIGHTED_AVERAGE:
-      rtt_ms = rtt_ms_observations_.GetUnweightedAverage(
-          start_time, signal_strength_, disallowed_observation_sources);
   }
 
   return base::TimeDelta::FromMilliseconds(
@@ -1987,10 +1939,6 @@ void NetworkQualityEstimator::MaybeUpdateNetworkQualityFromCache(
 const char* NetworkQualityEstimator::GetNameForStatistic(int i) const {
   Statistic statistic = static_cast<Statistic>(i);
   switch (statistic) {
-    case STATISTIC_WEIGHTED_AVERAGE:
-      return "WeightedAverage";
-    case STATISTIC_UNWEIGHTED_AVERAGE:
-      return "UnweightedAverage";
     case STATISTIC_LAST:
       NOTREACHED();
       return "";

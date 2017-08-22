@@ -80,60 +80,6 @@ base::Optional<int32_t> ObservationBuffer::GetPercentile(
   return weighted_observations.at(weighted_observations.size() - 1).value;
 }
 
-base::Optional<int32_t> ObservationBuffer::GetWeightedAverage(
-    base::TimeTicks begin_timestamp,
-    const base::Optional<int32_t>& current_signal_strength,
-    const std::vector<NetworkQualityObservationSource>&
-        disallowed_observation_sources) const {
-  // Stores weighted observations in increasing order by value.
-  std::vector<WeightedObservation> weighted_observations;
-
-  // Total weight of all observations in |weighted_observations|.
-  double total_weight = 0.0;
-
-  ComputeWeightedObservations(begin_timestamp, current_signal_strength,
-                              &weighted_observations, &total_weight,
-                              disallowed_observation_sources);
-  if (weighted_observations.empty())
-    return base::nullopt;
-
-  // Weighted average is the sum of observations times their respective
-  // weights, divided by the sum of the weights of all observations.
-  double total_weight_times_value = 0.0;
-  for (const auto& weighted_observation : weighted_observations) {
-    total_weight_times_value +=
-        (weighted_observation.weight * weighted_observation.value);
-  }
-
-  return static_cast<int32_t>(total_weight_times_value / total_weight);
-}
-
-base::Optional<int32_t> ObservationBuffer::GetUnweightedAverage(
-    base::TimeTicks begin_timestamp,
-    const base::Optional<int32_t>& current_signal_strength,
-    const std::vector<NetworkQualityObservationSource>&
-        disallowed_observation_sources) const {
-  // Stores weighted observations in increasing order by value.
-  std::vector<WeightedObservation> weighted_observations;
-
-  // Total weight of all observations in |weighted_observations|.
-  double total_weight = 0.0;
-
-  ComputeWeightedObservations(begin_timestamp, current_signal_strength,
-                              &weighted_observations, &total_weight,
-                              disallowed_observation_sources);
-  if (weighted_observations.empty())
-    return base::nullopt;
-
-  // The unweighted average is the sum of all observations divided by the
-  // number of observations.
-  double total_value = 0.0;
-  for (const auto& weighted_observation : weighted_observations)
-    total_value += weighted_observation.value;
-
-  return total_value / weighted_observations.size();
-}
-
 void ObservationBuffer::GetPercentileForEachHostWithCounts(
     base::TimeTicks begin_timestamp,
     int percentile,

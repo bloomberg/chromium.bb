@@ -218,11 +218,11 @@ class NET_EXPORT NetworkQualityEstimator
  protected:
   // Different experimental statistic algorithms that can be used for computing
   // the predictions.
+  // TODO(tbansal): crbug.com/649887. Consider evaluating other statistical
+  // algorithms.
   enum Statistic {
-    STATISTIC_WEIGHTED_AVERAGE = 0,
-    STATISTIC_UNWEIGHTED_AVERAGE = 1,
     // Last statistic. Not to be used.
-    STATISTIC_LAST = 2
+    STATISTIC_LAST = 0
   };
 
   // NetworkChangeNotifier::ConnectionTypeObserver implementation:
@@ -576,10 +576,6 @@ class NET_EXPORT NetworkQualityEstimator
   // request was started.
   nqe::internal::NetworkQuality estimated_quality_at_last_main_frame_;
   EffectiveConnectionType effective_connection_type_at_last_main_frame_;
-
-  // Estimated RTT at HTTP layer when the last main frame transaction was
-  // started. Computed using different statistics.
-  base::TimeDelta http_rtt_at_last_main_frame_[STATISTIC_LAST];
 
   // Estimated network quality obtained from external estimate provider when the
   // external estimate provider was last queried.
