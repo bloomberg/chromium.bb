@@ -17,7 +17,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
@@ -36,8 +35,7 @@ class RecentDownloadSource : public RecentSource {
   ~RecentDownloadSource() override;
 
   // RecentSource overrides:
-  void GetRecentFiles(RecentContext context,
-                      GetRecentFilesCallback callback) override;
+  void GetRecentFiles(Params params) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RecentDownloadSourceTest, GetRecentFiles_UmaStats);
@@ -60,8 +58,7 @@ class RecentDownloadSource : public RecentSource {
   const std::string mount_point_name_;
 
   // Parameters given to GetRecentFiles().
-  RecentContext context_;
-  GetRecentFilesCallback callback_;
+  base::Optional<Params> params_;
 
   // Time when the build started.
   base::TimeTicks build_start_time_;

@@ -13,8 +13,8 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_mounter.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
 #include "chrome/browser/chromeos/fileapi/recent_arc_media_source.h"
-#include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
+#include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -109,17 +109,16 @@ class RecentArcMediaSourceTest : public testing::Test {
 
     base::RunLoop run_loop;
 
-    source_->GetRecentFiles(
-        RecentContext(nullptr /* file_system_context */, GURL() /* origin */,
-                      1 /* max_files: ignored */,
-                      base::Time() /* cutoff_time: ignored */),
+    source_->GetRecentFiles(RecentSource::Params(
+        nullptr /* file_system_context */, GURL() /* origin */,
+        1 /* max_files: ignored */, base::Time() /* cutoff_time: ignored */,
         base::BindOnce(
             [](base::RunLoop* run_loop, std::vector<RecentFile>* out_files,
                std::vector<RecentFile> files) {
               run_loop->Quit();
               *out_files = std::move(files);
             },
-            &run_loop, &files));
+            &run_loop, &files)));
 
     run_loop.Run();
 

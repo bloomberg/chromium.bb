@@ -12,8 +12,8 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/file_errors.h"
@@ -41,8 +41,7 @@ class RecentDriveSource : public RecentSource {
   ~RecentDriveSource() override;
 
   // RecentSource overrides:
-  void GetRecentFiles(RecentContext context,
-                      GetRecentFilesCallback callback) override;
+  void GetRecentFiles(Params params) override;
 
  private:
   static const char kLoadHistogramName[];
@@ -58,8 +57,7 @@ class RecentDriveSource : public RecentSource {
   Profile* const profile_;
 
   // Set at the beginning of GetRecentFiles().
-  RecentContext context_;
-  GetRecentFilesCallback callback_;
+  base::Optional<Params> params_;
 
   base::TimeTicks build_start_time_;
 
