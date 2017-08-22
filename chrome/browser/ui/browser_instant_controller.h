@@ -30,8 +30,6 @@ class BrowserInstantController : public SearchModelObserver,
   // Returns the Profile associated with the Browser that owns this object.
   Profile* profile() const;
 
-  // Returns the InstantController or NULL if there is no InstantController for
-  // this BrowserInstantController.
   InstantController* instant() { return &instant_; }
 
   // Invoked by |instant_| to get the currently active tab.

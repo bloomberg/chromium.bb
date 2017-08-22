@@ -191,14 +191,11 @@ void InstantService::UndoAllMostVisitedDeletions() {
 
 void InstantService::UpdateThemeInfo() {
 #if !defined(OS_ANDROID)
-  // Update theme background info.
-  // Initialize |theme_info| if necessary.
+  // Initialize |theme_info_| if necessary.
   if (!theme_info_) {
-    OnThemeChanged();
-  } else {
-    for (InstantServiceObserver& observer : observers_)
-      observer.ThemeInfoChanged(*theme_info_);
+    BuildThemeInfo();
   }
+  NotifyAboutThemeInfo();
 #endif  // !defined(OS_ANDROID)
 }
 
@@ -256,7 +253,8 @@ void InstantService::Observe(int type,
       break;
 #if !defined(OS_ANDROID)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
-      OnThemeChanged();
+      BuildThemeInfo();
+      NotifyAboutThemeInfo();
       break;
 #endif  // !defined(OS_ANDROID)
     default:
@@ -317,6 +315,11 @@ void InstantService::NotifyAboutMostVisitedItems() {
     observer.MostVisitedItemsChanged(most_visited_items_);
 }
 
+void InstantService::NotifyAboutThemeInfo() {
+  for (InstantServiceObserver& observer : observers_)
+    observer.ThemeInfoChanged(*theme_info_);
+}
+
 #if !defined(OS_ANDROID)
 
 namespace {
@@ -335,7 +338,7 @@ RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
 
 }  // namespace
 
-void InstantService::OnThemeChanged() {
+void InstantService::BuildThemeInfo() {
   // Get theme information from theme service.
   theme_info_.reset(new ThemeBackgroundInfo());
 
@@ -432,9 +435,6 @@ void InstantService::OnThemeChanged() {
     theme_info_->has_attribution =
         theme_provider.HasCustomImage(IDR_THEME_NTP_ATTRIBUTION);
   }
-
-  for (InstantServiceObserver& observer : observers_)
-    observer.ThemeInfoChanged(*theme_info_);
 }
 #endif  // !defined(OS_ANDROID)
 
