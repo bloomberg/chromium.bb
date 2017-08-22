@@ -147,8 +147,8 @@ class AV1HBDSubtractBlockTest : public ::testing::TestWithParam<Params> {
   }
 
  protected:
-  void RunForSpeed();
   void CheckResult();
+  void RunForSpeed();
 
  private:
   ACMRandom rnd_;
@@ -160,24 +160,6 @@ class AV1HBDSubtractBlockTest : public ::testing::TestWithParam<Params> {
   uint8_t *pred_;
   int16_t *diff_;
 };
-
-void AV1HBDSubtractBlockTest::RunForSpeed() {
-  const int test_num = 200000;
-  const int max_width = 128;
-  const int max_block_size = max_width * max_width;
-  const int mask = (1 << bit_depth_) - 1;
-  int i, j;
-
-  for (j = 0; j < max_block_size; ++j) {
-    CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask;
-    CONVERT_TO_SHORTPTR(pred_)[j] = rnd_.Rand16() & mask;
-  }
-
-  for (i = 0; i < test_num; ++i) {
-    func_(block_height_, block_width_, diff_, block_width_, src_, block_width_,
-          pred_, block_width_, bit_depth_);
-  }
-}
 
 void AV1HBDSubtractBlockTest::CheckResult() {
   const int test_num = 100;
@@ -208,9 +190,25 @@ void AV1HBDSubtractBlockTest::CheckResult() {
 
 TEST_P(AV1HBDSubtractBlockTest, CheckResult) { CheckResult(); }
 
-#if USE_SPEED_TEST
-TEST_P(AV1HBDSubtractBlockTest, CheckSpeed) { RunForSpeed(); }
-#endif  // USE_SPEED_TEST
+void AV1HBDSubtractBlockTest::RunForSpeed() {
+  const int test_num = 200000;
+  const int max_width = 128;
+  const int max_block_size = max_width * max_width;
+  const int mask = (1 << bit_depth_) - 1;
+  int i, j;
+
+  for (j = 0; j < max_block_size; ++j) {
+    CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask;
+    CONVERT_TO_SHORTPTR(pred_)[j] = rnd_.Rand16() & mask;
+  }
+
+  for (i = 0; i < test_num; ++i) {
+    func_(block_height_, block_width_, diff_, block_width_, src_, block_width_,
+          pred_, block_width_, bit_depth_);
+  }
+}
+
+TEST_P(AV1HBDSubtractBlockTest, DISABLED_Speed) { RunForSpeed(); }
 
 #if HAVE_SSE2
 
