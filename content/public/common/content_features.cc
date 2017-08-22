@@ -129,13 +129,6 @@ const base::Feature kLazyParseCSS{"LazyParseCSS",
 const base::Feature kLoadingWithMojo{"LoadingWithMojo",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
-// FeatureList definition for trials to enable the download button on
-// MediaDocument.
-const base::Feature kMediaDocumentDownloadButton{
-    "MediaDocumentDownloadButton",
-    base::FEATURE_DISABLED_BY_DEFAULT
-};
-
 // Enables the old algorithm for processing audio constraints in getUserMedia().
 const base::Feature kMediaStreamOldAudioConstraints{
     "MediaStreamOldAudioConstraints", base::FEATURE_DISABLED_BY_DEFAULT};

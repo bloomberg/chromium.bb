@@ -25288,6 +25288,9 @@ from previous Chrome versions.
 </enum>
 
 <enum name="MediaDocumentDownloadButtonType">
+  <obsolete>
+    Deprecated 08/2017.
+  </obsolete>
   <int value="0" label="Shown"/>
   <int value="1" label="Clicked"/>
 </enum>

@@ -168,9 +168,6 @@ below:
       <message name="IDS_DETAILS_WITHOUT_SUMMARY_LABEL" desc="Clickable label to show detailed information or to hide the detailed information.">
         Details
       </message>
-      <message name="IDS_DOWNLOAD_BUTTON_LABEL" desc="Clickable button label to download media file.">
-        Save
-      </message>
       <message name="IDS_FORM_CALENDAR_CLEAR" desc="Label for a button which clears a date input field.">
         Clear
       </message>

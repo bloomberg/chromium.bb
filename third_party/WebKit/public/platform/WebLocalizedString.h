@@ -86,7 +86,6 @@ struct WebLocalizedString {
     kCalendarClear,
     kCalendarToday,
     kDetailsLabel,
-    kDownloadButtonLabel,
     kFileButtonChooseFileLabel,
     kFileButtonChooseMultipleFilesLabel,
     kFileButtonNoFileSelectedLabel,

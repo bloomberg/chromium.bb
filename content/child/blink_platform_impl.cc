@@ -177,8 +177,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_FORM_CALENDAR_TODAY;
     case WebLocalizedString::kDetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
-    case WebLocalizedString::kDownloadButtonLabel:
-      return IDS_DOWNLOAD_BUTTON_LABEL;
     case WebLocalizedString::kFileButtonChooseFileLabel:
       return IDS_FORM_FILE_BUTTON_LABEL;
     case WebLocalizedString::kFileButtonChooseMultipleFilesLabel:

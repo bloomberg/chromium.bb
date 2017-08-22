@@ -1422,12 +1422,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNetworkSettingsConfigDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kNetworkSettingsConfig)},
 #endif  // OS_CHROMEOS
-#if defined(OS_ANDROID)
-    {"enable-media-document-download-button",
-     flag_descriptions::kMediaDocumentDownloadButtonName,
-     flag_descriptions::kMediaDocumentDownloadButtonDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kMediaDocumentDownloadButton)},
-#endif  // OS_ANDROID
 #if BUILDFLAG(ENABLE_PLUGINS)
     {"allow-nacl-socket-api", flag_descriptions::kAllowNaclSocketApiName,
      flag_descriptions::kAllowNaclSocketApiDescription, kOsDesktop,
