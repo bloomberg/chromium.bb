@@ -29,6 +29,7 @@
  */
 
 #include "bindings/core/v8/V8Initializer.h"
+#include "bindings/modules/v8/V8ContextSnapshotExternalReferences.h"
 #include "build/build_config.h"
 #include "core/animation/AnimationClock.h"
 #include "modules/ModulesInitializer.h"
@@ -88,8 +89,8 @@ void Initialize(Platform* platform) {
 #endif  // !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_ARM64) &&
         // defined(OS_WIN)
 
-  V8Initializer::InitializeMainThread();
-
+  V8Initializer::InitializeMainThread(
+      V8ContextSnapshotExternalReferences::GetTable());
   GetModulesInitializer().Initialize();
 
   // currentThread is null if we are running on a thread without a message loop.
