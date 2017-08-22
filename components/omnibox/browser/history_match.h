@@ -49,9 +49,6 @@ struct HistoryMatch {
   // matches are, vacuously, "innermost matches".
   bool innermost_match;
 };
-
-// TODO(http://crbug.com/757231) use a base::circular_deque when it supports
-// erase().
 typedef std::deque<HistoryMatch> HistoryMatches;
 
 }  // namespace history

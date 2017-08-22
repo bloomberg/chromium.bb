@@ -12,13 +12,13 @@
 #include <wayland-client-protocol.h>
 
 #include <cmath>
+#include <deque>
 #include <iostream>
 #include <string>
 #include <vector>
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -149,7 +149,7 @@ struct Frame {
 };
 
 struct Presentation {
-  base::circular_deque<std::unique_ptr<Frame>> scheduled_frames;
+  std::deque<std::unique_ptr<Frame>> scheduled_frames;
   base::TimeDelta wall_time;
   base::TimeDelta cpu_time;
   base::TimeDelta latency_time;
@@ -261,7 +261,7 @@ int RectsClient::Run(const ClientBase::InitParams& params,
   wl_callback_listener frame_listener = {FrameCallback};
 
   Presentation presentation;
-  base::circular_deque<std::unique_ptr<Frame>> pending_frames;
+  std::deque<std::unique_ptr<Frame>> pending_frames;
 
   size_t num_benchmark_runs_left = num_benchmark_runs;
   base::TimeTicks benchmark_start_time;

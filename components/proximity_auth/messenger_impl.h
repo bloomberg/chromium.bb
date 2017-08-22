@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_PROXIMITY_AUTH_MESSENGER_IMPL_H
 #define COMPONENTS_PROXIMITY_AUTH_MESSENGER_IMPL_H
 
+#include <deque>
 #include <memory>
 
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -113,7 +113,7 @@ class MessengerImpl : public Messenger, public cryptauth::ConnectionObserver {
   base::ObserverList<MessengerObserver> observers_;
 
   // Queue of messages to send to the remote device.
-  base::circular_deque<PendingMessage> queued_messages_;
+  std::deque<PendingMessage> queued_messages_;
 
   // The current message being sent or waiting on the remote device for a
   // response. Null if there is no message currently in this state.

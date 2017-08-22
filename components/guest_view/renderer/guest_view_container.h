@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "content/public/renderer/browser_plugin_delegate.h"
 #include "ipc/ipc_message.h"
@@ -98,7 +97,7 @@ class GuestViewContainer : public content::BrowserPluginDelegate {
 
   bool in_destruction_;
 
-  base::circular_deque<std::unique_ptr<GuestViewRequest>> pending_requests_;
+  std::deque<std::unique_ptr<GuestViewRequest>> pending_requests_;
   std::unique_ptr<GuestViewRequest> pending_response_;
 
   v8::Global<v8::Function> destruction_callback_;

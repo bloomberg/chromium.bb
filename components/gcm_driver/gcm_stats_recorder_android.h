@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_GCM_DRIVER_GCM_STATS_RECORDER_ANDROID_H_
 #define COMPONENTS_GCM_DRIVER_GCM_STATS_RECORDER_ANDROID_H_
 
+#include <deque>
 #include <string>
 
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/gcm_driver/gcm_activity.h"
 
@@ -80,14 +80,13 @@ class GCMStatsRecorderAndroid {
   bool is_recording_ = false;
 
   // Recorded registration activities (which includes unregistrations).
-  base::circular_deque<RegistrationActivity> registration_activities_;
+  std::deque<RegistrationActivity> registration_activities_;
 
   // Recorded received message activities.
-  base::circular_deque<ReceivingActivity> receiving_activities_;
+  std::deque<ReceivingActivity> receiving_activities_;
 
   // Recorded message decryption failure activities.
-  base::circular_deque<DecryptionFailureActivity>
-      decryption_failure_activities_;
+  std::deque<DecryptionFailureActivity> decryption_failure_activities_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMStatsRecorderAndroid);
 };

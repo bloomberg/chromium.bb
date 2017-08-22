@@ -5,7 +5,6 @@
 #ifndef BASE_CONTAINERS_CIRCULAR_DEQUE_H_
 #define BASE_CONTAINERS_CIRCULAR_DEQUE_H_
 
-#include <algorithm>
 #include <cstddef>
 #include <iterator>
 #include <type_traits>

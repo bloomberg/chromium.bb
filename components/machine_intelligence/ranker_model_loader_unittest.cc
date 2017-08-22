@@ -4,11 +4,11 @@
 
 #include "components/machine_intelligence/ranker_model_loader.h"
 
+#include <deque>
 #include <initializer_list>
 #include <memory>
 #include <vector>
 
-#include "base/containers/circular_deque.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -88,7 +88,7 @@ class RankerModelLoaderTest : public ::testing::Test {
 
   // A queue of responses to return from Validate(). If empty, validate will
   // return 'OK'.
-  base::circular_deque<RankerModelStatus> validate_model_response_;
+  std::deque<RankerModelStatus> validate_model_response_;
 
   // A cached to remember the model validation calls.
   std::vector<std::unique_ptr<RankerModel>> validated_models_;
