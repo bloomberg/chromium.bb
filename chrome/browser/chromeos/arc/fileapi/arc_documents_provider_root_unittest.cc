@@ -461,6 +461,37 @@ TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryWithCacheExpired) {
   EXPECT_EQ(last_count + 2, fake_file_system_.get_child_documents_count());
 }
 
+TEST_F(ArcDocumentsProviderRootTest, ReadDirectoryPendingCallbacks) {
+  int num_callbacks = 0;
+
+  int last_count = fake_file_system_.get_child_documents_count();
+
+  for (int i = 0; i < 3; ++i) {
+    root_->ReadDirectory(
+        base::FilePath(FILE_PATH_LITERAL("dir")),
+        base::Bind(
+            [](int* num_callbacks, base::File::Error error,
+               std::vector<ArcDocumentsProviderRoot::ThinFileInfo> file_list) {
+              ++*num_callbacks;
+            },
+            &num_callbacks));
+  }
+
+  // FakeFileSystemInstance guarantees callbacks are not invoked immediately,
+  // so callbacks to ReadDirectory() have not been called at this point.
+  EXPECT_EQ(0, num_callbacks);
+
+  // GetChildDocuments() should have been called only once even though we called
+  // ReadDirectory() three times due to batching.
+  EXPECT_EQ(last_count + 1, fake_file_system_.get_child_documents_count());
+
+  // Process FakeFileSystemInstance callbacks.
+  base::RunLoop().RunUntilIdle();
+
+  // All callbacks should have been invoked.
+  EXPECT_EQ(3, num_callbacks);
+}
+
 TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
   int num_called = 0;
   auto watcher_callback = base::Bind(

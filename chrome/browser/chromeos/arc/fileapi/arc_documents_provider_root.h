@@ -41,12 +41,12 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
     base::Time last_modified;
   };
 
+  // TODO(crbug.com/755451): Use OnceCallback/RepeatingCallback.
   using GetFileInfoCallback = storage::AsyncFileUtil::GetFileInfoCallback;
   using ReadDirectoryCallback =
       base::OnceCallback<void(base::File::Error error,
                               std::vector<ThinFileInfo> files)>;
   using ChangeType = storage::WatcherManager::ChangeType;
-  // TODO(nya): Use OnceCallback/RepeatingCallback.
   using WatcherCallback = base::Callback<void(ChangeType type)>;
   using StatusCallback = base::Callback<void(base::File::Error error)>;
   using ResolveToContentUrlCallback =
@@ -143,6 +143,7 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   using NameToThinDocumentMap =
       std::map<base::FilePath::StringType, ThinDocument>;
 
+  // TODO(nya): Use OnceCallback.
   using ResolveToDocumentIdCallback =
       base::Callback<void(const std::string& document_id)>;
   using ReadDirectoryInternalCallback =
@@ -206,7 +207,6 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
                              const ReadDirectoryInternalCallback& callback);
   void ReadDirectoryInternalWithChildDocuments(
       const std::string& document_id,
-      const ReadDirectoryInternalCallback& callback,
       base::Optional<std::vector<mojom::DocumentPtr>> maybe_children);
 
   // Clears a directory cache.
@@ -224,6 +224,11 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
 
   // Cache of directory contents. Keys are document IDs of directories.
   std::map<std::string, DirectoryCache> directory_cache_;
+
+  // Map from a document ID to callbacks pending for ReadDirectoryInternal()
+  // calls.
+  std::map<std::string, std::vector<ReadDirectoryInternalCallback>>
+      pending_callbacks_map_;
 
   // Map from a file path to a watcher data.
   //
