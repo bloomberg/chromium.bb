@@ -170,6 +170,11 @@ def RevGitFile(filename, data, retries=5, dryrun=False):
     git.RunGit(cwd, ['commit', '-m', description])
     git.PushWithRetry(prebuilt_branch, cwd, dryrun=dryrun, retries=retries)
   finally:
+    # We reset the index and the working tree state in case there are any
+    # uncommitted or pending changes, but we don't change any existing commits.
+    git.RunGit(cwd, ['reset', '--hard'])
+
+    # Check out the last good commit as a sanity fallback.
     git.RunGit(cwd, ['checkout', commit])
 
 
