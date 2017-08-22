@@ -291,7 +291,7 @@ const base::Feature kVideoRotateToFullscreen{"VideoRotateToFullscreen",
 // when using Encrypted Media Extensions (EME) API.
 // TODO(xhwang): Remove this after feature launch. See http://crbug.com/493521
 const base::Feature kMediaDrmPersistentLicense{
-    "MediaDrmPersistentLicense", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaDrmPersistentLicense", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #endif
 
