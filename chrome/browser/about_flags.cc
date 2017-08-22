@@ -3348,6 +3348,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kClickToOpenPDFDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kClickToOpenPDFPlaceholder)},
 
+#if defined(OS_WIN)
+    {"direct-manipulation-stylus",
+     flag_descriptions::kDirectManipulationStylusName,
+     flag_descriptions::kDirectManipulationStylusDescription, kOsWin,
+     FEATURE_VALUE_TYPE(features::kDirectManipulationStylus)},
+#endif  // defined(OS_WIN)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.

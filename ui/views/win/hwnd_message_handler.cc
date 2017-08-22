@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/debug/alias.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -30,6 +29,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/base/view_prop.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/base/win/lock_state.h"
@@ -249,9 +249,6 @@ const int kTouchDownContextResetTimeout = 500;
 // location as the cursor.
 const int kSynthesizedMouseTouchMessagesTimeDifference = 500;
 
-const base::Feature kDirectManipulationStylus{"DirectManipulationStylus",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -361,8 +358,9 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       is_first_nccalc_(true),
       menu_depth_(0),
       id_generator_(0),
-      pen_processor_(&id_generator_,
-                     base::FeatureList::IsEnabled(kDirectManipulationStylus)),
+      pen_processor_(
+          &id_generator_,
+          base::FeatureList::IsEnabled(features::kDirectManipulationStylus)),
       in_size_loop_(false),
       touch_down_contexts_(0),
       last_mouse_hwheel_time_(0),
