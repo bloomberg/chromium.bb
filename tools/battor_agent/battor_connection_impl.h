@@ -59,15 +59,16 @@ class BattOrConnectionImpl
 
   // Reads the specified number of additional bytes and adds them to the pending
   // read buffer.
-  void BeginReadBytes(size_t bytes_to_read);
+  void BeginReadBytesForMessage(size_t bytes_to_read);
 
   // Internal callback for when bytes are read. This method may trigger
   // additional reads if any newly read bytes are escape bytes.
-  void OnBytesRead(int bytes_read, device::mojom::SerialReceiveError error);
+  void OnBytesReadForMessage(int bytes_read,
+                             device::mojom::SerialReceiveError error);
 
-  void EndReadBytes(bool success,
-                    BattOrMessageType type,
-                    std::unique_ptr<std::vector<char>> data);
+  void EndReadBytesForMessage(bool success,
+                              BattOrMessageType type,
+                              std::unique_ptr<std::vector<char>> data);
 
   // Pulls off the next complete message from already_read_buffer_, returning
   // its type and contents through out parameters and any error that occurred
