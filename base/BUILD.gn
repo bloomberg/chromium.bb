@@ -814,6 +814,7 @@ component("base") {
     "task_scheduler/scheduler_worker.cc",
     "task_scheduler/scheduler_worker.h",
     "task_scheduler/scheduler_worker_params.h",
+    "task_scheduler/scheduler_worker_pool.cc",
     "task_scheduler/scheduler_worker_pool.h",
     "task_scheduler/scheduler_worker_pool_impl.cc",
     "task_scheduler/scheduler_worker_pool_impl.h",
