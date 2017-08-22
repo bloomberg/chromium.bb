@@ -6,16 +6,13 @@
 
 #include <libdrm/drm_fourcc.h>
 
-#include <algorithm>
-
 namespace media {
 
 namespace {
 
 struct SupportedFormat {
-  VideoPixelFormat chromium_format;
   arc::mojom::HalPixelFormat hal_format;
-  uint32_t drm_format;
+  ChromiumPixelFormat cr_format;
 } const kSupportedFormats[] = {
     // The Android camera HAL v3 has three types of mandatory pixel formats:
     //
@@ -32,34 +29,32 @@ struct SupportedFormat {
     // only implementation-defined preview buffers.  We should use the video
     // capture stream in Chrome VCD as it is mandatory for the camera HAL to
     // support YUV flexbile format video streams.
-
-    // TODO(jcliang): Change NV12 to I420 after the camera HAL supports handling
-    //                I420 buffers.
-    {PIXEL_FORMAT_NV12,
-     arc::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888,
-     DRM_FORMAT_NV12},
+    {arc::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888,
+     {PIXEL_FORMAT_NV12, gfx::BufferFormat::YUV_420_BIPLANAR}},
+    // Add more mappings when we have more devices.
 };
 
 }  // namespace
 
-VideoPixelFormat PixFormatHalToChromium(arc::mojom::HalPixelFormat from) {
-  auto* it =
-      std::find_if(std::begin(kSupportedFormats), std::end(kSupportedFormats),
-                   [from](SupportedFormat f) { return f.hal_format == from; });
-  if (it == std::end(kSupportedFormats)) {
-    return PIXEL_FORMAT_UNKNOWN;
+std::vector<ChromiumPixelFormat> PixFormatHalToChromium(
+    arc::mojom::HalPixelFormat from) {
+  std::vector<ChromiumPixelFormat> ret;
+  for (const auto& it : kSupportedFormats) {
+    if (it.hal_format == from) {
+      ret.push_back(it.cr_format);
+    }
   }
-  return it->chromium_format;
+  return ret;
 }
 
-uint32_t PixFormatChromiumToDrm(VideoPixelFormat from) {
-  auto* it = std::find_if(
-      std::begin(kSupportedFormats), std::end(kSupportedFormats),
-      [from](SupportedFormat f) { return f.chromium_format == from; });
-  if (it == std::end(kSupportedFormats)) {
-    return 0;
+uint32_t PixFormatVideoToDrm(VideoPixelFormat from) {
+  switch (from) {
+    case PIXEL_FORMAT_NV12:
+      return DRM_FORMAT_NV12;
+    default:
+      // Unsupported format.
+      return 0;
   }
-  return it->drm_format;
 }
 
 }  // namespace media
