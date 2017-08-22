@@ -29,7 +29,7 @@
                 <action android:name="android.intent.action.VIEW"></action>
                 <category android:name="android.intent.category.DEFAULT"></category>
                 <category android:name="android.intent.category.BROWSABLE"></category>
-                <data android:scheme="{{{scope_url_scheme}}}" android:host="{{{scope_url_host}}}" android:pathPrefix="{{{scope_url_path}}}"></data>
+                <data android:scheme="{{{scope_url_scheme}}}" android:host="{{{scope_url_host}}}" {{{scope_url_path_type}}}="{{{scope_url_path}}}"></data>
             </intent-filter>
             {{/intent_filters}}
         </activity>
