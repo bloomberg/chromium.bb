@@ -524,7 +524,16 @@ function PaymentRequest(methodData, details, opt_options) {
         'SecurityError');
   }
 
-  if (!__gCrWeb['paymentRequestManager'].isContextSecure) {
+  // https://w3c.github.io/webappsec-secure-contexts/#is-origin-trustworthy
+  var isOriginPotentiallyTrustworthy = window.location.origin !== 'null' &&
+      (window.location.protocol === 'https:' ||
+          window.location.hostname === '127.0.0.1' ||
+          window.location.hostname === '::1' ||
+          window.location.hostname === 'localhost' ||
+          window.location.protocol === 'file:');
+
+  if (!__gCrWeb['paymentRequestManager'].isContextSecure ||
+      !isOriginPotentiallyTrustworthy) {
     throw new DOMException(
         'Failed to construct \'PaymentRequest\': Must be in a secure context',
         'SecurityError');
