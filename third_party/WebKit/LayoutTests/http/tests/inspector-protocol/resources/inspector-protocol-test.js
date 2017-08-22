@@ -44,7 +44,7 @@ var TestRunner = class {
     return originalMessage;
   }
 
-  logObject(object, title) {
+  logObject(object, title, stabilizeNames) {
     var lines = [];
 
     function dumpValue(value, prefix, prefixWithName) {
@@ -70,7 +70,10 @@ var TestRunner = class {
         if (!object.hasOwnProperty(name))
           continue;
         var prefixWithName = '    ' + prefix + name + ' : ';
-        dumpValue(object[name], '    ' + prefix, prefixWithName);
+        var value = object[name];
+        if (stabilizeNames && stabilizeNames.includes(name))
+          value = '<' + (typeof value) + '>';
+        dumpValue(value, '    ' + prefix, prefixWithName);
       }
       lines.push(prefix + '}');
     }
