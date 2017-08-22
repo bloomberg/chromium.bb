@@ -12,11 +12,6 @@
 @protocol ApplicationCommands;
 namespace ios_internal_settings {
 
-// Returns a ProceduralBlockWithURL that sends a chrome command up the
-// |responder|'s responder chain that dismisses settings and opens url
-// (parameter to the block) in a new tab.
-ProceduralBlockWithURL BlockToOpenURL(UIResponder* responder);
-
 // Returns a ProceduralBlockWithURL that uses the dispatcher and opens url
 // (parameter to the block) in a new tab.
 ProceduralBlockWithURL BlockToOpenURL(UIResponder* responder,

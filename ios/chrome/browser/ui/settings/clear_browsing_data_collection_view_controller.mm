@@ -46,8 +46,8 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/clear_browsing_data_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/settings/time_range_selector_collection_view_controller.h"
@@ -706,8 +706,7 @@ const int kMaxTimesHistoryNoticeShown = 1;
 - (void)openMyActivityLink {
   OpenUrlCommand* openMyActivityCommand =
       [[OpenUrlCommand alloc] initWithURLFromChrome:GURL(kGoogleMyAccountURL)];
-  openMyActivityCommand.tag = IDC_CLOSE_SETTINGS_AND_OPEN_URL;
-  [self chromeExecuteCommand:openMyActivityCommand];
+  [self.dispatcher closeSettingsUIAndOpenURL:openMyActivityCommand];
 }
 
 - (NSString*)getAccessibilityIdentifierFromItemType:(NSInteger)itemType {

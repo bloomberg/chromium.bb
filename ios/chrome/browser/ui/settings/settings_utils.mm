@@ -4,10 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 
-#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
-#import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
-#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -15,20 +12,6 @@
 #endif
 
 namespace ios_internal_settings {
-
-ProceduralBlockWithURL BlockToOpenURL(UIResponder* responder) {
-  __weak UIResponder* weakResponder = responder;
-  ProceduralBlockWithURL blockToOpenURL = ^(const GURL& url) {
-    UIResponder* strongResponder = weakResponder;
-    if (!strongResponder)
-      return;
-    OpenUrlCommand* command =
-        [[OpenUrlCommand alloc] initWithURLFromChrome:url];
-    [command setTag:IDC_CLOSE_SETTINGS_AND_OPEN_URL];
-    [strongResponder chromeExecuteCommand:command];
-  };
-  return [blockToOpenURL copy];
-}
 
 ProceduralBlockWithURL BlockToOpenURL(UIResponder* responder,
                                       id<ApplicationCommands> dispatcher) {

@@ -44,9 +44,6 @@ class UserFeedbackProvider {
   virtual bool IsUserFeedbackEnabled();
   // Returns view controller to present to the user to collect their feedback.
   virtual UIViewController* CreateViewController(
-      id<UserFeedbackDataSource> dataSource);
-  // Returns view controller to present to the user to collect their feedback.
-  virtual UIViewController* CreateViewController(
       id<UserFeedbackDataSource> dataSource,
       id<ApplicationCommands> dispatcher);
   // Uploads collected feedback reports.

@@ -327,7 +327,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
 
   // Items that push a new view controller.
-  UIViewController* controller;
+  SettingsRootCollectionViewController* controller;
 
   switch (itemType) {
     case ItemTypeOtherDevicesHandoff:
@@ -360,6 +360,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   if (controller) {
+    controller.dispatcher = self.dispatcher;
     [self.navigationController pushViewController:controller animated:YES];
   }
 }

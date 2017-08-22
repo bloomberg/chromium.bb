@@ -427,7 +427,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   CollectionViewModel* model = self.collectionViewModel;
-  UIViewController* controller;
+  SettingsRootCollectionViewController* controller;
   switch ([model itemTypeForIndexPath:indexPath]) {
     case ItemTypeAddress: {
       const std::vector<autofill::AutofillProfile*> autofillProfiles =
@@ -450,6 +450,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   if (controller) {
+    controller.dispatcher = self.dispatcher;
     [self.navigationController pushViewController:controller animated:YES];
   }
 }

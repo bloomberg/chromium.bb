@@ -10,6 +10,7 @@
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"
@@ -47,6 +48,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 @synthesize shouldHideDoneButton = shouldHideDoneButton_;
 @synthesize collectionViewAccessibilityIdentifier =
     collectionViewAccessibilityIdentifier_;
+@synthesize dispatcher = _dispatcher;
 
 - (void)viewDidLoad {
   [super viewDidLoad];
