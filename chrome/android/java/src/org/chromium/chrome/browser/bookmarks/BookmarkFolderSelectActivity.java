@@ -149,6 +149,13 @@ public class BookmarkFolderSelectActivity extends SynchronousInitializationActiv
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         updateFolderList();
+
+        if (!FeatureUtilities.isChromeHomeModernEnabled()) {
+            findViewById(R.id.shadow).setVisibility(View.VISIBLE);
+            toolbar.setTitleTextAppearance(toolbar.getContext(), R.style.BlackHeadline2);
+            toolbar.setBackgroundColor(
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.modern_primary_color));
+        }
     }
 
     private void updateFolderList() {
