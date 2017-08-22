@@ -39,7 +39,7 @@ class Command(object):
   IS_BROWSER_VISIBLE = (_Method.GET, '/session/:sessionId/visible')
   FIND_ELEMENT = (_Method.POST, '/session/:sessionId/element')
   FIND_ELEMENTS = (_Method.POST, '/session/:sessionId/elements')
-  GET_ACTIVE_ELEMENT = (_Method.POST, '/session/:sessionId/element/active')
+  GET_ACTIVE_ELEMENT = (_Method.GET, '/session/:sessionId/element/active')
   FIND_CHILD_ELEMENT = (_Method.POST, '/session/:sessionId/element/:id/element')
   FIND_CHILD_ELEMENTS = (
       _Method.POST, '/session/:sessionId/element/:id/elements')
