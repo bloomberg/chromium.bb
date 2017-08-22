@@ -39,9 +39,8 @@ void SensorImpl::GetDefaultConfiguration(
 }
 
 void SensorImpl::RemoveConfiguration(
-    const PlatformSensorConfiguration& configuration,
-    RemoveConfigurationCallback callback) {
-  std::move(callback).Run(sensor_->StopListening(this, configuration));
+    const PlatformSensorConfiguration& configuration) {
+  sensor_->StopListening(this, configuration);
 }
 
 void SensorImpl::Suspend() {

@@ -57,10 +57,7 @@ class FakeAmbientLightSensor : public device::mojom::Sensor {
   }
 
   void RemoveConfiguration(
-      const device::PlatformSensorConfiguration& configuration,
-      RemoveConfigurationCallback callback) override {
-    std::move(callback).Run(true);
-  }
+      const device::PlatformSensorConfiguration& configuration) override {}
 
   void Suspend() override {}
   void Resume() override {}
