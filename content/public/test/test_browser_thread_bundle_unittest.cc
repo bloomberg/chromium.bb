@@ -44,7 +44,8 @@ TEST(TestBrowserThreadBundleTest,
 
 TEST(TestBrowserThreadBundleTest, MessageLoopTypeMismatch) {
   base::MessageLoopForUI message_loop;
-  EXPECT_DEATH(
+
+  EXPECT_DEATH_IF_SUPPORTED(
       {
         TestBrowserThreadBundle test_browser_thread_bundle(
             TestBrowserThreadBundle::IO_MAINLOOP);
@@ -53,7 +54,7 @@ TEST(TestBrowserThreadBundleTest, MessageLoopTypeMismatch) {
 }
 
 TEST(TestBrowserThreadBundleTest, MultipleTestBrowserThreadBundle) {
-  EXPECT_DEATH(
+  EXPECT_DEATH_IF_SUPPORTED(
       {
         TestBrowserThreadBundle test_browser_thread_bundle;
         TestBrowserThreadBundle other_test_browser_thread_bundle;
