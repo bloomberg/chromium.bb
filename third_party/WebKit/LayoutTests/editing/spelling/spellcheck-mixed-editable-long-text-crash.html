@@ -27,5 +27,8 @@ test(function() {
 
     // Trigger spell checking
     window.getSelection().collapse(document.getElementById('sample'), 0);
+
+    if (window.internals && internals.runtimeFlags.idleTimeSpellCheckingEnabled)
+      internals.runIdleTimeSpellChecker(document);
 });
 </script>

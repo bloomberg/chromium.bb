@@ -12,5 +12,8 @@ test(function() {
         testRunner.setMockSpellCheckerEnabled(true);
     window.getSelection().selectAllChildren(document.getElementById('foo'));
     document.execCommand('insertParagraph');
+
+    if (internals.runtimeFlags.idleTimeSpellCheckingEnabled)
+      internals.runIdleTimeSpellChecker(document);
 }, 'spelling');
 </script>
