@@ -147,7 +147,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   // Map of registered client processes.
   std::map<mojom::ClientProcess*, std::unique_ptr<ClientInfo>> clients_;
 
-  // Oustanding dump requests, enqueued via RequestGlobalMemoryDump().
+  // Outstanding dump requests, enqueued via RequestGlobalMemoryDump().
   std::list<QueuedMemoryDumpRequest> queued_memory_dump_requests_;
 
   // Maintains a map of service_manager::Identity -> pid for registered clients.
