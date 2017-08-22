@@ -58,8 +58,8 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
     tick_clock_.Advance(base::TimeDelta::FromSeconds(1234));
     delegate_manager_.reset(
         new RendererWebMediaPlayerDelegate(view_->GetMainRenderFrame()));
-    delegate_manager_->SetIdleCleanupParamsForTesting(kIdleTimeout,
-                                                      &tick_clock_, false);
+    delegate_manager_->SetIdleCleanupParamsForTesting(
+        kIdleTimeout, base::TimeDelta(), &tick_clock_, false);
   }
 
   void TearDown() override {
@@ -79,8 +79,13 @@ class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {
   }
 
   void SetIsLowEndDeviceForTesting() {
-    delegate_manager_->SetIdleCleanupParamsForTesting(kIdleTimeout,
-                                                      &tick_clock_, true);
+    delegate_manager_->SetIdleCleanupParamsForTesting(
+        kIdleTimeout, base::TimeDelta(), &tick_clock_, true);
+  }
+
+  void SetNonZeroIdleTimeout() {
+    delegate_manager_->SetIdleCleanupParamsForTesting(
+        kIdleTimeout, base::TimeDelta::FromSeconds(1), &tick_clock_, true);
   }
 
   void RunLoopOnce() {
@@ -277,6 +282,20 @@ TEST_F(RendererWebMediaPlayerDelegateTest,
   delegate_manager_->SetIdle(delegate_id_1, true);
   EXPECT_CALL(observer_1_, OnIdleTimeout());
   tick_clock_.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(RendererWebMediaPlayerDelegateTest,
+       SuspendRequestsAreOnlySentOnceIfNotHandled) {
+  SetNonZeroIdleTimeout();
+  int delegate_id_1 = delegate_manager_->AddObserver(&observer_1_);
+  delegate_manager_->SetIdle(delegate_id_1, true);
+  EXPECT_CALL(observer_1_, OnIdleTimeout());
+  tick_clock_.Advance(kIdleTimeout + base::TimeDelta::FromMicroseconds(1));
+  base::RunLoop().RunUntilIdle();
+  delegate_manager_->ClearStaleFlag(delegate_id_1);
+  ASSERT_TRUE(delegate_manager_->IsIdleCleanupTimerRunningForTesting());
+  // Make sure that OnIdleTimeout isn't called again immediately.
   base::RunLoop().RunUntilIdle();
 }
 

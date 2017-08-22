@@ -166,7 +166,16 @@ void RendererWebMediaPlayerDelegate::ClearStaleFlag(int player_id) {
   // time idle cleanup runs.
   idle_player_map_[player_id] = tick_clock_->NowTicks() - idle_timeout_;
 
-  ScheduleUpdateTask();
+  // No need to call Update immediately, just make sure the idle
+  // timer is running. Calling ScheduleUpdateTask() here will cause
+  // immediate cleanup, and if that fails, this function gets called
+  // again which uses 100% cpu until resolved.
+  if (!idle_cleanup_timer_.IsRunning() && !pending_update_task_) {
+    idle_cleanup_timer_.Start(
+        FROM_HERE, idle_cleanup_interval_,
+        base::Bind(&RendererWebMediaPlayerDelegate::UpdateTask,
+                   base::Unretained(this)));
+  }
 }
 
 bool RendererWebMediaPlayerDelegate::IsStale(int player_id) {
@@ -226,10 +235,10 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
 
 void RendererWebMediaPlayerDelegate::SetIdleCleanupParamsForTesting(
     base::TimeDelta idle_timeout,
+    base::TimeDelta idle_cleanup_interval,
     base::TickClock* tick_clock,
     bool is_jelly_bean) {
-  idle_cleanup_interval_ = base::TimeDelta();
-  idle_timeout_ = idle_timeout;
+  idle_cleanup_interval_ = idle_cleanup_interval, idle_timeout_ = idle_timeout;
   tick_clock_ = tick_clock;
   is_jelly_bean_ = is_jelly_bean;
 }
