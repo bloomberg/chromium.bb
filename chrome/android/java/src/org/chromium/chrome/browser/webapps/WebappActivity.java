@@ -162,7 +162,8 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void preInflationStartup() {
         Intent intent = getIntent();
-        WebappInfo info = popWebappInfo(WebappInfo.idFromIntent(intent));
+        String id = WebappInfo.idFromIntent(intent);
+        WebappInfo info = popWebappInfo(id);
         // When WebappActivity is killed by the Android OS, and an entry stays in "Android Recents"
         // (The user does not swipe it away), when WebappActivity is relaunched it is relaunched
         // with the intent stored in WebappActivity#getIntent() at the time that the WebappActivity
@@ -190,7 +191,7 @@ public class WebappActivity extends SingleTabActivity {
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
             WebappRegistry.getInstance();
-            WebappRegistry.warmUpSharedPrefsForId(info.id());
+            WebappRegistry.warmUpSharedPrefsForId(id);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
