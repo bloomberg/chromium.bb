@@ -63,10 +63,6 @@ class CORE_EXPORT HTMLDocument : public Document {
   void RemoveNamedItem(const AtomicString& name);
   bool HasNamedItem(const AtomicString& name);
 
-  void AddExtraNamedItem(const AtomicString& name);
-  void RemoveExtraNamedItem(const AtomicString& name);
-  bool HasExtraNamedItem(const AtomicString& name);
-
   static bool IsCaseSensitiveAttribute(const QualifiedName&);
 
   Document* CloneDocumentWithoutChildren() final;
@@ -82,19 +78,11 @@ class CORE_EXPORT HTMLDocument : public Document {
   const AtomicString& BodyAttributeValue(const QualifiedName&) const;
   void SetBodyAttribute(const QualifiedName&, const AtomicString&);
 
-  void AddItemToMap(HashCountedSet<AtomicString>&, const AtomicString&);
-  void RemoveItemFromMap(HashCountedSet<AtomicString>&, const AtomicString&);
-
   HashCountedSet<AtomicString> named_item_counts_;
-  HashCountedSet<AtomicString> extra_named_item_counts_;
 };
 
 inline bool HTMLDocument::HasNamedItem(const AtomicString& name) {
   return named_item_counts_.Contains(name);
-}
-
-inline bool HTMLDocument::HasExtraNamedItem(const AtomicString& name) {
-  return extra_named_item_counts_.Contains(name);
 }
 
 DEFINE_DOCUMENT_TYPE_CASTS(HTMLDocument);

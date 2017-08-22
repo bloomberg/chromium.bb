@@ -3973,9 +3973,9 @@ void Element::UpdateNamedItemRegistration(NamedItemType type,
     const AtomicString id = GetIdAttribute();
     if (!id.IsEmpty()) {
       if (!old_name.IsEmpty() && new_name.IsEmpty())
-        doc.RemoveExtraNamedItem(id);
+        doc.RemoveNamedItem(id);
       else if (old_name.IsEmpty() && !new_name.IsEmpty())
-        doc.AddExtraNamedItem(id);
+        doc.AddNamedItem(id);
     }
   }
 }
@@ -3990,10 +3990,10 @@ void Element::UpdateIdNamedItemRegistration(NamedItemType type,
     return;
 
   if (!old_id.IsEmpty())
-    ToHTMLDocument(GetDocument()).RemoveExtraNamedItem(old_id);
+    ToHTMLDocument(GetDocument()).RemoveNamedItem(old_id);
 
   if (!new_id.IsEmpty())
-    ToHTMLDocument(GetDocument()).AddExtraNamedItem(new_id);
+    ToHTMLDocument(GetDocument()).AddNamedItem(new_id);
 }
 
 ScrollOffset Element::SavedLayerScrollOffset() const {

@@ -117,8 +117,8 @@ void HTMLIFrameElement::ParseAttribute(
   if (name == nameAttr) {
     if (IsInDocumentTree() && GetDocument().IsHTMLDocument()) {
       HTMLDocument& document = ToHTMLDocument(this->GetDocument());
-      document.RemoveExtraNamedItem(name_);
-      document.AddExtraNamedItem(value);
+      document.RemoveNamedItem(name_);
+      document.AddNamedItem(value);
     }
     AtomicString old_name = name_;
     name_ = value;
@@ -265,7 +265,7 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
   InsertionNotificationRequest result =
       HTMLFrameElementBase::InsertedInto(insertion_point);
   if (insertion_point->IsInDocumentTree() && GetDocument().IsHTMLDocument())
-    ToHTMLDocument(GetDocument()).AddExtraNamedItem(name_);
+    ToHTMLDocument(GetDocument()).AddNamedItem(name_);
   LogAddElementIfIsolatedWorldAndInDocument("iframe", srcAttr);
   return result;
 }
@@ -273,7 +273,7 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
 void HTMLIFrameElement::RemovedFrom(ContainerNode* insertion_point) {
   HTMLFrameElementBase::RemovedFrom(insertion_point);
   if (insertion_point->IsInDocumentTree() && GetDocument().IsHTMLDocument())
-    ToHTMLDocument(GetDocument()).RemoveExtraNamedItem(name_);
+    ToHTMLDocument(GetDocument()).RemoveNamedItem(name_);
 }
 
 bool HTMLIFrameElement::IsInteractiveContent() const {
