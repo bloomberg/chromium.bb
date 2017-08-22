@@ -561,9 +561,7 @@ void VrShellGl::HandleWebVrCompatibilityClick() {
     return;
 
   // Process screen touch events for Cardboard button compatibility.
-  // Also send tap events for controller "touchpad click" events.
-  if (touch_pending_ ||
-      controller_->ButtonUpHappened(gvr::kControllerButtonClick)) {
+  if (touch_pending_) {
     touch_pending_ = false;
     auto gesture = base::MakeUnique<blink::WebGestureEvent>(
         blink::WebInputEvent::kGestureTapDown,
