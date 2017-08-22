@@ -124,6 +124,9 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   // chrome.app.window.create() in the test app.
   AppWindow* CreateTestAppWindow(const std::string& window_create_options);
 
+  // Returns the native app window associated with |window|.
+  NativeAppWindow* GetNativeAppWindowForAppWindow(AppWindow* window);
+
  private:
 #if defined(OS_CHROMEOS)
   media_router::MockMediaRouter media_router_;

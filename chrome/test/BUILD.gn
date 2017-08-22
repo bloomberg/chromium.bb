@@ -2047,6 +2047,7 @@ test("browser_tests") {
         "../browser/ui/ash/system_tray_tray_cast_browsertest_media_router_chromeos.cc",
         "../browser/ui/ash/volume_controller_browsertest.cc",
         "../browser/ui/sort_windows_by_z_index_browsertest.cc",
+        "../browser/ui/views/apps/chrome_native_app_window_views_aura_ash_browsertest.cc",
         "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc",
       ]
       deps += [
