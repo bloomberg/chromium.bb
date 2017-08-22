@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label_listener.h"
-#include "ui/views/window/dialog_delegate.h"
 
 namespace content {
 class WebContents;
@@ -17,7 +17,7 @@ class WebContents;
 
 class PasswordDialogController;
 
-class AccountChooserDialogView : public views::DialogDelegateView,
+class AccountChooserDialogView : public views::BubbleDialogDelegateView,
                                  public views::StyledLabelListener,
                                  public views::ButtonListener,
                                  public AccountChooserPrompt {
@@ -34,8 +34,8 @@ class AccountChooserDialogView : public views::DialogDelegateView,
   // WidgetDelegate:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
+  void AddedToWidget() override;
   void WindowClosing() override;
 
   // DialogDelegate:
