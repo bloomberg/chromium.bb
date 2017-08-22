@@ -201,6 +201,10 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
                 R.drawable.btn_menu);
         mSelectionMenuButton = TintedDrawable.constructTintedDrawable(getResources(),
                 R.drawable.btn_menu, android.R.color.white);
+
+        if (!FeatureUtilities.isChromeHomeModernEnabled()) {
+            setTitleTextAppearance(getContext(), R.style.BlackHeadline2);
+        }
     }
 
     /**
