@@ -1,0 +1,9 @@
+Name: Android Support Library Bottom Navigation Menu
+URL: https://developer.android.com/reference/android/support/design/widget/BottomNavigationView.html
+License: Apache Version 2.0
+
+Description:
+Bottom navigation menu widget from Android SDK Sources 25.
+
+Local Modifications:
+* None.
