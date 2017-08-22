@@ -7,7 +7,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/parser/FontVariantNumericParser.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIFontVariantNumeric::ParseSingleValue(

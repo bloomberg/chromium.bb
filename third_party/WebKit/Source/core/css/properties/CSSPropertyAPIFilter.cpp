@@ -13,7 +13,6 @@
 #include "core/frame/UseCounter.h"
 
 namespace blink {
-class CSSParserLocalContext;
 
 namespace {
 

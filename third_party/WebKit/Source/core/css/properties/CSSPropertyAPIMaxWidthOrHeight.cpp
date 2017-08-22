@@ -7,7 +7,6 @@
 #include "core/css/properties/CSSPropertyLengthUtils.h"
 
 namespace blink {
-class CSSParserLocalContext;
 
 const CSSValue* CSSPropertyAPIMaxWidthOrHeight::ParseSingleValue(
     CSSPropertyID,

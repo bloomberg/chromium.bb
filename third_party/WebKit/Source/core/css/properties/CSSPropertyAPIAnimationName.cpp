@@ -8,7 +8,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyAnimationNameUtils.h"
 
-class CSSParserContext;
 
 namespace blink {
 
