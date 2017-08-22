@@ -19,6 +19,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/browser/renderer_host/input/input_router_config_helper.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -61,6 +62,20 @@ class GestureEventQueueTest : public testing::Test,
     // Process all pending tasks to avoid leaks.
     RunUntilIdle();
     queue_.reset();
+  }
+
+  void SetUpForTapSuppression(int max_cancel_to_down_time_ms,
+                              int max_tap_gap_time_ms) {
+    GestureEventQueue::Config gesture_config;
+    gesture_config.fling_config.touchscreen_tap_suppression_config.enabled =
+        true;
+    gesture_config.fling_config.touchscreen_tap_suppression_config
+        .max_cancel_to_down_time =
+        base::TimeDelta::FromMilliseconds(max_cancel_to_down_time_ms);
+    gesture_config.fling_config.touchscreen_tap_suppression_config
+        .max_tap_gap_time =
+        base::TimeDelta::FromMilliseconds(max_tap_gap_time_ms);
+    queue_.reset(new GestureEventQueue(this, this, gesture_config));
   }
 
   // GestureEventQueueClient
@@ -1219,6 +1234,40 @@ TEST_F(GestureEventQueueTest, DebounceDropsDeferredEvents) {
     WebGestureEvent merged_event = GestureEventQueueEventAt(i);
     EXPECT_EQ(expected[i], merged_event.GetType());
   }
+}
+
+// Test that the fling cancelling tap down event and its following tap get
+// suppressed when tap suppression is enabled.
+TEST_F(GestureEventQueueTest, TapGetsSuppressedAfterTapDownCancellsFling) {
+  SetUpForTapSuppression(400, 200);
+  SimulateGestureFlingStartEvent(0, -10, blink::kWebGestureDeviceTouchscreen);
+  EXPECT_TRUE(FlingInProgress());
+  SendInputEventACK(WebInputEvent::kGestureFlingStart,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
+  RunUntilIdle();
+
+  SimulateGestureEvent(WebInputEvent::kGestureFlingCancel,
+                       blink::kWebGestureDeviceTouchscreen);
+  EXPECT_FALSE(FlingInProgress());
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+  RunUntilIdle();
+
+  // Simulate a fling cancelling tap down by sending a gesture tap down event
+  // before arrival of the fling cancel ack. The tap down must get suppressed.
+  SimulateGestureEvent(WebInputEvent::kGestureTapDown,
+                       blink::kWebGestureDeviceTouchscreen);
+  SendInputEventACK(WebInputEvent::kGestureFlingCancel,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, GestureEventQueueSize());
+
+  // The tap event must get suppressed since its corresponding tap down event
+  // is suppressed.
+  SimulateGestureEvent(WebInputEvent::kGestureTap,
+                       blink::kWebGestureDeviceTouchscreen);
+  EXPECT_EQ(0U, GestureEventQueueSize());
 }
 
 TEST_F(GestureEventQueueTest, CoalescesSyntheticScrollBeginEndEvents) {
