@@ -37,29 +37,26 @@ class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
             )
 
         self._outputs = {}
-        # Generate map of API classname to list of methods implemented by that
-        # class, along with the output filenames + generation functions for
-        # this Writer class.
-        self.methods_for_classes = defaultdict(set)
         for property_ in self.properties().values():
             if property_['api_class'] is None:
                 continue
+            methods = []
+            for method_name in property_['api_methods']:
+                methods.append(self._api_methods[method_name])
+            property_['api_methods'] = methods
             classname = self.get_classname(property_)
             assert classname is not None
-            for method_name in property_['api_methods']:
-                self.methods_for_classes[classname].add(
-                    self._api_methods[method_name])
             self._outputs[classname + '.h'] = (
-                self.generate_property_api_h_builder(classname))
+                self.generate_property_api_h_builder(classname, property_))
 
-    def generate_property_api_h_builder(self, api_classname):
+    def generate_property_api_h_builder(self, api_classname, property_):
         @template_expander.use_jinja(
             'core/css/properties/templates/CSSPropertyAPISubclass.h.tmpl')
         def generate_property_api_h():
             return {
                 'input_files': self._input_files,
                 'api_classname': api_classname,
-                'methods_for_class': self.methods_for_classes[api_classname],
+                'methods_for_class': property_['api_methods'],
             }
         return generate_property_api_h
 
