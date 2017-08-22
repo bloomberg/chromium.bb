@@ -892,14 +892,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   // Now navigate to a login form that has similar HTML markup.
   NavigateToFile("/password/password_form.html");
 
+  // The form should be filled with the previously submitted username.
+  CheckElementValue("username_field", "my_username");
+
   // Simulate a user click to force an autofill of the form's DOM value, not
   // just the suggested value.
   content::SimulateMouseClick(WebContents(), 0,
                               blink::WebMouseEvent::Button::kLeft);
-
-  // The form should be filled with the previously submitted username.
-  CheckElementValue("username_field", "my_username");
-  CheckElementValue("password_field", "password");
+  WaitForElementValue("password_field", "password");
 
   // Submit the form and verify that there is no infobar (as the password
   // has already been saved).
