@@ -485,9 +485,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
 }
 
-
-#if defined(OS_WIN) && !defined(NDEBUG)
+#if defined(OS_WIN)
 // http://crbug.com/114859. Times out frequently on Windows.
+// https://crbug.com/757836. Flakily runs out of memory on Windows.
 #define MAYBE_ThirtyFourTabs DISABLED_ThirtyFourTabs
 #else
 #define MAYBE_ThirtyFourTabs ThirtyFourTabs
