@@ -1051,7 +1051,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
 
   const bool start_is_inside_mail_blockquote = EnclosingNodeOfType(
       selection.Start(), IsMailHTMLBlockquoteElement, kCanCrossEditingBoundary);
-  const bool selection_is_plain_text = !selection.IsContentRichlyEditable();
+  const bool selection_is_plain_text = !IsRichlyEditablePosition(selection.Base());
   Element* current_root = selection.RootEditableElement();
 
   if ((selection_start_was_start_of_paragraph &&
