@@ -194,7 +194,7 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   virtual void ShowModalWarning(
       content::WebContents* web_contents,
       const LoginReputationClientRequest* request_proto,
-      const LoginReputationClientResponse* response_proto);
+      const LoginReputationClientResponse* response_proto) {}
 
   // Record UMA stats and trigger event logger when warning UI is shown.
   virtual void OnWarningShown(content::WebContents* web_contents,

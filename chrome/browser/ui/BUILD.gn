@@ -1552,6 +1552,8 @@ split_static_library("ui") {
       "views/permission_bubble/chooser_bubble_ui.h",
       "views/permission_bubble/permission_prompt_impl.cc",
       "views/permission_bubble/permission_prompt_impl.h",
+      "views/safe_browsing/password_reuse_modal_warning_dialog.cc",
+      "views/safe_browsing/password_reuse_modal_warning_dialog.h",
       "views/simple_message_box_views.cc",
       "views/simple_message_box_views.h",
       "views/subtle_notification_view.cc",

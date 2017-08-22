@@ -5,8 +5,10 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CHROME_PASSWORD_PROTECTION_SERVICE_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CHROME_PASSWORD_PROTECTION_SERVICE_H_
 
+#include "build/build_config.h"
 #include "components/safe_browsing/password_protection/password_protection_service.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
+#include "ui/base/ui_features.h"
 
 class PrefService;
 class Profile;
@@ -21,6 +23,15 @@ class SafeBrowsingService;
 class SafeBrowsingNavigationObserverManager;
 class SafeBrowsingUIManager;
 
+using OnWarningDone =
+    base::OnceCallback<void(PasswordProtectionService::WarningAction)>;
+
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+// Shows the platform-specific password reuse modal dialog.
+void ShowPasswordReuseModalWarningDialog(content::WebContents* web_contents,
+                                         OnWarningDone done_callback);
+#endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
+
 // ChromePasswordProtectionService extends PasswordProtectionService by adding
 // access to SafeBrowsingNaivigationObserverManager and Profile.
 class ChromePasswordProtectionService : public PasswordProtectionService {
@@ -31,6 +42,11 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
   ~ChromePasswordProtectionService() override;
 
   static bool ShouldShowChangePasswordSettingUI(Profile* profile);
+
+  void ShowModalWarning(
+      content::WebContents* web_contents,
+      const LoginReputationClientRequest* request_proto,
+      const LoginReputationClientResponse* response_proto) override;
 
  protected:
   // PasswordProtectionService overrides.
