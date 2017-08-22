@@ -31,6 +31,7 @@
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/wtf/text/CharacterNames.h"
@@ -520,8 +521,10 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
   RefPtr<NGLayoutResult> result = algorithm.Layout();
 
   if (result->Status() == NGLayoutResult::kSuccess &&
-      result->UnpositionedFloats().IsEmpty())
+      result->UnpositionedFloats().IsEmpty() &&
+      !RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
     CopyFragmentDataToLayoutBox(*constraint_space, result.Get());
+  }
 
   return result;
 }

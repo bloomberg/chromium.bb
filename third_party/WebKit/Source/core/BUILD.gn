@@ -1613,6 +1613,7 @@ jumbo_source_set("unit_tests") {
     "paint/compositing/CompositingReasonFinderTest.cpp",
     "paint/compositing/CompositorWorkerTest.cpp",
     "paint/compositing/PaintLayerCompositorTest.cpp",
+    "paint/ng/ng_text_fragment_painter_test.cc",
     "resize_observer/ResizeObserverTest.cpp",
     "scheduler/ActiveConnectionThrottlingTest.cpp",
     "scheduler/FrameThrottlingTest.cpp",

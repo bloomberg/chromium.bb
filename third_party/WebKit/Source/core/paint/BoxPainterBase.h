@@ -22,7 +22,6 @@ class Document;
 class FillLayer;
 class FloatRoundedRect;
 class ImageResourceObserver;
-class LayoutPoint;
 class LayoutRect;
 struct PaintInfo;
 
@@ -61,9 +60,6 @@ class BoxPainterBase {
                       BackgroundBleedAvoidance,
                       BackgroundImageGeometry&,
                       SkBlendMode = SkBlendMode::kSrcOver);
-
-  LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
-                                      const LayoutPoint& adjusted_paint_offset);
 
   static void PaintNormalBoxShadow(const PaintInfo&,
                                    const LayoutRect&,

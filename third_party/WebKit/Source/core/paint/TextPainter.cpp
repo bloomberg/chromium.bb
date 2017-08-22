@@ -166,23 +166,4 @@ TextPainter::Style TextPainter::SelectionPaintingStyle(
   return selection_style;
 }
 
-void TextPainter::PaintDecorationUnderOrOverLine(
-    GraphicsContext& context,
-    const DecorationInfo& decoration_info,
-    const AppliedTextDecoration& decoration,
-    int line_offset,
-    float decoration_offset) {
-  AppliedDecorationPainter decoration_painter(
-      context, decoration_info, line_offset, decoration, decoration_offset, 1);
-  if (EnumHasFlags(decoration_info.style->GetTextDecorationSkip(),
-                   TextDecorationSkip::kInk)) {
-    FloatRect decoration_bounds = decoration_painter.Bounds();
-    ClipDecorationsStripe(-decoration_info.baseline + decoration_bounds.Y() -
-                              decoration_info.local_origin.Y(),
-                          decoration_bounds.Height(),
-                          decoration_info.thickness);
-  }
-  decoration_painter.Paint();
-}
-
 }  // namespace blink

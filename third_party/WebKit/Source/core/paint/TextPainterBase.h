@@ -26,7 +26,7 @@ class ShadowList;
 
 // Base class for text painting. Has no dependencies on the layout tree and thus
 // provides functionality and definitions that can be shared between both legacy
-// layout and LayoutNG. For performance reasons no virtual methods are utilized.
+// layout and LayoutNG.
 class CORE_EXPORT TextPainterBase {
   STACK_ALLOCATED();
 
@@ -40,6 +40,10 @@ class CORE_EXPORT TextPainterBase {
                   bool horizontal);
   ~TextPainterBase();
 
+  virtual void ClipDecorationsStripe(float upper,
+                                     float stripe_width,
+                                     float dilation) = 0;
+
   void SetEmphasisMark(const AtomicString&, TextEmphasisPosition);
   void SetEllipsisOffset(int offset) { ellipsis_offset_ = offset; }
 
@@ -51,6 +55,11 @@ class CORE_EXPORT TextPainterBase {
   void PaintDecorationsOnlyLineThrough(const DecorationInfo&,
                                        const PaintInfo&,
                                        const Vector<AppliedTextDecoration>&);
+  void PaintDecorationUnderOrOverLine(GraphicsContext&,
+                                      const DecorationInfo&,
+                                      const AppliedTextDecoration&,
+                                      int line_offset,
+                                      float decoration_offset);
 
   void ComputeDecorationInfo(DecorationInfo&,
                              const LayoutPoint& box_origin,

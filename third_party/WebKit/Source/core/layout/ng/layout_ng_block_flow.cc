@@ -9,6 +9,8 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
+#include "core/paint/ng/ng_block_flow_painter.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 namespace blink {
 
@@ -106,7 +108,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
   }
   fragment->SetOffset(physical_offset);
 
-  physical_root_fragment_for_testing_ = fragment;
+  physical_root_fragment_ = fragment;
 }
 
 void LayoutNGBlockFlow::UpdateMargins(
@@ -167,6 +169,16 @@ void LayoutNGBlockFlow::SetCachedLayoutResult(
 
   cached_constraint_space_ = constraint_space;
   cached_result_ = layout_result;
+}
+
+void LayoutNGBlockFlow::PaintObject(const PaintInfo& paint_info,
+                                    const LayoutPoint& paint_offset) const {
+  // TODO(eae): This logic should go in Paint instead and it should drive the
+  // full paint logic for LayoutNGBlockFlow.
+  if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
+    NGBlockFlowPainter(*this).PaintContents(paint_info, paint_offset);
+  else
+    LayoutBlockFlow::PaintObject(paint_info, paint_offset);
 }
 
 }  // namespace blink

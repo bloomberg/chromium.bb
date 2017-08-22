@@ -238,6 +238,14 @@ blink_core_sources("paint") {
     "compositing/GraphicsLayerUpdater.h",
     "compositing/PaintLayerCompositor.cpp",
     "compositing/PaintLayerCompositor.h",
+    "ng/ng_block_flow_painter.cc",
+    "ng/ng_block_flow_painter.h",
+    "ng/ng_box_fragment_painter.cc",
+    "ng/ng_box_fragment_painter.h",
+    "ng/ng_text_fragment_painter.cc",
+    "ng/ng_text_fragment_painter.h",
+    "ng/ng_text_painter.cc",
+    "ng/ng_text_painter.h",
   ]
 
   configs += [
