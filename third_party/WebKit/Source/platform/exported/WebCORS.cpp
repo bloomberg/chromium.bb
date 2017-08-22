@@ -357,6 +357,8 @@ WebURLRequest CreateAccessControlPreflightRequest(
       WebURLRequest::kFetchCredentialsModeOmit);
   preflight_request.SetServiceWorkerMode(
       WebURLRequest::ServiceWorkerMode::kNone);
+  preflight_request.SetHTTPReferrer(request.HttpHeaderField(HTTPNames::Referer),
+                                    request.GetReferrerPolicy());
 
   if (request.IsExternalRequest()) {
     preflight_request.SetHTTPHeaderField(
