@@ -3085,17 +3085,10 @@ bool LayerTreeHostImpl::ScrollAnimationCreate(ScrollNode* scroll_node,
 }
 
 static bool CanPropagate(ScrollNode* scroll_node, float x, float y) {
-  // ScrollBoundaryBehavior may have different values on x-axis and y-axis.
-  // We need to find out the dominant axis of user's intended scroll to decide
-  // which node's ScrollBoundaryBehavior should be applied, i.e. which the
-  // scroll should be propagated from this node given its relevant*
-  // ScrollBoundaryBehavior value. * relevant here depends on the dominant
-  // axis of scroll gesture.
-  bool x_dominant = std::abs(x) > std::abs(y);
-  return (x_dominant &&
+  return (x == 0 ||
           scroll_node->scroll_boundary_behavior.x ==
-              ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto) ||
-         (!x_dominant &&
+              ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto) &&
+         (y == 0 ||
           scroll_node->scroll_boundary_behavior.y ==
               ScrollBoundaryBehavior::kScrollBoundaryBehaviorTypeAuto);
 }
