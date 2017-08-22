@@ -154,6 +154,8 @@ TEST_F(SavePendingPasswordViewControllerTest,
   // User modifies the username and presses escape. We expect old username
   // restored in the label.
   [[row usernameField] setStringValue:@"tempusername"];
+  // TODO(irmakk): Use passwordItemContainer as subview after crbug.com/757752
+  // is fixed.
   [[test_window() contentView] addSubview:[row usernameField]];
   [test_window() makePretendKeyWindowAndSetFirstResponder:[row usernameField]];
   [[[row usernameField] currentEditor]
@@ -170,6 +172,34 @@ TEST_F(SavePendingPasswordViewControllerTest,
   EXPECT_NSNE(@"tempusername",
               base::SysUTF16ToNSString(
                   [delegate() model]->pending_password().username_value));
+}
+
+TEST_F(SavePendingPasswordViewControllerTest,
+       ShouldSaveEditedUsernameAndDismissWhenSaveClicked) {
+  profile()->GetPrefs()->SetBoolean(
+      password_manager::prefs::kWasSignInPasswordPromoClicked, true);
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnableUsernameCorrection);
+  SetUpSavePendingState(false);
+
+  // We need a window to be able to focus on username field and have an editor.
+  [[test_window() contentView] addSubview:[controller() view]];
+
+  // User enters edit mode, edits the username, clicks save without exiting the
+  // edit mode.
+  [controller().editButton performClick:nil];
+  PendingPasswordItemView* row =
+      [[controller().passwordItemContainer subviews] objectAtIndex:0];
+  [[[row usernameField] currentEditor] insertText:@"editedusername"];
+  EXPECT_NSEQ(@"editedusername", [[row usernameField] stringValue]);
+
+  EXPECT_CALL(*ui_controller(),
+              SavePassword(base::SysNSStringToUTF16(@"editedusername")));
+  EXPECT_CALL(*ui_controller(), NeverSavePassword()).Times(0);
+  [controller().saveButton performClick:nil];
+
+  EXPECT_TRUE([delegate() dismissed]);
 }
 
 TEST_F(SavePendingPasswordViewControllerTest,
