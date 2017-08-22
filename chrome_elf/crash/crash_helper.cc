@@ -134,15 +134,6 @@ void DumpWithoutCrashing() {
 // beyond that point (e.g. during tests).
 extern "C" {
 
-void GetCrashReportsImpl(const crash_reporter::Report** reports,
-                         size_t* report_count) {
-  if (!g_crash_helper_enabled)
-    return;
-  crash_reporter::GetReports(g_crash_reports);
-  *reports = g_crash_reports->data();
-  *report_count = g_crash_reports->size();
-}
-
 // This helper is invoked by debugging code in chrome to register the client
 // id.
 void SetMetricsClientId(const char* client_id) {

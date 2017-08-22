@@ -52,6 +52,7 @@ shared_library("chrome_elf") {
     "//build/config:exe_and_shlib_deps",
     "//chrome/install_static:install_static_util",
     "//chrome/install_static:primary_module",
+    "//components/crash/content/app:crash_export_thunks",
   ]
   configs += [ "//build/config/win:windowed" ]
   configs -= [ "//build/config/win:console" ]
@@ -167,12 +168,12 @@ static_library("crash") {
     "//base",  # This needs to go.  DEP of app, crash_keys, client.
     "//base:base_static",  # pe_image
     "//chrome/install_static:install_static_util",
-    "//components/crash/content/app:app",
+    "//components/crash/content/app",
     "//components/crash/core/common",  # crash_keys
     "//components/version_info:channel",
     "//content/public/common:result_codes",
     "//gpu/config:crash_keys",
-    "//third_party/crashpad/crashpad/client:client",  # DumpWithoutCrash
+    "//third_party/crashpad/crashpad/client",  # DumpWithoutCrash
   ]
 }
 
@@ -238,6 +239,7 @@ test("chrome_elf_unittests") {
     "//chrome/common:version_header",
     "//chrome/install_static:install_static_util",
     "//chrome/install_static/test:test_support",
+    "//components/crash/content/app:test_support",
     "//sandbox",
     "//testing/gtest",
   ]
@@ -281,6 +283,7 @@ shared_library("blacklist_test_main_dll") {
     "//base",
     "//build/config:exe_and_shlib_deps",
     "//chrome/install_static:install_static_util",
+    "//components/crash/content/app:test_support",
   ]
 }
 
