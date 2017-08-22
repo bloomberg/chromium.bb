@@ -1,4 +1,0 @@
-Page should not crash when a node does not have a renderer object associated with it. To test manually, right-click anywhere on the page. The test succeeds if the page does not crash. On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".PASS successfullyParsed is true
-
-TEST COMPLETE
-
