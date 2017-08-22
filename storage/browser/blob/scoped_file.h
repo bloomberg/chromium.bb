@@ -63,6 +63,8 @@ class STORAGE_EXPORT ScopedFile {
   // The full file path.
   const base::FilePath& path() const { return path_; }
 
+  ScopeOutPolicy policy() const { return scope_out_policy_; }
+
   // Releases the file. After calling this, this instance will hold
   // an empty file path and scoping out won't make any file deletion
   // or callback dispatch. (If an owned pointer is attached to any of

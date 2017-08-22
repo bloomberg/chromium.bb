@@ -62,6 +62,11 @@ void ScopedFile::Reset() {
     iter->second->PostTask(FROM_HERE, base::Bind(iter->first, path_));
   }
 
+  DVLOG(1) << "ScopedFile::Reset(): "
+           << (scope_out_policy_ == DELETE_ON_SCOPE_OUT ? "Deleting "
+                                                        : "Not deleting ")
+           << path_.value();
+
   if (scope_out_policy_ == DELETE_ON_SCOPE_OUT) {
     file_task_runner_->PostTask(
         FROM_HERE,
