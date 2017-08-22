@@ -31,6 +31,7 @@
 #include "media/video/h264_parser.h"
 #include "media/video/video_encode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
+#include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
 #include "third_party/webrtc/rtc_base/timeutils.h"
 
 namespace content {
@@ -559,15 +560,22 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
 void RTCVideoEncoder::Impl::NotifyError(
     media::VideoEncodeAccelerator::Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  int32_t retval;
+  int32_t retval = WEBRTC_VIDEO_CODEC_ERROR;
   switch (error) {
     case media::VideoEncodeAccelerator::kInvalidArgumentError:
       retval = WEBRTC_VIDEO_CODEC_ERR_PARAMETER;
       break;
-    default:
+    case media::VideoEncodeAccelerator::kIllegalStateError:
       retval = WEBRTC_VIDEO_CODEC_ERROR;
+      break;
+    case media::VideoEncodeAccelerator::kPlatformFailureError:
+      // Some platforms(i.e. Android) do not have SW H264 implementation so
+      // check if it is available before asking for fallback.
+      retval = video_codec_type_ != webrtc::kVideoCodecH264 ||
+                       webrtc::H264Encoder::IsSupported()
+                   ? WEBRTC_VIDEO_CODEC_FALLBACK_SOFTWARE
+                   : WEBRTC_VIDEO_CODEC_ERROR;
   }
-
   video_encoder_.reset();
 
   SetStatus(retval);
