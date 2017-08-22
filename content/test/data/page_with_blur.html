@@ -5,7 +5,6 @@
 
 window.onload = function() {
   document.body.onblur = function() {
-    domAutomationController.setAutomationId(0);
     domAutomationController.send("document-blur");
   }
 }

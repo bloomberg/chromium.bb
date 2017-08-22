@@ -14,12 +14,10 @@ function getInputFieldText() {
 }
 
 function onInputFocus() {
-  domAutomationController.setAutomationId(0);
   domAutomationController.send("input-focus");
 }
 
 function onInputBlur() {
-  domAutomationController.setAutomationId(0);
   domAutomationController.send("input-blur");
 }
 

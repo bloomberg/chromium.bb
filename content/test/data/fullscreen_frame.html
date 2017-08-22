@@ -7,7 +7,6 @@ var expectedWidth, expectedHeight;
 
 function onResize() {
   if (window.innerWidth == expectedWidth && window.innerHeight == expectedHeight) {
-    domAutomationController.setAutomationId(0);
     domAutomationController.send("resize");
     removeResizeListener();
   }

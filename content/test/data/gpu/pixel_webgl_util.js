@@ -107,7 +107,6 @@ function makeMain(antialias, alpha)
     if (g_glUtil && setup(g_glUtil)) {
       drawSomeFramesUtil();
     } else {
-      domAutomationController.setAutomationId(1);
       domAutomationController.send("FAILURE");
     }
   };
@@ -116,7 +115,6 @@ function makeMain(antialias, alpha)
 function drawSomeFramesUtil()
 {
   if (g_swapsBeforeAckUtil == 0) {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("SUCCESS");
   } else {
     g_swapsBeforeAckUtil--;

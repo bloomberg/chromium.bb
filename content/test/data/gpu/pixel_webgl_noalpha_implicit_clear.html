@@ -70,11 +70,9 @@ function main() {
   if (gl && setup(gl)) {
     waitForComposite(function() {
       gl.drawArrays(gl.TRIANGLES, 0, 3);
-      domAutomationController.setAutomationId(1);
       domAutomationController.send("SUCCESS");
     });
   } else {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("FAILURE");
   }
 }
