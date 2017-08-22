@@ -70,7 +70,7 @@ content::WebUIDataSource* CreateChooseMobileNetworkUIHTMLSource() {
                              IDS_NETWORK_SCANNING_THIS_MAY_TAKE_A_MINUTE);
   source->AddLocalizedString("noMobileNetworks",
                              IDS_NETWORK_NO_MOBILE_NETWORKS);
-  source->AddLocalizedString("connect", IDS_OPTIONS_SETTINGS_CONNECT);
+  source->AddLocalizedString("connect", IDS_SETTINGS_INTERNET_BUTTON_CONNECT);
   source->AddLocalizedString("cancel", IDS_CANCEL);
 
   source->SetJsonPath("strings.js");

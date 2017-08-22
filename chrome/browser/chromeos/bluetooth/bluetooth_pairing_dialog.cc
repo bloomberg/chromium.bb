@@ -93,8 +93,7 @@ ui::ModalType BluetoothPairingDialog::GetDialogModalType() const {
 }
 
 base::string16 BluetoothPairingDialog::GetDialogTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE);
+  return l10n_util::GetStringUTF16(IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE);
 }
 
 GURL BluetoothPairingDialog::GetDialogContentURL() const {

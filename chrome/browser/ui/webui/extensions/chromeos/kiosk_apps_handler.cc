@@ -149,39 +149,35 @@ void KioskAppsHandler::GetLocalizedValues(content::WebUIDataSource* source) {
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ADD_KIOSK_APP_BUTTON));
   source->AddString(
       "kioskOverlayTitle",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_OVERLAY_TITLE));
-  source->AddString(
-      "addKioskApp",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_ADD_APP));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_OVERLAY_TITLE));
+  source->AddString("addKioskApp",
+                    l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_ADD_APP));
   source->AddString(
       "kioskAppIdEditHint",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_ADD_APP_HINT));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_ADD_APP_HINT));
   source->AddString(
       "enableAutoLaunchButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_ENABLE_AUTO_LAUNCH));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_ENABLE_AUTO_LAUNCH));
   source->AddString(
       "disableAutoLaunchButton",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_DISABLE_AUTO_LAUNCH));
-  source->AddString(
-      "autoLaunch",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_AUTO_LAUNCH));
-  source->AddString(
-      "invalidApp",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_KIOSK_INVALID_APP));
-  source->AddString(
-      "kioskDiableBailoutShortcutLabel",
-      l10n_util::GetStringUTF16(
-          IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_KIOSK_DISABLE_AUTO_LAUNCH));
+  source->AddString("autoLaunch", l10n_util::GetStringUTF16(
+                                      IDS_EXTENSIONS_KIOSK_AUTO_LAUNCH));
+  source->AddString("invalidApp", l10n_util::GetStringUTF16(
+                                      IDS_EXTENSIONS_KIOSK_INVALID_APP));
+  source->AddString("kioskDiableBailoutShortcutLabel",
+                    l10n_util::GetStringUTF16(
+                        IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL));
   source->AddString(
       "kioskDisableBailoutShortcutWarningBold",
       l10n_util::GetStringUTF16(
-          IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD));
+          IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD));
   const base::string16 product_os_name =
       l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_OS_NAME);
   source->AddString(
       "kioskDisableBailoutShortcutWarning",
       l10n_util::GetStringFUTF16(
-          IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT,
+          IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT,
           product_os_name));
   source->AddString(
       "kioskDisableBailoutShortcutConfirm",

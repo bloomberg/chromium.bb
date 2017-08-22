@@ -65,6 +65,15 @@ Press any key to continue exploring.
   <message name="IDS_WALLPAPER_MANAGER_INVALID_WALLPAPER" desc="The string displayed to user when user selected wallpaper can not be set as a wallpaper.">
     Chrome cannot set wallpaper.
   </message>
+  <message name="IDS_WALLPAPER_MANAGER_LAYOUT_CENTER" desc="Label for option to center a customized wallpaper.">
+    Center
+  </message>
+  <message name="IDS_WALLPAPER_MANAGER_LAYOUT_CENTER_CROPPED" desc="Label for option to center crop a customized wallpaper.">
+    Center Cropped
+  </message>
+  <message name="IDS_WALLPAPER_MANAGER_LAYOUT_STRETCH" desc="Label for option to stretch a customized wallpaper.">
+    Stretch
+  </message>
   <message name="IDS_CURRENT_WALLPAPER_SET_BY_MESSAGE" desc="The string displayed to user if the current wallpaper is set by a third party wallpaper app/extension.">
     The current wallpaper is set by '<ph name="APP_NAME">$1</ph>'. You may need to uninstall '<ph name="APP_NAME">$1</ph>' before selecting a different wallpaper.
   </message>
@@ -2925,15 +2934,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
     Photo by
   </message>
-  <message name="IDS_OPTIONS_WALLPAPER_CENTER_LAYOUT" desc="Label for option to center a customized wallpaper.">
-    Center
-  </message>
-  <message name="IDS_OPTIONS_WALLPAPER_CENTER_CROPPED_LAYOUT" desc="Label for option to center crop a customized wallpaper.">
-    Center Cropped
-  </message>
-  <message name="IDS_OPTIONS_WALLPAPER_STRETCH_LAYOUT" desc="Label for option to stretch a customized wallpaper.">
-    Stretch
-  </message>
   <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user." meaning="Hint text">
     Change...
   </message>
@@ -3269,52 +3269,24 @@ Press any key to continue exploring.
     No networks found.
   </message>
 
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_SERVICE_NAME" desc="Cellular service name under network details in chrome:settings/internet.">
-    Service name:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN" desc="Cellular device APN label under network details in chrome:settings/internet.">
-    Access point name:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_USERNAME" desc="Cellular device APN user name label under network details in chrome:settings/internet.">
-    User name:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_PASSWORD" desc="Cellular device APN password label under network details in chrome:settings/internet.">
-    Password:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_CLEAR" desc="Cellular device use default APN settings button under network details in chrome:settings/internet.">
-    Use default
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_SET" desc="Cellular device set APN settings button under network details in chrome:settings/internet.">
-    Save
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_LOCK_SIM_CARD" desc="Cellular device enable SIM card PIN lock checkbox label in chrome:settings/internet.">
-    Lock SIM card (require PIN to use mobile data)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_BUTTON" desc="Cellular device change PIN button text in chrome:settings/internet.">
-    Change PIN
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_TITLE" desc="Cellular device change PIN dialog title in chrome:settings/internet.">
+  <message name="IDS_SIM_UNLOCK_CHANGE_PIN_TITLE" desc="Cellular device change PIN dialog title in chrome:settings/internet.">
     Change SIM card PIN
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_MESSAGE" desc="Cellular device change PIN dialog message in chrome:settings/internet.">
+  <message name="IDS_SIM_UNLOCK_CHANGE_PIN_MESSAGE" desc="Cellular device change PIN dialog message in chrome:settings/internet.">
     Please enter old and new PIN.
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN" desc="Cellular device change PIN dialog old PIN label text in chrome:settings/internet.">
+  <message name="IDS_SIM_UNLOCK_CHANGE_PIN_OLD_PIN" desc="Cellular device change PIN dialog old PIN label text in chrome:settings/internet.">
     Old PIN:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_NEW_PIN" desc="Cellular device change PIN dialog new PIN label text in chrome:settings/internet.">
+  <message name="IDS_SIM_UNLOCK_CHANGE_PIN_NEW_PIN" desc="Cellular device change PIN dialog new PIN label text in chrome:settings/internet.">
     New PIN:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_RETYPE_PIN" desc="Cellular device change PIN dialog re-type new PIN label text in chrome:settings/internet.">
+  <message name="IDS_SIM_UNLOCK_CHANGE_PIN_RETYPE_PIN" desc="Cellular device change PIN dialog re-type new PIN label text in chrome:settings/internet.">
     Re-type new PIN:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PINS_DONT_MATCH_ERROR" desc="Cellular device change PIN dialog message shown when entered new PINs don't match in chrome:settings/internet.">
+  <message name="IDS_SIM_UNLOCK_PINS_DONT_MATCH_ERROR" desc="Cellular device change PIN dialog message shown when entered new PINs don't match in chrome:settings/internet.">
     PINs don't match!
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_APN_OTHER" desc="Select user defined APN in the lost of predefined APNs under network details in chrome:settings/internet.">
-    Other...
-  </message>
-
   <message name="IDS_SIM_UNLOCK_ENTER_PIN_TITLE" desc="Title of the SIM card unlock dialog in chrome:sim-unlock.">
     Enter SIM card PIN
   </message>
@@ -3364,6 +3336,7 @@ Press any key to continue exploring.
     This SIM card is disabled and cannot be used. Please contact your service provider for a replacement.
   </message>
 
+  <!-- Slow UI -->
   <message name="IDS_SLOW_DISABLE" desc="The text of the button that disables performance collection for feedback reports">
     Disable performance data collection
   </message>
@@ -3377,6 +3350,7 @@ Press any key to continue exploring.
     <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>Note:<ph name="END_BOLD">&lt;/strong&gt;</ph> Only enable if you know what you are doing or if you have been asked to do so, as collection of data may reduce performance.
   </message>
 
+  <!-- EULA -->
   <message name="IDS_EULA_BACK_BUTTON" desc="Back button shown on EULA/OOBE screens.">
     Back
   </message>
@@ -3596,17 +3570,11 @@ Press any key to continue exploring.
   <message name="IDS_TERMS_OF_SERVICE_SCREEN_ACCEPT_BUTTON" desc="Text of the accept button on the Terms of Service screen.">
     Accept and continue
   </message>
-  <message name="IDS_OPTIONS_CONTROLLED_SETTING_OWNER" desc="Text displayed in the controlled settings bubble when a setting's value can be edited only by the owner.">
+  <message name="IDS_CONTROLLED_SETTING_OWNER" desc="Text displayed in the controlled settings bubble when a setting's value can be edited only by the owner.">
     This setting is managed by the device owner, <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
   </message>
-  <message name="IDS_OPTIONS_CONTROLLED_SETTING_SHARED" desc="Text displayed in the controlled settings bubble when a setting's value belongs to the primary user but can be edited.">
+  <message name="IDS_CONTROLLED_SETTING_SHARED" desc="Text displayed in the controlled settings bubble when a setting's value belongs to the primary user but can be edited.">
     This setting belongs to <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
-  </message>
-  <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_SHARED" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings which belong to the primary user but can be edited.">
-    These settings belong to <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
-  </message>
-  <message name="IDS_OPTIONS_CONTROLLED_SETTING_SHARED_SCREEN_LOCK" desc="Text displayed in the controlled settings bubble for the screen lock option, indicating screen lock is enabled if it's set for any profile in a session.">
-    Passwords are required for signed-in users, as one or more users has this setting turned on.
   </message>
 
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
@@ -4213,39 +4181,43 @@ Battery full
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Label for cellular network modem PRL (Preferred Roaming List) version under chrome://options/internet">
     PRL version:
   </message>
+
+  <!-- Extensions page: Kiosk apps -->
   <message name="IDS_EXTENSIONS_ADD_KIOSK_APP_BUTTON" desc="Label of the button to bring up kiosk management overlay on chrome extensions page.">
     Manage kiosk applications...
   </message>
-  <message name="IDS_OPTIONS_KIOSK_OVERLAY_TITLE" desc="The title text of the kiosk settings overlay.">
+  <message name="IDS_EXTENSIONS_KIOSK_OVERLAY_TITLE" desc="The title text of the kiosk settings overlay.">
     Manage Kiosk Applications
   </message>
-  <message name="IDS_OPTIONS_KIOSK_ADD_APP" desc="Label above the application id text input in the kiosk settings overlay.">
+  <message name="IDS_EXTENSIONS_KIOSK_ADD_APP" desc="Label above the application id text input in the kiosk settings overlay.">
     Add kiosk application:
   </message>
-  <message name="IDS_OPTIONS_KIOSK_ADD_APP_HINT" desc="Placeholder hint in  the application id text input in the kiosk settings overlay.">
+  <message name="IDS_EXTENSIONS_KIOSK_ADD_APP_HINT" desc="Placeholder hint in  the application id text input in the kiosk settings overlay.">
     Enter application id or webstore URL.
   </message>
-  <message name="IDS_OPTIONS_KIOSK_ENABLE_AUTO_LAUNCH" desc="Text for a button that enables an application to auto launch on startup in the kiosk settings overlay.">
+  <message name="IDS_EXTENSIONS_KIOSK_ENABLE_AUTO_LAUNCH" desc="Text for a button that enables an application to auto launch on startup in the kiosk settings overlay.">
     Set to auto-launch
   </message>
-  <message name="IDS_OPTIONS_KIOSK_DISABLE_AUTO_LAUNCH" desc="Text for a button that disables an application to auto launch on startup in the kiosk settings overlay.">
+  <message name="IDS_EXTENSIONS_KIOSK_DISABLE_AUTO_LAUNCH" desc="Text for a button that disables an application to auto launch on startup in the kiosk settings overlay.">
     Disable auto-launch
   </message>
-  <message name="IDS_OPTIONS_KIOSK_AUTO_LAUNCH" desc="Text shows besides an application that is set to auto launch on start up in the kiosk settings overlay.">
+  <message name="IDS_EXTENSIONS_KIOSK_AUTO_LAUNCH" desc="Text shows besides an application that is set to auto launch on start up in the kiosk settings overlay.">
     (auto-launched)
   </message>
-  <message name="IDS_OPTIONS_KIOSK_INVALID_APP" desc="Text shows besides an application that is not valid in the kiosk settings overlay.">
+  <message name="IDS_EXTENSIONS_KIOSK_INVALID_APP" desc="Text shows besides an application that is not valid in the kiosk settings overlay.">
     Invalid application.
   </message>
-  <message name="IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL" desc="Label text for a checkbox to disable kiosk application launch bail out shortcut.">
+  <message name="IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_LABEL" desc="Label text for a checkbox to disable kiosk application launch bail out shortcut.">
     Permanently keep this device in kiosk mode.
   </message>
-  <message name="IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD" desc="Bold text of the warning dialog for disabling kiosk application launch bail out shortcut.">
+  <message name="IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_BOLD" desc="Bold text of the warning dialog for disabling kiosk application launch bail out shortcut.">
     Are you sure you want to permanently keep this device in kiosk mode?
   </message>
-  <message name="IDS_OPTIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT" desc="Warning text of disabling kiosk application launch bail out shortcut.">
+  <message name="IDS_EXTENSIONS_KIOSK_DISABLE_BAILOUT_SHORTCUT_WARNING_FORMAT" desc="Warning text of disabling kiosk application launch bail out shortcut.">
     The only way to undo this is to re-install <ph name="IDS_SHORT_PRODUCT_OS_NAME">$1<ex>Chrome OS</ex></ph>.
   </message>
+
+  <!-- Keyboard overlay UI -->
   <message name="IDS_KEYBOARD_OVERLAY_LEARN_MORE" desc="The text of the learn more link on the keyboard overlay.">
     Learn more
   </message>
