@@ -232,6 +232,8 @@ source_set("common_sources") {
     "service_worker_modes.h",
     "simple_connection_filter.cc",
     "simple_connection_filter.h",
+    "simple_url_loader.cc",
+    "simple_url_loader.h",
     "socket_permission_request.h",
     "speech_recognition_error.h",
     "speech_recognition_grammar.h",
