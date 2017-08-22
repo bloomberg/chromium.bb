@@ -41,6 +41,10 @@ source_set("capture_device_specific") {
     "//media/capture/content/android",
     "//media/capture/video/android",
   ]
+  if (is_win) {
+    # TODO(jschuh): https://crbug.com/167187 fix size_t to int truncations.
+    configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+  }
   defines = [ "CAPTURE_IMPLEMENTATION" ]
   sources = [
     "content/animated_content_sampler.cc",
