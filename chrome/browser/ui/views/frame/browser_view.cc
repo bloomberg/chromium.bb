@@ -1351,10 +1351,13 @@ content::KeyboardEventProcessingResult BrowserView::PreHandleKeyboardEvent(
                : content::KeyboardEventProcessingResult::NOT_HANDLED;
   }
 
+  // BrowserView does not register RELEASED accelerators. So if we can find the
+  // command id from |accelerator_table_|, it must be a keydown event. This
+  // DCHECK ensures we won't accidentally return NOT_HANDLED for a later added
+  // RELEASED accelerator in BrowserView.
+  DCHECK_EQ(event.GetType(), blink::WebInputEvent::kRawKeyDown);
   // |accelerator| is a non-reserved browser shortcut (e.g. Ctrl+f).
-  return (event.GetType() == blink::WebInputEvent::kRawKeyDown)
-             ? content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT
-             : content::KeyboardEventProcessingResult::NOT_HANDLED;
+  return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
 }
 
 void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
