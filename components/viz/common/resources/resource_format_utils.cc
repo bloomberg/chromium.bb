@@ -4,9 +4,11 @@
 
 #include "components/viz/common/resources/resource_format_utils.h"
 
+#include "base/logging.h"
+#include "base/macros.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "ui/gfx/gpu_memory_buffer.h"
+#include "ui/gfx/buffer_types.h"
 
 namespace viz {
 
@@ -57,7 +59,7 @@ int BitsPerPixel(ResourceFormat format) {
   return 0;
 }
 
-GLenum GLDataType(ResourceFormat format) {
+unsigned int GLDataType(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const GLenum format_gl_data_type[] = {
       GL_UNSIGNED_BYTE,           // RGBA_8888
@@ -77,7 +79,7 @@ GLenum GLDataType(ResourceFormat format) {
   return format_gl_data_type[format];
 }
 
-GLenum GLDataFormat(ResourceFormat format) {
+unsigned int GLDataFormat(ResourceFormat format) {
   DCHECK_LE(format, RESOURCE_FORMAT_MAX);
   static const GLenum format_gl_data_format[] = {
       GL_RGBA,           // RGBA_8888
@@ -96,13 +98,13 @@ GLenum GLDataFormat(ResourceFormat format) {
   return format_gl_data_format[format];
 }
 
-GLenum GLInternalFormat(ResourceFormat format) {
+unsigned int GLInternalFormat(ResourceFormat format) {
   // In GLES2, the internal format must match the texture format. (It no longer
   // is true in GLES3, however it still holds for the BGRA extension.)
   return GLDataFormat(format);
 }
 
-GLenum GLCopyTextureInternalFormat(ResourceFormat format) {
+unsigned int GLCopyTextureInternalFormat(ResourceFormat format) {
   // In GLES2, valid formats for glCopyTexImage2D are: GL_ALPHA, GL_LUMINANCE,
   // GL_LUMINANCE_ALPHA, GL_RGB, or GL_RGBA.
   // Extensions typically used for glTexImage2D do not also work for

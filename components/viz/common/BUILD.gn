@@ -5,6 +5,27 @@
 import("//components/viz/viz.gni")
 import("//testing/test.gni")
 
+viz_component("resource_format") {
+  output_name = "viz_resource_format"
+
+  defines = [ "VIZ_RESOURCE_FORMAT_IMPLEMENTATION" ]
+
+  sources = [
+    "resources/resource_format.h",
+    "resources/resource_format_utils.cc",
+    "resources/resource_format_utils.h",
+    "viz_resource_format_export.h",
+  ]
+
+  configs = [ "//third_party/khronos:khronos_headers" ]
+
+  deps = [
+    "//base",
+    "//skia",
+    "//ui/gfx:buffer_types",
+  ]
+}
+
 viz_component("common") {
   output_name = "viz_common"
 
@@ -46,9 +67,6 @@ viz_component("common") {
     "resources/buffer_to_texture_target_map.cc",
     "resources/buffer_to_texture_target_map.h",
     "resources/platform_color.h",
-    "resources/resource_format.h",
-    "resources/resource_format_utils.cc",
-    "resources/resource_format_utils.h",
     "resources/resource_id.h",
     "resources/resource_settings.cc",
     "resources/resource_settings.h",
@@ -98,6 +116,7 @@ viz_component("common") {
   ]
 
   public_deps = [
+    ":resource_format",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/common",
     "//mojo/public/cpp/bindings",

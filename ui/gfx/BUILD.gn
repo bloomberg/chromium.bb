@@ -490,6 +490,13 @@ source_set("selection_bound_sources") {
   ]
 }
 
+# Depend on this to use buffer_types.h without pulling in all of gfx.
+source_set("buffer_types") {
+  sources = [
+    "buffer_types.h",
+  ]
+}
+
 # The GPU memory buffer stuff is separate from "gfx" to allow GPU-related
 # things to use these files without pulling in all of gfx, which includes large
 # things like Skia.
@@ -517,7 +524,6 @@ source_set("memory_buffer_sources") {
   sources = [
     "buffer_format_util.cc",
     "buffer_format_util.h",
-    "buffer_types.h",
     "client_native_pixmap.h",
     "client_native_pixmap_factory.cc",
     "client_native_pixmap_factory.h",
@@ -540,6 +546,10 @@ source_set("memory_buffer_sources") {
   }
 
   defines = [ "GFX_IMPLEMENTATION" ]
+
+  public_deps = [
+    ":buffer_types",
+  ]
 
   deps = [
     ":gfx_switches",
