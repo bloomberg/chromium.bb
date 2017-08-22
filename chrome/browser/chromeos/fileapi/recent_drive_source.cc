@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
-#include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_operation_runner.h"
@@ -86,7 +85,7 @@ void RecentDriveSource::GetRecentFiles(RecentContext context,
 
   file_system->SearchMetadata(
       "" /* query */, drive::SEARCH_METADATA_EXCLUDE_DIRECTORIES,
-      kMaxFilesFromSingleSource, drive::MetadataSearchOrder::LAST_MODIFIED,
+      context_.max_files(), drive::MetadataSearchOrder::LAST_MODIFIED,
       base::Bind(&RecentDriveSource::OnSearchMetadata,
                  weak_ptr_factory_.GetWeakPtr()));
 }

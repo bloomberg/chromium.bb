@@ -30,7 +30,12 @@ namespace chromeos {
 
 namespace {
 
+// Cut-off time. Files older than this are filtered out.
+constexpr base::TimeDelta kCutoffTimeDelta = base::TimeDelta::FromDays(30);
+
 // Recent file cache will be cleared this duration after it is built.
+// Note: Do not make this value large. When cache is used, cut-off criteria is
+// not strictly honored.
 constexpr base::TimeDelta kCacheExpiration = base::TimeDelta::FromSeconds(10);
 
 std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
@@ -43,8 +48,6 @@ std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
 }
 
 }  // namespace
-
-const size_t kMaxFilesFromSingleSource = 1000;
 
 const char RecentModel::kLoadHistogramName[] = "FileBrowser.Recent.LoadTotal";
 
@@ -72,8 +75,10 @@ RecentModel::~RecentModel() {
   DCHECK(sources_.empty());
 }
 
-void RecentModel::GetRecentFiles(const RecentContext& context,
-                                 GetRecentFilesCallback callback) {
+void RecentModel::GetRecentFiles(
+    storage::FileSystemContext* file_system_context,
+    const GURL& origin,
+    GetRecentFilesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Use cache if available.
@@ -95,6 +100,12 @@ void RecentModel::GetRecentFiles(const RecentContext& context,
   DCHECK(build_start_time_.is_null());
 
   build_start_time_ = base::TimeTicks::Now();
+
+  base::Time cutoff_time = forced_cutoff_time_.has_value()
+                               ? forced_cutoff_time_.value()
+                               : base::Time::Now() - kCutoffTimeDelta;
+
+  RecentContext context(file_system_context, origin, max_files_, cutoff_time);
 
   num_inflight_sources_ = sources_.size();
   if (sources_.empty()) {
@@ -123,10 +134,12 @@ void RecentModel::OnGetRecentFiles(const RecentContext& context,
 
   DCHECK_LT(0, num_inflight_sources_);
 
-  for (const auto& file : files)
-    intermediate_files_.emplace(file);
+  for (const auto& file : files) {
+    if (file.last_modified() >= context.cutoff_time())
+      intermediate_files_.emplace(file);
+  }
 
-  while (intermediate_files_.size() > kMaxFilesFromSingleSource)
+  while (intermediate_files_.size() > context.max_files())
     intermediate_files_.pop();
 
   --num_inflight_sources_;
@@ -174,6 +187,19 @@ void RecentModel::ClearCache() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   cached_urls_.reset();
+}
+
+void RecentModel::SetMaxFilesForTest(size_t max_files) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  max_files_ = max_files;
+}
+
+void RecentModel::SetForcedCutoffTimeForTest(
+    const base::Time& forced_cutoff_time) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  forced_cutoff_time_ = forced_cutoff_time;
 }
 
 }  // namespace chromeos

@@ -45,8 +45,7 @@ class RecentDownloadSourceTest : public testing::Test {
 
     RegisterFakeDownloadsFileSystem();
 
-    source_ = base::MakeUnique<RecentDownloadSource>(profile_.get(),
-                                                     3 /* max_num_files */);
+    source_ = base::MakeUnique<RecentDownloadSource>(profile_.get());
   }
 
  protected:
@@ -71,13 +70,15 @@ class RecentDownloadSourceTest : public testing::Test {
     return file.SetTimes(time, time);
   }
 
-  std::vector<RecentFile> GetRecentFiles() {
+  std::vector<RecentFile> GetRecentFiles(size_t max_files,
+                                         const base::Time& cutoff_time) {
     std::vector<RecentFile> files;
 
     base::RunLoop run_loop;
 
     source_->GetRecentFiles(
-        RecentContext(file_system_context_.get(), origin_),
+        RecentContext(file_system_context_.get(), origin_, max_files,
+                      cutoff_time),
         base::BindOnce(
             [](base::RunLoop* run_loop, std::vector<RecentFile>* out_files,
                std::vector<RecentFile> files) {
@@ -108,7 +109,7 @@ TEST_F(RecentDownloadSourceTest, GetRecentFiles) {
   ASSERT_TRUE(CreateEmptyFile("4.jpg", base::Time::FromJavaTime(4000)));
   // Newest
 
-  std::vector<RecentFile> files = GetRecentFiles();
+  std::vector<RecentFile> files = GetRecentFiles(3, base::Time());
 
   std::sort(files.begin(), files.end(), RecentFileComparator());
 
@@ -121,10 +122,30 @@ TEST_F(RecentDownloadSourceTest, GetRecentFiles) {
   EXPECT_EQ(base::Time::FromJavaTime(2000), files[2].last_modified());
 }
 
+TEST_F(RecentDownloadSourceTest, GetRecentFiles_CutoffTime) {
+  // Oldest
+  ASSERT_TRUE(CreateEmptyFile("1.jpg", base::Time::FromJavaTime(1000)));
+  ASSERT_TRUE(CreateEmptyFile("2.jpg", base::Time::FromJavaTime(2000)));
+  ASSERT_TRUE(CreateEmptyFile("3.jpg", base::Time::FromJavaTime(3000)));
+  ASSERT_TRUE(CreateEmptyFile("4.jpg", base::Time::FromJavaTime(4000)));
+  // Newest
+
+  std::vector<RecentFile> files =
+      GetRecentFiles(3, base::Time::FromJavaTime(2500));
+
+  std::sort(files.begin(), files.end(), RecentFileComparator());
+
+  ASSERT_EQ(2u, files.size());
+  EXPECT_EQ("4.jpg", files[0].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(4000), files[0].last_modified());
+  EXPECT_EQ("3.jpg", files[1].url().path().BaseName().value());
+  EXPECT_EQ(base::Time::FromJavaTime(3000), files[1].last_modified());
+}
+
 TEST_F(RecentDownloadSourceTest, GetRecentFiles_UmaStats) {
   base::HistogramTester histogram_tester;
 
-  GetRecentFiles();
+  GetRecentFiles(3, base::Time());
 
   histogram_tester.ExpectTotalCount(RecentDownloadSource::kLoadHistogramName,
                                     1);
