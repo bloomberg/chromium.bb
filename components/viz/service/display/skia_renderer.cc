@@ -25,10 +25,12 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkOverdrawCanvas.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkLayerRasterizer.h"
+#include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -109,6 +111,17 @@ void SkiaRenderer::BeginDrawingFrame() {
 
 void SkiaRenderer::FinishDrawingFrame() {
   TRACE_EVENT0("cc", "SkiaRenderer::FinishDrawingFrame");
+  if (settings_->show_overdraw_feedback) {
+    sk_sp<SkImage> image = overdraw_surface_->makeImageSnapshot();
+    SkPaint paint;
+    static const SkPMColor colors[SkOverdrawColorFilter::kNumColors] = {
+        0x00000000, 0x00000000, 0x2f0000ff, 0x2f00ff00, 0x3fff0000, 0x7fff0000,
+    };
+    sk_sp<SkColorFilter> color_filter = SkOverdrawColorFilter::Make(colors);
+    paint.setColorFilter(color_filter);
+    root_surface_->getCanvas()->drawImage(image.get(), 0, 0, &paint);
+    root_surface_->getCanvas()->flush();
+  }
   current_framebuffer_surface_lock_ = nullptr;
   current_framebuffer_lock_ = nullptr;
   current_canvas_ = nullptr;
@@ -185,8 +198,19 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   }
 
   root_canvas_ = root_surface_->getCanvas();
-
-  current_canvas_ = root_canvas_;
+  if (settings_->show_overdraw_feedback) {
+    const gfx::Size size(root_surface_->width(), root_surface_->height());
+    overdraw_surface_ = root_surface_->makeSurface(
+        SkImageInfo::MakeA8(size.width(), size.height()));
+    nway_canvas_ = std::make_unique<SkNWayCanvas>(size.width(), size.height());
+    overdraw_canvas_ =
+        std::make_unique<SkOverdrawCanvas>(overdraw_surface_->getCanvas());
+    nway_canvas_->addCanvas(overdraw_canvas_.get());
+    nway_canvas_->addCanvas(root_canvas_);
+    current_canvas_ = nway_canvas_.get();
+  } else {
+    current_canvas_ = root_canvas_;
+  }
 }
 
 bool SkiaRenderer::BindFramebufferToTexture(const cc::ScopedResource* texture) {

@@ -11,6 +11,8 @@
 #include "components/viz/service/viz_service_export.h"
 #include "ui/latency/latency_info.h"
 
+class SkNWayCanvas;
+
 namespace cc {
 class DebugBorderDrawQuad;
 class OutputSurface;
@@ -93,6 +95,9 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public cc::DirectRenderer {
   gfx::Rect scissor_rect_;
 
   sk_sp<SkSurface> root_surface_;
+  sk_sp<SkSurface> overdraw_surface_;
+  std::unique_ptr<SkCanvas> overdraw_canvas_;
+  std::unique_ptr<SkNWayCanvas> nway_canvas_;
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
   SkPaint current_paint_;
