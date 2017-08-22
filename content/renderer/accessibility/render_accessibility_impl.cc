@@ -576,6 +576,12 @@ void RenderAccessibilityImpl::OnPerformAction(
       break;
     case ui::AX_ACTION_CUSTOM_ACTION:
     case ui::AX_ACTION_REPLACE_SELECTED_TEXT:
+    case ui::AX_ACTION_SCROLL_BACKWARD:
+    case ui::AX_ACTION_SCROLL_FORWARD:
+    case ui::AX_ACTION_SCROLL_UP:
+    case ui::AX_ACTION_SCROLL_DOWN:
+    case ui::AX_ACTION_SCROLL_LEFT:
+    case ui::AX_ACTION_SCROLL_RIGHT:
     case ui::AX_ACTION_NONE:
       NOTREACHED();
       break;

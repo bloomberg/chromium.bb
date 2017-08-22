@@ -39,11 +39,12 @@ ui::AXEvent ToAXEvent(arc::mojom::AccessibilityEventType arc_event_type) {
       return ui::AX_EVENT_HOVER;
     case arc::mojom::AccessibilityEventType::ANNOUNCEMENT:
       return ui::AX_EVENT_ALERT;
+    case arc::mojom::AccessibilityEventType::VIEW_SCROLLED:
+      return ui::AX_EVENT_SCROLL_POSITION_CHANGED;
     case arc::mojom::AccessibilityEventType::VIEW_SELECTED:
     case arc::mojom::AccessibilityEventType::VIEW_HOVER_EXIT:
     case arc::mojom::AccessibilityEventType::TOUCH_EXPLORATION_GESTURE_START:
     case arc::mojom::AccessibilityEventType::TOUCH_EXPLORATION_GESTURE_END:
-    case arc::mojom::AccessibilityEventType::VIEW_SCROLLED:
     case arc::mojom::AccessibilityEventType::
         VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY:
     case arc::mojom::AccessibilityEventType::GESTURE_DETECTION_START:
@@ -305,12 +306,26 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   params.tree_id = tree_id();
   params.id = event_data->source_id;
 
+  ui::AXTreeUpdate update;
+
+  if (event_data->event_type ==
+      arc::mojom::AccessibilityEventType::WINDOW_CONTENT_CHANGED) {
+    current_tree_serializer_->DeleteClientSubtree(
+        GetFromId(event_data->source_id));
+  }
+
   current_tree_serializer_->SerializeChanges(GetFromId(event_data->source_id),
                                              &params.update);
 
   extensions::AutomationEventRouter* router =
       extensions::AutomationEventRouter::GetInstance();
   router->DispatchAccessibilityEvent(params);
+}
+
+void AXTreeSourceArc::NotifyActionResult(const ui::AXActionData& data,
+                                         bool result) {
+  extensions::AutomationEventRouter::GetInstance()->DispatchActionResult(
+      data, result);
 }
 
 void AXTreeSourceArc::Focus(aura::Window* window) {
@@ -396,13 +411,20 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
                                     ui::AXNodeData* out_data) const {
   if (!node)
     return;
-  out_data->id = node->id;
+
+  int32_t id = node->id;
+  out_data->id = id;
+  if (id == root_id_)
+    out_data->role = ui::AX_ROLE_ROOT_WEB_AREA;
+  else
+    PopulateAXRole(node, out_data);
 
   using AXIntListProperty = arc::mojom::AccessibilityIntListProperty;
   using AXIntProperty = arc::mojom::AccessibilityIntProperty;
   using AXStringListProperty = arc::mojom::AccessibilityStringListProperty;
   using AXStringProperty = arc::mojom::AccessibilityStringProperty;
 
+  // String properties.
   std::string text;
   if (GetStringProperty(node, AXStringProperty::TEXT, &text))
     out_data->SetName(text);
@@ -410,13 +432,12 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
                              &text))
     out_data->SetName(text);
 
-  int32_t id = node->id;
-  if (id == root_id_)
-    out_data->role = ui::AX_ROLE_ROOT_WEB_AREA;
-  else
-    PopulateAXRole(node, out_data);
-
+  // Boolean properties.
   PopulateAXState(node, out_data);
+  if (GetBooleanProperty(
+          node, arc::mojom::AccessibilityBooleanProperty::SCROLLABLE)) {
+    out_data->AddBoolAttribute(ui::AX_ATTR_SCROLLABLE, true);
+  }
 
   const gfx::Rect bounds_in_screen = GetBounds(node);
   out_data->location.SetRect(bounds_in_screen.x(), bounds_in_screen.y(),

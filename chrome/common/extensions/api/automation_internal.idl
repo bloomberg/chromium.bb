@@ -36,6 +36,12 @@ namespace automationInternal {
     hitTest,
     makeVisible,
     resumeMedia,
+    scrollBackward,
+    scrollForward,
+    scrollUp,
+    scrollDown,
+    scrollLeft,
+    scrollRight,
     setSequentialFocusNavigationStartingPoint,
     setSelection,
     showContextMenu,
@@ -49,6 +55,7 @@ namespace automationInternal {
     long treeID;
     long automationNodeID;
     ActionType actionType;
+    long? requestID;
   };
 
   // Arguments for the customAction action. Those args are passed to
@@ -141,5 +148,7 @@ namespace automationInternal {
     static void onNodesRemoved(long treeID, long[] nodeIDs);
 
     static void onAccessibilityTreeSerializationError(long treeID);
+
+    static void onActionResult(long treeID, long requestID, boolean result);
   };
 };

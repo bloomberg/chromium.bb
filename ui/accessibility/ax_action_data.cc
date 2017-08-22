@@ -17,7 +17,9 @@ namespace ui {
 
 AXActionData::AXActionData()
     : action(AX_ACTION_NONE),
+      target_tree_id(-1),
       target_node_id(-1),
+      request_id(-1),
       flags(0),
       anchor_node_id(-1),
       anchor_offset(-1),

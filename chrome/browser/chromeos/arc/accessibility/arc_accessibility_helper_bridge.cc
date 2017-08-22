@@ -271,6 +271,29 @@ void ArcAccessibilityHelperBridge::OnAction(
     case ui::AX_ACTION_DO_DEFAULT:
       action_data->action_type = arc::mojom::AccessibilityActionType::CLICK;
       break;
+    case ui::AX_ACTION_SCROLL_BACKWARD:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::SCROLL_BACKWARD;
+      break;
+    case ui::AX_ACTION_SCROLL_FORWARD:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::SCROLL_FORWARD;
+      break;
+    case ui::AX_ACTION_SCROLL_UP:
+      action_data->action_type = arc::mojom::AccessibilityActionType::SCROLL_UP;
+      break;
+    case ui::AX_ACTION_SCROLL_DOWN:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::SCROLL_DOWN;
+      break;
+    case ui::AX_ACTION_SCROLL_LEFT:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::SCROLL_LEFT;
+      break;
+    case ui::AX_ACTION_SCROLL_RIGHT:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::SCROLL_RIGHT;
+      break;
     case ui::AX_ACTION_CUSTOM_ACTION:
       action_data->action_type =
           arc::mojom::AccessibilityActionType::CUSTOM_ACTION;
@@ -282,7 +305,29 @@ void ArcAccessibilityHelperBridge::OnAction(
 
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
       arc_bridge_service_->accessibility_helper(), PerformAction);
-  instance->PerformAction(std::move(action_data));
+  instance->PerformAction(
+      std::move(action_data),
+      base::Bind(&ArcAccessibilityHelperBridge::OnActionResult,
+                 base::Unretained(this), data));
+}
+
+void ArcAccessibilityHelperBridge::OnActionResult(const ui::AXActionData& data,
+                                                  bool result) const {
+  AXTreeSourceArc* tree_source = nullptr;
+  for (auto it = package_name_to_tree_.begin();
+       it != package_name_to_tree_.end(); ++it) {
+    ui::AXTreeData cur_data;
+    it->second->GetTreeData(&cur_data);
+    if (cur_data.tree_id == data.target_tree_id) {
+      tree_source = it->second.get();
+      break;
+    }
+  }
+
+  if (!tree_source)
+    return;
+
+  tree_source->NotifyActionResult(data, result);
 }
 
 void ArcAccessibilityHelperBridge::OnWindowActivated(

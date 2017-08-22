@@ -31,8 +31,17 @@ struct AX_EXPORT AXActionData {
   // The action to take.
   AXAction action;
 
+  // The ID of the tree that this action should be performed on.
+  int target_tree_id;
+
+  // The source extension id (if any) of this action.
+  std::string source_extension_id;
+
   // The ID of the node that this action should be performed on.
   int target_node_id;
+
+  // The request id of this action tracked by the client.
+  int request_id;
 
   // Use enums from AXActionFlags
   int flags;

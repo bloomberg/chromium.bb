@@ -44,8 +44,13 @@ class AXTreeSourceArc
   explicit AXTreeSourceArc(Delegate* delegate);
   ~AXTreeSourceArc() override;
 
+  // AXTreeSource overrides.
+  bool GetTreeData(ui::AXTreeData* data) const override;
+
   // Notify automation of an accessibility event.
   void NotifyAccessibilityEvent(mojom::AccessibilityEventData* event_data);
+
+  void NotifyActionResult(const ui::AXActionData& data, bool result);
 
   void Focus(aura::Window* window);
 
@@ -53,7 +58,6 @@ class AXTreeSourceArc
   class FocusStealer;
 
   // AXTreeSource overrides.
-  bool GetTreeData(ui::AXTreeData* data) const override;
   mojom::AccessibilityNodeInfoData* GetRoot() const override;
   mojom::AccessibilityNodeInfoData* GetFromId(int32_t id) const override;
   int32_t GetId(mojom::AccessibilityNodeInfoData* node) const override;

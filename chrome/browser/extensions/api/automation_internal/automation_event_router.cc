@@ -22,6 +22,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/common/extension.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 
@@ -121,6 +122,24 @@ void AutomationEventRouter::DispatchTreeDestroyedEvent(
       api::automation_internal::OnAccessibilityTreeDestroyed::kEventName,
       std::move(args), browser_context);
   EventRouter::Get(browser_context)->BroadcastEvent(std::move(event));
+}
+
+void AutomationEventRouter::DispatchActionResult(const ui::AXActionData& data,
+                                                 bool result) {
+  CHECK(!data.source_extension_id.empty());
+
+  if (listeners_.empty())
+    return;
+
+  std::unique_ptr<base::ListValue> args(
+      api::automation_internal::OnActionResult::Create(
+          data.target_tree_id, data.request_id, result));
+  auto event = base::MakeUnique<Event>(
+      events::AUTOMATION_INTERNAL_ON_ACTION_RESULT,
+      api::automation_internal::OnActionResult::kEventName, std::move(args),
+      active_profile_);
+  EventRouter::Get(active_profile_)
+      ->DispatchEventToExtension(data.source_extension_id, std::move(event));
 }
 
 AutomationEventRouter::AutomationListener::AutomationListener() {
