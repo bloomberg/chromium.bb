@@ -228,10 +228,9 @@ class RemoteTryJob(object):
 
   def _GetBuilder(self, bot):
     """Find and return the builder for bot."""
-
     # Default to etc builder.
     builder = 'etc'
-    if site_config[bot] and site_config[bot]['_template']:
+    if bot in site_config and '_template' in site_config[bot]:
       builder = site_config[bot]['_template']
 
     return builder
@@ -352,7 +351,7 @@ class RemoteTryJob(object):
   def GetTrybotWaterfallLink(self):
     """Get link to the waterfall for the user."""
     # The builders on the trybot waterfall are named after the templates.
-    builders = set(site_config[bot]['_template'] for bot in self.bots)
+    builders = set(self._GetBuilder(bot) for bot in self.bots)
 
     # Note that this will only show the jobs submitted by the user in the last
     # 24 hours.
