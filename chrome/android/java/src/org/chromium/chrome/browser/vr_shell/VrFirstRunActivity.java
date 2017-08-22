@@ -26,7 +26,7 @@ public class VrFirstRunActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        assert VrShellDelegate.isVrIntent(getIntent());
+        assert VrIntentUtils.isVrIntent(getIntent());
         VrClassesWrapper wrapper = VrShellDelegate.createVrClassesWrapper();
         if (wrapper == null) {
             showFre();
@@ -67,7 +67,7 @@ public class VrFirstRunActivity extends Activity {
     private void showFre() {
         // Start the actual 2D FRE if the user successfully exited VR.
         Intent freIntent = (Intent) IntentUtils.safeGetParcelableExtra(
-                getIntent(), VrShellDelegate.VR_FRE_INTENT_EXTRA);
+                getIntent(), VrIntentUtils.VR_FRE_INTENT_EXTRA);
         IntentUtils.safeStartActivity(this, freIntent);
         finish();
     }

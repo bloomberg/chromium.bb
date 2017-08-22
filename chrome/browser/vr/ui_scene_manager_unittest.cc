@@ -278,6 +278,15 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   EXPECT_FALSE(IsVisible(kTransientUrlBar));
 }
 
+TEST_F(UiSceneManagerTest, AppButtonClickForAutopresentation) {
+  MakeAutoPresentedManager();
+
+  // Clicking app button should be a no-op.
+  EXPECT_CALL(*browser_, ExitPresent()).Times(0);
+  EXPECT_CALL(*browser_, ExitFullscreen()).Times(0);
+  manager_->OnAppButtonClicked();
+}
+
 TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   auto visible_in_fullscreen = kFloorCeilingBackgroundElements;
   visible_in_fullscreen.insert(kContentQuad);
