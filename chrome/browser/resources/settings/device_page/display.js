@@ -461,7 +461,7 @@ Polymer({
 
   /**
    * Triggered when the 'change' event for the selected mode slider is
-   * triggered. This only occurs when the value is comitted (i.e. not while
+   * triggered. This only occurs when the value is committed (i.e. not while
    * the slider is being dragged).
    * @private
    */

@@ -180,7 +180,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
       /**
        * Changes the lock screen pref value using the settings API; this is like
-       * the pref got changed from an unkown source such as another tab.
+       * the pref got changed from an unknown source such as another tab.
        * @param {boolean} value
        */
       function setLockScreenPref(value) {
@@ -447,7 +447,7 @@ cr.define('settings_people_page_quick_unlock', function() {
         pinKeyboard.value = '1119';
         assertFalse(isVisible(problemDiv));
 
-        // Submitting a mistmatched PIN shows an error. Directly call the button
+        // Submitting a mismatched PIN shows an error. Directly call the button
         // event since a tap on the disabled button does nothing.
         element.onPinSubmit_();
         assertHasClass(problemDiv, 'error');
