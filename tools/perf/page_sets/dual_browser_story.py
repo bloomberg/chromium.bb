@@ -98,8 +98,9 @@ class MultiBrowserSharedState(story_module.SharedState):
     else:
       wpr_mode = wpr_modes.WPR_REPLAY
 
-    self.platform.network_controller.Open(wpr_mode,
-                                          browser_options.extra_wpr_args)
+    self.platform.network_controller.Open(
+        wpr_mode, browser_options.extra_wpr_args,
+        use_wpr_go=story_set.wpr_archive_info.is_using_wpr_go_archives)
 
   @property
   def current_tab(self):
