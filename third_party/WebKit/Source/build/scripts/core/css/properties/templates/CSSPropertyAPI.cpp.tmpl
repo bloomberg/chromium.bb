@@ -27,35 +27,25 @@ const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
   // still need to use MSVC (e.g. for the dEQP tests, which use exceptions).
   // See http://crbug.com/753010.
 
-  static const CSSPropertyAPI base_api;
   {% for api_class in api_classnames %}
   static const {{api_class}} api_{{api_class.lower()}};
   {% endfor %}
 
   static const CSSPropertyAPI* const property_apis[] = {
     {% for api_class_data in api_classes_by_property_id %}
-      {% if api_class_data.classname %}
     &api_{{api_class_data.classname.lower()}},  // {{api_class_data.property_id}}
-      {% else %}
-    &base_api,  // API for {{api_class_data.property_id}} not implemented yet.
-      {% endif %}
     {% endfor %}
   };
 
 #else
 
-  static constexpr CSSPropertyAPI base_api;
   {% for api_class in api_classnames %}
   static constexpr {{api_class}} api_{{api_class.lower()}};
   {% endfor %}
 
   static constexpr const CSSPropertyAPI* const property_apis[] = {
     {% for api_class_data in api_classes_by_property_id %}
-      {% if api_class_data.classname %}
     &api_{{api_class_data.classname.lower()}},  // {{api_class_data.property_id}}
-      {% else %}
-    &base_api,  // API for {{api_class_data.property_id}} not implemented yet.
-      {% endif %}
     {% endfor %}
   };
 
