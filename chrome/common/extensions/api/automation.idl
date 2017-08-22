@@ -198,6 +198,7 @@
     editable,
     expanded,
     focusable,
+    focused,
     haspopup,
     horizontal,
     hovered,
@@ -360,6 +361,9 @@
 
   // A listener for changes on the <code>AutomationNode</code> tree.
   callback TreeChangeObserver = void(TreeChange treeChange);
+
+  // Callback called for actions with a response.
+  callback PerformActionCallback = void(boolean result);
 
   dictionary CustomAction {
     long id;
@@ -752,6 +756,24 @@
 
     // Suspend any media playing within this tree.
     static void suspendMedia();
+
+    // Scrolls this scrollable container backward.
+    static void scrollBackward(PerformActionCallback callback);
+
+    // Scrolls this scrollable container forward.
+    static void scrollForward(PerformActionCallback callback);
+
+    // Scrolls this scrollable container up.
+    static void scrollUp(PerformActionCallback callback);
+
+    // Scrolls this scrollable container down.
+    static void scrollDown(PerformActionCallback callback);
+
+    // Scrolls this scrollable container left.
+    static void scrollLeft(PerformActionCallback callback);
+
+    // Scrolls this scrollable container right.
+    static void scrollRight(PerformActionCallback callback);
 
     // Adds a listener for the given event type and event phase.
     static void addEventListener(

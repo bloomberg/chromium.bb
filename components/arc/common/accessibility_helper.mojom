@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 4
+// Next MinVersion: 5
 
 module arc.mojom;
 
@@ -210,7 +210,7 @@ interface AccessibilityHelperHost {
   OnAccessibilityEvent@1(AccessibilityEventData event_data);
 };
 
-// Next method ID: 4
+// Next method ID: 5
 interface AccessibilityHelperInstance {
   Init@0(AccessibilityHelperHost host);
 
@@ -219,6 +219,9 @@ interface AccessibilityHelperInstance {
   // Set a filter on the event types received.
   SetFilter@2(AccessibilityFilterType filter_type);
 
+  [MinVersion=3]PerformActionDeprecated2@3(AccessibilityActionData action_data);
+
   // Perform an action on a node requested by a Chrome client.
-  [MinVersion=3]PerformAction@3(AccessibilityActionData action_data);
+  [MinVersion=4]PerformAction@4(AccessibilityActionData action_data)
+      => (bool result);
 };

@@ -333,7 +333,11 @@ ExtensionFunction::ResponseAction
 AutomationInternalPerformActionFunction::ConvertToAXActionData(
     api::automation_internal::PerformAction::Params* params,
     ui::AXActionData* action) {
+  action->target_tree_id = params->args.tree_id;
+  action->source_extension_id = extension_id();
   action->target_node_id = params->args.automation_node_id;
+  int* request_id = params->args.request_id.get();
+  action->request_id = request_id ? *request_id : -1;
   switch (params->args.action_type) {
     case api::automation_internal::ACTION_TYPE_DODEFAULT:
       action->action = ui::AX_ACTION_DO_DEFAULT;
@@ -366,6 +370,24 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
     }
     case api::automation_internal::ACTION_TYPE_MAKEVISIBLE:
       action->action = ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE;
+      break;
+    case api::automation_internal::ACTION_TYPE_SCROLLBACKWARD:
+      action->action = ui::AX_ACTION_SCROLL_BACKWARD;
+      break;
+    case api::automation_internal::ACTION_TYPE_SCROLLFORWARD:
+      action->action = ui::AX_ACTION_SCROLL_FORWARD;
+      break;
+    case api::automation_internal::ACTION_TYPE_SCROLLUP:
+      action->action = ui::AX_ACTION_SCROLL_UP;
+      break;
+    case api::automation_internal::ACTION_TYPE_SCROLLDOWN:
+      action->action = ui::AX_ACTION_SCROLL_DOWN;
+      break;
+    case api::automation_internal::ACTION_TYPE_SCROLLLEFT:
+      action->action = ui::AX_ACTION_SCROLL_LEFT;
+      break;
+    case api::automation_internal::ACTION_TYPE_SCROLLRIGHT:
+      action->action = ui::AX_ACTION_SCROLL_RIGHT;
       break;
     case api::automation_internal::ACTION_TYPE_SETSELECTION: {
       api::automation_internal::SetSelectionParams selection_params;

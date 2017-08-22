@@ -88,6 +88,10 @@ def CheckEnumsMatch(input_api, output_api):
   repo_root = input_api.change.RepositoryRoot()
   ax_enums = GetEnumsFromFile(os.path.join(repo_root, AX_IDL))
   automation_enums = GetEnumsFromFile(os.path.join(repo_root, AUTOMATION_IDL))
+
+  # Focused state only exists in automation.
+  automation_enums['StateType'].remove('focused')
+
   errs = []
   CheckMatchingEnum(ax_enums, 'AXRole', automation_enums, 'RoleType', errs,
                     output_api)

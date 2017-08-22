@@ -88,6 +88,8 @@ class ArcAccessibilityHelperBridge
   void OnWindowActivated(aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
+  void OnActionResult(const ui::AXActionData& data, bool result) const;
+
   Profile* const profile_;
   ArcBridgeService* const arc_bridge_service_;
   mojo::Binding<mojom::AccessibilityHelperHost> binding_;

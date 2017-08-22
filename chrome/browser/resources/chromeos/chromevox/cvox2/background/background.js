@@ -439,6 +439,8 @@ Background.prototype = {
 
     var o = new Output();
     var selectedRange;
+    var msg;
+
     if (this.pageSel_ && this.pageSel_.isValid() && range.isValid()) {
       // Compute the direction of the endpoints of each range.
 
@@ -464,7 +466,6 @@ Background.prototype = {
         this.pageSel_ = null;
       } else {
         // Expand or shrink requires different feedback.
-        var msg;
         if (endDir == Dir.FORWARD &&
             (this.pageSel_.end.node != range.end.node ||
              this.pageSel_.end.index <= range.end.index)) {

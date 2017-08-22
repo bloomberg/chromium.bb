@@ -12079,6 +12079,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="409" label="NETWORKING_PRIVATE_ON_CERTIFICATE_LISTS_CHANGED"/>
   <int value="410" label="LOCK_SCREEN_DATA_ON_DATA_ITEMS_AVAILABLE"/>
   <int value="411" label="WEB_VIEW_INTERNAL_ON_AUDIO_STATE_CHANGED"/>
+  <int value="412" label="AUTOMATION_INTERNAL_ON_ACTION_RESULT"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">

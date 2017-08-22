@@ -263,6 +263,15 @@
     // insert |AXActionData::value| in its place, like when typing or pasting.
     replace_selected_text,
 
+    // Scrolls by approximately one screen in a specific direction. Should be
+    // called on a node that has scrollable boolean set to true.
+    scroll_backward,
+    scroll_forward,
+    scroll_up,
+    scroll_down,
+    scroll_left,
+    scroll_right,
+
     // Scroll any scrollable containers to make the target object visible
     // on the screen.  Optionally pass a subfocus rect in
     // AXActionData.target_rect.
@@ -475,7 +484,10 @@
     update_location_only,
 
     // Set on a canvas element if it has fallback content.
-    canvas_has_fallback
+    canvas_has_fallback,
+
+    // Indicates this node is scrollable (Android only).
+    scrollable
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXIntListAttribute {
