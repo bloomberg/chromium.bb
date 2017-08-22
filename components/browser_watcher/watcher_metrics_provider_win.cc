@@ -267,34 +267,37 @@ void WatcherMetricsProviderWin::CollectPostmortemReportsImpl() {
   const bool should_collect = base::GetFieldTrialParamByFeatureAsBool(
       browser_watcher::kStabilityDebuggingFeature,
       browser_watcher::kCollectPostmortemParam, false);
-  if (!should_collect) {
-    PostmortemDeleter deleter;
-    deleter.Process(stability_files);
-    return;
-  }
 
   // Create a database. Note: Chrome already has a g_database in crashpad.cc but
   // it has internal linkage. Create a new one.
-  std::unique_ptr<crashpad::CrashReportDatabase> crashpad_database =
-      crashpad::CrashReportDatabase::InitializeWithoutCreating(crash_dir_);
-  if (!crashpad_database) {
-    LOG(ERROR) << "Failed to initialize a CrashPad database.";
-    LogCollectionInitStatus(CRASHPAD_DATABASE_INIT_FAILED);
-    return;
+  std::unique_ptr<crashpad::CrashReportDatabase> crashpad_database;
+  if (should_collect) {
+    crashpad_database =
+        crashpad::CrashReportDatabase::InitializeWithoutCreating(crash_dir_);
+    if (!crashpad_database) {
+      LOG(ERROR) << "Failed to initialize a CrashPad database.";
+      LogCollectionInitStatus(CRASHPAD_DATABASE_INIT_FAILED);
+      // Note: continue to processing the files anyway.
+    }
   }
 
+  // Note: this is logged even when Crashpad database initialization fails.
   LogCollectionInitStatus(INIT_SUCCESS);
-
-  // Get the reporter's version details.
-  base::string16 product_name, version_number, channel_name;
-  exe_details_cb_.Run(&product_name, &version_number, &channel_name);
 
   const size_t kSystemSessionsToInspect = 5U;
   SystemSessionAnalyzer analyzer(kSystemSessionsToInspect);
-  PostmortemReportCollector collector(
-      base::UTF16ToUTF8(product_name), base::UTF16ToUTF8(version_number),
-      base::UTF16ToUTF8(channel_name), crashpad_database.get(), &analyzer);
-  collector.Process(stability_files);
+
+  if (should_collect) {
+    base::string16 product_name, version_number, channel_name;
+    exe_details_cb_.Run(&product_name, &version_number, &channel_name);
+    PostmortemReportCollector collector(
+        base::UTF16ToUTF8(product_name), base::UTF16ToUTF8(version_number),
+        base::UTF16ToUTF8(channel_name), crashpad_database.get(), &analyzer);
+    collector.Process(stability_files);
+  } else {
+    PostmortemReportCollector collector(&analyzer);
+    collector.Process(stability_files);
+  }
 }
 
 }  // namespace browser_watcher
