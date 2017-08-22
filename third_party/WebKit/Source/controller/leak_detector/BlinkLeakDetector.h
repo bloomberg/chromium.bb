@@ -5,7 +5,7 @@
 #ifndef BlinkLeakDetector_h
 #define BlinkLeakDetector_h
 
-#include "core/CoreExport.h"
+#include "controller/ControllerExport.h"
 #include "platform/Timer.h"
 
 namespace blink {
@@ -17,7 +17,7 @@ class WebFrame;
 // This class is responsible for stabilizing the detection results which are
 // InstanceCounter values by 1) preparing for leak detection and 2) operating
 // garbage collections before leak detection.
-class CORE_EXPORT BlinkLeakDetector {
+class CONTROLLER_EXPORT BlinkLeakDetector {
  public:
   BlinkLeakDetector(BlinkLeakDetectorClient*, WebFrame*);
   ~BlinkLeakDetector();
