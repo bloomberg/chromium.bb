@@ -629,16 +629,13 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
     texture->Allocate(
         size, ResourceProvider::TEXTURE_HINT_IMMUTABLE_FRAMEBUFFER,
         BackbufferFormat(), current_frame()->current_render_pass->color_space);
+  } else if (render_pass->cache_render_pass &&
+             !render_pass->has_damage_from_contributing_content) {
+    return false;
+  } else if (current_frame()->ComputeScissorRectForRenderPass().IsEmpty()) {
+    return false;
   }
   DCHECK(texture->id());
-
-  if (render_pass->cache_render_pass &&
-      !render_pass->has_damage_from_contributing_content) {
-    return false;
-  }
-
-  if (current_frame()->ComputeScissorRectForRenderPass().IsEmpty())
-    return false;
 
   if (BindFramebufferToTexture(texture)) {
     InitializeViewport(current_frame(), render_pass->output_rect,
