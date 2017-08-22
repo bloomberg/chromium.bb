@@ -15,9 +15,9 @@
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_download_source.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
+#include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -76,16 +76,15 @@ class RecentDownloadSourceTest : public testing::Test {
 
     base::RunLoop run_loop;
 
-    source_->GetRecentFiles(
-        RecentContext(file_system_context_.get(), origin_, max_files,
-                      cutoff_time),
+    source_->GetRecentFiles(RecentSource::Params(
+        file_system_context_.get(), origin_, max_files, cutoff_time,
         base::BindOnce(
             [](base::RunLoop* run_loop, std::vector<RecentFile>* out_files,
                std::vector<RecentFile> files) {
               run_loop->Quit();
               *out_files = std::move(files);
             },
-            &run_loop, &files));
+            &run_loop, &files)));
 
     run_loop.Run();
 

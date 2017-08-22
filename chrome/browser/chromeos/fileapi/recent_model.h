@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
+#include "chrome/browser/chromeos/fileapi/recent_source.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
@@ -33,9 +34,7 @@ class FileSystemURL;
 
 namespace chromeos {
 
-class RecentContext;
 class RecentModelFactory;
-class RecentSource;
 
 // Provides a list of recently modified files.
 //
@@ -74,7 +73,8 @@ class RecentModel : public KeyedService {
   explicit RecentModel(Profile* profile);
   explicit RecentModel(std::vector<std::unique_ptr<RecentSource>> sources);
 
-  void OnGetRecentFiles(const RecentContext& context,
+  void OnGetRecentFiles(size_t max_files,
+                        const base::Time& cutoff_time,
                         std::vector<RecentFile> files);
   void OnGetRecentFilesCompleted();
   void ClearCache();

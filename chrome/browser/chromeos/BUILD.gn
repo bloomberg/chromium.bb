@@ -716,8 +716,6 @@ source_set("chromeos") {
     "fileapi/mtp_watcher_manager.h",
     "fileapi/recent_arc_media_source.cc",
     "fileapi/recent_arc_media_source.h",
-    "fileapi/recent_context.cc",
-    "fileapi/recent_context.h",
     "fileapi/recent_download_source.cc",
     "fileapi/recent_download_source.h",
     "fileapi/recent_drive_source.cc",
