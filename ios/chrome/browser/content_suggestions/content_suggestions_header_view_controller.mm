@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -164,6 +165,10 @@ const CGFloat kHintLabelSidePadding = 12;
   if (!self.headerView) {
     self.headerView = [[NewTabPageHeaderView alloc] init];
     [self addFakeOmnibox];
+
+    self.logoVendor.view.isAccessibilityElement = YES;
+    self.logoVendor.view.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_NEW_TAB_LOGO_ACCESSIBILITY_LABEL);
 
     [self.headerView addSubview:self.logoVendor.view];
     [self.headerView addSubview:self.fakeOmnibox];
