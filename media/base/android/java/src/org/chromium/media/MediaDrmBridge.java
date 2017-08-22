@@ -70,6 +70,9 @@ public class MediaDrmBridge {
     // See details: https://github.com/w3c/encrypted-media/issues/32
     private static final byte[] DUMMY_KEY_ID = new byte[] {0};
 
+    // Special provision response to remove the cert.
+    private static final byte[] UNPROVISION = "unprovision".getBytes();
+
     private MediaDrm mMediaDrm;
     private long mNativeMediaDrmBridge;
     private UUID mSchemeUUID;
@@ -519,6 +522,23 @@ public class MediaDrmBridge {
 
         mResetDeviceCredentialsPending = true;
         startProvisioning();
+    }
+
+    /**
+     * Unprovision the current origin, a.k.a removing the cert for current origin.
+     */
+    @CalledByNative
+    private void unprovision() {
+        if (mMediaDrm == null) {
+            return;
+        }
+
+        // Unprovision only works for origin isolated storage.
+        if (!mOriginSet) {
+            return;
+        }
+
+        provideProvisionResponse(UNPROVISION);
     }
 
     /**

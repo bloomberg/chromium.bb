@@ -3020,6 +3020,8 @@ split_static_library("browser") {
       "lifetime/application_lifetime_android.h",
       "media/android/cdm/media_drm_credential_manager.cc",
       "media/android/cdm/media_drm_credential_manager.h",
+      "media/android/cdm/media_drm_license_manager.cc",
+      "media/android/cdm/media_drm_license_manager.h",
       "media/android/cdm/media_drm_storage_factory.cc",
       "media/android/cdm/media_drm_storage_factory.h",
       "media/android/remote/record_cast_action.cc",
