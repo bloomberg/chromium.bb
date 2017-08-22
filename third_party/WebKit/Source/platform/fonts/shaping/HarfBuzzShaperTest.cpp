@@ -279,6 +279,17 @@ TEST_F(HarfBuzzShaperTest, DISABLED_ShapeArabicWithContext) {
   ASSERT_NEAR(combined->Width(), first->Width() + second->Width(), 0.1);
 }
 
+TEST_F(HarfBuzzShaperTest, MissingGlyph) {
+  // U+FFF0 is not assigned as of Unicode 10.0.
+  String string(
+      u"\uFFF0"
+      u"Hello");
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+  EXPECT_EQ(0u, result->StartIndexForResult());
+  EXPECT_EQ(string.length(), result->EndIndexForResult());
+}
+
 TEST_F(HarfBuzzShaperTest, PositionForOffsetLatin) {
   String string = To16Bit("Hello World!", 12);
   TextDirection direction = TextDirection::kLtr;

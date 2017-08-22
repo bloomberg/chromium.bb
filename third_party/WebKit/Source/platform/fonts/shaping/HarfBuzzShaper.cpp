@@ -48,9 +48,63 @@
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/text/StringBuilder.h"
 #include "platform/wtf/text/Unicode.h"
 
 namespace blink {
+
+namespace {
+
+#if DCHECK_IS_ON()
+// Check if the ShapeResult has the specified range.
+// |text| and |font| are only for logging.
+void CheckShapeResultRange(const ShapeResult* result,
+                           unsigned start,
+                           unsigned end,
+                           const UChar* text,
+                           const Font* font) {
+  DCHECK_LE(start, end);
+  unsigned length = end - start;
+  if (length == result->NumCharacters() &&
+      (!length || (start == result->StartIndexForResult() &&
+                   end == result->EndIndexForResult())))
+    return;
+
+  // Log font-family/size as specified.
+  StringBuilder log;
+  log.Append("Font='");
+  const FontDescription& font_description = font->GetFontDescription();
+  for (const FontFamily* family = &font_description.Family();;) {
+    log.Append(family->Family());
+    family = family->Next();
+    if (!family)
+      break;
+    log.Append(", ");
+  }
+  log.Append(String::Format("', %f", font_description.ComputedSize()));
+
+  // Log the primary font with its family name in the font file.
+  const SimpleFontData* font_data = font->PrimaryFont();
+  if (font_data) {
+    const SkTypeface* typeface = font_data->PlatformData().Typeface();
+    SkString family_name;
+    typeface->getFamilyName(&family_name);
+    log.Append(", primary=");
+    log.Append(family_name.c_str());
+  }
+
+  // Log the text to shape.
+  log.Append(String::Format(": %u-%u -> %u-%u:", start, end,
+                            result->StartIndexForResult(),
+                            result->EndIndexForResult()));
+  for (unsigned i = start; i < end; ++i)
+    log.Append(String::Format(" %02X", text[i]));
+  NOTREACHED() << log.ToString();
+}
+#endif
+
+}  // namespace
+
 enum HolesQueueItemAction { kHolesQueueNextFont, kHolesQueueRange };
 
 struct HolesQueueItem {
@@ -715,11 +769,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
   }
 
 #if DCHECK_IS_ON()
-  DCHECK_EQ(length, result->NumCharacters());
-  if (length) {
-    DCHECK_EQ(start, result->StartIndexForResult());
-    DCHECK_EQ(end, result->EndIndexForResult());
-  }
+  CheckShapeResultRange(result.Get(), start, end, text_, font);
 #endif
 
   return result;
