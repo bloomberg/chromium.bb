@@ -5,11 +5,15 @@
 #ifndef CONTENT_COMMON_LOADER_UTIL_H_
 #define CONTENT_COMMON_LOADER_UTIL_H_
 
+#include "base/memory/ref_counted.h"
+
 namespace net {
+class HttpRawRequestHeaders;
 class URLRequest;
 }
 
 namespace content {
+struct ResourceDevToolsInfo;
 struct ResourceResponse;
 
 // Helper utilities shared between network service and ResourceDispatcherHost
@@ -19,6 +23,11 @@ struct ResourceResponse;
 // type of the response.
 bool ShouldSniffContent(net::URLRequest* url_request,
                         ResourceResponse* response);
+
+// Fill ResourceDevToolsInfo based on raw headers.
+scoped_refptr<ResourceDevToolsInfo> BuildDevToolsInfo(
+    const net::URLRequest& request,
+    const net::HttpRawRequestHeaders& raw_request_headers);
 
 }  // namespace content
 

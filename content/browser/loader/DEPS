@@ -201,6 +201,7 @@ specific_include_rules = {
     "+content/browser/ssl/ssl_client_auth_handler.h",
     "+content/browser/ssl/ssl_error_handler.h",
     "+content/common/content_export.h",
+    "+content/common/loader_util.h",
     "+content/public/browser/resource_dispatcher_host_login_delegate.h",
     "+content/public/common/browser_side_navigation_policy.h",
     "+content/public/common/previews_state.h",
