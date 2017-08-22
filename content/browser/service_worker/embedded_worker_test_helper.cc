@@ -402,6 +402,11 @@ void EmbeddedWorkerTestHelper::ShutdownContext() {
   wrapper_ = NULL;
 }
 
+ServiceWorkerDispatcherHost*
+EmbeddedWorkerTestHelper::GetDispatcherHostForProcess(int process_id) {
+  return dispatcher_hosts_[process_id].get();
+}
+
 // static
 net::HttpResponseInfo EmbeddedWorkerTestHelper::CreateHttpResponseInfo() {
   net::HttpResponseInfo info;

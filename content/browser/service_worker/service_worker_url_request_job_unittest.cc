@@ -1312,7 +1312,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailFetchDispatch) {
   ServiceWorkerProviderHost* host = helper_->context()->GetProviderHost(
       helper_->mock_render_process_id(), kProviderID);
   ASSERT_TRUE(host);
-  EXPECT_EQ(host->controlling_version(), nullptr);
+  EXPECT_EQ(host->controller(), nullptr);
 
   EXPECT_EQ(1, times_prepare_to_restart_invoked_);
   ServiceWorkerResponseInfo* info =
@@ -1336,7 +1336,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_MainResource) {
   ServiceWorkerProviderHost* host = helper_->context()->GetProviderHost(
       helper_->mock_render_process_id(), kProviderID);
   ASSERT_TRUE(host);
-  EXPECT_EQ(host->controlling_version(), nullptr);
+  EXPECT_EQ(host->controller(), nullptr);
 }
 
 TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_Subresource) {
@@ -1354,7 +1354,7 @@ TEST_F(ServiceWorkerURLRequestJobTest, FailToActivate_Subresource) {
   ServiceWorkerProviderHost* host = helper_->context()->GetProviderHost(
       helper_->mock_render_process_id(), kProviderID);
   ASSERT_TRUE(host);
-  EXPECT_EQ(host->controlling_version(), version_);
+  EXPECT_EQ(host->controller(), version_);
 }
 
 class EarlyResponseHelper : public EmbeddedWorkerTestHelper {
