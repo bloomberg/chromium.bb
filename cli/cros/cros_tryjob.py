@@ -10,12 +10,38 @@ import os
 
 from chromite.lib import constants
 from chromite.cli import command
+from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import path_util
 
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import trybot_patch_pool
+
+
+def PrintKnownConfigs(site_config, display_all=False):
+  """Print a list of known buildbot configs.
+
+  Args:
+    site_config: config_lib.SiteConfig containing all config info.
+    display_all: Print all configs.  Otherwise, prints only configs with
+                 trybot_list=True.
+  """
+  def _GetSortKey(config_name):
+    config_dict = site_config[config_name]
+    return (not config_dict.trybot_list, config_dict.description, config_name)
+
+  COLUMN_WIDTH = 45
+  if not display_all:
+    print('Note: This is the common list; for all configs, use --all.')
+  print('config'.ljust(COLUMN_WIDTH), 'description')
+  print('------'.ljust(COLUMN_WIDTH), '-----------')
+  config_names = site_config.keys()
+  config_names.sort(key=_GetSortKey)
+  for name in config_names:
+    if display_all or site_config[name].trybot_list:
+      desc = site_config[name].description or ''
+      print(name.ljust(COLUMN_WIDTH), desc)
 
 
 def CbuildbotArgs(options):
@@ -127,7 +153,7 @@ Production Examples (danger, can break production if misused):
     """Adds a parser."""
     super(cls, TryjobCommand).AddParser(parser)
     parser.add_argument(
-        'build_configs', nargs='+',
+        'build_configs', nargs='*',
         help='One or more configs to build.')
     parser.add_argument(
         '-b', '--branch',
@@ -237,20 +263,57 @@ Production Examples (danger, can break production if misused):
              'be specified multiple times. No valid for '
              'non-payloads configs.')
 
+    configs_group = parser.add_argument_group(
+        'Configs',
+        description='Options for displaying available build configs.')
+    configs_group.add_argument(
+        '-l', '--list', action='store_true', dest='list', default=False,
+        help='List the suggested trybot configs to use (see --all)')
+    configs_group.add_argument(
+        '-a', '--all', action='store_true', dest='list_all', default=False,
+        help='List all of the buildbot configs available w/--list')
+
+  def VerifyOptions(self):
+    """Verify that our command line options make sense."""
+    site_config = config_lib.GetConfig()
+
+    # Handle --list before checking that everything else is valid.
+    if self.options.list:
+      PrintKnownConfigs(site_config, self.options.list_all)
+      raise cros_build_lib.DieSystemExit(0)  # Exit with success code.
+
+    # Validate specified build_configs.
+    if not self.options.build_configs:
+      cros_build_lib.Die('At least one build_config is required.')
+
+    unknown_build_configs = [b for b in self.options.build_configs
+                             if b not in site_config]
+    if unknown_build_configs and not self.options.yes:
+      prompt = ('Unknown build configs; are you sure you want to schedule '
+                'for %s?' % ', '.join(unknown_build_configs))
+      if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+        cros_build_lib.Die('No confirmation.')
+
+    patches_given = self.options.gerrit_patches or self.options.local_patches
+
+    # Make sure production builds don't have patches.
+    if self.options.production:
+      if patches_given:
+        cros_build_lib.Die('Patches cannot be included in production builds.')
+    else:
+      # Ask for confirmation if there are no patches to test.
+      if not patches_given and not self.options.yes:
+        prompt = ('No patches were provided; are you sure you want to just '
+                  'run a remote build of %s?' % (
+                      self.options.branch if self.options.branch else 'ToT'))
+        if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
+          cros_build_lib.Die('No confirmation.')
+    return True
+
   def Run(self):
     """Runs `cros chroot`."""
     self.options.Freeze()
-
-    # Ask for confirmation if there are no patches to test.
-    if (not self.options.yes and
-        not self.options.production and
-        not self.options.gerrit_patches and
-        not self.options.local_patches):
-      prompt = ('No patches were provided; are you sure you want to just '
-                'run a remote build of %s?' % (
-                    self.options.branch if self.options.branch else 'ToT'))
-      if not cros_build_lib.BooleanPrompt(prompt=prompt, default=False):
-        cros_build_lib.Die('No confirmation.')
+    self.VerifyOptions()
 
     # Verify gerrit patches are valid.
     print('Verifying patches...')

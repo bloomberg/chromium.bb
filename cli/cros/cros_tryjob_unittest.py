@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 from chromite.cli import command_unittest
+from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_tryjob
 from chromite.lib import cros_test_lib
 
@@ -19,13 +20,13 @@ class MockTryjobCommand(command_unittest.MockCommand):
 
 
 class TryjobTest(cros_test_lib.MockTestCase):
-  """Test the TryjobCommand."""
+  """Base class for Tryjob command tests."""
 
   def setUp(self):
     self.cmd_mock = None
 
   def SetupCommandMock(self, cmd_args):
-    """Sets up the `cros chroot` command mock."""
+    """Sets up the `cros tryjob` command mock."""
     self.cmd_mock = MockTryjobCommand(cmd_args)
     self.StartPatcher(self.cmd_mock)
 
@@ -39,17 +40,14 @@ class TryjobTestParsing(TryjobTest):
         'branch': None,
         'production': False,
         'yes': False,
+        'list': False,
+        'list_all': False,
         'gerrit_patches': [],
         'local_patches': [],
         'passthrough': None,
         'passthrough_raw': None,
         'build_configs': ['lumpy-paladin'],
     }
-
-  def SetupCommandMock(self, cmd_args):
-    """Sets up the `cros chroot` command mock."""
-    self.cmd_mock = MockTryjobCommand(cmd_args)
-    self.StartPatcher(self.cmd_mock)
 
   def testMinimalParsing(self):
     """Tests flow for an interactive session."""
@@ -68,6 +66,7 @@ class TryjobTestParsing(TryjobTest):
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
+        '--list', '--all',
         'lumpy-paladin', 'lumpy-release',
     ])
     options = self.cmd_mock.inst.options
@@ -76,6 +75,8 @@ class TryjobTestParsing(TryjobTest):
         'remote': False,
         'branch': None,
         'yes': True,
+        'list': True,
+        'list_all': True,
         'gerrit_patches': ['123', '*123', '123..456'],
         'local_patches': ['chromiumos/chromite:tryjob', 'other:other'],
         'passthrough': [
@@ -101,6 +102,87 @@ class TryjobTestParsing(TryjobTest):
     })
 
     self.assertDictContainsSubset(self.expected, vars(options))
+
+
+class TryjobTestVerifyOptions(TryjobTest):
+  """Test cros_tryjob.VerifyOptions."""
+
+  def testEmpty(self):
+    """Test option verification with no options."""
+    self.SetupCommandMock([])
+
+    with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
+      self.cmd_mock.inst.VerifyOptions()
+    self.assertEqual(cm.exception.code, 1)
+
+  def testMinimal(self):
+    """Test option verification with simplest normal options."""
+    self.SetupCommandMock([
+        '-g', '123',
+        'amd64-generic-paladin',
+    ])
+
+  def testComplex(self):
+    """Test option verification with complex mix of options."""
+    self.SetupCommandMock([
+        '--yes',
+        '--latest-toolchain', '--nochromesdk',
+        '--hwtest', '--notests', '--novmtests', '--noimagetests',
+        '--local', '--buildroot', '/buildroot',
+        '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
+        '--committer-email', 'foo@bar',
+        '--version', '1.2.3', '--channel', 'chan',
+        '--pass-through=--cbuild-arg', '--pass-through=bar',
+        'lumpy-paladin', 'lumpy-release',
+    ])
+    self.cmd_mock.inst.VerifyOptions()
+
+  def testList(self):
+    """Test option verification with config list behavior."""
+    self.SetupCommandMock([
+        '--list',
+    ])
+
+    with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
+      self.cmd_mock.inst.VerifyOptions()
+    self.assertEqual(cm.exception.code, 0)
+
+  def testProduction(self):
+    """Test option verification with production/no patches."""
+    self.SetupCommandMock([
+        '--production',
+        'lumpy-paladin', 'lumpy-release'
+    ])
+    self.cmd_mock.inst.VerifyOptions()
+
+  def testProductionPatches(self):
+    """Test option verification with production/patches."""
+    self.SetupCommandMock([
+        '--production',
+        '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
+        'lumpy-paladin', 'lumpy-release'
+    ])
+
+    with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
+      self.cmd_mock.inst.VerifyOptions()
+    self.assertEqual(cm.exception.code, 1)
+
+  def testUnknownBuildYes(self):
+    """Test option using yes to force accepting an unknown config."""
+    self.SetupCommandMock([
+        '--yes',
+        '-g', '123',
+        'unknown-config'
+    ])
+    self.cmd_mock.inst.VerifyOptions()
+
+  def testNoPatchesYes(self):
+    """Test option using yes to force an unknown config, no patches."""
+    self.SetupCommandMock([
+        '--yes',
+        'unknown-config'
+    ])
+    self.cmd_mock.inst.VerifyOptions()
 
 
 class TryjobTestCbuildbotArgs(TryjobTest):
