@@ -8,6 +8,6 @@
     iframe.contentWindow.console = a;
     iframe.remove();
   `);
-  testRunner.logMessage(await dp.Runtime.evaluate({expression: 'console.log(239);'}));
+  testRunner.log(await dp.Runtime.evaluate({expression: 'console.log(239);'}));
   testRunner.completeTest();
 })

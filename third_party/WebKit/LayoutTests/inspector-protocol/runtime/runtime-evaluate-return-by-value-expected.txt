@@ -6,7 +6,7 @@ Running test: testSymbol
         code : -32000
         message : Object couldn't be returned by value
     }
-    id : <messageId>
+    id : <number>
 }
 
 Running test: testObjectWithChain
@@ -15,6 +15,6 @@ Running test: testObjectWithChain
         code : -32000
         message : Object reference chain is too long
     }
-    id : <messageId>
+    id : <number>
 }
 

@@ -1,36 +1,36 @@
 Tests how DOM.getDocument reports all child nodes when asked.
 {
-    id : <messageId>
+    id : <number>
     result : {
         root : {
-            backendNodeId : <backendNodeId>
-            baseURL : <baseURL>
+            backendNodeId : <number>
+            baseURL : <string>
             childNodeCount : 1
             children : [
                 [0] : {
                     attributes : [
                     ]
-                    backendNodeId : <backendNodeId>
+                    backendNodeId : <number>
                     childNodeCount : 2
                     children : [
                         [0] : {
                             attributes : [
                             ]
-                            backendNodeId : <backendNodeId>
+                            backendNodeId : <number>
                             childNodeCount : 0
                             children : [
                             ]
                             localName : head
-                            nodeId : <nodeId>
+                            nodeId : <number>
                             nodeName : HEAD
                             nodeType : 1
                             nodeValue : 
-                            parentId : <parentId>
+                            parentId : <number>
                         }
                         [1] : {
                             attributes : [
                             ]
-                            backendNodeId : <backendNodeId>
+                            backendNodeId : <number>
                             childNodeCount : 1
                             children : [
                                 [0] : {
@@ -38,7 +38,7 @@ Tests how DOM.getDocument reports all child nodes when asked.
                                         [0] : id
                                         [1] : depth-1
                                     ]
-                                    backendNodeId : <backendNodeId>
+                                    backendNodeId : <number>
                                     childNodeCount : 2
                                     children : [
                                         [0] : {
@@ -46,7 +46,7 @@ Tests how DOM.getDocument reports all child nodes when asked.
                                                 [0] : id
                                                 [1] : depth-2
                                             ]
-                                            backendNodeId : <backendNodeId>
+                                            backendNodeId : <number>
                                             childNodeCount : 1
                                             children : [
                                                 [0] : {
@@ -54,7 +54,7 @@ Tests how DOM.getDocument reports all child nodes when asked.
                                                         [0] : id
                                                         [1] : depth-3
                                                     ]
-                                                    backendNodeId : <backendNodeId>
+                                                    backendNodeId : <number>
                                                     childNodeCount : 1
                                                     children : [
                                                         [0] : {
@@ -62,41 +62,41 @@ Tests how DOM.getDocument reports all child nodes when asked.
                                                                 [0] : src
                                                                 [1] : ./shadow-dom-iframe.html
                                                             ]
-                                                            backendNodeId : <backendNodeId>
+                                                            backendNodeId : <number>
                                                             childNodeCount : 0
                                                             children : [
                                                             ]
                                                             contentDocument : {
-                                                                backendNodeId : <backendNodeId>
-                                                                baseURL : <baseURL>
+                                                                backendNodeId : <number>
+                                                                baseURL : <string>
                                                                 childNodeCount : 1
                                                                 children : [
                                                                     [0] : {
                                                                         attributes : [
                                                                         ]
-                                                                        backendNodeId : <backendNodeId>
+                                                                        backendNodeId : <number>
                                                                         childNodeCount : 2
                                                                         children : [
                                                                             [0] : {
                                                                                 attributes : [
                                                                                 ]
-                                                                                backendNodeId : <backendNodeId>
+                                                                                backendNodeId : <number>
                                                                                 childNodeCount : 0
                                                                                 children : [
                                                                                 ]
                                                                                 localName : head
-                                                                                nodeId : <nodeId>
+                                                                                nodeId : <number>
                                                                                 nodeName : HEAD
                                                                                 nodeType : 1
                                                                                 nodeValue : 
-                                                                                parentId : <parentId>
+                                                                                parentId : <number>
                                                                             }
                                                                             [1] : {
                                                                                 attributes : [
                                                                                     [0] : onload
                                                                                     [1] : addShadowDOM()
                                                                                 ]
-                                                                                backendNodeId : <backendNodeId>
+                                                                                backendNodeId : <number>
                                                                                 childNodeCount : 2
                                                                                 children : [
                                                                                     [0] : {
@@ -104,19 +104,19 @@ Tests how DOM.getDocument reports all child nodes when asked.
                                                                                             [0] : id
                                                                                             [1] : element_in_an_iframe
                                                                                         ]
-                                                                                        backendNodeId : <backendNodeId>
+                                                                                        backendNodeId : <number>
                                                                                         childNodeCount : 0
                                                                                         children : [
                                                                                         ]
                                                                                         localName : div
-                                                                                        nodeId : <nodeId>
+                                                                                        nodeId : <number>
                                                                                         nodeName : DIV
                                                                                         nodeType : 1
                                                                                         nodeValue : 
-                                                                                        parentId : <parentId>
+                                                                                        parentId : <number>
                                                                                         shadowRoots : [
                                                                                             [0] : {
-                                                                                                backendNodeId : <backendNodeId>
+                                                                                                backendNodeId : <number>
                                                                                                 childNodeCount : 1
                                                                                                 children : [
                                                                                                     [0] : {
@@ -124,43 +124,43 @@ Tests how DOM.getDocument reports all child nodes when asked.
                                                                                                             [0] : style
                                                                                                             [1] : color: red;
                                                                                                         ]
-                                                                                                        backendNodeId : <backendNodeId>
+                                                                                                        backendNodeId : <number>
                                                                                                         childNodeCount : 1
                                                                                                         children : [
                                                                                                             [0] : {
                                                                                                                 attributes : [
                                                                                                                 ]
-                                                                                                                backendNodeId : <backendNodeId>
+                                                                                                                backendNodeId : <number>
                                                                                                                 childNodeCount : 1
                                                                                                                 children : [
                                                                                                                     [0] : {
-                                                                                                                        backendNodeId : <backendNodeId>
+                                                                                                                        backendNodeId : <number>
                                                                                                                         localName : 
-                                                                                                                        nodeId : <nodeId>
+                                                                                                                        nodeId : <number>
                                                                                                                         nodeName : #text
                                                                                                                         nodeType : 3
                                                                                                                         nodeValue : Hello from the shadow dom!
-                                                                                                                        parentId : <parentId>
+                                                                                                                        parentId : <number>
                                                                                                                     }
                                                                                                                 ]
                                                                                                                 localName : h1
-                                                                                                                nodeId : <nodeId>
+                                                                                                                nodeId : <number>
                                                                                                                 nodeName : H1
                                                                                                                 nodeType : 1
                                                                                                                 nodeValue : 
-                                                                                                                parentId : <parentId>
+                                                                                                                parentId : <number>
                                                                                                             }
                                                                                                         ]
                                                                                                         localName : div
-                                                                                                        nodeId : <nodeId>
+                                                                                                        nodeId : <number>
                                                                                                         nodeName : DIV
                                                                                                         nodeType : 1
                                                                                                         nodeValue : 
-                                                                                                        parentId : <parentId>
+                                                                                                        parentId : <number>
                                                                                                     }
                                                                                                 ]
                                                                                                 localName : 
-                                                                                                nodeId : <nodeId>
+                                                                                                nodeId : <number>
                                                                                                 nodeName : #document-fragment
                                                                                                 nodeType : 11
                                                                                                 nodeValue : 
@@ -171,121 +171,121 @@ Tests how DOM.getDocument reports all child nodes when asked.
                                                                                     [1] : {
                                                                                         attributes : [
                                                                                         ]
-                                                                                        backendNodeId : <backendNodeId>
+                                                                                        backendNodeId : <number>
                                                                                         childNodeCount : 1
                                                                                         children : [
                                                                                             [0] : {
-                                                                                                backendNodeId : <backendNodeId>
+                                                                                                backendNodeId : <number>
                                                                                                 localName : 
-                                                                                                nodeId : <nodeId>
+                                                                                                nodeId : <number>
                                                                                                 nodeName : #text
                                                                                                 nodeType : 3
                                                                                                 nodeValue :  function addShadowDOM() {     var host = document.getElementById("element_in_an_iframe").createShadowRoot();     var template = document.querySelector("#shadow-template");     host.appendChild(template.content);     template.remove(); } 
-                                                                                                parentId : <parentId>
+                                                                                                parentId : <number>
                                                                                             }
                                                                                         ]
                                                                                         localName : script
-                                                                                        nodeId : <nodeId>
+                                                                                        nodeId : <number>
                                                                                         nodeName : SCRIPT
                                                                                         nodeType : 1
                                                                                         nodeValue : 
-                                                                                        parentId : <parentId>
+                                                                                        parentId : <number>
                                                                                     }
                                                                                 ]
                                                                                 localName : body
-                                                                                nodeId : <nodeId>
+                                                                                nodeId : <number>
                                                                                 nodeName : BODY
                                                                                 nodeType : 1
                                                                                 nodeValue : 
-                                                                                parentId : <parentId>
+                                                                                parentId : <number>
                                                                             }
                                                                         ]
-                                                                        frameId : <frameId>
+                                                                        frameId : <string>
                                                                         localName : html
-                                                                        nodeId : <nodeId>
+                                                                        nodeId : <number>
                                                                         nodeName : HTML
                                                                         nodeType : 1
                                                                         nodeValue : 
-                                                                        parentId : <parentId>
+                                                                        parentId : <number>
                                                                     }
                                                                 ]
-                                                                documentURL : <documentURL>
+                                                                documentURL : <string>
                                                                 localName : 
-                                                                nodeId : <nodeId>
+                                                                nodeId : <number>
                                                                 nodeName : #document
                                                                 nodeType : 9
                                                                 nodeValue : 
                                                                 xmlVersion : 
                                                             }
-                                                            frameId : <frameId>
+                                                            frameId : <string>
                                                             localName : iframe
-                                                            nodeId : <nodeId>
+                                                            nodeId : <number>
                                                             nodeName : IFRAME
                                                             nodeType : 1
                                                             nodeValue : 
-                                                            parentId : <parentId>
+                                                            parentId : <number>
                                                         }
                                                     ]
                                                     localName : div
-                                                    nodeId : <nodeId>
+                                                    nodeId : <number>
                                                     nodeName : DIV
                                                     nodeType : 1
                                                     nodeValue : 
-                                                    parentId : <parentId>
+                                                    parentId : <number>
                                                 }
                                             ]
                                             localName : div
-                                            nodeId : <nodeId>
+                                            nodeId : <number>
                                             nodeName : DIV
                                             nodeType : 1
                                             nodeValue : 
-                                            parentId : <parentId>
+                                            parentId : <number>
                                         }
                                         [1] : {
                                             attributes : [
                                                 [0] : id
                                                 [1] : targetDiv
                                             ]
-                                            backendNodeId : <backendNodeId>
+                                            backendNodeId : <number>
                                             childNodeCount : 0
                                             children : [
                                             ]
                                             localName : div
-                                            nodeId : <nodeId>
+                                            nodeId : <number>
                                             nodeName : DIV
                                             nodeType : 1
                                             nodeValue : 
-                                            parentId : <parentId>
+                                            parentId : <number>
                                         }
                                     ]
                                     localName : div
-                                    nodeId : <nodeId>
+                                    nodeId : <number>
                                     nodeName : DIV
                                     nodeType : 1
                                     nodeValue : 
-                                    parentId : <parentId>
+                                    parentId : <number>
                                 }
                             ]
                             localName : body
-                            nodeId : <nodeId>
+                            nodeId : <number>
                             nodeName : BODY
                             nodeType : 1
                             nodeValue : 
-                            parentId : <parentId>
+                            parentId : <number>
                         }
                     ]
-                    frameId : <frameId>
+                    frameId : <string>
                     localName : html
-                    nodeId : <nodeId>
+                    nodeId : <number>
                     nodeName : HTML
                     nodeType : 1
                     nodeValue : 
-                    parentId : <parentId>
+                    parentId : <number>
                 }
             ]
-            documentURL : <documentURL>
+            documentURL : <string>
             localName : 
-            nodeId : <nodeId>
+            nodeId : <number>
             nodeName : #document
             nodeType : 9
             nodeValue : 

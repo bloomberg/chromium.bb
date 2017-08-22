@@ -20,7 +20,7 @@
     dp.DOM.offSetChildNodes(onSetChildNodes);
     var response = await dp.DOM.querySelector({nodeId: node.contentDocument.nodeId, selector: 'div#rootDiv'});
     await dp.DOM.setInspectedNode({nodeId: response.result.nodeId});
-    testRunner.logMessage(await dp.Runtime.evaluate({expression: '$0', includeCommandLineAPI: true}));
+    testRunner.log(await dp.Runtime.evaluate({expression: '$0', includeCommandLineAPI: true}));
     testRunner.completeTest();
   }
 

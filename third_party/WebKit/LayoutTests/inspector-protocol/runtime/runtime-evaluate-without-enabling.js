@@ -5,6 +5,6 @@
   dp.Page.enable();
   dp.Page.reload();
   await dp.Page.onceLoadEventFired();
-  testRunner.logMessage(await dp.Runtime.getProperties({ objectId: result.result.result.objectId, ownProperties: true }));
+  testRunner.log(await dp.Runtime.getProperties({ objectId: result.result.result.objectId, ownProperties: true }));
   testRunner.completeTest();
 })

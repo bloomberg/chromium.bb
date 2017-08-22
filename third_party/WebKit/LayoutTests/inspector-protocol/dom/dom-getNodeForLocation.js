@@ -8,7 +8,7 @@
   dp.DOM.enable();
   var response = await dp.DOM.getNodeForLocation({x: 10, y: 10});
   var nodeId = response.result.nodeId;
-  testRunner.logMessage(nodeTracker.nodeForId(nodeId), 'Node: ');
+  testRunner.log(nodeTracker.nodeForId(nodeId), 'Node: ');
   testRunner.completeTest();
 })
 

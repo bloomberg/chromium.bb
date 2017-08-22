@@ -13,12 +13,12 @@
   function dumpMessages() {
     for (var message of messages1) {
       testRunner.log('From session1:');
-      testRunner.logMessage(message);
+      testRunner.log(message);
     }
     messages1 = [];
     for (var message of messages2) {
       testRunner.log('From session2:');
-      testRunner.logMessage(message);
+      testRunner.log(message);
     }
     messages2 = [];
   }

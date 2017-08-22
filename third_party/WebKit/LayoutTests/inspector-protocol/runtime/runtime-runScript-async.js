@@ -4,7 +4,7 @@
   function dumpResult(result) {
     if (result.error) {
       result.error.code = 0;
-      testRunner.logObject(result.error);
+      testRunner.log(result.error);
       return;
     }
     result = result.result;
@@ -20,7 +20,7 @@
     }
     if (result.result && result.result.objectId)
       result.result.objectId = '[ObjectId]';
-    testRunner.logObject(result);
+    testRunner.log(result);
   }
 
   testRunner.runTestSuite([

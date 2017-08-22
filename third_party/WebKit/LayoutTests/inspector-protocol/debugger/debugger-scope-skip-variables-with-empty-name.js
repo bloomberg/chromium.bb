@@ -21,7 +21,7 @@
   }
 
   for (var objectId of localScopeObjectIds)
-    testRunner.logObject((await dp.Runtime.getProperties({objectId})).result);
+    testRunner.log((await dp.Runtime.getProperties({objectId})).result);
 
   await dp.Debugger.resume();
   testRunner.completeTest();

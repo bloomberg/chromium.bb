@@ -1,7 +1,7 @@
 Tests that multiple sessions observe each other through evaluating.
 window.foo=42 in session1
 {
-    id : <messageId>
+    id : <number>
     result : {
         result : {
             description : 42
@@ -12,7 +12,7 @@ window.foo=42 in session1
 }
 window.foo in session2
 {
-    id : <messageId>
+    id : <number>
     result : {
         result : {
             description : 42
@@ -23,7 +23,7 @@ window.foo in session2
 }
 window.foo in session3
 {
-    id : <messageId>
+    id : <number>
     result : {
         result : {
             description : 42

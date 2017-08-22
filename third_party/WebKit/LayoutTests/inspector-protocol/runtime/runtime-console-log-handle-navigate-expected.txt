@@ -5,7 +5,7 @@ Got new context: true
         code : -32000
         message : Cannot find context with specified id
     }
-    id : <messageId>
+    id : <number>
 }
 Got new context: true
 {
@@ -13,7 +13,7 @@ Got new context: true
         code : -32000
         message : Cannot find context with specified id
     }
-    id : <messageId>
+    id : <number>
 }
 Got new context: true
 {
@@ -21,6 +21,6 @@ Got new context: true
         code : -32000
         message : Cannot find context with specified id
     }
-    id : <messageId>
+    id : <number>
 }
 

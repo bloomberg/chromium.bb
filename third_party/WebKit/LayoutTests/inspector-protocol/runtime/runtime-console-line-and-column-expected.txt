@@ -16,12 +16,12 @@ Tests line and column numbers in reported console messages.
                     columnNumber : 8
                     functionName : 
                     lineNumber : 0
-                    scriptId : <scriptId>
+                    scriptId : <string>
                     url : 
                 }
             ]
         }
-        timestamp : <timestamp>
+        timestamp : <number>
         type : log
     }
 }
@@ -42,12 +42,12 @@ Tests line and column numbers in reported console messages.
                     columnNumber : 2
                     functionName : 
                     lineNumber : 1
-                    scriptId : <scriptId>
+                    scriptId : <string>
                     url : 
                 }
             ]
         }
-        timestamp : <timestamp>
+        timestamp : <number>
         type : log
     }
 }

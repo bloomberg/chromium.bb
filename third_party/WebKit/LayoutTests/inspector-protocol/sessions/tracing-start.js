@@ -13,18 +13,18 @@
   session2.protocol.Tracing.onTracingComplete(event => session2TracingComplete = true);
 
   testRunner.log('Starting tracing in session1');
-  testRunner.logMessage(await session1.protocol.Tracing.start());
+  testRunner.log(await session1.protocol.Tracing.start());
 
   testRunner.log('Starting tracing in session2');
-  testRunner.logMessage(await session2.protocol.Tracing.start());
+  testRunner.log(await session2.protocol.Tracing.start());
 
   var promise = session1.protocol.Tracing.onceTracingComplete();
 
   testRunner.log('Stopping tracing in session1');
-  testRunner.logMessage(await session1.protocol.Tracing.end());
+  testRunner.log(await session1.protocol.Tracing.end());
 
   testRunner.log('Stopping tracing in session2');
-  testRunner.logMessage(await session2.protocol.Tracing.end());
+  testRunner.log(await session2.protocol.Tracing.end());
 
   await promise;
   testRunner.log(`session1: dataCollected=${session1DataCollected} tracingComplete=${true}`);

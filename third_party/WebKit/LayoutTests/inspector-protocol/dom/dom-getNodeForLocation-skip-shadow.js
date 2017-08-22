@@ -11,6 +11,6 @@
   dp.DOM.enable();
   var message = await dp.DOM.getNodeForLocation({x: 10, y: 10, includeUserAgentShadowDOM: false});
   var nodeId = message.result.nodeId;
-  testRunner.logMessage(nodeTracker.nodeForId(nodeId), 'Node: ');
+  testRunner.log(nodeTracker.nodeForId(nodeId), 'Node: ');
   testRunner.completeTest();
 })

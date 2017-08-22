@@ -4,8 +4,8 @@
   dp.Runtime.enable();
 
   dp.Runtime.evaluate({ expression: 'console.log(239)' });
-  testRunner.logMessage(await dp.Runtime.onceConsoleAPICalled());
+  testRunner.log(await dp.Runtime.onceConsoleAPICalled());
   dp.Runtime.evaluate({ expression: 'var l = console.log;\n  l(239)' });
-  testRunner.logMessage(await dp.Runtime.onceConsoleAPICalled());
+  testRunner.log(await dp.Runtime.onceConsoleAPICalled());
   testRunner.completeTest();
 })

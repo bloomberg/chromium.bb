@@ -30,7 +30,7 @@
 
   function dumpResult(title, message) {
     testRunner.log(title);
-    testRunner.logObject(message.result.value);
+    testRunner.log(message.result.value);
   }
 
   dumpResult(`Check that CommandLineAPI isn't enumerable on window object:`,

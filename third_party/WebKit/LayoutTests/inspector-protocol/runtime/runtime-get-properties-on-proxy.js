@@ -79,6 +79,6 @@
   var response = await dp.Runtime.evaluate({expression: '(' + testFunction.toString() + ')()'});
   await dp.Runtime.getProperties({ objectId: response.result.result.objectId, generatePreview: true });
   response = await dp.Runtime.evaluate({ expression: 'window.counter' });
-  testRunner.logObject(response.result);
+  testRunner.log(response.result);
   testRunner.completeTest();
 })
