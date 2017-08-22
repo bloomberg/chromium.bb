@@ -101,10 +101,14 @@ public class PasswordEntryEditor extends Fragment {
                 mKeyguardManager =
                         (KeyguardManager) getActivity().getApplicationContext().getSystemService(
                                 Context.KEYGUARD_SERVICE);
-                hidePassword();
-                hookupPasswordButtons();
+                if (isReauthenticationAvailable()) {
+                    hidePassword();
+                    hookupPasswordButtons();
+                } else {
+                    mView.findViewById(R.id.password_title).setVisibility(View.GONE);
+                    mView.findViewById(R.id.password_data).setVisibility(View.GONE);
+                }
             }
-
         } else {
             mView = inflater.inflate(R.layout.password_entry_editor, container, false);
             TextView nameView = (TextView) mView.findViewById(R.id.password_entry_editor_name);
@@ -121,8 +125,7 @@ public class PasswordEntryEditor extends Fragment {
     }
 
     public boolean shouldDisplayInteractivePasswordEntryEditor() {
-        return ChromeFeatureList.isEnabled(VIEW_PASSWORDS)
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+        return ChromeFeatureList.isEnabled(VIEW_PASSWORDS);
     }
 
     @Override
@@ -143,6 +146,10 @@ public class PasswordEntryEditor extends Fragment {
         return SavePasswordsPreferences.getLastReauthTimeMillis() != 0
                 && System.currentTimeMillis() - SavePasswordsPreferences.getLastReauthTimeMillis()
                 < VALID_REAUTHENTICATION_TIME_INTERVAL_MILLIS;
+    }
+
+    private boolean isReauthenticationAvailable() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
     @Override
