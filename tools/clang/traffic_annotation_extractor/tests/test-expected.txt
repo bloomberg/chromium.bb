@@ -1,5 +1,5 @@
 ==== NEW ANNOTATION ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 Global Namespace
 14
 Definition
@@ -25,7 +25,7 @@ id1
         comments: "comment1"
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestAnnotations
 36
 Partial
@@ -41,7 +41,7 @@ completing_id2
         }
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestAnnotations
 46
 Completing
@@ -61,7 +61,7 @@ id3
         comments: "comment3"
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestAnnotations
 61
 BranchedCompleting
@@ -76,7 +76,7 @@ branch4
         }
 ==== ANNOTATION ENDS ====
 ==== NEW ANNOTATION ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestURLFetcherCreate
 83
 Definition
@@ -85,79 +85,79 @@ undefined
 Nothing here yet.
 ==== ANNOTATION ENDS ====
 ==== NEW CALL ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestURLFetcherCreate
 73
 net::URLFetcher::Create
 0
 ==== CALL ENDS ====
 ==== NEW CALL ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestURLFetcherCreate
 76
 net::URLFetcher::Create
 0
 ==== CALL ENDS ====
 ==== NEW CALL ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestURLFetcherCreate
 79
 net::URLFetcher::Create
 1
 ==== CALL ENDS ====
 ==== NEW CALL ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestURLFetcherCreate
 82
 net::URLFetcher::Create
 1
 ==== CALL ENDS ====
 ==== NEW CALL ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestCreateRequest
 90
 net::URLRequestContext::CreateRequest
 0
 ==== CALL ENDS ====
 ==== NEW CALL ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestCreateRequest
 91
 net::URLRequestContext::CreateRequest
 1
 ==== CALL ENDS ====
 ==== NEW ASSIGNMENT ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestInitList
 96
 ==== ASSIGNMENT ENDS ====
 ==== NEW ASSIGNMENT ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestInitList
 97
 ==== ASSIGNMENT ENDS ====
 ==== NEW ASSIGNMENT ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestInitList
 98
 ==== ASSIGNMENT ENDS ====
 ==== NEW ASSIGNMENT ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestInitList
 99
 ==== ASSIGNMENT ENDS ====
 ==== NEW ASSIGNMENT ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestInitList
 101
 ==== ASSIGNMENT ENDS ====
 ==== NEW ASSIGNMENT ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestAssignment
 106
 ==== ASSIGNMENT ENDS ====
 ==== NEW ASSIGNMENT ====
-/usr/local/google/home/rhalavati/workspace/chromium/src/tools/clang/traffic_annotation_extractor/tests/test-actual.cc
+test-actual.cc
 TestAssignment
 109
 ==== ASSIGNMENT ENDS ====
