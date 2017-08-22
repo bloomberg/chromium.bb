@@ -12,3 +12,7 @@
 If you would like to build an SDK locally, `tools/fuchsia/local-sdk.py` tries to
 do this (so you can iterate on ToT Fuchsia against your Chromium build), however
 it's simply a copy of the steps run on the bot above, and so may be out of date.
+
+In order to sync a Fuchsia tree to the state matching an SDK hash, you can use:
+
+`jiri update https://storage.googleapis.com/fuchsia/jiri/snapshots/SDK_HASH_HERE`
