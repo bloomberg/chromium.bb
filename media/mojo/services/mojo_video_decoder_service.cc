@@ -78,8 +78,7 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
 
 void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
                                      DecodeCallback callback) {
-  DVLOG(2) << __func__;
-
+  DVLOG(2) << __func__ << " pts=" << buffer->timestamp.InMilliseconds();
   if (!decoder_) {
     std::move(callback).Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -138,7 +137,7 @@ void MojoVideoDecoderService::OnDecoderReset(ResetCallback callback) {
 void MojoVideoDecoderService::OnDecoderOutput(
     MojoMediaClient::ReleaseMailboxCB release_cb,
     const scoped_refptr<VideoFrame>& frame) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << " pts=" << frame->timestamp().InMilliseconds();
   DCHECK(client_);
   DCHECK(decoder_);
 
