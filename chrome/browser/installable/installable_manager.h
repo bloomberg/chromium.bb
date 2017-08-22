@@ -11,12 +11,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/installable/installable_data.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/installable/installable_params.h"
+#include "chrome/browser/installable/installable_task_queue.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -25,87 +27,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
-// This struct specifies the work to be done by the InstallableManager.
-// Data is cached and fetched in the order specified in this struct. A web app
-// manifest will always be fetched first.
-struct InstallableParams {
-  // The ideal primary icon size to fetch. Used only if
-  // |fetch_valid_primary_icon| is true.
-  int ideal_primary_icon_size_in_px = -1;
-
-  // The minimum primary icon size to fetch. Used only if
-  // |fetch_valid_primary_icon| is true.
-  int minimum_primary_icon_size_in_px = -1;
-
-  // The ideal badge icon size to fetch. Used only if
-  // |fetch_valid_badge_icon| is true.
-  int ideal_badge_icon_size_in_px = -1;
-
-  // The minimum badge icon size to fetch. Used only if
-  // |fetch_valid_badge_icon| is true.
-  int minimum_badge_icon_size_in_px = -1;
-
-  // Check whether there is a fetchable, non-empty icon in the manifest
-  // conforming to the primary icon size parameters.
-  bool fetch_valid_primary_icon = false;
-
-  // Check whether there is a fetchable, non-empty icon in the manifest
-  // conforming to the badge icon size parameters.
-  bool fetch_valid_badge_icon = false;
-
-  // Check whether the site is installable. That is, it has a manifest valid for
-  // a web app and a service worker controlling the manifest start URL and the
-  // current URL.
-  bool check_installable = false;
-
-  // Whether or not to wait indefinitely for a service worker. If this is set to
-  // false, the worker status will not be cached and will be re-checked if
-  // GetData() is called again for the current page.
-  bool wait_for_worker = true;
-};
-
-// This struct is passed to an InstallableCallback when the InstallableManager
-// has finished working. Each reference is owned by InstallableManager, and
-// callers should copy any objects which they wish to use later. Non-requested
-// fields will be set to null, empty, or false.
-struct InstallableData {
-  // NO_ERROR_DETECTED if there were no issues.
-  const InstallableStatusCode error_code;
-
-  // Empty if the site has no <link rel="manifest"> tag.
-  const GURL& manifest_url;
-
-  // Empty if the site has an unparseable manifest.
-  const content::Manifest& manifest;
-
-  // Empty if no primary_icon was requested.
-  const GURL& primary_icon_url;
-
-  // nullptr if the most appropriate primary icon couldn't be determined or
-  // downloaded. The underlying primary icon is owned by the InstallableManager;
-  // clients must copy the bitmap if they want to to use it. If
-  // fetch_valid_primary_icon was true and a primary icon could not be
-  // retrieved, the reason will be in error_code.
-  const SkBitmap* primary_icon;
-
-  // Empty if no badge_icon was requested.
-  const GURL& badge_icon_url;
-
-  // nullptr if the most appropriate badge icon couldn't be determined or
-  // downloaded. The underlying badge icon is owned by the InstallableManager;
-  // clients must copy the bitmap if they want to to use it. Since the badge
-  // icon is optional, no error code is set if it cannot be fetched, and clients
-  // specifying fetch_valid_badge_icon must check that the bitmap exists before
-  // using it.
-  const SkBitmap* badge_icon;
-
-  // true if the site has a service worker with a fetch handler and a viable web
-  // app manifest. If check_installable was true and the site isn't installable,
-  // the reason will be in error_code.
-  const bool is_installable;
-};
-
-using InstallableCallback = base::Callback<void(const InstallableData&)>;
 
 // This class is responsible for fetching the resources required to check and
 // install a site.
@@ -165,7 +86,6 @@ class InstallableManager
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            CheckLazyServiceWorkerNoFetchHandlerFails);
 
-  using Task = std::pair<InstallableParams, InstallableCallback>;
   using IconParams = std::tuple<int, int, content::Manifest::Icon::IconPurpose>;
 
   struct ManifestProperty {
@@ -248,7 +168,7 @@ class InstallableManager
   void SetManifestDependentTasksComplete();
 
   // Methods coordinating and dispatching work for the current task.
-  void RunCallback(const Task& task, InstallableStatusCode error);
+  void RunCallback(const InstallableTask& task, InstallableStatusCode error);
   void WorkOnTask();
 
   // Data retrieval methods.
@@ -277,46 +197,7 @@ class InstallableManager
   const content::Manifest& manifest() const;
   bool is_installable() const;
 
-  // TaskQueue keeps track of pending tasks.
-  class TaskQueue {
-   public:
-    TaskQueue();
-    ~TaskQueue();
-
-    // Adds task to the end of the active list of tasks to be processed.
-    void Insert(Task task);
-
-    // Moves the current task from the main to the paused list.
-    void PauseCurrent();
-
-    // Reports whether there are any tasks in the paused list.
-    bool HasPaused() const;
-
-    // Moves all paused tasks to the main list.
-    void UnpauseAll();
-
-    // Returns the currently active task.
-    Task& Current();
-
-    // Advances to the next task.
-    void Next();
-
-    // Clears all tasks from the main and paused list.
-    void Reset();
-
-    // Reports whether the main list is empty.
-    bool IsEmpty() const;
-
-   private:
-    // The list of <params, callback> pairs that have come from a call to
-    // InstallableManager::GetData.
-    std::vector<Task> tasks_;
-
-    // Tasks which are waiting indefinitely for a service worker to be detected.
-    std::vector<Task> paused_tasks_;
-  };
-
-  TaskQueue task_queue_;
+  InstallableTaskQueue task_queue_;
 
   // Installable properties cached on this object.
   std::unique_ptr<ManifestProperty> manifest_;
