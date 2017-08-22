@@ -48,7 +48,8 @@ class PasswordControllerOffTheRecordTest : public web::WebTestWithWebState {
     password_controller_ = [[PasswordController alloc]
            initWithWebState:&off_the_record_web_state_
         passwordsUiDelegate:nil
-                     client:base::MakeUnique<IncognitoPasswordManagerClient>()];
+                     client:base::MakeUnique<IncognitoPasswordManagerClient>()
+                 dispatcher:nil];
   }
 
   void TearDown() override {

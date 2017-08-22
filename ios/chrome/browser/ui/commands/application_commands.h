@@ -64,6 +64,9 @@
 // Shows the Autofill Settings UI.
 - (void)showAutofillSettings;
 
+// Shows the Save Passwords settings UI.
+- (void)showSavePasswordsSettings;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_APPLICATION_COMMANDS_H_

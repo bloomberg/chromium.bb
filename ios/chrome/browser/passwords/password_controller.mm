@@ -38,6 +38,7 @@
 #import "ios/chrome/browser/passwords/js_password_manager.h"
 #import "ios/chrome/browser/passwords/password_generation_agent.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/web/public/origin_util.h"
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -273,17 +274,20 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 @synthesize isWebStateDestroyed = isWebStateDestroyed_;
 
 - (instancetype)initWithWebState:(web::WebState*)webState
-             passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate {
+             passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
+                      dispatcher:(id<ApplicationCommands>)dispatcher {
   self = [self initWithWebState:webState
             passwordsUiDelegate:UIDelegate
-                         client:nullptr];
+                         client:nullptr
+                     dispatcher:dispatcher];
   return self;
 }
 
 - (instancetype)initWithWebState:(web::WebState*)webState
              passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
                           client:(std::unique_ptr<PasswordManagerClient>)
-                                     passwordManagerClient {
+                                     passwordManagerClient
+                      dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(webState);
   self = [super init];
   if (self) {
@@ -302,7 +306,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
                initWithWebState:webState
                 passwordManager:passwordManager_.get()
           passwordManagerDriver:passwordManagerDriver_.get()
-            passwordsUiDelegate:UIDelegate];
+            passwordsUiDelegate:UIDelegate
+                     dispatcher:dispatcher];
     }
 
     passwordJsManager_ = base::mac::ObjCCastStrict<JsPasswordManager>(
