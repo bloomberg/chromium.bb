@@ -66,6 +66,12 @@ namespace record_wallpaper_uma = wallpaper_private::RecordWallpaperUMA;
 
 namespace {
 
+// The time in seconds and retry limit to re-check the profile sync service
+// status. Only after the profile sync service has been configured, we can get
+// the correct value of the user sync preference of "syncThemes".
+constexpr int kRetryDelay = 10;
+constexpr int kRetryLimit = 3;
+
 #if defined(GOOGLE_CHROME_BUILD)
 const char kWallpaperManifestBaseURL[] =
     "https://storage.googleapis.com/chromeos-wallpaper-public/manifest_";
@@ -200,13 +206,53 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetSyncSettingFunction::Run() {
-  Profile* profile =  Profile::FromBrowserContext(browser_context());
-  browser_sync::ProfileSyncService* sync =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
+                         CheckProfileSyncServiceStatus,
+                     this));
+  return RespondLater();
+}
+
+void WallpaperPrivateGetSyncSettingFunction::CheckProfileSyncServiceStatus() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetBoolean("syncThemes",
-                   sync->GetActiveDataTypes().Has(syncer::THEMES));
-  return RespondNow(OneArgument(std::move(dict)));
+
+  if (retry_number > kRetryLimit) {
+    // It's most likely that the wallpaper synchronization is enabled (It's
+    // enabled by default so unless the user disables it explicitly it remains
+    // enabled).
+    dict->SetBoolean("syncThemes", true);
+    Respond(OneArgument(std::move(dict)));
+    return;
+  }
+
+  Profile* profile =  Profile::FromBrowserContext(browser_context());
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  if (!sync_service) {
+    dict->SetBoolean("syncThemes", false);
+    Respond(OneArgument(std::move(dict)));
+    return;
+  }
+
+  if (sync_service->IsSyncActive() && sync_service->ConfigurationDone()) {
+    dict->SetBoolean("syncThemes",
+                     sync_service->GetActiveDataTypes().Has(syncer::THEMES));
+    Respond(OneArgument(std::move(dict)));
+    return;
+  }
+
+  // It's possible that the profile sync service hasn't finished configuring yet
+  // when we're trying to query the user preference (this seems only happen for
+  // the first time configuration). In this case GetActiveDataTypes() returns an
+  // empty set. So re-check the status later.
+  retry_number++;
+  BrowserThread::PostDelayedTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&WallpaperPrivateGetSyncSettingFunction::
+                         CheckProfileSyncServiceStatus,
+                     this),
+      base::TimeDelta::FromSeconds(retry_number * kRetryDelay));
 }
 
 WallpaperPrivateSetWallpaperIfExistsFunction::
