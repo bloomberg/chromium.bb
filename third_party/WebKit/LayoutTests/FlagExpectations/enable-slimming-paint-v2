@@ -1684,6 +1684,7 @@ Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers-dynami
 Bug(none) virtual/threaded/compositing/visibility/visibility-image-layers.html [ Failure ]
 Bug(none) virtual/threaded/compositing/visibility/visibility-simple-video-layer.html [ Failure ]
 Bug(none) virtual/threaded/compositing/webgl/webgl-reflection.html [ Failure Crash ]
+Bug(none) virtual/threaded/compositing/webgl/webgl-with-accelerated-background-color.html [ Failure ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
 
 # Tests that fail after changes to border dash painting, due to antialiasing differences
