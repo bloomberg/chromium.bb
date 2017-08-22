@@ -1368,15 +1368,8 @@ void LayoutText::ComputePreferredLogicalWidths(
     last_line_line_min_width_ = curr_max_width;
   }
 
-  const SimpleFontData* font_data = f.PrimaryFont();
-  DCHECK(font_data);
-
   GlyphOverflow glyph_overflow;
-  if (font_data) {
-    glyph_overflow.SetFromBounds(
-        glyph_bounds, font_data->GetFontMetrics().FloatAscent(),
-        font_data->GetFontMetrics().FloatDescent(), max_width_);
-  }
+  glyph_overflow.SetFromBounds(glyph_bounds, f, max_width_);
   // We shouldn't change our mind once we "know".
   DCHECK(!known_to_have_no_overflow_and_no_fallback_fonts_ ||
          (fallback_fonts.IsEmpty() && glyph_overflow.IsApproximatelyZero()));

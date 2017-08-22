@@ -621,12 +621,7 @@ static inline void SetLogicalWidthForTextRun(
     measured_width = 0;
   }
 
-  const SimpleFontData* font_data = font.PrimaryFont();
-  DCHECK(font_data);
-  glyph_overflow.SetFromBounds(
-      glyph_bounds, font_data ? font_data->GetFontMetrics().FloatAscent() : 0,
-      font_data ? font_data->GetFontMetrics().FloatDescent() : 0,
-      measured_width);
+  glyph_overflow.SetFromBounds(glyph_bounds, font, measured_width);
 
   run->box_->SetLogicalWidth(LayoutUnit(measured_width) + hyphen_width);
   if (!fallback_fonts.IsEmpty()) {

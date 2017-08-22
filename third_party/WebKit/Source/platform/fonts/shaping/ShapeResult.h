@@ -65,8 +65,11 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
       unsigned count);
   ~ShapeResult();
 
+  // The logical width of this result.
   float Width() const { return width_; }
   LayoutUnit SnappedWidth() const { return LayoutUnit::FromFloatCeil(width_); }
+  // The glyph bounding box, in logical coordinates, using alphabetic baseline
+  // even when the result is in vertical flow.
   const FloatRect& Bounds() const { return glyph_bounding_box_; }
   unsigned NumCharacters() const { return num_characters_; }
   // The character start/end index of a range shape result.
