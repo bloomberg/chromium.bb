@@ -6031,6 +6031,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Blink.MediaDocument.DownloadButton"
     enum="MediaDocumentDownloadButtonType">
+  <obsolete>
+    Deprecated 08/2017 as it is integrated into media controller.
+  </obsolete>
   <owner>qinmin@chromium.org</owner>
   <summary>
     Records how the download button on the MediaDocument is used.

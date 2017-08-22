@@ -93,7 +93,6 @@ class WebRuntimeFeatures {
   BLINK_PLATFORM_EXPORT static void EnableLazyParseCSS(bool);
   BLINK_PLATFORM_EXPORT static void EnableLoadingWithMojo(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaCapture(bool);
-  BLINK_PLATFORM_EXPORT static void EnableMediaDocumentDownloadButton(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaSession(bool);
   BLINK_PLATFORM_EXPORT static void EnableMiddleClickAutoscroll(bool);
   BLINK_PLATFORM_EXPORT static void EnableModuleScripts(bool);

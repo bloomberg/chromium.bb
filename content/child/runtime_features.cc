@@ -270,9 +270,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kLazyParseCSS))
     WebRuntimeFeatures::EnableLazyParseCSS(true);
 
-  WebRuntimeFeatures::EnableMediaDocumentDownloadButton(
-      base::FeatureList::IsEnabled(features::kMediaDocumentDownloadButton));
-
   WebRuntimeFeatures::EnablePassiveDocumentEventListeners(
       base::FeatureList::IsEnabled(features::kPassiveDocumentEventListeners));
 

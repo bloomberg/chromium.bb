@@ -1727,11 +1727,6 @@ const char kLsdPermissionPromptDescription[] =
     "Whether to use the Google Play Services Location Settings Dialog "
     "permission dialog.";
 
-const char kMediaDocumentDownloadButtonName[] =
-    "Download button when opening a page with media url.";
-const char kMediaDocumentDownloadButtonDescription[] =
-    "Allow a download button to show up when opening a page with media url.";
-
 const char kMediaScreenCaptureName[] = "Experimental ScreenCapture.";
 const char kMediaScreenCaptureDescription[] =
     "Enable this option for experimental ScreenCapture feature on Android.";
