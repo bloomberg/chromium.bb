@@ -13,6 +13,8 @@
 #import "ios/web/public/test/fakes/test_native_content_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/test/web_view_content_test_util.h"
+#import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ios/web/test/test_url_constants.h"
@@ -29,6 +31,7 @@ namespace web {
 
 namespace {
 
+const char kTestPageText[] = "landing!";
 const char kExpectedMimeType[] = "text/html";
 
 // Verifies correctness of |NavigationContext| (|arg0|) for new page navigation
@@ -268,6 +271,7 @@ class WebStateObserverMock : public WebStateObserver {
 using test::HttpServer;
 using testing::StrictMock;
 using testing::_;
+using web::test::WaitForWebViewContainingText;
 
 // Test fixture for WebStateDelegate::ProvisionalNavigationStarted,
 // WebStateDelegate::DidFinishNavigation, WebStateDelegate::DidStartLoading and
@@ -502,16 +506,10 @@ TEST_F(NavigationCallbacksTest, NativeContentReload) {
 }
 
 // Tests successful navigation to a new page with post HTTP method.
-// TODO (crbug/729602): This test is disabled due to failing on iOS 9.3 devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_UserInitiatedPostNavigation UserInitiatedPostNavigation
-#else
-#define MAYBE_UserInitiatedPostNavigation DISABLED_UserInitiatedPostNavigation
-#endif
-TEST_F(NavigationCallbacksTest, MAYBE_UserInitiatedPostNavigation) {
+TEST_F(NavigationCallbacksTest, UserInitiatedPostNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
-  responses[url] = "Chromium Test";
+  responses[url] = kTestPageText;
   web::test::SetUpSimpleHttpServer(responses);
 
   // Perform new page navigation.
@@ -528,13 +526,18 @@ TEST_F(NavigationCallbacksTest, MAYBE_UserInitiatedPostNavigation) {
   params.post_data.reset([@"foo" dataUsingEncoding:NSUTF8StringEncoding]);
   params.extra_headers.reset(@{ @"Content-Type" : @"text/html" });
   LoadWithParams(params);
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 }
 
 // Tests successful navigation to a new page with post HTTP method.
 TEST_F(NavigationCallbacksTest, RendererInitiatedPostNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
+  const GURL action = HttpServer::MakeUrl("http://action.test");
   std::map<GURL, std::string> responses;
-  responses[url] = "<form method='post' id='form'></form>";
+  responses[url] =
+      base::StringPrintf("<form method='post' id='form' action='%s'></form>%s",
+                         action.spec().c_str(), kTestPageText);
+  responses[action] = "arrived!";
   web::test::SetUpSimpleHttpServer(responses);
 
   // Perform new page navigation.
@@ -544,31 +547,28 @@ TEST_F(NavigationCallbacksTest, RendererInitiatedPostNavigation) {
   EXPECT_CALL(*observer_, DidFinishNavigation(_));
   EXPECT_CALL(*observer_, DidStopLoading());
   LoadUrl(url);
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 
   // Submit the form using JavaScript.
   EXPECT_CALL(*observer_, DidStartNavigation(_))
-      .WillOnce(VerifyPostStartedContext(web_state(), url, &context));
+      .WillOnce(VerifyPostStartedContext(web_state(), action, &context));
   EXPECT_CALL(*observer_, DidStartLoading());
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifyPostFinishedContext(web_state(), url, &context));
+      .WillOnce(VerifyPostFinishedContext(web_state(), action, &context));
   EXPECT_CALL(*observer_, DidStopLoading());
-  ExecuteJavaScript(@"window.document.getElementById('form').submit();");
+  ExecuteJavaScript(@"document.getElementById('form').submit();");
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), responses[action]));
 }
 
 // Tests successful reload of a page returned for post request.
-// TODO (crbug/729602): This test is disabled due to failing on iOS 9.3 devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_ReloadPostNavigation ReloadPostNavigation
-#else
-#define MAYBE_ReloadPostNavigation DISABLED_ReloadPostNavigation
-#endif
-TEST_F(NavigationCallbacksTest, MAYBE_ReloadPostNavigation) {
+TEST_F(NavigationCallbacksTest, ReloadPostNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   const GURL action = HttpServer::MakeUrl("http://action.test");
   responses[url] =
-      base::StringPrintf("<form method='post' id='form' action='%s'></form>",
-                         action.spec().c_str());
+      base::StringPrintf("<form method='post' id='form' action='%s'></form>%s",
+                         action.spec().c_str(), kTestPageText);
+  responses[action] = "arrived!";
   web::test::SetUpSimpleHttpServer(responses);
 
   // Perform new page navigation.
@@ -578,15 +578,15 @@ TEST_F(NavigationCallbacksTest, MAYBE_ReloadPostNavigation) {
   EXPECT_CALL(*observer_, DidFinishNavigation(_));
   EXPECT_CALL(*observer_, DidStopLoading());
   LoadUrl(url);
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 
   // Submit the form using JavaScript.
   EXPECT_CALL(*observer_, DidStartNavigation(_));
   EXPECT_CALL(*observer_, DidStartLoading());
   EXPECT_CALL(*observer_, DidFinishNavigation(_));
   EXPECT_CALL(*observer_, DidStopLoading());
-  ExecuteBlockAndWaitForLoad(action, ^{
-    ExecuteJavaScript(@"window.document.getElementById('form').submit();");
-  });
+  ExecuteJavaScript(@"window.document.getElementById('form').submit();");
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), responses[action]));
 
   // Reload the page.
   EXPECT_CALL(*observer_, DidStartNavigation(_))
@@ -607,19 +607,14 @@ TEST_F(NavigationCallbacksTest, MAYBE_ReloadPostNavigation) {
 }
 
 // Tests going forward to a page rendered from post response.
-// TODO (crbug/729602): This test is disabled due to failing on iOS 9.3 devices.
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_ForwardPostNavigation ForwardPostNavigation
-#else
-#define MAYBE_ForwardPostNavigation DISABLED_ForwardPostNavigation
-#endif
-TEST_F(NavigationCallbacksTest, MAYBE_ForwardPostNavigation) {
+TEST_F(NavigationCallbacksTest, ForwardPostNavigation) {
   const GURL url = HttpServer::MakeUrl("http://chromium.test");
   std::map<GURL, std::string> responses;
   const GURL action = HttpServer::MakeUrl("http://action.test");
   responses[url] =
-      base::StringPrintf("<form method='post' id='form' action='%s'></form>",
-                         action.spec().c_str());
+      base::StringPrintf("<form method='post' id='form' action='%s'></form>%s",
+                         action.spec().c_str(), kTestPageText);
+  responses[action] = "arrived!";
   web::test::SetUpSimpleHttpServer(responses);
 
   // Perform new page navigation.
@@ -629,15 +624,15 @@ TEST_F(NavigationCallbacksTest, MAYBE_ForwardPostNavigation) {
   EXPECT_CALL(*observer_, DidFinishNavigation(_));
   EXPECT_CALL(*observer_, DidStopLoading());
   LoadUrl(url);
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
 
   // Submit the form using JavaScript.
   EXPECT_CALL(*observer_, DidStartNavigation(_));
   EXPECT_CALL(*observer_, DidStartLoading());
   EXPECT_CALL(*observer_, DidFinishNavigation(_));
   EXPECT_CALL(*observer_, DidStopLoading());
-  ExecuteBlockAndWaitForLoad(action, ^{
-    ExecuteJavaScript(@"window.document.getElementById('form').submit();");
-  });
+  ExecuteJavaScript(@"window.document.getElementById('form').submit();");
+  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), responses[action]));
 
   // Go Back.
   EXPECT_CALL(*observer_, DidStartNavigation(_));
