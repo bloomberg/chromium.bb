@@ -1294,8 +1294,8 @@ void LayoutMultiColumnFlowThread::ComputePreferredLogicalWidths() {
   // the multicol container.
   const LayoutBlockFlow* multicol_container = MultiColumnBlockFlow();
   const ComputedStyle* multicol_style = multicol_container->Style();
-  int column_count =
-      multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount();
+  LayoutUnit column_count(
+      multicol_style->HasAutoColumnCount() ? 1 : multicol_style->ColumnCount());
   LayoutUnit column_width;
   LayoutUnit gap_extra =
       LayoutUnit((column_count - 1) * multicol_container->ColumnGap());
