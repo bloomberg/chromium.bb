@@ -4,7 +4,6 @@
 
 #include "base/ios/ios_util.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
-#import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -13,8 +13,6 @@
 #import "ios/chrome/browser/payments/payment_request_cache.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
-#import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
-#import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"

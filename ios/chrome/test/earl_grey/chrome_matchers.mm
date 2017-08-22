@@ -14,10 +14,13 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
+#import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
+#import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
@@ -226,6 +229,10 @@ id<GREYMatcher> SettingsImportDataKeepSeparateButton() {
   return grey_accessibilityID(kImportDataKeepSeparateCellId);
 }
 
+id<GREYMatcher> SettingsSyncManageSyncedDataButton() {
+  return grey_accessibilityID(kSettingsSyncId);
+}
+
 id<GREYMatcher> AccountsSyncButton() {
   return grey_accessibilityID(kSettingsAccountsSyncCellId);
 }
@@ -246,6 +253,15 @@ id<GREYMatcher> SettingsMenuPrivacyButton() {
 
 id<GREYMatcher> SettingsMenuPasswordsButton() {
   return ButtonWithAccessibilityLabelId(IDS_IOS_SAVE_PASSWORDS);
+}
+
+id<GREYMatcher> PaymentRequestView() {
+  return grey_accessibilityID(kPaymentRequestCollectionViewID);
+}
+
+// Returns matcher for the error confirmation view for payment request.
+id<GREYMatcher> PaymentRequestErrorView() {
+  return grey_accessibilityID(kPaymentRequestErrorCollectionViewID);
 }
 
 }  // namespace chrome_test_util
