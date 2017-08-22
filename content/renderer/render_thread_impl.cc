@@ -59,6 +59,7 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
+#include "components/viz/common/switches.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
@@ -1938,6 +1939,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (command_line.HasSwitch(switches::kDisableGpuCompositing))
     use_software = true;
 
+  bool enable_surface_synchronization =
+      IsRunningInMash() ||
+      command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+
   // In disable gpu vsync mode, also let the renderer tick as fast as it
   // can. The top level begin frame source will also be running as a back
   // to back begin frame source, but using a synthetic begin frame source
@@ -1989,7 +1994,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
           std::move(synthetic_begin_frame_source), std::move(sink_info),
           std::move(client_request), nullptr /* hit_test_data_provider */,
           base::MakeUnique<RendererLocalSurfaceIdProvider>(),
-          false /* enable_surface_synchroninzation */));
+          enable_surface_synchronization));
       return;
     }
   }
@@ -2019,7 +2024,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         std::move(synthetic_begin_frame_source), std::move(sink_info),
         std::move(client_request), nullptr /* hit_test_data_provider */,
         base::MakeUnique<RendererLocalSurfaceIdProvider>(),
-        false /* enable_surface_synchroninzation */));
+        enable_surface_synchronization));
     return;
   }
 
@@ -2094,7 +2099,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       std::move(synthetic_begin_frame_source), std::move(sink_info),
       std::move(client_request), nullptr /* hit_test_data_provider */,
       base::MakeUnique<RendererLocalSurfaceIdProvider>(),
-      false /* enable_surface_synchroninzation */));
+      enable_surface_synchronization));
 }
 
 AssociatedInterfaceRegistry*
