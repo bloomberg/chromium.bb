@@ -365,9 +365,14 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     if (!self.sectionInformationByCategory[wrapper]) {
       [self addSectionInformationForCategory:category];
     }
-    [self.dataSink
-        dataAvailableForSection:self.sectionInformationByCategory[wrapper]
-                    forceReload:NO];
+    ContentSuggestionsSectionInformation* sectionInfo =
+        self.sectionInformationByCategory[wrapper];
+    [self.dataSink dataAvailableForSection:sectionInfo forceReload:NO];
+    if (status == ntp_snippets::CategoryStatus::AVAILABLE_LOADING) {
+      [self.dataSink section:sectionInfo isLoading:YES];
+    } else {
+      [self.dataSink section:sectionInfo isLoading:NO];
+    }
   }
 }
 

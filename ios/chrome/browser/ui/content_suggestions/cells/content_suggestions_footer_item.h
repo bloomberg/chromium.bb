@@ -36,6 +36,11 @@ initWithType:(NSInteger)type
 // Whether the item is loading.
 @property(nonatomic, assign, getter=isLoading) BOOL loading;
 
+// Last cell configured by this item. This cell might not be currently
+// associated with this item.
+@property(nonatomic, weak, nullable)
+    ContentSuggestionsFooterCell* configuredCell;
+
 @end
 
 // Corresponding cell for a Content Suggestions' section footer.
