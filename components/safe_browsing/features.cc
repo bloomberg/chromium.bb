@@ -30,6 +30,15 @@ const base::Feature kLocalDatabaseManagerEnabled{
     "SafeBrowsingV4LocalDatabaseManagerEnabled",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, SafeBrowsing URL checks don't defer starting requests or
+// following redirects, no matter on desktop or mobile. Instead they only defer
+// response processing.
+// Please note that when --enable-features=NetworkService is in effect,
+// SafeBrowsing URL checks never block starting requests or following redirects.
+// S13nSafeBrowsingParallelUrlCheck is ignored in that case.
+const base::Feature kParallelUrlCheck{"S13nSafeBrowsingParallelUrlCheck",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kPasswordFieldOnFocusPinging{
     "PasswordFieldOnFocusPinging", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -60,6 +69,7 @@ constexpr struct {
     {&kAdSamplerTriggerFeature, false},
     {&kGoogleBrandedPhishingWarning, false},
     {&kLocalDatabaseManagerEnabled, true},
+    {&kParallelUrlCheck, true},
     {&kPasswordFieldOnFocusPinging, true},
     {&kPasswordProtectionInterstitial, false},
     {&kProtectedPasswordEntryPinging, true},

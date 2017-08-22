@@ -19,14 +19,14 @@ class WebContents;
 
 namespace safe_browsing {
 
-class UrlCheckerDelegate;
+class NetEventLogger;
 class SafeBrowsingUrlCheckerImpl;
+class UrlCheckerDelegate;
 
 // BrowserURLLoaderThrottle is used in the browser process to query
 // SafeBrowsing to determine whether a URL and also its redirect URLs are safe
 // to load. It defers response processing until all URL checks are completed;
 // cancels the load if any URLs turn out to be bad.
-// Used when --enable-network-service is in effect.
 class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
  public:
   static std::unique_ptr<BrowserURLLoaderThrottle> MaybeCreate(
@@ -41,6 +41,8 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
   void WillProcessResponse(bool* defer) override;
+
+  void set_net_event_logger(NetEventLogger* net_event_logger);
 
  private:
   // |web_contents_getter| is used for displaying SafeBrowsing UI when
@@ -64,6 +66,8 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
   // The time when we started deferring the request.
   base::TimeTicks defer_start_time_;
   bool deferred_ = false;
+
+  NetEventLogger* net_event_logger_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserURLLoaderThrottle);
 };

@@ -712,7 +712,7 @@ void ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
   if (!first_throttle && io_data->safe_browsing_enabled()->GetValue()) {
-    first_throttle = SafeBrowsingResourceThrottle::MaybeCreate(
+    first_throttle = MaybeCreateSafeBrowsingResourceThrottle(
         request, resource_type, safe_browsing_.get());
   }
 #endif  // defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)

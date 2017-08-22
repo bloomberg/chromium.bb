@@ -7,19 +7,23 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/http/http_request_headers.h"
 
-// static
-SafeBrowsingResourceThrottle* SafeBrowsingResourceThrottle::MaybeCreate(
+content::ResourceThrottle* MaybeCreateSafeBrowsingResourceThrottle(
     net::URLRequest* request,
     content::ResourceType resource_type,
     safe_browsing::SafeBrowsingService* sb_service) {
-  if (sb_service->database_manager()->IsSupported()) {
-    return new SafeBrowsingResourceThrottle(request, resource_type, sb_service);
+  if (!sb_service->database_manager()->IsSupported())
+    return nullptr;
+
+  if (base::FeatureList::IsEnabled(safe_browsing::kParallelUrlCheck)) {
+    return new SafeBrowsingParallelResourceThrottle(request, resource_type,
+                                                    sb_service);
   }
-  return nullptr;
+  return new SafeBrowsingResourceThrottle(request, resource_type, sb_service);
 }
 
 SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
@@ -39,7 +43,7 @@ SafeBrowsingResourceThrottle::SafeBrowsingResourceThrottle(
           sb_service->database_manager(),
           sb_service->ui_manager())) {}
 
-SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() {}
+SafeBrowsingResourceThrottle::~SafeBrowsingResourceThrottle() = default;
 
 const char* SafeBrowsingResourceThrottle::GetNameForLogging() const {
   return "SafeBrowsingResourceThrottle";
@@ -57,4 +61,22 @@ void SafeBrowsingResourceThrottle::StartDisplayingBlockingPageHelper(
   url_checker_delegate_->StartDisplayingBlockingPageHelper(
       resource, std::string(), net::HttpRequestHeaders(),
       false /* is_main_frame */, false /* has_user_gesture */);
+}
+
+SafeBrowsingParallelResourceThrottle::SafeBrowsingParallelResourceThrottle(
+    const net::URLRequest* request,
+    content::ResourceType resource_type,
+    safe_browsing::SafeBrowsingService* sb_service)
+    : safe_browsing::BaseParallelResourceThrottle(
+          request,
+          resource_type,
+          new safe_browsing::UrlCheckerDelegateImpl(
+              sb_service->database_manager(),
+              sb_service->ui_manager())) {}
+
+SafeBrowsingParallelResourceThrottle::~SafeBrowsingParallelResourceThrottle() =
+    default;
+
+const char* SafeBrowsingParallelResourceThrottle::GetNameForLogging() const {
+  return "SafeBrowsingParallelResourceThrottle";
 }

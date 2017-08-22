@@ -12,13 +12,12 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/safe_browsing/base_ui_manager.h"
+#include "components/safe_browsing/net_event_logger.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
-#include "net/log/net_log_event_type.h"
-#include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -140,15 +139,6 @@ class BaseResourceThrottle
 
   void ResumeRequest();
 
-  // For marking network events.  |name| and |value| can be null.
-  void BeginNetLogEvent(net::NetLogEventType type,
-                        const GURL& url,
-                        const char* name,
-                        const char* value);
-  void EndNetLogEvent(net::NetLogEventType type,
-                      const char* name,
-                      const char* value);
-
   // The result of the most recent safe browsing check. Only valid to read this
   // when state_ != STATE_CHECKING_URL.
   safe_browsing::SBThreatType threat_type_;
@@ -175,7 +165,7 @@ class BaseResourceThrottle
   DeferState defer_state_;
 
   const content::ResourceType resource_type_;
-  net::NetLogWithSource net_log_with_source_;
+  NetEventLogger net_event_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseResourceThrottle);
 };

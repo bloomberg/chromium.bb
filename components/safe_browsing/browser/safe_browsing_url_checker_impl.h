@@ -22,6 +22,7 @@ class WebContents;
 
 namespace safe_browsing {
 
+class NetEventLogger;
 class UrlCheckerDelegate;
 
 // A SafeBrowsingUrlCheckerImpl instance is used to perform SafeBrowsing check
@@ -29,7 +30,6 @@ class UrlCheckerDelegate;
 // be used to handle queries from renderers. But it is also used to handle
 // queries from the browser. In that case, the public methods are called
 // directly instead of through Mojo.
-// Used when --enable-network-service is in effect.
 class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                                    public SafeBrowsingDatabaseManager::Client {
  public:
@@ -49,6 +49,12 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   void CheckUrl(const GURL& url,
                 const std::string& method,
                 CheckUrlCallback callback) override;
+
+  const GURL& GetCurrentlyCheckingUrl() const;
+
+  void set_net_event_logger(NetEventLogger* net_event_logger) {
+    net_event_logger_ = net_event_logger;
+  }
 
  private:
   // SafeBrowsingDatabaseManager::Client implementation:
@@ -115,6 +121,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   // Timer to abort the SafeBrowsing check if it takes too long.
   base::OneShotTimer timer_;
+
+  NetEventLogger* net_event_logger_ = nullptr;
 
   base::WeakPtrFactory<SafeBrowsingUrlCheckerImpl> weak_factory_;
 
