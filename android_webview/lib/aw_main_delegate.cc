@@ -148,6 +148,11 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // WebView does not support AndroidOverlay yet for video overlays.
   CommandLineHelper::AddDisabledFeature(*cl, media::kUseAndroidOverlay.name);
 
+  // WebView does not support EME persistent license yet, because it's not
+  // clear on how user can remove persistent media licenses from UI.
+  CommandLineHelper::AddDisabledFeature(*cl,
+                                        media::kMediaDrmPersistentLicense.name);
+
   android_webview::RegisterPathProvider();
 
   safe_browsing_api_handler_.reset(
