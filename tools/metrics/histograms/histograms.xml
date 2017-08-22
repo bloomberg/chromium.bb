@@ -97158,7 +97158,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="async_loading" label="Offline async loaded pages"/>
   <suffix name="custom_tabs" label="Offline custom tabs"/>
   <suffix name="download" label="Offline downloaded pages"/>
-  <suffix name="ntp_suggestions" label="Offline ntp suggestions"/>
+  <suffix name="ntp_suggestions" label="NTP suggestions offlined by the user"/>
+  <suffix name="suggested_articles" label="Prefetched NTP suggestions"/>
   <affected-histogram
       name="OfflinePages.Background.BackgroundLoadingFailedCode"/>
   <affected-histogram

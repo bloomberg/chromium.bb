@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import android.support.annotation.CallSuper;
-import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.suggestions.SuggestionsOfflineModelObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -224,13 +225,15 @@ public class SuggestionsSection extends InnerNode {
             itemRemovedCallback.onResult(suggestion.mTitle);
         }
 
-        public void updateSuggestionOfflineId(SnippetArticle article, Long newId) {
+        public void updateSuggestionOfflineId(
+                SnippetArticle article, Long newId, boolean isPrefetched) {
             int index = mSuggestions.indexOf(article);
             // The suggestions could have been removed / replaced in the meantime.
             if (index == -1) return;
 
             Long oldId = article.getOfflinePageOfflineId();
             article.setOfflinePageOfflineId(newId);
+            article.setIsPrefetched(isPrefetched);
 
             if ((oldId == null) == (newId == null)) return;
             notifyItemChanged(
@@ -610,8 +613,12 @@ public class SuggestionsSection extends InnerNode {
         }
 
         @Override
-        public void onSuggestionOfflineIdChanged(SnippetArticle suggestion, @Nullable Long id) {
-            mSuggestionsList.updateSuggestionOfflineId(suggestion, id);
+        public void onSuggestionOfflineIdChanged(SnippetArticle suggestion, OfflinePageItem item) {
+            boolean isPrefetched = item != null
+                    && TextUtils.equals(item.getClientId().getNamespace(),
+                               OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE);
+            mSuggestionsList.updateSuggestionOfflineId(
+                    suggestion, item == null ? null : item.getOfflineId(), isPrefetched);
         }
 
         @Override
