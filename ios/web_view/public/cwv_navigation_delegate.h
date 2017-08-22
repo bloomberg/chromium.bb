@@ -35,9 +35,11 @@ CWV_EXPORT
 // the main frame.
 - (void)webViewDidCommitNavigation:(CWVWebView*)webView;
 
-// Notifies the delegate that page load is completed. Called for
-// both success and failure cases.
-- (void)webView:(CWVWebView*)webView didLoadPageWithSuccess:(BOOL)success;
+// Notifies the delegate that page load has succeeded.
+- (void)webViewDidFinishNavigation:(CWVWebView*)webView;
+
+// Notifies the delegate that page load has failed.
+- (void)webView:(CWVWebView*)webView didFailNavigationWithError:(NSError*)error;
 
 // Notifies the delegate that web view process was terminated
 // (usually by crashing, though possibly by other means).
