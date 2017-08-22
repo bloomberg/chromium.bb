@@ -15,29 +15,26 @@ function executeSomeCode()
     debugger; // should stop here not earlier
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1, true);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout.callback", true);
-        TestRunner.evaluateInPage("runSetTimeoutWithSyntaxError()", ConsoleTestRunner.waitUntilMessageReceived.bind(this, step2));
-    }
+  function step1() {
+    SourcesTestRunner.setEventListenerBreakpoint('instrumentation:setTimeout.callback', true);
+    TestRunner.evaluateInPage(
+        'runSetTimeoutWithSyntaxError()', ConsoleTestRunner.waitUntilMessageReceived.bind(this, step2));
+  }
 
-    function step2()
-    {
-        var actions = [ "Print" ];
-        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
-        TestRunner.evaluateInPage("executeSomeCode()");
-    }
+  function step2() {
+    var actions = ['Print'];
+    SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
+    TestRunner.evaluateInPage('executeSomeCode()');
+  }
 
-    function step3()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout.callback", false);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step3() {
+    SourcesTestRunner.setEventListenerBreakpoint('instrumentation:setTimeout.callback', false);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

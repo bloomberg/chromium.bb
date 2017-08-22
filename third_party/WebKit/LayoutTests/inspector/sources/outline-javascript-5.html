@@ -5,26 +5,25 @@
 
 <script>
 
-async function test()
-{
-    var test = SourcesTestRunner.testJavascriptOutline;
+async function test() {
+  var test = SourcesTestRunner.testJavascriptOutline;
 
-    TestRunner.markStep('testComputedProperty');
-    await test('a.b[c] = function() { };');
+  TestRunner.markStep('testComputedProperty');
+  await test('a.b[c] = function() { };');
 
-    TestRunner.markStep('testComputedPropertyInTheMiddle');
-    await test('a.b[c].d = function() { };');
+  TestRunner.markStep('testComputedPropertyInTheMiddle');
+  await test('a.b[c].d = function() { };');
 
-    TestRunner.markStep('testComputedPropertyForExpression');
-    await test('(a || b).c = function() { };');
+  TestRunner.markStep('testComputedPropertyForExpression');
+  await test('(a || b).c = function() { };');
 
-    TestRunner.markStep('testPropertyStringLiteral');
-    await test('var foo = { "bar": function() { }}');
+  TestRunner.markStep('testPropertyStringLiteral');
+  await test('var foo = { "bar": function() { }}');
 
-    TestRunner.markStep('testPropertyNumberLiteral');
-    await test('var foo = { 42: function() { }}');
+  TestRunner.markStep('testPropertyNumberLiteral');
+  await test('var foo = { 42: function() { }}');
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

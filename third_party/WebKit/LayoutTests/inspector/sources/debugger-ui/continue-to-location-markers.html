@@ -79,37 +79,35 @@ function testFunction()
   foo3();
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1, true);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        TestRunner.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, "_continueToLocationRenderedForTest").then(step2);
-        TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", function() {
-          SourcesTestRunner.showUISourceCodePromise(this.uiSourceCode()).then(() => {
-            this._showContinueToLocations();
-          });
-        });
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused();
-    }
+  function step1() {
+    TestRunner.addSnifferPromise(Sources.JavaScriptSourceFrame.prototype, '_continueToLocationRenderedForTest')
+        .then(step2);
+    TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, 'setExecutionLocation', function() {
+      SourcesTestRunner.showUISourceCodePromise(this.uiSourceCode()).then(() => {
+        this._showContinueToLocations();
+      });
+    });
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused();
+  }
 
-    function step2()
-    {
-        var currentFrame = UI.panels.sources.visibleView;
-        var decorations = currentFrame._continueToLocationDecorations;
-        var lines = [];
-        for (var decoration of decorations.keysArray()) {
-            var find = decoration.find();
-            var line = find.from.line;
-            var text = currentFrame.textEditor.line(line).substring(find.from.ch, find.to.ch);
-            lines.push(`${decoration.className} @${line + 1}:${find.from.ch} = '${text}'`);
-        }
-        lines.sort();
-        TestRunner.addResults(lines);
-        SourcesTestRunner.completeDebuggerTest();
+  function step2() {
+    var currentFrame = UI.panels.sources.visibleView;
+    var decorations = currentFrame._continueToLocationDecorations;
+    var lines = [];
+    for (var decoration of decorations.keysArray()) {
+      var find = decoration.find();
+      var line = find.from.line;
+      var text = currentFrame.textEditor.line(line).substring(find.from.ch, find.to.ch);
+      lines.push(`${decoration.className} @${line + 1}:${find.from.ch} = '${text}'`);
     }
-}
+    lines.sort();
+    TestRunner.addResults(lines);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

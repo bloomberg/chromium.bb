@@ -70,135 +70,115 @@ function onVideoPlay()
     return 0;
 }
 
-function test()
-{
-    var testFunctions = [
-        function testClickBreakpoint(next)
-        {
-            SourcesTestRunner.setEventListenerBreakpoint("listener:click", true);
-            SourcesTestRunner.waitUntilPaused(paused);
-            TestRunner.evaluateInPageWithTimeout("addListenerAndClick()");
+function test() {
+  var testFunctions = [
+    function testClickBreakpoint(next) {
+      SourcesTestRunner.setEventListenerBreakpoint('listener:click', true);
+      SourcesTestRunner.waitUntilPaused(paused);
+      TestRunner.evaluateInPageWithTimeout('addListenerAndClick()');
 
-            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                printEventTargetName(auxData);
-                SourcesTestRunner.setEventListenerBreakpoint("listener:click", false);
-                SourcesTestRunner.resumeExecution(resumed);
-            }
+      function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        printEventTargetName(auxData);
+        SourcesTestRunner.setEventListenerBreakpoint('listener:click', false);
+        SourcesTestRunner.resumeExecution(resumed);
+      }
 
-            function resumed()
-            {
-                TestRunner.evaluateInPage("addListenerAndClick()", next);
-            }
-        },
+      function resumed() {
+        TestRunner.evaluateInPage('addListenerAndClick()', next);
+      }
+    },
 
-        function testAuxclickBreakpoint(next)
-        {
-            SourcesTestRunner.setEventListenerBreakpoint("listener:auxclick", true);
-            SourcesTestRunner.waitUntilPaused(paused);
-            TestRunner.evaluateInPageWithTimeout("addListenerAndAuxclick()");
+    function testAuxclickBreakpoint(next) {
+      SourcesTestRunner.setEventListenerBreakpoint('listener:auxclick', true);
+      SourcesTestRunner.waitUntilPaused(paused);
+      TestRunner.evaluateInPageWithTimeout('addListenerAndAuxclick()');
 
-            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                printEventTargetName(auxData);
-                SourcesTestRunner.setEventListenerBreakpoint("listener:auxclick", false);
-                SourcesTestRunner.resumeExecution(resumed);
-            }
+      function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        printEventTargetName(auxData);
+        SourcesTestRunner.setEventListenerBreakpoint('listener:auxclick', false);
+        SourcesTestRunner.resumeExecution(resumed);
+      }
 
-            function resumed()
-            {
-                TestRunner.evaluateInPage("addListenerAndAuxclick()", next);
-            }
-        },
+      function resumed() {
+        TestRunner.evaluateInPage('addListenerAndAuxclick()', next);
+      }
+    },
 
-        function testTimerFiredBreakpoint(next)
-        {
-            SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout.callback", true);
-            SourcesTestRunner.waitUntilPaused(paused);
-            TestRunner.evaluateInPage("setTimeout(timerFired, 10)");
+    function testTimerFiredBreakpoint(next) {
+      SourcesTestRunner.setEventListenerBreakpoint('instrumentation:setTimeout.callback', true);
+      SourcesTestRunner.waitUntilPaused(paused);
+      TestRunner.evaluateInPage('setTimeout(timerFired, 10)');
 
-            function paused(callFrames)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout.callback", false);
-                SourcesTestRunner.resumeExecution(next);
-            }
-        },
+      function paused(callFrames) {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.setEventListenerBreakpoint('instrumentation:setTimeout.callback', false);
+        SourcesTestRunner.resumeExecution(next);
+      }
+    },
 
-        function testLoadBreakpointOnXHR(next)
-        {
-            SourcesTestRunner.setEventListenerBreakpoint("listener:load", true, "xmlhttprequest");
-            SourcesTestRunner.setEventListenerBreakpoint("listener:error", true, "xmlhttprequest");
-            SourcesTestRunner.waitUntilPaused(paused);
-            TestRunner.evaluateInPageWithTimeout("addLoadListeners()");
+    function testLoadBreakpointOnXHR(next) {
+      SourcesTestRunner.setEventListenerBreakpoint('listener:load', true, 'xmlhttprequest');
+      SourcesTestRunner.setEventListenerBreakpoint('listener:error', true, 'xmlhttprequest');
+      SourcesTestRunner.waitUntilPaused(paused);
+      TestRunner.evaluateInPageWithTimeout('addLoadListeners()');
 
-            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                printEventTargetName(auxData);
-                SourcesTestRunner.setEventListenerBreakpoint("listener:load", false, "xmlhttprequest");
-                SourcesTestRunner.setEventListenerBreakpoint("listener:error", false, "xmlhttprequest");
-                SourcesTestRunner.resumeExecution(resumed);
-            }
+      function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        printEventTargetName(auxData);
+        SourcesTestRunner.setEventListenerBreakpoint('listener:load', false, 'xmlhttprequest');
+        SourcesTestRunner.setEventListenerBreakpoint('listener:error', false, 'xmlhttprequest');
+        SourcesTestRunner.resumeExecution(resumed);
+      }
 
-            function resumed()
-            {
-                TestRunner.evaluateInPage("addLoadListeners()", next);
-            }
-        },
+      function resumed() {
+        TestRunner.evaluateInPage('addLoadListeners()', next);
+      }
+    },
 
-        function testMediaEventBreakpoint(next)
-        {
-            SourcesTestRunner.setEventListenerBreakpoint("listener:play", true, "audio");
-            SourcesTestRunner.waitUntilPaused(paused);
-            TestRunner.evaluateInPageWithTimeout("playVideo()");
+    function testMediaEventBreakpoint(next) {
+      SourcesTestRunner.setEventListenerBreakpoint('listener:play', true, 'audio');
+      SourcesTestRunner.waitUntilPaused(paused);
+      TestRunner.evaluateInPageWithTimeout('playVideo()');
 
-            function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                printEventTargetName(auxData);
-                SourcesTestRunner.setEventListenerBreakpoint("listener:play", false, "audio");
-                SourcesTestRunner.resumeExecution(next);
-            }
-        }
-    ];
-
-    if (window.PointerEvent) {
-        testFunctions.push(
-            function testPointerEventBreakpoint(next)
-            {
-                SourcesTestRunner.setEventListenerBreakpoint("listener:pointerdown", true);
-                SourcesTestRunner.waitUntilPaused(paused);
-                TestRunner.evaluateInPageWithTimeout("addListenerAndPointerDown()");
-
-                function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-                {
-                    SourcesTestRunner.captureStackTrace(callFrames);
-                    printEventTargetName(auxData);
-                    SourcesTestRunner.setEventListenerBreakpoint("listener:pointerdown", false);
-                    SourcesTestRunner.resumeExecution(resumed);
-                }
-
-                function resumed()
-                {
-                    TestRunner.evaluateInPage("addListenerAndPointerDown()", next);
-                }
-            }
-        );
+      function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        printEventTargetName(auxData);
+        SourcesTestRunner.setEventListenerBreakpoint('listener:play', false, 'audio');
+        SourcesTestRunner.resumeExecution(next);
+      }
     }
+  ];
 
-    SourcesTestRunner.runDebuggerTestSuite(testFunctions);
+  if (window.PointerEvent) {
+    testFunctions.push(function testPointerEventBreakpoint(next) {
+      SourcesTestRunner.setEventListenerBreakpoint('listener:pointerdown', true);
+      SourcesTestRunner.waitUntilPaused(paused);
+      TestRunner.evaluateInPageWithTimeout('addListenerAndPointerDown()');
 
-    function printEventTargetName(auxData)
-    {
-        var targetName = auxData && auxData.targetName;
-        if (targetName)
-            TestRunner.addResult("Event target: " + targetName);
-        else
-            TestRunner.addResult("FAIL: No event target name received!");
-    }
+      function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        printEventTargetName(auxData);
+        SourcesTestRunner.setEventListenerBreakpoint('listener:pointerdown', false);
+        SourcesTestRunner.resumeExecution(resumed);
+      }
+
+      function resumed() {
+        TestRunner.evaluateInPage('addListenerAndPointerDown()', next);
+      }
+    });
+  }
+
+  SourcesTestRunner.runDebuggerTestSuite(testFunctions);
+
+  function printEventTargetName(auxData) {
+    var targetName = auxData && auxData.targetName;
+    if (targetName)
+      TestRunner.addResult('Event target: ' + targetName);
+    else
+      TestRunner.addResult('FAIL: No event target name received!');
+  }
 }
 
 </script>

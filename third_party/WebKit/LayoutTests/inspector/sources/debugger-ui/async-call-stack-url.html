@@ -10,37 +10,32 @@ function testFunction()
     setTimeout(f2, 0);
 }
 
-async function test()
-{
-    await TestRunner.DebuggerAgent.setAsyncCallStackDepth(200);
+async function test() {
+  await TestRunner.DebuggerAgent.setAsyncCallStackDepth(200);
 
-    var scriptFormatter = await SourcesTestRunner.scriptFormatter();
+  var scriptFormatter = await SourcesTestRunner.scriptFormatter();
 
-    SourcesTestRunner.startDebuggerTest(step3);
+  SourcesTestRunner.startDebuggerTest(step3);
 
-    function step3()
-    {
-        SourcesTestRunner.showScriptSource("unformatted-async.js", step4);
-    }
+  function step3() {
+    SourcesTestRunner.showScriptSource('unformatted-async.js', step4);
+  }
 
-    function step4()
-    {
-        TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", step5);
-        scriptFormatter._toggleFormatScriptSource();
-    }
+  function step4() {
+    TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, '_updateButton', step5);
+    scriptFormatter._toggleFormatScriptSource();
+  }
 
-    function step5()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step6);
-    }
+  function step5() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step6);
+  }
 
-    function step6()
-    {
-        var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
-        for (var element of pane.contentElement.querySelectorAll('.call-frame-item'))
-          TestRunner.addResult(element.deepTextContent().replace(/VM\d+/g, "VM"));
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step6() {
+    var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
+    for (var element of pane.contentElement.querySelectorAll('.call-frame-item'))
+      TestRunner.addResult(element.deepTextContent().replace(/VM\d+/g, 'VM'));
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

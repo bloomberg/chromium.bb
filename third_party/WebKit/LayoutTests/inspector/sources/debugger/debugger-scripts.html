@@ -4,37 +4,37 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 
 <script>
-function test()
-{
-    var scripts = [];
-    SourcesTestRunner.startDebuggerTest(step1);
+function test() {
+  var scripts = [];
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.queryScripts(function(script) { step2({ data: script }) });
-        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, step2);
-    }
+  function step1() {
+    SourcesTestRunner.queryScripts(function(script) {
+      step2({data: script});
+    });
+    TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, step2);
+  }
 
-    function step2(event)
-    {
-        var script = event.data;
-        if (script.sourceURL !== TestRunner.mainTarget.inspectedURL())
-            return;
-        scripts.push(script);
-        if (scripts.length === 6)
-            step3();
-    }
+  function step2(event) {
+    var script = event.data;
+    if (script.sourceURL !== TestRunner.mainTarget.inspectedURL())
+      return;
+    scripts.push(script);
+    if (scripts.length === 6)
+      step3();
+  }
 
-    function step3()
-    {
-        scripts.sort(function(x, y) { return x.lineOffset - y.lineOffset });
-        for (var i = 0; i < scripts.length; ++i) {
-            TestRunner.addResult("script " + (i + 1) + ":");
-            TestRunner.addResult("    start: " + scripts[i].lineOffset + ":" + scripts[i].columnOffset);
-            TestRunner.addResult("    end: " + scripts[i].endLine + ":" + scripts[i].endColumn);
-        }
-        SourcesTestRunner.completeDebuggerTest();
+  function step3() {
+    scripts.sort(function(x, y) {
+      return x.lineOffset - y.lineOffset;
+    });
+    for (var i = 0; i < scripts.length; ++i) {
+      TestRunner.addResult('script ' + (i + 1) + ':');
+      TestRunner.addResult('    start: ' + scripts[i].lineOffset + ':' + scripts[i].columnOffset);
+      TestRunner.addResult('    end: ' + scripts[i].endLine + ':' + scripts[i].endColumn);
     }
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 </script>    <script>
 function f1()

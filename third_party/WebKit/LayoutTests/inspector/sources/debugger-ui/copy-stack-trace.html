@@ -19,22 +19,19 @@ function functionBaz()
     debugger;
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        InspectorFrontendHost.copyText = text => TestRunner.addResult(TestRunner.clearSpecificInfoFromStackFrames(text));
-        self.runtime.sharedInstance(Sources.CallStackSidebarPane)._copyStackTrace();
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step2() {
+    InspectorFrontendHost.copyText = text => TestRunner.addResult(TestRunner.clearSpecificInfoFromStackFrames(text));
+    self.runtime.sharedInstance(Sources.CallStackSidebarPane)._copyStackTrace();
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

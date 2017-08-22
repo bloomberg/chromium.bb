@@ -35,11 +35,10 @@ function postMessageToFrame(msg)
     win.postMessage(msg, "*");
 }
 
-var test = function()
-{
-    var totalDebuggerStatements = 5;
-    SourcesTestRunner.runAsyncCallStacksTest(totalDebuggerStatements);
-}
+var test = function() {
+  var totalDebuggerStatements = 5;
+  SourcesTestRunner.runAsyncCallStacksTest(totalDebuggerStatements);
+};
 
 </script>
 </head>

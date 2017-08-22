@@ -5,35 +5,30 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-function test()
-{
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testRemoveNode(next)
-        {
-            TestRunner.addResult("Testing NodeRemoved DOM breakpoint.");
-            ElementsTestRunner.nodeWithId("elementToRemove", step2);
+function test() {
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testRemoveNode(next) {
+      TestRunner.addResult('Testing NodeRemoved DOM breakpoint.');
+      ElementsTestRunner.nodeWithId('elementToRemove', step2);
 
-            function step2(node)
-            {
-                TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
-                TestRunner.addResult("Set NodeRemoved DOM breakpoint.");
-                node.removeNode(next);
-            }
-        },
+      function step2(node) {
+        TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+        TestRunner.addResult('Set NodeRemoved DOM breakpoint.');
+        node.removeNode(next);
+      }
+    },
 
-        function testModifyAttribute(next)
-        {
-            TestRunner.addResult("Testing AttributeModified DOM breakpoint.");
-            ElementsTestRunner.nodeWithId("rootElement", step2);
+    function testModifyAttribute(next) {
+      TestRunner.addResult('Testing AttributeModified DOM breakpoint.');
+      ElementsTestRunner.nodeWithId('rootElement', step2);
 
-            function step2(node)
-            {
-                TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
-                TestRunner.addResult("Set AttributeModified DOM breakpoint.");
-                node.setAttribute("title", "a title", next);
-            }
-        }
-    ]);
+      function step2(node) {
+        TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+        TestRunner.addResult('Set AttributeModified DOM breakpoint.');
+        node.setAttribute('title', 'a title', next);
+      }
+    }
+  ]);
 }
 
 </script>

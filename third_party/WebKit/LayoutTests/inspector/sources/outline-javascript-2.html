@@ -5,26 +5,25 @@
 
 <script>
 
-async function test()
-{
-    var test = SourcesTestRunner.testJavascriptOutline;
+async function test() {
+  var test = SourcesTestRunner.testJavascriptOutline;
 
-    TestRunner.markStep('testNamedFunctionVariableAssignment');
-    await test('var a = function foo(...bar) { }');
+  TestRunner.markStep('testNamedFunctionVariableAssignment');
+  await test('var a = function foo(...bar) { }');
 
-    TestRunner.markStep('testArrowFunction');
-    await test('var a = x => x + 2');
+  TestRunner.markStep('testArrowFunction');
+  await test('var a = x => x + 2');
 
-    TestRunner.markStep('testArrowFunctionWithMultipleArguments');
-    await test('var a = (x, y) => x + y');
+  TestRunner.markStep('testArrowFunctionWithMultipleArguments');
+  await test('var a = (x, y) => x + y');
 
-    TestRunner.markStep('testInnerFunctions');
-    await test('function foo(){ function bar() {} function baz() { }}');
+  TestRunner.markStep('testInnerFunctions');
+  await test('function foo(){ function bar() {} function baz() { }}');
 
-    TestRunner.markStep('testObjectProperties');
-    await test('x = { run: function() { }, get count() { }, set count(value) { }}');
+  TestRunner.markStep('testObjectProperties');
+  await test('x = { run: function() { }, get count() { }, set count(value) { }}');
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

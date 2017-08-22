@@ -17,74 +17,64 @@ f4();
 
 <script>
 
-var test = function()
-{
-    var panel = UI.panels.sources;
-    SourcesTestRunner.startDebuggerTest(step1, true);
+var test = function() {
+  var panel = UI.panels.sources;
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function callstackStatus()
-    {
-        var statusElement = panel.element.querySelector(".paused-message");
-        return statusElement ? statusElement.deepTextContent() : "not found";
+  function callstackStatus() {
+    var statusElement = panel.element.querySelector('.paused-message');
+    return statusElement ? statusElement.deepTextContent() : 'not found';
+  }
+
+  function step1() {
+    SourcesTestRunner.showScriptSource('debug-inlined-scripts.html', step2);
+  }
+
+  function step2(sourceFrame) {
+    TestRunner.addResult('Script source was shown.');
+
+    SourcesTestRunner.setBreakpoint(sourceFrame, 2, '', true);
+    SourcesTestRunner.setBreakpoint(sourceFrame, 9, '', true);
+
+    SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame).then(() => {
+      TestRunner.reloadPage(() => SourcesTestRunner.completeDebuggerTest());
+    });
+
+    SourcesTestRunner.waitUntilPaused(step3);
+  }
+
+  function step3(callFrames) {
+    TestRunner.addResult('Script execution paused.');
+    SourcesTestRunner.captureStackTrace(callFrames);
+    TestRunner.addResult('Call stack status: ' + callstackStatus());
+    SourcesTestRunner.showScriptSource('debug-inlined-scripts.html', step4);
+  }
+
+  function step4(sourceFrame) {
+    SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
+    SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
+  }
+
+  function step5(callFrames) {
+    if (callFrames[0].location().lineNumber !== 9) {
+      SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
+      return;
     }
 
-    function step1()
-    {
-        SourcesTestRunner.showScriptSource("debug-inlined-scripts.html", step2);
-    }
+    TestRunner.addResult('Script execution paused.');
+    SourcesTestRunner.captureStackTrace(callFrames);
+    SourcesTestRunner.showScriptSource('debug-inlined-scripts.html', step6);
+  }
 
-    function step2(sourceFrame)
-    {
-        TestRunner.addResult("Script source was shown.");
+  function step6(sourceFrame) {
+    SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
+    SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step7));
+  }
 
-        SourcesTestRunner.setBreakpoint(sourceFrame, 2, "", true);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 9, "", true);
-
-        SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
-            .then(() => {
-                TestRunner.reloadPage(() => SourcesTestRunner.completeDebuggerTest());
-            });
-
-        SourcesTestRunner.waitUntilPaused(step3);
-    }
-
-    function step3(callFrames)
-    {
-        TestRunner.addResult("Script execution paused.");
-        SourcesTestRunner.captureStackTrace(callFrames);
-        TestRunner.addResult("Call stack status: " + callstackStatus());
-        SourcesTestRunner.showScriptSource("debug-inlined-scripts.html", step4);
-    }
-
-    function step4(sourceFrame)
-    {
-        SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
-        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
-    }
-
-    function step5(callFrames)
-    {
-        if (callFrames[0].location().lineNumber !== 9) {
-            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
-            return;
-        }
-
-        TestRunner.addResult("Script execution paused.");
-        SourcesTestRunner.captureStackTrace(callFrames);
-        SourcesTestRunner.showScriptSource("debug-inlined-scripts.html", step6);
-    }
-
-    function step6(sourceFrame)
-    {
-        SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
-        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step7));
-    }
-
-    function step7()
-    {
-        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
-    }
-}
+  function step7() {
+    SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
+  }
+};
 
 </script>
 

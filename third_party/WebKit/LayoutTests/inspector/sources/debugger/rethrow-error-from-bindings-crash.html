@@ -25,42 +25,37 @@ function f2() {
     new Range().compareBoundaryPoints(1, 2);
 }
 
-var test = function()
-{
-    var expectedErrorsCount = 8;
+var test = function() {
+  var expectedErrorsCount = 8;
 
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.startDebuggerTest(step1);
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  function step1() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  }
+
+  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+    --expectedErrorsCount;
+    if (!expectedErrorsCount) {
+      ConsoleTestRunner.waitUntilNthMessageReceived(1, step2);
+      SourcesTestRunner.resumeExecution();
+    } else {
+      SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
     }
+  }
 
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
-    {
-        --expectedErrorsCount;
-        if (!expectedErrorsCount) {
-            ConsoleTestRunner.waitUntilNthMessageReceived(1, step2);
-            SourcesTestRunner.resumeExecution();
-        } else {
-            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
-        }
-    }
+  function step2() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    completeTest();
+  }
 
-    function step2()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        completeTest();
-    }
-
-    function completeTest()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function completeTest() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

@@ -24,62 +24,54 @@ function simpleTestFunction3()
 </script>
 
 <script>
-var test = function()
-{
-    var currentSourceFrame;
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSimpleMonitor(next)
-        {
-            monitorAndRun(next, "simpleTestFunction", "simpleTestFunction();");
-        },
+var test = function() {
+  var currentSourceFrame;
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testSimpleMonitor(next) {
+      monitorAndRun(next, 'simpleTestFunction', 'simpleTestFunction();');
+    },
 
-        function testSimpleMonitorWith1Arg(next)
-        {
-            monitorAndRun(next, "simpleTestFunction", "simpleTestFunction(1);");
-        },
+    function testSimpleMonitorWith1Arg(next) {
+      monitorAndRun(next, 'simpleTestFunction', 'simpleTestFunction(1);');
+    },
 
-        function testSimpleMonitorWithManyArgs(next)
-        {
-            monitorAndRun(next, "simpleTestFunction", "simpleTestFunction(1, 2, 3, 4 ,5);");
-        },
+    function testSimpleMonitorWithManyArgs(next) {
+      monitorAndRun(next, 'simpleTestFunction', 'simpleTestFunction(1, 2, 3, 4 ,5);');
+    },
 
-        function testSimpleUnmonitor(next)
-        {
-            ConsoleTestRunner.evaluateInConsole("monitor(simpleTestFunction2)");
-            ConsoleTestRunner.evaluateInConsole("unmonitor(simpleTestFunction2)");
-            monitorAndRun(next, "simpleTestFunction3", "simpleTestFunction2();");
-        },
+    function testSimpleUnmonitor(next) {
+      ConsoleTestRunner.evaluateInConsole('monitor(simpleTestFunction2)');
+      ConsoleTestRunner.evaluateInConsole('unmonitor(simpleTestFunction2)');
+      monitorAndRun(next, 'simpleTestFunction3', 'simpleTestFunction2();');
+    },
 
-        function testUnmonitorFuntionNotMonitored(next)
-        {
-            ConsoleTestRunner.evaluateInConsole("monitor(simpleTestFunction)", next);
-        }
-    ]);
-
-    function monitorAndRun(next, functionName, runCmd)
-    {
-        ConsoleTestRunner.evaluateInConsole("monitor(" + functionName + ")");
-        TestRunner.addResult("Start monitoring function.");
-
-        ConsoleTestRunner.evaluateInConsole("setTimeout(function() { " + runCmd + " }, 0)");
-        TestRunner.addResult("Set timer for test function.");
-        ConsoleTestRunner.waitUntilMessageReceived(didReceive);
-
-        function didReceive(message)
-        {
-            if (message.type === ConsoleModel.ConsoleMessage.MessageType.Result) {
-                ConsoleTestRunner.waitUntilMessageReceived(didReceive);
-                return;
-            }
-
-            TestRunner.addResult("Console message received: " + message.messageText);
-            ConsoleTestRunner.evaluateInConsole("unmonitor(" + functionName + ")");
-            TestRunner.addResult("Stop monitoring.");
-            next();
-        }
+    function testUnmonitorFuntionNotMonitored(next) {
+      ConsoleTestRunner.evaluateInConsole('monitor(simpleTestFunction)', next);
     }
-}
+  ]);
+
+  function monitorAndRun(next, functionName, runCmd) {
+    ConsoleTestRunner.evaluateInConsole('monitor(' + functionName + ')');
+    TestRunner.addResult('Start monitoring function.');
+
+    ConsoleTestRunner.evaluateInConsole('setTimeout(function() { ' + runCmd + ' }, 0)');
+    TestRunner.addResult('Set timer for test function.');
+    ConsoleTestRunner.waitUntilMessageReceived(didReceive);
+
+    function didReceive(message) {
+      if (message.type === ConsoleModel.ConsoleMessage.MessageType.Result) {
+        ConsoleTestRunner.waitUntilMessageReceived(didReceive);
+        return;
+      }
+
+      TestRunner.addResult('Console message received: ' + message.messageText);
+      ConsoleTestRunner.evaluateInConsole('unmonitor(' + functionName + ')');
+      TestRunner.addResult('Stop monitoring.');
+      next();
+    }
+  }
+};
 
 </script>
 </head>

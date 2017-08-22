@@ -19,39 +19,33 @@ function testFunction()
     slave(4000);
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2(callFrames)
-    {
-        ConsoleTestRunner.evaluateInConsole("x + y + globalVar.b", step3.bind(null, callFrames));
-    }
+  function step2(callFrames) {
+    ConsoleTestRunner.evaluateInConsole('x + y + globalVar.b', step3.bind(null, callFrames));
+  }
 
-    function step3(callFrames, result)
-    {
-        TestRunner.addResult("Evaluated script on the top frame: " + result);
-        var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
-        pane._list.selectItem(pane._list._model.at(1));
-        TestRunner.deprecatedRunAfterPendingDispatches(step4);
-    }
+  function step3(callFrames, result) {
+    TestRunner.addResult('Evaluated script on the top frame: ' + result);
+    var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
+    pane._list.selectItem(pane._list._model.at(1));
+    TestRunner.deprecatedRunAfterPendingDispatches(step4);
+  }
 
-    function step4()
-    {
-        ConsoleTestRunner.evaluateInConsole("localObject.a + globalVar.b", step5);
-    }
+  function step4() {
+    ConsoleTestRunner.evaluateInConsole('localObject.a + globalVar.b', step5);
+  }
 
-    function step5(result)
-    {
-        TestRunner.addResult("Evaluated script on the calling frame: " + result);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step5(result) {
+    TestRunner.addResult('Evaluated script on the calling frame: ' + result);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

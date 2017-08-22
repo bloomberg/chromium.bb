@@ -18,13 +18,13 @@ function test() {
   }
 
   function didEditScriptSource() {
-    UI.panels.sources.sourcesView().currentUISourceCode().requestOriginalContent().then(gotOriginalContent)
+    UI.panels.sources.sourcesView().currentUISourceCode().requestOriginalContent().then(gotOriginalContent);
   }
 
   function gotOriginalContent(originalContent) {
     TestRunner.addResult('==== Original Content ====');
     TestRunner.addResult(originalContent);
-    UI.panels.sources.sourcesView().currentUISourceCode().requestContent().then(gotContent)
+    UI.panels.sources.sourcesView().currentUISourceCode().requestContent().then(gotContent);
   }
 
   function gotContent(content) {

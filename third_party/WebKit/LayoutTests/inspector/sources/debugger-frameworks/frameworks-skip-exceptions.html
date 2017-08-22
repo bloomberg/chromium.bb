@@ -14,31 +14,27 @@ function testFunction()
     debugger;
 }
 
-function test()
-{
-    var frameworkRegexString = "/framework\\.js$";
-    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+function test() {
+  var frameworkRegexString = '/framework\\.js$';
+  Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
 
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.startDebuggerTest(step1);
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
-    }
+  function step1() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  }
 
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
-    {
-        SourcesTestRunner.captureStackTrace(callFrames);
-        completeTest();
-    }
+  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    completeTest();
+  }
 
-    function completeTest()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function completeTest() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

@@ -28,27 +28,24 @@ function testFunction()
     f(2010);
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(onTestStarted);
+function test() {
+  SourcesTestRunner.startDebuggerTest(onTestStarted);
 
-    function onTestStarted()
-    {
-        TestRunner.addSniffer(Sources.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(() => {});
-    }
+  function onTestStarted() {
+    TestRunner.addSniffer(
+        Sources.ScopeChainSidebarPane.prototype, '_sidebarPaneUpdatedForTest', onSidebarRendered, true);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(() => {});
+  }
 
-    function onSidebarRendered()
-    {
-        SourcesTestRunner.expandScopeVariablesSidebarPane(onScopeVariablesExpanded);
-    }
+  function onSidebarRendered() {
+    SourcesTestRunner.expandScopeVariablesSidebarPane(onScopeVariablesExpanded);
+  }
 
-    function onScopeVariablesExpanded()
-    {
-        TestRunner.addResult("");
-        SourcesTestRunner.dumpScopeVariablesSidebarPane();
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function onScopeVariablesExpanded() {
+    TestRunner.addResult('');
+    SourcesTestRunner.dumpScopeVariablesSidebarPane();
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

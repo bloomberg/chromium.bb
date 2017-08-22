@@ -40,20 +40,17 @@ function testFunction()
 }
 testFunction.displayName = "<InspectorTest::testFunction>";
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2(callFrames)
-    {
-        SourcesTestRunner.captureStackTrace(callFrames);
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step2(callFrames) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    SourcesTestRunner.completeDebuggerTest();
+  }
 };
 
 </script>

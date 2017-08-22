@@ -27,35 +27,31 @@ function callback2()
     script.remove();
 }
 
-function test()
-{
-    var numberOfPauses = 2;
+function test() {
+  var numberOfPauses = 2;
 
-    SourcesTestRunner.startDebuggerTest(step1, true);
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", true);
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
-    }
+  function step1() {
+    SourcesTestRunner.setEventListenerBreakpoint('instrumentation:scriptFirstStatement', true);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  }
 
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-    {
-        var eventName = (auxData && auxData.eventName || "").replace(/^instrumentation:/, "");
-        TestRunner.addResult("\nPaused on " + eventName);
-        SourcesTestRunner.captureStackTrace(callFrames);
+  function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+    var eventName = (auxData && auxData.eventName || '').replace(/^instrumentation:/, '');
+    TestRunner.addResult('\nPaused on ' + eventName);
+    SourcesTestRunner.captureStackTrace(callFrames);
 
-        if (--numberOfPauses)
-            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
-        else
-            SourcesTestRunner.resumeExecution(step2);
-    }
+    if (--numberOfPauses)
+      SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
+    else
+      SourcesTestRunner.resumeExecution(step2);
+  }
 
-    function step2()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", false);
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step2() {
+    SourcesTestRunner.setEventListenerBreakpoint('instrumentation:scriptFirstStatement', false);
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

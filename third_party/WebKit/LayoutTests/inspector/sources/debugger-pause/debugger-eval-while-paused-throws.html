@@ -23,55 +23,46 @@ function testFunction()
     debugger;
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1, true);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function injectedFunction()
-    {
-        var injectedObj = {
-            func: function()
-            {
-                throw new Error("injectedObj.func");
-            }
-        };
-        return injectedObj.func();
-    }
+  function injectedFunction() {
+    var injectedObj = {
+      func: function() {
+        throw new Error('injectedObj.func');
+      }
+    };
+    return injectedObj.func();
+  }
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        TestRunner.evaluateInPage(String(injectedFunction), step3);
-    }
+  function step2() {
+    TestRunner.evaluateInPage(String(injectedFunction), step3);
+  }
 
-    function step3()
-    {
-        ConsoleTestRunner.evaluateInConsole("injectedFunction()", step4);
-    }
+  function step3() {
+    ConsoleTestRunner.evaluateInConsole('injectedFunction()', step4);
+  }
 
-    function step4()
-    {
-        ConsoleTestRunner.evaluateInConsole("localObj.func()", step5);
-    }
+  function step4() {
+    ConsoleTestRunner.evaluateInConsole('localObj.func()', step5);
+  }
 
-    function step5()
-    {
-        ConsoleTestRunner.evaluateInConsole("globalObj.func()", dumpConsoleMessages);
-    }
+  function step5() {
+    ConsoleTestRunner.evaluateInConsole('globalObj.func()', dumpConsoleMessages);
+  }
 
-    function dumpConsoleMessages()
-    {
-        TestRunner.deprecatedRunAfterPendingDispatches(() => {
-            TestRunner.addResult("Dumping console messages:\n");
-            ConsoleTestRunner.dumpConsoleMessages();
-            SourcesTestRunner.completeDebuggerTest();
-        });
-    }
-}
+  function dumpConsoleMessages() {
+    TestRunner.deprecatedRunAfterPendingDispatches(() => {
+      TestRunner.addResult('Dumping console messages:\n');
+      ConsoleTestRunner.dumpConsoleMessages();
+      SourcesTestRunner.completeDebuggerTest();
+    });
+  }
+};
 //# sourceURL=test.js
 </script>
 </head>

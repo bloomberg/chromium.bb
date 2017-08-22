@@ -11,25 +11,24 @@ function addScript(url)
     head.appendChild(script);
 }
 
-function test()
-{
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testScriptParsedEvent(next)
-        {
-            TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
-            TestRunner.evaluateInPage("addScript('resources/script-failed-to-parse.js')");
+function test() {
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testScriptParsedEvent(next) {
+      TestRunner.debuggerModel.addEventListener(
+          SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+      TestRunner.evaluateInPage('addScript(\'resources/script-failed-to-parse.js\')');
 
-            function scriptFailedToParse(event)
-            {
-                var script = event.data;
-                if (script.sourceURL.indexOf("script-failed-to-parse.js") !== -1) {
-                    TestRunner.addResult("Event with script-failed-to-parse.js received");
-                    TestRunner.debuggerModel.removeEventListener(SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
-                    next();
-                }
-            }
-        },
-    ]);
+      function scriptFailedToParse(event) {
+        var script = event.data;
+        if (script.sourceURL.indexOf('script-failed-to-parse.js') !== -1) {
+          TestRunner.addResult('Event with script-failed-to-parse.js received');
+          TestRunner.debuggerModel.removeEventListener(
+              SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+          next();
+        }
+      }
+    },
+  ]);
 }
 </script>
 </head>

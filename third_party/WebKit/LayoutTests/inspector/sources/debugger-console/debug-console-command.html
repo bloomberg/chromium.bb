@@ -20,67 +20,60 @@ function simpleTestFunction3() { Math.random(); debugger; }
 </script>
 
 <script>
-var test = function()
-{
-    var currentSourceFrame;
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSetSimpleBreakpoint(next)
-        {
-            setBreakpointAndRun(next, "simpleTestFunction", "simpleTestFunction();");
-        },
+var test = function() {
+  var currentSourceFrame;
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testSetSimpleBreakpoint(next) {
+      setBreakpointAndRun(next, 'simpleTestFunction', 'simpleTestFunction();');
+    },
 
-        function testSetBreakpointOnFirstFunctionInLine(next)
-        {
-            setBreakpointAndRun(next, "simpleTestFunction1", "simpleTestFunction2(); simpleTestFunction1();");
-        },
+    function testSetBreakpointOnFirstFunctionInLine(next) {
+      setBreakpointAndRun(next, 'simpleTestFunction1', 'simpleTestFunction2(); simpleTestFunction1();');
+    },
 
-        function testSetBreakpointOnLastFunctionInLine(next)
-        {
-            setBreakpointAndRun(next, "simpleTestFunction2", "simpleTestFunction1(); simpleTestFunction2();");
-        },
+    function testSetBreakpointOnLastFunctionInLine(next) {
+      setBreakpointAndRun(next, 'simpleTestFunction2', 'simpleTestFunction1(); simpleTestFunction2();');
+    },
 
-        function testRemoveBreakpoint(next)
-        {
-            ConsoleTestRunner.evaluateInConsole("debug(simpleTestFunction3); undebug(simpleTestFunction3);");
-            ConsoleTestRunner.evaluateInConsole("setTimeout(simpleTestFunction3, 0)");
-            SourcesTestRunner.waitUntilPaused(didPause1);
+    function testRemoveBreakpoint(next) {
+      ConsoleTestRunner.evaluateInConsole('debug(simpleTestFunction3); undebug(simpleTestFunction3);');
+      ConsoleTestRunner.evaluateInConsole('setTimeout(simpleTestFunction3, 0)');
+      SourcesTestRunner.waitUntilPaused(didPause1);
 
-            function didPause1(callFrames, reason)
-            {
-                TestRunner.addResult("Script execution paused.");
-                TestRunner.addResult("Reason for pause: " + (reason == SDK.DebuggerModel.BreakReason.DebugCommand ? "debug command" : "debugger statement") + ".");
-                next();
-            }
-        }
-    ]);
-
-    function setBreakpointAndRun(next, functionName, runCmd)
-    {
-        ConsoleTestRunner.evaluateInConsole("debug(" + functionName + ")");
-
-        TestRunner.addResult("Breakpoint added.");
-        ConsoleTestRunner.evaluateInConsole("setTimeout(function() { " + runCmd + " }, 0)");
-        TestRunner.addResult("Set timer for test function.");
-        SourcesTestRunner.waitUntilPaused(didPause);
-
-        function didPause(callFrames, reason)
-        {
-            TestRunner.addResult("Script execution paused.");
-            SourcesTestRunner.captureStackTrace(callFrames);
-            ConsoleTestRunner.evaluateInConsole("undebug(" + functionName + ")");
-            TestRunner.addResult("Breakpoint removed.");
-            TestRunner.assertEquals(reason, SDK.DebuggerModel.BreakReason.DebugCommand);
-            SourcesTestRunner.resumeExecution(didResume);
-        }
-
-        function didResume()
-        {
-            TestRunner.addResult("Script execution resumed.");
-            next();
-        }
+      function didPause1(callFrames, reason) {
+        TestRunner.addResult('Script execution paused.');
+        TestRunner.addResult(
+            'Reason for pause: ' +
+            (reason == SDK.DebuggerModel.BreakReason.DebugCommand ? 'debug command' : 'debugger statement') + '.');
+        next();
+      }
     }
-}
+  ]);
+
+  function setBreakpointAndRun(next, functionName, runCmd) {
+    ConsoleTestRunner.evaluateInConsole('debug(' + functionName + ')');
+
+    TestRunner.addResult('Breakpoint added.');
+    ConsoleTestRunner.evaluateInConsole('setTimeout(function() { ' + runCmd + ' }, 0)');
+    TestRunner.addResult('Set timer for test function.');
+    SourcesTestRunner.waitUntilPaused(didPause);
+
+    function didPause(callFrames, reason) {
+      TestRunner.addResult('Script execution paused.');
+      SourcesTestRunner.captureStackTrace(callFrames);
+      ConsoleTestRunner.evaluateInConsole('undebug(' + functionName + ')');
+      TestRunner.addResult('Breakpoint removed.');
+      TestRunner.assertEquals(reason, SDK.DebuggerModel.BreakReason.DebugCommand);
+      SourcesTestRunner.resumeExecution(didResume);
+    }
+
+    function didResume() {
+      TestRunner.addResult('Script execution resumed.');
+      next();
+    }
+  }
+};
 
 </script>
 </head>

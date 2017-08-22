@@ -47,50 +47,46 @@ function sendXHR()
     xhr.send(String(sendXHR));
 }
 
-function test()
-{
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.startDebuggerTest(step1);
+function test() {
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("listener:load", true, "xmlhttprequest");
-        SourcesTestRunner.setEventListenerBreakpoint("listener:error", true, "xmlhttprequest");
-        SourcesTestRunner.setEventListenerBreakpoint("listener:loadend", true, "xmlhttprequest");
-        SourcesTestRunner.setEventListenerBreakpoint("listener:progress", true, "xmlhttprequest");
-        SourcesTestRunner.setEventListenerBreakpoint("listener:readystatechange", true, "xmlhttprequest");
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  function step1() {
+    SourcesTestRunner.setEventListenerBreakpoint('listener:load', true, 'xmlhttprequest');
+    SourcesTestRunner.setEventListenerBreakpoint('listener:error', true, 'xmlhttprequest');
+    SourcesTestRunner.setEventListenerBreakpoint('listener:loadend', true, 'xmlhttprequest');
+    SourcesTestRunner.setEventListenerBreakpoint('listener:progress', true, 'xmlhttprequest');
+    SourcesTestRunner.setEventListenerBreakpoint('listener:readystatechange', true, 'xmlhttprequest');
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  }
+
+  var totalBreaks = 6;
+  var callStacksOutput = [];
+  function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+    --totalBreaks;
+    auxData = auxData || {};
+    var result = SourcesTestRunner.captureStackTraceIntoString(callFrames) + '\n';
+    result += 'Event target: ' + auxData['targetName'] + '\n';
+
+    callStacksOutput.push(result);
+    if (totalBreaks) {
+      SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
+    } else {
+      TestRunner.addResult('Captured call stacks in no particular order:');
+      callStacksOutput.sort();
+      TestRunner.addResults(callStacksOutput);
+      completeTest();
     }
+  }
 
-    var totalBreaks = 6;
-    var callStacksOutput = [];
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-    {
-        --totalBreaks;
-        auxData = auxData || {};
-        var result = SourcesTestRunner.captureStackTraceIntoString(callFrames) + "\n";
-        result += "Event target: " + auxData["targetName"] + "\n";
-
-        callStacksOutput.push(result);
-        if (totalBreaks) {
-            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
-        } else {
-            TestRunner.addResult("Captured call stacks in no particular order:");
-            callStacksOutput.sort();
-            TestRunner.addResults(callStacksOutput);
-            completeTest();
-        }
-    }
-
-    function completeTest()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("listener:load", false, "xmlhttprequest");
-        SourcesTestRunner.setEventListenerBreakpoint("listener:error", false, "xmlhttprequest");
-        SourcesTestRunner.setEventListenerBreakpoint("listener:loadend", false, "xmlhttprequest");
-        SourcesTestRunner.setEventListenerBreakpoint("listener:progress", false, "xmlhttprequest");
-        SourcesTestRunner.setEventListenerBreakpoint("listener:readystatechange", false, "xmlhttprequest");
-        TestRunner.deprecatedRunAfterPendingDispatches(SourcesTestRunner.completeDebuggerTest.bind(InspectorTest));
-    }
+  function completeTest() {
+    SourcesTestRunner.setEventListenerBreakpoint('listener:load', false, 'xmlhttprequest');
+    SourcesTestRunner.setEventListenerBreakpoint('listener:error', false, 'xmlhttprequest');
+    SourcesTestRunner.setEventListenerBreakpoint('listener:loadend', false, 'xmlhttprequest');
+    SourcesTestRunner.setEventListenerBreakpoint('listener:progress', false, 'xmlhttprequest');
+    SourcesTestRunner.setEventListenerBreakpoint('listener:readystatechange', false, 'xmlhttprequest');
+    TestRunner.deprecatedRunAfterPendingDispatches(SourcesTestRunner.completeDebuggerTest.bind(InspectorTest));
+  }
 }
 
 </script>

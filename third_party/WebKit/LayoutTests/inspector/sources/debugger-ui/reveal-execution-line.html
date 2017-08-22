@@ -8,50 +8,42 @@ function testFunction()
     debugger;
 }
 
-var test = function()
-{
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testRevealAndHighlightExecutionLine(next)
-        {
-            var executionLineSet = false;
-            var executionLineRevealed = false;
-            TestRunner.addSniffer(SourceFrame.SourceFrame.prototype, "revealPosition", didRevealLine);
-            TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, "setExecutionLocation", didSetExecutionLocation);
-            SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+var test = function() {
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.runDebuggerTestSuite([function testRevealAndHighlightExecutionLine(next) {
+    var executionLineSet = false;
+    var executionLineRevealed = false;
+    TestRunner.addSniffer(SourceFrame.SourceFrame.prototype, 'revealPosition', didRevealLine);
+    TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, 'setExecutionLocation', didSetExecutionLocation);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
 
-            function didPause(callFrames)
-            {
-            }
+    function didPause(callFrames) {
+    }
 
-            function didSetExecutionLocation(uiLocation)
-            {
-                if (executionLineSet)
-                    return;
-                executionLineSet = true;
-                maybeNext();
-            }
+    function didSetExecutionLocation(uiLocation) {
+      if (executionLineSet)
+        return;
+      executionLineSet = true;
+      maybeNext();
+    }
 
-            function didRevealLine(line)
-            {
-                if (executionLineRevealed)
-                    return;
-                if (this.isShowing()) {
-                    executionLineRevealed = true;
-                    maybeNext();
-                }
-            }
+    function didRevealLine(line) {
+      if (executionLineRevealed)
+        return;
+      if (this.isShowing()) {
+        executionLineRevealed = true;
+        maybeNext();
+      }
+    }
 
-            function maybeNext()
-            {
-                if (executionLineRevealed && executionLineSet) {
-                    TestRunner.addResult("Execution line revealed and highlighted.");
-                    SourcesTestRunner.resumeExecution(next);
-                }
-            }
-        }
-    ]);
-}
+    function maybeNext() {
+      if (executionLineRevealed && executionLineSet) {
+        TestRunner.addResult('Execution line revealed and highlighted.');
+        SourcesTestRunner.resumeExecution(next);
+      }
+    }
+  }]);
+};
 </script>
 </head>
 <body onload="runTest()">

@@ -24,31 +24,27 @@ function callback2()
         testRunner.evaluateInWebInspector(0, "(SourcesTestRunner.completeDebuggerTest())")
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1, true);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        var actions = [
-            "Print", // "debugger" in callback1
-            "StepInto",
-            "StepInto",
-            "Print",
-        ];
-        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, resume);
-    }
+  function step2() {
+    var actions = [
+      'Print',  // "debugger" in callback1
+      'StepInto',
+      'StepInto',
+      'Print',
+    ];
+    SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, resume);
+  }
 
-    function resume()
-    {
-        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, resume));
-    }
-}
+  function resume() {
+    SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, resume));
+  }
+};
 
 </script>
 </head>

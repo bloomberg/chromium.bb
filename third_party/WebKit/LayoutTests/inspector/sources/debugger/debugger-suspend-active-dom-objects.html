@@ -9,24 +9,21 @@ function testFunction() {
     debugger;
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(startDebuggerTestCallback);
+function test() {
+  SourcesTestRunner.startDebuggerTest(startDebuggerTestCallback);
 
-    function startDebuggerTestCallback()
-    {
-        TestRunner.evaluateInPage("setTimeout(testFunction, 0)", function(result) {
-            TestRunner.addResult("Set timer for test function.");
-        });
+  function startDebuggerTestCallback() {
+    TestRunner.evaluateInPage('setTimeout(testFunction, 0)', function(result) {
+      TestRunner.addResult('Set timer for test function.');
+    });
 
-        SourcesTestRunner.waitUntilPaused(function(callFrames) {
-            TestRunner.evaluateInPage("alert(1)", function(result) {
-                TestRunner.addResult("Shown alert while staying on a breakpoint.");
-                SourcesTestRunner.completeDebuggerTest();
-            });
-        });
-    }
-
+    SourcesTestRunner.waitUntilPaused(function(callFrames) {
+      TestRunner.evaluateInPage('alert(1)', function(result) {
+        TestRunner.addResult('Shown alert while staying on a breakpoint.');
+        SourcesTestRunner.completeDebuggerTest();
+      });
+    });
+  }
 }
 
 </script>

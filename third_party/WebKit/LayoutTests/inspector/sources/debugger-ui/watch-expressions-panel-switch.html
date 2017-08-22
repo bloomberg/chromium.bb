@@ -13,29 +13,26 @@ function testFunction()
     return x;
 }
 
-function test()
-{
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.startDebuggerTest(step1);
-    var updateCount = 8;
+function test() {
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.startDebuggerTest(step1);
+  var updateCount = 8;
 
-    Common.settings.createLocalSetting("watchExpressions", []).set(["x", "y.foo"]);
+  Common.settings.createLocalSetting('watchExpressions', []).set(['x', 'y.foo']);
 
-    function step1()
-    {
-        watchExpressionsPane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
-        UI.panels.sources._sidebarPaneStack.showView(UI.panels.sources._watchSidebarPane).then(() => {
-            TestRunner.addSniffer(Sources.WatchExpression.prototype, "_createWatchExpression", watchExpressionsUpdated, true);
-            TestRunner.evaluateInPage("testFunction()");
-        });
-    }
+  function step1() {
+    watchExpressionsPane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
+    UI.panels.sources._sidebarPaneStack.showView(UI.panels.sources._watchSidebarPane).then(() => {
+      TestRunner.addSniffer(Sources.WatchExpression.prototype, '_createWatchExpression', watchExpressionsUpdated, true);
+      TestRunner.evaluateInPage('testFunction()');
+    });
+  }
 
-    function watchExpressionsUpdated(result, wasThrown)
-    {
-        TestRunner.addResult(this._element.deepTextContent());
-        if (--updateCount === 0)
-            SourcesTestRunner.completeDebuggerTest();
-    }
+  function watchExpressionsUpdated(result, wasThrown) {
+    TestRunner.addResult(this._element.deepTextContent());
+    if (--updateCount === 0)
+      SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

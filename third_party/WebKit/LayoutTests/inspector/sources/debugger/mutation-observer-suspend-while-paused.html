@@ -5,59 +5,53 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-var test = function()
-{
-    var setup =
-        "window.testDiv = document.createElement('div');\n" +
-        "window.deliveryCount = 0;\n" +
-        "var observer = new WebKitMutationObserver(function(records) {\n" +
-        "    window.deliveryCount++;\n" +
-        "});\n" +
-        "observer.observe(window.testDiv, { attributes: true });";
-    
-    var mutateAndPause = 
-        "function mutateAndPause() {\n" +
-        "    window.testDiv.setAttribute('foo', 'baz');\n" +
-        "    debugger;\n" +
-        "};\n" +
-        "setTimeout(mutateAndPause, 0);";
+var test = function() {
+  var setup = 'window.testDiv = document.createElement(\'div\');\n' +
+      'window.deliveryCount = 0;\n' +
+      'var observer = new WebKitMutationObserver(function(records) {\n' +
+      '    window.deliveryCount++;\n' +
+      '});\n' +
+      'observer.observe(window.testDiv, { attributes: true });';
 
-    SourcesTestRunner.startDebuggerTest(step1);
+  var mutateAndPause = 'function mutateAndPause() {\n' +
+      '    window.testDiv.setAttribute(\'foo\', \'baz\');\n' +
+      '    debugger;\n' +
+      '};\n' +
+      'setTimeout(mutateAndPause, 0);';
 
-    function step1()
-    {
-        TestRunner.evaluateInPage(setup, function() {
-            TestRunner.addResult("DIV and observer setup.");
-            ConsoleTestRunner.evaluateInConsoleAndDump("deliveryCount", step2);
-        });
-    }
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step2()
-    {
-        TestRunner.evaluateInPage("window.testDiv.setAttribute('foo', 'bar')", function() {
-            TestRunner.addResult("setAttribute should have triggered delivery.");
-            ConsoleTestRunner.evaluateInConsoleAndDump("deliveryCount", step3); 
-        });
-    }
+  function step1() {
+    TestRunner.evaluateInPage(setup, function() {
+      TestRunner.addResult('DIV and observer setup.');
+      ConsoleTestRunner.evaluateInConsoleAndDump('deliveryCount', step2);
+    });
+  }
 
-    function step3()
-    {
-        TestRunner.evaluateInPage(mutateAndPause, TestRunner.addResult.bind(InspectorTest, "mutateAndPause invoked."));
-        SourcesTestRunner.waitUntilPaused(step4);
-    }
+  function step2() {
+    TestRunner.evaluateInPage('window.testDiv.setAttribute(\'foo\', \'bar\')', function() {
+      TestRunner.addResult('setAttribute should have triggered delivery.');
+      ConsoleTestRunner.evaluateInConsoleAndDump('deliveryCount', step3);
+    });
+  }
 
-    function step4() {
-        TestRunner.addResult("Delivery should not have taken place.");
-        ConsoleTestRunner.evaluateInConsoleAndDump("deliveryCount", function() {
-            SourcesTestRunner.resumeExecution(step5);
-        });
-    }
+  function step3() {
+    TestRunner.evaluateInPage(mutateAndPause, TestRunner.addResult.bind(InspectorTest, 'mutateAndPause invoked.'));
+    SourcesTestRunner.waitUntilPaused(step4);
+  }
 
-    function step5() {
-        TestRunner.addResult("Second delivery should now have happened.");
-        ConsoleTestRunner.evaluateInConsoleAndDump("deliveryCount", SourcesTestRunner.completeDebuggerTest);
-    }
-}
+  function step4() {
+    TestRunner.addResult('Delivery should not have taken place.');
+    ConsoleTestRunner.evaluateInConsoleAndDump('deliveryCount', function() {
+      SourcesTestRunner.resumeExecution(step5);
+    });
+  }
+
+  function step5() {
+    TestRunner.addResult('Second delivery should now have happened.');
+    ConsoleTestRunner.evaluateInConsoleAndDump('deliveryCount', SourcesTestRunner.completeDebuggerTest);
+  }
+};
 
 </script>
 </head>

@@ -4,13 +4,13 @@ Set timer for test function.
 Dumping console messages:
 
 injectedFunction()
-VM:6 Uncaught Error: injectedObj.func
-    at Object.func (<anonymous>:6:23)
-    at injectedFunction (<anonymous>:9:28)
+VM:4 Uncaught Error: injectedObj.func
+    at Object.func (<anonymous>:4:15)
+    at injectedFunction (<anonymous>:7:24)
     at eval (eval at testFunction (debugger-eval-while-…used-throws.html:18), <anonymous>:1:1)
     at testFunction (test.js:18)
-func @ VM:6
-injectedFunction @ VM:9
+func @ VM:4
+injectedFunction @ VM:7
 (anonymous) @ VM:1
 testFunction @ test.js:18
 setTimeout (async)

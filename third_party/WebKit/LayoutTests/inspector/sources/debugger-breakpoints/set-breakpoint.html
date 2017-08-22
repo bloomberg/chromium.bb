@@ -18,100 +18,87 @@ function testFunction()
     return x;
 }
 
-var test = function()
-{
-    var currentSourceFrame;
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSetBreakpoint(next)
-        {
-            SourcesTestRunner.showScriptSource("set-breakpoint.html", didShowScriptSource);
+var test = function() {
+  var currentSourceFrame;
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testSetBreakpoint(next) {
+      SourcesTestRunner.showScriptSource('set-breakpoint.html', didShowScriptSource);
 
-            function didShowScriptSource(sourceFrame)
-            {
-                currentSourceFrame = sourceFrame;
-                TestRunner.addResult("Script source was shown.");
-                SourcesTestRunner.waitUntilPaused(didPause);
-                SourcesTestRunner.createNewBreakpoint(currentSourceFrame, 16, "", true)
-                    .then(() => SourcesTestRunner.waitBreakpointSidebarPane())
-                    .then(() => SourcesTestRunner.runTestFunction());
-            }
+      function didShowScriptSource(sourceFrame) {
+        currentSourceFrame = sourceFrame;
+        TestRunner.addResult('Script source was shown.');
+        SourcesTestRunner.waitUntilPaused(didPause);
+        SourcesTestRunner.createNewBreakpoint(currentSourceFrame, 16, '', true)
+            .then(() => SourcesTestRunner.waitBreakpointSidebarPane())
+            .then(() => SourcesTestRunner.runTestFunction());
+      }
 
-            function didPause(callFrames)
-            {
-                TestRunner.addResult("Script execution paused.");
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.dumpBreakpointSidebarPane();
-                SourcesTestRunner.removeBreakpoint(currentSourceFrame, 16)
-                SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
-            }
+      function didPause(callFrames) {
+        TestRunner.addResult('Script execution paused.');
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.dumpBreakpointSidebarPane();
+        SourcesTestRunner.removeBreakpoint(currentSourceFrame, 16);
+        SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
+      }
 
-            function breakpointRemoved()
-            {
-                SourcesTestRunner.resumeExecution(didResume);
-            }
+      function breakpointRemoved() {
+        SourcesTestRunner.resumeExecution(didResume);
+      }
 
-            function didResume()
-            {
-                SourcesTestRunner.dumpBreakpointSidebarPane()
-                TestRunner.addResult("Script execution resumed.");
-                next();
-            }
-        },
+      function didResume() {
+        SourcesTestRunner.dumpBreakpointSidebarPane();
+        TestRunner.addResult('Script execution resumed.');
+        next();
+      }
+    },
 
-        function testSetBreakpointOnTheLastLine(next)
-        {
-            SourcesTestRunner.showScriptSource("set-breakpoint.html", didShowScriptSource);
+    function testSetBreakpointOnTheLastLine(next) {
+      SourcesTestRunner.showScriptSource('set-breakpoint.html', didShowScriptSource);
 
-            function didShowScriptSource(sourceFrame)
-            {
-                currentSourceFrame = sourceFrame;
-                SourcesTestRunner.waitUntilPaused(didPause);
-                SourcesTestRunner.createNewBreakpoint(currentSourceFrame, 6, "", true)
-                    .then(() => SourcesTestRunner.waitBreakpointSidebarPane())
-                    .then(() => TestRunner.evaluateInPage("setTimeout(oneLineTestFunction, 0)"));
-            }
+      function didShowScriptSource(sourceFrame) {
+        currentSourceFrame = sourceFrame;
+        SourcesTestRunner.waitUntilPaused(didPause);
+        SourcesTestRunner.createNewBreakpoint(currentSourceFrame, 6, '', true)
+            .then(() => SourcesTestRunner.waitBreakpointSidebarPane())
+            .then(() => TestRunner.evaluateInPage('setTimeout(oneLineTestFunction, 0)'));
+      }
 
-            function didPause(callFrames)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.removeBreakpoint(currentSourceFrame, 6);
-                SourcesTestRunner.resumeExecution(next);
-            }
-        },
+      function didPause(callFrames) {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.removeBreakpoint(currentSourceFrame, 6);
+        SourcesTestRunner.resumeExecution(next);
+      }
+    },
 
-        function testSetBreakpointOnTheLastLine2(next)
-        {
-            SourcesTestRunner.showScriptSource("set-breakpoint.html", didShowScriptSource);
+    function testSetBreakpointOnTheLastLine2(next) {
+      SourcesTestRunner.showScriptSource('set-breakpoint.html', didShowScriptSource);
 
-            function didShowScriptSource(sourceFrame)
-            {
-                currentSourceFrame = sourceFrame;
-                SourcesTestRunner.setBreakpoint(currentSourceFrame, 10, "", true);
-                SourcesTestRunner.waitUntilPaused(didPause);
-                TestRunner.evaluateInPage("setTimeout(oneLineTestFunction2, 0)");
-            }
+      function didShowScriptSource(sourceFrame) {
+        currentSourceFrame = sourceFrame;
+        SourcesTestRunner.setBreakpoint(currentSourceFrame, 10, '', true);
+        SourcesTestRunner.waitUntilPaused(didPause);
+        TestRunner.evaluateInPage('setTimeout(oneLineTestFunction2, 0)');
+      }
 
-            function didPause(callFrames)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.removeBreakpoint(currentSourceFrame, 10);
-                SourcesTestRunner.resumeExecution(next);
-            }
-        },
+      function didPause(callFrames) {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        SourcesTestRunner.removeBreakpoint(currentSourceFrame, 10);
+        SourcesTestRunner.resumeExecution(next);
+      }
+    },
 
-        async function testSetBreakpointOnTheSameLine(next)
-        {
-            var breakpointId = await TestRunner.DebuggerAgent.setBreakpointByUrl(1, "foo.js", undefined, 2, "");
-            TestRunner.assertTrue(!!breakpointId);
+    async function testSetBreakpointOnTheSameLine(next) {
+      var breakpointId = await TestRunner.DebuggerAgent.setBreakpointByUrl(1, 'foo.js', undefined, 2, '');
+      TestRunner.assertTrue(!!breakpointId);
 
-            breakpointId = await TestRunner.DebuggerAgent.setBreakpointByUrl(1, "foo.js", undefined, 2, "");
-            TestRunner.assertTrue(!breakpointId);
+      breakpointId = await TestRunner.DebuggerAgent.setBreakpointByUrl(1, 'foo.js', undefined, 2, '');
+      TestRunner.assertTrue(!breakpointId);
 
-            next();
-        }
-    ]);
-}
+      next();
+    }
+  ]);
+};
 
 </script>
 </head>

@@ -7,43 +7,38 @@
 
 function nonFormattedFunction() { var  i = 2 + 2; var a = 4; return a + i; }
 
-var test = function()
-{
-    var scriptSource;
-    var shouldRequestContent = false;
-    SourcesTestRunner.scriptFormatter().then(startDebuggerTest);
-    var scriptFormatter;
+var test = function() {
+  var scriptSource;
+  var shouldRequestContent = false;
+  SourcesTestRunner.scriptFormatter().then(startDebuggerTest);
+  var scriptFormatter;
 
-    function startDebuggerTest(sf)
-    {
-        scriptFormatter = sf;
-        SourcesTestRunner.startDebuggerTest(started);
-    }
+  function startDebuggerTest(sf) {
+    scriptFormatter = sf;
+    SourcesTestRunner.startDebuggerTest(started);
+  }
 
-    function started()
-    {
-        SourcesTestRunner.showScriptSource("script-formatter-search.html", didShowScriptSource);
-    }
+  function started() {
+    SourcesTestRunner.showScriptSource('script-formatter-search.html', didShowScriptSource);
+  }
 
-    async function didShowScriptSource(frame)
-    {
-        scriptSource = frame._uiSourceCode;
-        var matches = await scriptSource.searchInContent("magic-string", true, false);
-        TestRunner.addResult("Pre-format search results:");
-        SourcesTestRunner.dumpSearchMatches(matches);
-        shouldRequestContent = true;
-        TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
-        scriptFormatter._toggleFormatScriptSource();
-    }
+  async function didShowScriptSource(frame) {
+    scriptSource = frame._uiSourceCode;
+    var matches = await scriptSource.searchInContent('magic-string', true, false);
+    TestRunner.addResult('Pre-format search results:');
+    SourcesTestRunner.dumpSearchMatches(matches);
+    shouldRequestContent = true;
+    TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, '_updateButton', uiSourceCodeScriptFormatted);
+    scriptFormatter._toggleFormatScriptSource();
+  }
 
-    async function uiSourceCodeScriptFormatted()
-    {
-        var matches = await scriptSource.searchInContent("magic-string", true, false);
-        TestRunner.addResult("Post-format search results:");
-        SourcesTestRunner.dumpSearchMatches(matches);
-        TestRunner.completeTest();
-    }
-}
+  async function uiSourceCodeScriptFormatted() {
+    var matches = await scriptSource.searchInContent('magic-string', true, false);
+    TestRunner.addResult('Post-format search results:');
+    SourcesTestRunner.dumpSearchMatches(matches);
+    TestRunner.completeTest();
+  }
+};
 
 </script>
 

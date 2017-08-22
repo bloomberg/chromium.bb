@@ -14,53 +14,47 @@ function foobar()
 foobar();
 </script>
 <script>
-function test()
-{
-    Bindings.breakpointManager._storage._breakpoints = {};
-    var panel = UI.panels.sources;
+function test() {
+  Bindings.breakpointManager._storage._breakpoints = {};
+  var panel = UI.panels.sources;
 
-    SourcesTestRunner.startDebuggerTest();
+  SourcesTestRunner.startDebuggerTest();
 
-    SourcesTestRunner.showScriptSource("dynamic-scripts-breakpoints.html", didShowScriptSource);
+  SourcesTestRunner.showScriptSource('dynamic-scripts-breakpoints.html', didShowScriptSource);
 
-    function pathToFileName(path)
-    {
-        return path.substring(path.lastIndexOf("/") + 1);
-    }
+  function pathToFileName(path) {
+    return path.substring(path.lastIndexOf('/') + 1);
+  }
 
-    function dumpBreakpointStorage()
-    {
-        var breakpointManager = Bindings.breakpointManager;
-        var breakpoints = breakpointManager._storage._setting.get();
-        TestRunner.addResult("    Dumping breakpoint storage");
-        for (var i = 0; i < breakpoints.length; ++i)
-            TestRunner.addResult("        " + pathToFileName(breakpoints[i].url) + ":" + breakpoints[i].lineNumber);
-    }
+  function dumpBreakpointStorage() {
+    var breakpointManager = Bindings.breakpointManager;
+    var breakpoints = breakpointManager._storage._setting.get();
+    TestRunner.addResult('    Dumping breakpoint storage');
+    for (var i = 0; i < breakpoints.length; ++i)
+      TestRunner.addResult('        ' + pathToFileName(breakpoints[i].url) + ':' + breakpoints[i].lineNumber);
+  }
 
-    function didShowScriptSource(sourceFrame)
-    {
-        TestRunner.addResult("Setting breakpoint:");
-        TestRunner.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 11, "", true);
-    }
+  function didShowScriptSource(sourceFrame) {
+    TestRunner.addResult('Setting breakpoint:');
+    TestRunner.addSniffer(
+        Bindings.BreakpointManager.ModelBreakpoint.prototype, '_addResolvedLocation', breakpointResolved);
+    SourcesTestRunner.setBreakpoint(sourceFrame, 11, '', true);
+  }
 
-    function breakpointResolved(location)
-    {
-        SourcesTestRunner.waitUntilPaused(paused);
-        TestRunner.addResult("Reloading page.");
-        TestRunner.reloadPage(onPageReloaded);
-    }
+  function breakpointResolved(location) {
+    SourcesTestRunner.waitUntilPaused(paused);
+    TestRunner.addResult('Reloading page.');
+    TestRunner.reloadPage(onPageReloaded);
+  }
 
-    function paused()
-    {
-        dumpBreakpointStorage();
-        SourcesTestRunner.resumeExecution();
-    }
+  function paused() {
+    dumpBreakpointStorage();
+    SourcesTestRunner.resumeExecution();
+  }
 
-    function onPageReloaded()
-    {
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function onPageReloaded() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 </script>
 </head>

@@ -3,34 +3,31 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
-function test()
-{
-    SDK.targetManager.mainTarget().setIsNodeJSForTest();
-    SourcesTestRunner.startDebuggerTest();
+function test() {
+  SDK.targetManager.mainTarget().setIsNodeJSForTest();
+  SourcesTestRunner.startDebuggerTest();
 
-    var functionText = "function foobar() { \nconsole.log('foobar execute!');\n}";
-    var sourceURL = "\n//# sourceURL=/usr/local/home/prog/foobar.js";
-    TestRunner.evaluateInPage(functionText + sourceURL, function() { });
-    SourcesTestRunner.showScriptSource("foobar.js", didShowScriptSource);
+  var functionText = 'function foobar() { \nconsole.log(\'foobar execute!\');\n}';
+  var sourceURL = '\n//# sourceURL=/usr/local/home/prog/foobar.js';
+  TestRunner.evaluateInPage(functionText + sourceURL, function() {});
+  SourcesTestRunner.showScriptSource('foobar.js', didShowScriptSource);
 
-    function didShowScriptSource(sourceFrame)
-    {
-        TestRunner.addResult("Setting breakpoint:");
-        TestRunner.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 1, "", true);
-    }
+  function didShowScriptSource(sourceFrame) {
+    TestRunner.addResult('Setting breakpoint:');
+    TestRunner.addSniffer(
+        Bindings.BreakpointManager.ModelBreakpoint.prototype, '_addResolvedLocation', breakpointResolved);
+    SourcesTestRunner.setBreakpoint(sourceFrame, 1, '', true);
+  }
 
-    function breakpointResolved(location)
-    {
-        SourcesTestRunner.waitUntilPaused(paused);
-        TestRunner.evaluateInPage("foobar()");
-    }
+  function breakpointResolved(location) {
+    SourcesTestRunner.waitUntilPaused(paused);
+    TestRunner.evaluateInPage('foobar()');
+  }
 
-    function paused()
-    {
-        TestRunner.addResult("Successfully paused on breakpoint");
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function paused() {
+    TestRunner.addResult('Successfully paused on breakpoint');
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 </script>
 </head>

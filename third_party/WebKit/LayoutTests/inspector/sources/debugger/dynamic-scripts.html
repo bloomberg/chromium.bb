@@ -30,51 +30,51 @@ function scriptLoaded()
     console.log("Done.");
 }
 
-function test()
-{
-    ConsoleTestRunner.addConsoleSniffer(step1);
-    TestRunner.evaluateInPage("loadScripts()", function() { })
+function test() {
+  ConsoleTestRunner.addConsoleSniffer(step1);
+  TestRunner.evaluateInPage('loadScripts()', function() {});
 
-    function step1()
-    {
-        SourcesTestRunner.startDebuggerTest(step2);
+  function step1() {
+    SourcesTestRunner.startDebuggerTest(step2);
+  }
+
+  function step2() {
+    TestRunner.deprecatedRunAfterPendingDispatches(step3);
+  }
+
+  function step3() {
+    var panel = UI.panels.sources;
+    var uiSourceCodes = Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Network);
+    var urls = uiSourceCodes.map(function(uiSourceCode) {
+      return uiSourceCode.name();
+    });
+    urls.sort();
+
+    var whiteList = [
+      'debugger-test.js', 'dynamic-script.js', 'dynamic-scripts.html', 'evalSourceURL.js', 'inspector-test.js',
+      'scriptElementContentSourceURL.js'
+    ];
+    function filter(url) {
+      for (var i = 0; i < whiteList.length; ++i) {
+        if (url === whiteList[i])
+          return true;
+      }
+
+      return false;
     }
+    urls = urls.filter(filter);
 
-    function step2()
-    {
-        TestRunner.deprecatedRunAfterPendingDispatches(step3);
+    TestRunner.addResult('UISourceCodes:');
+    var lastURL;
+    for (var i = 0; i < urls.length; ++i) {
+      // Hack around the problem with scripts surviving between tests.
+      if (urls[i] === lastURL && !lastURL.endsWith('.html'))
+        continue;
+      TestRunner.addResult('    ' + urls[i]);
+      lastURL = urls[i];
     }
-
-    function step3()
-    {
-        var panel = UI.panels.sources;
-        var uiSourceCodes = Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Network);
-        var urls = uiSourceCodes.map(function(uiSourceCode) { return uiSourceCode.name(); });
-        urls.sort();
-
-        var whiteList = ["debugger-test.js", "dynamic-script.js", "dynamic-scripts.html", "evalSourceURL.js", "inspector-test.js", "scriptElementContentSourceURL.js"];
-        function filter(url)
-        {
-            for (var i = 0; i < whiteList.length; ++i) {
-                if (url === whiteList[i])
-                    return true;
-            }
-                
-            return false;
-        }
-        urls = urls.filter(filter);
-
-        TestRunner.addResult("UISourceCodes:");
-        var lastURL;
-        for (var i = 0; i < urls.length; ++i) {
-            // Hack around the problem with scripts surviving between tests.
-            if (urls[i] === lastURL && !lastURL.endsWith(".html"))
-                continue;
-            TestRunner.addResult("    " + urls[i]);
-            lastURL = urls[i];
-        }
-        SourcesTestRunner.completeDebuggerTest();
-    }
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 </script>
 </head>

@@ -6,17 +6,15 @@
 
 <script>
 
-function test()
-{
-    var testJSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, "text/javascript");
+function test() {
+  var testJSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, 'text/javascript');
 
-    TestRunner.runTestSuite([
-        function asyncAwaitSupport(next)
-        {
-            var mappingQueries = ["async", "function", "foo", "return", "Promise", "resolve"];
-            testJSFormatter("async function foo() {return await Promise.resolve(1);}", mappingQueries, next);
-        },
-    ]);
+  TestRunner.runTestSuite([
+    function asyncAwaitSupport(next) {
+      var mappingQueries = ['async', 'function', 'foo', 'return', 'Promise', 'resolve'];
+      testJSFormatter('async function foo() {return await Promise.resolve(1);}', mappingQueries, next);
+    },
+  ]);
 }
 
 </script>

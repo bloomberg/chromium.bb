@@ -13,38 +13,33 @@
 
 <script>
 
-function test()
-{
-    var numberOfStepInto = 7;
+function test() {
+  var numberOfStepInto = 7;
 
-    SourcesTestRunner.startDebuggerTest(step1, true);
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.showScriptSource("debugger-step-into-document-write.html", step2);
-    }
+  function step1() {
+    SourcesTestRunner.showScriptSource('debugger-step-into-document-write.html', step2);
+  }
 
-    function step2(sourceFrame)
-    {
-        TestRunner.addResult("Script source was shown.");
-        SourcesTestRunner.setBreakpoint(sourceFrame, 3, "", true);
-        SourcesTestRunner.waitUntilPaused(step3);
-        TestRunner.reloadPage(completeTest);
-    }
+  function step2(sourceFrame) {
+    TestRunner.addResult('Script source was shown.');
+    SourcesTestRunner.setBreakpoint(sourceFrame, 3, '', true);
+    SourcesTestRunner.waitUntilPaused(step3);
+    TestRunner.reloadPage(completeTest);
+  }
 
-    function step3()
-    {
-        var actions = ["Print"]; // First pause on breakpoint.
-        for (var i = 0; i < numberOfStepInto; ++i)
-            actions.push("StepInto", "Print");
-        actions.push("Resume");
-        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions);
-    }
+  function step3() {
+    var actions = ['Print'];  // First pause on breakpoint.
+    for (var i = 0; i < numberOfStepInto; ++i)
+      actions.push('StepInto', 'Print');
+    actions.push('Resume');
+    SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions);
+  }
 
-    function completeTest()
-    {
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function completeTest() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

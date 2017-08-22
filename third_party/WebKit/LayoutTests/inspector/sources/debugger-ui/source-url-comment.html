@@ -52,140 +52,121 @@ function addScriptWithPoorURL()
 function test()
 
 {
-    function forEachScriptMatchingURL(url, handler)
-    {
-        for (var script of TestRunner.debuggerModel.scripts()) {
-            if (script.sourceURL.indexOf(url) !== -1)
-                handler(script);
-        }
+  function forEachScriptMatchingURL(url, handler) {
+    for (var script of TestRunner.debuggerModel.scripts()) {
+      if (script.sourceURL.indexOf(url) !== -1)
+        handler(script);
     }
+  }
 
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSourceURLCommentInInlineScript(next)
-        {
-            SourcesTestRunner.showScriptSource("source-url-comment.html", didShowScriptSource);
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testSourceURLCommentInInlineScript(next) {
+      SourcesTestRunner.showScriptSource('source-url-comment.html', didShowScriptSource);
 
-            function didShowScriptSource(sourceFrame)
-            {
-                var panel = UI.panels.sources;
-                var uiSourceCodes = panel._workspace.uiSourceCodes();
-                var ignored = true;
-                for (var i = 0; i < uiSourceCodes.length && ignored; ++i) {
-                    if (uiSourceCodes[i].url().indexOf("inlineScriptURL.js") !== -1)
-                        ignored = false;
-                }
-                if (ignored)
-                    TestRunner.addResult("FAILED: sourceURL comment in inline script was ignored");
-                next();
-            }
-        },
-
-        function testSourceURLCommentInScript(next)
-        {
-            SourcesTestRunner.showScriptSource("scriptWithSourceURL.js", didShowScriptSource);
-            TestRunner.evaluateInPage("setTimeout(addScriptWithURL, 0)");
-
-            function didShowScriptSource(sourceFrame)
-            {
-                TestRunner.addResult(sourceFrame.textEditor.text().trim());
-                forEachScriptMatchingURL("scriptWithSourceURL.js", checkScriptSourceURL);
-                next();
-            }
-        },
-
-        function testPoorSourceURLCommentInScript(next)
-        {
-            SourcesTestRunner.showScriptSource("source-url-comment.html", didShowScriptSource);
-            TestRunner.evaluateInPage("setTimeout(addScriptWithPoorURL, 0)");
-
-            function didShowScriptSource(sourceFrame)
-            {
-                var panel = UI.panels.sources;
-                var uiSourceCodes = panel._workspace.uiSourceCodes();
-                for (var i = 0; i < uiSourceCodes.length; ++i) {
-                    if (uiSourceCodes[i].url().indexOf("scriptWithPoorSourceURL.js") !== -1)
-                        TestRunner.addResult("FAILED: poor sourceURL comment in script was used as a script name");
-                }
-                next();
-            }
-        },
-
-        function testSourceURLComment(next)
-        {
-            SourcesTestRunner.showScriptSource("evalURL.js", didShowScriptSource);
-            TestRunner.evaluateInPage("setTimeout(doEval, 0)");
-
-            function didShowScriptSource(sourceFrame)
-            {
-                TestRunner.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("evalURL.js", checkScriptSourceURL);
-                next();
-            }
-        },
-
-        function testSourceURLAndMappingURLComment(next)
-        {
-            SourcesTestRunner.showScriptSource("sourceURL.js", didShowScriptSource);
-            TestRunner.evaluateInPage("setTimeout(doURLAndMappingURL, 0)");
-
-            function didShowScriptSource(sourceFrame)
-            {
-                function checkScriptSourceURLAndMappingURL(script)
-                {
-                    TestRunner.addResult("hasSourceURL: " + script.hasSourceURL);
-                    TestRunner.addResult("sourceMapURL: " + script.sourceMapURL);
-                }
-
-                TestRunner.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("sourceURL.js", checkScriptSourceURLAndMappingURL);
-                next();
-            }
-        },
-
-        function testSourceURLCommentInDynamicScript(next)
-        {
-            SourcesTestRunner.showScriptSource("dynamicScriptURL.js", didShowScriptSource);
-            TestRunner.evaluateInPage("setTimeout(doDynamicScript, 0)");
-
-            function didShowScriptSource(sourceFrame)
-            {
-                TestRunner.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("dynamicScriptURL.js", checkScriptSourceURL);
-                next();
-            }
-        },
-
-        function testNonRelativeURL(next)
-        {
-            SourcesTestRunner.showScriptSource("js/nonRelativeURL.js", didShowScriptSource);
-            TestRunner.evaluateInPage("setTimeout(doEvalWithNonRelativeURL, 0)");
-
-            function didShowScriptSource(sourceFrame)
-            {
-                TestRunner.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("nonRelativeURL.js", checkScriptSourceURL);
-                next();
-            }
-        },
-
-        function testMultipleSourceURLComment(next)
-        {
-            SourcesTestRunner.showScriptSource("evalMultipleURL.js", didShowScriptSource);
-            TestRunner.evaluateInPage("setTimeout(doEvalWithMultipleSourceURL, 0)");
-
-            function didShowScriptSource(sourceFrame)
-            {
-                TestRunner.addResult(sourceFrame.textEditor.text());
-                forEachScriptMatchingURL("evalMultipleURL.js", checkScriptSourceURL);
-                next();
-            }
+      function didShowScriptSource(sourceFrame) {
+        var panel = UI.panels.sources;
+        var uiSourceCodes = panel._workspace.uiSourceCodes();
+        var ignored = true;
+        for (var i = 0; i < uiSourceCodes.length && ignored; ++i) {
+          if (uiSourceCodes[i].url().indexOf('inlineScriptURL.js') !== -1)
+            ignored = false;
         }
-    ]);
+        if (ignored)
+          TestRunner.addResult('FAILED: sourceURL comment in inline script was ignored');
+        next();
+      }
+    },
 
-    function checkScriptSourceURL(script)
-    {
-        TestRunner.addResult("hasSourceURL: " + script.hasSourceURL);
+    function testSourceURLCommentInScript(next) {
+      SourcesTestRunner.showScriptSource('scriptWithSourceURL.js', didShowScriptSource);
+      TestRunner.evaluateInPage('setTimeout(addScriptWithURL, 0)');
+
+      function didShowScriptSource(sourceFrame) {
+        TestRunner.addResult(sourceFrame.textEditor.text().trim());
+        forEachScriptMatchingURL('scriptWithSourceURL.js', checkScriptSourceURL);
+        next();
+      }
+    },
+
+    function testPoorSourceURLCommentInScript(next) {
+      SourcesTestRunner.showScriptSource('source-url-comment.html', didShowScriptSource);
+      TestRunner.evaluateInPage('setTimeout(addScriptWithPoorURL, 0)');
+
+      function didShowScriptSource(sourceFrame) {
+        var panel = UI.panels.sources;
+        var uiSourceCodes = panel._workspace.uiSourceCodes();
+        for (var i = 0; i < uiSourceCodes.length; ++i) {
+          if (uiSourceCodes[i].url().indexOf('scriptWithPoorSourceURL.js') !== -1)
+            TestRunner.addResult('FAILED: poor sourceURL comment in script was used as a script name');
+        }
+        next();
+      }
+    },
+
+    function testSourceURLComment(next) {
+      SourcesTestRunner.showScriptSource('evalURL.js', didShowScriptSource);
+      TestRunner.evaluateInPage('setTimeout(doEval, 0)');
+
+      function didShowScriptSource(sourceFrame) {
+        TestRunner.addResult(sourceFrame.textEditor.text());
+        forEachScriptMatchingURL('evalURL.js', checkScriptSourceURL);
+        next();
+      }
+    },
+
+    function testSourceURLAndMappingURLComment(next) {
+      SourcesTestRunner.showScriptSource('sourceURL.js', didShowScriptSource);
+      TestRunner.evaluateInPage('setTimeout(doURLAndMappingURL, 0)');
+
+      function didShowScriptSource(sourceFrame) {
+        function checkScriptSourceURLAndMappingURL(script) {
+          TestRunner.addResult('hasSourceURL: ' + script.hasSourceURL);
+          TestRunner.addResult('sourceMapURL: ' + script.sourceMapURL);
+        }
+
+        TestRunner.addResult(sourceFrame.textEditor.text());
+        forEachScriptMatchingURL('sourceURL.js', checkScriptSourceURLAndMappingURL);
+        next();
+      }
+    },
+
+    function testSourceURLCommentInDynamicScript(next) {
+      SourcesTestRunner.showScriptSource('dynamicScriptURL.js', didShowScriptSource);
+      TestRunner.evaluateInPage('setTimeout(doDynamicScript, 0)');
+
+      function didShowScriptSource(sourceFrame) {
+        TestRunner.addResult(sourceFrame.textEditor.text());
+        forEachScriptMatchingURL('dynamicScriptURL.js', checkScriptSourceURL);
+        next();
+      }
+    },
+
+    function testNonRelativeURL(next) {
+      SourcesTestRunner.showScriptSource('js/nonRelativeURL.js', didShowScriptSource);
+      TestRunner.evaluateInPage('setTimeout(doEvalWithNonRelativeURL, 0)');
+
+      function didShowScriptSource(sourceFrame) {
+        TestRunner.addResult(sourceFrame.textEditor.text());
+        forEachScriptMatchingURL('nonRelativeURL.js', checkScriptSourceURL);
+        next();
+      }
+    },
+
+    function testMultipleSourceURLComment(next) {
+      SourcesTestRunner.showScriptSource('evalMultipleURL.js', didShowScriptSource);
+      TestRunner.evaluateInPage('setTimeout(doEvalWithMultipleSourceURL, 0)');
+
+      function didShowScriptSource(sourceFrame) {
+        TestRunner.addResult(sourceFrame.textEditor.text());
+        forEachScriptMatchingURL('evalMultipleURL.js', checkScriptSourceURL);
+        next();
+      }
     }
+  ]);
+
+  function checkScriptSourceURL(script) {
+    TestRunner.addResult('hasSourceURL: ' + script.hasSourceURL);
+  }
 };
 
 </script>

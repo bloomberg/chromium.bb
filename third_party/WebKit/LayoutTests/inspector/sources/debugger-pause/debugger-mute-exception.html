@@ -25,31 +25,27 @@ function handleClick()
     throwAnException();
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        SourcesTestRunner.showScriptSource("debugger-mute-exception.html", step2);
-    }
+  function step1() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+    SourcesTestRunner.showScriptSource('debugger-mute-exception.html', step2);
+  }
 
-    function step2(sourceFrame)
-    {
-        TestRunner.addResult("Script source was shown.");
-        SourcesTestRunner.setBreakpoint(sourceFrame, 10, "false", true);
-        SourcesTestRunner.setBreakpoint(sourceFrame, 14, "false", true);
-        TestRunner.evaluateInPage("setTimeout(handleClick, 0)");
-        SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(step3);
-    }
+  function step2(sourceFrame) {
+    TestRunner.addResult('Script source was shown.');
+    SourcesTestRunner.setBreakpoint(sourceFrame, 10, 'false', true);
+    SourcesTestRunner.setBreakpoint(sourceFrame, 14, 'false', true);
+    TestRunner.evaluateInPage('setTimeout(handleClick, 0)');
+    SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(step3);
+  }
 
-    function step3()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step3() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

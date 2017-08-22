@@ -18,56 +18,47 @@ function testFunction()
     slave(4000);
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1, true);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function evalLocalVariables(callback)
-    {
-        ConsoleTestRunner.evaluateInConsoleAndDump("localObject1.a", next);
-        function next()
-        {
-            ConsoleTestRunner.evaluateInConsoleAndDump("localObject2", callback);
-        }
+  function evalLocalVariables(callback) {
+    ConsoleTestRunner.evaluateInConsoleAndDump('localObject1.a', next);
+    function next() {
+      ConsoleTestRunner.evaluateInConsoleAndDump('localObject2', callback);
     }
+  }
 
-    function localScopeObject()
-    {
-        var localsSection = SourcesTestRunner.scopeChainSections()[0];
-        return localsSection._object;
-    }
+  function localScopeObject() {
+    var localsSection = SourcesTestRunner.scopeChainSections()[0];
+    return localsSection._object;
+  }
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2(callFrames)
-    {
-        var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
-        pane._list.selectItem(pane._list._model.at(1));
-        TestRunner.deprecatedRunAfterPendingDispatches(step3);
-    }
+  function step2(callFrames) {
+    var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
+    pane._list.selectItem(pane._list._model.at(1));
+    TestRunner.deprecatedRunAfterPendingDispatches(step3);
+  }
 
-    function step3()
-    {
-        TestRunner.addResult("\nEvaluated before modification:");
-        evalLocalVariables(step4);
-    }
+  function step3() {
+    TestRunner.addResult('\nEvaluated before modification:');
+    evalLocalVariables(step4);
+  }
 
-    async function step4()
-    {
-        await localScopeObject().setPropertyValue("localObject1", "({ a: -290})");
-        await localScopeObject().setPropertyValue({ value: "localObject2" }, "123");
-        TestRunner.addResult("\nEvaluated after modification:");
-        evalLocalVariables(step7);
-    }
+  async function step4() {
+    await localScopeObject().setPropertyValue('localObject1', '({ a: -290})');
+    await localScopeObject().setPropertyValue({value: 'localObject2'}, '123');
+    TestRunner.addResult('\nEvaluated after modification:');
+    evalLocalVariables(step7);
+  }
 
-    function step7()
-    {
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step7() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>
