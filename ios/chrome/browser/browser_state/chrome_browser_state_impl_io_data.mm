@@ -86,11 +86,6 @@ void ChromeBrowserStateImplIOData::Handle::Init(
   io_data_->app_cache_max_size_ = cache_max_size;
 
   io_data_->InitializeMetricsEnabledStateOnUIThread();
-
-  scoped_refptr<base::SequencedTaskRunner> db_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 }
 
 scoped_refptr<IOSChromeURLRequestContextGetter>
@@ -202,11 +197,12 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   // Set up a persistent store for use by the network stack on the IO thread.
   base::FilePath network_json_store_filepath(
       profile_path_.Append(kIOSChromeNetworkPersistentStateFilename));
-  network_json_store_ = new JsonPrefStore(
-      network_json_store_filepath,
-      JsonPrefStore::GetTaskRunnerForFile(network_json_store_filepath,
-                                          web::WebThread::GetBlockingPool()),
-      std::unique_ptr<PrefFilter>());
+  network_json_store_ =
+      new JsonPrefStore(network_json_store_filepath,
+                        base::CreateSequencedTaskRunnerWithTraits(
+                            {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                             base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+                        std::unique_ptr<PrefFilter>());
   network_json_store_->ReadPrefsAsync(nullptr);
 
   net::URLRequestContext* main_context = main_request_context();

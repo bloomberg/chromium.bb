@@ -16,6 +16,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/values.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/log_manager.h"
@@ -1288,6 +1289,7 @@ TEST_F(PasswordControllerTest, CheckIncorrectData) {
 // The test case below does not need the heavy fixture from above, but it
 // needs to use MockWebState.
 TEST(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
+  base::test::ScopedTaskEnvironment task_environment;
   TestChromeBrowserState::Builder builder;
   std::unique_ptr<TestChromeBrowserState> browser_state(builder.Build());
   MockWebState web_state;

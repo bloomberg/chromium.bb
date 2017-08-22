@@ -46,6 +46,7 @@ source_set("unit_tests") {
   deps = [
     ":browser_list",
     "//base",
+    "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//testing/gtest",
   ]

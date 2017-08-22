@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/test/scoped_task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/browser_list/browser_list_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,6 +61,7 @@ class BrowserListTest : public PlatformTest {
   ios::ChromeBrowserState* browser_state() { return browser_state_.get(); }
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserListTest);

@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
-#include "components/prefs/json_pref_store.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -25,7 +24,11 @@
 
 namespace ios {
 
-ChromeBrowserState::ChromeBrowserState() {}
+ChromeBrowserState::ChromeBrowserState(
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    : io_task_runner_(std::move(io_task_runner)) {
+  DCHECK(io_task_runner_);
+}
 
 ChromeBrowserState::~ChromeBrowserState() {}
 
@@ -53,10 +56,7 @@ std::string ChromeBrowserState::GetDebugName() {
 }
 
 scoped_refptr<base::SequencedTaskRunner> ChromeBrowserState::GetIOTaskRunner() {
-  base::FilePath browser_state_path =
-      GetOriginalChromeBrowserState()->GetStatePath();
-  return JsonPrefStore::GetTaskRunnerForFile(browser_state_path,
-                                             web::WebThread::GetBlockingPool());
+  return io_task_runner_;
 }
 
 sync_preferences::PrefServiceSyncable* ChromeBrowserState::GetSyncablePrefs() {

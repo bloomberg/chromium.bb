@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/activity_services/chrome_activity_item_thumbnail_generator.h"
 
+#include "base/test/scoped_task_environment.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/tabs/tab.h"
 #include "testing/platform_test.h"
@@ -37,6 +38,7 @@ class ChromeActivityItemThumbnailGeneratorTest : public PlatformTest {
     [[[tab_ stub] andReturnValue:OCMOCK_VALUE(browserState)] browserState];
   }
 
+  base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   id tab_;
 };
