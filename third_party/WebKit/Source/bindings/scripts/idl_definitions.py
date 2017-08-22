@@ -296,6 +296,7 @@ class IdlInterface(object):
         self.stringifier = None
         self.iterable = None
         self.has_indexed_elements = False
+        self.has_named_property_getter = False
         self.maplike = None
         self.setlike = None
         self.original_interface = None
@@ -336,8 +337,11 @@ class IdlInterface(object):
                 self.extended_attributes = extended_attributes
             elif child_class == 'Operation':
                 op = IdlOperation(child)
-                if 'getter' in op.specials and str(op.arguments[0].idl_type) == 'unsigned long':
-                    has_indexed_property_getter = True
+                if 'getter' in op.specials:
+                    if str(op.arguments[0].idl_type) == 'unsigned long':
+                        has_indexed_property_getter = True
+                    elif str(op.arguments[0].idl_type) == 'DOMString':
+                        self.has_named_property_getter = True
                 self.operations.append(op)
             elif child_class == 'Inherit':
                 self.parent = child.GetName()
@@ -358,6 +362,15 @@ class IdlInterface(object):
 
         if len(filter(None, [self.iterable, self.maplike, self.setlike])) > 1:
             raise ValueError('Interface can only have one of iterable<>, maplike<> and setlike<>.')
+
+        # TODO(rakuco): This validation logic should be in v8_interface according to bashi@.
+        # At the moment, doing so does not work because several IDL files are partial Window
+        # interface definitions, and interface_dependency_resolver.py doesn't seem to have any logic
+        # to prevent these partial interfaces from resetting has_named_property to False.
+        if 'LegacyUnenumerableNamedProperties' in self.extended_attributes and \
+           not self.has_named_property_getter:
+            raise ValueError('[LegacyUnenumerableNamedProperties] can be used only in interfaces '
+                             'that support named properties.')
 
         if has_integer_typed_length and has_indexed_property_getter:
             self.has_indexed_elements = True

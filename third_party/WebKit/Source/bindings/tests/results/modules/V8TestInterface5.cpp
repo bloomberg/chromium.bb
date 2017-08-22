@@ -530,6 +530,9 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
   // 2.7. If |O| implements an interface with a named property setter, then set
   //      desc.[[Writable]] to true, otherwise set it to false.
+  // 2.8. If |O| implements an interface with the
+  //      [LegacyUnenumerableNamedProperties] extended attribute, then set
+  //      desc.[[Enumerable]] to false, otherwise set it to true.
   V8SetReturnValueInt(info, v8::ReadOnly);
 }
 

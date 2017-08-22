@@ -306,6 +306,25 @@ Summary: HTML Elements have special constructor behavior. Interface object of gi
 
 Usage: Must take no arguments, and must not appear on anything other than an interface. It must appear once on an interface, and the interface cannot be annotated with `[Constructor]` or `[NoInterfaceObject]` extended attributes. It must not be used on a callback interface.
 
+### [LegacyUnenumerableNamedProperties] _(i)_
+
+Standard: [LegacyUnenumerableNamedProperties](https://heycam.github.io/webidl/#LegacyUnenumerableNamedProperties)
+
+Summary: If an IDL interface [supports named properties](https://heycam.github.io/webidl/#dfn-support-named-properties), this extended attribute causes those properties not to be enumerable.
+
+```webidl
+[
+    LegacyUnenumerableNamedProperties
+] interface HTMLCollection {
+    ...
+    getter Element? namedItem(DOMString name);
+}
+```
+
+In the example above, named properties in `HTMLCollection` instances (such as those returned by `document.getElementsByTagName()`) are not enumerable. In other words, `for-in` loops do not iterate over them, they are not listed by `Object.keys()` calls and the property descriptor returned by `Object.getPropertyDescriptor()` has its `enumerable` property set to `false`.
+
+The `[LegacyUnenumerableNamedProperties]` extended attribute must be used **only** in interfaces that support named properties.
+
 ### [NamedConstructor] _(i)_
 
 Standard: [NamedConstructor](https://heycam.github.io/webidl/#NamedConstructor)
