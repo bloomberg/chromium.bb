@@ -86,6 +86,7 @@ ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
 
   DCHECK(!IsNull());
   v8::Local<v8::Context> context = script_state->GetContext();
+  probe::ExecuteScript probe(ExecutionContext::From(script_state));
   bool success;
   if (!NewLocal(script_state->GetIsolate())
            ->InstantiateModule(context, &ResolveModuleCallback)
