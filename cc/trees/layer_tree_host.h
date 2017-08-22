@@ -42,7 +42,7 @@
 #include "cc/trees/proxy.h"
 #include "cc/trees/swap_promise_manager.h"
 #include "cc/trees/target_property.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/surfaces/surface_reference_owner.h"
 #include "components/viz/common/surfaces/surface_sequence_generator.h"
 #include "third_party/skia/include/core/SkColor.h"

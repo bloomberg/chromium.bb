@@ -19,7 +19,7 @@
 #include "cc/cc_export.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/scoped_resource.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 
 namespace cc {
 

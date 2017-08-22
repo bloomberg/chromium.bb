@@ -12,7 +12,7 @@
 #include <unordered_map>
 
 #include "base/memory/ref_counted.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/gfx/geometry/size.h"
 

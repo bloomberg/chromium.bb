@@ -6,7 +6,7 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "components/viz/common/quads/resource_format.h"
+#include "components/viz/common/resources/resource_format.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
