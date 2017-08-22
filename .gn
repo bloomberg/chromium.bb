@@ -112,27 +112,8 @@ check_targets = [
   #"//jingle/*",
   "//mash/*",
 
-  #"//media/*",  # Lots of errors.
-  "//media/base/*",
-
-  #"//media/capture/*",
-  "//media/cast/*",
-  "//media:media",
-  "//media:shared_memory_support",
-  "//media:media_unittests",
-  "//media:audio_unittests",
-  "//media:media_perftests",
-  "//media/audio/*",
-  "//media/blink/*",
-  "//media/cdm/*",
-  "//media/ffmpeg/*",
-  "//media/gpu/*",
-  "//media/midi/*",
-  "//media/mojo/*",
-  "//media/remoting/*",
-  "//media/test/*",
-
-  "mojo/*",
+  "//media/*",
+  "//mojo/*",
 
   #"//native_client/*",
   "//net/*",
