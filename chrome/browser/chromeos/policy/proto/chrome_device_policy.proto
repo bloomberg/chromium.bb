@@ -823,6 +823,7 @@ message CastReceiverNameProto {
 // Day of the week and time settings for DeviceOffHoursIntervalProto.
 message WeeklyTimeProto {
   enum Weekday {
+    DAY_OF_WEEK_UNSPECIFIED = 0;
     MONDAY = 1;
     TUESDAY = 2;
     WEDNESDAY = 3;

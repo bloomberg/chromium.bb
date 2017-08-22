@@ -115,8 +115,9 @@ std::unique_ptr<base::Value> DecodeConnectionType(int value) {
 std::unique_ptr<base::DictionaryValue> ParseWeeklyTime(
     const em::WeeklyTimeProto& weekly_time) {
   auto weekly_time_res = base::MakeUnique<base::DictionaryValue>();
-  if (!weekly_time.has_weekday()) {
-    LOG(ERROR) << "Day of week in interval can't be absent.";
+  if (!weekly_time.has_weekday() ||
+      weekly_time.weekday() == em::WeeklyTimeProto::DAY_OF_WEEK_UNSPECIFIED) {
+    LOG(ERROR) << "Day of week in interval absent or unspecified.";
     return nullptr;
   }
   if (!weekly_time.has_time()) {
