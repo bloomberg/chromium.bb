@@ -73,7 +73,7 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
 // Converts a SiteSettingSource to its string identifier.
 std::string SiteSettingSourceToString(const SiteSettingSource source);
 
-// Helper function to construct a dictonary for an exception.
+// Helper function to construct a dictionary for an exception.
 std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSettingsPattern& pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -82,7 +82,7 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const std::string& provider_name,
     bool incognito);
 
-// Helper function to construct a dictonary for a hosted app exception.
+// Helper function to construct a dictionary for a hosted app exception.
 void AddExceptionForHostedApp(const std::string& url_pattern,
     const extensions::Extension& app, base::ListValue* exceptions);
 

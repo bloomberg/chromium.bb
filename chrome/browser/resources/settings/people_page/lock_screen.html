@@ -49,7 +49,7 @@
         margin: auto;
       }
 
-      #easyUnlockSettingsCollapsable {
+      #easyUnlockSettingsCollapsible {
         @apply(--settings-list-frame-padding);
       }
 
@@ -160,7 +160,7 @@
           </template>
         </div>
         <iron-collapse opened="[[easyUnlockEnabled_]]"
-            id="easyUnlockSettingsCollapsable">
+            id="easyUnlockSettingsCollapsible">
           <settings-toggle-button
               class="continuation no-padding underbar"
               pref="{{prefs.proximity_auth.is_chromeos_login_enabled}}"
