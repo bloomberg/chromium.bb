@@ -795,10 +795,6 @@ void Layer::SetScrollOffset(const gfx::ScrollOffset& scroll_offset) {
 
 void Layer::SetScrollOffsetFromImplSide(
     const gfx::ScrollOffset& scroll_offset) {
-  // TODO(pdr): This is a speculative CHECK to investigate crbug.com/747719 and
-  //            should be removed once that bug is resolved.
-  CHECK(layer_tree_host_);
-
   DCHECK(IsPropertyChangeAllowed());
   // This function only gets called during a BeginMainFrame, so there
   // is no need to call SetNeedsUpdate here.
