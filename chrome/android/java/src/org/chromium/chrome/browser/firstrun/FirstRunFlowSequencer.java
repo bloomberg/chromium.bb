@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.services.AndroidEduAndChildAccountHelper;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 
@@ -382,11 +382,11 @@ public abstract class FirstRunFlowSequencer  {
                         caller, TextUtils.equals(intent.getAction(), Intent.ACTION_MAIN));
             }
 
-            boolean isVrIntent = VrShellDelegate.isVrIntent(intent);
+            boolean isVrIntent = VrIntentUtils.isVrIntent(intent);
             if (isVrIntent) {
                 // Remove VR-specific extras from the intent to Chrome because we don't want the
                 // VR intent to auto-present after the FRE is complete.
-                VrShellDelegate.removeVrExtras(intent);
+                VrIntentUtils.removeVrExtras(intent);
             }
             // Add a PendingIntent so that the intent used to launch Chrome will be resent when
             // First Run is completed or canceled.
@@ -394,7 +394,7 @@ public abstract class FirstRunFlowSequencer  {
             freIntent.putExtra(FirstRunActivity.EXTRA_FINISH_ON_TOUCH_OUTSIDE, true);
 
             if (!(caller instanceof Activity)) freIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            if (isVrIntent) freIntent = VrShellDelegate.setupVrFreIntent(caller, freIntent);
+            if (isVrIntent) freIntent = VrIntentUtils.setupVrFreIntent(caller, freIntent);
             IntentUtils.safeStartActivity(caller, freIntent);
         } else {
             // First Run requires that the Intent contains NEW_TASK so that it doesn't sit on top

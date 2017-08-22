@@ -51,7 +51,8 @@ import org.chromium.chrome.browser.upgrade.UpgradeActivity;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr_shell.SeparateTaskCustomTabVrActivity;
+import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.ui.widget.Toast;
@@ -202,8 +203,8 @@ public class ChromeLauncherActivity extends Activity
         // Check if we should launch the ChromeTabbedActivity.
         if (!mIsCustomTabIntent && !FeatureUtilities.isDocumentMode(this)) {
             Bundle options = null;
-            if (VrShellDelegate.isVrIntent(getIntent())) {
-                options = VrShellDelegate.getVrIntentOptions(this);
+            if (VrIntentUtils.isVrIntent(getIntent())) {
+                options = VrIntentUtils.getVrIntentOptions(this);
             }
             launchTabbedMode(options);
             finish();
@@ -316,9 +317,9 @@ public class ChromeLauncherActivity extends Activity
      * @return Whether the intent is for launching a Custom Tab.
      */
     public static boolean isCustomTabIntent(Intent intent) {
-        if (intent == null
-                || CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
-                || !intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)) {
+        if (intent == null || CustomTabsIntent.shouldAlwaysUseBrowserUI(intent)
+                || (!intent.hasExtra(CustomTabsIntent.EXTRA_SESSION)
+                           && !VrIntentUtils.isCustomTabVrIntent(intent))) {
             return false;
         }
         return IntentHandler.getUrlFromIntent(intent) != null;
@@ -342,14 +343,18 @@ public class ChromeLauncherActivity extends Activity
         // so explicitly remove it to ensure the CCT does not get lost in recents.
         if ((newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
                 || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
-            newIntent.setFlags(
-                    newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            newIntent.setFlags(newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
             String uuid = UUID.randomUUID().toString();
             newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 // Force a new document L+ to ensure the proper task/stack creation.
                 newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-                newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
+                if (VrIntentUtils.isVrIntent(intent)) {
+                    newIntent.setClassName(
+                            context, SeparateTaskCustomTabVrActivity.class.getName());
+                } else {
+                    newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
+                }
             } else {
                 int activityIndex = ActivityAssigner
                         .instance(ActivityAssigner.SEPARATE_TASK_CCT_NAMESPACE).assign(uuid);
@@ -390,8 +395,17 @@ public class ChromeLauncherActivity extends Activity
         maybePrefetchDnsInBackground();
 
         // Create and fire a launch intent.
+        Bundle options = null;
+        if (VrIntentUtils.isVrIntent(getIntent())) {
+            // VR intents will open a VR-specific CCT {@link SeparateTaskCustomTabVrActivity} which
+            // starts with a theme that disables the system preview window. As a side effect, you
+            // see a flash of the previous app exiting before Chrome is started. These options
+            // prevent that flash as it can look jarring while the user is in their headset.
+            options = VrIntentUtils.getVrIntentOptions(this);
+        }
         startActivity(createCustomTabActivityIntent(
-                this, getIntent(), !isCustomTabIntent(getIntent()) && mIsHerbIntent));
+                              this, getIntent(), !isCustomTabIntent(getIntent()) && mIsHerbIntent),
+                options);
         if (mIsHerbIntent) overridePendingTransition(R.anim.activity_open_enter, R.anim.no_anim);
     }
 
