@@ -53,6 +53,17 @@ class HistogramBase;
 // process's instance.
 class BASE_EXPORT TaskScheduler {
  public:
+  enum class TaskPriorityAdjustment {
+    // Honor the TaskPriority with which tasks are posted.
+    NONE,
+
+    // Handle all tasks with TaskPriority::USER_BLOCKING. This is strictly for
+    // an experiment -- not something regular users should consider.
+    //
+    // TODO(fdoray): Remove after experiment. https://crbug.com/757022
+    EXPERIMENTAL_ALL_TASKS_USER_BLOCKING,
+  };
+
   struct BASE_EXPORT InitParams {
     InitParams(
         const SchedulerWorkerPoolParams& background_worker_pool_params_in,
@@ -60,13 +71,17 @@ class BASE_EXPORT TaskScheduler {
             background_blocking_worker_pool_params_in,
         const SchedulerWorkerPoolParams& foreground_worker_pool_params_in,
         const SchedulerWorkerPoolParams&
-            foreground_blocking_worker_pool_params_in);
+            foreground_blocking_worker_pool_params_in,
+        TaskPriorityAdjustment task_priority_adjustment_in =
+            TaskPriorityAdjustment::NONE);
     ~InitParams();
 
     SchedulerWorkerPoolParams background_worker_pool_params;
     SchedulerWorkerPoolParams background_blocking_worker_pool_params;
     SchedulerWorkerPoolParams foreground_worker_pool_params;
     SchedulerWorkerPoolParams foreground_blocking_worker_pool_params;
+    TaskPriorityAdjustment task_priority_adjustment =
+        TaskPriorityAdjustment::NONE;
   };
 
   // Destroying a TaskScheduler is not allowed in production; it is always
