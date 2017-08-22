@@ -3580,3 +3580,6 @@ crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_HMAC.https
 crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-OAEP.https.html [ Skip ]
 crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-PSS.https.html [ Skip ]
 crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKCS1-v1_5.https.html [ Skip ]
+
+# This test has a fixed number of time which can depend on performance.
+crbug.com/v8/6448 [ Debug ] external/wpt/hr-time/window-worker-time-origin.html [ Pass Failure ]

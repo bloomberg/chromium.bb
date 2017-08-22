@@ -88,6 +88,7 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
     case WorldType::kGarbageCollector:
     case WorldType::kRegExp:
     case WorldType::kTesting:
+    case WorldType::kForV8ContextSnapshotNonMain:
     case WorldType::kWorker: {
       WorldMap& map = GetWorldMap();
       DCHECK(!map.Contains(world_id_));
@@ -289,6 +290,7 @@ int DOMWrapperWorld::GenerateWorldIdForType(WorldType world_type) {
     case WorldType::kGarbageCollector:
     case WorldType::kRegExp:
     case WorldType::kTesting:
+    case WorldType::kForV8ContextSnapshotNonMain:
     case WorldType::kWorker:
       int world_id = *next_world_id;
       CHECK_GE(world_id, WorldId::kUnspecifiedWorldIdStart);

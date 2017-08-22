@@ -136,9 +136,7 @@ v8::Local<v8::Function> V8PerContextData::ConstructorForTypeSlowCase(
   // Origin Trials
   InstallConditionalFeatures(type, ScriptState::From(current_context),
                              prototype_object, interface_object);
-
   constructor_map_.Set(type, interface_object);
-
   return interface_object;
 }
 

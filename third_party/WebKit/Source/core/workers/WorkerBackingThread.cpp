@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "bindings/core/v8/V8ContextSnapshot.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Initializer.h"
@@ -75,8 +76,12 @@ void WorkerBackingThread::InitializeOnBackingThread(
   backing_thread_->InitializeOnThread();
 
   DCHECK(!isolate_);
+  // TODO(peria): Replace GetReferenceTable with nullptr.
+  // (http://crbug.com/v8/6448)
   isolate_ = V8PerIsolateData::Initialize(
-      backing_thread_->PlatformThread().GetWebTaskRunner());
+      backing_thread_->PlatformThread().GetWebTaskRunner(),
+      V8ContextSnapshot::GetReferenceTable(),
+      V8PerIsolateData::V8ContextSnapshotMode::kDontUseSnapshot);
   AddWorkerIsolate(isolate_);
   V8Initializer::InitializeWorker(isolate_);
 
