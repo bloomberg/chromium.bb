@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/foundation_util.h"
@@ -54,7 +55,10 @@ namespace {
 CGSize PreferredCellSizeForWidth(UICollectionViewCell* cell, CGFloat width) {
   CGRect cellFrame = cell.frame;
   cellFrame.size.width = width;
-  cellFrame.size.height = CGFLOAT_MAX;
+  // Increase the cell height to big height to avoid any horizontal constrants.
+  // To avoid a warning from _NSLayoutConstraintNumberExceedsLimit, the value
+  // has to be reasonable.
+  cellFrame.size.height = 2000.;
   cell.frame = cellFrame;
   [cell setNeedsLayout];
   [cell layoutIfNeeded];
@@ -736,6 +740,14 @@ CGFloat minFaviconSizePt = 16;
   if ([self isPromoSection:indexPath.section]) {
     UICollectionViewCell* cell =
         [self.collectionView cellForItemAtIndexPath:indexPath];
+    if (!base::ios::IsRunningOnIOS10OrLater() &&
+        [cell isKindOfClass:[BookmarkSigninPromoCell class]]) {
+      // With iOS 9, UICollectionView keeps asking the size of the cell, if the
+      // current cell size is updated in this method. To avoid this, a new cell
+      // should be created to not change the current cell.
+      // See crbug.com/754874
+      cell = nil;
+    }
     if (!cell) {
       // -[UICollectionView
       // dequeueReusableCellWithReuseIdentifier:forIndexPath:] cannot be used
