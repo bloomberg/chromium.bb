@@ -543,8 +543,7 @@ class Port(object):
             suffix: file suffix of the expected results, including dot; e.g. '.txt'
                 or '.png'.  This should not be None, but may be an empty string.
             platform: the most-specific directory name to use to build the
-                search list of directories, e.g., 'win', or
-                'chromium-cg-mac-leopard' (we follow the WebKit format)
+                search list of directories, e.g., 'win'.
             return_default: if True, returns the path to the generic expectation if nothing
                 else is found; if False, returns None.
         """
@@ -986,10 +985,6 @@ class Port(object):
     def set_option_default(self, name, default_value):
         return self._options.ensure_value(name, default_value)
 
-    @memoized
-    def path_to_generic_test_expectations_file(self):
-        return self._filesystem.join(self.layout_tests_dir(), 'TestExpectations')
-
     def relative_test_filename(self, filename):
         """Returns a Unix-style path for a filename relative to LayoutTests.
 
@@ -1325,14 +1320,33 @@ class Port(object):
         return {}
 
     def expectations_files(self):
-        paths = [
+        """Returns a list of paths to expectations files that apply by default.
+
+        There are other "test expectations" files that may be applied if
+        the --additional-expectations flag is passed; those aren't included
+        here.
+        """
+        return [
             self.path_to_generic_test_expectations_file(),
             self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'),
             self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'),
             self._filesystem.join(self.layout_tests_dir(), 'SlowTests'),
+        ] + self._flag_specific_expectations_files()
+
+    def extra_expectations_files(self):
+        """Returns a list of paths to test expectations not loaded by default.
+
+        These paths are passed via --additional-expectations on some builders.
+        """
+        return [
+            self._filesystem.join(self.layout_tests_dir(), 'ASANExpectations'),
+            self._filesystem.join(self.layout_tests_dir(), 'LeakExpectations'),
+            self._filesystem.join(self.layout_tests_dir(), 'MSANExpectations'),
         ]
-        paths.extend(self._flag_specific_expectations_files())
-        return paths
+
+    @memoized
+    def path_to_generic_test_expectations_file(self):
+        return self._filesystem.join(self.layout_tests_dir(), 'TestExpectations')
 
     def repository_path(self):
         """Returns the repository path for the chromium code base."""
