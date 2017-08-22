@@ -93,8 +93,8 @@ class ChromeTestExtensionLoader {
   // Checks that the permissions of the loaded extension are correct.
   void CheckPermissions(const std::string& extension_id);
 
-  // Checks for any errors associated with the extension.
-  bool CheckErrors(const Extension& extension);
+  // Checks for any install warnings associated with the extension.
+  bool CheckInstallWarnings(const Extension& extension);
 
   // Waits for the extension to finish setting up.
   bool WaitForExtensionReady();
