@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -41,6 +40,7 @@ import org.chromium.content.browser.test.util.TestTouchUtils;
 public class SuggestionsBottomSheetTest {
     @Rule
     public BottomSheetTestRule mActivityRule = new BottomSheetTestRule();
+
     @Rule
     public SuggestionsDependenciesRule createSuggestions() {
         return new SuggestionsDependenciesRule(NtpUiCaptureTestData.createFactory());
@@ -56,26 +56,21 @@ public class SuggestionsBottomSheetTest {
     @MediumTest
     public void testContextMenu() throws InterruptedException {
         SuggestionsRecyclerView recyclerView =
-                (SuggestionsRecyclerView) mActivityRule.getBottomSheetContent()
-                        .getContentView()
-                        .findViewById(R.id.recycler_view);
+                mActivityRule.getBottomSheetContent().getContentView().findViewById(
+                        R.id.recycler_view);
 
-        ViewHolder firstCardViewHolder = RecyclerViewTestUtils.waitForView(recyclerView, 2);
-        assertEquals(firstCardViewHolder.getItemViewType(), ItemViewType.SNIPPET);
+        int suggestionPosition =
+                recyclerView.getNewTabPageAdapter().getFirstPositionForType(ItemViewType.SNIPPET);
+        ViewHolder suggestionViewHolder =
+                RecyclerViewTestUtils.scrollToView(recyclerView, suggestionPosition);
 
         assertFalse(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
         TestTouchUtils.longClickView(
-                InstrumentationRegistry.getInstrumentation(), firstCardViewHolder.itemView);
+                InstrumentationRegistry.getInstrumentation(), suggestionViewHolder.itemView);
         assertTrue(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityRule.getActivity().closeContextMenu();
-            }
-        });
-
+        ThreadUtils.runOnUiThreadBlocking(mActivityRule.getActivity()::closeContextMenu);
         assertFalse(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
     }
 
