@@ -34,6 +34,7 @@ TEST(ContentSuggestionsFooterItemTest, CellIsConfigured) {
 
   // Tests.
   EXPECT_EQ(title, [cell.button titleForState:UIControlStateNormal]);
+  EXPECT_EQ(cell, item.configuredCell);
   EXPECT_OCMOCK_VERIFY(mockCell);
 }
 

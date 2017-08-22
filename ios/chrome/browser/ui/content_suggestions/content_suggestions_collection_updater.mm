@@ -223,6 +223,29 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
        toSectionInfo:sectionInfo];
 }
 
+- (void)section:(ContentSuggestionsSectionInformation*)sectionInfo
+      isLoading:(BOOL)isLoading {
+  SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+  if (![model hasSectionForSectionIdentifier:sectionIdentifier] ||
+      ![model footerForSectionWithIdentifier:sectionIdentifier])
+    return;
+
+  CollectionViewItem* footerItem =
+      [model footerForSectionWithIdentifier:sectionIdentifier];
+  ContentSuggestionsFooterItem* footer =
+      base::mac::ObjCCastStrict<ContentSuggestionsFooterItem>(footerItem);
+
+  if (footer.loading != isLoading) {
+    footer.loading = isLoading;
+    if (footer.configuredCell.delegate == footer) {
+      // The cell associated with this footer is probably still on screen.
+      [footer configureCell:footer.configuredCell];
+    }
+  }
+}
+
 - (void)clearSuggestion:(ContentSuggestionIdentifier*)suggestionIdentifier {
   SectionIdentifier sectionIdentifier =
       SectionIdentifierForInfo(suggestionIdentifier.sectionInfo);
