@@ -74,11 +74,8 @@ void CreateContextMenuDownload(
     const std::string& extra_headers,
     bool granted) {
   content::WebContents* web_contents = wc_getter.Run();
-  if (!granted) {
-    DownloadController::RecordStoragePermission(
-        DownloadController::StoragePermissionType::STORAGE_PERMISSION_DENIED);
+  if (!granted)
     return;
-  }
 
   if (!web_contents) {
     DownloadController::RecordStoragePermission(
@@ -87,8 +84,6 @@ void CreateContextMenuDownload(
     return;
   }
 
-  DownloadController::RecordStoragePermission(
-      DownloadController::StoragePermissionType::STORAGE_PERMISSION_GRANTED);
   const GURL& url = is_link ? params.link_url : params.src_url;
   const GURL& referring_url =
       params.frame_url.is_empty() ? params.page_url : params.frame_url;
@@ -156,30 +151,7 @@ void RemoveDownloadItem(std::unique_ptr<DownloadManagerGetter> getter,
     item->Remove();
 }
 
-}  // namespace
-
-static void OnAcquirePermissionResult(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz,
-    jlong callback_id,
-    jboolean granted,
-    const JavaParamRef<jstring>& jpermission_to_update) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(callback_id);
-
-  std::string permission_to_update;
-  if (jpermission_to_update) {
-    permission_to_update =
-        base::android::ConvertJavaStringToUTF8(env, jpermission_to_update);
-  }
-  // Convert java long long int to c++ pointer, take ownership.
-  std::unique_ptr<DownloadController::AcquirePermissionCallback> cb(
-      reinterpret_cast<DownloadController::AcquirePermissionCallback*>(
-          callback_id));
-  cb->Run(granted, permission_to_update);
-}
-
-static void OnRequestFileAccessResult(
+void OnRequestFileAccessResult(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb,
     bool granted,
@@ -202,6 +174,45 @@ static void OnRequestFileAccessResult(
         DownloadController::CANCEL_REASON_NO_STORAGE_PERMISSION);
   }
   cb.Run(granted);
+}
+
+void OnStoragePermissionDecided(
+    const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb,
+    bool granted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (granted) {
+    DownloadController::RecordStoragePermission(
+        DownloadController::StoragePermissionType::STORAGE_PERMISSION_GRANTED);
+  } else {
+    DownloadController::RecordStoragePermission(
+        DownloadController::StoragePermissionType::STORAGE_PERMISSION_DENIED);
+  }
+
+  cb.Run(granted);
+}
+
+}  // namespace
+
+static void OnAcquirePermissionResult(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    jlong callback_id,
+    jboolean granted,
+    const JavaParamRef<jstring>& jpermission_to_update) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(callback_id);
+
+  std::string permission_to_update;
+  if (jpermission_to_update) {
+    permission_to_update =
+        base::android::ConvertJavaStringToUTF8(env, jpermission_to_update);
+  }
+  // Convert java long long int to c++ pointer, take ownership.
+  std::unique_ptr<DownloadController::AcquirePermissionCallback> cb(
+      reinterpret_cast<DownloadController::AcquirePermissionCallback*>(
+          callback_id));
+  cb->Run(granted, permission_to_update);
 }
 
 // static
@@ -250,14 +261,19 @@ void DownloadController::AcquireFileAccessPermission(
   if (vr::VrTabHelper::IsInVr(web_contents))
     return;
 
+  RecordStoragePermission(StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
+
   if (HasFileAccessPermission()) {
+    RecordStoragePermission(
+        StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE, base::Bind(cb, true));
     return;
   }
 
   AcquirePermissionCallback callback(
-      base::Bind(&OnRequestFileAccessResult, web_contents_getter, cb));
+      base::Bind(&OnRequestFileAccessResult, web_contents_getter,
+                 base::Bind(&OnStoragePermissionDecided, cb)));
   // Make copy on the heap so we can pass the pointer through JNI.
   intptr_t callback_id =
       reinterpret_cast<intptr_t>(new AcquirePermissionCallback(callback));
@@ -447,13 +463,6 @@ void DownloadController::StartContextMenuDownload(
 
   const content::ResourceRequestInfo::WebContentsGetter& wc_getter(
       base::Bind(&GetWebContents, process_id, routing_id));
-
-  RecordStoragePermission(StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
-
-  if (HasFileAccessPermission()) {
-    RecordStoragePermission(
-        StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
-  }
 
   AcquireFileAccessPermission(
       wc_getter, base::Bind(&CreateContextMenuDownload, wc_getter, params,
