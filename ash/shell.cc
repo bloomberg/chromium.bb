@@ -907,8 +907,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   wallpaper_controller_ = base::MakeUnique<WallpaperController>();
 
-  if (config == Config::MASH)
-    app_list_delegate_impl_ = base::MakeUnique<AppListDelegateImpl>();
+  app_list_delegate_impl_ = base::MakeUnique<AppListDelegateImpl>();
 
   // TODO(sky): move creation to ShellPort.
   if (config != Config::MASH)

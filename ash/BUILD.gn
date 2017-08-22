@@ -1595,8 +1595,8 @@ static_library("test_support_common") {
   testonly = true
   visibility = [ ":*" ]
   sources = [
-    "app_list/test_app_list_view_presenter_impl.cc",
-    "app_list/test_app_list_view_presenter_impl.h",
+    "app_list/test_app_list_presenter_impl.cc",
+    "app_list/test_app_list_presenter_impl.h",
     "display/display_configuration_controller_test_api.cc",
     "display/display_configuration_controller_test_api.h",
     "display/mirror_window_test_api.cc",

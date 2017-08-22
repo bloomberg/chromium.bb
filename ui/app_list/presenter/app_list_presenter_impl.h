@@ -53,19 +53,10 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Returns app list view if one exists, or NULL otherwise.
   AppListView* GetView() { return view_; }
 
-  // Show/hide app list window. The |window| is used to deterime in which
-  // display (in which the |window| exists) the app list should be shown.
+  // Show the app list window on the display with the given id.
   void Show(int64_t display_id);
 
-  // Updates y position and opacity of app list. |is_end_gesture| means it is
-  // the end of the gesture dragging of app list from shelf and should restore
-  // the opacity of the app list.
-  void UpdateYPositionAndOpacity(int y_position_in_screen,
-                                 float background_opacity,
-                                 bool is_end_gesture);
-
-  // Invoked to dismiss app list. This may leave the view open but hidden from
-  // the user.
+  // Hide the open app list window. This may leave the view open but hidden.
   void Dismiss();
 
   // Show the app list if it is visible, hide it if it is hidden.
@@ -80,6 +71,13 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
 
   // Sets the app list interface pointer; used to report visibility changes.
   void SetAppList(mojom::AppListPtr app_list);
+
+  // Updates y position and opacity of app list. |is_end_gesture| means it is
+  // the end of the gesture dragging of app list from shelf and should restore
+  // the opacity of the app list.
+  void UpdateYPositionAndOpacity(int y_position_in_screen,
+                                 float background_opacity,
+                                 bool is_end_gesture);
 
  private:
   friend class test::AppListPresenterImplTestApi;

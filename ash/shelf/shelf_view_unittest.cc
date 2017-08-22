@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/app_list/test_app_list_presenter_impl.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -1492,12 +1493,10 @@ TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
       gfx::Point(all_area.x(), all_area.bottom())));
 }
 
+// Test that shelf button tooltips show (except app list) with an open app list.
 TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
-  // Trigger mock notifications that the app list was shown.
-  Shell::Get()->app_list()->OnTargetVisibilityChanged(true);
-  Shell::Get()->app_list()->OnVisibilityChanged(true, GetPrimaryDisplayId());
-  AppListButton* app_list_button = shelf_view_->GetAppListButton();
-  app_list_button->OnAppListShown();
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
   for (int i = 1; i < test_api_->GetButtonCount(); i++) {
@@ -1511,6 +1510,7 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
   }
 
   // The tooltip should hide on the app list button if the app list is visible.
+  AppListButton* app_list_button = shelf_view_->GetAppListButton();
   EXPECT_TRUE(shelf_view_->ShouldHideTooltip(
       app_list_button->GetMirroredBounds().CenterPoint()));
 }
@@ -2203,18 +2203,6 @@ class ShelfViewInkDropTest : public ShelfViewTest {
         .SetInkDrop(std::move(browser_button_ink_drop));
   }
 
-  void ShowAppList() {
-    // Trigger a mock notification that the app list was shown.
-    Shell::Get()->app_list()->OnTargetVisibilityChanged(true);
-    app_list_button_->OnAppListShown();
-  }
-
-  void DismissAppList() {
-    // Trigger a mock notification that the app list was dismissed.
-    Shell::Get()->app_list()->OnTargetVisibilityChanged(false);
-    app_list_button_->OnAppListDismissed();
-  }
-
   void FinishAppListVisibilityChange() {
     // Trigger a mock notification that the app list finished animating.
     app_list::AppList* app_list = Shell::Get()->app_list();
@@ -2234,21 +2222,16 @@ class ShelfViewInkDropTest : public ShelfViewTest {
 // Tests that changing visibility of the app list transitions app list button's
 // ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonWhenVisibilityChanges) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   InitAppListButtonInkDrop();
 
-  ShowAppList();
-  FinishAppListVisibilityChange();
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
-  DismissAppList();
-  FinishAppListVisibilityChange();
+  app_list_presenter_impl.DismissAndRunLoop();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2291,27 +2274,21 @@ TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenHidden) {
 // which dismisses the app list, transitions ink drop states correctly. Also,
 // tests that mouse drag and mouse release does not affect the ink drop state.
 TEST_F(ShelfViewInkDropTest, AppListButtonMouseEventsWhenVisible) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   InitAppListButtonInkDrop();
 
-  ShowAppList();
-  FinishAppListVisibilityChange();
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
-  ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
-
   // Mouse press on the button, which dismisses the app list, should end up in
   // the hidden state.
-  DismissAppList();
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
   generator.PressLeftButton();
-  FinishAppListVisibilityChange();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2358,38 +2335,26 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenHidden) {
 // Tests that when the app list is visible, tapping on the app list button
 // transitions ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapWhenVisible) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   InitAppListButtonInkDrop();
 
-  ShowAppList();
-  FinishAppListVisibilityChange();
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
+  // Touch press and release on the button, which dismisses the app list, should
+  // end up in the hidden state.
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
-
-  // Touch press on the button, which dismisses the app list, should end up in
-  // the hidden state.
-  DismissAppList();
   generator.PressTouch();
+  generator.ReleaseTouch();
+  RunAllPendingInMessageLoop();
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::DEACTIVATED));
-
-  // Touch release on the button should not change the ink drop state.
-  generator.ReleaseTouch();
-  FinishAppListVisibilityChange();
-  EXPECT_EQ(views::InkDropState::HIDDEN,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              IsEmpty());
 }
 
 // Tests that when the app list is hidden, tapping down on the app list button
@@ -2428,39 +2393,20 @@ TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenHidden) {
 // Tests that when the app list is visible, tapping down on the app list button
 // and dragging the touch point transitions ink drop states correctly.
 TEST_F(ShelfViewInkDropTest, AppListButtonGestureTapDragWhenVisible) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   InitAppListButtonInkDrop();
 
-  ShowAppList();
-  FinishAppListVisibilityChange();
+  TestAppListPresenterImpl app_list_presenter_impl;
+  app_list_presenter_impl.ShowAndRunLoop(GetPrimaryDisplay().id());
   EXPECT_EQ(views::InkDropState::ACTIVATED,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
               ElementsAre(views::InkDropState::ACTIVATED));
 
+  // Touch press on the button, dragging the touch point, and releasing, which
+  // dismisses the app list, should end up in the hidden state.
   ui::test::EventGenerator& generator = GetEventGenerator();
-  gfx::Point touch_location =
-      app_list_button_->GetBoundsInScreen().CenterPoint();
-  generator.MoveMouseTo(touch_location);
-
-  // Touch press on the button, which dismisses the app list, should end up in
-  // the hidden state.
-  DismissAppList();
-  generator.PressTouch();
-  EXPECT_EQ(views::InkDropState::HIDDEN,
-            app_list_button_ink_drop_->GetTargetInkDropState());
-  EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
-              ElementsAre(views::InkDropState::DEACTIVATED));
-
-  // Dragging the touch point and releasing should not change the ink drop
-  // state.
-  touch_location.Offset(app_list_button_->width(), 0);
-  generator.MoveTouch(touch_location);
-  generator.ReleaseTouch();
-  FinishAppListVisibilityChange();
+  generator.MoveMouseTo(app_list_button_->GetBoundsInScreen().CenterPoint());
+  generator.PressMoveAndReleaseTouchBy(app_list_button_->width(), 0);
   EXPECT_EQ(views::InkDropState::HIDDEN,
             app_list_button_ink_drop_->GetTargetInkDropState());
   EXPECT_THAT(app_list_button_ink_drop_->GetAndResetRequestedStates(),
@@ -2670,10 +2616,6 @@ const ui::EventPointerType kPointerTypes[] = {
 // Tests that clicking/tapping on the app list button in tablet mode (when
 // it has two functionalities), transitions the ink drop state correctly.
 TEST_P(AppListButtonInkDropTest, AppListButtonInTabletMode) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   InitAppListButtonInkDrop();
   // Finish all setup tasks. In particular we want to finish the GetSwitchStates
   // post task in (Fake)PowerManagerClient which is triggered by

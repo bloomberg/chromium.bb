@@ -460,7 +460,8 @@ gfx::Point AppListButton::GetBackButtonCenterPoint() const {
 
 void AppListButton::OnAppListVisibilityChanged(bool shown,
                                                aura::Window* root_window) {
-  if (shelf_ != Shelf::ForWindow(root_window))
+  aura::Window* window = GetWidget() ? GetWidget()->GetNativeWindow() : nullptr;
+  if (!window || window->GetRootWindow() != root_window)
     return;
 
   if (shown)
