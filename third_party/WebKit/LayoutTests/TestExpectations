@@ -1098,7 +1098,7 @@ crbug.com/658305 css3/filters/effect-reference-external-stylesheet.html [ Failur
 crbug.com/658305 css3/filters/effect-reference-hidpi.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-hidpi-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-hw.html [ Failure Pass ]
+crbug.com/658305 css3/filters/effect-reference-hw.html [ Failure Pass Timeout ]
 crbug.com/658305 css3/filters/effect-reference-ordering.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-ordering-hw.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-rename.html [ Failure Pass ]
@@ -3585,6 +3585,12 @@ crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_HMAC.https
 crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-OAEP.https.html [ Skip ]
 crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSA-PSS.https.html [ Skip ]
 crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKCS1-v1_5.https.html [ Skip ]
+
+# Tests timing out on WebKit Win7 dbg builder
+crbug.com/757955 [ Win7 Debug ] animations/interpolation/svg-d-interpolation.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] inspector/sources/debugger-pause/pause-on-elements-panel.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] virtual/threaded/animations/composited-animations-rotate-zero-degrees.html [ Pass Timeout ]
 
 # This test has a fixed number of time which can depend on performance.
 crbug.com/v8/6448 [ Debug ] external/wpt/hr-time/window-worker-time-origin.html [ Pass Failure ]
