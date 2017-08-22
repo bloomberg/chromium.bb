@@ -433,17 +433,15 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                          .ContainingBlock()
                          .Style()
                          ->IsLeftToRightDirection();
+
+  const PaintOffsets& selection_offsets =
+      ApplyTruncationToPaintOffsets({static_cast<unsigned>(selection_start),
+                                     static_cast<unsigned>(selection_end)});
+  selection_start = selection_offsets.start;
+  selection_end = selection_offsets.end;
   if (inline_text_box_.Truncation() != kCNoTruncation) {
     // In a mixed-direction flow the ellipsis is at the start of the text
     // rather than at the end of it.
-    selection_start =
-        ltr == flow_is_ltr
-            ? std::min<int>(selection_start, inline_text_box_.Truncation())
-            : std::max<int>(selection_start, inline_text_box_.Truncation());
-    selection_end =
-        ltr == flow_is_ltr
-            ? std::min<int>(selection_end, inline_text_box_.Truncation())
-            : std::max<int>(selection_end, inline_text_box_.Truncation());
     length =
         ltr == flow_is_ltr ? inline_text_box_.Truncation() : text_run.length();
   }
@@ -551,38 +549,57 @@ bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {
   return true;
 }
 
-unsigned InlineTextBoxPainter::MarkerPaintStart(const DocumentMarker& marker) {
+InlineTextBoxPainter::PaintOffsets
+InlineTextBoxPainter::ApplyTruncationToPaintOffsets(
+    const InlineTextBoxPainter::PaintOffsets& offsets) {
+  const unsigned short truncation = inline_text_box_.Truncation();
+  if (truncation == kCNoTruncation)
+    return offsets;
+
+  // If we're in mixed-direction mode (LTR text in an RTL box or vice-versa),
+  // the truncation ellipsis is at the *start* of the text box rather than the
+  // end.
+  bool ltr = inline_text_box_.IsLeftToRightDirection();
+  bool flow_is_ltr = inline_text_box_.GetLineLayoutItem()
+                         .ContainingBlock()
+                         .Style()
+                         ->IsLeftToRightDirection();
+
+  // truncation is relative to the start of the InlineTextBox, not the text
+  // node.
+  if (ltr == flow_is_ltr) {
+    return {std::min<unsigned>(offsets.start, truncation),
+            std::min<unsigned>(offsets.end, truncation)};
+  }
+
+  return {std::max<unsigned>(offsets.start, truncation),
+          std::max<unsigned>(offsets.end, truncation)};
+}
+
+InlineTextBoxPainter::PaintOffsets InlineTextBoxPainter::MarkerPaintStartAndEnd(
+    const DocumentMarker& marker) {
   DCHECK(inline_text_box_.Truncation() != kCFullTruncation);
   DCHECK(inline_text_box_.Len());
 
   // Start painting at the beginning of the text or the specified underline
-  // start offset, whichever is higher.
+  // start offset, whichever is greater.
   unsigned paint_start =
       std::max(inline_text_box_.Start(), marker.StartOffset());
-  // Cap the maximum paint start to (if no truncation) the last character,
-  // else the last character before the truncation ellipsis.
-  return std::min(paint_start, (inline_text_box_.Truncation() == kCNoTruncation)
-                                   ? inline_text_box_.end()
-                                   : inline_text_box_.Start() +
-                                         inline_text_box_.Truncation() - 1);
-}
-
-unsigned InlineTextBoxPainter::MarkerPaintEnd(const DocumentMarker& marker) {
-  DCHECK(inline_text_box_.Truncation() != kCFullTruncation);
-  DCHECK(inline_text_box_.Len());
+  // Cap the maximum paint start to the last character in the text box.
+  paint_start = std::min(paint_start, inline_text_box_.end());
 
   // End painting just past the end of the text or the specified underline end
-  // offset, whichever is lower.
+  // offset, whichever is less.
   unsigned paint_end = std::min(
       inline_text_box_.end() + 1,
       marker.EndOffset());  // end() points at the last char, not past it.
-  // Cap the maximum paint end to (if no truncation) one past the last
-  // character, else one past the last character before the truncation
-  // ellipsis.
-  return std::min(paint_end, (inline_text_box_.Truncation() == kCNoTruncation)
-                                 ? inline_text_box_.end() + 1
-                                 : inline_text_box_.Start() +
-                                       inline_text_box_.Truncation());
+
+  // paint_start and paint_end are currently relative to the start of the text
+  // node. Subtract to make them relative to the start of the InlineTextBox.
+  paint_start -= inline_text_box_.Start();
+  paint_end -= inline_text_box_.Start();
+
+  return ApplyTruncationToPaintOffsets({paint_start, paint_end});
 }
 
 void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
@@ -594,13 +611,6 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
     int start_pos,
     int end_pos) {
   if (background_color == Color::kTransparent)
-    return;
-
-  int s_pos =
-      std::max(start_pos - static_cast<int>(inline_text_box_.Start()), 0);
-  int e_pos = std::min(end_pos - static_cast<int>(inline_text_box_.Start()),
-                       static_cast<int>(inline_text_box_.Len()));
-  if (s_pos >= e_pos)
     return;
 
   int delta_y =
@@ -615,7 +625,7 @@ void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
                           box_origin.Y().ToFloat() - delta_y);
   context.DrawHighlightForText(font, inline_text_box_.ConstructTextRun(style),
                                local_origin, sel_height, background_color,
-                               s_pos, e_pos);
+                               start_pos, end_pos);
 }
 
 void InlineTextBoxPainter::PaintDocumentMarkers(
@@ -680,14 +690,15 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
       case DocumentMarker::kActiveSuggestion: {
         const StyleableMarker& styleable_marker = ToStyleableMarker(marker);
         if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
-          PaintSingleMarkerBackgroundRun(paint_info.context, box_origin, style,
-                                         font,
-                                         styleable_marker.BackgroundColor(),
-                                         MarkerPaintStart(styleable_marker),
-                                         MarkerPaintEnd(styleable_marker));
+          const PaintOffsets marker_offsets =
+              MarkerPaintStartAndEnd(styleable_marker);
+          PaintSingleMarkerBackgroundRun(
+              paint_info.context, box_origin, style, font,
+              styleable_marker.BackgroundColor(), marker_offsets.start,
+              marker_offsets.end);
         } else {
           PaintStyleableMarkerUnderline(paint_info.context, box_origin,
-                                        styleable_marker);
+                                        styleable_marker, style, font);
         }
       } break;
       default:
@@ -1037,54 +1048,31 @@ void InlineTextBoxPainter::ExpandToIncludeNewlineForSelection(
 void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
     GraphicsContext& context,
     const LayoutPoint& box_origin,
-    const StyleableMarker& marker) {
+    const StyleableMarker& marker,
+    const ComputedStyle& style,
+    const Font& font) {
   if (marker.UnderlineColor() == Color::kTransparent)
     return;
 
   if (inline_text_box_.Truncation() == kCFullTruncation)
     return;
 
-  unsigned paint_start = MarkerPaintStart(marker);
-  unsigned paint_end = MarkerPaintEnd(marker);
-  DCHECK_LT(paint_start, paint_end);
+  const PaintOffsets marker_offsets = MarkerPaintStartAndEnd(marker);
 
-  // start of line to draw
-  float start =
-      paint_start == inline_text_box_.Start()
-          ? 0
-          : inline_text_box_.GetLineLayoutItem().Width(
-                inline_text_box_.Start(),
-                paint_start - inline_text_box_.Start(),
-                inline_text_box_.TextPos(),
-                inline_text_box_.IsLeftToRightDirection() ? TextDirection::kLtr
-                                                          : TextDirection::kRtl,
-                inline_text_box_.IsFirstLineStyle());
-  // how much line to draw
-  float width;
-  bool ltr = inline_text_box_.IsLeftToRightDirection();
-  bool flow_is_ltr =
-      inline_text_box_.GetLineLayoutItem().Style()->IsLeftToRightDirection();
-  if (paint_start == inline_text_box_.Start() &&
-      paint_end == inline_text_box_.end() + 1) {
-    width = inline_text_box_.LogicalWidth().ToFloat();
-  } else {
-    unsigned paint_from = ltr == flow_is_ltr ? paint_start : paint_end;
-    unsigned paint_length =
-        ltr == flow_is_ltr
-            ? paint_end - paint_start
-            : inline_text_box_.Start() + inline_text_box_.Len() - paint_end;
-    width = inline_text_box_.GetLineLayoutItem().Width(
-        paint_from, paint_length,
-        LayoutUnit(inline_text_box_.TextPos() + start),
-        flow_is_ltr ? TextDirection::kLtr : TextDirection::kRtl,
-        inline_text_box_.IsFirstLineStyle());
-  }
-  // In RTL mode, start and width are computed from the right end of the text
-  // box: starting at |logicalWidth| - |start| and continuing left by |width| to
-  // |logicalWidth| - |start| - |width|. We will draw that line, but backwards:
-  // |logicalWidth| - |start| - |width| to |logicalWidth| - |start|.
-  if (!flow_is_ltr)
-    start = inline_text_box_.LogicalWidth().ToFloat() - width - start;
+  const TextRun& run = inline_text_box_.ConstructTextRun(style);
+  // Pass 0 for height since we only care about the width
+  const FloatRect& marker_rect = font.SelectionRectForText(
+      run, FloatPoint(), 0, marker_offsets.start, marker_offsets.end);
+  // start of line to draw, relative to box_origin.X()
+  LayoutUnit start = LayoutUnit(marker_rect.X());
+  LayoutUnit width = LayoutUnit(marker_rect.Width());
+
+  // We need to have some space between underlines of subsequent clauses,
+  // because some input methods do not use different underline styles for those.
+  // We make each line shorter, which has a harmless side effect of shortening
+  // the first and last clauses, too.
+  start += 1;
+  width -= 2;
 
   // Thick marked text underlines are 2px thick as long as there is room for the
   // 2px line under the baseline.  All other marked text underlines are 1px
@@ -1100,13 +1088,6 @@ void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
   int baseline = font_data ? font_data->GetFontMetrics().Ascent() : 0;
   if (marker.IsThick() && inline_text_box_.LogicalHeight() - baseline >= 2)
     line_thickness = 2;
-
-  // We need to have some space between underlines of subsequent clauses,
-  // because some input methods do not use different underline styles for those.
-  // We make each line shorter, which has a harmless side effect of shortening
-  // the first and last clauses, too.
-  start += 1;
-  width -= 2;
 
   context.SetStrokeColor(marker.UnderlineColor());
   context.SetStrokeThickness(line_thickness);
