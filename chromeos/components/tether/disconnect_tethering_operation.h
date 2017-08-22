@@ -6,6 +6,7 @@
 #define CHROMEOS_COMPONENTS_TETHER_DISCONNECT_TETHERING_OPERATION_H_
 
 #include "base/observer_list.h"
+#include "base/time/clock.h"
 #include "chromeos/components/tether/message_transfer_operation.h"
 
 namespace chromeos {
@@ -63,10 +64,15 @@ class DisconnectTetheringOperation : public MessageTransferOperation {
  private:
   friend class DisconnectTetheringOperationTest;
 
+  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+
   base::ObserverList<Observer> observer_list_;
   cryptauth::RemoteDevice remote_device_;
   int disconnect_message_sequence_number_ = -1;
   bool has_sent_message_;
+
+  std::unique_ptr<base::Clock> clock_;
+  base::Time disconnect_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(DisconnectTetheringOperation);
 };

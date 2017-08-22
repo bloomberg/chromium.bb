@@ -4,6 +4,8 @@
 
 #include "chromeos/components/tether/disconnect_tethering_operation.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/time/default_clock.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -49,7 +51,8 @@ DisconnectTetheringOperation::DisconnectTetheringOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
       remote_device_(device_to_connect),
-      has_sent_message_(false) {}
+      has_sent_message_(false),
+      clock_(base::MakeUnique<base::DefaultClock>()) {}
 
 DisconnectTetheringOperation::~DisconnectTetheringOperation() {}
 
@@ -75,6 +78,7 @@ void DisconnectTetheringOperation::OnDeviceAuthenticated(
   disconnect_message_sequence_number_ = SendMessageToDevice(
       remote_device,
       base::MakeUnique<MessageWrapper>(DisconnectTetheringRequest()));
+  disconnect_start_time_ = clock_->Now();
 }
 
 void DisconnectTetheringOperation::OnOperationFinished() {
@@ -91,6 +95,17 @@ void DisconnectTetheringOperation::OnMessageSent(int sequence_number) {
 
   has_sent_message_ = true;
   UnregisterDevice(remote_device_);
+
+  DCHECK(!disconnect_start_time_.is_null());
+  UMA_HISTOGRAM_TIMES(
+      "InstantTethering.Performance.DisconnectTetheringRequestDuration",
+      clock_->Now() - disconnect_start_time_);
+  disconnect_start_time_ = base::Time();
+}
+
+void DisconnectTetheringOperation::SetClockForTest(
+    std::unique_ptr<base::Clock> clock_for_test) {
+  clock_ = std::move(clock_for_test);
 }
 
 }  // namespace tether

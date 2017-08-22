@@ -27830,6 +27830,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="InstantTethering.Performance.ConnectToHotspotDuration"
+    units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of time it takes for the client to connect to the provided
+    hotspot after receiving a ConnectTetheringResponse. This does not include
+    timeouts.
+  </summary>
+</histogram>
+
+<histogram
+    name="InstantTethering.Performance.DisconnectTetheringRequestDuration"
+    units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of time it takes for the client to send off a
+    DisconnectTetheringRequest.
+  </summary>
+</histogram>
+
 <histogram name="InterProcessTimeTicks.BrowserAhead" units="ms">
   <owner>ppi@chromium.org</owner>
   <summary>
