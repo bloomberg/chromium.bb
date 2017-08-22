@@ -3250,7 +3250,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 
   id<CRWNativeContent> nativeController = nil;
   std::string url_host = url.host();
-  if (url_host == kChromeUINewTabHost || url_host == kChromeUIBookmarksHost) {
+  if (url_host == kChromeUINewTabHost ||
+      (IsIPadIdiom() && url_host == kChromeUIBookmarksHost)) {
     NewTabPageController* pageController =
         [[NewTabPageController alloc] initWithUrl:url
                                            loader:self
