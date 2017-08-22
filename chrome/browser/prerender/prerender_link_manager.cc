@@ -40,51 +40,23 @@ namespace prerender {
 
 namespace {
 
-bool ShouldStartRelNextPrerenders() {
-  const std::string experiment_name =
-      base::FieldTrialList::FindFullName("PrerenderRelNextTrial");
-
-  return experiment_name.find("Yes") != std::string::npos;
-}
-
-bool ShouldStartPrerender(const uint32_t rel_types) {
-  const bool should_start_rel_next_prerenders =
-      ShouldStartRelNextPrerenders();
-
-  if (rel_types & PrerenderRelTypePrerender) {
-    return true;
-  } else if (should_start_rel_next_prerenders &&
-             (rel_types & PrerenderRelTypeNext) == PrerenderRelTypeNext) {
-    return true;
-  }
-  return false;
-}
-
 static_assert(PrerenderRelTypePrerender == 0x1,
               "RelTypeHistogrameEnum must match PrerenderRelType");
 static_assert(PrerenderRelTypeNext == 0x2,
               "RelTypeHistogramEnum must match PrerenderRelType");
-enum RelTypeHistogramEnum {
-  RelTypeHistogramEnumNone = 0,
-  RelTypeHistogramEnumPrerender = PrerenderRelTypePrerender,
-  RelTypeHistogramEnumNext = PrerenderRelTypeNext,
-  RelTypeHistogramEnumPrerenderAndNext =
-      PrerenderRelTypePrerender | PrerenderRelTypeNext,
-  RelTypeHistogramEnumMax,
-};
+constexpr int kRelTypeHistogramEnumMax =
+    (PrerenderRelTypePrerender | PrerenderRelTypeNext) + 1;
 
 void RecordLinkManagerAdded(const uint32_t rel_types) {
-  const RelTypeHistogramEnum enum_value = static_cast<RelTypeHistogramEnum>(
-      rel_types & (RelTypeHistogramEnumMax - 1));
-  UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkAdded", enum_value,
-                            RelTypeHistogramEnumMax);
+  UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkAdded",
+                            rel_types & (kRelTypeHistogramEnumMax - 1),
+                            kRelTypeHistogramEnumMax);
 }
 
 void RecordLinkManagerStarting(const uint32_t rel_types) {
-  const RelTypeHistogramEnum enum_value = static_cast<RelTypeHistogramEnum>(
-      rel_types & (RelTypeHistogramEnumMax - 1));
-  UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkStarted", enum_value,
-                            RelTypeHistogramEnumMax);
+  UMA_HISTOGRAM_ENUMERATION("Prerender.RelTypesLinkStarted",
+                            rel_types & (kRelTypeHistogramEnumMax - 1),
+                            kRelTypeHistogramEnumMax);
 }
 
 void Send(int child_id, IPC::Message* raw_message) {
@@ -381,7 +353,7 @@ void PrerenderLinkManager::StartPrerenders() {
       }
     }
 
-    if (!ShouldStartPrerender((*i)->rel_types)) {
+    if (!(PrerenderRelTypePrerender & (*i)->rel_types)) {
       prerenders_.erase(*i);
       continue;
     }
