@@ -15,7 +15,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/address_validation_util.h"
-#include "components/autofill/core/browser/phone_validation_util.h"
+#include "components/autofill/core/browser/phone_email_validation_util.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_validator.h"
 
@@ -65,14 +65,14 @@ void AutofillProfileValidator::ValidationRequest::OnRulesLoaded() {
       AutofillProfile::UNVALIDATED;
   AutofillProfile::ValidityState address_validity =
       address_validation_util::ValidateAddress(profile_, validator_);
-  AutofillProfile::ValidityState phone_validity =
-      phone_validation_util::ValidatePhoneNumber(profile_);
+  AutofillProfile::ValidityState phone_email_validity =
+      phone_email_validation_util::ValidatePhoneAndEmail(profile_);
 
   if (address_validity == AutofillProfile::INVALID ||
-      phone_validity == AutofillProfile::INVALID) {
+      phone_email_validity == AutofillProfile::INVALID) {
     profile_validity = AutofillProfile::INVALID;
   } else if (address_validity == AutofillProfile::VALID &&
-             phone_validity == AutofillProfile::VALID) {
+             phone_email_validity == AutofillProfile::VALID) {
     profile_validity = AutofillProfile::VALID;
   }
 
