@@ -46,7 +46,6 @@ class UrlInfo {
     NO_PREFETCH_MOTIVATION,  // Browser navigation info (not prefetch related).
 
     // The following involve predictive prefetching, triggered by a navigation.
-    // The referrinrg_url_ is also set when these are used.
     // TODO(jar): Support STATIC_REFERAL_MOTIVATED API and integration.
     STATIC_REFERAL_MOTIVATED,  // External database suggested this resolution.
     LEARNED_REFERAL_MOTIVATED,  // Prior navigation taught us this resolution.
@@ -101,11 +100,6 @@ class UrlInfo {
   void SetUrl(const GURL& url);
 
   bool was_linked() const { return was_linked_; }
-
-  GURL referring_url() const { return referring_url_; }
-  void SetReferringHostname(const GURL& url) {
-    referring_url_ = url;
-  }
 
   bool was_found() const { return FOUND == state_; }
   bool was_nonexistent() const { return NO_SUCH_NAME == state_; }
@@ -174,11 +168,6 @@ class UrlInfo {
 
   // Record if the motivation for prefetching was ever a page-link-scan.
   bool was_linked_;
-
-  // If this instance holds data about a navigation, we store the referrer.
-  // If this instance hold data about a prefetch, and the prefetch was
-  // instigated by a referrer, we store it here (for use in about:dns).
-  GURL referring_url_;
 
   // We put these objects into a std::map, and hence we
   // need some "evil" constructors.

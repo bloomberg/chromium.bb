@@ -931,10 +931,7 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
     } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
       evalution = PRERESOLUTION;
       future_url->second.preresolution_increment();
-      UrlInfo* queued_info = AppendToResolutionQueue(future_url->first,
-                                                     motivation);
-      if (queued_info)
-        queued_info->SetReferringHostname(url);
+      AppendToResolutionQueue(future_url->first, motivation);
     }
     // Remove future urls that are below the discardable threshold here. This is
     // the only place where the future urls of a referrer are iterated through,
@@ -987,37 +984,33 @@ bool Predictor::WouldLikelyProxyURL(const GURL& url) {
   return synchronous_success && !info.is_direct();
 }
 
-UrlInfo* Predictor::AppendToResolutionQueue(
+void Predictor::AppendToResolutionQueue(
     const GURL& url,
     UrlInfo::ResolutionMotivation motivation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(url.has_host());
 
   if (shutdown_)
-    return nullptr;
+    return;
 
   UrlInfo* info = &results_[url];
   info->SetUrl(url);  // Initialize or DCHECK.
-  // TODO(jar):  I need to discard names that have long since expired.
-  // Currently we only add to the domain map :-/
-
   DCHECK(info->HasUrl(url));
 
   if (!info->NeedsDnsUpdate()) {
     info->DLogResultsStats("DNS PrefetchNotUpdated");
-    return nullptr;
+    return;
   }
 
   if (WouldLikelyProxyURL(url)) {
     info->DLogResultsStats("DNS PrefetchForProxiedRequest");
-    return nullptr;
+    return;
   }
 
   info->SetQueuedState(motivation);
   work_queue_.Push(url, motivation);
 
   StartSomeQueuedResolutions();
-  return info;
 }
 
 bool Predictor::CongestionControlPerformed(UrlInfo* info) {
@@ -1047,6 +1040,7 @@ void Predictor::StartSomeQueuedResolutions() {
     UrlInfo* info = &results_[url];
     DCHECK(info->HasUrl(url));
     info->SetAssignedState();
+    info->SetPendingDeleteState();
 
     if (CongestionControlPerformed(info)) {
       DCHECK(work_queue_.IsEmpty());
