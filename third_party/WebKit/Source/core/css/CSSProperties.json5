@@ -664,7 +664,6 @@
     },
     {
       name: "alignment-baseline",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       svg: true,
     },
     {
@@ -694,7 +693,6 @@
     },
     {
       name: "backface-visibility",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       field_group: "rare-non-inherited",
       default_value: "visible",
@@ -762,12 +760,10 @@
     },
     {
       name: "background-repeat-x",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       custom_all: true,
     },
     {
       name: "background-repeat-y",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       custom_all: true,
     },
     {
@@ -824,7 +820,6 @@
     },
     {
       name: "border-bottom-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "EBorderStyle",
       field_template: "keyword",
       keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
@@ -905,7 +900,6 @@
     },
     {
       name: "border-left-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "EBorderStyle",
       field_template: "keyword",
       keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
@@ -941,7 +935,6 @@
     },
     {
       name: "border-right-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "EBorderStyle",
       typedom_types: ["Image"],
       field_template: "keyword",
@@ -1001,7 +994,6 @@
     },
     {
       name: "border-top-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "EBorderStyle",
       field_template: "keyword",
       default_value: "none",
@@ -1050,7 +1042,6 @@
     },
     {
       name: "box-sizing",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       default_value: "content-box",
       keywords: ["content-box", "border-box"],
@@ -1058,7 +1049,6 @@
     },
     {
       name: "break-after",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       // Storage for this property also covers these legacy properties:
       // page-break-after, -webkit-column-break-after
       default_value: "auto",
@@ -1070,7 +1060,6 @@
     },
     {
       name: "break-before",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       // Storage for this property also covers these legacy properties:
       // page-break-before, -webkit-column-break-before
       default_value: "auto",
@@ -1082,7 +1071,6 @@
     },
     {
       name: "break-inside",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       // Storage for this property also covers these legacy properties:
       // page-break-inside, -webkit-column-break-inside
       default_value: "auto",
@@ -1091,7 +1079,6 @@
     },
     {
       name: "buffered-rendering",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       svg: true,
     },
     {
@@ -1118,7 +1105,6 @@
     },
     {
       name: "clear",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "none",
       field_template: "keyword",
       keywords: ["none", "left", "right", "both"],
@@ -1178,7 +1164,6 @@
     },
     {
       name: "column-fill",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       keywords: ["balance", "auto"],
       default_value: "balance",
@@ -1266,7 +1251,6 @@
     },
     {
       name: "display",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "inline",
       field_template: 'keyword',
       keywords: [
@@ -1341,7 +1325,6 @@
     },
     {
       name: "flex-direction",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       default_value: "row",
       field_group: "rare-non-inherited->flexible-box",
@@ -1369,7 +1352,6 @@
     },
     {
       name: "flex-wrap",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       default_value: "nowrap",
       field_group: "rare-non-inherited->flexible-box",
@@ -1377,7 +1359,6 @@
     },
     {
       name: "float",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "none",
       field_template: "keyword",
       keywords: ["none", "left", "right"],
@@ -1584,7 +1565,6 @@
     },
     {
       name: "isolation",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       keywords: ["auto", "isolate"],
       field_group: "rare-non-inherited",
@@ -1798,7 +1778,6 @@
     },
     {
       name: "mask-type",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       svg: true,
     },
     {
@@ -1847,7 +1826,6 @@
     },
     {
       name: "mix-blend-mode",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       name_for_methods: "BlendMode",
       type_name: "WebBlendMode",
       field_template: "keyword",
@@ -1860,7 +1838,6 @@
     },
     {
       name: "object-fit",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       keywords: ["fill", "contain", "cover", "none", "scale-down"],
       field_group: "rare-non-inherited",
@@ -1999,7 +1976,6 @@
     },
     {
       name: "outline-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       custom_all: true,
       field_template: "keyword",
       type_name: "EBorderStyle",
@@ -2021,7 +1997,6 @@
     },
     {
       name: "overflow-anchor",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       runtime_flag: "ScrollAnchoring",
       inherited: false,
       default_value: "auto",
@@ -2041,7 +2016,6 @@
     },
     {
       name: "overflow-x",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "visible",
       field_template: "keyword",
       keywords: [
@@ -2051,7 +2025,6 @@
     },
     {
       name: "overflow-y",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "visible",
       field_template: "keyword",
       keywords: [
@@ -2143,7 +2116,6 @@
     },
     {
       name: "position",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       custom_inherit: true,
       default_value: "static",
       field_template: "keyword",
@@ -2167,7 +2139,6 @@
     },
     {
       name: "resize",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       custom_value: true,
       field_template: "keyword",
       keywords: ["none", "both", "horizontal", "vertical"],
@@ -2212,7 +2183,6 @@
     },
     {
       name: "scroll-behavior",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       runtime_flag: "CSSOMSmoothScroll",
       type_name: "ScrollBehavior",
       field_template: "storage_only",
@@ -2223,7 +2193,6 @@
     },
     {
       name: "scroll-boundary-behavior-x",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "auto",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
@@ -2232,7 +2201,6 @@
     },
     {
       name: "scroll-boundary-behavior-y",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "auto",
       field_template: "keyword",
       keywords: ["auto", "contain", "none"],
@@ -2267,7 +2235,6 @@
     },
     {
       name: "scroll-snap-stop",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "normal",
       field_template: "keyword",
       keywords: ["normal", "always"],
@@ -2598,7 +2565,6 @@
     },
     {
       name: "table-layout",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       default_value: "auto",
       field_template: "keyword",
       keywords: [
@@ -2698,7 +2664,6 @@
     },
     {
       name: "text-decoration-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       runtime_flag: "CSS3TextDecorations",
       field_template: "keyword",
       keywords: ["solid", "double", "dotted", "dashed", "wavy"],
@@ -2731,7 +2696,6 @@
     },
     {
       name: "text-overflow",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       field_group: "rare-non-inherited",
       default_value: "clip",
@@ -2828,7 +2792,6 @@
     },
     {
       name: "transform-box",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       keywords: ["border-box", "fill-box", "view-box"],
       default_value: "border-box",
@@ -2849,7 +2812,6 @@
     },
     {
       name: "transform-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       name_for_methods: "TransformStyle3D",
       field_template: "keyword",
       keywords: ["flat", "preserve-3d"],
@@ -2900,7 +2862,6 @@
     },
     {
       name: "unicode-bidi",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       include_paths: ["platform/text/UnicodeBidi.h"],
       default_value: "normal",
       field_template: "keyword",
@@ -2911,7 +2872,6 @@
     },
     {
       name: "vector-effect",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       svg: true,
     },
     {
@@ -2950,7 +2910,6 @@
     },
     {
       name: "-webkit-appearance",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "ControlPart",
       field_template: "storage_only",
       field_group: "rare-non-inherited",
@@ -2960,7 +2919,6 @@
     },
     {
       name: "-webkit-app-region",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       custom_all: true,
       name_for_methods: "DraggableRegionMode",
       field_template: "keyword",
@@ -3014,7 +2972,6 @@
     // http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
     {
       name: "-webkit-box-align",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "EBoxAlignment",
       field_template: "keyword",
       keywords: ["stretch", "start", "center", "end", "baseline"],
@@ -3023,7 +2980,6 @@
     },
     {
       name: "-webkit-box-decoration-break",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       field_group: "box",
       keywords: ["slice", "clone"],
@@ -3058,7 +3014,6 @@
     },
     {
       name: "-webkit-box-lines",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       keywords: ["single", "multiple"],
       default_value: "single",
@@ -3076,7 +3031,6 @@
     },
     {
       name: "-webkit-box-orient",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       keywords: ["horizontal", "vertical"],
       default_value: "horizontal",
@@ -3084,7 +3038,6 @@
     },
     {
       name: "-webkit-box-pack",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       keywords: ["start", "center", "end", "justify"],
       default_value: "start",
@@ -3141,7 +3094,6 @@
     },
     {
       name: "column-rule-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "EBorderStyle",
       field_template: "keyword",
       default_value: "none",
@@ -3237,7 +3189,6 @@
     },
     {
       name: "-webkit-margin-after-collapse",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "EMarginCollapse",
       field_template: "keyword",
       keywords: ["collapse", "separate", "discard"],
@@ -3246,7 +3197,6 @@
     },
     {
       name: "-webkit-margin-before-collapse",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       type_name: "EMarginCollapse",
       field_template: "keyword",
       keywords: ["collapse", "separate", "discard"],
@@ -3255,13 +3205,11 @@
     },
     {
       name: "-webkit-margin-bottom-collapse",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       name_for_methods: "MarginAfterCollapse",
       type_name: "EMarginCollapse",
     },
     {
       name: "-webkit-margin-top-collapse",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       name_for_methods: "MarginBeforeCollapse",
       type_name: "EMarginCollapse",
     },
@@ -3511,7 +3459,6 @@
     },
     {
       name: "-webkit-user-drag",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       field_template: "keyword",
       field_group: "rare-non-inherited",
       default_value: "auto",
@@ -3661,7 +3608,6 @@
     },
     {
       name: "-webkit-border-end-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       direction_aware: true,
     },
     {
@@ -3678,7 +3624,6 @@
     },
     {
       name: "-webkit-border-start-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       direction_aware: true,
     },
     {
@@ -3695,7 +3640,6 @@
     },
     {
       name: "-webkit-border-before-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       direction_aware: true,
     },
     {
@@ -3712,7 +3656,6 @@
     },
     {
       name: "-webkit-border-after-style",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       direction_aware: true,
     },
     {
@@ -3807,7 +3750,6 @@
 
     {
       name: "all",
-      api_class: "CSSPropertyAPIDefaultMetadata",
       builder_skip: true,
     },
     {
