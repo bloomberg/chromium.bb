@@ -57,6 +57,10 @@ void Increment(int* i) {
 // Label for test extension menu item.
 const char* kTestExtensionItemLabel = "test-ext-item";
 
+std::string item_label() {
+  return kTestExtensionItemLabel;
+}
+
 class MenuBuilder {
  public:
   MenuBuilder(scoped_refptr<const Extension> extension,
@@ -82,9 +86,26 @@ class MenuBuilder {
         extension_.get(),
         base::MakeUnique<MenuItem>(id, kTestExtensionItemLabel,
                                    false,  // check`ed
+                                   true,   // visible
                                    true,   // enabled
                                    MenuItem::NORMAL,
                                    MenuItem::ContextList(context)));
+  }
+
+  void SetItemVisibility(int item_id, bool visible) {
+    MenuItem::Id id(false /* not incognito */,
+                    MenuItem::ExtensionKey(extension_->id()));
+    id.uid = item_id;
+
+    menu_manager_->GetItemById(id)->set_visible(visible);
+  }
+
+  void SetItemTitle(int item_id, const std::string& title) {
+    MenuItem::Id id(false /* not incognito */,
+                    MenuItem::ExtensionKey(extension_->id()));
+    id.uid = item_id;
+
+    menu_manager_->GetItemById(id)->set_title(title);
   }
 
  private:
@@ -104,17 +125,46 @@ int CountExtensionItems(const ExtensionContextMenuModel& model) {
   int num_items_found = 0;
   int num_custom_found = 0;
   for (int i = 0; i < model.GetItemCount(); ++i) {
-    if (expected_label == model.GetLabelAt(i))
-      ++num_items_found;
+    base::string16 actual_label = model.GetLabelAt(i);
     int command_id = model.GetCommandIdAt(i);
-    if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
-        command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST)
-      ++num_custom_found;
+    // If the command id is not visible, it should not be counted.
+    if (model.IsCommandIdVisible(command_id)) {
+      // The last character of |expected_label| can be the item number (e.g
+      // "test-ext-item" -> "test-ext-item1"). In checking that extensions items
+      // have the same label |kTestExtensionItemLabel|, the specific item number
+      // is ignored, [0, expected_label.size).
+      if (base::StartsWith(actual_label, expected_label,
+                           base::CompareCase::SENSITIVE))
+        ++num_items_found;
+      if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+          command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+        ++num_custom_found;
+      }
+    }
   }
   // The only custom extension items present on the menu should be those we
   // added in the test.
   EXPECT_EQ(num_items_found, num_custom_found);
   return num_items_found;
+}
+
+// Checks that the model has the extension items in the exact order specified by
+// |item_number|.
+void VerifyItems(const ExtensionContextMenuModel& model,
+                 std::vector<std::string> item_number) {
+  size_t j = 0;
+  for (int i = 0; i < model.GetItemCount(); i++) {
+    int command_id = model.GetCommandIdAt(i);
+    if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+        command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST &&
+        model.IsCommandIdVisible(command_id)) {
+      ASSERT_LT(j, item_number.size());
+      EXPECT_EQ(base::ASCIIToUTF16(item_label() + item_number[j]),
+                model.GetLabelAt(i));
+      j++;
+    }
+  }
+  EXPECT_EQ(item_number.size(), j);
 }
 
 }  // namespace
@@ -221,6 +271,8 @@ TEST_F(ExtensionContextMenuModelTest, RequiredInstallationsDisablesItems) {
 
   // Uninstallation should be, by default, enabled.
   EXPECT_TRUE(menu.IsCommandIdEnabled(ExtensionContextMenuModel::UNINSTALL));
+  // Uninstallation should always be visible.
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::UNINSTALL));
 
   TestManagementPolicyProvider policy_provider(
       TestManagementPolicyProvider::PROHIBIT_MODIFY_STATUS);
@@ -329,7 +381,7 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
   builder.AddContextItem(MenuItem::PAGE_ACTION);
   EXPECT_EQ(1, CountExtensionItems(*builder.BuildMenu()));
 
-  // Create more page action items to test top level menu item limitations.
+  // Create more page action items to test top-level menu item limitations.
   // We start at 1, so this should try to add the limit + 1.
   for (int i = 0; i < api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT; ++i)
     builder.AddContextItem(MenuItem::PAGE_ACTION);
@@ -337,6 +389,127 @@ TEST_F(ExtensionContextMenuModelTest, ExtensionItemTest) {
   // We shouldn't go above the limit of top-level items.
   EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
             CountExtensionItems(*builder.BuildMenu()));
+}
+
+// Top-level extension actions, like 'browser_action' or 'page_action',
+// are subject to an item limit chrome.contextMenus.ACTION_MENU_TOP_LEVEL_LIMIT.
+// The test below ensures that:
+//
+// 1. The limit is respected for top-level items. In this case, we test
+//    MenuItem::PAGE_ACTION.
+// 2. Adding more items than the limit are ignored; only items within the limit
+//    are visible.
+// 3. Hiding items within the limit makes "extra" ones visible.
+// 4. Unhiding an item within the limit hides a visible "extra" one.
+TEST_F(ExtensionContextMenuModelTest,
+       TestItemVisibilityAgainstItemLimitForTopLevelItems) {
+  InitializeEmptyExtensionService();
+  const Extension* extension =
+      AddExtension("extension", manifest_keys::kPageAction, Manifest::INTERNAL);
+
+  // Create a MenuManager for adding context items.
+  MenuManager* manager = static_cast<MenuManager*>(
+      MenuManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile(), &MenuManagerFactory::BuildServiceInstanceForTesting));
+  ASSERT_TRUE(manager);
+
+  MenuBuilder builder(extension, GetBrowser(), manager);
+
+  // There should be no extension items yet.
+  EXPECT_EQ(0, CountExtensionItems(*builder.BuildMenu()));
+
+  // Create more page action items to test top-level menu item limitations.
+  for (int i = 1; i <= api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT; ++i) {
+    builder.AddContextItem(MenuItem::PAGE_ACTION);
+    builder.SetItemTitle(i, item_label().append(base::StringPrintf("%d", i)));
+  }
+
+  // We shouldn't go above the limit of top-level items.
+  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+            CountExtensionItems(*builder.BuildMenu()));
+
+  // Add three more page actions items. This exceeds the top-level menu item
+  // limit, so the three added should not be visible in the menu.
+  builder.AddContextItem(MenuItem::PAGE_ACTION);
+  builder.SetItemTitle(7, item_label() + "7");
+
+  // By default, the additional page action items have their visibility set to
+  // true. Test creating the eigth item such that it is hidden.
+  builder.AddContextItem(MenuItem::PAGE_ACTION);
+  builder.SetItemTitle(8, item_label() + "8");
+  builder.SetItemVisibility(8, false);
+
+  builder.AddContextItem(MenuItem::PAGE_ACTION);
+  builder.SetItemTitle(9, item_label() + "9");
+
+  std::unique_ptr<ExtensionContextMenuModel> model = builder.BuildMenu();
+
+  // Ensure that the menu item limit is obeyed, meaning that the three
+  // additional items are not visible in the menu.
+  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+            CountExtensionItems(*model));
+  // Items 7 to 9 should not be visible in the model.
+  VerifyItems(*model, {"1", "2", "3", "4", "5", "6"});
+
+  // Hide the first two items.
+  builder.SetItemVisibility(1, false);
+  builder.SetItemVisibility(2, false);
+  model = builder.BuildMenu();
+
+  // Ensure that the menu item limit is obeyed.
+  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+            CountExtensionItems(*model));
+  // Hiding the first two items in the model should make visible the "extra"
+  // items -- items 7 and 9. Note, item 8 was set to hidden, so it should not
+  // show in the model.
+  VerifyItems(*model, {"3", "4", "5", "6", "7", "9"});
+
+  // Unhide the eigth item.
+  builder.SetItemVisibility(8, true);
+  model = builder.BuildMenu();
+
+  // Ensure that the menu item limit is obeyed.
+  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+            CountExtensionItems(*model));
+  // The ninth item should be replaced with the eigth.
+  VerifyItems(*model, {"3", "4", "5", "6", "7", "8"});
+
+  // Unhide the first two items.
+  builder.SetItemVisibility(1, true);
+  builder.SetItemVisibility(2, true);
+  model = builder.BuildMenu();
+
+  EXPECT_EQ(api::context_menus::ACTION_MENU_TOP_LEVEL_LIMIT,
+            CountExtensionItems(*model));
+  // Unhiding the first two items should respect the menu item limit and
+  // exclude the "extra" items -- items 7, 8, and 9 -- from the model.
+  VerifyItems(*model, {"1", "2", "3", "4", "5", "6"});
+}
+
+// Tests that the standard menu items (e.g. uninstall, manage) are always
+// visible.
+TEST_F(ExtensionContextMenuModelTest,
+       ExtensionContextMenuStandardItemsAlwaysVisible) {
+  InitializeEmptyExtensionService();
+  const Extension* extension =
+      AddExtension("extension", manifest_keys::kPageAction, Manifest::INTERNAL);
+
+  ExtensionContextMenuModel menu(extension, GetBrowser(),
+                                 ExtensionContextMenuModel::VISIBLE, nullptr);
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::NAME));
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::CONFIGURE));
+  EXPECT_TRUE(
+      menu.IsCommandIdVisible(ExtensionContextMenuModel::TOGGLE_VISIBILITY));
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::UNINSTALL));
+  EXPECT_TRUE(menu.IsCommandIdVisible(ExtensionContextMenuModel::MANAGE));
+  EXPECT_TRUE(
+      menu.IsCommandIdVisible(ExtensionContextMenuModel::INSPECT_POPUP));
+  EXPECT_TRUE(menu.IsCommandIdVisible(
+      ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_CLICK));
+  EXPECT_TRUE(menu.IsCommandIdVisible(
+      ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_SITE));
+  EXPECT_TRUE(menu.IsCommandIdVisible(
+      ExtensionContextMenuModel::PAGE_ACCESS_RUN_ON_ALL_SITES));
 }
 
 // Test that the "show" and "hide" menu items appear correctly in the extension
