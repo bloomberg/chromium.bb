@@ -34,14 +34,12 @@ function main()
   gl = initGL(webglCanvas);
   if (!gl) {
     console.log('Failed to initialize GL from canvas: ' + webglCanvas);
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("FAILURE");
     return;
   }
 
   if (!setup(gl)) {
     console.log('Failed to set up GL: ' + gl);
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("FAILURE");
     return;
   }
@@ -54,7 +52,6 @@ function main()
 function waitForFinish()
 {
   if (g_swapsBeforeAck == 0) {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("SUCCESS");
   } else {
     g_swapsBeforeAck--;

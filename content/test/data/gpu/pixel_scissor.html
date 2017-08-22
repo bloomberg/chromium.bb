@@ -14,7 +14,6 @@ function run() {
   var canvas = document.getElementById("c");
   gl = initGL(canvas);
   if (!gl) {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("FAILURE");
     return;
   }
@@ -45,7 +44,6 @@ var swapsBeforeAck = 15;
 function deferredAck()
 {
   if (swapsBeforeAck == 0) {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("SUCCESS");
   } else {
     --swapsBeforeAck;

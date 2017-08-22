@@ -32,7 +32,6 @@ function sendRequest(resourceUrl) {
            xhr.getResponseHeader("content-type") + ") " +
            (wasBlocked ? "blocked" : "not-blocked"));
 
-      domAutomationController.setAutomationId(0);
       domAutomationController.send(wasBlocked);
     }
   }

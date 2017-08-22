@@ -121,7 +121,6 @@ function makeWorker(script) {
 function waitForFinish()
 {
   if (g_swapsBeforeAck == 0) {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("SUCCESS");
   } else {
     g_swapsBeforeAck--;

@@ -78,7 +78,6 @@
     } else if (event.data === "subframe-msg") {
       event.source.postMessage("subframe-msg-reply", "*");
     } else if (event.data === "subframe-msg-reply") {
-      domAutomationController.setAutomationId(0);
       domAutomationController.send("done-" + window.name);
     }
     if (event.ports && event.ports.length > 0) {

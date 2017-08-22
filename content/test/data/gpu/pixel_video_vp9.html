@@ -32,7 +32,6 @@ function waitForFinish()
 {
   console.log("readyState" + video.readyState);
   if (g_swapsBeforeAck == 0) {
-    domAutomationController.setAutomationId(1);
     domAutomationController.send("SUCCESS");
   } else {
     g_swapsBeforeAck--;
