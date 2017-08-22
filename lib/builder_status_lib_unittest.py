@@ -482,15 +482,11 @@ class SlaveBuilderStatusTest(cros_test_lib.MockTestCase):
 
     self.PatchObject(buildbucket_lib, 'GetServiceAccount',
                      return_value=True)
-    self.PatchObject(auth.AuthorizedHttp, '__init__',
-                     return_value=None)
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     '_GetHost',
-                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
     send_request_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
                                          'SendBuildbucketRequest',
                                          return_value=dict())
-    buildbucket_client = buildbucket_lib.BuildbucketClient()
+    buildbucket_client = buildbucket_lib.BuildbucketClient(
+        mock.Mock(), mock.Mock())
 
     builder_status_lib.CancelBuilds(buildbucket_ids, buildbucket_client)
 

@@ -92,6 +92,7 @@ class PRPCClient(object):
     """
     self.http = auth.AuthorizedHttp(
         auth.GetAccessToken,
+        None,
         service_account_json=service_account)
     self.insecure = insecure
     self.host = host

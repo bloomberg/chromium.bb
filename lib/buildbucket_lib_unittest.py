@@ -26,7 +26,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     self.PatchObject(buildbucket_lib.BuildbucketClient,
                      '_GetHost',
                      return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
-    self.client = buildbucket_lib.BuildbucketClient()
+    self.client = buildbucket_lib.BuildbucketClient(mock.Mock(), None)
 
   def testPutBuildRequest(self):
     """Test PutBuildRequest."""

@@ -13,6 +13,7 @@ import time
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import manifest_version
+from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import config_lib
 from chromite.lib import constants
@@ -278,9 +279,9 @@ class RemoteTryJob(object):
     host = (buildbucket_lib.BUILDBUCKET_TEST_HOST if testjob
             else buildbucket_lib.BUILDBUCKET_HOST)
     buildbucket_client = buildbucket_lib.BuildbucketClient(
-        service_account=buildbucket_lib.GetServiceAccount(
-            constants.CHROMEOS_SERVICE_ACCOUNT),
-        host=host)
+        auth.GetAccessToken, host,
+        service_account_json=buildbucket_lib.GetServiceAccount(
+            constants.CHROMEOS_SERVICE_ACCOUNT))
 
     for bot in self.bots:
       self._PutConfigToBuildBucket(buildbucket_client, bot, dryrun)

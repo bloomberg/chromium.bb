@@ -19,6 +19,7 @@ import traceback
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import topology
+from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import builder_status_lib
 from chromite.lib import config_lib
@@ -312,7 +313,8 @@ class BuilderStage(object):
     if config_lib.UseBuildbucketScheduler(self._run.config):
       if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
         buildbucket_client = buildbucket_lib.BuildbucketClient(
-            service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
+            auth.GetAccessToken, None,
+            service_account_json=constants.CHROMEOS_SERVICE_ACCOUNT)
 
       if buildbucket_client is None and self._run.InProduction():
         # If the build using Buildbucket is running on buildbot and

@@ -104,6 +104,7 @@ class SheriffOMaticClient(object):
     """
     self.http = auth.AuthorizedHttp(
         auth.GetAccessToken,
+        None,
         service_account_json=service_account)
     self.insecure = insecure
     self.host = (self._GetHost() if host is None else host).strip()

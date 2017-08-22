@@ -11,6 +11,7 @@ import os
 import shutil
 import time
 
+from chromite.lib import auth
 from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.lib import cros_build_lib
@@ -42,7 +43,7 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
     args = ['-r', '/tmp/test_build1', '-g', '5555', '-g',
             '6666', '--remote']
     args.extend(self.BOTS)
-    self.options, args = cbuildbot.ParseCommandLine(self.parser, args)
+    self.options = cbuildbot.ParseCommandLine(self.parser, args)
     self.options.cache_dir = self.tempdir
     self.checkout_dir = os.path.join(self.tempdir, 'test_checkout')
     self.int_mirror, self.ext_mirror = None, None
@@ -190,3 +191,17 @@ class RemoteTryTests(cros_test_lib.MockTempDirTestCase):
         ['git', 'config', 'remote.origin.url'], redirect_stdout=True,
         cwd=self.checkout_dir).output.strip()
     self.assertEqual(remote_url, self.int_mirror)
+
+
+class RemoteTryJobTests(cros_test_lib.MockTempDirTestCase):
+  """Tests for RemoteTryJob."""
+
+  # pylint: disable=protected-access
+  def testPostConfigsToBuildBucket(self):
+    """Check syntax for PostConfigsToBuildBucket."""
+    self.PatchObject(auth, 'Login')
+    self.PatchObject(auth, 'Token')
+    self.PatchObject(remote_try.RemoteTryJob, '_PutConfigToBuildBucket')
+    remote_try_job = remote_try.RemoteTryJob(
+        'build_config', [], [], self.tempdir, 'description')
+    remote_try_job._PostConfigsToBuildBucket(testjob=True, dryrun=True)

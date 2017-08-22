@@ -161,17 +161,16 @@ def GetBuildbucketIds(metadata):
 class BuildbucketClient(object):
   """Buildbucket client to interact with the Buildbucket server."""
 
-  def __init__(self, service_account=None, host=None):
+  def __init__(self, get_access_token, host, **kwargs):
     """Init a BuildbucketClient instance.
 
     Args:
-      service_account: The path to the service account json file.
+      get_access_token: Method to get access token.
       host: The buildbucket instance to interact.
+      kwargs: The kwargs to pass to get_access_token.
     """
-    self.http = auth.AuthorizedHttp(
-        auth.GetAccessToken,
-        service_account_json=service_account)
     self.host = self._GetHost() if host is None else host
+    self.http = auth.AuthorizedHttp(get_access_token, None, **kwargs)
 
   def _GetHost(self):
     """Get buildbucket Server host from topology."""
