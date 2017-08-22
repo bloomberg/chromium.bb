@@ -180,16 +180,8 @@ void HttpStreamFactoryImpl::JobController::OnRequestComplete() {
   CancelJobs();
   request_ = nullptr;
   if (bound_job_) {
-    if (bound_job_->job_type() == MAIN) {
-      main_job_.reset();
-      // |alternative_job_| can be non-null if |main_job_| is resumed after
-      // |main_job_wait_time_| has elapsed. Allow |alternative_job_| to run to
-      // completion, rather than resetting it. OnOrphanedJobComplete() will
-      // clean up |this| when the job completes.
-    } else {
-      DCHECK(bound_job_->job_type() == ALTERNATIVE);
-      alternative_job_.reset();
-    }
+    alternative_job_.reset();
+    main_job_.reset();
     bound_job_ = nullptr;
   }
   MaybeNotifyFactoryOfCompletion();
