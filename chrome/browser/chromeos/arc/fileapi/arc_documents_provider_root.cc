@@ -396,24 +396,44 @@ void ArcDocumentsProviderRoot::ReadDirectoryInternal(
     }
   }
 
+  auto& pending_callbacks = pending_callbacks_map_[document_id];
+  bool read_in_flight = !pending_callbacks.empty();
+  pending_callbacks.emplace_back(callback);
+
+  if (read_in_flight) {
+    // There is already an in-flight ReadDirectoryInternal() call, so
+    // just enqueue the callback and return.
+    return;
+  }
+
   runner_->GetChildDocuments(
       authority_, document_id,
       base::Bind(
           &ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments,
-          weak_ptr_factory_.GetWeakPtr(), document_id, callback));
+          weak_ptr_factory_.GetWeakPtr(), document_id));
 }
 
 void ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments(
     const std::string& document_id,
-    const ReadDirectoryInternalCallback& callback,
     base::Optional<std::vector<mojom::DocumentPtr>> maybe_children) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  auto iter = pending_callbacks_map_.find(document_id);
+  DCHECK(iter != pending_callbacks_map_.end());
+
+  std::vector<ReadDirectoryInternalCallback> pending_callbacks =
+      std::move(iter->second);
+  DCHECK(!pending_callbacks.empty());
+
+  pending_callbacks_map_.erase(iter);
+
   if (!maybe_children) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND, NameToThinDocumentMap());
+    for (const auto& callback : pending_callbacks)
+      callback.Run(base::File::FILE_ERROR_NOT_FOUND, NameToThinDocumentMap());
     return;
   }
-  std::vector<mojom::DocumentPtr>& children = maybe_children.value();
+
+  std::vector<mojom::DocumentPtr> children = std::move(maybe_children.value());
 
   // Sort entries to keep the mapping stable as far as possible.
   std::sort(children.begin(), children.end(),
@@ -458,7 +478,8 @@ void ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments(
       base::Bind(&ArcDocumentsProviderRoot::ClearDirectoryCache,
                  weak_ptr_factory_.GetWeakPtr(), document_id));
 
-  callback.Run(base::File::FILE_OK, cache.mapping);
+  for (const auto& callback : pending_callbacks)
+    callback.Run(base::File::FILE_OK, cache.mapping);
 }
 
 void ArcDocumentsProviderRoot::ClearDirectoryCache(
