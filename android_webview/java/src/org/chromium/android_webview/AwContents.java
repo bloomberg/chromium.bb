@@ -41,10 +41,8 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
 import android.view.animation.AnimationUtils;
-import android.view.autofill.AutofillValue;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.textclassifier.TextClassifier;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 
@@ -1043,7 +1041,7 @@ public class AwContents implements SmartClipProvider {
      */
     private void setNewAwContents(long newAwContentsPtr) {
         // Move the text classifier to the new ContentViewCore.
-        TextClassifier textClassifier =
+        Object textClassifier =
                 mContentViewCore == null ? null : mContentViewCore.getCustomTextClassifier();
 
         if (mNativeAwContents != 0) {
@@ -2315,7 +2313,7 @@ public class AwContents implements SmartClipProvider {
         }
     }
 
-    public void autofill(final SparseArray<AutofillValue> values) {
+    public void autofill(final SparseArray<Object> values) {
         if (mAutofillProvider != null) {
             mAutofillProvider.autofill(values);
         }
@@ -2693,12 +2691,14 @@ public class AwContents implements SmartClipProvider {
                 mNativeAwContents, rendererRequestedPriority, waivedWhenNotVisible);
     }
 
-    public void setTextClassifier(TextClassifier textClassifier) {
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    public void setTextClassifier(Object textClassifier) {
         assert mContentViewCore != null;
         mContentViewCore.setTextClassifier(textClassifier);
     }
 
-    public TextClassifier getTextClassifier() {
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
+    public Object getTextClassifier() {
         assert mContentViewCore != null;
         return mContentViewCore.getTextClassifier();
     }

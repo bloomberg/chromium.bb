@@ -24,7 +24,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.print.PrintDocumentAdapter;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.DragEvent;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -34,10 +33,8 @@ import android.view.ViewStructure;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeProvider;
-import android.view.autofill.AutofillValue;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
-import android.view.textclassifier.TextClassifier;
 import android.webkit.DownloadListener;
 import android.webkit.FindActionModeCallback;
 import android.webkit.ValueCallback;
@@ -58,7 +55,6 @@ import org.chromium.android_webview.AwContentsStatics;
 import org.chromium.android_webview.AwPrintDocumentAdapter;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.ResourcesContextWrapperFactory;
-import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.components.autofill.AutofillProvider;
@@ -1491,79 +1487,19 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
     @Override
     public void setRendererPriorityPolicy(
             int rendererRequestedPriority, boolean waivedWhenNotVisible) {
-        @RendererPriority
-        int awRendererRequestedPriority;
-        switch (rendererRequestedPriority) {
-            case WebView.RENDERER_PRIORITY_WAIVED:
-                awRendererRequestedPriority = RendererPriority.WAIVED;
-                break;
-            case WebView.RENDERER_PRIORITY_BOUND:
-                awRendererRequestedPriority = RendererPriority.LOW;
-                break;
-            default:
-            case WebView.RENDERER_PRIORITY_IMPORTANT:
-                awRendererRequestedPriority = RendererPriority.HIGH;
-                break;
-        }
-        mAwContents.setRendererPriorityPolicy(awRendererRequestedPriority, waivedWhenNotVisible);
+        // TODO(paulmiller): Unfork O APIs
     }
 
     @Override
     public int getRendererRequestedPriority() {
-        @RendererPriority
-        final int awRendererRequestedPriority = mAwContents.getRendererRequestedPriority();
-        switch (awRendererRequestedPriority) {
-            case RendererPriority.WAIVED:
-                return WebView.RENDERER_PRIORITY_WAIVED;
-            case RendererPriority.LOW:
-                return WebView.RENDERER_PRIORITY_BOUND;
-            default:
-            case RendererPriority.HIGH:
-                return WebView.RENDERER_PRIORITY_IMPORTANT;
-        }
+        // TODO(paulmiller): Unfork O APIs
+        return 0;
     }
 
     @Override
     public boolean getRendererPriorityWaivedWhenNotVisible() {
-        return mAwContents.getRendererPriorityWaivedWhenNotVisible();
-    }
-
-    @Override
-    public void setTextClassifier(TextClassifier textClassifier) {
-        mAwContents.setTextClassifier(textClassifier);
-    }
-
-    @Override
-    public TextClassifier getTextClassifier() {
-        return (TextClassifier) mAwContents.getTextClassifier();
-    }
-
-    public void autofill(final SparseArray<AutofillValue> values) {
-        mFactory.startYourEngines(false);
-        if (checkNeedsPost()) {
-            mFactory.runVoidTaskOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    autofill(values);
-                }
-            });
-        }
-        mAwContents.autofill(values);
-    }
-
-    @Override
-    public void onProvideAutofillVirtualStructure(final ViewStructure structure, final int flags) {
-        mFactory.startYourEngines(false);
-        if (checkNeedsPost()) {
-            mFactory.runVoidTaskOnUiThreadBlocking(new Runnable() {
-                @Override
-                public void run() {
-                    onProvideAutofillVirtualStructure(structure, flags);
-                }
-            });
-            return;
-        }
-        mAwContents.onProvideAutoFillVirtualStructure(structure, flags);
+        // TODO(paulmiller): Unfork O APIs
+        return false;
     }
 
     // WebViewProvider glue methods ---------------------------------------------------------------

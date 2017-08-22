@@ -6,7 +6,6 @@ package org.chromium.content.browser;
 
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
-import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -40,16 +39,9 @@ public class SmartSelectionClient implements SelectionClient {
     // Used for surrounding text request.
     private static final int NUM_EXTRA_CHARS = 240;
 
-    // Is smart selection enabled?
-    private static boolean sEnabled;
-
     private long mNativeSmartSelectionClient;
     private SmartSelectionProvider mProvider;
     private SmartSelectionProvider.ResultCallback mCallback;
-
-    public static void setEnabled(boolean enabled) {
-        sEnabled = enabled;
-    }
 
     /**
      * Creates the SmartSelectionClient. Returns null in case SmartSelectionProvider does not exist
@@ -57,8 +49,12 @@ public class SmartSelectionClient implements SelectionClient {
      */
     public static SmartSelectionClient create(SmartSelectionProvider.ResultCallback callback,
             WindowAndroid windowAndroid, WebContents webContents) {
-        if (!sEnabled) return null;
-        SmartSelectionProvider provider = new SmartSelectionProvider(callback, windowAndroid);
+        SmartSelectionProvider provider =
+                ContentClassFactory.get().createSmartSelectionProvider(callback, windowAndroid);
+
+        // SmartSelectionProvider might not exist.
+        if (provider == null) return null;
+
         return new SmartSelectionClient(provider, callback, webContents);
     }
 
@@ -104,18 +100,21 @@ public class SmartSelectionClient implements SelectionClient {
         mProvider.cancelAllRequests();
     }
 
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     @Override
-    public void setTextClassifier(TextClassifier textClassifier) {
+    public void setTextClassifier(Object textClassifier) {
         mProvider.setTextClassifier(textClassifier);
     }
 
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     @Override
-    public TextClassifier getTextClassifier() {
+    public Object getTextClassifier() {
         return mProvider.getTextClassifier();
     }
 
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     @Override
-    public TextClassifier getCustomTextClassifier() {
+    public Object getCustomTextClassifier() {
         return mProvider.getCustomTextClassifier();
     }
 
