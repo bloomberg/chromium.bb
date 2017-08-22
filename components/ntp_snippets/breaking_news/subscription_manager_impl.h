@@ -58,6 +58,7 @@ class SubscriptionManagerImpl : public SubscriptionManager {
   bool NeedsToResubscribe() override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void ClearProfilePrefs(PrefService* pref_service);
 
  private:
   class SigninObserver;
