@@ -30,9 +30,9 @@
 
 #include "public/web/WebLeakDetector.h"
 
-#include "controller/leak_detector/BlinkLeakDetector.h"
-#include "controller/leak_detector/BlinkLeakDetectorClient.h"
 #include "core/frame/WebLocalFrameImpl.h"
+#include "core/leak_detector/BlinkLeakDetector.h"
+#include "core/leak_detector/BlinkLeakDetectorClient.h"
 #include "platform/InstanceCounters.h"
 #include "public/web/WebFrame.h"
 
