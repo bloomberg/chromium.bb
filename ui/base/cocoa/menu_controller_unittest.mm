@@ -9,8 +9,10 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "testing/gtest_mac.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #import "ui/base/cocoa/menu_controller.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/test/cocoa_test_event_utils.h"
@@ -72,6 +74,50 @@ namespace {
 const int kTestLabelResourceId = IDS_APP_SCROLLBAR_CXMENU_SCROLLHERE;
 
 class MenuControllerTest : public CocoaTest {
+};
+
+class TestSimpleMenuModelVisibility : public SimpleMenuModel {
+ public:
+  explicit TestSimpleMenuModelVisibility(SimpleMenuModel::Delegate* delegate)
+      : SimpleMenuModel(delegate) {}
+
+  // SimpleMenuModel:
+  bool IsVisibleAt(int index) const override {
+    return items_[ValidateItemIndex(index)].visible;
+  }
+
+  void SetVisibility(int command_id, bool visible) {
+    int index = SimpleMenuModel::GetIndexOfCommandId(command_id);
+    items_[ValidateItemIndex(index)].visible = visible;
+  }
+
+  void AddItem(int command_id, const base::string16& label) {
+    SimpleMenuModel::AddItem(command_id, label);
+    items_.push_back({true, command_id});
+  }
+
+  void AddSubMenuWithStringId(int command_id, int string_id, MenuModel* model) {
+    SimpleMenuModel::AddSubMenuWithStringId(command_id, string_id, model);
+    items_.push_back({true, command_id});
+  }
+
+ private:
+  struct Item {
+    bool visible;
+    int command_id;
+  };
+
+  typedef std::vector<Item> ItemVector;
+
+  int ValidateItemIndex(int index) const {
+    CHECK_GE(index, 0);
+    CHECK_LT(static_cast<size_t>(index), items_.size());
+    return index;
+  }
+
+  ItemVector items_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSimpleMenuModelVisibility);
 };
 
 // A menu delegate that counts the number of times certain things are called
@@ -214,7 +260,7 @@ TEST_F(MenuControllerTest, EmptyMenu) {
   SimpleMenuModel model(&delegate);
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
-  EXPECT_EQ([[menu menu] numberOfItems], 0);
+  EXPECT_EQ(0, [[menu menu] numberOfItems]);
 }
 
 TEST_F(MenuControllerTest, BasicCreation) {
@@ -229,14 +275,14 @@ TEST_F(MenuControllerTest, BasicCreation) {
 
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
-  EXPECT_EQ([[menu menu] numberOfItems], 6);
+  EXPECT_EQ(6, [[menu menu] numberOfItems]);
 
   // Check the title, tag, and represented object are correct for a random
   // element.
   NSMenuItem* itemTwo = [[menu menu] itemAtIndex:2];
   NSString* title = [itemTwo title];
   EXPECT_EQ(ASCIIToUTF16("three"), base::SysNSStringToUTF16(title));
-  EXPECT_EQ([itemTwo tag], 2);
+  EXPECT_EQ(2, [itemTwo tag]);
   EXPECT_EQ([[itemTwo representedObject] pointerValue], &model);
 
   EXPECT_TRUE([[[menu menu] itemAtIndex:3] isSeparatorItem]);
@@ -255,19 +301,19 @@ TEST_F(MenuControllerTest, Submenus) {
 
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
-  EXPECT_EQ([[menu menu] numberOfItems], 3);
+  EXPECT_EQ(3, [[menu menu] numberOfItems]);
 
   // Inspect the submenu to ensure it has correct properties.
   NSMenu* submenu = [[[menu menu] itemAtIndex:1] submenu];
   EXPECT_TRUE(submenu);
-  EXPECT_EQ([submenu numberOfItems], 3);
+  EXPECT_EQ(3, [submenu numberOfItems]);
 
   // Inspect one of the items to make sure it has the correct model as its
   // represented object and the proper tag.
   NSMenuItem* submenuItem = [submenu itemAtIndex:1];
   NSString* title = [submenuItem title];
   EXPECT_EQ(ASCIIToUTF16("sub-two"), base::SysNSStringToUTF16(title));
-  EXPECT_EQ([submenuItem tag], 1);
+  EXPECT_EQ(1, [submenuItem tag]);
   EXPECT_EQ([[submenuItem representedObject] pointerValue], &submodel);
 
   // Make sure the item after the submenu is correct and its represented
@@ -275,7 +321,7 @@ TEST_F(MenuControllerTest, Submenus) {
   NSMenuItem* item = [[menu menu] itemAtIndex:2];
   title = [item title];
   EXPECT_EQ(ASCIIToUTF16("three"), base::SysNSStringToUTF16(title));
-  EXPECT_EQ([item tag], 2);
+  EXPECT_EQ(2, [item tag]);
   EXPECT_EQ([[item representedObject] pointerValue], &model);
 }
 
@@ -288,7 +334,88 @@ TEST_F(MenuControllerTest, EmptySubmenu) {
 
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
-  EXPECT_EQ([[menu menu] numberOfItems], 2);
+  EXPECT_EQ(2, [[menu menu] numberOfItems]);
+
+  // Inspect the submenu to ensure it has one item labeled "(empty)".
+  NSMenu* submenu = [[[menu menu] itemAtIndex:1] submenu];
+  EXPECT_TRUE(submenu);
+  EXPECT_EQ(1, [submenu numberOfItems]);
+
+  EXPECT_NSEQ(@"(empty)", [[submenu itemAtIndex:0] title]);
+}
+
+// Tests that an empty menu item, "(empty)", is added to a submenu that contains
+// hidden child items.
+TEST_F(MenuControllerTest, EmptySubmenuWhenAllChildItemsAreHidden) {
+  Delegate delegate;
+  TestSimpleMenuModelVisibility model(&delegate);
+  model.AddItem(1, ASCIIToUTF16("one"));
+  TestSimpleMenuModelVisibility submodel(&delegate);
+  // Hide the two child menu items.
+  submodel.AddItem(2, ASCIIToUTF16("sub-one"));
+  submodel.SetVisibility(2, false);
+  submodel.AddItem(3, ASCIIToUTF16("sub-two"));
+  submodel.SetVisibility(3, false);
+  model.AddSubMenuWithStringId(4, kTestLabelResourceId, &submodel);
+
+  base::scoped_nsobject<MenuController> menu(
+      [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
+  EXPECT_EQ(2, [[menu menu] numberOfItems]);
+
+  // Inspect the submenu to ensure it has one item labeled "(empty)".
+  NSMenu* submenu = [[[menu menu] itemAtIndex:1] submenu];
+  EXPECT_TRUE(submenu);
+  EXPECT_EQ(1, [submenu numberOfItems]);
+
+  EXPECT_NSEQ(@"(empty)", [[submenu itemAtIndex:0] title]);
+}
+
+// Tests hiding a submenu item. If a submenu item with children is set to
+// hidden, then the submenu should hide.
+TEST_F(MenuControllerTest, HiddenSubmenu) {
+  // SimpleMenuModel posts a task that calls Delegate::MenuClosed. Create
+  // a MessageLoop for that purpose.
+  base::MessageLoopForUI message_loop;
+
+  // Create the model.
+  Delegate delegate;
+  TestSimpleMenuModelVisibility model(&delegate);
+  model.AddItem(1, ASCIIToUTF16("one"));
+  TestSimpleMenuModelVisibility submodel(&delegate);
+  submodel.AddItem(2, ASCIIToUTF16("sub-one"));
+  submodel.AddItem(3, ASCIIToUTF16("sub-two"));
+  // Set the submenu to be hidden.
+  model.AddSubMenuWithStringId(4, kTestLabelResourceId, &submodel);
+
+  model.SetVisibility(4, false);
+
+  // Create the controller.
+  base::scoped_nsobject<MenuController> menu_controller(
+      [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
+  EXPECT_EQ(2, [[menu_controller menu] numberOfItems]);
+  delegate.menu_to_close_ = [menu_controller menu];
+
+  // Show the menu.
+  CFRunLoopPerformBlock(CFRunLoopGetCurrent(), NSEventTrackingRunLoopMode, ^{
+    EXPECT_TRUE([menu_controller isMenuOpen]);
+    // Ensure that the submenu is hidden.
+    NSMenuItem* item = [[menu_controller menu] itemAtIndex:1];
+    EXPECT_TRUE([item isHidden]);
+  });
+
+  // Pop open the menu, which will spin an event-tracking run loop.
+  [NSMenu popUpContextMenu:[menu_controller menu]
+                 withEvent:cocoa_test_event_utils::RightMouseDownAtPoint(
+                               NSZeroPoint)
+                   forView:[test_window() contentView]];
+
+  EXPECT_FALSE([menu_controller isMenuOpen]);
+
+  // Pump the task that notifies the delegate.
+  base::RunLoop().RunUntilIdle();
+
+  // Expect that the delegate got notified properly.
+  EXPECT_TRUE(delegate.did_close_);
 }
 
 TEST_F(MenuControllerTest, PopUpButton) {
@@ -302,13 +429,13 @@ TEST_F(MenuControllerTest, PopUpButton) {
   // title.
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:YES]);
-  EXPECT_EQ([[menu menu] numberOfItems], 4);
-  EXPECT_EQ(base::SysNSStringToUTF16([[[menu menu] itemAtIndex:0] title]),
-            base::string16());
+  EXPECT_EQ(4, [[menu menu] numberOfItems]);
+  EXPECT_EQ(base::string16(),
+            base::SysNSStringToUTF16([[[menu menu] itemAtIndex:0] title]));
 
   // Make sure the tags are still correct (the index no longer matches the tag).
   NSMenuItem* itemTwo = [[menu menu] itemAtIndex:2];
-  EXPECT_EQ([itemTwo tag], 1);
+  EXPECT_EQ(1, [itemTwo tag]);
 }
 
 TEST_F(MenuControllerTest, Execute) {
@@ -317,13 +444,13 @@ TEST_F(MenuControllerTest, Execute) {
   model.AddItem(1, ASCIIToUTF16("one"));
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
-  EXPECT_EQ([[menu menu] numberOfItems], 1);
+  EXPECT_EQ(1, [[menu menu] numberOfItems]);
 
   // Fake selecting the menu item, we expect the delegate to be told to execute
   // a command.
   NSMenuItem* item = [[menu menu] itemAtIndex:0];
   [[item target] performSelector:[item action] withObject:item];
-  EXPECT_EQ(delegate.execute_count_, 1);
+  EXPECT_EQ(1, delegate.execute_count_);
 }
 
 void Validate(MenuController* controller, NSMenu* menu) {
@@ -346,7 +473,7 @@ TEST_F(MenuControllerTest, Validate) {
 
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
-  EXPECT_EQ([[menu menu] numberOfItems], 3);
+  EXPECT_EQ(3, [[menu menu] numberOfItems]);
 
   Validate(menu.get(), [menu menu]);
 }
@@ -363,7 +490,7 @@ TEST_F(MenuControllerTest, LabelFontList) {
 
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
-  EXPECT_EQ([[menu menu] numberOfItems], 2);
+  EXPECT_EQ(2, [[menu menu] numberOfItems]);
 
   Validate(menu.get(), [menu menu]);
 
@@ -403,7 +530,7 @@ TEST_F(MenuControllerTest, Dynamic) {
   model.AddItem(1, ASCIIToUTF16("foo"));
   base::scoped_nsobject<MenuController> menu(
       [[MenuController alloc] initWithModel:&model useWithPopUpButtonCell:NO]);
-  EXPECT_EQ([[menu menu] numberOfItems], 1);
+  EXPECT_EQ(1, [[menu menu] numberOfItems]);
   // Validate() simulates opening the menu - the item label/icon should be
   // initialized after this so we can validate the menu contents.
   Validate(menu.get(), [menu menu]);
