@@ -34,7 +34,13 @@ component("capture_base") {
   ]
 }
 
-component("capture_lib") {
+# Target which allows breakout of Android BUILD.gn files.
+source_set("capture_device_specific") {
+  visibility = [
+    ":capture_lib",
+    "//media/capture/content/android",
+    "//media/capture/video/android",
+  ]
   defines = [ "CAPTURE_IMPLEMENTATION" ]
   sources = [
     "content/animated_content_sampler.cc",
@@ -57,6 +63,27 @@ component("capture_lib") {
     "video/file_video_capture_device.h",
     "video/file_video_capture_device_factory.cc",
     "video/file_video_capture_device_factory.h",
+    "video/video_capture_buffer_handle.h",
+    "video/video_capture_device.cc",
+    "video/video_capture_device.h",
+    "video/video_capture_device_factory.cc",
+    "video/video_capture_device_factory.h",
+  ]
+  public_deps = [
+    ":capture_base",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//media",
+    "//media/capture/mojo:image_capture",
+    "//ui/gfx",
+  ]
+}
+
+component("capture_lib") {
+  defines = [ "CAPTURE_IMPLEMENTATION" ]
+  sources = [
     "video/linux/camera_config_chromeos.cc",
     "video/linux/camera_config_chromeos.h",
     "video/linux/v4l2_capture_delegate.cc",
@@ -79,7 +106,6 @@ component("capture_lib") {
     "video/shared_memory_buffer_handle.h",
     "video/shared_memory_buffer_tracker.cc",
     "video/shared_memory_buffer_tracker.h",
-    "video/video_capture_buffer_handle.h",
     "video/video_capture_buffer_pool.h",
     "video/video_capture_buffer_pool_impl.cc",
     "video/video_capture_buffer_pool_impl.h",
@@ -87,12 +113,8 @@ component("capture_lib") {
     "video/video_capture_buffer_tracker_factory.h",
     "video/video_capture_buffer_tracker_factory_impl.cc",
     "video/video_capture_buffer_tracker_factory_impl.h",
-    "video/video_capture_device.cc",
-    "video/video_capture_device.h",
     "video/video_capture_device_client.cc",
     "video/video_capture_device_client.h",
-    "video/video_capture_device_factory.cc",
-    "video/video_capture_device_factory.h",
     "video/video_capture_jpeg_decoder.h",
     "video/video_capture_system.h",
     "video/video_capture_system_impl.cc",
@@ -123,6 +145,7 @@ component("capture_lib") {
 
   public_deps = [
     ":capture_base",
+    ":capture_device_specific",
   ]
 
   deps = [
@@ -227,6 +250,7 @@ test("capture_unittests") {
     "//base/test:test_support",
     "//media:test_support",
     "//media/capture/mojo:image_capture",
+    "//mojo/edk/system",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gfx:test_support",
