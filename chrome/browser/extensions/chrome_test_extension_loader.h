@@ -128,7 +128,7 @@ class ChromeTestExtensionLoader {
   // The install location of the added extension.
   Manifest::Location location_ = Manifest::INTERNAL;
 
-  // Whether or not the installation should fail.
+  // Whether or not the extension load should fail.
   bool should_fail_ = false;
 
   // Whether or not to always pack the extension before loading it. Otherwise,

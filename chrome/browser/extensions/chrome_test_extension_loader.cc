@@ -23,6 +23,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/test/extension_test_notification_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -57,9 +58,9 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadExtension(
   }
 
   if (should_fail_ && extension)
-    ADD_FAILURE() << "Expected extension installation failure, but succeeded";
+    ADD_FAILURE() << "Expected extension load failure, but succeeded";
   else if (!should_fail_ && !extension)
-    ADD_FAILURE() << "Failed to install extension";
+    ADD_FAILURE() << "Failed to load extension";
 
   if (!extension)
     return nullptr;
@@ -220,7 +221,13 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadUnpacked(
   installer->set_require_modern_manifest_version(
       require_modern_manifest_version_);
   installer->Load(file_path);
-  extension = registry_observer.WaitForExtensionLoaded();
+  if (!should_fail_) {
+    extension = registry_observer.WaitForExtensionLoaded();
+  } else {
+    EXPECT_TRUE(ExtensionTestNotificationObserver(browser_context_)
+                    .WaitForExtensionLoadError())
+        << "No load error observed";
+  }
 
   return extension;
 }
