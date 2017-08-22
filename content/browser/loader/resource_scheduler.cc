@@ -53,23 +53,18 @@ const base::Feature kNetworkSchedulerYielding{
 const char kMaxRequestsBeforeYieldingParam[] = "MaxRequestsBeforeYieldingParam";
 const int kMaxRequestsBeforeYieldingDefault = 5;
 
-// When the effective connection type is detected to be lower than or equal to
-// the parameter provided in the experiment configuration and greater than
-// |EFFECTIVE_CONNECTION_TYPE_OFFLINE|, this feature will override the value of
+// Based on the field trial parameters, this feature will override the value of
 // the maximum number of delayable requests allowed in flight. The number of
 // delayable requests allowed in flight will be based on the BDP ranges and the
 // corresponding number of delayable requests in flight specified in the
-// experiment configuration.
-const base::Feature kMaxDelayableRequestsNetworkOverride{
-    "MaxDelayableRequestsNetworkOverride", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// This experiment throttles delayable requests based on the number of
-// non-delayable requests in-flight times a weighting factor. The experiment is
-// enabled only when the effective connection type is strictly greater than
-// net::EFFECTIVE_CONNECTION_TYPE_OFFLINE and less than or equal to
-// the maximum effective connection type in the configuration.
-const base::Feature kNonDelayableThrottlesDelayable{
-    "NonDelayableThrottlesDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
+// experiment configuration. Based on field trial parameters, this experiment
+// may also throttle delayable requests based on the number of non-delayable
+// requests in-flight times a weighting factor. The experiment is enabled only
+// when the effective connection type is strictly greater than
+// net::EFFECTIVE_CONNECTION_TYPE_OFFLINE and less than or equal to the maximum
+// effective connection type in the configuration.
+const base::Feature kThrottleDelayble{"ThrottleDelayable",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 enum StartMode {
   START_SYNC,
@@ -420,9 +415,8 @@ class ResourceScheduler::Client {
         max_requests_before_yielding_(max_requests_before_yielding),
         network_quality_estimator_(network_quality_estimator),
         max_delayable_requests_(
-            resource_scheduler
-                ->max_delayable_requests_network_override_experiment_
-                .GetMaxDelayableRequests(network_quality_estimator)),
+            resource_scheduler->throttle_delayable_.GetMaxDelayableRequests(
+                network_quality_estimator)),
         resource_scheduler_(resource_scheduler),
         weak_ptr_factory_(this) {}
 
@@ -491,8 +485,8 @@ class ResourceScheduler::Client {
     has_html_body_ = false;
     is_loaded_ = false;
     max_delayable_requests_ =
-        resource_scheduler_->max_delayable_requests_network_override_experiment_
-            .GetMaxDelayableRequests(network_quality_estimator_);
+        resource_scheduler_->throttle_delayable_.GetMaxDelayableRequests(
+            network_quality_estimator_);
   }
 
   void OnWillInsertBody() {
@@ -811,11 +805,11 @@ class ResourceScheduler::Client {
     // Delayable requests.
     DCHECK_GE(in_flight_requests_.size(), in_flight_delayable_count_);
     size_t num_non_delayable_requests_weighted = static_cast<size_t>(
-        resource_scheduler_->non_delayable_throttles_delayable_experiment_
-            .GetCurrentNonDelayableWeight(network_quality_estimator_) *
+        resource_scheduler_->throttle_delayable_.GetCurrentNonDelayableWeight(
+            network_quality_estimator_) *
         (in_flight_requests_.size() - in_flight_delayable_count_));
-    if (in_flight_delayable_count_ + num_non_delayable_requests_weighted >=
-        max_delayable_requests_) {
+    if ((in_flight_delayable_count_ + num_non_delayable_requests_weighted >=
+         max_delayable_requests_)) {
       return DO_NOT_START_REQUEST_AND_STOP_SEARCHING;
     }
 
@@ -1206,22 +1200,23 @@ ResourceScheduler::ClientId ResourceScheduler::MakeClientId(
   return (static_cast<ResourceScheduler::ClientId>(child_id) << 32) | route_id;
 }
 
-ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
-    MaxDelayableRequestsNetworkOverrideExperiment()
-    : max_requests_for_bdp_ranges_(GetConfig()),
+ResourceScheduler::ThrottleDelayble::ThrottleDelayble()
+    : max_requests_for_bdp_ranges_(GetMaxRequestsForBDPRanges()),
       max_effective_connection_type_(
           net::GetEffectiveConnectionTypeForName(
               base::GetFieldTrialParamValueByFeature(
-                  kMaxDelayableRequestsNetworkOverride,
+                  kThrottleDelayble,
                   "MaxEffectiveConnectionType"))
-              .value_or(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)) {}
+              .value_or(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)),
+      non_delayable_weight_(
+          base::GetFieldTrialParamByFeatureAsDouble(kThrottleDelayble,
+                                                    "NonDelayableWeight",
+                                                    0.0)) {}
 
-ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
-    ~MaxDelayableRequestsNetworkOverrideExperiment() {}
+ResourceScheduler::ThrottleDelayble::~ThrottleDelayble() {}
 
-size_t ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
-    GetMaxDelayableRequests(
-        const net::NetworkQualityEstimator* network_quality_estimator) const {
+size_t ResourceScheduler::ThrottleDelayble::GetMaxDelayableRequests(
+    const net::NetworkQualityEstimator* network_quality_estimator) const {
   if (max_requests_for_bdp_ranges_.empty() || !network_quality_estimator)
     return kDefaultMaxNumDelayableRequestsPerClient;
 
@@ -1244,60 +1239,8 @@ size_t ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::
   return kDefaultMaxNumDelayableRequestsPerClient;
 }
 
-ResourceScheduler::MaxRequestsForBDPRanges
-ResourceScheduler::MaxDelayableRequestsNetworkOverrideExperiment::GetConfig() {
-  static const char kMaxBDPKbitsBase[] = "MaxBDPKbits";
-  static const char kMaxDelayableRequestsBase[] = "MaxDelayableRequests";
-
-  MaxRequestsForBDPRanges result;
-  if (!base::FeatureList::IsEnabled(kMaxDelayableRequestsNetworkOverride))
-    return result;
-
-  int config_param_index = 1;
-  while (true) {
-    int64_t max_bdp_kbits;
-    size_t max_delayable_requests;
-
-    if (!base::StringToInt64(
-            base::GetFieldTrialParamValueByFeature(
-                kMaxDelayableRequestsNetworkOverride,
-                kMaxBDPKbitsBase + base::IntToString(config_param_index)),
-            &max_bdp_kbits)) {
-      DCHECK_LE(result.size(), 20u);
-      return result;
-    }
-    if (!base::StringToSizeT(base::GetFieldTrialParamValueByFeature(
-                                 kMaxDelayableRequestsNetworkOverride,
-                                 kMaxDelayableRequestsBase +
-                                     base::IntToString(config_param_index)),
-                             &max_delayable_requests)) {
-      DCHECK_LE(result.size(), 20u);
-      return result;
-    }
-    // Check that the previous bandwidth delay product is strictly less than the
-    // current bandwidth delay product.
-    DCHECK(result.empty() || result.back().max_bdp_kbits < max_bdp_kbits);
-    result.push_back({max_bdp_kbits, max_delayable_requests});
-    config_param_index++;
-  }
-}
-
-ResourceScheduler::NonDelayableThrottlesDelayableExperiment::
-    NonDelayableThrottlesDelayableExperiment()
-    : max_effective_connection_type_(
-          net::GetEffectiveConnectionTypeForName(
-              base::GetFieldTrialParamValueByFeature(
-                  kNonDelayableThrottlesDelayable,
-                  "MaxEffectiveConnectionType"))
-              .value_or(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN)),
-      non_delayable_weight_(base::GetFieldTrialParamByFeatureAsDouble(
-          kNonDelayableThrottlesDelayable,
-          "NonDelayableWeight",
-          0.0)) {}
-
-double ResourceScheduler::NonDelayableThrottlesDelayableExperiment::
-    GetCurrentNonDelayableWeight(
-        const net::NetworkQualityEstimator* network_quality_estimator) const {
+double ResourceScheduler::ThrottleDelayble::GetCurrentNonDelayableWeight(
+    const net::NetworkQualityEstimator* network_quality_estimator) const {
   if (!network_quality_estimator) {
     // Fall back to default behavior by setting the weight of non-delayable
     // requests to 0 when |network_quality_estimator| is not set.
@@ -1314,5 +1257,44 @@ double ResourceScheduler::NonDelayableThrottlesDelayableExperiment::
   }
   return non_delayable_weight_;
 }
+
+ResourceScheduler::MaxRequestsForBDPRanges
+ResourceScheduler::ThrottleDelayble::GetMaxRequestsForBDPRanges() {
+  const char max_bdp_kbits_base[] = "MaxBDPKbits";
+  const char max_delayable_requests_base[] = "MaxDelayableRequests";
+
+  MaxRequestsForBDPRanges result;
+  if (!base::FeatureList::IsEnabled(kThrottleDelayble))
+    return result;
+
+  int config_param_index = 1;
+  while (true) {
+    int64_t max_bdp_kbits;
+    size_t max_delayable_requests;
+
+    if (!base::StringToInt64(
+            base::GetFieldTrialParamValueByFeature(
+                kThrottleDelayble,
+                max_bdp_kbits_base + base::IntToString(config_param_index)),
+            &max_bdp_kbits)) {
+      DCHECK_LE(result.size(), 20u);
+      return result;
+    }
+    if (!base::StringToSizeT(
+            base::GetFieldTrialParamValueByFeature(
+                kThrottleDelayble, max_delayable_requests_base +
+                                       base::IntToString(config_param_index)),
+            &max_delayable_requests)) {
+      DCHECK_LE(result.size(), 20u);
+      return result;
+    }
+    // Check that the previous bandwidth delay product is strictly less than the
+    // current bandwidth delay product.
+    DCHECK(result.empty() || result.back().max_bdp_kbits < max_bdp_kbits);
+    result.push_back({max_bdp_kbits, max_delayable_requests});
+    config_param_index++;
+  }
+}
+
 
 }  // namespace content

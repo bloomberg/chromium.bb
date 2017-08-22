@@ -261,34 +261,10 @@ class ResourceSchedulerTest : public testing::Test {
     mock_timer_->Fire();
   }
 
-  void InitializeExperiment(base::test::ScopedFeatureList* scoped_feature_list,
-                            bool enabled,
-                            const char* experiment_name,
-                            const std::map<std::string, std::string>& params) {
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-    const char kTrialName[] = "TrialName";
-    const char kGroupName[] = "GroupName";
-
-    ASSERT_TRUE(
-        base::AssociateFieldTrialParams(kTrialName, kGroupName, params));
-    base::FieldTrial* field_trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-    ASSERT_TRUE(field_trial);
-
-    std::unique_ptr<base::FeatureList> feature_list(
-        base::MakeUnique<base::FeatureList>());
-    feature_list->RegisterFieldTrialOverride(
-        experiment_name,
-        enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
-                : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
-        field_trial);
-    scoped_feature_list->InitWithFeatureList(std::move(feature_list));
-  }
-
   void RequestLimitOverrideConfigTestHelper(bool experiment_status) {
     base::test::ScopedFeatureList scoped_feature_list;
-    InitializeMaxDelayableRequestsExperiment(&scoped_feature_list,
-                                             experiment_status);
+    InitializeThrottleDelayableExperiment(&scoped_feature_list,
+                                          experiment_status, 0.0);
 
     // Set BDP to 120 kbits, which lies in the first configuration bucket. Set
     // the effective connection type to Slow-2G, which is slower than the
@@ -357,28 +333,45 @@ class ResourceSchedulerTest : public testing::Test {
     }
   }
 
-  void InitializeMaxDelayableRequestsExperiment(
+  void InitializeThrottleDelayableExperiment(
       base::test::ScopedFeatureList* scoped_feature_list,
-      bool enabled) {
-    std::map<std::string, std::string> params;
-    params["MaxEffectiveConnectionType"] = "2G";
-    params["MaxBDPKbits1"] = "130";
-    params["MaxDelayableRequests1"] = "2";
-    params["MaxBDPKbits2"] = "160";
-    params["MaxDelayableRequests2"] = "4";
-    InitializeExperiment(scoped_feature_list, enabled,
-                         "MaxDelayableRequestsNetworkOverride", params);
-  }
-
-  void InitializeNonDelayableThrottlesDelayableExperiment(
-      base::test::ScopedFeatureList* scoped_feature_list,
-      bool enabled,
+      bool lower_delayable_count_enabled,
       double non_delayable_weight) {
     std::map<std::string, std::string> params;
-    params["MaxEffectiveConnectionType"] = "2G";
-    params["NonDelayableWeight"] = base::DoubleToString(non_delayable_weight);
-    InitializeExperiment(scoped_feature_list, enabled,
-                         "NonDelayableThrottlesDelayable", params);
+    bool experiment_enabled = false;
+    if (lower_delayable_count_enabled) {
+      experiment_enabled = true;
+      params["MaxEffectiveConnectionType"] = "2G";
+      params["MaxBDPKbits1"] = "130";
+      params["MaxDelayableRequests1"] = "2";
+      params["MaxBDPKbits2"] = "160";
+      params["MaxDelayableRequests2"] = "4";
+    }
+
+    if (non_delayable_weight > 0.0) {
+      experiment_enabled = true;
+      params["MaxEffectiveConnectionType"] = "2G";
+      params["NonDelayableWeight"] = base::DoubleToString(non_delayable_weight);
+    }
+
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+    const char kTrialName[] = "TrialName";
+    const char kGroupName[] = "GroupName";
+
+    ASSERT_TRUE(
+        base::AssociateFieldTrialParams(kTrialName, kGroupName, params));
+    base::FieldTrial* field_trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+    ASSERT_TRUE(field_trial);
+
+    std::unique_ptr<base::FeatureList> feature_list(
+        base::MakeUnique<base::FeatureList>());
+    feature_list->RegisterFieldTrialOverride(
+        "ThrottleDelayable",
+        experiment_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                           : base::FeatureList::OVERRIDE_DISABLE_FEATURE,
+        field_trial);
+    scoped_feature_list->InitWithFeatureList(std::move(feature_list));
   }
 
   void ReadConfigTestHelper(size_t num_bdp_ranges,
@@ -386,8 +379,7 @@ class ResourceSchedulerTest : public testing::Test {
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
     const char kTrialName[] = "TrialName";
     const char kGroupName[] = "GroupName";
-    const char kMaxDelayableRequestsNetworkOverride[] =
-        "MaxDelayableRequestsNetworkOverride";
+    const char kThrottleDelayable[] = "ThrottleDelayable";
 
     base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
     base::test::ScopedFeatureList scoped_feature_list;
@@ -406,8 +398,8 @@ class ResourceSchedulerTest : public testing::Test {
     std::unique_ptr<base::FeatureList> feature_list(
         base::MakeUnique<base::FeatureList>());
     feature_list->RegisterFieldTrialOverride(
-        kMaxDelayableRequestsNetworkOverride,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
+        kThrottleDelayable, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        field_trial);
     scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
     ResourceScheduler::MaxRequestsForBDPRanges bdp_ranges =
@@ -424,54 +416,13 @@ class ResourceSchedulerTest : public testing::Test {
     }
   }
 
-  void NonDelayableThrottlesDelayableConfigTestHelper(bool experiment_status) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    const double kNonDelayableWeight = 2.0;
-    // Should be in sync with .cc.
-    const int kDefaultMaxNumDelayableRequestsPerClient = 10;
-    // Initialize the experiment with |kNonDelayableWeight| as the weight of
-    // non-delayable requests.
-    InitializeNonDelayableThrottlesDelayableExperiment(
-        &scoped_feature_list, experiment_status, kNonDelayableWeight);
-    // Experiment will only run when the effective connection type is slower
-    // than 2G.
-    network_quality_estimator_.set_effective_connection_type(
-        net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
-
-    InitializeScheduler();
-    // Limit will only trigger after the page has a body.
-    scheduler()->OnWillInsertBody(kChildId, kRouteId);
-    // Insert one non-delayable request, which should cause the limit for the
-    // number of delayable requests to go down by |kNonDelayableWeight|.
-    std::unique_ptr<TestRequest> medium(
-        NewRequest("http://host/medium", net::MEDIUM));
-    ASSERT_TRUE(medium->started());
-    // Start |kDefaultMaxNumDelayableRequestsPerClient| - 1 *
-    // |kNonDelayableWeight| delayable requests.
-    std::vector<std::unique_ptr<TestRequest>> delayable_requests;
-    for (int i = 0;
-         i < kDefaultMaxNumDelayableRequestsPerClient - kNonDelayableWeight;
-         ++i) {
-      delayable_requests.push_back(NewRequest(
-          base::StringPrintf("http://host%d/low", i).c_str(), net::LOWEST));
-      EXPECT_TRUE(delayable_requests.back()->started());
-    }
-    // A new non-delayable request should not start if the experiment is enabled
-    // because the weighted sum of the non-delayable request and the delayable
-    // requests in-flight is already |kDefaultMaxNumDelayableRequestsPerClient|.
-    std::unique_ptr<TestRequest> last_low(
-        NewRequest("http://lasthost/low", net::LOWEST));
-    EXPECT_EQ(experiment_status, !last_low->started());
-  }
-
-  void NonDelayableThrottlesDelayableVaryWeightHelper(
-      double non_delayable_weight) {
+  void NonDelayableThrottlesDelayableHelper(double non_delayable_weight) {
     base::test::ScopedFeatureList scoped_feature_list;
     // Should be in sync with .cc.
     const int kDefaultMaxNumDelayableRequestsPerClient = 10;
     // Initialize the experiment.
-    InitializeNonDelayableThrottlesDelayableExperiment(
-        &scoped_feature_list, true, non_delayable_weight);
+    InitializeThrottleDelayableExperiment(&scoped_feature_list, false,
+                                          non_delayable_weight);
     network_quality_estimator_.set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_2G);
 
@@ -1254,7 +1205,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideDisabled) {
 // not equal to any of the values provided in the experiment configuration.
 TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
   base::test::ScopedFeatureList scoped_feature_list;
-  InitializeMaxDelayableRequestsExperiment(&scoped_feature_list, true);
+  InitializeThrottleDelayableExperiment(&scoped_feature_list, true, 0.0);
   InitializeScheduler();
   for (net::EffectiveConnectionType ect :
        {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
@@ -1303,7 +1254,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
 // buckets provided in the configuration.
 TEST_F(ResourceSchedulerTest, RequestLimitOverrideConfigOutsideBDPRange) {
   base::test::ScopedFeatureList scoped_feature_list;
-  InitializeMaxDelayableRequestsExperiment(&scoped_feature_list, true);
+  InitializeThrottleDelayableExperiment(&scoped_feature_list, true, 0.0);
   // The BDP should lie outside the provided ranges. Here, the BDP is set to
   // 200, which lies outside the configuration BDP buckets.
   // The effective connection type is set to Slow-2G.
@@ -1348,7 +1299,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideConfigOutsideBDPRange) {
 // change the behavior of the resource scheduler.
 TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
   base::test::ScopedFeatureList scoped_feature_list;
-  InitializeMaxDelayableRequestsExperiment(&scoped_feature_list, true);
+  InitializeThrottleDelayableExperiment(&scoped_feature_list, true, 0.0);
   // BDP value is in range for which the limit is overridden to 2. The
   // effective connection type is set to Slow-2G.
   network_quality_estimator_.set_bandwidth_delay_product_kbits(120);
@@ -1407,7 +1358,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
 // until the number of requests in flight have gone below the new limit.
 TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   base::test::ScopedFeatureList scoped_feature_list;
-  InitializeMaxDelayableRequestsExperiment(&scoped_feature_list, true);
+  InitializeThrottleDelayableExperiment(&scoped_feature_list, true, 0.0);
   // BDP value is in range for which the limit is overridden to 4. The
   // effective connection type is set to Slow-2G.
   network_quality_estimator_.set_bandwidth_delay_product_kbits(150);
@@ -1455,7 +1406,8 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   EXPECT_TRUE(high->started());
 
   // Generate requests from second page. None of them should start because the
-  // new limit is 2 and there are already 4 requests in flight.
+  // new limit is |kNumDelayableLow| and there are already |kNumDelayableHigh|
+  // requests in flight.
   std::vector<std::unique_ptr<TestRequest>> delayable_second_page;
   for (int i = 0; i < kNumDelayableLow; ++i) {
     // Keep unique hostnames to prevent the per host limit from kicking in.
@@ -1465,12 +1417,13 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   }
 
   // Finish 2 requests from first page load.
-  for (int i = 0; i < kNumDelayableLow; ++i) {
+  for (int i = 0; i < kNumDelayableHigh - kNumDelayableLow; ++i) {
     delayable_first_page.pop_back();
   }
   base::RunLoop().RunUntilIdle();
 
-  // Nothing should start because there are already 2 requests in flight.
+  // Nothing should start because there are already |kNumDelayableLow| requests
+  // in flight.
   for (int i = 0; i < kNumDelayableLow; ++i) {
     EXPECT_FALSE(delayable_second_page[i]->started());
   }
@@ -1514,8 +1467,7 @@ TEST_F(ResourceSchedulerTest, ReadInvalidConfigTest) {
   base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
   const char kTrialName[] = "TrialName";
   const char kGroupName[] = "GroupName";
-  const char kMaxDelayableRequestsNetworkOverride[] =
-      "MaxDelayableRequestsNetworkOverride";
+  const char kThrottleDelayable[] = "ThrottleDelayable";
 
   base::test::ScopedFeatureList scoped_feature_list;
   std::map<std::string, std::string> params;
@@ -1537,8 +1489,8 @@ TEST_F(ResourceSchedulerTest, ReadInvalidConfigTest) {
   std::unique_ptr<base::FeatureList> feature_list(
       base::MakeUnique<base::FeatureList>());
   feature_list->RegisterFieldTrialOverride(
-      kMaxDelayableRequestsNetworkOverride,
-      base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
+      kThrottleDelayable, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+      field_trial);
   scoped_feature_list.InitWithFeatureList(std::move(feature_list));
 
   ResourceScheduler::MaxRequestsForBDPRanges bdp_ranges =
@@ -1564,18 +1516,6 @@ TEST_F(ResourceSchedulerTest, ReadMaxECTForExperimentTest4G) {
   ReadConfigTestHelper(3, "4G");
 }
 
-// Test that the delayable requests are limited in the presence of non-delayable
-// requests when the experiment is enabled.
-TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableEnabledTest) {
-  NonDelayableThrottlesDelayableConfigTestHelper(true);
-}
-
-// Test that the default limit is used for delayable requests when the
-// experiment is disabled, even if non-delayable requests are present.
-TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableDisabledTest) {
-  NonDelayableThrottlesDelayableConfigTestHelper(false);
-}
-
 // Test that the default limit is used for delayable requests when the
 // experiment is enabled, but the current effective connection type is higher
 // than the maximum effective connection type set in the experiment
@@ -1587,8 +1527,8 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableOutsideECT) {
       10;  // Should be in sync with cc.
   // Initialize the experiment with |kNonDelayableWeight| as the weight of
   // non-delayable requests.
-  InitializeNonDelayableThrottlesDelayableExperiment(&scoped_feature_list, true,
-                                                     kNonDelayableWeight);
+  InitializeThrottleDelayableExperiment(&scoped_feature_list, false,
+                                        kNonDelayableWeight);
   // Experiment should not run when the effective connection type is faster
   // than 2G.
   network_quality_estimator_.set_effective_connection_type(
@@ -1621,8 +1561,8 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
       10;  // Should be in sync with cc.
   // Initialize the experiment with |kNonDelayableWeight| as the weight of
   // non-delayable requests.
-  InitializeNonDelayableThrottlesDelayableExperiment(&scoped_feature_list, true,
-                                                     kNonDelayableWeight);
+  InitializeThrottleDelayableExperiment(&scoped_feature_list, false,
+                                        kNonDelayableWeight);
   network_quality_estimator_.set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
 
@@ -1658,21 +1598,21 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
 // Test that the default limit is used for delayable requests in the presence of
 // non-delayable requests when the non-delayable request weight is zero.
 TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableWeight0) {
-  NonDelayableThrottlesDelayableVaryWeightHelper(0.0);
+  NonDelayableThrottlesDelayableHelper(0.0);
 }
 
 // Test that each non-delayable request in-flight results in the reduction of
 // one in the limit of delayable requests in-flight when the non-delayable
 // request weight is 1.
 TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableWeight1) {
-  NonDelayableThrottlesDelayableVaryWeightHelper(1.0);
+  NonDelayableThrottlesDelayableHelper(1.0);
 }
 
 // Test that each non-delayable request in-flight results in the reduction of
 // three in the limit of delayable requests in-flight when the non-delayable
 // request weight is 3.
 TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableWeight3) {
-  NonDelayableThrottlesDelayableVaryWeightHelper(3.0);
+  NonDelayableThrottlesDelayableHelper(3.0);
 }
 
 // Test that UMA counts are recorded for the number of delayable requests
