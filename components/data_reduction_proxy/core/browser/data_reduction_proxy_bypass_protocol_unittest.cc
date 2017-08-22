@@ -190,14 +190,26 @@ class DataReductionProxyProtocolTest : public testing::Test {
       response2_via_header = "Via: 1.1 Chrome-Compression-Proxy\r\n";
     }
 
-    request2 = base::StringPrintf(
+    std::string request2_prefix = base::StringPrintf(
         "%s %s HTTP/1.1\r\n"
         "Host: www.google.com\r\n"
-        "%sConnection: keep-alive\r\n%s"
-        "User-Agent:\r\n"
-        "Accept-Encoding: gzip, deflate\r\n\r\n",
+        "%sConnection: keep-alive\r\n%s",
         method, request2_path.c_str(), request2_connection_type.c_str(),
         trailer.c_str());
+
+    // Cache headers are set only if the request was intercepted and retried by
+    // data reduction proxy. If the request was restarted by the network stack,
+    // then the cache headers are unset.
+    std::string request2_middle = expected_bad_proxy_count == 0
+                                      ? "Pragma: no-cache\r\n"
+                                        "Cache-Control: no-cache\r\n"
+                                      : "";
+
+    std::string request2_suffix =
+        "User-Agent:\r\n"
+        "Accept-Encoding: gzip, deflate\r\n\r\n";
+
+    request2 = request2_prefix + request2_middle + request2_suffix;
 
     response2 = base::StringPrintf(
         "HTTP/1.0 200 OK\r\n"

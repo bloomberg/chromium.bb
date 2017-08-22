@@ -169,8 +169,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
                           data_reduction_proxy_info->bypass_all,
                           data_reduction_proxy_type_info.proxy_servers);
   } else {
-    request->SetLoadFlags(request->load_flags() |
-                          net::LOAD_DISABLE_CACHE |
+    request->SetLoadFlags(request->load_flags() | net::LOAD_BYPASS_CACHE |
                           net::LOAD_BYPASS_PROXY);
   }
 
