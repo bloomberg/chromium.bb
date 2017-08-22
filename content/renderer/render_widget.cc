@@ -382,7 +382,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 #if defined(OS_MACOSX)
       text_input_client_observer_(new TextInputClientObserver(this)),
 #endif
-      time_to_first_active_paint_recorded_(true),
+      first_update_visual_state_after_hidden_(false),
       was_shown_time_(base::TimeTicks::Now()),
       current_content_source_id_(0),
       widget_binding_(this, std::move(widget_request)),
@@ -992,17 +992,26 @@ void RenderWidget::UpdateVisualState() {
   GetWebWidget()->UpdateAllLifecyclePhases();
   GetWebWidget()->SetSuppressFrameRequestsWorkaroundFor704763Only(false);
 
-  if (time_to_first_active_paint_recorded_)
-    return;
+  if (first_update_visual_state_after_hidden_) {
+    RecordTimeToFirstActivePaint();
+    first_update_visual_state_after_hidden_ = false;
+  }
+}
 
+void RenderWidget::RecordTimeToFirstActivePaint() {
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
-  if (!render_thread_impl->NeedsToRecordFirstActivePaint())
-    return;
-
-  time_to_first_active_paint_recorded_ = true;
   base::TimeDelta sample = base::TimeTicks::Now() - was_shown_time_;
-  UMA_HISTOGRAM_TIMES("PurgeAndSuspend.Experimental.TimeToFirstActivePaint",
-                      sample);
+  if (render_thread_impl->NeedsToRecordFirstActivePaint(TTFAP_AFTER_PURGED)) {
+    UMA_HISTOGRAM_TIMES("PurgeAndSuspend.Experimental.TimeToFirstActivePaint",
+                        sample);
+  }
+  if (render_thread_impl->NeedsToRecordFirstActivePaint(
+          TTFAP_5MIN_AFTER_BACKGROUNDED)) {
+    UMA_HISTOGRAM_TIMES(
+        "PurgeAndSuspend.Experimental.TimeToFirstActivePaint."
+        "AfterBackgrounded.5min",
+        sample);
+  }
 }
 
 void RenderWidget::WillBeginCompositorFrame() {
@@ -2012,7 +2021,7 @@ void RenderWidget::SetHidden(bool hidden) {
 
   if (is_hidden_) {
     RenderThreadImpl::current()->WidgetHidden();
-    time_to_first_active_paint_recorded_ = false;
+    first_update_visual_state_after_hidden_ = true;
   } else
     RenderThreadImpl::current()->WidgetRestored();
 
