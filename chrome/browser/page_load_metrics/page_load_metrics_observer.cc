@@ -68,7 +68,8 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
         data_reduction_proxy_data,
     content::ResourceType detected_resource_type,
-    int net_error)
+    int net_error,
+    std::unique_ptr<net::LoadTimingInfo> load_timing_info)
     : url(url),
       host_port_pair(host_port_pair),
       frame_tree_node_id(frame_tree_node_id),
@@ -77,7 +78,8 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
       original_network_content_length(original_network_content_length),
       data_reduction_proxy_data(std::move(data_reduction_proxy_data)),
       resource_type(detected_resource_type),
-      net_error(net_error) {}
+      net_error(net_error),
+      load_timing_info(std::move(load_timing_info)) {}
 
 ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
     const ExtraRequestCompleteInfo& other)
@@ -92,7 +94,11 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
               ? nullptr
               : other.data_reduction_proxy_data->DeepCopy()),
       resource_type(other.resource_type),
-      net_error(other.net_error) {}
+      net_error(other.net_error),
+      load_timing_info(other.load_timing_info == nullptr
+                           ? nullptr
+                           : base::MakeUnique<net::LoadTimingInfo>(
+                                 *other.load_timing_info)) {}
 
 ExtraRequestCompleteInfo::~ExtraRequestCompleteInfo() {}
 

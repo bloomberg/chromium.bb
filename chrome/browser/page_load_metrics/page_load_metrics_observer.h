@@ -217,7 +217,8 @@ struct ExtraRequestCompleteInfo {
       std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
           data_reduction_proxy_data,
       content::ResourceType detected_resource_type,
-      int net_error);
+      int net_error,
+      std::unique_ptr<net::LoadTimingInfo> load_timing_info);
 
   ExtraRequestCompleteInfo(const ExtraRequestCompleteInfo& other);
 
@@ -256,6 +257,9 @@ struct ExtraRequestCompleteInfo {
   // net/base/net_error_list.h. If no error was encountered, this value will be
   // 0.
   const int net_error;
+
+  // Additional timing information.
+  const std::unique_ptr<net::LoadTimingInfo> load_timing_info;
 };
 
 // Interface for PageLoadMetrics observers. All instances of this class are

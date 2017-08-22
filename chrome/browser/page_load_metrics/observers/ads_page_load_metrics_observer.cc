@@ -258,7 +258,11 @@ void AdsPageLoadMetricsObserver::ProcessLoadedResource(
               extra_request_info.frame_tree_node_id,
               extra_request_info.was_cached, extra_request_info.raw_body_bytes,
               extra_request_info.original_network_content_length, nullptr,
-              extra_request_info.resource_type, extra_request_info.net_error));
+              extra_request_info.resource_type, extra_request_info.net_error,
+              extra_request_info.load_timing_info
+                  ? base::MakeUnique<net::LoadTimingInfo>(
+                        *extra_request_info.load_timing_info)
+                  : nullptr));
     } else {
       // This is unexpected, it could be:
       // 1. a resource from a previous navigation that started its resource
