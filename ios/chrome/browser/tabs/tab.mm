@@ -1229,8 +1229,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (!_requireReloadAfterBecomingActive)
     return;
   if (_visible) {
-    self.navigationManager->Reload(web::ReloadType::NORMAL,
-                                   false /* check_for_repost */);
+    self.webState->GetNavigationManager()->LoadIfNecessary();
   } else {
     _requireReloadOnDisplay = YES;
   }
