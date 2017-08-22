@@ -880,8 +880,6 @@ class Port(object):
         """
         self._filesystem.write_binary_file(baseline_path, data)
 
-    # TODO(qyearsley): Update callers to create a finder and call it instead
-    # of these next two routines (which should be protected).
     def _path_from_chromium_base(self, *comps):
         return self._path_finder.path_from_chromium_base(*comps)
 
