@@ -3426,8 +3426,7 @@ void Element::UpdatePseudoElement(PseudoId pseudo_id,
       MutableComputedStyle()->RemoveCachedPseudoStyle(pseudo_id);
 
     // PseudoElement styles hang off their parent element's style so if we
-    // needed a style recalc we should Force one on the pseudo.  FIXME: We
-    // should figure out the right text sibling to pass.
+    // needed a style recalc we should Force one on the pseudo.
     element->RecalcStyle(change == kUpdatePseudoElements ? kForce : change);
 
     // Wait until our parent is not displayed or
