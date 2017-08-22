@@ -6,6 +6,7 @@
 #define CC_RESOURCES_DISPLAY_RESOURCE_PROVIDER_H_
 
 #include "build/build_config.h"
+#include "cc/output/overlay_candidate.h"
 #include "cc/resources/resource_provider.h"
 
 namespace viz {

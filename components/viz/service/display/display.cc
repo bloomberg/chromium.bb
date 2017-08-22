@@ -13,6 +13,7 @@
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/direct_renderer.h"
+#include "cc/output/output_surface.h"
 #include "cc/output/software_renderer.h"
 #include "cc/output/texture_mailbox_deleter.h"
 #include "components/viz/common/display/renderer_settings.h"
