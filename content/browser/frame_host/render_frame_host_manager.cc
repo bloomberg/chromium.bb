@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
@@ -1712,10 +1713,126 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
   if (!new_instance->GetProcess()->Init())
     return false;
 
+  // TODO(alexmos): Temporarily collect information about situations when a
+  // frame is created without a live parent proxy.  See
+  // https://crbug.com/756790.
+  RenderViewHostImpl* existing_view =
+      frame_tree_node_->frame_tree()->GetRenderViewHost(new_instance);
+  bool existing_view_is_live = false;
+  if (existing_view)
+    existing_view_is_live = existing_view->IsRenderViewLive();
+
+  RenderFrameProxyHost* existing_parent_proxy = nullptr;
+  bool existing_parent_proxy_is_live = false;
+  if (frame_tree_node_->parent()) {
+    existing_parent_proxy =
+        frame_tree_node_->parent()->render_manager()->GetRenderFrameProxyHost(
+            new_instance);
+    if (existing_parent_proxy) {
+      existing_parent_proxy_is_live =
+          existing_parent_proxy->is_render_frame_proxy_live();
+    }
+  }
+
   CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
   speculative_render_frame_host_ =
       CreateRenderFrame(new_instance, delegate_->IsHidden(), nullptr);
+
+  // TODO(alexmos): Temporary DumpWithoutCrashing to debug situations when a
+  // frame is created without an existing proxy and with a non-live parent
+  // proxy.  This causes a renderer crash.  See https://crbug.com/756790.
+  RenderFrameProxyHost* existing_proxy = GetRenderFrameProxyHost(new_instance);
+  if (frame_tree_node_->parent() && !existing_proxy &&
+      speculative_render_frame_host_) {
+    RenderFrameProxyHost* parent_proxy =
+        frame_tree_node_->parent()->render_manager()->GetRenderFrameProxyHost(
+            new_instance);
+    if (parent_proxy && !parent_proxy->is_render_frame_proxy_live()) {
+      char old_instance_buf[128];
+      base::strlcpy(old_instance_buf, old_instance->GetSiteURL().spec().c_str(),
+                    arraysize(old_instance_buf));
+      base::debug::Alias(old_instance_buf);
+
+      char new_instance_buf[128];
+      base::strlcpy(new_instance_buf, new_instance->GetSiteURL().spec().c_str(),
+                    arraysize(new_instance_buf));
+      base::debug::Alias(new_instance_buf);
+
+      char parent_instance_buf[128];
+      base::strlcpy(parent_instance_buf,
+                    frame_tree_node_->parent()
+                        ->current_frame_host()
+                        ->GetSiteInstance()
+                        ->GetSiteURL()
+                        .spec()
+                        .c_str(),
+                    arraysize(parent_instance_buf));
+      base::debug::Alias(parent_instance_buf);
+
+      RenderViewHostImpl* view =
+          speculative_render_frame_host_->render_view_host();
+      base::debug::Alias(view);
+      bool view_is_live = view->IsRenderViewLive();
+      base::debug::Alias(&view_is_live);
+      bool view_is_active = view->is_active();
+      base::debug::Alias(&view_is_active);
+      bool view_termination_status = view->render_view_termination_status();
+      base::debug::Alias(&view_termination_status);
+      RenderFrameHostImpl* main_frame =
+          static_cast<RenderFrameHostImpl*>(view->GetMainFrame());
+      base::debug::Alias(main_frame);
+
+      bool view_was_created = (view != existing_view);
+      base::debug::Alias(&view_was_created);
+
+      base::debug::Alias(existing_view);
+      base::debug::Alias(&existing_view_is_live);
+      base::debug::Alias(&existing_parent_proxy);
+      base::debug::Alias(&existing_parent_proxy_is_live);
+
+      RenderViewHostImpl* parent_view =
+          frame_tree_node_->parent()->render_manager()->current_host();
+      base::debug::Alias(parent_view);
+      bool parent_view_is_live = parent_view->IsRenderViewLive();
+      base::debug::Alias(&parent_view_is_live);
+      bool parent_view_is_active = parent_view->is_active();
+      base::debug::Alias(&parent_view_is_active);
+      bool parent_view_termination_status =
+          parent_view->render_view_termination_status();
+      base::debug::Alias(&parent_view_termination_status);
+
+      bool is_over_process_limit =
+          RenderProcessHost::ShouldTryToUseExistingProcessHost(
+              new_instance->GetBrowserContext(), new_instance->GetSiteURL());
+      base::debug::Alias(&is_over_process_limit);
+
+      RenderProcessHostImpl* rph = static_cast<RenderProcessHostImpl*>(
+          speculative_render_frame_host_->GetProcess());
+      bool process_is_in_shutdown = rph->FastShutdownStarted();
+      base::debug::Alias(&process_is_in_shutdown);
+      bool process_is_unused = rph->IsUnused();
+      base::debug::Alias(&process_is_unused);
+      bool host_has_not_been_used = rph->HostHasNotBeenUsed();
+      base::debug::Alias(&host_has_not_been_used);
+
+      bool is_related_site_instance =
+          new_instance->IsRelatedSiteInstance(old_instance);
+      base::debug::Alias(&is_related_site_instance);
+
+      auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+      auto lock_state_new_instance = policy->CheckOriginLock(
+          speculative_render_frame_host_->GetProcess()->GetID(),
+          new_instance->GetSiteURL());
+      base::debug::Alias(&lock_state_new_instance);
+      auto lock_state_old_instance = policy->CheckOriginLock(
+          speculative_render_frame_host_->GetProcess()->GetID(),
+          old_instance->GetSiteURL());
+      base::debug::Alias(&lock_state_old_instance);
+
+      base::debug::DumpWithoutCrashing();
+    }
+  }
 
   return !!speculative_render_frame_host_;
 }
