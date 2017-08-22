@@ -16,7 +16,6 @@ typedef int64_t SourceId;
 enum class SourceIdType : int64_t {
   UKM = 0,
   NAVIGATION_ID = 1,
-  RESOURCE_COORDINATOR = 2,
 };
 
 // Get a new source ID, which is unique for the duration of a browser session.

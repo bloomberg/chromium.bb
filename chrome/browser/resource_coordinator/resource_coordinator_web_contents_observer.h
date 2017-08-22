@@ -25,7 +25,6 @@ class ResourceCoordinatorWebContentsObserver
 
   static bool ukm_recorder_initialized;
 
-  static ukm::SourceId CreateUkmSourceId();
   static bool IsEnabled();
 
   resource_coordinator::ResourceCoordinatorInterface*
@@ -44,7 +43,7 @@ class ResourceCoordinatorWebContentsObserver
 
   void EnsureUkmRecorderInterface();
   void MaybeSetUkmRecorderInterface(bool ukm_recorder_already_initialized);
-  void UpdateUkmRecorder(const GURL& url);
+  void UpdateUkmRecorder(int64_t navigation_id);
 
  private:
   explicit ResourceCoordinatorWebContentsObserver(

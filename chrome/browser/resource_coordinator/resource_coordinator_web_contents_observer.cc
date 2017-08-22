@@ -99,13 +99,6 @@ ResourceCoordinatorWebContentsObserver::
     ~ResourceCoordinatorWebContentsObserver() = default;
 
 // static
-ukm::SourceId ResourceCoordinatorWebContentsObserver::CreateUkmSourceId() {
-  static base::AtomicSequenceNumber seq;
-  return ConvertToSourceId(seq.GetNext() + 1,
-                           ukm::SourceIdType::RESOURCE_COORDINATOR);
-}
-
-// static
 bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
   // Check that service_manager is active and GRC is enabled.
   return content::ServiceManagerConnection::GetForProcess() != nullptr &&
@@ -130,7 +123,7 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
   }
 
   if (navigation_handle->IsInMainFrame()) {
-    UpdateUkmRecorder(navigation_handle->GetURL());
+    UpdateUkmRecorder(navigation_handle->GetNavigationId());
     ResetFlag();
     navigation_finished_time_ = base::TimeTicks::Now();
   }
@@ -183,16 +176,13 @@ void ResourceCoordinatorWebContentsObserver::DidUpdateFaviconURL(
 }
 
 void ResourceCoordinatorWebContentsObserver::UpdateUkmRecorder(
-    const GURL& url) {
-  if (!base::FeatureList::IsEnabled(ukm::kUkmFeature) ||
-      !ukm::UkmRecorder::Get()) {
+    int64_t navigation_id) {
+  if (!base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
     return;
   }
 
-  // TODO(oysteine): Use NavigationID instead of a new sourceID, when it
-  // lands (https://chromium-review.googlesource.com/c/580586).
-  ukm_source_id_ = CreateUkmSourceId();
-  ukm::UkmRecorder::Get()->UpdateSourceURL(ukm_source_id_, url);
+  ukm_source_id_ =
+      ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
   tab_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kUKMSourceId, ukm_source_id_);
 }
