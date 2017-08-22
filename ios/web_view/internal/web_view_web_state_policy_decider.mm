@@ -4,6 +4,7 @@
 
 #import "ios/web_view/internal/web_view_web_state_policy_decider.h"
 
+#import "ios/web_view/internal/cwv_navigation_type_internal.h"
 #import "ios/web_view/public/cwv_navigation_delegate.h"
 #import "ios/web_view/public/cwv_web_view.h"
 
@@ -14,11 +15,21 @@ WebViewWebStatePolicyDecider::WebViewWebStatePolicyDecider(
     CWVWebView* web_view)
     : web::WebStatePolicyDecider(web_state), web_view_(web_view) {}
 
-bool WebViewWebStatePolicyDecider::ShouldAllowRequest(NSURLRequest* request) {
+bool WebViewWebStatePolicyDecider::ShouldAllowRequest(
+    NSURLRequest* request,
+    ui::PageTransition transition) {
   id<CWVNavigationDelegate> delegate = web_view_.navigationDelegate;
-  if ([delegate
-          respondsToSelector:@selector(webView:shouldStartLoadWithRequest:)]) {
-    return [delegate webView:web_view_ shouldStartLoadWithRequest:request];
+  if ([delegate respondsToSelector:@selector
+                (webView:shouldStartLoadWithRequest:navigationType:)]) {
+    // CWVNavigationType is virtually the same as ui::PageTransition. But
+    // ui::PageTransition must not be used in the public API of //ios/web_view
+    // because its API must be in pure Objective-C. It cannot use a type defined
+    // in a C++ header //ui/base/page_transition_types.h.
+    CWVNavigationType navigation_type =
+        CWVNavigationTypeFromPageTransition(transition);
+    return [delegate webView:web_view_
+        shouldStartLoadWithRequest:request
+                    navigationType:navigation_type];
   }
   return true;
 }

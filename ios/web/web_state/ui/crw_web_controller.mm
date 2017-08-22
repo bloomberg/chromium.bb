@@ -628,6 +628,9 @@ registerLoadRequestForURL:(const GURL&)URL
                  referrer:(const web::Referrer&)referrer
                transition:(ui::PageTransition)transition
    sameDocumentNavigation:(BOOL)sameDocumentNavigation;
+// Maps WKNavigationType to ui::PageTransition.
+- (ui::PageTransition)pageTransitionFromNavigationType:
+    (WKNavigationType)navigationType;
 // Generates the JavaScript string used to update the UIWebView's URL so that it
 // matches the URL displayed in the omnibox and sets window.history.state to
 // stateObject. Needed for history.pushState() and history.replaceState().
@@ -1373,31 +1376,8 @@ registerLoadRequestForURL:(const GURL&)URL
   WKNavigationType navigationType =
       _pendingNavigationInfo ? [_pendingNavigationInfo navigationType]
                              : WKNavigationTypeOther;
-  ui::PageTransition transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-  switch (navigationType) {
-    case WKNavigationTypeLinkActivated:
-      transition = ui::PAGE_TRANSITION_LINK;
-      break;
-    case WKNavigationTypeFormSubmitted:
-    case WKNavigationTypeFormResubmitted:
-      transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
-      break;
-    case WKNavigationTypeBackForward:
-      transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-      break;
-    case WKNavigationTypeReload:
-      transition = ui::PAGE_TRANSITION_RELOAD;
-      break;
-    case WKNavigationTypeOther:
-      // The "Other" type covers a variety of very different cases, which may
-      // or may not be the result of user actions. For now, guess based on
-      // whether there's been an interaction since the last URL change.
-      // TODO(crbug.com/549301): See if this heuristic can be improved.
-      transition = _interactionRegisteredSinceLastURLChange
-                       ? ui::PAGE_TRANSITION_LINK
-                       : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-      break;
-  }
+  ui::PageTransition transition =
+      [self pageTransitionFromNavigationType:navigationType];
   // The referrer is not known yet, and will be updated later.
   const web::Referrer emptyReferrer;
   return [self registerLoadRequestForURL:URL
@@ -1460,6 +1440,29 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _webStateImpl->SetIsLoading(true);
   _webStateImpl->OnNavigationStarted(context.get());
   return context;
+}
+
+- (ui::PageTransition)pageTransitionFromNavigationType:
+    (WKNavigationType)navigationType {
+  switch (navigationType) {
+    case WKNavigationTypeLinkActivated:
+      return ui::PAGE_TRANSITION_LINK;
+    case WKNavigationTypeFormSubmitted:
+    case WKNavigationTypeFormResubmitted:
+      return ui::PAGE_TRANSITION_FORM_SUBMIT;
+    case WKNavigationTypeBackForward:
+      return ui::PAGE_TRANSITION_FORWARD_BACK;
+    case WKNavigationTypeReload:
+      return ui::PAGE_TRANSITION_RELOAD;
+    case WKNavigationTypeOther:
+      // The "Other" type covers a variety of very different cases, which may
+      // or may not be the result of user actions. For now, guess based on
+      // whether there's been an interaction since the last URL change.
+      // TODO(crbug.com/549301): See if this heuristic can be improved.
+      return _interactionRegisteredSinceLastURLChange
+                 ? ui::PAGE_TRANSITION_LINK
+                 : ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  }
 }
 
 - (void)updateHTML5HistoryState {
@@ -4149,7 +4152,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
   BOOL allowLoad = [self shouldAllowLoadWithNavigationAction:action];
 
   if (allowLoad) {
-    allowLoad = self.webStateImpl->ShouldAllowRequest(action.request);
+    ui::PageTransition transition =
+        [self pageTransitionFromNavigationType:action.navigationType];
+    allowLoad =
+        self.webStateImpl->ShouldAllowRequest(action.request, transition);
     if (!allowLoad && action.targetFrame.mainFrame) {
       [_pendingNavigationInfo setCancelled:YES];
     }
