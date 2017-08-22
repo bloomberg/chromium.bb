@@ -316,8 +316,7 @@ class UtilsTest(TestCase):
         pass
     except IOError:
       failed = True
-    # TODO(aludwin): assert that we *did* fail once we enable the exception.
-    self.assertEqual(False, failed)
+    self.assertEqual(True, failed)
 
 
 class StorageTest(TestCase):
