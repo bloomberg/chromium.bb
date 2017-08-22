@@ -142,7 +142,7 @@ TEST_F(PrefetchedPagesTrackerImplTest, ShouldDeletePrefetchedURLWhenNotified) {
   ASSERT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
-      item.offline_id, item.client_id, "" /* request_origin */));
+      item.offline_id, item.client_id, /*request_origin=*/""));
   EXPECT_FALSE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 }
@@ -163,7 +163,7 @@ TEST_F(PrefetchedPagesTrackerImplTest,
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
   tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
       manually_downloaded_item.offline_id, manually_downloaded_item.client_id,
-      "" /* request_origin */));
+      /*request_origin=*/""));
   EXPECT_TRUE(
       tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 }
@@ -233,6 +233,57 @@ TEST_F(PrefetchedPagesTrackerImplTest,
   EXPECT_CALL(mock_initialization_completed_callback, Run());
   tracker.AddInitializationCompletedCallback(
       mock_initialization_completed_callback.Get());
+}
+
+TEST_F(PrefetchedPagesTrackerImplTest,
+       ShouldKeepPrefetchedURLAfterDuplicatePageDeleted) {
+  const OfflinePageItem first_item =
+      CreateOfflinePageItem(GURL("http://prefetched.com"),
+                            offline_pages::kSuggestedArticlesNamespace);
+  const OfflinePageItem second_item =
+      CreateOfflinePageItem(GURL("http://prefetched.com"),
+                            offline_pages::kSuggestedArticlesNamespace);
+  (*fake_offline_page_model()->mutable_items()) = {first_item, second_item};
+  PrefetchedPagesTrackerImpl tracker(fake_offline_page_model());
+
+  ASSERT_TRUE(
+      tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
+
+  tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
+      first_item.offline_id, first_item.client_id, /*request_origin=*/""));
+
+  // Only one offline page (out of two) has been removed, the remaining one
+  // should be reported here.
+  EXPECT_TRUE(
+      tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
+}
+
+TEST_F(PrefetchedPagesTrackerImplTest,
+       ShouldDeletePrefetchedURLAfterAllItsPagesAreDeleted) {
+  const OfflinePageItem first_item =
+      CreateOfflinePageItem(GURL("http://prefetched.com"),
+                            offline_pages::kSuggestedArticlesNamespace);
+  const OfflinePageItem second_item =
+      CreateOfflinePageItem(GURL("http://prefetched.com"),
+                            offline_pages::kSuggestedArticlesNamespace);
+  (*fake_offline_page_model()->mutable_items()) = {first_item, second_item};
+  PrefetchedPagesTrackerImpl tracker(fake_offline_page_model());
+
+  ASSERT_TRUE(
+      tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
+
+  tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
+      first_item.offline_id, first_item.client_id, /*request_origin=*/""));
+
+  ASSERT_TRUE(
+      tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
+
+  tracker.OfflinePageDeleted(offline_pages::OfflinePageModel::DeletedPageInfo(
+      second_item.offline_id, second_item.client_id, /*request_origin=*/""));
+
+  // All offline pages have been removed, their absence should be reported here.
+  EXPECT_FALSE(
+      tracker.PrefetchedOfflinePageExists(GURL("http://prefetched.com")));
 }
 
 }  // namespace ntp_snippets
