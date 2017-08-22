@@ -1450,7 +1450,7 @@ class PreCQLauncherStage(SyncStage):
 
         return {}
 
-    cmd = ['cbuildbot', '--remote',
+    cmd = ['cros', 'tryjob', '--yes',
            '--timeout', str(self.INFLIGHT_TIMEOUT * 60)] + configs
 
     if sanity_check_build:
@@ -1465,9 +1465,8 @@ class PreCQLauncherStage(SyncStage):
     if self._run.options.debug:
       logging.debug('Would have launched tryjob with %s', cmd)
     else:
-      input_val = 'yes' if plan is None else None
       result = cros_build_lib.RunCommand(
-          cmd, cwd=self._build_root, capture_output=True, input=input_val)
+          cmd, cwd=self._build_root, capture_output=True)
       if result and result.output:
         logging.info('cbuildbot output: %s' % result.output)
         config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
