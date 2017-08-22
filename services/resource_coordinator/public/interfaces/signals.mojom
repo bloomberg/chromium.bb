@@ -21,6 +21,7 @@ enum PropertyType {
   kCPUUsage,
   kExpectedTaskQueueingDuration,
   kNetworkIdle,
+  kPID,
   kVisible,
   kURL,
   kUKMSourceId,
