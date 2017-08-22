@@ -163,22 +163,6 @@ class ProcessMemoryMetricsEmitterTest : public InProcessBrowserTest {
  protected:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
-  void CheckUkmSourcesWithUrl(const GURL& url, size_t count) {
-    std::vector<const ukm::UkmSource*> sources =
-        test_ukm_recorder_->GetSourcesForUrl(url.spec().c_str());
-
-    // There should be at least |count|, and not more than 2 * |count| renderers
-    // with this URL.
-    EXPECT_GE(sources.size(), count) << "Expected at least " << count
-                                     << " renderers with url: " << url.spec();
-    EXPECT_LE(sources.size(), 2 * count);
-
-    // Each one should have renderer type.
-    for (const ukm::UkmSource* source : sources) {
-      EXPECT_TRUE(ProcessHasTypeForSource(source, ProcessType::RENDERER));
-    }
-  }
-
   void CheckAllUkmSources(size_t metric_count = 1u) {
     const std::map<ukm::SourceId, std::unique_ptr<ukm::UkmSource>>& sources =
         test_ukm_recorder_->GetSources();
@@ -266,7 +250,6 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   run_loop.Run();
 
   CheckAllMemoryMetrics(histogram_tester, 1);
-  CheckUkmSourcesWithUrl(url1, 1);
   CheckAllUkmSources();
 }
 
@@ -323,7 +306,6 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                   MemoryDumpType::EXPLICITLY_TRIGGERED))));
 
   CheckAllMemoryMetrics(histogram_tester, 1);
-  CheckUkmSourcesWithUrl(url1, 1);
   CheckAllUkmSources();
 }
 
@@ -352,6 +334,5 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
   run_loop.Run();
 
   CheckAllMemoryMetrics(histogram_tester, count);
-  CheckUkmSourcesWithUrl(url1, 1);
   CheckAllUkmSources(count);
 }
