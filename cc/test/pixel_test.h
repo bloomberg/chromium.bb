@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
+#include "cc/output/output_surface.h"
 #include "cc/output/software_renderer.h"
 #include "cc/quads/render_pass.h"
 #include "cc/test/pixel_comparator.h"
