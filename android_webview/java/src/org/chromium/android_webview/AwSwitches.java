@@ -18,6 +18,10 @@ public final class AwSwitches {
     public static final String WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT =
             "webview-enable-safebrowsing-support";
 
+    // Enables variations AB testing experiments in webview.
+    // Native switch kEnableWebViewVariations.
+    public static final String ENABLE_WEBVIEW_VARIATIONS = "enable-webview-variations";
+
     // Do not instantiate this class.
     private AwSwitches() {}
 }

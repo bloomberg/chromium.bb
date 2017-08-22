@@ -810,7 +810,6 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/AwTokenBindingManager.java",
     "java/src/org/chromium/android_webview/AwViewMethods.java",
     "java/src/org/chromium/android_webview/AwViewAndroidDelegate.java",
-    "java/src/org/chromium/android_webview/AwVariationsSeedFetchService.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegateAdapter.java",
     "java/src/org/chromium/android_webview/AwWebContentsObserver.java",
@@ -836,6 +835,10 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
+    "java/src/org/chromium/android_webview/variations/AwVariationsConfigurationService.java",
+    "java/src/org/chromium/android_webview/variations/AwVariationsSeedFetchService.java",
+    "java/src/org/chromium/android_webview/variations/AwVariationsSeedHandler.java",
+    "java/src/org/chromium/android_webview/variations/AwVariationsUtils.java",
   ]
   deps = [
     ":android_webview_commandline_java",
@@ -847,6 +850,7 @@ android_library("android_webview_java") {
     "//base:base_java",
     "//components/autofill/android:autofill_java",
     "//components/autofill/android:provider_java",
+    "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/crash/android:java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
