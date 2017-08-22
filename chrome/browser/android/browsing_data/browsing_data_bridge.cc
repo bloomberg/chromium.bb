@@ -102,8 +102,10 @@ static void ClearBrowsingData(
         remove_mask |=
             ChromeBrowsingDataRemoverDelegate::DATA_TYPE_CONTENT_SETTINGS;
         break;
-      case browsing_data::BrowsingDataType::DOWNLOADS:
       case browsing_data::BrowsingDataType::MEDIA_LICENSES:
+        remove_mask |= BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
+        break;
+      case browsing_data::BrowsingDataType::DOWNLOADS:
       case browsing_data::BrowsingDataType::HOSTED_APPS_DATA:
         // Only implemented on Desktop.
         NOTREACHED();

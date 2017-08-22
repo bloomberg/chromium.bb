@@ -89,6 +89,7 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/webapps/webapp_registry.h"
+#include "chrome/browser/media/android/cdm/media_drm_license_manager.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_model.h"
@@ -333,6 +334,7 @@ ChromeBrowsingDataRemoverDelegate::ChromeBrowsingDataRemoverDelegate(
       synchronous_clear_operations_(sub_task_forward_callback_),
       clear_autofill_origin_urls_(sub_task_forward_callback_),
       clear_flash_content_licenses_(sub_task_forward_callback_),
+      clear_media_drm_licenses_(sub_task_forward_callback_),
       clear_domain_reliability_monitor_(sub_task_forward_callback_),
       clear_form_(sub_task_forward_callback_),
       clear_history_(sub_task_forward_callback_),
@@ -1018,6 +1020,13 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                   weak_ptr_factory_.GetWeakPtr()));
     }
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+    clear_media_drm_licenses_.Start();
+    chrome::ClearMediaDrmLicenses(
+        prefs, delete_begin_, delete_end, filter,
+        clear_media_drm_licenses_.GetCompletionCallback());
+#endif  // defined(OS_ANDROID);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -1100,6 +1109,7 @@ bool ChromeBrowsingDataRemoverDelegate::AllDone() {
   return !clear_cookies_count_ && !synchronous_clear_operations_.is_pending() &&
          !clear_autofill_origin_urls_.is_pending() &&
          !clear_flash_content_licenses_.is_pending() &&
+         !clear_media_drm_licenses_.is_pending() &&
          !clear_domain_reliability_monitor_.is_pending() &&
          !clear_form_.is_pending() && !clear_history_.is_pending() &&
          !clear_hostname_resolution_cache_.is_pending() &&
