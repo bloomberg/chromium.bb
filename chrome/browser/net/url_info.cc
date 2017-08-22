@@ -368,10 +368,10 @@ std::string UrlInfo::GetAsciiMotivation() const {
       return "n/a";
 
     case STATIC_REFERAL_MOTIVATED:
-      return RemoveJs(referring_url_.spec()) + "*";
+      return "[static referal]";
 
     case LEARNED_REFERAL_MOTIVATED:
-      return RemoveJs(referring_url_.spec());
+      return "[learned referal]";
 
     default:
       return std::string();

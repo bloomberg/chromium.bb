@@ -379,12 +379,11 @@ class Predictor {
   // Underlying method for both async and synchronous lookup to update state.
   void LookupFinished(const GURL& url, bool found);
 
-  // Queues hostname for resolution.  If queueing was done, return the pointer
-  // to the queued instance, otherwise return nullptr. If the proxy advisor is
-  // enabled, and |url| is likely to be proxied, the hostname will not be
-  // queued as the browser is not expected to fetch it directly.
-  UrlInfo* AppendToResolutionQueue(const GURL& url,
-                                   UrlInfo::ResolutionMotivation motivation);
+  // Queues hostname for resolution. If the proxy advisor is enabled, and
+  // |url| is likely to be proxied, the hostname will not be queued as the
+  // browser is not expected to fetch it directly.
+  void AppendToResolutionQueue(const GURL& url,
+                               UrlInfo::ResolutionMotivation motivation);
 
   // Check to see if too much queuing delay has been noted for the given info,
   // which indicates that there is "congestion" or growing delay in handling the
