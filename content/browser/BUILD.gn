@@ -1165,6 +1165,8 @@ source_set("browser") {
     "renderer_host/frame_metadata_util.h",
     "renderer_host/frame_sink_provider_impl.cc",
     "renderer_host/frame_sink_provider_impl.h",
+    "renderer_host/input/fling_controller.cc",
+    "renderer_host/input/fling_controller.h",
     "renderer_host/input/gesture_event_queue.cc",
     "renderer_host/input/gesture_event_queue.h",
     "renderer_host/input/input_device_change_observer.cc",
