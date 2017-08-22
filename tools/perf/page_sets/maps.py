@@ -47,7 +47,6 @@ class MapsPage(page_module.Page):
       shared_page_state_class=(
           webgl_supported_shared_state.WebGLSupportedSharedState),
       name=url)
-    self.archive_data_file = 'data/maps.json'
 
   @property
   def skipped_gpus(self):
