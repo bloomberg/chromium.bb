@@ -124,6 +124,41 @@ public class WebApkUtils {
     }
 
     /**
+     * Returns the new intent url, rewrite if necessary.
+     * The WebAPK may have been launched as a result of an intent filter for a different
+     * scheme or top level domain. Rewrite the scheme and host name to the scope's
+     * scheme and host name in this case, and append orginal intent url if |loggedIntentUrlParam| is
+     * set.
+     */
+    public static String rewriteIntentUrlIfNecessary(String startUrl, Bundle metadata) {
+        String returnUrl = startUrl;
+        String scopeUrl = metadata.getString(WebApkMetaDataKeys.SCOPE);
+        if (!TextUtils.isEmpty(scopeUrl)) {
+            Uri parsedStartUrl = Uri.parse(startUrl);
+            Uri parsedScope = Uri.parse(scopeUrl);
+
+            if (!parsedStartUrl.getScheme().equals(parsedScope.getScheme())
+                    || !parsedStartUrl.getEncodedAuthority().equals(
+                               parsedScope.getEncodedAuthority())) {
+                Uri.Builder returnUrlBuilder =
+                        parsedStartUrl.buildUpon()
+                                .scheme(parsedScope.getScheme())
+                                .encodedAuthority(parsedScope.getEncodedAuthority());
+
+                String loggedIntentUrlParam =
+                        metadata.getString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM);
+                if (loggedIntentUrlParam != null && !TextUtils.isEmpty(loggedIntentUrlParam)) {
+                    String orginalUrl = Uri.encode(startUrl).toString();
+                    returnUrlBuilder.appendQueryParameter(loggedIntentUrlParam, orginalUrl);
+                }
+
+                returnUrl = returnUrlBuilder.build().toString();
+            }
+        }
+        return returnUrl;
+    }
+
+    /**
      * Returns the package name of the host browser to launch the WebAPK, or null if we did not find
      * one.
      */

@@ -81,6 +81,28 @@ public class WebApkUtilsTest {
     }
 
     /**
+     * Test that MainActivity appends the start URL as a paramater if |loggedIntentUrlParam| in
+     * WebAPK metadata is set to true.
+     */
+    @Test
+    public void testLoggedIntentUrlParamWhenRewrite() {
+        final String intentStartUrl = "https://www.g.com/page?a=A";
+        final String manifestScope = "https://www.google.com";
+        final String expectedRewrittenStartUrl =
+                "https://www.google.com/page?a=A&originalUrl=https%253A%252F%252Fwww.g.com%252Fpage%253Fa%253DA";
+        final String browserPackageName = "browser.support.webapks";
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, intentStartUrl);
+        bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
+        bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, browserPackageName);
+        bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
+
+        Assert.assertEquals(expectedRewrittenStartUrl,
+                WebApkUtils.rewriteIntentUrlIfNecessary(intentStartUrl, bundle));
+    }
+
+    /**
      * This is a test for the WebAPK WITH a runtime host specified in its AndroidManifest.xml.
      * Tests that the package name of the host browser specified in the AndroidManifest.xml will be
      * returned if:
