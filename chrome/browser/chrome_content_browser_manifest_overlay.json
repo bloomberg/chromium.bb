@@ -18,14 +18,17 @@
           "spellcheck::mojom::SpellCheckHost",
           "spellcheck::mojom::SpellCheckPanelHost",
           "translate::mojom::ContentTranslateDriver"
-	],
+        ],
         "url_keyed_metrics": [
           "ukm::mojom::UkmRecorderInterface"
         ],
         "gpu": [
           "metrics::mojom::CallStackProfileCollector"
         ],
-        "ime:ime_driver": []
+        "ime:ime_driver": [],
+        "memlog_client": [
+          "profiling::mojom::MemlogClient"
+        ]
       },
       "requires": {
         "accessibility_autoclick": [ "ash:autoclick" ],
@@ -34,6 +37,7 @@
         "ash_pref_connector": [ "pref_connector" ],
         // Only used in classic ash case.
         "chrome": [ "input_device_controller" ],
+        "content_browser": [ "memlog_client" ],
         "device": [ "device:fingerprint" ],
         "identity": [ "identity_manager" ],
         "nacl_broker": [ "browser" ],

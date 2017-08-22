@@ -106,6 +106,7 @@ class ChromeContentClient : public content::ContentClient {
   media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
 
+  // This method isn't called by utility processes.
   void OnServiceManagerConnected(
       content::ServiceManagerConnection* connection) override;
 

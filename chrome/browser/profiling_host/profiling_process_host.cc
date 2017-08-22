@@ -24,6 +24,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -197,24 +198,18 @@ void ProfilingProcessHost::LaunchAsService() {
     return;
   }
 
-  // Ideally, we'd just call StartProfilingForClient, to interface with the
-  // memlog client in the current [browser] process, but ChromeContentClient is
-  // not correctly hooked up for the browser process. The MemlogClient there is
-  // never bound. Instead, we use the *second* MemlogClient instance in the
-  // process [a member variable of ProfilingProcessHost], which we also don't
-  // bind, but instead directly call StartProfiling.
+  // Bind to the memlog service. This will start it if it hasn't started
+  // already.
   connector_->BindInterface(mojom::kServiceName, &memlog_);
 
-  mojo::edk::PlatformChannelPair data_channel;
-  // Unretained is safe because this class is a leaky singleton that owns the
-  // client object.
-  memlog_->AddSender(
-      base::Process::Current().Pid(),
-      mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
-      base::BindOnce(&MemlogClient::StartProfiling,
-                     base::Unretained(&memlog_client_),
-                     mojo::WrapPlatformFile(
-                         data_channel.PassClientHandle().release().handle)));
+  // Tell the current process to start profiling.
+  profiling::mojom::MemlogClientPtr memlog_client;
+  profiling::mojom::MemlogClientRequest request =
+      mojo::MakeRequest(&memlog_client);
+  connector_->BindInterface(content::mojom::kBrowserServiceName,
+                            mojo::MakeRequest(&memlog_client));
+  base::ProcessId pid = base::Process::Current().Pid();
+  SendPipeToProfilingService(std::move(memlog_client), pid);
 }
 
 void ProfilingProcessHost::GetOutputFileOnBlockingThread(

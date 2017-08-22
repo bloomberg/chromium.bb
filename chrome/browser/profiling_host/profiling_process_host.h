@@ -115,10 +115,6 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   std::unique_ptr<service_manager::Connector> connector_;
   mojom::MemlogPtr memlog_;
 
-  // Handles profiling for the current process, without connecting to any
-  // service manager interfaces.
-  profiling::MemlogClient memlog_client_;
-
   // The mode determines which processes should be profiled.
   Mode mode_;
 
