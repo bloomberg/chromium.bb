@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/webauthn/#dictdef-collectedclientdata
+// https://www.w3.org/TR/2017/WD-webauthn-20170505/#dictdef-collectedclientdata
 
 dictionary CollectedClientData {
     required DOMString challenge;
     required DOMString origin;
-    required DOMString hashAlgorithm;
+    required DOMString hashAlg;
     DOMString tokenBindingId;
     // TODO(crbug.com/733033): Add extension support
 };

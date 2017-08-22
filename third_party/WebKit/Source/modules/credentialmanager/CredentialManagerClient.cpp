@@ -4,6 +4,7 @@
 
 #include "modules/credentialmanager/CredentialManagerClient.h"
 
+#include <utility>
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/page/Page.h"
@@ -18,6 +19,7 @@ CredentialManagerClient::CredentialManagerClient(
 CredentialManagerClient::~CredentialManagerClient() {}
 
 DEFINE_TRACE(CredentialManagerClient) {
+  visitor->Trace(authentication_client_);
   Supplement<Page>::Trace(visitor);
 }
 
@@ -80,4 +82,12 @@ void CredentialManagerClient::DispatchGet(
   client_->DispatchGet(mediation, include_passwords, federations, callbacks);
 }
 
+void CredentialManagerClient::DispatchMakeCredential(
+    LocalFrame& frame,
+    const MakeCredentialOptions& options,
+    std::unique_ptr<WebAuthenticationClient::PublicKeyCallbacks> callbacks) {
+  if (!authentication_client_)
+    authentication_client_ = new WebAuthenticationClient(frame);
+  authentication_client_->DispatchMakeCredential(options, std::move(callbacks));
+}
 }  // namespace blink

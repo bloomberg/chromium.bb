@@ -63,7 +63,7 @@ void AuthenticatorImpl::MakeCredential(
   // opaque origin
   if (caller_origin_.unique()) {
     std::move(callback).Run(
-        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, NULL);
+        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
     return;
   }
 

@@ -34,6 +34,44 @@ using webauth::mojom::PublicKeyCredentialParametersPtr;
 
 const char* kOrigin1 = "https://google.com";
 
+namespace {
+
+PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialRPEntity() {
+  auto entity = PublicKeyCredentialEntity::New();
+  entity->id = std::string("localhost");
+  entity->name = std::string("TestRP@example.com");
+  return entity;
+}
+
+PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialUserEntity() {
+  auto entity = PublicKeyCredentialEntity::New();
+  entity->display_name = std::string("User A. Name");
+  entity->id = std::string("1098237235409872");
+  entity->name = std::string("username@example.com");
+  entity->icon = GURL("fakeurl2.png");
+  return entity;
+}
+
+std::vector<PublicKeyCredentialParametersPtr>
+GetTestPublicKeyCredentialParameters() {
+  std::vector<PublicKeyCredentialParametersPtr> parameters;
+  auto fake_parameter = PublicKeyCredentialParameters::New();
+  fake_parameter->type = webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY;
+  parameters.push_back(std::move(fake_parameter));
+  return parameters;
+}
+
+MakeCredentialOptionsPtr GetTestMakeCredentialOptions() {
+  auto options = MakeCredentialOptions::New();
+  std::vector<uint8_t> buffer(32, 0x0A);
+  options->relying_party = GetTestPublicKeyCredentialRPEntity();
+  options->user = GetTestPublicKeyCredentialUserEntity();
+  options->crypto_parameters = GetTestPublicKeyCredentialParameters();
+  options->challenge = std::move(buffer);
+  options->adjusted_timeout = base::TimeDelta::FromMinutes(1);
+  return options;
+}
+
 class AuthenticatorImplTest : public content::RenderViewHostTestHarness {
  public:
   AuthenticatorImplTest() {}
@@ -89,50 +127,16 @@ class TestMakeCredentialCallback {
   base::RunLoop run_loop_;
 };
 
-PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialRPEntity() {
-  auto entity = PublicKeyCredentialEntity::New();
-  entity->id = std::string("localhost");
-  entity->name = std::string("TestRP@example.com");
-  return entity;
-}
-
-PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialUserEntity() {
-  auto entity = PublicKeyCredentialEntity::New();
-  entity->display_name = std::string("User A. Name");
-  entity->id = std::string("1098237235409872");
-  entity->name = std::string("TestRP@example.com");
-  entity->icon = GURL("fakeurl2.png");
-  return entity;
-}
-
-std::vector<PublicKeyCredentialParametersPtr>
-GetTestPublicKeyCredentialParameters() {
-  std::vector<PublicKeyCredentialParametersPtr> parameters;
-  auto fake_parameter = PublicKeyCredentialParameters::New();
-  fake_parameter->type = webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY;
-  parameters.push_back(std::move(fake_parameter));
-  return parameters;
-}
-
-MakeCredentialOptionsPtr GetTestMakeCredentialOptions() {
-  auto opts = MakeCredentialOptions::New();
-  std::vector<uint8_t> buffer(32, 0x0A);
-  opts->relying_party = GetTestPublicKeyCredentialRPEntity();
-  opts->user = GetTestPublicKeyCredentialUserEntity();
-  opts->crypto_parameters = GetTestPublicKeyCredentialParameters();
-  opts->challenge = std::move(buffer);
-  opts->adjusted_timeout = base::TimeDelta::FromMinutes(1);
-  return opts;
-}
+}  // namespace
 
 // Test that service returns NOT_IMPLEMENTED on a call to MakeCredential.
 TEST_F(AuthenticatorImplTest, MakeCredentialNotImplemented) {
   SimulateNavigation(GURL(kOrigin1));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
-  MakeCredentialOptionsPtr opts = GetTestMakeCredentialOptions();
+  MakeCredentialOptionsPtr options = GetTestMakeCredentialOptions();
 
   TestMakeCredentialCallback cb;
-  authenticator->MakeCredential(std::move(opts), cb.callback());
+  authenticator->MakeCredential(std::move(options), cb.callback());
   std::pair<webauth::mojom::AuthenticatorStatus,
             webauth::mojom::PublicKeyCredentialInfoPtr>& response =
       cb.WaitForCallback();
@@ -146,10 +150,10 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOpaqueOrigin) {
   NavigateAndCommit(GURL("data:text/html,opaque"));
   AuthenticatorPtr authenticator = ConnectToAuthenticator();
 
-  MakeCredentialOptionsPtr opts = GetTestMakeCredentialOptions();
+  MakeCredentialOptionsPtr options = GetTestMakeCredentialOptions();
 
   TestMakeCredentialCallback cb;
-  authenticator->MakeCredential(std::move(opts), cb.callback());
+  authenticator->MakeCredential(std::move(options), cb.callback());
   std::pair<webauth::mojom::AuthenticatorStatus,
             webauth::mojom::PublicKeyCredentialInfoPtr>& response =
       cb.WaitForCallback();

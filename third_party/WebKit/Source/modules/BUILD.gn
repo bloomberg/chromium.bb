@@ -157,7 +157,6 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/vr",
     "//third_party/WebKit/Source/modules/wake_lock",
     "//third_party/WebKit/Source/modules/webaudio",
-    "//third_party/WebKit/Source/modules/webauth",
     "//third_party/WebKit/Source/modules/webdatabase",
     "//third_party/WebKit/Source/modules/webgl",
     "//third_party/WebKit/Source/modules/webmidi",
