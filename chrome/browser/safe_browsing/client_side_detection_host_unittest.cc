@@ -165,7 +165,8 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
   MockSafeBrowsingDatabaseManager() {}
 
-  MOCK_METHOD1(MatchCsdWhitelistUrl, bool(const GURL&));
+  MOCK_METHOD2(CheckCsdWhitelistUrl,
+               AsyncMatch(const GURL&, SafeBrowsingDatabaseManager::Client*));
   MOCK_METHOD1(MatchMalwareIP, bool(const std::string& ip_address));
   MOCK_METHOD0(IsMalwareKillSwitchOn, bool());
 
@@ -277,8 +278,9 @@ class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
           .WillRepeatedly(Return(*is_incognito));
     }
     if (match_csd_whitelist) {
-      EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(url))
-          .WillOnce(Return(*match_csd_whitelist));
+      EXPECT_CALL(*database_manager_.get(), CheckCsdWhitelistUrl(url, _))
+          .WillOnce(Return(*match_csd_whitelist ? AsyncMatch::MATCH
+                                                : AsyncMatch::NO_MATCH));
     }
     if (malware_killswitch) {
       EXPECT_CALL(*database_manager_.get(), IsMalwareKillSwitchOn())
