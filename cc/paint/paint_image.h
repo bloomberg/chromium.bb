@@ -52,6 +52,7 @@ class CC_PAINT_EXPORT PaintImage {
   bool is_multipart() const { return is_multipart_; }
 
   // TODO(vmpstr): Don't get the SkImage here if you don't need to.
+  uint32_t unique_id() const { return GetSkImage()->uniqueID(); }
   explicit operator bool() const { return !!GetSkImage(); }
   bool IsLazyGenerated() const { return GetSkImage()->isLazyGenerated(); }
   int width() const { return GetSkImage()->width(); }

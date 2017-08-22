@@ -616,7 +616,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
           gfx::Rect(x * 512, y * 512, 500, 500), &draw_images);
       if ((x + y) & 1) {
         EXPECT_EQ(1u, draw_images.size()) << x << " " << y;
-        EXPECT_TRUE(draw_images[0]->image() == discardable_image[y][x])
+        EXPECT_TRUE(draw_images[0]->paint_image().GetSkImage() ==
+                    discardable_image[y][x])
             << x << " " << y;
         EXPECT_EQ(std::max(x * 0.5f, kMinScale),
                   draw_images[0]->scale().fWidth);
@@ -633,10 +634,14 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
   image_map.GetDiscardableImagesInRect(gfx::Rect(512, 512, 2048, 2048),
                                        &draw_images);
   EXPECT_EQ(4u, draw_images.size());
-  EXPECT_TRUE(draw_images[0]->image() == discardable_image[1][2]);
-  EXPECT_TRUE(draw_images[1]->image() == discardable_image[2][1]);
-  EXPECT_TRUE(draw_images[2]->image() == discardable_image[2][3]);
-  EXPECT_TRUE(draw_images[3]->image() == discardable_image[3][2]);
+  EXPECT_TRUE(draw_images[0]->paint_image().GetSkImage() ==
+              discardable_image[1][2]);
+  EXPECT_TRUE(draw_images[1]->paint_image().GetSkImage() ==
+              discardable_image[2][1]);
+  EXPECT_TRUE(draw_images[2]->paint_image().GetSkImage() ==
+              discardable_image[2][3]);
+  EXPECT_TRUE(draw_images[3]->paint_image().GetSkImage() ==
+              discardable_image[3][2]);
 }
 
 TEST_F(DiscardableImageMapTest, ClipsImageRects) {

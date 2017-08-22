@@ -211,7 +211,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), &images);
     EXPECT_EQ(1u, images.size());
     DrawImage image(*images[0], 1.f, target_color_space);
-    EXPECT_EQ(discardable_image[0][0], image.image());
+    EXPECT_EQ(discardable_image[0][0], image.paint_image().GetSkImage());
     EXPECT_EQ(target_color_space, image.target_color_space());
   }
   // Shifted tile sized iterators. These should find only one pixel ref.
@@ -221,7 +221,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     raster->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256), &images);
     EXPECT_EQ(1u, images.size());
     DrawImage image(*images[0], 1.f, target_color_space);
-    EXPECT_EQ(discardable_image[1][1], image.image());
+    EXPECT_EQ(discardable_image[1][1], image.paint_image().GetSkImage());
     EXPECT_EQ(target_color_space, image.target_color_space());
   }
   // Ensure there's no discardable pixel refs in the empty cell
@@ -235,9 +235,9 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     std::vector<const DrawImage*> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_EQ(discardable_image[0][0], images[0]->image());
-    EXPECT_EQ(discardable_image[0][1], images[1]->image());
-    EXPECT_EQ(discardable_image[1][1], images[2]->image());
+    EXPECT_EQ(discardable_image[0][0], images[0]->paint_image().GetSkImage());
+    EXPECT_EQ(discardable_image[0][1], images[1]->paint_image().GetSkImage());
+    EXPECT_EQ(discardable_image[1][1], images[2]->paint_image().GetSkImage());
   }
 }
 

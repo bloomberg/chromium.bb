@@ -55,7 +55,7 @@ class TestImageController : public ImageController {
     ImageDecodeRequestId request_id = next_image_request_id_++;
 
     decoded_images_.push_back(image);
-    decodes_requested_.insert(image.image()->uniqueID());
+    decodes_requested_.insert(image.paint_image().unique_id());
     locked_images_.insert(request_id);
 
     // Post the callback asynchronously to match the behaviour in
@@ -322,8 +322,8 @@ TEST_F(CheckerImageTrackerTest, CancelsScheduledDecodes) {
   // Only the first image in the queue should have been decoded.
   EXPECT_EQ(image_controller_.decodes_requested().size(), 1U);
   EXPECT_EQ(
-      image_controller_.decodes_requested().count(
-          static_cast<PaintImage::Id>(checkerable_image1.image()->uniqueID())),
+      image_controller_.decodes_requested().count(static_cast<PaintImage::Id>(
+          checkerable_image1.paint_image().unique_id())),
       1U);
 
   // Rebuild the queue before the tracker is notified of decode completion,
@@ -342,8 +342,8 @@ TEST_F(CheckerImageTrackerTest, CancelsScheduledDecodes) {
   // pending at a time.
   EXPECT_EQ(image_controller_.decodes_requested().size(), 1U);
   EXPECT_EQ(
-      image_controller_.decodes_requested().count(
-          static_cast<PaintImage::Id>(checkerable_image1.image()->uniqueID())),
+      image_controller_.decodes_requested().count(static_cast<PaintImage::Id>(
+          checkerable_image1.paint_image().unique_id())),
       1U);
 
   // Trigger completion for all decodes. Only 2 images should have been decoded
@@ -351,8 +351,8 @@ TEST_F(CheckerImageTrackerTest, CancelsScheduledDecodes) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(image_controller_.decodes_requested().size(), 2U);
   EXPECT_EQ(
-      image_controller_.decodes_requested().count(
-          static_cast<PaintImage::Id>(checkerable_image3.image()->uniqueID())),
+      image_controller_.decodes_requested().count(static_cast<PaintImage::Id>(
+          checkerable_image3.paint_image().unique_id())),
       1U);
   EXPECT_EQ(image_controller_.num_of_locked_images(), 2);
 }
@@ -434,8 +434,8 @@ TEST_F(CheckerImageTrackerTest, CheckersOnlyStaticCompletedImages) {
 
   // Change the partial image to complete and try again. It should sstill not
   // be checkered.
-  gfx::Size image_size = gfx::Size(partial_image.image()->width(),
-                                   partial_image.image()->height());
+  gfx::Size image_size = gfx::Size(partial_image.paint_image().width(),
+                                   partial_image.paint_image().height());
   DrawImage completed_paint_image =
       DrawImage(PaintImageBuilder()
                     .set_id(partial_image.paint_image().stable_id())

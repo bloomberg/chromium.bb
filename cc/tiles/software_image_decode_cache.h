@@ -258,7 +258,7 @@ class CC_EXPORT SoftwareImageDecodeCache
   // called with no lock acquired and it returns nullptr if the decoding failed.
   std::unique_ptr<DecodedImage> GetOriginalSizeImageDecode(
       const ImageKey& key,
-      sk_sp<const SkImage> image);
+      const PaintImage& image);
 
   // GetSubrectImageDecode is similar to GetOriginalSizeImageDecode in that no
   // scale is performed on the image. However, we extract a subrect (copy it
