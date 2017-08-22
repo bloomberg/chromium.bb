@@ -165,6 +165,7 @@ class SiteEngagementService : public KeyedService,
                            CleanupMovesScoreBackToRebase);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            CleanupEngagementScoresProportional);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ClearHistoryForURLs);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetMedianEngagement);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalNavigationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalUserInputPoints);
