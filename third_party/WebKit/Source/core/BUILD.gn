@@ -516,7 +516,6 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPICounterReset.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPICursor.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPID.h",
-    "$blink_core_output_dir/css/properties/CSSPropertyAPIDefaultMetadata.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIDelay.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIDuration.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIFillOrStrokeOpacity.h",
