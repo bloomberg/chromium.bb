@@ -75,18 +75,32 @@ std::unique_ptr<Notification> CreateNotification() {
       IsSearchKeyMappedToCapsLock()
           ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
           : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
-  std::unique_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
-      l10n_util::GetStringUTF16(string_id),
-      gfx::Image(
-          gfx::CreateVectorIcon(kSystemMenuCapsLockIcon,
-                                TrayPopupItemStyle::GetIconColor(
-                                    TrayPopupItemStyle::ColorStyle::ACTIVE))),
-      base::string16() /* display_source */, GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 system_notifier::kNotifierCapsLock),
-      message_center::RichNotificationData(), nullptr));
+  std::unique_ptr<Notification> notification;
+  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+    notification = Notification::CreateSystemNotification(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
+        l10n_util::GetStringUTF16(string_id), gfx::Image(),
+        base::string16() /* display_source */, GURL(),
+        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                   system_notifier::kNotifierCapsLock),
+        message_center::RichNotificationData(), nullptr,
+        kNotificationCapslockIcon,
+        message_center::SystemNotificationWarningLevel::NORMAL);
+  } else {
+    notification = base::MakeUnique<Notification>(
+        message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
+        l10n_util::GetStringUTF16(string_id),
+        gfx::Image(
+            gfx::CreateVectorIcon(kSystemMenuCapsLockIcon,
+                                  TrayPopupItemStyle::GetIconColor(
+                                      TrayPopupItemStyle::ColorStyle::ACTIVE))),
+        base::string16() /* display_source */, GURL(),
+        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
+                                   system_notifier::kNotifierCapsLock),
+        message_center::RichNotificationData(), nullptr);
+  }
   return notification;
 }
 
