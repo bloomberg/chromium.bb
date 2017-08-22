@@ -2303,6 +2303,8 @@ public class LocationBarLayout extends FrameLayout
     }
 
     private void updateOmniboxResultsContainerVisibility(boolean visible) {
+        if (mOmniboxResultsContainer == null) return;
+
         boolean currentlyVisible = mOmniboxResultsContainer.getVisibility() == VISIBLE;
         if (currentlyVisible == visible) return;
 
