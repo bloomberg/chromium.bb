@@ -18,6 +18,33 @@
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
+#include "ui/strings/grit/ui_strings.h"
+
+namespace {
+
+// Called when an empty submenu is created. This inserts a menu item labeled
+// "(empty)" into the submenu. Matches Windows behavior.
+NSMenu* MakeEmptySubmenu() {
+  base::scoped_nsobject<NSMenu> submenu([[NSMenu alloc] initWithTitle:@""]);
+  NSString* empty_menu_title =
+      l10n_util::GetNSString(IDS_APP_MENU_EMPTY_SUBMENU);
+  [submenu addItemWithTitle:empty_menu_title action:NULL keyEquivalent:@""];
+  [[submenu itemAtIndex:0] setEnabled:NO];
+  return submenu.autorelease();
+}
+
+// Called when adding a submenu to the menu and checks if the submenu, via its
+// |model|, has visible child items.
+bool MenuHasVisibleItems(const ui::MenuModel* model) {
+  int count = model->GetItemCount();
+  for (int index = 0; index < count; index++) {
+    if (model->IsVisibleAt(index))
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 NSString* const kMenuControllerMenuWillOpenNotification =
     @"MenuControllerMenuWillOpen";
@@ -144,13 +171,16 @@ NSString* const kMenuControllerMenuDidCloseNotification =
     [item setImage:icon.ToNSImage()];
 
   ui::MenuModel::ItemType type = model->GetTypeAt(index);
-  if (type == ui::MenuModel::TYPE_SUBMENU) {
-    // Recursively build a submenu from the sub-model at this index.
+  if (type == ui::MenuModel::TYPE_SUBMENU && model->IsVisibleAt(index)) {
+    ui::MenuModel* submenuModel = model->GetSubmenuModelAt(index);
+
+    // If there are visible items, recursively build the submenu.
+    NSMenu* submenu = MenuHasVisibleItems(submenuModel)
+                          ? [self menuFromModel:submenuModel]
+                          : MakeEmptySubmenu();
+
     [item setTarget:nil];
     [item setAction:nil];
-    ui::MenuModel* submenuModel = model->GetSubmenuModelAt(index);
-    NSMenu* submenu =
-        [self menuFromModel:(ui::SimpleMenuModel*)submenuModel];
     [item setSubmenu:submenu];
   } else {
     // The MenuModel works on indexes so we can't just set the command id as the
