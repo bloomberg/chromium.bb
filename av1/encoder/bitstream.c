@@ -1502,9 +1502,16 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       palette_y_mode_ctx +=
           (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     }
+#if CONFIG_NEW_MULTISYMBOL
+    aom_write_symbol(
+        w, n > 0,
+        xd->tile_ctx->palette_y_mode_cdf[block_palette_idx][palette_y_mode_ctx],
+        2);
+#else
     aom_write(
         w, n > 0,
         av1_default_palette_y_mode_prob[block_palette_idx][palette_y_mode_ctx]);
+#endif
     if (n > 0) {
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
                        xd->tile_ctx->palette_y_size_cdf[block_palette_idx],
@@ -1523,7 +1530,12 @@ static void write_palette_mode_info(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (mbmi->uv_mode == UV_DC_PRED) {
     const int n = pmi->palette_size[1];
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
+#if CONFIG_NEW_MULTISYMBOL
+    aom_write_symbol(w, n > 0,
+                     xd->tile_ctx->palette_uv_mode_cdf[palette_uv_mode_ctx], 2);
+#else
     aom_write(w, n > 0, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx]);
+#endif
     if (n > 0) {
       aom_write_symbol(w, n - PALETTE_MIN_SIZE,
                        xd->tile_ctx->palette_uv_size_cdf[block_palette_idx],

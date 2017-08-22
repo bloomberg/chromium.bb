@@ -1644,6 +1644,61 @@ const aom_prob av1_default_palette_uv_mode_prob[PALETTE_UV_MODE_CONTEXTS] = {
   253, 229
 };
 
+#if CONFIG_NEW_MULTISYMBOL
+const aom_cdf_prob
+    default_palette_y_mode_cdf[PALETTE_BLOCK_SIZES][PALETTE_Y_MODE_CONTEXTS]
+                              [CDF_SIZE(2)] = {
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+#if CONFIG_EXT_PARTITION
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+                                { { AOM_ICDF(128 * 240), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 180), AOM_ICDF(32768), 0 },
+                                  { AOM_ICDF(128 * 100), AOM_ICDF(32768), 0 } },
+#endif  // CONFIG_EXT_PARTITION
+                              };
+
+const aom_cdf_prob
+    default_palette_uv_mode_cdf[PALETTE_UV_MODE_CONTEXTS][CDF_SIZE(2)] = {
+      { AOM_ICDF(128 * 253), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(128 * 229), AOM_ICDF(32768), 0 }
+    };
+
+#endif
+
 const aom_cdf_prob default_palette_y_color_index_cdf
     [PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] = {
       {
@@ -4920,6 +4975,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif  // CONFIG_EXT_COMP_REFS
   av1_copy(fc->comp_ref_prob, default_comp_ref_p);
 #if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->palette_y_mode_cdf, default_palette_y_mode_cdf);
+  av1_copy(fc->palette_uv_mode_cdf, default_palette_uv_mode_cdf);
   av1_copy(fc->comp_ref_cdf, default_comp_ref_cdf);
 #endif
 #if CONFIG_LV_MAP

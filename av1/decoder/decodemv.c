@@ -789,6 +789,7 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   assert(bsize >= BLOCK_8X8 && bsize <= BLOCK_LARGEST);
   const int block_palette_idx = bsize - BLOCK_8X8;
+  int modev;
 
   if (mbmi->mode == DC_PRED) {
     int palette_y_mode_ctx = 0;
@@ -800,9 +801,18 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       palette_y_mode_ctx +=
           (left_mi->mbmi.palette_mode_info.palette_size[0] > 0);
     }
-    if (aom_read(r, av1_default_palette_y_mode_prob[block_palette_idx]
-                                                   [palette_y_mode_ctx],
-                 ACCT_STR)) {
+#if CONFIG_NEW_MULTISYMBOL
+    modev = aom_read_symbol(
+        r,
+        xd->tile_ctx->palette_y_mode_cdf[block_palette_idx][palette_y_mode_ctx],
+        2, ACCT_STR);
+#else
+    modev = aom_read(
+        r,
+        av1_default_palette_y_mode_prob[block_palette_idx][palette_y_mode_ctx],
+        ACCT_STR);
+#endif
+    if (modev) {
       pmi->palette_size[0] =
           aom_read_symbol(r,
                           xd->tile_ctx->palette_y_size_cdf[block_palette_idx],
@@ -816,11 +826,16 @@ static void read_palette_mode_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
     }
   }
-
   if (mbmi->uv_mode == UV_DC_PRED) {
     const int palette_uv_mode_ctx = (pmi->palette_size[0] > 0);
-    if (aom_read(r, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx],
-                 ACCT_STR)) {
+#if CONFIG_NEW_MULTISYMBOL
+    modev = aom_read_symbol(
+        r, xd->tile_ctx->palette_uv_mode_cdf[palette_uv_mode_ctx], 2, ACCT_STR);
+#else
+    modev = aom_read(r, av1_default_palette_uv_mode_prob[palette_uv_mode_ctx],
+                     ACCT_STR);
+#endif
+    if (modev) {
       pmi->palette_size[1] =
           aom_read_symbol(r,
                           xd->tile_ctx->palette_uv_size_cdf[block_palette_idx],
