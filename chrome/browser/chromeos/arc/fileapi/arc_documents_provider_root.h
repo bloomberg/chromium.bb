@@ -131,7 +131,6 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   void OnWatchersCleared() override;
 
  private:
-  struct ThinDocument;
   struct WatcherData;
   struct DirectoryCache;
 
@@ -139,28 +138,30 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   static const uint64_t kInvalidWatcherRequestId;
   static const WatcherData kInvalidWatcherData;
 
-  // Mapping from a file name to a ThinDocument.
-  using NameToThinDocumentMap =
-      std::map<base::FilePath::StringType, ThinDocument>;
+  // Mapping from a file name to a Document.
+  using NameToDocumentMap =
+      std::map<base::FilePath::StringType, mojom::DocumentPtr>;
 
   // TODO(nya): Use OnceCallback.
   using ResolveToDocumentIdCallback =
       base::Callback<void(const std::string& document_id)>;
   using ReadDirectoryInternalCallback =
       base::Callback<void(base::File::Error error,
-                          const NameToThinDocumentMap& mapping)>;
+                          const NameToDocumentMap& mapping)>;
 
-  void GetFileInfoWithDocumentId(const GetFileInfoCallback& callback,
-                                 const std::string& document_id);
-  void GetFileInfoWithDocument(const GetFileInfoCallback& callback,
-                               mojom::DocumentPtr document);
+  void GetFileInfoWithParentDocumentId(const GetFileInfoCallback& callback,
+                                       const base::FilePath& basename,
+                                       const std::string& parent_document_id);
+  void GetFileInfoWithNameToDocumentMap(const GetFileInfoCallback& callback,
+                                        const base::FilePath& basename,
+                                        base::File::Error error,
+                                        const NameToDocumentMap& mapping);
 
   void ReadDirectoryWithDocumentId(ReadDirectoryCallback callback,
                                    const std::string& document_id);
-  void ReadDirectoryWithNameToThinDocumentMap(
-      ReadDirectoryCallback callback,
-      base::File::Error error,
-      const NameToThinDocumentMap& mapping);
+  void ReadDirectoryWithNameToDocumentMap(ReadDirectoryCallback callback,
+                                          base::File::Error error,
+                                          const NameToDocumentMap& mapping);
 
   void AddWatcherWithDocumentId(const base::FilePath& path,
                                 uint64_t watcher_request_id,
@@ -190,17 +191,17 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
       const std::string& document_id,
       const std::vector<base::FilePath::StringType>& components,
       const ResolveToDocumentIdCallback& callback);
-  void ResolveToDocumentIdRecursivelyWithNameToThinDocumentMap(
+  void ResolveToDocumentIdRecursivelyWithNameToDocumentMap(
       const std::vector<base::FilePath::StringType>& components,
       const ResolveToDocumentIdCallback& callback,
       base::File::Error error,
-      const NameToThinDocumentMap& mapping);
+      const NameToDocumentMap& mapping);
 
   // Enumerates child documents of a directory specified by |document_id|.
   // If |force_refresh| is true, the backend is queried even if there is a
   // directory cache.
-  // The result is returned as a NameToThinDocumentMap. It is valid only
-  // within the callback and might get deleted immediately after the callback
+  // The result is returned as a NameToDocumentMap. It is valid only within
+  // the callback and might get deleted immediately after the callback
   // returns.
   void ReadDirectoryInternal(const std::string& document_id,
                              bool force_refresh,
