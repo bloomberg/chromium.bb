@@ -458,20 +458,4 @@ TEST_F(PrerenderingTest, MutateRel) {
   EXPECT_EQ(2u, PrerenderingSupport()->TotalCount());
 }
 
-TEST_F(PrerenderingTest, RelNext) {
-  Initialize("http://www.foo.com/", "prerender/rel_next_prerender.html");
-
-  WebPrerender rel_next_only = PrerendererClient()->ReleaseWebPrerender();
-  EXPECT_EQ(ToWebURL("http://rel-next-only.com/"), rel_next_only.Url());
-  EXPECT_EQ(kPrerenderRelTypeNext, rel_next_only.RelTypes());
-
-  WebPrerender rel_next_and_prerender =
-      PrerendererClient()->ReleaseWebPrerender();
-  EXPECT_EQ(ToWebURL("http://rel-next-and-prerender.com/"),
-            rel_next_and_prerender.Url());
-  EXPECT_EQ(
-      static_cast<unsigned>(kPrerenderRelTypeNext | kPrerenderRelTypePrerender),
-      rel_next_and_prerender.RelTypes());
-}
-
 }  // namespace blink

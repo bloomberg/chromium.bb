@@ -1244,36 +1244,6 @@ TEST_F(PrerenderTest, SourceRenderViewClosed) {
   EXPECT_FALSE(LauncherHasRunningPrerender(100, last_prerender_id()));
 }
 
-// Tests that prerendering doesn't launch rel=next prerenders without the field
-// trial.
-TEST_F(PrerenderTest, NoRelNextByDefault) {
-  GURL url("http://www.google.com/");
-  prerender_manager()->CreateNextPrerenderContents(
-      url, FINAL_STATUS_MANAGER_SHUTDOWN);
-
-  prerender_link_manager()->OnAddPrerender(
-      kDefaultChildId, GetNextPrerenderID(), url, PrerenderRelTypeNext,
-      Referrer(), kSize, kDefaultRenderViewRouteId);
-  EXPECT_FALSE(prerender_manager()->FindEntry(url));
-}
-
-// Tests that prerendering does launch rel=next prerenders with the field trial.
-TEST_F(PrerenderTest, RelNextByFieldTrial) {
-  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("PrerenderRelNextTrial",
-                                                     "Yes"));
-  GURL url("http://www.google.com/");
-  DummyPrerenderContents* prerender_contents =
-      prerender_manager()->CreateNextPrerenderContents(
-          url, ORIGIN_LINK_REL_NEXT, FINAL_STATUS_USED);
-
-  prerender_link_manager()->OnAddPrerender(
-      kDefaultChildId, GetNextPrerenderID(), url, PrerenderRelTypeNext,
-      Referrer(), kSize, kDefaultRenderViewRouteId);
-  std::unique_ptr<PrerenderContents> entry =
-      prerender_manager()->FindAndUseEntry(url);
-  EXPECT_EQ(prerender_contents, entry.get());
-}
-
 // Tests that prerendering is cancelled when we launch a second prerender of
 // the same target within a short time interval.
 TEST_F(PrerenderTest, RecentlyVisited) {
