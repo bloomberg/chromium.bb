@@ -27,6 +27,8 @@ static const gfx::Transform kProjMatrix(1.03317f,
                                         -1.0f,
                                         0.0f);
 
+constexpr float kEpsilon = 0.0001f;
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_TEST_CONSTANTS_H_

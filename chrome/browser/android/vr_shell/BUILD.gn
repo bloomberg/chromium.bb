@@ -20,6 +20,8 @@ static_library("vr_android") {
     "elbow_model.cc",
     "elbow_model.h",
     "gl_browser_interface.h",
+    "gvr_util.cc",
+    "gvr_util.h",
     "mailbox_to_surface_bridge.cc",
     "mailbox_to_surface_bridge.h",
     "vr_compositor.cc",

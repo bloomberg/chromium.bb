@@ -8,6 +8,7 @@
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace vr {
 
@@ -65,10 +66,10 @@ void UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
   base::TimeTicks target_time = current_time_ + delta;
   base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 60.0);
   for (; current_time_ < target_time; current_time_ += frame_time) {
-    scene_->OnBeginFrame(current_time_);
+    scene_->OnBeginFrame(current_time_, gfx::Vector3dF());
   }
   current_time_ = target_time;
-  scene_->OnBeginFrame(current_time_);
+  scene_->OnBeginFrame(current_time_, gfx::Vector3dF());
 }
 
 bool UiSceneManagerTest::IsAnimating(UiElement* element,

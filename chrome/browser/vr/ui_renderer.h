@@ -54,8 +54,12 @@ class UiRenderer {
   void Draw(const RenderInfo& render_info,
             const ControllerInfo& controller_info,
             bool web_vr_mode);
-  void DrawHeadLocked(const RenderInfo& render_info,
-                      const ControllerInfo& controller_info);
+  // This is used to draw visible viewport aware elements in the scene, i.e.
+  // the security warning elements on top of WebVR or the exit warning element
+  // in ChromeVR.
+  void DrawViewportAware(const RenderInfo& render_info,
+                         const ControllerInfo& controller_info,
+                         bool web_vr_mode);
 
  private:
   void DrawWorldElements(const RenderInfo& render_info,

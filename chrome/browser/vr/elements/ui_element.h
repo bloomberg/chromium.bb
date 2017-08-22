@@ -111,10 +111,13 @@ class UiElement : public cc::AnimationTarget {
   bool hit_testable() const { return hit_testable_; }
   void set_hit_testable(bool hit_testable) { hit_testable_ = hit_testable; }
 
-  // If true, transformations will be applied relative to the field of view,
-  // rather than the world.
-  bool lock_to_fov() const { return lock_to_fov_; }
-  void set_lock_to_fov(bool lock) { lock_to_fov_ = lock; }
+  // TODO(bshe): We might be able to remove this state.
+  bool viewport_aware() const { return viewport_aware_; }
+  void set_viewport_aware(bool enable) { viewport_aware_ = enable; }
+  bool computed_viewport_aware() const { return computed_viewport_aware_; }
+  void set_computed_viewport_aware(bool computed_lock) {
+    computed_viewport_aware_ = computed_lock;
+  }
 
   // If true should be drawn in the world viewport, but over all other elements.
   bool is_overlay() const { return is_overlay_; }
@@ -122,12 +125,6 @@ class UiElement : public cc::AnimationTarget {
 
   bool scrollable() const { return scrollable_; }
   void set_scrollable(bool scrollable) { scrollable_ = scrollable; }
-
-  // The computed lock to the FoV, incorporating lock of parent objects.
-  bool computed_lock_to_fov() const { return computed_lock_to_fov_; }
-  void set_computed_lock_to_fov(bool computed_lock) {
-    computed_lock_to_fov_ = computed_lock;
-  }
 
   // The size of the object.  This does not affect children.
   gfx::SizeF size() const { return size_; }
@@ -255,6 +252,12 @@ class UiElement : public cc::AnimationTarget {
 
   virtual gfx::Transform LocalTransform() const;
 
+  // Handles positioning adjustment for element which may reposition itself
+  // automatically under certain circumstances. For example, viewport aware
+  // element needs to reposition itself when the element is too far to the left
+  // or right where the head is pointing.
+  virtual void AdjustRotationForHeadPose(const gfx::Vector3dF& look_at);
+
  protected:
   virtual void OnSetMode();
 
@@ -272,12 +275,11 @@ class UiElement : public cc::AnimationTarget {
   // If false, the reticle will not hit the element, even if visible.
   bool hit_testable_ = true;
 
-  // If true, transformations will be applied relative to the field of view,
-  // rather than the world.
-  bool lock_to_fov_ = false;
+  // If true, the element will reposition itself to viewport if neccessary.
+  bool viewport_aware_ = false;
 
-  // The computed lock to the FoV, incorporating lock of parent objects.
-  bool computed_lock_to_fov_ = false;
+  // The computed viewport aware, incorporating from parent objects.
+  bool computed_viewport_aware_ = false;
 
   // If true, then this element will be drawn in the world viewport, but above
   // all other elements.

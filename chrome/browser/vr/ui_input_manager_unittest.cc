@@ -16,6 +16,7 @@
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace vr {
 
@@ -25,7 +26,7 @@ class UiInputManagerTest : public UiSceneManagerTest {
     UiSceneManagerTest::SetUp();
     MakeManager(kNotInCct, kNotInWebVr);
     input_manager_ = base::MakeUnique<UiInputManager>(scene_.get());
-    scene_->OnBeginFrame(MicrosecondsToTicks(1));
+    scene_->OnBeginFrame(MicrosecondsToTicks(1), gfx::Vector3dF());
   }
 
  protected:
