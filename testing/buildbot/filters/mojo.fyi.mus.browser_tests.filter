@@ -52,3 +52,7 @@
 -WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/0
 -WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/1
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
+
+# TODO(sky): file bugs for these.
+-ChromeScreenshotGrabberBrowserTest.TakeScreenshot
+-PolicyDisplayRotationDefault/DisplayRotationDefaultTest.RefreshSecondDisplay/2
