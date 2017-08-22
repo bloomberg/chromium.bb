@@ -7675,24 +7675,23 @@ I don't think this site should be blocked!
           </message>
         </if>
 
+        <!-- Google Cloud Print and local discovery -->
         <message name="IDS_GOOGLE_CLOUD_PRINT" desc="The name of the Google Cloud Print product.">
           Google Cloud Print
         </message>
-        <message name="IDS_OPTIONS_CURRENT_USER_ONLY" desc="In the multi profiles user list, the tooltip text noticing that only the current user can modify these settings.">
-          You can only edit settings for the current user. Switch to this user to edit settings for it.
-        </message>
-        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
+        <message name="IDS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON" desc="The label of the cloud connector configure button when it hasn't been set up yet.">
           Add printers
         </message>
-        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
+        <message name="IDS_CLOUD_PRINT_CONNECTOR_ENABLED_LABEL" desc="The label of the cloud print setup button when it has been set up.">
           You have registered your printers with <ph name="CLOUD_PRINT_NAME">$1<ex>Google Cloud Print</ex></ph> using the account <ph name="EMAIL">$2<ex>foo@bar.com</ex></ph>
         </message>
-        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON" desc="The label of the cloud print connector configure button when it has been set up.">
+        <message name="IDS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON" desc="The label of the cloud print connector configure button when it has been set up.">
           Disconnect printers
         </message>
-        <message name="IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON" desc="The label of the cloud connector configure button while it is being set up.">
+        <message name="IDS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON" desc="The label of the cloud connector configure button while it is being set up.">
           Enabling...
         </message>
+
         <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Protect you and your device from dangerous sites' checkbox">
           Protect you and your device from dangerous sites
         </message>
@@ -7707,62 +7706,44 @@ I don't think this site should be blocked!
           Import bookmarks and settings...
         </message>
 
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by policy.">
+        <message name="IDS_CONTROLLED_SETTING_POLICY" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by policy.">
           This setting is enforced by your administrator.
         </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension.">
+        <message name="IDS_CONTROLLED_SETTING_EXTENSION" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension.">
           This setting is enforced by an extension.
         </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when a setting's value is enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
-          This setting is controlled by:
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_MANAGE_EXTENSION" desc="Text displayed for a link to manage extension from the controlled settings bubble.">
-          Manage extension
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy and the user has not overridden this recommendation.">
+        <message name="IDS_CONTROLLED_SETTING_RECOMMENDED" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy and the user has not overridden this recommendation.">
           You are following the administrator's recommendation for this setting.
         </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_HAS_RECOMMENDATION" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy but is currently overridden by a user-supplied value.">
+        <message name="IDS_CONTROLLED_SETTING_HAS_RECOMMENDATION" desc="Text displayed in the controlled settings bubble when a value is recommended for a setting through policy but is currently overridden by a user-supplied value.">
           Your administrator recommends a specific value for this setting.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTING_FOLLOW_RECOMMENDATION" desc="Link text displayed in the controlled settings bubble to clear the user-supplied value and start following the recommendation.">
-          Follow recommendation
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_POLICY" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by policy.">
-          These settings are enforced by your administrator.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by an extension.">
-          These settings are enforced by an extension.
-        </message>
-        <message name="IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION_WITH_NAME" desc="Text displayed in the controlled settings bubble when it is shown for a group of settings whose values are enforced by an extension. The name of the extension would be displayed on the following line, thus the ending with ':'.">
-          These settings are controlled by:
         </message>
 
         <!-- Extension install location strings -->
-        <message name="IDS_OPTIONS_INSTALL_LOCATION_UNKNOWN" desc="The text explaining the the installation location is unknown.">
+        <message name="IDS_EXTENSIONS_INSTALL_LOCATION_UNKNOWN" desc="The text explaining the the installation location is unknown.">
           Not from Chrome Web Store.
         </message>
-        <message name="IDS_OPTIONS_INSTALL_LOCATION_3RD_PARTY" desc="The text explaining the the installation came from a 3rd party app.">
+        <message name="IDS_EXTENSIONS_INSTALL_LOCATION_3RD_PARTY" desc="The text explaining the the installation came from a 3rd party app.">
           Installed by a third party.
         </message>
-        <message name="IDS_OPTIONS_INSTALL_LOCATION_ENTERPRISE" desc="The text explaining the the installation of the extension came from an enterprise policy.">
+        <message name="IDS_EXTENSIONS_INSTALL_LOCATION_ENTERPRISE" desc="The text explaining the the installation of the extension came from an enterprise policy.">
           Installed by enterprise policy.
         </message>
-        <message name="IDS_OPTIONS_INSTALL_LOCATION_SHARED_MODULE" desc="The text explaining the the installation of the extension was because of extensions that depend on this shared module">
+        <message name="IDS_EXTENSIONS_INSTALL_LOCATION_SHARED_MODULE" desc="The text explaining the the installation of the extension was because of extensions that depend on this shared module">
           Installed because of dependent extension(s).
         </message>
 
         <!-- Extension blacklist state -->
-        <message name="IDS_OPTIONS_BLACKLISTED_MALWARE" desc="The text explaining the reason for disabling extension or app. The extension in question contains malware.">
+        <message name="IDS_EXTENSIONS_BLACKLISTED_MALWARE" desc="The text explaining the reason for disabling extension or app. The extension in question contains malware.">
           This extension contains malware.
         </message>
-        <message name="IDS_OPTIONS_BLACKLISTED_SECURITY_VULNERABILITY" desc="The text explaining the reason for disabling extension or app. The extension in question has a security vulnerability.">
+        <message name="IDS_EXTENSIONS_BLACKLISTED_SECURITY_VULNERABILITY" desc="The text explaining the reason for disabling extension or app. The extension in question has a security vulnerability.">
           This extension contains a serious security vulnerability.
         </message>
-        <message name="IDS_OPTIONS_BLACKLISTED_CWS_POLICY_VIOLATION" desc="The text explaining the reason for disabling extension or app. The extension in question violates Chrome Web Store policy.">
+        <message name="IDS_EXTENSIONS_BLACKLISTED_CWS_POLICY_VIOLATION" desc="The text explaining the reason for disabling extension or app. The extension in question violates Chrome Web Store policy.">
           This extension violates the Chrome Web Store policy.
         </message>
-        <message name="IDS_OPTIONS_BLACKLISTED_POTENTIALLY_UNWANTED" desc="The text explaining the reason for disabling extension or app. The extension in question might have been installed without user consent.">
+        <message name="IDS_EXTENSIONS_BLACKLISTED_POTENTIALLY_UNWANTED" desc="The text explaining the reason for disabling extension or app. The extension in question might have been installed without user consent.">
           Disabled by Chrome. This extension may be unsafe.
         </message>
 
@@ -7850,9 +7831,6 @@ I don't think this site should be blocked!
       </if>
 
       <!-- chrome://settings strings that are used by all platforms including Android -->
-      <message name="IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK" desc="The label of the 'Manage passwords' link">
-        Manage passwords
-      </message>
       <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of the home page overlay" formatter_data="android_java">
         Home page
       </message>
@@ -10293,6 +10271,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
           Password saved. Access your passwords from any device at <ph name="SAVED_PASSWORDS_LINK">$1<ex>passwords.google.com</ex></ph>
         </message>
       </if>
+      <message name="IDS_MANAGE_PASSWORDS_BUBBLE_LINK" desc="The label of the 'Manage passwords' link in the Manage Passwords bubble view">
+        Manage passwords
+      </message>
       <message name="IDS_MANAGE_PASSWORDS_LINK" desc="The text for a link to the user's saved passwords. This is inserted into an infobar or a bubble that the browser shows to the user. The infobar and the bubble use a separate string in the translation console that has a placeholder for this link title.">
         Google saved passwords
       </message>

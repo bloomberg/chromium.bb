@@ -312,12 +312,13 @@ void SimUnlockUIHTMLSource::StartDataRequest(
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_CHOOSE_PIN_TITLE));
   strings.SetString("choosePinMessage",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_CHOOSE_PIN_MESSAGE));
-  strings.SetString("newPin", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_NEW_PIN));
+  strings.SetString(
+      "newPin", l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_CHANGE_PIN_NEW_PIN));
   strings.SetString("retypeNewPin", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_RETYPE_PIN));
-  strings.SetString("pinsDontMatchMessage", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PINS_DONT_MATCH_ERROR));
+                                        IDS_SIM_UNLOCK_CHANGE_PIN_RETYPE_PIN));
+  strings.SetString(
+      "pinsDontMatchMessage",
+      l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_PINS_DONT_MATCH_ERROR));
   strings.SetString("noPukTriesLeft",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_NO_PUK_TRIES_LEFT_MESSAGE));
   strings.SetString("simDisabledTitle",
@@ -325,12 +326,12 @@ void SimUnlockUIHTMLSource::StartDataRequest(
   strings.SetString("simDisabledMessage",
       l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_SIM_DISABLED_MESSAGE));
 
-  strings.SetString("changePinTitle", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_TITLE));
+  strings.SetString("changePinTitle",
+                    l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_CHANGE_PIN_TITLE));
   strings.SetString("changePinMessage", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_MESSAGE));
-  strings.SetString("oldPin", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_CHANGE_PIN_OLD_PIN));
+                                            IDS_SIM_UNLOCK_CHANGE_PIN_MESSAGE));
+  strings.SetString(
+      "oldPin", l10n_util::GetStringUTF16(IDS_SIM_UNLOCK_CHANGE_PIN_OLD_PIN));
 
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, &strings);

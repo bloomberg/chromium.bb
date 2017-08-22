@@ -522,7 +522,7 @@ bool ArcSupportHost::Initialize() {
       l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
   loadtime_data->SetString(
       "controlledByPolicy",
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
+      l10n_util::GetStringUTF16(IDS_CONTROLLED_SETTING_POLICY));
   loadtime_data->SetString(
       "learnMoreStatistics",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_LEARN_MORE_STATISTICS));

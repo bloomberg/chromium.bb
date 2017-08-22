@@ -277,8 +277,8 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
       size_string = ui::FormatBytes(
           browser_site_data_size_ + browser_cache_size_);
     } else {
-      size_string = l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
+      size_string =
+          l10n_util::GetStringUTF16(IDS_SETTINGS_STORAGE_SIZE_UNKNOWN);
     }
     updating_browsing_data_size_ = false;
     FireWebUIListener("storage-browsing-data-size-changed",
@@ -321,8 +321,8 @@ void StorageHandler::OnGetOtherUserSize(bool success, int64_t size) {
       size_string = ui::FormatBytes(
           std::accumulate(user_sizes_.begin(), user_sizes_.end(), 0LL));
     } else {
-      size_string = l10n_util::GetStringUTF16(
-          IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
+      size_string =
+          l10n_util::GetStringUTF16(IDS_SETTINGS_STORAGE_SIZE_UNKNOWN);
     }
     updating_other_users_size_ = false;
     FireWebUIListener("storage-other-users-size-changed",
@@ -363,8 +363,7 @@ void StorageHandler::OnGetAndroidSize(bool succeeded,
                            size->total_cache_bytes;
     size_string = ui::FormatBytes(total_bytes);
   } else {
-    size_string = l10n_util::GetStringUTF16(
-        IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN);
+    size_string = l10n_util::GetStringUTF16(IDS_SETTINGS_STORAGE_SIZE_UNKNOWN);
   }
   updating_android_size_ = false;
   FireWebUIListener("storage-android-size-changed", base::Value(size_string));

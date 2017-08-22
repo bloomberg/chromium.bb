@@ -101,11 +101,11 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   // Cloud print connector-related strings.
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
   source->AddLocalizedString("cloudPrintConnectorEnablingButton",
-                             IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON);
+                             IDS_CLOUD_PRINT_CONNECTOR_ENABLING_BUTTON);
   source->AddLocalizedString("cloudPrintConnectorDisabledButton",
-                             IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON);
+                             IDS_CLOUD_PRINT_CONNECTOR_DISABLED_BUTTON);
   source->AddLocalizedString("cloudPrintConnectorEnabledButton",
-                             IDS_OPTIONS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON);
+                             IDS_CLOUD_PRINT_CONNECTOR_ENABLED_BUTTON);
   source->AddLocalizedString("cloudPrintName",
                              IDS_GOOGLE_CLOUD_PRINT);
   source->AddLocalizedString("titleConnector",

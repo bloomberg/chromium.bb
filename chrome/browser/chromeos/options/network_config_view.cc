@@ -143,8 +143,8 @@ base::string16 NetworkConfigView::GetDialogButtonLabel(
     ui::DialogButton button) const {
   if (button == ui::DIALOG_BUTTON_OK) {
     if (child_config_view_->IsConfigureDialog())
-      return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONFIGURE);
-    return l10n_util::GetStringUTF16(IDS_OPTIONS_SETTINGS_CONNECT);
+      return l10n_util::GetStringUTF16(IDS_SETTINGS_INTERNET_BUTTON_CONFIGURE);
+    return l10n_util::GetStringUTF16(IDS_SETTINGS_INTERNET_BUTTON_CONNECT);
   }
   return views::DialogDelegateView::GetDialogButtonLabel(button);
 }
@@ -299,7 +299,7 @@ ControlledSettingIndicatorView::ControlledSettingIndicatorView(
   image_view_->SetImage(gfx::CreateVectorIcon(vector_icons::kBusinessIcon, 16,
                                               gfx::kChromeIconGrey));
   image_view_->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
+      l10n_util::GetStringUTF16(IDS_CONTROLLED_SETTING_POLICY));
   AddChildView(image_view_);
   SetLayoutManager(new views::FillLayout());
 }
