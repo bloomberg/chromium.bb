@@ -128,7 +128,8 @@ class MockWebStatePolicyDecider : public WebStatePolicyDecider {
       : WebStatePolicyDecider(web_state) {}
   virtual ~MockWebStatePolicyDecider() {}
 
-  MOCK_METHOD1(ShouldAllowRequest, bool(NSURLRequest* request));
+  MOCK_METHOD2(ShouldAllowRequest,
+               bool(NSURLRequest* request, ui::PageTransition transition));
   MOCK_METHOD1(ShouldAllowResponse, bool(NSURLResponse* response));
   MOCK_METHOD0(WebStateDestroyed, void());
 };
@@ -579,49 +580,73 @@ TEST_F(WebStateImplTest, GlobalObserverTest) {
   EXPECT_TRUE(observer->web_state_destroyed_called());
 }
 
+// A Google Mock matcher which matches ui::PAGE_TRANSITION_LINK.
+// This is needed because ui::PageTransition doesn't support operator==.
+MATCHER(IsPageTransitionLink, /* argument_name = */ "") {
+  return ui::PageTransitionTypeIncludingQualifiersIs(arg,
+                                                     ui::PAGE_TRANSITION_LINK);
+}
+
 // Verifies that policy deciders are correctly called by the web state.
 TEST_F(WebStateImplTest, PolicyDeciderTest) {
   MockWebStatePolicyDecider decider(web_state_.get());
   MockWebStatePolicyDecider decider2(web_state_.get());
   EXPECT_EQ(web_state_.get(), decider.web_state());
 
+  NSURL* url = [NSURL URLWithString:@"http://example.com"];
+  NSURLRequest* request = [NSURLRequest requestWithURL:url];
+  NSURLResponse* response = [[NSURLResponse alloc] initWithURL:url
+                                                      MIMEType:@"text/html"
+                                         expectedContentLength:0
+                                              textEncodingName:nil];
+
   // Test that ShouldAllowRequest() is called.
-  EXPECT_CALL(decider, ShouldAllowRequest(_)).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(decider2, ShouldAllowRequest(_)).Times(1).WillOnce(Return(true));
-  EXPECT_TRUE(web_state_->ShouldAllowRequest(nil));
+  EXPECT_CALL(decider, ShouldAllowRequest(request, IsPageTransitionLink()))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(decider2, ShouldAllowRequest(request, IsPageTransitionLink()))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_TRUE(
+      web_state_->ShouldAllowRequest(request, ui::PAGE_TRANSITION_LINK));
 
   // Test that ShouldAllowRequest() is stopping on negative answer. Only one
   // one the decider should be called.
   {
     bool decider_called = false;
     bool decider2_called = false;
-    EXPECT_CALL(decider, ShouldAllowRequest(_))
+    EXPECT_CALL(decider, ShouldAllowRequest(request, IsPageTransitionLink()))
         .Times(AtMost(1))
         .WillOnce(DoAll(Assign(&decider_called, true), Return(false)));
-    EXPECT_CALL(decider2, ShouldAllowRequest(_))
+    EXPECT_CALL(decider2, ShouldAllowRequest(request, IsPageTransitionLink()))
         .Times(AtMost(1))
         .WillOnce(DoAll(Assign(&decider2_called, true), Return(false)));
-    EXPECT_FALSE(web_state_->ShouldAllowRequest(nil));
+    EXPECT_FALSE(
+        web_state_->ShouldAllowRequest(request, ui::PAGE_TRANSITION_LINK));
     EXPECT_FALSE(decider_called && decider2_called);
   }
 
   // Test that ShouldAllowResponse() is called.
-  EXPECT_CALL(decider, ShouldAllowResponse(_)).Times(1).WillOnce(Return(true));
-  EXPECT_CALL(decider2, ShouldAllowResponse(_)).Times(1).WillOnce(Return(true));
-  EXPECT_TRUE(web_state_->ShouldAllowResponse(nil));
+  EXPECT_CALL(decider, ShouldAllowResponse(response))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(decider2, ShouldAllowResponse(response))
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_TRUE(web_state_->ShouldAllowResponse(response));
 
   // Test that ShouldAllowResponse() is stopping on negative answer. Only one
   // one the decider should be called.
   {
     bool decider_called = false;
     bool decider2_called = false;
-    EXPECT_CALL(decider, ShouldAllowResponse(_))
+    EXPECT_CALL(decider, ShouldAllowResponse(response))
         .Times(AtMost(1))
         .WillOnce(DoAll(Assign(&decider_called, true), Return(false)));
-    EXPECT_CALL(decider2, ShouldAllowResponse(_))
+    EXPECT_CALL(decider2, ShouldAllowResponse(response))
         .Times(AtMost(1))
         .WillOnce(DoAll(Assign(&decider2_called, true), Return(false)));
-    EXPECT_FALSE(web_state_->ShouldAllowResponse(nil));
+    EXPECT_FALSE(web_state_->ShouldAllowResponse(response));
     EXPECT_FALSE(decider_called && decider2_called);
   }
 

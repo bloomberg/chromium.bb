@@ -491,9 +491,10 @@ void WebStateImpl::SetContentsMimeType(const std::string& mime_type) {
   mime_type_ = mime_type;
 }
 
-bool WebStateImpl::ShouldAllowRequest(NSURLRequest* request) {
+bool WebStateImpl::ShouldAllowRequest(NSURLRequest* request,
+                                      ui::PageTransition transition) {
   for (auto& policy_decider : policy_deciders_) {
-    if (!policy_decider.ShouldAllowRequest(request))
+    if (!policy_decider.ShouldAllowRequest(request, transition))
       return false;
   }
   return true;

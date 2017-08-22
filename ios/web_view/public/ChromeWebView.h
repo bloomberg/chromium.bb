@@ -13,6 +13,7 @@
 #import "cwv_html_element.h"
 #import "cwv_navigation_action.h"
 #import "cwv_navigation_delegate.h"
+#import "cwv_navigation_type.h"
 #import "cwv_preferences.h"
 #import "cwv_scroll_view.h"
 #import "cwv_scroll_view_delegate.h"
