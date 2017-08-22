@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
+#include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 #include "ios/public/provider/chrome/browser/ui/logo_vendor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -157,6 +158,10 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (UIView*)headerForWidth:(CGFloat)width {
   if (!self.fakeOmnibox) {
     [self addFakeOmnibox];
+
+    self.logoVendor.view.isAccessibilityElement = YES;
+    self.logoVendor.view.accessibilityLabel =
+        l10n_util::GetNSString(IDS_IOS_NEW_TAB_LOGO_ACCESSIBILITY_LABEL);
 
     [self.view addSubview:self.logoVendor.view];
     [self.view addSubview:self.fakeOmnibox];
