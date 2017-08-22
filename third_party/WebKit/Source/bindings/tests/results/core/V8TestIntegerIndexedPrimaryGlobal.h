@@ -38,7 +38,7 @@ class V8TestIntegerIndexedPrimaryGlobal {
   CORE_EXPORT static TestIntegerIndexedPrimaryGlobal* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->Trace(scriptWrappable->ToImpl<TestIntegerIndexedPrimaryGlobal>());
+    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestIntegerIndexedPrimaryGlobal>());
   }
   static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestIntegerIndexedPrimaryGlobal>());

@@ -37,7 +37,7 @@ class V8TestInterfaceCheckSecurity {
   CORE_EXPORT static TestInterfaceCheckSecurity* toImplWithTypeCheck(v8::Isolate*, v8::Local<v8::Value>);
   CORE_EXPORT static const WrapperTypeInfo wrapperTypeInfo;
   static void Trace(Visitor* visitor, ScriptWrappable* scriptWrappable) {
-    visitor->Trace(scriptWrappable->ToImpl<TestInterfaceCheckSecurity>());
+    visitor->TraceFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceCheckSecurity>());
   }
   static void TraceWrappers(ScriptWrappableVisitor* visitor, ScriptWrappable* scriptWrappable) {
     visitor->TraceWrappersFromGeneratedCode(scriptWrappable->ToImpl<TestInterfaceCheckSecurity>());
