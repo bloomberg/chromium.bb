@@ -15,7 +15,3 @@ glue_library_deps = [
   "//net/android:net_java",
   "//ui/android:ui_java",
 ]
-
-# Omit downstream *ForO classes.
-# TODO(paulmiller): Remove this after removing those downstream classes.
-unpublished_apis_upstream = true

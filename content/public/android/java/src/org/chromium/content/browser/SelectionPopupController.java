@@ -30,7 +30,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.WindowManager;
-import android.view.textclassifier.TextClassifier;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
@@ -137,6 +136,9 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     // SmartSelectionProvider was able to classify it, otherwise null.
     private SmartSelectionProvider.Result mClassificationResult;
 
+    // The resource ID for Assist menu item.
+    private int mAssistMenuItemId;
+
     // This variable is set to true when showActionMode() is postponed till classification result
     // arrives or till the selection is adjusted based on the classification result.
     private boolean mPendingShowActionMode;
@@ -177,6 +179,12 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 SmartSelectionClient.create(new SmartSelectionCallback(), window, webContents);
 
         mLastSelectedText = "";
+        // TODO(timav): Use android.R.id.textAssist for the Assist item id once we switch to
+        // Android O SDK and remove |mAssistMenuItemId|.
+        if (BuildInfo.isAtLeastO()) {
+            mAssistMenuItemId =
+                    mContext.getResources().getIdentifier("textAssist", "id", "android");
+        }
 
         nativeInit(webContents);
     }
@@ -608,10 +616,16 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     private void updateAssistMenuItem(MenuDescriptor descriptor) {
         // There is no Assist functionality before Android O.
-        if (!BuildInfo.isAtLeastO()) return;
+        if (!BuildInfo.isAtLeastO() || mAssistMenuItemId == 0) return;
+
+        // The assist menu item ID has to be equal to android.R.id.textAssist. Until we compile
+        // with Android O SDK where this ID is defined we replace the corresponding inflated
+        // item with an item with the proper ID.
+        // TODO(timav): Use android.R.id.textAssist for the Assist item id once we switch to
+        // Android O SDK and remove |mAssistMenuItemId|.
 
         if (mClassificationResult != null && mClassificationResult.hasNamedAction()) {
-            descriptor.addItem(R.id.select_action_menu_assist_items, android.R.id.textAssist, 1,
+            descriptor.addItem(R.id.select_action_menu_assist_items, mAssistMenuItemId, 1,
                     mClassificationResult.label, mClassificationResult.icon);
         }
     }
@@ -658,7 +672,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         int id = item.getItemId();
         int groupId = item.getGroupId();
 
-        if (BuildInfo.isAtLeastO()) {
+        if (BuildInfo.isAtLeastO() && id == mAssistMenuItemId) {
             doAssistAction();
             mode.finish();
         } else if (id == R.id.select_action_menu_select_all) {
@@ -1124,26 +1138,29 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 PackageManager.MATCH_DEFAULT_ONLY).size() > 0;
     }
 
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     /**
      * Sets TextClassifier for Smart Text selection.
      */
-    public void setTextClassifier(TextClassifier textClassifier) {
+    public void setTextClassifier(Object textClassifier) {
         if (mSelectionClient != null) mSelectionClient.setTextClassifier(textClassifier);
     }
 
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     /**
      * Returns TextClassifier that is used for Smart Text selection. If the custom classifier
      * has been set with setTextClassifier, returns that object, otherwise returns the system
      * classifier.
      */
-    public TextClassifier getTextClassifier() {
+    public Object getTextClassifier() {
         return mSelectionClient == null ? null : mSelectionClient.getTextClassifier();
     }
 
+    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
     /**
      * Returns the TextClassifier which has been set with setTextClassifier(), or null.
      */
-    public TextClassifier getCustomTextClassifier() {
+    public Object getCustomTextClassifier() {
         return mSelectionClient == null ? null : mSelectionClient.getCustomTextClassifier();
     }
 

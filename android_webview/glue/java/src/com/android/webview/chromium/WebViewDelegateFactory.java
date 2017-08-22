@@ -204,7 +204,7 @@ class WebViewDelegateFactory {
 
         @Override
         public boolean isMultiProcessEnabled() {
-            return mDelegate.isMultiProcessEnabled();
+            throw new UnsupportedOperationException();
         }
     }
 
