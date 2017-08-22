@@ -551,7 +551,7 @@ TEST_F(CheckerImageTrackerTest, UseSrcRectForSize) {
   // be checkered.
   DrawImage image = CreateImage(ImageType::CHECKERABLE);
   image = DrawImage(image.paint_image(), SkIRect::MakeWH(200, 200),
-                    image.filter_quality(), image.matrix(),
+                    image.filter_quality(), SkMatrix::I(),
                     image.target_color_space());
   EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
       image, WhichTree::PENDING_TREE));

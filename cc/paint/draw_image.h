@@ -18,8 +18,6 @@
 
 namespace cc {
 
-// TODO(vmpstr): This should probably be DISALLOW_COPY_AND_ASSIGN and transport
-// it around using a pointer, since it became kind of large. Profile.
 class CC_PAINT_EXPORT DrawImage {
  public:
   DrawImage();
@@ -47,7 +45,6 @@ class CC_PAINT_EXPORT DrawImage {
   const SkIRect& src_rect() const { return src_rect_; }
   SkFilterQuality filter_quality() const { return filter_quality_; }
   bool matrix_is_decomposable() const { return matrix_is_decomposable_; }
-  const SkMatrix& matrix() const { return matrix_; }
   const gfx::ColorSpace& target_color_space() const {
     DCHECK(target_color_space_.has_value());
     return *target_color_space_;
@@ -57,7 +54,6 @@ class CC_PAINT_EXPORT DrawImage {
   PaintImage paint_image_;
   SkIRect src_rect_;
   SkFilterQuality filter_quality_;
-  SkMatrix matrix_;
   SkSize scale_;
   bool matrix_is_decomposable_;
   base::Optional<gfx::ColorSpace> target_color_space_;

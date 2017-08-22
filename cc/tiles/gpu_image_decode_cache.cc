@@ -1291,8 +1291,9 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
 
   DecodedDataMode mode;
   int upload_scale_mip_level = CalculateUploadScaleMipLevel(draw_image);
+  // TODO(ericrk): Remove the matrix parameter in this call.
   auto params = SkImage::DeferredTextureImageUsageParams(
-      draw_image.matrix(), CalculateDesiredFilterQuality(draw_image),
+      SkMatrix::I(), CalculateDesiredFilterQuality(draw_image),
       upload_scale_mip_level);
   SkImage* image = draw_image.paint_image().GetSkImage().get();
   size_t data_size = image->getDeferredTextureImageData(
