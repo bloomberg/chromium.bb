@@ -26,6 +26,8 @@ enum class OrderDirection;
 }
 
 namespace viz {
+class FrameSinkId;
+class LocalSurfaceId;
 class SurfaceInfo;
 }
 
