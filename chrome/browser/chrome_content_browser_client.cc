@@ -763,17 +763,19 @@ WebContents* GetWebContents(int render_process_id, int render_frame_id) {
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-// Returns true if there is is an extension with the same origin as
-// |source_origin| in |opener_render_process_id| with
-// APIPermission::kBackground.
-bool SecurityOriginHasExtensionBackgroundPermission(
+// Returns true if there is is an extension matching |url| in
+// |opener_render_process_id| with APIPermission::kBackground.
+//
+// Note that GetExtensionOrAppByURL requires a full URL in order to match with a
+// hosted app, even though normal extensions just use the host.
+bool URLHasExtensionBackgroundPermission(
     extensions::ProcessMap* process_map,
     extensions::ExtensionRegistry* registry,
-    const GURL& source_origin,
+    const GURL& url,
     int opener_render_process_id) {
   // Note: includes web URLs that are part of an extension's web extent.
   const Extension* extension =
-      registry->enabled_extensions().GetExtensionOrAppByURL(source_origin);
+      registry->enabled_extensions().GetExtensionOrAppByURL(url);
   return extension &&
          extension->permissions_data()->HasAPIPermission(
              APIPermission::kBackground) &&
@@ -2258,9 +2260,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     auto* process_map = extensions::ProcessMap::Get(profile);
     auto* registry = extensions::ExtensionRegistry::Get(profile);
-    if (!SecurityOriginHasExtensionBackgroundPermission(
-            process_map, registry, source_origin,
-            opener->GetProcess()->GetID())) {
+    if (!URLHasExtensionBackgroundPermission(process_map, registry, opener_url,
+                                             opener->GetProcess()->GetID())) {
       return false;
     }
 
