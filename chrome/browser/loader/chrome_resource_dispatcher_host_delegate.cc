@@ -416,7 +416,8 @@ void NotifyUIThreadOfRequestComplete(
     int64_t raw_body_bytes,
     int64_t original_content_length,
     base::TimeTicks request_creation_time,
-    base::TimeDelta request_loading_time) {
+    base::TimeDelta request_loading_time,
+    std::unique_ptr<net::LoadTimingInfo> load_timing_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents = web_contents_getter.Run();
   if (!web_contents)
@@ -458,7 +459,8 @@ void NotifyUIThreadOfRequestComplete(
           url, host_port_pair, frame_tree_node_id_getter.Run(), request_id,
           render_frame_host_or_null, resource_type, was_cached,
           std::move(data_reduction_proxy_data), raw_body_bytes,
-          original_content_length, request_creation_time, net_error);
+          original_content_length, request_creation_time, net_error,
+          std::move(load_timing_info));
     }
   }
 }
@@ -932,6 +934,9 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
     }
   }
 
+  auto load_timing_info = base::MakeUnique<net::LoadTimingInfo>();
+  url_request->GetLoadTimingInfo(load_timing_info.get());
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(
@@ -940,11 +945,12 @@ void ChromeResourceDispatcherHostDelegate::RequestComplete(
           info->GetFrameTreeNodeIdGetterForRequest(), url_request->url(),
           request_host_port, info->GetGlobalRequestID(), info->GetChildID(),
           info->GetRenderFrameID(), info->GetResourceType(), info->IsDownload(),
-          url_request->was_cached(), base::Passed(&data_reduction_proxy_data),
+          url_request->was_cached(), std::move(data_reduction_proxy_data),
           net_error, url_request->GetTotalReceivedBytes(),
           url_request->GetRawBodyBytes(), original_content_length,
           url_request->creation_time(),
-          base::TimeTicks::Now() - url_request->creation_time()));
+          base::TimeTicks::Now() - url_request->creation_time(),
+          std::move(load_timing_info)));
 }
 
 content::PreviewsState ChromeResourceDispatcherHostDelegate::GetPreviewsState(

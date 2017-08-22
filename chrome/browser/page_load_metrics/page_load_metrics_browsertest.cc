@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -64,8 +66,10 @@
 #include "net/http/http_cache.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "net/url_request/url_request_filter.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "url/gurl.h"
 
@@ -95,7 +99,9 @@ class PageLoadMetricsWaiter
     FIRST_CONTENTFUL_PAINT = 1 << 2,
     FIRST_MEANINGFUL_PAINT = 1 << 3,
     DOCUMENT_WRITE_BLOCK_RELOAD = 1 << 4,
-    LOAD_EVENT = 1 << 5
+    LOAD_EVENT = 1 << 5,
+    // LOAD_TIMING_INFO waits for main frame timing info only.
+    LOAD_TIMING_INFO = 1 << 6,
   };
 
   explicit PageLoadMetricsWaiter(content::WebContents* web_contents)
@@ -109,10 +115,15 @@ class PageLoadMetricsWaiter
   // Add a page-level expectation.
   void AddPageExpectation(TimingField field) {
     page_expected_fields_.Set(field);
+    if (field == TimingField::LOAD_TIMING_INFO) {
+      attach_on_tracker_creation_ = true;
+    }
   }
 
   // Add a subframe-level expectation.
   void AddSubFrameExpectation(TimingField field) {
+    CHECK_NE(field, TimingField::LOAD_TIMING_INFO)
+        << "LOAD_TIMING_INFO should only be used as a page-level expectation";
     subframe_expected_fields_.Set(field);
     // If the given field is also a page-level field, then add a page-level
     // expectation as well
@@ -125,9 +136,9 @@ class PageLoadMetricsWaiter
     return observed_page_fields_.IsSet(field);
   }
 
-  // Waits for a OnTimingUpdated call that matches the fields set by
+  // Waits for PageLoadMetrics events that match the fields set by
   // |AddPageExpectation| and |AddSubFrameExpectation|. All matching fields
-  // must be set in a OnTimingUpdated call for it to end this wait.
+  // must be set to end this wait.
   void Wait() {
     if (expectations_satisfied())
       return;
@@ -160,6 +171,33 @@ class PageLoadMetricsWaiter
       run_loop_->Quit();
   }
 
+  void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
+                            extra_request_complete_info) {
+    if (expectations_satisfied())
+      return;
+
+    if (extra_request_complete_info.resource_type !=
+        content::RESOURCE_TYPE_MAIN_FRAME) {
+      // The waiter confirms loading timing for the main frame only.
+      return;
+    }
+
+    if (!extra_request_complete_info.load_timing_info->connect_timing.dns_start
+             .is_null() &&
+        !extra_request_complete_info.load_timing_info->connect_timing.dns_end
+             .is_null() &&
+        !extra_request_complete_info.load_timing_info->send_start.is_null() &&
+        !extra_request_complete_info.load_timing_info->send_end.is_null() &&
+        !extra_request_complete_info.load_timing_info->request_start
+             .is_null()) {
+      page_expected_fields_.Clear(TimingField::LOAD_TIMING_INFO);
+      observed_page_fields_.Set(TimingField::LOAD_TIMING_INFO);
+    }
+
+    if (expectations_satisfied() && run_loop_)
+      run_loop_->Quit();
+  }
+
  private:
   // PageLoadMetricsObserver used by the PageLoadMetricsWaiter to observe
   // metrics updates.
@@ -177,6 +215,12 @@ class PageLoadMetricsWaiter
         const page_load_metrics::PageLoadExtraInfo& extra_info) override {
       if (waiter_)
         waiter_->OnTimingUpdated(is_subframe, timing, extra_info);
+    }
+
+    void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
+                              extra_request_complete_info) override {
+      if (waiter_)
+        waiter_->OnLoadedResource(extra_request_complete_info);
     }
 
    private:
@@ -198,6 +242,9 @@ class PageLoadMetricsWaiter
 
     // Sets the bit for the given |field|.
     void Set(TimingField field) { bitmask_ |= static_cast<int>(field); }
+
+    // Clears the bit for the given |field|.
+    void Clear(TimingField field) { bitmask_ &= ~static_cast<int>(field); }
 
     // Merges bits set in |other| into this bitset.
     void Merge(const TimingFieldBitSet& other) { bitmask_ |= other.bitmask_; }
@@ -244,7 +291,20 @@ class PageLoadMetricsWaiter
     return matched_bits;
   }
 
+  void OnTrackerCreated(page_load_metrics::PageLoadTracker* tracker) override {
+    if (!attach_on_tracker_creation_)
+      return;
+    // A PageLoadMetricsWaiter should only wait for events from a single page
+    // load.
+    ASSERT_FALSE(did_add_observer_);
+    tracker->AddObserver(
+        base::MakeUnique<WaiterMetricsObserver>(weak_factory_.GetWeakPtr()));
+    did_add_observer_ = true;
+  }
+
   void OnCommit(page_load_metrics::PageLoadTracker* tracker) override {
+    if (attach_on_tracker_creation_)
+      return;
     // A PageLoadMetricsWaiter should only wait for events from a single page
     // load.
     ASSERT_FALSE(did_add_observer_);
@@ -264,6 +324,7 @@ class PageLoadMetricsWaiter
 
   TimingFieldBitSet observed_page_fields_;
 
+  bool attach_on_tracker_creation_ = false;
   bool did_add_observer_ = false;
 
   base::WeakPtrFactory<PageLoadMetricsWaiter> weak_factory_;
@@ -271,7 +332,6 @@ class PageLoadMetricsWaiter
 
 using TimingField = PageLoadMetricsWaiter::TimingField;
 using WebFeature = blink::mojom::WebFeature;
-
 }  // namespace
 
 class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
@@ -354,6 +414,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, NewPageInNewForegroundTab) {
                                 embedded_test_server()->GetURL("/title1.html"),
                                 ui::PAGE_TRANSITION_LINK);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+
   chrome::Navigate(&params);
   auto waiter = base::MakeUnique<PageLoadMetricsWaiter>(params.target_contents);
   waiter->AddPageExpectation(TimingField::LOAD_EVENT);
@@ -1120,6 +1181,29 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kV8Element_Animate_Method), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetrics) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_TIMING_INFO);
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  // Waits until nonzero loading metrics are seen.
+  waiter->Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetricsFailed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_TIMING_INFO);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/page_load_metrics/404.html"));
+  // Waits until nonzero loading metrics are seen about the failed request. The
+  // load timing metrics come before the commit, but because the
+  // PageLoadMetricsWaiter is registered on tracker creation, it is able to
+  // catch the events.
+  waiter->Wait();
 }
 
 class SessionRestorePageLoadMetricsBrowserTest
