@@ -341,13 +341,14 @@ PasswordFormManager::MatchResultMask PasswordFormManager::DoesManage(
       CalculateFormSignature(observed_form_.form_data))
     result |= RESULT_SIGNATURE_MATCH;
 
-  if (form.form_data.name == observed_form_.form_data.name)
+  if (!form.form_data.name.empty() &&
+      form.form_data.name == observed_form_.form_data.name)
     result |= RESULT_FORM_NAME_MATCH;
 
   // Note: although saved password forms might actually have an empty action
   // URL if they were imported (see bug 1107719), the |form| we see here comes
   // never from the password store, and should have an exactly matching action.
-  if (form.action == observed_form_.action)
+  if (!form.action.is_empty() && form.action == observed_form_.action)
     result |= RESULT_ACTION_MATCH;
 
   return result;

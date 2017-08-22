@@ -389,6 +389,7 @@ class PasswordFormManagerTest : public testing::Test {
     observed_form_.password_element = ASCIIToUTF16("Passwd");
     observed_form_.submit_element = ASCIIToUTF16("signIn");
     observed_form_.signon_realm = "http://accounts.google.com";
+    observed_form_.form_data.name = ASCIIToUTF16("the-form-name");
 
     saved_match_ = observed_form_;
     saved_match_.origin = GURL("http://accounts.google.com/a/ServiceLoginAuth");
@@ -1914,6 +1915,26 @@ TEST_F(PasswordFormManagerTest, FormsMatchIfSignaturesMatch) {
   EXPECT_EQ(PasswordFormManager::RESULT_SIGNATURE_MATCH,
             form_manager()->DoesManage(other_form, nullptr) &
                 PasswordFormManager::RESULT_SIGNATURE_MATCH);
+}
+
+TEST_F(PasswordFormManagerTest, NoMatchForEmptyNames) {
+  // If two forms have no name, it's not evidence for a match.
+  PasswordForm other_form(*observed_form());
+  const_cast<PasswordForm&>(form_manager()->observed_form())
+      .form_data.name.clear();
+  other_form.form_data.name.clear();
+  EXPECT_EQ(0, form_manager()->DoesManage(other_form, nullptr) &
+                   PasswordFormManager::RESULT_FORM_NAME_MATCH);
+}
+
+TEST_F(PasswordFormManagerTest, NoMatchForEmtpyActions) {
+  // If two forms have no actions, it's not evidence for a match.
+  PasswordForm other_form(*observed_form());
+  const_cast<PasswordForm&>(form_manager()->observed_form()).form_data.action =
+      GURL::EmptyGURL();
+  other_form.action = GURL::EmptyGURL();
+  EXPECT_EQ(0, form_manager()->DoesManage(other_form, nullptr) &
+                   PasswordFormManager::RESULT_ACTION_MATCH);
 }
 
 // Test that if multiple credentials with the same username are stored, and the
