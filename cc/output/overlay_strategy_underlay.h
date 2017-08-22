@@ -23,7 +23,7 @@ class CC_EXPORT OverlayStrategyUnderlay : public OverlayProcessor::Strategy {
       OverlayCandidateValidator* capability_checker);
   ~OverlayStrategyUnderlay() override;
 
-  bool Attempt(ResourceProvider* resource_provider,
+  bool Attempt(DisplayResourceProvider* resource_provider,
                RenderPass* render_pass,
                OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;

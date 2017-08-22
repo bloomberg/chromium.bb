@@ -15,7 +15,7 @@ class DebugBorderDrawQuad;
 class OutputSurface;
 class PictureDrawQuad;
 class RenderPassDrawQuad;
-class ResourceProvider;
+class DisplayResourceProvider;
 class SoftwareOutputDevice;
 class SolidColorDrawQuad;
 class TextureDrawQuad;
@@ -25,7 +25,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
  public:
   SoftwareRenderer(const viz::RendererSettings* settings,
                    OutputSurface* output_surface,
-                   ResourceProvider* resource_provider);
+                   DisplayResourceProvider* resource_provider);
 
   ~SoftwareRenderer() override;
 

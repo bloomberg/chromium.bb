@@ -19,6 +19,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/display_resource_provider.h"
 #include "cc/test/fake_compositor_frame_sink_support_client.h"
 #include "cc/test/fake_resource_provider.h"
 #include "cc/test/render_pass_test_utils.h"
@@ -2129,7 +2130,8 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
   void SetUp() override {
     shared_bitmap_manager_ = base::MakeUnique<cc::TestSharedBitmapManager>();
     resource_provider_ =
-        cc::FakeResourceProvider::Create(nullptr, shared_bitmap_manager_.get());
+        cc::FakeResourceProvider::Create<cc::DisplayResourceProvider>(
+            nullptr, shared_bitmap_manager_.get());
 
     aggregator_ = base::MakeUnique<SurfaceAggregator>(
         manager_.surface_manager(), resource_provider_.get(), false);
@@ -2139,7 +2141,7 @@ class SurfaceAggregatorWithResourcesTest : public testing::Test {
  protected:
   FrameSinkManagerImpl manager_;
   std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<cc::ResourceProvider> resource_provider_;
+  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
 };
 

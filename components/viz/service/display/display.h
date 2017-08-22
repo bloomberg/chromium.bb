@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/resources/display_resource_provider.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -25,9 +26,9 @@
 
 namespace cc {
 class DirectRenderer;
+class DisplayResourceProvider;
 class OutputSurface;
 class RendererSettings;
-class ResourceProvider;
 class SoftwareRenderer;
 class TextureMailboxDeleter;
 }  // namespace cc
@@ -132,7 +133,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
 
   std::unique_ptr<cc::OutputSurface> output_surface_;
   std::unique_ptr<DisplayScheduler> scheduler_;
-  std::unique_ptr<cc::ResourceProvider> resource_provider_;
+  std::unique_ptr<cc::DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SurfaceAggregator> aggregator_;
   std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter_;
   std::unique_ptr<cc::DirectRenderer> renderer_;

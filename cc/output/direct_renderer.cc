@@ -77,7 +77,7 @@ DirectRenderer::DrawingFrame::~DrawingFrame() = default;
 
 DirectRenderer::DirectRenderer(const viz::RendererSettings* settings,
                                OutputSurface* output_surface,
-                               ResourceProvider* resource_provider)
+                               DisplayResourceProvider* resource_provider)
     : settings_(settings),
       output_surface_(output_surface),
       resource_provider_(resource_provider),

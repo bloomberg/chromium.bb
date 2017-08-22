@@ -42,15 +42,15 @@ class SoftwareRendererTest : public testing::Test {
     output_surface_->BindToClient(&output_surface_client_);
 
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
-    resource_provider_ =
-        FakeResourceProvider::Create(nullptr, shared_bitmap_manager_.get());
+    resource_provider_ = FakeResourceProvider::Create<DisplayResourceProvider>(
+        nullptr, shared_bitmap_manager_.get());
     renderer_ = base::MakeUnique<SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider());
     renderer_->Initialize();
     renderer_->SetVisible(true);
   }
 
-  ResourceProvider* resource_provider() const {
+  DisplayResourceProvider* resource_provider() const {
     return resource_provider_.get();
   }
 
@@ -85,7 +85,7 @@ class SoftwareRendererTest : public testing::Test {
   FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
   std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<SoftwareRenderer> renderer_;
 };
 

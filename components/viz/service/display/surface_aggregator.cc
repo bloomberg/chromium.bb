@@ -24,7 +24,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/display_resource_provider.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_client.h"
@@ -77,7 +77,7 @@ bool CalculateQuadSpaceDamageRect(
 }  // namespace
 
 SurfaceAggregator::SurfaceAggregator(SurfaceManager* manager,
-                                     cc::ResourceProvider* provider,
+                                     cc::DisplayResourceProvider* provider,
                                      bool aggregate_only_damaged)
     : manager_(manager),
       provider_(provider),

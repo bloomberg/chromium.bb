@@ -12,7 +12,7 @@
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/display_resource_provider.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
@@ -193,7 +193,7 @@ OverlayCandidate::OverlayCandidate(const OverlayCandidate& other) = default;
 OverlayCandidate::~OverlayCandidate() {}
 
 // static
-bool OverlayCandidate::FromDrawQuad(ResourceProvider* resource_provider,
+bool OverlayCandidate::FromDrawQuad(DisplayResourceProvider* resource_provider,
                                     const DrawQuad* quad,
                                     OverlayCandidate* candidate) {
   // We don't support an opacity value different than one for an overlay plane.
@@ -254,11 +254,12 @@ bool OverlayCandidate::IsOccluded(const OverlayCandidate& candidate,
 }
 
 // static
-bool OverlayCandidate::FromDrawQuadResource(ResourceProvider* resource_provider,
-                                            const DrawQuad* quad,
-                                            viz::ResourceId resource_id,
-                                            bool y_flipped,
-                                            OverlayCandidate* candidate) {
+bool OverlayCandidate::FromDrawQuadResource(
+    DisplayResourceProvider* resource_provider,
+    const DrawQuad* quad,
+    viz::ResourceId resource_id,
+    bool y_flipped,
+    OverlayCandidate* candidate) {
   if (!resource_provider->IsOverlayCandidate(resource_id))
     return false;
 
@@ -289,9 +290,10 @@ bool OverlayCandidate::FromDrawQuadResource(ResourceProvider* resource_provider,
 }
 
 // static
-bool OverlayCandidate::FromTextureQuad(ResourceProvider* resource_provider,
-                                       const TextureDrawQuad* quad,
-                                       OverlayCandidate* candidate) {
+bool OverlayCandidate::FromTextureQuad(
+    DisplayResourceProvider* resource_provider,
+    const TextureDrawQuad* quad,
+    OverlayCandidate* candidate) {
   if (quad->background_color != SK_ColorTRANSPARENT)
     return false;
   if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(),
@@ -304,7 +306,7 @@ bool OverlayCandidate::FromTextureQuad(ResourceProvider* resource_provider,
 }
 
 // static
-bool OverlayCandidate::FromTileQuad(ResourceProvider* resource_provider,
+bool OverlayCandidate::FromTileQuad(DisplayResourceProvider* resource_provider,
                                     const TileDrawQuad* quad,
                                     OverlayCandidate* candidate) {
   if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
@@ -317,9 +319,10 @@ bool OverlayCandidate::FromTileQuad(ResourceProvider* resource_provider,
 }
 
 // static
-bool OverlayCandidate::FromStreamVideoQuad(ResourceProvider* resource_provider,
-                                           const StreamVideoDrawQuad* quad,
-                                           OverlayCandidate* candidate) {
+bool OverlayCandidate::FromStreamVideoQuad(
+    DisplayResourceProvider* resource_provider,
+    const StreamVideoDrawQuad* quad,
+    OverlayCandidate* candidate) {
   if (!FromDrawQuadResource(resource_provider, quad, quad->resource_id(), false,
                             candidate)) {
     return false;

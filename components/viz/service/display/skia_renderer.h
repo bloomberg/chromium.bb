@@ -27,7 +27,7 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public cc::DirectRenderer {
  public:
   SkiaRenderer(const RendererSettings* settings,
                cc::OutputSurface* output_surface,
-               cc::ResourceProvider* resource_provider);
+               cc::DisplayResourceProvider* resource_provider);
 
   ~SkiaRenderer() override;
 

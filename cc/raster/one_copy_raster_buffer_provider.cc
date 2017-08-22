@@ -37,7 +37,7 @@ const int kMaxBytesPerCopyOperation = 1024 * 1024 * 4;
 
 OneCopyRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     OneCopyRasterBufferProvider* client,
-    ResourceProvider* resource_provider,
+    LayerTreeResourceProvider* resource_provider,
     const Resource* resource,
     uint64_t previous_content_id)
     : client_(client),
@@ -70,7 +70,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     base::SequencedTaskRunner* task_runner,
     viz::ContextProvider* compositor_context_provider,
     viz::ContextProvider* worker_context_provider,
-    ResourceProvider* resource_provider,
+    LayerTreeResourceProvider* resource_provider,
     int max_copy_texture_chromium_size,
     bool use_partial_raster,
     int max_staging_buffer_usage_in_bytes,

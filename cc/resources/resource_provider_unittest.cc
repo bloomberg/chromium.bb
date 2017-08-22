@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/display_resource_provider.h"
+#include "cc/resources/layer_tree_resource_provider.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -402,7 +403,7 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
   std::deque<std::unique_ptr<PendingProduceTexture>> pending_produce_textures_;
 };
 
-void GetResourcePixels(ResourceProvider* resource_provider,
+void GetResourcePixels(DisplayResourceProvider* resource_provider,
                        ResourceProviderContext* context,
                        viz::ResourceId id,
                        const gfx::Size& size,
@@ -464,12 +465,12 @@ class ResourceProviderTest
         gpu_memory_buffer_manager_->CreateClientGpuMemoryBufferManager();
 
     viz::ResourceSettings resource_settings = CreateResourceSettings();
-    resource_provider_ = base::MakeUnique<ResourceProvider>(
+    resource_provider_ = base::MakeUnique<DisplayResourceProvider>(
         context_provider_.get(), shared_bitmap_manager_.get(),
         gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
         kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
         resource_settings);
-    child_resource_provider_ = base::MakeUnique<ResourceProvider>(
+    child_resource_provider_ = base::MakeUnique<LayerTreeResourceProvider>(
         child_context_provider_.get(), shared_bitmap_manager_.get(),
         child_gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
         child_needs_sync_token, kEnableColorCorrectRendering,
@@ -544,14 +545,14 @@ class ResourceProviderTest
   scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
   std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<TestGpuMemoryBufferManager> child_gpu_memory_buffer_manager_;
-  std::unique_ptr<ResourceProvider> child_resource_provider_;
+  std::unique_ptr<LayerTreeResourceProvider> child_resource_provider_;
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
 };
 
 void CheckCreateResource(ResourceProvider::ResourceType expected_default_type,
-                         ResourceProvider* resource_provider,
+                         DisplayResourceProvider* resource_provider,
                          ResourceProviderContext* context) {
   DCHECK_EQ(expected_default_type, resource_provider->default_resource_type());
 
@@ -1147,9 +1148,10 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
 
   resource_provider_->DeclareUsedResourcesFromChild(child_id,
                                                     viz::ResourceIdSet());
-  std::unique_ptr<ResourceProvider::ScopedBatchReturnResources> returner =
-      base::MakeUnique<ResourceProvider::ScopedBatchReturnResources>(
-          resource_provider_.get());
+  std::unique_ptr<DisplayResourceProvider::ScopedBatchReturnResources>
+      returner =
+          base::MakeUnique<DisplayResourceProvider::ScopedBatchReturnResources>(
+              resource_provider_.get());
   EXPECT_EQ(0u, returned_to_child.size());
 
   read_locks.clear();
@@ -1617,8 +1619,8 @@ TEST_P(ResourceProviderTest, TransferGLToSoftware) {
           ResourceProviderContext::Create(shared_data_.get()));
   child_context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> child_resource_provider(
-      base::MakeUnique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> child_resource_provider(
+      base::MakeUnique<LayerTreeResourceProvider>(
           child_context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -1898,8 +1900,8 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
     auto shared_bitmap_manager = base::MakeUnique<TestSharedBitmapManager>();
 
     viz::ResourceSettings resource_settings = CreateResourceSettings();
-    std::unique_ptr<ResourceProvider> child_resource_provider(
-        base::MakeUnique<ResourceProvider>(
+    std::unique_ptr<LayerTreeResourceProvider> child_resource_provider(
+        base::MakeUnique<LayerTreeResourceProvider>(
             child_context_provider.get(), shared_bitmap_manager.get(), nullptr,
             nullptr, kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
             resource_settings));
@@ -1912,8 +1914,8 @@ class ResourceProviderTestTextureFilters : public ResourceProviderTest {
         TestContextProvider::Create(std::move(parent_context_owned));
     parent_context_provider->BindToCurrentThread();
 
-    std::unique_ptr<ResourceProvider> parent_resource_provider(
-        base::MakeUnique<ResourceProvider>(
+    std::unique_ptr<DisplayResourceProvider> parent_resource_provider(
+        base::MakeUnique<DisplayResourceProvider>(
             parent_context_provider.get(), shared_bitmap_manager.get(), nullptr,
             nullptr, kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
             resource_settings));
@@ -2988,8 +2990,8 @@ TEST_P(ResourceProviderTest, TextureMailbox_PrepareSendToParent_NoSyncToken) {
   auto context_provider = TestContextProvider::Create(std::move(context_owned));
   context_provider->BindToCurrentThread();
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      base::MakeUnique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      base::MakeUnique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3478,12 +3480,13 @@ TEST_P(ResourceProviderTest, GetSyncTokenForResources) {
 
   ResourceProvider::ResourceIdArray array;
   for (uint32_t i = 0; i < arraysize(release_counts); ++i) {
-    viz::ResourceId id = resource_provider_->CreateResource(
+    viz::ResourceId id = child_resource_provider_->CreateResource(
         size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
         gfx::ColorSpace());
     array.push_back(id);
 
-    ResourceProvider::ScopedWriteLockGL lock(resource_provider_.get(), id);
+    ResourceProvider::ScopedWriteLockGL lock(child_resource_provider_.get(),
+                                             id);
     gpu::SyncToken token;
     token.Set(gpu::CommandBufferNamespace::INVALID, 0, gpu::CommandBufferId(),
               release_counts[i]);
@@ -3491,7 +3494,7 @@ TEST_P(ResourceProviderTest, GetSyncTokenForResources) {
   }
 
   gpu::SyncToken last_token =
-      resource_provider_->GetSyncTokenForResources(array);
+      child_resource_provider_->GetSyncTokenForResources(array);
   EXPECT_EQ(last_token.release_count(), 10u);
 }
 
