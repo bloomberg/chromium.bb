@@ -54,11 +54,16 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   struct MetricsReportRecord {
     MetricsReportRecord();
     void Reset();
+    // UMA histograms report.
     bool first_alert_fired_after_backgrounded_reported;
     bool first_audible_after_backgrounded_reported;
     bool first_favicon_updated_after_backgrounded_reported;
     bool first_non_persistent_notification_created_after_backgrounded_reported;
     bool first_title_updated_after_backgrounded_reported;
+
+    // UKM collection report.
+    bool main_frame_first_audible_after_backgrounded_reported;
+    bool child_frame_first_audible_after_backgrounded_reported;
   };
 
   struct FrameData {
@@ -80,6 +85,11 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
   void RecordCPUUsageForUkm(const CoordinationUnitID& web_contents_cu_id,
                             double cpu_usage,
                             size_t num_coresident_tabs);
+  void ReportAudibilityUKMIfNeeded(
+      const WebContentsCoordinationUnitImpl* web_contents_cu,
+      bool* reported,
+      bool is_main_frame,
+      base::TimeDelta duration);
   void UpdateUkmSourceIdForWebContents(
       const CoordinationUnitID& web_contents_cu_id,
       ukm::SourceId ukm_source_id);
