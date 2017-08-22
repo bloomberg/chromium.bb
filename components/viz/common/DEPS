@@ -7,7 +7,6 @@ specific_include_rules = {
     "+gpu/command_buffer/service",
     "+gpu/ipc/common",
     "+mojo/public/cpp/bindings",
-    "+ui/gfx/geometry",
     "+services/ui/gpu/interfaces",
     "+third_party/skia",
   ],
@@ -15,11 +14,9 @@ specific_include_rules = {
     "+components/viz/test",
     "+gpu/ipc/gl_in_process_context.h",
     "+media/base",
-    "+ui/gfx",
     "+ui/gl",
   ],
   ".*_benchmark\.cc": [
     "+gpu/ipc/gl_in_process_context.h",
-    "+ui/gfx",
   ],
 }

@@ -5,8 +5,6 @@ include_rules = [
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
   "+third_party/skia",
-  "+ui/gfx",
-  "+ui/gfx/geometry",
   "+ui/latency",
 ]
 
