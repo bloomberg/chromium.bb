@@ -23,12 +23,12 @@ class LayerTreeHostImpl;
 // will unregister itself from SwapPromiseManager or LayerTreeHostImpl.
 class CC_EXPORT SwapPromiseMonitor {
  public:
-  // If the monitor lives on the main thread, pass in swap_promise_manager tied
-  // to the LayerTreeHost and set layer_tree_host_impl to nullptr.
-  // If the monitor lives on the impl thread, pass in layer_tree_host_impl
-  // and set layer_tree_host to nullptr.
+  // If the monitor lives on the main thread, pass in |swap_promise_manager|
+  // tied to the LayerTreeHost and set |host_impl| to nullptr. If the monitor
+  // lives on the impl thread, pass in |host_impl| and set |layer_tree_host| to
+  // nullptr.
   SwapPromiseMonitor(SwapPromiseManager* swap_promise_managaer,
-                     LayerTreeHostImpl* layer_tree_host_impl);
+                     LayerTreeHostImpl* host_impl);
   virtual ~SwapPromiseMonitor();
 
   virtual void OnSetNeedsCommitOnMain() = 0;
@@ -37,7 +37,7 @@ class CC_EXPORT SwapPromiseMonitor {
 
  protected:
   SwapPromiseManager* swap_promise_manager_;
-  LayerTreeHostImpl* layer_tree_host_impl_;
+  LayerTreeHostImpl* host_impl_;
 };
 
 }  // namespace cc

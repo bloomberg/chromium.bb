@@ -142,7 +142,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   // Used on the Thread, but checked on main thread during
   // initialization/shutdown.
-  std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
+  std::unique_ptr<LayerTreeHostImpl> host_impl_;
 
   // Accessed from both threads.
   std::unique_ptr<Scheduler> scheduler_on_impl_thread_;

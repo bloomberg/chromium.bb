@@ -67,11 +67,11 @@ void LayerTreeLifecycle::AdvanceTo(LifecycleState next_state) {
 }
 
 LayerTreeImpl::LayerTreeImpl(
-    LayerTreeHostImpl* layer_tree_host_impl,
+    LayerTreeHostImpl* host_impl,
     scoped_refptr<SyncedProperty<ScaleGroup>> page_scale_factor,
     scoped_refptr<SyncedBrowserControls> top_controls_shown_ratio,
     scoped_refptr<SyncedElasticOverscroll> elastic_overscroll)
-    : layer_tree_host_impl_(layer_tree_host_impl),
+    : host_impl_(host_impl),
       source_frame_number_(-1),
       is_first_frame_after_commit_tracker_(-1),
       root_layer_for_testing_(nullptr),
@@ -181,10 +181,10 @@ void LayerTreeImpl::DidUpdateScrollOffset(ElementId id) {
 
   if (IsActiveTree()) {
     // Ensure the other trees are kept in sync.
-    if (layer_tree_host_impl_->pending_tree())
-      layer_tree_host_impl_->pending_tree()->DidUpdateScrollOffset(id);
-    if (layer_tree_host_impl_->recycle_tree())
-      layer_tree_host_impl_->recycle_tree()->DidUpdateScrollOffset(id);
+    if (host_impl_->pending_tree())
+      host_impl_->pending_tree()->DidUpdateScrollOffset(id);
+    if (host_impl_->recycle_tree())
+      host_impl_->recycle_tree()->DidUpdateScrollOffset(id);
   }
 }
 
@@ -274,11 +274,11 @@ void LayerTreeImpl::SetRootLayerForTesting(std::unique_ptr<LayerImpl> layer) {
     AddLayer(std::move(layer));
     BuildLayerListForTesting();
   }
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
+  host_impl_->OnCanDrawStateChangedForTree();
 }
 
 void LayerTreeImpl::OnCanDrawStateChangedForTree() {
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
+  host_impl_->OnCanDrawStateChangedForTree();
 }
 
 void LayerTreeImpl::AddToLayerList(LayerImpl* layer) {
@@ -486,7 +486,7 @@ void LayerTreeImpl::HandleScrollbarShowRequestsFromMain() {
     if (!layer->needs_show_scrollbars())
       return;
     ScrollbarAnimationController* controller =
-        layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
+        host_impl_->ScrollbarAnimationControllerForElementId(
             layer->element_id());
     if (controller) {
       controller->DidRequestShowFromMainThread();
@@ -558,7 +558,7 @@ void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
 
   element_layers_map_[element_id] = layer->id();
 
-  layer_tree_host_impl_->mutator_host()->RegisterElement(
+  host_impl_->mutator_host()->RegisterElement(
       element_id,
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
 }
@@ -572,7 +572,7 @@ void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
                layer->element_id().AsValue().release(), "layer_id",
                layer->id());
 
-  layer_tree_host_impl_->mutator_host()->UnregisterElement(
+  host_impl_->mutator_host()->UnregisterElement(
       layer->element_id(),
       IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
 
@@ -632,11 +632,9 @@ void LayerTreeImpl::SetCurrentlyScrollingNode(ScrollNode* node) {
     return;
 
   ScrollbarAnimationController* old_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
-          old_element_id);
+      host_impl_->ScrollbarAnimationControllerForElementId(old_element_id);
   ScrollbarAnimationController* new_animation_controller =
-      layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
-          new_element_id);
+      host_impl_->ScrollbarAnimationControllerForElementId(new_element_id);
 
   if (old_animation_controller)
     old_animation_controller->DidScrollEnd();
@@ -730,7 +728,7 @@ void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
     if (PageScaleLayer()) {
       draw_property_utils::UpdatePageScaleFactor(
           property_trees(), PageScaleLayer(), current_page_scale_factor(),
-          device_scale_factor(), layer_tree_host_impl_->DrawTransform());
+          device_scale_factor(), host_impl_->DrawTransform());
     } else {
       DCHECK(layer_list_.empty() || active_page_scale == 1);
     }
@@ -754,7 +752,7 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
       SetPageScaleFactorLimits(min_page_scale_factor, max_page_scale_factor);
 
   if (page_scale_factor) {
-    DCHECK(!IsActiveTree() || !layer_tree_host_impl_->pending_tree());
+    DCHECK(!IsActiveTree() || !host_impl_->pending_tree());
     changed_page_scale |=
         page_scale_factor_->PushMainToPending(*page_scale_factor);
   }
@@ -771,7 +769,7 @@ void LayerTreeImpl::PushPageScaleFactorAndLimits(const float* page_scale_factor,
     if (PageScaleLayer()) {
       draw_property_utils::UpdatePageScaleFactor(
           property_trees(), PageScaleLayer(), current_page_scale_factor(),
-          device_scale_factor(), layer_tree_host_impl_->DrawTransform());
+          device_scale_factor(), host_impl_->DrawTransform());
     } else {
       DCHECK(layer_list_.empty() || *page_scale_factor == 1);
     }
@@ -784,7 +782,7 @@ void LayerTreeImpl::set_browser_controls_shrink_blink_size(bool shrink) {
 
   browser_controls_shrink_blink_size_ = shrink;
   if (IsActiveTree())
-    layer_tree_host_impl_->UpdateViewportContainerSizes();
+    host_impl_->UpdateViewportContainerSizes();
 }
 
 void LayerTreeImpl::set_top_controls_height(float top_controls_height) {
@@ -793,7 +791,7 @@ void LayerTreeImpl::set_top_controls_height(float top_controls_height) {
 
   top_controls_height_ = top_controls_height;
   if (IsActiveTree())
-    layer_tree_host_impl_->UpdateViewportContainerSizes();
+    host_impl_->UpdateViewportContainerSizes();
 }
 
 void LayerTreeImpl::set_bottom_controls_height(float bottom_controls_height) {
@@ -802,7 +800,7 @@ void LayerTreeImpl::set_bottom_controls_height(float bottom_controls_height) {
 
   bottom_controls_height_ = bottom_controls_height;
   if (IsActiveTree())
-    layer_tree_host_impl_->UpdateViewportContainerSizes();
+    host_impl_->UpdateViewportContainerSizes();
 }
 
 bool LayerTreeImpl::ClampBrowserControlsShownRatio() {
@@ -827,14 +825,14 @@ void LayerTreeImpl::PushBrowserControls(const float* top_controls_shown_ratio) {
   DCHECK(top_controls_shown_ratio || IsActiveTree());
 
   if (top_controls_shown_ratio) {
-    DCHECK(!IsActiveTree() || !layer_tree_host_impl_->pending_tree());
+    DCHECK(!IsActiveTree() || !host_impl_->pending_tree());
     top_controls_shown_ratio_->PushMainToPending(*top_controls_shown_ratio);
   }
   if (IsActiveTree()) {
     bool changed_active = top_controls_shown_ratio_->PushPendingToActive();
     changed_active |= ClampBrowserControlsShownRatio();
     if (changed_active)
-      layer_tree_host_impl_->DidChangeBrowserControlsPosition();
+      host_impl_->DidChangeBrowserControlsPosition();
   }
 }
 
@@ -860,9 +858,9 @@ void LayerTreeImpl::DidUpdatePageScale() {
   // Viewport scrollbar sizes depend on the page scale factor.
   SetScrollbarGeometriesNeedUpdate();
 
-  if (IsActiveTree() && layer_tree_host_impl_->ViewportMainScrollLayer()) {
+  if (IsActiveTree() && host_impl_->ViewportMainScrollLayer()) {
     if (ScrollbarAnimationController* controller =
-            layer_tree_host_impl_->ScrollbarAnimationControllerForElementId(
+            host_impl_->ScrollbarAnimationControllerForElementId(
                 OuterViewportScrollLayer()->element_id()))
       controller->DidScrollUpdate();
   }
@@ -875,8 +873,8 @@ void LayerTreeImpl::SetDeviceScaleFactor(float device_scale_factor) {
 
   set_needs_update_draw_properties();
   if (IsActiveTree())
-    layer_tree_host_impl_->SetFullViewportDamage();
-  layer_tree_host_impl_->SetNeedUpdateGpuRasterizationStatus();
+    host_impl_->SetFullViewportDamage();
+  host_impl_->SetNeedUpdateGpuRasterizationStatus();
 }
 
 void LayerTreeImpl::SetRasterColorSpace(
@@ -975,7 +973,7 @@ bool LayerTreeImpl::UpdateDrawProperties() {
 
   // For max_texture_size. When a new output surface is received the needs
   // update draw properties flag is set again.
-  if (!layer_tree_host_impl_->layer_tree_frame_sink())
+  if (!host_impl_->layer_tree_frame_sink())
     return false;
 
   // Clear this after the renderer early out, as it should still be
@@ -994,9 +992,8 @@ bool LayerTreeImpl::UpdateDrawProperties() {
     // calculations except when this function is explicitly passed a flag asking
     // us to skip it.
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
-        layer_list_[0], DeviceViewport().size(),
-        layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
-        current_page_scale_factor(), PageScaleLayer(),
+        layer_list_[0], DeviceViewport().size(), host_impl_->DrawTransform(),
+        device_scale_factor(), current_page_scale_factor(), PageScaleLayer(),
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
         OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
@@ -1126,8 +1123,8 @@ void LayerTreeImpl::BuildPropertyTreesForTesting() {
       OuterViewportScrollLayer(), OverscrollElasticityLayer(),
       elastic_overscroll()->Current(IsActiveTree()),
       current_page_scale_factor(), device_scale_factor(),
-      gfx::Rect(DeviceViewport().size()),
-      layer_tree_host_impl_->DrawTransform(), &property_trees_);
+      gfx::Rect(DeviceViewport().size()), host_impl_->DrawTransform(),
+      &property_trees_);
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(false);
 }
 
@@ -1243,13 +1240,13 @@ size_t LayerTreeImpl::NumLayers() {
 
 void LayerTreeImpl::DidBecomeActive() {
   if (next_activation_forces_redraw_) {
-    layer_tree_host_impl_->SetFullViewportDamage();
+    host_impl_->SetFullViewportDamage();
     next_activation_forces_redraw_ = false;
   }
 
   // Always reset this flag on activation, as we would only have activated
   // if we were in a good state.
-  layer_tree_host_impl_->ResetRequiresHighResToDraw();
+  host_impl_->ResetRequiresHighResToDraw();
 
   if (!layer_list_.empty()) {
     LayerTreeHostCommon::CallFunctionForEveryLayer(
@@ -1258,12 +1255,12 @@ void LayerTreeImpl::DidBecomeActive() {
 
   for (const auto& swap_promise : swap_promise_list_)
     swap_promise->DidActivate();
-  devtools_instrumentation::DidActivateLayerTree(layer_tree_host_impl_->id(),
+  devtools_instrumentation::DidActivateLayerTree(host_impl_->id(),
                                                  source_frame_number_);
 }
 
 bool LayerTreeImpl::RequiresHighResToDraw() const {
-  return layer_tree_host_impl_->RequiresHighResToDraw();
+  return host_impl_->RequiresHighResToDraw();
 }
 
 bool LayerTreeImpl::ViewportSizeInvalid() const {
@@ -1272,106 +1269,106 @@ bool LayerTreeImpl::ViewportSizeInvalid() const {
 
 void LayerTreeImpl::SetViewportSizeInvalid() {
   viewport_size_invalid_ = true;
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
+  host_impl_->OnCanDrawStateChangedForTree();
 }
 
 void LayerTreeImpl::ResetViewportSizeInvalid() {
   viewport_size_invalid_ = false;
-  layer_tree_host_impl_->OnCanDrawStateChangedForTree();
+  host_impl_->OnCanDrawStateChangedForTree();
 }
 
 TaskRunnerProvider* LayerTreeImpl::task_runner_provider() const {
-  return layer_tree_host_impl_->task_runner_provider();
+  return host_impl_->task_runner_provider();
 }
 
 const LayerTreeSettings& LayerTreeImpl::settings() const {
-  return layer_tree_host_impl_->settings();
+  return host_impl_->settings();
 }
 
 const LayerTreeDebugState& LayerTreeImpl::debug_state() const {
-  return layer_tree_host_impl_->debug_state();
+  return host_impl_->debug_state();
 }
 
 viz::ContextProvider* LayerTreeImpl::context_provider() const {
-  return layer_tree_host_impl_->layer_tree_frame_sink()->context_provider();
+  return host_impl_->layer_tree_frame_sink()->context_provider();
 }
 
 LayerTreeResourceProvider* LayerTreeImpl::resource_provider() const {
-  return layer_tree_host_impl_->resource_provider();
+  return host_impl_->resource_provider();
 }
 
 TileManager* LayerTreeImpl::tile_manager() const {
-  return layer_tree_host_impl_->tile_manager();
+  return host_impl_->tile_manager();
 }
 
 ImageDecodeCache* LayerTreeImpl::image_decode_cache() const {
-  return layer_tree_host_impl_->image_decode_cache();
+  return host_impl_->image_decode_cache();
 }
 
 FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
-  return layer_tree_host_impl_->fps_counter();
+  return host_impl_->fps_counter();
 }
 
 MemoryHistory* LayerTreeImpl::memory_history() const {
-  return layer_tree_host_impl_->memory_history();
+  return host_impl_->memory_history();
 }
 
 gfx::Size LayerTreeImpl::device_viewport_size() const {
-  return layer_tree_host_impl_->device_viewport_size();
+  return host_impl_->device_viewport_size();
 }
 
 DebugRectHistory* LayerTreeImpl::debug_rect_history() const {
-  return layer_tree_host_impl_->debug_rect_history();
+  return host_impl_->debug_rect_history();
 }
 
 bool LayerTreeImpl::IsActiveTree() const {
-  return layer_tree_host_impl_->active_tree() == this;
+  return host_impl_->active_tree() == this;
 }
 
 bool LayerTreeImpl::IsPendingTree() const {
-  return layer_tree_host_impl_->pending_tree() == this;
+  return host_impl_->pending_tree() == this;
 }
 
 bool LayerTreeImpl::IsRecycleTree() const {
-  return layer_tree_host_impl_->recycle_tree() == this;
+  return host_impl_->recycle_tree() == this;
 }
 
 bool LayerTreeImpl::IsSyncTree() const {
-  return layer_tree_host_impl_->sync_tree() == this;
+  return host_impl_->sync_tree() == this;
 }
 
 LayerImpl* LayerTreeImpl::FindActiveTreeLayerById(int id) {
-  LayerTreeImpl* tree = layer_tree_host_impl_->active_tree();
+  LayerTreeImpl* tree = host_impl_->active_tree();
   if (!tree)
     return NULL;
   return tree->LayerById(id);
 }
 
 LayerImpl* LayerTreeImpl::FindPendingTreeLayerById(int id) {
-  LayerTreeImpl* tree = layer_tree_host_impl_->pending_tree();
+  LayerTreeImpl* tree = host_impl_->pending_tree();
   if (!tree)
     return NULL;
   return tree->LayerById(id);
 }
 
 bool LayerTreeImpl::PinchGestureActive() const {
-  return layer_tree_host_impl_->pinch_gesture_active();
+  return host_impl_->pinch_gesture_active();
 }
 
 viz::BeginFrameArgs LayerTreeImpl::CurrentBeginFrameArgs() const {
-  return layer_tree_host_impl_->CurrentBeginFrameArgs();
+  return host_impl_->CurrentBeginFrameArgs();
 }
 
 base::TimeDelta LayerTreeImpl::CurrentBeginFrameInterval() const {
-  return layer_tree_host_impl_->CurrentBeginFrameInterval();
+  return host_impl_->CurrentBeginFrameInterval();
 }
 
 gfx::Rect LayerTreeImpl::DeviceViewport() const {
-  return layer_tree_host_impl_->DeviceViewport();
+  return host_impl_->DeviceViewport();
 }
 
 const gfx::Rect LayerTreeImpl::ViewportRectForTilePriority() const {
-  return layer_tree_host_impl_->ViewportRectForTilePriority();
+  return host_impl_->ViewportRectForTilePriority();
 }
 
 std::unique_ptr<ScrollbarAnimationController>
@@ -1385,16 +1382,16 @@ LayerTreeImpl::CreateScrollbarAnimationController(ElementId scroll_element_id,
     case LayerTreeSettings::ANDROID_OVERLAY: {
       return ScrollbarAnimationController::
           CreateScrollbarAnimationControllerAndroid(
-              scroll_element_id, layer_tree_host_impl_, fade_delay,
-              fade_duration, initial_opacity);
+              scroll_element_id, host_impl_, fade_delay, fade_duration,
+              initial_opacity);
     }
     case LayerTreeSettings::AURA_OVERLAY: {
       base::TimeDelta thinning_duration =
           settings().scrollbar_thinning_duration;
       return ScrollbarAnimationController::
           CreateScrollbarAnimationControllerAuraOverlay(
-              scroll_element_id, layer_tree_host_impl_, fade_delay,
-              fade_duration, thinning_duration, initial_opacity);
+              scroll_element_id, host_impl_, fade_delay, fade_duration,
+              thinning_duration, initial_opacity);
     }
     case LayerTreeSettings::NO_ANIMATOR:
       NOTREACHED();
@@ -1404,23 +1401,23 @@ LayerTreeImpl::CreateScrollbarAnimationController(ElementId scroll_element_id,
 }
 
 void LayerTreeImpl::DidAnimateScrollOffset() {
-  layer_tree_host_impl_->DidAnimateScrollOffset();
+  host_impl_->DidAnimateScrollOffset();
 }
 
 bool LayerTreeImpl::use_gpu_rasterization() const {
-  return layer_tree_host_impl_->use_gpu_rasterization();
+  return host_impl_->use_gpu_rasterization();
 }
 
 GpuRasterizationStatus LayerTreeImpl::GetGpuRasterizationStatus() const {
-  return layer_tree_host_impl_->gpu_rasterization_status();
+  return host_impl_->gpu_rasterization_status();
 }
 
 bool LayerTreeImpl::create_low_res_tiling() const {
-  return layer_tree_host_impl_->create_low_res_tiling();
+  return host_impl_->create_low_res_tiling();
 }
 
 void LayerTreeImpl::SetNeedsRedraw() {
-  layer_tree_host_impl_->SetNeedsRedraw();
+  host_impl_->SetNeedsRedraw();
 }
 
 void LayerTreeImpl::GetAllPrioritizedTilesForTracing(
@@ -1573,7 +1570,7 @@ void LayerTreeImpl::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
 }
 
 void LayerTreeImpl::DidModifyTilePriorities() {
-  layer_tree_host_impl_->DidModifyTilePriorities();
+  host_impl_->DidModifyTilePriorities();
 }
 
 void LayerTreeImpl::set_ui_resource_request_queue(
@@ -1582,21 +1579,21 @@ void LayerTreeImpl::set_ui_resource_request_queue(
 }
 
 viz::ResourceId LayerTreeImpl::ResourceIdForUIResource(UIResourceId uid) const {
-  return layer_tree_host_impl_->ResourceIdForUIResource(uid);
+  return host_impl_->ResourceIdForUIResource(uid);
 }
 
 bool LayerTreeImpl::IsUIResourceOpaque(UIResourceId uid) const {
-  return layer_tree_host_impl_->IsUIResourceOpaque(uid);
+  return host_impl_->IsUIResourceOpaque(uid);
 }
 
 void LayerTreeImpl::ProcessUIResourceRequestQueue() {
   for (const auto& req : ui_resource_request_queue_) {
     switch (req.GetType()) {
       case UIResourceRequest::UI_RESOURCE_CREATE:
-        layer_tree_host_impl_->CreateUIResource(req.GetId(), req.GetBitmap());
+        host_impl_->CreateUIResource(req.GetId(), req.GetBitmap());
         break;
       case UIResourceRequest::UI_RESOURCE_DELETE:
-        layer_tree_host_impl_->DeleteUIResource(req.GetId());
+        host_impl_->DeleteUIResource(req.GetId());
         break;
       case UIResourceRequest::UI_RESOURCE_INVALID_REQUEST:
         NOTREACHED();
@@ -1607,8 +1604,8 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
 
   // If all UI resource evictions were not recreated by processing this queue,
   // then another commit is required.
-  if (layer_tree_host_impl_->EvictedUIResourcesExist())
-    layer_tree_host_impl_->SetNeedsCommit();
+  if (host_impl_->EvictedUIResourcesExist())
+    host_impl_->SetNeedsCommit();
 }
 
 void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
@@ -1655,7 +1652,7 @@ void LayerTreeImpl::RegisterScrollbar(ScrollbarLayerImplBase* scrollbar_layer) {
   if (IsActiveTree() && scrollbar_layer->is_overlay_scrollbar() &&
       scrollbar_layer->GetScrollbarAnimator() !=
           LayerTreeSettings::NO_ANIMATOR) {
-    layer_tree_host_impl_->RegisterScrollbarAnimationController(
+    host_impl_->RegisterScrollbarAnimationController(
         scroll_element_id, scrollbar_layer->Opacity());
   }
 
@@ -1679,8 +1676,7 @@ void LayerTreeImpl::UnregisterScrollbar(
       scrollbar_ids.vertical == Layer::INVALID_ID) {
     element_id_to_scrollbar_layer_ids_.erase(scroll_element_id);
     if (IsActiveTree()) {
-      layer_tree_host_impl_->UnregisterScrollbarAnimationController(
-          scroll_element_id);
+      host_impl_->UnregisterScrollbarAnimationController(scroll_element_id);
     }
   }
 }
@@ -2044,12 +2040,12 @@ void LayerTreeImpl::GetViewportSelection(
 }
 
 bool LayerTreeImpl::SmoothnessTakesPriority() const {
-  return layer_tree_host_impl_->GetTreePriority() == SMOOTHNESS_TAKES_PRIORITY;
+  return host_impl_->GetTreePriority() == SMOOTHNESS_TAKES_PRIORITY;
 }
 
 VideoFrameControllerClient* LayerTreeImpl::GetVideoFrameControllerClient()
     const {
-  return layer_tree_host_impl_;
+  return host_impl_;
 }
 
 void LayerTreeImpl::SetPendingPageScaleAnimation(

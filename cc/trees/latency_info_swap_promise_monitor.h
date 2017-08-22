@@ -21,7 +21,7 @@ class CC_EXPORT LatencyInfoSwapPromiseMonitor : public SwapPromiseMonitor {
  public:
   LatencyInfoSwapPromiseMonitor(ui::LatencyInfo* latency,
                                 SwapPromiseManager* swap_promise_manager,
-                                LayerTreeHostImpl* layer_tree_host_impl);
+                                LayerTreeHostImpl* host_impl);
   ~LatencyInfoSwapPromiseMonitor() override;
 
   void OnSetNeedsCommitOnMain() override;

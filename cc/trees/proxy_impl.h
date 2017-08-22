@@ -148,7 +148,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation_;
 
-  std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
+  std::unique_ptr<LayerTreeHostImpl> host_impl_;
 
   // Use accessors instead of this variable directly.
   BlockedMainCommitOnly main_thread_blocked_commit_vars_unsafe_;

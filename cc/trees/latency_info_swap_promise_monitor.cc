@@ -43,9 +43,8 @@ namespace cc {
 LatencyInfoSwapPromiseMonitor::LatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency,
     SwapPromiseManager* swap_promise_manager,
-    LayerTreeHostImpl* layer_tree_host_impl)
-    : SwapPromiseMonitor(swap_promise_manager, layer_tree_host_impl),
-      latency_(latency) {}
+    LayerTreeHostImpl* host_impl)
+    : SwapPromiseMonitor(swap_promise_manager, host_impl), latency_(latency) {}
 
 LatencyInfoSwapPromiseMonitor::~LatencyInfoSwapPromiseMonitor() {
 }
@@ -66,8 +65,7 @@ void LatencyInfoSwapPromiseMonitor::OnSetNeedsRedrawOnImpl() {
     // measurement of the time to the next SwapBuffers(). The swap
     // promise is pinned so that it is not interrupted by new incoming
     // activations (which would otherwise break the swap promise).
-    layer_tree_host_impl_->active_tree()->QueuePinnedSwapPromise(
-        std::move(swap_promise));
+    host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
   }
 }
 
@@ -98,7 +96,7 @@ void LatencyInfoSwapPromiseMonitor::OnForwardScrollUpdateToMainThreadOnImpl() {
         new_sequence_number, "ScrollUpdate");
     std::unique_ptr<SwapPromise> swap_promise(
         new LatencyInfoSwapPromise(new_latency));
-    layer_tree_host_impl_->QueueSwapPromiseForMainThreadScrollUpdate(
+    host_impl_->QueueSwapPromiseForMainThreadScrollUpdate(
         std::move(swap_promise));
   }
 }
