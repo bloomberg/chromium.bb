@@ -112,12 +112,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                   "sizeof(MachPortsExtraHeader) must be 2 bytes");
 #elif defined(OS_FUCHSIA)
     struct HandleInfoEntry {
-      // The MXIO metadata for each handle, or zero of the handle is not part
-      // of an MXIO file-descriptor.
-      uint32_t info;
+      // The MXIO type associated with one or more handles, or zero for handles
+      // that do not belong to MXIO.
+      uint8_t type;
+      // Zero for non-MXIO handles, otherwise the number of handles to consume
+      // to generate an MXIO file-descriptor wrapper.
+      uint8_t count;
     };
-    static_assert(sizeof(HandleInfoEntry) == 4,
-                  "sizeof(HandleInfoEntry) must be 4 bytes");
 #elif defined(OS_WIN)
     struct HandleEntry {
       // The windows HANDLE. HANDLEs are guaranteed to fit inside 32-bits.
