@@ -51,7 +51,7 @@ static void fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
     return;
   }
 
-#if CONFIG_LGT
+#if CONFIG_LGT || CONFIG_DAALA_DCT4
   // only C version has LGTs
   av1_fht4x4_c(src_diff, coeff, diff_stride, txfm_param);
 #else
@@ -107,7 +107,7 @@ static void fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
 
 static void fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TxfmParam *txfm_param) {
-#if CONFIG_LGT
+#if CONFIG_LGT || CONFIG_DAALA_DCT8
   av1_fht8x8_c(src_diff, coeff, diff_stride, txfm_param);
 #else
   av1_fht8x8(src_diff, coeff, diff_stride, txfm_param);
