@@ -58,10 +58,11 @@ class AnswerCardContents {
   // Unregisters a result.
   void UnregisterResult(AnswerCardResult* result);
 
- protected:
-  Delegate* delegate() const { return delegate_; }
   // Notifies registered results about a mouse event.
   void SetIsMouseInView(bool mouse_is_inside);
+
+ protected:
+  Delegate* delegate() const { return delegate_; }
 
  private:
   // Results receiving input events.

@@ -17,7 +17,9 @@
 #include "content/public/common/renderer_preferences.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "third_party/WebKit/public/platform/WebMouseEvent.h"
+#include "ui/app_list/views/app_list_view.h"
+#include "ui/aura/window.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
@@ -32,14 +34,24 @@ constexpr char kSearchAnswerTitle[] = "SearchAnswer-Title";
 
 class SearchAnswerWebView : public views::WebView {
  public:
-  explicit SearchAnswerWebView(content::BrowserContext* browser_context)
-      : WebView(browser_context) {}
+  SearchAnswerWebView(AnswerCardWebContents* content,
+                      content::BrowserContext* browser_context)
+      : WebView(browser_context), content_(content) {
+    holder()->set_can_process_events_within_subtree(false);
+  }
 
   // views::WebView overrides:
   void VisibilityChanged(View* starting_from, bool is_visible) override {
     WebView::VisibilityChanged(starting_from, is_visible);
 
     if (GetWidget() && GetWidget()->IsVisible() && IsDrawn()) {
+      // Find the root element that attached to the app list view.
+      aura::Window* const app_list_window =
+          web_contents()->GetTopLevelNativeWindow();
+      aura::Window* window = web_contents()->GetNativeView();
+      while (window->parent() != app_list_window)
+        window = window->parent();
+      AppListView::ExcludeWindowFromEventHandling(window);
       if (shown_time_.is_null())
         shown_time_ = base::TimeTicks::Now();
     } else {
@@ -51,11 +63,26 @@ class SearchAnswerWebView : public views::WebView {
     }
   }
 
+  void OnMouseEntered(const ui::MouseEvent& event) override {
+    content_->SetIsMouseInView(true);
+  }
+
+  void OnMouseMoved(const ui::MouseEvent& event) override {
+    content_->SetIsMouseInView(true);
+  }
+
+  void OnMouseExited(const ui::MouseEvent& event) override {
+    content_->SetIsMouseInView(false);
+  }
+
   const char* GetClassName() const override { return "SearchAnswerWebView"; }
 
  private:
   // Time when the answer became visible to the user.
   base::TimeTicks shown_time_;
+
+  // Content to dispatch events.
+  AnswerCardWebContents* const content_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
 };
@@ -96,14 +123,12 @@ void ParseResponseHeaders(const net::HttpResponseHeaders* headers,
 }  // namespace
 
 AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
-    : web_view_(base::MakeUnique<SearchAnswerWebView>(profile)),
-      web_contents_(
+    : web_contents_(
           content::WebContents::Create(content::WebContents::CreateParams(
               profile,
               content::SiteInstance::Create(profile)))),
-      mouse_event_callback_(base::Bind(&AnswerCardWebContents::HandleMouseEvent,
-                                       base::Unretained(this))),
       profile_(profile) {
+  web_view_ = base::MakeUnique<SearchAnswerWebView>(this, profile);
   content::RendererPreferences* renderer_prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_prefs->can_accept_load_drops = false;
@@ -237,33 +262,14 @@ void AnswerCardWebContents::RenderViewHostChanged(
   }
 }
 
-bool AnswerCardWebContents::HandleMouseEvent(
-    const blink::WebMouseEvent& event) {
-  switch (event.GetType()) {
-    case blink::WebInputEvent::kMouseMove:
-    case blink::WebInputEvent::kMouseEnter:
-      SetIsMouseInView(true);
-      break;
-    case blink::WebInputEvent::kMouseLeave:
-      SetIsMouseInView(false);
-      break;
-    default:
-      break;
-  }
-
-  return false;
-}
-
 void AnswerCardWebContents::AttachToHost(content::RenderWidgetHost* host) {
   host_ = host;
-  host->AddMouseEventCallback(mouse_event_callback_);
 }
 
 void AnswerCardWebContents::DetachFromHost() {
   if (!host_)
     return;
 
-  host_->RemoveMouseEventCallback(mouse_event_callback_);
   host_ = nullptr;
 }
 

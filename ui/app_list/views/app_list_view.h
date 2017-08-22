@@ -19,6 +19,10 @@
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/widget/widget.h"
 
+namespace aura {
+class Window;
+}
+
 namespace display {
 class Screen;
 }
@@ -81,6 +85,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Does not take ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   ~AppListView() override;
+
+  // Prevents handling input events for the |window| in context of handling in
+  // app list.
+  static void ExcludeWindowFromEventHandling(aura::Window* window);
 
   // Initializes the widget as a bubble or fullscreen view depending on if the
   // fullscreen app list feature is set. |parent| and |initial_apps_page| are
