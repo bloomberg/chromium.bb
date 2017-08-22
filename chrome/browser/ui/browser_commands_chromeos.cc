@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/browser_commands_chromeos.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_classic.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/mus/bridge/shell_port_mash.h"
 #include "ash/public/cpp/config.h"
 #include "ash/screenshot_delegate.h"
@@ -32,8 +31,6 @@ void TakeScreenshot() {
   }
   ash::ScreenshotDelegate* screenshot_delegate =
       accelerator_controller_delegate->screenshot_delegate();
-  if (screenshot_delegate &&
-      screenshot_delegate->CanTakeScreenshot()) {
+  if (screenshot_delegate && screenshot_delegate->CanTakeScreenshot())
     screenshot_delegate->HandleTakeScreenshotForAllRootWindows();
-  }
 }

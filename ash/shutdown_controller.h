@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 

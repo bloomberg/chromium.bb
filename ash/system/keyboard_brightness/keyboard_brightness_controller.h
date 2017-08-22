@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 
 namespace ash {
@@ -17,8 +16,8 @@ namespace ash {
 class ASH_EXPORT KeyboardBrightnessController
     : public KeyboardBrightnessControlDelegate {
  public:
-  KeyboardBrightnessController() {}
-  ~KeyboardBrightnessController() override {}
+  KeyboardBrightnessController();
+  ~KeyboardBrightnessController() override;
 
  private:
   // Overridden from KeyboardBrightnessControlDelegate:

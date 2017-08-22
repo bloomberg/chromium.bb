@@ -187,36 +187,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
   using base::UserMetricsAction;
 
   switch (action) {
-    case UMA_ACCEL_KEYBOARD_BRIGHTNESS_DOWN_F6:
-      RecordAction(UserMetricsAction("Accel_KeyboardBrightnessDown_F6"));
-      break;
-    case UMA_ACCEL_KEYBOARD_BRIGHTNESS_UP_F7:
-      RecordAction(UserMetricsAction("Accel_KeyboardBrightnessUp_F7"));
-      break;
-    case UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON:
-      RecordAction(UserMetricsAction("Accel_LockScreen_LockButton"));
-      break;
-    case UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON:
-      RecordAction(UserMetricsAction("Accel_LockScreen_PowerButton"));
-      break;
-    case UMA_ACCEL_MAXIMIZE_RESTORE_F4:
-      RecordAction(UserMetricsAction("Accel_Maximize_Restore_F4"));
-      break;
-    case UMA_ACCEL_PREVWINDOW_F5:
-      RecordAction(UserMetricsAction("Accel_PrevWindow_F5"));
-      break;
-    case UMA_ACCEL_EXIT_FIRST_Q:
-      RecordAction(UserMetricsAction("Accel_Exit_First_Q"));
-      break;
-    case UMA_ACCEL_EXIT_SECOND_Q:
-      RecordAction(UserMetricsAction("Accel_Exit_Second_Q"));
-      break;
-    case UMA_ACCEL_RESTART_POWER_BUTTON:
-      RecordAction(UserMetricsAction("Accel_Restart_PowerButton"));
-      break;
-    case UMA_ACCEL_SHUT_DOWN_POWER_BUTTON:
-      RecordAction(UserMetricsAction("Accel_ShutDown_PowerButton"));
-      break;
     case UMA_DESKTOP_SWITCH_TASK:
       RecordAction(UserMetricsAction("Desktop_SwitchTask"));
       task_switch_metrics_recorder_.OnTaskSwitch(TaskSwitchSource::DESKTOP);
