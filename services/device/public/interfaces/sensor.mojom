@@ -68,10 +68,9 @@ interface Sensor {
   // reconsider the the shared buffer udpate frequency. If there are no
   // configurations left in the Sensor's configuration list it stops polling
   // sensor data from the platform and update the shared buffer.
-  // Returns 'true' if |configuration| was successfully removed;
-  // returns 'false' if |configuration| could not be removed due to an error
-  // (e.g. |configuration| is not present in the Sensor's list).
-  RemoveConfiguration(SensorConfiguration configuration) => (bool success);
+  // If |configuration| is not present in the Sensor's list the call is
+  // ignored.
+  RemoveConfiguration(SensorConfiguration configuration);
 
   // Temporary suppresses sensor reading changes notification and deactivates
   // all the previously added configurations for current instance.

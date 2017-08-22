@@ -36,7 +36,7 @@ function sensorMocks() {
       this.resumeCalled_ = null;
       this.addConfigurationCalled_ = null;
       this.removeConfigurationCalled_ = null;
-      this.activeSensorConfigurations_ = [];
+      this.requestedFrequencies_ = [];
       let rv = handle.mapBuffer(offset, size);
       assert_equals(rv.result, Mojo.RESULT_OK, "Failed to map shared buffer");
       this.bufferArray_ = rv.buffer;
@@ -62,10 +62,10 @@ function sensorMocks() {
     addConfiguration(configuration) {
       assert_not_equals(configuration, null, "Invalid sensor configuration.");
 
-      this.activeSensorConfigurations_.push(configuration);
+      this.requestedFrequencies_.push(configuration.frequency);
       // Sort using descending order.
-      this.activeSensorConfigurations_.sort(
-          (first, second) => { return second.frequency - first.frequency });
+      this.requestedFrequencies_.sort(
+          (first, second) => { return second - first });
 
       if (!this.startShouldFail_ )
         this.startReading();
@@ -78,23 +78,19 @@ function sensorMocks() {
 
     // Removes sensor configuration from the list of active configurations and
     // stops notification about sensor reading changes if
-    // activeSensorConfigurations_ is empty.
+    // requestedFrequencies_ is empty.
     removeConfiguration(configuration) {
       if (this.removeConfigurationCalled_ != null) {
         this.removeConfigurationCalled_(this);
       }
 
-      let index = this.activeSensorConfigurations_.indexOf(configuration);
-      if (index !== -1) {
-        this.activeSensorConfigurations_.splice(index, 1);
-      } else {
-        return sensorResponse(false);
-      }
+      let index = this.requestedFrequencies_.indexOf(configuration.frequency);
+      if (index == -1)
+        return;
 
-      if (this.activeSensorConfigurations_.length === 0)
+      this.requestedFrequencies_.splice(index, 1);
+      if (this.requestedFrequencies_.length === 0)
         this.stopReading();
-
-      return sensorResponse(true);
     }
 
     // Suspends sensor.
@@ -123,7 +119,7 @@ function sensorMocks() {
       this.readingUpdatesCount_ = 0;
       this.startShouldFail_ = false;
       this.updateReadingFunction_ = null;
-      this.activeSensorConfigurations_ = [];
+      this.requestedFrequencies_ = [];
       this.suspendCalled_ = null;
       this.resumeCalled_ = null;
       this.addConfigurationCalled_ = null;
@@ -182,7 +178,7 @@ function sensorMocks() {
     startReading() {
       if (this.updateReadingFunction_ != null) {
         this.stopReading();
-        let maxFrequencyUsed = this.activeSensorConfigurations_[0].frequency;
+        let maxFrequencyUsed = this.requestedFrequencies_[0];
         let timeout = (1 / maxFrequencyUsed) * 1000;
         this.sensorReadingTimerId_ = window.setInterval(() => {
           if (this.updateReadingFunction_) {
@@ -204,6 +200,11 @@ function sensorMocks() {
         window.clearInterval(this.sensorReadingTimerId_);
         this.sensorReadingTimerId_ = null;
       }
+    }
+
+    getSamplingFrequency() {
+       assert_true(this.requestedFrequencies_.length > 0);
+       return this.requestedFrequencies_[0];
     }
 
   }
