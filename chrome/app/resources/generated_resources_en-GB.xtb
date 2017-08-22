@@ -69,6 +69,7 @@
 <translation id="1110155001042129815">Wait</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{Continue Download}other{Continue Downloads}}</translation>
 <translation id="1110772031432362678">No networks found.</translation>
+<translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamond</translation>
 <translation id="1114335938027186412">Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in Chrome OS. Visit the Chromebook Help Centre to find out more: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Sleep when lid is closed</translation>
@@ -935,6 +936,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2378982052244864789">Select the extension directory.</translation>
 <translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
+<translation id="2384436799579181135">An error has occurred. Please check your printer and try again.</translation>
 <translation id="2385700042425247848">Service name:</translation>
 <translation id="2390045462562521613">Forget this network</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> new photos found
@@ -1319,6 +1321,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2897878306272793870">Are you sure that you want to open <ph name="TAB_COUNT" /> tabs?</translation>
 <translation id="290105521672621980">File uses unsupported features</translation>
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> could not communicate with this printer. Make sure that the printer is plugged in and try again.</translation>
+<translation id="2902312830803030883">More actions</translation>
 <translation id="2903457445916429186">Open selected items</translation>
 <translation id="2903493209154104877">Addresses</translation>
 <translation id="290444763029043472"><ph name="DOWNLOADED_AMOUNT_MB" /> MB / <ph name="TOTAL_AMOUNT_MB" /> MB downloaded</translation>
@@ -1365,7 +1368,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME" /> activation portal to buy more data.</translation>
 <translation id="2966598748518102999">Improve voice search by sending the sound of 'Ok Google', and a few seconds before, to Google.</translation>
 <translation id="2966937470348689686">Manage Android preferences</translation>
-<translation id="2967544384642772068">Kill</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">bright down</translation>
 <translation id="2972557485845626008">Firmware</translation>
@@ -1439,6 +1441,7 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="3065041951436100775">Tab killed feedback.</translation>
 <translation id="3065140616557457172">Type to search or enter a URL to navigate - everything just works.</translation>
 <translation id="3067198360141518313">Run this plug-in</translation>
+<translation id="3071624960923923138">You can click here to open a new tab</translation>
 <translation id="3074037959626057712">You've signed in and turned on Sync</translation>
 <translation id="3075874217500066906">A restart is required to begin the Powerwash process. After restart you will be asked to confirm that you want to proceed.</translation>
 <translation id="3076677906922146425">Let anyone add a person to Chrome</translation>
@@ -1516,7 +1519,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3165390001037658081">Some operators might block this feature.</translation>
 <translation id="3166571619128686629">Click, or say 'Ok Google' to start voice search</translation>
 <translation id="3170072451822350649">You may also skip signing in and <ph name="LINK_START" />browse as Guest<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Keep magnifier focus centred on screen</translation>
 <translation id="3177048931975664371">Click to hide password</translation>
 <translation id="3177909033752230686">Page language:</translation>
 <translation id="3180365125572747493">Please enter a password to encrypt this certificate file.</translation>
@@ -2054,8 +2056,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
   Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Back</translation>
 <translation id="3943857333388298514">Paste</translation>
-<translation id="3944266449990965865">Entire Screen</translation>
-<translation id="3946471364541867667">TalkBack Settings</translation>
 <translation id="3947376313153737208">No selection</translation>
 <translation id="3948116654032448504">&amp;Search <ph name="SEARCH_ENGINE" /> for Image</translation>
 <translation id="3949371968208420848">Welcome to Hangouts Meet!</translation>
@@ -2362,7 +2362,6 @@ Press any key to continue exploring.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
 <translation id="4452426408005428395">Never mind</translation>
 <translation id="4454939697743986778">This certificate has been installed by your system administrator.</translation>
-<translation id="445891990714234385">ChromeVox Settings</translation>
 <translation id="445923051607553918">Join Wi-Fi network</translation>
 <translation id="4462159676511157176">Custom name servers</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
@@ -2379,6 +2378,7 @@ Press any key to continue exploring.</translation>
 <translation id="450099669180426158">Exclamation mark icon</translation>
 <translation id="4501530680793980440">Confirm Removal</translation>
 <translation id="4504940961672722399">Use this extension by clicking on this icon or by pressing <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4508051413094283164">Open all in incognito window</translation>
 <translation id="4508265954913339219">Activation failed</translation>
 <translation id="4508765956121923607">View S&amp;ource</translation>
 <translation id="4509017836361568632">Discard photo</translation>
@@ -2482,6 +2482,7 @@ Press any key to continue exploring.</translation>
 <translation id="4664482161435122549">PKCS No.12 Export Error</translation>
 <translation id="466481852929361583">The secure module is being set up. Please be patient; this may take a few minutes.</translation>
 <translation id="4665014895760275686">Manufacturer</translation>
+<translation id="466506872045057845">Chrome will reset permissions to their defaults</translation>
 <translation id="4667176955651319626">Block third-party cookies and site data</translation>
 <translation id="4668721319092543482">Click to enable <ph name="PLUGIN_NAME" /></translation>
 <translation id="4668954208278016290">There was a problem while extracting image to the machine.</translation>
@@ -2655,12 +2656,12 @@ Press any key to continue exploring.</translation>
 <translation id="4903369323166982260">Run Chrome Clean-Up Tool</translation>
 <translation id="4907161631261076876">This file is not commonly downloaded and may be dangerous.</translation>
 <translation id="4907306957610201395">Permission Category</translation>
+<translation id="4908811072292128752">Open a new tab to browse two sites at once</translation>
 <translation id="4909038193460299775">Because this account is managed by <ph name="DOMAIN" />, your bookmarks, history, passwords and other settings will be cleared from this device. However, your data will remain stored in your Google account and can be managed on <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="4910673011243110136">Private networks</translation>
 <translation id="4911714727432509308">No extensions have keyboard shortcuts assigned.</translation>
 <translation id="4912643508233590958">Idle Wake Ups</translation>
-<translation id="4916679969857390442">Lens</translation>
 <translation id="491691592645955587">Switch to a secure browser</translation>
 <translation id="4917385247580444890">Strong</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> wants to communicate with the extension "<ph name="EXTENSION_NAME" />"</translation>
@@ -2725,7 +2726,6 @@ Press any key to continue exploring.</translation>
 <translation id="5011739343823725107">Failed to start up the sync backend</translation>
 <translation id="5015344424288992913">Resolving proxy...</translation>
 <translation id="5015762597229892204">Select a printer driver app</translation>
-<translation id="5016049845330225051">Clear search box text button</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Manage on start-up pages</translation>
 <translation id="5023943178135355362">Australian scrolling <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
@@ -2851,6 +2851,7 @@ Press any key to continue exploring.</translation>
 <translation id="521582610500777512">Photo was discarded</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="5225324770654022472">Show apps shortcut</translation>
+<translation id="5225360179303283478">Reset site settings</translation>
 <translation id="5227536357203429560">Add private network...</translation>
 <translation id="5227679487546032910">Default teal avatar</translation>
 <translation id="5227808808023563348">Find previous text</translation>
@@ -3482,7 +3483,6 @@ Press any key to continue exploring.</translation>
 <translation id="6151771661215463137">The file already exists in your download folder.</translation>
 <translation id="615436196126345398">Protocol</translation>
 <translation id="6154697846084421647">Currently signed in</translation>
-<translation id="6156262341071374681">Expand to all apps</translation>
 <translation id="6156323911414505561">Show bookmarks bar</translation>
 <translation id="6156863943908443225">Script cache</translation>
 <translation id="6156960295318603523">Language Settings</translation>
@@ -3769,6 +3769,7 @@ Press any key to continue exploring.</translation>
 <translation id="655384502888039633"><ph name="USER_COUNT" /> users</translation>
 <translation id="6555432686520421228">Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME" /> device to be just like new.</translation>
 <translation id="6556866813142980365">Redo</translation>
+<translation id="6558280019477628686">An error occurred. Some items may not have been deleted.</translation>
 <translation id="6559580823502247193">(already on this device)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="6562437808764959486">Extracting recovery image...</translation>
@@ -3843,6 +3844,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="6664237456442406323">Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD" />may be vulnerable to malicious attacks<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Something went wrong when opening your profile. Please sign out then sign in again.</translation>
 <translation id="6666647326143344290">with your Google Account</translation>
+<translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Do you want Google to translate this page from <ph name="SOURCE_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Pointing device connected</translation>
 <translation id="6677037229676347494">Expected ID "<ph name="EXPECTED_ID" />", but ID was "<ph name="NEW_ID" />".</translation>
@@ -3875,6 +3877,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="6716704051134091292">PDF Converter</translation>
 <translation id="6718273304615422081">Zipping...</translation>
 <translation id="671928215901716392">Lock screen</translation>
+<translation id="67211069045302358">Reset settings for this site?</translation>
 <translation id="6721972322305477112">&amp;File</translation>
 <translation id="672213144943476270">Please unlock your profile before browsing as a guest.</translation>
 <translation id="6723354935081862304">Print to Google Docs and other cloud destinations. <ph name="BEGIN_LINK" />Sign in<ph name="END_LINK" /> to print to Google Cloud Print.</translation>
@@ -4050,7 +4053,6 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="6996946928646015361">Secure module is disabled or absent.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
 <translation id="6998793565256476099">Enrol device for video conferencing</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{The following page has become unresponsive. You can wait for it to become responsive or kill it.}other{The following pages have become unresponsive. You can wait for them to become responsive or kill them.}}</translation>
 <translation id="7002055706763150362">To set up Smart Lock for Chromebook, Google needs to make sure that it’s you – type your password to get started.</translation>
 <translation id="7002454948392136538">Choose the manager for this supervised user</translation>
 <translation id="7003257528951459794">Frequency:</translation>
@@ -4060,6 +4062,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7005848115657603926">Invalid page range, use <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Bottom margin</translation>
 <translation id="7006844981395428048">$1 audio</translation>
+<translation id="7007648447224463482">Open all in new window</translation>
 <translation id="7008270479623533562">In order to run this extension, you need to refresh the page. You can run this extension automatically on this site by right-clicking on the extension icon.</translation>
 <translation id="701080569351381435">View Source</translation>
 <translation id="7012372675181957985">Your Google account may have other forms of browsing history at <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -4169,6 +4172,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7180611975245234373">Refresh</translation>
 <translation id="7180865173735832675">Customise</translation>
 <translation id="7186088072322679094">Keep in Toolbar</translation>
+<translation id="7191159667348037">Unknown Printer (USB)</translation>
 <translation id="7191454237977785534">Save file as</translation>
 <translation id="7196835305346730603">Searching for nearby Chromeboxes...</translation>
 <translation id="7199158086730159431">Get H&amp;elp</translation>

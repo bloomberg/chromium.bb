@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">入力方法は管理者によって設定されています。</translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1823873187264960516">イーサネット: <ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">アシスタント（読み込み中...）</translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
 <translation id="1856813161013948396">指紋認証センサーをタップして画面のロックを解除できます。設定するにはクリックしてください。</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">ミラーリング</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">虫メガネ</translation>
+<translation id="4351433414020964307">アシスタントを読み込んでいます...</translation>
 <translation id="4378551569595875038">接続中...</translation>
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>

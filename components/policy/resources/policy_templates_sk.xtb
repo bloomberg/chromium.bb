@@ -423,7 +423,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak je toto nastavenie zakázané, používatelia v službe <ph name="PRODUCT_NAME" /> tlačiť nemôžu. Tlač je zakázaná v ponuke nástrojov, rozšíreniach, aplikáciách jazyka JavaScript a pod. Tlačiť môžete z doplnkov, ktoré pri tlači službu <ph name="PRODUCT_NAME" /> obchádzajú. Niektoré aplikácie Flash majú napríklad možnosť tlače v kontextovej ponuke, na ktoré sa tieto pravidlá nevzťahujú.</translation>
 <translation id="2518231489509538392">Povoliť prehrávanie zvuku</translation>
-<translation id="2521581787935130926">Zobraziť skratku aplikácií na paneli so záložkami</translation>
+<translation id="2521581787935130926">Zobrazovať odkaz aplikácií na paneli so záložkami</translation>
 <translation id="2529700525201305165">Obmedzenie používateľov, ktorí sa môžu prihlásiť do prehliadača <ph name="PRODUCT_NAME" /></translation>
 <translation id="2529880111512635313">Konfigurácia zoznamu vynútene nainštalovaných aplikácií a rozšírení</translation>
 <translation id="253135976343875019">Oneskorenie upozornenia na nečinnosť pri napájaní zo siete</translation>
@@ -562,7 +562,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3034580675120919256">Umožní nastaviť, či môžu webové stránky spúšťať kód JavaScript. Spúšťanie kódu JavaScript sa dá pre všetky webové stránky buď umožniť, alebo naopak zamietnuť.
 
           Ak toto pravidlo ponecháte nenastavené, použije sa pravidlo „AllowJavaScript“ a používateľ to bude môcť zmeniť.</translation>
-<translation id="3038323923255997294">Po uzavretí prehliadača <ph name="PRODUCT_NAME" /> ponechať aplikácie na pozadí spustené</translation>
+<translation id="3038323923255997294">Po zatvorení prehliadača <ph name="PRODUCT_NAME" /> nechať aplikácie na pozadí spustené</translation>
 <translation id="3046192273793919231">Odosielať sieťové pakety na správcovský server s cieľom sledovania online stavu</translation>
 <translation id="3048744057455266684">Ak je toto pravidlo nastavené a webová adresa vyhľadávania navrhnutá vo všeobecnom poli obsahuje tento parameter v reťazci dopytu alebo v identifikátore fragmentu, potom odporúčanie zobrazí hľadané výrazy a poskytovateľa vyhľadávania namiesto nespracovanej webovej adresy vyhľadávania.
 
@@ -1006,7 +1006,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Príklady vzorov nájdete na adrese http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="467449052039111439">Otvoriť zoznam webových adries</translation>
-<translation id="4680961954980851756">Povoliť automatické dopĺňanie</translation>
+<translation id="4680961954980851756">Zapnúť automatické dopĺňanie</translation>
 <translation id="4722399051042571387">Ak je toto nastavenie nakonfigurované na možnosť False, používatelia nebudú môcť nastaviť slabé ani ľahko uhádnuteľné kódy PIN.
 
           Niekoľko príkladov slabých kódov PIN: kódy PIN obsahujúce iba jedno číslo (1111), kódy PIN so vzostupným radom po sebe nasledujúcich čísel (1234), kódy PIN so zostupnými radom po sebe nasledujúcich čísel (4321) a také, ktoré sa bežne používajú.

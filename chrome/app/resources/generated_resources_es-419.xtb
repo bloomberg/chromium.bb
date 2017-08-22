@@ -1361,7 +1361,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2966449113954629791">Es posible que hayas agotado los datos móviles. Accede al portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
 <translation id="2966598748518102999">Mejorar la búsqueda por voz enviando el sonido de unos segundos previos y al decir "OK Google" a Google</translation>
 <translation id="2966937470348689686">Administrar las preferencias de Android</translation>
-<translation id="2967544384642772068">Cerrar</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">reducir brillo</translation>
 <translation id="2972557485845626008">Firmware</translation>
@@ -1512,7 +1511,6 @@ Revisa tu correo electrónico <ph name="ACCOUNT_EMAIL" /> para consultar estas y
 <translation id="3165390001037658081">Es posible que algunos proveedores bloqueen esta función.</translation>
 <translation id="3166571619128686629">Haz clic aquí o di "OK Google" para iniciar la búsqueda por voz.</translation>
 <translation id="3170072451822350649">También puedes omitir el acceso y <ph name="LINK_START" />navegar como invitado<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Mantener el foco de la lupa centrado en la pantalla</translation>
 <translation id="3177048931975664371">Haz clic para ocultar la contraseña</translation>
 <translation id="3177909033752230686">Idioma de la página:</translation>
 <translation id="3180365125572747493">Ingresa una contraseña para encriptar este archivo de certificado.</translation>
@@ -2050,8 +2048,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
   ¿Quieres iniciar <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Atrás</translation>
 <translation id="3943857333388298514">Pegar</translation>
-<translation id="3944266449990965865">Pantalla completa</translation>
-<translation id="3946471364541867667">Configuración de TalkBack</translation>
 <translation id="3947376313153737208">Sin selección</translation>
 <translation id="3948116654032448504">Buscar imagen en <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">¡Bienvenido a Meet de Hangouts!</translation>
@@ -2358,7 +2354,6 @@ Presiona cualquier tecla para seguir navegando.</translation>
 <translation id="4450974146388585462">Diagnosticar</translation>
 <translation id="4452426408005428395">Cancelar</translation>
 <translation id="4454939697743986778">El administrador del sistema instaló este certificado.</translation>
-<translation id="445891990714234385">Configuración de ChromeVox</translation>
 <translation id="445923051607553918">Únete a la red Wi-Fi</translation>
 <translation id="4462159676511157176">Servidores de nombres personalizados</translation>
 <translation id="4467100756425880649">Galería de Chrome Web Store</translation>
@@ -2656,7 +2651,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="4910673011243110136">Redes privadas</translation>
 <translation id="4911714727432509308">No hay extensiones con combinaciones de teclas asignadas.</translation>
 <translation id="4912643508233590958">Reactivaciones</translation>
-<translation id="4916679969857390442">Lupa</translation>
 <translation id="491691592645955587">Cambiar a un navegador seguro</translation>
 <translation id="4917385247580444890">Fuerte</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> quiere comunicarse con la extensión "<ph name="EXTENSION_NAME" />".</translation>
@@ -2721,7 +2715,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="5011739343823725107">No se pudo iniciar el servidor de sincronización.</translation>
 <translation id="5015344424288992913">Resolviendo proxy...</translation>
 <translation id="5015762597229892204">Selecciona una aplicación de controlador de impresora</translation>
-<translation id="5016049845330225051">Botón para borrar el texto en el cuadro de búsqueda</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Administrar en las páginas de inicio</translation>
 <translation id="5023943178135355362">Desplazamiento australiano <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -3478,7 +3471,6 @@ Presiona cualquier tecla para seguir con navegando.</translation>
 <translation id="6151771661215463137">El archivo ya existe en tu carpeta de descargas.</translation>
 <translation id="615436196126345398">Protocolo</translation>
 <translation id="6154697846084421647">Sesión iniciada</translation>
-<translation id="6156262341071374681">Expande la lista a todas las apps</translation>
 <translation id="6156323911414505561">Mostrar barra de favoritos</translation>
 <translation id="6156863943908443225">Caché de la secuencia de comandos</translation>
 <translation id="6156960295318603523">Configuración de idioma</translation>
@@ -4045,7 +4037,6 @@ Usa esta función solo con cuentas de confianza.</translation>
 <translation id="6996946928646015361">El módulo de seguridad está inhabilitado o no está disponible.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
 <translation id="6998793565256476099">Inscribe el dispositivo para realizar videoconferencias</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{La página siguiente dejó de responder. Puedes esperar que responda o cerrarla.}other{Las páginas siguientes dejaron de responder. Puedes esperar que respondan o cerrarlas.}}</translation>
 <translation id="7002055706763150362">Google debe estar seguro de que se trata de ti si deseas configurar Smart Lock para Chromebook: escribe tu contraseña para comenzar.</translation>
 <translation id="7002454948392136538">Elige el administrador para este usuario supervisado.</translation>
 <translation id="7003257528951459794">Frecuencia:</translation>
@@ -4878,7 +4869,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8260864402787962391">Mouse</translation>
 <translation id="8261378640211443080">Esta extensión no figura en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> y es posible que se haya agregado sin tu conocimiento.</translation>
 <translation id="8261387128019234107">Agregar cuenta para <ph name="PROFILE_NAME" /></translation>
-<translation id="8261506727792406068">Eliminar</translation>
+<translation id="8261506727792406068">Borrar</translation>
 <translation id="8261580862248730866">Excepciones del micrófono</translation>
 <translation id="8261673729476082470">Guardando copia de seguridad de <ph name="FILE_COUNT" /> fotos en <ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="826246685091802258"><ph name="BAD_FLAG" /> no se implementó en esta compilación.</translation>

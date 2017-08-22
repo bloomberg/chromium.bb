@@ -23,7 +23,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="1520828917794284345">Az asztal átméretezése, hogy illeszkedjen</translation>
 <translation id="154040539590487450">Nem sikerült elindítani a távoli hozzáférési szolgáltatást.</translation>
 <translation id="1546934824884762070">Váratlan hiba történt. Kérjük, jelentse a problémát a fejlesztőknek.</translation>
-<translation id="1619813076098775562">Lezárult a kapcsolat a Cast-eszközzel.</translation>
 <translation id="1643640058022401035">Ha elhagyja ezt az oldalt, akkor befejeződik a Chromoting munkamenete.</translation>
 <translation id="1654128982815600832">Távoli kapcsolatok engedélyezése ezen a számítógépen...</translation>
 <translation id="170207782578677537">Nem sikerült regisztrálni a számítógépet.</translation>
@@ -80,6 +79,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="2676780859508944670">Feldolgozás…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">A szoftverfrissítések általában automatikusan történnek, ám egyes ritka esetekben sikertelenek lehetnek. A szoftverfrissítés nem szokott pár percnél több időt igénybe venni, és a számítógéphez távolról csatlakozva is elvégezhető.</translation>
+<translation id="2758123043070977469">Probléma volt a hitelesítéssel. Jelentkezzen be újra.</translation>
 <translation id="2803375539583399270">PIN-kód megadása</translation>
 <translation id="2841013758207633010">Idő</translation>
 <translation id="2851754573186462851">Chromium alkalmazás internetes megjelenítése</translation>
@@ -187,7 +187,6 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="5419418238395129586">Utoljára online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">A gazdagép leállt.</translation>
 <translation id="5510035215749041527">Leválasztás most</translation>
-<translation id="5537725057119320332">Küldés</translation>
 <translation id="5593560073513909978">A szolgáltatás átmenetileg nem érhető el. Kérjük, próbálkozzon újra később.</translation>
 <translation id="5601503069213153581">PIN-kód</translation>
 <translation id="5619148062500147964">Ehhez a számítógéphez</translation>
@@ -196,10 +195,10 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="5708869785009007625">Az asztalt jelenleg ezzel a felhasználóval osztja meg: <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Párosítási dátum</translation>
 <translation id="579702532610384533">Újrakapcsolódás</translation>
+<translation id="5810269635982033450">A képernyő érintőpadként viselkedik</translation>
 <translation id="5841343754884244200">Megjelenítési beállítások</translation>
 <translation id="5843054235973879827">Miért biztonságos ez?</translation>
 <translation id="5859141382851488196">Új ablak…</translation>
-<translation id="5885438903806970186">Online.</translation>
 <translation id="6011539954251327702">A Chromoting lehetővé teszi a számítógép biztonságos megosztását az interneten keresztül. Mindkét felhasználónál futnia kell a Chromoting alkalmazásnak, amely itt található: <ph name="URL" />.</translation>
 <translation id="6033507038939587647">A billentyűzet beállításai</translation>
 <translation id="6040143037577758943">Bezárás</translation>
@@ -248,7 +247,7 @@ Adatvédelmi információkért tekintse meg a Google adatvédelmi irányelveit (
 <translation id="7019153418965365059">Ismeretlen gazdagéphiba: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Távsegítség</translation>
 <translation id="7038683108611689168">Segítsen fejleszteni a Chromoting alkalmazást azáltal, hogy rendelkezésünkre bocsátja a használati statisztikát és a hibajelentéseket.</translation>
-<translation id="712467900648340229">Nem sikerült csatlakozni a Cast-eszközhöz.</translation>
+<translation id="7067321367069083429">A képernyő érintőképernyőként működik</translation>
 <translation id="7144878232160441200">Újra</translation>
 <translation id="7149517134817561223">Alkalmazás parancsok kiadására a Chrome távoliasztal-szolgáltatás gazdagépének.</translation>
 <translation id="7215059001581613786">Kérjük, legalább hat számjegyből álló PIN kódot adjon meg.</translation>

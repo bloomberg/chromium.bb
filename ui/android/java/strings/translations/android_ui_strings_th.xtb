@@ -1,36 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
-<translation id="1620510694547887537">กล้องถ่ายรูป</translation>
-<translation id="1768717197362323622">มิลลิวินาที</translation>
-<translation id="1822429046913737220">AM/PM</translation>
-<translation id="1989112275319619282">เล่นเน็ต</translation>
-<translation id="2429669115401274487">PM</translation>
-<translation id="2732718972699418926">AM</translation>
-<translation id="2841013758207633010">เวลา</translation>
-<translation id="376869769528291915">.</translation>
-<translation id="3845599764535987402">ชั่วโมง</translation>
-<translation id="4247305538398689241">ตั้งสัปดาห์</translation>
-<translation id="4768459022382175196">วินาที</translation>
-<translation id="4842092870884894799">กำลังแสดงป๊อปอัปการสร้างรหัสผ่าน</translation>
-<translation id="4932733599132424254">วันที่</translation>
-<translation id="550684401320795253">กำลังอัปเดต Chrome...</translation>
-<translation id="5779929835642192302">มีคำแนะนำ</translation>
-<translation id="5789643057113097023">.</translation>
-<translation id="5966707198760109579">สัปดาห์</translation>
-<translation id="6015796118275082299">ปี</translation>
 <translation id="6315516427814392808">ไม่สามารถดำเนินการก่อนหน้าให้สิ้นสุดได้เพราะหน่วยความจำเหลือน้อย</translation>
-<translation id="6444070574980481588">ตั้งวันที่และเวลา</translation>
 <translation id="6555463879959038093">ไม่สามารถคัดลอกไปยังคลิปบอร์ด</translation>
-<translation id="6643016212128521049">ล้าง</translation>
-<translation id="6727102863431372879">ตั้งค่า</translation>
-<translation id="7102218676258945610">นาที</translation>
-<translation id="7138678301420049075">อื่นๆ</translation>
-<translation id="723171743924126238">เลือกภาพ</translation>
-<translation id="7575803462290353686">ตั้งเวลา</translation>
-<translation id="7781164152564914424">ตั้งเดือน</translation>
-<translation id="7821540960913969614">ตั้งวันที่</translation>
 <translation id="793640675459356075">ไม่สามารถเปิดไฟล์ที่เลือก</translation>
-<translation id="8987927404178983737">เดือน</translation>
-<translation id="928752963351137118">กำลังแสดงป๊อปอัปการป้อนข้อความอัตโนมัติ</translation>
 </translationbundle>

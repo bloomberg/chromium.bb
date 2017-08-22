@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">Các phương thức nhập do quản trị viên của bạn định cấu hình.</translation>
 <translation id="1747827819627189109">Đã bật bàn phím ảo</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">Trợ lý (đang tải...)</translation>
 <translation id="1850504506766569011">Wi-Fi đang tắt.</translation>
 <translation id="1856813161013948396">Bỏ qua màn hình khóa bằng cách chỉ cần nhấn vào cảm biến vân tay. Nhấp để định cấu hình.</translation>
 <translation id="1864454756846565995">Thiết bị USB-C (cổng phía sau)</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">Đang phản chiếu</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Kính lúp</translation>
+<translation id="4351433414020964307">Trợ lý đang tải...</translation>
 <translation id="4378551569595875038">Đang kết nối…</translation>
 <translation id="4421231901400348175">Chia sẻ quyền kiểm soát màn hình của bạn với <ph name="HELPER_NAME" /> qua Trợ giúp từ xa.</translation>
 <translation id="4430019312045809116">Âm lượng</translation>

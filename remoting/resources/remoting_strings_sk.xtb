@@ -23,7 +23,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="1520828917794284345">Prispôsobiť veľkosť pracovnej plochy obrazovke klienta</translation>
 <translation id="154040539590487450">Spustenie služby vzdialeného prístupu zlyhalo.</translation>
 <translation id="1546934824884762070">Vyskytla sa neočakávaná chyba. Nahláste tento problém vývojárom.</translation>
-<translation id="1619813076098775562">Pripojenie k zariadeniu Cast bolo zavreté.</translation>
 <translation id="1643640058022401035">Ak opustíte túto stránku, relácia aplikácie Chromoting sa ukončí.</translation>
 <translation id="1654128982815600832">Prebieha povoľovanie vzdialených pripojení pre tento počítač...</translation>
 <translation id="170207782578677537">Registrácia tohto počítača zlyhala.</translation>
@@ -187,7 +186,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="5419418238395129586">Naposledy online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hostiteľ je vypnutý</translation>
 <translation id="5510035215749041527">Odpojiť</translation>
-<translation id="5537725057119320332">Prenášať</translation>
 <translation id="5593560073513909978">Služba je dočasne nedostupná. Skúste to znova neskôr.</translation>
 <translation id="5601503069213153581">Kód PIN</translation>
 <translation id="5619148062500147964">K tomuto počítaču</translation>
@@ -199,7 +197,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="5841343754884244200">Možnosti zobrazenia</translation>
 <translation id="5843054235973879827">Prečo je to bezpečné?</translation>
 <translation id="5859141382851488196">Nové okno…</translation>
-<translation id="5885438903806970186">Online.</translation>
 <translation id="6011539954251327702">Funkcia Chromoting vám umožňuje bezpečne zdieľať váš počítač cez internet. Obaja používatelia musia mať spustenú aplikáciu Chromoting, ktorú nájdete na adrese <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Možnosti klávesnice</translation>
 <translation id="6040143037577758943">Zavrieť</translation>
@@ -248,7 +245,6 @@ Informácie o ochrane osobných údajov nájdete v Pravidlách ochrany osobných
 <translation id="7019153418965365059">Nerozpoznaná chyba hostiteľa: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Pomoc na diaľku</translation>
 <translation id="7038683108611689168">Pomôžte nám zlepšiť aplikáciu Chromoting tým, že nám umožníte zhromažďovať štatistiky používania a správy o zlyhaní.</translation>
-<translation id="712467900648340229">Nepodarilo sa pripojiť k zariadeniu Cast.</translation>
 <translation id="7144878232160441200">Skúsiť znova</translation>
 <translation id="7149517134817561223">Aplikácia na zadávanie príkazov hostiteľovi Vzdialenej plochy Chrome.</translation>
 <translation id="7215059001581613786">Zadajte kód PIN obsahujúci 6 alebo viac číslic.</translation>

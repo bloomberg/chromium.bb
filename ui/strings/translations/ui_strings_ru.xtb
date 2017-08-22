@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}one{# секунда}few{# секунды}many{# секунд}other{# секунды}}</translation>
 <translation id="4971687151119236543">Предыдущий трек</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">Удалить текст из окна поиска</translation>
 <translation id="5046499563572181734">Нажмите здесь</translation>
 <translation id="5076340679995252485">&amp;Вставить</translation>
 <translation id="5120799197269191491">Поиск + <ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">Пробел</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> Б/с</translation>
+<translation id="6156262341071374681">Просмотреть все приложения</translation>
 <translation id="6264365405983206840">Выделить все</translation>
 <translation id="6351032674660237738">ПРЕДЛАГАЕМЫЕ ПРИЛОЖЕНИЯ</translation>
 <translation id="6364916375976753737">Прокрутка влево</translation>

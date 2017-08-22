@@ -1364,7 +1364,6 @@
 <translation id="2966449113954629791">你可能已用盡行動數據配額。造訪 <ph name="NAME" /> 啟用入口網站即可購買更多數據量。</translation>
 <translation id="2966598748518102999">停頓一下再說出「Ok Google」，然後將語音傳送給 Google，改善語音搜尋的服務品質。</translation>
 <translation id="2966937470348689686">管理 Android 偏好設定</translation>
-<translation id="2967544384642772068">刪除</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">調低亮度鍵</translation>
 <translation id="2972557485845626008">韌體</translation>
@@ -1515,7 +1514,6 @@
 <translation id="3165390001037658081">部分電信業者可能會封鎖這項功能。</translation>
 <translation id="3166571619128686629">按一下或說出「Ok Google」啟動語音搜尋</translation>
 <translation id="3170072451822350649">你也可以略過登入程序，<ph name="LINK_START" />以訪客身分瀏覽<ph name="LINK_END" />。</translation>
-<translation id="3170544058711792988">將放大鏡焦點固定在畫面中間</translation>
 <translation id="3177048931975664371">按這裡隱藏密碼</translation>
 <translation id="3177909033752230686">網頁語言：</translation>
 <translation id="3180365125572747493">請輸入對這個憑證檔案進行加密時使用的密碼。</translation>
@@ -2052,8 +2050,6 @@
   是否要開啟「<ph name="CONTROL_PANEL_APPLET_NAME" />」？</translation>
 <translation id="3943582379552582368">上一頁(&amp;B)</translation>
 <translation id="3943857333388298514">貼上</translation>
-<translation id="3944266449990965865">整個畫面</translation>
-<translation id="3946471364541867667">TalkBack 設定</translation>
 <translation id="3947376313153737208">未選取任何項目</translation>
 <translation id="3948116654032448504">透過 <ph name="SEARCH_ENGINE" /> 搜尋圖片(&amp;S)</translation>
 <translation id="3949371968208420848">歡迎使用 Hangouts Meet！</translation>
@@ -2360,7 +2356,6 @@
 <translation id="4450974146388585462">診斷</translation>
 <translation id="4452426408005428395">不用了</translation>
 <translation id="4454939697743986778">系統管理員已安裝這個憑證。</translation>
-<translation id="445891990714234385">ChromeVox 設定</translation>
 <translation id="445923051607553918">加入 Wi-Fi 網路</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
 <translation id="4467100756425880649">Chrome 線上應用程式商店擴充功能庫</translation>
@@ -2656,7 +2651,6 @@
 <translation id="4910673011243110136">私人網路</translation>
 <translation id="4911714727432509308">尚未對任何擴充功能指派鍵盤快速鍵。</translation>
 <translation id="4912643508233590958">閒置喚醒</translation>
-<translation id="4916679969857390442">透鏡</translation>
 <translation id="491691592645955587">改用安全的瀏覽器</translation>
 <translation id="4917385247580444890">強</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> 要求與「<ph name="EXTENSION_NAME" />」擴充功能通訊</translation>
@@ -2720,7 +2714,6 @@
 <translation id="5011739343823725107">無法啟動同步處理後端</translation>
 <translation id="5015344424288992913">正在解析 proxy...</translation>
 <translation id="5015762597229892204">選取印表機驅動程式應用程式</translation>
-<translation id="5016049845330225051">清除搜尋框文字按鈕</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">管理起始網頁</translation>
 <translation id="5023943178135355362">澳洲式捲動 - <ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
@@ -3476,7 +3469,6 @@
 <translation id="6151771661215463137">下載資料夾中已有這個檔案。</translation>
 <translation id="615436196126345398">通訊協定</translation>
 <translation id="6154697846084421647">目前已登入</translation>
-<translation id="6156262341071374681">展開並顯示所有應用程式</translation>
 <translation id="6156323911414505561">顯示書籤列</translation>
 <translation id="6156863943908443225">指令碼快取</translation>
 <translation id="6156960295318603523">語言設定</translation>
@@ -4043,7 +4035,6 @@
 <translation id="6996946928646015361">安全模組已停用或遺失。</translation>
 <translation id="6998711733709403587">已選取 <ph name="SELCTED_FOLDERS_COUNT" /> 個資料夾</translation>
 <translation id="6998793565256476099">註冊視訊會議裝置</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{以下這個網頁無回應。您可以等待網頁回應，也可以關閉網頁。}other{以下這些網頁無回應。您可以等待網頁回應，也可以關閉網頁。}}</translation>
 <translation id="7002055706763150362">如要設定 Chromebook 專用 Smart Lock，請先輸入您的密碼，讓 Google 確認操作者是您本人。</translation>
 <translation id="7002454948392136538">選擇這位受監管使用者的管理員</translation>
 <translation id="7003257528951459794">頻率：</translation>

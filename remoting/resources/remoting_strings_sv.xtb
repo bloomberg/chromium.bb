@@ -23,7 +23,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="1520828917794284345">Anpassa skrivbordets storlek</translation>
 <translation id="154040539590487450">Det gick inte att starta fjärråtkomsttjänsten.</translation>
 <translation id="1546934824884762070">Ett oväntat fel uppstod. Rapportera problemet till utvecklarna.</translation>
-<translation id="1619813076098775562">Stängd anslutning till överföringsenheten.</translation>
 <translation id="1643640058022401035">Om du lämnar sidan avslutas sessionen i Chromoting.</translation>
 <translation id="1654128982815600832">Fjärranslutningar aktiveras för den här datorn ...</translation>
 <translation id="170207782578677537">Det gick inte att registrera datorn.</translation>
@@ -80,6 +79,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="2676780859508944670">Arbetar ...</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Programuppdateringar sker oftast automatiskt, men kan ibland misslyckas. Uppdateringen av programvaran bör inte ta mer än några minuter och du kan göra den när du är fjärransluten till datorn.</translation>
+<translation id="2758123043070977469">Det gick inte att autentisera. Logga in igen.</translation>
 <translation id="2803375539583399270">Ange pinkod</translation>
 <translation id="2841013758207633010">Tid</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -187,7 +187,6 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="5419418238395129586">Senast online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Värdenheten har stängts av.</translation>
 <translation id="5510035215749041527">Koppla från nu</translation>
-<translation id="5537725057119320332">Casta</translation>
 <translation id="5593560073513909978">Tjänsten är inte tillgänglig för närvarande. Försök igen senare.</translation>
 <translation id="5601503069213153581">PIN-kod</translation>
 <translation id="5619148062500147964">Till den här datorn</translation>
@@ -196,10 +195,10 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="5708869785009007625">Ditt skrivbord delas just nu med <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Kopplade den</translation>
 <translation id="579702532610384533">Återanslut</translation>
+<translation id="5810269635982033450">Skärmen används som styrplatta</translation>
 <translation id="5841343754884244200">Skärmalternativ</translation>
 <translation id="5843054235973879827">Varför är det säkert?</translation>
 <translation id="5859141382851488196">Nytt fönster ...</translation>
-<translation id="5885438903806970186">På webben.</translation>
 <translation id="6011539954251327702">Med Chromoting kan du säkert dela din dator över internet. Båda användarna måste köra appen Chromoting, som finns här: <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Tangentbordsalternativ</translation>
 <translation id="6040143037577758943">Stäng</translation>
@@ -248,7 +247,7 @@ Du hittar mer information om sekretess i Googles sekretesspolicy (http://goo.gl/
 <translation id="7019153418965365059">Okänt värdfel: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Fjärrhjälp</translation>
 <translation id="7038683108611689168">Hjälp oss att förbättra Chromoting genom att tillåta att vi samlar in användningsstatistik och felrapporter.</translation>
-<translation id="712467900648340229">Det gick inte att ansluta till överföringsenheten.</translation>
+<translation id="7067321367069083429">Skärmen används som pekskärm</translation>
 <translation id="7144878232160441200">Försök igen</translation>
 <translation id="7149517134817561223">Program som används för att skicka kommandon till värddatorn för Chrome Remote Desktop.</translation>
 <translation id="7215059001581613786">Ange en PIN-kod som består av minst sex siffror.</translation>

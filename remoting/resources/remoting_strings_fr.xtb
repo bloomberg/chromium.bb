@@ -23,7 +23,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="1520828917794284345">Ajuster le bureau à la taille du client</translation>
 <translation id="154040539590487450">Échec du démarrage du service d'accès à distance.</translation>
 <translation id="1546934824884762070">Une erreur inattendue s'est produite. Veuillez signaler le problème aux développeurs.</translation>
-<translation id="1619813076098775562">Connexion avec l'appareil Cast interrompue</translation>
 <translation id="1643640058022401035">En quittant cette page, vous mettrez fin à la session Google Chromoting.</translation>
 <translation id="1654128982815600832">Activation des connexions à distance pour cet ordinateur en cours…</translation>
 <translation id="170207782578677537">Échec de l'enregistrement de cet ordinateur.</translation>
@@ -187,7 +186,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="5419418238395129586">Dernière connexion : <ph name="DATE" /></translation>
 <translation id="544077782045763683">L'hôte a été arrêté.</translation>
 <translation id="5510035215749041527">Se déconnecter maintenant</translation>
-<translation id="5537725057119320332">Caster</translation>
 <translation id="5593560073513909978">Le service est momentanément indisponible. Veuillez réessayer ultérieurement.</translation>
 <translation id="5601503069213153581">Code d'accès</translation>
 <translation id="5619148062500147964">À cet ordinateur</translation>
@@ -199,7 +197,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="5841343754884244200">Options d'affichage</translation>
 <translation id="5843054235973879827">En quoi est-ce sûr ?</translation>
 <translation id="5859141382851488196">Nouvelle fenêtre…</translation>
-<translation id="5885438903806970186">En ligne</translation>
 <translation id="6011539954251327702">L'application Google Chromoting vous permet de partager votre ordinateur sur le Web en toute sécurité. Pour ce faire, les deux utilisateurs en question doivent exécuter cette application, disponible à l'adresse <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Options du clavier</translation>
 <translation id="6040143037577758943">Fermer</translation>
@@ -248,7 +245,6 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="7019153418965365059">Erreur d'hôte non reconnue : <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistance à distance</translation>
 <translation id="7038683108611689168">Aidez-nous à améliorer Google Chromoting en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
-<translation id="712467900648340229">Échec de la connexion à l'appareil Cast</translation>
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="7149517134817561223">Demande pour émettre des commandes à l'hôte du Bureau à distance Chrome</translation>
 <translation id="7215059001581613786">Veuillez saisir un code d'accès composé d'au moins six chiffres.</translation>

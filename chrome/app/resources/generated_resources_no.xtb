@@ -1351,7 +1351,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2951247061394563839">Sentrér vinduet</translation>
 <translation id="2951721188322348056">Videoinformasjon</translation>
 <translation id="2956763290572484660"><ph name="COOKIES" /> informasjonskapsler</translation>
-<translation id="2958721676848865875">Advarsel om pakking av utvidelse</translation>
+<translation id="2958721676848865875">Advarsel om pakkeutvidelse</translation>
 <translation id="2959614062380389916">Slått av av administratoren</translation>
 <translation id="2961090598421146107"><ph name="CERTIFICATE_NAME" /> (fra utvidelse)</translation>
 <translation id="2961695502793809356">Klikk for å gå fremover – hold for å se logg</translation>
@@ -1360,7 +1360,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2966449113954629791">Du kan ha brukt opp mobildatakvoten din. Gå til aktiveringsportalen for <ph name="NAME" /> for å kjøpe mer data.</translation>
 <translation id="2966598748518102999">Forbedre talesøk ved å sende lyden av «Ok Google» og et par sekunder før det, til Google.</translation>
 <translation id="2966937470348689686">Administrer Android-innstillinger</translation>
-<translation id="2967544384642772068">Avslutt</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">redusert lysstyrke</translation>
 <translation id="2972557485845626008">Fastvare</translation>
@@ -1511,7 +1510,6 @@ Sjekk e-posten din på <ph name="ACCOUNT_EMAIL" /> for instruksjoner om dette og
 <translation id="3165390001037658081">Det kan hende at enkelte operatører blokkerer denne funksjonen.</translation>
 <translation id="3166571619128686629">Klikk eller si «Ok Google» for å starte talesøk</translation>
 <translation id="3170072451822350649">Du kan også hoppe over påloggingen og <ph name="LINK_START" />surfe som gjest<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Hold fokuset for skjermforstørreren sentrert på skjermen</translation>
 <translation id="3177048931975664371">Klikk for å skjule passord</translation>
 <translation id="3177909033752230686">Språket siden er på:</translation>
 <translation id="3180365125572747493">Skriv inn et passord for å kryptere denne sertifikatfilen.</translation>
@@ -1798,7 +1796,7 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
 <translation id="3596235046596950091">Slå på skytjenester</translation>
 <translation id="3600456501114769456">Administratoren din har deaktivert tilgang til lokale filer på enheten din.</translation>
-<translation id="3603533104205588786">Du kan klikke på stjerner for å sette en side som bokmerke</translation>
+<translation id="3603533104205588786">Du kan klikke på stjernen for å sette en side som bokmerke</translation>
 <translation id="3603622770190368340">Hent nettverkssertifikat</translation>
 <translation id="3604048165392640554">Fant ingen mobiltilkobling. Slå på Umiddelbar internettdeling på de andre enhetene dine, og prøv på nytt. &lt;a target="_blank" href="<ph name="URL" />"&gt;Finn ut mer&lt;/a&gt;</translation>
 <translation id="3605780360466892872">Businessmann</translation>
@@ -2046,8 +2044,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
   Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">Til&amp;bake</translation>
 <translation id="3943857333388298514">Lim inn</translation>
-<translation id="3944266449990965865">Hele skjermen</translation>
-<translation id="3946471364541867667">TalkBack-innstillinger</translation>
 <translation id="3947376313153737208">Ingen valgt</translation>
 <translation id="3948116654032448504">&amp;Søk etter bilder i <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Velkommen til Hangouts Meet</translation>
@@ -2354,7 +2350,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4450974146388585462">Diagnostiser</translation>
 <translation id="4452426408005428395">Glem det</translation>
 <translation id="4454939697743986778">Dette sertifikatet er installert av systemadministratoren din.</translation>
-<translation id="445891990714234385">ChromeVox-innstillinger</translation>
 <translation id="445923051607553918">Koble til Wi-Fi-nettverk</translation>
 <translation id="4462159676511157176">Egendefinerte navnetjenere</translation>
 <translation id="4467100756425880649">Chrome Nettmarked Galleri</translation>
@@ -2652,7 +2647,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4910673011243110136">Private nettverk</translation>
 <translation id="4911714727432509308">Ingen utvidelser har tildelte hurtigtaster.</translation>
 <translation id="4912643508233590958">Inaktive oppvåkninger</translation>
-<translation id="4916679969857390442">Forstørrelsesglass</translation>
 <translation id="491691592645955587">Bytt til en sikker nettleser</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ønsker å kommunisere med «<ph name="EXTENSION_NAME" />»-utvidelsen</translation>
@@ -2716,7 +2710,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="5011739343823725107">Kunne ikke starte opp tjenerdelens synkronisering</translation>
 <translation id="5015344424288992913">Konverterer proxy ...</translation>
 <translation id="5015762597229892204">Velg en skriverdriverapp</translation>
-<translation id="5016049845330225051">Fjern teksten i søkefeltet</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Administrer oppstartssider</translation>
 <translation id="5023943178135355362">Australsk rulling <ph name="BEGIN_LINK" />Les mer<ph name="END_LINK" /></translation>
@@ -3471,7 +3464,6 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="6151771661215463137">Filen finnes allerede i nedlastingsmappen.</translation>
 <translation id="615436196126345398">Protokoll</translation>
 <translation id="6154697846084421647">Pålogget</translation>
-<translation id="6156262341071374681">Vis alle apper</translation>
 <translation id="6156323911414505561">Vis bokmerkeraden</translation>
 <translation id="6156863943908443225">Skriptbuffer</translation>
 <translation id="6156960295318603523">Språkinnstillinger</translation>
@@ -4037,7 +4029,6 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="6996946928646015361">Den sikre modulen er deaktivert eller mangler.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mapper er valgt</translation>
 <translation id="6998793565256476099">Registrer enheten for videokonferanser</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Følgende side har sluttet å svare. Du kan vente til den svarer, eller du kan lukke den.}other{Følgende sider har sluttet å svare. Du kan vente til de svarer, eller du kan lukke dem.}}</translation>
 <translation id="7002055706763150362">For å konfigurere Smart Lock for Chromebook, må Google være sikker på at det er deg. Skriv inn passordet for å begynne.</translation>
 <translation id="7002454948392136538">Velg administratoren for denne administrerte brukeren</translation>
 <translation id="7003257528951459794">Frekvens:</translation>
@@ -5093,7 +5084,7 @@ Oppbevar nøkkelfilen på et trygt sted. Du får bruk for den når du skal oppre
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> eller <ph name="RE_SCAN_LINK" /></translation>
 <translation id="8651585100578802546">Tving ny innlasting av siden</translation>
 <translation id="8652139471850419555">Foretrukne nettverk</translation>
-<translation id="8652400352452647993">Feil ved pakking av utvidelse</translation>
+<translation id="8652400352452647993">Feil med pakkeutvidelse</translation>
 <translation id="8652487083013326477">alternativknapp for sideomfang</translation>
 <translation id="8654151524613148204">Beklager, men filen er så stor at datamaskinen din ikke klarer å håndtere den.</translation>
 <translation id="8655295600908251630">Kanal</translation>

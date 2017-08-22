@@ -23,7 +23,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="1520828917794284345">Dopasuj pulpit</translation>
 <translation id="154040539590487450">Nie udało się uruchomić usługi dostępu zdalnego.</translation>
 <translation id="1546934824884762070">Wystąpił nieoczekiwany błąd. Zgłoś ten problem programistom.</translation>
-<translation id="1619813076098775562">Połączenie z urządzeniem Cast zostało zakończone.</translation>
 <translation id="1643640058022401035">Jeśli opuścisz tę stronę, sesja Chromoting zostanie zakończona.</translation>
 <translation id="1654128982815600832">Włączam połączenia zdalne z tym komputerem…</translation>
 <translation id="170207782578677537">Nie udało się zarejestrować tego komputera.</translation>
@@ -187,7 +186,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="5419418238395129586">Ostatnio online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host został wyłączony.</translation>
 <translation id="5510035215749041527">Odłącz teraz</translation>
-<translation id="5537725057119320332">Przesyłaj</translation>
 <translation id="5593560073513909978">Usługa jest tymczasowo niedostępna. Spróbuj ponownie później.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Z tym komputerem</translation>
@@ -199,7 +197,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="5841343754884244200">Opcje wyświetlania</translation>
 <translation id="5843054235973879827">Dlaczego to bezpieczne?</translation>
 <translation id="5859141382851488196">Nowe okno...</translation>
-<translation id="5885438903806970186">Online.</translation>
 <translation id="6011539954251327702">Chromoting pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Chromoting, którą można znaleźć na <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opcje klawiatury</translation>
 <translation id="6040143037577758943">Zamknij</translation>
@@ -248,7 +245,6 @@ Informacje na temat prywatności znajdziesz w Polityce prywatności Google (http
 <translation id="7019153418965365059">Nieznany błąd hosta: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Pomoc zdalna</translation>
 <translation id="7038683108611689168">Pomóż nam udoskonalić Chromoting, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
-<translation id="712467900648340229">Nie można połączyć się z urządzeniem Cast.</translation>
 <translation id="7144878232160441200">Ponów próbę</translation>
 <translation id="7149517134817561223">Aplikacja do wysyłania poleceń do hosta Pulpitu zdalnego Chrome.</translation>
 <translation id="7215059001581613786">Wpisz PIN złożony z co najmniej sześciu cyfr.</translation>

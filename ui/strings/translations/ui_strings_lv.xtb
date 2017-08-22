@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunde}zero{# sekundes}one{# sekunde}other{# sekundes}}</translation>
 <translation id="4971687151119236543">Multivide — iepriekšējā dziesma</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">Meklēšanas lodziņa teksta notīrīšanas poga</translation>
 <translation id="5046499563572181734">Pieskarieties šeit</translation>
 <translation id="5076340679995252485">&amp;Ielīmēt</translation>
 <translation id="5120799197269191491">Meklēšanas taustiņš + <ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">Atstarpe</translation>
 <translation id="6135826906199951471">Dzēst</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6156262341071374681">Skatīt visas lietotnes</translation>
 <translation id="6264365405983206840">&amp;Atlasīt visu</translation>
 <translation id="6351032674660237738">LIETOTŅU IETEIKUMI</translation>
 <translation id="6364916375976753737">Ritināt pa kreisi</translation>

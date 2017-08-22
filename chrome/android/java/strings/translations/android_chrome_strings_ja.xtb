@@ -103,6 +103,7 @@
 <translation id="1966710179511230534">ログイン情報を更新してください。</translation>
 <translation id="1974060860693918893">詳細設定</translation>
 <translation id="1984937141057606926">サードパーティを除いて許可する</translation>
+<translation id="1989112275319619282">閲覧</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> がペア設定を要求しています</translation>
 <translation id="1994173015038366702">サイトの URL</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB を他のアプリで使用中</translation>
@@ -375,6 +376,7 @@
 <translation id="4807963036345170158">データセーバー OFF</translation>
 <translation id="4816465935029283692">データタイプ</translation>
 <translation id="4837753911714442426">ページの印刷オプションを開く</translation>
+<translation id="4842092870884894799">パスワード作成のポップアップを表示しています</translation>
 <translation id="4850886885716139402">表示</translation>
 <translation id="4860895144060829044">通話</translation>
 <translation id="4881695831933465202">開く</translation>
@@ -443,6 +445,7 @@
 <translation id="5487521232677179737">データを消去</translation>
 <translation id="5487729733663684359">このバージョンの Android では Chrome の更新はサポートされなくなりました。</translation>
 <translation id="5490801865084500306">ブックマークタブが選択されています</translation>
+<translation id="550684401320795253">Chrome を更新しています...</translation>
 <translation id="5512137114520586844">このアカウントは <ph name="PARENT_NAME" /> によって管理されています。</translation>
 <translation id="5514904542973294328">この端末の管理者によって無効にされています</translation>
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" /> のブックマーク、履歴、パスワードとその他の設定を使用できます。</translation>
@@ -482,6 +485,7 @@
 <translation id="5763382633136178763">シークレット タブ</translation>
 <translation id="5765780083710877561">説明:</translation>
 <translation id="5777170031995031090">検索、広告、その他の Google サービスをカスタマイズするために Google が閲覧履歴をどのような方法で使用するかを設定します。</translation>
+<translation id="5779929835642192302">候補があります</translation>
 <translation id="5804241973901381774">権限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 時間前}other{# 時間前}}</translation>
 <translation id="5817918615728894473">ペア設定</translation>
@@ -553,7 +557,6 @@
 <translation id="6437478888915024427">ページ情報</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">検索と URL 候補</translation>
-<translation id="6463070039183944536">追加しています…</translation>
 <translation id="6475951671322991020">動画をダウンロード</translation>
 <translation id="6482749332252372425">ストレージの空き容量が不足しているため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="6508332297647760142">フィジカル ウェブの共有</translation>
@@ -638,6 +641,7 @@
 <translation id="7189372733857464326">Google Play 開発者サービスの更新完了を待機しています</translation>
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7191430249889272776">バックグラウンドでタブを開きました。</translation>
+<translation id="723171743924126238">画像を選択</translation>
 <translation id="7243308994586599757">画面の下の方にオプションがあります</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> では地域の検索結果を表示するためにユーザーの位置情報が使用されます</translation>
 <translation id="7251326866581677552">一部のサイトでブロックされています</translation>

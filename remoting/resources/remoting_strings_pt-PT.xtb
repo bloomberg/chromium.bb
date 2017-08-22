@@ -23,7 +23,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="1520828917794284345">Redimensionar o ambiente de trabalho para ajustar ao tamanho</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>
-<translation id="1619813076098775562">Terminou a ligação ao Dispositivo de transmissão.</translation>
 <translation id="1643640058022401035">Se sair desta página, terminará a sessão do Chromoting.</translation>
 <translation id="1654128982815600832">A ativar as ligações remotas neste computador…</translation>
 <translation id="170207782578677537">Falha ao registar o computador.</translation>
@@ -187,7 +186,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="5419418238395129586">Último acesso online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">O anfitrião foi desligado.</translation>
 <translation id="5510035215749041527">Desligar agora</translation>
-<translation id="5537725057119320332">Transmitir</translation>
 <translation id="5593560073513909978">O serviço está temporariamente indisponível. Tente novamente mais tarde.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">A este computador</translation>
@@ -199,7 +197,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="5841343754884244200">Opções de visualização</translation>
 <translation id="5843054235973879827">Porque é que isto é seguro?</translation>
 <translation id="5859141382851488196">Nova janela…</translation>
-<translation id="5885438903806970186">Online.</translation>
 <translation id="6011539954251327702">O Chromoting permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação Chromoting, que pode ser encontrada em <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opções do teclado</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -248,7 +245,6 @@ Para mais informações acerca da privacidade, consulte a Política de Privacida
 <translation id="7019153418965365059">Erro de anfitrião não reconhecido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistência Remota</translation>
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
-<translation id="712467900648340229">Falha na ligação ao Dispositivo de transmissão.</translation>
 <translation id="7144878232160441200">Repetir</translation>
 <translation id="7149517134817561223">Aplicação para emitir comandos para o anfitrião do Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="7215059001581613786">Introduza um PIN com seis ou mais dígitos.</translation>

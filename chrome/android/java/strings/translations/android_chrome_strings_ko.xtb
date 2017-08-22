@@ -103,6 +103,7 @@
 <translation id="1966710179511230534">로그인 세부정보를 업데이트하세요.</translation>
 <translation id="1974060860693918893">고급</translation>
 <translation id="1984937141057606926">타사 쿠키만 제외하고 허용</translation>
+<translation id="1989112275319619282">찾아보기</translation>
 <translation id="1993768208584545658"><ph name="SITE" />에서 페어링하려고 함</translation>
 <translation id="1994173015038366702">사이트 URL</translation>
 <translation id="200815880754187296">기타 앱 <ph name="KILOBYTES" />KB</translation>
@@ -375,6 +376,7 @@
 <translation id="4807963036345170158">데이터 절약 모드 사용 안함</translation>
 <translation id="4816465935029283692">데이터 유형</translation>
 <translation id="4837753911714442426">옵션을 열어 페이지 인쇄</translation>
+<translation id="4842092870884894799">비밀번호 생성 팝업 표시</translation>
 <translation id="4850886885716139402">보기</translation>
 <translation id="4860895144060829044">전화걸기</translation>
 <translation id="4881695831933465202">열기</translation>
@@ -443,6 +445,7 @@
 <translation id="5487521232677179737">인터넷 사용 기록 삭제</translation>
 <translation id="5487729733663684359">Chrome 업데이트는 더 이상 이 버전의 Android에서 지원되지 않습니다.</translation>
 <translation id="5490801865084500306">북마크 탭이 선택됨</translation>
+<translation id="550684401320795253">Chrome 업데이트 중...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" />님이 관리하는 계정입니다.</translation>
 <translation id="5514904542973294328">기기 관리자가 사용 중지함</translation>
 <translation id="5517095782334947753"><ph name="FROM_ACCOUNT" />에서 가져온 북마크, 방문 기록, 비밀번호 및 기타 설정이 있습니다.</translation>
@@ -482,6 +485,7 @@
 <translation id="5763382633136178763">시크릿 탭</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5777170031995031090">Google이 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
+<translation id="5779929835642192302">제안 사용 가능</translation>
 <translation id="5804241973901381774">권한</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{#시간 전}other{#시간 전}}</translation>
 <translation id="5817918615728894473">페어링</translation>
@@ -553,7 +557,6 @@
 <translation id="6437478888915024427">페이지 정보</translation>
 <translation id="6447842834002726250">쿠키</translation>
 <translation id="6448273550210938826">추천 검색어 및 추천 URL</translation>
-<translation id="6463070039183944536">추가 중...</translation>
 <translation id="6475951671322991020">동영상 다운로드</translation>
 <translation id="6482749332252372425">저장공간이 부족하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="6508332297647760142">피지컬 웹 공유</translation>
@@ -638,6 +641,7 @@
 <translation id="7189372733857464326">Google Play 서비스 업데이트 완료 대기 중</translation>
 <translation id="7189598951263744875">공유...</translation>
 <translation id="7191430249889272776">탭이 백그라운드에 열림</translation>
+<translation id="723171743924126238">이미지 선택</translation>
 <translation id="7243308994586599757">화면 하단에서 옵션 선택 가능</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" />이(가) 사용자 위치 정보를 사용하여 지역 검색결과 표시</translation>
 <translation id="7251326866581677552">일부 사이트에서 차단됨</translation>

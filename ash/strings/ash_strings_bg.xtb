@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">Методите на въвеждане са конфигурирани от администратора ви.</translation>
 <translation id="1747827819627189109">Екранната клавиатура е активирана</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">Асистент (зарежда се...)</translation>
 <translation id="1850504506766569011">Wi-Fi е изключен.</translation>
 <translation id="1856813161013948396">Отключвайте екрана с едно докосване на сензора за отпечатъци. Кликнете, за да конфигурирате.</translation>
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">Дублиране</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Лупа</translation>
+<translation id="4351433414020964307">Асистент се зарежда...</translation>
 <translation id="4378551569595875038">Установява се връзка...</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
 <translation id="4430019312045809116">Звук</translation>

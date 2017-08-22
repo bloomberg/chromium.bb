@@ -23,7 +23,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="1520828917794284345">デスクトップを画面に合わせてサイズ変更する</translation>
 <translation id="154040539590487450">リモート アクセス サービスを開始できませんでした。</translation>
 <translation id="1546934824884762070">予期しないエラーが発生しました。この問題をデベロッパーに報告してください。</translation>
-<translation id="1619813076098775562">キャスト デバイスへの接続を終了しました。</translation>
 <translation id="1643640058022401035">このページを閉じると、Chromoting セッションが終了します。</translation>
 <translation id="1654128982815600832">このパソコンのリモート接続を有効にしています...</translation>
 <translation id="170207782578677537">このパソコンを登録できませんでした。</translation>
@@ -187,7 +186,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="5419418238395129586">前回のインターネット接続日: <ph name="DATE" /></translation>
 <translation id="544077782045763683">ホストはシャットダウンしました。</translation>
 <translation id="5510035215749041527">切断</translation>
-<translation id="5537725057119320332">キャスト</translation>
 <translation id="5593560073513909978">このサービスは一時的に利用できなくなっています。しばらくしてからもう一度お試しください。</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">このパソコンへの接続</translation>
@@ -199,7 +197,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="5841343754884244200">表示オプション</translation>
 <translation id="5843054235973879827">この操作が安全な理由</translation>
 <translation id="5859141382851488196">新しいウィンドウ...</translation>
-<translation id="5885438903806970186">オンラインです。</translation>
 <translation id="6011539954251327702">Chromoting を使用すると、パソコンをウェブ経由で安全に共有できます。共有するには両方のユーザーが Chromoting アプリを実行している必要があります。このアプリは <ph name="URL" /> から入手できます。</translation>
 <translation id="6033507038939587647">キーボード オプション</translation>
 <translation id="6040143037577758943">閉じる</translation>
@@ -248,7 +245,6 @@ US英語以外のキーボードを使用しているリモートパソコンで
 <translation id="7019153418965365059">不明なホストエラー: <ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">リモート サポート</translation>
 <translation id="7038683108611689168">Chromoting の改善のため、使用統計情報とクラッシュ レポートの収集に協力する</translation>
-<translation id="712467900648340229">キャスト デバイスに接続できませんでした。</translation>
 <translation id="7144878232160441200">再読み込み</translation>
 <translation id="7149517134817561223">Chrome リモート デスクトップのホストにコマンドを発行するアプリケーション。</translation>
 <translation id="7215059001581613786">PIN は 6 桁以上で入力してください。</translation>

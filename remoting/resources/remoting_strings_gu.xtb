@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">ફિટ કરવા માટે ડેસ્કટૉપનું કદ બદલો</translation>
 <translation id="154040539590487450">રીમોટ ઍક્સેસ સેવા શરૂ કરવામાં નિષ્ફળ.</translation>
 <translation id="1546934824884762070">અનપેક્ષિત ભૂલ આવી. કૃપા કરીને વિકાસકર્તાઓને આ સમસ્યાની જાણ કરો.</translation>
-<translation id="1619813076098775562">Cast ઉપકરણ પર બંધ કનેક્શન છે.</translation>
 <translation id="1643640058022401035">આ પૃષ્ઠ છોડવું તમારા Chromoting સત્રને સમાપ્ત કરશે.</translation>
 <translation id="1654128982815600832">આ કમ્પ્યુટર માટે રીમોટ કનેક્શન્સ સક્ષમ કરવામાં આવી રહ્યાં છે...</translation>
 <translation id="170207782578677537">આ કમ્પ્યુટરની નોંધણી કરવામાં નિષ્ફળ.</translation>
@@ -80,6 +79,7 @@
 <translation id="2676780859508944670">કાર્ય કરી રહ્યું છે...</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">સૉફ્ટવેર અપડેટ્સ સુધારાઓ સામાન્ય રીતે આપમેળે થાય છે, પરંતુ કેટલાક કિસ્સાઓમાં ભાગ્યે જ નિષ્ફળ થાય છે. સૉફ્ટવેરને અપડેટ કરવામાં થોડી મિનિટથી વધુ સમય લાગતો નથી અને તમારું કમ્પ્યુટર રીમોટલી કનેક્ટ કરેલું હોય ત્યારે થઈ શકે છે.</translation>
+<translation id="2758123043070977469">પ્રમાણીકરણ કરવામાં એક સમસ્યા આવી હતી, કૃપા કરીને ફરી લૉગ ઇન કરો.</translation>
 <translation id="2803375539583399270">PIN દાખલ કરો</translation>
 <translation id="2841013758207633010">સમય</translation>
 <translation id="2851754573186462851">Chromium ઍપ્લિકેશન સ્ટ્રીમિંગ</translation>
@@ -187,7 +187,6 @@
 <translation id="5419418238395129586">છેલ્લે ઑનલાઇન: <ph name="DATE" /></translation>
 <translation id="544077782045763683">હોસ્ટ શટ ડાઉન થયું છે.</translation>
 <translation id="5510035215749041527">હવે ડિસ્કનેક્ટ કરો</translation>
-<translation id="5537725057119320332">કાસ્ટ કરો</translation>
 <translation id="5593560073513909978">અમારી સેવા અસ્થાયી રીતે અનુપલબ્ધ છે. કૃપા કરીને પછીથી ફરી પ્રયાસ કરો.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">આ કમ્પ્યુટર પર</translation>
@@ -196,10 +195,10 @@
 <translation id="5708869785009007625">તમારું ડેસ્કટૉપ હાલમાં <ph name="USER" /> સાથે શેર કરવામાં આવી રહ્યું છે.</translation>
 <translation id="5773590752998175013">જોડી કર્યાની તારીખ</translation>
 <translation id="579702532610384533">ફરીથી કનેક્ટ કરો</translation>
+<translation id="5810269635982033450">સ્ક્રીન એ ટ્રૅકપૅડના જેવું કાર્ય કરે છે</translation>
 <translation id="5841343754884244200">પ્રદર્શનનાં વિકલ્પો</translation>
 <translation id="5843054235973879827">આ કેમ સલામત છે?</translation>
 <translation id="5859141382851488196">નવી વિંડો…</translation>
-<translation id="5885438903806970186">ઓનલાઇન.</translation>
 <translation id="6011539954251327702">Chromoting તમને વેબ પર સુરક્ષિત રીતે તમારા કમ્પ્યુટરને શેર કરવાની પરવાનગી આપે છે. બન્ને વપરાશકર્તાઓ Chromoting એપ્લિકેશનનો ઉપયોગ કરતા હોવા આવશ્યક છે, જે <ph name="URL" /> ખાતેથી મળી શકે છે.</translation>
 <translation id="6033507038939587647">કીબોર્ડનાં વિકલ્પો</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
@@ -248,7 +247,7 @@
 <translation id="7019153418965365059">ન ઓળખાયેલ હોસ્ટ ભૂલ: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">રીમોટ સહાય</translation>
 <translation id="7038683108611689168">અમને ઉપયોગનાં આંકડા અને ક્રેશ રિપોર્ટ્સ એકત્રિત કરવાની મંજૂરી આપીને Chromoting માં સુધારો કરવામાં અમને સહાય કરો.</translation>
-<translation id="712467900648340229">Cast ઉપકરણથી કનેક્ટ થવામાં નિષ્ફળ થયાં.</translation>
+<translation id="7067321367069083429">સ્ક્રીન એ ટચ સ્ક્રીનના જેવું કાર્ય કરે છે</translation>
 <translation id="7144878232160441200">ફરી પ્રયાસ કરો</translation>
 <translation id="7149517134817561223">Chrome રીમોટ ડેસ્કટૉપ હોસ્ટને આદેશો રજૂ કરવા માટેની ઍપ્લિકેશન.</translation>
 <translation id="7215059001581613786">કૃપા કરીને છ અથવા વધુ અંકોવાળો PIN દાખલ કરો.</translation>

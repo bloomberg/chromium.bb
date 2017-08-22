@@ -1361,7 +1361,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2966449113954629791">ייתכן שהשתמשת בכל מכסת הנתונים לנייד שלך. בקר בפורטל ההפעלה של <ph name="NAME" /> לרכישת נתונים נוספים.</translation>
 <translation id="2966598748518102999">‏שפר את החיפוש הקולי על ידי שליחת הצליל "Ok Google" והקלטה של מספר שניות לפני כן, אל Google.</translation>
 <translation id="2966937470348689686">‏ניהול העדפות ל-Android</translation>
-<translation id="2967544384642772068">חסל</translation>
 <translation id="2971033837577180453">‏&lt;span&gt;מזהה:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">הפחתת בהירות</translation>
 <translation id="2972557485845626008">קושחה</translation>
@@ -1511,7 +1510,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3165390001037658081">ייתכן שספקים מסוימים חוסמים את התכונה הזו.</translation>
 <translation id="3166571619128686629">‏לחץ או אמור "Ok Google" כדי להתחיל חיפוש קולי</translation>
 <translation id="3170072451822350649">ניתן גם לדלג על הכניסה ו<ph name="LINK_START" />לגלוש כאורח<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">השאר את המיקוד של מגדיל התצוגה במרכז המסך</translation>
 <translation id="3177048931975664371">לחץ כדי להסתיר את הסיסמה</translation>
 <translation id="3177909033752230686">שפת הדף:</translation>
 <translation id="3180365125572747493">הזן סיסמה כדי להצפין את קובץ האישור הזה.</translation>
@@ -2049,8 +2047,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 האם תרצה להפעיל את <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;אחורה</translation>
 <translation id="3943857333388298514">הדבק</translation>
-<translation id="3944266449990965865">כל המסך</translation>
-<translation id="3946471364541867667">‏הגדרות TalkBack</translation>
 <translation id="3947376313153737208">ללא בחירה</translation>
 <translation id="3948116654032448504">בצע &amp;חיפוש תמונה ב-<ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">‏ברכות על הצטרפותך אל Hangouts Meet!</translation>
@@ -2357,7 +2353,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4450974146388585462">אבחן</translation>
 <translation id="4452426408005428395">לא חשוב</translation>
 <translation id="4454939697743986778">אישור זה הותקן על ידי מנהל המערכת שלך.</translation>
-<translation id="445891990714234385">‏הגדרות ChromeVox</translation>
 <translation id="445923051607553918">‏הצטרף לרשת Wi-Fi</translation>
 <translation id="4462159676511157176">שרתי שמות מותאמים אישית</translation>
 <translation id="4467100756425880649">‏הגלריה של חנות האינטרנט של Chrome</translation>
@@ -2655,7 +2650,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4910673011243110136">רשתות פרטיות</translation>
 <translation id="4911714727432509308">לאף תוסף לא הוקצו מקשי קיצור.</translation>
 <translation id="4912643508233590958">הוצאות לא פעילות ממצב שינה</translation>
-<translation id="4916679969857390442">עדשה</translation>
 <translation id="491691592645955587">החלף לדפדפן בטוח</translation>
 <translation id="4917385247580444890">חזק</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> רוצה לתקשר עם התוסף"<ph name="EXTENSION_NAME" />"</translation>
@@ -2720,7 +2714,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5011739343823725107">הפעלת הקצה העורפי של הסנכרון נכשלה</translation>
 <translation id="5015344424288992913">פותר פרוקסי...</translation>
 <translation id="5015762597229892204">בחר יישום של מנהל התקן למדפסת</translation>
-<translation id="5016049845330225051">לחצן למחיקת הטקסט מתיבת החיפוש</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">נהל דפים לפתיחה בהפעלה</translation>
 <translation id="5023943178135355362">גלילה פשוטה <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
@@ -3478,7 +3471,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6151771661215463137">הקובץ כבר קיים בתיקיית ההורדות שלך.</translation>
 <translation id="615436196126345398">פרוטוקול</translation>
 <translation id="6154697846084421647">מחובר כעת</translation>
-<translation id="6156262341071374681">הרחב לכל האפליקציות</translation>
 <translation id="6156323911414505561">הצג את סרגל הסימניות</translation>
 <translation id="6156863943908443225">מטמון סקריפטים</translation>
 <translation id="6156960295318603523">הגדרות שפה</translation>
@@ -4045,7 +4037,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6996946928646015361">המודול המאובטח מושבת או חסר.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> תיקיות נבחרו</translation>
 <translation id="6998793565256476099">רישום של מכשיר לשיחות ועידה בטלפון</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{הדף הבא הפסיק להגיב. תוכל להמתין עד שיגיב, או להסיר אותו.}two{הדפים הבאים הפסיקו להגיב. תוכל להמתין עד שיגיבו, או להסירם.}many{הדפים הבאים הפסיקו להגיב. תוכל להמתין עד שיגיבו, או להסירם.}other{הדפים הבאים הפסיקו להגיב. תוכל להמתין עד שיגיבו, או להסירם.}}</translation>
 <translation id="7002055706763150362">‏כדי להגדיר את ‏Smart Lock for Chromebook‏, Google צריכה לאמת את הזהות שלך - כדי להתחיל הזן את הסיסמה.</translation>
 <translation id="7002454948392136538">בחר את המנהל עבור משתמש בפיקוח זה</translation>
 <translation id="7003257528951459794">תדר:</translation>
@@ -4869,7 +4860,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="8260864402787962391">עכבר</translation>
 <translation id="8261378640211443080">התוסף הזה לא רשום ב<ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> וייתכן שנוסף ללא ידיעתך.</translation>
 <translation id="8261387128019234107">הוסף חשבון עבור <ph name="PROFILE_NAME" /></translation>
-<translation id="8261506727792406068">מחק</translation>
+<translation id="8261506727792406068">מחיקה</translation>
 <translation id="8261580862248730866">חריגי מצלמה</translation>
 <translation id="8261673729476082470">‏מגבה <ph name="FILE_COUNT" /> תמונות ב-<ph name="BEGIN_LINK" />Google Drive<ph name="END_LINK" /></translation>
 <translation id="826246685091802258">‏<ph name="BAD_FLAG" /> לא מוטמע ב-build הזה.</translation>

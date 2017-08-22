@@ -23,7 +23,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="1520828917794284345">Ubah saiz desktop supaya sesuai</translation>
 <translation id="154040539590487450">Gagal memulakan perkhidmatan akses jauh.</translation>
 <translation id="1546934824884762070">Ralat yang tidak dijangka telah berlaku. Sila laporkan masalah ini kepada pembangun.</translation>
-<translation id="1619813076098775562">Sambungan ke peranti Cast ditutup.</translation>
 <translation id="1643640058022401035">Tindakan meninggalkan halaman ini akan menamatkan sesi Chromoting anda.</translation>
 <translation id="1654128982815600832">Mendayakan sambungan jauh untuk komputer ini…</translation>
 <translation id="170207782578677537">Gagal mendaftarkan komputer ini.</translation>
@@ -80,6 +79,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="2676780859508944670">Mengusahakan...</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Kemas kini perisian biasanya berlaku secara automatik, tetapi boleh gagal dalam beberapa kes yang jarang berlaku. Proses mengemas kini perisian akan mengambil masa tidak lebih daripada beberapa minit dan boleh dilakukan semasa disambungkan ke komputer anda dari jauh.</translation>
+<translation id="2758123043070977469">Terdapat masalah semasa mengesahkan, sila log masuk semula.</translation>
 <translation id="2803375539583399270">Masukkan PIN</translation>
 <translation id="2841013758207633010">Masa</translation>
 <translation id="2851754573186462851">Penstriman Apl Chromium</translation>
@@ -187,7 +187,6 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="5419418238395129586">Terakhir dalam talian: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Hos telah ditutup.</translation>
 <translation id="5510035215749041527">Putuskan sambungan sekarang</translation>
-<translation id="5537725057119320332">Cast</translation>
 <translation id="5593560073513909978">Perkhidmatan ini tergendala buat sementara waktu. Sila cuba lagi kemudian.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Kepada komputer ini</translation>
@@ -196,10 +195,10 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="5708869785009007625">Desktop anda sedang dikongsi dengan <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Tarikh berpasangan</translation>
 <translation id="579702532610384533">Sambung semula</translation>
+<translation id="5810269635982033450">Skrin bertindak seperti pad jejak</translation>
 <translation id="5841343754884244200">Pilihan paparan</translation>
 <translation id="5843054235973879827">Mengapa dianggap selamat?</translation>
 <translation id="5859141382851488196">Tetingkap baharu…</translation>
-<translation id="5885438903806970186">Dalam talian.</translation>
 <translation id="6011539954251327702">Chromoting membolehkan anda berkongsi komputer anda dengan selamat melalui Web. Kedua-dua pengguna mesti menjalankan apl Chromoting, yang boleh didapati di <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Pilihan papan kekunci</translation>
 <translation id="6040143037577758943">Tutup</translation>
@@ -248,7 +247,7 @@ Untuk mendapatkan maklumat tentang privasi, sila lihat Dasar Privasi Google (htt
 <translation id="7019153418965365059">Ralat hos tak dikenali: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Bantuan Jauh</translation>
 <translation id="7038683108611689168">Bantu kami mempertingkatkan Chromoting dengan membenarkan kami mengumpulkan perangkaan penggunaan dan laporan keranapan.</translation>
-<translation id="712467900648340229">Gagal menyambung ke peranti Cast.</translation>
+<translation id="7067321367069083429">Skrin bertindak seperti skrin sentuh</translation>
 <translation id="7144878232160441200">Cuba semula</translation>
 <translation id="7149517134817561223">Aplikasi untuk mengeluarkan perintah kepada hos desktop jauh Chrome.</translation>
 <translation id="7215059001581613786">Sila masukkan PIN yang mengandungi enam atau lebih angka.</translation>

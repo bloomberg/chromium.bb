@@ -1364,7 +1364,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2966449113954629791">Il semble que vous ayez utilisé l'intégralité de votre quota de données mobiles. Accédez au portail d'activation <ph name="NAME" /> pour acheter des données supplémentaires.</translation>
 <translation id="2966598748518102999">Améliorer la recherche vocale en envoyant à Google l'enregistrement "Ok Google", et les quelques secondes précédentes</translation>
 <translation id="2966937470348689686">Gérer les préférences Android</translation>
-<translation id="2967544384642772068">Fermer</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID :&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">baisser la luminosité</translation>
 <translation id="2972557485845626008">Micrologiciel</translation>
@@ -1515,7 +1514,6 @@ Pour vérifier ce point et en savoir plus, veuillez consulter votre compte de me
 <translation id="3165390001037658081">Certains opérateurs peuvent bloquer cette fonctionnalité.</translation>
 <translation id="3166571619128686629">Cliquer, ou dire "Ok Google", pour lancer une recherche vocale</translation>
 <translation id="3170072451822350649">Vous pouvez également ignorer l'étape de connexion et <ph name="LINK_START" />naviguer en tant qu'invité<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Maintenir la loupe appliquée au centre de l'écran</translation>
 <translation id="3177048931975664371">Cliquer pour masquer le mot de passe</translation>
 <translation id="3177909033752230686">Langue de la page :</translation>
 <translation id="3180365125572747493">Saisissez un mot de passe pour chiffrer ce fichier de certificat.</translation>
@@ -2053,8 +2051,6 @@ au moyen de <ph name="CONTROL_PANEL_APPLET_NAME" /> dans le panneau de configura
 Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="3943582379552582368">R&amp;etour</translation>
 <translation id="3943857333388298514">Coller</translation>
-<translation id="3944266449990965865">Plein écran</translation>
-<translation id="3946471364541867667">Paramètres TalkBack</translation>
 <translation id="3947376313153737208">Aucune sélection</translation>
 <translation id="3948116654032448504">&amp;Rechercher une image avec <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Bienvenue dans Hangouts Meet !</translation>
@@ -2361,7 +2357,6 @@ Pour poursuivre l'exploration, veuillez appuyer sur n'importe quelle touche.</tr
 <translation id="4450974146388585462">Analyser</translation>
 <translation id="4452426408005428395">Ignorer</translation>
 <translation id="4454939697743986778">Ce certificat a été installé par votre administrateur système.</translation>
-<translation id="445891990714234385">Paramètres ChromeVox</translation>
 <translation id="445923051607553918">Se connecter à un réseau Wi-Fi</translation>
 <translation id="4462159676511157176">Serveurs de noms personnalisés</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
@@ -2658,7 +2653,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="4910673011243110136">Réseaux privés</translation>
 <translation id="4911714727432509308">Aucune extension n'est associée à des raccourcis clavier</translation>
 <translation id="4912643508233590958">Sorties de veille</translation>
-<translation id="4916679969857390442">Loupe</translation>
 <translation id="491691592645955587">Passez à un navigateur sécurisé</translation>
 <translation id="4917385247580444890">Très bon</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> souhaite communiquer avec l'extension "<ph name="EXTENSION_NAME" />".</translation>
@@ -2723,7 +2717,6 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="5011739343823725107">Échec du démarrage du système de synchronisation</translation>
 <translation id="5015344424288992913">Résolution du proxy...</translation>
 <translation id="5015762597229892204">Sélectionner une application de pilote d'imprimante</translation>
-<translation id="5016049845330225051">Bouton pour effacer le texte du champ de recherche</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Gérer les pages de démarrage</translation>
 <translation id="5023943178135355362">Défilement naturel <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
@@ -3481,7 +3474,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6151771661215463137">Ce fichier existe déjà dans votre dossier de téléchargements.</translation>
 <translation id="615436196126345398">Protocole</translation>
 <translation id="6154697846084421647">Actuellement connecté</translation>
-<translation id="6156262341071374681">Développer pour afficher toutes les applications</translation>
 <translation id="6156323911414505561">Afficher la barre de favoris</translation>
 <translation id="6156863943908443225">Cache des scripts</translation>
 <translation id="6156960295318603523">Paramètres linguistiques</translation>
@@ -4048,7 +4040,6 @@ N'utilisez cette fonctionnalité qu'avec des comptes fiables.</translation>
 <translation id="6996946928646015361">Le module sécurisé est désactivé ou absent.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> dossiers sélectionnés</translation>
 <translation id="6998793565256476099">Enregistrer un appareil pour la visioconférence</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{La page suivante ne répond plus. Vous pouvez attendre qu'elle soit de nouveau accessible ou la fermer.}one{La page suivante ne répond plus. Vous pouvez attendre qu'elle soit de nouveau accessible ou la fermer.}other{Les pages suivantes ne répondent plus. Vous pouvez attendre qu'elles soient de nouveau accessibles ou les fermer.}}</translation>
 <translation id="7002055706763150362">Pour configurer Smart Lock pour Chromebook, nous devons vérifier qu'il s'agit bien de vous. Pour commencer, saisissez votre mot de passe.</translation>
 <translation id="7002454948392136538">Sélectionner le gestionnaire de cet utilisateur supervisé</translation>
 <translation id="7003257528951459794">Fréquence :</translation>

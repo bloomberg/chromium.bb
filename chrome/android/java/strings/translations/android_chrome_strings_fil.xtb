@@ -103,6 +103,7 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="1966710179511230534">Paki-update ang iyong mga detalye sa pag-sign in.</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1984937141057606926">Pinapayagan, maliban ang third-party</translation>
+<translation id="1989112275319619282">Mag-browse</translation>
 <translation id="1993768208584545658">Gustong makipagpares ng <ph name="SITE" /></translation>
 <translation id="1994173015038366702">URL ng site</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB na iba pang mga app</translation>
@@ -375,6 +376,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4807963036345170158">Naka-off ang Data Saver</translation>
 <translation id="4816465935029283692">Mga uri ng data</translation>
 <translation id="4837753911714442426">Buksan ang mga opsyon sa pag-print ng page</translation>
+<translation id="4842092870884894799">Ipinapakita ang popup para sa pagbuo ng password</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4860895144060829044">Tawagan</translation>
 <translation id="4881695831933465202">Buksan</translation>
@@ -443,6 +445,7 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="5487521232677179737">I-clear ang data</translation>
 <translation id="5487729733663684359">Hindi na sinusuportahan ang mga update sa Chrome para sa bersyong ito ng Android.</translation>
 <translation id="5490801865084500306">Pinili ang tab ng mga bookmark</translation>
+<translation id="550684401320795253">Ina-update ang Chrome...</translation>
 <translation id="5512137114520586844">Pinapamahalaan ang account na ito ng <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Na-disable ng administrator ng device na ito</translation>
 <translation id="5517095782334947753">Mayroon kang mga bookmark, history, password at iba pang mga setting mula sa <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +485,7 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="5763382633136178763">Mga tab na incognito</translation>
 <translation id="5765780083710877561">Paglalarawan:</translation>
 <translation id="5777170031995031090">Kontrolin kung paano ginagamit ng Google ang iyong history ng pagba-browse upang i-personalize ang Search, mga ad at iba pang mga serbisyo ng Google.</translation>
+<translation id="5779929835642192302">May available na mga suhestyon</translation>
 <translation id="5804241973901381774">Mga Pahintulot</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# oras ang nakalipas}one{# oras ang nakalipas}other{# na oras ang nakalipas}}</translation>
 <translation id="5817918615728894473">Ipares</translation>
@@ -553,7 +557,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="6437478888915024427">Impormasyon ng page</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Mga suhestyon sa paghahanap at URL</translation>
-<translation id="6463070039183944536">Idinaragdag…</translation>
 <translation id="6475951671322991020">I-download ang video</translation>
 <translation id="6482749332252372425">Hindi na-download ang <ph name="FILE_NAME" /> dahil kulang ang espasyo sa storage.</translation>
 <translation id="6508332297647760142">Pagbabahagi sa Pisikal na Web</translation>
@@ -638,6 +641,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7189372733857464326">Hinihintay ang Mga Serbisyo ng Google Play na matapos sa pag-update</translation>
 <translation id="7189598951263744875">Ibahagi...</translation>
 <translation id="7191430249889272776">Binuksan ang tab sa background.</translation>
+<translation id="723171743924126238">Pumili ng mga larawan</translation>
 <translation id="7243308994586599757">May mga opsyon malapit sa ibaba ng screen</translation>
 <translation id="7244362611678346589">Ginagamit ng <ph name="SEARCH_ENGINE_URL" /> ang iyong lokasyon upang magpakita ng mga lokal na resulta ng paghahanap</translation>
 <translation id="7251326866581677552">Naka-block sa ilang site</translation>
@@ -744,7 +748,7 @@ Maaaring mayroong ibang mga uri ng history ng pagba-browse ang iyong Google acco
 <translation id="8223946939421658889">I-clear ang data sa</translation>
 <translation id="8250920743982581267">Mga Dokumento</translation>
 <translation id="8260126382462817229">Subukang mag-sign in muli</translation>
-<translation id="8261506727792406068">Burahin</translation>
+<translation id="8261506727792406068">I-delete</translation>
 <translation id="8275818695183729150">Payagan (para sa mga paghahanap sa address bar)</translation>
 <translation id="8283853025636624853">Sini-sync sa <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Mga karaniwang tab</translation>

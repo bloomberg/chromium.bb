@@ -950,7 +950,7 @@
       Hvis verdien for innstillingen er 0, brukes standard bufferstørrelse, og brukeren kan ikke endre den.
 
       Hvis innstillingen ikke er angitt, brukes standard bufferstørrelse, og brukeren kan overstyre den med «--media-cache-size»-flagget.</translation>
-<translation id="4508686775017063528">Hvis denne retningslinjen er angitt som Sann eller ikke er angitt, er <ph name="PRODUCT_NAME" /> slått på, og brukere kan starte den fra appmenyen, kontekstuelle menyer på siden, mediekontroller på Cast-kompatible nettsteder og (hvis det vises) ikonet for Cast-verktøylinjen.
+<translation id="4508686775017063528">Hvis denne retningslinjen er satt til Sann eller ikke er angitt, er <ph name="PRODUCT_NAME" /> slått på, og brukere kan starte den fra appmenyen, kontekstuelle menyer på siden, mediekontroller på Cast-kompatible nettsteder og (hvis det vises) ikonet for Cast-verktøylinjen.
 
           Hvis denne retningslinjen er satt til Usann, er <ph name="PRODUCT_NAME" /> slått av.</translation>
 <translation id="4518251772179446575">Spør hver gang et nettsted ønsker å spore brukernes fysiske plassering</translation>
@@ -1864,7 +1864,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
-<translation id="7976157349247117979">Navnet til <ph name="PRODUCT_NAME" />-destinasjonen</translation>
+<translation id="7976157349247117979">Navnet på <ph name="PRODUCT_NAME" />-destinasjonen</translation>
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>

@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 सेकंद}one{# सेकंद}other{# सेकंद}}</translation>
 <translation id="4971687151119236543">मीडिया मागील ट्रॅक</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">सर्चबॉक्समधील मजकूर साफ करण्‍‍‍‍याचे बटण</translation>
 <translation id="5046499563572181734">येथे टॅप करा</translation>
 <translation id="5076340679995252485">&amp;पेस्ट करा</translation>
 <translation id="5120799197269191491">शोध+<ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">जागा</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6156262341071374681">सर्व अ‍ॅप्सवर विस्तृत करा</translation>
 <translation id="6264365405983206840">&amp;सर्व निवडा</translation>
 <translation id="6351032674660237738">अॅप सूचना</translation>
 <translation id="6364916375976753737">डावीकडे स्क्रोल करा</translation>

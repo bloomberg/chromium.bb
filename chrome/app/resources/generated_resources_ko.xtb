@@ -1366,7 +1366,6 @@
 <translation id="2966449113954629791">할당되 모바일 데이터를 모두 사용한 것 같습니다. 추가 데이터를 구입하려면 <ph name="NAME" /> 활성화 포털을 방문하세요.</translation>
 <translation id="2966598748518102999">Google에 'Ok Google'과 몇 초 전의 음성 정보를 전송하여 음성 검색 기능 향상</translation>
 <translation id="2966937470348689686">Android 환경설정 관리</translation>
-<translation id="2967544384642772068">종료</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">어둡게</translation>
 <translation id="2972557485845626008">펌웨어</translation>
@@ -1517,7 +1516,6 @@
 <translation id="3165390001037658081">일부 이동통신사는 이 기능을 차단할 수도 있습니다.</translation>
 <translation id="3166571619128686629">음성 검색을 시작하려면 클릭하거나 "Ok, Google"이라고 말하세요.</translation>
 <translation id="3170072451822350649">로그인을 건너뛰고 <ph name="LINK_START" />손님으로 로그인<ph name="LINK_END" />할 수도 있습니다.</translation>
-<translation id="3170544058711792988">돋보기가 화면 중앙에 오도록 유지</translation>
 <translation id="3177048931975664371">비밀번호를 숨기려면 클릭하세요.</translation>
 <translation id="3177909033752230686">페이지 언어:</translation>
 <translation id="3180365125572747493">이 인증서 파일을 암호화하려면 비밀번호를 입력하세요.</translation>
@@ -2055,8 +2053,6 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" />을(를) 시작하시겠습니까?</translation>
 <translation id="3943582379552582368">뒤로(&amp;B)</translation>
 <translation id="3943857333388298514">붙여넣기</translation>
-<translation id="3944266449990965865">전체 화면</translation>
-<translation id="3946471364541867667">음성 안내 지원 설정</translation>
 <translation id="3947376313153737208">선택사항 없음</translation>
 <translation id="3948116654032448504"><ph name="SEARCH_ENGINE" />에서 이미지 검색(&amp;S)</translation>
 <translation id="3949371968208420848">행아웃 Meet에 오신 것을 환영합니다</translation>
@@ -2362,7 +2358,6 @@
 <translation id="4450974146388585462">진단</translation>
 <translation id="4452426408005428395">닫기</translation>
 <translation id="4454939697743986778">이 인증서는 시스템 관리자가 설치했습니다.</translation>
-<translation id="445891990714234385">ChromeVox 설정</translation>
 <translation id="445923051607553918">WiFi 네트워크 연결</translation>
 <translation id="4462159676511157176">맞춤 이름 서버</translation>
 <translation id="4467100756425880649">Chrome 웹 스토어 갤러리</translation>
@@ -2660,7 +2655,6 @@
 <translation id="4910673011243110136">사설 네트워크</translation>
 <translation id="4911714727432509308">단축키가 할당된 확장 프로그램이 없습니다.</translation>
 <translation id="4912643508233590958">유휴 상태 해제</translation>
-<translation id="4916679969857390442">렌즈</translation>
 <translation id="491691592645955587">안전한 브라우저로 전환</translation>
 <translation id="4917385247580444890">강력</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" />에서 '<ph name="EXTENSION_NAME" />' 확장 프로그램과 통신하려고 합니다.</translation>
@@ -2725,7 +2719,6 @@
 <translation id="5011739343823725107">동기화 백엔드를 시작하지 못했습니다.</translation>
 <translation id="5015344424288992913">프록시 알아내는 중...</translation>
 <translation id="5015762597229892204">프린터 드라이버 앱 선택</translation>
-<translation id="5016049845330225051">검색창 텍스트 삭제 버튼</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">시작 페이지에서 관리</translation>
 <translation id="5023943178135355362">호주식 스크롤 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
@@ -3482,7 +3475,6 @@
 <translation id="6151771661215463137">파일이 이미 다운로드 폴더에 있습니다.</translation>
 <translation id="615436196126345398">프로토콜</translation>
 <translation id="6154697846084421647">현재 로그인되어 있음</translation>
-<translation id="6156262341071374681">펼쳐서 모든 앱 보기</translation>
 <translation id="6156323911414505561">북마크바 표시</translation>
 <translation id="6156863943908443225">스크립트 캐시</translation>
 <translation id="6156960295318603523">언어 설정</translation>
@@ -4049,7 +4041,6 @@
 <translation id="6996946928646015361">보안 모듈이 사용 중지되었거나 없습니다.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />개의 폴더가 선택됨</translation>
 <translation id="6998793565256476099">화상회의용 기기 등록</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{다음 페이지가 응답하지 않습니다. 페이지가 응답할 때까지 기다리거나 종료할 수 있습니다.}other{다음 페이지가 응답하지 않습니다. 페이지가 응답할 때까지 기다리거나 종료할 수 있습니다.}}</translation>
 <translation id="7002055706763150362">Chromebook용 Smart Lock을 설정하려면 본인 확인이 필요합니다. 시작하려면 비밀번호를 입력하세요.</translation>
 <translation id="7002454948392136538">이 관리 대상 사용자에 대한 관리자 선택</translation>
 <translation id="7003257528951459794">주파수:</translation>

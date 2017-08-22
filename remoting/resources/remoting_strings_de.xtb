@@ -23,7 +23,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="1520828917794284345">Desktop-Größe anpassen</translation>
 <translation id="154040539590487450">Fehler beim Starten des Remote-Zugriffsdienstes</translation>
 <translation id="1546934824884762070">Ein unerwarteter Fehler ist aufgetreten. Bitte melden Sie dieses Problem den Entwicklern.</translation>
-<translation id="1619813076098775562">Die Verbindung zum Übertragungsgerät wurde beendet.</translation>
 <translation id="1643640058022401035">Wenn Sie diese Seite verlassen, wird Ihre Chromoting-Sitzung beendet.</translation>
 <translation id="1654128982815600832">Remote-Verbindungen für diesen Computer werden aktiviert…</translation>
 <translation id="170207782578677537">Fehler beim Registrieren dieses Computers</translation>
@@ -187,7 +186,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="5419418238395129586">Zuletzt online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Der Host wurde heruntergefahren.</translation>
 <translation id="5510035215749041527">Verbindung jetzt aufheben</translation>
-<translation id="5537725057119320332">Übertragen</translation>
 <translation id="5593560073513909978">Der Dienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Zu diesem Computer</translation>
@@ -199,7 +197,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="5841343754884244200">Anzeigeoptionen</translation>
 <translation id="5843054235973879827">Warum ist dieser Vorgang sicher?</translation>
 <translation id="5859141382851488196">Neues Fenster...</translation>
-<translation id="5885438903806970186">Online</translation>
 <translation id="6011539954251327702">Chromoting ermöglicht die sichere Freigabe Ihres Computers über das Internet. Beide Nutzer müssen dazu die Chromoting App ausführen. Diese App finden Sie unter <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Tastaturoptionen</translation>
 <translation id="6040143037577758943">Schließen</translation>
@@ -248,7 +245,6 @@ Informationen zum Datenschutz finden Sie in der Google-Datenschutzerklärung (ht
 <translation id="7019153418965365059">Nicht erkannter Hostfehler: <ph name="HOST_OFFLINE_REASON" /></translation>
 <translation id="701976023053394610">Remote-Unterstützung</translation>
 <translation id="7038683108611689168">Helfen Sie uns bei der Verbesserung von Chromoting, indem Sie zulassen, dass wir Nutzungsstatistiken und Absturzberichte erfassen.</translation>
-<translation id="712467900648340229">Die Verbindung zum Übertragungsgerät konnte nicht hergestellt werden.</translation>
 <translation id="7144878232160441200">Wiederholen</translation>
 <translation id="7149517134817561223">Anwendung, die Befehle an den Host von Chrome Remote Desktop weitergibt</translation>
 <translation id="7215059001581613786">Die PIN muss aus mindestens 6 Ziffern bestehen.</translation>

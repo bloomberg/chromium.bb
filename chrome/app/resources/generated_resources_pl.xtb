@@ -1364,7 +1364,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2966449113954629791">Możliwe, że wykorzystałeś już limit transferu danych przez sieć komórkową. Odwiedź portal aktywacji <ph name="NAME" />, by zwiększyć limit.</translation>
 <translation id="2966598748518102999">Zwiększ jakość wyszukiwania głosowego, przesyłając do Google nagranie słów „OK, Google” i kilku wcześniejszych sekund.</translation>
 <translation id="2966937470348689686">Zarządzaj ustawieniami Androida</translation>
-<translation id="2967544384642772068">Zakończ</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">zmniejsz jasność</translation>
 <translation id="2972557485845626008">Oprogramowanie układowe</translation>
@@ -1515,7 +1514,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
 <translation id="3165390001037658081">Niektórzy operatorzy mogą blokować tę funkcję.</translation>
 <translation id="3166571619128686629">Kliknij lub powiedz „OK, Google”, by rozpocząć wyszukiwanie głosowe</translation>
 <translation id="3170072451822350649">Możesz też pominąć logowanie i <ph name="LINK_START" />przeglądać internet jako gość<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Utrzymuj ostrość lupy na środku ekranu</translation>
 <translation id="3177048931975664371">Kliknij, aby ukryć hasło</translation>
 <translation id="3177909033752230686">Język strony:</translation>
 <translation id="3180365125572747493">Wprowadź hasło, aby zaszyfrować ten plik certyfikatu.</translation>
@@ -2053,8 +2051,6 @@ Dalsze instrukcje znajdziesz w e-mailu przesłanym na adres <ph name="ACCOUNT_EM
   Uruchomić aplet <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Wstecz</translation>
 <translation id="3943857333388298514">Wklej</translation>
-<translation id="3944266449990965865">Cały ekran</translation>
-<translation id="3946471364541867667">Ustawienia TalkBack</translation>
 <translation id="3947376313153737208">Nie wybrano</translation>
 <translation id="3948116654032448504">&amp;Szukaj obrazu w <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Witamy w Hangouts Meet</translation>
@@ -2361,7 +2357,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4450974146388585462">Diagnozuj</translation>
 <translation id="4452426408005428395">Anuluj</translation>
 <translation id="4454939697743986778">Ten certyfikat został zainstalowany przez administratora systemu.</translation>
-<translation id="445891990714234385">Ustawienia ChromeVox</translation>
 <translation id="445923051607553918">Połącz się z siecią Wi-Fi</translation>
 <translation id="4462159676511157176">Własne serwery nazw</translation>
 <translation id="4467100756425880649">Galeria Chrome Web Store</translation>
@@ -2656,7 +2651,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="4910673011243110136">Sieci prywatne</translation>
 <translation id="4911714727432509308">Brak skrótów klawiszowych przypisanych do rozszerzeń.</translation>
 <translation id="4912643508233590958">Wyjścia z nieaktywności</translation>
-<translation id="4916679969857390442">Lupa</translation>
 <translation id="491691592645955587">Przełącz się na bezpieczną przeglądarkę</translation>
 <translation id="4917385247580444890">Silny</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> chce nawiązać połączenie z rozszerzeniem „<ph name="EXTENSION_NAME" />”</translation>
@@ -2721,7 +2715,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="5011739343823725107">Niepowodzenie uruchamiania procesów obsługi synchronizacji</translation>
 <translation id="5015344424288992913">Łączenie z proxy...</translation>
 <translation id="5015762597229892204">Wybierz aplikację sterownika drukarki</translation>
-<translation id="5016049845330225051">Przycisk czyszczenia pola wyszukiwania</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Zarządzaj stronami początkowymi</translation>
 <translation id="5023943178135355362">Przewijanie australijskie <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
@@ -3479,7 +3472,6 @@ Naciśnij dowolny klawisz, by kontynuować przeglądanie.</translation>
 <translation id="6151771661215463137">Plik już istnieje w folderze pobierania.</translation>
 <translation id="615436196126345398">Protokół</translation>
 <translation id="6154697846084421647">Zalogowano</translation>
-<translation id="6156262341071374681">Rozwiń, by wyświetlić wszystkie aplikacje</translation>
 <translation id="6156323911414505561">Pokaż pasek zakładek</translation>
 <translation id="6156863943908443225">Pamięć podręczna skryptów</translation>
 <translation id="6156960295318603523">Ustawienia języka</translation>
@@ -4046,7 +4038,6 @@ Używaj jej tylko w przypadku kont, którym ufasz.</translation>
 <translation id="6996946928646015361">Brak modułu zabezpieczeń lub jest on wyłączony.</translation>
 <translation id="6998711733709403587">Wybrano <ph name="SELCTED_FOLDERS_COUNT" /> foldery(ów)</translation>
 <translation id="6998793565256476099">Zarejestruj urządzenie na potrzeby wideokonferencji</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Ta strona nie odpowiada. Możesz zaczekać, aż zacznie odpowiadać, lub ją zamknąć.}few{Te strony nie odpowiadają. Możesz zaczekać, aż zaczną odpowiadać, lub je zamknąć.}many{Te strony nie odpowiadają. Możesz zaczekać, aż zaczną odpowiadać, lub je zamknąć.}other{Te strony nie odpowiadają. Możesz zaczekać, aż zaczną odpowiadać, lub je zamknąć.}}</translation>
 <translation id="7002055706763150362">Aby skonfigurować Smart Lock na Chromebooki, Google musi mieć pewność, że jesteś osobą, za którą się podajesz. Najpierw wpisz hasło.</translation>
 <translation id="7002454948392136538">Wybierz menedżera dla tego użytkownika nadzorowanego</translation>
 <translation id="7003257528951459794">Częstotliwość:</translation>

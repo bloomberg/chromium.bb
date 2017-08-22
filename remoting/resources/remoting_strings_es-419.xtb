@@ -23,7 +23,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="1520828917794284345">Ajustar el tamaño del escritorio</translation>
 <translation id="154040539590487450">No se pudo iniciar el servicio de acceso remoto.</translation>
 <translation id="1546934824884762070">Se produjo un error inesperado. Informa este problema a los programadores.</translation>
-<translation id="1619813076098775562">Se cerró la conexión con el dispositivo de transmisión.</translation>
 <translation id="1643640058022401035">Al abandonar esta página, se cerrará tu sesión en Chromoting.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas para esta computadora…</translation>
 <translation id="170207782578677537">No se pudo registrar esta computadora.</translation>
@@ -187,7 +186,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="5419418238395129586">Última conexión: <ph name="DATE" /></translation>
 <translation id="544077782045763683">El host se cerró.</translation>
 <translation id="5510035215749041527">Desconectar ahora</translation>
-<translation id="5537725057119320332">Transmitir</translation>
 <translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más tarde.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Hacia esta computadora</translation>
@@ -199,7 +197,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="5841343754884244200">Opciones de la pantalla</translation>
 <translation id="5843054235973879827">¿Por qué esta operación es segura?</translation>
 <translation id="5859141382851488196">Nueva ventana…</translation>
-<translation id="5885438903806970186">En línea</translation>
 <translation id="6011539954251327702">Chromoting te permite compartir tu computadora con otro usuario de manera segura en la Web. Tanto tú como el otro usuario deben ejecutar la aplicación Chromoting, que está disponible en <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opciones del teclado</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -248,7 +245,6 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="7019153418965365059">Error de host no reconocido: <ph name="HOST_OFFLINE_REASON" /></translation>
 <translation id="701976023053394610">Asistencia remota</translation>
 <translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
-<translation id="712467900648340229">No se pudo establecer conexión con el dispositivo de transmisión.</translation>
 <translation id="7144878232160441200">Volver a intentarlo</translation>
 <translation id="7149517134817561223">Aplicación para enviar comandos al host del escritorio remoto de Chrome</translation>
 <translation id="7215059001581613786">Ingresa un PIN de al menos seis dígitos.</translation>
@@ -290,7 +286,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="8187079423890319756">Copyright 2013 Los autores de Chromium. Todos los derechos reservados.</translation>
 <translation id="8196755618196986400">Para que podamos comunicarnos contigo y brindarte más información, se incluirá tu dirección de correo electrónico en todos los comentarios que envíes.</translation>
 <translation id="8244400547700556338">Más información</translation>
-<translation id="8261506727792406068">Eliminar</translation>
+<translation id="8261506727792406068">Borrar</translation>
 <translation id="8355326866731426344">Este código de acceso vence en <ph name="TIMEOUT" />.</translation>
 <translation id="8355485110405946777">Incluye registros de aplicaciones para ayudarnos a solucionar tu problema (los registros pueden contener información privada).</translation>
 <translation id="837021510621780684">Desde esta computadora</translation>

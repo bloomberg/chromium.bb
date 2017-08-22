@@ -23,7 +23,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="1520828917794284345">Masaüstünü uygun şekilde yeniden boyutlandır</translation>
 <translation id="154040539590487450">Uzaktan erişim hizmeti başlatılamadı.</translation>
 <translation id="1546934824884762070">Beklenmeyen bir hata oluştu. Lütfen bu sorunu geliştiricilere bildirin.</translation>
-<translation id="1619813076098775562">Cast cihazına bağlantı kapatıldı.</translation>
 <translation id="1643640058022401035">Bu sayfadan ayrılırsanız Chromoting oturumunuz sonlandırılır.</translation>
 <translation id="1654128982815600832">Bu bilgisayara uzaktan bağlantılar etkinleştiriliyor…</translation>
 <translation id="170207782578677537">Bu bilgisayar kaydettirilemedi.</translation>
@@ -187,7 +186,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="5419418238395129586">Son çevrimiçi olduğu tarih: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Ana makine kapatıldı.</translation>
 <translation id="5510035215749041527">Bağlantıyı şimdi kes</translation>
-<translation id="5537725057119320332">Yayınla</translation>
 <translation id="5593560073513909978">Hizmet geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Bu bilgisayara</translation>
@@ -199,7 +197,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="5841343754884244200">Görüntüleme seçenekleri</translation>
 <translation id="5843054235973879827">Bu işlem neden güvenli?</translation>
 <translation id="5859141382851488196">Yeni pencere…</translation>
-<translation id="5885438903806970186">Çevrimiçi.</translation>
 <translation id="6011539954251327702">Chromoting, bilgisayarınızı Web üzerinden güvenli şekilde paylaşmanıza olanak verir. Her iki kullanıcının da Chromoting uygulamasını çalıştırıyor olması gerekir; uygulamayı <ph name="URL" /> adresinde bulabilirsiniz.</translation>
 <translation id="6033507038939587647">Klavye seçenekleri</translation>
 <translation id="6040143037577758943">Kapat</translation>
@@ -248,7 +245,6 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="7019153418965365059">Tanınmayan ana makine hatası: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Uzaktan Yardım</translation>
 <translation id="7038683108611689168">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chromoting'i daha iyi hale getirmemize yardımcı olun.</translation>
-<translation id="712467900648340229">Yayın cihazına bağlanamadı.</translation>
 <translation id="7144878232160441200">Yeniden Dene</translation>
 <translation id="7149517134817561223">Chrome uzaktan masaüstü ana makinesine komutları verecek uygulama.</translation>
 <translation id="7215059001581613786">Lütfen altı veya daha fazla basamaklı bir PIN kodu girin.</translation>

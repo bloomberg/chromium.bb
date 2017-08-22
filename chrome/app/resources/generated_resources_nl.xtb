@@ -342,7 +342,7 @@
 <translation id="150962533380566081">Ongeldige pukcode.</translation>
 <translation id="1510030919967934016">Deze pagina is geblokkeerd voor het bijhouden van je locatie.</translation>
 <translation id="1510200760579344855">Dit apparaat is vergrendeld door de beheerder van <ph name="SAML_DOMAIN" />.</translation>
-<translation id="1510238584712386396">Opstartprogramma</translation>
+<translation id="1510238584712386396">Launcher</translation>
 <translation id="1510785804673676069">Als je een proxyserver gebruikt, controleer je je proxyinstellingen of
     neemt je contact op met je netwerkbeheerder om te controleren of de
     proxyserver werkt. Als je van mening bent dat je geen proxyserver
@@ -1365,7 +1365,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2966449113954629791">Je hebt misschien je mobiele gegevensquotum verbruikt. Ga naar de activeringsportal van <ph name="NAME" /> om meer gegevens te kopen.</translation>
 <translation id="2966598748518102999">Verbeter Gesproken zoekopdracht door het geluid van 'Ok Google', voorafgegaan door enkele seconden, naar Google te verzenden.</translation>
 <translation id="2966937470348689686">Android-voorkeuren beheren</translation>
-<translation id="2967544384642772068">Sluiten</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">helderheid lager</translation>
 <translation id="2972557485845626008">Firmware</translation>
@@ -1516,7 +1515,6 @@ Controleer je e-mail op <ph name="ACCOUNT_EMAIL" /> voor deze en verdere instruc
 <translation id="3165390001037658081">Sommige providers kunnen deze functie blokkeren.</translation>
 <translation id="3166571619128686629">Klik of zeg 'Ok Google' om een gesproken zoekopdracht uit te voeren</translation>
 <translation id="3170072451822350649">Je kunt het inloggen ook overslaan en <ph name="LINK_START" />browsen als gast<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">De focus van het vergrootglas gecentreerd houden op het scherm</translation>
 <translation id="3177048931975664371">Klik om het wachtwoord te verbergen</translation>
 <translation id="3177909033752230686">Brontaal:</translation>
 <translation id="3180365125572747493">Voer een wachtwoord in voor het versleutelen van dit certificaatbestand.</translation>
@@ -2054,8 +2052,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
   Wil je <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3943582379552582368">&amp;Vorige</translation>
 <translation id="3943857333388298514">Plak</translation>
-<translation id="3944266449990965865">Volledig scherm</translation>
-<translation id="3946471364541867667">Instellingen voor TalkBack</translation>
 <translation id="3947376313153737208">Geen selectie</translation>
 <translation id="3948116654032448504">&amp;Afbeelding zoeken in <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Welkom bij Hangouts Meet</translation>
@@ -2362,7 +2358,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4450974146388585462">Diagnose</translation>
 <translation id="4452426408005428395">Annuleren</translation>
 <translation id="4454939697743986778">Dit certificaat is door je systeembeheerder geïnstalleerd.</translation>
-<translation id="445891990714234385">ChromeVox-instellingen</translation>
 <translation id="445923051607553918">Aanmelden bij wifi-netwerk</translation>
 <translation id="4462159676511157176">Aangepaste naamservers</translation>
 <translation id="4467100756425880649">Chrome Web Store-galerij</translation>
@@ -2660,7 +2655,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4910673011243110136">Privénetwerken</translation>
 <translation id="4911714727432509308">Er zijn geen sneltoetsen aan extensies toegewezen.</translation>
 <translation id="4912643508233590958">Activeringen vanuit inactief</translation>
-<translation id="4916679969857390442">Lens</translation>
 <translation id="491691592645955587">Overschakelen naar een veilige browser</translation>
 <translation id="4917385247580444890">Sterk</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> wil communiceren met de extensie '<ph name="EXTENSION_NAME" />'</translation>
@@ -2725,7 +2719,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="5011739343823725107">Kan backend voor synchronisatie niet starten</translation>
 <translation id="5015344424288992913">Proxy laden...</translation>
 <translation id="5015762597229892204">Een stuurprogramma-app van een printer selecteren</translation>
-<translation id="5016049845330225051">Knop 'Tekst in zoekvak wissen'</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Beheren op startpagina's</translation>
 <translation id="5023943178135355362">Australisch scrollen <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
@@ -3481,7 +3474,6 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="6151771661215463137">Het bestand staat al in je downloadmap.</translation>
 <translation id="615436196126345398">Protocol</translation>
 <translation id="6154697846084421647">Momenteel ingelogd</translation>
-<translation id="6156262341071374681">Uitbreiden naar alle apps</translation>
 <translation id="6156323911414505561">Bladwijzerbalk weergeven</translation>
 <translation id="6156863943908443225">Script in cachegeheugen</translation>
 <translation id="6156960295318603523">Taalinstellingen</translation>
@@ -4049,7 +4041,6 @@ Gebruik deze functie alleen met accounts die je vertrouwt.</translation>
 <translation id="6996946928646015361">Beveiligde module is uitgeschakeld of ontbreekt.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappen geselecteerd</translation>
 <translation id="6998793565256476099">Apparaat aanmelden voor videovergaderingen</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{De volgende pagina reageert niet meer. Je kunt wachten tot de pagina reageert of de pagina sluiten.}other{De volgende pagina's reageren niet meer. Je kunt wachten tot ze reageren of de pagina's sluiten.}}</translation>
 <translation id="7002055706763150362">Als je Smart Lock voor Chromebook wilt instellen, moet Google eerst controleren of je de juiste gebruiker bent. Typ je wachtwoord om aan de slag te gaan.</translation>
 <translation id="7002454948392136538">De beheerder voor deze gebruiker met beperkte rechten kiezen</translation>
 <translation id="7003257528951459794">Frequentie:</translation>

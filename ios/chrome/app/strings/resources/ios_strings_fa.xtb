@@ -176,6 +176,7 @@
 <translation id="4272631900155121838">‏برای اسکن کردن کد QR، دوربین را در تنظیمات فعال کنید</translation>
 <translation id="4281844954008187215">شرایط استفاده از سرویس</translation>
 <translation id="430793432425771671">همگام‌سازی همه چیز</translation>
+<translation id="4342284590510997375">جدید</translation>
 <translation id="4359125752503270327">این صفحه در برنامه دیگری باز می‌شود.</translation>
 <translation id="4375040482473363939">‏جستجوی کد QR</translation>
 <translation id="4378154925671717803">تلفن</translation>
@@ -250,6 +251,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5982717868370722439">افزودن داده‌های موجود به <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">در حال رمزگذاری…</translation>
 <translation id="6021332621416007159">بازکردن در...</translation>
+<translation id="6039429417015973673"><ph name="TITLE" />، <ph name="PUBLISHER_INFORMATION" />، <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6039694632319341016">می‌خواهید <ph name="PASSWORD_MANAGER_BRAND" /> گذرواژه‌تان را برای <ph name="USERNAME" /> در این وب‌سایت به‌روزرسانی کند؟</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
@@ -304,7 +306,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6896758677409633944">کپی</translation>
 <translation id="6903907808598579934">روشن کردن همگام‌سازی</translation>
 <translation id="6945221475159498467">انتخاب</translation>
-<translation id="6965382102122355670">قبول</translation>
 <translation id="6973630695168034713">پوشه‌ها</translation>
 <translation id="7004499039102548441">برگه‌های جدید</translation>
 <translation id="7006788746334555276">تنظیمات محتوا</translation>

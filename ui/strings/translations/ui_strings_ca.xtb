@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segon}other{# segons}}</translation>
 <translation id="4971687151119236543">Fitxer multimèdia: pista anterior</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">Botó per esborrar el text del quadre de cerca</translation>
 <translation id="5046499563572181734">Toca aquí</translation>
 <translation id="5076340679995252485">Engan&amp;xa</translation>
 <translation id="5120799197269191491">Cerca + <ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">Espai</translation>
 <translation id="6135826906199951471">Supr</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6156262341071374681">Amplia a totes les aplicacions</translation>
 <translation id="6264365405983206840">Selecciona-ho &amp;tot</translation>
 <translation id="6351032674660237738">SUGGERIMENTS D'APLICACIONS</translation>
 <translation id="6364916375976753737">Desplaçament a l'esquerra</translation>

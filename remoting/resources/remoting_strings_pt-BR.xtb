@@ -23,7 +23,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="1520828917794284345">Redimensionar área de trabalho para ajustar</translation>
 <translation id="154040539590487450">Falha ao iniciar o serviço de acesso remoto.</translation>
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Informe este problema aos desenvolvedores.</translation>
-<translation id="1619813076098775562">A conexão com o dispositivo de transmissão foi encerrada.</translation>
 <translation id="1643640058022401035">Abandonar esta página encerrará sua sessão de Chromoting.</translation>
 <translation id="1654128982815600832">Permitindo conexões remotas a este computador...</translation>
 <translation id="170207782578677537">Falha ao registrar este computador.</translation>
@@ -80,6 +79,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="2676780859508944670">Processando…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">As atualizações de software geralmente ocorrem automaticamente, mas podem falhar em casos raros. Essa atualização não deve demorar mais do que alguns minutos e pode ser feita enquanto você estiver conectado ao computador remotamente.</translation>
+<translation id="2758123043070977469">Ocorreu um problema durante a autenticação. Faça login novamente.</translation>
 <translation id="2803375539583399270">Insira o PIN</translation>
 <translation id="2841013758207633010">Tempo</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -187,7 +187,6 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="5419418238395129586">Última conexão: <ph name="DATE" /></translation>
 <translation id="544077782045763683">O host foi encerrado.</translation>
 <translation id="5510035215749041527">Desconectar agora</translation>
-<translation id="5537725057119320332">Transmitir</translation>
 <translation id="5593560073513909978">O serviço está temporariamente indisponível. Tente novamente mais tarde.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">A este computador</translation>
@@ -196,10 +195,10 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="5708869785009007625">Seu computador está sendo compartilhado com <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Data do pareamento</translation>
 <translation id="579702532610384533">Reconectar</translation>
+<translation id="5810269635982033450">A tela atua como um trackpad</translation>
 <translation id="5841343754884244200">Opções de exibição</translation>
 <translation id="5843054235973879827">Por que isto é seguro?</translation>
 <translation id="5859141382851488196">Nova janela...</translation>
-<translation id="5885438903806970186">On-line.</translation>
 <translation id="6011539954251327702">O Chromoting permite compartilhar seu computador pela Web de forma segura. Ambos os usuários devem estar executando o aplicativo Chromoting, disponível em <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opções do teclado</translation>
 <translation id="6040143037577758943">Fechar</translation>
@@ -248,7 +247,7 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="7019153418965365059">Erro de host não reconhecido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistência remota</translation>
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting por meio da coleta de estatísticas de uso e de relatórios de falhas.</translation>
-<translation id="712467900648340229">Não foi possível estabelecer conexão com o dispositivo de transmissão.</translation>
+<translation id="7067321367069083429">A tela atua como uma touchscreen</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
 <translation id="7149517134817561223">Aplicativo para emitir comandos ao host da Área de trabalho remota do Google Chrome.</translation>
 <translation id="7215059001581613786">Digite um PIN de seis ou mais dígitos.</translation>

@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">媒体上一曲</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">“清除搜索框文字”按钮</translation>
 <translation id="5046499563572181734">点按此处</translation>
 <translation id="5076340679995252485">粘贴(&amp;P)</translation>
 <translation id="5120799197269191491">搜索键 + <ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">空格</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6156262341071374681">展开以显示所有应用</translation>
 <translation id="6264365405983206840">全选(&amp;A)</translation>
 <translation id="6351032674660237738">应用推荐</translation>
 <translation id="6364916375976753737">向左滚动</translation>

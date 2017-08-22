@@ -42,6 +42,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="138361230106469022">Hai, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Telusuri</translation>
 <translation id="1384959399684842514">Download dijeda</translation>
+<translation id="1389236224998445076">Data yang dihemat:</translation>
 <translation id="1389974829397082527">Tidak ada bookmark di sini</translation>
 <translation id="1397811292916898096">Telusuri dengan <ph name="PRODUCT_NAME" /></translation>
 <translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> saran Chrome</translation>
@@ -103,6 +104,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="1966710179511230534">Perbarui detail ID masuk Anda.</translation>
 <translation id="1974060860693918893">Lanjutan</translation>
 <translation id="1984937141057606926">Diizinkan, kecuali pihak ketiga</translation>
+<translation id="1989112275319619282">Jelajahi</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> ingin menyandingkan</translation>
 <translation id="1994173015038366702">URL situs</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB aplikasi lain</translation>
@@ -129,6 +131,7 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="219985413780390209">Lindungi perangkat dan diri Anda dari situs berbahaya</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplikasi web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Lanjutkan sebagai <ph name="USER_FULL_NAME" /></translation>
+<translation id="2266890032547182881">Detail penggunaan data</translation>
 <translation id="2268044343513325586">Saring</translation>
 <translation id="2286841657746966508">Alamat penagihan</translation>
 <translation id="2315043854645842844">Pilihan sertifikat sisi klien tidak didukung oleh sistem operasi.</translation>
@@ -347,6 +350,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4522570452068850558">Detail</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Pilih folder</translation>
+<translation id="4550003330909367850">Untuk melihat atau menyalin sandi di sini, setel kunci layar di perangkat ini.</translation>
 <translation id="4558311620361989323">Pintasan halaman web</translation>
 <translation id="4572422548854449519">Masuk ke akun yang dikelola</translation>
 <translation id="4581964774250883625">Anda masuk mode penyamaran.</translation>
@@ -375,11 +379,13 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4807963036345170158">Penghemat Data nonaktif</translation>
 <translation id="4816465935029283692">Jenis data</translation>
 <translation id="4837753911714442426">Membuka opsi untuk mencetak halaman</translation>
+<translation id="4842092870884894799">Menampilkan munculan pembuatan sandi</translation>
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4860895144060829044">Panggil</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4885273946141277891">Jumlah kemunculan Chrome tidak didukung.</translation>
 <translation id="4910889077668685004">Aplikasi pembayaran</translation>
+<translation id="4913161338056004800">Setel ulang statistik</translation>
 <translation id="4913169188695071480">Hentikan refresh</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /> saat memindai perangkat…</translation>
 <translation id="4943872375798546930">Tidak ada hasil</translation>
@@ -443,6 +449,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5487521232677179737">Hapus data</translation>
 <translation id="5487729733663684359">Pembaruan Chrome tidak lagi didukung untuk versi Android.</translation>
 <translation id="5490801865084500306">Tab bookmark dipilih</translation>
+<translation id="550684401320795253">Memperbarui Chrome...</translation>
 <translation id="5512137114520586844">Akun ini dikelola oleh <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dinonaktifkan oleh administrator perangkat</translation>
 <translation id="5517095782334947753">Anda memiliki bookmark, riwayat, sandi, dan setelan lain dari <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +489,7 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="5763382633136178763">Tab penyamaran</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5777170031995031090">Kontrol cara Google menggunakan riwayat penjelajahan Anda untuk mempersonalisasi Penelusuran, iklan, dan layanan Google lainnya.</translation>
+<translation id="5779929835642192302">Saran yang tersedia</translation>
 <translation id="5804241973901381774">Izin</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# jam yang lalu}other{# jam yang lalu}}</translation>
 <translation id="5817918615728894473">Sandingkan</translation>
@@ -553,7 +561,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6437478888915024427">Info halaman</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6448273550210938826">Saran URL dan penelusuran</translation>
-<translation id="6463070039183944536">Menambahkan…</translation>
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6482749332252372425">Download <ph name="FILE_NAME" /> gagal karena ruang penyimpanan tidak cukup.</translation>
 <translation id="6508332297647760142">Berbagi Web Fisik</translation>
@@ -638,6 +645,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7189372733857464326">Menunggu Layanan Google Play selesai di-update</translation>
 <translation id="7189598951263744875">Bagikan...</translation>
 <translation id="7191430249889272776">Tab dibuka di latar belakang.</translation>
+<translation id="723171743924126238">Pilih gambar</translation>
 <translation id="7243308994586599757">Opsi terdapat di dekat bagian bawah layar</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> menggunakan lokasi Anda untuk menampilkan hasil penelusuran lokal</translation>
 <translation id="7251326866581677552">Diblokir dari beberapa situs</translation>
@@ -648,6 +656,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Bagikan 1 item yang dipilih}other{Bagikan # item yang dipilih}}</translation>
 <translation id="7366340029385295517">Mentransmisikan ke <ph name="SCREEN_NAME" /></translation>
+<translation id="7374228672268453233">Data yang digunakan</translation>
 <translation id="7375125077091615385">Jenis:</translation>
 <translation id="7378627244592794276">Tidak</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -792,6 +801,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang did
 <translation id="8812260976093120287">Di beberapa situs, Anda dapat membayar dengan aplikasi pembayaran yang didukung di atas pada perangkat Anda.</translation>
 <translation id="8820817407110198400">Bookmark</translation>
 <translation id="883635517171802338">Memblokir situs agar tidak menampilkan munculan (disarankan)</translation>
+<translation id="883806473910249246">Terjadi error saat mendownload konten.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Penyimpanan</translation>

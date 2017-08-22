@@ -1363,7 +1363,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2966449113954629791">És possible que hàgiu esgotat la quantitat assignada de dades mòbils. Visiteu el portal d'activació <ph name="NAME" /> per comprar més dades.</translation>
 <translation id="2966598748518102999">Per millorar la Cerca per veu, permet que s'enviï el so d'"Ok Google" (així com el so que es produeix uns segons abans) a Google</translation>
 <translation id="2966937470348689686">Gestiona les preferències d'Android</translation>
-<translation id="2967544384642772068">Finalitza</translation>
 <translation id="2971033837577180453">&lt;span&gt;Identificador:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">menys brillantor</translation>
 <translation id="2972557485845626008">Microprogramari</translation>
@@ -1514,7 +1513,6 @@ Consulteu el vostre correu electrònic (<ph name="ACCOUNT_EMAIL" />) per obtenir
 <translation id="3165390001037658081">Alguns operadors de telefonia mòbil poden bloquejar aquesta funció.</translation>
 <translation id="3166571619128686629">Feu-hi clic o digueu "Ok Google" per començar la cerca per veu</translation>
 <translation id="3170072451822350649">També podeu <ph name="LINK_START" />navegar com a convidat<ph name="LINK_END" /> sense iniciar sessió.</translation>
-<translation id="3170544058711792988">Mantén la lupa centrada a la pantalla</translation>
 <translation id="3177048931975664371">Feu clic per amagar la contrasenya</translation>
 <translation id="3177909033752230686">Idioma de la pàgina:</translation>
 <translation id="3180365125572747493">Introduïu una contrasenya per encriptar aquest fitxer de certificat.</translation>
@@ -2050,8 +2048,6 @@ Del domini <ph name="DOWNLOAD_DOMAIN" /></translation>
   Voleu iniciar <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Enrere</translation>
 <translation id="3943857333388298514">Enganxa</translation>
-<translation id="3944266449990965865">Tota la pantalla</translation>
-<translation id="3946471364541867667">Configuració de TalkBack</translation>
 <translation id="3947376313153737208">Cap selecció</translation>
 <translation id="3948116654032448504">&amp;Cerca la imatge a <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Et donem la benvinguda a Hangouts Meet!</translation>
@@ -2358,7 +2354,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4450974146388585462">Diagnòstic</translation>
 <translation id="4452426408005428395">No cal</translation>
 <translation id="4454939697743986778">L'administrador del sistema ha instal·lat aquest certificat.</translation>
-<translation id="445891990714234385">Configuració de ChromeVox</translation>
 <translation id="445923051607553918">Connexió a una xarxa Wi-Fi</translation>
 <translation id="4462159676511157176">Servidors de noms personalitzats</translation>
 <translation id="4467100756425880649">Galeria de Chrome Web Store</translation>
@@ -2654,7 +2649,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="4910673011243110136">Xarxes privades</translation>
 <translation id="4911714727432509308">No hi ha cap extensió que tingui tecles de drecera assignades.</translation>
 <translation id="4912643508233590958">Activacions en estat de repòs</translation>
-<translation id="4916679969857390442">Objectiu</translation>
 <translation id="491691592645955587">Canvia a un navegador segur</translation>
 <translation id="4917385247580444890">Forta</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> es vol comunicar amb l'extensió "<ph name="EXTENSION_NAME" />"</translation>
@@ -2719,7 +2713,6 @@ Premeu qualsevol tecla per continuar explorant.</translation>
 <translation id="5011739343823725107">No s'ha pogut iniciar el servidor de sincronització</translation>
 <translation id="5015344424288992913">Resolent el servidor intermediari...</translation>
 <translation id="5015762597229892204">Seleccionar una aplicació de controlador d'impressora</translation>
-<translation id="5016049845330225051">Botó per esborrar el text del quadre de cerca</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Gestiona les pàgines d'inici</translation>
 <translation id="5023943178135355362">Desplaçament australià <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
@@ -3476,7 +3469,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="6151771661215463137">El fitxer ja existeix a la carpeta de baixades.</translation>
 <translation id="615436196126345398">Protocol</translation>
 <translation id="6154697846084421647">Sessió iniciada en aquests moments</translation>
-<translation id="6156262341071374681">Amplia a totes les aplicacions</translation>
 <translation id="6156323911414505561">Mostra la barra d'adreces d'interès</translation>
 <translation id="6156863943908443225">Memòria cau d'scripts</translation>
 <translation id="6156960295318603523">Configuració d'idioma</translation>
@@ -4043,7 +4035,6 @@ Utilitza aquesta funció només amb comptes de confiança.</translation>
 <translation id="6996946928646015361">El mòdul de seguretat està desactivat o bé no és present.</translation>
 <translation id="6998711733709403587">S'han seleccionat <ph name="SELCTED_FOLDERS_COUNT" /> carpetes</translation>
 <translation id="6998793565256476099">Inscriu el dispositiu per a la videoconferència</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{La pàgina que es mostra a continuació no respon. Podeu esperar que respongui o finalitzar-la.}other{Les pàgines que es mostren a continuació no responen. Podeu esperar que responguin o finalitzar-les.}}</translation>
 <translation id="7002055706763150362">Per configurar Smart Lock per a Chromebook, Google ha de comprovar la vostra identitat. Escriviu la contrasenya per començar.</translation>
 <translation id="7002454948392136538">Selecció de l'administrador d'aquest usuari supervisat</translation>
 <translation id="7003257528951459794">Freqüència:</translation>

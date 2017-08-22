@@ -1365,7 +1365,6 @@ Servera ziņojums: <ph name="SERVER_MSG" /></translation>
 <translation id="2966449113954629791">Iespējams, esat jau izmantojis savu mobilo datu atļauju. Lai iegādātos citus datus, apmeklējiet <ph name="NAME" /> aktivizācijas portālu.</translation>
 <translation id="2966598748518102999">Uzlabot meklēšanu ar balsi, nosūtot Google serveriem balss ieraksta fragmentu, kurā dzirdams izrunātais teksts “Ok Google” un dažas sekundes pirms tā.</translation>
 <translation id="2966937470348689686">Pārvaldīt Android preferences</translation>
-<translation id="2967544384642772068">Iznīcināt</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">samazināt spilgtumu</translation>
 <translation id="2972557485845626008">Programmaparatūra</translation>
@@ -1517,7 +1516,6 @@ Lūdzu, pārbaudiet savu e-pasta iesūtni <ph name="ACCOUNT_EMAIL" />, lai skat�
 <translation id="3165390001037658081">Daļa mobilo sakaru operatoru var bloķēt šo funkciju.</translation>
 <translation id="3166571619128686629">Noklikšķiniet vai izrunājiet frāzi “Ok Google”, lai sāktu meklēšanu ar balsi</translation>
 <translation id="3170072451822350649">Varat arī izlaist pierakstīšanos un <ph name="LINK_START" />veikt pārlūkošanu kā viesis<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Fokusēt lupu ekrāna vidū</translation>
 <translation id="3177048931975664371">Noklikšķiniet, lai slēptu paroli</translation>
 <translation id="3177909033752230686">Lapas valoda:</translation>
 <translation id="3180365125572747493">Lūdzu, ievadiet paroli, lai šifrētu šo sertifikāta failu.</translation>
@@ -2055,8 +2053,6 @@ no <ph name="DOWNLOAD_DOMAIN" /></translation>
 Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">Atpakaļ</translation>
 <translation id="3943857333388298514">Ielīmēt</translation>
-<translation id="3944266449990965865">Viss ekrāns</translation>
-<translation id="3946471364541867667">TalkBack iestatījumi</translation>
 <translation id="3947376313153737208">Nav atlasīts</translation>
 <translation id="3948116654032448504">Meklēt attēlu <ph name="SEARCH_ENGINE" /> tīklā</translation>
 <translation id="3949371968208420848">Laipni lūdzam pakalpojumā Hangouts Meet!</translation>
@@ -2363,7 +2359,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4450974146388585462">Diagnosticēt</translation>
 <translation id="4452426408005428395">Atcelt</translation>
 <translation id="4454939697743986778">Šo sertifikātu instalēja sistēmas administrators.</translation>
-<translation id="445891990714234385">ChromeVox iestatījumi</translation>
 <translation id="445923051607553918">Pievienoties Wi-Fi tīklam</translation>
 <translation id="4462159676511157176">Pielāgoti nosaukumu serveri</translation>
 <translation id="4467100756425880649">Chrome interneta veikala galerija</translation>
@@ -2661,7 +2656,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="4910673011243110136">Privāti tīkli</translation>
 <translation id="4911714727432509308">Nevienam paplašinājumam nav piešķirts īsinājumtaustiņš.</translation>
 <translation id="4912643508233590958">Aktivizēšanas reižu skaits pēc gaidstāves režīma</translation>
-<translation id="4916679969857390442">Lēca</translation>
 <translation id="491691592645955587">Pāreja uz drošu pārlūku</translation>
 <translation id="4917385247580444890">Spēcīgs</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> vēlas sazināties ar paplašinājumu “<ph name="EXTENSION_NAME" />”</translation>
@@ -2726,7 +2720,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="5011739343823725107">Neizdevās uzsākt sinhronizāciju</translation>
 <translation id="5015344424288992913">Risina starpniekserveri...</translation>
 <translation id="5015762597229892204">Printera draivera lietotnes atlasīšana</translation>
-<translation id="5016049845330225051">Meklēšanas lodziņa teksta notīrīšanas poga</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Pārvaldīt sākumlapās</translation>
 <translation id="5023943178135355362">Ritināšana pretējā virzienā: <ph name="BEGIN_LINK" />uzziniet vairāk<ph name="END_LINK" />.</translation>
@@ -3483,7 +3476,6 @@ Lai turpinātu skatīšanu, nospiediet jebkuru taustiņu.</translation>
 <translation id="6151771661215463137">Fails jau pastāv jūsu lejupielāžu mapē.</translation>
 <translation id="615436196126345398">Protokols</translation>
 <translation id="6154697846084421647">Pašreiz pierakstījies</translation>
-<translation id="6156262341071374681">Skatīt visas lietotnes</translation>
 <translation id="6156323911414505561">Rādīt grāmatzīmju joslu</translation>
 <translation id="6156863943908443225">Skriptu kešatmiņa</translation>
 <translation id="6156960295318603523">Valodas iestatījumi</translation>
@@ -4051,7 +4043,6 @@ Izmantojiet šo funkciju tikai uzticamiem kontiem.</translation>
 <translation id="6996946928646015361">Drošības modulis ir atspējots, vai arī tā vispār nav.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mapes atlasītas</translation>
 <translation id="6998793565256476099">Reģistrēt ierīci videokonferencēm</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Tālāk norādītā lapa vairs nereaģē. Varat uzgaidīt, līdz tā reaģēs, vai iznīcināt to.}zero{Tālāk norādītās lapas vairs nereaģē. Varat uzgaidīt, līdz tās reaģēs, vai iznīcināt tās.}one{Tālāk norādītās lapas vairs nereaģē. Varat uzgaidīt, līdz tās reaģēs, vai iznīcināt tās.}other{Tālāk norādītās lapas vairs nereaģē. Varat uzgaidīt, līdz tās reaģēs, vai iznīcināt tās.}}</translation>
 <translation id="7002055706763150362">Lai iestatītu sistēmu Smart Lock Chromebook datoriem, uzņēmumam Google ir jāpārliecinās par jūsu identitāti — lai sāktu darbu, ievadiet savu paroli.</translation>
 <translation id="7002454948392136538">Uzraudzītā lietotāja pārziņa izvēle</translation>
 <translation id="7003257528951459794">Frekvence:</translation>

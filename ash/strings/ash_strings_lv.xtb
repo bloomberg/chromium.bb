@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">Administrators konfigurē ievades metodes.</translation>
 <translation id="1747827819627189109">Ekrāna tastatūra iespējota</translation>
 <translation id="1823873187264960516">Ethernet adrese: <ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">Asistents (notiek ielāde...)</translation>
 <translation id="1850504506766569011">Wi-Fi tīkls ir izslēgts.</translation>
 <translation id="1856813161013948396">Izlaidiet bloķēšanas ekrānu, vienkārši pieskaroties pirksta nospieduma sensoram. Noklikšķiniet, lai konfigurētu.</translation>
 <translation id="1864454756846565995">USB-C ierīce (aizmugurējā pieslēgvieta)</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">Spoguļošana</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lupa</translation>
+<translation id="4351433414020964307">Notiek Asistenta ielāde...</translation>
 <translation id="4378551569595875038">Notiek pievienošana...</translation>
 <translation id="4421231901400348175">Ekrāna pārvaldības koplietošana ar <ph name="HELPER_NAME" />, izmantojot attālo palīdzību.</translation>
 <translation id="4430019312045809116">Skaļums</translation>

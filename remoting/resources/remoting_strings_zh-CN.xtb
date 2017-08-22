@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">将桌面调整为合适大小</translation>
 <translation id="154040539590487450">无法启动远程访问服务。</translation>
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>
-<translation id="1619813076098775562">已断开与投射设备的连接。</translation>
 <translation id="1643640058022401035">如果您离开此页，那么您的 Chrome 远程访问会话就会结束。</translation>
 <translation id="1654128982815600832">正在对此计算机启用远程连接…</translation>
 <translation id="170207782578677537">无法注册此计算机。</translation>
@@ -187,7 +186,6 @@
 <translation id="5419418238395129586">上次在线日期：<ph name="DATE" /></translation>
 <translation id="544077782045763683">主机已关机。</translation>
 <translation id="5510035215749041527">立即断开</translation>
-<translation id="5537725057119320332">投射</translation>
 <translation id="5593560073513909978">此服务暂时无法使用。请稍后再试。</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">指向此计算机</translation>
@@ -199,7 +197,6 @@
 <translation id="5841343754884244200">显示选项</translation>
 <translation id="5843054235973879827">此操作为什么是安全的？</translation>
 <translation id="5859141382851488196">打开新的窗口…</translation>
-<translation id="5885438903806970186">在线。</translation>
 <translation id="6011539954251327702">Chrome 远程访问可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程访问应用（下载地址为 <ph name="URL" />）。</translation>
 <translation id="6033507038939587647">键盘选项</translation>
 <translation id="6040143037577758943">关闭</translation>
@@ -248,7 +245,6 @@
 <translation id="7019153418965365059">无法识别的主机错误：<ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">远程协助</translation>
 <translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程访问。</translation>
-<translation id="712467900648340229">无法连接到投射设备。</translation>
 <translation id="7144878232160441200">重试</translation>
 <translation id="7149517134817561223">向 Chrome 远程桌面主机发出命令的应用。</translation>
 <translation id="7215059001581613786">请输入至少包含 6 位数的 PIN。</translation>

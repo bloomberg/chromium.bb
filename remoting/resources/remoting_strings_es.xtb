@@ -23,7 +23,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="1520828917794284345">Ajustar el tamaño del escritorio</translation>
 <translation id="154040539590487450">No se ha podido iniciar el servicio de acceso remoto.</translation>
 <translation id="1546934824884762070">Se ha producido un error inesperado. Comunícaselo a los desarrolladores.</translation>
-<translation id="1619813076098775562">Se ha cerrado la conexión al dispositivo de transmisión.</translation>
 <translation id="1643640058022401035">Si abandonas esta página, finalizará tu sesión en Chromoting.</translation>
 <translation id="1654128982815600832">Habilitando conexiones remotas con este ordenador...</translation>
 <translation id="170207782578677537">No se ha podido registrar este ordenador.</translation>
@@ -187,7 +186,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="5419418238395129586">Última conexión: <ph name="DATE" /></translation>
 <translation id="544077782045763683">El host se ha desconectado.</translation>
 <translation id="5510035215749041527">Desconectar ahora</translation>
-<translation id="5537725057119320332">Enviar</translation>
 <translation id="5593560073513909978">El servicio no está disponible temporalmente. Vuelve a intentarlo más tarde.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Conexiones con este ordenador</translation>
@@ -199,7 +197,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="5841343754884244200">Opciones de visualización</translation>
 <translation id="5843054235973879827">¿Por qué es segura esta operación?</translation>
 <translation id="5859141382851488196">Nueva ventana…</translation>
-<translation id="5885438903806970186">Online.</translation>
 <translation id="6011539954251327702">Chromoting permite compartir de forma segura tu ordenador a través de Internet. Ambos usuarios deben estar ejecutando la aplicación Chromoting, que está disponible en la página <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opciones del teclado</translation>
 <translation id="6040143037577758943">Cerrar</translation>
@@ -248,7 +245,6 @@ Para obtener información sobre la privacidad, consulta la Política de Privacid
 <translation id="7019153418965365059">Error de host no reconocido: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Asistencia remota</translation>
 <translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting autorizando la recopilación de estadísticas de uso e informes sobre fallos.</translation>
-<translation id="712467900648340229">Error al establecer conexión con el dispositivo de transmisión.</translation>
 <translation id="7144878232160441200">Volver a intentar</translation>
 <translation id="7149517134817561223">Aplicación para enviar comandos al host del Escritorio Remoto de Chrome.</translation>
 <translation id="7215059001581613786">Introduce un PIN que tenga como mínimo seis dígitos.</translation>

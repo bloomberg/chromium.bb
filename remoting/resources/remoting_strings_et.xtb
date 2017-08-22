@@ -23,7 +23,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="1520828917794284345">Muuda suurust töölaua sobitamiseks</translation>
 <translation id="154040539590487450">Kaugühenduse teenuse käivitamine ebaõnnestus.</translation>
 <translation id="1546934824884762070">Ilmnes ootamatu viga. Teatage sellest probleemist arendajatele.</translation>
-<translation id="1619813076098775562">Ühendus ülekandeseadmesse suleti.</translation>
 <translation id="1643640058022401035">Lehelt lahkudes katkeb teie rakenduse Chromoting seanss.</translation>
 <translation id="1654128982815600832">Arvuti kaugühenduste lubamine …</translation>
 <translation id="170207782578677537">Arvuti registreerimine ebaõnnestus.</translation>
@@ -187,7 +186,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="5419418238395129586">Viimati veebis: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host on välja lülitatud.</translation>
 <translation id="5510035215749041527">Katkesta kohe ühendus</translation>
-<translation id="5537725057119320332">Ülekanne</translation>
 <translation id="5593560073513909978">Teenus on ajutiselt kättesaamatu. Proovige hiljem uuesti.</translation>
 <translation id="5601503069213153581">PIN-kood</translation>
 <translation id="5619148062500147964">Selle arvutiga</translation>
@@ -199,7 +197,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="5841343754884244200">Kuvavalikud</translation>
 <translation id="5843054235973879827">Miks on see ohutu?</translation>
 <translation id="5859141382851488196">Uus aken ...</translation>
-<translation id="5885438903806970186">Veebis.</translation>
 <translation id="6011539954251327702">Rakendus Chromoting võimaldab teil arvutit turvaliselt veebi kaudu jagada. Mõlemad kasutajad peavad käitama rakendust Chromoting, mille leiate aadressilt <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Klaviatuurivalikud</translation>
 <translation id="6040143037577758943">Sulge</translation>
@@ -248,7 +245,6 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="7019153418965365059">Tundmatu hostiviga: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Kaugabi</translation>
 <translation id="7038683108611689168">Aidake meil rakendust Chromoting täiustada, lubades kasutusstatistika ja krahhiaruannete kogumise.</translation>
-<translation id="712467900648340229">Ülekandeseadmega ühenduse loomine ebaõnnestus.</translation>
 <translation id="7144878232160441200">Proovi uuesti</translation>
 <translation id="7149517134817561223">Rakendus, millega saate Chrome Remote Desktopi hostile käske saata.</translation>
 <translation id="7215059001581613786">Sisestage vähemalt kuuest numbrist koosnev PIN-kood.</translation>

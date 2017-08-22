@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 seconde}one{# seconde}other{# secondes}}</translation>
 <translation id="4971687151119236543">Contenu multimédia : titre précédent</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">Bouton pour effacer le texte du champ de recherche</translation>
 <translation id="5046499563572181734">Appuyez ici</translation>
 <translation id="5076340679995252485">C&amp;oller</translation>
 <translation id="5120799197269191491">Recherche + <ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">Espace</translation>
 <translation id="6135826906199951471">Suppr</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> o/s</translation>
+<translation id="6156262341071374681">Développer pour afficher toutes les applications</translation>
 <translation id="6264365405983206840">Tout &amp;sélectionner</translation>
 <translation id="6351032674660237738">SUGGESTIONS D'APPLICATIONS</translation>
 <translation id="6364916375976753737">Défilement vers la gauche</translation>

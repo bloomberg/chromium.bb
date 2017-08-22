@@ -103,6 +103,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1966710179511230534">Veuillez mettre à jour vos informations de connexion.</translation>
 <translation id="1974060860693918893">Paramètres avancés</translation>
 <translation id="1984937141057606926">Autorisés, sauf cookies tiers</translation>
+<translation id="1989112275319619282">Parcourir</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> tente de s'associer</translation>
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> Ko par d'autres applis</translation>
@@ -375,6 +376,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="4807963036345170158">L'économiseur de données est désactivé</translation>
 <translation id="4816465935029283692">Types de données</translation>
 <translation id="4837753911714442426">Afficher les options d'impression de la page</translation>
+<translation id="4842092870884894799">Affichage de la fenêtre contextuelle de génération de mot de passe</translation>
 <translation id="4850886885716139402">Afficher</translation>
 <translation id="4860895144060829044">Appeler</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
@@ -443,6 +445,7 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5487521232677179737">Effacer les données</translation>
 <translation id="5487729733663684359">Les mises à jour de Chrome ne sont plus disponibles avec cette version d'Android.</translation>
 <translation id="5490801865084500306">Onglet "Favoris" sélectionné</translation>
+<translation id="550684401320795253">Mise à jour de Chrome…</translation>
 <translation id="5512137114520586844">Ce compte est géré par <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Désactivé par l'administrateur de cet appareil</translation>
 <translation id="5517095782334947753">Vous disposez des favoris, de l'historique, des mots de passe et d'autres paramètres du compte <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +485,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5763382633136178763">Onglets de navigation privée</translation>
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5777170031995031090">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
+<translation id="5779929835642192302">Suggestions disponibles</translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Il y a # heure}one{Il y a # heure}other{Il y a # heures}}</translation>
 <translation id="5817918615728894473">Associer</translation>
@@ -553,7 +557,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6437478888915024427">Infos sur la page</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Suggestions de recherche et d'URL</translation>
-<translation id="6463070039183944536">Ajout…</translation>
 <translation id="6475951671322991020">Télécharger la vidéo</translation>
 <translation id="6482749332252372425">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage insuffisant.</translation>
 <translation id="6508332297647760142">Partage du Web physique</translation>
@@ -638,6 +641,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7189372733857464326">En attente de la fin de la mise à jour des services Google Play</translation>
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7191430249889272776">L'onglet a été ouvert en arrière-plan.</translation>
+<translation id="723171743924126238">Sélectionner des images</translation>
 <translation id="7243308994586599757">Options disponibles au bas de l'écran</translation>
 <translation id="7244362611678346589">Le site <ph name="SEARCH_ENGINE_URL" /> utilise votre position pour afficher les résultats de recherche à proximité.</translation>
 <translation id="7251326866581677552">Bloqué sur certains sites</translation>
