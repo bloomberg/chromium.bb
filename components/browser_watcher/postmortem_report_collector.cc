@@ -59,16 +59,9 @@ void LogCollectionStatus(CollectionStatus status) {
 
 }  // namespace
 
-void PostmortemDeleter::Process(
-    const std::vector<base::FilePath>& stability_files) {
-  for (const FilePath& file : stability_files) {
-    if (base::DeleteFile(file, false))
-      LogCollectionStatus(UNCLEAN_SHUTDOWN);
-    else
-      LogCollectionStatus(DEBUG_FILE_DELETION_FAILED);
-  }
-}
-
+PostmortemReportCollector::PostmortemReportCollector(
+    SystemSessionAnalyzer* analyzer)
+    : report_database_(nullptr), system_session_analyzer_(analyzer) {}
 PostmortemReportCollector::PostmortemReportCollector(
     const std::string& product_name,
     const std::string& version_number,
@@ -80,6 +73,9 @@ PostmortemReportCollector::PostmortemReportCollector(
       channel_name_(channel_name),
       report_database_(report_database),
       system_session_analyzer_(analyzer) {
+  DCHECK(!product_name_.empty());
+  DCHECK(!version_number.empty());
+  DCHECK(!channel_name.empty());
   DCHECK_NE(nullptr, report_database);
 }
 
@@ -89,22 +85,23 @@ void PostmortemReportCollector::Process(
     const std::vector<base::FilePath>& stability_files) {
   // Determine the crashpad client id.
   crashpad::UUID client_id;
-  crashpad::Settings* settings = report_database_->GetSettings();
-  if (settings) {
-    // If GetSettings() or GetClientID() fails client_id will be left at its
-    // default value, all zeroes, which is appropriate.
-    settings->GetClientID(&client_id);
+  if (report_database_) {
+    crashpad::Settings* settings = report_database_->GetSettings();
+    if (settings) {
+      // If GetSettings() or GetClientID() fails client_id will be left at its
+      // default value, all zeroes, which is appropriate.
+      settings->GetClientID(&client_id);
+    }
   }
 
   for (const FilePath& file : stability_files) {
-    CollectAndSubmitOneReport(client_id, file);
+    ProcessOneReport(client_id, file);
   }
 }
 
-void PostmortemReportCollector::CollectAndSubmitOneReport(
+void PostmortemReportCollector::ProcessOneReport(
     const crashpad::UUID& client_id,
     const FilePath& file) {
-  DCHECK_NE(nullptr, report_database_);
   LogCollectionStatus(COLLECTION_ATTEMPT);
 
   // Note: the code below involves two notions of report: chrome internal state
@@ -114,11 +111,12 @@ void PostmortemReportCollector::CollectAndSubmitOneReport(
   StabilityReport report_proto;
   CollectionStatus status = CollectOneReport(file, &report_proto);
   if (status != SUCCESS) {
-    // The file was empty, or there was an error collecting the data. Detailed
-    // logging happens within the Collect function.
-    if (!base::DeleteFile(file, false))
-      DLOG(ERROR) << "Failed to delete " << file.value();
+    // The file was empty, or there was an error collecting the data. This is
+    // not deemed an unclean shutdown. Detailed logging happens within the
+    // Collect function.
     LogCollectionStatus(status);
+    if (!base::DeleteFile(file, false))
+      LogCollectionStatus(DEBUG_FILE_DELETION_FAILED);
     return;
   }
 
@@ -138,37 +136,8 @@ void PostmortemReportCollector::CollectAndSubmitOneReport(
   if (report_proto.system_state().session_state() == SystemState::UNCLEAN)
     LogCollectionStatus(UNCLEAN_SESSION);
 
-  // Prepare a crashpad report.
-  CrashReportDatabase::NewReport* new_report = nullptr;
-  CrashReportDatabase::OperationStatus database_status =
-      report_database_->PrepareNewCrashReport(&new_report);
-  if (database_status != CrashReportDatabase::kNoError) {
-    LogCollectionStatus(PREPARE_NEW_CRASH_REPORT_FAILED);
-    return;
-  }
-  CrashReportDatabase::CallErrorWritingCrashReport
-      call_error_writing_crash_report(report_database_, new_report);
-
-  // Write the report to a minidump.
-  if (!WriteReportToMinidump(&report_proto, client_id, new_report->uuid,
-                             reinterpret_cast<FILE*>(new_report->handle))) {
-    LogCollectionStatus(WRITE_TO_MINIDUMP_FAILED);
-    return;
-  }
-
-  // Finalize the report wrt the report database. Note that this doesn't trigger
-  // an immediate upload, but Crashpad will eventually upload the report (as of
-  // writing, the delay is on the order of up to 15 minutes).
-  call_error_writing_crash_report.Disarm();
-  crashpad::UUID unused_report_id;
-  database_status = report_database_->FinishedWritingCrashReport(
-      new_report, &unused_report_id);
-  if (database_status != CrashReportDatabase::kNoError) {
-    LogCollectionStatus(FINISHED_WRITING_CRASH_REPORT_FAILED);
-    return;
-  }
-
-  LogCollectionStatus(SUCCESS);
+  if (report_database_)
+    GenerateCrashReport(client_id, &report_proto);
 }
 
 CollectionStatus PostmortemReportCollector::CollectOneReport(
@@ -246,6 +215,45 @@ void PostmortemReportCollector::RecordSystemShutdownState(
   UMA_HISTOGRAM_ENUMERATION(
       "ActivityTracker.Collect.SystemSessionAnalysisStatus", status,
       SYSTEM_SESSION_ANALYSIS_STATUS_MAX);
+}
+
+void PostmortemReportCollector::GenerateCrashReport(
+    const crashpad::UUID& client_id,
+    StabilityReport* report_proto) {
+  DCHECK_NE(nullptr, report_database_);
+  DCHECK(report_proto);
+
+  // Prepare a crashpad report.
+  CrashReportDatabase::NewReport* new_report = nullptr;
+  CrashReportDatabase::OperationStatus database_status =
+      report_database_->PrepareNewCrashReport(&new_report);
+  if (database_status != CrashReportDatabase::kNoError) {
+    LogCollectionStatus(PREPARE_NEW_CRASH_REPORT_FAILED);
+    return;
+  }
+  CrashReportDatabase::CallErrorWritingCrashReport
+      call_error_writing_crash_report(report_database_, new_report);
+
+  // Write the report to a minidump.
+  if (!WriteReportToMinidump(report_proto, client_id, new_report->uuid,
+                             reinterpret_cast<FILE*>(new_report->handle))) {
+    LogCollectionStatus(WRITE_TO_MINIDUMP_FAILED);
+    return;
+  }
+
+  // Finalize the report wrt the report database. Note that this doesn't trigger
+  // an immediate upload, but Crashpad will eventually upload the report (as of
+  // writing, the delay is on the order of up to 15 minutes).
+  call_error_writing_crash_report.Disarm();
+  crashpad::UUID unused_report_id;
+  database_status = report_database_->FinishedWritingCrashReport(
+      new_report, &unused_report_id);
+  if (database_status != CrashReportDatabase::kNoError) {
+    LogCollectionStatus(FINISHED_WRITING_CRASH_REPORT_FAILED);
+    return;
+  }
+
+  LogCollectionStatus(SUCCESS);
 }
 
 bool PostmortemReportCollector::WriteReportToMinidump(
