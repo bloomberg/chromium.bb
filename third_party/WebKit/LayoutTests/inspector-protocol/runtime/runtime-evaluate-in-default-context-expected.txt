@@ -1,6 +1,6 @@
 Tests that default execution context is selected correctly.
 {
-    id : <messageId>
+    id : <number>
     result : {
         result : {
             description : 42

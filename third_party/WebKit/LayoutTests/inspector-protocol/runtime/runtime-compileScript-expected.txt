@@ -7,13 +7,13 @@ compilation result: {
         exception : {
             className : SyntaxError
             description : SyntaxError: Unexpected end of input
-            objectId : 0
+            objectId : <number>
             subtype : error
             type : object
         }
         exceptionId : 0
         lineNumber : 1
-        scriptId : 0
+        scriptId : <number>
         text : Uncaught
     }
 }
@@ -22,7 +22,7 @@ Compiling script: foo2.js
          persist: true
 Debugger.scriptParsed: foo2.js
 compilation result: {
-    scriptId : 0
+    scriptId : <number>
 }
 -----
 Compiling script: foo3.js
@@ -38,13 +38,13 @@ compilation result: {
         exception : {
             className : SyntaxError
             description : SyntaxError: Unexpected identifier
-            objectId : 0
+            objectId : <number>
             subtype : error
             type : object
         }
         exceptionId : 0
         lineNumber : 0
-        scriptId : 0
+        scriptId : <number>
         text : Uncaught
     }
 }

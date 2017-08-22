@@ -5,15 +5,15 @@
   dp.Runtime.enable();
   var {result} = await dp.Runtime.evaluate({expression: `document.getElementById('div')`});
   var {result} = await dp.DOM.describeNode({objectId: result.result.objectId});
-  testRunner.logObject(result.node, 'DIV', ['backendNodeId']);
+  testRunner.log(result.node, 'DIV');
 
   var {result} = await dp.Runtime.evaluate({expression: `document.body`});
   var {result} = await dp.DOM.describeNode({objectId: result.result.objectId});
-  testRunner.logObject(result.node, 'BODY', ['backendNodeId']);
+  testRunner.log(result.node, 'BODY');
 
   var {result} = await dp.Runtime.evaluate({expression: `document.body`});
   var {result} = await dp.DOM.describeNode({objectId: result.result.objectId, depth: -1});
-  testRunner.logObject(result.node, 'BODY DEEP', ['backendNodeId']);
+  testRunner.log(result.node, 'BODY DEEP');
 
   testRunner.completeTest();
 })

@@ -8,6 +8,6 @@
     'id': requestId
   };
   var message = JSON.stringify(command).replace('!!!', '\\u041F\\u0440\\u0438\\u0432\\u0435\\u0442 \\u043C\\u0438\\u0440');
-  testRunner.logMessage(await session.sendRawCommand(requestId, message));
+  testRunner.log(await session.sendRawCommand(requestId, message));
   testRunner.completeTest();
 })

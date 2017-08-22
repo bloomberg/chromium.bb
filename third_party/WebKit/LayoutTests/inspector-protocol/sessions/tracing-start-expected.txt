@@ -1,7 +1,7 @@
 Tests that multiple sessions cannot trace simultaneously.
 Starting tracing in session1
 {
-    id : <messageId>
+    id : <number>
     result : {
     }
 }
@@ -11,11 +11,11 @@ Starting tracing in session2
         code : -32000
         message : Tracing is already started
     }
-    id : <messageId>
+    id : <number>
 }
 Stopping tracing in session1
 {
-    id : <messageId>
+    id : <number>
     result : {
     }
 }
@@ -25,7 +25,7 @@ Stopping tracing in session2
         code : -32000
         message : Tracing is not started
     }
-    id : <messageId>
+    id : <number>
 }
 session1: dataCollected=true tracingComplete=true
 session2: dataCollected=false tracingComplete=false

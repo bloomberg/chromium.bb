@@ -19,7 +19,7 @@
     if (message.error)
       testRunner.log(node.nodeName + ': ' + message.error.message);
     else
-      testRunner.logObject(message.result.model.content, node.nodeName + ' ' + node.attributes + ' ');
+      testRunner.log(message.result.model.content, node.nodeName + ' ' + node.attributes + ' ');
   }
   testRunner.completeTest();
 })

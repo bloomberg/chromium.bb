@@ -6,22 +6,22 @@ Node: {
         [2] : style
         [3] : position:absolute;top:0;left:0;width:100;height:100
     ]
-    backendNodeId : <backendNodeId>
+    backendNodeId : <number>
     childNodeCount : 0
     children : [
     ]
     localName : input
-    nodeId : <nodeId>
+    nodeId : <number>
     nodeName : INPUT
     nodeType : 1
     nodeValue : 
-    parentId : <parentId>
+    parentId : <number>
     shadowRoots : [
         [0] : {
-            backendNodeId : <backendNodeId>
+            backendNodeId : <number>
             childNodeCount : 1
             localName : 
-            nodeId : <nodeId>
+            nodeId : <number>
             nodeName : #document-fragment
             nodeType : 11
             nodeValue : 

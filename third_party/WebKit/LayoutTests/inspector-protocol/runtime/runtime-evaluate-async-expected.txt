@@ -15,13 +15,13 @@ Running test: testRejectedPromise
         columnNumber : 0
         exception : {
             description : 239
-            objectId : 0
+            objectId : <number>
             type : number
             value : 239
         }
         exceptionId : 0
         lineNumber : 0
-        scriptId : 
+        scriptId : <string>
         text : Uncaught (in promise)
     }
     result : {
@@ -64,13 +64,13 @@ Running test: testExceptionInEvaluate
         columnNumber : 0
         exception : {
             description : 239
-            objectId : 0
+            objectId : <number>
             type : number
             value : 239
         }
         exceptionId : 0
         lineNumber : 0
-        scriptId : 
+        scriptId : <string>
         text : Uncaught
     }
     result : {

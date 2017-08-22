@@ -1,6 +1,6 @@
 Tests that backend correctly handles unicode in messages
 {
-    id : <messageId>
+    id : <number>
     result : {
         result : {
             type : string

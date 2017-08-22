@@ -7,7 +7,7 @@ DIV{
     backendNodeId : <number>
     childNodeCount : 1
     localName : div
-    nodeId : 0
+    nodeId : <number>
     nodeName : DIV
     nodeType : 1
     nodeValue : 
@@ -18,7 +18,7 @@ BODY{
     backendNodeId : <number>
     childNodeCount : 1
     localName : body
-    nodeId : 0
+    nodeId : <number>
     nodeName : BODY
     nodeType : 1
     nodeValue : 
@@ -46,31 +46,31 @@ BODY DEEP{
                         [0] : {
                             backendNodeId : <number>
                             localName : 
-                            nodeId : 0
+                            nodeId : <number>
                             nodeName : #text
                             nodeType : 3
                             nodeValue : text
-                            parentId : 0
+                            parentId : <number>
                         }
                     ]
                     localName : span
-                    nodeId : 0
+                    nodeId : <number>
                     nodeName : SPAN
                     nodeType : 1
                     nodeValue : 
-                    parentId : 0
+                    parentId : <number>
                 }
             ]
             localName : div
-            nodeId : 0
+            nodeId : <number>
             nodeName : DIV
             nodeType : 1
             nodeValue : 
-            parentId : 0
+            parentId : <number>
         }
     ]
     localName : body
-    nodeId : 0
+    nodeId : <number>
     nodeName : BODY
     nodeType : 1
     nodeValue : 

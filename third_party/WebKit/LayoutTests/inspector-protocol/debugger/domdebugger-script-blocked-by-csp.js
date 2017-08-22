@@ -47,7 +47,7 @@
     var params = messageObject.params;
     testRunner.log('Paused at: ' + params.callFrames[0].functionName + '@' + params.callFrames[0].location.lineNumber);
     testRunner.log('Reason: ' + params.reason + '; Data:');
-    testRunner.logObject(params.data);
+    testRunner.log(params.data);
     await dp.Debugger.resume();
   }
 

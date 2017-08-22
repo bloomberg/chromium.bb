@@ -48,6 +48,6 @@
   async function dumpListeners(objectId, depth, pierce) {
     testRunner.log(`Fetching listeners for depth = ${depth} and pierce = ${pierce}`);
     var {result} = await dp.DOMDebugger.getEventListeners({objectId, depth, pierce});
-    testRunner.logMessage(result);
+    testRunner.log(result);
   }
 })

@@ -66,20 +66,20 @@
     testRunner.log(expression);
     await setLastEvaluationResultTo239();
     var result = await evaluate(expression + '; var a = presentedAPIMethods(); a', true);
-    testRunner.logObject(result);
+    testRunner.log(result);
   }
 
   async function dumpLeftMethods() {
     // Should always be zero.
     await setLastEvaluationResultTo239();
     var result = await evaluate('presentedAPIMethods()', false);
-    testRunner.logObject(result);
+    testRunner.log(result);
   }
 
   async function dumpDir() {
     // Should always be presented.
     var result = await evaluate('dir', false);
-    testRunner.logObject(result);
+    testRunner.log(result);
   }
 
   await runExpressionAndDumpPresentedMethods('');

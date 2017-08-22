@@ -2,7 +2,7 @@
   var {page, session, dp} = await testRunner.startBlank(`Check that console.log doesn't run microtasks.`);
 
   dp.Runtime.onConsoleAPICalled(result => {
-    testRunner.logObject(result.params.args[0]);
+    testRunner.log(result.params.args[0]);
     if (result.params.args[0].value === 'finished')
       testRunner.completeTest();
   });

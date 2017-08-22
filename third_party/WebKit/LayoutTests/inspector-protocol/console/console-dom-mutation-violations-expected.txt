@@ -12,13 +12,13 @@ Tests that dom modification event listener produces a violation.
                         columnNumber : 14
                         functionName : 
                         lineNumber : 0
-                        scriptId : <scriptId>
+                        scriptId : <string>
                         url : 
                     }
                 ]
             }
             text : Added synchronous DOM mutation listener to a 'DOMSubtreeModified' event. Consider using MutationObserver to make the page more responsive.
-            timestamp : <timestamp>
+            timestamp : <number>
         }
     }
 }

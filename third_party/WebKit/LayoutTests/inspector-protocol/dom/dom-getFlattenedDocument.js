@@ -9,7 +9,7 @@
   });
   dp.DOM.enable();
   var response = await dp.DOM.getFlattenedDocument({depth: -1, pierce: true});
-  testRunner.logMessage(response.result);
+  testRunner.log(response.result);
   testRunner.completeTest();
 })
 
