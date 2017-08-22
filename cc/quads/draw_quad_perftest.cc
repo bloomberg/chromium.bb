@@ -61,6 +61,7 @@ class DrawQuadPerfTest : public testing::Test {
       TextureDrawQuad* quad =
           render_pass_->CreateAndAppendDrawQuad<TextureDrawQuad>();
       gfx::Rect rect(0, 0, 100, 100);
+      bool needs_blending = false;
       viz::ResourceId resource_id = 1;
       bool premultiplied_alpha = true;
       gfx::PointF uv_top_left(0, 0);
@@ -70,7 +71,7 @@ class DrawQuadPerfTest : public testing::Test {
       bool y_flipped = false;
       bool nearest_neighbor = true;
 
-      quad->SetNew(shared_state_, rect, rect, rect, resource_id,
+      quad->SetNew(shared_state_, rect, rect, rect, needs_blending, resource_id,
                    premultiplied_alpha, uv_top_left, uv_bottom_right,
                    background_color, vertex_opacity, y_flipped,
                    nearest_neighbor, false);

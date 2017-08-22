@@ -143,6 +143,7 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
+  bool needs_blending = true;
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   const gfx::PointF uv_top_left(0.0f, 0.0f);
   const gfx::PointF uv_bottom_right(1.0f, 1.0f);
@@ -150,7 +151,7 @@ void CreateTestTwoColoredTextureDrawQuad(const gfx::Rect& rect,
   const bool nearest_neighbor = false;
   TextureDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  quad->SetNew(shared_state, rect, gfx::Rect(), rect, resource,
+  quad->SetNew(shared_state, rect, gfx::Rect(), rect, needs_blending, resource,
                premultiplied_alpha, uv_top_left, uv_bottom_right,
                background_color, vertex_opacity, flipped, nearest_neighbor,
                false);
@@ -179,13 +180,14 @@ void CreateTestTextureDrawQuad(const gfx::Rect& rect,
   resource_provider->CopyToResource(
       resource, reinterpret_cast<uint8_t*>(&pixels.front()), rect.size());
 
+  bool needs_blending = true;
   const gfx::PointF uv_top_left(0.0f, 0.0f);
   const gfx::PointF uv_bottom_right(1.0f, 1.0f);
   const bool flipped = false;
   const bool nearest_neighbor = false;
   TextureDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  quad->SetNew(shared_state, rect, gfx::Rect(), rect, resource,
+  quad->SetNew(shared_state, rect, gfx::Rect(), rect, needs_blending, resource,
                premultiplied_alpha, uv_top_left, uv_bottom_right,
                background_color, vertex_opacity, flipped, nearest_neighbor,
                false);
@@ -226,6 +228,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   gfx::ColorSpace video_color_space = video_frame->ColorSpace();
 
   const gfx::Rect opaque_rect(0, 0, 0, 0);
+  bool needs_blending = true;
 
   if (with_alpha) {
     memset(video_frame->data(media::VideoFrame::kAPlane), alpha_value,
@@ -298,9 +301,9 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
   }
 
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                   ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
-                   uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space, video_color_space, 0.0f, 1.0f,
+                   needs_blending, ya_tex_coord_rect, uv_tex_coord_rect,
+                   ya_tex_size, uv_tex_size, y_resource, u_resource, v_resource,
+                   a_resource, color_space, video_color_space, 0.0f, 1.0f,
                    bits_per_channel);
 }
 
@@ -328,10 +331,12 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
 
   TextureDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
+  bool needs_blending = true;
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-  quad->SetNew(shared_state, rect, gfx::Rect(), rect, y_resource, false,
-               tex_coord_rect.origin(), tex_coord_rect.bottom_right(),
-               SK_ColorBLACK, vertex_opacity, false, false, false);
+  quad->SetNew(shared_state, rect, gfx::Rect(), rect, needs_blending,
+               y_resource, false, tex_coord_rect.origin(),
+               tex_coord_rect.bottom_right(), SK_ColorBLACK, vertex_opacity,
+               false, false, false);
 }
 
 // Upshift video frame to 10 bit.
@@ -549,6 +554,7 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
   }
 
   const gfx::Rect opaque_rect(0, 0, 0, 0);
+  bool needs_blending = true;
   const gfx::Size ya_tex_size = rect.size();
   const gfx::Size uv_tex_size = media::VideoFrame::PlaneSize(
       media::PIXEL_FORMAT_NV12, media::VideoFrame::kUVPlane, rect.size());
@@ -583,9 +589,9 @@ void CreateTestYUVVideoDrawQuad_NV12(const SharedQuadState* shared_state,
   YUVVideoDrawQuad* yuv_quad =
       render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   yuv_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                   ya_tex_coord_rect, uv_tex_coord_rect, ya_tex_size,
-                   uv_tex_size, y_resource, u_resource, v_resource, a_resource,
-                   color_space, video_color_space, 0.0f, 1.0f, 8);
+                   needs_blending, ya_tex_coord_rect, uv_tex_coord_rect,
+                   ya_tex_size, uv_tex_size, y_resource, u_resource, v_resource,
+                   a_resource, color_space, video_color_space, 0.0f, 1.0f, 8);
 }
 
 void CreateTestY16TextureDrawQuad_TwoColor(
@@ -1034,6 +1040,7 @@ TYPED_TEST(IntersectingQuadPixelTest, TexturedQuads) {
 }
 
 TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
+  bool needs_blending = true;
   this->SetupQuadStateAndRenderPass();
   gfx::Rect outer_rect(this->quad_rect_);
   gfx::Rect inner_rect(this->quad_rect_.x() + (this->quad_rect_.width() / 4),
@@ -1059,10 +1066,10 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
   PictureDrawQuad* blue_quad =
       this->render_pass_->template CreateAndAppendDrawQuad<PictureDrawQuad>();
 
-  blue_quad->SetNew(this->front_quad_state_, this->quad_rect_, gfx::Rect(),
-                    this->quad_rect_, gfx::RectF(this->quad_rect_),
-                    this->quad_rect_.size(), false, viz::RGBA_8888,
-                    this->quad_rect_, 1.f, blue_raster_source);
+  blue_quad->SetNew(
+      this->front_quad_state_, this->quad_rect_, gfx::Rect(), this->quad_rect_,
+      needs_blending, gfx::RectF(this->quad_rect_), this->quad_rect_.size(),
+      false, viz::RGBA_8888, this->quad_rect_, 1.f, blue_raster_source);
 
   std::unique_ptr<FakeRecordingSource> green_recording =
       FakeRecordingSource::CreateFilledRecordingSource(this->quad_rect_.size());
@@ -1074,10 +1081,10 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
 
   PictureDrawQuad* green_quad =
       this->render_pass_->template CreateAndAppendDrawQuad<PictureDrawQuad>();
-  green_quad->SetNew(this->back_quad_state_, this->quad_rect_, gfx::Rect(),
-                     this->quad_rect_, gfx::RectF(this->quad_rect_),
-                     this->quad_rect_.size(), false, viz::RGBA_8888,
-                     this->quad_rect_, 1.f, green_raster_source);
+  green_quad->SetNew(
+      this->back_quad_state_, this->quad_rect_, gfx::Rect(), this->quad_rect_,
+      needs_blending, gfx::RectF(this->quad_rect_), this->quad_rect_.size(),
+      false, viz::RGBA_8888, this->quad_rect_, 1.f, green_raster_source);
   SCOPED_TRACE("IntersectingPictureQuadsPass");
   this->AppendBackgroundAndRunTest(
       FuzzyPixelComparator(false, 2.f, 0.f, 256.f, 256, 0.f),
@@ -2606,6 +2613,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
       blue_recording->CreateRasterSource();
 
   gfx::Vector2d offset(viewport.bottom_right() - blue_rect.bottom_right());
+  bool needs_blending = true;
   gfx::Transform blue_quad_to_target_transform;
   blue_quad_to_target_transform.Translate(offset.x(), offset.y());
   gfx::Rect blue_target_clip_rect = MathUtil::MapEnclosingClippedRect(
@@ -2618,7 +2626,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
 
   blue_quad->SetNew(blue_shared_state,
                     viewport,  // Intentionally bigger than clip.
-                    gfx::Rect(), viewport, gfx::RectF(viewport),
+                    gfx::Rect(), viewport, needs_blending, gfx::RectF(viewport),
                     viewport.size(), nearest_neighbor, texture_format, viewport,
                     1.f, std::move(blue_raster_source));
 
@@ -2639,9 +2647,9 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
   PictureDrawQuad* green_quad =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad->SetNew(green_shared_state, viewport, gfx::Rect(), viewport,
-                     gfx::RectF(0.f, 0.f, 1.f, 1.f), viewport.size(),
-                     nearest_neighbor, texture_format, viewport, 1.f,
-                     std::move(green_raster_source));
+                     needs_blending, gfx::RectF(0.f, 0.f, 1.f, 1.f),
+                     viewport.size(), nearest_neighbor, texture_format,
+                     viewport, 1.f, std::move(green_raster_source));
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -2655,6 +2663,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadIdentityScale) {
 // Not WithSkiaGPUBackend since that path currently requires tiles for opacity.
 TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   gfx::Rect viewport(this->device_viewport_size_);
+  bool needs_blending = true;
   viz::ResourceFormat texture_format = viz::RGBA_8888;
   bool nearest_neighbor = false;
 
@@ -2681,8 +2690,9 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   PictureDrawQuad* green_quad =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad->SetNew(green_shared_state, viewport, gfx::Rect(), viewport,
-                     gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor,
-                     texture_format, viewport, 1.f, green_raster_source.get());
+                     needs_blending, gfx::RectF(0, 0, 1, 1), viewport.size(),
+                     nearest_neighbor, texture_format, viewport, 1.f,
+                     green_raster_source.get());
 
   // One viewport-filling white quad.
   std::unique_ptr<FakeRecordingSource> white_recording =
@@ -2701,8 +2711,8 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadOpacity) {
   PictureDrawQuad* white_quad =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   white_quad->SetNew(white_shared_state, viewport, gfx::Rect(), viewport,
-                     gfx::RectF(0, 0, 1, 1), viewport.size(), nearest_neighbor,
-                     texture_format, viewport, 1.f,
+                     needs_blending, gfx::RectF(0, 0, 1, 1), viewport.size(),
+                     nearest_neighbor, texture_format, viewport, 1.f,
                      std::move(white_raster_source));
 
   RenderPassList pass_list;
@@ -2744,6 +2754,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
 
   gfx::Rect viewport(this->device_viewport_size_);
   viz::ResourceFormat texture_format = viz::RGBA_8888;
+  bool needs_blending = true;
   bool nearest_neighbor = false;
 
   int id = 1;
@@ -2773,7 +2784,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
       CreateTestSharedQuadState(quad_to_target_transform, viewport, pass.get());
 
   PictureDrawQuad* quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport,
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, needs_blending,
                gfx::RectF(0, 0, 2, 2), viewport.size(), nearest_neighbor,
                texture_format, viewport, 1.f, std::move(raster_source));
 
@@ -2792,6 +2803,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadDisableImageFiltering) {
 TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
   gfx::Rect viewport(this->device_viewport_size_);
   viz::ResourceFormat texture_format = viz::RGBA_8888;
+  bool needs_blending = true;
   bool nearest_neighbor = true;
 
   int id = 1;
@@ -2821,7 +2833,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
       CreateTestSharedQuadState(quad_to_target_transform, viewport, pass.get());
 
   PictureDrawQuad* quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport,
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, needs_blending,
                gfx::RectF(0, 0, 2, 2), viewport.size(), nearest_neighbor,
                texture_format, viewport, 1.f, std::move(raster_source));
 
@@ -2838,6 +2850,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
 TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool swizzle_contents = true;
+  bool needs_blending = true;
   bool nearest_neighbor = true;
 
   SkBitmap bitmap;
@@ -2866,9 +2879,9 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
       CreateTestSharedQuadState(quad_to_target_transform, viewport, pass.get());
 
   TileDrawQuad* quad = pass->CreateAndAppendDrawQuad<TileDrawQuad>();
-  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource,
-               gfx::RectF(gfx::Rect(tile_size)), tile_size, swizzle_contents,
-               nearest_neighbor);
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, needs_blending,
+               resource, gfx::RectF(gfx::Rect(tile_size)), tile_size,
+               swizzle_contents, nearest_neighbor);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -2883,6 +2896,7 @@ TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
 // TextureDrawQuad.
 TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
   gfx::Rect viewport(this->device_viewport_size_);
+  bool needs_blending = true;
   bool nearest_neighbor = true;
 
   SkBitmap bitmap;
@@ -2912,9 +2926,9 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
 
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource, false,
-               gfx::PointF(0, 0), gfx::PointF(1, 1), SK_ColorBLACK,
-               vertex_opacity, false, nearest_neighbor, false);
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, needs_blending,
+               resource, false, gfx::PointF(0, 0), gfx::PointF(1, 1),
+               SK_ColorBLACK, vertex_opacity, false, nearest_neighbor, false);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -2929,6 +2943,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
 // the TextureDrawQuad.
 TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
   gfx::Rect viewport(this->device_viewport_size_);
+  bool needs_blending = true;
   bool nearest_neighbor = false;
 
   SkBitmap bitmap;
@@ -2960,9 +2975,9 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
 
   float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
   TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, resource, false,
-               gfx::PointF(0, 0), gfx::PointF(1, 1), SK_ColorBLACK,
-               vertex_opacity, false, nearest_neighbor, false);
+  quad->SetNew(shared_state, viewport, gfx::Rect(), viewport, needs_blending,
+               resource, false, gfx::PointF(0, 0), gfx::PointF(1, 1),
+               SK_ColorBLACK, vertex_opacity, false, nearest_neighbor, false);
 
   RenderPassList pass_list;
   pass_list.push_back(std::move(pass));
@@ -2979,6 +2994,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
   gfx::Rect viewport(this->device_viewport_size_);
   // TODO(enne): the renderer should figure this out on its own.
   viz::ResourceFormat texture_format = viz::RGBA_8888;
+  bool needs_blending = true;
   bool nearest_neighbor = false;
 
   int id = 1;
@@ -3014,15 +3030,16 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
 
   PictureDrawQuad* green_quad1 =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-  green_quad1->SetNew(
-      top_right_green_shared_quad_state, green_rect1, gfx::Rect(), green_rect1,
-      gfx::RectF(gfx::SizeF(green_rect1.size())), green_rect1.size(),
-      nearest_neighbor, texture_format, green_rect1, 1.f, green_raster_source);
+  green_quad1->SetNew(top_right_green_shared_quad_state, green_rect1,
+                      gfx::Rect(), green_rect1, needs_blending,
+                      gfx::RectF(gfx::SizeF(green_rect1.size())),
+                      green_rect1.size(), nearest_neighbor, texture_format,
+                      green_rect1, 1.f, green_raster_source);
 
   PictureDrawQuad* green_quad2 =
       pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   green_quad2->SetNew(top_right_green_shared_quad_state, green_rect2,
-                      gfx::Rect(), green_rect2,
+                      gfx::Rect(), green_rect2, needs_blending,
                       gfx::RectF(gfx::SizeF(green_rect2.size())),
                       green_rect2.size(), nearest_neighbor, texture_format,
                       green_rect2, 1.f, std::move(green_raster_source));
@@ -3089,10 +3106,10 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNonIdentityScale) {
 
   PictureDrawQuad* blue_quad = pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
   blue_quad->SetNew(blue_shared_state, quad_content_rect, gfx::Rect(),
-                    quad_content_rect, gfx::RectF(quad_content_rect),
-                    content_union_rect.size(), nearest_neighbor, texture_format,
-                    content_union_rect, contents_scale,
-                    std::move(raster_source));
+                    quad_content_rect, needs_blending,
+                    gfx::RectF(quad_content_rect), content_union_rect.size(),
+                    nearest_neighbor, texture_format, content_union_rect,
+                    contents_scale, std::move(raster_source));
 
   // Fill left half of viewport with green.
   gfx::Transform half_green_quad_to_target_transform;
@@ -3275,6 +3292,7 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
   // viz::GLRenderer does the right thing with its draw quad cache.
 
   gfx::Rect rect(this->device_viewport_size_);
+  bool needs_blending = false;
 
   int id = 1;
   std::unique_ptr<RenderPass> pass = CreateTestRootRenderPass(id, rect);
@@ -3335,7 +3353,7 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
       TextureDrawQuad* texture_quad =
           pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       texture_quad->SetNew(shared_state, layer_rect, layer_rect, layer_rect,
-                           resource, true, uv_rect.origin(),
+                           needs_blending, resource, true, uv_rect.origin(),
                            uv_rect.bottom_right(), SK_ColorWHITE,
                            vertex_opacity, false, false, false);
     }
@@ -3487,6 +3505,7 @@ TEST_P(ColorTransformPixelTest, Basic) {
     resource_provider_->CopyToResource(resource, input_colors.data(),
                                        rect.size());
 
+    bool needs_blending = true;
     const gfx::PointF uv_top_left(0.0f, 0.0f);
     const gfx::PointF uv_bottom_right(1.0f, 1.0f);
     const bool flipped = false;
@@ -3495,8 +3514,8 @@ TEST_P(ColorTransformPixelTest, Basic) {
     TextureDrawQuad* quad = pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
 
     float vertex_opacity[4] = {1.0f, 1.0f, 1.0f, 1.0f};
-    quad->SetNew(shared_state, rect, gfx::Rect(), rect, resource,
-                 premultiplied_alpha, uv_top_left, uv_bottom_right,
+    quad->SetNew(shared_state, rect, gfx::Rect(), rect, needs_blending,
+                 resource, premultiplied_alpha, uv_top_left, uv_bottom_right,
                  SK_ColorBLACK, vertex_opacity, flipped, nearest_neighbor,
                  false);
 

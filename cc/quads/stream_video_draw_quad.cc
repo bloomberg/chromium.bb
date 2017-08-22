@@ -18,10 +18,10 @@ void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& opaque_rect,
                                  const gfx::Rect& visible_rect,
+                                 bool needs_blending,
                                  unsigned resource_id,
                                  gfx::Size resource_size_in_pixels,
                                  const gfx::Transform& matrix) {
-  bool needs_blending = false;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::STREAM_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;

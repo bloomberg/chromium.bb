@@ -29,6 +29,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
+              bool needs_blending,
               const gfx::RectF& tex_coord_rect,
               const gfx::Size& texture_size,
               bool nearest_neighbor,

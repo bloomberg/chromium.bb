@@ -291,6 +291,7 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
                                        const SharedQuadState* shared_quad_state,
                                        RenderPass* render_pass,
                                        const gfx::Rect& rect) {
+  bool needs_blending = false;
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -302,10 +303,10 @@ TextureDrawQuad* CreateCandidateQuadAt(ResourceProvider* resource_provider,
 
   TextureDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  overlay_quad->SetNew(shared_quad_state, rect, rect, rect, resource_id,
-                       premultiplied_alpha, kUVTopLeft, kUVBottomRight,
-                       SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                       nearest_neighbor, false);
+  overlay_quad->SetNew(shared_quad_state, rect, rect, rect, needs_blending,
+                       resource_id, premultiplied_alpha, kUVTopLeft,
+                       kUVBottomRight, SK_ColorTRANSPARENT, vertex_opacity,
+                       flipped, nearest_neighbor, false);
   overlay_quad->set_resource_size_in_pixels(resource_size_in_pixels);
 
   return overlay_quad;
@@ -317,6 +318,7 @@ TextureDrawQuad* CreateTransparentCandidateQuadAt(
     RenderPass* render_pass,
     const gfx::Rect& rect) {
   gfx::Rect opaque_rect = gfx::Rect();
+  bool needs_blending = true;
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -328,10 +330,10 @@ TextureDrawQuad* CreateTransparentCandidateQuadAt(
 
   TextureDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  overlay_quad->SetNew(shared_quad_state, rect, opaque_rect, rect, resource_id,
-                       premultiplied_alpha, kUVTopLeft, kUVBottomRight,
-                       SK_ColorTRANSPARENT, vertex_opacity, flipped,
-                       nearest_neighbor, false);
+  overlay_quad->SetNew(shared_quad_state, rect, opaque_rect, rect,
+                       needs_blending, resource_id, premultiplied_alpha,
+                       kUVTopLeft, kUVBottomRight, SK_ColorTRANSPARENT,
+                       vertex_opacity, flipped, nearest_neighbor, false);
   overlay_quad->set_resource_size_in_pixels(resource_size_in_pixels);
 
   return overlay_quad;
@@ -343,6 +345,7 @@ StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
     RenderPass* render_pass,
     const gfx::Rect& rect,
     const gfx::Transform& transform) {
+  bool needs_blending = false;
   gfx::Size resource_size_in_pixels = rect.size();
   bool is_overlay_candidate = true;
   viz::ResourceId resource_id = CreateResource(
@@ -350,8 +353,8 @@ StreamVideoDrawQuad* CreateCandidateVideoQuadAt(
 
   StreamVideoDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
-  overlay_quad->SetNew(shared_quad_state, rect, rect, rect, resource_id,
-                       resource_size_in_pixels, transform);
+  overlay_quad->SetNew(shared_quad_state, rect, rect, rect, needs_blending,
+                       resource_id, resource_size_in_pixels, transform);
 
   return overlay_quad;
 }
@@ -378,6 +381,7 @@ YUVVideoDrawQuad* CreateFullscreenCandidateYUVVideoQuad(
     ResourceProvider* resource_provider,
     const SharedQuadState* shared_quad_state,
     RenderPass* render_pass) {
+  bool needs_blending = false;
   gfx::RectF tex_coord_rect(0, 0, 1, 1);
   gfx::Rect rect = render_pass->output_rect;
   gfx::Size resource_size_in_pixels = rect.size();
@@ -387,8 +391,8 @@ YUVVideoDrawQuad* CreateFullscreenCandidateYUVVideoQuad(
 
   YUVVideoDrawQuad* overlay_quad =
       render_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
-  overlay_quad->SetNew(shared_quad_state, rect, rect, rect, tex_coord_rect,
-                       tex_coord_rect, resource_size_in_pixels,
+  overlay_quad->SetNew(shared_quad_state, rect, rect, rect, needs_blending,
+                       tex_coord_rect, tex_coord_rect, resource_size_in_pixels,
                        resource_size_in_pixels, resource_id, resource_id,
                        resource_id, resource_id, YUVVideoDrawQuad::REC_601,
                        gfx::ColorSpace(), 0, 1.0, 8);

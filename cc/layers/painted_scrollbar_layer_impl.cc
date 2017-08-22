@@ -116,15 +116,16 @@ void PaintedScrollbarLayerImpl::AppendQuads(
 
   if (thumb_resource_id && !visible_thumb_quad_rect.IsEmpty()) {
     gfx::Rect opaque_rect;
+    bool needs_blending = true;
     const float opacity[] = {thumb_opacity_, thumb_opacity_, thumb_opacity_,
                              thumb_opacity_};
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state, scaled_thumb_quad_rect, opaque_rect,
-                 scaled_visible_thumb_quad_rect, thumb_resource_id,
-                 premultipled_alpha, uv_top_left, uv_bottom_right,
-                 SK_ColorTRANSPARENT, opacity, flipped, nearest_neighbor,
-                 false);
+                 scaled_visible_thumb_quad_rect, needs_blending,
+                 thumb_resource_id, premultipled_alpha, uv_top_left,
+                 uv_bottom_right, SK_ColorTRANSPARENT, opacity, flipped,
+                 nearest_neighbor, false);
     ValidateQuadResources(quad);
   }
 
@@ -138,14 +139,15 @@ void PaintedScrollbarLayerImpl::AppendQuads(
   if (track_resource_id && !visible_track_quad_rect.IsEmpty()) {
     gfx::Rect opaque_rect(contents_opaque() ? scaled_track_quad_rect
                                             : gfx::Rect());
+    bool needs_blending = !contents_opaque();
     const float opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     quad->SetNew(shared_quad_state, scaled_track_quad_rect, opaque_rect,
-                 scaled_visible_track_quad_rect, track_resource_id,
-                 premultipled_alpha, uv_top_left, uv_bottom_right,
-                 SK_ColorTRANSPARENT, opacity, flipped, nearest_neighbor,
-                 false);
+                 scaled_visible_track_quad_rect, needs_blending,
+                 track_resource_id, premultipled_alpha, uv_top_left,
+                 uv_bottom_right, SK_ColorTRANSPARENT, opacity, flipped,
+                 nearest_neighbor, false);
     ValidateQuadResources(quad);
   }
 }

@@ -31,6 +31,7 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
                              const gfx::Rect& visible_rect,
+                             bool needs_blending,
                              unsigned resource_id,
                              bool premultiplied_alpha,
                              const gfx::PointF& uv_top_left,
@@ -40,8 +41,9 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              bool y_flipped,
                              bool nearest_neighbor,
                              bool secure_output_only) {
-  bool needs_blending = vertex_opacity[0] != 1.0f || vertex_opacity[1] != 1.0f
-      || vertex_opacity[2] != 1.0f || vertex_opacity[3] != 1.0f;
+  needs_blending = needs_blending || vertex_opacity[0] != 1.0f ||
+                   vertex_opacity[1] != 1.0f || vertex_opacity[2] != 1.0f ||
+                   vertex_opacity[3] != 1.0f;
   DrawQuad::SetAll(shared_quad_state, DrawQuad::TEXTURE_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;

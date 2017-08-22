@@ -210,6 +210,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
     EXPECT_EQ(visible_layer_rect.ToString(),
               render_pass->quad_list.front()->opaque_rect.ToString());
+    EXPECT_FALSE(render_pass->quad_list.front()->needs_blending);
   }
 
   EXPECT_TRUE(layer->contents_opaque());
@@ -236,6 +237,7 @@ TEST(SolidColorLayerImplTest, VerifyOpaqueRect) {
     ASSERT_EQ(render_pass->quad_list.size(), 1U);
     EXPECT_EQ(gfx::Rect().ToString(),
               render_pass->quad_list.front()->opaque_rect.ToString());
+    EXPECT_TRUE(render_pass->quad_list.front()->needs_blending);
   }
 }
 

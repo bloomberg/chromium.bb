@@ -1528,6 +1528,7 @@ TEST_F(PictureLayerImplTest, DisallowTileDrawQuads) {
             render_pass->quad_list.front()->material);
   EXPECT_EQ(render_pass->quad_list.front()->rect, layer_rect);
   EXPECT_EQ(render_pass->quad_list.front()->opaque_rect, layer_rect);
+  EXPECT_FALSE(render_pass->quad_list.front()->needs_blending);
   EXPECT_EQ(render_pass->quad_list.front()->visible_rect, layer_rect);
 }
 
@@ -1566,6 +1567,7 @@ TEST_F(PictureLayerImplTest, ResourcelessPartialRecording) {
   EXPECT_EQ(quad_visible, quad->rect);
   EXPECT_EQ(quad_visible, quad->opaque_rect);
   EXPECT_EQ(quad_visible, quad->visible_rect);
+  EXPECT_FALSE(quad->needs_blending);
 }
 
 TEST_F(PictureLayerImplTest, ResourcelessEmptyRecording) {

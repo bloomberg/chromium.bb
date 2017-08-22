@@ -354,14 +354,16 @@ void NinePatchGenerator::AppendQuads(LayerImpl* layer_impl,
         layer_impl->draw_properties()
             .occlusion_in_content_space.GetUnoccludedContentRect(output_rect);
     gfx::Rect opaque_rect = opaque ? visible_rect : gfx::Rect();
+    bool needs_blending = opaque ? false : true;
     if (!visible_rect.IsEmpty()) {
       gfx::RectF image_rect = patch.normalized_image_rect;
       TextureDrawQuad* quad =
           render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
       quad->SetNew(shared_quad_state, output_rect, opaque_rect, visible_rect,
-                   resource, premultiplied_alpha, image_rect.origin(),
-                   image_rect.bottom_right(), SK_ColorTRANSPARENT,
-                   vertex_opacity, flipped, nearest_neighbor_, false);
+                   needs_blending, resource, premultiplied_alpha,
+                   image_rect.origin(), image_rect.bottom_right(),
+                   SK_ColorTRANSPARENT, vertex_opacity, flipped,
+                   nearest_neighbor_, false);
       layer_impl->ValidateQuadResources(quad);
     }
   }
