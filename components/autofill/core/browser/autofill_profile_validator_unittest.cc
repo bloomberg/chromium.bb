@@ -162,9 +162,8 @@ TEST_F(AutofillProfileValidatorTest, ValidateAddress_RuleNotExists) {
   validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
 }
 
-// Validate a profile with an invalid phone number and a valid address.
-TEST_F(AutofillProfileValidatorTest,
-       ValidateProfile_InvalidPhone_ValidAddress) {
+// Validate a profile with an invalid phone, valid email and valid address.
+TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidPhone) {
   AutofillProfile profile(autofill::test::GetFullValidProfile());
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
 
@@ -173,9 +172,8 @@ TEST_F(AutofillProfileValidatorTest,
   validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
 }
 
-// Validate a profile with a valid phone number and an invalid address.
-TEST_F(AutofillProfileValidatorTest,
-       ValidateProfile_ValidPhone_InvalidAddress) {
+// Validate a profile with a valid phone, valid email and invalid address.
+TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidAddress) {
   AutofillProfile profile(autofill::test::GetFullValidProfile());
   // QQ is an invalid admin area, thus an invalid address.
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("QQ"));
@@ -185,7 +183,7 @@ TEST_F(AutofillProfileValidatorTest,
   validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
 }
 
-// Validate a profile with an invalid phone number and an invalid address.
+// Validate a profile with an invalid phone, invalid email and invalid address.
 TEST_F(AutofillProfileValidatorTest,
        ValidateProfile_InvalidPhone_InvalidAddress) {
   AutofillProfile profile(autofill::test::GetFullValidProfile());
@@ -194,7 +192,51 @@ TEST_F(AutofillProfileValidatorTest,
   profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("QQ"));
 
   set_expected_status(AutofillProfile::INVALID);
+  validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
+}
 
+// Validate a profile with a valid phone, invalid email and invalid address.
+TEST_F(AutofillProfileValidatorTest,
+       ValidateProfile_InvalidEmail_InvalidAddress) {
+  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
+  // QQ is an invalid admin area, thus an invalid address.
+  profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("QQ"));
+
+  set_expected_status(AutofillProfile::INVALID);
+  validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
+}
+
+// Validate a profile with a valid phone, invalid email and invalid address.
+TEST_F(AutofillProfileValidatorTest,
+       ValidateProfile_InvalidEmail_InvalidPhone) {
+  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
+
+  set_expected_status(AutofillProfile::INVALID);
+  validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
+}
+
+// Validate a profile with a valid phone, invalid email and valid address.
+TEST_F(AutofillProfileValidatorTest, ValidateProfile_InvalidEmail) {
+  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
+
+  set_expected_status(AutofillProfile::VALID);
+  validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
+}
+
+// Validate a profile with a invalid phone, invalid email and invalid address.
+TEST_F(AutofillProfileValidatorTest,
+       ValidateProfile_InvalidEmail_InvalidPhone_InvalidAddress) {
+  AutofillProfile profile(autofill::test::GetFullValidProfile());
+  profile.SetRawInfo(EMAIL_ADDRESS, base::ASCIIToUTF16("Invalid Email."));
+  profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, base::string16());
+  // QQ is an invalid admin area, thus an invalid address.
+  profile.SetRawInfo(ADDRESS_HOME_STATE, base::UTF8ToUTF16("QQ"));
+
+  set_expected_status(AutofillProfile::INVALID);
   validator_->ValidateProfile(&profile, std::move(onvalidated_cb_));
 }
 
