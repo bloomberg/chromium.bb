@@ -3158,6 +3158,38 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, ReattachWebContents) {
                                   TabStripModel::ADD_ACTIVE);
 }
 
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       FillWhenFormWithHiddenUsername) {
+  // At first let us save a credential to the password store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.action = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("current_username");
+  signin_form.password_value = base::ASCIIToUTF16("current_username_password");
+  password_store->AddLogin(signin_form);
+  signin_form.username_value = base::ASCIIToUTF16("last_used_username");
+  signin_form.password_value = base::ASCIIToUTF16("last_used_password");
+  signin_form.preferred = true;
+  password_store->AddLogin(signin_form);
+  WaitForPasswordStore();
+
+  NavigateToFile("/password/hidden_username.html");
+
+  // Let the user interact with the page.
+  content::SimulateMouseClickAt(
+      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
+
+  // current_username is hardcoded in the invisible text on the page so
+  // current_username_password should be filled rather than last_used_password.
+  WaitForElementValue("password", "current_username_password");
+}
+
 // Verify the Form-Not-Secure warning is shown on a non-secure username field.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
                        ShowFormNotSecureOnUsernameField) {
