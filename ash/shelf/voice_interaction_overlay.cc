@@ -281,9 +281,6 @@ class VoiceInteractionIconBackground : public ui::Layer,
   void SetToLarge(const gfx::PointF& new_center) {
     PaintedShapeTransforms transforms;
     SetPaintedLayersVisible(true);
-    // Hide the foreground layers and only show the background layers.
-    for (int i = 0; i < PAINTED_SHAPE_COUNT; ++i)
-      painted_layers_[i]->SetVisible(false);
     // Hide the shadow layer
     shadow_layer_->SetVisible(false);
 
