@@ -79,7 +79,10 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
   timer_.Stop();
   if (threat_type == SB_THREAT_TYPE_SAFE) {
     state_ = STATE_NONE;
-    RunNextCallback(true, false);
+
+    if (!RunNextCallback(true, false))
+      return;
+
     ProcessUrls();
     return;
   }
@@ -90,9 +93,9 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
       url_checker_delegate_->MaybeDestroyPrerenderContents(
           web_contents_getter_);
     }
-    BlockAndProcessUrls(false);
     UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.UnsafePrefetchCanceled",
                               resource_type_, content::RESOURCE_TYPE_LAST_TYPE);
+    BlockAndProcessUrls(false);
     return;
   }
 
@@ -152,7 +155,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
                  url.spec());
 
     if (url_checker_delegate_->IsUrlWhitelisted(url)) {
-      RunNextCallback(true, false);
+      if (!RunNextCallback(true, false))
+        return;
+
       continue;
     }
 
@@ -166,7 +171,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
       UMA_HISTOGRAM_ENUMERATION("SB2.ResourceTypes2.Skipped", resource_type_,
                                 content::RESOURCE_TYPE_LAST_TYPE);
 
-      RunNextCallback(true, false);
+      if (!RunNextCallback(true, false))
+        return;
+
       continue;
     }
 
@@ -188,7 +195,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
 
     if (database_manager_->CheckBrowseUrl(
             url, url_checker_delegate_->GetThreatTypes(), this)) {
-      RunNextCallback(true, false);
+      if (!RunNextCallback(true, false))
+        return;
+
       continue;
     }
 
@@ -209,8 +218,10 @@ void SafeBrowsingUrlCheckerImpl::BlockAndProcessUrls(bool showed_interstitial) {
 
   // If user decided to not proceed through a warning, mark all the remaining
   // redirects as "bad".
-  for (; next_index_ < urls_.size(); ++next_index_)
-    RunNextCallback(false, showed_interstitial);
+  for (; next_index_ < urls_.size(); ++next_index_) {
+    if (!RunNextCallback(false, showed_interstitial))
+      return;
+  }
 }
 
 void SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete(bool proceed) {
@@ -218,7 +229,8 @@ void SafeBrowsingUrlCheckerImpl::OnBlockingPageComplete(bool proceed) {
 
   if (proceed) {
     state_ = STATE_NONE;
-    RunNextCallback(true, true);
+    if (!RunNextCallback(true, true))
+      return;
     ProcessUrls();
   } else {
     BlockAndProcessUrls(true);
@@ -239,10 +251,13 @@ SBThreatType SafeBrowsingUrlCheckerImpl::CheckWebUIUrls(const GURL& url) {
   return safe_browsing::SB_THREAT_TYPE_SAFE;
 }
 
-void SafeBrowsingUrlCheckerImpl::RunNextCallback(bool proceed,
+bool SafeBrowsingUrlCheckerImpl::RunNextCallback(bool proceed,
                                                  bool showed_interstitial) {
   DCHECK_LT(next_index_, urls_.size());
+
+  auto weak_self = weak_factory_.GetWeakPtr();
   std::move(urls_[next_index_++].callback).Run(proceed, showed_interstitial);
+  return !!weak_self;
 }
 
 }  // namespace safe_browsing
