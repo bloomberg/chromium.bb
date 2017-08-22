@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <title>Test for crbug.com/190880</title>
+<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script src="resources/text-based-repaint.js"></script>
 <style>
     video { width: 700px; }
@@ -22,7 +23,8 @@
     video.addEventListener("canplaythrough", runTest, true);
     function repaintTest() {
         video.volume = 0.5;
-        finishRepaintTest();
+        // Volume change is handled in another document cycle.
+        runAfterLayoutAndPaint(finishRepaintTest);
     }
 
     function runTest() {
