@@ -119,4 +119,17 @@ bool CSSPropertyBackgroundUtils::ConsumeBackgroundPosition(
   return true;
 }
 
+CSSValue* CSSPropertyBackgroundUtils::ConsumePrefixedBackgroundBox(
+    CSSParserTokenRange& range,
+    bool allow_text_value) {
+  // The values 'border', 'padding' and 'content' are deprecated and do not
+  // apply to the version of the property that has the -webkit- prefix removed.
+  if (CSSValue* value = CSSPropertyParserHelpers::ConsumeIdentRange(
+          range, CSSValueBorder, CSSValuePaddingBox))
+    return value;
+  if (allow_text_value && range.Peek().Id() == CSSValueText)
+    return CSSPropertyParserHelpers::ConsumeIdent(range);
+  return nullptr;
+}
+
 }  // namespace blink

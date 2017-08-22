@@ -58,14 +58,6 @@ const CSSValue* CSSPropertyAPI::ParseSingleValue(
       DCHECK(!RuntimeEnabledFeatures::CSS3TextDecorationsEnabled());
       return CSSPropertyTextDecorationLineUtils::ConsumeTextDecorationLine(
           range);
-    case CSSPropertyWebkitBackgroundClip:
-    case CSSPropertyWebkitMaskClip:
-      return ConsumeCommaSeparatedList(ConsumePrefixedBackgroundBox, range,
-                                       true /* allow_text_value */);
-    case CSSPropertyWebkitBackgroundOrigin:
-    case CSSPropertyWebkitMaskOrigin:
-      return ConsumeCommaSeparatedList(ConsumePrefixedBackgroundBox, range,
-                                       false /* allow_text_value */);
     default:
       return nullptr;
   }
