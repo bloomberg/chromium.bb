@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 
@@ -91,7 +92,7 @@ class ChromeTestExtensionLoader {
       const base::FilePath& unpacked_path);
 
   // Checks that the permissions of the loaded extension are correct.
-  void CheckPermissions(const std::string& extension_id);
+  void CheckPermissions(const Extension* extension);
 
   // Checks for any install warnings associated with the extension.
   bool CheckInstallWarnings(const Extension& extension);
@@ -125,7 +126,8 @@ class ChromeTestExtensionLoader {
   // extension. Only used for crx installs.
   int creation_flags_ = Extension::NO_FLAGS;
 
-  // The install location of the added extension.
+  // The install location of the added extension. Not valid for unpacked
+  // extensions.
   Manifest::Location location_ = Manifest::INTERNAL;
 
   // Whether or not the extension load should fail.
@@ -144,7 +146,7 @@ class ChromeTestExtensionLoader {
   bool grant_permissions_ = true;
 
   // Whether or not to allow file access by default to the extension.
-  bool allow_file_access_ = false;
+  base::Optional<bool> allow_file_access_;
 
   // Whether or not to allow incognito access by default to the extension.
   bool allow_incognito_access_ = false;

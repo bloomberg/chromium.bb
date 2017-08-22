@@ -71,8 +71,10 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadExtension(
   // non-shared modules.
   // TODO(devlin): That's not good; we shouldn't be crashing.
   if (!SharedModuleInfo::IsSharedModule(extension.get())) {
+    CheckPermissions(extension.get());
+    // Make |extension| null since it may have been reloaded invalidating
+    // pointers to it.
     extension = nullptr;
-    CheckPermissions(extension_id_);
   }
 
   if (!install_param_.empty()) {
@@ -191,15 +193,25 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadCrx(
   return extension;
 }
 
-void ChromeTestExtensionLoader::CheckPermissions(
-    const std::string& extension_id) {
-  std::string id = extension_id;
+void ChromeTestExtensionLoader::CheckPermissions(const Extension* extension) {
+  std::string id = extension->id();
+
+  // If the client explicitly set |allow_file_access_|, use that value. Else
+  // use the default as per the extensions manifest location.
+  if (!allow_file_access_) {
+    allow_file_access_ =
+        Manifest::ShouldAlwaysAllowFileAccess(extension->location());
+  }
+
+  // |extension| may be reloaded subsequently, invalidating the pointer. Hence
+  // make it null.
+  extension = nullptr;
 
   // Toggling incognito or file access will reload the extension, so wait for
   // the reload.
-  if (allow_file_access_ != util::AllowFileAccess(id, browser_context_)) {
+  if (*allow_file_access_ != util::AllowFileAccess(id, browser_context_)) {
     TestExtensionRegistryObserver registry_observer(extension_registry_, id);
-    util::SetAllowFileAccess(id, browser_context_, allow_file_access_);
+    util::SetAllowFileAccess(id, browser_context_, *allow_file_access_);
     registry_observer.WaitForExtensionLoaded();
   }
 
