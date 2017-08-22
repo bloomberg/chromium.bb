@@ -1586,9 +1586,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   }
 
   // The rest of this function initiates the new tab animation, which is
-  // phone-specific.
-  if (IsIPadIdiom())
+  // phone-specific.  Call the foreground tab added completion block; for
+  // iPhones, this will get executed after the animation has finished.
+  if (IsIPadIdiom()) {
+    if (self.foregroundTabWasAddedCompletionBlock) {
+      self.foregroundTabWasAddedCompletionBlock();
+      self.foregroundTabWasAddedCompletionBlock = nil;
+    }
     return;
+  }
 
   // Do nothing if browsing is currently suspended.  The BVC will set everything
   // up correctly when browsing resumes.
