@@ -267,6 +267,10 @@ double V8Platform::MonotonicallyIncreasingTime() {
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
+double V8Platform::CurrentClockTimeMillis() {
+  return base::Time::Now().ToJsTime();
+}
+
 v8::TracingController* V8Platform::GetTracingController() {
   return tracing_controller_.get();
 }
