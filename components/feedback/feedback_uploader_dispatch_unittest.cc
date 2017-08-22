@@ -1,8 +1,8 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/feedback/feedback_uploader_chrome.h"
+#include "components/feedback/feedback_uploader.h"
 
 #include <string>
 
@@ -33,12 +33,12 @@ constexpr int kHttpPostFailServerError = 500;
 
 }  // namespace
 
-class FeedbackUploaderChromeTest : public ::testing::Test {
+class FeedbackUploaderDispatchTest : public ::testing::Test {
  protected:
-  FeedbackUploaderChromeTest()
+  FeedbackUploaderDispatchTest()
       : browser_thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  ~FeedbackUploaderChromeTest() override {
+  ~FeedbackUploaderDispatchTest() override {
     // Clean up registered ids.
     variations::testing::ClearAllVariationIDs();
   }
@@ -54,13 +54,16 @@ class FeedbackUploaderChromeTest : public ::testing::Test {
     base::FieldTrialList::CreateFieldTrial(trial_name, group_name)->group();
   }
 
+  content::BrowserContext* context() { return &context_; }
+
  private:
   content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::TestBrowserContext context_;
 
-  DISALLOW_COPY_AND_ASSIGN(FeedbackUploaderChromeTest);
+  DISALLOW_COPY_AND_ASSIGN(FeedbackUploaderDispatchTest);
 };
 
-TEST_F(FeedbackUploaderChromeTest, VariationHeaders) {
+TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
   // Register a trial and variation id, so that there is data in variations
   // headers. Also, the variations header provider may have been registered to
   // observe some other field trial list, so reset it.
@@ -68,9 +71,8 @@ TEST_F(FeedbackUploaderChromeTest, VariationHeaders) {
   base::FieldTrialList field_trial_list_(NULL);
   CreateFieldTrialWithId("Test", "Group1", 123);
 
-  content::TestBrowserContext context;
-  FeedbackUploaderChrome uploader(
-      &context, FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  FeedbackUploader uploader(
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
 
   net::TestURLFetcherFactory factory;
   uploader.QueueReport("test");
@@ -87,11 +89,10 @@ TEST_F(FeedbackUploaderChromeTest, VariationHeaders) {
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
 
-TEST_F(FeedbackUploaderChromeTest, TestVariousServerResponses) {
-  content::TestBrowserContext context;
+TEST_F(FeedbackUploaderDispatchTest, TestVariousServerResponses) {
   FeedbackUploader::SetMinimumRetryDelayForTesting(kTestRetryDelay);
-  FeedbackUploaderChrome uploader(
-      &context, FeedbackUploaderFactory::CreateUploaderTaskRunner());
+  FeedbackUploader uploader(
+      context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
 
   EXPECT_EQ(kTestRetryDelay, uploader.retry_delay());
   // Successful reports should not introduce any retries, and should not

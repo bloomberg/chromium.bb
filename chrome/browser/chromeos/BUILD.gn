@@ -578,8 +578,6 @@ source_set("chromeos") {
     "external_metrics.h",
     "external_protocol_dialog.cc",
     "external_protocol_dialog.h",
-    "feedback_util.cc",
-    "feedback_util.h",
     "file_manager/app_id.h",
     "file_manager/arc_file_tasks.cc",
     "file_manager/arc_file_tasks.h",

@@ -8,36 +8,9 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "build/build_config.h"
-#include "components/feedback/feedback_data.h"
-#include "components/feedback/feedback_uploader.h"
-#include "components/feedback/feedback_uploader_factory.h"
-#include "components/feedback/proto/extension.pb.h"
 #include "third_party/zlib/google/zip.h"
 
-using feedback::FeedbackData;
-
 namespace feedback_util {
-
-void SendReport(scoped_refptr<FeedbackData> data) {
-  if (!data.get()) {
-    LOG(ERROR) << "SendReport called with NULL data!";
-    NOTREACHED();
-    return;
-  }
-
-  userfeedback::ExtensionSubmit feedback_data;
-  data->PrepareReport(&feedback_data);
-
-  // This pointer will eventually get deleted by the PostCleanup class, after
-  // we've either managed to successfully upload the report or died trying.
-  std::string post_body;
-  feedback_data.SerializeToString(&post_body);
-
-  feedback::FeedbackUploader *uploader =
-      feedback::FeedbackUploaderFactory::GetForBrowserContext(data->context());
-  uploader->QueueReport(post_body);
-}
 
 bool ZipString(const base::FilePath& filename,
                const std::string& data, std::string* compressed_logs) {

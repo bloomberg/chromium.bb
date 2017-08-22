@@ -18,6 +18,10 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
+namespace feedback {
+class FeedbackUploader;
+}  // namespace feedback
+
 namespace system_logs {
 class SystemLogsFetcher;
 class SystemLogsSource;
@@ -55,6 +59,11 @@ class FeedbackPrivateDelegate {
 
   // Called if sending the feedback report was delayed.
   virtual void NotifyFeedbackDelayed() const = 0;
+
+  // Returns the uploader associated with |context| which is used to upload
+  // feedback reports to the feedback server.
+  virtual feedback::FeedbackUploader* GetFeedbackUploaderForContext(
+      content::BrowserContext* context) const = 0;
 };
 
 }  // namespace extensions

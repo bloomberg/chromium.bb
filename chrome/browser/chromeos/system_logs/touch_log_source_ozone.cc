@@ -20,7 +20,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
-#include "components/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 
