@@ -302,6 +302,12 @@ void ScrollingCoordinator::UpdateLayerPositionConstraint(PaintLayer* layer) {
 
 void ScrollingCoordinator::WillDestroyScrollableArea(
     ScrollableArea* scrollable_area) {
+  {
+    // Remove any callback from |scroll_layer| to this object.
+    DisableCompositingQueryAsserts disabler;
+    if (GraphicsLayer* scroll_layer = scrollable_area->LayerForScrolling())
+      scroll_layer->SetScrollableArea(nullptr, false);
+  }
   RemoveWebScrollbarLayer(scrollable_area, kHorizontalScrollbar);
   RemoveWebScrollbarLayer(scrollable_area, kVerticalScrollbar);
 }

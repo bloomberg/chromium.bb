@@ -134,12 +134,8 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       scroll_corner_(nullptr),
       resizer_(nullptr),
       scroll_anchor_(this),
-      non_composited_main_thread_scrolling_reasons_(0)
-#if DCHECK_IS_ON()
-      ,
-      has_been_disposed_(false)
-#endif
-{
+      non_composited_main_thread_scrolling_reasons_(0),
+      has_been_disposed_(false) {
   Node* node = Box().GetNode();
   if (node && node->IsElementNode()) {
     // We save and restore only the scrollOffset as the other scroll values are
@@ -154,9 +150,14 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
-#if DCHECK_IS_ON()
   DCHECK(has_been_disposed_);
-#endif
+}
+
+void PaintLayerScrollableArea::DidScroll(const gfx::ScrollOffset& offset) {
+  ScrollableArea::DidScroll(offset);
+  // Ensure that there is no DidScroll callback from the composited scrolling
+  // cc::Layer to this object.
+  CHECK(!has_been_disposed_);
 }
 
 void PaintLayerScrollableArea::Dispose() {
@@ -212,9 +213,7 @@ void PaintLayerScrollableArea::Dispose() {
       !Box().DocumentBeingDestroyed())
     scroll_anchor_.ClearSelf();
 
-#if DCHECK_IS_ON()
   has_been_disposed_ = true;
-#endif
 }
 
 DEFINE_TRACE(PaintLayerScrollableArea) {
