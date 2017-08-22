@@ -1086,4 +1086,24 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="TabManager.Background.FirstAudioStarts">
+  <owner>chrisha@chromium.org</owner>
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    Collects the duration in MS from when the tab is backgrounded to when audio
+    starts to play. Only recorded when the tab is in the background.
+  </summary>
+  <metric name="IsMainFrame">
+    <summary>
+      Indicates whether the the audio stream belongs to the main frame.
+    </summary>
+  </metric>
+  <metric name="TimeFromBackgrounded">
+    <summary>
+      Duration in MS from when the tab is backgrounded to when audio starts to
+      play. Only recorded when the tab is in the background.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>

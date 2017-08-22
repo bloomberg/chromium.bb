@@ -104,13 +104,23 @@ void MetricsCollector::OnFramePropertyChanged(
     if (frame_data.last_audible_time + kMaxAudioSlientTime < now) {
       MetricsReportRecord& record =
           metrics_report_record_map_[web_contents_cu->id()];
+      auto duration =
+          now -
+          web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
+
       if (!record.first_audible_after_backgrounded_reported) {
-        const WebContentsData& web_contents_data =
-            web_contents_data_map_[web_contents_cu->id()];
         HEURISTICS_HISTOGRAM(kTabFromBackgroundedToFirstAudioStartsUMA,
-                             now - web_contents_data.last_invisible_time);
+                             duration);
         record.first_audible_after_backgrounded_reported = true;
       }
+
+      bool is_main_frame = frame_cu->IsMainFrame();
+      ReportAudibilityUKMIfNeeded(
+          web_contents_cu,
+          is_main_frame
+              ? &record.main_frame_first_audible_after_backgrounded_reported
+              : &record.child_frame_first_audible_after_backgrounded_reported,
+          is_main_frame, duration);
     }
   }
 }
@@ -239,6 +249,25 @@ void MetricsCollector::RecordCPUUsageForUkm(
       .Record(coordination_unit_manager().ukm_recorder());
 }
 
+void MetricsCollector::ReportAudibilityUKMIfNeeded(
+    const WebContentsCoordinationUnitImpl* web_contents_cu,
+    bool* reported,
+    bool is_main_frame,
+    base::TimeDelta duration) {
+  if (*reported)
+    return;
+  int64_t ukm_source_id = -1;
+  if (!web_contents_cu->GetProperty(mojom::PropertyType::kUKMSourceId,
+                                    &ukm_source_id)) {
+    return;
+  }
+  ukm::builders::TabManager_Background_FirstAudioStarts(ukm_source_id)
+      .SetIsMainFrame(is_main_frame)
+      .SetTimeFromBackgrounded(duration.InMilliseconds())
+      .Record(coordination_unit_manager().ukm_recorder());
+  *reported = true;
+}
+
 void MetricsCollector::UpdateUkmSourceIdForWebContents(
     const CoordinationUnitID& web_contents_cu_id,
     ukm::SourceId ukm_source_id) {
@@ -273,7 +302,9 @@ MetricsCollector::MetricsReportRecord::MetricsReportRecord()
       first_favicon_updated_after_backgrounded_reported(false),
       first_non_persistent_notification_created_after_backgrounded_reported(
           false),
-      first_title_updated_after_backgrounded_reported(false) {}
+      first_title_updated_after_backgrounded_reported(false),
+      main_frame_first_audible_after_backgrounded_reported(false),
+      child_frame_first_audible_after_backgrounded_reported(false) {}
 
 void MetricsCollector::MetricsReportRecord::Reset() {
   first_alert_fired_after_backgrounded_reported = false;
@@ -281,6 +312,8 @@ void MetricsCollector::MetricsReportRecord::Reset() {
   first_favicon_updated_after_backgrounded_reported = false;
   first_non_persistent_notification_created_after_backgrounded_reported = false;
   first_title_updated_after_backgrounded_reported = false;
+  main_frame_first_audible_after_backgrounded_reported = false;
+  child_frame_first_audible_after_backgrounded_reported = false;
 }
 
 }  // namespace resource_coordinator
