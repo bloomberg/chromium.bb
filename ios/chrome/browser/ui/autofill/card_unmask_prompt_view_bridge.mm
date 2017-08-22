@@ -200,7 +200,8 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   if ([self.collectionViewModel hasItemForItemType:ItemTypeCVC
                                  sectionIdentifier:SectionIdentifierMain]) {
     NSIndexPath* CVCIndexPath =
-        [self.collectionViewModel indexPathForItem:_CVCItem];
+        [self.collectionViewModel indexPathForItemType:ItemTypeCVC
+                                     sectionIdentifier:SectionIdentifierMain];
     CVCCell* CVC = base::mac::ObjCCastStrict<CVCCell>(
         [self.collectionView cellForItemAtIndexPath:CVCIndexPath]);
     [self focusInputIfNeeded:CVC];
@@ -251,6 +252,8 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   [_verifyButton setEnabled:NO];
 
   [self loadModel];
+  [self.collectionView reloadData];
+
   _CVCItem.errorMessage = errorMessage;
   // If the server requested a new expiration date, show the date input. If it
   // didn't and there was an error, show the "New card?" link which will show
