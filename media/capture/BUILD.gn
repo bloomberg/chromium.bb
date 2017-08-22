@@ -215,6 +215,7 @@ component("capture_lib") {
 
   if (is_chromeos) {
     sources += [
+      "video/chromeos/camera_buffer_factory.cc",
       "video/chromeos/camera_device_context.cc",
       "video/chromeos/camera_device_delegate.cc",
       "video/chromeos/camera_hal_delegate.cc",
@@ -277,14 +278,18 @@ test("capture_unittests") {
       "video/chromeos/camera_device_delegate_unittest.cc",
       "video/chromeos/camera_hal_delegate_unittest.cc",
       "video/chromeos/camera_hal_dispatcher_impl_unittest.cc",
+      "video/chromeos/local_gpu_memory_buffer_manager.cc",
       "video/chromeos/mock_camera_module.cc",
+      "video/chromeos/mock_gpu_memory_buffer_manager.cc",
       "video/chromeos/mock_video_capture_client.cc",
       "video/chromeos/stream_buffer_manager_unittest.cc",
     ]
     deps += [
       "//media/capture/video/chromeos/mojo:arc_camera3",
       "//mojo/edk/system",
+      "//third_party/libdrm",
       "//third_party/libsync",
+      "//third_party/minigbm",
     ]
   }
 }
