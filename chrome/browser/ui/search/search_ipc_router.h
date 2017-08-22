@@ -194,10 +194,6 @@ class SearchIPCRouter : public content::WebContentsObserver,
  private:
   friend class SearchIPCRouterPolicyTest;
   friend class SearchIPCRouterTest;
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           PageURLDoesntBelongToInstantRenderer);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
 
   // Used by unit tests to set a fake delegate.

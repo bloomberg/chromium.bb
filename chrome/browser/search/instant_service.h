@@ -139,12 +139,11 @@ class InstantService : public KeyedService,
           sections) override;
   void OnIconMadeAvailable(const GURL& site_url) override;
 
-  // Notifies the observer about the last known most visited items.
   void NotifyAboutMostVisitedItems();
+  void NotifyAboutThemeInfo();
 
 #if !defined(OS_ANDROID)
-  // Theme changed notification handler.
-  void OnThemeChanged();
+  void BuildThemeInfo();
 #endif
 
   void ResetInstantSearchPrerendererIfNecessary();

@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
@@ -15,15 +15,6 @@
 #include "chrome/browser/ui/browser_instant_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
-
-namespace {
-
-bool IsContentsFrom(const InstantTab* page,
-                    const content::WebContents* contents) {
-  return page && (page->web_contents() == contents);
-}
-
-}  // namespace
 
 InstantController::InstantController(BrowserInstantController* browser)
     : browser_(browser) {}
@@ -62,7 +53,8 @@ void InstantController::ClearDebugEvents() {
 void InstantController::InstantTabAboutToNavigateMainFrame(
     const content::WebContents* contents,
     const GURL& url) {
-  DCHECK(IsContentsFrom(instant_tab_.get(), contents));
+  DCHECK(instant_tab_);
+  DCHECK_EQ(instant_tab_->web_contents(), contents);
 
   // The Instant tab navigated (which means it had instant support both before
   // and after the navigation). This may cause it to be assigned to a new
@@ -77,7 +69,7 @@ void InstantController::ResetInstantTab() {
   if (search_mode_.is_origin_ntp()) {
     content::WebContents* active_tab = browser_->GetActiveWebContents();
     if (!instant_tab_ || active_tab != instant_tab_->web_contents()) {
-      instant_tab_.reset(new InstantTab(this, active_tab));
+      instant_tab_ = base::MakeUnique<InstantTab>(this, active_tab);
       instant_tab_->Init();
       UpdateInfoForInstantTab();
     }
@@ -88,13 +80,10 @@ void InstantController::ResetInstantTab() {
 
 void InstantController::UpdateInfoForInstantTab() {
   DCHECK(instant_tab_);
-  InstantService* instant_service = GetInstantService();
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser_->profile());
   if (instant_service) {
     instant_service->UpdateThemeInfo();
     instant_service->UpdateMostVisitedItemsInfo();
   }
-}
-
-InstantService* InstantController::GetInstantService() const {
-  return InstantServiceFactory::GetForProfile(browser_->profile());
 }

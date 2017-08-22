@@ -30,7 +30,6 @@ struct LoadCommittedDetails;
 
 class GURL;
 class InstantService;
-class InstantTabTest;
 class OmniboxView;
 class Profile;
 class SearchIPCRouterTest;
@@ -83,15 +82,8 @@ class SearchTabHelper : public content::WebContentsObserver,
 
  private:
   friend class content::WebContentsUserData<SearchTabHelper>;
-  friend class SearchIPCRouterPolicyTest;
   friend class SearchIPCRouterTest;
 
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           DetermineIfPageSupportsInstant_Local);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           DetermineIfPageSupportsInstant_NonLocal);
-  FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
-                           PageURLDoesntBelongToInstantRenderer);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnChromeIdentityCheckMatch);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
@@ -105,16 +97,7 @@ class SearchTabHelper : public content::WebContentsObserver,
                            OnHistorySyncCheckSyncing);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            OnHistorySyncCheckNotSyncing);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           IgnoreMessageIfThePageIsNotActive);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
-                           DetermineIfPageSupportsInstant_Local);
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
-                           DetermineIfPageSupportsInstant_NonLocal);
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest,
-                           PageURLDoesntBelongToInstantRenderer);
-  FRIEND_TEST_ALL_PREFIXES(InstantTabTest, PageSupportsInstant);
 
   explicit SearchTabHelper(content::WebContents* web_contents);
 
@@ -151,9 +134,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override;
   void MostVisitedItemsChanged(
       const std::vector<InstantMostVisitedItem>& items) override;
-
-  // Invoked to update the instant support state.
-  void InstantSupportChanged(bool supports_instant);
 
   // Sets the mode of the model based on the current URL of web_contents().
   // Only updates the origin part of the mode if |update_origin| is true,
