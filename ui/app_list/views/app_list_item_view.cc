@@ -329,7 +329,7 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setAntiAlias(true);
-    flags.setColor(kFolderBubbleColor);
+    flags.setColor(FolderImage::GetFolderBubbleSkColor());
     canvas->DrawCircle(center, kFolderPreviewRadius, flags);
   }
 }

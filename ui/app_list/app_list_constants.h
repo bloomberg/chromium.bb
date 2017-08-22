@@ -22,8 +22,8 @@ APP_LIST_EXPORT extern const SkColor kSearchBoxBackgroundDefault;
 APP_LIST_EXPORT extern const SkColor kSearchTextColor;
 
 APP_LIST_EXPORT extern const SkColor kLabelBackgroundColor;
-APP_LIST_EXPORT extern const SkColor kTopSeparatorColor;
 APP_LIST_EXPORT extern const SkColor kBottomSeparatorColor;
+APP_LIST_EXPORT extern const SkColor kBottomSeparatorColorFullScreen;
 
 APP_LIST_EXPORT extern const SkColor kDialogSeparatorColor;
 
@@ -55,7 +55,9 @@ APP_LIST_EXPORT extern const int kGridSelectedCornerRadius;
 APP_LIST_EXPORT extern const SkColor kFolderTitleColor;
 APP_LIST_EXPORT extern const SkColor kFolderTitleHintTextColor;
 APP_LIST_EXPORT extern const SkColor kFolderBubbleColor;
+APP_LIST_EXPORT extern const SkColor kFolderBubbleColorFullScreen;
 APP_LIST_EXPORT extern const SkColor kFolderShadowColor;
+APP_LIST_EXPORT extern const float kFolderBubbleOpacity;
 APP_LIST_EXPORT extern const float kFolderBubbleRadius;
 APP_LIST_EXPORT extern const float kFolderBubbleOffsetY;
 
@@ -97,6 +99,8 @@ APP_LIST_EXPORT extern const int kReorderDroppingCircleRadius;
 
 APP_LIST_EXPORT extern const int kAppsGridPadding;
 APP_LIST_EXPORT extern const int kAppsGridLeftRightPaddingFullscreen;
+APP_LIST_EXPORT extern const int kBottomSeparatorLeftRightPaddingFullScreen;
+APP_LIST_EXPORT extern const int kBottomSeparatorBottomPaddingFullScreen;
 APP_LIST_EXPORT extern const int kSearchBoxPadding;
 APP_LIST_EXPORT extern const int kSearchBoxTopPadding;
 APP_LIST_EXPORT extern const int kSearchBoxPeekingBottomPadding;

@@ -77,6 +77,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the size of a tile view including its padding.
   static gfx::Size GetTotalTileSize();
 
+  // Returns the padding around a tile view.
+  static gfx::Insets GetTilePadding();
+
   // This resets the grid view to a fresh state for showing the app list.
   void ResetForShowApps();
 

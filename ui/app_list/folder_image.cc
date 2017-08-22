@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -85,7 +86,7 @@ void FolderImageSource::Draw(gfx::Canvas* canvas) {
   bubble_center.Offset(0, -kFolderBubbleOffsetY);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
-  flags.setColor(kFolderBubbleColor);
+  flags.setColor(FolderImage::GetFolderBubbleSkColor());
   canvas->DrawCircle(bubble_center, kFolderBubbleRadius, flags);
 
   if (icons_.size() == 0)
@@ -163,6 +164,12 @@ std::vector<gfx::Rect> FolderImage::GetTopIconsBounds(
   top_icon_bounds.push_back(bottom_right);
 
   return top_icon_bounds;
+}
+
+// static
+SkColor FolderImage::GetFolderBubbleSkColor() {
+  return features::IsFullscreenAppListEnabled() ? kFolderBubbleColorFullScreen
+                                                : kFolderBubbleColor;
 }
 
 gfx::Rect FolderImage::GetTargetIconRectInFolderForItem(

@@ -44,8 +44,11 @@ class FolderBackgroundView : public views::View,
   // ui::ImplicitAnimationObserver overrides:
   void OnImplicitAnimationsCompleted() override;
 
+  float GetBubbleOpacity() const;
+
   AppListFolderView* folder_view_;
   ShowState show_state_;
+  bool is_fullscreen_app_list_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(FolderBackgroundView);
 };
