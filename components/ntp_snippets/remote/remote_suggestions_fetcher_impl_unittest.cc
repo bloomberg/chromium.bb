@@ -218,9 +218,7 @@ class DelegateCallingTestURLFetcherFactory
     DropAndCallDelegate(fetcher_id);
   }
 
-  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
-  // erase().
-  std::deque<int> fetchers_;
+  std::deque<int> fetchers_;  // std::queue doesn't support std::find.
 };
 
 // Factory for FakeURLFetcher objects that always generate errors.

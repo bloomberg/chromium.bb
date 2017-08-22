@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include <deque>
 #include <map>
 #include <string>
 
-#include "base/containers/circular_deque.h"
 #include "base/files/file_path.h"
 
 namespace drive {
@@ -56,7 +56,7 @@ class FileChange {
 
   class ChangeList {
    public:
-    typedef base::circular_deque<Change> List;
+    typedef std::deque<Change> List;
 
     ChangeList();
     ChangeList(const ChangeList& other);

@@ -7,11 +7,11 @@
 
 #include <stddef.h>
 
+#include <deque>
 #include <string>
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/circular_deque.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
@@ -59,7 +59,7 @@ class EventLogger {
   std::vector<Event> GetHistory();
 
  private:
-  base::circular_deque<Event> history_;  // guarded by lock_.
+  std::deque<Event> history_;  // guarded by lock_.
   size_t history_size_;  // guarded by lock_.
   int next_event_id_;  // guarded by lock_.
   base::Lock lock_;

@@ -5,11 +5,11 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_DOWNLOAD_SERVICE_IMPL_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_DOWNLOAD_SERVICE_IMPL_H_
 
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/download/internal/config.h"
 #include "components/download/internal/service_config_impl.h"
@@ -51,7 +51,7 @@ class DownloadServiceImpl : public DownloadService {
   std::unique_ptr<Controller> controller_;
   ServiceConfigImpl service_config_;
 
-  base::circular_deque<base::Closure> pending_actions_;
+  std::deque<base::Closure> pending_actions_;
   std::map<DownloadTaskType, base::Closure> pending_tasks_;
   bool startup_completed_;
 

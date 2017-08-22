@@ -6,11 +6,11 @@
 #define COMPONENTS_EXO_SHELL_SURFACE_H_
 
 #include <cstdint>
+#include <deque>
 #include <memory>
 #include <string>
 
 #include "ash/wm/window_state_observer.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/exo/surface_observer.h"
@@ -395,7 +395,7 @@ class ShellSurface : public SurfaceTreeHost,
   gfx::Rect shadow_content_bounds_;
   bool shadow_content_bounds_changed_ = false;
   float shadow_background_opacity_ = 1.0;
-  base::circular_deque<Config> pending_configs_;
+  std::deque<Config> pending_configs_;
   std::unique_ptr<ash::WindowResizer> resizer_;
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
   int top_inset_height_ = 0;

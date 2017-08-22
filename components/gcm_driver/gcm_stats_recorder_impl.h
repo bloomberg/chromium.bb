@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
+#include <deque>
 #include <string>
 #include <vector>
 
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/gcm_driver/gcm_activity.h"
@@ -99,25 +99,23 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   bool is_recording() const { return is_recording_; }
   void set_is_recording(bool recording) { is_recording_ = recording; }
 
-  const base::circular_deque<CheckinActivity>& checkin_activities() const {
+  const std::deque<CheckinActivity>& checkin_activities() const {
     return checkin_activities_;
   }
-  const base::circular_deque<ConnectionActivity>& connection_activities()
-      const {
+  const std::deque<ConnectionActivity>& connection_activities() const {
     return connection_activities_;
   }
-  const base::circular_deque<RegistrationActivity>& registration_activities()
-      const {
+  const std::deque<RegistrationActivity>& registration_activities() const {
     return registration_activities_;
   }
-  const base::circular_deque<ReceivingActivity>& receiving_activities() const {
+  const std::deque<ReceivingActivity>& receiving_activities() const {
     return receiving_activities_;
   }
-  const base::circular_deque<SendingActivity>& sending_activities() const {
+  const std::deque<SendingActivity>& sending_activities() const {
     return sending_activities_;
   }
-  const base::circular_deque<DecryptionFailureActivity>&
-  decryption_failure_activities() const {
+  const std::deque<DecryptionFailureActivity>& decryption_failure_activities()
+      const {
     return decryption_failure_activities_;
   }
 
@@ -152,13 +150,12 @@ class GCMStatsRecorderImpl : public GCMStatsRecorder {
   bool is_recording_;
   Delegate* delegate_;
 
-  base::circular_deque<CheckinActivity> checkin_activities_;
-  base::circular_deque<ConnectionActivity> connection_activities_;
-  base::circular_deque<RegistrationActivity> registration_activities_;
-  base::circular_deque<ReceivingActivity> receiving_activities_;
-  base::circular_deque<SendingActivity> sending_activities_;
-  base::circular_deque<DecryptionFailureActivity>
-      decryption_failure_activities_;
+  std::deque<CheckinActivity> checkin_activities_;
+  std::deque<ConnectionActivity> connection_activities_;
+  std::deque<RegistrationActivity> registration_activities_;
+  std::deque<ReceivingActivity> receiving_activities_;
+  std::deque<SendingActivity> sending_activities_;
+  std::deque<DecryptionFailureActivity> decryption_failure_activities_;
 
   base::TimeTicks last_connection_initiation_time_;
   base::TimeTicks last_connection_success_time_;

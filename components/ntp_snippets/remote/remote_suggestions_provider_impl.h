@@ -226,8 +226,6 @@ class RemoteSuggestionsProviderImpl final : public RemoteSuggestionsProvider {
     // be on some open NTP. We do not persist this list so that on a new start
     // of Chrome, this is empty.
     // |archived| is a FIFO buffer with a maximum length.
-    // TODO(http://crbug.com/757231) use a base::circular_deque when it
-    // supports insert().
     std::deque<std::unique_ptr<RemoteSuggestion>> archived;
 
     // Suggestions that the user dismissed. We keep these around until they

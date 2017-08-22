@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_QUEUE_H_
 #define COMPONENTS_APP_MODAL_APP_MODAL_DIALOG_QUEUE_H_
 
-#include "base/containers/circular_deque.h"
+#include <deque>
+
 #include "base/macros.h"
 
 namespace base {
@@ -21,7 +22,7 @@ class JavaScriptAppModalDialog;
 // This class is a singleton.
 class AppModalDialogQueue {
  public:
-  typedef base::circular_deque<JavaScriptAppModalDialog*>::iterator iterator;
+  typedef std::deque<JavaScriptAppModalDialog*>::iterator iterator;
 
   // Returns the singleton instance.
   static AppModalDialogQueue* GetInstance();
@@ -76,7 +77,7 @@ class AppModalDialogQueue {
 
   // Contains all app modal dialogs which are waiting to be shown. The currently
   // active modal dialog is not included.
-  base::circular_deque<JavaScriptAppModalDialog*> app_modal_dialog_queue_;
+  std::deque<JavaScriptAppModalDialog*> app_modal_dialog_queue_;
 
   // The currently active app-modal dialog box. nullptr if there is no active
   // app-modal dialog box.
