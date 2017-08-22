@@ -136,9 +136,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
  private:
   friend class SelectionAdjuster;
 
-  VisibleSelectionTemplate(const SelectionTemplate<Strategy>&, TextGranularity);
-
-  void Validate(const SelectionTemplate<Strategy>&, TextGranularity);
+  explicit VisibleSelectionTemplate(const SelectionTemplate<Strategy>&);
 
   // We need to store these as Positions because VisibleSelection is
   // used to store values in editing commands for use when
