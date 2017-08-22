@@ -103,7 +103,11 @@ public class NewTabPageRecyclerViewTest {
                         ContentSuggestionsCardLayout.FULL_CARD,
                         ContentSuggestionsAdditionalAction.FETCH, /*showIfEmpty=*/true,
                         "noSuggestionsMessage"));
-        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.INITIALIZING);
+
+        // Set the status as AVAILABLE so no spinner is shown. Showing the spinner during
+        // initialization can cause the test to hang because the message queue never becomes idle.
+        mSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.AVAILABLE);
+
         mSuggestionsDeps.getFactory().suggestionsSource = mSource;
 
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
@@ -430,7 +434,6 @@ public class NewTabPageRecyclerViewTest {
         Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(), contextMenuItemId, 0));
     }
-
 
     private static void assertArrayEquals(int[] expected, int[] actual) {
         Assert.assertEquals(Arrays.toString(expected), Arrays.toString(actual));

@@ -1523,6 +1523,31 @@
             ]
         }
     ],
+    "NTPCondensedLayout": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "CondensedLayoutWithSmallLogo",
+                    "params": {
+                        "condensed_layout_logo_height": "50",
+                        "condensed_layout_show_logo": "true",
+                        "condensed_tile_layout_for_small_screens_enabled": "true"
+                    },
+                    "enable_features": [
+                        "NTPCondensedLayout",
+                        "NTPCondensedTileLayout"
+                    ],
+                    "disable_features": [
+                        "ContentSuggestionsShowSummary",
+                        "NTPShowGoogleGInOmnibox"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPFaviconsFromNewServer": [
         {
             "platforms": [

@@ -132,6 +132,7 @@ public class NewTabPageTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
+    @CommandLineFlags.Add("disable-features=NTPCondensedLayout")
     public void testRender() throws IOException {
         mActivityTestRule.getInstrumentation().waitForIdleSync();
         mRenderTestRule.render(mTileGridLayout, "most_visited");
