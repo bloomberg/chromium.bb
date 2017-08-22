@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/atomicops.h"
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -35,6 +36,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker_impl.h"
@@ -857,6 +859,328 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
 
   worker_pool->DisallowWorkerCleanupForTesting();
   worker_pool->JoinForTesting();
+}
+
+class TaskSchedulerWorkerPoolBlockingEnterExitTest
+    : public TaskSchedulerWorkerPoolImplTest {
+ public:
+  TaskSchedulerWorkerPoolBlockingEnterExitTest()
+      : TaskSchedulerWorkerPoolImplTest(),
+        blocking_thread_running_(WaitableEvent::ResetPolicy::AUTOMATIC,
+                                 WaitableEvent::InitialState::NOT_SIGNALED),
+        blocking_thread_continue_(WaitableEvent::ResetPolicy::MANUAL,
+                                  WaitableEvent::InitialState::NOT_SIGNALED) {}
+
+  void SetUp() override {
+    TaskSchedulerWorkerPoolImplTest::SetUp();
+    task_runner_ =
+        worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+  }
+
+ protected:
+  // Saturates the worker pool with a task that first blocks, waits to be
+  // unblocked, then exits.
+  void SaturateWithBlockingTasks() {
+    RepeatingClosure blocking_thread_running_closure =
+        BarrierClosure(kNumWorkersInWorkerPool,
+                       BindOnce(&WaitableEvent::Signal,
+                                Unretained(&blocking_thread_running_)));
+    for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
+      task_runner_->PostTask(
+          FROM_HERE,
+          BindOnce(
+              [](Closure* blocking_thread_running_closure,
+                 WaitableEvent* blocking_thread_continue_) {
+                ScopedBlockingCall scoped_will_block(BlockingType::WILL_BLOCK);
+
+                blocking_thread_running_closure->Run();
+                blocking_thread_continue_->Wait();
+
+              },
+              Unretained(&blocking_thread_running_closure),
+              Unretained(&blocking_thread_continue_)));
+    }
+    blocking_thread_running_.Wait();
+  }
+
+  // Unblocks tasks posted by SaturateWithBlockingTasks().
+  void UnblockTasks() { blocking_thread_continue_.Signal(); }
+
+  scoped_refptr<TaskRunner> task_runner_;
+
+ private:
+  WaitableEvent blocking_thread_running_;
+  WaitableEvent blocking_thread_continue_;
+
+  DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolBlockingEnterExitTest);
+};
+
+// Verify that BlockingScopeEntered() causes worker capacity to increase and
+// creates a worker if needed. Also verify that BlockingScopeExited() decreases
+// worker capacity after an increase.
+TEST_F(TaskSchedulerWorkerPoolBlockingEnterExitTest, ThreadBlockedUnblocked) {
+  ASSERT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
+            kNumWorkersInWorkerPool);
+
+  SaturateWithBlockingTasks();
+  // A range of possible number of workers is accepted because of
+  // crbug.com/757897.
+  EXPECT_GE(worker_pool_->NumberOfWorkersForTesting(),
+            kNumWorkersInWorkerPool + 1);
+  EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(),
+            2 * kNumWorkersInWorkerPool);
+  EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
+            2 * kNumWorkersInWorkerPool);
+
+  UnblockTasks();
+  task_tracker_.Flush();
+  EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
+            kNumWorkersInWorkerPool);
+}
+
+// Verify that tasks posted in a saturated pool before a ScopedBlockingCall will
+// execute after ScopedBlockingCall is instantiated.
+TEST_F(TaskSchedulerWorkerPoolBlockingEnterExitTest, PostBeforeBlocking) {
+  WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
+                               WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent thread_can_block(WaitableEvent::ResetPolicy::MANUAL,
+                                 WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent thread_continue(WaitableEvent::ResetPolicy::MANUAL,
+                                WaitableEvent::InitialState::NOT_SIGNALED);
+
+  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        BindOnce(
+            [](WaitableEvent* thread_running, WaitableEvent* thread_can_block,
+               WaitableEvent* thread_continue) {
+              thread_running->Signal();
+              thread_can_block->Wait();
+              ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+              thread_continue->Wait();
+            },
+            Unretained(&thread_running), Unretained(&thread_can_block),
+            Unretained(&thread_continue)));
+    thread_running.Wait();
+  }
+
+  // All workers should be occupied and the pool should be saturated. Workers
+  // have not entered ScopedBlockingCall yet.
+  EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(), kNumWorkersInWorkerPool);
+  EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
+            kNumWorkersInWorkerPool);
+
+  WaitableEvent extra_thread_running(WaitableEvent::ResetPolicy::MANUAL,
+                                     WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent extra_threads_continue(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+  RepeatingClosure extra_threads_running_barrier = BarrierClosure(
+      kNumWorkersInWorkerPool,
+      BindOnce(&WaitableEvent::Signal, Unretained(&extra_thread_running)));
+  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
+    task_runner_->PostTask(FROM_HERE,
+                           BindOnce(
+                               [](Closure* extra_threads_running_barrier,
+                                  WaitableEvent* extra_threads_continue) {
+                                 extra_threads_running_barrier->Run();
+                                 extra_threads_continue->Wait();
+                               },
+                               Unretained(&extra_threads_running_barrier),
+                               Unretained(&extra_threads_continue)));
+  }
+
+  // Allow tasks to enter ScopedBlockingCall. Workers should be created for the
+  // tasks we just posted.
+  thread_can_block.Signal();
+
+  // Should not block forever.
+  extra_thread_running.Wait();
+  EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(),
+            2 * kNumWorkersInWorkerPool);
+  extra_threads_continue.Signal();
+
+  thread_continue.Signal();
+  task_tracker_.Flush();
+}
+// Verify that workers become idle when the pool is over-capacity and that
+// those workers do no work.
+TEST_F(TaskSchedulerWorkerPoolBlockingEnterExitTest,
+       WorkersIdleWhenOverCapacity) {
+  ASSERT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
+            kNumWorkersInWorkerPool);
+
+  SaturateWithBlockingTasks();
+  EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
+            2 * kNumWorkersInWorkerPool);
+  // A range of possible number of workers is accepted because of
+  // crbug.com/757897.
+  EXPECT_GE(worker_pool_->NumberOfWorkersForTesting(),
+            kNumWorkersInWorkerPool + 1);
+  EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(),
+            2 * kNumWorkersInWorkerPool);
+
+  WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
+                               WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent thread_continue(WaitableEvent::ResetPolicy::MANUAL,
+                                WaitableEvent::InitialState::NOT_SIGNALED);
+
+  RepeatingClosure thread_running_barrier = BarrierClosure(
+      kNumWorkersInWorkerPool,
+      BindOnce(&WaitableEvent::Signal, Unretained(&thread_running)));
+  // Posting these tasks should cause new workers to be created.
+  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
+    task_runner_->PostTask(FROM_HERE, BindOnce(
+                                          [](Closure* thread_running_barrier,
+                                             WaitableEvent* thread_continue) {
+                                            thread_running_barrier->Run();
+                                            thread_continue->Wait();
+                                          },
+                                          Unretained(&thread_running_barrier),
+                                          Unretained(&thread_continue)));
+  }
+  thread_running.Wait();
+
+  ASSERT_EQ(worker_pool_->NumberOfIdleWorkersForTesting(), 0U);
+  EXPECT_EQ(worker_pool_->NumberOfWorkersForTesting(),
+            2 * kNumWorkersInWorkerPool);
+
+  AtomicFlag is_exiting;
+  // These tasks should not get executed until after other tasks become
+  // unblocked.
+  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
+    task_runner_->PostTask(FROM_HERE, BindOnce(
+                                          [](AtomicFlag* is_exiting) {
+                                            EXPECT_TRUE(is_exiting->IsSet());
+                                          },
+                                          Unretained(&is_exiting)));
+  }
+
+  // The original |kNumWorkersInWorkerPool| will finish their tasks after being
+  // unblocked. There will be work in the work queue, but the pool should now
+  // be over-capacity and workers will become idle.
+  UnblockTasks();
+  worker_pool_->WaitForWorkersIdleForTesting(kNumWorkersInWorkerPool);
+  EXPECT_EQ(worker_pool_->NumberOfIdleWorkersForTesting(),
+            kNumWorkersInWorkerPool);
+
+  // Posting more tasks should not cause workers idle from the pool being over
+  // capacity to begin doing work.
+  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
+    task_runner_->PostTask(FROM_HERE, BindOnce(
+                                          [](AtomicFlag* is_exiting) {
+                                            EXPECT_TRUE(is_exiting->IsSet());
+                                          },
+                                          Unretained(&is_exiting)));
+  }
+
+  // Give time for those idle workers to possibly do work (which should not
+  // happen).
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  is_exiting.Set();
+  // Unblocks the new workers.
+  thread_continue.Signal();
+  task_tracker_.Flush();
+}
+
+// Verify that workers that become idle due to the pool being over capacity will
+// eventually cleanup.
+TEST(TaskSchedulerWorkerPoolOverWorkerCapacityTest, VerifyCleanup) {
+  constexpr size_t kWorkerCapacity = 3;
+
+  TaskTracker task_tracker;
+  DelayedTaskManager delayed_task_manager;
+  delayed_task_manager.Start(MakeRefCounted<TestSimpleTaskRunner>());
+  SchedulerWorkerPoolImpl worker_pool("OverWorkerCapacityTestWorkerPool",
+                                      ThreadPriority::NORMAL, &task_tracker,
+                                      &delayed_task_manager);
+  worker_pool.Start(
+      SchedulerWorkerPoolParams(kWorkerCapacity, kReclaimTimeForCleanupTests));
+
+  scoped_refptr<TaskRunner> task_runner =
+      worker_pool.CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+
+  WaitableEvent thread_running(WaitableEvent::ResetPolicy::AUTOMATIC,
+                               WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent thread_continue(WaitableEvent::ResetPolicy::MANUAL,
+                                WaitableEvent::InitialState::NOT_SIGNALED);
+  RepeatingClosure thread_running_barrier = BarrierClosure(
+      kWorkerCapacity,
+      BindOnce(&WaitableEvent::Signal, Unretained(&thread_running)));
+
+  WaitableEvent blocked_call_continue(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+
+  RepeatingClosure closure = BindRepeating(
+      [](Closure* thread_running_barrier, WaitableEvent* thread_continue,
+         WaitableEvent* blocked_call_continue) {
+        thread_running_barrier->Run();
+        {
+          ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+          blocked_call_continue->Wait();
+        }
+        thread_continue->Wait();
+
+      },
+      Unretained(&thread_running_barrier), Unretained(&thread_continue),
+      Unretained(&blocked_call_continue));
+
+  for (size_t i = 0; i < kWorkerCapacity; ++i)
+    task_runner->PostTask(FROM_HERE, closure);
+
+  thread_running.Wait();
+
+  WaitableEvent extra_threads_running(
+      WaitableEvent::ResetPolicy::AUTOMATIC,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent extra_threads_continue(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+
+  RepeatingClosure extra_threads_running_barrier = BarrierClosure(
+      kWorkerCapacity,
+      BindOnce(&WaitableEvent::Signal, Unretained(&extra_threads_running)));
+  // These tasks should run on the new threads from increasing worker capacity.
+  for (size_t i = 0; i < kWorkerCapacity; ++i) {
+    task_runner->PostTask(FROM_HERE,
+                          BindOnce(
+                              [](Closure* extra_threads_running_barrier,
+                                 WaitableEvent* extra_threads_continue) {
+                                extra_threads_running_barrier->Run();
+                                extra_threads_continue->Wait();
+                              },
+                              Unretained(&extra_threads_running_barrier),
+                              Unretained(&extra_threads_continue)));
+  }
+  extra_threads_running.Wait();
+
+  ASSERT_EQ(kWorkerCapacity * 2, worker_pool.NumberOfWorkersForTesting());
+  EXPECT_EQ(kWorkerCapacity * 2, worker_pool.GetWorkerCapacityForTesting());
+  blocked_call_continue.Signal();
+  extra_threads_continue.Signal();
+
+  TimeTicks before_cleanup_start = TimeTicks::Now();
+  while (TimeTicks::Now() - before_cleanup_start <
+         kReclaimTimeForCleanupTests + kExtraTimeToWaitForCleanup) {
+    if (worker_pool.NumberOfWorkersForTesting() <= kWorkerCapacity + 1)
+      break;
+
+    // Periodically post tasks to ensure that posting tasks does not prevent
+    // workers that are idle due to the pool being over capacity from cleaning
+    // up.
+    task_runner->PostTask(FROM_HERE, BindOnce(&DoNothing));
+    PlatformThread::Sleep(kReclaimTimeForCleanupTests / 2);
+  }
+  // Note: one worker above capacity will not get cleaned up since it's on the
+  // top of the idle stack.
+  EXPECT_EQ(kWorkerCapacity + 1, worker_pool.NumberOfWorkersForTesting());
+
+  thread_continue.Signal();
+
+  worker_pool.DisallowWorkerCleanupForTesting();
+  worker_pool.JoinForTesting();
 }
 
 }  // namespace internal
