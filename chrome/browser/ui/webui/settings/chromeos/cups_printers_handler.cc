@@ -155,11 +155,10 @@ std::string GetPrinterQueue(const base::DictionaryValue& printer_dict) {
 
 CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
     : profile_(Profile::FromWebUI(webui)),
+      ppd_provider_(CreatePpdProvider(profile_)),
+      printer_configurer_(PrinterConfigurer::Create(profile_)),
       printers_manager_(CupsPrintersManager::Create(profile_)),
-      weak_factory_(this) {
-  ppd_provider_ = CreatePpdProvider(profile_);
-  printer_configurer_ = PrinterConfigurer::Create(profile_);
-}
+      weak_factory_(this) {}
 
 CupsPrintersHandler::~CupsPrintersHandler() {}
 
