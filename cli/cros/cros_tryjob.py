@@ -219,10 +219,10 @@ Production Examples (danger, can break production if misused):
              'to make it easier to identify the results when it '
              'finishes')
 
-    # Modify the build config.
+    # Modify the build.
     how_group = parser.add_argument_group(
         'Modifiers',
-        description='How do we change the build configuration?')
+        description='How do we modify build behavior?')
     how_group.add_argument(
         '--latest-toolchain', dest='passthrough', action='append_option',
         help='Use the latest toolchain.')
@@ -230,6 +230,15 @@ Production Examples (danger, can break production if misused):
         '--nochromesdk', dest='passthrough', action='append_option',
         help="Don't run the ChromeSDK stage which builds "
              'Chrome outside of the chroot.')
+    how_group.add_argument(
+        '--timeout', dest='passthrough', action='append_option_value',
+        help='Specify the maximum amount of time this job '
+             'can run for, at which point the build will be '
+             'aborted.  If set to zero, then there is no '
+             'timeout.')
+    how_group.add_argument(
+        '--sanity-check-build', dest='passthrough', action='append_option',
+        help='Run the build as a sanity check build.')
 
     # Overrides for the build configs testing behaviors.
     test_group = parser.add_argument_group(

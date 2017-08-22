@@ -63,6 +63,7 @@ class TryjobTestParsing(TryjobTest):
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
         '--local', '--buildroot', '/buildroot',
+        '--timeout', '5', '--sanity-check-build',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--local-patches', 'chromiumos/chromite:tryjob', '-p', 'other:other',
         '--pass-through=--cbuild-arg', '--pass-through', 'bar',
@@ -82,6 +83,7 @@ class TryjobTestParsing(TryjobTest):
         'passthrough': [
             '--latest-toolchain', '--nochromesdk',
             '--hwtest', '--notests', '--novmtests', '--noimagetests',
+            '--timeout', '5', '--sanity-check-build',
         ],
         'passthrough_raw': ['--cbuild-arg', 'bar'],
         'build_configs': ['lumpy-paladin', 'lumpy-release'],
@@ -129,6 +131,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
         '--local', '--buildroot', '/buildroot',
+        '--timeout', '5', '--sanity-check-build',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
@@ -217,6 +220,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
         '--local', '--buildroot', '/buildroot',
+        '--timeout', '5', '--sanity-check-build',
         '--gerrit-patches', '123', '-g', '*123', '-g', '123..456',
         '--committer-email', 'foo@bar',
         '--version', '1.2.3', '--channel', 'chan',
@@ -228,6 +232,7 @@ class TryjobTestCbuildbotArgs(TryjobTest):
         '-g', '123', '-g', '*123', '-g', '123..456',
         '--latest-toolchain', '--nochromesdk',
         '--hwtest', '--notests', '--novmtests', '--noimagetests',
+        '--timeout', '5', '--sanity-check-build',
         '--version', '1.2.3', '--channel', 'chan',
         '--cbuild-arg', 'bar'
     ])
