@@ -1007,6 +1007,8 @@ DEFINE_TRACE(BaseAudioContext) {
 }
 
 DEFINE_TRACE_WRAPPERS(BaseAudioContext) {
+  EventTargetWithInlineData::TraceWrappers(visitor);
+
   // Inform V8's GC that we have references to these objects so they
   // don't get collected until we're done with them.
   for (auto callback : success_callbacks_) {
