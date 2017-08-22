@@ -259,7 +259,8 @@ FcLangNormalize (const FcChar8 *lang)
 		 lang);
 	goto bail0;
     }
-    if (territory && (tlen < 2 || tlen > 3))
+    if (territory && (tlen < 2 || tlen > 3) &&
+	!(territory[0] == 'z' && tlen < 5))
     {
 	fprintf (stderr, "Fontconfig warning: ignoring %s: not a valid region tag\n",
 		 lang);
