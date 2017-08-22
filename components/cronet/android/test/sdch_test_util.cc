@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sdch_test_util.h"
-
 #include <string>
 
 #include "base/android/jni_android.h"
@@ -98,10 +96,6 @@ void AddSdchObserver(JNIEnv* env,
   TestUtil::RunAfterContextInit(jadapter,
                                 base::Bind(&AddSdchObserverHelper, target_url,
                                            jsdch_observer_ref, jadapter));
-}
-
-bool RegisterSdchTestUtil(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace cronet

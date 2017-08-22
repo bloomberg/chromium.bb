@@ -10,10 +10,7 @@ static_library("variations") {
   sources = [
     "active_field_trials.cc",
     "active_field_trials.h",
-    "android/component_jni_registrar.cc",
-    "android/component_jni_registrar.h",
     "android/variations_associated_data_android.cc",
-    "android/variations_associated_data_android.h",
     "android/variations_seed_bridge.cc",
     "android/variations_seed_bridge.h",
     "caching_permuted_entropy_provider.cc",

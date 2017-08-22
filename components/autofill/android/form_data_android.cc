@@ -95,8 +95,4 @@ bool FormDataAndroid::SimilarFormAs(const FormData& form) {
   return form_.SimilarFormAs(form);
 }
 
-bool RegisterFormDataAndroid(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace autofill

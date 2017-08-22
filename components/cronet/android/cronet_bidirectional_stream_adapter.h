@@ -66,8 +66,6 @@ struct PendingWriteData {
 class CronetBidirectionalStreamAdapter
     : public net::BidirectionalStream::Delegate {
  public:
-  static bool RegisterJni(JNIEnv* env);
-
   CronetBidirectionalStreamAdapter(
       CronetURLRequestContextAdapter* context,
       JNIEnv* env,

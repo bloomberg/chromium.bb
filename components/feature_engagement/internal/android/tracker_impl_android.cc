@@ -47,11 +47,6 @@ TrackerImplAndroid* FromTrackerImpl(Tracker* feature_engagement) {
 }  // namespace
 
 // static
-bool TrackerImplAndroid::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 TrackerImplAndroid* TrackerImplAndroid::FromJavaObject(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jobj) {

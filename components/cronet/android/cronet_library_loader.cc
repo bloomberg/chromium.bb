@@ -10,6 +10,7 @@
 #include "base/android/base_jni_onload.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "base/android/jni_string.h"
 #include "base/android/jni_utils.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/feature_list.h"
@@ -18,14 +19,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/task_scheduler/task_scheduler.h"
-#include "components/cronet/android/cronet_bidirectional_stream_adapter.h"
 #include "components/cronet/android/cronet_jni_registration.h"
-#include "components/cronet/android/cronet_upload_data_stream_adapter.h"
-#include "components/cronet/android/cronet_url_request_adapter.h"
-#include "components/cronet/android/cronet_url_request_context_adapter.h"
 #include "components/cronet/version.h"
 #include "jni/CronetLibraryLoader_jni.h"
-#include "net/android/net_jni_registrar.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "url/url_features.h"
@@ -41,27 +37,11 @@ using base::android::ScopedJavaLocalRef;
 namespace cronet {
 namespace {
 
-const base::android::RegistrationMethod kCronetRegisteredMethods[] = {
-    {"CronetBidirectionalStreamAdapter",
-     CronetBidirectionalStreamAdapter::RegisterJni},
-    {"CronetLibraryLoader", RegisterNativesImpl},
-    {"CronetUploadDataStreamAdapter", CronetUploadDataStreamAdapterRegisterJni},
-    {"CronetUrlRequestAdapter", CronetUrlRequestAdapterRegisterJni},
-    {"CronetUrlRequestContextAdapter",
-     CronetUrlRequestContextAdapterRegisterJni},
-    {"NetAndroid", net::android::RegisterJni},
-};
-
 // MessageLoop on the init thread, which is where objects that receive Java
 // notifications generally live.
 base::MessageLoop* g_init_message_loop = nullptr;
 
 net::NetworkChangeNotifier* g_network_change_notifier = nullptr;
-
-bool RegisterJNI(JNIEnv* env) {
-  return base::android::RegisterNativeMethods(
-      env, kCronetRegisteredMethods, arraysize(kCronetRegisteredMethods));
-}
 
 bool NativeInit() {
   if (!base::android::OnJNIOnLoadInit())
@@ -90,9 +70,7 @@ jint CronetOnLoad(JavaVM* vm, void* reserved) {
   if (!RegisterMainDexNatives(env) || !RegisterNonMainDexNatives(env)) {
     return -1;
   }
-  // TODO(agrieve): Delete this block, this is a no-op now.
-  // https://crbug.com/683256.
-  if (!RegisterJNI(env) || !NativeInit()) {
+  if (!NativeInit()) {
     return -1;
   }
   return JNI_VERSION_1_6;

@@ -47,11 +47,6 @@ std::string GetProxy(const net::HttpResponseInfo& info) {
 
 }  // namespace
 
-// Explicitly register static JNI functions.
-bool CronetUrlRequestAdapterRegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static jlong CreateRequestAdapter(JNIEnv* env,
                                   const JavaParamRef<jobject>& jurl_request,
                                   jlong jurl_request_context_adapter,

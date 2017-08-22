@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mock_cert_verifier.h"
-
 #include <string>
 #include <vector>
 
@@ -85,10 +83,6 @@ static jlong CreateMockCertVerifier(
   }
 
   return reinterpret_cast<jlong>(mock_cert_verifier);
-}
-
-bool RegisterMockCertVerifier(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace cronet

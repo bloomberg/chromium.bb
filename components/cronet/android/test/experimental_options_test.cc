@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/cronet/android/test/experimental_options_test.h"
-
 #include <jni.h>
 
 #include "base/android/jni_android.h"
@@ -57,10 +55,6 @@ static void WriteToHostCache(JNIEnv* env,
       jcontext_adapter,
       base::Bind(&WriteToHostCacheOnNetworkThread, jcontext_adapter,
                  base::android::ConvertJavaStringToUTF8(env, jaddress)));
-}
-
-bool RegisterExperimentalOptionsTest(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace cronet

@@ -34,9 +34,6 @@ class WebRestrictionsClient {
   WebRestrictionsClient();
   ~WebRestrictionsClient();
 
-  // Register JNI methods.
-  static bool Register(JNIEnv* env);
-
   // Verify the content provider and query it for basic information like does it
   // support handling requests. This should be called everytime the provider
   // changes. An empty authority can be used to disable this class.

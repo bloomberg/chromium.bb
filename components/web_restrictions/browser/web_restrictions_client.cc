@@ -39,11 +39,6 @@ bool CheckSupportsRequestTask(
 
 }  // namespace
 
-// static
-bool WebRestrictionsClient::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 WebRestrictionsClient::WebRestrictionsClient()
     : initialized_(false), supports_request_(false) {
   background_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(

@@ -73,9 +73,6 @@ class AutofillProviderAndroid : public AutofillProvider {
 
   DISALLOW_COPY_AND_ASSIGN(AutofillProviderAndroid);
 };
-
-bool RegisterAutofillProvider(JNIEnv* env);
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_ANDROID_AUTOFILL_PROVIDER_ANDROID_H_

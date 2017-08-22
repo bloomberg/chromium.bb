@@ -27,7 +27,6 @@ namespace feature_engagement {
 class TrackerImplAndroid : public base::SupportsUserData::Data {
  public:
   using FeatureMap = std::unordered_map<std::string, const base::Feature*>;
-  static bool RegisterJni(JNIEnv* env);
   static TrackerImplAndroid* FromJavaObject(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj);

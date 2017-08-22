@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/dom_distiller/content/browser/distillable_page_utils_android.h"
-
 #include <memory>
 
 #include "base/bind.h"
@@ -68,10 +66,6 @@ static void SetDelegate(JNIEnv* env,
   DistillabilityDelegate delegate = base::Bind(
       OnIsPageDistillableUpdate, ScopedJavaGlobalRef<jobject>(env, callback));
   setDelegate(web_contents, delegate);
-}
-
-bool RegisterDistillablePageUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }

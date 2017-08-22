@@ -61,11 +61,6 @@ static base::android::ScopedJavaLocalRef<jbyteArray> GetJavaWrapperCredits(
       env, reinterpret_cast<const uint8_t*>(html_content_arr),
       html_content.size());
 }
-
-// The RegisterNativesImpl is a static function, so has to be called somewhere.
-bool RegisterAboutUIUtils(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
 #endif
 
 }  // namespace about_ui

@@ -16,9 +16,6 @@
 // Helper for utilizing native FakeServer infrastructure in Android tests.
 class FakeServerHelperAndroid {
  public:
-  // Registers the native methods.
-  static bool Register(JNIEnv* env);
-
   // Creates a FakeServerHelperAndroid.
   FakeServerHelperAndroid(JNIEnv* env, jobject obj);
 
