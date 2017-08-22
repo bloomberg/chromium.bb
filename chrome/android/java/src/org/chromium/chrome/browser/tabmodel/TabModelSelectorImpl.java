@@ -331,9 +331,9 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
 
     @Override
     public void requestToShowTab(Tab tab, TabSelectionType type) {
-        boolean isFromExternalApp = tab != null
-                && tab.getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP;
-
+        boolean isFromExternalApp =
+                tab != null && tab.getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP;
+        Tab tabToDropImportance = null;
         if (mVisibleTab != tab && tab != null && !tab.isNativePage()) {
             TabModelImpl.startTabSwitchLatencyTiming(type);
         }
@@ -347,13 +347,16 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
                     cacheTabBitmap(mVisibleTab);
                 }
                 mVisibleTab.hide();
-                mVisibleTab.setImportance(ChildProcessImportance.NORMAL);
                 mTabSaver.addTabToSaveQueue(mVisibleTab);
             }
+            tabToDropImportance = mVisibleTab;
             mVisibleTab = null;
         }
 
         if (tab == null) {
+            if (tabToDropImportance != null) {
+                tabToDropImportance.setImportance(ChildProcessImportance.NORMAL);
+            }
             notifyChanged();
             return;
         }
@@ -363,7 +366,11 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         if (mVisibleTab == tab && !mVisibleTab.isHidden()) {
             // The current tab might have been killed by the os while in tab switcher.
             tab.loadIfNeeded();
+            // |tabToDropImportance| must be null, so no need to drop importance.
             return;
+        }
+        if (tabToDropImportance == null) {
+            tabToDropImportance = mVisibleTab;
         }
         mVisibleTab = tab;
 
@@ -372,8 +379,14 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
         // http://crbug.com/316166.
         if (type != TabSelectionType.FROM_EXIT) {
             tab.show(type);
-            mVisibleTab.setImportance(ChildProcessImportance.MODERATE);
             mUma.onShowTab(tab.getId(), tab.isBeingRestored());
+        }
+
+        // Always raise importance before lowering it on old Tab because in case these two Tabs
+        // are hosted by the same process, the process importance is not dropped momentarily.
+        mVisibleTab.setImportance(ChildProcessImportance.MODERATE);
+        if (tabToDropImportance != null) {
+            tabToDropImportance.setImportance(ChildProcessImportance.NORMAL);
         }
     }
 
