@@ -1734,6 +1734,8 @@ void BrowserMainLoop::InitializeMojo() {
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
 #endif  // defined(OS_MACOSX)
+  GetContentClient()->OnServiceManagerConnected(
+      ServiceManagerConnection::GetForProcess());
   if (parts_) {
     parts_->ServiceManagerConnectionStarted(
         ServiceManagerConnection::GetForProcess());
