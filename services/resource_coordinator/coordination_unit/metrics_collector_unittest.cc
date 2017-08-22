@@ -216,4 +216,36 @@ TEST_F(MetricsCollectorTest,
       kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA, 2);
 }
 
+TEST_F(MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
+  CoordinationUnitID tab_cu_id(CoordinationUnitType::kWebContents,
+                               std::string());
+
+  auto web_contents_cu = CreateCoordinationUnit(tab_cu_id);
+  coordination_unit_manager().OnCoordinationUnitCreated(web_contents_cu.get());
+
+  web_contents_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  web_contents_cu->SendEvent(mojom::Event::kFaviconUpdated);
+  // The tab is not backgrounded, thus no metrics recorded.
+  histogram_tester_.ExpectTotalCount(
+      kTabFromBackgroundedToFirstFaviconUpdatedUMA, 0);
+
+  web_contents_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  web_contents_cu->SendEvent(mojom::Event::kFaviconUpdated);
+  // The tab is backgrounded, thus metrics recorded.
+  histogram_tester_.ExpectTotalCount(
+      kTabFromBackgroundedToFirstFaviconUpdatedUMA, 1);
+  web_contents_cu->SendEvent(mojom::Event::kFaviconUpdated);
+  // Metrics should only be recorded once per background period, thus metrics
+  // not recorded.
+  histogram_tester_.ExpectTotalCount(
+      kTabFromBackgroundedToFirstFaviconUpdatedUMA, 1);
+
+  web_contents_cu->SetProperty(mojom::PropertyType::kVisible, true);
+  web_contents_cu->SetProperty(mojom::PropertyType::kVisible, false);
+  web_contents_cu->SendEvent(mojom::Event::kFaviconUpdated);
+  // The tab is backgrounded from foregrounded, thus metrics recorded.
+  histogram_tester_.ExpectTotalCount(
+      kTabFromBackgroundedToFirstFaviconUpdatedUMA, 2);
+}
+
 }  // namespace resource_coordinator

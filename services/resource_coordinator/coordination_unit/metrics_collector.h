@@ -19,6 +19,7 @@ class WebContentsCoordinationUnitImpl;
 
 extern const char kTabFromBackgroundedToFirstAlertFiredUMA[];
 extern const char kTabFromBackgroundedToFirstAudioStartsUMA[];
+extern const char kTabFromBackgroundedToFirstFaviconUpdatedUMA[];
 extern const char kTabFromBackgroundedToFirstTitleUpdatedUMA[];
 extern const char
     kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA[];
@@ -55,8 +56,9 @@ class MetricsCollector : public CoordinationUnitGraphObserver {
     void Reset();
     bool first_alert_fired_after_backgrounded_reported;
     bool first_audible_after_backgrounded_reported;
-    bool first_title_updated_after_backgrounded_reported;
+    bool first_favicon_updated_after_backgrounded_reported;
     bool first_non_persistent_notification_created_after_backgrounded_reported;
+    bool first_title_updated_after_backgrounded_reported;
   };
 
   struct FrameData {
