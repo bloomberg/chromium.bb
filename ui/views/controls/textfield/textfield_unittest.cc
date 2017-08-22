@@ -265,11 +265,7 @@ void MockInputMethod::ClearComposition() {
 // A Textfield wrapper to intercept OnKey[Pressed|Released]() results.
 class TestTextfield : public views::Textfield {
  public:
-  TestTextfield()
-     : Textfield(),
-       key_handled_(false),
-       key_received_(false),
-       weak_ptr_factory_(this) {}
+  TestTextfield() = default;
 
   // ui::TextInputClient overrides:
   void InsertChar(const ui::KeyEvent& e) override {
@@ -283,13 +279,18 @@ class TestTextfield : public views::Textfield {
 
   bool key_handled() const { return key_handled_; }
   bool key_received() const { return key_received_; }
+  int event_flags() const { return event_flags_; }
 
-  void clear() { key_received_ = key_handled_ = false; }
+  void clear() {
+    key_received_ = key_handled_ = false;
+    event_flags_ = 0;
+  }
 
  private:
   // views::View override:
   void OnKeyEvent(ui::KeyEvent* event) override {
     key_received_ = true;
+    event_flags_ = event->flags();
 
     // Since Textfield::OnKeyPressed() might destroy |this|, get a weak pointer
     // and verify it isn't null before writing the bool value to key_handled_.
@@ -306,10 +307,11 @@ class TestTextfield : public views::Textfield {
       EXPECT_FALSE(key_handled_);
   }
 
-  bool key_handled_;
-  bool key_received_;
+  bool key_handled_ = false;
+  bool key_received_ = false;
+  int event_flags_ = 0;
 
-  base::WeakPtrFactory<TestTextfield> weak_ptr_factory_;
+  base::WeakPtrFactory<TestTextfield> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestTextfield);
 };
@@ -3315,6 +3317,19 @@ TEST_F(TextfieldTest, FocusChangesScrollToStart) {
   EXPECT_EQ(1U, textfield_->GetCursorPosition());
   textfield_->OnBlur();
   EXPECT_EQ(0U, textfield_->GetCursorPosition());
+}
+
+TEST_F(TextfieldTest, SendingDeletePreservesShiftFlag) {
+  InitTextfield();
+  SendKeyPress(ui::VKEY_DELETE, 0);
+  EXPECT_EQ(0, textfield_->event_flags());
+  textfield_->clear();
+
+  // Ensure the shift modifier propagates for keys that may be subject to native
+  // key mappings. E.g., on Mac, Delete and Shift+Delete are both
+  // deleteForward:, but the shift modifier should propagate.
+  SendKeyPress(ui::VKEY_DELETE, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(ui::EF_SHIFT_DOWN, textfield_->event_flags());
 }
 
 }  // namespace views

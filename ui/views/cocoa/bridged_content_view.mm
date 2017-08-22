@@ -466,6 +466,12 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   if (!hostedView_)
     return;
 
+  // Always propagate the shift modifier if present. Shift doesn't always alter
+  // the command selector, but should always be passed along. Control and Alt
+  // have different meanings on Mac, so they do not propagate automatically.
+  if ([keyDownEvent_ modifierFlags] & NSShiftKeyMask)
+    eventFlags |= ui::EF_SHIFT_DOWN;
+
   // Generate a synthetic event with the keycode toolkit-views expects.
   ui::KeyEvent event(ui::ET_KEY_PRESSED, keyCode, domCode, eventFlags);
 
