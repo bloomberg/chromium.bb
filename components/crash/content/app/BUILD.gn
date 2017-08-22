@@ -7,7 +7,7 @@ if (is_android) {
   import("//build/config/android/config.gni")
 }
 
-static_library("lib") {
+source_set("lib") {
   sources = [
     "crash_keys_win.cc",
     "crash_keys_win.h",
@@ -28,6 +28,7 @@ static_library("lib") {
 
 static_library("app") {
   sources = [
+    "crash_export_thunks.h",
     "crash_switches.cc",
     "crash_switches.h",
     "crashpad.h",
@@ -83,6 +84,40 @@ if (is_win) {
       "//third_party/crashpad/crashpad/handler:handler_lib",
       "//third_party/crashpad/crashpad/minidump",
     ]
+  }
+
+  # This source set contains a set of functions that allow using the crashpad
+  # handler across a module boundary. The intent is for these functions to be
+  # built into a dynamic library, which the user of the crashpad handler then
+  # has a link-time dependency on. This will result in an import dependency
+  # from the user to the dynamic library that will be bound at load time.
+  # In a single-module project, this source set can alternatively be included in
+  # the sole module, in which case the implementation will be bound at link
+  # time.
+  source_set("crash_export_thunks") {
+    sources = [
+      "crash_export_thunks.cc",
+      "crash_export_thunks.h",
+    ]
+
+    deps = [
+      ":app",
+      "//base",
+    ]
+  }
+}
+
+# This source set provides the functionality required for tests, which on Windows
+# link the export thunks directly into the test binary.
+source_set("test_support") {
+  testonly = true
+
+  deps = [
+    ":lib",
+  ]
+
+  if (is_win) {
+    deps += [ ":crash_export_thunks" ]
   }
 }
 

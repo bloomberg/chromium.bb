@@ -15,48 +15,6 @@
 
 namespace {
 
-#if defined(OS_WIN)
-typedef void (*GetCrashReportsPointer)(
-    const crash_reporter::Report** reports,
-    size_t* report_count);
-typedef void (*RequestSingleCrashUploadPointer)(const std::string& local_id);
-
-void GetReportsThunk(
-    std::vector<crash_reporter::Report>* reports) {
-  static GetCrashReportsPointer get_crash_reports = []() {
-    // The crash reporting is handled by chrome_elf.dll which loads early in
-    // the chrome process.
-    HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
-    return reinterpret_cast<GetCrashReportsPointer>(
-        elf_module ? GetProcAddress(elf_module, "GetCrashReportsImpl")
-                   : nullptr);
-  }();
-
-  if (get_crash_reports) {
-    const crash_reporter::Report* reports_pointer;
-    size_t report_count;
-    get_crash_reports(&reports_pointer, &report_count);
-    *reports = std::vector<crash_reporter::Report>(
-        reports_pointer, reports_pointer + report_count);
-  }
-}
-
-void RequestSingleCrashUploadThunk(const std::string& local_id) {
-  static RequestSingleCrashUploadPointer request_single_crash_upload = []() {
-    // The crash reporting is handled by chrome_elf.dll which loads early in
-    // the chrome process.
-    HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
-    return reinterpret_cast<RequestSingleCrashUploadPointer>(
-        elf_module ? GetProcAddress(elf_module, "RequestSingleCrashUploadImpl")
-                   : nullptr);
-  }();
-
-  if (request_single_crash_upload)
-    request_single_crash_upload(local_id);
-}
-
-#endif  // OS_WIN
-
 UploadList::UploadInfo::State ReportUploadStateToUploadInfoState(
     crash_reporter::ReportUploadState state) {
   switch (state) {
@@ -90,15 +48,7 @@ base::TaskTraits CrashUploadListCrashpad::LoadingTaskTraits() {
 
 std::vector<UploadList::UploadInfo> CrashUploadListCrashpad::LoadUploadList() {
   std::vector<crash_reporter::Report> reports;
-#if defined(OS_WIN)
-  // On Windows, we only link crash client into chrome.exe (not the dlls), and
-  // it does the registration. That means the global that holds the crash report
-  // database lives in the .exe, so we need to grab a pointer to a helper in the
-  // exe to get our reports list.
-  GetReportsThunk(&reports);
-#else
   crash_reporter::GetReports(&reports);
-#endif
 
   std::vector<UploadInfo> uploads;
   for (const crash_reporter::Report& report : reports) {
@@ -111,11 +61,5 @@ std::vector<UploadList::UploadInfo> CrashUploadListCrashpad::LoadUploadList() {
 }
 
 void CrashUploadListCrashpad::RequestSingleUpload(const std::string& local_id) {
-#if defined(OS_WIN)
-  // On Windows, crash reporting is handled by chrome_elf.dll, that's why we
-  // can't call crash_reporter::RequestSingleCrashUpload directly.
-  RequestSingleCrashUploadThunk(local_id);
-#else
   crash_reporter::RequestSingleCrashUpload(local_id);
-#endif
 }

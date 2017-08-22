@@ -92,9 +92,9 @@ enum class ReportUploadState {
 };
 
 struct Report {
-  std::string local_id;
+  char local_id[64];
   time_t capture_time;
-  std::string remote_id;
+  char remote_id[64];
   time_t upload_time;
   ReportUploadState state;
 };
@@ -110,6 +110,12 @@ void GetReports(std::vector<Report>* reports);
 void RequestSingleCrashUpload(const std::string& local_id);
 
 void DumpWithoutCrashing();
+
+// The implementation function for GetReports.
+void GetReportsImpl(std::vector<Report>* reports);
+
+// The implementation function for RequestSingleCrashUpload.
+void RequestSingleCrashUploadImpl(const std::string& local_id);
 
 namespace internal {
 
