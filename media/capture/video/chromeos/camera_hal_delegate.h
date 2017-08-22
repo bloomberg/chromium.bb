@@ -20,6 +20,8 @@
 
 namespace media {
 
+class CameraBufferFactory;
+
 // CameraHalDelegate is the component which does Mojo IPCs to the camera HAL
 // process on Chrome OS to access the module-level camera functionalities such
 // as camera device info look-up and opening camera devices.
@@ -129,6 +131,8 @@ class CAPTURE_EXPORT CameraHalDelegate final
   std::unordered_map<std::string, arc::mojom::CameraInfoPtr> camera_info_;
 
   SEQUENCE_CHECKER(sequence_checker_);
+
+  std::unique_ptr<CameraBufferFactory> camera_buffer_factory_;
 
   // The task runner where all the camera module Mojo communication takes place.
   const scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;

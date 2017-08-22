@@ -18,7 +18,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
  public:
   explicit VideoCaptureDeviceFactoryChromeOS(
       scoped_refptr<base::SingleThreadTaskRunner>
-          task_runner_for_screen_observer);
+          task_runner_for_screen_observer,
+      gpu::GpuMemoryBufferManager* gpu_buffer_manager);
 
   ~VideoCaptureDeviceFactoryChromeOS() override;
 
@@ -34,6 +35,12 @@ class CAPTURE_EXPORT VideoCaptureDeviceFactoryChromeOS final
   // A run-time check for whether we should enable
   // VideoCaptureDeviceFactoryChromeOS on the device.
   static bool ShouldEnable();
+
+  static gpu::GpuMemoryBufferManager* GetBufferManager();
+
+  // For testing purpose only.
+  static void SetBufferManagerForTesting(
+      gpu::GpuMemoryBufferManager* buffer_manager);
 
  private:
   // Initializes the factory. The factory is functional only after this call

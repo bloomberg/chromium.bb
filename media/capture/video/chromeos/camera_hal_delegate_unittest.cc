@@ -13,7 +13,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
+#include "media/capture/video/chromeos/mock_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
+#include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,6 +32,8 @@ class CameraHalDelegateTest : public ::testing::Test {
         hal_delegate_thread_("HalDelegateThread") {}
 
   void SetUp() override {
+    VideoCaptureDeviceFactoryChromeOS::SetBufferManagerForTesting(
+        &mock_gpu_memory_buffer_manager_);
     hal_delegate_thread_.Start();
     camera_hal_delegate_ =
         new CameraHalDelegate(hal_delegate_thread_.task_runner());
@@ -50,6 +54,7 @@ class CameraHalDelegateTest : public ::testing::Test {
  protected:
   scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
   testing::StrictMock<unittest_internal::MockCameraModule> mock_camera_module_;
+  unittest_internal::MockGpuMemoryBufferManager mock_gpu_memory_buffer_manager_;
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
@@ -143,6 +148,15 @@ TEST_F(CameraHalDelegateTest, GetBuiltinCameraInfo) {
   ASSERT_EQ(std::to_string(0), descriptors[1].device_id);
   ASSERT_EQ(VideoFacingMode::MEDIA_VIDEO_FACING_ENVIRONMENT,
             descriptors[1].facing);
+
+  EXPECT_CALL(mock_gpu_memory_buffer_manager_,
+              CreateGpuMemoryBuffer(_, gfx::BufferFormat::YUV_420_BIPLANAR,
+                                    gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+                                    gpu::kNullSurfaceHandle))
+      .Times(1)
+      .WillOnce(Invoke(
+          &mock_gpu_memory_buffer_manager_,
+          &unittest_internal::MockGpuMemoryBufferManager::ReturnValidBuffer));
 
   VideoCaptureFormats supported_formats;
   camera_hal_delegate_->GetSupportedFormats(descriptors[0], &supported_formats);
