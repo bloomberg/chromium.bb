@@ -121,5 +121,9 @@
       testRunner.log('Video behind text: should be empty array');
       await testGetBgColors('.video > p');
     },
+    async function testShadowDOM() {
+      testRunner.log('Background color in Shadow DOM: should be blue');
+      await testGetBgColors('.shadowDOM > .shadowHost > p');
+    },
   ]);
 });

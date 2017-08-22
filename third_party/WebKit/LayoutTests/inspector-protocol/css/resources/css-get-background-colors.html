@@ -370,3 +370,38 @@ p {
     Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
   </p>
 </div>
+
+<!-- Element in Shadow DOM -->
+<style>
+.shadowDom > .background {
+  background-color: red;
+}
+</style>
+<div class="testCase shadowDOM">
+  <div class="background layer"></div>
+  <div class="shadowHost layer">
+    <p class="layer">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+    </p>
+  </div>
+  <template id="template-shadowDOM">
+    <style>
+      .background {
+        width: 200px;
+        height: 200px;
+        overflow: hidden;
+        background-color: blue;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+    </style>
+    <div class="background layer"></div>
+    <slot></slot>
+  </template>
+  <script>
+    let template = document.getElementById('template-shadowDOM');
+    let shadowRoot = document.querySelector('.testCase.shadowDOM .shadowHost').attachShadow({mode: 'open'});
+    shadowRoot.appendChild(template.content.cloneNode(true));
+  </script>
+</div>
