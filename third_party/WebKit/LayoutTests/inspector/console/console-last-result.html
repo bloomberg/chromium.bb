@@ -4,47 +4,39 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testLastResult(next)
-        {
-            ConsoleTestRunner.evaluateInConsole("1+1", step1);
+function test() {
+  TestRunner.runTestSuite([
+    function testLastResult(next) {
+      ConsoleTestRunner.evaluateInConsole('1+1', step1);
 
-            function step1()
-            {
-                evaluateLastResultAndDump(next);
-            }
-        },
+      function step1() {
+        evaluateLastResultAndDump(next);
+      }
+    },
 
-        function testLastResultAfterConsoleClear(next)
-        {
-            ConsoleTestRunner.evaluateInConsole("1+1", step1);
+    function testLastResultAfterConsoleClear(next) {
+      ConsoleTestRunner.evaluateInConsole('1+1', step1);
 
-            function step1()
-            {
-                Console.ConsoleView.clearConsole();
-                TestRunner.deprecatedRunAfterPendingDispatches(step2);
-            }
+      function step1() {
+        Console.ConsoleView.clearConsole();
+        TestRunner.deprecatedRunAfterPendingDispatches(step2);
+      }
 
-            function step2()
-            {
-                evaluateLastResultAndDump(next);
-            }
-        }
-    ]);
-
-    function evaluateLastResultAndDump(callback)
-    {
-        ConsoleTestRunner.evaluateInConsole("$_", didEvaluate);
-
-        function didEvaluate()
-        {
-            ConsoleTestRunner.dumpConsoleMessages();
-            if (callback)
-                callback();
-        }
+      function step2() {
+        evaluateLastResultAndDump(next);
+      }
     }
+  ]);
+
+  function evaluateLastResultAndDump(callback) {
+    ConsoleTestRunner.evaluateInConsole('$_', didEvaluate);
+
+    function didEvaluate() {
+      ConsoleTestRunner.dumpConsoleMessages();
+      if (callback)
+        callback();
+    }
+  }
 }
 
 </script>

@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 26: Uncaught SyntaxError: Unexpected identifier
+CONSOLE ERROR: line 25: Uncaught SyntaxError: Unexpected identifier
 Tests getEventListeners() method of console command line API.
 
  

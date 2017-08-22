@@ -13,50 +13,39 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    var expressions = [
-        "42",
-        "'foo string'",
-        "NaN",
-        "Infinity",
-        "-Infinity",
-        "-0",
-        "[1, 2, NaN, -0, null, undefined]",
-        "({ foo: 'bar' })",
-        "(function(){ return arguments; })(1,2,3,4)",
-        "(function func() {})",
-        "new Error('errr')"
-    ];
+function test() {
+  var expressions = [
+    '42', '\'foo string\'', 'NaN', 'Infinity', '-Infinity', '-0', '[1, 2, NaN, -0, null, undefined]',
+    '({ foo: \'bar\' })', '(function(){ return arguments; })(1,2,3,4)', '(function func() {})', 'new Error(\'errr\')'
+  ];
 
-    TestRunner.addResult("Number of expressions: " + expressions.length);
-    TestRunner.addResult("Names [temp3..temp7] are reserved\n");
+  TestRunner.addResult('Number of expressions: ' + expressions.length);
+  TestRunner.addResult('Names [temp3..temp7] are reserved\n');
 
-    function evaluateNext()
-    {
-        var expression = expressions.shift();
-        if (!expression) {
-            ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(dumpConsoleMessages);
-            return;
-        }
-
-        function didEvaluate(result)
-        {
-            TestRunner.assertTrue(!result.exceptionDetails, "FAIL: was thrown. Expression: " + expression);
-            UI.panels.sources._saveToTempVariable(result.object);
-            ConsoleTestRunner.waitUntilNthMessageReceived(2, evaluateNext);
-        }
-
-        UI.context.flavor(SDK.ExecutionContext).evaluate({expression: expression, objectGroup:"console"}).then(didEvaluate);
+  function evaluateNext() {
+    var expression = expressions.shift();
+    if (!expression) {
+      ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(dumpConsoleMessages);
+      return;
     }
 
-    function dumpConsoleMessages()
-    {
-        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-        TestRunner.completeTest();
+    function didEvaluate(result) {
+      TestRunner.assertTrue(!result.exceptionDetails, 'FAIL: was thrown. Expression: ' + expression);
+      UI.panels.sources._saveToTempVariable(result.object);
+      ConsoleTestRunner.waitUntilNthMessageReceived(2, evaluateNext);
     }
 
-    evaluateNext();
+    UI.context.flavor(SDK.ExecutionContext)
+        .evaluate({expression: expression, objectGroup: 'console'})
+        .then(didEvaluate);
+  }
+
+  function dumpConsoleMessages() {
+    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+    TestRunner.completeTest();
+  }
+
+  evaluateNext();
 }
 
 </script>

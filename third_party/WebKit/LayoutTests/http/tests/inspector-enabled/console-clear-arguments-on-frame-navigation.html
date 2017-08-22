@@ -22,13 +22,12 @@ function frameLoaded(event) {
     runTest();
 }
 
-function test()
-{
-    for (var message of ConsoleModel.consoleModel.messages()) {
-        var args = (message.parameters || []).map((arg) => arg.type);
-        TestRunner.addResult("Message: \"" + message.messageText + "\", arguments: [" + args.join(", ") + "]");
-    }
-    TestRunner.completeTest();
+function test() {
+  for (var message of ConsoleModel.consoleModel.messages()) {
+    var args = (message.parameters || []).map((arg) => arg.type);
+    TestRunner.addResult('Message: "' + message.messageText + '", arguments: [' + args.join(', ') + ']');
+  }
+  TestRunner.completeTest();
 }
 </script>
 

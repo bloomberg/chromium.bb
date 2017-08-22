@@ -3,15 +3,13 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
-function test()
-{
-    ConsoleTestRunner.evaluateInConsole("foo().", step1);
+function test() {
+  ConsoleTestRunner.evaluateInConsole('foo().', step1);
 
-    function step1()
-    {
-        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

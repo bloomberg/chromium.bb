@@ -23,29 +23,28 @@ function reopenWebInspector(objectId)
     }, 0);
 }
 
-async function test()
-{
-    var result = await TestRunner.RuntimeAgent.evaluate("window.objectId");
+async function test() {
+  var result = await TestRunner.RuntimeAgent.evaluate('window.objectId');
 
-    if (result.type !== "string") {
-        TestRunner.evaluateInPage("console.log('Opening front-end for the first time')");
-        result = await TestRunner.RuntimeAgent.evaluate(`({ handle : "handle" })`);
-        checkHandleInInjectedScript(result.objectId, reopenInspector);
-    } else {
-        TestRunner.evaluateInPage("console.log('Opening front-end second time')");
-        checkHandleInInjectedScript(result.value, TestRunner.completeTest);
-    }
+  if (result.type !== 'string') {
+    TestRunner.evaluateInPage('console.log(\'Opening front-end for the first time\')');
+    result = await TestRunner.RuntimeAgent.evaluate(`({ handle : "handle" })`);
+    checkHandleInInjectedScript(result.objectId, reopenInspector);
+  } else {
+    TestRunner.evaluateInPage('console.log(\'Opening front-end second time\')');
+    checkHandleInInjectedScript(result.value, TestRunner.completeTest);
+  }
 
-    function reopenInspector()
-    {
-        TestRunner.evaluateInPage("reopenWebInspector('" + escape(result.objectId) + "')");
-    }
+  function reopenInspector() {
+    TestRunner.evaluateInPage('reopenWebInspector(\'' + escape(result.objectId) + '\')');
+  }
 
-    async function checkHandleInInjectedScript(objectId, callback)
-    {
-        var properties = await TestRunner.RuntimeAgent.getProperties(objectId, false);
-        TestRunner.evaluateInPage(!properties ? "console.log('Error resolving object')" : "console.log('Resolved object successfully')", callback);
-    }
+  async function checkHandleInInjectedScript(objectId, callback) {
+    var properties = await TestRunner.RuntimeAgent.getProperties(objectId, false);
+    TestRunner.evaluateInPage(
+        !properties ? 'console.log(\'Error resolving object\')' : 'console.log(\'Resolved object successfully\')',
+        callback);
+  }
 }
 
 </script>

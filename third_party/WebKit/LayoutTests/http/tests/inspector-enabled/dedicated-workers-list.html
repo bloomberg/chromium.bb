@@ -27,31 +27,29 @@ function handleLoad()
 }
 
 
-async function test()
-{
-    var workerCount = 0;
-    var observer = {
-        targetAdded(target) {
-            if (!TestRunner.isDedicatedWorker(target))
-                return;
-            workerCount++;
-            TestRunner.addResult("Added worker: " + workerCount);
-            if (workerCount === 2) {
-                TestRunner.addResult("Done.");
-                TestRunner.completeTest();
-            }
-        },
+async function test() {
+  var workerCount = 0;
+  var observer = {
+    targetAdded(target) {
+      if (!TestRunner.isDedicatedWorker(target))
+        return;
+      workerCount++;
+      TestRunner.addResult('Added worker: ' + workerCount);
+      if (workerCount === 2) {
+        TestRunner.addResult('Done.');
+        TestRunner.completeTest();
+      }
+    },
 
-        targetRemoved() {
-        }
-    };
+    targetRemoved() {}
+  };
 
-    await TestRunner.TargetAgent.setAutoAttach(false, false);
-    // Debugger should not crash when autoconnecting is immediately followed by termination.
+  await TestRunner.TargetAgent.setAutoAttach(false, false);
+  // Debugger should not crash when autoconnecting is immediately followed by termination.
 
-    SDK.targetManager.observeTargets(observer);
-    TestRunner.TargetAgent.setAutoAttach(true, true);
-    TestRunner.addResult("Worker inspection enabled");
+  SDK.targetManager.observeTargets(observer);
+  TestRunner.TargetAgent.setAutoAttach(true, true);
+  TestRunner.addResult('Worker inspection enabled');
 };
 
 </script>

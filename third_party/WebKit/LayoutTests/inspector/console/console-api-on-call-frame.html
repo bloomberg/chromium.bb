@@ -14,32 +14,27 @@ function testFunction()
     debugger;
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        ConsoleTestRunner.evaluateInConsole("dir + clear + inspect", step3);
-    }
+  function step2() {
+    ConsoleTestRunner.evaluateInConsole('dir + clear + inspect', step3);
+  }
 
-    function step3(result)
-    {
-        TestRunner.addResult("Evaluated in console in the top frame context: dir + clear + inspect = " + result);
-        ConsoleTestRunner.evaluateInConsole("typeof $$", step4);
-    }
+  function step3(result) {
+    TestRunner.addResult('Evaluated in console in the top frame context: dir + clear + inspect = ' + result);
+    ConsoleTestRunner.evaluateInConsole('typeof $$', step4);
+  }
 
-    function step4(result)
-    {
-        TestRunner.addResult("Evaluated in console in the top frame context: typeof $$ = " + result);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step4(result) {
+    TestRunner.addResult('Evaluated in console in the top frame context: typeof $$ = ' + result);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

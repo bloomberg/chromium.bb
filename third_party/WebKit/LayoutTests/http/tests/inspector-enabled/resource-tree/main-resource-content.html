@@ -13,29 +13,28 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    ApplicationTestRunner.runAfterResourcesAreFinished(["main-resource-content-frame-utf8.php", "main-resource-content-frame.html"], step2)
+function test() {
+  ApplicationTestRunner.runAfterResourcesAreFinished(
+      ['main-resource-content-frame-utf8.php', 'main-resource-content-frame.html'], step2);
 
-    async function step2()
-    {
-        TestRunner.addResult("Requesting content: ");
-        var resource = ApplicationTestRunner.resourceMatchingURL("main-resource-content-frame.html");
-        var content = await TestRunner.PageAgent.getResourceContent(resource.frameId, resource.url);
+  async function step2() {
+    TestRunner.addResult('Requesting content: ');
+    var resource = ApplicationTestRunner.resourceMatchingURL('main-resource-content-frame.html');
+    var content = await TestRunner.PageAgent.getResourceContent(resource.frameId, resource.url);
 
-        TestRunner.assertTrue(!!content, "No content available.");
-        TestRunner.addResult("Resource url: " + resource.url);
-        TestRunner.addResult("Resource content: " + content);
+    TestRunner.assertTrue(!!content, 'No content available.');
+    TestRunner.addResult('Resource url: ' + resource.url);
+    TestRunner.addResult('Resource content: ' + content);
 
-        TestRunner.addResult("Requesting utf8 content: ");
-        resource = ApplicationTestRunner.resourceMatchingURL("main-resource-content-frame-utf8.php");
-        content = await TestRunner.PageAgent.getResourceContent(resource.frameId, resource.url);
+    TestRunner.addResult('Requesting utf8 content: ');
+    resource = ApplicationTestRunner.resourceMatchingURL('main-resource-content-frame-utf8.php');
+    content = await TestRunner.PageAgent.getResourceContent(resource.frameId, resource.url);
 
-        TestRunner.assertTrue(!!content, "No content available.");
-        TestRunner.addResult("Resource url: " + resource.url);
-        TestRunner.addResult("Resource content: " + content);
-        TestRunner.completeTest();
-    }
+    TestRunner.assertTrue(!!content, 'No content available.');
+    TestRunner.addResult('Resource url: ' + resource.url);
+    TestRunner.addResult('Resource content: ' + content);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

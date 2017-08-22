@@ -3,25 +3,21 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
-function test()
-{
-    ConsoleTestRunner.evaluateInConsole("Math.random", step1);
+function test() {
+  ConsoleTestRunner.evaluateInConsole('Math.random', step1);
 
-    function step1()
-    {
-        ConsoleTestRunner.evaluateInConsole("document.appendChild", step2);
-    }
+  function step1() {
+    ConsoleTestRunner.evaluateInConsole('document.appendChild', step2);
+  }
 
-    function step2()
-    {
-        ConsoleTestRunner.expandConsoleMessages(onExpanded);
-    }
+  function step2() {
+    ConsoleTestRunner.expandConsoleMessages(onExpanded);
+  }
 
-    function onExpanded()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function onExpanded() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

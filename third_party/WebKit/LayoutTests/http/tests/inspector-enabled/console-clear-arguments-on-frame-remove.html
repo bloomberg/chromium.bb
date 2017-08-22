@@ -29,13 +29,12 @@ function createIFrame()
     document.getElementById('container').appendChild(iframe);
 }
 
-function test()
-{
-    for (var message of ConsoleModel.consoleModel.messages()) {
-        var args = (message.parameters || []).map((arg) => arg.type);
-        TestRunner.addResult("Message: \"" + message.messageText + "\", arguments: [" + args.join(", ") + "]");
-    }
-    TestRunner.completeTest();
+function test() {
+  for (var message of ConsoleModel.consoleModel.messages()) {
+    var args = (message.parameters || []).map((arg) => arg.type);
+    TestRunner.addResult('Message: "' + message.messageText + '", arguments: [' + args.join(', ') + ']');
+  }
+  TestRunner.completeTest();
 }
 </script>
 </head>

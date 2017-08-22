@@ -21,62 +21,55 @@ function onload()
     runTest();
 }
 
-var test = function()
-{
-    var panel = UI.panels.sources;
-    var sourceFrame;
-    var scriptFormatter;
+var test = function() {
+  var panel = UI.panels.sources;
+  var sourceFrame;
+  var scriptFormatter;
 
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSetup(next)
-        {
-            SourcesTestRunner.scriptFormatter().then(function(sf) {
-                scriptFormatter = sf;
-                next();
-            });
-        },
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testSetup(next) {
+      SourcesTestRunner.scriptFormatter().then(function(sf) {
+        scriptFormatter = sf;
+        next();
+      });
+    },
 
-        function testConsoleMessagesForFormattedScripts(next)
-        {
-            SourcesTestRunner.showScriptSource("script-formatter-console.html", didShowScriptSource);
+    function testConsoleMessagesForFormattedScripts(next) {
+      SourcesTestRunner.showScriptSource('script-formatter-console.html', didShowScriptSource);
 
-            function didShowScriptSource(frame)
-            {
-                sourceFrame = frame;
-                TestRunner.evaluateInPage("f1()", didEvaluate);
-            }
+      function didShowScriptSource(frame) {
+        sourceFrame = frame;
+        TestRunner.evaluateInPage('f1()', didEvaluate);
+      }
 
-            function didEvaluate()
-            {
-                dumpConsoleMessageURLs();
-                TestRunner.addResult("Pre-format row message list:");
-                TestRunner.addResult(JSON.stringify(sourceFrame._rowMessageBuckets.keysArray()));
-                var name = panel.visibleView.uiSourceCode().name();
-                scriptFormatter._toggleFormatScriptSource();
-                SourcesTestRunner.showScriptSource(name + ":formatted", uiSourceCodeScriptFormatted);
-            }
+      function didEvaluate() {
+        dumpConsoleMessageURLs();
+        TestRunner.addResult('Pre-format row message list:');
+        TestRunner.addResult(JSON.stringify(sourceFrame._rowMessageBuckets.keysArray()));
+        var name = panel.visibleView.uiSourceCode().name();
+        scriptFormatter._toggleFormatScriptSource();
+        SourcesTestRunner.showScriptSource(name + ':formatted', uiSourceCodeScriptFormatted);
+      }
 
-            function uiSourceCodeScriptFormatted()
-            {
-                dumpConsoleMessageURLs();
-                TestRunner.addResult("Post-format row message list:");
-                var formattedSourceFrame = panel.visibleView;
-                TestRunner.addResult(JSON.stringify(formattedSourceFrame._rowMessageBuckets.keysArray()));
-                next();
-            }
-        }
-    ]);
-
-    function dumpConsoleMessageURLs()
-    {
-        var messages = Console.ConsoleView.instance()._visibleViewMessages;
-        for (var i = 0; i < messages.length; ++i) {
-            var element = messages[i].toMessageElement();
-            var anchor = element.querySelector(".console-message-anchor");
-            TestRunner.addResult(anchor.textContent);
-        }
+      function uiSourceCodeScriptFormatted() {
+        dumpConsoleMessageURLs();
+        TestRunner.addResult('Post-format row message list:');
+        var formattedSourceFrame = panel.visibleView;
+        TestRunner.addResult(JSON.stringify(formattedSourceFrame._rowMessageBuckets.keysArray()));
+        next();
+      }
     }
-}
+  ]);
+
+  function dumpConsoleMessageURLs() {
+    var messages = Console.ConsoleView.instance()._visibleViewMessages;
+    for (var i = 0; i < messages.length; ++i) {
+      var element = messages[i].toMessageElement();
+      var anchor = element.querySelector('.console-message-anchor');
+      TestRunner.addResult(anchor.textContent);
+    }
+  }
+};
 
 </script>
 

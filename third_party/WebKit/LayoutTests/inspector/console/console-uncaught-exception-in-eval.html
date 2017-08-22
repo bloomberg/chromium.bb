@@ -31,33 +31,28 @@ function doAnonymousEvalWith()
     setTimeout(eval.bind(this, source), 0);
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("doEvalWithSourceURL()", step2.bind(this));
+function test() {
+  TestRunner.evaluateInPage('doEvalWithSourceURL()', step2.bind(this));
 
-    function step2()
-    {
-        TestRunner.evaluateInPage("doAnonymousEvalWith()", step3.bind(this));
-    }
+  function step2() {
+    TestRunner.evaluateInPage('doAnonymousEvalWith()', step3.bind(this));
+  }
 
-    function step3()
-    {
-        if (Console.ConsoleView.instance()._visibleViewMessages.length < 2)
-            ConsoleTestRunner.addConsoleSniffer(step3);
-        else
-            step4();
-    }
+  function step3() {
+    if (Console.ConsoleView.instance()._visibleViewMessages.length < 2)
+      ConsoleTestRunner.addConsoleSniffer(step3);
+    else
+      step4();
+  }
 
-    function step4()
-    {
-        ConsoleTestRunner.expandConsoleMessages(onExpanded);
-    }
+  function step4() {
+    ConsoleTestRunner.expandConsoleMessages(onExpanded);
+  }
 
-    function onExpanded()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function onExpanded() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

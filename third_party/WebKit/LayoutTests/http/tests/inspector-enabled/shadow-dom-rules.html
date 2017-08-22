@@ -16,20 +16,17 @@ function createShadowRoot()
     runTest();
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testInit(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("inner", next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function testInit(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inner', next);
+    },
 
-        function testDumpStyles(next)
-        {
-            ElementsTestRunner.dumpSelectedElementStyles(true);
-            next();
-        }
-    ]);
+    function testDumpStyles(next) {
+      ElementsTestRunner.dumpSelectedElementStyles(true);
+      next();
+    }
+  ]);
 }
 </script>
 </head>

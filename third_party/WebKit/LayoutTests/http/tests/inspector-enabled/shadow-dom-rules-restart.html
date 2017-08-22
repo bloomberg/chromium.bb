@@ -27,33 +27,29 @@ function createShadowRoot()
     runTest();
 }
 
-async function test()
-{
-    var result = await TestRunner.RuntimeAgent.evaluate("window.didReopen");
+async function test() {
+  var result = await TestRunner.RuntimeAgent.evaluate('window.didReopen');
 
-    if (result.type !== "number") {
-        TestRunner.evaluateInPage("console.log('Opening front-end for the first time')");
-        runTests(reopenInspector);
-    } else {
-        TestRunner.evaluateInPage("console.log('Opening front-end second time')");
-        runTests(TestRunner.completeTest);
+  if (result.type !== 'number') {
+    TestRunner.evaluateInPage('console.log(\'Opening front-end for the first time\')');
+    runTests(reopenInspector);
+  } else {
+    TestRunner.evaluateInPage('console.log(\'Opening front-end second time\')');
+    runTests(TestRunner.completeTest);
+  }
+
+  function reopenInspector() {
+    TestRunner.evaluateInPage('reopenWebInspector()');
+  }
+
+  function runTests(callback) {
+    ElementsTestRunner.selectNodeAndWaitForStyles('inner', step2);
+
+    function step2() {
+      ElementsTestRunner.dumpSelectedElementStyles(true);
+      callback();
     }
-
-    function reopenInspector()
-    {
-        TestRunner.evaluateInPage("reopenWebInspector()");
-    }
-
-    function runTests(callback)
-    {
-        ElementsTestRunner.selectNodeAndWaitForStyles("inner", step2);
-
-        function step2()
-        {
-            ElementsTestRunner.dumpSelectedElementStyles(true);
-            callback();
-        }
-    }
+  }
 }
 </script>
 </head>

@@ -30,8 +30,7 @@ function destroyIframe() {
   window.iframe = null;
 }
 
-async function test()
-{
+async function test() {
   await new Promise(f => SourcesTestRunner.startDebuggerTest(f, true));
 
   await TestRunner.evaluateInPageAsync('setup()');
@@ -45,9 +44,12 @@ async function test()
   dump();
 
   var mainFrame = TestRunner.resourceTreeModel.mainFrame;
-  var mainExecutionContext = TestRunner.runtimeModel.executionContexts().find(context => context.frameId === mainFrame.id);
-  var childFrame = TestRunner.resourceTreeModel.frames().find(frame => frame !== TestRunner.resourceTreeModel.mainFrame);
-  var childExecutionContext = TestRunner.runtimeModel.executionContexts().find(context => context.frameId === childFrame.id);
+  var mainExecutionContext =
+      TestRunner.runtimeModel.executionContexts().find(context => context.frameId === mainFrame.id);
+  var childFrame =
+      TestRunner.resourceTreeModel.frames().find(frame => frame !== TestRunner.resourceTreeModel.mainFrame);
+  var childExecutionContext =
+      TestRunner.runtimeModel.executionContexts().find(context => context.frameId === childFrame.id);
   TestRunner.addResult('');
   TestRunner.addResult('Selected iframe');
   UI.context.setFlavor(SDK.ExecutionContext, childExecutionContext);

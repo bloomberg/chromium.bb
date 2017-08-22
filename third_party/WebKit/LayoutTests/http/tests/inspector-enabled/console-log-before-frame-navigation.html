@@ -24,17 +24,16 @@ function receiveMessage(event) {
     runTest();
 }
 
-function test()
-{
-    var messages = TestRunner.consoleModel.messages();
-    TestRunner.addResult("Received console messages:");
-    for (var i = 0; i < messages.length; ++i) {
-        var m = messages[i];
-        TestRunner.addResult("Message[" + i + "]:");
-        TestRunner.addResult("Message: " + Bindings.displayNameForURL(m.url) + ":" + m.line + " " + m.messageText);
-    }
-    TestRunner.addResult("TEST COMPLETE.");
-    TestRunner.completeTest();
+function test() {
+  var messages = TestRunner.consoleModel.messages();
+  TestRunner.addResult('Received console messages:');
+  for (var i = 0; i < messages.length; ++i) {
+    var m = messages[i];
+    TestRunner.addResult('Message[' + i + ']:');
+    TestRunner.addResult('Message: ' + Bindings.displayNameForURL(m.url) + ':' + m.line + ' ' + m.messageText);
+  }
+  TestRunner.addResult('TEST COMPLETE.');
+  TestRunner.completeTest();
 }
 
 </script>

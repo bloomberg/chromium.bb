@@ -11,28 +11,24 @@ function startWorker()
     worker.postMessage("");
 }
 
-function test()
-{
-    ConsoleTestRunner.addConsoleViewSniffer(checkConsoleMessages, true);
-    TestRunner.evaluateInPage("setTimeout(startWorker, 0)");
+function test() {
+  ConsoleTestRunner.addConsoleViewSniffer(checkConsoleMessages, true);
+  TestRunner.evaluateInPage('setTimeout(startWorker, 0)');
 
-    function checkConsoleMessages()
-    {
-        var count = ConsoleTestRunner.consoleMessagesCount();
-        if (count === 2)
-            Common.console.showPromise().then(expand);
-    }
+  function checkConsoleMessages() {
+    var count = ConsoleTestRunner.consoleMessagesCount();
+    if (count === 2)
+      Common.console.showPromise().then(expand);
+  }
 
-    function expand()
-    {
-        ConsoleTestRunner.expandConsoleMessages(dump);
-    }
+  function expand() {
+    ConsoleTestRunner.expandConsoleMessages(dump);
+  }
 
-    function dump()
-    {
-        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-        TestRunner.completeTest();
-    }
+  function dump() {
+    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

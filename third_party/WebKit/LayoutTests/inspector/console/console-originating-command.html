@@ -4,14 +4,12 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
-function test()
-{
-    ConsoleTestRunner.evaluateInConsole("1 + 1", step1);
-    function step1()
-    {
-        ConsoleTestRunner.dumpConsoleMessages(true);
-        TestRunner.completeTest();
-    }
+function test() {
+  ConsoleTestRunner.evaluateInConsole('1 + 1', step1);
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages(true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

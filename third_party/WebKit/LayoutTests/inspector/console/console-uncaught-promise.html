@@ -93,29 +93,25 @@ function promiseTest9()
     navigator.serviceWorker.register('404');
 }
 
-function test()
-{
-    ConsoleTestRunner.addConsoleViewSniffer(checkConsoleMessages, true);
-    Common.console.showPromise();
+function test() {
+  ConsoleTestRunner.addConsoleViewSniffer(checkConsoleMessages, true);
+  Common.console.showPromise();
 
-    checkConsoleMessages();
+  checkConsoleMessages();
 
-    function checkConsoleMessages()
-    {
-        TestRunner.evaluateInPage("runNextPromiseTest()", callback);
+  function checkConsoleMessages() {
+    TestRunner.evaluateInPage('runNextPromiseTest()', callback);
 
-        function callback(result)
-        {
-            if (!result.value)
-                ConsoleTestRunner.expandConsoleMessages(dump);
-        }
+    function callback(result) {
+      if (!result.value)
+        ConsoleTestRunner.expandConsoleMessages(dump);
     }
+  }
 
-    function dump()
-    {
-        ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-        TestRunner.completeTest();
-    }
+  function dump() {
+    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

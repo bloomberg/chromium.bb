@@ -8,15 +8,13 @@ function startWorker()
     var worker = new Worker("resources/worker.js");
 }
 
-function test()
-{
-    TestRunner.addSniffer(SDK.RuntimeModel.prototype, "_executionContextCreated", contextCreated);
-    TestRunner.evaluateInPage("startWorker()");
+function test() {
+  TestRunner.addSniffer(SDK.RuntimeModel.prototype, '_executionContextCreated', contextCreated);
+  TestRunner.evaluateInPage('startWorker()');
 
-    function contextCreated()
-    {
-        ConsoleTestRunner.changeExecutionContext("\u2699 worker.js");
-        ConsoleTestRunner.evaluateInConsole("\
+  function contextCreated() {
+    ConsoleTestRunner.changeExecutionContext('\u2699 worker.js');
+    ConsoleTestRunner.evaluateInConsole('\
             function foo()\n\
             {\n\
                 throw {a:239};\n\
@@ -25,19 +23,17 @@ function test()
             {\n\
                 foo();\n\
             }\n\
-            boo();", step2);
-    }
+            boo();', step2);
+  }
 
-    function step2()
-    {
-        ConsoleTestRunner.expandConsoleMessages(step3);
-    }
+  function step2() {
+    ConsoleTestRunner.expandConsoleMessages(step3);
+  }
 
-    function step3()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function step3() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 };
 </script>
 </head>

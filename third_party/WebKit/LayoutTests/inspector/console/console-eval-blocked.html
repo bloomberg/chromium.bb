@@ -4,14 +4,12 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline'">
 <script>
-function test()
-{
-    ConsoleTestRunner.evaluateInConsole("1+2", step1);
-    function step1()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+function test() {
+  ConsoleTestRunner.evaluateInConsole('1+2', step1);
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>
