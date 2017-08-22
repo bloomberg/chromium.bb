@@ -42,6 +42,7 @@
 <translation id="138361230106469022">Здравствуйте, <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1384959399684842514">Скачивание приостановлено</translation>
+<translation id="1389236224998445076">Сэкономлено:</translation>
 <translation id="1389974829397082527">Закладок пока нет</translation>
 <translation id="1397811292916898096">Поиск в <ph name="PRODUCT_NAME" /></translation>
 <translation id="1402229579576898974">Рекомендации Chrome: <ph name="NUMBER_OF_SUGGESTIONS" /></translation>
@@ -103,6 +104,7 @@
 <translation id="1966710179511230534">Обновите учетные данные</translation>
 <translation id="1974060860693918893">Дополнительные</translation>
 <translation id="1984937141057606926">Разрешено, кроме сторонних сайтов</translation>
+<translation id="1989112275319619282">Выбрать</translation>
 <translation id="1993768208584545658">Сайт <ph name="SITE" /> запрашивает подключение</translation>
 <translation id="1994173015038366702">Адрес сайта</translation>
 <translation id="200815880754187296">Другие приложения: <ph name="KILOBYTES" /> КБ</translation>
@@ -129,6 +131,7 @@
 <translation id="219985413780390209">Защитить устройство от опасных сайтов</translation>
 <translation id="2206488550163399966">Приложение "<ph name="APP_NAME" />" (<ph name="APP_URL" />)</translation>
 <translation id="2227444325776770048">Продолжить как <ph name="USER_FULL_NAME" /></translation>
+<translation id="2266890032547182881">Статистика по расходу трафика</translation>
 <translation id="2268044343513325586">Уточнить</translation>
 <translation id="2286841657746966508">Платежный адрес</translation>
 <translation id="2315043854645842844">Сертификат, выбранный клиентом, не поддерживается операционной системой.</translation>
@@ -347,6 +350,7 @@
 <translation id="4522570452068850558">Подробнее</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Выбор папки</translation>
+<translation id="4550003330909367850">Чтобы просмотреть или скопировать пароль, включите блокировку экрана на этом устройстве.</translation>
 <translation id="4558311620361989323">Работа с веб-страницами</translation>
 <translation id="4572422548854449519">Войдите в управляемый аккаунт</translation>
 <translation id="4581964774250883625">Вы перешли в режим инкогнито</translation>
@@ -375,11 +379,13 @@
 <translation id="4807963036345170158">Режим экономии трафика отключен</translation>
 <translation id="4816465935029283692">Типы данных</translation>
 <translation id="4837753911714442426">Открыть параметры печати страницы</translation>
+<translation id="4842092870884894799">Открыто всплывающее окно создания пароля</translation>
 <translation id="4850886885716139402">Посмотреть</translation>
 <translation id="4860895144060829044">Позвонить</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4885273946141277891">Конфликт версий Chrome</translation>
 <translation id="4910889077668685004">Платежные приложения</translation>
+<translation id="4913161338056004800">Сбросить статистику</translation>
 <translation id="4913169188695071480">Остановить обновление</translation>
 <translation id="4915549754973153784">Поиск устройств… <ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="4943872375798546930">Нет результатов</translation>
@@ -443,6 +449,7 @@
 <translation id="5487521232677179737">Удалить данные</translation>
 <translation id="5487729733663684359">Невозможно обновить Chrome в текущей версии Android.</translation>
 <translation id="5490801865084500306">Выбрана вкладка Закладки</translation>
+<translation id="550684401320795253">Chrome обновляется…</translation>
 <translation id="5512137114520586844">Этим аккаунтом управляет <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Отключено администратором устройства</translation>
 <translation id="5517095782334947753">Вам доступны закладки, история, пароли и другие настройки пользователя <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +489,7 @@
 <translation id="5763382633136178763">Вкладки в режиме инкогнито</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5777170031995031090">Укажите, как Google может использовать историю просмотров для персонализации Поиска, Рекламы и других сервисов.</translation>
+<translation id="5779929835642192302">Доступны подходящие варианты</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="5817918615728894473">Подключить</translation>
@@ -553,7 +561,6 @@
 <translation id="6437478888915024427">Информация о странице</translation>
 <translation id="6447842834002726250">Файлы сookie</translation>
 <translation id="6448273550210938826">Поиск и предложения URL</translation>
-<translation id="6463070039183944536">Добавление…</translation>
 <translation id="6475951671322991020">Скачать видео</translation>
 <translation id="6482749332252372425">Не удалось скачать файл <ph name="FILE_NAME" />, так как места для хранения данных недостаточно.</translation>
 <translation id="6508332297647760142">Интернет вокруг нас</translation>
@@ -638,6 +645,7 @@
 <translation id="7189372733857464326">Обновление сервисов Google Play…</translation>
 <translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7191430249889272776">Вкладка открыта в фоновом режиме</translation>
+<translation id="723171743924126238">Выберите изображения</translation>
 <translation id="7243308994586599757">Доступные параметры указаны в нижней части экрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> использует ваше местоположение, чтобы показывать результаты поиска по адресам.</translation>
 <translation id="7251326866581677552">Заблокировано на определенных сайтах</translation>
@@ -648,6 +656,7 @@
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Поделиться 1 выбранным объектом}one{Поделиться # выбранным объектом}few{Поделиться # выбранными объектами}many{Поделиться # выбранными объектами}other{Поделиться # выбранного объекта}}</translation>
 <translation id="7366340029385295517">Транслируется на экран устройства "<ph name="SCREEN_NAME" />"</translation>
+<translation id="7374228672268453233">Использовано:</translation>
 <translation id="7375125077091615385">Тип:</translation>
 <translation id="7378627244592794276">Нет</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -792,6 +801,7 @@
 <translation id="8812260976093120287">На некоторых сайтах вы можете совершать платежи со своего устройства с помощью перечисленных выше приложений.</translation>
 <translation id="8820817407110198400">Закладки</translation>
 <translation id="883635517171802338">Блокировать всплывающие окна на сайтах (рекомендуется)</translation>
+<translation id="883806473910249246">При скачивании контента произошла ошибка.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>

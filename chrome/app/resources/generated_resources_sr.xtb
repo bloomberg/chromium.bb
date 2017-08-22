@@ -1362,7 +1362,6 @@
 <translation id="2966449113954629791">Можда сте искористили дозвољену количину података за мобилне уређаје. Посетите портал за активацију за <ph name="NAME" /> да бисте купили још података.</translation>
 <translation id="2966598748518102999">Побољшај гласовну претрагу слањем звучног фрагмента „Ок Google“ и неколико секунди пре тога Google-у.</translation>
 <translation id="2966937470348689686">Управљајте Android подешавањима</translation>
-<translation id="2967544384642772068">Затвори</translation>
 <translation id="2971033837577180453">&lt;span&gt;ИД:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">смањивање осветљености</translation>
 <translation id="2972557485845626008">Фирмвер</translation>
@@ -1513,7 +1512,6 @@
 <translation id="3165390001037658081">Неки мобилни оператери могу да блокирају ову функцију.</translation>
 <translation id="3166571619128686629">Кликните или кажите „Ок Google“ да бисте започели гласовну претрагу</translation>
 <translation id="3170072451822350649">Можете и да прескочите пријављивање и да <ph name="LINK_START" />прегледате као гост<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Задржи фокус лупе у центру екрана</translation>
 <translation id="3177048931975664371">Кликните да бисте сакрили лозинку</translation>
 <translation id="3177909033752230686">Језик странице:</translation>
 <translation id="3180365125572747493">Унесите лозинку да бисте шифровали ову датотеку сертификата.</translation>
@@ -2051,8 +2049,6 @@
   Желите ли одмах да покренете <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Назад</translation>
 <translation id="3943857333388298514">Налепи</translation>
-<translation id="3944266449990965865">Цео екран</translation>
-<translation id="3946471364541867667">Подешавања TalkBack-а</translation>
 <translation id="3947376313153737208">Није изабрана ниједна ставка</translation>
 <translation id="3948116654032448504">&amp;Потражи слику у претраживачу <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Добро дошли у Hangouts Meet!</translation>
@@ -2359,7 +2355,6 @@
 <translation id="4450974146388585462">Дијагностикуј</translation>
 <translation id="4452426408005428395">Нема везе</translation>
 <translation id="4454939697743986778">Администратор система је инсталирао овај сертификат.</translation>
-<translation id="445891990714234385">Подешавања ChromeVox-а</translation>
 <translation id="445923051607553918">Придружите се Wi-Fi мрежи</translation>
 <translation id="4462159676511157176">Прилагођени сервери назива</translation>
 <translation id="4467100756425880649">Галерија Chrome веб-продавнице</translation>
@@ -2657,7 +2652,6 @@
 <translation id="4910673011243110136">Приватне мреже</translation>
 <translation id="4911714727432509308">Ниједном додатку нису додељене тастерске пречице.</translation>
 <translation id="4912643508233590958">Буђења из стања мировања</translation>
-<translation id="4916679969857390442">Објектив</translation>
 <translation id="491691592645955587">Пређите на безбедан прегледач</translation>
 <translation id="4917385247580444890">Јак</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> жели да комуницира са додатком „<ph name="EXTENSION_NAME" />“</translation>
@@ -2722,7 +2716,6 @@
 <translation id="5011739343823725107">Покретање позадинског механизма синхронизације није успело</translation>
 <translation id="5015344424288992913">Одређује се прокси...</translation>
 <translation id="5015762597229892204">Избор апликације управљачког програма за штампач</translation>
-<translation id="5016049845330225051">Дугме за брисање текста из оквира за претрагу</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Управљај на страницама при покретању</translation>
 <translation id="5023943178135355362">Обрнуто померање <ph name="BEGIN_LINK" />Сазнајте више<ph name="END_LINK" /></translation>
@@ -3481,7 +3474,6 @@
 <translation id="6151771661215463137">Датотека већ постоји у директоријуму са преузимањима.</translation>
 <translation id="615436196126345398">Протокол</translation>
 <translation id="6154697846084421647">Тренутно пријављен</translation>
-<translation id="6156262341071374681">Проширите на све апликације</translation>
 <translation id="6156323911414505561">Прикажи траку са обележивачима</translation>
 <translation id="6156863943908443225">Кеш скрипте</translation>
 <translation id="6156960295318603523">Подешавања језика</translation>
@@ -4048,7 +4040,6 @@
 <translation id="6996946928646015361">Безбедносни модул је онемогућен или недостаје.</translation>
 <translation id="6998711733709403587">Изабраних директоријума: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Региструј уређај за видео конференције</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Следећа страница је престала да се одазива. Можете да сачекате да почне да се одазива или да је затворите.}one{Следеће странице су престале да се одазивају. Можете да чекате да почну да се одазивају или да их затворите.}few{Следеће странице су престале да се одазивају. Можете да чекате да почну да се одазивају или да их затворите.}other{Следеће странице су престале да се одазивају. Можете да чекате да почну да се одазивају или да их затворите.}}</translation>
 <translation id="7002055706763150362">Да бисте подесили Smart Lock за Chromebook, Google мора да провери да ли сте то ви – унесите лозинку да бисте почели.</translation>
 <translation id="7002454948392136538">Избор менаџера за овог корисника под надзором</translation>
 <translation id="7003257528951459794">Фреквенција:</translation>

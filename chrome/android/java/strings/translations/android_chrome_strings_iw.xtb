@@ -103,6 +103,7 @@
 <translation id="1966710179511230534">עדכן את פרטי הכניסה שלך.</translation>
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1984937141057606926">מותר, מלבד צד שלישי</translation>
+<translation id="1989112275319619282">דפדף</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> רוצה לבצע התאמה עם</translation>
 <translation id="1994173015038366702">כתובת אתר</translation>
 <translation id="200815880754187296">‏‎<ph name="KILOBYTES" /> KB ליישומים אחרים</translation>
@@ -375,6 +376,7 @@
 <translation id="4807963036345170158">‏חוסך הנתונים (Data Saver) כבוי</translation>
 <translation id="4816465935029283692">סוגי נתונים</translation>
 <translation id="4837753911714442426">פתח אפשרויות להדפסת דפים</translation>
+<translation id="4842092870884894799">מציג את החלון הקופץ של יצירת סיסמה</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4860895144060829044">התקשר</translation>
 <translation id="4881695831933465202">פתח</translation>
@@ -443,6 +445,7 @@
 <translation id="5487521232677179737">נקה נתונים</translation>
 <translation id="5487729733663684359">‏עדכוני Chrome אינם נתמכים עוד בגרסה הזו של Android.</translation>
 <translation id="5490801865084500306">כרטיסיית הסימניות נבחרה</translation>
+<translation id="550684401320795253">‏מעדכן את Chrome...</translation>
 <translation id="5512137114520586844">החשבון הזה מנוהל על ידי <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">האפשרות הזו הושבתה על-ידי מנהל המערכת של המכשיר</translation>
 <translation id="5517095782334947753">יש לך סימניות, היסטוריה, סיסמאות והגדרות נוספות מ-<ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +485,7 @@
 <translation id="5763382633136178763">כרטיסיות גלישה בסתר</translation>
 <translation id="5765780083710877561">תיאור:</translation>
 <translation id="5777170031995031090">‏שלוט באופן שבו חברת Google משתמשת בהיסטוריית הגלישה לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים.</translation>
+<translation id="5779929835642192302">הצעות זמינות</translation>
 <translation id="5804241973901381774">הרשאות</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{לפני שעה}two{לפני שעתיים}many{לפני # שעות}other{לפני # שעות}}</translation>
 <translation id="5817918615728894473">התאם</translation>
@@ -553,7 +557,6 @@
 <translation id="6437478888915024427">פרטי דף</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
 <translation id="6448273550210938826">הצעות חיפוש וכתובות אתר</translation>
-<translation id="6463070039183944536">מוסיף...</translation>
 <translation id="6475951671322991020">הורד סרטון</translation>
 <translation id="6482749332252372425">הורדת <ph name="FILE_NAME" /> נכשלה מאחר שחסר מקום אחסון.</translation>
 <translation id="6508332297647760142">שיתוף האינטרנט הווירטופיזי</translation>
@@ -638,6 +641,7 @@
 <translation id="7189372733857464326">‏המערכת ממתינה שיסתיים העדכון של שירותי Google Play</translation>
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7191430249889272776">הכרטיסייה נפתחה ברקע.</translation>
+<translation id="723171743924126238">בחר תמונות</translation>
 <translation id="7243308994586599757">אפשרויות הזמינות באזור החלק התחתון של המסך</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> משתמש במיקום שלך כדי להציג תוצאות חיפוש מקומיות</translation>
 <translation id="7251326866581677552">חסומות באתרים מסוימים</translation>
@@ -744,7 +748,7 @@
 <translation id="8223946939421658889">נקה נתונים</translation>
 <translation id="8250920743982581267">מסמכים</translation>
 <translation id="8260126382462817229">נסה להיכנס שוב</translation>
-<translation id="8261506727792406068">מחק</translation>
+<translation id="8261506727792406068">מחיקה</translation>
 <translation id="8275818695183729150">התר (בשביל חיפושים בסרגל הכתובות)</translation>
 <translation id="8283853025636624853">מסנכרן עם <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">כרטיסיות רגילות</translation>

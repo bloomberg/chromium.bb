@@ -1366,7 +1366,6 @@ Pretende pará-lo?</translation>
 <translation id="2966449113954629791">Poderá ter atingido o limite de utilização dos dados móveis. Visite o portal de ativação <ph name="NAME" /> para comprar mais dados.</translation>
 <translation id="2966598748518102999">Melhore a pesquisa por voz através do envio do som de "Ok Google" precedido por alguns segundos para o Google.</translation>
 <translation id="2966937470348689686">Gerir as preferências do Android</translation>
-<translation id="2967544384642772068">Desativar</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">diminuir brilho</translation>
 <translation id="2972557485845626008">Firmware</translation>
@@ -1517,7 +1516,6 @@ Verifique o seu email em <ph name="ACCOUNT_EMAIL" /> para obter estas e outras i
 <translation id="3165390001037658081">Alguns operadores podem bloquear esta funcionalidade.</translation>
 <translation id="3166571619128686629">Clique ou diga "OK Google" para iniciar uma pesquisa por voz</translation>
 <translation id="3170072451822350649">Também pode ignorar o início de sessão e <ph name="LINK_START" />navegar como Convidado<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Manter o foco da lupa centrado no ecrã</translation>
 <translation id="3177048931975664371">Clicar para ocultar a palavra-passe</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3180365125572747493">Introduza uma palavra-passe para encriptar este ficheiro de certificado.</translation>
@@ -2055,8 +2053,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
   Pretende iniciar <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Anterior</translation>
 <translation id="3943857333388298514">Colar</translation>
-<translation id="3944266449990965865">Ecrã Inteiro</translation>
-<translation id="3946471364541867667">Definições do TalkBack</translation>
 <translation id="3947376313153737208">Sem selecção</translation>
 <translation id="3948116654032448504">Pe&amp;squisar Imagem no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Bem-vindo ao Hangouts Meet!</translation>
@@ -2363,7 +2359,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4450974146388585462">Diagnosticar</translation>
 <translation id="4452426408005428395">Ignorar</translation>
 <translation id="4454939697743986778">Este certificado foi instalado pelo seu administrador do sistema.</translation>
-<translation id="445891990714234385">Definições do ChromeVox</translation>
 <translation id="445923051607553918">Ligar a uma rede Wi-Fi</translation>
 <translation id="4462159676511157176">Servidores de nome personalizado</translation>
 <translation id="4467100756425880649">Galeria da Web Store do Chrome</translation>
@@ -2661,7 +2656,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="4910673011243110136">Redes privadas</translation>
 <translation id="4911714727432509308">Não existem extensões com atalhos de teclado atribuídos.</translation>
 <translation id="4912643508233590958">Reativações após inatividade</translation>
-<translation id="4916679969857390442">Lente</translation>
 <translation id="491691592645955587">Mude para um navegador seguro</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> pretende comunicar com a extensão "<ph name="EXTENSION_NAME" />"</translation>
@@ -2726,7 +2720,6 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5011739343823725107">Falha ao iniciar o back-end da sincronização</translation>
 <translation id="5015344424288992913">A resolver proxy...</translation>
 <translation id="5015762597229892204">Selecionar uma aplicação de controlador de impressora</translation>
-<translation id="5016049845330225051">Botão de limpar o texto da caixa de pesquisa</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Gerir nas páginas iniciais</translation>
 <translation id="5023943178135355362">Deslocamento australiano <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -3484,7 +3477,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6151771661215463137">O ficheiro já existe na sua pasta de transferências.</translation>
 <translation id="615436196126345398">Protocolo</translation>
 <translation id="6154697846084421647">Atualmente com sessão iniciada</translation>
-<translation id="6156262341071374681">Expandir para ver todas as aplicações</translation>
 <translation id="6156323911414505561">Mostrar barra de marcadores</translation>
 <translation id="6156863943908443225">Cache de script</translation>
 <translation id="6156960295318603523">Definições de idioma</translation>
@@ -4052,7 +4044,6 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="6996946928646015361">O módulo seguro está desativado ou não existe.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
 <translation id="6998793565256476099">Inscrever dispositivo para videoconferência</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{A página seguinte deixou de responder. Pode esperar pela respetiva resposta ou desativá-la.}one{The following pages have become unresponsive. You can wait for them to become responsive or kill them.}other{As páginas seguintes deixaram de responder. Pode esperar pela respetiva resposta ou desativá-las.}}</translation>
 <translation id="7002055706763150362">Para configurar o Smart Lock para Chromebook, a Google tem de ter a certeza de que é o utilizador. Introduza a sua palavra-passe para começar.</translation>
 <translation id="7002454948392136538">Escolher o gestor para este utilizador supervisionado</translation>
 <translation id="7003257528951459794">Frequência:</translation>

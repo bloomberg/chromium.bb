@@ -42,6 +42,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="138361230106469022">Hi, <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">Download paused</translation>
+<translation id="1389236224998445076">Data saved:</translation>
 <translation id="1389974829397082527">No bookmarks here</translation>
 <translation id="1397811292916898096">Search with <ph name="PRODUCT_NAME" /></translation>
 <translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> Chrome suggestions</translation>
@@ -103,6 +104,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="1966710179511230534">Please update your sign-in details.</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1984937141057606926">Allowed, except third-party</translation>
+<translation id="1989112275319619282">Browse</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> wants to pair</translation>
 <translation id="1994173015038366702">Site URL</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB other apps</translation>
@@ -129,6 +131,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="219985413780390209">Protect you and your device from dangerous sites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, web app. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continue as <ph name="USER_FULL_NAME" /></translation>
+<translation id="2266890032547182881">Data usage breakdown</translation>
 <translation id="2268044343513325586">Refine</translation>
 <translation id="2286841657746966508">Billing address</translation>
 <translation id="2315043854645842844">Client side certificate selection is not supported by the operating system.</translation>
@@ -347,6 +350,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4522570452068850558">Details</translation>
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Choose folder</translation>
+<translation id="4550003330909367850">To view or copy your password here, set screen lock on this device.</translation>
 <translation id="4558311620361989323">Web page shortcuts</translation>
 <translation id="4572422548854449519">Sign in to managed account</translation>
 <translation id="4581964774250883625">You’ve gone incognito.</translation>
@@ -375,11 +379,13 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4807963036345170158">Data Saver is off</translation>
 <translation id="4816465935029283692">Data types</translation>
 <translation id="4837753911714442426">Open options to print page</translation>
+<translation id="4842092870884894799">Showing password generation pop-up</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4860895144060829044">Call</translation>
 <translation id="4881695831933465202">Open</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
 <translation id="4910889077668685004">Payment apps</translation>
+<translation id="4913161338056004800">Reset statistics</translation>
 <translation id="4913169188695071480">Stop refreshing</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /> while scanning for devices…</translation>
 <translation id="4943872375798546930">No results</translation>
@@ -443,6 +449,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="5487521232677179737">Clear data</translation>
 <translation id="5487729733663684359">Chrome updates are no longer supported for this version of Android.</translation>
 <translation id="5490801865084500306">Bookmarks tab selected</translation>
+<translation id="550684401320795253">Updating Chrome...</translation>
 <translation id="5512137114520586844">This account is managed by <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Disabled by the administrator of this device</translation>
 <translation id="5517095782334947753">You have bookmarks, history, passwords and other settings from <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +489,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="5763382633136178763">Incognito tabs</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5777170031995031090">Control how Google uses your browsing history to personalise Search, ads and other Google services.</translation>
+<translation id="5779929835642192302">Suggestions available</translation>
 <translation id="5804241973901381774">Permissions</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# hour ago}other{# hours ago}}</translation>
 <translation id="5817918615728894473">Pair</translation>
@@ -553,7 +561,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6437478888915024427">Page info</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Search and URL suggestions</translation>
-<translation id="6463070039183944536">Adding...</translation>
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> download failed due to lack of storage space.</translation>
 <translation id="6508332297647760142">Physical Web Sharing</translation>
@@ -638,6 +645,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7189372733857464326">Waiting for Google Play Services to finish updating</translation>
 <translation id="7189598951263744875">Share...</translation>
 <translation id="7191430249889272776">Tab opened in background.</translation>
+<translation id="723171743924126238">Select images</translation>
 <translation id="7243308994586599757">Options available near bottom of the screen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> uses your location to show local search results</translation>
 <translation id="7251326866581677552">Blocked from some sites</translation>
@@ -648,6 +656,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
 <translation id="7366340029385295517">Casting to <ph name="SCREEN_NAME" /></translation>
+<translation id="7374228672268453233">Data used:</translation>
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7378627244592794276">Nope</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -790,6 +799,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
 <translation id="883635517171802338">Block sites from showing pop-ups (recommended)</translation>
+<translation id="883806473910249246">An error occurred while downloading the content.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, tab</translation>
 <translation id="885701979325669005">Storage</translation>

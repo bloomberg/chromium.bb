@@ -23,7 +23,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="1520828917794284345">Badilisha ukubwa wa eneo-kazi ili litoshe</translation>
 <translation id="154040539590487450">Imeshindwa kuanza huduma ya ufikiaji wa mbali.</translation>
 <translation id="1546934824884762070">Hitilafu isiyotarajiwa imetokea. Tafadhali ripoti tatizo hili kwa wasanidi programu.</translation>
-<translation id="1619813076098775562">Imefunga muunganisho kwenye kifaa kinachotuma maudhui.</translation>
 <translation id="1643640058022401035">Kuondoka kwenye ukurasa huu kutakamilisha kipindi chako cha Chromoting.</translation>
 <translation id="1654128982815600832">Inawasha miunganisho ya mbali kwa kompyuta hii...</translation>
 <translation id="170207782578677537">Ilishindwa kusajili kompyuta hii.</translation>
@@ -80,6 +79,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="2676780859508944670">Inafanya kazi…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Usasishaji wa programu kwa kawaida hufanyika kiotomatiki, lakini wakati mwingine unaweza kushindwa japo kwa nadra. Kusasisha programu kunapaswa kuchukua si zaidi ya dakika chache na kunaweza kufanyika wakati imeunganishwa kwa kompyuta yako kwa mbali.</translation>
+<translation id="2758123043070977469">Hitilafu imetokea wakati wa kuthibitisha, tafadhali ingia katika akaunti tena.</translation>
 <translation id="2803375539583399270">Weka PIN</translation>
 <translation id="2841013758207633010">Muda</translation>
 <translation id="2851754573186462851">Utiririshaji wa Programu ya Chromium</translation>
@@ -187,7 +187,6 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="5419418238395129586">Mara ya mwisho kuwa mtandaoni: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Pangishi imezima.</translation>
 <translation id="5510035215749041527">Ondoa sasa</translation>
-<translation id="5537725057119320332">Tuma</translation>
 <translation id="5593560073513909978">Huduma haipatikani kwa muda. Tafadhali jaribu tena baadaye.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Kwenye kompyuta hii</translation>
@@ -196,10 +195,10 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="5708869785009007625">Kwa sasa kompyuta yako inashirikiwa na <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Tarehe ya kuoanisha</translation>
 <translation id="579702532610384533">Unganisha upya</translation>
+<translation id="5810269635982033450">Skrini inafanya kazi kama padi ya ufuatiliaji</translation>
 <translation id="5841343754884244200">Onyesha chaguo</translation>
 <translation id="5843054235973879827">Kwa nini hii ni salama?</translation>
 <translation id="5859141382851488196">Dirisha jipya...</translation>
-<translation id="5885438903806970186">Mtandaoni.</translation>
 <translation id="6011539954251327702">Chromoting hukuruhusu kushiriki kompyuta yako kwa usalama kwenye Wavuti. Watumiaji wote wawili lazima wawe wakiendesha programu ya Chromoting, inayoweza kupatikana katika <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Chaguo za kibodi</translation>
 <translation id="6040143037577758943">Funga</translation>
@@ -248,7 +247,7 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="7019153418965365059">Hitilafu ya seva pangishi isiyotambulika: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Usaidizi wa Mbali</translation>
 <translation id="7038683108611689168">Tusaidie kuboresha Chromoting kwa kuturuhusu tukusanye takwimu za matumizi na ripoti za hitilafu.</translation>
-<translation id="712467900648340229">Haikuunganisha kwenye kifaa kinachotuma maudhui.</translation>
+<translation id="7067321367069083429">Skrini inafanya kazi kama skrini ya kugusa</translation>
 <translation id="7144878232160441200">Jaribu tena</translation>
 <translation id="7149517134817561223">Programu ya kupeleka amri kwa mpangishi wa kompyuta ya mbali kwenye Chrome.</translation>
 <translation id="7215059001581613786">Tafadhali ingiza PIN iliyo na tarakimu sita au zaidi.</translation>

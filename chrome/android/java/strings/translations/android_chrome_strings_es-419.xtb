@@ -103,6 +103,7 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="1966710179511230534">Actualiza los datos de acceso.</translation>
 <translation id="1974060860693918893">Avanzada</translation>
 <translation id="1984937141057606926">Permitidas, salvo de terceros</translation>
+<translation id="1989112275319619282">Navegar</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> desea sincronizarse</translation>
 <translation id="1994173015038366702">URL del sitio</translation>
 <translation id="200815880754187296">Otras apps: <ph name="KILOBYTES" /> kilobytes</translation>
@@ -375,6 +376,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4807963036345170158">Reducir datos está desactivada</translation>
 <translation id="4816465935029283692">Tipos de datos</translation>
 <translation id="4837753911714442426">Abrir opciones para imprimir la página</translation>
+<translation id="4842092870884894799">Mostrando mensaje emergente de generación de contraseña</translation>
 <translation id="4850886885716139402">Ver</translation>
 <translation id="4860895144060829044">Llamar</translation>
 <translation id="4881695831933465202">Abrir</translation>
@@ -443,6 +445,7 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5487729733663684359">Las actualizaciones de Chrome ya no son compatibles con esta versión de Android.</translation>
 <translation id="5490801865084500306">Se seleccionó la pestaña de favoritos</translation>
+<translation id="550684401320795253">Actualizando Chrome...</translation>
 <translation id="5512137114520586844"><ph name="PARENT_NAME" /> administra esta cuenta.</translation>
 <translation id="5514904542973294328">El administrador de este dispositivo inhabilitó esta opción</translation>
 <translation id="5517095782334947753">Tienes favoritos, historial, contraseñas y otras opciones de configuración de <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +485,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5763382633136178763">Pestañas en modo de incógnito</translation>
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5777170031995031090">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google.</translation>
+<translation id="5779929835642192302">Sugerencias disponibles</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Hace # hora}other{Hace # horas}}</translation>
 <translation id="5817918615728894473">Sincronizar</translation>
@@ -553,7 +557,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6437478888915024427">Información de la página</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sugerencias de URL y de búsqueda</translation>
-<translation id="6463070039183944536">Agregando…</translation>
 <translation id="6475951671322991020">Descargar video</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> no se pudo descargar debido a la falta de espacio de almacenamiento.</translation>
 <translation id="6508332297647760142">Uso compartido de la Web física</translation>
@@ -638,6 +641,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7189372733857464326">Esperando que los servicios de Google Play terminen de actualizarse</translation>
 <translation id="7189598951263744875">Compartir...</translation>
 <translation id="7191430249889272776">Pestaña abierta en segundo plano</translation>
+<translation id="723171743924126238">Seleccionar imágenes</translation>
 <translation id="7243308994586599757">Opciones disponibles junto a la parte inferior de la pantalla</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> usa tu ubicación para mostrar resultados de la búsqueda a nivel local.</translation>
 <translation id="7251326866581677552">Bloqueados de algunos sitios</translation>
@@ -744,7 +748,7 @@ Es posible que tu cuenta de Google tenga otros formularios del historial de nave
 <translation id="8223946939421658889">Borrar datos desde</translation>
 <translation id="8250920743982581267">Documentos</translation>
 <translation id="8260126382462817229">Intenta volver a acceder</translation>
-<translation id="8261506727792406068">Eliminar</translation>
+<translation id="8261506727792406068">Borrar</translation>
 <translation id="8275818695183729150">Permitir (en búsquedas de la barra de direcciones)</translation>
 <translation id="8283853025636624853">Sincronizando con <ph name="SYNC_ACCOUNT_USER_NAME" /></translation>
 <translation id="8310344678080805313">Pestañas estándar</translation>

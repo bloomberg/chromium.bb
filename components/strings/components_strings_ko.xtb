@@ -524,7 +524,7 @@
 <translation id="5086888986931078152">일부 사이트의 보호된 콘텐츠에 액세스하지 못할 수 있습니다.</translation>
 <translation id="5087286274860437796">서버의 인증서가 현재 유효하지 않습니다.</translation>
 <translation id="5087580092889165836">카드 추가</translation>
-<translation id="5089810972385038852">주</translation>
+<translation id="5089810972385038852">시/도</translation>
 <translation id="5094747076828555589">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chromium에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="5095208057601539847">주/도</translation>
 <translation id="5115563688576182185">(64비트)</translation>

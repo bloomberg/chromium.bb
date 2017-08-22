@@ -1363,7 +1363,6 @@
 <translation id="2966449113954629791">നിങ്ങളുടെ മൊബൈൽ ഡാറ്റ അലവൻസ് പരമാവധി ഉപയോഗിച്ചിരിക്കാനിടയുണ്ട്. കൂടുതൽ ഡാറ്റ വാങ്ങാൻ <ph name="NAME" /> സജീവമാക്കൽ പോർട്ടൽ സന്ദർശിക്കുക.</translation>
 <translation id="2966598748518102999">"Ok Google" എന്നതിലേക്കും കുറച്ചുനിമിഷം മുമ്പ് Google-ലേക്കും ശബ്‌ദം അയച്ചുകൊണ്ട് ശബ്ദ തിരയൽ മെച്ചപ്പെടുത്തുക.</translation>
 <translation id="2966937470348689686">Android മുൻഗണനകൾ മാനേജുചെയ്യുക</translation>
-<translation id="2967544384642772068">ഇല്ലാതാക്കുക</translation>
 <translation id="2971033837577180453">&lt;span&gt;ഐഡി:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">തെളിച്ചം കുറയ്‌ക്കുക</translation>
 <translation id="2972557485845626008">ഫേംവെയര്‍</translation>
@@ -1514,7 +1513,6 @@
 <translation id="3165390001037658081">ചില സേവനദായകർ ഈ ഫീച്ചർ ബ്ലോക്കുചെയ്‌തേക്കും.</translation>
 <translation id="3166571619128686629">Google ശബ്‌ദ തിരയൽ ആരംഭിക്കാൻ ക്ലിക്കുചെയ്യുക അല്ലെങ്കിൽ "Ok Google" എന്നുപറയുക</translation>
 <translation id="3170072451822350649">നിങ്ങൾക്ക് സൈൻ ഇൻ ചെയ്യുന്നത് ഒഴിവാക്കി <ph name="LINK_START" />അതിഥിയായി ബ്രൗസുചെയ്യാനുമാകും<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">മാഗ്‌നിഫയറിനെ സ്‌ക്രീനിന്റെ മധ്യഭാഗത്ത് കേന്ദ്രീകരിച്ച് നിർത്തുക</translation>
 <translation id="3177048931975664371">പാസ്‌വേഡ് മറയ്ക്കുന്നതിനായി ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="3177909033752230686">പേജ് ഭാഷ:</translation>
 <translation id="3180365125572747493">ഈ സാക്‍ഷ്യപത്ര ഫയല്‍ എന്‍‌ക്രിപ്റ്റ് ചെയ്യുന്നതിന് ദയവായി ഒരു പാസ്‌വേഡ് നല്‍കുക.</translation>
@@ -2051,8 +2049,6 @@
   <ph name="CONTROL_PANEL_APPLET_NAME" />, ആരംഭിക്കാൻ താൽപ്പര്യമുണ്ടോ?</translation>
 <translation id="3943582379552582368">&amp;പിന്നോട്ട്</translation>
 <translation id="3943857333388298514">ഒട്ടിക്കുക</translation>
-<translation id="3944266449990965865">മുഴുവൻ സ്‌ക്രീൻ</translation>
-<translation id="3946471364541867667">TalkBack ക്രമീകരണങ്ങൾ</translation>
 <translation id="3947376313153737208">തിരഞ്ഞെടുപ്പൊന്നുമില്ല</translation>
 <translation id="3948116654032448504">&amp;ചിത്രത്തിനായി തിരയുക <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Hangouts Meet-ലേക്ക് സ്വാഗതം!</translation>
@@ -2358,7 +2354,6 @@
 <translation id="4450974146388585462">പ്രശ്‌നം നിർണ്ണയിക്കുക</translation>
 <translation id="4452426408005428395">കാര്യമാക്കേണ്ടതില്ല</translation>
 <translation id="4454939697743986778">നിങ്ങളുടെ സിസ്റ്റം അഡ്‌മിനിസ്‌ട്രേറ്റർ ഈ സർട്ടിഫിക്കറ്റ് ഇൻസ്റ്റാളുചെയ്‌തു.</translation>
-<translation id="445891990714234385">ChromeVox ക്രമീകരണം</translation>
 <translation id="445923051607553918">Wi-Fi നെറ്റ്‌വര്‍ക്കില്‍ അംഗമാകുക</translation>
 <translation id="4462159676511157176">ഇഷ്‌ടാനുസൃത നാമ സെർവറുകൾ</translation>
 <translation id="4467100756425880649">Chrome വെബ് സ്‌റ്റോർ ഗാലറി</translation>
@@ -2656,7 +2651,6 @@
 <translation id="4910673011243110136">സ്വകാര്യ നെറ്റ്‌വര്‍ക്കുകള്‍</translation>
 <translation id="4911714727432509308">കീബോർഡ് കുറുക്കുവഴികൾ നൽകിയിട്ടുള്ള വിപുലീകരണങ്ങൾ ഒന്നുമില്ല.</translation>
 <translation id="4912643508233590958">നിഷ്‌ക്രിയമായിരിക്കുന്നത് സജീവമാകുന്ന സമയം</translation>
-<translation id="4916679969857390442">ലെന്‍സ്</translation>
 <translation id="491691592645955587">സുരക്ഷിതമായ ഒരു ബ്രൗസറിലേക്ക് മാറുക</translation>
 <translation id="4917385247580444890">ശക്തം</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> എന്നതിന് വിപുലീകരണ "<ph name="EXTENSION_NAME" />" ഉപയോഗിച്ച് ആശയവിനിമയം നടത്തേണ്ടതുണ്ട്</translation>
@@ -2721,7 +2715,6 @@
 <translation id="5011739343823725107">സമന്വയ ബാക്ക്എൻഡ് ആരംഭിക്കുന്നതിന് പരാജയപ്പെട്ടു</translation>
 <translation id="5015344424288992913">റിസോള്‍വിംഗ് പ്രോക്സി...</translation>
 <translation id="5015762597229892204">പ്രിന്റർ ഡ്രൈവർ ആപ്പ് തിരഞ്ഞെടുക്കുക</translation>
-<translation id="5016049845330225051">'തിരയൽ ബോക്‌സ് ടെക്‌സ്‌റ്റ് മായ്‌ക്കുക' ബട്ടൺ</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">ആരംഭ പേജുകൾ മാനേജുചെയ്യുക</translation>
 <translation id="5023943178135355362">ഓസ്‌ട്രേലിയൻ സ്‌ക്രോളിംഗ് <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
@@ -3478,7 +3471,6 @@
 <translation id="6151771661215463137">നിങ്ങളുടെ ഡൗൺലോഡ് ഫോൾഡറിൽ ഇതിനകം തന്നെ ഫയൽ നിലവിലുണ്ട്.</translation>
 <translation id="615436196126345398">പ്രോട്ടോക്കോൾ</translation>
 <translation id="6154697846084421647">നിലവില്‍ പ്രവേശിച്ചു</translation>
-<translation id="6156262341071374681">എല്ലാ ആപ്പുകളിലേക്കും വികസിപ്പിക്കുക</translation>
 <translation id="6156323911414505561">ബുക്ക്മാർക്ക് ബാർ കാണിക്കുക</translation>
 <translation id="6156863943908443225">സ്ക്രിപ്റ്റ് കാഷേ</translation>
 <translation id="6156960295318603523">ഭാഷാ ക്രമീകരണം</translation>
@@ -4047,7 +4039,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="6996946928646015361">സുരക്ഷിത മൊഡ്യൂൾ പ്രവർത്തനരഹിതമാക്കിയിരിക്കുന്നു അല്ലെങ്കിൽ ലഭ്യമല്ല.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ഫോൾഡറുകൾ തിരഞ്ഞെടുത്തു</translation>
 <translation id="6998793565256476099">വീഡിയോ കോണ്‍ഫറന്‍സിംഗിനായി ഉപകരണം എൻറോൾ ചെയ്യുക</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{ഇനിപ്പറയുന്ന പേജ് പ്രതികരിക്കുന്നില്ല. അത് പ്രതികരിക്കുന്നതുവരെ നിങ്ങൾക്ക് കാത്തിരിക്കാനാവും അല്ലെങ്കിൽ അത് ഇല്ലാതാക്കുക.}other{ഇനിപ്പറയുന്ന പേജുകൾ പ്രതികരിക്കുന്നില്ല. അവ പ്രതികരിക്കുന്നതുവരെ നിങ്ങൾക്ക് കാത്തിരിക്കാനാവും അല്ലെങ്കിൽ അവ ഇല്ലാതാക്കുക.}}</translation>
 <translation id="7002055706763150362">Chromebook-നുള്ള Smart Lock സജ്ജീകരിക്കുന്നതിന്, ഇത് നിങ്ങളാണെന്ന് Google-ന് തീർച്ചപ്പെടുത്തേണ്ടതുണ്ട്—ആരംഭിക്കാൻ പാസ്‌വേഡ് ടൈപ്പുചെയ്യുക.</translation>
 <translation id="7002454948392136538">സൂപ്പർവൈസ് ചെയ്‌ത ഈ ഉപയോക്താവിനായി മാനേജറെ തിരഞ്ഞെടുക്കുക</translation>
 <translation id="7003257528951459794">ആവൃത്തി:</translation>

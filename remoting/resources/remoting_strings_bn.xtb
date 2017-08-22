@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">মানানসই করতে ডেস্কটপের আকার পরিবর্তন করুন</translation>
 <translation id="154040539590487450">দূরবর্তী অ্যাক্সেস পরিষেবা শুরু করতে ব্যর্থ হয়েছে৷</translation>
 <translation id="1546934824884762070">একটি অপ্রত্যাশিত ত্রুটি ঘটেছে৷ দয়া করে বিকাশকারীদের কাছে এই সমস্যাটির বিষয়ে জানান৷</translation>
-<translation id="1619813076098775562">কাস্ট করা ডিভাইসে সংযোগ বন্ধ।</translation>
 <translation id="1643640058022401035">এই পৃষ্ঠাটি ছেড়ে গেলেও সেটা আপনার Chromoting অধিবেশনটিকে শেষ করবে৷</translation>
 <translation id="1654128982815600832">এই কম্পিউটারটিতে দূরবর্তী সংযোগ সক্ষম করা হচ্ছে...</translation>
 <translation id="170207782578677537">এই কম্পিউটারটিতে নথিভুক্ত করতে ব্যর্থ হয়েছে৷</translation>
@@ -187,7 +186,6 @@
 <translation id="5419418238395129586">শেষ অনলাইনে ছিলেন: <ph name="DATE" /> তারিখে</translation>
 <translation id="544077782045763683">হোস্ট বন্ধ হয়ে গেছে৷</translation>
 <translation id="5510035215749041527">এখনই সংযোগ বিচ্ছিন্ন করুন</translation>
-<translation id="5537725057119320332">কাস্ট করুন</translation>
 <translation id="5593560073513909978">এই পরিষেবাটি অস্থায়ীভাবে অনুপলব্ধ আছে৷ দয়া করে পরে আবার চেষ্টা করুন৷</translation>
 <translation id="5601503069213153581">পিন</translation>
 <translation id="5619148062500147964">এই কম্পিউটারটিতে</translation>
@@ -199,7 +197,6 @@
 <translation id="5841343754884244200">দেখার বিকল্প</translation>
 <translation id="5843054235973879827">এটি কেন নিরাপদ?</translation>
 <translation id="5859141382851488196">নতুন উইন্ডো...</translation>
-<translation id="5885438903806970186">অনলাইন।</translation>
 <translation id="6011539954251327702">Chromoting আপনাকে নিরাপদভাবে ওয়েবে আপনার কম্পিউটারকে শেয়ার করার অনুমতি দেয়৷ ব্যবহারকারীদের উভয়ের Chromoting অ্যাপ্লিকেশন চালনা করা অবশ্যক, যা <ph name="URL" /> এ পেতে পারেন৷</translation>
 <translation id="6033507038939587647">কীবোর্ড বিকল্পগুলি</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
@@ -248,7 +245,6 @@
 <translation id="7019153418965365059">অস্বীকৃত হোস্ট ত্রুটি: <ph name="HOST_OFFLINE_REASON" />।</translation>
 <translation id="701976023053394610">রিমোট সহায়তা</translation>
 <translation id="7038683108611689168">আমাদের ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি সংগ্রহের অনুমতি দিয়ে, Chromoting এর উন্নতিতে আমাদের সাহায্য করুন৷</translation>
-<translation id="712467900648340229">কাস্ট করা ডিভাইসে সংযোগ করতে ব্যর্থ হয়েছে।</translation>
 <translation id="7144878232160441200">আবার চেষ্টা করুন</translation>
 <translation id="7149517134817561223">Chrome দূরবর্তী ডেস্কটপ হোস্টের জন্য কম্যান্ড ইস্যু করে যে অ্যাপ্লিকেশান।</translation>
 <translation id="7215059001581613786">দয়া করে ছয়টি অথবা তার বেশি সংখ্যার একটি পিন লিখুন৷</translation>

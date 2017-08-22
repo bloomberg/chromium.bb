@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">输入法是由您的管理员配置的。</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">智能助理（正在加载中…）</translation>
 <translation id="1850504506766569011">Wi-Fi 已关闭。</translation>
 <translation id="1856813161013948396">轻触指纹传感器即可略过锁定屏幕。点按一下即可进行配置。</translation>
 <translation id="1864454756846565995">USB-C 设备（背面端口）</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">放大镜</translation>
+<translation id="4351433414020964307">智能助理正在加载中…</translation>
 <translation id="4378551569595875038">正在连接…</translation>
 <translation id="4421231901400348175">正在通过远程协助与<ph name="HELPER_NAME" />共享您屏幕的控制权限。</translation>
 <translation id="4430019312045809116">音量</translation>

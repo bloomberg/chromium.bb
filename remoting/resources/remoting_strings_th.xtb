@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">ปรับขนาดเดสก์ท็อปให้พอดี</translation>
 <translation id="154040539590487450">ไม่สามารถเริ่มบริการเข้าถึงระยะไกล</translation>
 <translation id="1546934824884762070">เกิดข้อผิดพลาดที่ไม่คาดคิด โปรดรายงานปัญหานี้ให้นักพัฒนาซอฟต์แวร์ทราบ</translation>
-<translation id="1619813076098775562">ปิดการเชื่อมต่อกับเครื่องส่งแล้ว</translation>
 <translation id="1643640058022401035">การออกจากหน้าเว็บนี้จะเป็นการสิ้นสุดเซสชัน Chromoting ของคุณ</translation>
 <translation id="1654128982815600832">กำลังเปิดใช้งานการเชื่อมต่อระยะไกลสำหรับคอมพิวเตอร์เครื่องนี้…</translation>
 <translation id="170207782578677537">ไม่สามารถลงทะเบียนคอมพิวเตอร์เครื่องนี้</translation>
@@ -187,7 +186,6 @@
 <translation id="5419418238395129586">ออนไลน์ครั้งล่าสุด: <ph name="DATE" /></translation>
 <translation id="544077782045763683">โฮสต์ปิดตัวลงแล้ว</translation>
 <translation id="5510035215749041527">ยกเลิกการเชื่อมต่อเลย</translation>
-<translation id="5537725057119320332">ส่ง</translation>
 <translation id="5593560073513909978">ไม่สามารถให้บริการนี้ได้ชั่วคราว โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">กับคอมพิวเตอร์เครื่องนี้</translation>
@@ -199,7 +197,6 @@
 <translation id="5841343754884244200">ตัวเลือกการแสดงผล</translation>
 <translation id="5843054235973879827">เหตุใดการดำเนินการนี้จึงปลอดภัย</translation>
 <translation id="5859141382851488196">หน้าต่างใหม่…</translation>
-<translation id="5885438903806970186">ออนไลน์</translation>
 <translation id="6011539954251327702">Chromoting ช่วยให้คุณแชร์คอมพิวเตอร์ผ่านเว็บได้อย่างปลอดภัย ผู้ใช้ทั้งสองฝ่ายจะต้องใช้งานแอปพลิเคชัน Chromoting ซึ่งสามารถรับได้ที่ <ph name="URL" /></translation>
 <translation id="6033507038939587647">ตัวเลือกแป้นพิมพ์</translation>
 <translation id="6040143037577758943">ปิด</translation>
@@ -248,7 +245,6 @@
 <translation id="7019153418965365059">ข้อผิดพลาดของโฮสต์ที่ไม่รู้จัก: <ph name="HOST_OFFLINE_REASON" /></translation>
 <translation id="701976023053394610">ความช่วยเหลือจากระยะไกล</translation>
 <translation id="7038683108611689168">ช่วยเราปรับปรุง Chromoting ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
-<translation id="712467900648340229">ไม่สามารถเชื่อมต่อเครื่องส่งได้</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
 <translation id="7149517134817561223">แอปพลิเคชันที่จะออกคำสั่งให้โฮสต์ของ Chrome Remote Desktop</translation>
 <translation id="7215059001581613786">โปรดป้อน PIN ที่ประกอบด้วยตัวเลขอย่างน้อยหกหลัก</translation>

@@ -1363,7 +1363,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2966449113954629791">Potresti avere esaurito la tua quota di dati mobili. Visita il portale di attivazione <ph name="NAME" /> per acquistare altri dati.</translation>
 <translation id="2966598748518102999">Migliora la ricerca vocale inviando a Google l'audio di "Ok Google" e di alcuni secondi precedenti.</translation>
 <translation id="2966937470348689686">Gestisci le preferenze Android</translation>
-<translation id="2967544384642772068">Termina</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">riduci luminosità</translation>
 <translation id="2972557485845626008">Firmware</translation>
@@ -1514,7 +1513,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3165390001037658081">La funzione potrebbe essere bloccata da alcuni operatori.</translation>
 <translation id="3166571619128686629">Dì o fai clic su "Ok Google" per avviare la ricerca vocale</translation>
 <translation id="3170072451822350649">Puoi anche saltare l'accesso e <ph name="LINK_START" />navigare come ospite<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Mantieni la messa a fuoco sullo schermo</translation>
 <translation id="3177048931975664371">Fai clic per nascondere la password</translation>
 <translation id="3177909033752230686">Lingua della pagina:</translation>
 <translation id="3180365125572747493">Inserisci una password per criptare il file del certificato.</translation>
@@ -2050,8 +2048,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
   Vuoi avviare <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Indietro</translation>
 <translation id="3943857333388298514">Incolla</translation>
-<translation id="3944266449990965865">Schermo intero</translation>
-<translation id="3946471364541867667">Impostazioni di Talkback</translation>
 <translation id="3947376313153737208">Nessuna selezione</translation>
 <translation id="3948116654032448504">&amp;Cerca l'immagine su <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Benvenuto in Hangouts Meet.</translation>
@@ -2358,7 +2354,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4450974146388585462">Diagnostica</translation>
 <translation id="4452426408005428395">Non importa</translation>
 <translation id="4454939697743986778">Questo certificato è stato installato dall'amministratore di sistema.</translation>
-<translation id="445891990714234385">Impostazioni di ChromeVox</translation>
 <translation id="445923051607553918">Connetti a rete Wi-Fi</translation>
 <translation id="4462159676511157176">Assegna nomi personalizzati a server</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
@@ -2653,7 +2648,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="4910673011243110136">Reti private</translation>
 <translation id="4911714727432509308">Non sono state assegnate scorciatoie da tastiera a nessuna estensione.</translation>
 <translation id="4912643508233590958">Riattivazioni</translation>
-<translation id="4916679969857390442">Lente</translation>
 <translation id="491691592645955587">Passa a un browser sicuro</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> vuole comunicare con l'estensione "<ph name="EXTENSION_NAME" />"</translation>
@@ -2718,7 +2712,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="5011739343823725107">Avvio backend di sincronizzazione non riuscito</translation>
 <translation id="5015344424288992913">Risoluzione proxy in corso...</translation>
 <translation id="5015762597229892204">Seleziona un'app driver per stampante</translation>
-<translation id="5016049845330225051">Pulsante Cancella testo dalla casella di ricerca</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Gestisci in pagine iniziali</translation>
 <translation id="5023943178135355362">Scorrimento australiano <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
@@ -3474,7 +3467,6 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 <translation id="6151771661215463137">File già esistente nella cartella dei download.</translation>
 <translation id="615436196126345398">Protocollo</translation>
 <translation id="6154697846084421647">Accesso eseguito</translation>
-<translation id="6156262341071374681">Espandi per vedere tutte le app</translation>
 <translation id="6156323911414505561">Mostra barra dei Preferiti.</translation>
 <translation id="6156863943908443225">Cache script</translation>
 <translation id="6156960295318603523">Impostazioni lingua</translation>
@@ -3778,7 +3770,7 @@ Premi un tasto qualsiasi per continuare a esplorare.</translation>
 
 Utilizza questa funzione solo con gli account che consideri attendibili.</translation>
 <translation id="6581162200855843583">Link Google Drive</translation>
-<translation id="6582421931165117398">Cambia subito la password per proteggere le tue informazioni personali. Per poter cambiare la password ti verrà chiesto di accedere.</translation>
+<translation id="6582421931165117398">Cambia subito la password per proteggere le tue informazioni personali. Ti verrà chiesto di accedere per cambiare la password.</translation>
 <translation id="6583851739559471707">Bloccati sui siti che tendono a mostrare annunci invasivi (opzione consigliata)</translation>
 <translation id="6584878029876017575">Firma definitiva Microsoft</translation>
 <translation id="6585234750898046415">Scegli un'immagine da visualizzare per il tuo account nella schermata di accesso.</translation>
@@ -3802,7 +3794,7 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6610183966322615106">Errore durante l'aggiunta della stampante</translation>
 <translation id="6610610633807698299">Inserisci URL...</translation>
 <translation id="6612358246767739896">Contenuti protetti</translation>
-<translation id="6613452264606394692">Torna rapidamente in questa pagina aggiungendola ai preferiti</translation>
+<translation id="6613452264606394692">Aggiungi questa pagina ai preferiti per ritrovarla rapidamente</translation>
 <translation id="6615455863669487791">Mostrami</translation>
 <translation id="6615807189585243369"><ph name="BURNT_AMOUNT" /> di <ph name="TOTAL_SIZE" /> copiati</translation>
 <translation id="661719348160586794">Le password salvate verranno visualizzate qui.</translation>
@@ -4042,7 +4034,6 @@ Utilizza questa funzione solo con gli account che consideri attendibili.</transl
 <translation id="6996946928646015361">Modulo per la sicurezza disattivato o non presente.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> cartelle selezionate</translation>
 <translation id="6998793565256476099">Registra il dispositivo per le videoconferenze</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{La pagina seguente non risponde. Puoi aspettare che risponda di nuovo o puoi terminarla.}other{Le pagine seguenti non rispondono. Puoi aspettare che rispondano di nuovo o puoi terminarle.}}</translation>
 <translation id="7002055706763150362">Per poter configurare Smart Lock per Chromebook, Google deve verificare che l'utente sia tu. Digita la password per iniziare.</translation>
 <translation id="7002454948392136538">Scegli il gestore di questo utente supervisionato</translation>
 <translation id="7003257528951459794">Frequenza:</translation>

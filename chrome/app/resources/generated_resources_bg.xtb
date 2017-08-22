@@ -1361,7 +1361,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2966449113954629791">Възможно е да сте изразходвали отпуснатите ви мобилни данни. Посетете портала за активиране „<ph name="NAME" />“, за да купите още данни.</translation>
 <translation id="2966598748518102999">Подобряване на гласовото търсене чрез изпращане до Google на запис на произнасянето на „Ok Google“ и няколко секунди от предхождащия звук.</translation>
 <translation id="2966937470348689686">Управление на предпочитанията за Android</translation>
-<translation id="2967544384642772068">Затваряне</translation>
 <translation id="2971033837577180453">&lt;span&gt;Идент. №:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">намаляване на яркостта</translation>
 <translation id="2972557485845626008">Фърмуер</translation>
@@ -1512,7 +1511,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3165390001037658081">Някои оператори може да блокират тази функция.</translation>
 <translation id="3166571619128686629">Кликнете или кажете „Ok Google“, за да стартирате гласово търсене</translation>
 <translation id="3170072451822350649">Може също да пропуснете влизането и <ph name="LINK_START" />да сърфирате като гост<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Задържане на фокуса на лупата в центъра на екрана</translation>
 <translation id="3177048931975664371">Кликнете, за да скриете паролата</translation>
 <translation id="3177909033752230686">Език на страницата:</translation>
 <translation id="3180365125572747493">Моля, въведете парола за шифроването на този файл със сертификат.</translation>
@@ -2050,8 +2048,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 Искате ли да стартирате <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Назад</translation>
 <translation id="3943857333388298514">Поставяне</translation>
-<translation id="3944266449990965865">Цял екран</translation>
-<translation id="3946471364541867667">Настройки на TalkBack</translation>
 <translation id="3947376313153737208">Няма избрана</translation>
 <translation id="3948116654032448504">&amp;Търсене на изображението чрез <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Добре дошли в Hangouts Meet!</translation>
@@ -2358,7 +2354,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4450974146388585462">Диагностициране</translation>
 <translation id="4452426408005428395">Няма значение</translation>
 <translation id="4454939697743986778">Този сертификат е инсталиран от системния ви администратор.</translation>
-<translation id="445891990714234385">Настройки на ChromeVox</translation>
 <translation id="445923051607553918">Присъединяване към Wi-Fi мрежа</translation>
 <translation id="4462159676511157176">Специално зададени сървъри за имена</translation>
 <translation id="4467100756425880649">Галерия на уеб магазина на Chrome</translation>
@@ -2656,7 +2651,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4910673011243110136">Частни мрежи</translation>
 <translation id="4911714727432509308">Няма разширения със зададени клавишни комбинации.</translation>
 <translation id="4912643508233590958">Събуждания при неактивност</translation>
-<translation id="4916679969857390442">Лупа</translation>
 <translation id="491691592645955587">Преминете към сигурен браузър</translation>
 <translation id="4917385247580444890">Силен</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> иска да комуникира с разширението „<ph name="EXTENSION_NAME" />“</translation>
@@ -2721,7 +2715,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5011739343823725107">Стартирането на задния слой за синхронизиране не бе успешно</translation>
 <translation id="5015344424288992913">Получава се разрешение от прокси сървъра...</translation>
 <translation id="5015762597229892204">Избор на приложение за драйвер за принтер</translation>
-<translation id="5016049845330225051">Бутон за изчистване на текста от полето за търсене</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Управление на страниците при стартиране</translation>
 <translation id="5023943178135355362">Обратно превъртане <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
@@ -3479,7 +3472,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6151771661215463137">Файлът вече съществува в папката ви с изтегляния.</translation>
 <translation id="615436196126345398">Протокол</translation>
 <translation id="6154697846084421647">Сега сте в профила си</translation>
-<translation id="6156262341071374681">Разгъване на списъка с всички приложения</translation>
 <translation id="6156323911414505561">Показване на лентата на отметките</translation>
 <translation id="6156863943908443225">Кеш за скриптове</translation>
 <translation id="6156960295318603523">Езикови настройки</translation>
@@ -4046,7 +4038,6 @@ PDF файл или в Google Диск.</translation>
 <translation id="6996946928646015361">Модулът за сигурност е деактивиран или липсва.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> избрани папки</translation>
 <translation id="6998793565256476099">Регистриране на устройството за видеоконференции</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Следната страница е блокирала. Можете да изчакате да се възстанови или да я затворите.}other{Следните страници са блокирали. Можете да изчакате да се възстановят или да ги затворите.}}</translation>
 <translation id="7002055706763150362">Преди да настроите Smart Lock за Chromebook, Google трябва да се увери, че това сте вие. Въведете паролата си, за да започнете.</translation>
 <translation id="7002454948392136538">Избиране на мениджъра за този контролиран потребител</translation>
 <translation id="7003257528951459794">Честота:</translation>

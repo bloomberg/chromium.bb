@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">將桌面調整為合適大小</translation>
 <translation id="154040539590487450">無法啟動遠端存取服務。</translation>
 <translation id="1546934824884762070">發生未預期的錯誤，請向開發人員回報這個問題。</translation>
-<translation id="1619813076098775562">已中斷與 Cast 裝置之間的連線。</translation>
 <translation id="1643640058022401035">如果離開這個頁面，你的 Chromoting 工作階段也會結束。</translation>
 <translation id="1654128982815600832">正在啟用這台電腦的遠端連線...</translation>
 <translation id="170207782578677537">無法註冊這台電腦。</translation>
@@ -187,7 +186,6 @@
 <translation id="5419418238395129586">上次上線日期：<ph name="DATE" /></translation>
 <translation id="544077782045763683">主機已關閉。</translation>
 <translation id="5510035215749041527">立即中斷連線</translation>
-<translation id="5537725057119320332">投放</translation>
 <translation id="5593560073513909978">服務暫時無法使用，請稍後再試。</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">與這台電腦</translation>
@@ -199,7 +197,6 @@
 <translation id="5841343754884244200">顯示選項</translation>
 <translation id="5843054235973879827">為什麼這項操作是安全的？</translation>
 <translation id="5859141382851488196">新增視窗…</translation>
-<translation id="5885438903806970186">線上。</translation>
 <translation id="6011539954251327702">Chromoting 提供了安全的連線機制，可讓你透過網路與他人共用自己的電腦。你和共用對象都必須執行 Chromoting 應用程式，請前往 <ph name="URL" /> 安裝。</translation>
 <translation id="6033507038939587647">鍵盤選項</translation>
 <translation id="6040143037577758943">關閉</translation>
@@ -248,7 +245,6 @@
 <translation id="7019153418965365059">不明主機錯誤：<ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">遠端協助</translation>
 <translation id="7038683108611689168">允許我們收集使用統計資料和當機報告，協助我們改善 Chromoting。</translation>
-<translation id="712467900648340229">無法連線至 Cast 裝置。</translation>
 <translation id="7144878232160441200">重試</translation>
 <translation id="7149517134817561223">要對 Chrome 遠端桌面主機發出指令的應用程式。</translation>
 <translation id="7215059001581613786">請輸入一個至少 6 位數的 PIN。</translation>

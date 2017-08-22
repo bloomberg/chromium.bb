@@ -1366,7 +1366,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2966449113954629791">Bạn có thể đã sử dụng hết dung lượng dữ liệu di động cho phép. Hãy truy cập cổng kích hoạt <ph name="NAME" /> để mua thêm dữ liệu.</translation>
 <translation id="2966598748518102999">Cải thiện tìm kiếm bằng giọng nói bằng cách gửi âm thanh "Ok Google" và vài giây trước tới Google.</translation>
 <translation id="2966937470348689686">Quản lý tùy chọn Android</translation>
-<translation id="2967544384642772068">Xóa</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">giảm sáng</translation>
 <translation id="2972557485845626008">Chương trình cơ sở</translation>
@@ -1517,7 +1516,6 @@ Vui lòng kiểm tra email của bạn tại <ph name="ACCOUNT_EMAIL" /> để b
 <translation id="3165390001037658081">Một số nhà cung cấp dịch vụ có thể chặn tính năng này.</translation>
 <translation id="3166571619128686629">Nhấp vào hoặc nói "Ok Google" để bắt đầu tìm kiếm bằng giọng nói</translation>
 <translation id="3170072451822350649">Bạn cũng có thể bỏ qua việc đăng nhập và <ph name="LINK_START" />duyệt với tư cách khách<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Giữ tiêu điểm của kính lúp ở giữa màn hình</translation>
 <translation id="3177048931975664371">Nhấp để ẩn mật khẩu</translation>
 <translation id="3177909033752230686">Ngôn ngữ trang:</translation>
 <translation id="3180365125572747493">Vui lòng nhập mật khẩu để mã hóa tệp chứng chỉ này.</translation>
@@ -2055,8 +2053,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
   Bạn có muốn khởi động <ph name="CONTROL_PANEL_APPLET_NAME" /> không?</translation>
 <translation id="3943582379552582368">&amp;Quay lại</translation>
 <translation id="3943857333388298514">Dán</translation>
-<translation id="3944266449990965865">Toàn màn hình</translation>
-<translation id="3946471364541867667">Cài đặt TalkBack</translation>
 <translation id="3947376313153737208">Không có lựa chọn nào</translation>
 <translation id="3948116654032448504">&amp;Tìm kiếm hình ảnh trên <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Chào mừng bạn đến với Hangouts Meet!</translation>
@@ -2363,7 +2359,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4450974146388585462">Chẩn đoán</translation>
 <translation id="4452426408005428395">Không sao</translation>
 <translation id="4454939697743986778">Quản trị viên hệ thống của bạn đã cài đặt chứng chỉ này.</translation>
-<translation id="445891990714234385">Cài đặt ChromeVox</translation>
 <translation id="445923051607553918">Tham gia mạng Wi-Fi</translation>
 <translation id="4462159676511157176">Máy chủ có tên tùy chỉnh</translation>
 <translation id="4467100756425880649">Thư viện của Cửa hàng Chrome trực tuyến</translation>
@@ -2661,7 +2656,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="4910673011243110136">Mạng riêng</translation>
 <translation id="4911714727432509308">Không có tiện ích nào được gán phím tắt.</translation>
 <translation id="4912643508233590958">Đánh thức khỏi chế độ rảnh</translation>
-<translation id="4916679969857390442">Ống kính</translation>
 <translation id="491691592645955587">Chuyển sang trình duyệt an toàn</translation>
 <translation id="4917385247580444890">Mạnh</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> muốn giao tiếp với tiện ích "<ph name="EXTENSION_NAME" />"</translation>
@@ -2726,7 +2720,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="5011739343823725107">Không thể khởi động chương trình phụ trợ đồng bộ hóa</translation>
 <translation id="5015344424288992913">Đang phân giải proxy…</translation>
 <translation id="5015762597229892204">Chọn ứng dụng trình điều khiển máy in</translation>
-<translation id="5016049845330225051">Nút xóa văn bản trong hộp tìm kiếm</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Quản lý các trang khi khởi động</translation>
 <translation id="5023943178135355362">Cuộn theo kiểu Úc <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
@@ -3483,7 +3476,6 @@ Nhấn phím bất kỳ để tiếp tục khám phá.</translation>
 <translation id="6151771661215463137">Tệp đã tồn tại trong thư mục tải xuống của bạn.</translation>
 <translation id="615436196126345398">Giao thức</translation>
 <translation id="6154697846084421647">Hiện đã đăng nhập</translation>
-<translation id="6156262341071374681">Mở rộng cho tất cả ứng dụng</translation>
 <translation id="6156323911414505561">Hiển thị thanh dấu trang</translation>
 <translation id="6156863943908443225">Bộ nhớ cache tập lệnh</translation>
 <translation id="6156960295318603523">Cài đặt ngôn ngữ</translation>
@@ -4052,7 +4044,6 @@ Chỉ sử dụng tính năng này với các tài khoản mà bạn tin tưởn
 <translation id="6996946928646015361">Mô-đun an toàn đã bị vô hiệu hóa hoặc bị thiếu.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> thư mục đã được chọn</translation>
 <translation id="6998793565256476099">Đăng ký thiết bị tham gia hội nghị truyền hình</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Trang sau không phản hồi. Bạn có thể chờ trang trở về trạng thái hồi đáp hoặc xóa trang.}other{Các trang sau không phản hồi. Bạn có thể chờ các trang trở về trạng thái hồi đáp hoặc xoá chúng.}}</translation>
 <translation id="7002055706763150362">Để thiết lập Smart Lock cho Chromebook, Google cần đảm bảo đó là bạn—hãy nhập mật khẩu của bạn để bắt đầu.</translation>
 <translation id="7002454948392136538">Chọn người quản lý cho người dùng được giám sát này</translation>
 <translation id="7003257528951459794">Tần suất:</translation>

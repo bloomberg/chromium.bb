@@ -1364,12 +1364,11 @@
 <translation id="2966449113954629791">हो सकता है कि आपने अपनी मोबाइल डेटा छूट का उपयोग कर लिया हो. और डेटा खरीदने के लिए <ph name="NAME" /> सक्रियण पोर्टल पर जाएं.</translation>
 <translation id="2966598748518102999">"Ok Google" और उससे कुछ सेकंड पहले की ध्वनि Google को भेजकर, बोलकर खोजना बेहतर बनाएं.</translation>
 <translation id="2966937470348689686">Android प्राथमिकताएं प्रबंधित करें</translation>
-<translation id="2967544384642772068">बंद करें</translation>
 <translation id="2971033837577180453">&lt;span&gt;आईडी:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">स्‍क्रीन की रोशनी कम करें</translation>
 <translation id="2972557485845626008">फ़र्मवेयर</translation>
 <translation id="2972581237482394796">&amp;फिर से करें</translation>
-<translation id="2972642118232180842">केवल महत्वपूर्ण सामग्री चलाएं (सुझाया गया)</translation>
+<translation id="2972642118232180842">केवल ज़रूरी सामग्री चलाएं (सुझाया गया)</translation>
 <translation id="297870353673992530">DNS सर्वर:</translation>
 <translation id="2979639724566107830">नई विंडो में खोलें</translation>
 <translation id="2981113813906970160">बड़ा माउस कर्सर दिखाएं</translation>
@@ -1515,7 +1514,6 @@
 <translation id="3165390001037658081">कुछ वाहक इस सुविधा को बंद कर सकते हैं.</translation>
 <translation id="3166571619128686629">बोलकर खोजना प्रारंभ करने के लिए "Ok Google" क्‍लिक करें या बोलें</translation>
 <translation id="3170072451822350649">आप प्रवेश करना छोड़ भी सकते हैं और <ph name="LINK_START" />अतिथि के रूप में ब्राउज़<ph name="LINK_END" /> कर सकते हैं.</translation>
-<translation id="3170544058711792988">आवर्धक फ़ोकस को स्क्रीन के केंद्र में रखें</translation>
 <translation id="3177048931975664371">पासवर्ड छुपाने के लिए क्लिक करें</translation>
 <translation id="3177909033752230686">पेज की भाषा:</translation>
 <translation id="3180365125572747493">इस प्रमाणपत्र फ़ाइल को एन्‍क्रिप्‍ट करने के लिए कृपया पासवर्ड डालें.</translation>
@@ -2052,8 +2050,6 @@
   क्या आप <ph name="CONTROL_PANEL_APPLET_NAME" /> को प्रारंभ करना चाहते हैं?</translation>
 <translation id="3943582379552582368">&amp;वापस</translation>
 <translation id="3943857333388298514">चिपकाएं</translation>
-<translation id="3944266449990965865">संपूर्ण स्क्रीन</translation>
-<translation id="3946471364541867667">Talkback सेटिंग</translation>
 <translation id="3947376313153737208">कोई चयन नहीं</translation>
 <translation id="3948116654032448504">चित्र को <ph name="SEARCH_ENGINE" /> पर &amp;खोजें</translation>
 <translation id="3949371968208420848">Hangouts Meet में आपका स्वागत है!</translation>
@@ -2360,7 +2356,6 @@
 <translation id="4450974146388585462">निदान करें</translation>
 <translation id="4452426408005428395">कोई बात नहीं</translation>
 <translation id="4454939697743986778">आपके सिस्टम व्यवस्थापक द्वारा प्रमाणपत्र इंस्टॉल कर दिया गया है.</translation>
-<translation id="445891990714234385">ChromeVox सेटिंग</translation>
 <translation id="445923051607553918">वाई-फ़ाई  नेटवर्क से जुड़ें</translation>
 <translation id="4462159676511157176">कस्टम नाम सर्वर</translation>
 <translation id="4467100756425880649">Chrome वेब स्‍टोर गैलरी</translation>
@@ -2658,7 +2653,6 @@
 <translation id="4910673011243110136">निजी नेटवर्क</translation>
 <translation id="4911714727432509308">किसी भी एक्सटेंशन को कीबोर्ड शॉर्टकट असाइन नहीं किए गए हैं.</translation>
 <translation id="4912643508233590958">निष्क्रिय प्रोसेसर का सक्रियण</translation>
-<translation id="4916679969857390442">लैंस</translation>
 <translation id="491691592645955587">किसी सुरक्षित ब्राउज़र पर जाएं</translation>
 <translation id="4917385247580444890">सशक्त</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> "<ph name="EXTENSION_NAME" />" एक्‍सटेंशन से संचार करना चाहता है</translation>
@@ -2723,7 +2717,6 @@
 <translation id="5011739343823725107">समन्वयन बैकेंड प्रारंभ करने में विफल रहा</translation>
 <translation id="5015344424288992913">प्रॉक्सी को परिष्कृत कर रहा है...</translation>
 <translation id="5015762597229892204">प्रिंटर ड्राइवर ऐप चुनें</translation>
-<translation id="5016049845330225051">खोज बॉक्स लेख साफ़ करें बटन</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">शुरुआती पन्ना पर प्रबंधित करें</translation>
 <translation id="5023943178135355362">ऑस्ट्रेलियाई स्क्रॉलिंग <ph name="BEGIN_LINK" />अधिक जानें<ph name="END_LINK" /></translation>
@@ -3480,7 +3473,6 @@
 <translation id="6151771661215463137">फ़ाइल आपके डाउनलोड फ़ोल्डर में पहले से मौजूद है.</translation>
 <translation id="615436196126345398">प्रोटोकॉल</translation>
 <translation id="6154697846084421647">वर्तमान में प्रवेश हैं</translation>
-<translation id="6156262341071374681">सभी ऐप्लिकेशन के लिए विस्तृत करें</translation>
 <translation id="6156323911414505561">बुकमार्क बार दिखाएं</translation>
 <translation id="6156863943908443225">स्क्रिप्ट संचय</translation>
 <translation id="6156960295318603523">भाषा सेटिंग</translation>
@@ -4048,7 +4040,6 @@
 <translation id="6996946928646015361">सुरक्षित मॉड्यूल अक्षम है या मौजूद नहीं है.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> फ़ोल्‍डर चयनित</translation>
 <translation id="6998793565256476099">डिवाइस को वीडियो कॉन्फ़्रेंसिंग के लिए नामांकित करें</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{निम्नलिखित पेज प्रतिसाद नहीं दे रहा है. आप इसके प्रतिसाद देने की प्रतीक्षा कर सकते हैं या इसे बंद कर सकते हैं.}one{निम्नलिखित पेज प्रतिसाद नहीं दे रहे हैं. आप इनके प्रतिसाद देने की प्रतीक्षा कर सकते हैं या इन्हें बंद कर सकते हैं.}other{निम्नलिखित पेज प्रतिसाद नहीं दे रहे हैं. आप इनके प्रतिसाद देने की प्रतीक्षा कर सकते हैं या इन्हें बंद कर सकते हैं.}}</translation>
 <translation id="7002055706763150362">Chromebook के लिए Smart Lock सेट करने हेतु, Google यह सुनिश्‍चित करना चाहता है कि यह आप ही हैं—प्रारंभ करने के लिए अपना पासवर्ड लिखें.</translation>
 <translation id="7002454948392136538">इस निगरानी में रखे गए उपयोगकर्ता के लिए प्रबंधक चुनें</translation>
 <translation id="7003257528951459794">आवृत्ति:</translation>

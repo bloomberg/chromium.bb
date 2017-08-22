@@ -23,7 +23,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="1520828917794284345">Adatta dimensioni desktop</translation>
 <translation id="154040539590487450">Impossibile avviare il servizio di accesso remoto.</translation>
 <translation id="1546934824884762070">Si è verificato un errore imprevisto. Segnala il problema agli sviluppatori.</translation>
-<translation id="1619813076098775562">Connessione al dispositivo di trasmissione interrotta.</translation>
 <translation id="1643640058022401035">Se esci da questa pagina, la sessione Chromoting verrà terminata.</translation>
 <translation id="1654128982815600832">Attivazione connessioni remote per questo computer in corso…</translation>
 <translation id="170207782578677537">Impossibile registrare il computer.</translation>
@@ -187,7 +186,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="5419418238395129586">Ultimo collegamento online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">L'host è stato chiuso.</translation>
 <translation id="5510035215749041527">Scollegati ora</translation>
-<translation id="5537725057119320332">Trasmetti</translation>
 <translation id="5593560073513909978">Il servizio non è al momento disponibile. Riprova più tardi.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">A questo computer</translation>
@@ -199,7 +197,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="5841343754884244200">Opzioni di visualizzazione</translation>
 <translation id="5843054235973879827">Perché questa operazione è sicura?</translation>
 <translation id="5859141382851488196">Nuova finestra…</translation>
-<translation id="5885438903806970186">Online.</translation>
 <translation id="6011539954251327702">Chromoting ti consente di condividere in modo sicuro il computer sul Web. Entrambi gli utenti devono eseguire l'app Chromoting, reperibile all'indirizzo <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Opzioni tastiera</translation>
 <translation id="6040143037577758943">Chiudi</translation>
@@ -248,7 +245,6 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="7019153418965365059">Errore host non riconosciuto: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistenza remota</translation>
 <translation id="7038683108611689168">Aiutaci a migliorare Chromoting consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
-<translation id="712467900648340229">Impossibile connettersi al dispositivo di trasmissione.</translation>
 <translation id="7144878232160441200">Riprova</translation>
 <translation id="7149517134817561223">Applicazione per fornire comandi all'host Chrome Remote Desktop.</translation>
 <translation id="7215059001581613786">Inserisci un PIN formato da almeno sei cifre.</translation>

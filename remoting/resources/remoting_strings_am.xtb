@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">እንዲመጣጠን የዴስክቶፑን መጠን ይቀይሩ</translation>
 <translation id="154040539590487450">የርቀት መዳረሻ አገልግሎትን መጀመር አልተሳካም።</translation>
 <translation id="1546934824884762070">ያልተጠበቀ ስህተት ተከስቷል። እባክዎ ይህንን ችግር ለገንቢዎች ሪፖርት ያድርጉት።</translation>
-<translation id="1619813076098775562">ወደ Cast መሣሪያ ዝግ ግንኙነቶች።</translation>
 <translation id="1643640058022401035">ከዚህ ገጽ መውጣት የChromoting ክፍለ-ጊዜዎን ያጠናቅቀዋል።</translation>
 <translation id="1654128982815600832">ለዚህ ኮምፒውተር የርቀት ግንኙነቶችን በማንቃት ላይ…</translation>
 <translation id="170207782578677537">ይህንን ኮምፒውተር መመዝገብ አልተሳካም።</translation>
@@ -80,6 +79,7 @@
 <translation id="2676780859508944670">በመስራት ላይ…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">የሶፍትዌር ዝማኔዎች አብዛኛውን ጊዜ በራስ-ሰር ነው የሚከናወኑት፣ ነገር ግን ከስንት አንዴ ላይሳኩ ይችላሉ። ሶፍትዌሩን ማዘመን ከጥቂት ደቂቃዎች በላይ መውሰድ የለበትም፣ እና ከኮምፒውተርዎ ጋር በርቀት ተገናኝተው ሳለ ሊደረግ ይችላል።</translation>
+<translation id="2758123043070977469">ማረጋገጥ ላይ አንድ ችግር ነበር፣ እባክዎ እንደገና ይግቡ።</translation>
 <translation id="2803375539583399270">ፒን ያስገቡ</translation>
 <translation id="2841013758207633010">ሰዓት</translation>
 <translation id="2851754573186462851">የChromium መተግበሪያ ዥረት</translation>
@@ -187,7 +187,6 @@
 <translation id="5419418238395129586">መጨረሻ መስመር ላይ የነበረው በ፦ <ph name="DATE" /></translation>
 <translation id="544077782045763683">አስተናጋጅ ተዘግቷል።</translation>
 <translation id="5510035215749041527">አሁን አቋርጥ</translation>
-<translation id="5537725057119320332">Cast</translation>
 <translation id="5593560073513909978">አገልግሎቱ ለጊዜው አይገኝም። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="5601503069213153581">ፒን</translation>
 <translation id="5619148062500147964">ከዚህ ኮምፒውተር ጋር</translation>
@@ -196,10 +195,10 @@
 <translation id="5708869785009007625">ዴስክቶፕዎ በአሁኑ ጊዜ ከ<ph name="USER" /> ጋር ተጋርቷል።</translation>
 <translation id="5773590752998175013">የተጣመረበት ቀን</translation>
 <translation id="579702532610384533">ዳግም ያገናኙ</translation>
+<translation id="5810269635982033450">ማያ ገጽ እንደ የመከታተያ ፓድ ይሆናል</translation>
 <translation id="5841343754884244200">የማሳያ አማራጮች</translation>
 <translation id="5843054235973879827">ይሄ ለምንድነው ደህንነቱ የተጠበቀ የሆነው?</translation>
 <translation id="5859141382851488196">አዲሰ መስኮት…</translation>
-<translation id="5885438903806970186">መስመር ላይ።</translation>
 <translation id="6011539954251327702">Chromoting ኮምፒውተርዎ ደህንነቱ በተጠበቀ መልኩ በድሩ ላይ እንዲያጋሩት ያስችልዎታል። ሁለቱም ተጠቃሚዎች የChromoting መተግበሪያውን ማሂድ አለባቸው፣ <ph name="URL" /> ላይ ሊያገኙት ይችላሉ።</translation>
 <translation id="6033507038939587647">የቁልፍ ሰሌዳ አማራጮች</translation>
 <translation id="6040143037577758943">ዝጋ</translation>
@@ -248,7 +247,7 @@
 <translation id="7019153418965365059">ያልታወቀ የአስተናጋጅ ስህተት፦ <ph name="HOST_OFFLINE_REASON" />።</translation>
 <translation id="701976023053394610">የርቀት እርዳታ</translation>
 <translation id="7038683108611689168">የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን እንድንሰበስብ በመፍቀድ Chromoting እንድናሻሽል ያግዙን።</translation>
-<translation id="712467900648340229">ወደ Cast መሣሪያ ማገናኘት አልተሳካም</translation>
+<translation id="7067321367069083429">ማያ ገጽ እንደ ማያንካ ይሆናል</translation>
 <translation id="7144878232160441200">እንደገና ሞክር</translation>
 <translation id="7149517134817561223">ለChrome የርቀት ዴስክቶፕ አስተናጋጅ ትዕዛዞችን የሚሰጥ መተግበሪያ።</translation>
 <translation id="7215059001581613786">እባክዎ ስድስት ወይም ከዚያ በላይ የሆነ አኃዝ ያለው ፒን ያስገቡ።</translation>

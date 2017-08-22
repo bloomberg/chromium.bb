@@ -175,6 +175,7 @@
 <translation id="4272631900155121838">Чтобы отсканировать QR-код, разрешите доступ к камере в настройках.</translation>
 <translation id="4281844954008187215">Условия использования</translation>
 <translation id="430793432425771671">Синхронизировать все</translation>
+<translation id="4342284590510997375">Новое</translation>
 <translation id="4359125752503270327">Страница откроется в другом приложении.</translation>
 <translation id="4375040482473363939">Поиск по QR-коду</translation>
 <translation id="4378154925671717803">Телефон</translation>
@@ -249,6 +250,7 @@
 <translation id="5982717868370722439">Объединить сохраненные данные с данными пользователя <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">Шифрование…</translation>
 <translation id="6021332621416007159">Открыть в…</translation>
+<translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6039694632319341016">Сохранить в <ph name="PASSWORD_MANAGER_BRAND" /> новый пароль пользователя <ph name="USERNAME" /> для этого сайта?</translation>
 <translation id="6040143037577758943">Закрыть</translation>
 <translation id="6042308850641462728">Подробнее...</translation>
@@ -303,7 +305,6 @@
 <translation id="6896758677409633944">Копировать</translation>
 <translation id="6903907808598579934">Включить</translation>
 <translation id="6945221475159498467">Выбрать</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Папки</translation>
 <translation id="7004499039102548441">Недавние вкладки</translation>
 <translation id="7006788746334555276">Настройки контента</translation>

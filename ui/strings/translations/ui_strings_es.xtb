@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segundo}other{# segundos}}</translation>
 <translation id="4971687151119236543">Pista anterior multimedia</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">Botón para borrar el texto del cuadro de búsqueda</translation>
 <translation id="5046499563572181734">Toca aquí</translation>
 <translation id="5076340679995252485">&amp;Pegar</translation>
 <translation id="5120799197269191491">Buscar+<ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">Espacio</translation>
 <translation id="6135826906199951471">Supr</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6156262341071374681">Mostrar todas las aplicaciones</translation>
 <translation id="6264365405983206840">Seleccionar &amp;todo</translation>
 <translation id="6351032674660237738">SUGERENCIAS DE APLICACIONES</translation>
 <translation id="6364916375976753737">Desplazar hacia la izquierda</translation>

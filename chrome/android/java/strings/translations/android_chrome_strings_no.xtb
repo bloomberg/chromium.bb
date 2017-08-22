@@ -103,6 +103,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1966710179511230534">Oppdater påloggingsinformasjonen din.</translation>
 <translation id="1974060860693918893">Avansert</translation>
 <translation id="1984937141057606926">Tillatt – unntatt fra tredjeparter.</translation>
+<translation id="1989112275319619282">Bla gjennom</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> vil koble til</translation>
 <translation id="1994173015038366702">Nettadressen til nettstedet</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB andre apper</translation>
@@ -375,6 +376,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4807963036345170158">Datasparing er av</translation>
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4837753911714442426">Åpne alternativene for å skrive ut siden</translation>
+<translation id="4842092870884894799">Viser forgrunnsvinduet for passordgenerering</translation>
 <translation id="4850886885716139402">Visning</translation>
 <translation id="4860895144060829044">Ring</translation>
 <translation id="4881695831933465202">Åpne</translation>
@@ -443,6 +445,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5487521232677179737">Slett data</translation>
 <translation id="5487729733663684359">Denne Android-versjonen har ikke lenger støtte for Chrome-oppdateringer.</translation>
 <translation id="5490801865084500306">Bokmerkefanen er valgt</translation>
+<translation id="550684401320795253">Oppdaterer Chrome ...</translation>
 <translation id="5512137114520586844">Denne kontoen er administrert av <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Deaktivert av administratoren for denne enheten</translation>
 <translation id="5517095782334947753">Du har bokmerker, loggen, passord og andre innstillinger fra <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +485,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5763382633136178763">Inkognitofaner</translation>
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5777170031995031090">Kontrollér hvordan Google bruker nettlesingsloggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg.</translation>
+<translation id="5779929835642192302">Det finnes tilgjengelige forslag</translation>
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{for # time siden}other{for # timer siden}}</translation>
 <translation id="5817918615728894473">Koble sammen</translation>
@@ -553,7 +557,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6437478888915024427">Sideinformasjon</translation>
 <translation id="6447842834002726250">Informasjonskapsler</translation>
 <translation id="6448273550210938826">Nettadresse- og søkeforslag</translation>
-<translation id="6463070039183944536">Legger til …</translation>
 <translation id="6475951671322991020">Last ned videoen</translation>
 <translation id="6482749332252372425">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av mangel på lagringsplass.</translation>
 <translation id="6508332297647760142">Deling på det fysiske nettet</translation>
@@ -638,6 +641,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7189372733857464326">Venter på at Google Play Tjenester fullfører oppdateringen</translation>
 <translation id="7189598951263744875">Del</translation>
 <translation id="7191430249889272776">En fane ble åpnet i bakgrunnen.</translation>
+<translation id="723171743924126238">Velg bilder</translation>
 <translation id="7243308994586599757">Du finner alternativer ved bunnen av skjermen</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> bruker posisjonen din for å vise lokale søkeresultater</translation>
 <translation id="7251326866581677552">Blokkert på noen nettsteder</translation>

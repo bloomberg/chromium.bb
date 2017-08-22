@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">फिट करण्यासाठी डेस्कटॉपचा आकार बदला</translation>
 <translation id="154040539590487450">दूरस्‍थ प्रवेश सेवा प्रारंभ करण्‍यात अयशस्वी.</translation>
 <translation id="1546934824884762070">एक अनपेक्षित त्रुटी आली. कृपया विकसकांकडे या समस्येचा अहवाल द्या.</translation>
-<translation id="1619813076098775562">कास्ट डिव्हाइससाठी कनेक्शन बंद केले.</translation>
 <translation id="1643640058022401035">हे पृष्‍ठ सोडण्यामुळे आपले Chromoting सत्र समाप्त होईल.</translation>
 <translation id="1654128982815600832">या संगणकासाठी दूरस्थ कनेक्‍शन सक्षम करीत आहे...</translation>
 <translation id="170207782578677537">या संगणकावर नोंदणी करण्‍यात अयशस्वी.</translation>
@@ -80,6 +79,7 @@
 <translation id="2676780859508944670">कार्यरत आहे...</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">सॉफ्टवेअर अपडेट सामान्यतः स्वयंचलितपणे होतात, परंतु काही क्वचित प्रकरणांमध्ये अयशस्वी होऊ शकतात. सॉफ्टवेअर अपडेट करण्यास काही मिनिटांपेक्षा जास्त वेळ लागत नाही आणि आपल्या संगणकास दूरस्थपणे कनेक्ट केलेले असताना पूर्ण केली जाऊ शकतात.</translation>
+<translation id="2758123043070977469">प्रमाणीकृत करताना समस्या आली, कृपया पुन्हा लॉगिन करा.</translation>
 <translation id="2803375539583399270">पिन प्रविष्ट करा</translation>
 <translation id="2841013758207633010">वेळ</translation>
 <translation id="2851754573186462851">Chromium अॅप प्रवाह</translation>
@@ -187,7 +187,6 @@
 <translation id="5419418238395129586">अखेरचे ऑनलाइन होते: <ph name="DATE" /></translation>
 <translation id="544077782045763683">होस्टने बंद केले आहे.</translation>
 <translation id="5510035215749041527">आता डिस्कनेक्ट करा</translation>
-<translation id="5537725057119320332">कास्ट करा</translation>
 <translation id="5593560073513909978">सेवा तात्पुरती अनुपलब्ध आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="5601503069213153581">पिन</translation>
 <translation id="5619148062500147964">या संगणकावर</translation>
@@ -196,10 +195,10 @@
 <translation id="5708869785009007625">आपला डेस्कटॉप सध्या <ph name="USER" /> सह सामायिक केला आहे.</translation>
 <translation id="5773590752998175013">जोडल्याची तारीख</translation>
 <translation id="579702532610384533">रीकनेक्ट करा</translation>
+<translation id="5810269635982033450">स्क्रीन ट्रॅकपॅडसारखा काम करत आहे</translation>
 <translation id="5841343754884244200">प्रदर्शन पर्याय</translation>
 <translation id="5843054235973879827">हे सुरक्षित का आहे?</translation>
 <translation id="5859141382851488196">नवीन विंडो…</translation>
-<translation id="5885438903806970186">ऑनलाइन.</translation>
 <translation id="6011539954251327702">Chromoting आपल्याला वेबवर आपला संगणक सुरक्षितपणे सामायिक करण्याची अनुमती देते. दोन्ही वापरकर्त्यांनी Chromoting अ‍ॅप चालविणे आवश्यक आहे, जो <ph name="URL" /> येथे आढळू शकतो.</translation>
 <translation id="6033507038939587647">कीबोर्ड पर्याय</translation>
 <translation id="6040143037577758943">बंद करा</translation>
@@ -248,7 +247,7 @@
 <translation id="7019153418965365059">न ओळखलेली होस्ट त्रुटी: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">दूरस्‍थ सहाय्य</translation>
 <translation id="7038683108611689168">आम्हाला वापर आकडेवारी आणि क्रॅश अहवाल संकलित करण्याची अनुमती देऊन Chromoting सुधारण्यात आम्हाला मदत करा.</translation>
-<translation id="712467900648340229">कास्ट डिव्हाइसशी कनेक्ट करण्यात अयशस्वी.</translation>
+<translation id="7067321367069083429">स्क्रीन टच स्क्रीनसारखा काम करत आहे</translation>
 <translation id="7144878232160441200">पुन्हा प्रयत्न करा</translation>
 <translation id="7149517134817561223">Chrome दूरस्थ डेस्कटॉप होस्टवर आदेश जारी करण्यासाठी अॅप्लिकेशन.</translation>
 <translation id="7215059001581613786">कृपया सहा किंवा अधिक अंक असलेला एक पिन प्रविष्‍ट करा.</translation>

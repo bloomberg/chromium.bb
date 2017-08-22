@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">Подогнать размер рабочего стола</translation>
 <translation id="154040539590487450">Не удалось запустить службу удаленного доступа.</translation>
 <translation id="1546934824884762070">Непредвиденная ошибка. Сообщите об этой проблеме разработчикам.</translation>
-<translation id="1619813076098775562">Приложение больше не подключено к Cast-устройству</translation>
 <translation id="1643640058022401035">Если вы покинете эту страницу, сеанс Пульта Chrome будет завершен.</translation>
 <translation id="1654128982815600832">Разрешение удаленных подключений…</translation>
 <translation id="170207782578677537">Не удалось зарегистрировать этот компьютер.</translation>
@@ -80,6 +79,7 @@
 <translation id="2676780859508944670">В процессе...</translation>
 <translation id="2699970397166997657">Пульт Chrome</translation>
 <translation id="2747641796667576127">Программное обеспечение обычно обновляется автоматически, но иногда возможны сбои. Обновление занимает несколько минут и может выполняться при удаленном подключении к компьютеру.</translation>
+<translation id="2758123043070977469">Ошибка аутентификации. Войдите в аккаунт снова.</translation>
 <translation id="2803375539583399270">Введите PIN-код</translation>
 <translation id="2841013758207633010">Время</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -187,7 +187,6 @@
 <translation id="5419418238395129586">Последний раз в сети: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Хост отключен.</translation>
 <translation id="5510035215749041527">Отключить</translation>
-<translation id="5537725057119320332">Cast</translation>
 <translation id="5593560073513909978">Служба временно недоступна. Повторите попытку позже.</translation>
 <translation id="5601503069213153581">PIN-код</translation>
 <translation id="5619148062500147964">К этому компьютеру</translation>
@@ -196,10 +195,10 @@
 <translation id="5708869785009007625">В настоящее время доступ к вашему рабочему столу предоставлен пользователю <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Дата подключения</translation>
 <translation id="579702532610384533">Подключиться повторно</translation>
+<translation id="5810269635982033450">Пользоваться экраном как сенсорной панелью компьютера</translation>
 <translation id="5841343754884244200">Настройки внешнего вида</translation>
 <translation id="5843054235973879827">Безопасно ли это?</translation>
 <translation id="5859141382851488196">Новое окно...</translation>
-<translation id="5885438903806970186">В Интернете.</translation>
 <translation id="6011539954251327702">Пульт Chrome обеспечит безопасный доступ к компьютеру через Интернет. Приложение должно быть установлено на обоих компьютерах: вашем и удаленном. Загрузить его можно на странице <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Настройки клавиатуры</translation>
 <translation id="6040143037577758943">Закрыть</translation>
@@ -248,7 +247,7 @@
 <translation id="7019153418965365059">Неизвестная ошибка хоста: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Удаленная поддержка</translation>
 <translation id="7038683108611689168">Разрешить Google собирать данные статистики использования и отчеты о сбоях для улучшения работы Пульта Chrome</translation>
-<translation id="712467900648340229">Не удалось подключиться к Cast-устройству</translation>
+<translation id="7067321367069083429">Пользоваться экраном как сенсорным</translation>
 <translation id="7144878232160441200">Повторить попытку</translation>
 <translation id="7149517134817561223">Приложение для отдачи команд хосту Удаленного рабочего стола Chrome.</translation>
 <translation id="7215059001581613786">PIN-код должен содержать не менее шести цифр.</translation>

@@ -23,7 +23,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="1520828917794284345">Sovita työpöydän koko</translation>
 <translation id="154040539590487450">Etäkäyttöpalvelun käynnistäminen epäonnistui.</translation>
 <translation id="1546934824884762070">Odottamaton virhe. Ilmoita tästä ongelmasta kehittäjille.</translation>
-<translation id="1619813076098775562">Yhteys Cast-laitteeseen katkaistiin.</translation>
 <translation id="1643640058022401035">Vaihtamalla sivua päätät Chromoting-käyttökerran.</translation>
 <translation id="1654128982815600832">Otetaan tietokoneen etäyhteyksiä käyttöön…</translation>
 <translation id="170207782578677537">Tietokoneen rekisteröinti epäonnistui.</translation>
@@ -80,6 +79,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="2676780859508944670">Käsitellään…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Ohjelmistopäivitykset tapahtuvat yleensä automaattisesti, mutta voivat epäonnistua joissakin harvinaisissa tapauksissa. Ohjelmiston päivittäminen kestää yleensä vain muutaman minuutin, ja se voidaan suorittaa etäyhteyden välityksellä.</translation>
+<translation id="2758123043070977469">Todennusvirhe – kirjaudu uudelleen sisään.</translation>
 <translation id="2803375539583399270">Anna PIN-koodi.</translation>
 <translation id="2841013758207633010">Aika</translation>
 <translation id="2851754573186462851">Chromium-sovellusten suoratoisto</translation>
@@ -187,7 +187,6 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="5419418238395129586">Yhdistetty verkkoon viimeksi: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Isäntä on offline-tilassa.</translation>
 <translation id="5510035215749041527">Katkaise yhteys nyt</translation>
-<translation id="5537725057119320332">Lähetä</translation>
 <translation id="5593560073513909978">Palvelu ei ole tällä hetkellä käytettävissä. Yritä myöhemmin uudelleen.</translation>
 <translation id="5601503069213153581">PIN-koodi</translation>
 <translation id="5619148062500147964">Tähän tietokoneeseen</translation>
@@ -196,10 +195,10 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="5708869785009007625">Tietokoneesi on jaettu käyttäjän <ph name="USER" /> kanssa.</translation>
 <translation id="5773590752998175013">Laiteparin muodostamispäivä</translation>
 <translation id="579702532610384533">Yhdistä uudelleen</translation>
+<translation id="5810269635982033450">Näyttö toimii ohjauslevynä</translation>
 <translation id="5841343754884244200">Näyttöasetukset</translation>
 <translation id="5843054235973879827">Miksi tämä on turvallista?</translation>
 <translation id="5859141382851488196">Uusi ikkuna…</translation>
-<translation id="5885438903806970186">Verkossa.</translation>
 <translation id="6011539954251327702">Chromotingin avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL" /> löytyvää Chromoting-sovellusta.</translation>
 <translation id="6033507038939587647">Näppäimistöasetukset</translation>
 <translation id="6040143037577758943">Sulje</translation>
@@ -248,7 +247,7 @@ Lisätietoja tietosuojasta on Googlen tietosuojakäytännössä (http://goo.gl/S
 <translation id="7019153418965365059">Tuntematon isäntävirhe: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Etätuki</translation>
 <translation id="7038683108611689168">Auta meitä parantamaan Chromotingia antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
-<translation id="712467900648340229">Yhteyden muodostaminen Cast-laitteeseen epäonnistui.</translation>
+<translation id="7067321367069083429">Näyttö toimii kosketusnäyttönä</translation>
 <translation id="7144878232160441200">Yritä uudelleen</translation>
 <translation id="7149517134817561223">Sovellus, joka antaa komentoja Chromen etätyöpöytäisännälle.</translation>
 <translation id="7215059001581613786">Anna PIN-koodi, jossa on vähintään kuusi numeroa.</translation>

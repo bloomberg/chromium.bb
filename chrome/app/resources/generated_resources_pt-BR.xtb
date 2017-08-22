@@ -69,6 +69,7 @@
 <translation id="1110155001042129815">Aguarde</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{Continuar download}one{Continuar downloads}other{Continuar downloads}}</translation>
 <translation id="1110772031432362678">Nenhuma rede encontrada.</translation>
+<translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamante</translation>
 <translation id="1114335938027186412">Seu computador possui um dispositivo de segurança Trusted Platform Module (TPM, na sigla em inglês), que é utilizado para implementar muitos recursos de segurança importantes no Chrome OS. Visite a Central de Ajuda do Chromebook para saber mais: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Colocar em modo de suspensão quando a tampa estiver fechada</translation>
@@ -933,6 +934,7 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="2378982052244864789">Selecionar o diretório da extensão.</translation>
 <translation id="2379281330731083556">Imprimir utilizando caixa de diálogo de sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
+<translation id="2384436799579181135">Ocorreu um erro. Verifique sua impressora e tente novamente.</translation>
 <translation id="2385700042425247848">Nome do serviço:</translation>
 <translation id="2390045462562521613">Esquecer esta rede</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> fotos novas encontradas
@@ -1001,7 +1003,7 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="248861575772995840">Não foi possível localizar seu smartphone. Certifique-se de que o Bluetooth do <ph name="DEVICE_TYPE" /> esteja ativado. &lt;a&gt;Saiba mais&lt;/a&gt;</translation>
 <translation id="2489316678672211764">Um plug-in (<ph name="PLUGIN_NAME" />) não está respondendo.</translation>
 <translation id="2489428929217601177">o dia anterior</translation>
-<translation id="2489435327075806094">Velocidade do ponteiro:</translation>
+<translation id="2489435327075806094">Velocidade do cursor:</translation>
 <translation id="2489918096470125693">Adicionar &amp;pasta...</translation>
 <translation id="249113932447298600">O dispositivo <ph name="DEVICE_LABEL" /> não é atualmente suportado.</translation>
 <translation id="2493021387995458222">Selecionar "uma palavra por vez"</translation>
@@ -1318,6 +1320,7 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2897878306272793870">Você tem certeza de que deseja abrir <ph name="TAB_COUNT" /> guias?</translation>
 <translation id="290105521672621980">O arquivo utiliza recursos não compatíveis</translation>
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> não conseguiu se comunicar com esta impressora. Verifique se a impressora está conectada e tente novamente.</translation>
+<translation id="2902312830803030883">Mais ações</translation>
 <translation id="2903457445916429186">Abrir itens selecionados</translation>
 <translation id="2903493209154104877">Endereços</translation>
 <translation id="290444763029043472">Download de <ph name="DOWNLOADED_AMOUNT_MB" /> MB de <ph name="TOTAL_AMOUNT_MB" /> MB concluído</translation>
@@ -1364,7 +1367,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2966449113954629791">Você pode ter usado a cota de dados do seu dispositivo móvel. Visite o portal de ativação do <ph name="NAME" /> para comprar mais dados.</translation>
 <translation id="2966598748518102999">Enviar o som de "Ok Google" e, alguns segundos antes, enviar para o Google a fim de melhorar a pesquisa por voz.</translation>
 <translation id="2966937470348689686">Gerenciar preferências do Android</translation>
-<translation id="2967544384642772068">Eliminar</translation>
 <translation id="2971033837577180453">&lt;span&gt;Código:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">diminuir brilho</translation>
 <translation id="2972557485845626008">Firmware</translation>
@@ -1438,6 +1440,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3065041951436100775">Feedback para guia desativada.</translation>
 <translation id="3065140616557457172">Digite para pesquisar ou insira um URL para navegar - o que você preferir.</translation>
 <translation id="3067198360141518313">Executar este plug-in</translation>
+<translation id="3071624960923923138">Você pode clicar aqui para abrir uma nova guia</translation>
 <translation id="3074037959626057712">Você fez login e ativou a sincronização</translation>
 <translation id="3075874217500066906">É necessária uma reinicialização para iniciar o processo Powerwash. Após a reinicialização, solicitaremos que você confirme que deseja continuar.</translation>
 <translation id="3076677906922146425">Deixar qualquer um adicionar uma pessoa ao Chrome</translation>
@@ -1515,7 +1518,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="3165390001037658081">Algumas operadoras podem bloquear esse recurso.</translation>
 <translation id="3166571619128686629">Clique ou diga "Ok Google" para iniciar uma pesquisa por voz</translation>
 <translation id="3170072451822350649">Também é possível ignorar o login e <ph name="LINK_START" />navegar como visitante<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Manter foco da lupa centralizado na tela</translation>
 <translation id="3177048931975664371">Clique para ocultar senha</translation>
 <translation id="3177909033752230686">Idioma da página:</translation>
 <translation id="3180365125572747493">Digite uma senha para criptografar este arquivo de certificado.</translation>
@@ -2053,8 +2055,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
   Deseja iniciar o <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Voltar</translation>
 <translation id="3943857333388298514">Colar</translation>
-<translation id="3944266449990965865">Tela cheia</translation>
-<translation id="3946471364541867667">Configurações de TalkBack</translation>
 <translation id="3947376313153737208">Nenhuma seleção</translation>
 <translation id="3948116654032448504">&amp;Procurar imagem no <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Bem-vindo ao Hangouts Meet!</translation>
@@ -2360,7 +2360,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4450974146388585462">Diagnosticar</translation>
 <translation id="4452426408005428395">Ignorar</translation>
 <translation id="4454939697743986778">Este certificado foi instalado pelo administrador do sistema.</translation>
-<translation id="445891990714234385">Configurações do ChromeVox</translation>
 <translation id="445923051607553918">Entrar na rede Wi-Fi</translation>
 <translation id="4462159676511157176">Servidores de nome personalizados</translation>
 <translation id="4467100756425880649">Galeria da Chrome Web Store</translation>
@@ -2377,6 +2376,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="450099669180426158">Ícone de ponto de exclamação</translation>
 <translation id="4501530680793980440">Confirmar remoção</translation>
 <translation id="4504940961672722399">Para usar esta extensão, clique neste ícone ou pressione <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4508051413094283164">Abrir todos em uma janela sem rastros</translation>
 <translation id="4508265954913339219">Falha na ativação</translation>
 <translation id="4508765956121923607">Exibir &amp;código fonte</translation>
 <translation id="4509017836361568632">Descartar foto</translation>
@@ -2480,6 +2480,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4664482161435122549">Erro de exportação do PKCS #12</translation>
 <translation id="466481852929361583">O módulo de segurança está sendo configurado. Seja paciente. Esse processo pode demorar alguns minutos.</translation>
 <translation id="4665014895760275686">Fabricante</translation>
+<translation id="466506872045057845">O Chrome redefinirá as permissões para seus padrões</translation>
 <translation id="4667176955651319626">Bloquear cookies de terceiros e dados do site</translation>
 <translation id="4668721319092543482">Clique para ativar o plug-in <ph name="PLUGIN_NAME" /></translation>
 <translation id="4668954208278016290">Ocorreu um problema ao extrair a imagem para o computador.</translation>
@@ -2652,12 +2653,12 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="4903369323166982260">Executar a Ferramenta de limpeza do Chrome</translation>
 <translation id="4907161631261076876">Esse arquivo não é transferido com frequência e pode ser perigoso.</translation>
 <translation id="4907306957610201395">Categoria de permissão</translation>
+<translation id="4908811072292128752">Abra uma nova guia para navegar em dois sites de uma vez</translation>
 <translation id="4909038193460299775">Como essa conta é gerenciada por <ph name="DOMAIN" />, seus favoritos, histórico, senhas e outras configurações serão excluídos desse dispositivo. No entanto, seus dados permanecerão armazenados na sua Conta do Google e poderão ser gerenciados no <ph name="BEGIN_LINK" />Painel do Google<ph name="END_LINK" />.</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="4910673011243110136">Rede privadas</translation>
 <translation id="4911714727432509308">Não foi atribuído atalho de teclado a nenhuma extensão.</translation>
 <translation id="4912643508233590958">Ativações do estado ocioso</translation>
-<translation id="4916679969857390442">Lupa</translation>
 <translation id="491691592645955587">Mudar para um navegador seguro</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> deseja se comunicar com a extensão "<ph name="EXTENSION_NAME" />"</translation>
@@ -2722,7 +2723,6 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5011739343823725107">Falha ao iniciar o back-end de sincronização</translation>
 <translation id="5015344424288992913">Resolvendo proxy...</translation>
 <translation id="5015762597229892204">Selecione um aplicativo de driver de impressora</translation>
-<translation id="5016049845330225051">Botão Limpar texto da caixa de pesquisa</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Gerenciar nas páginas de inicialização</translation>
 <translation id="5023943178135355362">Rolagem australiana. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -2848,6 +2848,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="521582610500777512">A foto foi descartada.</translation>
 <translation id="5222676887888702881">Sair</translation>
 <translation id="5225324770654022472">Mostrar atalho para aplicativos</translation>
+<translation id="5225360179303283478">Redefinir as configurações do site</translation>
 <translation id="5227536357203429560">Adicionar rede privada...</translation>
 <translation id="5227679487546032910">Avatar verde-azulado padrão</translation>
 <translation id="5227808808023563348">Busca texto anterior</translation>
@@ -3480,7 +3481,6 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="6151771661215463137">O arquivo já existe na sua pasta de download.</translation>
 <translation id="615436196126345398">Protocolo</translation>
 <translation id="6154697846084421647">Conectado no momento</translation>
-<translation id="6156262341071374681">Expandir para ver todos os apps</translation>
 <translation id="6156323911414505561">Mostrar barra de favoritos</translation>
 <translation id="6156863943908443225">Cache de script</translation>
 <translation id="6156960295318603523">Configurações de idioma</translation>
@@ -3768,6 +3768,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="655384502888039633"><ph name="USER_COUNT" /> usuários</translation>
 <translation id="6555432686520421228">Remover todas as contas de usuário e redefinir seu dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /> para as condições de fábrica.</translation>
 <translation id="6556866813142980365">Refazer</translation>
+<translation id="6558280019477628686">Ocorreu um erro. Alguns itens podem não ter sido excluídos.</translation>
 <translation id="6559580823502247193">(já neste dispositivo)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="6562437808764959486">Extraindo imagem de recuperação...</translation>
@@ -3842,6 +3843,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="6664237456442406323">Infelizmente, seu computador está configurado com um ID de hardware mal formado. Isso impede que o Chrome OS seja atualizado com as correções de segurança mais recentes e, por isso, seu computador <ph name="BEGIN_BOLD" />pode ficar vulnerável a ataques maliciosos<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Ocorreu um erro ao abrir seu perfil. Saia da conta e faça login novamente.</translation>
 <translation id="6666647326143344290">com sua Conta do Google</translation>
+<translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Deseja que o Google traduza esta página de <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Dispositivo apontador conectado</translation>
 <translation id="6677037229676347494">ID esperado "<ph name="EXPECTED_ID" />", mas era "<ph name="NEW_ID" />".</translation>
@@ -3874,6 +3876,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="6716704051134091292">Conversor de PDF</translation>
 <translation id="6718273304615422081">Compactando...</translation>
 <translation id="671928215901716392">Bloquear tela</translation>
+<translation id="67211069045302358">Redefinir configurações para esse site?</translation>
 <translation id="6721972322305477112">&amp;Arquivo</translation>
 <translation id="672213144943476270">Desbloqueie seu perfil antes de navegar como convidado.</translation>
 <translation id="6723354935081862304">Imprima no Google Docs e outros destinos de nuvem. <ph name="BEGIN_LINK" />Faça login<ph name="END_LINK" /> para imprimir no Google Cloud Print.</translation>
@@ -4049,7 +4052,6 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="6996946928646015361">O módulo de segurança está desativado ou ausente.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> pastas selecionadas</translation>
 <translation id="6998793565256476099">Cadastre o dispositivo para videoconferência</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{A página a seguir parou de responder. Aguarde até que ela volte a responder ou elimine-a.}one{As páginas a seguir pararam de responder. Aguarde até que voltem a responder ou elimine-as.}other{As páginas a seguir pararam de responder. Aguarde até que voltem a responder ou elimine-as.}}</translation>
 <translation id="7002055706763150362">Para configurar o Smart Lock para Chromebook, o Google precisa confirmar que é você: digite sua senha para começar.</translation>
 <translation id="7002454948392136538">Escolha o gerente para este usuário supervisionado</translation>
 <translation id="7003257528951459794">Frequência:</translation>
@@ -4059,6 +4061,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="7005848115657603926">Intervalo de páginas inválido. Use <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Margem inferior</translation>
 <translation id="7006844981395428048">Áudio $1</translation>
+<translation id="7007648447224463482">Abrir todos em uma nova janela</translation>
 <translation id="7008270479623533562">Para executar esta extensão, é necessário atualizar a página. Execute-a automaticamente neste site clicando com o botão direito do mouse no ícone da extensão.</translation>
 <translation id="701080569351381435">Exibir o código fonte</translation>
 <translation id="7012372675181957985">Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -4168,6 +4171,7 @@ Use esse recurso somente com contas nas quais você confia.</translation>
 <translation id="7180611975245234373">Atualizar</translation>
 <translation id="7180865173735832675">Personalizar</translation>
 <translation id="7186088072322679094">Manter na barra de ferramentas</translation>
+<translation id="7191159667348037">Impressora desconhecida (USB)</translation>
 <translation id="7191454237977785534">Salvar arquivo como</translation>
 <translation id="7196835305346730603">Procurando por Chromeboxes próximas...</translation>
 <translation id="7199158086730159431">Conseguir &amp;ajuda</translation>

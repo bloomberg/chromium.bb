@@ -1365,7 +1365,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2966449113954629791">Mobil veri kullanım hakkınızı doldurmuş olabilirsiniz. Daha fazla veri satın almak için <ph name="NAME" /> etkinleştirme portalını ziyaret edin.</translation>
 <translation id="2966598748518102999">Öncesinde birkaç saniye boşlukla "Ok Google" sesini Google'a göndererek sesli arama özelliğini iyileştirin.</translation>
 <translation id="2966937470348689686">Android tercihlerini yönet</translation>
-<translation id="2967544384642772068">Sonlandır</translation>
 <translation id="2971033837577180453">&lt;span&gt;Kimlik:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">parlaklığı azalt</translation>
 <translation id="2972557485845626008">Donanım yazılımı</translation>
@@ -1516,7 +1515,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3165390001037658081">Bazı operatörler bu özelliği engelleyebilir.</translation>
 <translation id="3166571619128686629">Sesli aramayı başlatmak için tıklayın veya "Ok Google" deyin</translation>
 <translation id="3170072451822350649">Ayrıca, oturum açmayı atlayabilir ve <ph name="LINK_START" />misafir olarak göz atabilirsiniz<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Büyütecin odağını ekranın ortasında tut</translation>
 <translation id="3177048931975664371">Şifreyi gizlemek için tıklayın</translation>
 <translation id="3177909033752230686">Sayfanın Dili:</translation>
 <translation id="3180365125572747493">Lütfen bu sertifika dosyasını şifrelemek için bir şifre girin.</translation>
@@ -2054,8 +2052,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <ph name="CONTROL_PANEL_APPLET_NAME" /> aracını başlatmak ister misiniz?</translation>
 <translation id="3943582379552582368">&amp;Geri</translation>
 <translation id="3943857333388298514">Yapıştır</translation>
-<translation id="3944266449990965865">Tüm Ekran</translation>
-<translation id="3946471364541867667">TalkBack Ayarları</translation>
 <translation id="3947376313153737208">Seçim yok</translation>
 <translation id="3948116654032448504"><ph name="SEARCH_ENGINE" /> içinde Resim &amp;ara</translation>
 <translation id="3949371968208420848">Hangouts Meet'e hoş geldiniz!</translation>
@@ -2362,7 +2358,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4450974146388585462">Teşhis Et</translation>
 <translation id="4452426408005428395">Vazgeç</translation>
 <translation id="4454939697743986778">Bu sertifika, sistem yöneticiniz tarafından yüklenmiştir.</translation>
-<translation id="445891990714234385">ChromeVox Ayarları</translation>
 <translation id="445923051607553918">Kablosuz ağa bağlan</translation>
 <translation id="4462159676511157176">Özel ad sunucuları</translation>
 <translation id="4467100756425880649">Chrome Web Mağazası Galerisi</translation>
@@ -2660,7 +2655,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="4910673011243110136">Özel ağlar</translation>
 <translation id="4911714727432509308">Hiçbir uzantıya klavye kısayolu atanmamış.</translation>
 <translation id="4912643508233590958">Boşta Kalma Uyanmaları</translation>
-<translation id="4916679969857390442">Lens</translation>
 <translation id="491691592645955587">Güvenli bir tarayıcıya geç</translation>
 <translation id="4917385247580444890">Güçlü</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" />, "<ph name="EXTENSION_NAME" />" uzantısıyla iletişim kurmak istiyor</translation>
@@ -2725,7 +2719,6 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5011739343823725107">Senkronizasyon arka ucu başlatılamadı</translation>
 <translation id="5015344424288992913">Proxy çözümleniyor...</translation>
 <translation id="5015762597229892204">Bir yazıcı sürücüsü uygulaması seçin</translation>
-<translation id="5016049845330225051">Arama kutusu metin düğmesini temizle</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Başlangıç sayfalarını yönet</translation>
 <translation id="5023943178135355362">Ters kaydırma <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
@@ -3483,7 +3476,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6151771661215463137">Dosya zaten indirilenler klasörünüzde mevcut.</translation>
 <translation id="615436196126345398">Protokol</translation>
 <translation id="6154697846084421647">Şu anda oturumu açık</translation>
-<translation id="6156262341071374681">Tüm uygulamalara genişlet</translation>
 <translation id="6156323911414505561">Yer işaretleri çubuğunu göster</translation>
 <translation id="6156863943908443225">Komut Dosyası Önbelleği</translation>
 <translation id="6156960295318603523">Dil Ayarları</translation>
@@ -4050,7 +4042,6 @@ Bu özelliği sadece güvendiğiniz hesaplarda kullanın.</translation>
 <translation id="6996946928646015361">Güvenli Modül devre dışı bırakıldı veya yok.</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> klasör seçildi</translation>
 <translation id="6998793565256476099">Video konferans için cihazı kaydetme</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Aşağıdaki sayfa yanıt vermiyor. Bu sayfanın tekrar yanıt vermesini bekleyebilir veya sayfayı sonlandırabilirsiniz.}other{Aşağıdaki sayfalar yanıt vermiyor. Bu sayfaların tekrar yanıt vermesini bekleyebilir veya sayfaları sonlandırabilirsiniz.}}</translation>
 <translation id="7002055706763150362">Google'ın, Chromebook için Smart Lock özelliğini kurmak amacıyla, bunu talep eden kullanıcının siz olduğunuzdan emin olması gerekir. Başlamak için şifrenizi girin.</translation>
 <translation id="7002454948392136538">Bu denetlenen kullanıcı için yönetici seçin</translation>
 <translation id="7003257528951459794">Sıklık:</translation>

@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">डेस्कटॉप को सटीक आकार में बदलें</translation>
 <translation id="154040539590487450">दूरस्‍थ पहुंच सेवा प्रारंभ करने में विफल.</translation>
 <translation id="1546934824884762070">एक अनपेक्षित गड़बड़ी आई. कृपया इस समस्या की रिपोर्ट डेवलपर से करें.</translation>
-<translation id="1619813076098775562">कास्‍ट डिवाइस से कनेक्‍शन बंद किया गया.</translation>
 <translation id="1643640058022401035">यह पेज छोड़ देने से आपका Chromoting सत्र समाप्त हो जाएगा.</translation>
 <translation id="1654128982815600832">इस कंप्‍यूटर के लिए दूरस्‍थ कनेक्‍शन सक्षम किए जा रहे हैं…</translation>
 <translation id="170207782578677537">इस कंप्‍यूटर को पंजीकृत करने में विफल.</translation>
@@ -187,7 +186,6 @@
 <translation id="5419418238395129586">पिछली बार ऑनलाइन: <ph name="DATE" /></translation>
 <translation id="544077782045763683">होस्‍ट बंद हो गया है.</translation>
 <translation id="5510035215749041527">अभी डिस्‍कनेक्‍ट करें</translation>
-<translation id="5537725057119320332">कास्‍ट करें</translation>
 <translation id="5593560073513909978">सेवा अस्थायी रूप से अनुपलब्ध है. कृपया बाद में पुन: प्रयास करें.</translation>
 <translation id="5601503069213153581">पिन</translation>
 <translation id="5619148062500147964">इस कंप्‍यूटर से</translation>
@@ -199,7 +197,6 @@
 <translation id="5841343754884244200">प्रदर्शन विकल्प</translation>
 <translation id="5843054235973879827">यह सुरक्षित क्यों है?</translation>
 <translation id="5859141382851488196">नई विंडो...</translation>
-<translation id="5885438903806970186">ऑनलाइन.</translation>
 <translation id="6011539954251327702">Chromoting आपको अपने कंप्यूटर को वेब पर सुरक्षित रूप से साझा करने देता है. दोनों उपयोगकर्ताओं को क्रोमोटिंग ऐप्स  चलाना चाहिए, जिसे <ph name="URL" /> पर ढूंढा जा सके.</translation>
 <translation id="6033507038939587647">कीबोर्ड विकल्प</translation>
 <translation id="6040143037577758943">बंद करें</translation>
@@ -248,7 +245,6 @@
 <translation id="7019153418965365059">अपरिचित होस्‍ट गड़बड़ी: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">दूरस्थ सहायता</translation>
 <translation id="7038683108611689168">हमें उपयोग के आंकड़े और क्रैश रिपोर्ट एकत्रित करने की अनुमति देकर Chromoting को सुधारने में हमारी सहायता करें.</translation>
-<translation id="712467900648340229">कास्‍ट डिवाइस से कनेक्‍ट करने में विफल रहा.</translation>
 <translation id="7144878232160441200">पुन: प्रयास करें</translation>
 <translation id="7149517134817561223">ऐप्‍लिकेशन, Chrome दूरस्‍थ डेस्‍कटॉप होस्‍ट को आदेश जारी करेगा.</translation>
 <translation id="7215059001581613786">कृपया छः या अधिक अंकों वाला पिन दर्ज करें.</translation>

@@ -23,7 +23,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="1520828917794284345">Baguhin ang laki ng desktop upang kumasya</translation>
 <translation id="154040539590487450">Nabigong simulan ang serbisyo ng malayuang pag-access.</translation>
 <translation id="1546934824884762070">May naganap na hindi inaasahang error. Paki-ulat ang problemang ito sa mga developer.</translation>
-<translation id="1619813076098775562">Isinara ang koneksyon sa Cast device.</translation>
 <translation id="1643640058022401035">Tatapusin ng pag-alis sa pahinang ito ang iyong session ng Chromoting.</translation>
 <translation id="1654128982815600832">Pinapagana ang mga malayuang koneksyon para sa computer na ito…</translation>
 <translation id="170207782578677537">Nabigong irehistro ang computer na ito.</translation>
@@ -187,7 +186,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="5419418238395129586">Huling nag-online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Nag-shut down ang host.</translation>
 <translation id="5510035215749041527">Alisin na sa pagkakakonekta</translation>
-<translation id="5537725057119320332">I-cast</translation>
 <translation id="5593560073513909978">Pansamantalang hindi available ang serbisyo. Pakisubukang muli sa ibang pagkakataon.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Sa computer na ito</translation>
@@ -199,7 +197,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="5841343754884244200">Mga opsyon sa display</translation>
 <translation id="5843054235973879827">Bakit ito ligtas?</translation>
 <translation id="5859141382851488196">Bagong window…</translation>
-<translation id="5885438903806970186">Naka-online.</translation>
 <translation id="6011539954251327702">Binibigyang-daan ka ng Chromoting na maibahagi nang ligtas ang iyong computer sa Web. Dapat na pinapatakbo ng parehong user ang Chromoting app, na matatagpuan sa <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Mga opsyon sa keyboard</translation>
 <translation id="6040143037577758943">Isara</translation>
@@ -248,7 +245,6 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="7019153418965365059">Hindi alam na error sa host: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Malayuang Tulong</translation>
 <translation id="7038683108611689168">Tumulong sa amin na pahusayin ang Chromoting sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
-<translation id="712467900648340229">Hindi nakakonekta sa Cast device.</translation>
 <translation id="7144878232160441200">Subukang muli</translation>
 <translation id="7149517134817561223">Application na magbibigay ng mga command sa host ng remote na desktop ng Chrome.</translation>
 <translation id="7215059001581613786">Mangyaring maglagay ng PIN na binubuo ng anim o higit pang mga digit.</translation>
@@ -290,7 +286,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="8187079423890319756">Copyright 2013 Ang Mga May-akda ng Chromium. Nakalaan ang Lahat ng Karapatan.</translation>
 <translation id="8196755618196986400">Upang mabigyang-daan kaming makipag-ugnayan sa iyo para sa karagdagang impormasyon, isasama ang iyong email address sa anumang feedback na iyong isusumite.</translation>
 <translation id="8244400547700556338">Matutunan kung paano.</translation>
-<translation id="8261506727792406068">Burahin</translation>
+<translation id="8261506727792406068">I-delete</translation>
 <translation id="8355326866731426344">Mag-e-expire ang access code sa loob ng <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Isama ang mga log ng application upang matulungan kaming lutasin ang iyong problema (maaaring kasama sa mga log ang pribadong impormasyon).</translation>
 <translation id="837021510621780684">Mula sa computer na ito</translation>

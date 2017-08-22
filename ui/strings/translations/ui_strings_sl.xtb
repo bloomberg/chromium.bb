@@ -68,6 +68,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 s}one{# s}two{# s}few{# s}other{# s}}</translation>
 <translation id="4971687151119236543">Prejšnja skladba</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">Gumb za izbris besedila v iskalnem polju</translation>
 <translation id="5046499563572181734">Dotaknite se tukaj</translation>
 <translation id="5076340679995252485">&amp;Prilepi</translation>
 <translation id="5120799197269191491">Tipka za iskanje + <ph name="KEY_COMBO_NAME" /></translation>
@@ -90,6 +91,7 @@
 <translation id="6129953537138746214">Presledek</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6156262341071374681">Razširitev na vse aplikacije</translation>
 <translation id="6264365405983206840">Izberi &amp;vse</translation>
 <translation id="6351032674660237738">PREDLOGI ZA APLIKACIJE</translation>
 <translation id="6364916375976753737">Pomik levo</translation>

@@ -1365,7 +1365,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="2966449113954629791">Pravděpodobně jste vyčerpali povolený objem mobilních datových přenosů. Chcete-li koupit více dat, navštivte aktivační portál <ph name="NAME" />.</translation>
 <translation id="2966598748518102999">Zlepšit hlasové vyhledávání odesláním zvuku „Ok Google“ a několika předchozích sekund do Googlu.</translation>
 <translation id="2966937470348689686">Spravovat nastavení aplikací Android</translation>
-<translation id="2967544384642772068">Ukončit</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">snížení jasu</translation>
 <translation id="2972557485845626008">Firmware</translation>
@@ -1516,7 +1515,6 @@ Tyto i další pokyny naleznete v e-mailu, který byl odeslán na adresu <ph n
 <translation id="3165390001037658081">Někteří operátoři mohou tuto funkci blokovat.</translation>
 <translation id="3166571619128686629">Hlasové vyhledávání zahájíte kliknutím nebo vyslovením příkazu „Ok Google“</translation>
 <translation id="3170072451822350649">Také můžete přihlášení přeskočit a <ph name="LINK_START" />prohlížet v roli hosta<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Zachovat lupu na středu obrazovky</translation>
 <translation id="3177048931975664371">Kliknutím skryjete heslo</translation>
 <translation id="3177909033752230686">Jazyk stránky:</translation>
 <translation id="3180365125572747493">Zadejte prosím heslo k zašifrování tohoto souboru certifikátu.</translation>
@@ -2051,8 +2049,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
  Chcete spustit aplet <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Zpět</translation>
 <translation id="3943857333388298514">Vložit</translation>
-<translation id="3944266449990965865">Celá obrazovka</translation>
-<translation id="3946471364541867667">Nastavení aplikace TalkBack</translation>
 <translation id="3947376313153737208">Žádný výběr</translation>
 <translation id="3948116654032448504">&amp;Vyhledat obrázek pomocí vyhledávače <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Vítejte v Hangouts Meet!</translation>
@@ -2359,7 +2355,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4450974146388585462">Diagnostikovat</translation>
 <translation id="4452426408005428395">Zrušit</translation>
 <translation id="4454939697743986778">Tento certifikát byl nainstalován administrátorem systému.</translation>
-<translation id="445891990714234385">Nastavení aplikace ChromeVox</translation>
 <translation id="445923051607553918">Připojit se k síti Wi-Fi</translation>
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
 <translation id="4467100756425880649">Galerie Internetového obchodu Chrome</translation>
@@ -2656,7 +2651,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="4910673011243110136">Soukromé sítě</translation>
 <translation id="4911714727432509308">K žádným rozšířením nejsou přiřazeny klávesové zkratky.</translation>
 <translation id="4912643508233590958">Probuzení z nečinnosti</translation>
-<translation id="4916679969857390442">Lupa</translation>
 <translation id="491691592645955587">Přejděte na bezpečný prohlížeč</translation>
 <translation id="4917385247580444890">Silný</translation>
 <translation id="4918021164741308375">Web <ph name="ORIGIN" /> chce komunikovat s rozšířením <ph name="EXTENSION_NAME" /></translation>
@@ -2721,7 +2715,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="5011739343823725107">Interní implementaci synchronizace se nepodařilo spustit</translation>
 <translation id="5015344424288992913">Rozpoznávání proxy serveru...</translation>
 <translation id="5015762597229892204">Vyberte aplikaci ovladače tiskárny</translation>
-<translation id="5016049845330225051">Tlačítko vymazání textu z vyhledávacího pole</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Spravovat počáteční stránky</translation>
 <translation id="5023943178135355362">Australské posouvání <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
@@ -3475,7 +3468,6 @@ Chcete-li pokračovat v práci, stiskněte libovolnou klávesu.</translation>
 <translation id="6151771661215463137">Soubor již existuje ve složce staženého obsahu.</translation>
 <translation id="615436196126345398">Protokol</translation>
 <translation id="6154697846084421647">Aktuálně přihlášený uživatel</translation>
-<translation id="6156262341071374681">Rozšířit na všechny aplikace</translation>
 <translation id="6156323911414505561">Zobrazit lištu záložek</translation>
 <translation id="6156863943908443225">Mezipaměť skript</translation>
 <translation id="6156960295318603523">Nastavení jazyka</translation>
@@ -4043,7 +4035,6 @@ Tuto funkci používejte pouze s účty, kterým důvěřujete.</translation>
 <translation id="6996946928646015361">Modul zabezpečení je zakázán nebo chybí.</translation>
 <translation id="6998711733709403587">Vybrané soubory: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Zaregistrovat zařízení pro videokonference</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Následující stránka přestala reagovat. Můžete počkat, až začne reagovat, nebo ji ukončit.}few{Následující stránky přestaly reagovat. Můžete počkat, až začnou reagovat, nebo je ukončit.}many{Následující stránky přestaly reagovat. Můžete počkat, až začnou reagovat, nebo je ukončit.}other{Následující stránky přestaly reagovat. Můžete počkat, až začnou reagovat, nebo je ukončit.}}</translation>
 <translation id="7002055706763150362">Aby bylo možné funkci Smart Lock pro Chromebook nastavit, Google musí zkontrolovat, zda jste to opravdu vy. Chcete-li začít, zadejte heslo.</translation>
 <translation id="7002454948392136538">Vyberte správce tohoto dozorovaného uživatele</translation>
 <translation id="7003257528951459794">Frekvence:</translation>

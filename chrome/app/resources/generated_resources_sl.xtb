@@ -1366,7 +1366,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2966449113954629791">Morda ste porabili dovoljeno količino prenosa podatkov v mobilnem omrežju. Večjo količino podatkov lahko kupite na portalu za aktiviranje <ph name="NAME" />.</translation>
 <translation id="2966598748518102999">Izboljšajte glasovno iskanje s pošiljanjem zvoka za »Ok Google« in nekaj sekund zvoka pred tem Googlu.</translation>
 <translation id="2966937470348689686">Upravljanje nastavitev Androida</translation>
-<translation id="2967544384642772068">Ustavi</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">zmanjšanje svetlosti</translation>
 <translation id="2972557485845626008">Vdelana programska oprema</translation>
@@ -1517,7 +1516,6 @@ Za ta in dodatna navodila preverite e-pošto za račun <ph name="ACCOUNT_EMAIL" 
 <translation id="3165390001037658081">Nekateri operaterji morda blokirajo to funkcijo.</translation>
 <translation id="3166571619128686629">Kliknite ali izgovorite »Ok Google«, da začnete glasovno iskanje.</translation>
 <translation id="3170072451822350649">Prijavo lahko tudi preskočite in <ph name="LINK_START" />brskate kot gost<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Naj ostane lupa izostrena na sredino zaslona</translation>
 <translation id="3177048931975664371">Kliknite, če želite skriti geslo</translation>
 <translation id="3177909033752230686">Jezik strani:</translation>
 <translation id="3180365125572747493">Vnesite geslo za šifriranje te datoteke s potrdilom.</translation>
@@ -2055,8 +2053,6 @@ Iz <ph name="DOWNLOAD_DOMAIN" /></translation>
   Ali želite zagnati <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3943582379552582368">&amp;Nazaj</translation>
 <translation id="3943857333388298514">Prilepi</translation>
-<translation id="3944266449990965865">Cel zaslon</translation>
-<translation id="3946471364541867667">Nastavitve TalkBacka</translation>
 <translation id="3947376313153737208">Brez izbora</translation>
 <translation id="3948116654032448504">&amp;Išči sliko tu: <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">Pozdravljeni v storitvi Hangouts Meet!</translation>
@@ -2363,7 +2359,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4450974146388585462">Diagnosticiraj</translation>
 <translation id="4452426408005428395">Prekliči</translation>
 <translation id="4454939697743986778">To potrdilo je namestil skrbnik sistema.</translation>
-<translation id="445891990714234385">Nastavitve ChromeVoxa</translation>
 <translation id="445923051607553918">Pridružite se omrežju Wi-Fi</translation>
 <translation id="4462159676511157176">Imenski strežniki po meri</translation>
 <translation id="4467100756425880649">Galerija za Spletno trgovino Chrome</translation>
@@ -2661,7 +2656,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="4910673011243110136">Zasebna omrežja</translation>
 <translation id="4911714727432509308">Nobena razširitev nima dodeljenih bližnjičnih tipk.</translation>
 <translation id="4912643508233590958">Prekinitve nedejavnosti</translation>
-<translation id="4916679969857390442">Lupa</translation>
 <translation id="491691592645955587">Preklop na varni brskalnik</translation>
 <translation id="4917385247580444890">Močan</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> želi vzpostaviti povezavo z razširitvijo »<ph name="EXTENSION_NAME" />«</translation>
@@ -2726,7 +2720,6 @@ Pritisnite katero koli tipko, če želite še naprej raziskovati.</translation>
 <translation id="5011739343823725107">Zalednega strežnika za sinhronizacijo ni bilo mogoče zagnati</translation>
 <translation id="5015344424288992913">Razrešujem proxy ...</translation>
 <translation id="5015762597229892204">Izbira aplikacije za gonilnik tiskalnika</translation>
-<translation id="5016049845330225051">Gumb za izbris besedila v iskalnem polju</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Upravljanje strani ob zagonu</translation>
 <translation id="5023943178135355362">Avstralsko pomikanje <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
@@ -3484,7 +3477,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6151771661215463137">Datoteka je že v mapi s prenosi.</translation>
 <translation id="615436196126345398">Protokol</translation>
 <translation id="6154697846084421647">Trenutno prijavljen</translation>
-<translation id="6156262341071374681">Razširitev na vse aplikacije</translation>
 <translation id="6156323911414505561">Pokaži vrstico z zaznamki</translation>
 <translation id="6156863943908443225">Predpomnilnik skriptov</translation>
 <translation id="6156960295318603523">Jezikovne nastavitve</translation>
@@ -4050,7 +4042,6 @@ Uporabljajte to funkcijo samo z računi, ki jim zaupate.</translation>
 <translation id="6996946928646015361">Varni modul je onemogočen ali ni nameščen.</translation>
 <translation id="6998711733709403587">Izbranih toliko map: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Včlanitev naprave za videokonference</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{Ta stran se je nehala odzivati. Lahko počakate, da se začne odzivati, ali pa jo zaprete.}one{Te strani so se nehale odzivati. Lahko počakate, da se začnejo odzivati ali pa jih zaprete.}two{Te strani so se nehale odzivati. Lahko počakate, da se začnejo odzivati ali pa jih zaprete.}few{Te strani so se nehale odzivati. Lahko počakate, da se začnejo odzivati ali pa jih zaprete.}other{Te strani so se nehale odzivati. Lahko počakate, da se začnejo odzivati ali pa jih zaprete.}}</translation>
 <translation id="7002055706763150362">Če želite nastaviti Smart Lock za Chromebook, se mora Google prepričati, da ste to res vi – vnesite geslo, če želite začeti.</translation>
 <translation id="7002454948392136538">Izbira upravitelja za tega zaščitenega uporabnika</translation>
 <translation id="7003257528951459794">Frekvenca:</translation>

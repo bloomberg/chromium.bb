@@ -103,6 +103,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1966710179511230534">Actualizați detaliile de conectare.</translation>
 <translation id="1974060860693918893">Avansate</translation>
 <translation id="1984937141057606926">Permise, cu excepția celor terță parte</translation>
+<translation id="1989112275319619282">Răsfoiește</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> dorește să se asocieze</translation>
 <translation id="1994173015038366702">Adresa URL a site-ului</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> KB pentru alte aplicații</translation>
@@ -375,6 +376,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4807963036345170158">Economizorul de date este dezactivat</translation>
 <translation id="4816465935029283692">Tipuri de date</translation>
 <translation id="4837753911714442426">Deschide opțiunile pentru a printa pagina</translation>
+<translation id="4842092870884894799">Fereastra pop-up pentru generarea parolelor este afișată</translation>
 <translation id="4850886885716139402">Afișează</translation>
 <translation id="4860895144060829044">Apelează</translation>
 <translation id="4881695831933465202">Deschide</translation>
@@ -443,6 +445,7 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5487521232677179737">Șterge datele</translation>
 <translation id="5487729733663684359">Actualizările Chrome nu mai sunt acceptate pentru această versiune de Android.</translation>
 <translation id="5490801865084500306">Este selectată fila Marcaje</translation>
+<translation id="550684401320795253">Se actualizează Chrome...</translation>
 <translation id="5512137114520586844">Acest cont este gestionat de <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Dezactivată de administratorul dispozitivului</translation>
 <translation id="5517095782334947753">Ai marcajele, istoricul, parolele și alte setări din <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +485,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5763382633136178763">File incognito</translation>
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5777170031995031090">Stabilește cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google.</translation>
+<translation id="5779929835642192302">Sugestii disponibile</translation>
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Acum # oră}few{Acum # ore}other{Acum # de ore}}</translation>
 <translation id="5817918615728894473">Asociază</translation>
@@ -553,7 +557,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6437478888915024427">Informații despre pagină</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="6448273550210938826">Sugestii de căutare și pentru adrese URL</translation>
-<translation id="6463070039183944536">Se adaugă…</translation>
 <translation id="6475951671322991020">Descarcă videoclipul</translation>
 <translation id="6482749332252372425">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza spațiului de stocare insuficient.</translation>
 <translation id="6508332297647760142">Permiterea accesului la Webul material</translation>
@@ -638,6 +641,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7189372733857464326">Se așteaptă finalizarea actualizării pentru serviciile Google Play</translation>
 <translation id="7189598951263744875">Trimite...</translation>
 <translation id="7191430249889272776">A fost deschisă o filă în fundal.</translation>
+<translation id="723171743924126238">Selectează imagini</translation>
 <translation id="7243308994586599757">Opțiuni disponibile în partea de jos a ecranului</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> folosește locația ta pentru a afișa rezultate locale ale căutării</translation>
 <translation id="7251326866581677552">Blocate pe anumite site-uri</translation>

@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">Tu administrador configura los métodos de entrada.</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">Asistente (cargando…)</translation>
 <translation id="1850504506766569011">Wi-Fi desactivada</translation>
 <translation id="1856813161013948396">Para omitir la pantalla bloqueada, presiona el sensor de huellas digitales. Haz clic para configurar esta función.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lupa</translation>
+<translation id="4351433414020964307">El Asistente se está cargando…</translation>
 <translation id="4378551569595875038">Conectando…</translation>
 <translation id="4421231901400348175">Se está compartiendo el control de la pantalla con <ph name="HELPER_NAME" /> mediante la Asistencia remota.</translation>
 <translation id="4430019312045809116">Volumen</translation>

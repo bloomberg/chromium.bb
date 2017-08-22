@@ -23,7 +23,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="1520828917794284345">Prilagodi veličinu radne površine</translation>
 <translation id="154040539590487450">Nisam uspio pokrenuti uslugu daljinskog pristupa.</translation>
 <translation id="1546934824884762070">Pojavila se neočekivana pogreška. Prijavite taj problem razvojnim programerima.</translation>
-<translation id="1619813076098775562">Zatvorena je veza s uređajem za emitiranje.</translation>
 <translation id="1643640058022401035">Napuštanjem ove stranice završit ćete svoju sesiju aplikacije Chromoting.</translation>
 <translation id="1654128982815600832">Omogućavanje daljinskih veza za ovo računalo…</translation>
 <translation id="170207782578677537">Nisam uspio registrirati ovo računalo.</translation>
@@ -187,7 +186,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="5419418238395129586">Zadnji put online: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Host je isključen.</translation>
 <translation id="5510035215749041527">Prekini vezu odmah</translation>
-<translation id="5537725057119320332">Emitiraj</translation>
 <translation id="5593560073513909978">Usluga je privremeno nedostupna. Pokušajte ponovo kasnije.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Na ovo računalo</translation>
@@ -199,7 +197,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="5841343754884244200">Opcije prikaza</translation>
 <translation id="5843054235973879827">Zašto je ovo sigurno?</translation>
 <translation id="5859141382851488196">Novi prozor…</translation>
-<translation id="5885438903806970186">Online.</translation>
 <translation id="6011539954251327702">Chromoting omogućuje sigurno dijeljenje računala putem weba. Aplikacija Chromoting, koja se nalazi na web-lokaciji <ph name="URL" />, mora biti pokrenuta na oba računala.</translation>
 <translation id="6033507038939587647">Opcije tipkovnice</translation>
 <translation id="6040143037577758943">Zatvori</translation>
@@ -248,7 +245,6 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="7019153418965365059">Nepoznata pogreška hosta: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Daljinska pomoć</translation>
 <translation id="7038683108611689168">Pomognite nam da poboljšamo Chromoting tako da nam dopustite prikupljanje statistika o upotrebi i izvješća o padovima.</translation>
-<translation id="712467900648340229">Nije uspjelo povezivanje s uređajem za emitiranje.</translation>
 <translation id="7144878232160441200">Pokušaj ponovo</translation>
 <translation id="7149517134817561223">Aplikacija za izdavanje naredbi hostu Udaljene radne površine Chrome.</translation>
 <translation id="7215059001581613786">Unesite PIN koji se sastoji od šest ili više znamenki.</translation>

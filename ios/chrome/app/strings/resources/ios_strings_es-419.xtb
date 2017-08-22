@@ -303,7 +303,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Activar la sincronización</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
-<translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Carpetas</translation>
 <translation id="7004499039102548441">Pestañas recientes</translation>
 <translation id="7006788746334555276">Configuración de contenido</translation>
@@ -362,7 +361,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8137558756159375272">La función Tocar para buscar envía la palabra seleccionada y la página actual como contexto a la Búsqueda de Google. Para desactivarla, accede a <ph name="BEGIN_LINK" />Configuración<ph name="END_LINK" />.</translation>
 <translation id="8205564605687841303">Cancelar</translation>
 <translation id="8225985093977202398">Imágenes y archivos almacenados en caché</translation>
-<translation id="8261506727792406068">Eliminar</translation>
+<translation id="8261506727792406068">Borrar</translation>
 <translation id="8272426682713568063">Tarjetas de crédito</translation>
 <translation id="8281781826761538115">Predeterminado: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8381750437846184350">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google</translation>

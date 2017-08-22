@@ -27,6 +27,7 @@
 <translation id="1746730358044914197">Metódy vstupu sú nakonfigurované vaším správcom.</translation>
 <translation id="1747827819627189109">Klávesnica na obrazovke je povolená</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
+<translation id="1836215606488044471">Asistent (načítava sa...)</translation>
 <translation id="1850504506766569011">Pripojenie Wi-Fi je vypnuté.</translation>
 <translation id="1856813161013948396">Preskočte uzamknutú obrazovku jednoduchým klepnutím na senzor odtlačkov prstov. Kliknutím nastavíte konfiguráciu.</translation>
 <translation id="1864454756846565995">Zariadenie USB-C (port vzadu)</translation>
@@ -123,6 +124,7 @@
 <translation id="4279490309300973883">Zrkadlenie</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4338109981321384717">Lupa</translation>
+<translation id="4351433414020964307">Asistent sa načítava...</translation>
 <translation id="4378551569595875038">Pripája sa...</translation>
 <translation id="4421231901400348175">Ovládanie obrazovky sa prostredníctvom Vzdialenej pomoci zdieľa s používateľom <ph name="HELPER_NAME" />.</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>

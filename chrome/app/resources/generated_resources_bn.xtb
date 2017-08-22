@@ -1366,7 +1366,6 @@
 <translation id="2966449113954629791">আপনি হয়তো আপনার মোবাইল ডেটার প্রদত্ত পরিমান ব্যবহার করে ফেলেছেন৷ আরো ডেটা কিনতে <ph name="NAME" /> সক্রিয়করণ পোর্টালে যান৷</translation>
 <translation id="2966598748518102999">"Ok Google" শব্দটি পাঠিয়ে কন্ঠ অনুসন্ধানকে উন্নত করুন এবং কয়েক সেকেন্ড আগে তা Google এ পাঠান।</translation>
 <translation id="2966937470348689686">Android ডিভাইসে পছন্দের সেটিংগুলি পরিচালনা করুন</translation>
-<translation id="2967544384642772068">বন্ধ করুন</translation>
 <translation id="2971033837577180453">&lt;span&gt;আইডি:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">অনুজ্জ্বল করুন</translation>
 <translation id="2972557485845626008">ফার্মওয়্যার</translation>
@@ -1516,7 +1515,6 @@
 <translation id="3165390001037658081">কিছু পরিষেবা প্রদানকারী এই বৈশিষ্ট্যকে অবরুদ্ধ করতে পারে।</translation>
 <translation id="3166571619128686629">ভয়েস অনুসন্ধান শুরু করতে ক্লিক করুন অথবা "Ok Google" বলুন</translation>
 <translation id="3170072451822350649">এছাড়াও আপনি প্রবেশ করুন এড়িয়ে যেতে ও <ph name="LINK_START" />অতিথি হিসাবে ব্রাউজ<ph name="LINK_END" /> করতে পারেন৷</translation>
-<translation id="3170544058711792988">বিবর্ধকের ফোকাস স্ক্রীনে রাখুন</translation>
 <translation id="3177048931975664371">পাসওয়ার্ড লুকাতে ক্লিক করুন</translation>
 <translation id="3177909033752230686">পৃষ্ঠার ভাষা:</translation>
 <translation id="3180365125572747493">এই শংসাপত্র ফাইলটি এনক্রিপ্ট করতে একটি পাসওয়ার্ড দিন৷</translation>
@@ -2049,8 +2047,6 @@
 আপনি কি <ph name="CONTROL_PANEL_APPLET_NAME" /> শুরু করতে চান?</translation>
 <translation id="3943582379552582368">&amp;ফিরুন</translation>
 <translation id="3943857333388298514">আটকে দিন</translation>
-<translation id="3944266449990965865">সম্পূর্ণ স্ক্রিন</translation>
-<translation id="3946471364541867667">TalkBack সেটিংস</translation>
 <translation id="3947376313153737208">কোনও নির্বাচন নেই</translation>
 <translation id="3948116654032448504">&amp;চিত্রের জন্য <ph name="SEARCH_ENGINE" /> অনুসন্ধান করুন</translation>
 <translation id="3949371968208420848">Hangouts Meet এ স্বাগতম!</translation>
@@ -2356,7 +2352,6 @@
 <translation id="4450974146388585462">নির্ণয় করুন</translation>
 <translation id="4452426408005428395">আরে, ঠিক আছে</translation>
 <translation id="4454939697743986778">এই শংসাপত্রটি আপনার সিস্টেম প্রশাসক দ্বারা ইনস্টল করা হয়েছে৷</translation>
-<translation id="445891990714234385">ChromeVox সেটিংস</translation>
 <translation id="445923051607553918">ওয়াই-ফাই  নেটওয়ার্কে যোগ দিন</translation>
 <translation id="4462159676511157176">কাস্টম নাম সার্ভার</translation>
 <translation id="4467100756425880649">Chrome ওয়েব দোকান গ্যালারি</translation>
@@ -2653,7 +2648,6 @@
 <translation id="4910673011243110136">ব্যক্তিগত নেটওয়ার্কগুলি</translation>
 <translation id="4911714727432509308">কিবোর্ড শর্টকাটে কোনো এক্সটেনশন ধার্য করা হয়নি৷</translation>
 <translation id="4912643508233590958">নিষ্ক্রিয়তা সময়ের সমাপ্তি</translation>
-<translation id="4916679969857390442">লেন্স</translation>
 <translation id="491691592645955587">একটি সুরক্ষিত ব্রাউজারে স্যুইচ করুন</translation>
 <translation id="4917385247580444890">জোরালো</translation>
 <translation id="4918021164741308375">"<ph name="EXTENSION_NAME" />" এক্সটেনশন দ্বারা <ph name="ORIGIN" /> যোগাযোগ করতে চায়</translation>
@@ -2717,7 +2711,6 @@
 <translation id="5011739343823725107">সিঙ্ক ব্যাকএণ্ড সূচনা করতে ব্যর্থ হয়েছে</translation>
 <translation id="5015344424288992913">প্রক্সি স্থির করা হচ্ছে...</translation>
 <translation id="5015762597229892204">একটি প্রিন্টার ড্রাইভার অ্যাপ্লিকেশান নির্বাচন করুন</translation>
-<translation id="5016049845330225051">অনুসন্ধান বক্সের টেক্সট সাফ করার বোতাম</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">স্টার্ট-আপের পৃষ্ঠাগুলি পরিচালনা করুন</translation>
 <translation id="5023943178135355362">অস্ট্রেলিয়ান স্ক্রলিং <ph name="BEGIN_LINK" />আরো জানুন<ph name="END_LINK" /></translation>
@@ -3474,7 +3467,6 @@
 <translation id="6151771661215463137">ফাইলটি আগে থেকেই আপনার ডাউনলোড ফোল্ডারে রয়েছে।</translation>
 <translation id="615436196126345398">প্রোটোকল</translation>
 <translation id="6154697846084421647">বর্তমানে প্রবেশ করুন আছে</translation>
-<translation id="6156262341071374681">সমস্ত অ্যাপ দেখুন</translation>
 <translation id="6156323911414505561">বুকমার্ক দণ্ড দেখান</translation>
 <translation id="6156863943908443225">স্ক্রিপ্ট  ক্যাশে</translation>
 <translation id="6156960295318603523">ভাষা সেটিংস</translation>
@@ -4042,7 +4034,6 @@
 <translation id="6996946928646015361">নিরাপদ মডিউল নেই, অথবা অক্ষম করা আছে।</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />টি ফোল্ডার নির্বাচিত</translation>
 <translation id="6998793565256476099">ভিডিও কনফারেন্সিংয়ের জন্য ডিভাইস যোগ করুন</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{নিম্নলিখিত পৃষ্ঠাটি প্রতিক্রিয়াবিহীন হয়ে উঠেছে৷ আপনি এটি প্রতিক্রিয়াশীল হওয়ার জন্য অপেক্ষা করতে পারেন বা এটিকে বন্ধ করুন৷}one{নিম্নলিখিত পৃষ্ঠাগুলি প্রতিক্রিয়াবিহীন হয়ে উঠেছে৷ আপনি সেইগুলি প্রতিক্রিয়াশীল হওয়ার জন্য অপেক্ষা করতে পারেন বা সেগুলি বন্ধ করুন৷}other{নিম্নলিখিত পৃষ্ঠাগুলি প্রতিক্রিয়াবিহীন হয়ে উঠেছে৷ আপনি সেইগুলি প্রতিক্রিয়াশীল হওয়ার জন্য অপেক্ষা করতে পারেন বা সেগুলি বন্ধ করুন৷}}</translation>
 <translation id="7002055706763150362">Chromebook এর জন্য Smart Lock সেট আপ করার জন্য Google এর এটি নিশ্চিত হওয়া প্রয়োজন যে—শুরু করতে আপনিই আপনার পাসওয়ার্ড লিখেছেন।</translation>
 <translation id="7002454948392136538">এই তত্ত্বাবধান করা ব্যবহারকারীর জন্য পরিচালক চয়ন করুন</translation>
 <translation id="7003257528951459794">পৌনঃপুনিকতা:</translation>

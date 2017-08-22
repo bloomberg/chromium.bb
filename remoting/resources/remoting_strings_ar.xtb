@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">تغيير حجم سطح المكتب للملاءمة</translation>
 <translation id="154040539590487450">تعذّر بدء خدمة الدخول عن بُعد.</translation>
 <translation id="1546934824884762070">حدث خطأ غير متوقع. يُرجى الإبلاغ عن هذه المشكلة إلى مطوري البرامج.</translation>
-<translation id="1619813076098775562">تم إغلاق الاتصال بجهاز البث.</translation>
 <translation id="1643640058022401035">‏ستؤدي مغادرة هذه الصفحة إلى إنهاء جلسة التوافق مع نظام التشغيل Chrome.</translation>
 <translation id="1654128982815600832">جارٍ تمكين الاتصالات عن بُعد لهذا الكمبيوتر...</translation>
 <translation id="170207782578677537">تعذّر تسجيل هذا الكمبيوتر.</translation>
@@ -80,6 +79,7 @@
 <translation id="2676780859508944670">جارٍ العمل…</translation>
 <translation id="2699970397166997657">‏التوافق مع نظام التشغيل Chrome</translation>
 <translation id="2747641796667576127">يتم عادةً إجراء تحديثات البرامج تلقائيًا، لكنها قد تخفق في بعض الحالات النادرة. من المفترض ألا يستغرق تحديث البرامج أكثر من بضع دقائق، كما يمكن إجراؤه أثناء الاتصال بالكمبيوتر عن بُعد.</translation>
+<translation id="2758123043070977469">حدثت مشكلة أثناء المصادقة، يُرجى إعادة تسجيل الدخول.</translation>
 <translation id="2803375539583399270">أدخل رقم التعريف الشخصي</translation>
 <translation id="2841013758207633010">الوقت</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -188,7 +188,6 @@
 <translation id="5419418238395129586">آخر اتصال بالإنترنت: <ph name="DATE" /></translation>
 <translation id="544077782045763683">تم إيقاف تشغيل المضيف.</translation>
 <translation id="5510035215749041527">إلغاء الربط الآن</translation>
-<translation id="5537725057119320332">إرسال</translation>
 <translation id="5593560073513909978">الخدمة غير متاحة مؤقتًا. يُرجى إعادة المحاولة لاحقًا.</translation>
 <translation id="5601503069213153581">رقم التعريف الشخصي</translation>
 <translation id="5619148062500147964">بهذا الكمبيوتر</translation>
@@ -197,10 +196,10 @@
 <translation id="5708869785009007625">تتم مشاركة سطح المكتب حاليًا مع <ph name="USER" />.</translation>
 <translation id="5773590752998175013">تاريخ الإقران</translation>
 <translation id="579702532610384533">إعادة الاتصال</translation>
+<translation id="5810269635982033450">تعمل الشاشة كلوحة تتبع</translation>
 <translation id="5841343754884244200">خيارات العرض</translation>
 <translation id="5843054235973879827">ما سبب تمتع هذه العملية بالأمان؟</translation>
 <translation id="5859141382851488196">نافذة جديدة…</translation>
-<translation id="5885438903806970186">متصل.</translation>
 <translation id="6011539954251327702">‏يسمح لك تطبيق التوافق مع نظام التشغيل Chrome بمشاركة جهاز الكمبيوتر التابع لك بشكل آمن عبر الويب. ويجب أن يشغّل كلا المستخدمَين تطبيق التوافق مع نظام التشغيل Chrome، والذي يمكن العثور عليه على <ph name="URL" />.</translation>
 <translation id="6033507038939587647">خيارات لوحة المفاتيح</translation>
 <translation id="6040143037577758943">إغلاق</translation>
@@ -249,7 +248,7 @@
 <translation id="7019153418965365059">خطأ بالمضيف غير معروف: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">المساعدة عن بُعد</translation>
 <translation id="7038683108611689168">‏ساعدنا في تحسين تطبيق التوافق مع نظام التشغيل Chrome من خلال السماح لنا بتجميع إحصاءات الاستخدام وتقارير الأعطال.</translation>
-<translation id="712467900648340229">فشل الاتصال بجهاز البث.</translation>
+<translation id="7067321367069083429">تعمل الشاشة كشاشة باللمس</translation>
 <translation id="7144878232160441200">إعادة المحاولة</translation>
 <translation id="7149517134817561223">‏تطبيق لإصدار الأوامر إلى مضيف سطح المكتب البعيد من Chrome.</translation>
 <translation id="7215059001581613786">يُرجى إدخال رقم تعريف شخصي يتكون من ستة أرقام أو أكثر.</translation>

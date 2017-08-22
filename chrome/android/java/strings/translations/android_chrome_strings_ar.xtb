@@ -42,6 +42,7 @@
 <translation id="138361230106469022">مرحبًا، <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">البحث</translation>
 <translation id="1384959399684842514">توقف التنزيل مؤقتًا</translation>
+<translation id="1389236224998445076">البيانات التي تم توفيرها:</translation>
 <translation id="1389974829397082527">ليست هناك إشارات مرجعية هنا</translation>
 <translation id="1397811292916898096">البحث باستخدام <ph name="PRODUCT_NAME" /></translation>
 <translation id="1402229579576898974">‏<ph name="NUMBER_OF_SUGGESTIONS" /> من اقتراحات Chrome</translation>
@@ -103,6 +104,7 @@
 <translation id="1966710179511230534">يُرجى تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
+<translation id="1989112275319619282">تصفّح</translation>
 <translation id="1993768208584545658">يريد <ph name="SITE" /> الاقتران</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="200815880754187296">تطبيقات أخرى بحجم <ph name="KILOBYTES" /> كيلوبايت</translation>
@@ -129,6 +131,7 @@
 <translation id="219985413780390209">حمايتك وحماية جهازك من المواقع الخطرة</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />، تطبيق ويب. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">متابعة باسم <ph name="USER_FULL_NAME" /></translation>
+<translation id="2266890032547182881">تحليل استخدام البيانات</translation>
 <translation id="2268044343513325586">تحسين</translation>
 <translation id="2286841657746966508">عنوان الفاتورة</translation>
 <translation id="2315043854645842844">لا يدعم نظام التشغيل تحديد الشهادة من جانب العميل.</translation>
@@ -348,6 +351,7 @@
 <translation id="4522570452068850558">التفاصيل</translation>
 <translation id="4526249700380860531">‏عرض كلمات المرور المحفوظة وإدارتها في <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">اختيار مجلد</translation>
+<translation id="4550003330909367850">لعرض كلمة المرور أو نسخها هنا، عيّن قفل الشاشة على هذا الجهاز.</translation>
 <translation id="4558311620361989323">اختصارات صفحة الويب</translation>
 <translation id="4572422548854449519">تسجيل الدخول إلى الحساب المدار</translation>
 <translation id="4581964774250883625">لقد انتقلت إلى التصفح المتخفي.</translation>
@@ -376,11 +380,13 @@
 <translation id="4807963036345170158">تم إيقاف توفير البيانات</translation>
 <translation id="4816465935029283692">أنواع البيانات</translation>
 <translation id="4837753911714442426">فتح الخيارات لطباعة الصفحة</translation>
+<translation id="4842092870884894799">عرض نافذة إنشاء كلمة المرور المنبثقة</translation>
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4860895144060829044">اتصال</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4885273946141277891">‏عدد نسخ Chrome غير متوافق.</translation>
 <translation id="4910889077668685004">تطبيقات الدفع</translation>
+<translation id="4913161338056004800">إعادة تعيين الإحصائيات</translation>
 <translation id="4913169188695071480">إيقاف التحديث</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /> أثناء البحث عن الأجهزة…</translation>
 <translation id="4943872375798546930">لا نتائج</translation>
@@ -444,6 +450,7 @@
 <translation id="5487521232677179737">محو البيانات</translation>
 <translation id="5487729733663684359">‏لم يعد يتم دعم تحديثات Chrome لهذا الإصدار من Android.</translation>
 <translation id="5490801865084500306">تم تحديد علامة تبويب "الإشارات المرجعية"</translation>
+<translation id="550684401320795253">‏جارٍ تحديث Chrome...</translation>
 <translation id="5512137114520586844">تتم إدارة هذا الحساب بواسطة <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">تم التعطيل من قبل مشرف هذا الجهاز</translation>
 <translation id="5517095782334947753">تتوفر لديك الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى من <ph name="FROM_ACCOUNT" />.</translation>
@@ -483,6 +490,7 @@
 <translation id="5763382633136178763">علامات تبويب التصفح المتخفي</translation>
 <translation id="5765780083710877561">الوصف:</translation>
 <translation id="5777170031995031090">‏التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث، والإعلانات، وخدمات Google الأخرى.</translation>
+<translation id="5779929835642192302">الاقتراحات المتاحة</translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{قبل ساعة واحدة (#)}zero{قبل # ساعة}two{قبل ساعتين (#)}few{قبل # ساعات}many{قبل # ساعة}other{قبل # ساعة}}</translation>
 <translation id="5817918615728894473">إقران</translation>
@@ -554,7 +562,6 @@
 <translation id="6437478888915024427">معلومات الصفحة</translation>
 <translation id="6447842834002726250">ملفّات تعريف الارتباط</translation>
 <translation id="6448273550210938826">‏اقتراحات البحث وعناوين URL</translation>
-<translation id="6463070039183944536">جارٍ الإضافة...</translation>
 <translation id="6475951671322991020">تنزيل الفيديو</translation>
 <translation id="6482749332252372425">تعذّر تنزيل الملف <ph name="FILE_NAME" /> لعدم توفر مساحة لتخزين.</translation>
 <translation id="6508332297647760142">مشاركة الشبكة المادية</translation>
@@ -639,6 +646,7 @@
 <translation id="7189372733857464326">‏انتظار انتهاء تحديث خدمات Google Play</translation>
 <translation id="7189598951263744875">مشاركة...</translation>
 <translation id="7191430249889272776">تم فتح علامة التبويب في الخلفية.</translation>
+<translation id="723171743924126238">تحديد الصور</translation>
 <translation id="7243308994586599757">الخيارات المتاحة بالقرب من الجزء السفلي من الشاشة</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> يستخدم موقعك لعرض نتائج البحث المحلي</translation>
 <translation id="7251326866581677552">تم الحظر من بعض المواقع</translation>
@@ -649,6 +657,7 @@
 <translation id="7352939065658542140">فيديو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{مشاركة عنصر واحد محدد}zero{مشاركة # عنصر محدد}two{مشاركة عنصرين (#) محددين}few{مشاركة # عناصر محددة}many{مشاركة # عنصرًا محددًا}other{مشاركة # عنصر محدد}}</translation>
 <translation id="7366340029385295517">جارٍ الإرسال إلى <ph name="SCREEN_NAME" /></translation>
+<translation id="7374228672268453233">البيانات المستخدَمة:</translation>
 <translation id="7375125077091615385">النوع:</translation>
 <translation id="7378627244592794276">لا</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
@@ -793,6 +802,7 @@
 <translation id="8812260976093120287">يمكنك على مواقع ويب معيّنة الدفع باستخدام تطبيقات الدفع المتوافقة أعلاه على جهازك.</translation>
 <translation id="8820817407110198400">إشارات</translation>
 <translation id="883635517171802338">منع مواقع الويب من عرض النوافذ المنبثقة (موصى به)</translation>
+<translation id="883806473910249246">حدث خطأ أثناء تنزيل المحتوى.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198">علامة التبويب <ph name="TAB_TITLE" /></translation>
 <translation id="885701979325669005">التخزين</translation>

@@ -103,6 +103,7 @@
 <translation id="1966710179511230534">Моля, актуализирайте данните си за вход.</translation>
 <translation id="1974060860693918893">Разширени</translation>
 <translation id="1984937141057606926">Разрешено, но не и за трети страни</translation>
+<translation id="1989112275319619282">Сърфиране</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> иска да се сдвои</translation>
 <translation id="1994173015038366702">URL адрес на сайт</translation>
 <translation id="200815880754187296">Други приложения: <ph name="KILOBYTES" /> КБ</translation>
@@ -375,6 +376,7 @@
 <translation id="4807963036345170158">Функцията Икономия на данни е изключена</translation>
 <translation id="4816465935029283692">Типове данни</translation>
 <translation id="4837753911714442426">Отваряне на опциите за отпечатване на страницата</translation>
+<translation id="4842092870884894799">Изскачащият прозорец за генериране на пароли е показан</translation>
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="4860895144060829044">Обаждане</translation>
 <translation id="4881695831933465202">Отваряне</translation>
@@ -443,6 +445,7 @@
 <translation id="5487521232677179737">Изчиств. на данните</translation>
 <translation id="5487729733663684359">Актуализациите на Chrome вече не се поддържат за тази версия на Android.</translation>
 <translation id="5490801865084500306">Избрахте раздела за отметки</translation>
+<translation id="550684401320795253">Chrome се актуализира...</translation>
 <translation id="5512137114520586844">Този профил се управлява от <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Деактивирано от администратора на това устройство</translation>
 <translation id="5517095782334947753">Имате отметки, история, пароли и други настройки от <ph name="FROM_ACCOUNT" /></translation>
@@ -482,6 +485,7 @@
 <translation id="5763382633136178763">Раздели в режим „инкогнито“</translation>
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5777170031995031090">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google.</translation>
+<translation id="5779929835642192302">Налице са предложения</translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{преди # час}other{преди # часа}}</translation>
 <translation id="5817918615728894473">Сдвояване</translation>
@@ -553,7 +557,6 @@
 <translation id="6437478888915024427">Информация за страницата</translation>
 <translation id="6447842834002726250">„Бисквитки“</translation>
 <translation id="6448273550210938826">Предложения за търсене и за URL адреси</translation>
-<translation id="6463070039183944536">Добавя се…</translation>
 <translation id="6475951671322991020">Изтегляне на видеоклипа</translation>
 <translation id="6482749332252372425">Изтеглянето на „<ph name="FILE_NAME" />“ не бе успешно поради липса на място в хранилището.</translation>
 <translation id="6508332297647760142">Споделяне във Физическата мрежа</translation>
@@ -638,6 +641,7 @@
 <translation id="7189372733857464326">Изчаква се актуализирането на услугите за Google Play да приключи</translation>
 <translation id="7189598951263744875">Споделяне...</translation>
 <translation id="7191430249889272776">Разделът е отворен на заден план.</translation>
+<translation id="723171743924126238">Избиране на изображения</translation>
 <translation id="7243308994586599757">Опциите са в долната част на екрана</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> използва местоположението ви, за да показва резултати от местното търсене</translation>
 <translation id="7251326866581677552">Блокиране за някои сайтове</translation>

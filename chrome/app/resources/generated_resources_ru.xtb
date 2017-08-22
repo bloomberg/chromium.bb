@@ -69,6 +69,7 @@
 <translation id="1110155001042129815">Подождать</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{Продолжить скачивание}one{Продолжить скачивание}few{Продолжить скачивание}many{Продолжить скачивание}other{Продолжить скачивание}}</translation>
 <translation id="1110772031432362678">Сети не найдены.</translation>
+<translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamond</translation>
 <translation id="1114335938027186412">Компьютер оснащен устройством безопасности модуля доверительной платформы (TPM), используемым для реализации многих критических функций безопасности в Chrome OS. Более подробную информацию можно получить в Справочном центре Chromebook: https://support.google.com/chromebook/?p=tpm.</translation>
 <translation id="1114525161406758033">Перейти в спящий режим, когда крышка закрыта</translation>
@@ -88,7 +89,7 @@
 <translation id="1128591060186966949">Изменить поисковую систему</translation>
 <translation id="1128987120443782698">Объем запоминающего устройства – <ph name="DEVICE_CAPACITY" />. Вставьте SD-карту или USB-накопитель объемом не менее 4 ГБ.</translation>
 <translation id="1131167343343087859">Банковские карты и адреса из Google Payments</translation>
-<translation id="1134009406053225289">Открыть в окне в режиме инкогнито</translation>
+<translation id="1134009406053225289">Открыть в режиме инкогнито</translation>
 <translation id="1140351953533677694">Доступ к Bluetooth- и последовательным устройствам</translation>
 <translation id="114140604515785785">Корневой каталог расширения:</translation>
 <translation id="1143142264369994168">Подписчик сертификата</translation>
@@ -932,6 +933,7 @@
 <translation id="2378982052244864789">Выберите каталог расширения</translation>
 <translation id="2379281330731083556">Печатать с помощью системного диалогового окна <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Спрашивать разрешение перед отправкой (рекомендуется)</translation>
+<translation id="2384436799579181135">Произошла ошибка. Проверьте принтер и повторите попытку.</translation>
 <translation id="2385700042425247848">Название службы:</translation>
 <translation id="2390045462562521613">Забыть эту сеть</translation>
 <translation id="2391243203977115091">Новых фото: <ph name="FILE_COUNT" />
@@ -1319,6 +1321,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2897878306272793870">Вы действительно хотите открыть столько вкладок (<ph name="TAB_COUNT" />)?</translation>
 <translation id="290105521672621980">Файл использует неподдерживаемые функции</translation>
 <translation id="2902127500170292085">Расширение "<ph name="EXTENSION_NAME" />" не может установить связь с принтером. Убедитесь, что он подключен и повторите попытку.</translation>
+<translation id="2902312830803030883">Другие действия</translation>
 <translation id="2903457445916429186">Открыть выбранные элементы?</translation>
 <translation id="2903493209154104877">Адреса</translation>
 <translation id="290444763029043472"><ph name="DOWNLOADED_AMOUNT_MB" /> МБ/<ph name="TOTAL_AMOUNT_MB" /> МБ</translation>
@@ -1365,7 +1368,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2966449113954629791">Возможно, вы использовали свой лимит мобильных данных. Зайдите на портал активации <ph name="NAME" />, чтобы приобрести дополнительный объем данных.</translation>
 <translation id="2966598748518102999">Отправлять в Google запись фразы "О'кей, Google" и нескольких секунд до нее, чтобы улучшить работу голосового поиска</translation>
 <translation id="2966937470348689686">Управление настройками Android</translation>
-<translation id="2967544384642772068">Закрыть</translation>
 <translation id="2971033837577180453">&lt;span&gt;Идентификатор:&lt;/span&gt; <ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">уменьшить яркость</translation>
 <translation id="2972557485845626008">Микропрограмма</translation>
@@ -1439,6 +1441,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3065041951436100775">Сообщение о вкладке, закрытой из-за отсутствия ответа.</translation>
 <translation id="3065140616557457172">Введите поисковый запрос или напечатайте URL, по которому надо перейти, – все просто работает.</translation>
 <translation id="3067198360141518313">Запустить подключаемый модуль</translation>
+<translation id="3071624960923923138">Нажмите здесь, чтобы открыть новую вкладку</translation>
 <translation id="3074037959626057712">Вы вошли и включили синхронизацию</translation>
 <translation id="3075874217500066906">Для запуска процесса Powerwash необходимо перезагрузить устройство. После этого появится запрос подтверждения.</translation>
 <translation id="3076677906922146425">Разрешить всем создавать профили пользователей в Chrome</translation>
@@ -1516,7 +1519,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3165390001037658081">Некоторые операторы могут блокировать эту функцию.</translation>
 <translation id="3166571619128686629">Нажмите на этот значок или произнесите "О'кей, Google", чтобы начать голосовой поиск</translation>
 <translation id="3170072451822350649">Можно пропустить это действие и начать <ph name="LINK_START" />гостевой сеанс<ph name="LINK_END" />.</translation>
-<translation id="3170544058711792988">Установить лупу в центре экрана</translation>
 <translation id="3177048931975664371">Нажмите, чтобы скрыть пароль</translation>
 <translation id="3177909033752230686">Язык страницы:</translation>
 <translation id="3180365125572747493">Введите пароль для шифрования этого файла сертификата.</translation>
@@ -2054,8 +2056,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
   Запустить компонент "<ph name="CONTROL_PANEL_APPLET_NAME" />"?</translation>
 <translation id="3943582379552582368">&amp;Назад</translation>
 <translation id="3943857333388298514">Вставить</translation>
-<translation id="3944266449990965865">Полноэкранный режим</translation>
-<translation id="3946471364541867667">Настройки TalkBack</translation>
 <translation id="3947376313153737208">Нет</translation>
 <translation id="3948116654032448504">&amp;Найти картинку (<ph name="SEARCH_ENGINE" />)</translation>
 <translation id="3949371968208420848">Добро пожаловать в Hangouts Meet!</translation>
@@ -2362,7 +2362,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4450974146388585462">Проверить подключение</translation>
 <translation id="4452426408005428395">Пропустить</translation>
 <translation id="4454939697743986778">Этот сертификат установлен вашим системным администратором.</translation>
-<translation id="445891990714234385">Настройки ChromeVox</translation>
 <translation id="445923051607553918">Подключение к сети Wi-Fi</translation>
 <translation id="4462159676511157176">Другие серверы имен</translation>
 <translation id="4467100756425880649">Галерея Интернет-магазина Chrome</translation>
@@ -2379,6 +2378,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="450099669180426158">Значок восклицательного знака.</translation>
 <translation id="4501530680793980440">Подтверждение удаления</translation>
 <translation id="4504940961672722399">Активируйте это расширение, нажав на значок или с помощью комбинации клавиш <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4508051413094283164">Открыть все в режиме инкогнито</translation>
 <translation id="4508265954913339219">Активация завершилась со сбоем</translation>
 <translation id="4508765956121923607">Исходный код страницы</translation>
 <translation id="4509017836361568632">Удалить фото</translation>
@@ -2482,6 +2482,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4664482161435122549">Ошибка экспорта PKCS #12</translation>
 <translation id="466481852929361583">Выполняется настройка безопасного модуля. Это может занять несколько минут.</translation>
 <translation id="4665014895760275686">Производитель</translation>
+<translation id="466506872045057845">Chrome восстановит разрешения по умолчанию.</translation>
 <translation id="4667176955651319626">Блокировать данные и файлы cookie сторонних сайтов</translation>
 <translation id="4668721319092543482">Нажмите, чтобы включить плагин "<ph name="PLUGIN_NAME" />"</translation>
 <translation id="4668954208278016290">Не удалось скопировать образ для восстановления на жесткий диск.</translation>
@@ -2655,12 +2656,12 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4903369323166982260">Запустить Инструмент очистки Chrome</translation>
 <translation id="4907161631261076876">Этот файл скачивают редко. Возможно, он вредоносный.</translation>
 <translation id="4907306957610201395">Категория разрешения</translation>
+<translation id="4908811072292128752">Откройте новую вкладку, чтобы перейти на другой сайт, не закрывая предыдущий</translation>
 <translation id="4909038193460299775">Ваш аккаунт управляется доменом <ph name="DOMAIN" />. Все закладки, история, пароли и настройки будут удалены с устройства, однако данные в аккаунте Google сохранятся. Вы можете просмотреть и изменить их в <ph name="BEGIN_LINK" />Личном кабинете Google<ph name="END_LINK" />.</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="4910673011243110136">Частные сети</translation>
 <translation id="4911714727432509308">Расширениям не назначены быстрые клавиши.</translation>
 <translation id="4912643508233590958">Переходы в активный режим</translation>
-<translation id="4916679969857390442">Лупа</translation>
 <translation id="491691592645955587">Перейдите на безопасный браузер</translation>
 <translation id="4917385247580444890">Сильный</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> запрашивает доступ к расширению "<ph name="EXTENSION_NAME" />"</translation>
@@ -2725,7 +2726,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5011739343823725107">Не удалось начать синхронизацию</translation>
 <translation id="5015344424288992913">Определение прокси-сервера...</translation>
 <translation id="5015762597229892204">Выберите драйвер для принтера</translation>
-<translation id="5016049845330225051">Удалить текст из окна поиска</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">Управление стартовыми страницами</translation>
 <translation id="5023943178135355362">Простая прокрутка <ph name="BEGIN_LINK" />Подробнее...<ph name="END_LINK" /></translation>
@@ -2851,6 +2851,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="521582610500777512">Фотография удалена.</translation>
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="5225324770654022472">Показывать кнопку "Сервисы"</translation>
+<translation id="5225360179303283478">Сбросить настройки сайта</translation>
 <translation id="5227536357203429560">Добавить частную сеть...</translation>
 <translation id="5227679487546032910">Аватар по умолчанию (сине-зеленый)</translation>
 <translation id="5227808808023563348">Найти предыдущий текст</translation>
@@ -3482,7 +3483,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6151771661215463137">Файл уже есть в папке назначения</translation>
 <translation id="615436196126345398">Протокол</translation>
 <translation id="6154697846084421647">Вы вошли в этот аккаунт</translation>
-<translation id="6156262341071374681">Просмотреть все приложения</translation>
 <translation id="6156323911414505561">Показывать панель закладок</translation>
 <translation id="6156863943908443225">Кеш скрипта</translation>
 <translation id="6156960295318603523">Языковые настройки</translation>
@@ -3769,6 +3769,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="655384502888039633">Пользователей: <ph name="USER_COUNT" /></translation>
 <translation id="6555432686520421228">Удалить все пользовательские аккаунты и восстановить заводские настройки на устройстве <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6556866813142980365">Повторить</translation>
+<translation id="6558280019477628686">Произошла ошибка. Возможно, не все элементы были удалены.</translation>
 <translation id="6559580823502247193">(используется на этом устройстве)</translation>
 <translation id="6561726789132298588">Войти</translation>
 <translation id="6562437808764959486">Извлечение образа для восстановления...</translation>
@@ -3843,6 +3844,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6664237456442406323">К сожалению, в настройках компьютера указан недействительный аппаратный код. Chrome OS не сможет устанавливать обновления для системы безопасности, и ваш компьютер <ph name="BEGIN_BOLD" />может подвергаться атакам вредоносных сайтов<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Не удалось открыть профиль. Попробуйте выйти из аккаунта и войти снова.</translation>
 <translation id="6666647326143344290">Введите данные своего аккаунта Google</translation>
+<translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Вы хотите, чтобы Google сделал перевод страницы: <ph name="SOURCE_LANGUAGE" /> &gt;&gt; <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Подключено дополнительное устройство</translation>
 <translation id="6677037229676347494">Ожидаемый идентификатор: "<ph name="EXPECTED_ID" />", полученный идентификатор: "<ph name="NEW_ID" />".</translation>
@@ -3875,6 +3877,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6716704051134091292">Конвертер PDF</translation>
 <translation id="6718273304615422081">Архивирование…</translation>
 <translation id="671928215901716392">Блокировать экран</translation>
+<translation id="67211069045302358">Сбросить настройки?</translation>
 <translation id="6721972322305477112">&amp;Файл</translation>
 <translation id="672213144943476270">Чтобы пользоваться браузером в гостевом режиме, разблокируйте свой профиль.</translation>
 <translation id="6723354935081862304">Отправляйте файлы на хранение и печать в Google Документы и другие места назначения в облаке. Чтобы использовать Виртуальный принтер Google, <ph name="BEGIN_LINK" />войдите в систему<ph name="END_LINK" />.</translation>
@@ -4050,7 +4053,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6996946928646015361">Безопасный модуль отключен или отсутствует</translation>
 <translation id="6998711733709403587">Выбрано папок: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
 <translation id="6998793565256476099">Зарегистрировать как устройство для проведения видеоконференций.</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{На запрос перестала отвечать следующая страница. Вы можете подождать от нее ответа или закрыть.}one{На запрос перестали отвечать следующие страницы. Вы можете подождать от них ответа или закрыть.}few{На запрос перестали отвечать следующие страницы. Вы можете подождать от них ответа или закрыть.}many{На запрос перестали отвечать следующие страницы. Вы можете подождать от них ответа или закрыть.}other{На запрос перестали отвечать следующие страницы. Вы можете подождать от них ответа или закрыть.}}</translation>
 <translation id="7002055706763150362">Чтобы начать настройку Smart Lock для Chromebook, введите пароль. Так мы определим, что функцию пытаетесь включить именно вы.</translation>
 <translation id="7002454948392136538">Выбор менеджера для этого контролируемого профиля</translation>
 <translation id="7003257528951459794">Частота:</translation>
@@ -4060,6 +4062,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7005848115657603926">Недопустимый диапазон страниц. Используйте <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Нижнее поле</translation>
 <translation id="7006844981395428048">Аудио $1</translation>
+<translation id="7007648447224463482">Открыть все в новом окне</translation>
 <translation id="7008270479623533562">Обновите страницу, чтобы запустить это расширение. Если нажать правой кнопкой на значок расширения, оно будет автоматически включаться на этом сайте.</translation>
 <translation id="701080569351381435">Просмотр исходного кода</translation>
 <translation id="7012372675181957985">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
@@ -4169,6 +4172,7 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7180611975245234373">Обновить</translation>
 <translation id="7180865173735832675">Настроить</translation>
 <translation id="7186088072322679094">Сохранить на Панели инструментов</translation>
+<translation id="7191159667348037">Неизвестный принтер (USB)</translation>
 <translation id="7191454237977785534">Сохранить файл как</translation>
 <translation id="7196835305346730603">Поиск других устройств Chromebox...</translation>
 <translation id="7199158086730159431">&amp;Справка</translation>

@@ -23,7 +23,6 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="1520828917794284345">Mainīt darbvirsmas izmērus, lai tā atbilstu</translation>
 <translation id="154040539590487450">Neizdevās sākt attālās piekļuves pakalpojumu.</translation>
 <translation id="1546934824884762070">Radās neparedzēta kļūda. Lūdzu, ziņojiet par šo problēmu izstrādātājiem.</translation>
-<translation id="1619813076098775562">Savienojums ar Cast ierīci tika pārtraukts.</translation>
 <translation id="1643640058022401035">Aizverot šo lapu, Chrome saites sesija tiks pārtraukta.</translation>
 <translation id="1654128982815600832">Notiek attālo savienojumu iespējošana šim datoram…</translation>
 <translation id="170207782578677537">Neizdevās reģistrēt šo datoru.</translation>
@@ -187,7 +186,6 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="5419418238395129586">Pēdējoreiz tiešsaistē: <ph name="DATE" /></translation>
 <translation id="544077782045763683">Saimniekdators tika izslēgts.</translation>
 <translation id="5510035215749041527">Atvienot tūlīt</translation>
-<translation id="5537725057119320332">Apraidīt</translation>
 <translation id="5593560073513909978">Šobrīd pakalpojums nav pieejams. Lūdzu, vēlāk mēģiniet vēlreiz.</translation>
 <translation id="5601503069213153581">PIN</translation>
 <translation id="5619148062500147964">Ar šo datoru</translation>
@@ -199,7 +197,6 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="5841343754884244200">Attēlojuma opcijas</translation>
 <translation id="5843054235973879827">Kāpēc tas ir droši?</translation>
 <translation id="5859141382851488196">Jauns logs...</translation>
-<translation id="5885438903806970186">Tiešsaistē.</translation>
 <translation id="6011539954251327702">Izmantojot Chrome saiti, varat droši koplietot savu datoru tīmeklī. Abiem lietotājiem ir jāizmanto lietotne Chrome saite, kas ir pieejama vietnē <ph name="URL" />.</translation>
 <translation id="6033507038939587647">Tastatūras opcijas</translation>
 <translation id="6040143037577758943">Aizvērt</translation>
@@ -248,7 +245,6 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="7019153418965365059">Neatpazīta saimniekdatora kļūda: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Attālā palīdzība</translation>
 <translation id="7038683108611689168">Palīdziet mums uzlabot Chrome saiti, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
-<translation id="712467900648340229">Neizdevās izveidot savienojumu ar Cast ierīci.</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="7149517134817561223">Lietojumprogramma, kas paredzēta komandu sniegšanai Chrome attālās darbvirsmas saimniekdatoram.</translation>
 <translation id="7215059001581613786">Lūdzu, ievadiet PIN, kura garums ir vismaz seši cipari.</translation>

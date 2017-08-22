@@ -42,6 +42,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" />!</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1384959399684842514">Nedladdningen har pausats</translation>
+<translation id="1389236224998445076">Data som har sparats:</translation>
 <translation id="1389974829397082527">Det finns inga bokmärken i den här mappen</translation>
 <translation id="1397811292916898096">Sök med <ph name="PRODUCT_NAME" /></translation>
 <translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> förslag i Chrome</translation>
@@ -103,6 +104,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="1966710179511230534">Uppdatera dina inloggningsuppgifter.</translation>
 <translation id="1974060860693918893">Avancerat</translation>
 <translation id="1984937141057606926">Tillåts, men inte från tredje part</translation>
+<translation id="1989112275319619282">Bläddra</translation>
 <translation id="1993768208584545658"><ph name="SITE" /> vill kopplas</translation>
 <translation id="1994173015038366702">Webbadress</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> kB används av övriga appar</translation>
@@ -129,6 +131,7 @@ Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjä
 <translation id="219985413780390209">Skydda dig själv och enheten från farliga webbplatser</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webbapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsätt som <ph name="USER_FULL_NAME" /></translation>
+<translation id="2266890032547182881">Dataanvändningsanalys</translation>
 <translation id="2268044343513325586">Finjustera</translation>
 <translation id="2286841657746966508">Faktureringsadress</translation>
 <translation id="2315043854645842844">Val av certifikat på klienten stöds inte av operativsystemet.</translation>
@@ -347,6 +350,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4522570452068850558">Info</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Välj mapp</translation>
+<translation id="4550003330909367850">Ange ett skärmlås på enheten om du vill visa eller kopiera lösenordet här.</translation>
 <translation id="4558311620361989323">Kortkommandon på webbsidor</translation>
 <translation id="4572422548854449519">Logga in på hanterat konto</translation>
 <translation id="4581964774250883625">Du surfar inkognito.</translation>
@@ -375,11 +379,13 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4807963036345170158">Databesparing är inaktiverat</translation>
 <translation id="4816465935029283692">Datatyper</translation>
 <translation id="4837753911714442426">Öppna utskriftsalternativ</translation>
+<translation id="4842092870884894799">Visar popupfönster för lösenordsgenerering</translation>
 <translation id="4850886885716139402">Visa</translation>
 <translation id="4860895144060829044">Ring</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4885273946141277891">Fler Chrome-förekomster än det finns stöd för.</translation>
 <translation id="4910889077668685004">Betalningsappar</translation>
+<translation id="4913161338056004800">Återställ statistik</translation>
 <translation id="4913169188695071480">Sluta uppdatera</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /> under sökningen efter enheter …</translation>
 <translation id="4943872375798546930">Inga resultat</translation>
@@ -443,6 +449,7 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5487729733663684359">Uppdateringar av Chrome stöds inte längre för den här versionen av Android.</translation>
 <translation id="5490801865084500306">Bokmärkesfliken har valts</translation>
+<translation id="550684401320795253">Chrome uppdateras …</translation>
 <translation id="5512137114520586844">Det här kontot hanteras av <ph name="PARENT_NAME" />.</translation>
 <translation id="5514904542973294328">Har inaktiverats av enhetens administratör</translation>
 <translation id="5517095782334947753">Du har bokmärken, historik, lösenord och andra inställningar från <ph name="FROM_ACCOUNT" />.</translation>
@@ -482,6 +489,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="5763382633136178763">Inkognitoflikar</translation>
 <translation id="5765780083710877561">Beskrivning:</translation>
 <translation id="5777170031995031090">Styr hur Google anpassar Sök, annonser och andra Google-tjänster utifrån webbhistoriken.</translation>
+<translation id="5779929835642192302">Förslag tillgängliga</translation>
 <translation id="5804241973901381774">Behörigheter</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{för # timme sedan}other{för # timmar sedan}}</translation>
 <translation id="5817918615728894473">Koppla</translation>
@@ -553,7 +561,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6437478888915024427">Sidinformation</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6448273550210938826">Sökning och webbadressförslag</translation>
-<translation id="6463070039183944536">Lägger till …</translation>
 <translation id="6475951671322991020">Ladda ned video</translation>
 <translation id="6482749332252372425">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte finns tillräckligt med lagringsutrymme.</translation>
 <translation id="6508332297647760142">Physical Web-delning</translation>
@@ -638,6 +645,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7189372733857464326">Väntar på Google Play-tjänster ska avsluta uppdateringen</translation>
 <translation id="7189598951263744875">Dela ...</translation>
 <translation id="7191430249889272776">Fliken öppnades i bakgrunden.</translation>
+<translation id="723171743924126238">Välj bilder</translation>
 <translation id="7243308994586599757">Alternativ visas nära skärmens nedre kant</translation>
 <translation id="7244362611678346589"><ph name="SEARCH_ENGINE_URL" /> använder din platsinformation för att visa lokala sökresultat</translation>
 <translation id="7251326866581677552">Blockeras från vissa webbplatser</translation>
@@ -648,6 +656,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
 <translation id="7366340029385295517">Castar till <ph name="SCREEN_NAME" /></translation>
+<translation id="7374228672268453233">Använd data:</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7400418766976504921">Webbadress</translation>
@@ -792,6 +801,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8812260976093120287">På vissa webbplatser kan du betala med ovanstående betalningsappar som stöds på enheten.</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
 <translation id="883635517171802338">Blockera webbplatser från att visa popup-fönster (rekommenderas)</translation>
+<translation id="883806473910249246">Ett fel uppstod när innehållet skulle laddas ned.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flik</translation>
 <translation id="885701979325669005">Lagring</translation>

@@ -23,7 +23,6 @@
 <translation id="1520828917794284345">تغییر اندازه دسک‌تاپ جهت تناسب</translation>
 <translation id="154040539590487450">راه‌اندازی دسترسی راه دور به سرویس انجام نشد.</translation>
 <translation id="1546934824884762070">یک خطای غیرمنتظره روی داد. لطفاً این مشکل را به برنامه‌نویسان گزارش دهید.</translation>
-<translation id="1619813076098775562">‏ارتباط با دستگاه Cast را قطع کرد.</translation>
 <translation id="1643640058022401035">‏خروج از این صفحه، جلسه کار با Chrome را پایان می‌دهد.</translation>
 <translation id="1654128982815600832">در حال فعال کردن اتصالات راه دور برای این رایانه…</translation>
 <translation id="170207782578677537">این رایانه ثبت نشد.</translation>
@@ -80,6 +79,7 @@
 <translation id="2676780859508944670">در حال انجام...</translation>
 <translation id="2699970397166997657">‏کار با Chrome</translation>
 <translation id="2747641796667576127">معمولاً به‌روزرسانی نرم‌افزار به‌طور خودکار انجام می‌شود، اما در بعضی موارد نادر ممکن است این کار ناموفق باشد. به‌روزرسانی نرم‌افزار نباید بیشتر از چند دقیقه زمان ببرد و انجام آن باید هنگام اتصال از راه دور به رایانه نیز ممکن باشد.</translation>
+<translation id="2758123043070977469">مشکلی در احراز هویت وجود داشت، لطفاً دوباره به سیستم وارد شوید.</translation>
 <translation id="2803375539583399270">پین را وارد کنید</translation>
 <translation id="2841013758207633010">زمان</translation>
 <translation id="2851754573186462851">‏اجرای جریانی برنامه Chromium</translation>
@@ -187,7 +187,6 @@
 <translation id="5419418238395129586">آخرین حضور آنلاین: <ph name="DATE" /></translation>
 <translation id="544077782045763683">میزبان خاموش شد.</translation>
 <translation id="5510035215749041527">قطع ارتباط</translation>
-<translation id="5537725057119320332">فرستادن</translation>
 <translation id="5593560073513909978">سرویس موقتاً در دسترس نیست. لطفاً بعداً دوباره امتحان کنید.</translation>
 <translation id="5601503069213153581">پین</translation>
 <translation id="5619148062500147964">به این رایانه</translation>
@@ -196,10 +195,10 @@
 <translation id="5708869785009007625">دسک‌تاپ شما در حال حاضر با <ph name="USER" /> به‌ اشتراک گذاشته شده است.</translation>
 <translation id="5773590752998175013">تاریخ مرتبط‌سازی</translation>
 <translation id="579702532610384533">اتصال مجدد</translation>
+<translation id="5810269635982033450">صفحه نمایش مانند ترک‌پد عمل می‌کند</translation>
 <translation id="5841343754884244200">گزینه‌های نمایش</translation>
 <translation id="5843054235973879827">چرا این امن است؟</translation>
 <translation id="5859141382851488196">پنجره جدید...</translation>
-<translation id="5885438903806970186">آنلاین.</translation>
 <translation id="6011539954251327702">‏کار با Chrome، به شما اجازه می‌دهد رایانه خود را به راحتی در وب به اشتراک بگذارید. هر دو کاربر باید برنامه Chrome را داشته باشند که می‌توان آن را در <ph name="URL" /> یافت.</translation>
 <translation id="6033507038939587647">گزینه‌های صفحه‌کلید</translation>
 <translation id="6040143037577758943">بستن</translation>
@@ -248,7 +247,7 @@
 <translation id="7019153418965365059">خطای نامشخص میزبان: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">راهنمایی از راه دور</translation>
 <translation id="7038683108611689168">‏با در اختیار قرار دادن آمار استفاده و گزارش‌های خرابی، به ما کمک کنید کار با Chrome را بهبود بخشیم.</translation>
-<translation id="712467900648340229">‏برقراری اتصال با دستگاه Cast انجام نشد.</translation>
+<translation id="7067321367069083429">صفحه نمایش مانند صفحه لمسی عمل می‌کند</translation>
 <translation id="7144878232160441200">سعی مجدد</translation>
 <translation id="7149517134817561223">‏برنامه‌ای که دستورها را به میزبان کنترل دسک تاپ از راه دور Chrome ارسال می‌کند.</translation>
 <translation id="7215059001581613786">لطفاً پینی وارد کنید که دارای شش رقم یا بیشتر باشد.</translation>

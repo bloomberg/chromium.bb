@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1초}other{#초}}</translation>
 <translation id="4971687151119236543">미디어 이전 트랙</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">검색창 텍스트 삭제 버튼</translation>
 <translation id="5046499563572181734">여기를 탭하세요.</translation>
 <translation id="5076340679995252485">붙여넣기(&amp;P)</translation>
 <translation id="5120799197269191491">검색+<ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">공백</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" />B/s</translation>
+<translation id="6156262341071374681">펼쳐서 모든 앱 보기</translation>
 <translation id="6264365405983206840">모두 선택(&amp;A)</translation>
 <translation id="6351032674660237738">앱 추천</translation>
 <translation id="6364916375976753737">왼쪽으로 스크롤</translation>

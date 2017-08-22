@@ -1,36 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
-<translation id="1620510694547887537">摄像头</translation>
-<translation id="1768717197362323622">毫秒</translation>
-<translation id="1822429046913737220">上午/下午</translation>
-<translation id="1989112275319619282">浏览</translation>
-<translation id="2429669115401274487">下午</translation>
-<translation id="2732718972699418926">上午</translation>
-<translation id="2841013758207633010">时间</translation>
-<translation id="376869769528291915">:</translation>
-<translation id="3845599764535987402">小时</translation>
-<translation id="4247305538398689241">设置星期</translation>
-<translation id="4768459022382175196">秒</translation>
-<translation id="4842092870884894799">目前显示的是密码生成弹出式窗口</translation>
-<translation id="4932733599132424254">日期</translation>
-<translation id="550684401320795253">正在更新 Chrome…</translation>
-<translation id="5779929835642192302">有自动填充建议</translation>
-<translation id="5789643057113097023">.</translation>
-<translation id="5966707198760109579">周</translation>
-<translation id="6015796118275082299">年</translation>
 <translation id="6315516427814392808">内存不足，无法完成上一操作</translation>
-<translation id="6444070574980481588">设置日期和时间</translation>
 <translation id="6555463879959038093">未能复制到剪贴板</translation>
-<translation id="6643016212128521049">清除</translation>
-<translation id="6727102863431372879">设置</translation>
-<translation id="7102218676258945610">分钟</translation>
-<translation id="7138678301420049075">其他</translation>
-<translation id="723171743924126238">选择图片</translation>
-<translation id="7575803462290353686">设置时间</translation>
-<translation id="7781164152564914424">设置月份</translation>
-<translation id="7821540960913969614">设置日期</translation>
 <translation id="793640675459356075">无法打开所选文件</translation>
-<translation id="8987927404178983737">月</translation>
-<translation id="928752963351137118">目前显示的是自动填充弹出式窗口</translation>
 </translationbundle>

@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}one{# sekunda}few{# sekunde}other{# sekundi}}</translation>
 <translation id="4971687151119236543">Prethodni zapis Medija</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">Gumb za brisanje teksta u okviru za pretraživanje</translation>
 <translation id="5046499563572181734">Dodirnite ovdje</translation>
 <translation id="5076340679995252485">&amp;Zalijepi</translation>
 <translation id="5120799197269191491">Pretraživanje + <ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">Razmak</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6156262341071374681">Proširivanje na sve aplikacije</translation>
 <translation id="6264365405983206840">Odaberi &amp;sve</translation>
 <translation id="6351032674660237738">PRIJEDLOZI APLIKACIJA</translation>
 <translation id="6364916375976753737">Pomakni se lijevo</translation>

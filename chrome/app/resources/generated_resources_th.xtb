@@ -1364,7 +1364,6 @@
 <translation id="2966449113954629791">คุณอาจใช้ข้อมูลมือถือตามปริมาณที่อนุญาตหมดแล้ว ไปที่พอร์ทัลการเปิดใช้งาน <ph name="NAME" /> เพื่อซื้อข้อมูลเพิ่มเติม</translation>
 <translation id="2966598748518102999">ปรับปรุงการค้นหาด้วยเสียงโดยการส่งเสียงพูด "Ok Google" และเว้นช่วงเล็กน้อย เพื่อให้ Google ทำการค้นหา</translation>
 <translation id="2966937470348689686">จัดการค่ากำหนด Android</translation>
-<translation id="2967544384642772068">หยุดใช้งาน</translation>
 <translation id="2971033837577180453">&lt;span&gt;รหัส:&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">มืดลง</translation>
 <translation id="2972557485845626008">เฟิร์มแวร์</translation>
@@ -1515,7 +1514,6 @@
 <translation id="3165390001037658081">ผู้ให้บริการบางรายอาจบล็อกฟีเจอร์นี้</translation>
 <translation id="3166571619128686629">คลิกหรือพูดว่า "Ok Google" เพื่อเริ่มค้นหาด้วยเสียง</translation>
 <translation id="3170072451822350649">คุณสามารถข้ามการลงชื่อเข้าใช้และ<ph name="LINK_START" />เรียกดูในฐานะผู้เยี่ยมชม<ph name="LINK_END" />ได้ด้วย</translation>
-<translation id="3170544058711792988">ให้โฟกัสของแว่นขยายอยู่ที่กลางหน้าจอเสมอ</translation>
 <translation id="3177048931975664371">คลิกเพื่อซ่อนรหัสผ่าน</translation>
 <translation id="3177909033752230686">ภาษาหน้าเว็บ:</translation>
 <translation id="3180365125572747493">ป้อนรหัสผ่านเพื่อเข้ารหัสไฟล์ใบรับรองนี้</translation>
@@ -2053,8 +2051,6 @@
   คุณต้องการเริ่มต้น <ph name="CONTROL_PANEL_APPLET_NAME" /> ไหม</translation>
 <translation id="3943582379552582368">&amp;กลับ</translation>
 <translation id="3943857333388298514">วาง</translation>
-<translation id="3944266449990965865">ทั้งหน้าจอ</translation>
-<translation id="3946471364541867667">การตั้งค่า TalkBack</translation>
 <translation id="3947376313153737208">ยังไม่ได้เลือก</translation>
 <translation id="3948116654032448504">ค้นหา&amp;รูปภาพด้วย <ph name="SEARCH_ENGINE" /></translation>
 <translation id="3949371968208420848">ยินดีต้อนรับสู่การประชุมแฮงเอาท์!</translation>
@@ -2361,7 +2357,6 @@
 <translation id="4450974146388585462">วินิจฉัย</translation>
 <translation id="4452426408005428395">ไม่เป็นไร</translation>
 <translation id="4454939697743986778">ใบรับรองนี้ได้รับการติดตั้งโดยผู้ดูแลระบบของคุณ</translation>
-<translation id="445891990714234385">การตั้งค่า ChromeVox</translation>
 <translation id="445923051607553918">เข้าร่วมเครือข่าย Wi-Fi</translation>
 <translation id="4462159676511157176">เซิร์ฟเวอร์ชื่อที่กำหนดเอง</translation>
 <translation id="4467100756425880649">แกลเลอรี Chrome เว็บสโตร์</translation>
@@ -2659,7 +2654,6 @@
 <translation id="4910673011243110136">เครือข่ายส่วนตัว</translation>
 <translation id="4911714727432509308">ไม่มีส่วนขยา่ยใดที่มีการกำหนดแป้นพิมพ์ลัดให้</translation>
 <translation id="4912643508233590958">ไม่ใช้งานการปลุก</translation>
-<translation id="4916679969857390442">เลนส์</translation>
 <translation id="491691592645955587">เปลี่ยนเป็นเบราว์เซอร์ที่ปลอดภัย</translation>
 <translation id="4917385247580444890">แรง</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> ต้องการสื่อสารกับส่วนขยาย "<ph name="EXTENSION_NAME" />"</translation>
@@ -2724,7 +2718,6 @@
 <translation id="5011739343823725107">การเริ่มต้นแบ็กเอนด์การซิงค์ล้มเหลว</translation>
 <translation id="5015344424288992913">กำลังแปลงพร็อกซี...</translation>
 <translation id="5015762597229892204">เลือกแอปไดรเวอร์ของเครื่องพิมพ์</translation>
-<translation id="5016049845330225051">ปุ่มล้างข้อความในช่องค้นหา</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">จัดการในหน้าเริ่มต้นใช้งาน</translation>
 <translation id="5023943178135355362">การเลื่อนแบบธรรมชาติ <ph name="BEGIN_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LINK" /></translation>
@@ -3481,7 +3474,6 @@
 <translation id="6151771661215463137">มีไฟล์นี้อยู่แล้วในโฟลเดอร์ดาวน์โหลด</translation>
 <translation id="615436196126345398">โปรโตคอล</translation>
 <translation id="6154697846084421647">ลงชื่อเข้าใช้อยู่</translation>
-<translation id="6156262341071374681">แสดงแอปทั้งหมด</translation>
 <translation id="6156323911414505561">แสดงแถบบุ๊กมาร์ก</translation>
 <translation id="6156863943908443225">แคชของสคริปต์</translation>
 <translation id="6156960295318603523">การตั้งค่าภาษา</translation>
@@ -4048,7 +4040,6 @@
 <translation id="6996946928646015361">ไม่พบโมดูลความปลอดภัยหรือถูกปิดใช้</translation>
 <translation id="6998711733709403587">เลือก <ph name="SELCTED_FOLDERS_COUNT" /> โฟลเดอร์</translation>
 <translation id="6998793565256476099">ลงทะเบียนอุปกรณ์สำหรับการประชุมทางวิดีโอ</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{หน้าต่อไปนี้ไม่มีการตอบสนอง คุณสามารถรอให้ตอบสนองหรือปิดไปเลยได้}other{หน้าต่อไปนี้ไม่มีการตอบสนอง คุณสามารถรอให้ตอบสนองหรือปิดไปเลยได้}}</translation>
 <translation id="7002055706763150362">ในการตั้งค่า Smart Lock สำหรับ Chromebook นั้น Google จะต้องตรวจสอบว่าเป็นคุณจริงๆ โปรดพิมพ์รหัสผ่านเพื่อเริ่มต้นใช้งาน</translation>
 <translation id="7002454948392136538">เลือกผู้จัดการสำหรับผู้ใช้ภายใต้การดูแลนี้</translation>
 <translation id="7003257528951459794">ความถี่:</translation>

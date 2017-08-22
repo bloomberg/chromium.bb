@@ -72,6 +72,7 @@
 <translation id="4968171027979920686">{SECONDS,plural, =1{o secundă}few{# secunde}other{# de secunde}}</translation>
 <translation id="4971687151119236543">Melodia anterioară din conținutul media</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME" /></translation>
+<translation id="5016049845330225051">Butonul pentru ștergerea textului din caseta de căutare</translation>
 <translation id="5046499563572181734">Atinge aici</translation>
 <translation id="5076340679995252485">&amp;Inserează</translation>
 <translation id="5120799197269191491">Tasta de căutare+<ph name="KEY_COMBO_NAME" /></translation>
@@ -96,6 +97,7 @@
 <translation id="6129953537138746214">Spațiu</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
+<translation id="6156262341071374681">Extinde la toate aplicațiile</translation>
 <translation id="6264365405983206840">Select&amp;ează tot</translation>
 <translation id="6351032674660237738">SUGESTII DE APLICAȚII</translation>
 <translation id="6364916375976753737">Derulează spre stânga</translation>

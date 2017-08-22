@@ -1360,7 +1360,6 @@
 <translation id="2966449113954629791">您的移动数据量可能已用完。请访问“<ph name="NAME" />”激活门户网站，购买更多数据。</translation>
 <translation id="2966598748518102999">允许将“Ok Google”及其之前几秒所说的内容发送给Google，帮助改进语音搜索。</translation>
 <translation id="2966937470348689686">管理 Android 偏好设置</translation>
-<translation id="2967544384642772068">关闭</translation>
 <translation id="2971033837577180453">&lt;span&gt;ID：&lt;/span&gt;<ph name="EXTENSION_ID" /></translation>
 <translation id="2971213274238188218">调低亮度</translation>
 <translation id="2972557485845626008">固件</translation>
@@ -1511,7 +1510,6 @@
 <translation id="3165390001037658081">有些运营商可能会屏蔽此功能。</translation>
 <translation id="3166571619128686629">说“Ok Google”或点击可启动语音搜索</translation>
 <translation id="3170072451822350649">您也可以跳过登录步骤，<ph name="LINK_START" />以访客身份浏览<ph name="LINK_END" />。</translation>
-<translation id="3170544058711792988">使放大镜焦点位于屏幕中心</translation>
 <translation id="3177048931975664371">点击可隐藏密码</translation>
 <translation id="3177909033752230686">网页语言：</translation>
 <translation id="3180365125572747493">请输入密码，用于加密该证书文件。</translation>
@@ -2046,8 +2044,6 @@
   要启动“<ph name="CONTROL_PANEL_APPLET_NAME" />”吗？</translation>
 <translation id="3943582379552582368">返回(&amp;B)</translation>
 <translation id="3943857333388298514">粘贴</translation>
-<translation id="3944266449990965865">全屏</translation>
-<translation id="3946471364541867667">TalkBack 设置</translation>
 <translation id="3947376313153737208">未选择</translation>
 <translation id="3948116654032448504">通过<ph name="SEARCH_ENGINE" />搜索图片(&amp;S)</translation>
 <translation id="3949371968208420848">欢迎使用 Hangouts Meet！</translation>
@@ -2354,7 +2350,6 @@
 <translation id="4450974146388585462">诊断</translation>
 <translation id="4452426408005428395">不用了</translation>
 <translation id="4454939697743986778">您的系统管理员已安装此证书。</translation>
-<translation id="445891990714234385">ChromeVox 设置</translation>
 <translation id="445923051607553918">加入Wi-Fi网络</translation>
 <translation id="4462159676511157176">自定义域名服务器</translation>
 <translation id="4467100756425880649">Chrome 网上应用店扩展程序列表</translation>
@@ -2649,7 +2644,6 @@
 <translation id="4910673011243110136">专用网络</translation>
 <translation id="4911714727432509308">尚未为任何扩展程序分配键盘快捷键。</translation>
 <translation id="4912643508233590958">闲置状态唤醒</translation>
-<translation id="4916679969857390442">镜头</translation>
 <translation id="491691592645955587">切换到安全的浏览器</translation>
 <translation id="4917385247580444890">强</translation>
 <translation id="4918021164741308375"><ph name="ORIGIN" /> 希望与“<ph name="EXTENSION_NAME" />”扩展程序通信</translation>
@@ -2713,7 +2707,6 @@
 <translation id="5011739343823725107">启动同步后端失败</translation>
 <translation id="5015344424288992913">正在解析代理...</translation>
 <translation id="5015762597229892204">选择打印机驱动程序应用</translation>
-<translation id="5016049845330225051">“清除搜索框文字”按钮</translation>
 <translation id="5017508259293544172">LEAP</translation>
 <translation id="5018792385199109315">管理启动页</translation>
 <translation id="5023943178135355362">自然滚动 <ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
@@ -3463,7 +3456,6 @@
 <translation id="6151771661215463137">“下载”文件夹中已存在此文件。</translation>
 <translation id="615436196126345398">协议</translation>
 <translation id="6154697846084421647">当前已登录</translation>
-<translation id="6156262341071374681">展开以显示所有应用</translation>
 <translation id="6156323911414505561">显示书签栏</translation>
 <translation id="6156863943908443225">脚本缓存</translation>
 <translation id="6156960295318603523">语言设置</translation>
@@ -4030,7 +4022,6 @@
 <translation id="6996946928646015361">安全模块缺失或已被停用。</translation>
 <translation id="6998711733709403587">已选择 <ph name="SELCTED_FOLDERS_COUNT" /> 个文件夹</translation>
 <translation id="6998793565256476099">注册设备以进行视频会议</translation>
-<translation id="6998872712520806535">{NUM_PAGES,plural, =1{以下页面已停止响应。您可以等待该页面恢复响应，也可以将其关闭。}other{以下页面已停止响应。您可以等待这些页面恢复响应，也可以将其关闭。}}</translation>
 <translation id="7002055706763150362">要设置 Smart Lock（Chromebook 版），您需要先输入密码，因为 Google 需要确认是您本人在操作。</translation>
 <translation id="7002454948392136538">选择此受监管用户的管理员</translation>
 <translation id="7003257528951459794">频率：</translation>
