@@ -1407,7 +1407,7 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
   std::unique_ptr<PdfMetafileSkia> draft_metafile;
   PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
   if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
-    draft_metafile = base::MakeUnique<PdfMetafileSkia>(PDF_SKIA_DOCUMENT_TYPE);
+    draft_metafile = base::MakeUnique<PdfMetafileSkia>(SkiaDocumentType::PDF);
     initial_render_metafile = draft_metafile.get();
   }
 
@@ -1425,7 +1425,7 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
     DCHECK(!draft_metafile.get());
     draft_metafile =
         print_preview_context_.metafile()->GetMetafileForCurrentPage(
-            PDF_SKIA_DOCUMENT_TYPE);
+            SkiaDocumentType::PDF);
   }
   return PreviewPageRendered(page_number, draft_metafile.get());
 }
@@ -2211,7 +2211,7 @@ bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     return false;
   }
 
-  metafile_ = base::MakeUnique<PdfMetafileSkia>(PDF_SKIA_DOCUMENT_TYPE);
+  metafile_ = base::MakeUnique<PdfMetafileSkia>(SkiaDocumentType::PDF);
   CHECK(metafile_->Init());
 
   current_page_index_ = 0;

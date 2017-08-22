@@ -161,10 +161,10 @@ bool PdfMetafileSkia::FinishDocument() {
   SkDynamicMemoryWStream stream;
   sk_sp<SkDocument> doc;
   switch (data_->type_) {
-    case PDF_SKIA_DOCUMENT_TYPE:
+    case SkiaDocumentType::PDF:
       doc = MakePdfDocument(printing::GetAgent(), &stream);
       break;
-    case MSKP_SKIA_DOCUMENT_TYPE:
+    case SkiaDocumentType::MSKP:
       doc = SkMakeMultiPictureDocument(&stream);
       break;
   }

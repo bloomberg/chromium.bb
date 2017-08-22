@@ -46,7 +46,7 @@ namespace printing {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
                                               int page_count) {
-  PdfMetafileSkia metafile(PDF_SKIA_DOCUMENT_TYPE);
+  PdfMetafileSkia metafile(SkiaDocumentType::PDF);
   CHECK(metafile.Init());
 
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
