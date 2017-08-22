@@ -7,12 +7,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/browser/url_checker_delegate.h"
+#include "components/safe_browsing/net_event_logger.h"
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "net/log/net_log_event_type.h"
 
 namespace safe_browsing {
 namespace {
@@ -53,8 +55,14 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
 SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  if (state_ == STATE_CHECKING_URL)
+  if (state_ == STATE_CHECKING_URL) {
     database_manager_->CancelCheck(this);
+    if (net_event_logger_) {
+      net_event_logger_->EndNetLogEvent(
+          net::NetLogEventType::SAFE_BROWSING_CHECKING_URL, "result",
+          "request_canceled");
+    }
+  }
 }
 
 void SafeBrowsingUrlCheckerImpl::CheckUrl(const GURL& url,
@@ -68,6 +76,11 @@ void SafeBrowsingUrlCheckerImpl::CheckUrl(const GURL& url,
   ProcessUrls();
 }
 
+const GURL& SafeBrowsingUrlCheckerImpl::GetCurrentlyCheckingUrl() const {
+  return next_index_ < urls_.size() ? urls_[next_index_].url
+                                    : GURL::EmptyGURL();
+}
+
 void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
     const GURL& url,
     SBThreatType threat_type,
@@ -77,6 +90,13 @@ void SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult(
   DCHECK_EQ(urls_[next_index_].url, url);
 
   timer_.Stop();
+
+  if (net_event_logger_) {
+    net_event_logger_->EndNetLogEvent(
+        net::NetLogEventType::SAFE_BROWSING_CHECKING_URL, "result",
+        threat_type == SB_THREAT_TYPE_SAFE ? "safe" : "unsafe");
+  }
+
   if (threat_type == SB_THREAT_TYPE_SAFE) {
     state_ = STATE_NONE;
 
@@ -185,6 +205,12 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     SBThreatType threat_type = CheckWebUIUrls(url);
     if (threat_type != safe_browsing::SB_THREAT_TYPE_SAFE) {
       state_ = STATE_CHECKING_URL;
+      if (net_event_logger_) {
+        net_event_logger_->BeginNetLogEvent(
+            net::NetLogEventType::SAFE_BROWSING_CHECKING_URL, url, nullptr,
+            nullptr);
+      }
+
       content::BrowserThread::PostTask(
           content::BrowserThread::IO, FROM_HERE,
           base::Bind(&SafeBrowsingUrlCheckerImpl::OnCheckBrowseUrlResult,
@@ -202,6 +228,12 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     }
 
     state_ = STATE_CHECKING_URL;
+    if (net_event_logger_) {
+      net_event_logger_->BeginNetLogEvent(
+          net::NetLogEventType::SAFE_BROWSING_CHECKING_URL, url, nullptr,
+          nullptr);
+    }
+
     // Start a timer to abort the check if it takes too long.
     timer_.Start(FROM_HERE,
                  base::TimeDelta::FromMilliseconds(kCheckUrlTimeoutMs), this,
