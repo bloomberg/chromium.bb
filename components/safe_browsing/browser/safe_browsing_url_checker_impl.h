@@ -44,6 +44,8 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
   ~SafeBrowsingUrlCheckerImpl() override;
 
   // mojom::SafeBrowsingUrlChecker implementation.
+  // NOTE: |callback| could be run synchronously before this method returns. Be
+  // careful if |callback| could destroy this object.
   void CheckUrl(const GURL& url,
                 const std::string& method,
                 CheckUrlCallback callback) override;
@@ -56,15 +58,19 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   void OnCheckUrlTimeout();
 
+  // NOTE: this method runs callbacks which could destroy this object.
   void ProcessUrls();
 
+  // NOTE: this method runs callbacks which could destroy this object.
   void BlockAndProcessUrls(bool showed_interstitial);
 
   void OnBlockingPageComplete(bool proceed);
 
   SBThreatType CheckWebUIUrls(const GURL& url);
 
-  void RunNextCallback(bool proceed, bool showed_interstitial);
+  // Returns false if this object has been destroyed by the callback. In that
+  // case none of the members of this object should be touched again.
+  bool RunNextCallback(bool proceed, bool showed_interstitial);
 
   enum State {
     // Haven't started checking or checking is complete.
