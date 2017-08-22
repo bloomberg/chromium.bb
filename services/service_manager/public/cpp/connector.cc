@@ -133,19 +133,16 @@ void Connector::ResetStartServiceCallback() {
 }
 
 bool Connector::BindConnectorIfNecessary() {
-  // Bind this object to the current thread the first time it is used to
-  // connect.
+  // Bind the message pipe and SequenceChecker to the current thread the first
+  // time it is used to connect.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connector_.is_bound()) {
     if (!unbound_state_.is_valid()) {
       // It's possible to get here when the link to the service manager has been
-      // severed
-      // (and so the connector pipe has been closed) but the app has chosen not
-      // to quit.
+      // severed (and so the connector pipe has been closed) but the app has
+      // chosen not to quit.
       return false;
     }
-
-    // Bind the SequenceChecker to this thread.
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     connector_.Bind(std::move(unbound_state_));
     connector_.set_connection_error_handler(
