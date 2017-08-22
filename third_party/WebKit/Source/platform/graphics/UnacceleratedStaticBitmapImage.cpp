@@ -40,6 +40,11 @@ IntSize UnacceleratedStaticBitmapImage::Size() const {
   return IntSize(paint_image_.width(), paint_image_.height());
 }
 
+bool UnacceleratedStaticBitmapImage::IsPremultiplied() const {
+  return paint_image_.GetSkImage()->alphaType() ==
+         SkAlphaType::kPremul_SkAlphaType;
+}
+
 bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque(MetadataMode) {
   return paint_image_.GetSkImage()->isOpaque();
 }
