@@ -28,6 +28,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/version.h"
 #include "base/win/pe_image.h"
@@ -222,12 +223,13 @@ void OnModuleEvent(uint32_t process_id,
 // the provided |module_watcher|, and starts the enumeration of registered
 // modules in the Windows Registry.
 void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   uint64_t creation_time = 0;
   ModuleEventSinkImpl::GetProcessCreationTime(::GetCurrentProcess(),
                                               &creation_time);
-  ModuleDatabase::SetInstance(base::MakeUnique<ModuleDatabase>(
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI)));
+  ModuleDatabase::SetInstance(
+      base::MakeUnique<ModuleDatabase>(base::SequencedTaskRunnerHandle::Get()));
   auto* module_database = ModuleDatabase::GetInstance();
   uint32_t process_id = ::GetCurrentProcessId();
 
