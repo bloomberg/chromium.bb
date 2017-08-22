@@ -15,12 +15,15 @@ class BackgroundMemoryTracingObserver
   static BackgroundMemoryTracingObserver* GetInstance();
 
   void OnScenarioActivated(const BackgroundTracingConfigImpl* config) override;
+  void OnScenarioAborted() override;
   void OnTracingEnabled(
       BackgroundTracingConfigImpl::CategoryPreset preset) override;
 
  private:
   BackgroundMemoryTracingObserver();
   ~BackgroundMemoryTracingObserver() override;
+
+  bool heap_profiling_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundMemoryTracingObserver);
 };

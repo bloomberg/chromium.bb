@@ -580,6 +580,9 @@ void BackgroundTracingManagerImpl::AbortScenario() {
   tracing_timer_.reset();
 
   content::TracingController::GetInstance()->StopTracing(nullptr);
+
+  for (auto* observer : background_tracing_observers_)
+    observer->OnScenarioAborted();
 }
 
 std::string
