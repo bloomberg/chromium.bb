@@ -8444,6 +8444,9 @@ static int64_t motion_mode_rd(
   (void)rate_mv;
   (void)is_comp_pred;
   (void)this_mode;
+#if !CONFIG_WARPED_MOTION
+  (void)single_newmv;
+#endif
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   MOTION_MODE motion_mode, last_motion_mode_allowed;

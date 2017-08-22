@@ -300,7 +300,7 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                     MODE_INFO *mi, aom_reader *r) {
   MB_MODE_INFO *mbmi = &mi->mbmi;
-#if CONFIG_NEW_MULTISYMBOL || CONFIG_NCOBMC_ADAPT_WEIGHT
+#if !CONFIG_MOTION_VAR || !CONFIG_WARPED_MOTION || CONFIG_NEW_MULTISYMBOL
   (void)cm;
 #endif
 
