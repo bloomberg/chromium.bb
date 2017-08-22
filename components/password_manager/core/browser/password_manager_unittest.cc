@@ -171,6 +171,7 @@ class PasswordManagerTest : public testing::Test {
     form.password_value = ASCIIToUTF16("p4ssword");
     form.submit_element = ASCIIToUTF16("signIn");
     form.signon_realm = "http://www.google.com";
+    form.form_data.name = ASCIIToUTF16("the-form-name");
     return form;
   }
 
