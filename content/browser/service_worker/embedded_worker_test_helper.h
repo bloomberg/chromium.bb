@@ -164,6 +164,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   TestBrowserContext* browser_context() { return browser_context_.get(); }
 
+  ServiceWorkerDispatcherHost* GetDispatcherHostForProcess(int process_id);
+
   base::WeakPtr<EmbeddedWorkerTestHelper> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }

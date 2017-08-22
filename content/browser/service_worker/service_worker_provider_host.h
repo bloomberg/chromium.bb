@@ -151,14 +151,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // to an exceptional circumstance (here also it is not "using" the
   // registration).
   // (3) During algorithms such as the update, skipWaiting(), and claim() steps,
-  // the active_version and controlling_version may temporarily differ. For
-  // example, to perform skipWaiting(), the registration's active version is
-  // updated first and then the provider host's controlling version is updated
-  // to match it.
-  ServiceWorkerVersion* controlling_version() const {
+  // the active version and controller may temporarily differ. For example, to
+  // perform skipWaiting(), the registration's active version is updated first
+  // and then the provider host's controlling version is updated to match it.
+  ServiceWorkerVersion* controller() const {
     // Only clients can have controllers.
-    DCHECK(!controlling_version_ || IsProviderForClient());
-    return controlling_version_.get();
+    DCHECK(!controller_ || IsProviderForClient());
+    return controller_.get();
   }
 
   ServiceWorkerVersion* active_version() const {
@@ -377,9 +376,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       ServiceWorkerRegistration* registration) override;
   void OnSkippedWaiting(ServiceWorkerRegistration* registration) override;
 
-  // Sets the controller version field to |version| or if |version| is nullptr,
-  // clears the field. If |notify_controllerchange| is true, instructs the
-  // renderer to dispatch a 'controller' change event.
+  // Sets the controller field to |version| or if |version| is nullptr, clears
+  // the field. If |notify_controllerchange| is true, instructs the renderer to
+  // dispatch a 'controller' change event.
   void SetControllerVersionAttribute(ServiceWorkerVersion* version,
                                      bool notify_controllerchange);
 
@@ -400,9 +399,13 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   bool IsReadyToSendMessages() const;
   void Send(IPC::Message* message) const;
 
-  // Sends information about the controller to the providers of the worker
-  // clients in the renderer.  If |notify_controllerchange| is true,
-  // instructs the renderer to dispatch a 'controllerchange' event.
+  // Sends information about the controller to the providers of the service
+  // worker clients in the renderer. If |notify_controllerchange| is true,
+  // instructs the renderer to dispatch a 'controllerchange' event.  If
+  // |version| is non-null, it must be the same as |controller_|. |version| can
+  // be null while |controller_| is non-null in the strange case of cross-site
+  // transfer, which will be removed when the non-PlzNavigate code path is
+  // removed.
   void SendSetControllerServiceWorker(ServiceWorkerVersion* version,
                                       bool notify_controllerchange);
 
@@ -443,9 +446,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   ServiceWorkerRegistrationMap matching_registrations_;
 
   std::unique_ptr<OneShotGetReadyCallback> get_ready_callback_;
-  scoped_refptr<ServiceWorkerVersion> controlling_version_;
+  scoped_refptr<ServiceWorkerVersion> controller_;
   std::unique_ptr<BrowserSideServiceWorkerEventDispatcher>
-      controlling_version_event_dispatcher_;
+      controller_event_dispatcher_;
 
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;

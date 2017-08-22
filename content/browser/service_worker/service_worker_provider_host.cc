@@ -120,7 +120,7 @@ ServiceWorkerProviderHost::PreCreateNavigationHost(
       ServiceWorkerProviderHostInfo(
           NextBrowserProvidedProviderId(), MSG_ROUTING_NONE,
           SERVICE_WORKER_PROVIDER_FOR_WINDOW, are_ancestors_secure),
-      context, nullptr));
+      context, nullptr /* dispatcher_host */));
   host->web_contents_getter_ = web_contents_getter;
   return host;
 }
@@ -158,8 +158,8 @@ void ServiceWorkerProviderHost::BindWorkerFetchContext(
       base::BindOnce(&ServiceWorkerProviderHost::UnregisterWorkerFetchContext,
                      base::Unretained(this), client.get()));
 
-  if (controlling_version_)
-    client->SetControllerServiceWorker(controlling_version_->version_id());
+  if (controller_)
+    client->SetControllerServiceWorker(controller_->version_id());
 
   auto result = worker_clients_.insert(
       std::make_pair<mojom::ServiceWorkerWorkerClient*,
@@ -226,8 +226,8 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
   // Clear docurl so the deferred activation of a waiting worker
   // won't associate the new version with a provider being destroyed.
   document_url_ = GURL();
-  if (controlling_version_.get())
-    controlling_version_->RemoveControllee(this);
+  if (controller_.get())
+    controller_->RemoveControllee(this);
 
   RemoveAllMatchingRegistrations();
 
@@ -294,7 +294,7 @@ void ServiceWorkerProviderHost::OnSkippedWaiting(
   // A client is "using" a registration if it is controlled by the active
   // worker of the registration. skipWaiting doesn't cause a client to start
   // using the registration.
-  if (!controlling_version_)
+  if (!controller_)
     return;
   ServiceWorkerVersion* active_version = registration->active_version();
   DCHECK(active_version);
@@ -318,18 +318,18 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
     ServiceWorkerVersion* version,
     bool notify_controllerchange) {
   CHECK(!version || IsContextSecureForServiceWorker());
-  if (version == controlling_version_.get())
+  if (version == controller_.get())
     return;
 
-  scoped_refptr<ServiceWorkerVersion> previous_version = controlling_version_;
-  controlling_version_ = version;
+  scoped_refptr<ServiceWorkerVersion> previous_version = controller_;
+  controller_ = version;
 
   // This will drop the message pipes to the client pages as well.
-  controlling_version_event_dispatcher_.reset();
+  controller_event_dispatcher_.reset();
 
   if (version) {
     version->AddControllee(this);
-    controlling_version_event_dispatcher_ =
+    controller_event_dispatcher_ =
         base::MakeUnique<BrowserSideServiceWorkerEventDispatcher>(version);
     for (const auto& pair : worker_clients_) {
       pair.second->SetControllerServiceWorker(version->version_id());
@@ -472,8 +472,7 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     return base::MakeUnique<ServiceWorkerContextRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, resource_type);
   }
-  if (ServiceWorkerUtils::IsMainResourceType(resource_type) ||
-      controlling_version()) {
+  if (ServiceWorkerUtils::IsMainResourceType(resource_type) || controller()) {
     return base::MakeUnique<ServiceWorkerControlleeRequestHandler>(
         context_, AsWeakPtr(), blob_storage_context, request_mode,
         credentials_mode, redirect_mode, integrity, resource_type,
@@ -575,10 +574,6 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
   DCHECK_EQ(kDocumentMainThreadId, render_thread_id_);
   DCHECK_NE(SERVICE_WORKER_PROVIDER_UNKNOWN, info_.type);
 
-  // |info_| is reset below as we move it to the new |provisional_host|,
-  // so save the provider type here.
-  const bool is_for_client = IsProviderForClient();
-
   std::unique_ptr<ServiceWorkerProviderHost> provisional_host =
       base::WrapUnique(new ServiceWorkerProviderHost(
           process_id(),
@@ -591,7 +586,9 @@ ServiceWorkerProviderHost::PrepareForCrossSiteTransfer() {
 
   RemoveAllMatchingRegistrations();
 
-  if (is_for_client && associated_registration_.get()) {
+  // Clear the controller from the renderer-side provider, since no one knows
+  // what's going to happen until after cross-site transfer finishes.
+  if (controller_) {
     SendSetControllerServiceWorker(nullptr,
                                    false /* notify_controllerchange */);
   }
@@ -628,9 +625,10 @@ void ServiceWorkerProviderHost::CompleteCrossSiteTransfer(
     IncreaseProcessReference(pattern);
   SyncMatchingRegistrations();
 
-  if (associated_registration_.get() &&
-      associated_registration_->active_version()) {
-    SendSetControllerServiceWorker(associated_registration_->active_version(),
+  // Now that the provider is stable and the connection is established,
+  // send it the SetController IPC if there is a controller.
+  if (controller_) {
+    SendSetControllerServiceWorker(controller_.get(),
                                    false /* notify_controllerchange */);
   }
 }
@@ -667,9 +665,10 @@ void ServiceWorkerProviderHost::CompleteNavigationInitialized(
   for (auto& key_registration : matching_registrations_)
     IncreaseProcessReference(key_registration.second->pattern());
 
-  if (associated_registration_.get() &&
-      associated_registration_->active_version() && IsProviderForClient()) {
-    SendSetControllerServiceWorker(associated_registration_->active_version(),
+  // Now that there is a connection with the renderer-side provider,
+  // send it the SetController IPC.
+  if (controller_) {
+    SendSetControllerServiceWorker(controller_.get(),
                                    false /* notify_controllerchange */);
   }
 }
@@ -887,7 +886,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
   if (version) {
     DCHECK(associated_registration_);
     DCHECK_EQ(associated_registration_->active_version(), version);
-    DCHECK_EQ(controlling_version_.get(), version);
+    DCHECK_EQ(controller_.get(), version);
   }
 
   ServiceWorkerMsg_SetControllerServiceWorker_Params params;
@@ -899,7 +898,7 @@ void ServiceWorkerProviderHost::SendSetControllerServiceWorker(
     params.used_features = version->used_features();
     if (ServiceWorkerUtils::IsServicificationEnabled()) {
       params.controller_event_dispatcher =
-          controlling_version_event_dispatcher_->CreateEventDispatcherPtrInfo()
+          controller_event_dispatcher_->CreateEventDispatcherPtrInfo()
               .PassHandle()
               .release();
     }

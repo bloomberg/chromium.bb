@@ -493,8 +493,8 @@ void ServiceWorkerControlleeRequestHandler::PrepareForSubResource() {
   // because a permanent failure occurred when trying to start it.
   //
   // As this is an exceptional case, just error out.
-  // TODO(falken): Figure out if |active_version| can change to
-  // |controlling_version| and do it or document the findings.
+  // TODO(falken): Figure out if |active_version| can change to |controller| and
+  // do it or document the findings.
   if (!provider_host_->active_version()) {
     url_job_->FailDueToLostController();
     return;

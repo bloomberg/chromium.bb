@@ -211,7 +211,7 @@ void ServiceWorkerRegistration::ClaimClients() {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
     if (host->IsHostToRunningServiceWorker())
       continue;
-    if (host->controlling_version() == active_version())
+    if (host->controller() == active_version())
       continue;
     if (!host->IsContextSecureForServiceWorker())
       continue;
@@ -411,7 +411,7 @@ void ServiceWorkerRegistration::DeleteVersion(
            context_->GetProviderHostIterator();
        !it->IsAtEnd(); it->Advance()) {
     ServiceWorkerProviderHost* host = it->GetProviderHost();
-    if (host->controlling_version() == version)
+    if (host->controller() == version)
       host->NotifyControllerLost();
   }
 

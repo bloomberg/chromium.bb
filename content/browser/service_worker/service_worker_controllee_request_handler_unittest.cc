@@ -254,7 +254,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, InstallingRegistration) {
   EXPECT_EQ(registration_.get(), provider_host_->associated_registration());
   EXPECT_EQ(version_.get(), provider_host_->installing_version());
   EXPECT_FALSE(version_->HasControllee());
-  EXPECT_FALSE(provider_host_->controlling_version());
+  EXPECT_FALSE(provider_host_->controller());
 }
 
 // Test to not regress crbug/414118.
@@ -311,14 +311,14 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, LostActiveVersion) {
   main_test_resources.MaybeCreateJob();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(version_->HasControllee());
-  EXPECT_EQ(version_, provider_host_->controlling_version());
+  EXPECT_EQ(version_, provider_host_->controller());
   EXPECT_EQ(version_, provider_host_->active_version());
 
   // Unset the active version.
   provider_host_->NotifyControllerLost();
   registration_->SetActiveVersion(nullptr);
   EXPECT_FALSE(version_->HasControllee());
-  EXPECT_FALSE(provider_host_->controlling_version());
+  EXPECT_FALSE(provider_host_->controller());
   EXPECT_FALSE(provider_host_->active_version());
 
   // Conduct a subresource load.
@@ -355,7 +355,7 @@ TEST_F(ServiceWorkerControlleeRequestHandlerTest, FallbackWithNoFetchHandler) {
   EXPECT_TRUE(main_job->ShouldFallbackToNetwork());
   EXPECT_FALSE(main_job->ShouldForwardToServiceWorker());
   EXPECT_TRUE(version_->HasControllee());
-  EXPECT_EQ(version_, provider_host_->controlling_version());
+  EXPECT_EQ(version_, provider_host_->controller());
 
   ServiceWorkerRequestTestResources sub_test_resources(
       this, GURL("https://host/scope/doc/subresource"), RESOURCE_TYPE_IMAGE);
