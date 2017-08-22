@@ -18,6 +18,7 @@ import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl;
+import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrTestFramework;
 import org.chromium.content.browser.ContentViewCore;
@@ -152,7 +153,7 @@ public class VrTransitionUtils {
                 activity.getPackageManager().getLaunchIntentForPackage(activity.getPackageName());
         intent.setAction(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
-        intent.putExtra(VrShellDelegate.DAYDREAM_VR_EXTRA, true);
+        intent.putExtra(VrIntentUtils.DAYDREAM_VR_EXTRA, true);
         DaydreamApi.setupVrIntent(intent);
         intent.removeCategory("com.google.intent.category.DAYDREAM");
         CustomTabsIntent.setAlwaysUseBrowserUI(intent);
