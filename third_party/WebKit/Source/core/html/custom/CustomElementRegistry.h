@@ -20,6 +20,7 @@ namespace blink {
 
 class CustomElementDefinitionBuilder;
 class CustomElementDescriptor;
+class CustomElementReactionStack;
 class Element;
 class ElementDefinitionOptions;
 class ExceptionState;
@@ -106,6 +107,8 @@ class CORE_EXPORT CustomElementRegistry final
   using WhenDefinedPromiseMap =
       HeapHashMap<AtomicString, Member<ScriptPromiseResolver>>;
   WhenDefinedPromiseMap when_defined_promise_map_;
+
+  TraceWrapperMember<CustomElementReactionStack> reaction_stack_;
 };
 
 }  // namespace blink
