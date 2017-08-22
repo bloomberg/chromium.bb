@@ -1,36 +1,26 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 <script>
-if (window.testRunner)
-    testRunner.setMockSpellCheckerEnabled(true);
+const clicked = false;
 
-var clicked = false;
-
-function handleClicked()
-{
+function handleClicked() {
     clicked = true;
 }
 
-function test()
-{
-    description("This test passes if it doesn't crash and the context menu is shown for the search input");
-    if (!window.eventSender)
-        return;
+spellcheck_test(
+  '<input id="target" oncontextmenu="handleClicked()" type="search">',
+  document => {
+    assert_not_equals(window.eventSender, undefined, 'This test requires eventSender');
+
     var target = document.getElementById("target");
     var clickX = target.offsetLeft + target.offsetWidth - 2;
     var clickY = target.offsetTop + target.offsetHeight / 2;
     eventSender.mouseMoveTo(clickX, clickY);
     eventSender.contextClick();
-    shouldBe("clicked", "true");
-}
+  },
+  '<input id="target" oncontextmenu="handleClicked()" type="search">',
+  'Show context menu for search input should not crash.');
 </script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
-<input id="target" type="search" oncontextmenu="handleClicked()">
-<script>test();</script>
-</body>
-</html>
