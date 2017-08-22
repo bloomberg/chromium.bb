@@ -807,13 +807,7 @@ void LayerTreeHost::RecordWheelAndTouchScrollingCount(ScrollAndScaleSet* info) {
 }
 
 void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
-  // TODO(pdr): This is a speculative CHECK to investigate crbug.com/747719 and
-  //            should be removed once that bug is resolved.
-  CHECK(info);
   for (auto& swap_promise : info->swap_promises) {
-    // TODO(pdr): This is a speculative CHECK to investigate crbug.com/747719
-    //            and should be removed once that bug is resolved.
-    CHECK(swap_promise);
     TRACE_EVENT_WITH_FLOW1("input,benchmark", "LatencyInfo.Flow",
                            TRACE_ID_DONT_MANGLE(swap_promise->TraceId()),
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
@@ -826,9 +820,6 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
       Layer* layer = LayerByElementId(info->scrolls[i].element_id);
       if (!layer)
         continue;
-      // TODO(pdr): This is a speculative CHECK to investigate crbug.com/747719
-      //            and should be removed once that bug is resolved.
-      CHECK(info);
       layer->SetScrollOffsetFromImplSide(gfx::ScrollOffsetWithDelta(
           layer->scroll_offset(), info->scrolls[i].scroll_delta));
       SetNeedsUpdateLayers();
@@ -837,9 +828,6 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
       Layer* layer = LayerByElementId(info->scrollbars[i].element_id);
       if (!layer)
         continue;
-      // TODO(pdr): This is a speculative CHECK to investigate crbug.com/747719
-      //            and should be removed once that bug is resolved.
-      CHECK(info);
       layer->SetScrollbarsHiddenFromImplSide(info->scrollbars[i].hidden);
     }
   }
