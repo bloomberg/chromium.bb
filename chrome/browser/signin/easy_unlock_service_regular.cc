@@ -658,18 +658,23 @@ void EasyUnlockServiceRegular::OnScreenDidUnlock(
         base::Time::Now().ToJavaTime());
   }
 
-  // Do not process events for the login screen.
-  if (screen_type != proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN)
-    return;
-
-  // If we tried to load remote devices (e.g. after a sync) while the screen was
-  // locked, we can now load the new remote devices.
-  // Note: This codepath may be reachable when the login screen unlocks.
+  // If we tried to load remote devices (e.g. after a sync or the
+  // service was initialized) while the screen was locked, we can now
+  // load the new remote devices.
+  //
+  // It's important to go through this code path even if unlocking the
+  // login screen. Because when the service is initialized while the
+  // user is signing in we need to load the remotes. Otherwise, the
+  // first time the user locks the screen the feature won't work.
   if (deferring_device_load_) {
     PA_LOG(INFO) << "Loading deferred devices after screen unlock.";
     deferring_device_load_ = false;
     LoadRemoteDevices();
   }
+
+  // Do not process events for the login screen.
+  if (screen_type != proximity_auth::ScreenlockBridge::LockHandler::LOCK_SCREEN)
+    return;
 
   if (shown_pairing_changed_notification_) {
     shown_pairing_changed_notification_ = false;
