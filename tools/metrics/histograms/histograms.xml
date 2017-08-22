@@ -81958,6 +81958,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ThirdPartyModules.InstalledPrograms.DataSize" units="KB">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    Records the size of the in-memory representation of the installed
+    third-party programs on the user's machine.
+  </summary>
+</histogram>
+
+<histogram name="ThirdPartyModules.InstalledPrograms.GetDataTime" units="ms">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    Records the time it took to gather the list of installed third-party
+    programs and their install location or components.
+  </summary>
+</histogram>
+
 <histogram name="ThirdPartyModules.Modules.Loaded" units="modules">
   <owner>chrisha@chromium.org</owner>
   <summary>
