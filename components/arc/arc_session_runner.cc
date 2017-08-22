@@ -16,10 +16,6 @@ namespace {
 constexpr base::TimeDelta kDefaultRestartDelay =
     base::TimeDelta::FromSeconds(5);
 
-// TODO(yusukes): This is a workaround for crbug.com/756687. Remove the code
-// once the issue is fixed.
-bool g_emit_login_prompt_visible_called_called = false;
-
 chromeos::SessionManagerClient* GetSessionManagerClient() {
   // If the DBusThreadManager or the SessionManagerClient aren't available,
   // there isn't much we can do. This should only happen when running tests.
@@ -153,11 +149,6 @@ void ArcSessionRunner::SetRestartDelayForTesting(
   restart_delay_ = restart_delay;
 }
 
-// static
-void ArcSessionRunner::ResetEmitLoginPromptVisibleCalledCalledForTesting() {
-  g_emit_login_prompt_visible_called_called = false;
-}
-
 void ArcSessionRunner::StartArcSession() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!restart_timer_.IsRunning());
@@ -240,15 +231,6 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason) {
 }
 
 void ArcSessionRunner::EmitLoginPromptVisibleCalled() {
-  // TODO(yusukes): Remove the code once crbug.com/756687 is fixed.
-  if (g_emit_login_prompt_visible_called_called) {
-    LOG(WARNING) << "EmitLoginPromptVisibleCalled() has already been called "
-                 << "before. Returning now without changing the |state_| which "
-                 << "is currently " << static_cast<int>(state_);
-    return;
-  }
-  g_emit_login_prompt_visible_called_called = true;
-
   // Since 'login-prompt-visible' Upstart signal starts all Upstart jobs the
   // container may depend on such as cras, EmitLoginPromptVisibleCalled() is the
   // safe place to start the container for login screen.
