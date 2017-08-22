@@ -132,6 +132,8 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
                     int index,
                     void* params) override;
 
+  Profile* profile_;
+
   // Discovery support.  discovery_active_ tracks whether or not the UI
   // currently wants updates about printer availability.  The two vectors track
   // the most recent list of printers in each class.
@@ -139,6 +141,10 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   std::vector<Printer> discovered_printers_;
   std::vector<Printer> automatic_printers_;
 
+  // These must be initialized before printers_manager_, as they are
+  // used by callbacks that may be issued immediately by printers_manager_.
+  //
+  // TODO(crbug/757887) - Remove this subtle initialization constraint.
   scoped_refptr<PpdProvider> ppd_provider_;
   std::unique_ptr<PrinterConfigurer> printer_configurer_;
 
@@ -146,7 +152,6 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   // that has been resolved in the lifetime of this object.
   std::map<std::string, PpdProvider::ResolvedPrintersList> resolved_printers_;
 
-  Profile* profile_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   std::string webui_callback_id_;
   std::unique_ptr<CupsPrintersManager> printers_manager_;
