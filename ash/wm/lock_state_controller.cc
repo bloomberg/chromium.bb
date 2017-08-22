@@ -10,7 +10,6 @@
 
 #include "ash/accessibility_delegate.h"
 #include "ash/cancel_mode.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/shutdown.mojom.h"
 #include "ash/session/session_controller.h"
@@ -27,6 +26,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/timer/timer.h"
@@ -486,9 +486,13 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
   }
 
   if (request_lock) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        shutdown_after_lock_ ? UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON
-                             : UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON);
+    if (shutdown_after_lock_) {
+      base::RecordAction(
+          base::UserMetricsAction("Accel_LockScreen_PowerButton"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("Accel_LockScreen_LockButton"));
+    }
     chromeos::DBusThreadManager::Get()
         ->GetSessionManagerClient()
         ->RequestLockScreen();

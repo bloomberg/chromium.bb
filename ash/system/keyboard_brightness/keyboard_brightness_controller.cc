@@ -4,20 +4,24 @@
 
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 
-#include "ash/metrics/user_metrics_recorder.h"
-#include "ash/shell.h"
+#include "base/metrics/user_metrics.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "ui/base/accelerators/accelerator.h"
 
+using base::RecordAction;
+using base::UserMetricsAction;
+
 namespace ash {
+
+KeyboardBrightnessController::KeyboardBrightnessController() = default;
+
+KeyboardBrightnessController::~KeyboardBrightnessController() = default;
 
 void KeyboardBrightnessController::HandleKeyboardBrightnessDown(
     const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_ACCEL_KEYBOARD_BRIGHTNESS_DOWN_F6);
-  }
+  if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_DOWN)
+    RecordAction(UserMetricsAction("Accel_KeyboardBrightnessDown_F6"));
 
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
@@ -26,10 +30,8 @@ void KeyboardBrightnessController::HandleKeyboardBrightnessDown(
 
 void KeyboardBrightnessController::HandleKeyboardBrightnessUp(
     const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_ACCEL_KEYBOARD_BRIGHTNESS_UP_F7);
-  }
+  if (accelerator.key_code() == ui::VKEY_BRIGHTNESS_UP)
+    RecordAction(UserMetricsAction("Accel_KeyboardBrightnessUp_F7"));
 
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
