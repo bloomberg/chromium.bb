@@ -133,13 +133,16 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
   int ctx_idx = -1;
   if (row == 0 && col == 0) {
     ctx_idx = (ctx << 1) + sig_mag;
-    assert(ctx_idx < 8);
+    // TODO(angiebird): turn this on once the optimization is finalized
+    // assert(ctx_idx < 8);
   } else if (row == 0) {
     ctx_idx = 8 + (ctx << 1) + sig_mag;
-    assert(ctx_idx < 18);
+    // TODO(angiebird): turn this on once the optimization is finalized
+    // assert(ctx_idx < 18);
   } else if (col == 0) {
     ctx_idx = 8 + 10 + (ctx << 1) + sig_mag;
-    assert(ctx_idx < 28);
+    // TODO(angiebird): turn this on once the optimization is finalized
+    // assert(ctx_idx < 28);
   } else {
     ctx_idx = 8 + 10 + 10 + (ctx << 1) + sig_mag;
     assert(ctx_idx < COEFF_BASE_CONTEXTS);
