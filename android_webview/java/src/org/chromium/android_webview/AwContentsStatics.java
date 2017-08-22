@@ -117,6 +117,7 @@ public class AwContentsStatics {
     public static void initSafeBrowsing(Context context, final ValueCallback<Boolean> callback) {
         // Wrap the callback to make sure we always invoke it on the UI thread, as guaranteed by the
         // API.
+        final Context appContext = context.getApplicationContext();
         ValueCallback<Boolean> wrapperCallback = b -> {
             if (callback != null) {
                 ThreadUtils.runOnUiThread(() -> callback.onReceiveValue(b));
@@ -127,7 +128,7 @@ public class AwContentsStatics {
             Class cls = Class.forName(sSafeBrowsingWarmUpHelper);
             Method m =
                     cls.getDeclaredMethod("warmUpSafeBrowsing", Context.class, ValueCallback.class);
-            m.invoke(null, context, wrapperCallback);
+            m.invoke(null, appContext, wrapperCallback);
         } catch (ReflectiveOperationException e) {
             wrapperCallback.onReceiveValue(false);
         }
