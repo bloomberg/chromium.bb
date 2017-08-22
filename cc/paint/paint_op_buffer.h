@@ -361,7 +361,10 @@ class CC_PAINT_EXPORT DrawArcOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid() && oval.isFinite(); }
+  bool IsValid() const {
+    return flags.IsValid() && oval.isFinite() && std::isfinite(start_angle) &&
+           std::isfinite(sweep_angle);
+  }
   HAS_SERIALIZATION_FUNCTIONS();
 
   SkRect oval;
