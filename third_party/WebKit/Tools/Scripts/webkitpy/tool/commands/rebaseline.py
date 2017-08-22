@@ -332,20 +332,17 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return optimize_commands
 
     def _update_expectations_files(self, lines_to_remove):
-        # FIXME: This routine is way too expensive. We're creating O(n ports) TestExpectations objects.
-        # This is slow and uses a lot of memory.
         tests = lines_to_remove.keys()
         to_remove = []
 
-        # This is so we remove lines for builders that skip this test, e.g. Android skips most
-        # tests and we don't want to leave stray [ Android ] lines in TestExpectations..
+        # This is so we remove lines for builders that skip this test.
+        # For example, Android skips most tests and we don't want to leave
+        # stray [ Android ] lines in TestExpectations.
         # This is only necessary for "webkit-patch rebaseline".
         for port_name in self._tool.port_factory.all_port_names():
             port = self._tool.port_factory.get(port_name)
-            generic_expectations = TestExpectations(port, tests=tests, include_overrides=False)
-            full_expectations = TestExpectations(port, tests=tests, include_overrides=True)
             for test in tests:
-                if port.skips_test(test, generic_expectations, full_expectations):
+                if port.skips_test(test):
                     for test_configuration in port.all_test_configurations():
                         if test_configuration.version == port.test_configuration().version:
                             to_remove.append((test, test_configuration))

@@ -642,49 +642,36 @@ class PortTest(unittest.TestCase):
     def test_skips_test_in_smoke_tests(self):
         port = self.make_port(with_tests=True)
         port.default_smoke_test_only = lambda: True
-        port.host.filesystem.write_text_file(port.path_to_smoke_tests_file(), 'passes/text.html\n')
-        self.assertTrue(port.skips_test(
-            'failures/expected/image.html',
-            generic_expectations=TestExpectations(port, include_overrides=False),
-            full_expectations=TestExpectations(port, include_overrides=True)))
+        port.host.filesystem.write_text_file(
+            port.path_to_smoke_tests_file(),
+            'passes/text.html\n')
+        self.assertTrue(port.skips_test('failures/expected/image.html'))
 
     def test_skips_test_no_skip_smoke_tests_file(self):
         port = self.make_port(with_tests=True)
         port.default_smoke_test_only = lambda: True
-        self.assertFalse(port.skips_test(
-            'failures/expected/image.html',
-            generic_expectations=TestExpectations(port, include_overrides=False),
-            full_expectations=TestExpectations(port, include_overrides=True)))
+        self.assertFalse(port.skips_test('failures/expected/image.html'))
 
     def test_skips_test_port_doesnt_skip_smoke_tests(self):
         port = self.make_port(with_tests=True)
         port.default_smoke_test_only = lambda: False
-        self.assertFalse(port.skips_test(
-            'failures/expected/image.html',
-            generic_expectations=TestExpectations(port, include_overrides=False),
-            full_expectations=TestExpectations(port, include_overrides=True)))
+        self.assertFalse(port.skips_test('failures/expected/image.html'))
 
-    def test_skips_test_skip_in_generic_expectations(self):
+    def test_skips_test_in_test_expectations(self):
         port = self.make_port(with_tests=True)
         port.default_smoke_test_only = lambda: False
         port.host.filesystem.write_text_file(
             port.path_to_generic_test_expectations_file(),
             'Bug(test) failures/expected/image.html [ Skip ]\n')
-        self.assertFalse(port.skips_test(
-            'failures/expected/image.html',
-            generic_expectations=TestExpectations(port, include_overrides=False),
-            full_expectations=TestExpectations(port, include_overrides=True)))
+        self.assertFalse(port.skips_test('failures/expected/image.html'))
 
-    def test_skips_test_skip_in_full_expectations(self):
+    def test_skips_test_in_never_fix_tests(self):
         port = self.make_port(with_tests=True)
         port.default_smoke_test_only = lambda: False
         port.host.filesystem.write_text_file(
-            port.host.filesystem.join(port.layout_tests_dir(), 'NeverFixTests'),
+            port.path_to_never_fix_tests_file(),
             'Bug(test) failures/expected/image.html [ WontFix ]\n')
-        self.assertTrue(port.skips_test(
-            'failures/expected/image.html',
-            generic_expectations=TestExpectations(port, include_overrides=False),
-            full_expectations=TestExpectations(port, include_overrides=True)))
+        self.assertTrue(port.skips_test('failures/expected/image.html'))
 
 
 class NaturalCompareTest(unittest.TestCase):

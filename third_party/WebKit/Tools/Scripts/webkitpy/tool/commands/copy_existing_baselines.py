@@ -56,13 +56,11 @@ class CopyExistingBaselines(AbstractRebaseliningCommand):
                 _log.debug('Existing baseline at %s, not copying over it.', new_baseline)
                 continue
 
-            generic_expectations = TestExpectations(port, tests=[test_name], include_overrides=False)
             full_expectations = TestExpectations(port, tests=[test_name], include_overrides=True)
-            # TODO(qyearsley): Change Port.skips_test so that this can be simplified.
             if SKIP in full_expectations.get_expectations(test_name):
-                _log.debug('%s is skipped (perhaps temporarily) on %s.', test_name, port.name())
+                _log.debug('%s is skipped on %s.', test_name, port.name())
                 continue
-            if port.skips_test(test_name, generic_expectations, full_expectations):
+            if port.skipped_due_to_smoke_tests(test_name):
                 _log.debug('%s is skipped on %s.', test_name, port.name())
                 continue
 
