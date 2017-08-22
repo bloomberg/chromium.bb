@@ -4,3 +4,9 @@ include_rules = [
   "+ui/base",
   "+ui/latency",
 ]
+
+specific_include_rules = {
+  "gpu_in_process_context_tests.cc": [
+    "+components/viz/test/test_gpu_memory_buffer_manager.h",
+  ]
+}

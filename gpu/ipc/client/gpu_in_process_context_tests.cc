@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -21,7 +23,7 @@ namespace {
 
 class ContextTestBase : public testing::Test {
  public:
-  void SetUp() override {
+  std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext() {
     gpu::gles2::ContextCreationAttribHelper attributes;
     attributes.alpha_size = 8;
     attributes.depth_size = 24;
@@ -33,25 +35,34 @@ class ContextTestBase : public testing::Test {
     attributes.sample_buffers = 1;
     attributes.bind_generates_resource = false;
 
-    context_.reset(
-        gpu::GLInProcessContext::Create(nullptr,                 /* service */
-                                        nullptr,                 /* surface */
-                                        true,                    /* offscreen */
-                                        gpu::kNullSurfaceHandle, /* window */
-                                        nullptr, /* share_context */
-                                        attributes, gpu::SharedMemoryLimits(),
-                                        nullptr, /* gpu_memory_buffer_manager */
-                                        nullptr, /* image_factory */
-                                        base::ThreadTaskRunnerHandle::Get()));
+    return base::WrapUnique(gpu::GLInProcessContext::Create(
+        nullptr,                 /* service */
+        nullptr,                 /* surface */
+        true,                    /* offscreen */
+        gpu::kNullSurfaceHandle, /* window */
+        nullptr,                 /* share_context */
+        attributes, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_.get(),
+        nullptr, /* image_factory */
+        base::ThreadTaskRunnerHandle::Get()));
+  }
+
+  void SetUp() override {
+    gpu_memory_buffer_manager_ =
+        std::make_unique<viz::TestGpuMemoryBufferManager>();
+    context_ = CreateGLInProcessContext();
     gl_ = context_->GetImplementation();
     context_support_ = context_->GetImplementation();
   }
 
-  void TearDown() override { context_.reset(NULL); }
+  void TearDown() override {
+    context_.reset();
+    gpu_memory_buffer_manager_.reset();
+  }
 
  protected:
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
+  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
  private:
   std::unique_ptr<gpu::GLInProcessContext> context_;
@@ -62,3 +73,42 @@ class ContextTestBase : public testing::Test {
 // Include the actual tests.
 #define CONTEXT_TEST_F TEST_F
 #include "gpu/ipc/client/gpu_context_tests.h"
+
+using InProcessCommandBufferTest = ContextTestBase;
+
+TEST_F(InProcessCommandBufferTest, CreateImage) {
+  constexpr gfx::BufferFormat kBufferFormat = gfx::BufferFormat::RGBA_8888;
+  constexpr gfx::BufferUsage kBufferUsage = gfx::BufferUsage::SCANOUT;
+  constexpr gfx::Size kBufferSize(100, 100);
+
+#if defined(OS_WIN)
+  // The IPC version of ContextTestBase::SetUpOnMainThread does not succeed on
+  // some platforms.
+  if (!gl_)
+    return;
+#endif
+
+  // Calling CreateImageCHROMIUM() should allocate an image id starting at 1.
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer1 =
+      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
+          kBufferSize, kBufferFormat, kBufferUsage, gpu::kNullSurfaceHandle);
+  int image_id1 = gl_->CreateImageCHROMIUM(gpu_memory_buffer1->AsClientBuffer(),
+                                           kBufferSize.width(),
+                                           kBufferSize.height(), GL_RGBA);
+
+  EXPECT_EQ(image_id1, 1);
+
+  // Create a second GLInProcessContext that is backed by a different
+  // InProcessCommandBuffer. Calling CreateImageCHROMIUM() should return a
+  // different id than the first call.
+  std::unique_ptr<gpu::GLInProcessContext> context2 =
+      CreateGLInProcessContext();
+  std::unique_ptr<gfx::GpuMemoryBuffer> buffer2 =
+      gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
+          kBufferSize, kBufferFormat, kBufferUsage, gpu::kNullSurfaceHandle);
+  int image_id2 = context2->GetImplementation()->CreateImageCHROMIUM(
+      buffer2->AsClientBuffer(), kBufferSize.width(), kBufferSize.height(),
+      GL_RGBA);
+
+  EXPECT_EQ(image_id2, 2);
+}
