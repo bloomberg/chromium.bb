@@ -38,6 +38,8 @@ class CSSPropertyBackgroundUtils {
                                         CSSPropertyParserHelpers::UnitlessQuirk,
                                         CSSValue*& result_x,
                                         CSSValue*& result_y);
+  static CSSValue* ConsumePrefixedBackgroundBox(CSSParserTokenRange&,
+                                                bool allow_text_value);
 };
 
 }  // namespace blink
