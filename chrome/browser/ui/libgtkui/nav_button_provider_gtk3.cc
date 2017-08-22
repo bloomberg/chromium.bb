@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "ui/base/glib/scoped_gobject.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_source.h"
 #include "ui/views/resources/grit/views_resources.h"
 
 namespace libgtkui {
@@ -103,11 +104,11 @@ int DefaultMonitorScaleFactor() {
 }
 
 ScopedGObject<GdkPixbuf> LoadNavButtonIcon(chrome::FrameButtonDisplayType type,
-                                           GtkStyleContext* button_context) {
-  const int monitor_scale = DefaultMonitorScaleFactor();
+                                           GtkStyleContext* button_context,
+                                           int scale) {
   const char* icon_name = IconNameFromButtonType(type);
   ScopedGObject<GtkIconInfo> icon_info(gtk_icon_theme_lookup_icon_for_scale(
-      gtk_icon_theme_get_default(), icon_name, kIconSize, monitor_scale,
+      gtk_icon_theme_get_default(), icon_name, kIconSize, scale,
       static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_USE_BUILTIN |
                                       GTK_ICON_LOOKUP_GENERIC_FALLBACK)));
   return ScopedGObject<GdkPixbuf>(gtk_icon_info_load_symbolic_for_context(
@@ -128,7 +129,7 @@ void CalculateUnscaledButtonSize(chrome::FrameButtonDisplayType type,
                               ButtonStyleClassFromButtonType(type));
 
   ScopedGObject<GdkPixbuf> icon_pixbuf =
-      LoadNavButtonIcon(type, button_context);
+      LoadNavButtonIcon(type, button_context, 1);
 
   const int monitor_scale = DefaultMonitorScaleFactor();
 
@@ -155,50 +156,77 @@ void CalculateUnscaledButtonSize(chrome::FrameButtonDisplayType type,
       MarginFromStyleContext(button_context, GTK_STATE_FLAG_NORMAL);
 }
 
-gfx::ImageSkia RenderNavButton(chrome::FrameButtonDisplayType type,
-                               views::Button::ButtonState state,
-                               gfx::Size button_size) {
-  // TODO(thomasanderson): Handle different window scale factors.
-  auto button_context = GetStyleContextFromCss(
-      "GtkHeaderBar#headerbar.header-bar.titlebar "
-      "GtkButton#button.titlebutton");
-  gtk_style_context_add_class(button_context,
-                              ButtonStyleClassFromButtonType(type));
-  GtkStateFlags button_state = GtkStateFlagsFromButtonState(state);
-  gtk_style_context_set_state(button_context, button_state);
+class NavButtonImageSource : public gfx::ImageSkiaSource {
+ public:
+  NavButtonImageSource(chrome::FrameButtonDisplayType type,
+                       views::Button::ButtonState state,
+                       gfx::Size button_size)
+      : type_(type), state_(state), button_size_(button_size) {}
 
-  ScopedGObject<GdkPixbuf> icon_pixbuf =
-      LoadNavButtonIcon(type, button_context);
+  ~NavButtonImageSource() override {}
 
-  const int monitor_scale = DefaultMonitorScaleFactor();
+  gfx::ImageSkiaRep GetImageForScale(float scale) override {
+    // gfx::ImageSkia kindly caches the result of this function, so
+    // RenderNavButton() is called at most once for each needed scale
+    // factor.  Additionally, buttons in the HOVERED or PRESSED states
+    // are not actually rendered until they are needed.
+    auto button_context = GetStyleContextFromCss(
+        "GtkHeaderBar#headerbar.header-bar.titlebar "
+        "GtkButton#button.titlebutton");
+    gtk_style_context_add_class(button_context,
+                                ButtonStyleClassFromButtonType(type_));
+    GtkStateFlags button_state = GtkStateFlagsFromButtonState(state_);
+    gtk_style_context_set_state(button_context, button_state);
 
-  gfx::Size icon_size(gdk_pixbuf_get_width(icon_pixbuf) / monitor_scale,
-                      gdk_pixbuf_get_height(icon_pixbuf) / monitor_scale);
+    // Gtk doesn't support fractional scale factors, but chrome does.
+    // Rendering the button background and border at a fractional
+    // scale factor is easy, since we can adjust the cairo context
+    // transform.  But the icon is loaded from a pixbuf, so we pick
+    // the next-highest integer scale and manually downsize.
+    int pixbuf_scale = scale == static_cast<int>(scale) ? scale : scale + 1;
+    ScopedGObject<GdkPixbuf> icon_pixbuf =
+        LoadNavButtonIcon(type_, button_context, pixbuf_scale);
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(button_size.width(), button_size.height());
-  bitmap.eraseColor(0);
+    gfx::Size icon_size(gdk_pixbuf_get_width(icon_pixbuf),
+                        gdk_pixbuf_get_height(icon_pixbuf));
 
-  CairoSurface surface(bitmap);
-  cairo_t* cr = surface.cairo();
+    SkBitmap bitmap;
+    bitmap.allocN32Pixels(scale * button_size_.width(),
+                          scale * button_size_.height());
+    bitmap.eraseColor(0);
 
-  if (GtkVersionCheck(3, 11, 3) ||
-      (button_state & (GTK_STATE_FLAG_PRELIGHT | GTK_STATE_FLAG_ACTIVE))) {
-    gtk_render_background(button_context, cr, 0, 0, button_size.width(),
-                          button_size.height());
-    gtk_render_frame(button_context, cr, 0, 0, button_size.width(),
-                     button_size.height());
+    CairoSurface surface(bitmap);
+    cairo_t* cr = surface.cairo();
+
+    cairo_save(cr);
+    cairo_scale(cr, scale, scale);
+    if (GtkVersionCheck(3, 11, 3) ||
+        (button_state & (GTK_STATE_FLAG_PRELIGHT | GTK_STATE_FLAG_ACTIVE))) {
+      gtk_render_background(button_context, cr, 0, 0, button_size_.width(),
+                            button_size_.height());
+      gtk_render_frame(button_context, cr, 0, 0, button_size_.width(),
+                       button_size_.height());
+    }
+    cairo_restore(cr);
+    cairo_save(cr);
+    float pixbuf_extra_scale = scale / pixbuf_scale;
+    cairo_scale(cr, pixbuf_extra_scale, pixbuf_extra_scale);
+    gtk_render_icon(
+        button_context, cr, icon_pixbuf,
+        ((pixbuf_scale * button_size_.width() - icon_size.width()) / 2),
+        ((pixbuf_scale * button_size_.height() - icon_size.height()) / 2));
+    cairo_restore(cr);
+
+    return gfx::ImageSkiaRep(bitmap, scale);
   }
-  cairo_save(cr);
-  cairo_scale(cr, 1.0f / monitor_scale, 1.0f / monitor_scale);
-  gtk_render_icon(
-      button_context, cr, icon_pixbuf,
-      monitor_scale * ((button_size.width() - icon_size.width()) / 2),
-      monitor_scale * ((button_size.height() - icon_size.height()) / 2));
-  cairo_restore(cr);
 
-  return gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
-}
+  bool HasRepresentationAtAllScales() const override { return true; }
+
+ private:
+  chrome::FrameButtonDisplayType type_;
+  views::Button::ButtonState state_;
+  gfx::Size button_size_;
+};
 
 }  // namespace
 
@@ -271,8 +299,10 @@ void NavButtonProviderGtk3::RedrawImages(int top_area_height, bool maximized) {
     button_margins_[type] = margin;
 
     for (size_t state = 0; state < views::Button::STATE_COUNT; state++) {
-      button_images_[type][state] = RenderNavButton(
-          type, static_cast<views::Button::ButtonState>(state), size);
+      button_images_[type][state] = gfx::ImageSkia(
+          std::make_unique<NavButtonImageSource>(
+              type, static_cast<views::Button::ButtonState>(state), size),
+          size);
     }
   }
 }
