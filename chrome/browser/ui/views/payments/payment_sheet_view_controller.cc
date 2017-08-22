@@ -621,11 +621,11 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   }
 
   layout->StartRow(0, 0);
-  layout->AddView(
-      CreateBoldLabel(
-          base::UTF8ToUTF16(
-              spec()->GetTotal(state()->selected_instrument())->label))
-          .release());
+  PaymentInstrument* selected_instrument = state()->selected_instrument();
+  const mojom::PaymentItemPtr& total = spec()->GetTotal(selected_instrument);
+  base::string16 total_label_text = base::UTF8ToUTF16(total->label);
+  std::unique_ptr<views::Label> total_label = CreateBoldLabel(total_label_text);
+  layout->AddView(total_label.release());
 
   layout->AddView(
       CreateInlineCurrencyAmountItem(
