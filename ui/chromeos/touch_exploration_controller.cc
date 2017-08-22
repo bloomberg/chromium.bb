@@ -42,7 +42,7 @@ void SetTouchAccessibilityFlag(ui::Event* event) {
 TouchExplorationController::TouchExplorationController(
     aura::Window* root_window,
     TouchExplorationControllerDelegate* delegate,
-    TouchAccessibilityEnabler* touch_accessibility_enabler)
+    base::WeakPtr<TouchAccessibilityEnabler> touch_accessibility_enabler)
     : root_window_(root_window),
       delegate_(delegate),
       state_(NO_FINGERS_DOWN),
@@ -53,10 +53,14 @@ TouchExplorationController::TouchExplorationController(
       touch_accessibility_enabler_(touch_accessibility_enabler) {
   DCHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
+  if (touch_accessibility_enabler_)
+    touch_accessibility_enabler_->RemoveEventHandler();
 }
 
 TouchExplorationController::~TouchExplorationController() {
   root_window_->GetHost()->GetEventSource()->RemoveEventRewriter(this);
+  if (touch_accessibility_enabler_)
+    touch_accessibility_enabler_->AddEventHandler();
 }
 
 void TouchExplorationController::SetTouchAccessibilityAnchorPoint(

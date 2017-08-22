@@ -188,7 +188,7 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
       touch_exploration_controller_ =
           base::MakeUnique<ui::TouchExplorationController>(
               root_window_controller_->GetRootWindow(), this,
-              touch_accessibility_enabler_.get());
+              touch_accessibility_enabler_->GetWeakPtr());
     }
     if (pass_through_surface) {
       const display::Display display =
