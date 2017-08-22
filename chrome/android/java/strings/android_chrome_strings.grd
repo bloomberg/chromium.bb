@@ -1899,11 +1899,11 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that an installation for the WebAPK for the specific website is already in progress.">
         Still adding previous site
       </message>
-      <message name="IDS_NOTIFICATION_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that the install of a WebAPK is in progress.">
-        Installing <ph name="WEBAPK_NAME">%1$s<ex>Progressive Web Apps</ex></ph> ...
+      <message name="IDS_NOTIFICATION_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that the adding of a WebAPK is in progress.">
+        Adding <ph name="WEBAPK_NAME">%1$s<ex>Progressive Web Apps</ex></ph> ...
       </message>
-      <message name="IDS_NOTIFICATION_WEBAPK_INSTALLED" desc="Indicates that a WebAPK has been successfully installed.">
-        Successfully installed.
+      <message name="IDS_NOTIFICATION_WEBAPK_INSTALLED" desc="Indicates that a WebAPK has been successfully added to home screen.">
+        Added to home screen.
       </message>
 
       <!-- PageInfoPopup (PageInfo dialog) -->
