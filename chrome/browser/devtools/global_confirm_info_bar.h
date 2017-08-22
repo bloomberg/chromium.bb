@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DEVTOOLS_GLOBAL_CONFIRM_INFO_BAR_H_
 
 #include <map>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -27,6 +28,8 @@ class GlobalConfirmInfoBar : public TabStripModelObserver,
  public:
   static base::WeakPtr<GlobalConfirmInfoBar> Show(
       std::unique_ptr<ConfirmInfoBarDelegate> delegate);
+
+  // Closes all the infobars.
   void Close();
 
   // infobars::InfoBarManager::Observer:
@@ -54,6 +57,10 @@ class GlobalConfirmInfoBar : public TabStripModelObserver,
   std::unique_ptr<ConfirmInfoBarDelegate> delegate_;
   std::map<infobars::InfoBarManager*, DelegateProxy*> proxies_;
   BrowserTabStripTracker browser_tab_strip_tracker_;
+
+  // Indicates if the global infobar is currently in the process of shutting
+  // down.
+  bool is_closing_;
 
   base::WeakPtrFactory<GlobalConfirmInfoBar> weak_factory_;
 
