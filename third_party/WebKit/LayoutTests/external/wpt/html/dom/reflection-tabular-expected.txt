@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 4830 tests; 4820 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 4894 tests; 4882 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS table.title: 32 tests
 PASS table.lang: 32 tests
 PASS table.dir: 62 tests
@@ -113,6 +113,9 @@ FAIL td.rowSpan: IDL set to 0 assert_equals: IDL get expected 0 but got 1
 PASS td.rowSpan: 3 tests
 FAIL td.rowSpan: IDL set to "-0" assert_equals: IDL get expected 0 but got 1
 PASS td.rowSpan: 4 tests
+PASS td.headers: 29 tests
+FAIL td.headers: IDL set to null assert_equals: getAttribute() expected (string) "null" but got (object) null
+PASS td.headers: 2 tests
 PASS td.scope: 72 tests
 PASS td.abbr: 32 tests
 PASS td.align: 32 tests
@@ -142,6 +145,9 @@ FAIL th.rowSpan: IDL set to 0 assert_equals: IDL get expected 0 but got 1
 PASS th.rowSpan: 3 tests
 FAIL th.rowSpan: IDL set to "-0" assert_equals: IDL get expected 0 but got 1
 PASS th.rowSpan: 4 tests
+PASS th.headers: 29 tests
+FAIL th.headers: IDL set to null assert_equals: getAttribute() expected (string) "null" but got (object) null
+PASS th.headers: 2 tests
 PASS th.scope: 72 tests
 PASS th.abbr: 32 tests
 PASS th.align: 32 tests

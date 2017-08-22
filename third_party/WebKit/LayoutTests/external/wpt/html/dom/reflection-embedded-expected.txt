@@ -1,5 +1,12 @@
 This is a testharness.js-based test.
-Found 6750 tests; 6552 PASS, 198 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6997 tests; 6863 PASS, 134 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS picture.title: 32 tests
+PASS picture.lang: 32 tests
+PASS picture.dir: 62 tests
+PASS picture.className (<picture class>): 32 tests
+PASS picture.hidden: 33 tests
+PASS picture.accessKey: 32 tests
+PASS picture.tabIndex: 24 tests
 PASS img.title: 32 tests
 PASS img.lang: 32 tests
 PASS img.dir: 62 tests
@@ -217,38 +224,6 @@ PASS video.crossOrigin: 52 tests
 PASS video.preload: 37 tests
 PASS video.autoplay: 33 tests
 PASS video.loop: 33 tests
-FAIL video.mediaGroup: typeof IDL attribute assert_equals: expected "string" but got "undefined"
-FAIL video.mediaGroup: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
-FAIL video.mediaGroup: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
-FAIL video.mediaGroup: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
-FAIL video.mediaGroup: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
 PASS video.controls: 33 tests
 PASS video.defaultMuted (<video muted>): 33 tests
 PASS video.width: 62 tests
@@ -266,38 +241,6 @@ PASS audio.crossOrigin: 52 tests
 PASS audio.preload: 37 tests
 PASS audio.autoplay: 33 tests
 PASS audio.loop: 33 tests
-FAIL audio.mediaGroup: typeof IDL attribute assert_equals: expected "string" but got "undefined"
-FAIL audio.mediaGroup: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to "" assert_equals: IDL get expected (string) "" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to undefined assert_equals: IDL get expected (string) "undefined" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to 7 assert_equals: IDL get expected (string) "7" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to 1.5 assert_equals: IDL get expected (string) "1.5" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to true assert_equals: IDL get expected (string) "true" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to false assert_equals: IDL get expected (string) "false" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to object "[object Object]" assert_equals: IDL get expected (string) "[object Object]" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to NaN assert_equals: IDL get expected (string) "NaN" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to Infinity assert_equals: IDL get expected (string) "Infinity" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to -Infinity assert_equals: IDL get expected (string) "-Infinity" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to "\0" assert_equals: IDL get expected (string) "\0" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to null assert_equals: IDL get expected (string) "null" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to object "test-toString" assert_equals: IDL get expected (string) "test-toString" but got (undefined) undefined
-FAIL audio.mediaGroup: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (undefined) undefined
-FAIL audio.mediaGroup: IDL set to "" assert_equals: getAttribute() expected "" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to undefined assert_equals: getAttribute() expected "undefined" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to 7 assert_equals: getAttribute() expected "7" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to 1.5 assert_equals: getAttribute() expected "1.5" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to true assert_equals: getAttribute() expected "true" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to false assert_equals: getAttribute() expected "false" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to object "[object Object]" assert_equals: getAttribute() expected "[object Object]" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to NaN assert_equals: getAttribute() expected "NaN" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to Infinity assert_equals: getAttribute() expected "Infinity" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to -Infinity assert_equals: getAttribute() expected "-Infinity" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to "\0" assert_equals: getAttribute() expected "\0" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to null assert_equals: getAttribute() expected "null" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to object "test-toString" assert_equals: getAttribute() expected "test-toString" but got "test-valueOf"
-FAIL audio.mediaGroup: IDL set to object "test-valueOf" assert_equals: IDL get expected (string) "test-valueOf" but got (object) object "test-valueOf"
 PASS audio.controls: 33 tests
 PASS audio.defaultMuted (<audio muted>): 33 tests
 PASS source.title: 32 tests
@@ -309,6 +252,8 @@ PASS source.accessKey: 32 tests
 PASS source.tabIndex: 24 tests
 PASS source.src: 38 tests
 PASS source.type: 32 tests
+PASS source.srcset: 32 tests
+PASS source.sizes: 32 tests
 PASS source.media: 32 tests
 PASS track.title: 32 tests
 PASS track.lang: 32 tests

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1871 tests; 1817 PASS, 54 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1819 tests; 1817 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selectors-API Test Suite: XHTML 
 PASS Document supports querySelector 
 PASS Document supports querySelectorAll 
@@ -609,20 +609,6 @@ PASS Document.querySelectorAll: Descendant combinator, whitespace characters: #d
 #descendant-div2 
 PASS Document.querySelector: Descendant combinator, whitespace characters: #descendant	\r
 #descendant-div2 
-FAIL Document.querySelectorAll: Descendant combinator '>>', matching element that is a descendant of an element with id: #descendant>>div Failed to execute 'querySelectorAll' on 'Document': '#descendant>>div' is not a valid selector.
-FAIL Document.querySelector: Descendant combinator '>>', matching element that is a descendant of an element with id: #descendant>>div Failed to execute 'querySelector' on 'Document': '#descendant>>div' is not a valid selector.
-FAIL Document.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element: body>>#descendant-div1 Failed to execute 'querySelectorAll' on 'Document': 'body>>#descendant-div1' is not a valid selector.
-FAIL Document.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element: body>>#descendant-div1 Failed to execute 'querySelector' on 'Document': 'body>>#descendant-div1' is not a valid selector.
-FAIL Document.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element: div>>#descendant-div1 Failed to execute 'querySelectorAll' on 'Document': 'div>>#descendant-div1' is not a valid selector.
-FAIL Document.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element: div>>#descendant-div1 Failed to execute 'querySelector' on 'Document': 'div>>#descendant-div1' is not a valid selector.
-FAIL Document.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element with id: #descendant>>#descendant-div2 Failed to execute 'querySelectorAll' on 'Document': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL Document.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element with id: #descendant>>#descendant-div2 Failed to execute 'querySelector' on 'Document': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL Document.querySelectorAll: Descendant combinator '>>', matching element with class that is a descendant of an element with id: #descendant>>.descendant-div2 Failed to execute 'querySelectorAll' on 'Document': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL Document.querySelector: Descendant combinator '>>', matching element with class that is a descendant of an element with id: #descendant>>.descendant-div2 Failed to execute 'querySelector' on 'Document': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL Document.querySelectorAll: Descendant combinator '>>', matching element with class that is a descendant of an element with class: .descendant-div1>>.descendant-div3 Failed to execute 'querySelectorAll' on 'Document': '.descendant-div1>>.descendant-div3' is not a valid selector.
-FAIL Document.querySelector: Descendant combinator '>>', matching element with class that is a descendant of an element with class: .descendant-div1>>.descendant-div3 Failed to execute 'querySelector' on 'Document': '.descendant-div1>>.descendant-div3' is not a valid selector.
-FAIL Document.querySelectorAll: Descendant combinator '>>', not matching element with id that is not a descendant of an element with id: #descendant-div1>>#descendant-div4 Failed to execute 'querySelectorAll' on 'Document': '#descendant-div1>>#descendant-div4' is not a valid selector.
-FAIL Document.querySelector: Descendant combinator '>>', not matching element with id that is not a descendant of an element with id: #descendant-div1>>#descendant-div4 Failed to execute 'querySelector' on 'Document': '#descendant-div1>>#descendant-div4' is not a valid selector.
 PASS Document.querySelectorAll: Child combinator, matching element that is a child of an element with id: #child>div 
 PASS Document.querySelector: Child combinator, matching element that is a child of an element with id: #child>div 
 PASS Document.querySelectorAll: Child combinator, matching element with id that is a child of an element: div>#child-div1 
@@ -1035,18 +1021,6 @@ PASS Detached Element.querySelectorAll: Descendant combinator, whitespace charac
 #descendant-div2 
 PASS Detached Element.querySelector: Descendant combinator, whitespace characters: #descendant	\r
 #descendant-div2 
-FAIL Detached Element.querySelectorAll: Descendant combinator '>>', matching element that is a descendant of an element with id: #descendant>>div Failed to execute 'querySelectorAll' on 'Element': '#descendant>>div' is not a valid selector.
-FAIL Detached Element.querySelector: Descendant combinator '>>', matching element that is a descendant of an element with id: #descendant>>div Failed to execute 'querySelector' on 'Element': '#descendant>>div' is not a valid selector.
-FAIL Detached Element.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element: div>>#descendant-div1 Failed to execute 'querySelectorAll' on 'Element': 'div>>#descendant-div1' is not a valid selector.
-FAIL Detached Element.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element: div>>#descendant-div1 Failed to execute 'querySelector' on 'Element': 'div>>#descendant-div1' is not a valid selector.
-FAIL Detached Element.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element with id: #descendant>>#descendant-div2 Failed to execute 'querySelectorAll' on 'Element': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL Detached Element.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element with id: #descendant>>#descendant-div2 Failed to execute 'querySelector' on 'Element': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL Detached Element.querySelectorAll: Descendant combinator '>>', matching element with class that is a descendant of an element with id: #descendant>>.descendant-div2 Failed to execute 'querySelectorAll' on 'Element': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL Detached Element.querySelector: Descendant combinator '>>', matching element with class that is a descendant of an element with id: #descendant>>.descendant-div2 Failed to execute 'querySelector' on 'Element': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL Detached Element.querySelectorAll: Descendant combinator '>>', matching element with class that is a descendant of an element with class: .descendant-div1>>.descendant-div3 Failed to execute 'querySelectorAll' on 'Element': '.descendant-div1>>.descendant-div3' is not a valid selector.
-FAIL Detached Element.querySelector: Descendant combinator '>>', matching element with class that is a descendant of an element with class: .descendant-div1>>.descendant-div3 Failed to execute 'querySelector' on 'Element': '.descendant-div1>>.descendant-div3' is not a valid selector.
-FAIL Detached Element.querySelectorAll: Descendant combinator '>>', not matching element with id that is not a descendant of an element with id: #descendant-div1>>#descendant-div4 Failed to execute 'querySelectorAll' on 'Element': '#descendant-div1>>#descendant-div4' is not a valid selector.
-FAIL Detached Element.querySelector: Descendant combinator '>>', not matching element with id that is not a descendant of an element with id: #descendant-div1>>#descendant-div4 Failed to execute 'querySelector' on 'Element': '#descendant-div1>>#descendant-div4' is not a valid selector.
 PASS Detached Element.querySelectorAll: Child combinator, matching element that is a child of an element with id: #child>div 
 PASS Detached Element.querySelector: Child combinator, matching element that is a child of an element with id: #child>div 
 PASS Detached Element.querySelectorAll: Child combinator, matching element with id that is a child of an element: div>#child-div1 
@@ -1459,18 +1433,6 @@ PASS Fragment.querySelectorAll: Descendant combinator, whitespace characters: #d
 #descendant-div2 
 PASS Fragment.querySelector: Descendant combinator, whitespace characters: #descendant	\r
 #descendant-div2 
-FAIL Fragment.querySelectorAll: Descendant combinator '>>', matching element that is a descendant of an element with id: #descendant>>div Failed to execute 'querySelectorAll' on 'DocumentFragment': '#descendant>>div' is not a valid selector.
-FAIL Fragment.querySelector: Descendant combinator '>>', matching element that is a descendant of an element with id: #descendant>>div Failed to execute 'querySelector' on 'DocumentFragment': '#descendant>>div' is not a valid selector.
-FAIL Fragment.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element: div>>#descendant-div1 Failed to execute 'querySelectorAll' on 'DocumentFragment': 'div>>#descendant-div1' is not a valid selector.
-FAIL Fragment.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element: div>>#descendant-div1 Failed to execute 'querySelector' on 'DocumentFragment': 'div>>#descendant-div1' is not a valid selector.
-FAIL Fragment.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element with id: #descendant>>#descendant-div2 Failed to execute 'querySelectorAll' on 'DocumentFragment': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL Fragment.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element with id: #descendant>>#descendant-div2 Failed to execute 'querySelector' on 'DocumentFragment': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL Fragment.querySelectorAll: Descendant combinator '>>', matching element with class that is a descendant of an element with id: #descendant>>.descendant-div2 Failed to execute 'querySelectorAll' on 'DocumentFragment': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL Fragment.querySelector: Descendant combinator '>>', matching element with class that is a descendant of an element with id: #descendant>>.descendant-div2 Failed to execute 'querySelector' on 'DocumentFragment': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL Fragment.querySelectorAll: Descendant combinator '>>', matching element with class that is a descendant of an element with class: .descendant-div1>>.descendant-div3 Failed to execute 'querySelectorAll' on 'DocumentFragment': '.descendant-div1>>.descendant-div3' is not a valid selector.
-FAIL Fragment.querySelector: Descendant combinator '>>', matching element with class that is a descendant of an element with class: .descendant-div1>>.descendant-div3 Failed to execute 'querySelector' on 'DocumentFragment': '.descendant-div1>>.descendant-div3' is not a valid selector.
-FAIL Fragment.querySelectorAll: Descendant combinator '>>', not matching element with id that is not a descendant of an element with id: #descendant-div1>>#descendant-div4 Failed to execute 'querySelectorAll' on 'DocumentFragment': '#descendant-div1>>#descendant-div4' is not a valid selector.
-FAIL Fragment.querySelector: Descendant combinator '>>', not matching element with id that is not a descendant of an element with id: #descendant-div1>>#descendant-div4 Failed to execute 'querySelector' on 'DocumentFragment': '#descendant-div1>>#descendant-div4' is not a valid selector.
 PASS Fragment.querySelectorAll: Child combinator, matching element that is a child of an element with id: #child>div 
 PASS Fragment.querySelector: Child combinator, matching element that is a child of an element with id: #child>div 
 PASS Fragment.querySelectorAll: Child combinator, matching element with id that is a child of an element: div>#child-div1 
@@ -1885,20 +1847,6 @@ PASS In-document Element.querySelectorAll: Descendant combinator, whitespace cha
 #descendant-div2 
 PASS In-document Element.querySelector: Descendant combinator, whitespace characters: #descendant	\r
 #descendant-div2 
-FAIL In-document Element.querySelectorAll: Descendant combinator '>>', matching element that is a descendant of an element with id: #descendant>>div Failed to execute 'querySelectorAll' on 'Element': '#descendant>>div' is not a valid selector.
-FAIL In-document Element.querySelector: Descendant combinator '>>', matching element that is a descendant of an element with id: #descendant>>div Failed to execute 'querySelector' on 'Element': '#descendant>>div' is not a valid selector.
-FAIL In-document Element.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element: body>>#descendant-div1 Failed to execute 'querySelectorAll' on 'Element': 'body>>#descendant-div1' is not a valid selector.
-FAIL In-document Element.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element: body>>#descendant-div1 Failed to execute 'querySelector' on 'Element': 'body>>#descendant-div1' is not a valid selector.
-FAIL In-document Element.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element: div>>#descendant-div1 Failed to execute 'querySelectorAll' on 'Element': 'div>>#descendant-div1' is not a valid selector.
-FAIL In-document Element.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element: div>>#descendant-div1 Failed to execute 'querySelector' on 'Element': 'div>>#descendant-div1' is not a valid selector.
-FAIL In-document Element.querySelectorAll: Descendant combinator '>>', matching element with id that is a descendant of an element with id: #descendant>>#descendant-div2 Failed to execute 'querySelectorAll' on 'Element': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL In-document Element.querySelector: Descendant combinator '>>', matching element with id that is a descendant of an element with id: #descendant>>#descendant-div2 Failed to execute 'querySelector' on 'Element': '#descendant>>#descendant-div2' is not a valid selector.
-FAIL In-document Element.querySelectorAll: Descendant combinator '>>', matching element with class that is a descendant of an element with id: #descendant>>.descendant-div2 Failed to execute 'querySelectorAll' on 'Element': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL In-document Element.querySelector: Descendant combinator '>>', matching element with class that is a descendant of an element with id: #descendant>>.descendant-div2 Failed to execute 'querySelector' on 'Element': '#descendant>>.descendant-div2' is not a valid selector.
-FAIL In-document Element.querySelectorAll: Descendant combinator '>>', matching element with class that is a descendant of an element with class: .descendant-div1>>.descendant-div3 Failed to execute 'querySelectorAll' on 'Element': '.descendant-div1>>.descendant-div3' is not a valid selector.
-FAIL In-document Element.querySelector: Descendant combinator '>>', matching element with class that is a descendant of an element with class: .descendant-div1>>.descendant-div3 Failed to execute 'querySelector' on 'Element': '.descendant-div1>>.descendant-div3' is not a valid selector.
-FAIL In-document Element.querySelectorAll: Descendant combinator '>>', not matching element with id that is not a descendant of an element with id: #descendant-div1>>#descendant-div4 Failed to execute 'querySelectorAll' on 'Element': '#descendant-div1>>#descendant-div4' is not a valid selector.
-FAIL In-document Element.querySelector: Descendant combinator '>>', not matching element with id that is not a descendant of an element with id: #descendant-div1>>#descendant-div4 Failed to execute 'querySelector' on 'Element': '#descendant-div1>>#descendant-div4' is not a valid selector.
 PASS In-document Element.querySelectorAll: Child combinator, matching element that is a child of an element with id: #child>div 
 PASS In-document Element.querySelector: Child combinator, matching element that is a child of an element with id: #child>div 
 PASS In-document Element.querySelectorAll: Child combinator, matching element with id that is a child of an element: div>#child-div1 

@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS The scrolldelay attribute is a string 
-PASS The scrolldelay attribute is a negative 
-FAIL The scrolldelay attribute is less than 60 assert_equals: The delay time should be 60ms. expected 60 but got 1
-PASS The scrolldelay attribute is greater than 60 
-Harness: the test ran to completion.
-
