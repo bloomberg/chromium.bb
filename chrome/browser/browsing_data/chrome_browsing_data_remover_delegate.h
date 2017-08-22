@@ -259,6 +259,7 @@ class ChromeBrowsingDataRemoverDelegate
   SubTask synchronous_clear_operations_;
   SubTask clear_autofill_origin_urls_;
   SubTask clear_flash_content_licenses_;
+  SubTask clear_media_drm_licenses_;
   SubTask clear_domain_reliability_monitor_;
   SubTask clear_form_;
   SubTask clear_history_;
