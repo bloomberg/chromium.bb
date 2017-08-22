@@ -8,7 +8,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyMarginUtils.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIMargin::ParseSingleValue(

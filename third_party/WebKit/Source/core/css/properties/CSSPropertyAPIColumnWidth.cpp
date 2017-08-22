@@ -6,7 +6,6 @@
 
 #include "core/css/properties/CSSPropertyColumnUtils.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPIColumnWidth::ParseSingleValue(

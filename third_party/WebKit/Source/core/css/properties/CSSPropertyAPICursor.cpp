@@ -11,7 +11,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/frame/UseCounter.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPICursor::ParseSingleValue(

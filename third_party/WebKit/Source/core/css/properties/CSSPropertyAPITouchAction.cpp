@@ -8,7 +8,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "platform/RuntimeEnabledFeatures.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
 namespace {

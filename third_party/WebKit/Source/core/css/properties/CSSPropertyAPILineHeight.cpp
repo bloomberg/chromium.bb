@@ -7,7 +7,6 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
 const CSSValue* CSSPropertyAPILineHeight::ParseSingleValue(

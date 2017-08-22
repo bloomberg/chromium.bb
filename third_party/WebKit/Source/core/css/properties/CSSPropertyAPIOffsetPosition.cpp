@@ -9,7 +9,6 @@
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/frame/UseCounter.h"
 
-class CSSParserLocalContext;
 namespace blink {
 
 using namespace CSSPropertyParserHelpers;
