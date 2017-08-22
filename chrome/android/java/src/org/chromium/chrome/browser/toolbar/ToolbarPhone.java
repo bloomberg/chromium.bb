@@ -2293,7 +2293,7 @@ public class ToolbarPhone extends ToolbarLayout
         mLocationBar.updateVisualsForState();
         // Remove the side padding for incognito to ensure the badge icon aligns correctly with the
         // background of the location bar.
-        if (isIncognito) {
+        if (mLocationBar.isIncognitoBadgeVisible()) {
             mLocationBar.setPadding(
                     0, mLocationBarBackgroundPadding.top, 0, mLocationBarBackgroundPadding.bottom);
         } else {
