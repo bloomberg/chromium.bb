@@ -256,9 +256,170 @@ Further Info:
 - [`TreeScope.h`](./TreeScope.h), [`TreeScope.cpp`](./TreeScope.cpp)
 - `Node#GetTreeScope()`, `Node#ContainingTreeScope()`, `Node#IsInTreeScope()`
 
-# Composed Tree (a tree of DOM trees)
+# Composed Tree (a tree of node trees)
 
-TODO(hayato): Explain.
+In the previous picture, you might think that more than one node trees, a document tree and a shadow tree, were *connected* to each other. That is *true* in some sense.
+The following is a more complex example:
+
+
+``` text
+document
+├── a1 (host)
+│   ├──/shadowRoot1
+│   │   └── b1
+│   └── a2 (host)
+│       ├──/shadowRoot2
+│       │   ├── c1
+│       │   │   ├── c2
+│       │   │   └── c3
+│       │   └── c4
+│       ├── a3
+│       └── a4
+└── a5
+    └── a6 (host)
+        └──/shadowRoot3
+            └── d1
+                ├── d2
+                ├── d3 (host)
+                │   └──/shadowRoot4
+                │       ├── e1
+                │       └── e2
+                └── d4 (host)
+                    └──/shadowRoot5
+                        ├── f1
+                        └── f2
+```
+
+If you see this carefully, you can notice that this *composed tree* is composed of 6 node trees; 1 document tree and 5 shadow trees:
+
+
+- document tree
+
+  ``` text
+  document
+  ├── a1 (host)
+  │   └── a2 (host)
+  │       ├── a3
+  │       └── a4
+  └── a5
+      └── a6 (host)
+  ```
+
+- shadow tree 1
+
+  ``` text
+  shadowRoot1
+  └── b1
+  ```
+
+- shadow tree 2
+
+  ``` text
+  shadowRoot2
+  ├── c1
+  │   ├── c2
+  │   └── c3
+  └── c4
+  ```
+
+- shadow tree 3
+
+  ``` text
+  shadowRoot3
+  └── d1
+      ├── d2
+      ├── d3 (host)
+      └── d4 (host)
+  ```
+
+- shadow tree 4
+
+  ``` text
+  shadowRoot4
+  ├── e1
+  └── e2
+  ```
+
+- shadow tree 5
+
+  ``` text
+  shadowRoot5
+  ├── f1
+  └── f2
+  ```
+
+If we consider each *node tree* as *node* of a *super-tree*, we can draw a super-tree as such:
+
+``` text
+document
+├── shadowRoot1
+├── shadowRoot2
+└── shadowRoot3
+    ├── shadowRoot4
+    └── shadowRoot5
+```
+
+Here, a root node is used as a representative of each node tree; A root node and a node tree itself can be sometimes exchangeable in explanations.
+
+We call this kind of a *super-tree* (*a tree of node trees*) a **composed tree**.
+The concept of a *composed tree* is very useful to understand how Shadow DOM's encapsulation works.
+
+[DOM Standard] defines the following terminologies:
+
+- [shadow-including tree order](https://dom.spec.whatwg.org/#concept-shadow-including-tree-order)
+- [shadow-including root](https://dom.spec.whatwg.org/#concept-shadow-including-root)
+- [shadow-including descendant](https://dom.spec.whatwg.org/#concept-shadow-including-descendant)
+- [shadow-including inclusive descendant](https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-descendant)
+- [shadow-including ancestor](https://dom.spec.whatwg.org/#concept-shadow-including-ancestor)
+- [shadow-including inclusive ancestor](https://dom.spec.whatwg.org/#concept-shadow-including-inclusive-ancestor)
+- [closed-shadow-hidden](https://dom.spec.whatwg.org/#concept-closed-shadow-hidden)
+
+For example,
+
+- *d1*'s *shadow-including ancestor nodes* are *shadowRoot3*, *a6*, *a5*, and *document*
+- *d1*'s *shadow-including descendant nodes* are *d2*, *d3*, *shadowRoot4*, *e1*, *e2*, *d4*, *shadowRoot5*, *f1*, and *f2*.
+
+
+To honor Shadow DOM's encapsulation, we have a concept of *visibility relationship* between two nodes.
+
+In the following table, "`-`" means that "node *A* is *visible* from node *B*".
+
+
+| *A* \ *B* | document | a1     | a2     | b1     | c1     | d1     | d2     | e1     | f1     |
+|-----------|----------|--------|--------|--------|--------|--------|--------|--------|--------|
+| document  | -        | -      | -      | -      | -      | -      | -      | -      | -      |
+| a1        | -        | -      | -      | -      | -      | -      | -      | -      | -      |
+| a2        | -        | -      | -      | -      | -      | -      | -      | -      | -      |
+| b1        | hidden   | hidden | hidden | -      | hidden | hidden | hidden | hidden | hidden |
+| c1        | hidden   | hidden | hidden | hidden | -      | hidden | hidden | hidden | hidden |
+| d1        | hidden   | hidden | hidden | hidden | hidden | -      | -      | -      | -      |
+| d2        | hidden   | hidden | hidden | hidden | hidden | -      | -      | -      | -      |
+| e1        | hidden   | hidden | hidden | hidden | hidden | hidden | hidden | -      | hidden |
+| f1        | hidden   | hidden | hidden | hidden | hidden | hidden | hidden | hidden | -      |
+
+For example, *document* is *visible* from any nodes.
+
+To understand *visibility relationship* easily, here is a rule of thumb:
+
+- If node *B* can reach node *A* by traversing an *edge* (in the first picture of this section), recursively, *A* is visible from *B*.
+- However, an *edge* of (`──/`) ( *shadowhost-shadowroot* relationship) is one-directional:
+  - From a shadow root to the shadow host -> Okay
+  - From a shadow host to the shadow root -> Forbidden
+
+In other words, a node in an *inner tree* can see a node in an *outer tree* in a composed tree, but the opposite is not true.
+
+We have designed (or re-designed) a bunch of Web-facing APIs to honor this basic principle.
+If you add a new API to the web platform and Blink, please consider this rule and don't *leak* a node which should be hidden to web developers.
+
+Warning: Unfortunately, a *composed tree* had a different meaning in the past; it was used to specify a *flat tree* (which will be explained later).
+If you find a wrong usage of a composed tree in Blink, please fix it.
+
+Further Info:
+
+- `TreeScope::ParentTreeScope()`
+- `Node::IsConnected()`
+- DOM Standard: [connected](https://dom.spec.whatwg.org/#connected)
+- DOM Standard: [retarget](https://dom.spec.whatwg.org/#retarget)
 
 # Layout Tree
 
