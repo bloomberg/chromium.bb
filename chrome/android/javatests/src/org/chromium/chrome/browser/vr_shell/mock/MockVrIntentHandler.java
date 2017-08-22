@@ -6,12 +6,12 @@ package org.chromium.chrome.browser.vr_shell.mock;
 
 import android.content.Intent;
 
-import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
+import org.chromium.chrome.browser.vr_shell.VrIntentHandler;
 
 /**
  * Mock version of VrIntentHandler for testing.
  */
-public class MockVrIntentHandler implements VrIntentUtils.VrIntentHandler {
+public class MockVrIntentHandler extends VrIntentHandler {
     private boolean mUseMockImplementation;
     private boolean mTreatIntentsAsTrusted;
 
@@ -25,7 +25,7 @@ public class MockVrIntentHandler implements VrIntentUtils.VrIntentHandler {
         if (mUseMockImplementation) {
             return mTreatIntentsAsTrusted;
         }
-        return false;
+        return super.isTrustedDaydreamIntent(intent);
     }
 
     public void setUseMockImplementation(boolean enabled) {

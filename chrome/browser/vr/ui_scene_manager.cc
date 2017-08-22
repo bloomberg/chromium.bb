@@ -771,10 +771,6 @@ void UiSceneManager::OnGlInitialized(unsigned int content_texture_id) {
 }
 
 void UiSceneManager::OnAppButtonClicked() {
-  // App button clicks should be a no-op when auto-presenting WebVR.
-  if (started_for_autopresentation_)
-    return;
-
   // App button click exits the WebVR presentation and fullscreen.
   browser_->ExitPresent();
   browser_->ExitFullscreen();

@@ -135,7 +135,12 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
 
         setPresentationView(mPresentationView);
 
-        getUiLayout().setCloseButtonListener(mDelegate.getVrCloseButtonListener());
+        getUiLayout().setCloseButtonListener(new Runnable() {
+            @Override
+            public void run() {
+                mDelegate.shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
+            }
+        });
 
         DisplayAndroid primaryDisplay = DisplayAndroid.getNonMultiDisplay(activity);
         mContentVirtualDisplay = VirtualDisplayAndroid.createVirtualDisplay();
