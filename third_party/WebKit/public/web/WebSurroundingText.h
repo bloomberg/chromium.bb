@@ -47,12 +47,6 @@ class WebSurroundingText {
 
   BLINK_EXPORT bool IsNull() const;
 
-  // Initializes the object to get the surrounding text centered in the
-  // position relative to a provided node.
-  // The maximum length of the contents retrieved is defined by maxLength.
-  BLINK_EXPORT void Initialize(const WebNode&,
-                               const WebPoint&,
-                               size_t max_length);
   // Initializes the object with the current selection in a given frame.
   // The maximum length of the contents retrieved is defined by maxLength.
   // It does not include the text inside the range.

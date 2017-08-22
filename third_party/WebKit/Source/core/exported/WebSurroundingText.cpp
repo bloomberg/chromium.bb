@@ -44,31 +44,6 @@ WebSurroundingText::WebSurroundingText() {}
 
 WebSurroundingText::~WebSurroundingText() {}
 
-void WebSurroundingText::Initialize(const WebNode& web_node,
-                                    const WebPoint& node_point,
-                                    size_t max_length) {
-  const Node* node = web_node.ConstUnwrap<Node>();
-  if (!node)
-    return;
-
-  // VisiblePosition and SurroundingText must be created with clean layout.
-  node->GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  DocumentLifecycle::DisallowTransitionScope disallow_transition(
-      node->GetDocument().Lifecycle());
-
-  if (!node->GetLayoutObject())
-    return;
-
-  // TODO(xiaochengh): The followinng SurroundingText can hold a null Range,
-  // in which case we should prevent it from being stored in |m_private|.
-  private_.reset(new SurroundingText(
-      CreateVisiblePosition(node->GetLayoutObject()->PositionForPoint(
-                                static_cast<IntPoint>(node_point)))
-          .DeepEquivalent()
-          .ParentAnchoredEquivalent(),
-      max_length));
-}
-
 void WebSurroundingText::InitializeFromCurrentSelection(WebLocalFrame* frame,
                                                         size_t max_length) {
   LocalFrame* web_frame = ToWebLocalFrameImpl(frame)->GetFrame();
