@@ -408,6 +408,12 @@ TEST_F(TemplateURLPrepopulateDataTest, HttpsUrls) {
     GURL logo_url = data->logo_url;
     EXPECT_TRUE(logo_url.is_empty() || logo_url.SchemeIsCryptographic())
         << logo_url;
+    GURL doodle_url = data->doodle_url;
+    EXPECT_TRUE(doodle_url.is_empty() || doodle_url.SchemeIsCryptographic())
+        << doodle_url;
+    EXPECT_TRUE(logo_url.is_empty() || doodle_url.is_empty())
+        << "Only one of logo_url or doodle_url should be set.";
+
     GURL favicon_url = data->favicon_url;
     EXPECT_TRUE(favicon_url.is_empty() || favicon_url.SchemeIsCryptographic())
         << favicon_url;

@@ -570,6 +570,8 @@ class TemplateURL {
 
   const GURL& logo_url() const { return data_.logo_url; }
 
+  const GURL& doodle_url() const { return data_.doodle_url; }
+
   const GURL& originating_url() const { return data_.originating_url; }
 
   bool safe_for_autoreplace() const { return data_.safe_for_autoreplace; }

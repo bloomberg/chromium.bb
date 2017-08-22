@@ -12,5 +12,8 @@ const base::Feature kUseDdljsonApi{"UseDdljsonApi",
 
 const char kDdljsonOverrideUrlParam[] = "ddljson-override-url";
 
+const base::Feature kThirdPartyDoodles{"ThirdPartyDoodles",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace search_provider_logos

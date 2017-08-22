@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,6 +21,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/util.h"
+#include "components/search_provider_logos/features.h"
 #include "components/search_provider_logos/switches.h"
 #include "jni/TemplateUrlService_jni.h"
 #include "net/base/url_util.h"
@@ -133,8 +135,21 @@ jboolean TemplateUrlServiceAndroid::DoesDefaultSearchEngineHaveLogo(
 
   const TemplateURL* default_search_provider =
       template_url_service_->GetDefaultSearchProvider();
+
+  if (base::FeatureList::IsEnabled(
+          search_provider_logos::features::kThirdPartyDoodles)) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            search_provider_logos::switches::kThirdPartyDoodleURL)) {
+      return true;
+    }
+    if (default_search_provider &&
+        default_search_provider->doodle_url().is_valid()) {
+      return true;
+    }
+  }
+
   return default_search_provider &&
-         !default_search_provider->logo_url().is_empty();
+         default_search_provider->logo_url().is_valid();
 }
 
 jboolean

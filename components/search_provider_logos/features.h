@@ -18,6 +18,10 @@ extern const base::Feature kUseDdljsonApi;
 // for testing.
 extern const char kDdljsonOverrideUrlParam[];
 
+// If enabled, Doodles are fetched for third-party search engines that specify
+// a doodle_url in prepopulated_engines.json.
+extern const base::Feature kThirdPartyDoodles;
+
 }  // namespace features
 }  // namespace search_provider_logos
 

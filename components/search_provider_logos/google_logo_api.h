@@ -39,13 +39,13 @@ std::unique_ptr<EncodedLogo> GoogleLegacyParseLogoResponse(
     bool* parsing_failed);
 
 // Implements AppendQueryparamsToLogoURL, defined in logo_tracker.h, for Google
-// doodles (new ddljson API).
+// or third-party doodles (new ddljson API).
 GURL GoogleNewAppendQueryparamsToLogoURL(bool gray_background,
                                          const GURL& logo_url,
                                          const std::string& fingerprint);
 
-// Implements ParseLogoResponse, defined in logo_tracker.h, for Google doodles
-// (new ddljson API).
+// Implements ParseLogoResponse, defined in logo_tracker.h, for Google or
+// third-party doodles (new ddljson API).
 std::unique_ptr<EncodedLogo> GoogleNewParseLogoResponse(
     const GURL& base_url,
     std::unique_ptr<std::string> response,
