@@ -23,7 +23,7 @@ class GURL;
 - (void)dismissModalsAndOpenSelectedTabInMode:(ApplicationMode)targetMode
                                       withURL:(const GURL&)url
                                    transition:(ui::PageTransition)transition
-                                   completion:(ProceduralBlock)handler;
+                                   completion:(ProceduralBlock)completion;
 
 // Creates a new tab if the launch options are not null.
 - (void)openTabFromLaunchOptions:(NSDictionary*)launchOptions

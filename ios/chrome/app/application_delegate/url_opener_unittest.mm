@@ -333,8 +333,9 @@ TEST_F(URLOpenerTest, HandleOpenURL) {
             else
               EXPECT_EQ(nil, controller.startupParameters);
           } else if (result) {
-            EXPECT_EQ(nil, controller.startupParameters);
             EXPECT_EQ([params externalURL], [tabOpener url]);
+            tabOpener.completionBlock();
+            EXPECT_EQ(nil, controller.startupParameters);
           }
         }
       }

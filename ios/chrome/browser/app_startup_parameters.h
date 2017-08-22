@@ -40,10 +40,6 @@ class GURL;
 //@property(nonatomic, readwrite, assign) BOOL launchVoiceSearch;
 // Boolean to track if the app should launch in incognito mode.
 @property(nonatomic, readwrite, assign) BOOL launchInIncognito;
-//// Boolean to track if the omnibox should be focused on startup.
-//@property(nonatomic, readwrite, assign) BOOL launchFocusOmnibox;
-//// Boolean to track if a QR scanner is requested at startup.
-//@property(nonatomic, readwrite, assign) BOOL launchQRScanner;
 @property(nonatomic, readwrite, assign)
     NTPTabOpeningPostOpeningAction postOpeningAction;
 // Boolean to track if a Payment Request response is requested at startup.
