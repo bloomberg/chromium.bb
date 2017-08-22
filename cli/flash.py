@@ -416,7 +416,7 @@ class RemoteDeviceUpdater(object):
       translated_path, resolved_path = ds_wrapper.GetImagePathWithXbuddy(
           self.image, self.board, static_dir=DEVSERVER_STATIC_DIR,
           lookup_only=True)
-      logging.info('Using image %s', translated_path)
+      logging.notice('Using image %s', translated_path)
       # Convert the translated path to be used in the update request.
       image_path = ds_wrapper.ConvertTranslatedPath(resolved_path,
                                                     translated_path)
