@@ -79,6 +79,8 @@ class JobQueue {
   };
 
   const size_t num_max_concurrent_jobs_;
+  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
+  // erase().
   std::vector<std::deque<Item>> queue_;
   const size_t num_max_batch_jobs_;
   const size_t max_batch_size_;

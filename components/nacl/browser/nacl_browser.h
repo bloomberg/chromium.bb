@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 
 #include "base/bind.h"
+#include "base/containers/circular_deque.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -202,7 +202,7 @@ class NaClBrowser {
   // A list of pending tasks to start NaCl processes.
   std::vector<base::Closure> waiting_;
 
-  std::deque<base::Time> crash_times_;
+  base::circular_deque<base::Time> crash_times_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };

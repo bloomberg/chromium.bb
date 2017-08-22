@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_MANAGER_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_MANAGER_H_
 
-#include <deque>
 #include <map>
 #include <memory>
 #include <string>
@@ -13,6 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
+#include "base/containers/circular_deque.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -510,7 +510,7 @@ class AutofillManager : public AutofillHandler,
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_;
 
-  std::deque<std::string> autofilled_form_signatures_;
+  base::circular_deque<std::string> autofilled_form_signatures_;
 
   // Handles queries and uploads to Autofill servers. Will be NULL if
   // the download manager functionality is disabled.
