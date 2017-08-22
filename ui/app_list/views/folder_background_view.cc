@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -19,12 +20,14 @@ namespace {
 
 const float kFolderInkBubbleScale = 1.2f;
 const int kBubbleTransitionDurationMs = 200;
+const int kBubbleRadiusFullScreen = 288;
 
 }  // namespace
 
 FolderBackgroundView::FolderBackgroundView()
     : folder_view_(NULL),
-      show_state_(NO_BUBBLE) {
+      show_state_(NO_BUBBLE),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 }
@@ -48,7 +51,7 @@ void FolderBackgroundView::UpdateFolderContainerBubble(ShowState state) {
     layer()->SetOpacity(0.0f);
     layer()->SetTransform(transform);
   } else {
-    layer()->SetOpacity(1.0f);
+    layer()->SetOpacity(GetBubbleOpacity());
     layer()->SetTransform(gfx::Transform());
   }
 
@@ -58,7 +61,7 @@ void FolderBackgroundView::UpdateFolderContainerBubble(ShowState state) {
       base::TimeDelta::FromMilliseconds((kBubbleTransitionDurationMs)));
   if (show_state_ == SHOW_BUBBLE) {
     settings.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
-    layer()->SetOpacity(1.0f);
+    layer()->SetOpacity(GetBubbleOpacity());
     layer()->SetTransform(gfx::Transform());
   } else {
     settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
@@ -70,8 +73,11 @@ void FolderBackgroundView::UpdateFolderContainerBubble(ShowState state) {
 }
 
 int FolderBackgroundView::GetFolderContainerBubbleRadius() const {
-  return std::max(GetContentsBounds().width(), GetContentsBounds().height()) /
-         2;
+  return is_fullscreen_app_list_enabled_
+             ? kBubbleRadiusFullScreen
+             : std::max(GetContentsBounds().width(),
+                        GetContentsBounds().height()) /
+                   2;
 }
 
 void FolderBackgroundView::OnPaint(gfx::Canvas* canvas) {
@@ -93,6 +99,10 @@ void FolderBackgroundView::OnImplicitAnimationsCompleted() {
     static_cast<AppsContainerView*>(parent())->app_list_folder_view()->
         UpdateFolderNameVisibility(true);
   }
+}
+
+float FolderBackgroundView::GetBubbleOpacity() const {
+  return is_fullscreen_app_list_enabled_ ? kFolderBubbleOpacity : 1.0f;
 }
 
 }  // namespace app_list
