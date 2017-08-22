@@ -35,10 +35,6 @@ component("controller") {
   sources = [
     "BlinkInitializer.cpp",
     "ControllerExport.h",
-    "leak_detector/BlinkLeakDetector.cpp",
-    "leak_detector/BlinkLeakDetector.h",
-    "leak_detector/BlinkLeakDetectorClient.h",
-    "leak_detector/WebLeakDetector.cpp",
   ]
 
   if (is_mac) {

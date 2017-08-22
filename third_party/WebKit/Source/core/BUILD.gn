@@ -192,6 +192,7 @@ component("core") {
     "//third_party/WebKit/Source/core/intersection_observer",
     "//third_party/WebKit/Source/core/layout",
     "//third_party/WebKit/Source/core/layout/svg:svg_layout",
+    "//third_party/WebKit/Source/core/leak_detector",
     "//third_party/WebKit/Source/core/loader",
     "//third_party/WebKit/Source/core/mojo",
     "//third_party/WebKit/Source/core/offscreencanvas",
