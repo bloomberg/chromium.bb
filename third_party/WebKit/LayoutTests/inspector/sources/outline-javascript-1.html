@@ -5,26 +5,25 @@
 
 <script>
 
-async function test()
-{
-    var test = SourcesTestRunner.testJavascriptOutline;
+async function test() {
+  var test = SourcesTestRunner.testJavascriptOutline;
 
-    TestRunner.markStep('testSimpleFunction');
-    await test('function foo(a, b, c) {}');
+  TestRunner.markStep('testSimpleFunction');
+  await test('function foo(a, b, c) {}');
 
-    TestRunner.markStep('testSpreadOperator');
-    await test('function foo(a, b, ...c) {}');
+  TestRunner.markStep('testSpreadOperator');
+  await test('function foo(a, b, ...c) {}');
 
-    TestRunner.markStep('testVariableDeclaration');
-    await test('var a = function(a,b) { }');
+  TestRunner.markStep('testVariableDeclaration');
+  await test('var a = function(a,b) { }');
 
-    TestRunner.markStep('testMultipleVariableDeclaration');
-    await test('var a = function(a,b) { }, b = function(c,d) { }');
+  TestRunner.markStep('testMultipleVariableDeclaration');
+  await test('var a = function(a,b) { }, b = function(c,d) { }');
 
-    TestRunner.markStep('testObjectProperty');
-    await test('a.b.c = function(d, e) { }');
+  TestRunner.markStep('testObjectProperty');
+  await test('a.b.c = function(d, e) { }');
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

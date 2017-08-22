@@ -4,28 +4,24 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="resources/resolve-identifiers.js"></script>
 <script>
-function test()
-{
-    Runtime.experiments.enableForTest("resolveVariableNames");
-    SourcesTestRunner.waitForScriptSource("resolve-identifiers.ts", onSourceMapLoaded);
+function test() {
+  Runtime.experiments.enableForTest('resolveVariableNames');
+  SourcesTestRunner.waitForScriptSource('resolve-identifiers.ts', onSourceMapLoaded);
 
-    function onSourceMapLoaded()
-    {
-        SourcesTestRunner.startDebuggerTest(() => SourcesTestRunner.runTestFunctionAndWaitUntilPaused());
-        TestRunner.addSniffer(Sources.SourceMapNamesResolver, "_scopeResolvedForTest", onAllScopesResolved, true);
-    }
+  function onSourceMapLoaded() {
+    SourcesTestRunner.startDebuggerTest(() => SourcesTestRunner.runTestFunctionAndWaitUntilPaused());
+    TestRunner.addSniffer(Sources.SourceMapNamesResolver, '_scopeResolvedForTest', onAllScopesResolved, true);
+  }
 
-    function onAllScopesResolved()
-    {
-        SourcesTestRunner.expandScopeVariablesSidebarPane(onSidebarsExpanded);
-    }
+  function onAllScopesResolved() {
+    SourcesTestRunner.expandScopeVariablesSidebarPane(onSidebarsExpanded);
+  }
 
-    function onSidebarsExpanded()
-    {
-        TestRunner.addResult("");
-        SourcesTestRunner.dumpScopeVariablesSidebarPane();
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function onSidebarsExpanded() {
+    TestRunner.addResult('');
+    SourcesTestRunner.dumpScopeVariablesSidebarPane();
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

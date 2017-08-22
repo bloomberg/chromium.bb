@@ -11,26 +11,22 @@ function testFunction()
     debugger;
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        ConsoleTestRunner.evaluateInConsole("foo", step3);
-    }
+  function step2() {
+    ConsoleTestRunner.evaluateInConsole('foo', step3);
+  }
 
-    function step3(result)
-    {
-        TestRunner.addResult("Evaluated in console in the top frame context: foo = " + result);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step3(result) {
+    TestRunner.addResult('Evaluated in console in the top frame context: foo = ' + result);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

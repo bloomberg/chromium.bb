@@ -25,33 +25,27 @@ function stop()
     debugger;
 }
 
-function test()
-{
-    var frameworkRegexString = "/framework\\.js$";
-    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+function test() {
+  var frameworkRegexString = '/framework\\.js$';
+  Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
 
-    SourcesTestRunner.startDebuggerTest(step1, true);
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        var actions = [
-            "Print", // debugger;
-            "StepOut", "Print",
-            "StepInto", "Print",
-            "StepInto", "Print", // Should NOT stop on setTimeout() inside framework
-        ];
-        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
-    }
+  function step2() {
+    var actions = [
+      'Print',                                                       // debugger;
+      'StepOut', 'Print', 'StepInto', 'Print', 'StepInto', 'Print',  // Should NOT stop on setTimeout() inside framework
+    ];
+    SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
+  }
 
-    function step3()
-    {
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step3() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

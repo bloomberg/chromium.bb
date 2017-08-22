@@ -7,33 +7,31 @@
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-function test()
-{
-    SourcesTestRunner.showScriptSource("css-outline-column.css", onSourceShown);
-    var textEditor;
-    function onSourceShown(sourceFrame)
-    {
-        textEditor = sourceFrame.textEditor;
-        TestRunner.addSniffer(Sources.OutlineQuickOpen.prototype, "refresh", onQuickOpenFulfilled);
-        UI.panels.sources._sourcesView._showOutlineQuickOpen();
-    }
+function test() {
+  SourcesTestRunner.showScriptSource('css-outline-column.css', onSourceShown);
+  var textEditor;
+  function onSourceShown(sourceFrame) {
+    textEditor = sourceFrame.textEditor;
+    TestRunner.addSniffer(Sources.OutlineQuickOpen.prototype, 'refresh', onQuickOpenFulfilled);
+    UI.panels.sources._sourcesView._showOutlineQuickOpen();
+  }
 
-    function onQuickOpenFulfilled()
-    {
-        TestRunner.addSniffer(Common.Revealer, "revealPromise", (revealable, omitFocus, promise) => promise.then(revealed));
-        this.selectItem(1, "");
-    }
+  function onQuickOpenFulfilled() {
+    TestRunner.addSniffer(Common.Revealer, 'revealPromise', (revealable, omitFocus, promise) => promise.then(revealed));
+    this.selectItem(1, '');
+  }
 
-    function revealed() {
-        var selection = textEditor.selection();
-        if (!selection.isEmpty()) {
-            TestRunner.addResult("ERROR: selection is not empty.");
-            TestRunner.completeTest();
-            return;
-        }
-        TestRunner.addResult(String.sprintf("Cursor position: line %d, column %d", selection.startLine, selection.startColumn));
-        TestRunner.completeTest();
+  function revealed() {
+    var selection = textEditor.selection();
+    if (!selection.isEmpty()) {
+      TestRunner.addResult('ERROR: selection is not empty.');
+      TestRunner.completeTest();
+      return;
     }
+    TestRunner.addResult(
+        String.sprintf('Cursor position: line %d, column %d', selection.startLine, selection.startColumn));
+    TestRunner.completeTest();
+  }
 }
 
 </script>

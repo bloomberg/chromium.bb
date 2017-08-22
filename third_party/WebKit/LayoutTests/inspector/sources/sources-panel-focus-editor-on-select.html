@@ -3,22 +3,19 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script>
-function test()
-{
-    SourcesTestRunner.showScriptSource("inspector-test.js", onSourceFrame);
-    function onSourceFrame(sourceFrame)
-    {
-        TestRunner.addResult("initial: focused = " + sourceFrame.hasFocus());
-        UI.inspectorView.showPanel("elements")
-            .then(() => UI.inspectorView.showPanel("sources"))
-            .then(onPanelReselected.bind(null, sourceFrame));
-    }
+function test() {
+  SourcesTestRunner.showScriptSource('inspector-test.js', onSourceFrame);
+  function onSourceFrame(sourceFrame) {
+    TestRunner.addResult('initial: focused = ' + sourceFrame.hasFocus());
+    UI.inspectorView.showPanel('elements')
+        .then(() => UI.inspectorView.showPanel('sources'))
+        .then(onPanelReselected.bind(null, sourceFrame));
+  }
 
-    function onPanelReselected(sourceFrame)
-    {
-        TestRunner.addResult("after panel reselected: focused = " + sourceFrame.hasFocus());
-        TestRunner.completeTest();
-    }
+  function onPanelReselected(sourceFrame) {
+    TestRunner.addResult('after panel reselected: focused = ' + sourceFrame.hasFocus());
+    TestRunner.completeTest();
+  }
 };
 </script>
 </head>

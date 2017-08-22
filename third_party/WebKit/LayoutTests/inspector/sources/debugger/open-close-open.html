@@ -4,26 +4,21 @@
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-function test()
-{
-    TestRunner.evaluateInPage("frontendReopeningCount", function(result) {
-        if (result._description === "0")
-            TestRunner.evaluateInPage("reopenFrontend()")
-        else {
-            SourcesTestRunner.runDebuggerTestSuite([
-                function testSourceFrameContent(next)
-                {
-                    SourcesTestRunner.showScriptSource("open-close-open.html", didShowScriptSource);
+function test() {
+  TestRunner.evaluateInPage('frontendReopeningCount', function(result) {
+    if (result._description === '0')
+      TestRunner.evaluateInPage('reopenFrontend()');
+    else {
+      SourcesTestRunner.runDebuggerTestSuite([function testSourceFrameContent(next) {
+        SourcesTestRunner.showScriptSource('open-close-open.html', didShowScriptSource);
 
-                    function didShowScriptSource(sourceFrame)
-                    {
-                        SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
-                        next();
-                    }
-                }
-            ]);
+        function didShowScriptSource(sourceFrame) {
+          SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
+          next();
         }
-    });
+      }]);
+    }
+  });
 }
 
 </script>

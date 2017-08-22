@@ -5,21 +5,20 @@
 
 <script>
 
-async function test()
-{
-    var test = SourcesTestRunner.testJavascriptOutline;
+async function test() {
+  var test = SourcesTestRunner.testJavascriptOutline;
 
-    TestRunner.markStep('testAsyncFunction');
-    await test('async function foo() { }');
+  TestRunner.markStep('testAsyncFunction');
+  await test('async function foo() { }');
 
-    TestRunner.markStep('testAsyncArrowFunction');
-    await test('var sum = async (x, y) => x + y;');
+  TestRunner.markStep('testAsyncArrowFunction');
+  await test('var sum = async (x, y) => x + y;');
 
-    TestRunner.markStep('testGeneratorFunction');
-    await test('function* foo() { }');
+  TestRunner.markStep('testGeneratorFunction');
+  await test('function* foo() { }');
 
-    TestRunner.markStep('testMismatchBrackets');
-    await test(`
+  TestRunner.markStep('testMismatchBrackets');
+  await test(`
 function foo(a, b) {
     if (a > b) {
         return a;
@@ -30,13 +29,13 @@ function bar(eee) {
 }
 `);
 
-    TestRunner.markStep('testSyntaxError');
-    await test(`
+  TestRunner.markStep('testSyntaxError');
+  await test(`
 function notAGenerator(a, b) {
     yield 10;
 }`);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

@@ -24,60 +24,56 @@ var iterSuspended2 = forward(gen(), 2);
 var iterSuspended3 = forward(gen(), 3);
 var iterClosed = forward(gen(), 4);
 
-function test()
-{
-    var panel = UI.panels.sources;
+function test() {
+  var panel = UI.panels.sources;
 
-    function performStandardTestCase(pageExpression, next)
-    {
-        TestRunner.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
-        TestRunner.evaluateInPage(pageExpression, didEvaluate);
+  function performStandardTestCase(pageExpression, next) {
+    TestRunner.addSniffer(panel, 'showUISourceCode', showUISourceCodeHook);
+    TestRunner.evaluateInPage(pageExpression, didEvaluate);
 
-        function didEvaluate(remote)
-        {
-            remote.getOwnPropertiesPromise().then(revealLocation.bind(null, remote));
-        }
-
-        function revealLocation(remote, properties)
-        {
-            var loc;
-            for (var prop of properties.internalProperties) {
-                if (prop.name === "[[GeneratorLocation]]") {
-                    loc = prop.value.value;
-                    break;
-                }
-            }
-            Common.Revealer.reveal(remote.debuggerModel().createRawLocationByScriptId(loc.scriptId, loc.lineNumber, loc.columnNumber));
-        }
-
-        function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)
-        {
-            // lineNumber and columnNumber are 0-based
-            ++lineNumber;
-            ++columnNumber;
-            TestRunner.addResult("Generator location revealed: [" + lineNumber + ":" + columnNumber + "]");
-            next();
-        }
+    function didEvaluate(remote) {
+      remote.getOwnPropertiesPromise().then(revealLocation.bind(null, remote));
     }
 
-    var expressions = [
-        "iterNotStarted",
-        "iterSuspended1",
-        "iterSuspended2",
-        "iterSuspended3",
-        "iterClosed",
-    ];
-
-    function createTestSuiteFunction(expression)
-    {
-        var functionName = "test" + expression.toTitleCase();
-        return eval("function " + functionName + "(next)\n" +
-            "{\n" +
-            "    performStandardTestCase('" + expression + "', next);\n" +
-            "}; " + functionName);
+    function revealLocation(remote, properties) {
+      var loc;
+      for (var prop of properties.internalProperties) {
+        if (prop.name === '[[GeneratorLocation]]') {
+          loc = prop.value.value;
+          break;
+        }
+      }
+      Common.Revealer.reveal(
+          remote.debuggerModel().createRawLocationByScriptId(loc.scriptId, loc.lineNumber, loc.columnNumber));
     }
 
-    TestRunner.runTestSuite(expressions.map(createTestSuiteFunction));
+    function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel) {
+      // lineNumber and columnNumber are 0-based
+      ++lineNumber;
+      ++columnNumber;
+      TestRunner.addResult('Generator location revealed: [' + lineNumber + ':' + columnNumber + ']');
+      next();
+    }
+  }
+
+  var expressions = [
+    'iterNotStarted',
+    'iterSuspended1',
+    'iterSuspended2',
+    'iterSuspended3',
+    'iterClosed',
+  ];
+
+  function createTestSuiteFunction(expression) {
+    var functionName = 'test' + expression.toTitleCase();
+    return eval(
+        'function ' + functionName + '(next)\n' +
+        '{\n' +
+        '    performStandardTestCase(\'' + expression + '\', next);\n' +
+        '}; ' + functionName);
+  }
+
+  TestRunner.runTestSuite(expressions.map(createTestSuiteFunction));
 }
 
 </script>

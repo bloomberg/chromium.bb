@@ -39,41 +39,37 @@ function callback4()
     }
 }
 
-function test()
-{
-    var frameworkRegexString = "/framework\\.js$";
-    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+function test() {
+  var frameworkRegexString = '/framework\\.js$';
+  Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
 
-    SourcesTestRunner.startDebuggerTest(step1, true);
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        var actions = [
-            "Print", // debugger;
-            "StepInto", "StepInto", "Print", // callback1
-            "StepInto", "Print", // callback2
-            "StepInto", "Print", // callback2, skipped
-            "StepInto", "Print", // callback3
-            "StepInto", "StepInto", "StepInto", "StepInto", "Print", // callback4
-            "StepInto", "Print", // anonymous calback
-            "StepInto", "StepInto", "Print", // callback4, skipped
-            "StepInto", "Print", // callback4, inside catch
-            "StepOut", "Print", // return to callback3
-            "StepOver", "Print", // return to callback2
-            "StepInto", "Print", // return to callback1
-        ];
-        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
-    }
+  function step2() {
+    var actions = [
+      'Print',                                                  // debugger;
+      'StepInto', 'StepInto', 'Print',                          // callback1
+      'StepInto', 'Print',                                      // callback2
+      'StepInto', 'Print',                                      // callback2, skipped
+      'StepInto', 'Print',                                      // callback3
+      'StepInto', 'StepInto', 'StepInto', 'StepInto', 'Print',  // callback4
+      'StepInto', 'Print',                                      // anonymous calback
+      'StepInto', 'StepInto', 'Print',                          // callback4, skipped
+      'StepInto', 'Print',                                      // callback4, inside catch
+      'StepOut',  'Print',                                      // return to callback3
+      'StepOver', 'Print',                                      // return to callback2
+      'StepInto', 'Print',                                      // return to callback1
+    ];
+    SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
+  }
 
-    function step3()
-    {
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step3() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

@@ -22,66 +22,60 @@ f3();
 
 <script>
 
-var test = function()
-{
-    var testName = TestRunner.mainTarget.inspectedURL();
-    testName = testName.substring(testName.lastIndexOf('/') + 1);
+var test = function() {
+  var testName = TestRunner.mainTarget.inspectedURL();
+  testName = testName.substring(testName.lastIndexOf('/') + 1);
 
-    SourcesTestRunner.startDebuggerTest(step1);
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.addResult("Did load front-end");
-        TestRunner.addResult("Paused: " + !!TestRunner.debuggerModel.debuggerPausedDetails());
-        TestRunner.reloadPage(didReload.bind(this));
-        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerPaused, didPauseAfterReload, this);
+  function step1() {
+    TestRunner.addResult('Did load front-end');
+    TestRunner.addResult('Paused: ' + !!TestRunner.debuggerModel.debuggerPausedDetails());
+    TestRunner.reloadPage(didReload.bind(this));
+    TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DebuggerPaused, didPauseAfterReload, this);
+  }
+
+  function didReload() {
+    TestRunner.addResult('didReload');
+    SourcesTestRunner.completeDebuggerTest();
+  }
+
+  function didPauseAfterReload(details) {
+    TestRunner.addResult('didPauseAfterReload');
+    TestRunner.addResult('Source strings corresponding to the call stack:');
+    dumpNextCallFrame(didDump);
+  }
+
+  var callFrameIndex = 0;
+  function dumpNextCallFrame(next) {
+    var callFrames = TestRunner.debuggerModel.callFrames;
+    if (callFrameIndex === callFrames.length) {
+      next();
+      return;
     }
+    var frame = callFrames[callFrameIndex];
+    var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
+    SourcesTestRunner.showUISourceCode(uiLocation.uiSourceCode, dumpCallFrameLine);
 
-    function didReload()
-    {
-        TestRunner.addResult("didReload");
-        SourcesTestRunner.completeDebuggerTest();
+    function dumpCallFrameLine(sourceFrame) {
+      var resourceText = sourceFrame._textEditor.text();
+      var lines = resourceText.split('\n');
+      var lineNumber = uiLocation.lineNumber;
+      TestRunner.addResult(
+          'Frame ' + callFrameIndex + ') line ' + lineNumber + ', content: ' + lines[lineNumber] +
+          ' (must be part of function \'' + frame.functionName + '\')');
+      callFrameIndex++;
+      dumpNextCallFrame(next);
     }
+  }
 
-    function didPauseAfterReload(details)
-    {
-        TestRunner.addResult("didPauseAfterReload");
-        TestRunner.addResult("Source strings corresponding to the call stack:");
-        dumpNextCallFrame(didDump);
-    }
+  function didDump() {
+    SourcesTestRunner.resumeExecution(didResume);
+  }
 
-    var callFrameIndex = 0;
-    function dumpNextCallFrame(next)
-    {
-        var callFrames = TestRunner.debuggerModel.callFrames;
-        if (callFrameIndex === callFrames.length) {
-            next();
-            return;
-        }
-        var frame = callFrames[callFrameIndex];
-        var uiLocation = Bindings.debuggerWorkspaceBinding.rawLocationToUILocation(frame.location());
-        SourcesTestRunner.showUISourceCode(uiLocation.uiSourceCode, dumpCallFrameLine);
-
-        function dumpCallFrameLine(sourceFrame)
-        {
-            var resourceText = sourceFrame._textEditor.text();
-            var lines = resourceText.split("\n");
-            var lineNumber = uiLocation.lineNumber;
-            TestRunner.addResult("Frame " + callFrameIndex + ") line " + lineNumber + ", content: " + lines[lineNumber] + " (must be part of function '" + frame.functionName + "')");
-            callFrameIndex++
-            dumpNextCallFrame(next);
-        }
-    }
-
-    function didDump()
-    {
-        SourcesTestRunner.resumeExecution(didResume);
-    }
-
-    function didResume()
-    {
-        TestRunner.addResult("didResume");
-    }
+  function didResume() {
+    TestRunner.addResult('didResume');
+  }
 };
 </script>
 

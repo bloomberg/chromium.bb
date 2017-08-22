@@ -10,19 +10,17 @@ function onload()
     console.dir(Object(true));
     console.dir((function(a,b) { return a + b; }));
     console.dir((function(a,b) { return a + b; }).bind({}, 2));
-    console.dir((function*() { yeild [1,2,3] }));
+    console.dir((function*() { yield [1,2,3] }));
     runTest();
 }
 
-function test()
-{
-    ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
+function test() {
+  ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
 
-    function dumpConsoleMessages()
-    {
-        ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
-        TestRunner.completeTest();
-    }
+  function dumpConsoleMessages() {
+    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -22,37 +22,32 @@ function stop()
     setTimeout(function() {}, 0); // Should pause here.
 }
 
-function test()
-{
-    var frameworkRegexString = "/framework\\.js$";
-    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+function test() {
+  var frameworkRegexString = '/framework\\.js$';
+  Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
 
-    SourcesTestRunner.startDebuggerTest(step1, true);
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
-        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout", true);
-        SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
-    }
+  function step2() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+    SourcesTestRunner.setEventListenerBreakpoint('instrumentation:setTimeout', true);
+    SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
+  }
 
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
-    {
-        SourcesTestRunner.captureStackTrace(callFrames);
-        completeTest();
-    }
+  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    completeTest();
+  }
 
-    function completeTest()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:setTimeout", false);
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function completeTest() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+    SourcesTestRunner.setEventListenerBreakpoint('instrumentation:setTimeout', false);
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

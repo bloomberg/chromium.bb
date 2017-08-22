@@ -13,27 +13,23 @@ function testFunction()
 
 testFunction.invocationCount = 0;
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        ConsoleTestRunner.evaluateInConsole("testFunction(); testFunction.invocationCount", step3);
-        TestRunner.addResult("Set timer for test function.");
-    }
+  function step2() {
+    ConsoleTestRunner.evaluateInConsole('testFunction(); testFunction.invocationCount', step3);
+    TestRunner.addResult('Set timer for test function.');
+  }
 
-    function step3(result)
-    {
-        TestRunner.addResult("testFunction.invocationCount = " + result);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step3(result) {
+    TestRunner.addResult('testFunction.invocationCount = ' + result);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

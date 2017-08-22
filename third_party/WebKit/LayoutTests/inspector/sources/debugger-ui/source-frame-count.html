@@ -15,45 +15,37 @@ function createScriptsAndRun()
     runTest();
 }
 
-function test()
-{
-    var framesOpened = 0;
+function test() {
+  var framesOpened = 0;
 
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSourceFramesCount(next)
-        {
-            var panel = UI.panels.sources;
+  SourcesTestRunner.runDebuggerTestSuite([function testSourceFramesCount(next) {
+    var panel = UI.panels.sources;
 
-            SourcesTestRunner.showScriptSource("source-frame-count.html", function() {});
-            SourcesTestRunner.showScriptSource("script1.js", function() {});
-            SourcesTestRunner.showScriptSource("script2.js", function() {});
-            SourcesTestRunner.showScriptSource("script3.js", function() {});
-            SourcesTestRunner.showScriptSource("script4.js", function() {});
-            SourcesTestRunner.showScriptSource("script5.js", reloadThePage);
+    SourcesTestRunner.showScriptSource('source-frame-count.html', function() {});
+    SourcesTestRunner.showScriptSource('script1.js', function() {});
+    SourcesTestRunner.showScriptSource('script2.js', function() {});
+    SourcesTestRunner.showScriptSource('script3.js', function() {});
+    SourcesTestRunner.showScriptSource('script4.js', function() {});
+    SourcesTestRunner.showScriptSource('script5.js', reloadThePage);
 
-            function reloadThePage()
-            {
-                TestRunner.addResult("Reloading page...");
-                TestRunner.reloadPage(didReload);
-                function didCreateSourceFrame()
-                {
-                    framesOpened++;
-                }
-                TestRunner.addSniffer(SourceFrame.SourceFrame.prototype, "wasShown", didCreateSourceFrame, true);
+    function reloadThePage() {
+      TestRunner.addResult('Reloading page...');
+      TestRunner.reloadPage(didReload);
+      function didCreateSourceFrame() {
+        framesOpened++;
+      }
+      TestRunner.addSniffer(SourceFrame.SourceFrame.prototype, 'wasShown', didCreateSourceFrame, true);
+    }
 
-            }
-
-            function didReload()
-            {
-                if (framesOpened > 3)
-                    TestRunner.addResult("Too many frames opened: " + framesOpened);
-                else
-                    TestRunner.addResult("Less than 3 frames opened");
-                TestRunner.addResult("Visible view: " + panel.visibleView._uiSourceCode.name());
-                next();
-            }
-        }
-    ]);
+    function didReload() {
+      if (framesOpened > 3)
+        TestRunner.addResult('Too many frames opened: ' + framesOpened);
+      else
+        TestRunner.addResult('Less than 3 frames opened');
+      TestRunner.addResult('Visible view: ' + panel.visibleView._uiSourceCode.name());
+      next();
+    }
+  }]);
 };
 
 </script>

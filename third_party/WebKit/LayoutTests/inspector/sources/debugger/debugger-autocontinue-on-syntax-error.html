@@ -11,21 +11,18 @@ function loadIframe()
     document.body.appendChild(iframe);
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
-        ConsoleTestRunner.addConsoleSniffer(step2);
-        TestRunner.evaluateInPage("loadIframe()");
-    }
+  function step1() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
+    ConsoleTestRunner.addConsoleSniffer(step2);
+    TestRunner.evaluateInPage('loadIframe()');
+  }
 
-    function step2()
-    {
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step2() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

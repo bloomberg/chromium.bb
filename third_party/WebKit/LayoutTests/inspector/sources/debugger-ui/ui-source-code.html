@@ -4,57 +4,51 @@
 
 <script>
 
-function test()
-{
-    var MockProject = class extends Workspace.ProjectStore {
-        requestFileContent(uri, callback) {
-            TestRunner.addResult("Content is requested from SourceCodeProvider.");
-            setTimeout(callback.bind(null, "var x = 0;"), 0);
-        }
+function test() {
+  var MockProject = class extends Workspace.ProjectStore {
+    requestFileContent(uri, callback) {
+      TestRunner.addResult('Content is requested from SourceCodeProvider.');
+      setTimeout(callback.bind(null, 'var x = 0;'), 0);
+    }
 
-        mimeType() {
-            return 'text/javascript';
-        }
+    mimeType() {
+      return 'text/javascript';
+    }
 
-        isServiceProject() {
-            return false;
-        }
+    isServiceProject() {
+      return false;
+    }
 
-        type() {
-            return Workspace.projectTypes.Debugger;
-        }
+    type() {
+      return Workspace.projectTypes.Debugger;
+    }
 
-        url() {
-            return "mock://debugger-ui/";
-        }
-    };
+    url() {
+      return 'mock://debugger-ui/';
+    }
+  };
 
-    TestRunner.runTestSuite([
-        function testUISourceCode(next)
-        {
-            var uiSourceCode = new Workspace.UISourceCode(new MockProject(), "url", Common.resourceTypes.Script);
-            function didRequestContent(callNumber, content)
-            {
-                TestRunner.addResult("Callback " + callNumber + " is invoked.");
-                TestRunner.assertEquals("text/javascript", uiSourceCode.mimeType());
-                TestRunner.assertEquals("var x = 0;", content);
+  TestRunner.runTestSuite([function testUISourceCode(next) {
+    var uiSourceCode = new Workspace.UISourceCode(new MockProject(), 'url', Common.resourceTypes.Script);
+    function didRequestContent(callNumber, content) {
+      TestRunner.addResult('Callback ' + callNumber + ' is invoked.');
+      TestRunner.assertEquals('text/javascript', uiSourceCode.mimeType());
+      TestRunner.assertEquals('var x = 0;', content);
 
-                if (callNumber === 3) {
-                    // Check that sourceCodeProvider.requestContent won't be called anymore.
-                    uiSourceCode.requestContent().then(function(content)
-                    {
-                        TestRunner.assertEquals("text/javascript", uiSourceCode.mimeType());
-                        TestRunner.assertEquals("var x = 0;", content);
-                        next();
-                    });
-                }
-            }
-            // Check that all callbacks will be invoked.
-            uiSourceCode.requestContent().then(didRequestContent.bind(null, 1));
-            uiSourceCode.requestContent().then(didRequestContent.bind(null, 2));
-            uiSourceCode.requestContent().then(didRequestContent.bind(null, 3));
-        }
-    ]);
+      if (callNumber === 3) {
+        // Check that sourceCodeProvider.requestContent won't be called anymore.
+        uiSourceCode.requestContent().then(function(content) {
+          TestRunner.assertEquals('text/javascript', uiSourceCode.mimeType());
+          TestRunner.assertEquals('var x = 0;', content);
+          next();
+        });
+      }
+    }
+    // Check that all callbacks will be invoked.
+    uiSourceCode.requestContent().then(didRequestContent.bind(null, 1));
+    uiSourceCode.requestContent().then(didRequestContent.bind(null, 2));
+    uiSourceCode.requestContent().then(didRequestContent.bind(null, 3));
+  }]);
 };
 
 </script>

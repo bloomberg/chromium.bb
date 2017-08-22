@@ -15,28 +15,24 @@ function callback()
     return window.__foo;
 }
 
-function test()
-{
-    var maxAsyncCallStackDepth = 8;
-    SourcesTestRunner.startDebuggerTest(step1, true);
+function test() {
+  var maxAsyncCallStackDepth = 8;
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    async function step1()
-    {
-        await TestRunner.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth);
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
-    }
+  async function step1() {
+    await TestRunner.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  }
 
-    function didPause()
-    {
-        TestRunner.addResult("Reloading the page...");
-        TestRunner.reloadPage(afterReload);
-    }
+  function didPause() {
+    TestRunner.addResult('Reloading the page...');
+    TestRunner.reloadPage(afterReload);
+  }
 
-    function afterReload()
-    {
-        TestRunner.addResult("PASS: Reloaded successfully.");
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function afterReload() {
+    TestRunner.addResult('PASS: Reloaded successfully.');
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

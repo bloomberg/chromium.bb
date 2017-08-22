@@ -52,40 +52,37 @@ function test6()
     Framework.safeRun(Framework.doSomeWorkDoNotChangeTopCallFrame, callback);
 }
 
-function test()
-{
-    var frameworkRegexString = "/framework\\.js$";
-    var totalDebuggerStatements = 6;
+function test() {
+  var frameworkRegexString = '/framework\\.js$';
+  var totalDebuggerStatements = 6;
 
-    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+  Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
 
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.startDebuggerTest(step1);
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  }
+
+  var step = 0;
+  var stepInCount = 0;
+  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+    if (stepInCount < 2) {
+      ++stepInCount;
+      SourcesTestRunner.stepInto();
+      SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
+      return;
     }
 
-    var step = 0;
-    var stepInCount = 0;
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace)
-    {
-        if (stepInCount < 2) {
-            ++stepInCount;
-            SourcesTestRunner.stepInto();
-            SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
-            return;
-        }
-
-        stepInCount = 0;
-        SourcesTestRunner.captureStackTrace(callFrames);
-        TestRunner.addResult("");
-        if (++step < totalDebuggerStatements)
-            SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
-        else
-            SourcesTestRunner.completeDebuggerTest();
-    }
+    stepInCount = 0;
+    SourcesTestRunner.captureStackTrace(callFrames);
+    TestRunner.addResult('');
+    if (++step < totalDebuggerStatements)
+      SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, didPause));
+    else
+      SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

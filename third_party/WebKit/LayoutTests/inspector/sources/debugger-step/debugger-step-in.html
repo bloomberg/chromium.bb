@@ -15,28 +15,25 @@ function testFunction()
     d();
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    var stepCount = 0;
-    function step2(callFrames)
-    {
-        SourcesTestRunner.captureStackTrace(callFrames);
-        if (stepCount < 2) {
-            TestRunner.addResult("Stepping into...");
-            SourcesTestRunner.stepInto();
-            SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step2));
-        } else
-            SourcesTestRunner.completeDebuggerTest();
-        stepCount++;
-    }
-}
+  var stepCount = 0;
+  function step2(callFrames) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    if (stepCount < 2) {
+      TestRunner.addResult('Stepping into...');
+      SourcesTestRunner.stepInto();
+      SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step2));
+    } else
+      SourcesTestRunner.completeDebuggerTest();
+    stepCount++;
+  }
+};
 
 </script>
 </head>

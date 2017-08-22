@@ -19,30 +19,27 @@ function testFunction()
     debugger;
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.addSniffer(Sources.ScopeChainSidebarPane.prototype, "_sidebarPaneUpdatedForTest", onSidebarRendered, true);
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(() => {});
-    }
+  function step1() {
+    TestRunner.addSniffer(
+        Sources.ScopeChainSidebarPane.prototype, '_sidebarPaneUpdatedForTest', onSidebarRendered, true);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(() => {});
+  }
 
-    function onSidebarRendered()
-    {
-        var localScope = SourcesTestRunner.scopeChainSections()[0].objectTreeElement();
-        var properties = [
-            localScope, ["o", "__proto__", "__proto__"],
-            localScope, ["d", "__proto__", "__proto__", "__proto__", "__proto__", "__proto__"]
-        ];
-        SourcesTestRunner.expandProperties(properties, step3);
-    }
+  function onSidebarRendered() {
+    var localScope = SourcesTestRunner.scopeChainSections()[0].objectTreeElement();
+    var properties = [
+      localScope, ['o', '__proto__', '__proto__'], localScope,
+      ['d', '__proto__', '__proto__', '__proto__', '__proto__', '__proto__']
+    ];
+    SourcesTestRunner.expandProperties(properties, step3);
+  }
 
-    function step3()
-    {
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step3() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

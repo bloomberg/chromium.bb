@@ -137,11 +137,10 @@ function doTestPromiseResolveAndReject()
     Promise.reject(Error("2")).then(thenCallback, errorCallback);
 }
 
-var test = function()
-{
-    var totalDebuggerStatements = 14;
-    SourcesTestRunner.runAsyncCallStacksTest(totalDebuggerStatements);
-}
+var test = function() {
+  var totalDebuggerStatements = 14;
+  SourcesTestRunner.runAsyncCallStacksTest(totalDebuggerStatements);
+};
 
 </script>
 </head>

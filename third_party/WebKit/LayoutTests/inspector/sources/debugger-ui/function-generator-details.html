@@ -40,56 +40,51 @@ var anonymousGenIter = (function*() {
 })();
 forward(anonymousGenIter, 3);
 
-function test()
-{
-    function performStandardTestCase(pageExpression, next)
-    {
-        TestRunner.evaluateInPage(pageExpression, didEvaluate);
+function test() {
+  function performStandardTestCase(pageExpression, next) {
+    TestRunner.evaluateInPage(pageExpression, didEvaluate);
 
-        function didEvaluate(remote)
-        {
-            TestRunner.addResult(pageExpression + ": type = " + remote.type + ", subtype = " + remote.subtype);
-            remote.getOwnPropertiesPromise().then(dumpInternalProperties);
-        }
-
-        function dumpInternalProperties(properties)
-        {
-            TestRunner.assertTrue(properties && properties.internalProperties, "FAIL: no properties");
-            for (var prop of properties.internalProperties) {
-                if (prop.name !== "[[GeneratorLocation]]")
-                    TestRunner.addResult(prop.name + " = " + prop.value.description);
-                else
-                    dumpLocation(prop.value.value);
-            }
-            next();
-        }
-
-        function dumpLocation(location)
-        {
-            TestRunner.addResult("lineNumber = " + location.lineNumber);
-            TestRunner.addResult("columnNumber = " + location.columnNumber);
-            TestRunner.addResult("script is valid: " + (location.scriptId ? "yes" : "no"));
-        }
+    function didEvaluate(remote) {
+      TestRunner.addResult(pageExpression + ': type = ' + remote.type + ', subtype = ' + remote.subtype);
+      remote.getOwnPropertiesPromise().then(dumpInternalProperties);
     }
 
-    var expressions = [
-        "iterNotStarted",
-        "iterSuspended",
-        "iterClosed",
-        "iterObjGenerator",
-        "anonymousGenIter",
-    ];
-
-    function createTestSuiteFunction(expression)
-    {
-        var functionName = "test" + expression.toTitleCase();
-        return eval("function " + functionName + "(next)\n" +
-            "{\n" +
-            "    performStandardTestCase('" + expression + "', next);\n" +
-            "}; " + functionName);
+    function dumpInternalProperties(properties) {
+      TestRunner.assertTrue(properties && properties.internalProperties, 'FAIL: no properties');
+      for (var prop of properties.internalProperties) {
+        if (prop.name !== '[[GeneratorLocation]]')
+          TestRunner.addResult(prop.name + ' = ' + prop.value.description);
+        else
+          dumpLocation(prop.value.value);
+      }
+      next();
     }
 
-    SourcesTestRunner.runDebuggerTestSuite(expressions.map(createTestSuiteFunction));
+    function dumpLocation(location) {
+      TestRunner.addResult('lineNumber = ' + location.lineNumber);
+      TestRunner.addResult('columnNumber = ' + location.columnNumber);
+      TestRunner.addResult('script is valid: ' + (location.scriptId ? 'yes' : 'no'));
+    }
+  }
+
+  var expressions = [
+    'iterNotStarted',
+    'iterSuspended',
+    'iterClosed',
+    'iterObjGenerator',
+    'anonymousGenIter',
+  ];
+
+  function createTestSuiteFunction(expression) {
+    var functionName = 'test' + expression.toTitleCase();
+    return eval(
+        'function ' + functionName + '(next)\n' +
+        '{\n' +
+        '    performStandardTestCase(\'' + expression + '\', next);\n' +
+        '}; ' + functionName);
+  }
+
+  SourcesTestRunner.runDebuggerTestSuite(expressions.map(createTestSuiteFunction));
 };
 
 </script>

@@ -3,28 +3,22 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script>
-function test()
-{
-    var contentScriptsNavigatorView = new Sources.ContentScriptsNavigatorView();
-    contentScriptsNavigatorView.show(UI.inspectorView.element);
+function test() {
+  var contentScriptsNavigatorView = new Sources.ContentScriptsNavigatorView();
+  contentScriptsNavigatorView.show(UI.inspectorView.element);
 
-    var mockExecutionContext = {
-        id: 1234567,
-        isDefault: false,
-        origin: "chrome-extension://113581321345589144",
-        name: "FibExtension"
-    };
-    var mockContentScriptURL = mockExecutionContext.origin + "/script.js";
+  var mockExecutionContext =
+      {id: 1234567, isDefault: false, origin: 'chrome-extension://113581321345589144', name: 'FibExtension'};
+  var mockContentScriptURL = mockExecutionContext.origin + '/script.js';
 
-    TestRunner.runTestSuite([
-        async function testAddExecutionContextBeforeFile(next)
-        {
-            TestRunner.runtimeModel._executionContextCreated(mockExecutionContext);
-            await SourcesTestRunner.addScriptUISourceCode(mockContentScriptURL, '', true, 1234567);
-            SourcesTestRunner.dumpNavigatorView(contentScriptsNavigatorView);
-            next();
-        },
-    ]);
+  TestRunner.runTestSuite([
+    async function testAddExecutionContextBeforeFile(next) {
+      TestRunner.runtimeModel._executionContextCreated(mockExecutionContext);
+      await SourcesTestRunner.addScriptUISourceCode(mockContentScriptURL, '', true, 1234567);
+      SourcesTestRunner.dumpNavigatorView(contentScriptsNavigatorView);
+      next();
+    },
+  ]);
 }
 
 </script>

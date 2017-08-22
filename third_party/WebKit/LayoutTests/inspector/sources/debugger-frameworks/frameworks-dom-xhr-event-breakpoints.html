@@ -70,94 +70,100 @@ function addFewBlackboxedListenersAndClick(addNonBlackboxedListener)
     return inner();
 }
 
-function test()
-{
-    var frameworkRegexString = "/framework\\.js$";
-    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+function test() {
+  var frameworkRegexString = '/framework\\.js$';
+  Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
 
-    SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.setQuiet(true);
 
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testDOMBreakpoint(next)
-        {
-            ElementsTestRunner.nodeWithId("rootElement", step1);
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testDOMBreakpoint(next) {
+      ElementsTestRunner.nodeWithId('rootElement', step1);
 
-            function step1(node)
-            {
-                var pane = Components.domBreakpointsSidebarPane;
-                pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
-                TestRunner.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
-                SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
-            }
-        },
+      function step1(node) {
+        var pane = Components.domBreakpointsSidebarPane;
+        pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
+        TestRunner.evaluateInPageWithTimeout('appendElement(\'rootElement\', \'childElement\')');
+        SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
+      }
+    },
 
-        function testXHRBreakpoint(next)
-        {
-            var pane = self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane);
-            pane._setBreakpoint("foo", true);
-            TestRunner.evaluateInPageWithTimeout("sendXHR('file:///foo?a=b')");
-            SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
-        },
+    function testXHRBreakpoint(next) {
+      var pane = self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane);
+      pane._setBreakpoint('foo', true);
+      TestRunner.evaluateInPageWithTimeout('sendXHR(\'file:///foo?a=b\')');
+      SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);
+    },
 
-        function testEventListenerBreakpoint(next)
-        {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
-            TestRunner.evaluateInPageWithTimeout("addListenerAndClick(false)");
-            SourcesTestRunner.waitUntilPausedAndPerformSteppingActions([
-                "Print", "Resume",
-                "Print", "Resume",
-            ], next);
-        },
+    function testEventListenerBreakpoint(next) {
+      var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
+      pane._setBreakpoint('listener:click');
+      TestRunner.evaluateInPageWithTimeout('addListenerAndClick(false)');
+      SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(
+          [
+            'Print',
+            'Resume',
+            'Print',
+            'Resume',
+          ],
+          next);
+    },
 
-        function testSteppingThroughEventListenerBreakpoint(next)
-        {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
-            TestRunner.evaluateInPageWithTimeout("addListenerAndClick(true)");
-            SourcesTestRunner.waitUntilPausedAndPerformSteppingActions([
-                "StepOver", "Print",
-                "StepOver", "Print", // should break at the first "remover()"
-                "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
-                "StepOut", "StepOver", "StepOver", "StepOver", "StepOver", "Print", // enter testElementClicked()
-                "StepOver", "StepOver", "StepOver", "Print",
-                "Resume",
-            ], next);
-        },
+    function testSteppingThroughEventListenerBreakpoint(next) {
+      var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
+      pane._setBreakpoint('listener:click');
+      TestRunner.evaluateInPageWithTimeout('addListenerAndClick(true)');
+      SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(
+          [
+            'StepOver', 'Print',    'StepOver', 'Print',  // should break at the first "remover()"
+            'StepOver', 'StepOver', 'StepOver', 'Print',  // enter testElementClicked()
+            'StepOut',  'StepOver', 'StepOver', 'StepOver', 'StepOver', 'Print',  // enter testElementClicked()
+            'StepOver', 'StepOver', 'StepOver', 'Print',    'Resume',
+          ],
+          next);
+    },
 
-        function testSteppingOutOnEventListenerBreakpoint(next)
-        {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
-            TestRunner.evaluateInPageWithTimeout("addListenerAndClick(true)");
-            SourcesTestRunner.waitUntilPausedAndPerformSteppingActions([
-                "StepOut", "Print", // should be in testElementClicked()
-                "StepOut", "StepOut", "Print", // again in testElementClicked()
-                "StepOut", "Print",
-                "Resume",
-            ], next);
-        },
+    function testSteppingOutOnEventListenerBreakpoint(next) {
+      var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
+      pane._setBreakpoint('listener:click');
+      TestRunner.evaluateInPageWithTimeout('addListenerAndClick(true)');
+      SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(
+          [
+            'StepOut',
+            'Print',  // should be in testElementClicked()
+            'StepOut',
+            'StepOut',
+            'Print',  // again in testElementClicked()
+            'StepOut',
+            'Print',
+            'Resume',
+          ],
+          next);
+    },
 
-        function testSteppingOutOnEventListenerBreakpointAllBlackboxedButOne(next)
-        {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
-            TestRunner.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(true)");
-            SourcesTestRunner.waitUntilPausedAndPerformSteppingActions([
-                "StepOut", "Print",
-                "StepOut", "Print",
-                "StepOut", "Print",
-                "Resume",
-            ], next);
-        },
+    function testSteppingOutOnEventListenerBreakpointAllBlackboxedButOne(next) {
+      var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
+      pane._setBreakpoint('listener:click');
+      TestRunner.evaluateInPageWithTimeout('addFewBlackboxedListenersAndClick(true)');
+      SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(
+          [
+            'StepOut',
+            'Print',
+            'StepOut',
+            'Print',
+            'StepOut',
+            'Print',
+            'Resume',
+          ],
+          next);
+    },
 
-        function tearDown(next)
-        {
-            self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane)._removeBreakpoint("foo");
-            self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane)._removeBreakpoint("listener:click");
-            next();
-        }
-    ]);
+    function tearDown(next) {
+      self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane)._removeBreakpoint('foo');
+      self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane)._removeBreakpoint('listener:click');
+      next();
+    }
+  ]);
 }
 
 </script>

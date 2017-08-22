@@ -16,52 +16,45 @@ function addListenerAndClick()
     element.click();
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(start);
+function test() {
+  SourcesTestRunner.startDebuggerTest(start);
 
-    function start()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("listener:click", true);
-        SourcesTestRunner.waitUntilPaused(paused);
-        TestRunner.evaluateInPageWithTimeout("addListenerAndClick()");
-    }
+  function start() {
+    SourcesTestRunner.setEventListenerBreakpoint('listener:click', true);
+    SourcesTestRunner.waitUntilPaused(paused);
+    TestRunner.evaluateInPageWithTimeout('addListenerAndClick()');
+  }
 
-    function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-    {
-        printEventTargetName(auxData);
-        SourcesTestRunner.resumeExecution(suspendAll);
-    }
+  function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+    printEventTargetName(auxData);
+    SourcesTestRunner.resumeExecution(suspendAll);
+  }
 
-    function suspendAll()
-    {
-        TestRunner.addResult("Suspend all targets");
-        SDK.targetManager.suspendAllTargets();
-        TestRunner.deprecatedRunAfterPendingDispatches(resumeAll);
-    }
+  function suspendAll() {
+    TestRunner.addResult('Suspend all targets');
+    SDK.targetManager.suspendAllTargets();
+    TestRunner.deprecatedRunAfterPendingDispatches(resumeAll);
+  }
 
-    function resumeAll()
-    {
-        TestRunner.addResult("Resume all targets");
-        SDK.targetManager.resumeAllTargets();
-        SourcesTestRunner.waitUntilPaused(finish);
-        TestRunner.evaluateInPageWithTimeout("addListenerAndClick()");
-    }
+  function resumeAll() {
+    TestRunner.addResult('Resume all targets');
+    SDK.targetManager.resumeAllTargets();
+    SourcesTestRunner.waitUntilPaused(finish);
+    TestRunner.evaluateInPageWithTimeout('addListenerAndClick()');
+  }
 
-    function finish()
-    {
-        TestRunner.addResult("Successfully paused after suspension and resuming all targets");
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function finish() {
+    TestRunner.addResult('Successfully paused after suspension and resuming all targets');
+    SourcesTestRunner.completeDebuggerTest();
+  }
 
-    function printEventTargetName(auxData)
-    {
-        var targetName = auxData && auxData.targetName;
-        if (targetName)
-            TestRunner.addResult("Event target: " + targetName);
-        else
-            TestRunner.addResult("FAIL: No event target name received!");
-    }
+  function printEventTargetName(auxData) {
+    var targetName = auxData && auxData.targetName;
+    if (targetName)
+      TestRunner.addResult('Event target: ' + targetName);
+    else
+      TestRunner.addResult('FAIL: No event target name received!');
+  }
 }
 
 </script>

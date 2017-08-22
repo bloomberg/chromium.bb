@@ -16,31 +16,25 @@ function testFunction()
     return sum;
 }
 
-function test()
-{
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSetBreakpoint(next)
-        {
-            SourcesTestRunner.showScriptSource("pause-in-internal-script.html", didShowScriptSource);
+function test() {
+  SourcesTestRunner.runDebuggerTestSuite([function testSetBreakpoint(next) {
+    SourcesTestRunner.showScriptSource('pause-in-internal-script.html', didShowScriptSource);
 
-            var breakpointFunctionFrame = null;
+    var breakpointFunctionFrame = null;
 
-            function didShowScriptSource(sourceFrame)
-            {
-                breakpointFunctionFrame = sourceFrame;
-                TestRunner.addResult("Script source was shown.");
-                SourcesTestRunner.setBreakpoint(sourceFrame, 13, "", true);
-                SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
-            }
+    function didShowScriptSource(sourceFrame) {
+      breakpointFunctionFrame = sourceFrame;
+      TestRunner.addResult('Script source was shown.');
+      SourcesTestRunner.setBreakpoint(sourceFrame, 13, '', true);
+      SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+    }
 
-            function didPause(callFrames)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.removeBreakpoint(breakpointFunctionFrame, 13);
-                next();
-            }
-        }
-    ]);
+    function didPause(callFrames) {
+      SourcesTestRunner.captureStackTrace(callFrames);
+      SourcesTestRunner.removeBreakpoint(breakpointFunctionFrame, 13);
+      next();
+    }
+  }]);
 };
 
 </script>

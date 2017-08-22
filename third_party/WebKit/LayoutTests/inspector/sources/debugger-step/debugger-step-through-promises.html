@@ -26,32 +26,33 @@ function testFunction()
     });
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(step1, true);
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        var actions = [
-            "Print", // debugger; at p1
-            "StepInto", "Print",
-            "StepInto", "Print", // entered p2
-            "StepOver", "Print",
-            "StepOver", "Print", // entered p3
-            "StepOver", "Print",
-        ];
-        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
-    }
+  function step2() {
+    var actions = [
+      'Print',  // debugger; at p1
+      'StepInto',
+      'Print',
+      'StepInto',
+      'Print',  // entered p2
+      'StepOver',
+      'Print',
+      'StepOver',
+      'Print',  // entered p3
+      'StepOver',
+      'Print',
+    ];
+    SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step3);
+  }
 
-    function step3()
-    {
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step3() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 
 </script>

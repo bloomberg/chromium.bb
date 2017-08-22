@@ -1,7 +1,7 @@
 CONSOLE MESSAGE: line 10: true
 CONSOLE MESSAGE: line 11: function (a,b) { return a + b; }
 CONSOLE MESSAGE: line 12: function () { [native code] }
-CONSOLE MESSAGE: line 13: function* () { yeild [1,2,3] }
+CONSOLE MESSAGE: line 13: function* () { yield [1,2,3] }
 Tests how debugger presents special properties of closures, bound functions and object wrappers.
 
 properties-special.html:10 Boolean

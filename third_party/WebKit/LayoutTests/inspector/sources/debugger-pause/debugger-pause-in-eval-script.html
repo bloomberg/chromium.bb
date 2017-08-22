@@ -5,27 +5,25 @@
 <script>
 
 
-var test = function()
-{
-    var scriptToEvaluate = "function testFunction() {\n" +
-                           "    debugger;\n" +
-                           "}\n" +
-                           "setTimeout(testFunction, 0);\n";
+var test = function() {
+  var scriptToEvaluate = 'function testFunction() {\n' +
+      '    debugger;\n' +
+      '}\n' +
+      'setTimeout(testFunction, 0);\n';
 
-    SourcesTestRunner.startDebuggerTest(step1);
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.evaluateInPage(scriptToEvaluate, TestRunner.addResult.bind(InspectorTest, "Evaluated script in console."));
-        SourcesTestRunner.waitUntilPaused(step2);
-    }
+  function step1() {
+    TestRunner.evaluateInPage(
+        scriptToEvaluate, TestRunner.addResult.bind(InspectorTest, 'Evaluated script in console.'));
+    SourcesTestRunner.waitUntilPaused(step2);
+  }
 
-    function step2(callFrames)
-    {
-        SourcesTestRunner.captureStackTrace(callFrames);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step2(callFrames) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

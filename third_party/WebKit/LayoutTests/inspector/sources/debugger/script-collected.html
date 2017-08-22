@@ -13,24 +13,23 @@ function generateErrorScripts()
     }
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
-    var discardedScripts = 0;
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1);
+  var discardedScripts = 0;
 
-    function step1()
-    {
-        TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.DiscardedAnonymousScriptSource, () => ++discardedScripts);
-        TestRunner.evaluateInPage("generateErrorScripts()\n//# sourceURL=foo", step2);
-    }
+  function step1() {
+    TestRunner.debuggerModel.addEventListener(
+        SDK.DebuggerModel.Events.DiscardedAnonymousScriptSource, () => ++discardedScripts);
+    TestRunner.evaluateInPage('generateErrorScripts()\n//# sourceURL=foo', step2);
+  }
 
-    function step2()
-    {
-        TestRunner.addResult("Discarded: " + discardedScripts);
-        var codes = Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Debugger).filter(code => !code.url().match(/VM\d+\s/));
-        TestRunner.addResult("Remaining UISourceCodes: " + codes.length);
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step2() {
+    TestRunner.addResult('Discarded: ' + discardedScripts);
+    var codes = Workspace.workspace.uiSourceCodesForProjectType(Workspace.projectTypes.Debugger)
+                    .filter(code => !code.url().match(/VM\d+\s/));
+    TestRunner.addResult('Remaining UISourceCodes: ' + codes.length);
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 </script>
 </head>

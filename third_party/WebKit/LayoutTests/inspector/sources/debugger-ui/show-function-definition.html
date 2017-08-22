@@ -10,56 +10,50 @@ function jumpToMe()
     return window.foo || result;
 }
 
-function test()
-{
-    var panel = UI.panels.sources;
+function test() {
+  var panel = UI.panels.sources;
 
-    TestRunner.runTestSuite([
-        function testRevealFunctionDefinition(next)
-        {
-            TestRunner.addSniffer(panel, "showUISourceCode", showUISourceCodeHook);
-            UI.context.flavor(SDK.ExecutionContext).evaluate({expression: "jumpToMe", silent:true}).then(didGetFunction);
+  TestRunner.runTestSuite([
+    function testRevealFunctionDefinition(next) {
+      TestRunner.addSniffer(panel, 'showUISourceCode', showUISourceCodeHook);
+      UI.context.flavor(SDK.ExecutionContext).evaluate({expression: 'jumpToMe', silent: true}).then(didGetFunction);
 
-            function didGetFunction(result)
-            {
-                var error = !result.object || !!result.exceptionDetails;
-                TestRunner.assertTrue(!error);
-                panel._showFunctionDefinition(result.object);
-            }
+      function didGetFunction(result) {
+        var error = !result.object || !!result.exceptionDetails;
+        TestRunner.assertTrue(!error);
+        panel._showFunctionDefinition(result.object);
+      }
 
-            function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)
-            {
-                // lineNumber and columnNumber are 0-based
-                ++lineNumber;
-                ++columnNumber;
-                TestRunner.addResult("Function location revealed: [" + lineNumber + ":" + columnNumber + "]");
-                next();
-            }
-        },
+      function showUISourceCodeHook(uiSourceCode, lineNumber, columnNumber, forceShowInPanel) {
+        // lineNumber and columnNumber are 0-based
+        ++lineNumber;
+        ++columnNumber;
+        TestRunner.addResult('Function location revealed: [' + lineNumber + ':' + columnNumber + ']');
+        next();
+      }
+    },
 
-        function testDumpFunctionDefinition(next)
-        {
-            TestRunner.addSniffer(ObjectUI.ObjectPropertiesSection, "formatObjectAsFunction", onConsoleMessagesReceived);
-            var consoleView = Console.ConsoleView.instance();
-            consoleView._prompt._appendCommand("jumpToMe", true);
+    function testDumpFunctionDefinition(next) {
+      TestRunner.addSniffer(ObjectUI.ObjectPropertiesSection, 'formatObjectAsFunction', onConsoleMessagesReceived);
+      var consoleView = Console.ConsoleView.instance();
+      consoleView._prompt._appendCommand('jumpToMe', true);
 
-            function onConsoleMessagesReceived()
-            {
-                TestRunner.deprecatedRunAfterPendingDispatches(function() {
-                    var messages = [];
-                    ConsoleTestRunner.disableConsoleViewport();
-                    var viewMessages = Console.ConsoleView.instance()._visibleViewMessages;
-                    for (var i = 0; i < viewMessages.length; ++i) {
-                        var uiMessage = viewMessages[i];
-                        var element = uiMessage.contentElement();
-                        messages.push(element.deepTextContent());
-                    }
-                    TestRunner.addResult(messages.join("\n"));
-                    next();
-                });
-            }
-        }
-    ]);
+      function onConsoleMessagesReceived() {
+        TestRunner.deprecatedRunAfterPendingDispatches(function() {
+          var messages = [];
+          ConsoleTestRunner.disableConsoleViewport();
+          var viewMessages = Console.ConsoleView.instance()._visibleViewMessages;
+          for (var i = 0; i < viewMessages.length; ++i) {
+            var uiMessage = viewMessages[i];
+            var element = uiMessage.contentElement();
+            messages.push(element.deepTextContent());
+          }
+          TestRunner.addResult(messages.join('\n'));
+          next();
+        });
+      }
+    }
+  ]);
 }
 
 </script>

@@ -5,20 +5,19 @@
 
 <script>
 
-async function test()
-{
-    var test = SourcesTestRunner.testJavascriptOutline;
+async function test() {
+  var test = SourcesTestRunner.testJavascriptOutline;
 
-    TestRunner.markStep('testClassAsNumberLiteralProperty');
-    await test('var foo = { 42: class { }};');
+  TestRunner.markStep('testClassAsNumberLiteralProperty');
+  await test('var foo = { 42: class { }};');
 
-    TestRunner.markStep('testClassAsStringLiteralProperty');
-    await test('var foo = { "foo": class { }};');
+  TestRunner.markStep('testClassAsStringLiteralProperty');
+  await test('var foo = { "foo": class { }};');
 
-    TestRunner.markStep('testClassAsIdentifierProperty');
-    await test('var foo = { foo: class { }};');
+  TestRunner.markStep('testClassAsIdentifierProperty');
+  await test('var foo = { foo: class { }};');
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

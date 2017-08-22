@@ -7,15 +7,13 @@
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script>
 
-function test()
-{
-    SourcesTestRunner.showScriptSource("empty.scss", onSourceShown);
-    function onSourceShown(uiSourceCodeFrame)
-    {
-        var uiSourceCode = uiSourceCodeFrame.uiSourceCode();
-        TestRunner.addResult(uiSourceCode.mimeType());
-        TestRunner.completeTest();
-    }
+function test() {
+  SourcesTestRunner.showScriptSource('empty.scss', onSourceShown);
+  function onSourceShown(uiSourceCodeFrame) {
+    var uiSourceCode = uiSourceCodeFrame.uiSourceCode();
+    TestRunner.addResult(uiSourceCode.mimeType());
+    TestRunner.completeTest();
+  }
 }
 
 </script>

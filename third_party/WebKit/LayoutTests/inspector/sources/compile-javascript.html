@@ -6,22 +6,21 @@
 <script src="./debugger/resources/edit-me.js"></script>
 <script>
 
-function test()
-{
-    SourcesTestRunner.showScriptSource("edit-me.js", onSourceFrame);
+function test() {
+  SourcesTestRunner.showScriptSource('edit-me.js', onSourceFrame);
 
-    function onSourceFrame(sourceFrame)
-    {
-        TestRunner.addSniffer(Sources.JavaScriptCompiler.prototype, "_compilationFinishedForTest", onCompilationFinished.bind(null, sourceFrame));
-        sourceFrame.textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
-        SourcesTestRunner.typeIn(sourceFrame.textEditor, "test!");
-    }
+  function onSourceFrame(sourceFrame) {
+    TestRunner.addSniffer(
+        Sources.JavaScriptCompiler.prototype, '_compilationFinishedForTest',
+        onCompilationFinished.bind(null, sourceFrame));
+    sourceFrame.textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
+    SourcesTestRunner.typeIn(sourceFrame.textEditor, 'test!');
+  }
 
-    function onCompilationFinished(sourceFrame)
-    {
-        SourcesTestRunner.dumpSourceFrameMessages(sourceFrame);
-        TestRunner.completeTest();
-    }
+  function onCompilationFinished(sourceFrame) {
+    SourcesTestRunner.dumpSourceFrameMessages(sourceFrame);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

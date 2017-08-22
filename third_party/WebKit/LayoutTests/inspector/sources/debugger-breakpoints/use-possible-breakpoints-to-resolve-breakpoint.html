@@ -23,39 +23,36 @@ function foo() {
 </script>
 <script>
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTestPromise()
-        .then(() => SourcesTestRunner.showScriptSource("foo.js", didShowScriptSource));
+function test() {
+  SourcesTestRunner.startDebuggerTestPromise().then(
+      () => SourcesTestRunner.showScriptSource('foo.js', didShowScriptSource));
 
-    function didShowScriptSource(sourceFrame)
-    {
-        var uiSourceCode = sourceFrame._uiSourceCode;
-        var breakpointManager = Bindings.breakpointManager;
-        setBreakpoint(breakpointManager, sourceFrame, 3, false)
-            .then(() => setBreakpoint(breakpointManager, sourceFrame, 4, false))
-            .then(() => setBreakpoint(breakpointManager, sourceFrame, 5, false))
-            .then(() => setBreakpoint(breakpointManager, sourceFrame, 6, false))
-            .then(() => setBreakpoint(breakpointManager, sourceFrame, 11, false))
-            .then(() => setBreakpoint(breakpointManager, sourceFrame, 12, false))
-            .then(() => setBreakpoint(breakpointManager, sourceFrame, 13, false))
-            .then(() => SourcesTestRunner.completeDebuggerTest());
+  function didShowScriptSource(sourceFrame) {
+    var uiSourceCode = sourceFrame._uiSourceCode;
+    var breakpointManager = Bindings.breakpointManager;
+    setBreakpoint(breakpointManager, sourceFrame, 3, false)
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 4, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 5, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 6, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 11, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 12, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 13, false))
+        .then(() => SourcesTestRunner.completeDebuggerTest());
+  }
+
+  function setBreakpoint(breakpointManager, sourceFrame, lineNumberClicked, shiftKey) {
+    var resolveCallback;
+    var promise = new Promise(resolve => resolveCallback = resolve);
+    TestRunner.addSniffer(sourceFrame.__proto__, '_breakpointWasSetForTest', dumpLocation, false);
+    sourceFrame._handleGutterClick(
+        {data: {lineNumber: lineNumberClicked, event: {button: 0, shiftKey: shiftKey, consume: () => true}}});
+    return promise;
+
+    function dumpLocation(lineNumber, columnNumber, condition, enabled) {
+      TestRunner.addResult(`${lineNumberClicked}: breakpointAdded(${lineNumber}, ${columnNumber})`);
+      resolveCallback();
     }
-
-    function setBreakpoint(breakpointManager, sourceFrame, lineNumberClicked, shiftKey)
-    {
-        var resolveCallback;
-        var promise = new Promise(resolve => resolveCallback = resolve);
-        TestRunner.addSniffer(sourceFrame.__proto__, "_breakpointWasSetForTest", dumpLocation, false);
-        sourceFrame._handleGutterClick({ data: { lineNumber: lineNumberClicked, event: { button: 0, shiftKey: shiftKey, consume: () => true }}});
-        return promise;
-
-        function dumpLocation(lineNumber, columnNumber, condition, enabled)
-        {
-            TestRunner.addResult(`${lineNumberClicked}: breakpointAdded(${lineNumber}, ${columnNumber})`);
-            resolveCallback();
-        }
-    }
+  }
 };
 
 </script>

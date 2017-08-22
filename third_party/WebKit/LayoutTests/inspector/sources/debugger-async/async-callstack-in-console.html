@@ -40,43 +40,37 @@ function tryPostMessage(win, origin)
     }
 }
 
-var test = function()
-{
-    var maxAsyncCallStackDepth = 8;
-    var numberOfConsoleMessages = 5;
+var test = function() {
+  var maxAsyncCallStackDepth = 8;
+  var numberOfConsoleMessages = 5;
 
-    SourcesTestRunner.setQuiet(true);
-    SourcesTestRunner.startDebuggerTest(step1);
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-        TestRunner.DebuggerAgent.setAsyncCallStackDepth(0);
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+    TestRunner.DebuggerAgent.setAsyncCallStackDepth(0);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2()
-    {
-        TestRunner.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(didPause);
-    }
+  function step2() {
+    TestRunner.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(didPause);
+  }
 
-    function didPause()
-    {
-        ConsoleTestRunner.waitUntilNthMessageReceived(numberOfConsoleMessages, expandAndDumpConsoleMessages);
-        SourcesTestRunner.resumeExecution();
-    }
+  function didPause() {
+    ConsoleTestRunner.waitUntilNthMessageReceived(numberOfConsoleMessages, expandAndDumpConsoleMessages);
+    SourcesTestRunner.resumeExecution();
+  }
 
-    function expandAndDumpConsoleMessages()
-    {
-        ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
-    }
+  function expandAndDumpConsoleMessages() {
+    ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
+  }
 
-    function dumpConsoleMessages()
-    {
-        ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function dumpConsoleMessages() {
+    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

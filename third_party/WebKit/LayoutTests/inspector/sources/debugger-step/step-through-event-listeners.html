@@ -26,56 +26,45 @@ function addListenerAndClick()
     element.click();
 }
 
-function test()
-{
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testClickBreakpoint(next)
-        {
-            SourcesTestRunner.setEventListenerBreakpoint("listener:click", true);
-            SourcesTestRunner.waitUntilPaused(paused1);
-            TestRunner.evaluateInPageWithTimeout("addListenerAndClick()");
+function test() {
+  SourcesTestRunner.runDebuggerTestSuite([function testClickBreakpoint(next) {
+    SourcesTestRunner.setEventListenerBreakpoint('listener:click', true);
+    SourcesTestRunner.waitUntilPaused(paused1);
+    TestRunner.evaluateInPageWithTimeout('addListenerAndClick()');
 
-            function paused1(callFrames)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.resumeExecution(resumed1);
-            }
+    function paused1(callFrames) {
+      SourcesTestRunner.captureStackTrace(callFrames);
+      SourcesTestRunner.resumeExecution(resumed1);
+    }
 
-            function resumed1()
-            {
-                SourcesTestRunner.waitUntilPaused(paused2);
-            }
+    function resumed1() {
+      SourcesTestRunner.waitUntilPaused(paused2);
+    }
 
-            function paused2(callFrames)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.resumeExecution(resumed2);
-            }
+    function paused2(callFrames) {
+      SourcesTestRunner.captureStackTrace(callFrames);
+      SourcesTestRunner.resumeExecution(resumed2);
+    }
 
-            function resumed2()
-            {
-                SourcesTestRunner.waitUntilPaused(paused3);
-            }
+    function resumed2() {
+      SourcesTestRunner.waitUntilPaused(paused3);
+    }
 
-            function paused3(callFrames)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.resumeExecution(resumed3);
-            }
+    function paused3(callFrames) {
+      SourcesTestRunner.captureStackTrace(callFrames);
+      SourcesTestRunner.resumeExecution(resumed3);
+    }
 
-            function resumed3()
-            {
-                SourcesTestRunner.waitUntilPaused(paused4);
-            }
+    function resumed3() {
+      SourcesTestRunner.waitUntilPaused(paused4);
+    }
 
-            function paused4(callFrames)
-            {
-                SourcesTestRunner.captureStackTrace(callFrames);
-                SourcesTestRunner.setEventListenerBreakpoint("listener:click", false);
-                SourcesTestRunner.resumeExecution(next);
-            }
-        }
-    ]);
+    function paused4(callFrames) {
+      SourcesTestRunner.captureStackTrace(callFrames);
+      SourcesTestRunner.setEventListenerBreakpoint('listener:click', false);
+      SourcesTestRunner.resumeExecution(next);
+    }
+  }]);
 }
 
 </script>

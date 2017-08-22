@@ -12,23 +12,21 @@ function testFunction()
 </script>
 <script>
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTestPromise(/* quiet */ true)
-        .then(() => SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise())
-        .then(() => stepIntoPromise())
-        .then(() => stepIntoPromise())
-        .then((callFrames) => SourcesTestRunner.captureStackTrace(callFrames))
-        .then(() => SourcesTestRunner.completeDebuggerTest());
+function test() {
+  SourcesTestRunner.startDebuggerTestPromise(/* quiet */ true)
+      .then(() => SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise())
+      .then(() => stepIntoPromise())
+      .then(() => stepIntoPromise())
+      .then((callFrames) => SourcesTestRunner.captureStackTrace(callFrames))
+      .then(() => SourcesTestRunner.completeDebuggerTest());
 
-    function stepIntoPromise()
-    {
-        var cb;
-        var p = new Promise(fullfill => cb = fullfill);
-        SourcesTestRunner.stepInto();
-        SourcesTestRunner.waitUntilResumed(() => SourcesTestRunner.waitUntilPaused(cb));
-        return p;
-    }
+  function stepIntoPromise() {
+    var cb;
+    var p = new Promise(fullfill => cb = fullfill);
+    SourcesTestRunner.stepInto();
+    SourcesTestRunner.waitUntilResumed(() => SourcesTestRunner.waitUntilPaused(cb));
+    return p;
+  }
 }
 </script>
 </head>

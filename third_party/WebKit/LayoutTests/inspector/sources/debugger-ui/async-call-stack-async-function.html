@@ -24,22 +24,20 @@ async function testFunction()
 //# sourceURL=test.js
 </script>
 <script>
-var test = function()
-{
-    TestRunner.DebuggerAgent.setAsyncCallStackDepth(200);
+var test = function() {
+  TestRunner.DebuggerAgent.setAsyncCallStackDepth(200);
 
-    SourcesTestRunner.startDebuggerTestPromise(/* quiet */ true)
-        .then(() => SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise())
-        .then(() => dumpCallStackSidebarPane())
-        .then(() => SourcesTestRunner.completeDebuggerTest());
+  SourcesTestRunner.startDebuggerTestPromise(/* quiet */ true)
+      .then(() => SourcesTestRunner.runTestFunctionAndWaitUntilPausedPromise())
+      .then(() => dumpCallStackSidebarPane())
+      .then(() => SourcesTestRunner.completeDebuggerTest());
 
-    function dumpCallStackSidebarPane()
-    {
-        var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
-        for (var element of pane.contentElement.querySelectorAll('.call-frame-item'))
-            TestRunner.addResult(element.deepTextContent().replace(/VM\d+/g, "VM"));
-    }
-}
+  function dumpCallStackSidebarPane() {
+    var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
+    for (var element of pane.contentElement.querySelectorAll('.call-frame-item'))
+      TestRunner.addResult(element.deepTextContent().replace(/VM\d+/g, 'VM'));
+  }
+};
 
 </script>
 </head>

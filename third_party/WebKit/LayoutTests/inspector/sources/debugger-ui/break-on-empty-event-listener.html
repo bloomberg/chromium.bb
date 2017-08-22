@@ -19,24 +19,21 @@ function addEmptyEventListenerAndClick()
     debugger;
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1, true);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        var actions = [ "Print" ];
-        SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step2);
-        SourcesTestRunner.setEventListenerBreakpoint("listener:click", true);
-        TestRunner.evaluateInPageWithTimeout("addEmptyEventListenerAndClick()");
-    }
+  function step1() {
+    var actions = ['Print'];
+    SourcesTestRunner.waitUntilPausedAndPerformSteppingActions(actions, step2);
+    SourcesTestRunner.setEventListenerBreakpoint('listener:click', true);
+    TestRunner.evaluateInPageWithTimeout('addEmptyEventListenerAndClick()');
+  }
 
-    function step2()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("listener:click", false);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step2() {
+    SourcesTestRunner.setEventListenerBreakpoint('listener:click', false);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>
