@@ -21,14 +21,14 @@ ResourceRequestAllowedNotifier::ResourceRequestAllowedNotifier(
 
 ResourceRequestAllowedNotifier::~ResourceRequestAllowedNotifier() {
   if (observer_)
-    net::NetworkChangeNotifier::RemoveConnectionTypeObserver(this);
+    net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void ResourceRequestAllowedNotifier::Init(Observer* observer) {
   DCHECK(!observer_ && observer);
   observer_ = observer;
 
-  net::NetworkChangeNotifier::AddConnectionTypeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 
   // Check this state during initialization. It is not expected to change until
   // the corresponding notification is received.
@@ -102,7 +102,7 @@ void ResourceRequestAllowedNotifier::OnEulaAccepted() {
   MaybeNotifyObserver();
 }
 
-void ResourceRequestAllowedNotifier::OnConnectionTypeChanged(
+void ResourceRequestAllowedNotifier::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   // Only attempt to notify observers if this was previously waiting for the
   // network to reconnect, and new network state is actually available. This
