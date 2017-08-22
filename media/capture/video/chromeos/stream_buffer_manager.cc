@@ -7,9 +7,10 @@
 #include <sync/sync.h>
 
 #include "base/memory/ptr_util.h"
-#include "media/capture/video/chromeos/camera_buffer_factory.h"
+#include "base/memory/shared_memory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
+#include "media/capture/video/chromeos/pixel_format_utils.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 
@@ -19,12 +20,10 @@ StreamBufferManager::StreamBufferManager(
     arc::mojom::Camera3CallbackOpsRequest callback_ops_request,
     std::unique_ptr<StreamCaptureInterface> capture_interface,
     CameraDeviceContext* device_context,
-    std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
     scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner)
     : callback_ops_(this, std::move(callback_ops_request)),
       capture_interface_(std::move(capture_interface)),
       device_context_(device_context),
-      camera_buffer_factory_(std::move(camera_buffer_factory)),
       ipc_task_runner_(std::move(ipc_task_runner)),
       capturing_(false),
       frame_number_(0),
@@ -36,14 +35,7 @@ StreamBufferManager::StreamBufferManager(
   DCHECK(device_context_);
 }
 
-StreamBufferManager::~StreamBufferManager() {
-  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  if (stream_context_) {
-    for (const auto& buf : stream_context_->buffers) {
-      buf->Unmap();
-    }
-  }
-}
+StreamBufferManager::~StreamBufferManager() {}
 
 void StreamBufferManager::SetUpStreamAndBuffers(
     VideoCaptureFormat capture_format,
@@ -70,28 +62,28 @@ void StreamBufferManager::SetUpStreamAndBuffers(
   stream_context_->capture_format = capture_format;
   stream_context_->stream = std::move(stream);
 
-  const ChromiumPixelFormat stream_format =
-      camera_buffer_factory_->ResolveStreamBufferFormat(
-          stream_context_->stream->format);
-  stream_context_->capture_format.pixel_format = stream_format.video_format;
-
   // Allocate buffers.
   size_t num_buffers = stream_context_->stream->max_buffers;
   stream_context_->buffers.resize(num_buffers);
   for (size_t j = 0; j < num_buffers; ++j) {
-    auto buffer = camera_buffer_factory_->CreateGpuMemoryBuffer(
+    const VideoCaptureFormat frame_format(
         gfx::Size(stream_context_->stream->width,
                   stream_context_->stream->height),
-        stream_format.gfx_format);
-    if (!buffer) {
-      device_context_->SetErrorState(FROM_HERE,
-                                     "Failed to create GpuMemoryBuffer");
-      return;
-    }
-    bool ret = buffer->Map();
+        0.0, stream_context_->capture_format.pixel_format);
+    auto buffer = base::MakeUnique<base::SharedMemory>();
+    base::SharedMemoryCreateOptions options;
+    options.size = frame_format.ImageAllocationSize();
+    options.share_read_only = false;
+    bool ret = buffer->Create(options);
     if (!ret) {
       device_context_->SetErrorState(FROM_HERE,
-                                     "Failed to map GpuMemoryBuffer");
+                                     "Failed to create SharedMemory buffer");
+      return;
+    }
+    ret = buffer->Map(buffer->requested_size());
+    if (!ret) {
+      device_context_->SetErrorState(FROM_HERE,
+                                     "Failed to map SharedMemory buffer");
       return;
     }
     stream_context_->buffers[j] = std::move(buffer);
@@ -132,11 +124,10 @@ void StreamBufferManager::RegisterBuffer() {
 
   size_t buffer_id = stream_context_->free_buffers.front();
   stream_context_->free_buffers.pop();
-  const gfx::GpuMemoryBuffer* buffer =
-      stream_context_->buffers[buffer_id].get();
+  const base::SharedMemory* buffer = stream_context_->buffers[buffer_id].get();
 
   VideoPixelFormat buffer_format = stream_context_->capture_format.pixel_format;
-  uint32_t drm_format = PixFormatVideoToDrm(buffer_format);
+  uint32_t drm_format = PixFormatChromiumToDrm(buffer_format);
   if (!drm_format) {
     device_context_->SetErrorState(
         FROM_HERE, std::string("Unsupported video pixel format") +
@@ -145,35 +136,36 @@ void StreamBufferManager::RegisterBuffer() {
   }
   arc::mojom::HalPixelFormat hal_pixel_format = stream_context_->stream->format;
 
-  gfx::NativePixmapHandle buffer_handle =
-      buffer->GetHandle().native_pixmap_handle;
-  size_t num_planes = buffer_handle.planes.size();
+  size_t num_planes = VideoFrame::NumPlanes(buffer_format);
   std::vector<StreamCaptureInterface::Plane> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
+    base::SharedMemoryHandle shm_handle = buffer->handle();
     // Wrap the platform handle.
     MojoHandle wrapped_handle;
-    // There is only one fd.
-    int dup_fd = dup(buffer_handle.fds[0].fd);
-    if (dup_fd == -1) {
-      device_context_->SetErrorState(FROM_HERE, "Failed to dup fd");
-      return;
-    }
     MojoResult result = mojo::edk::CreatePlatformHandleWrapper(
-        mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(dup_fd)),
+        mojo::edk::ScopedPlatformHandle(mojo::edk::PlatformHandle(
+            base::SharedMemory::DuplicateHandle(shm_handle).GetHandle())),
         &wrapped_handle);
     if (result != MOJO_RESULT_OK) {
       device_context_->SetErrorState(FROM_HERE,
-                                     "Failed to wrap gpu memory handle");
+                                     "Failed to wrap shared memory handle");
       return;
     }
     planes[i].fd.reset(mojo::Handle(wrapped_handle));
-    planes[i].stride = buffer_handle.planes[i].stride;
-    planes[i].offset = buffer_handle.planes[i].offset;
+    planes[i].stride = VideoFrame::RowBytes(
+        i, buffer_format, stream_context_->capture_format.frame_size.width());
+    if (!i) {
+      planes[i].offset = 0;
+    } else {
+      planes[i].offset =
+          planes[i - 1].offset +
+          VideoFrame::PlaneSize(buffer_format, i - 1,
+                                stream_context_->capture_format.frame_size)
+              .GetArea();
+    }
   }
-  // We reuse BufferType::GRALLOC here since on ARC++ we are using DMA-buf-based
-  // gralloc buffers.
   capture_interface_->RegisterBuffer(
-      buffer_id, arc::mojom::Camera3DeviceOps::BufferType::GRALLOC, drm_format,
+      buffer_id, arc::mojom::Camera3DeviceOps::BufferType::SHM, drm_format,
       hal_pixel_format, stream_context_->stream->width,
       stream_context_->stream->height, std::move(planes),
       base::Bind(&StreamBufferManager::OnRegisteredBuffer,
@@ -478,18 +470,12 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number) {
   // Deliver the captured data to client and then re-queue the buffer.
   if (partial_result.buffer->status !=
       arc::mojom::Camera3BufferStatus::CAMERA3_BUFFER_STATUS_ERROR) {
-    gfx::GpuMemoryBuffer* buffer = stream_context_->buffers[buffer_id].get();
-    auto buffer_handle = buffer->GetHandle();
-    size_t mapped_size = 0;
-    for (const auto& plane : buffer_handle.native_pixmap_handle.planes) {
-      mapped_size += plane.size;
-    }
-    // We are relying on the GpuMemoryBuffer being mapped contiguously on the
-    // virtual memory address space.
+    const base::SharedMemory* shm_buffer =
+        stream_context_->buffers[buffer_id].get();
     device_context_->SubmitCapturedData(
-        reinterpret_cast<uint8_t*>(buffer->memory(0)), mapped_size,
-        stream_context_->capture_format, partial_result.reference_time,
-        partial_result.timestamp);
+        reinterpret_cast<uint8_t*>(shm_buffer->memory()),
+        shm_buffer->mapped_size(), stream_context_->capture_format,
+        partial_result.reference_time, partial_result.timestamp);
   }
   stream_context_->free_buffers.push(buffer_id);
   partial_results_.erase(frame_number);

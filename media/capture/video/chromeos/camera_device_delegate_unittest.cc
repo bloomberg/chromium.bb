@@ -14,14 +14,11 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/bind_to_current_loop.h"
-#include "media/capture/video/chromeos/camera_buffer_factory.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
 #include "media/capture/video/chromeos/camera_hal_delegate.h"
 #include "media/capture/video/chromeos/mock_camera_module.h"
-#include "media/capture/video/chromeos/mock_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/mock_video_capture_client.h"
 #include "media/capture/video/chromeos/mojo/arc_camera3.mojom.h"
-#include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -126,8 +123,6 @@ class CameraDeviceDelegateTest : public ::testing::Test {
         hal_delegate_thread_("HalDelegateThread") {}
 
   void SetUp() override {
-    VideoCaptureDeviceFactoryChromeOS::SetBufferManagerForTesting(
-        &mock_gpu_memory_buffer_manager_);
     hal_delegate_thread_.Start();
     camera_hal_delegate_ =
         new CameraHalDelegate(hal_delegate_thread_.task_runner());
@@ -275,24 +270,6 @@ class CameraDeviceDelegateTest : public ::testing::Test {
         .Times(1)
         .WillOnce(
             Invoke(this, &CameraDeviceDelegateTest::ConfigureFakeStreams));
-    EXPECT_CALL(
-        mock_gpu_memory_buffer_manager_,
-        CreateGpuMemoryBuffer(_, gfx::BufferFormat::YUV_420_BIPLANAR,
-                              gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                              gpu::kNullSurfaceHandle))
-        .Times(1)
-        .WillOnce(Invoke(
-            &mock_gpu_memory_buffer_manager_,
-            &unittest_internal::MockGpuMemoryBufferManager::ReturnValidBuffer));
-    EXPECT_CALL(mock_gpu_memory_buffer_manager_,
-                CreateGpuMemoryBuffer(
-                    gfx::Size(1280, 720), gfx::BufferFormat::YUV_420_BIPLANAR,
-                    gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                    gpu::kNullSurfaceHandle))
-        .Times(1)
-        .WillOnce(Invoke(
-            &mock_gpu_memory_buffer_manager_,
-            &unittest_internal::MockGpuMemoryBufferManager::ReturnValidBuffer));
   }
 
   void SetUpExpectationUntilCapturing(
@@ -383,7 +360,6 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   std::unique_ptr<CameraDeviceDelegate> camera_device_delegate_;
 
   testing::StrictMock<unittest_internal::MockCameraModule> mock_camera_module_;
-  unittest_internal::MockGpuMemoryBufferManager mock_gpu_memory_buffer_manager_;
 
   testing::StrictMock<MockCameraDevice> mock_camera_device_;
   mojo::Binding<arc::mojom::Camera3DeviceOps> mock_camera_device_binding_;

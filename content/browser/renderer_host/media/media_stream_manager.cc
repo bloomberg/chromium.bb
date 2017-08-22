@@ -27,7 +27,6 @@
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
 #include "content/browser/renderer_host/media/media_capture_devices_impl.h"
@@ -435,8 +434,7 @@ MediaStreamManager::MediaStreamManager(
       video_capture_provider = InProcessVideoCaptureProvider::CreateInstance(
           base::MakeUnique<media::VideoCaptureSystemImpl>(
               media::VideoCaptureDeviceFactory::CreateFactory(
-                  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-                  BrowserGpuMemoryBufferManager::current())),
+                  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
           std::move(device_task_runner));
     }
   }

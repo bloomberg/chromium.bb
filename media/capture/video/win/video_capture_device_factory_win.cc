@@ -383,8 +383,7 @@ void VideoCaptureDeviceFactoryWin::GetSupportedFormats(
 // static
 VideoCaptureDeviceFactory*
 VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return new VideoCaptureDeviceFactoryWin();
 }
 
