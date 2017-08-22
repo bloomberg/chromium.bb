@@ -556,6 +556,11 @@ ResourceFetcher::PrepareRequestResult ResourceFetcher::PrepareRequest(
           ? SecurityViolationReportingPolicy::kSuppressReporting
           : SecurityViolationReportingPolicy::kReport;
 
+  // Note that resource_request.GetRedirectStatus() may return kFollowedRedirect
+  // here since e.g. DocumentThreadableLoader may create a new Resource from
+  // a ResourceRequest that originates from the ResourceRequest passed to
+  // the redirect handling callback.
+
   // Before modifying the request for CSP, evaluate report-only headers. This
   // allows site owners to learn about requests that are being modified
   // (e.g. mixed content that is being upgraded by upgrade-insecure-requests).
