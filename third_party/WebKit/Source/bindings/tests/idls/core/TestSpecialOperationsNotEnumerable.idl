@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(rakuco): [NotEnumerable] does not make sense here. The closest to the
-// original intent of this file is [LegacyUnenumerableNamedProperties], which
-// causes named properties not to be enumerable.
+[LegacyUnenumerableNamedProperties]
 interface TestSpecialOperationsNotEnumerable {
     // This getter without setter also checks that the property descriptor for
     // indexed properties has [[Writable]] set to false.
-    [NotEnumerable] getter DOMString (unsigned long index);
-
-    [NotEnumerable] getter DOMString (DOMString name);
+    getter DOMString (unsigned long index);
+    getter DOMString (DOMString name);
 };

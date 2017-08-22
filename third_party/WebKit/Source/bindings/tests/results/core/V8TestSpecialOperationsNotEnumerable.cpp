@@ -73,6 +73,36 @@ static void namedPropertyGetter(const AtomicString& name, const v8::PropertyCall
   V8SetReturnValueString(info, result, info.GetIsolate());
 }
 
+static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  const CString& nameInUtf8 = name.Utf8();
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "TestSpecialOperationsNotEnumerable", nameInUtf8.data());
+
+  TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
+
+  bool result = impl->NamedPropertyQuery(name, exceptionState);
+  if (!result)
+    return;
+  // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
+  // 2.7. If |O| implements an interface with a named property setter, then set
+  //      desc.[[Writable]] to true, otherwise set it to false.
+  // 2.8. If |O| implements an interface with the
+  //      [LegacyUnenumerableNamedProperties] extended attribute, then set
+  //      desc.[[Enumerable]] to false, otherwise set it to true.
+  V8SetReturnValueInt(info, v8::DontEnum | v8::ReadOnly);
+}
+
+static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kEnumerationContext, "TestSpecialOperationsNotEnumerable");
+
+  TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
+
+  Vector<String> names;
+  impl->NamedPropertyEnumerator(names, exceptionState);
+  if (exceptionState.HadException())
+    return;
+  V8SetReturnValue(info, ToV8(names, info.Holder(), info.GetIsolate()).As<v8::Array>());
+}
+
 static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestSpecialOperationsNotEnumerable* impl = V8TestSpecialOperationsNotEnumerable::toImpl(info.Holder());
 
@@ -120,6 +150,20 @@ void V8TestSpecialOperationsNotEnumerable::namedPropertyGetterCallback(v8::Local
   const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
 
   TestSpecialOperationsNotEnumerableV8Internal::namedPropertyGetter(propertyName, info);
+}
+
+void V8TestSpecialOperationsNotEnumerable::namedPropertyQueryCallback(v8::Local<v8::Name> name, const v8::PropertyCallbackInfo<v8::Integer>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestSpecialOperationsNotEnumerable_NamedPropertyQuery");
+
+  if (!name->IsString())
+    return;
+  const AtomicString& propertyName = ToCoreAtomicString(name.As<v8::String>());
+
+  TestSpecialOperationsNotEnumerableV8Internal::namedPropertyQuery(propertyName, info);
+}
+
+void V8TestSpecialOperationsNotEnumerable::namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::Array>& info) {
+  TestSpecialOperationsNotEnumerableV8Internal::namedPropertyEnumerator(info);
 }
 
 void V8TestSpecialOperationsNotEnumerable::indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info) {
@@ -187,13 +231,13 @@ static void installV8TestSpecialOperationsNotEnumerableTemplate(
       V8TestSpecialOperationsNotEnumerable::indexedPropertySetterCallback,
       V8TestSpecialOperationsNotEnumerable::indexedPropertyDescriptorCallback,
       nullptr,
-      nullptr,
+      IndexedPropertyEnumerator<TestSpecialOperationsNotEnumerable>,
       V8TestSpecialOperationsNotEnumerable::indexedPropertyDefinerCallback,
       v8::Local<v8::Value>(),
       v8::PropertyHandlerFlags::kNone);
   instanceTemplate->SetHandler(indexedPropertyHandlerConfig);
   // Named properties
-  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestSpecialOperationsNotEnumerable::namedPropertyGetterCallback, nullptr, nullptr, nullptr, nullptr, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
+  v8::NamedPropertyHandlerConfiguration namedPropertyHandlerConfig(V8TestSpecialOperationsNotEnumerable::namedPropertyGetterCallback, nullptr, V8TestSpecialOperationsNotEnumerable::namedPropertyQueryCallback, nullptr, V8TestSpecialOperationsNotEnumerable::namedPropertyEnumeratorCallback, v8::Local<v8::Value>(), static_cast<v8::PropertyHandlerFlags>(int(v8::PropertyHandlerFlags::kOnlyInterceptStrings) | int(v8::PropertyHandlerFlags::kNonMasking)));
   instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
   // Custom signature

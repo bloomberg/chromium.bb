@@ -520,12 +520,21 @@ static void namedPropertyQuery(const AtomicString& name, const v8::PropertyCallb
   bool result = impl->NamedPropertyQuery({{getter_arguments | join(', ')}});
   if (!result)
     return;
-  {# TODO(rakuco): [LegacyUnenumerableNamedProperties] makes named properties
-     have [[Enumerable]] set to false. #}
   // https://heycam.github.io/webidl/#LegacyPlatformObjectGetOwnProperty
   // 2.7. If |O| implements an interface with a named property setter, then set
   //      desc.[[Writable]] to true, otherwise set it to false.
-  V8SetReturnValueInt(info, {% if named_property_setter %}v8::None{% else %}v8::ReadOnly{% endif %});
+  // 2.8. If |O| implements an interface with the
+  //      [LegacyUnenumerableNamedProperties] extended attribute, then set
+  //      desc.[[Enumerable]] to false, otherwise set it to true.
+  {% if named_property_setter %}
+  {% set desc_properties = ['v8::None'] %}
+  {% else %}
+  {% set desc_properties = ['v8::ReadOnly'] %}
+  {% endif %}
+  {% if has_legacy_unenumerable_named_properties %}
+  {% set desc_properties = ['v8::DontEnum'] + desc_properties %}
+  {% endif %}
+  V8SetReturnValueInt(info, {{desc_properties | join(' | ')}});
 }
 
 {% endif %}
