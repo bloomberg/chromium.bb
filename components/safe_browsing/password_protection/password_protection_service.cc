@@ -161,26 +161,6 @@ void PasswordProtectionService::OnWarningDone(
   }
 }
 
-void PasswordProtectionService::ShowModalWarning(
-    content::WebContents* web_contents,
-    const LoginReputationClientRequest* request_proto,
-    const LoginReputationClientResponse* response_proto) {
-  // Do nothing if there is already a modal warning showing for this
-  // WebContents.
-  if (web_contents_to_proto_map().find(web_contents) !=
-      web_contents_to_proto_map().end())
-    return;
-
-  web_contents_to_proto_map().insert(std::make_pair(
-      web_contents,
-      std::make_pair(LoginReputationClientRequest(*request_proto),
-                     LoginReputationClientResponse(*response_proto))));
-
-  UpdateSecurityState(SB_THREAT_TYPE_PASSWORD_REUSE, web_contents);
-  // TODO(jialiul): instantiate modal warning dialog.
-  OnWarningShown(web_contents, MODAL_DIALOG);
-}
-
 void PasswordProtectionService::OnWarningShown(
     content::WebContents* web_contents,
     WarningUIType ui_type) {
