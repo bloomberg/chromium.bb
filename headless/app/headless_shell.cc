@@ -347,14 +347,16 @@ void HeadlessShell::OnPageReady() {
 void HeadlessShell::FetchDom() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   devtools_client_->GetRuntime()->Evaluate(
-      "document.body.outerHTML",
+      "(document.doctype ? new "
+      "XMLSerializer().serializeToString(document.doctype) + '\\n' : '') + "
+      "document.documentElement.outerHTML",
       base::Bind(&HeadlessShell::OnDomFetched, weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessShell::OnDomFetched(
     std::unique_ptr<runtime::EvaluateResult> result) {
   if (result->HasExceptionDetails()) {
-    LOG(ERROR) << "Failed to evaluate document.body.outerHTML: "
+    LOG(ERROR) << "Failed to serialize document: "
                << result->GetExceptionDetails()->GetText();
   } else {
     std::string dom;

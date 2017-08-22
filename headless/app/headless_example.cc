@@ -97,9 +97,11 @@ void HeadlessExample::DevToolsTargetReady() {
 void HeadlessExample::OnLoadEventFired(
     const headless::page::LoadEventFiredParams& params) {
   // The page has now finished loading. Let's grab a snapshot of the DOM by
-  // evaluating the outerHTML property on the body element.
+  // evaluating the innerHTML property on the document element.
   devtools_client_->GetRuntime()->Evaluate(
-      "document.body.outerHTML",
+      "(document.doctype ? new "
+      "XMLSerializer().serializeToString(document.doctype) + '\\n' : '') + "
+      "document.documentElement.outerHTML",
       base::Bind(&HeadlessExample::OnDomFetched, weak_factory_.GetWeakPtr()));
 }
 
@@ -108,7 +110,7 @@ void HeadlessExample::OnDomFetched(
   std::string dom;
   // Make sure the evaluation succeeded before reading the result.
   if (result->HasExceptionDetails()) {
-    LOG(ERROR) << "Failed to evaluate document.body.outerHTML: "
+    LOG(ERROR) << "Failed to serialize document: "
                << result->GetExceptionDetails()->GetText();
   } else if (result->GetResult()->GetValue()->GetAsString(&dom)) {
     printf("%s\n", dom.c_str());
