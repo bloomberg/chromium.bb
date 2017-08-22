@@ -276,21 +276,15 @@ using namespace HTMLNames;
 
 class DocumentOutliveTimeReporter : public BlinkGCObserver {
  public:
-  DocumentOutliveTimeReporter()
-      : BlinkGCObserver(ThreadState::Current()),
-        gc_age_when_document_detached_(ThreadState::Current()->GcAge()) {}
+  explicit DocumentOutliveTimeReporter(Document* document)
+      : BlinkGCObserver(ThreadState::Current()), document_(document) {}
 
   ~DocumentOutliveTimeReporter() override {
     // As not all documents are destroyed before the process dies, this might
     // miss some long-lived documents or leaked documents.
-    // TODO(hajimehoshi): There are some cases that a document can live after
-    // shutting down because the document can still be reffed (e.g. a document
-    // opened via window.open can be reffed by the opener even after shutting
-    // down). Detect those cases and record them independently.
     UMA_HISTOGRAM_EXACT_LINEAR(
         "Document.OutliveTimeAfterShutdown.DestroyedBeforeProcessDies",
-        ThreadState::Current()->GcAge() - gc_age_when_document_detached_ + 1,
-        101);
+        GetOutliveTimeCount() + 1, 101);
   }
 
   void OnCompleteSweepDone() override {
@@ -300,26 +294,40 @@ class DocumentOutliveTimeReporter : public BlinkGCObserver {
       kGCCountMax,
     };
 
-    int diff = ThreadState::Current()->GcAge() - gc_age_when_document_detached_;
-    if (diff == 5 || diff == 10) {
-      GCCount count = kGCCount5;
-      switch (diff) {
-        case 5:
-          count = kGCCount5;
-          break;
-        case 10:
-          count = kGCCount10;
-          break;
-        default:
-          NOTREACHED();
-          break;
+    // There are some cases that a document can live after shutting down because
+    // the document can still be referenced (e.g. a document opened via
+    // window.open can be referenced by the opener even after shutting down). To
+    // avoid such cases as much as possible, outlive time count is started after
+    // all DomWrapper of the document have disappeared.
+    if (!gc_age_when_document_detached_) {
+      if (document_->domWindow() &&
+          DOMWrapperWorld::HasWrapperInAnyWorldInMainThread(
+              document_->domWindow())) {
+        return;
       }
-      UMA_HISTOGRAM_ENUMERATION("Document.OutliveTimeAfterShutdown.GCCount",
-                                count, kGCCountMax);
+      gc_age_when_document_detached_ = ThreadState::Current()->GcAge();
+    }
+
+    int outlive_time_count = GetOutliveTimeCount();
+    if (outlive_time_count == 5 || outlive_time_count == 10) {
+      const char* kUMAString = "Document.OutliveTimeAfterShutdown.GCCount";
+      if (outlive_time_count == 5)
+        UMA_HISTOGRAM_ENUMERATION(kUMAString, kGCCount5, kGCCountMax);
+      else if (outlive_time_count == 10)
+        UMA_HISTOGRAM_ENUMERATION(kUMAString, kGCCount10, kGCCountMax);
+      else
+        NOTREACHED();
     }
   }
 
  private:
+  int GetOutliveTimeCount() const {
+    if (!gc_age_when_document_detached_)
+      return 0;
+    return ThreadState::Current()->GcAge() - gc_age_when_document_detached_;
+  }
+
+  WeakPersistent<Document> document_;
   int gc_age_when_document_detached_ = 0;
 };
 
@@ -2729,7 +2737,7 @@ void Document::Shutdown() {
   frame_ = nullptr;
 
   document_outlive_time_reporter_ =
-      WTF::WrapUnique(new DocumentOutliveTimeReporter());
+      WTF::WrapUnique(new DocumentOutliveTimeReporter(this));
 }
 
 void Document::RemoveAllEventListeners() {

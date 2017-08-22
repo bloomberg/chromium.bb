@@ -127,6 +127,8 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
                                                     const String& policy);
   bool IsolatedWorldHasContentSecurityPolicy();
 
+  static bool HasWrapperInAnyWorldInMainThread(ScriptWrappable*);
+
   bool IsMainWorld() const { return world_type_ == WorldType::kMain; }
   bool IsWorkerWorld() const { return world_type_ == WorldType::kWorker; }
   bool IsIsolatedWorld() const {
