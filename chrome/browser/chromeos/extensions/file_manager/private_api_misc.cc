@@ -24,7 +24,6 @@
 #include "chrome/browser/chromeos/file_manager/zip_file_creator.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
-#include "chrome/browser/chromeos/fileapi/recent_context.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -716,9 +715,8 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
       chromeos::RecentModel::GetForProfile(chrome_details_.GetProfile());
 
   model->GetRecentFiles(
-      chromeos::RecentContext(
-          file_system_context.get(),
-          Extension::GetBaseURLFromExtensionId(extension_id())),
+      file_system_context.get(),
+      Extension::GetBaseURLFromExtensionId(extension_id()),
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
           this));

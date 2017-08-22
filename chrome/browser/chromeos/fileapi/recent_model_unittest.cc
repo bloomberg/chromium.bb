@@ -22,22 +22,54 @@
 
 namespace chromeos {
 
+namespace {
+
+RecentFile MakeRecentFile(const std::string& name,
+                          const base::Time& last_modified) {
+  storage::FileSystemURL url = storage::FileSystemURL::CreateForTest(
+      GURL(),  // origin
+      storage::kFileSystemTypeNativeLocal, base::FilePath(name));
+  return RecentFile(url, last_modified);
+}
+
+}  // namespace
+
 class RecentModelTest : public testing::Test {
  public:
   RecentModelTest() = default;
 
  protected:
+  std::vector<std::unique_ptr<RecentSource>> BuildDefaultSources() {
+    auto source1 = base::MakeUnique<FakeRecentSource>();
+    source1->AddFile(MakeRecentFile("aaa.jpg", base::Time::FromJavaTime(1000)));
+    source1->AddFile(MakeRecentFile("ccc.jpg", base::Time::FromJavaTime(3000)));
+
+    auto source2 = base::MakeUnique<FakeRecentSource>();
+    source2->AddFile(MakeRecentFile("bbb.jpg", base::Time::FromJavaTime(2000)));
+    source2->AddFile(MakeRecentFile("ddd.jpg", base::Time::FromJavaTime(4000)));
+
+    std::vector<std::unique_ptr<RecentSource>> sources;
+    sources.emplace_back(std::move(source1));
+    sources.emplace_back(std::move(source2));
+    return sources;
+  }
+
   std::vector<storage::FileSystemURL> BuildModelAndGetRecentFiles(
-      std::vector<std::unique_ptr<RecentSource>> sources) {
+      std::vector<std::unique_ptr<RecentSource>> sources,
+      size_t max_files,
+      const base::Time& cutoff_time) {
     RecentModel* model = RecentModelFactory::SetForProfileAndUseForTest(
         &profile_, RecentModel::CreateForTest(std::move(sources)));
+
+    model->SetMaxFilesForTest(max_files);
+    model->SetForcedCutoffTimeForTest(cutoff_time);
 
     std::vector<storage::FileSystemURL> urls;
 
     base::RunLoop run_loop;
 
     model->GetRecentFiles(
-        RecentContext(nullptr /* file_system_context */, GURL() /* origin */),
+        nullptr /* file_system_context */, GURL() /* origin */,
         base::BindOnce(
             [](base::RunLoop* run_loop,
                std::vector<storage::FileSystemURL>* urls_out,
@@ -56,29 +88,9 @@ class RecentModelTest : public testing::Test {
   TestingProfile profile_;
 };
 
-RecentFile MakeRecentFile(const std::string& name,
-                          const base::Time& last_modified) {
-  storage::FileSystemURL url = storage::FileSystemURL::CreateForTest(
-      GURL(),  // origin
-      storage::kFileSystemTypeNativeLocal, base::FilePath(name));
-  return RecentFile(url, last_modified);
-}
-
 TEST_F(RecentModelTest, GetRecentFiles) {
-  auto source1 = base::MakeUnique<FakeRecentSource>();
-  source1->AddFile(MakeRecentFile("aaa.jpg", base::Time::FromJavaTime(1)));
-  source1->AddFile(MakeRecentFile("ccc.jpg", base::Time::FromJavaTime(3)));
-
-  auto source2 = base::MakeUnique<FakeRecentSource>();
-  source2->AddFile(MakeRecentFile("bbb.jpg", base::Time::FromJavaTime(2)));
-  source2->AddFile(MakeRecentFile("ddd.jpg", base::Time::FromJavaTime(4)));
-
-  std::vector<std::unique_ptr<RecentSource>> sources;
-  sources.emplace_back(std::move(source1));
-  sources.emplace_back(std::move(source2));
-
   std::vector<storage::FileSystemURL> urls =
-      BuildModelAndGetRecentFiles(std::move(sources));
+      BuildModelAndGetRecentFiles(BuildDefaultSources(), 10, base::Time());
 
   ASSERT_EQ(4u, urls.size());
   EXPECT_EQ("ddd.jpg", urls[0].path().value());
@@ -87,12 +99,29 @@ TEST_F(RecentModelTest, GetRecentFiles) {
   EXPECT_EQ("aaa.jpg", urls[3].path().value());
 }
 
-// TODO(nya): Add tests for filtering files.
+TEST_F(RecentModelTest, GetRecentFiles_MaxFiles) {
+  std::vector<storage::FileSystemURL> urls =
+      BuildModelAndGetRecentFiles(BuildDefaultSources(), 3, base::Time());
+
+  ASSERT_EQ(3u, urls.size());
+  EXPECT_EQ("ddd.jpg", urls[0].path().value());
+  EXPECT_EQ("ccc.jpg", urls[1].path().value());
+  EXPECT_EQ("bbb.jpg", urls[2].path().value());
+}
+
+TEST_F(RecentModelTest, GetRecentFiles_CutoffTime) {
+  std::vector<storage::FileSystemURL> urls = BuildModelAndGetRecentFiles(
+      BuildDefaultSources(), 10, base::Time::FromJavaTime(2500));
+
+  ASSERT_EQ(2u, urls.size());
+  EXPECT_EQ("ddd.jpg", urls[0].path().value());
+  EXPECT_EQ("ccc.jpg", urls[1].path().value());
+}
 
 TEST_F(RecentModelTest, GetRecentFiles_UmaStats) {
   base::HistogramTester histogram_tester;
 
-  BuildModelAndGetRecentFiles({});
+  BuildModelAndGetRecentFiles({}, 10, base::Time());
 
   histogram_tester.ExpectTotalCount(RecentModel::kLoadHistogramName, 1);
 }

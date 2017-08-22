@@ -8,20 +8,26 @@
 
 namespace chromeos {
 
-RecentContext::RecentContext() : is_valid_(false) {}
+RecentContext::RecentContext() : is_valid_(false), max_files_(0) {}
 
 RecentContext::RecentContext(storage::FileSystemContext* file_system_context,
-                             const GURL& origin)
+                             const GURL& origin,
+                             size_t max_files,
+                             const base::Time& cutoff_time)
     : is_valid_(true),
       file_system_context_(file_system_context),
-      origin_(origin) {}
+      origin_(origin),
+      max_files_(max_files),
+      cutoff_time_(cutoff_time) {}
 
 RecentContext::RecentContext(const RecentContext& other) = default;
 
 RecentContext::RecentContext(RecentContext&& other)
     : is_valid_(other.is_valid_),
       file_system_context_(std::move(other.file_system_context_)),
-      origin_(std::move(other.origin_)) {
+      origin_(std::move(other.origin_)),
+      max_files_(other.max_files_),
+      cutoff_time_(std::move(other.cutoff_time_)) {
   other.is_valid_ = false;
 }
 

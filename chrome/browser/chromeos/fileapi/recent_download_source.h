@@ -33,7 +33,6 @@ namespace chromeos {
 class RecentDownloadSource : public RecentSource {
  public:
   explicit RecentDownloadSource(Profile* profile);
-  RecentDownloadSource(Profile* profile, size_t max_num_files);
   ~RecentDownloadSource() override;
 
   // RecentSource overrides:
@@ -59,7 +58,6 @@ class RecentDownloadSource : public RecentSource {
   storage::FileSystemURL BuildDownloadsURL(const base::FilePath& path) const;
 
   const std::string mount_point_name_;
-  const size_t max_num_files_;
 
   // Parameters given to GetRecentFiles().
   RecentContext context_;

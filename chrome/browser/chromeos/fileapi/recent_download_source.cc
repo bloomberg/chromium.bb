@@ -72,13 +72,8 @@ const char RecentDownloadSource::kLoadHistogramName[] =
     "FileBrowser.Recent.LoadDownloads";
 
 RecentDownloadSource::RecentDownloadSource(Profile* profile)
-    : RecentDownloadSource(profile, kMaxFilesFromSingleSource) {}
-
-RecentDownloadSource::RecentDownloadSource(Profile* profile,
-                                           size_t max_num_files)
     : mount_point_name_(
           file_manager::util::GetDownloadsMountPointName(profile)),
-      max_num_files_(max_num_files),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -162,9 +157,10 @@ void RecentDownloadSource::OnGetMetadata(const storage::FileSystemURL& url,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context_.is_valid());
 
-  if (result == base::File::FILE_OK) {
+  if (result == base::File::FILE_OK &&
+      info.last_modified >= context_.cutoff_time()) {
     recent_files_.emplace(RecentFile(url, info.last_modified));
-    while (recent_files_.size() > max_num_files_)
+    while (recent_files_.size() > context_.max_files())
       recent_files_.pop();
   }
 
