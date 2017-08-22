@@ -199,6 +199,7 @@ Polymer({
    */
   onPhotoTaken_: function(event) {
     this.browserProxy_.photoTaken(event.detail.photoDataUrl);
+    this.pictureList_.setOldImageUrl(event.detail.photoDataUrl);
     this.pictureList_.setFocus();
     announceAccessibleMessage(
         loadTimeData.getString('photoCaptureAccessibleText'));
