@@ -17,3 +17,9 @@ include_rules = [
     "+services/viz/public/interfaces/compositing",
     "+public/web/WebSettings.h",
 ]
+
+specific_include_rules = {
+  ".*Test.cpp": [
+    "+components/viz/test",
+  ],
+}

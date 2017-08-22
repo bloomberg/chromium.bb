@@ -13,9 +13,9 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,7 +59,7 @@ class StubGpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   size_t* set_color_space_count_;
 };
 
-class StubGpuMemoryBufferManager : public cc::TestGpuMemoryBufferManager {
+class StubGpuMemoryBufferManager : public TestGpuMemoryBufferManager {
  public:
   StubGpuMemoryBufferManager() : allocate_succeeds_(true) {}
 

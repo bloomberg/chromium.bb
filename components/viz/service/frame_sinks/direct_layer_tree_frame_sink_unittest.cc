@@ -11,7 +11,6 @@
 #include "cc/test/fake_layer_tree_frame_sink_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_context_provider.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "cc/test/test_shared_bitmap_manager.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -25,6 +24,7 @@
 #include "components/viz/test/begin_frame_args_test.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace viz {
@@ -132,7 +132,7 @@ class DirectLayerTreeFrameSinkTest : public testing::Test {
   FrameSinkManagerImpl frame_sink_manager_;
   TestCompositorFrameSinkSupportManager support_manager_;
   cc::TestSharedBitmapManager bitmap_manager_;
-  cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
+  TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 
   scoped_refptr<cc::TestContextProvider> context_provider_;
   cc::FakeOutputSurface* display_output_surface_ = nullptr;

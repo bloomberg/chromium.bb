@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_gpu_memory_buffer_manager.h"
+#include "components/viz/test/test_gpu_memory_buffer_manager.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -13,7 +13,7 @@
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace cc {
+namespace viz {
 namespace {
 
 class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
@@ -125,8 +125,7 @@ class GpuMemoryBufferFromClient : public gfx::GpuMemoryBuffer {
 
 }  // namespace
 
-TestGpuMemoryBufferManager::TestGpuMemoryBufferManager() {
-}
+TestGpuMemoryBufferManager::TestGpuMemoryBufferManager() {}
 
 TestGpuMemoryBufferManager::~TestGpuMemoryBufferManager() {
   {
@@ -170,8 +169,9 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   last_gpu_memory_buffer_id_ += 1;
   std::unique_ptr<gfx::GpuMemoryBuffer> result(new GpuMemoryBufferImpl(
       this, last_gpu_memory_buffer_id_, size, format, std::move(shared_memory),
-      0, base::checked_cast<int>(
-             gfx::RowSizeForBufferFormat(size.width(), format, 0))));
+      0,
+      base::checked_cast<int>(
+          gfx::RowSizeForBufferFormat(size.width(), format, 0))));
   base::AutoLock hold(buffers_lock_);
   buffers_[last_gpu_memory_buffer_id_] = result.get();
   return result;
@@ -181,4 +181,4 @@ void TestGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {}
 
-}  // namespace cc
+}  // namespace viz
