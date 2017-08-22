@@ -366,9 +366,16 @@ void AppsGridView::SetLayout(int cols, int rows_per_page) {
 
 // static
 gfx::Size AppsGridView::GetTotalTileSize() {
+  static gfx::Size rect_size;
+
+  if (!rect_size.IsEmpty())
+    return rect_size;
+
   gfx::Rect rect(GetTileViewSize());
   rect.Inset(GetTilePadding());
-  return rect.size();
+  rect_size = rect.size();
+
+  return rect_size;
 }
 
 // static
