@@ -26,7 +26,7 @@ OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
 OverlayStrategySingleOnTop::~OverlayStrategySingleOnTop() {}
 
 bool OverlayStrategySingleOnTop::Attempt(
-    ResourceProvider* resource_provider,
+    DisplayResourceProvider* resource_provider,
     RenderPass* render_pass,
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {

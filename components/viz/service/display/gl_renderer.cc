@@ -394,7 +394,7 @@ class GLRenderer::SyncQuery {
 
 GLRenderer::GLRenderer(const RendererSettings* settings,
                        cc::OutputSurface* output_surface,
-                       cc::ResourceProvider* resource_provider,
+                       cc::DisplayResourceProvider* resource_provider,
                        cc::TextureMailboxDeleter* texture_mailbox_deleter)
     : cc::DirectRenderer(settings, output_surface, resource_provider),
       shared_geometry_quad_(QuadVertexRect()),
@@ -2775,7 +2775,7 @@ void GLRenderer::SwapBuffersComplete() {
       gl_->ScheduleCALayerInUseQueryCHROMIUM(textures.size(), textures.data());
     }
   } else if (swapping_overlay_resources_.size() > 1) {
-    cc::ResourceProvider::ScopedBatchReturnResources returner(
+    cc::DisplayResourceProvider::ScopedBatchReturnResources returner(
         resource_provider_);
 
     // If a query is not needed to release the overlay buffers, we can assume
@@ -2788,7 +2788,8 @@ void GLRenderer::SwapBuffersComplete() {
 void GLRenderer::DidReceiveTextureInUseResponses(
     const gpu::TextureInUseResponses& responses) {
   DCHECK(settings_->release_overlay_resources_after_gpu_query);
-  cc::ResourceProvider::ScopedBatchReturnResources returner(resource_provider_);
+  cc::DisplayResourceProvider::ScopedBatchReturnResources returner(
+      resource_provider_);
   for (const gpu::TextureInUseResponse& response : responses) {
     if (!response.in_use) {
       swapped_and_acked_overlay_resources_.erase(response.texture);

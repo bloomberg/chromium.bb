@@ -2557,7 +2557,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   layer_tree_frame_sink_ = layer_tree_frame_sink;
   has_valid_layer_tree_frame_sink_ = true;
-  resource_provider_ = base::MakeUnique<ResourceProvider>(
+  resource_provider_ = base::MakeUnique<LayerTreeResourceProvider>(
       layer_tree_frame_sink_->context_provider(),
       layer_tree_frame_sink_->shared_bitmap_manager(),
       layer_tree_frame_sink_->gpu_memory_buffer_manager(),

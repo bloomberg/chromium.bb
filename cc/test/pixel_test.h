@@ -20,10 +20,10 @@ class CopyOutputResult;
 }
 
 namespace cc {
+class DisplayResourceProvider;
 class DirectRenderer;
 class FakeOutputSurfaceClient;
 class OutputSurface;
-class ResourceProvider;
 class SoftwareRenderer;
 class TestGpuMemoryBufferManager;
 class TestSharedBitmapManager;
@@ -66,7 +66,7 @@ class PixelTest : public testing::Test {
   std::unique_ptr<TestSharedBitmapManager> shared_bitmap_manager_;
   std::unique_ptr<TestGpuMemoryBufferManager> gpu_memory_buffer_manager_;
   std::unique_ptr<BlockingTaskRunner> main_thread_task_runner_;
-  std::unique_ptr<ResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProvider> resource_provider_;
   std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter_;
   std::unique_ptr<DirectRenderer> renderer_;
   SoftwareRenderer* software_renderer_ = nullptr;
@@ -104,7 +104,7 @@ class GLRendererWithExpandedViewport : public viz::GLRenderer {
  public:
   GLRendererWithExpandedViewport(const viz::RendererSettings* settings,
                                  OutputSurface* output_surface,
-                                 ResourceProvider* resource_provider,
+                                 DisplayResourceProvider* resource_provider,
                                  TextureMailboxDeleter* texture_mailbox_deleter)
       : viz::GLRenderer(settings,
                         output_surface,
@@ -114,9 +114,10 @@ class GLRendererWithExpandedViewport : public viz::GLRenderer {
 
 class SoftwareRendererWithExpandedViewport : public SoftwareRenderer {
  public:
-  SoftwareRendererWithExpandedViewport(const viz::RendererSettings* settings,
-                                       OutputSurface* output_surface,
-                                       ResourceProvider* resource_provider)
+  SoftwareRendererWithExpandedViewport(
+      const viz::RendererSettings* settings,
+      OutputSurface* output_surface,
+      DisplayResourceProvider* resource_provider)
       : SoftwareRenderer(settings, output_surface, resource_provider) {}
 };
 
@@ -124,7 +125,7 @@ class GLRendererWithFlippedSurface : public viz::GLRenderer {
  public:
   GLRendererWithFlippedSurface(const viz::RendererSettings* settings,
                                OutputSurface* output_surface,
-                               ResourceProvider* resource_provider,
+                               DisplayResourceProvider* resource_provider,
                                TextureMailboxDeleter* texture_mailbox_deleter)
       : viz::GLRenderer(settings,
                         output_surface,

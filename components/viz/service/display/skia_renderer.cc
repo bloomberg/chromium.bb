@@ -56,7 +56,7 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
 
 SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            cc::OutputSurface* output_surface,
-                           cc::ResourceProvider* resource_provider)
+                           cc::DisplayResourceProvider* resource_provider)
     : DirectRenderer(settings, output_surface, resource_provider) {
   const auto& context_caps =
       output_surface_->context_provider()->ContextCapabilities();

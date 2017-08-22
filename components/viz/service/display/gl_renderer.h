@@ -55,7 +55,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public cc::DirectRenderer {
 
   GLRenderer(const RendererSettings* settings,
              cc::OutputSurface* output_surface,
-             cc::ResourceProvider* resource_provider,
+             cc::DisplayResourceProvider* resource_provider,
              cc::TextureMailboxDeleter* texture_mailbox_deleter);
   ~GLRenderer() override;
 

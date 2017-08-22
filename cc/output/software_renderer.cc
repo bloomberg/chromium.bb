@@ -55,7 +55,7 @@ bool IsScaleAndIntegerTranslate(const SkMatrix& matrix) {
 
 SoftwareRenderer::SoftwareRenderer(const viz::RendererSettings* settings,
                                    OutputSurface* output_surface,
-                                   ResourceProvider* resource_provider)
+                                   DisplayResourceProvider* resource_provider)
     : DirectRenderer(settings, output_surface, resource_provider),
       output_device_(output_surface->software_device()) {}
 

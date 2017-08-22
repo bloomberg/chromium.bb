@@ -166,7 +166,7 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   gpu_memory_buffer_manager_.reset(new TestGpuMemoryBufferManager);
   // Not relevant for display compositor since it's not delegated.
   constexpr bool delegated_sync_points_required = false;
-  resource_provider_ = base::MakeUnique<ResourceProvider>(
+  resource_provider_ = base::MakeUnique<DisplayResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
       delegated_sync_points_required,
@@ -195,7 +195,7 @@ void PixelTest::SetUpSoftwareRenderer() {
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   constexpr bool delegated_sync_points_required =
       false;  // Meaningless for software.
-  resource_provider_ = base::MakeUnique<ResourceProvider>(
+  resource_provider_ = base::MakeUnique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
       main_thread_task_runner_.get(), delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,

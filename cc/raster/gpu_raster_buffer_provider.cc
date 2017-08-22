@@ -99,7 +99,7 @@ static void RasterizeSource(
 
 GpuRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     GpuRasterBufferProvider* client,
-    ResourceProvider* resource_provider,
+    LayerTreeResourceProvider* resource_provider,
     viz::ResourceId resource_id,
     bool resource_has_previous_content)
     : client_(client),
@@ -130,7 +130,7 @@ void GpuRasterBufferProvider::RasterBufferImpl::Playback(
 GpuRasterBufferProvider::GpuRasterBufferProvider(
     viz::ContextProvider* compositor_context_provider,
     viz::ContextProvider* worker_context_provider,
-    ResourceProvider* resource_provider,
+    LayerTreeResourceProvider* resource_provider,
     bool use_distance_field_text,
     int gpu_rasterization_msaa_sample_count,
     viz::ResourceFormat preferred_tile_format,
