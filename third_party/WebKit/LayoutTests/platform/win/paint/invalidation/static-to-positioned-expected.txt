@@ -7,9 +7,9 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='t'",
+          "object": "LayoutBlockFlow DIV id='t'",
           "rect": [8, 332, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='t'",
@@ -22,14 +22,22 @@
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='a'",
+          "object": "LayoutBlockFlow DIV id='a'",
           "rect": [8, 82, 100, 100],
-          "reason": "style change"
+          "reason": "subtree"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='t'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='a'",
+      "reason": "subtree"
+    },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='a'",
       "reason": "style change"

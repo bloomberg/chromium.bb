@@ -7,29 +7,37 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='t'",
-          "rect": [8, 332, 100, 100],
-          "reason": "style change"
+          "object": "LayoutBlockFlow DIV id='t'",
+          "rect": [8, 328, 100, 100],
+          "reason": "subtree"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='t'",
-          "rect": [8, 282, 100, 100],
+          "rect": [8, 278, 100, 100],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow (relative positioned) DIV id='a'",
-          "rect": [8, 132, 100, 100],
+          "rect": [8, 128, 100, 100],
           "reason": "style change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='a'",
-          "rect": [8, 82, 100, 100],
-          "reason": "style change"
+          "object": "LayoutBlockFlow DIV id='a'",
+          "rect": [8, 78, 100, 100],
+          "reason": "subtree"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='t'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='a'",
+      "reason": "subtree"
+    },
     {
       "object": "LayoutBlockFlow (relative positioned) DIV id='a'",
       "reason": "style change"
