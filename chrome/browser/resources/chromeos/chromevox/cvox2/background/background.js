@@ -636,22 +636,22 @@ Background.prototype = {
     var actionNodeSpan = null;
     var selectionSpan = null;
 
-    // For a routing key press one cell beyond the last displayed character, use
-    // the node span for the last character. This enables routing selection to
-    // the length of the text, which is valid.
-    var nodePosition = position;
-    if (position == text.length && position > 0)
-      nodePosition--;
-    text.getSpans(nodePosition).forEach(function(span) {
-      if (span instanceof Output.SelectionSpan) {
-        selectionSpan = span;
-      } else if (span instanceof Output.NodeSpan) {
-        if (!actionNodeSpan ||
-            text.getSpanLength(span) <= text.getSpanLength(actionNodeSpan)) {
-          actionNodeSpan = span;
-        }
+    var selSpans = text.getSpansInstanceOf(Output.SelectionSpan);
+    var nodeSpans = text.getSpansInstanceOf(Output.NodeSpan);
+    for (var i = 0, selSpan; selSpan = selSpans[i]; i++) {
+      if (text.getSpanStart(selSpan) <= position &&
+          position < text.getSpanEnd(selSpan)) {
+        selectionSpan = selSpan;
+        break;
       }
-    });
+    }
+
+    for (var j = 0, nodeSpan; nodeSpan = nodeSpans[j]; j++) {
+      if (text.getSpanStart(nodeSpan) <= position &&
+          position <= text.getSpanEnd(nodeSpan))
+        actionNodeSpan = nodeSpan;
+    }
+
     if (!actionNodeSpan)
       return;
     var actionNode = actionNodeSpan.node;
@@ -659,6 +659,10 @@ Background.prototype = {
     if (actionNode.role === RoleType.INLINE_TEXT_BOX)
       actionNode = actionNode.parent;
     actionNode.doDefault();
+
+    if (actionNode.role != RoleType.STATIC_TEXT &&
+        actionNode.role != RoleType.TEXT_FIELD)
+      return;
 
     if (!selectionSpan)
       selectionSpan = actionNodeSpan;
