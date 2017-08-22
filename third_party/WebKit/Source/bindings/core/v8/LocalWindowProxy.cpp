@@ -399,8 +399,7 @@ static v8::Local<v8::Value> GetNamedProperty(
     const AtomicString& key,
     v8::Local<v8::Object> creation_context,
     v8::Isolate* isolate) {
-  if (!html_document->HasNamedItem(key) &&
-      !html_document->HasExtraNamedItem(key))
+  if (!html_document->HasNamedItem(key))
     return V8Undefined();
 
   DocumentNameCollection* items = html_document->DocumentNamedItems(key);
@@ -477,7 +476,7 @@ void LocalWindowProxy::NamedItemRemoved(HTMLDocument* document,
   if (lifecycle_ != Lifecycle::kContextIsInitialized)
     return;
 
-  if (document->HasNamedItem(name) || document->HasExtraNamedItem(name))
+  if (document->HasNamedItem(name))
     return;
   ScriptState::Scope scope(script_state_.Get());
   v8::Local<v8::Object> document_wrapper =

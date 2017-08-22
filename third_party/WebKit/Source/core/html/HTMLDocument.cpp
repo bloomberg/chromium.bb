@@ -150,11 +150,10 @@ Document* HTMLDocument::CloneDocumentWithoutChildren() {
 // not part of the DOM
 // --------------------------------------------------------------------------
 
-void HTMLDocument::AddItemToMap(HashCountedSet<AtomicString>& map,
-                                const AtomicString& name) {
+void HTMLDocument::AddNamedItem(const AtomicString& name) {
   if (name.IsEmpty())
     return;
-  map.insert(name);
+  named_item_counts_.insert(name);
   if (LocalFrame* f = GetFrame()) {
     f->GetScriptController()
         .WindowProxy(DOMWrapperWorld::MainWorld())
@@ -162,32 +161,15 @@ void HTMLDocument::AddItemToMap(HashCountedSet<AtomicString>& map,
   }
 }
 
-void HTMLDocument::RemoveItemFromMap(HashCountedSet<AtomicString>& map,
-                                     const AtomicString& name) {
+void HTMLDocument::RemoveNamedItem(const AtomicString& name) {
   if (name.IsEmpty())
     return;
-  map.erase(name);
+  named_item_counts_.erase(name);
   if (LocalFrame* f = GetFrame()) {
     f->GetScriptController()
         .WindowProxy(DOMWrapperWorld::MainWorld())
         ->NamedItemRemoved(this, name);
   }
-}
-
-void HTMLDocument::AddNamedItem(const AtomicString& name) {
-  AddItemToMap(named_item_counts_, name);
-}
-
-void HTMLDocument::RemoveNamedItem(const AtomicString& name) {
-  RemoveItemFromMap(named_item_counts_, name);
-}
-
-void HTMLDocument::AddExtraNamedItem(const AtomicString& name) {
-  AddItemToMap(extra_named_item_counts_, name);
-}
-
-void HTMLDocument::RemoveExtraNamedItem(const AtomicString& name) {
-  RemoveItemFromMap(extra_named_item_counts_, name);
 }
 
 static HashSet<StringImpl*>* CreateHtmlCaseInsensitiveAttributesSet() {
