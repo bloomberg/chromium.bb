@@ -949,4 +949,44 @@ TEST_F(LayoutBoxModelObjectTest, NoCrashStackingContextChangeNonRooted) {
   object.SetDangerousOneWayParent(parent);
 }
 
+TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
+  SetBodyInnerHTML(
+      "<style>"
+      "  .stacked { background: red; position: relative; height: 2000px; }"
+      "  .non-stacked { all: inherit }"
+      "</style>"
+      "<div style='height: 100px; backface-visibility: hidden'>"
+      "  <div id='target' class='stacked'></div>"
+      "</div>");
+
+  auto* target_element = GetDocument().getElementById("target");
+  auto* target = target_element->GetLayoutBoxModelObject();
+  auto* parent = target->Parent();
+  auto* original_compositing_container =
+      target->Layer()->CompositingContainer();
+  EXPECT_FALSE(target->StyleRef().IsStackingContext());
+  EXPECT_TRUE(target->StyleRef().IsStacked());
+  EXPECT_FALSE(parent->StyleRef().IsStacked());
+  EXPECT_NE(parent, original_compositing_container->GetLayoutObject());
+
+  target_element->setAttribute(HTMLNames::classAttr, "non-stacked");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+
+  EXPECT_FALSE(target->StyleRef().IsStacked());
+  EXPECT_TRUE(target->Layer()->NeedsRepaint());
+  EXPECT_TRUE(original_compositing_container->NeedsRepaint());
+  auto* new_compositing_container = target->Layer()->CompositingContainer();
+  EXPECT_EQ(parent, new_compositing_container->GetLayoutObject());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  target_element->setAttribute(HTMLNames::classAttr, "stacked");
+  GetDocument().View()->UpdateLifecycleToLayoutClean();
+
+  EXPECT_TRUE(target->StyleRef().IsStacked());
+  EXPECT_TRUE(target->Layer()->NeedsRepaint());
+  EXPECT_TRUE(new_compositing_container->NeedsRepaint());
+  EXPECT_EQ(original_compositing_container,
+            target->Layer()->CompositingContainer());
+}
+
 }  // namespace blink

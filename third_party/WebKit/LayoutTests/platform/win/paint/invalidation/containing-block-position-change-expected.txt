@@ -25,6 +25,14 @@
       "reason": "subtree"
     },
     {
+      "object": "LayoutBlockFlow DIV id='t'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "subtree"
+    },
+    {
       "object": "LayoutBlockFlow (relative positioned) DIV id='t'",
       "reason": "style change"
     },
