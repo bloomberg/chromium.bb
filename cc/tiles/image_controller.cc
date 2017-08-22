@@ -190,8 +190,8 @@ ImageController::ImageDecodeRequestId ImageController::QueueImageDecode(
   // Generate the next id.
   ImageDecodeRequestId id = s_next_image_decode_queue_id_++;
 
-  DCHECK(draw_image.image());
-  bool is_image_lazy = draw_image.image()->isLazyGenerated();
+  DCHECK(draw_image.paint_image());
+  bool is_image_lazy = draw_image.paint_image().IsLazyGenerated();
 
   // Get the tasks for this decode.
   scoped_refptr<TileTask> task;
@@ -291,7 +291,7 @@ void ImageController::ImageDecodeCompleted(ImageDecodeRequestId id) {
     // implies that we never attempted the decode. Some of the reasons for this
     // would be that the image is of an empty size, or if the image doesn't fit
     // into memory. In all cases, this implies that the decode was a failure.
-    if (!request.draw_image.image()->isLazyGenerated())
+    if (!request.draw_image.paint_image().IsLazyGenerated())
       result = ImageDecodeResult::DECODE_NOT_REQUIRED;
     else if (!request.need_unref)
       result = ImageDecodeResult::FAILURE;
@@ -334,7 +334,7 @@ void ImageController::GenerateTasksForOrphanedRequests() {
   for (auto& request : orphaned_decode_requests_) {
     DCHECK(!request.task);
     DCHECK(!request.need_unref);
-    if (request.draw_image.image()->isLazyGenerated()) {
+    if (request.draw_image.paint_image().IsLazyGenerated()) {
       // Get the task for this decode.
       request.need_unref = cache_->GetOutOfRasterDecodeTaskForImageAndRef(
           request.draw_image, &request.task);

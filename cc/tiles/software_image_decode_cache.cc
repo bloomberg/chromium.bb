@@ -108,7 +108,7 @@ class ImageDecodeTaskImpl : public TileTask {
                  "software", "source_prepare_tiles_id",
                  tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        image_.image().get(),
+        image_.paint_image().GetSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kSoftware,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
     cache_->DecodeImage(image_key_, image_, task_type_);
@@ -180,8 +180,8 @@ gfx::Rect GetSrcRect(const DrawImage& image) {
   const SkIRect& src_rect = image.src_rect();
   int x = std::max(0, src_rect.x());
   int y = std::max(0, src_rect.y());
-  int right = std::min(image.image()->width(), src_rect.right());
-  int bottom = std::min(image.image()->height(), src_rect.bottom());
+  int right = std::min(image.paint_image().width(), src_rect.right());
+  int bottom = std::min(image.paint_image().height(), src_rect.bottom());
   if (x >= right || y >= bottom)
     return gfx::Rect();
   return gfx::Rect(x, y, right - x, bottom - y);
@@ -442,8 +442,7 @@ SoftwareImageDecodeCache::DecodeImageInternal(const ImageKey& key,
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::DecodeImageInternal", "key",
                key.ToString());
-  sk_sp<const SkImage> image = draw_image.image();
-  if (!image)
+  if (!draw_image.paint_image())
     return nullptr;
 
   switch (key.filter_quality()) {
@@ -451,7 +450,7 @@ SoftwareImageDecodeCache::DecodeImageInternal(const ImageKey& key,
     case kLow_SkFilterQuality:
       if (key.should_use_subrect())
         return GetSubrectImageDecode(key, draw_image.paint_image());
-      return GetOriginalSizeImageDecode(key, std::move(image));
+      return GetOriginalSizeImageDecode(key, draw_image.paint_image());
     case kMedium_SkFilterQuality:
       return GetScaledImageDecode(key, draw_image.paint_image());
     case kHigh_SkFilterQuality:
@@ -570,7 +569,8 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
 std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
 SoftwareImageDecodeCache::GetOriginalSizeImageDecode(
     const ImageKey& key,
-    sk_sp<const SkImage> image) {
+    const PaintImage& paint_image) {
+  sk_sp<const SkImage> image = paint_image.GetSkImage();
   SkImageInfo decoded_info =
       CreateImageInfo(image->width(), image->height(), format_);
   sk_sp<SkColorSpace> target_color_space =
@@ -952,10 +952,10 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(
   // If the target size is empty, then we'll be skipping the decode anyway, so
   // the filter quality doesn't matter. Early out instead.
   if (target_size.IsEmpty()) {
-    return ImageDecodeCacheKey(image.image()->uniqueID(), src_rect, target_size,
-                               image.target_color_space(), kLow_SkFilterQuality,
-                               true /* can_use_original_decode */,
-                               false /* should_use_subrect */);
+    return ImageDecodeCacheKey(
+        image.paint_image().unique_id(), src_rect, target_size,
+        image.target_color_space(), kLow_SkFilterQuality,
+        true /* can_use_original_decode */, false /* should_use_subrect */);
   }
 
   // Start with the given filter quality.
@@ -975,7 +975,8 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(
       mip_level == 0 || !image.matrix_is_decomposable()) {
     quality = std::min(quality, kLow_SkFilterQuality);
     // Update the size to be the original image size.
-    target_size = gfx::Size(image.image()->width(), image.image()->height());
+    target_size =
+        gfx::Size(image.paint_image().width(), image.paint_image().height());
   } else {
     quality = kMedium_SkFilterQuality;
     // Update the target size to be a mip level size.
@@ -993,11 +994,11 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(
   // If the original image is large, we might want to do a subrect instead if
   // the subrect would be kMemoryRatioToSubrect times smaller.
   if (can_use_original_size_decode &&
-      (image.image()->width() >= kMinDimensionToSubrect ||
-       image.image()->height() >= kMinDimensionToSubrect)) {
+      (image.paint_image().width() >= kMinDimensionToSubrect ||
+       image.paint_image().height() >= kMinDimensionToSubrect)) {
     base::CheckedNumeric<size_t> checked_original_size = 4u;
-    checked_original_size *= image.image()->width();
-    checked_original_size *= image.image()->height();
+    checked_original_size *= image.paint_image().width();
+    checked_original_size *= image.paint_image().height();
     size_t original_size = checked_original_size.ValueOrDefault(
         std::numeric_limits<size_t>::max());
 
@@ -1018,8 +1019,8 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(
     }
   }
 
-  return ImageDecodeCacheKey(image.image()->uniqueID(), src_rect, target_size,
-                             image.target_color_space(), quality,
+  return ImageDecodeCacheKey(image.paint_image().unique_id(), src_rect,
+                             target_size, image.target_color_space(), quality,
                              can_use_original_size_decode, should_use_subrect);
 }
 

@@ -55,8 +55,12 @@ static const int kSuspendedOrInvisibleMaxGpuImageBytes = 0;
 // Returns true if an image would not be drawn and should therefore be
 // skipped rather than decoded.
 bool SkipImage(const DrawImage& draw_image) {
-  if (!SkIRect::Intersects(draw_image.src_rect(), draw_image.image()->bounds()))
+  if (!SkIRect::Intersects(
+          draw_image.src_rect(),
+          SkIRect::MakeWH(draw_image.paint_image().width(),
+                          draw_image.paint_image().height()))) {
     return true;
+  }
   if (std::abs(draw_image.scale().width()) <
           std::numeric_limits<float>::epsilon() ||
       std::abs(draw_image.scale().height()) <
@@ -79,11 +83,14 @@ int CalculateUploadScaleMipLevel(const DrawImage& draw_image) {
   // Images which are being clipped will have color-bleeding if scaled.
   // TODO(ericrk): Investigate uploading clipped images to handle this case and
   // provide further optimization. crbug.com/620899
-  if (draw_image.src_rect() != draw_image.image()->bounds())
+  if (draw_image.src_rect() !=
+      SkIRect::MakeWH(draw_image.paint_image().width(),
+                      draw_image.paint_image().height())) {
     return 0;
+  }
 
-  gfx::Size base_size(draw_image.image()->width(),
-                      draw_image.image()->height());
+  gfx::Size base_size(draw_image.paint_image().width(),
+                      draw_image.paint_image().height());
   // Ceil our scaled size so that the mip map generated is guaranteed to be
   // larger. Take the abs of the scale, as mipmap functions don't handle
   // (and aren't impacted by) negative image dimensions.
@@ -98,15 +105,15 @@ int CalculateUploadScaleMipLevel(const DrawImage& draw_image) {
 // mip level.
 SkSize CalculateScaleFactorForMipLevel(const DrawImage& draw_image,
                                        int mip_level) {
-  gfx::Size base_size(draw_image.image()->width(),
-                      draw_image.image()->height());
+  gfx::Size base_size(draw_image.paint_image().width(),
+                      draw_image.paint_image().height());
   return MipMapUtil::GetScaleAdjustmentForLevel(base_size, mip_level);
 }
 
 // Calculates the size of a given mip level.
 gfx::Size CalculateSizeForMipLevel(const DrawImage& draw_image, int mip_level) {
-  gfx::Size base_size(draw_image.image()->width(),
-                      draw_image.image()->height());
+  gfx::Size base_size(draw_image.paint_image().width(),
+                      draw_image.paint_image().height());
   return MipMapUtil::GetSizeForLevel(base_size, mip_level);
 }
 
@@ -115,7 +122,7 @@ gfx::Size CalculateSizeForMipLevel(const DrawImage& draw_image, int mip_level) {
 // if not, decodes to a compatible temporary pixmap and then converts that into
 // the |target_pixmap|.
 bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
-  const SkImage* image = draw_image.image().get();
+  const SkImage* image = draw_image.paint_image().GetSkImage().get();
   if (image->dimensions() == target_pixmap->bounds().size() ||
       target_pixmap->info().colorType() == kN32_SkColorType) {
     // If no scaling is occurring, or if the target colortype is already N32,
@@ -153,7 +160,7 @@ GpuImageDecodeCache::InUseCacheKey::FromDrawImage(const DrawImage& draw_image) {
 // Extract the information to uniquely identify a DrawImage for the purposes of
 // the |in_use_cache_|.
 GpuImageDecodeCache::InUseCacheKey::InUseCacheKey(const DrawImage& draw_image)
-    : image_id(draw_image.image()->uniqueID()),
+    : image_id(draw_image.paint_image().unique_id()),
       mip_level(CalculateUploadScaleMipLevel(draw_image)),
       filter_quality(CalculateDesiredFilterQuality(draw_image)),
       target_color_space(draw_image.target_color_space()) {}
@@ -204,7 +211,7 @@ class ImageDecodeTaskImpl : public TileTask {
     TRACE_EVENT2("cc", "ImageDecodeTaskImpl::RunOnWorkerThread", "mode", "gpu",
                  "source_prepare_tiles_id", tracing_info_.prepare_tiles_id);
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
-        image_.image().get(),
+        image_.paint_image().GetSkImage().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kGpu,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
     cache_->DecodeImage(image_, tracing_info_.task_type);
@@ -465,7 +472,7 @@ bool GpuImageDecodeCache::GetTaskForImageAndRefInternal(
   }
 
   base::AutoLock lock(lock_);
-  const auto image_id = draw_image.image()->uniqueID();
+  const auto image_id = draw_image.paint_image().unique_id();
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
   scoped_refptr<ImageData> new_data;
   if (!image_data) {
@@ -556,7 +563,8 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
     // We didn't find the image, create a new entry.
     auto data = CreateImageData(draw_image);
     image_data = data.get();
-    persistent_cache_.Put(draw_image.image()->uniqueID(), std::move(data));
+    persistent_cache_.Put(draw_image.paint_image().unique_id(),
+                          std::move(data));
   }
 
   if (!image_data->upload.budgeted) {
@@ -895,7 +903,8 @@ void GpuImageDecodeCache::RefImage(const DrawImage& draw_image) {
   // the draw_image only exists in the |persistent_cache_|. Create an in-use
   // cache entry now.
   if (found == in_use_cache_.end()) {
-    auto found_image = persistent_cache_.Peek(draw_image.image()->uniqueID());
+    auto found_image =
+        persistent_cache_.Peek(draw_image.paint_image().unique_id());
     DCHECK(found_image != persistent_cache_.end());
     DCHECK(IsCompatible(found_image->second.get(), draw_image));
     found = in_use_cache_
@@ -938,7 +947,7 @@ void GpuImageDecodeCache::OwnershipChanged(const DrawImage& draw_image,
   if (!has_any_refs && !image_data->upload.image() &&
       !image_data->decode.data()) {
     auto found_persistent =
-        persistent_cache_.Peek(draw_image.image()->uniqueID());
+        persistent_cache_.Peek(draw_image.paint_image().unique_id());
     if (found_persistent != persistent_cache_.end())
       persistent_cache_.Erase(found_persistent);
   }
@@ -1180,7 +1189,8 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
         // TODO(crbug.com/649167): Params should not have changed since initial
         // sizing. Somehow this still happens. We should investigate and re-add
         // DCHECKs here to enforce this.
-        if (!draw_image.image()->getDeferredTextureImageData(
+        SkImage* image = draw_image.paint_image().GetSkImage().get();
+        if (!image->getDeferredTextureImageData(
                 *context_threadsafe_proxy_.get(), &image_data->upload_params, 1,
                 backing_memory->data(), nullptr,
                 viz::ResourceFormatToClosestSkColorType(format_))) {
@@ -1284,7 +1294,8 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   auto params = SkImage::DeferredTextureImageUsageParams(
       draw_image.matrix(), CalculateDesiredFilterQuality(draw_image),
       upload_scale_mip_level);
-  size_t data_size = draw_image.image()->getDeferredTextureImageData(
+  SkImage* image = draw_image.paint_image().GetSkImage().get();
+  size_t data_size = image->getDeferredTextureImageData(
       *context_threadsafe_proxy_.get(), &params, 1, nullptr, nullptr,
       viz::ResourceFormatToClosestSkColorType(format_));
 
@@ -1332,7 +1343,8 @@ GpuImageDecodeCache::ImageData* GpuImageDecodeCache::GetImageDataForDrawImage(
   if (found_in_use != in_use_cache_.end())
     return found_in_use->second.image_data.get();
 
-  auto found_persistent = persistent_cache_.Get(draw_image.image()->uniqueID());
+  auto found_persistent =
+      persistent_cache_.Get(draw_image.paint_image().unique_id());
   if (found_persistent != persistent_cache_.end()) {
     ImageData* image_data = found_persistent->second.get();
     if (IsCompatible(image_data, draw_image)) {
@@ -1379,7 +1391,7 @@ size_t GpuImageDecodeCache::GetDrawImageSizeForTesting(const DrawImage& image) {
 void GpuImageDecodeCache::SetImageDecodingFailedForTesting(
     const DrawImage& image) {
   base::AutoLock lock(lock_);
-  auto found = persistent_cache_.Peek(image.image()->uniqueID());
+  auto found = persistent_cache_.Peek(image.paint_image().unique_id());
   DCHECK(found != persistent_cache_.end());
   ImageData* image_data = found->second.get();
   image_data->decode.decode_failure = true;
@@ -1388,7 +1400,7 @@ void GpuImageDecodeCache::SetImageDecodingFailedForTesting(
 bool GpuImageDecodeCache::DiscardableIsLockedForTesting(
     const DrawImage& image) {
   base::AutoLock lock(lock_);
-  auto found = persistent_cache_.Peek(image.image()->uniqueID());
+  auto found = persistent_cache_.Peek(image.paint_image().unique_id());
   DCHECK(found != persistent_cache_.end());
   ImageData* image_data = found->second.get();
   return image_data->decode.is_locked();
