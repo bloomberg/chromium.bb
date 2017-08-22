@@ -12,7 +12,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/atomic_sequence_num.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -335,7 +334,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   int32_t last_put_offset_;
   gpu::Capabilities capabilities_;
   GpuMemoryBufferManager* gpu_memory_buffer_manager_;
-  base::AtomicSequenceNumber next_image_id_;
   uint64_t next_fence_sync_release_;
   uint64_t flushed_fence_sync_release_;
 
