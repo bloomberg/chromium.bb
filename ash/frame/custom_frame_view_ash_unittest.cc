@@ -9,9 +9,13 @@
 #include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/header_view.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
+#include "ash/wm/wm_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
@@ -22,15 +26,19 @@
 namespace ash {
 
 // A views::WidgetDelegate which uses a CustomFrameViewAsh.
-class TestWidgetDelegate : public views::WidgetDelegateView {
+class CustomFrameTestWidgetDelegate : public views::WidgetDelegateView {
  public:
-  TestWidgetDelegate() {}
-  ~TestWidgetDelegate() override {}
+  CustomFrameTestWidgetDelegate() {}
+  ~CustomFrameTestWidgetDelegate() override {}
 
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     custom_frame_view_ = new CustomFrameViewAsh(widget);
     return custom_frame_view_;
+  }
+
+  int GetCustomFrameViewTopBorderHeight() {
+    return custom_frame_view_->NonClientTopBorderHeight();
   }
 
   CustomFrameViewAsh* custom_frame_view() const { return custom_frame_view_; }
@@ -39,10 +47,10 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
   // Not owned.
   CustomFrameViewAsh* custom_frame_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
+  DISALLOW_COPY_AND_ASSIGN(CustomFrameTestWidgetDelegate);
 };
 
-class TestWidgetConstraintsDelegate : public TestWidgetDelegate {
+class TestWidgetConstraintsDelegate : public CustomFrameTestWidgetDelegate {
  public:
   TestWidgetConstraintsDelegate() {}
   ~TestWidgetConstraintsDelegate() override {}
@@ -96,7 +104,8 @@ class CustomFrameViewAshTest : public AshTestBase {
   ~CustomFrameViewAshTest() override {}
 
  protected:
-  std::unique_ptr<views::Widget> CreateWidget(TestWidgetDelegate* delegate) {
+  std::unique_ptr<views::Widget> CreateWidget(
+      CustomFrameTestWidgetDelegate* delegate) {
     std::unique_ptr<views::Widget> widget(new views::Widget);
     views::Widget::InitParams params;
     params.delegate = delegate;
@@ -113,7 +122,8 @@ class CustomFrameViewAshTest : public AshTestBase {
 
 // Verifies the client view is not placed at a y location of 0.
 TEST_F(CustomFrameViewAshTest, ClientViewCorrectlyPlaced) {
-  std::unique_ptr<views::Widget> widget(CreateWidget(new TestWidgetDelegate));
+  std::unique_ptr<views::Widget> widget(
+      CreateWidget(new CustomFrameTestWidgetDelegate));
   widget->Show();
   EXPECT_NE(0, widget->client_view()->bounds().y());
 }
@@ -121,7 +131,7 @@ TEST_F(CustomFrameViewAshTest, ClientViewCorrectlyPlaced) {
 // Test that the height of the header is correct upon initially displaying
 // the widget.
 TEST_F(CustomFrameViewAshTest, HeaderHeight) {
-  TestWidgetDelegate* delegate = new TestWidgetDelegate;
+  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
 
   std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
   widget->Show();
@@ -231,6 +241,95 @@ TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
   const gfx::Rect after_restore =
       delegate->GetFrameCaptionButtonContainerViewBounds();
   EXPECT_EQ(initial, after_restore);
+}
+
+class HiddenTitlebarsCustomFrameViewAshTest : public CustomFrameViewAshTest {
+ public:
+  HiddenTitlebarsCustomFrameViewAshTest() = default;
+  ~HiddenTitlebarsCustomFrameViewAshTest() override = default;
+
+  void SetUp() override {
+    scoped_feature_list.InitAndEnableFeature(kAutoHideTitleBarsInTabletMode);
+    CustomFrameViewAshTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  DISALLOW_COPY_AND_ASSIGN(HiddenTitlebarsCustomFrameViewAshTest);
+};
+
+// Verify that when in tablet mode with a maximized window, the height of the
+// header is zero.
+TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
+       FrameHiddenInTabletModeForMaximizedWindows) {
+  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  widget->Maximize();
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
+}
+
+// Verify that when in tablet mode with a non maximized window, the height of
+// the header is non zero.
+TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
+       FrameShownInTabletModeForNonMaximizedWindows) {
+  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(
+      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(),
+      delegate->GetCustomFrameViewTopBorderHeight());
+}
+
+// Verify that if originally in fullscreen mode, and enter tablet mode, the
+// height of the header remains zero.
+TEST_F(HiddenTitlebarsCustomFrameViewAshTest,
+       FrameRemainsHiddenInTabletModeWhenTogglingFullscreen) {
+  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+
+  widget->SetFullscreen(true);
+  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
+}
+
+TEST_F(HiddenTitlebarsCustomFrameViewAshTest, OpeningAppsInTabletMode) {
+  CustomFrameTestWidgetDelegate* delegate = new CustomFrameTestWidgetDelegate;
+  views::Widget* widget = new views::Widget();
+  views::Widget::InitParams params;
+  params.context = CurrentContext();
+  params.delegate = delegate;
+  widget->Init(params);
+  widget->Show();
+  widget->Maximize();
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
+
+  // Verify that after minimizing and showing the widget, the height of the
+  // header is zero.
+  widget->Minimize();
+  widget->Show();
+  widget->Maximize();
+  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
+
+  // Verify that when we toggle maximize, the header is shown. For example,
+  // maximized can be toggled in tablet mode by using the accessibility
+  // keyboard.
+  wm::WMEvent event(wm::WM_EVENT_TOGGLE_MAXIMIZE);
+  wm::GetWindowState(widget->GetNativeWindow())->OnWMEvent(&event);
+  EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
+
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_EQ(
+      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(),
+      delegate->GetCustomFrameViewTopBorderHeight());
 }
 
 }  // namespace ash

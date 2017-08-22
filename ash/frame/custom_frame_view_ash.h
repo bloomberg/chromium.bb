@@ -92,8 +92,9 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView {
  private:
   class AvatarObserver;
   class OverlayView;
-  friend class TestWidgetConstraintsDelegate;
   friend class CustomFrameViewAshSizeLock;
+  friend class CustomFrameTestWidgetDelegate;
+  friend class TestWidgetConstraintsDelegate;
 
   // views::NonClientFrameView:
   bool DoesIntersectRect(const views::View* target,

@@ -8,6 +8,7 @@
 #include "ash/frame/default_header_painter.h"
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/window_state.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,7 +47,13 @@ void HeaderView::ResetWindowControls() {
 }
 
 int HeaderView::GetPreferredOnScreenHeight() {
-  if (is_immersive_delegate_ && target_widget_->IsFullscreen()) {
+  const bool should_hide_titlebar_in_tablet_mode =
+      Shell::Get()->tablet_mode_controller() &&
+      Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars() &&
+      target_widget_->IsMaximized();
+
+  if (is_immersive_delegate_ &&
+      (target_widget_->IsFullscreen() || should_hide_titlebar_in_tablet_mode)) {
     return static_cast<int>(GetPreferredHeight() *
                             fullscreen_visible_fraction_);
   }
@@ -145,11 +152,14 @@ void HeaderView::OnOverviewModeEnded() {
 void HeaderView::OnTabletModeStarted() {
   caption_button_container_->UpdateSizeButtonVisibility();
   parent()->Layout();
+  if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars())
+    target_widget_->non_client_view()->Layout();
 }
 
 void HeaderView::OnTabletModeEnded() {
   caption_button_container_->UpdateSizeButtonVisibility();
   parent()->Layout();
+  target_widget_->non_client_view()->Layout();
 }
 
 views::View* HeaderView::avatar_icon() const {

@@ -112,6 +112,9 @@ CreateScopedDisableInternalMouseAndKeyboard() {
 
 }  // namespace
 
+const base::Feature kAutoHideTitleBarsInTabletMode{
+    "AutoHideTitleBarsInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
 TabletModeController::TabletModeController()
     : have_seen_accelerometer_data_(false),
       can_detect_lid_angle_(false),
@@ -119,6 +122,8 @@ TabletModeController::TabletModeController()
       tick_clock_(new base::DefaultTickClock()),
       tablet_mode_switch_is_on_(false),
       lid_is_closed_(false),
+      auto_hide_title_bars_(
+          base::FeatureList::IsEnabled(kAutoHideTitleBarsInTabletMode)),
       scoped_session_observer_(this),
       weak_factory_(this) {
   Shell::Get()->AddShellObserver(this);
@@ -212,6 +217,10 @@ void TabletModeController::AddObserver(TabletModeObserver* observer) {
 
 void TabletModeController::RemoveObserver(TabletModeObserver* observer) {
   tablet_mode_observers_.RemoveObserver(observer);
+}
+
+bool TabletModeController::ShouldAutoHideTitlebars() const {
+  return auto_hide_title_bars_ && IsTabletModeWindowManagerEnabled();
 }
 
 void TabletModeController::OnAccelerometerUpdated(

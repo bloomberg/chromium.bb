@@ -288,6 +288,11 @@ AppWindow* PlatformAppBrowserTest::CreateTestAppWindow(
   return app_window;
 }
 
+NativeAppWindow* PlatformAppBrowserTest::GetNativeAppWindowForAppWindow(
+    AppWindow* window) {
+  return window->native_app_window_.get();
+}
+
 void ExperimentalPlatformAppBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   PlatformAppBrowserTest::SetUpCommandLine(command_line);
