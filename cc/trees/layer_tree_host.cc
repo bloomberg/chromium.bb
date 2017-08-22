@@ -1089,7 +1089,7 @@ void LayerTreeHost::RegisterLayer(Layer* layer) {
   DCHECK(!LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
   layer_id_map_[layer->id()] = layer;
-  if (!settings_.use_layer_lists && layer->element_id()) {
+  if (!IsUsingLayerLists() && layer->element_id()) {
     mutator_host_->RegisterElement(layer->element_id(),
                                    ElementListType::ACTIVE);
   }
@@ -1098,7 +1098,7 @@ void LayerTreeHost::RegisterLayer(Layer* layer) {
 void LayerTreeHost::UnregisterLayer(Layer* layer) {
   DCHECK(LayerById(layer->id()));
   DCHECK(!in_paint_layer_contents_);
-  if (!settings_.use_layer_lists && layer->element_id()) {
+  if (!IsUsingLayerLists() && layer->element_id()) {
     mutator_host_->UnregisterElement(layer->element_id(),
                                      ElementListType::ACTIVE);
   }
