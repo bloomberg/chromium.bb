@@ -1617,7 +1617,7 @@ void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
   Node* stop_node = PastLastNode();
 
   // Stores the elements selected by the range.
-  HeapHashSet<Member<Node>> selected_elements;
+  HeapHashSet<Member<const Node>> selected_elements;
   for (Node* node = FirstNode(); node != stop_node;
        node = NodeTraversal::Next(*node)) {
     if (!node->IsElementNode())
@@ -1630,36 +1630,40 @@ void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
     }
   }
 
-  for (Node* node = FirstNode(); node != stop_node;
+  for (const Node* node = FirstNode(); node != stop_node;
        node = NodeTraversal::Next(*node)) {
     if (node->IsElementNode()) {
       if (!selected_elements.Contains(node) ||
           selected_elements.Contains(node->parentNode()))
         continue;
-      if (LayoutObject* layout_object = ToElement(node)->GetLayoutObject()) {
-        Vector<FloatQuad> element_quads;
-        layout_object->AbsoluteQuads(element_quads);
-        owner_document_->AdjustFloatQuadsForScrollAndAbsoluteZoom(
-            element_quads, *layout_object);
+      LayoutObject* const layout_object = ToElement(node)->GetLayoutObject();
+      if (!layout_object)
+        continue;
+      Vector<FloatQuad> element_quads;
+      layout_object->AbsoluteQuads(element_quads);
+      owner_document_->AdjustFloatQuadsForScrollAndAbsoluteZoom(element_quads,
+                                                                *layout_object);
 
-        quads.AppendVector(element_quads);
-      }
-    } else if (node->IsTextNode()) {
-      if (LayoutText* layout_text = ToText(node)->GetLayoutObject()) {
-        unsigned start_offset = (node == start_container) ? start_.Offset() : 0;
-        unsigned end_offset = (node == end_container)
-                                  ? end_.Offset()
-                                  : std::numeric_limits<unsigned>::max();
-
-        Vector<FloatQuad> text_quads;
-        layout_text->AbsoluteQuadsForRange(text_quads, start_offset,
-                                           end_offset);
-        owner_document_->AdjustFloatQuadsForScrollAndAbsoluteZoom(text_quads,
-                                                                  *layout_text);
-
-        quads.AppendVector(text_quads);
-      }
+      quads.AppendVector(element_quads);
+      continue;
     }
+
+    if (!node->IsTextNode())
+      continue;
+    LayoutText* const layout_text = ToText(node)->GetLayoutObject();
+    if (!layout_text)
+      continue;
+    const unsigned start_offset =
+        (node == start_container) ? start_.Offset() : 0;
+    const unsigned end_offset = (node == end_container)
+                                    ? end_.Offset()
+                                    : std::numeric_limits<unsigned>::max();
+    Vector<FloatQuad> text_quads;
+    layout_text->AbsoluteQuadsForRange(text_quads, start_offset, end_offset);
+    owner_document_->AdjustFloatQuadsForScrollAndAbsoluteZoom(text_quads,
+                                                              *layout_text);
+
+    quads.AppendVector(text_quads);
   }
 }
 
