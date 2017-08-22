@@ -3,3 +3,9 @@ rootWebArea
 ++checkBox name='CheckBox2' checkedState=false
 ++checkBox name='CheckBox3' checkedState=mixed
 ++checkBox name='CheckBox4' checkedState=false
+++checkBox name='Complex checkbox' checkedState=false
+++++staticText name='Complex '
+++++++inlineTextBox name='Complex '
+++++textField
+++++staticText name=' checkbox'
+++++++inlineTextBox name=' checkbox'

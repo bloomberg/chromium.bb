@@ -1,10 +1,6 @@
 (async function(testRunner) {
   var {page, session, dp} = await testRunner.startHTML(`
     <div>Non-hidden div for comparison</div>
-      <div role='tree'>
-          <div role='treeitem'>non-hidden treeitem</div>
-          <div data-dump >hidden non-treeitem</div>
-      </div>
       <div role='img'>
           <svg data-dump>
               <!-- Children of img role are presentational -->

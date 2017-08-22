@@ -122,8 +122,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void AriaOwnsElements(AXObjectVector&) const override;
 
   bool AriaHasPopup() const override;
-  bool AriaRoleHasPresentationalChildren() const override;
-  AXObject* AncestorForWhichThisIsAPresentationalChild() const override;
   bool SupportsARIADragging() const override;
   bool SupportsARIADropping() const override;
   bool SupportsARIAFlowTo() const override;
@@ -190,7 +188,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   void LineBreaks(Vector<int>&) const final;
 
  private:
-  AXObject* TreeAncestorDisallowingChild() const;
   bool IsTabItemSelected() const;
   bool IsValidSelectionBound(const AXObject*) const;
   AXObject* AccessibilityImageMapHitTest(HTMLAreaElement*,

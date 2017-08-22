@@ -24,9 +24,10 @@ rootWebArea
 ++++treeItem selectable name='Tree item at level 1 ' hierarchicalLevel=1
 ++++++staticText name='Tree item at level 1'
 ++++++++inlineTextBox name='Tree item at level 1'
-++++++treeItem selectable name='Tree item at level 2' hierarchicalLevel=2
-++++++++staticText name='Tree item at level 2'
-++++++++++inlineTextBox name='Tree item at level 2'
+++++++group
+++++++++treeItem selectable name='Tree item at level 2' hierarchicalLevel=2
+++++++++++staticText name='Tree item at level 2'
+++++++++++++inlineTextBox name='Tree item at level 2'
 ++++treeItem selectable name='Tree item at level 3' hierarchicalLevel=3
 ++++++staticText name='Tree item at level 3'
 ++++++++inlineTextBox name='Tree item at level 3'

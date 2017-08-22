@@ -2388,7 +2388,7 @@ bool AXNodeObject::CanHaveChildren() const {
     return false;
 
   if (GetNode() && isHTMLMapElement(GetNode()))
-    return false;
+    return false;  // Does not have a role, so check here
 
   // Placeholder gets exposed as an attribute on the input accessibility node,
   // so there's no need to add its text children.
@@ -2397,36 +2397,71 @@ bool AXNodeObject::CanHaveChildren() const {
     return false;
   }
 
-  AccessibilityRole role = RoleValue();
-
-  // If an element has an ARIA role of presentation, we need to consider the
-  // native role when deciding whether it can have children or not - otherwise
-  // giving something a role of presentation could expose inner implementation
-  // details.
-  if (IsPresentational())
-    role = NativeAccessibilityRoleIgnoringAria();
-
-  switch (role) {
-    case kImageRole:
+  switch (NativeAccessibilityRoleIgnoringAria()) {
     case kButtonRole:
     case kCheckBoxRole:
-    case kRadioButtonRole:
-    case kSwitchRole:
-    case kTabRole:
-    case kToggleButtonRole:
+    case kImageRole:
     case kListBoxOptionRole:
     case kMenuButtonRole:
     case kMenuListOptionRole:
+    case kMenuItemRole:
+    case kMenuItemCheckBoxRole:
+    case kMenuItemRadioRole:
+    case kProgressIndicatorRole:
+    case kRadioButtonRole:
     case kScrollBarRole:
+    // case kSearchBoxRole:
+    case kSliderRole:
+    case kSplitterRole:
+    case kSwitchRole:
+    case kTabRole:
+    // case kTextFieldRole:
+    case kToggleButtonRole:
       return false;
     case kPopUpButtonRole:
-      return isHTMLSelectElement(GetNode());
-    case kStaticTextRole:
-      if (!AxObjectCache().InlineTextBoxAccessibilityEnabled())
-        return false;
-    default:
       return true;
+    case kStaticTextRole:
+      return AxObjectCache().InlineTextBoxAccessibilityEnabled();
+    default:
+      break;
   }
+
+  switch (AriaRoleAttribute()) {
+    case kImageRole:
+      return false;
+    case kButtonRole:
+    case kCheckBoxRole:
+    case kListBoxOptionRole:
+    case kMathRole:  // role="math" is flat, unlike <math>
+    case kMenuButtonRole:
+    case kMenuListOptionRole:
+    case kMenuItemRole:
+    case kMenuItemCheckBoxRole:
+    case kMenuItemRadioRole:
+    case kPopUpButtonRole:
+    case kProgressIndicatorRole:
+    case kRadioButtonRole:
+    case kScrollBarRole:
+    case kSliderRole:
+    case kSplitterRole:
+    case kSwitchRole:
+    case kTabRole:
+    case kToggleButtonRole: {
+      // These roles have ChildrenPresentational: true in the ARIA spec.
+      // We used to remove/prune all descendants of them, but that removed
+      // useful content if the author didn't follow the spec perfectly, for
+      // example if they wanted a complex radio button with a textfield child.
+      // We are now only pruning these if there is a single text child,
+      // otherwise the subtree is exposed. The ChildrenPresentational rule
+      // is thus useful for authoring/verification tools but does not break
+      // complex widget implementations.
+      Element* element = GetElement();
+      return element && !element->HasOneTextChild();
+    }
+    default:
+      break;
+  }
+  return true;
 }
 
 Element* AXNodeObject::ActionElement() const {
@@ -2589,10 +2624,12 @@ void AXNodeObject::ChildrenChanged() {
   if (!GetNode() && !GetLayoutObject())
     return;
 
-  // If this is not part of the accessibility tree because an ancestor
-  // has only presentational children, invalidate this object's children but
-  // skip sending a notification and skip walking up the ancestors.
-  if (AncestorForWhichThisIsAPresentationalChild()) {
+  // If this is not part of the accessibility tree then invalidate this object's
+  // children but skip sending a notification and skip walking up the ancestors.
+  // This occurs when the ancestor is a leaf node.
+  // Uses |cached_is_descendant_of_leaf_node_| to avoid expense of updating
+  // cached attribs for each change via |UpdateCachedAttributeValuesIfNeeded()|.
+  if (!CanHaveChildren() || cached_is_descendant_of_leaf_node_) {
     SetNeedsToUpdateChildren();
     return;
   }

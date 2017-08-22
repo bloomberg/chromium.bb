@@ -531,14 +531,6 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return true;
   }
 
-  // An ARIA tree can only have tree items and static text as children.
-  if (AXObject* tree_ancestor = TreeAncestorDisallowingChild()) {
-    if (ignored_reasons)
-      ignored_reasons->push_back(
-          IgnoredReason(kAXAncestorDisallowsChild, tree_ancestor));
-    return true;
-  }
-
   // A LayoutEmbeddedContent is an iframe element or embedded object element or
   // something like that. We don't want to ignore those.
   if (layout_object_->IsLayoutEmbeddedContent())
@@ -577,16 +569,6 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     return false;
 
   if (layout_object_->IsText()) {
-    // Static text beneath MenuItems and MenuButtons are just reported along
-    // with the menu item, so it's ignored on an individual level.
-    AXObject* parent = ParentObjectUnignored();
-    if (parent && (parent->AriaRoleAttribute() == kMenuItemRole ||
-                   parent->AriaRoleAttribute() == kMenuButtonRole)) {
-      if (ignored_reasons)
-        ignored_reasons->push_back(
-            IgnoredReason(kAXStaticTextUsedAsNameFor, parent));
-      return true;
-    }
     LayoutText* layout_text = ToLayoutText(layout_object_);
     if (!layout_text->HasTextBoxes()) {
       if (ignored_reasons)
@@ -1262,39 +1244,6 @@ bool AXLayoutObject::AriaHasPopup() const {
          !EqualIgnoringASCIICase(has_popup, "false");
 }
 
-bool AXLayoutObject::AriaRoleHasPresentationalChildren() const {
-  switch (aria_role_) {
-    case kButtonRole:
-    case kSliderRole:
-    case kImageRole:
-    case kProgressIndicatorRole:
-    case kSpinButtonRole:
-      // case SeparatorRole:
-      return true;
-    default:
-      return false;
-  }
-}
-
-AXObject* AXLayoutObject::AncestorForWhichThisIsAPresentationalChild() const {
-  // Walk the parent chain looking for a parent that has presentational children
-  AXObject* parent = ParentObjectIfExists();
-  while (parent) {
-    if (parent->AriaRoleHasPresentationalChildren())
-      break;
-
-    // The descendants of a AXMenuList that are AXLayoutObjects are all
-    // presentational. (The real descendants are an AXMenuListPopup and
-    // AXMenuListOptions, which are not AXLayoutObjects.)
-    if (parent->IsMenuList())
-      break;
-
-    parent = parent->ParentObjectIfExists();
-  }
-
-  return parent;
-}
-
 bool AXLayoutObject::SupportsARIADragging() const {
   const AtomicString& grabbed = GetAttribute(aria_grabbedAttr);
   return EqualIgnoringASCIICase(grabbed, "true") ||
@@ -1576,9 +1525,6 @@ void AXLayoutObject::AddChildren() {
   DCHECK(!have_children_);
 
   have_children_ = true;
-
-  if (!CanHaveChildren())
-    return;
 
   HeapVector<Member<AXObject>> owned_children;
   ComputeAriaOwnsChildren(owned_children);
@@ -2211,28 +2157,6 @@ void AXLayoutObject::LineBreaks(Vector<int>& line_breaks) const {
 // Private.
 //
 
-AXObject* AXLayoutObject::TreeAncestorDisallowingChild() const {
-  // Determine if this is in a tree. If so, we apply special behavior to make it
-  // work like an AXOutline.
-  AXObject* ax_obj = ParentObject();
-  AXObject* tree_ancestor = 0;
-  while (ax_obj) {
-    if (ax_obj->IsTree()) {
-      tree_ancestor = ax_obj;
-      break;
-    }
-    ax_obj = ax_obj->ParentObject();
-  }
-
-  // If the object is in a tree, only tree items should be exposed (and the
-  // children of tree items).
-  if (tree_ancestor) {
-    AccessibilityRole role = RoleValue();
-    if (role != kTreeItemRole && role != kStaticTextRole)
-      return tree_ancestor;
-  }
-  return 0;
-}
 
 bool AXLayoutObject::IsTabItemSelected() const {
   if (!IsTabItem() || !GetLayoutObject())
