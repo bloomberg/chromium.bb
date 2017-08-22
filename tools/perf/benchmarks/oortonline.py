@@ -57,8 +57,6 @@ class OortOnline(perf_benchmark.PerfBenchmark):
 
     return StoryExpectations()
 
-# Disabled on Linux due to timeouts; crbug.com/727850
-@benchmark.Disabled('linux', 'win')
 @benchmark.Owner(emails=['ulan@chromium.org'])
 class OortOnlineTBMv2(perf_benchmark.PerfBenchmark):
   """OortOnline benchmark that measures WebGL and V8 performance.
