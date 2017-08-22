@@ -94375,6 +94375,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="IPH_DownloadPageScreenshot"
       label="In product help download page for screenshot."/>
   <suffix name="IPH_DownloadHome" label="In product help download home."/>
+  <suffix name="IPH_MediaDownload" label="In product help media download."/>
   <suffix name="IPH_NewTab" label="In product help new tab."/>
   <suffix name="IPH_IncognitoWindow" label="In product help incognito window."/>
   <suffix name="IPH_NewTabTip" label="In product help new tab tip."/>

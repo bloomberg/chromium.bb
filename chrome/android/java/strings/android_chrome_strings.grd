@@ -3110,7 +3110,12 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_IPH_DATA_SAVER_DETAIL_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility text to open data saver.">
         See how much data you've saved from the More Options button
       </message>
-
+      <message name="IDS_IPH_MEDIA_DOWNLOAD_TEXT" desc="The in-product-help message to download a video.">
+        Download videos to watch later
+      </message>
+      <message name="IDS_IPH_MEDIA_DOWNLOAD_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility text to download a video.">
+        Download videos to watch later using the Download button
+      </message>
       <!-- Search Widget strings -->
       <message name="IDS_SEARCH_WIDGET_DEFAULT" desc="Default text for the search widget">
         Search

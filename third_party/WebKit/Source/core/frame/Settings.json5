@@ -955,6 +955,10 @@
       name: "highContrastImagePolicy",
       initial: "HighContrastImagePolicy::kFilterAll",
       type: "HighContrastImagePolicy",
+    },
+    {
+      name: "mediaDownloadInProductHelpEnabled",
+      initial: false,
     }
   ],
 }

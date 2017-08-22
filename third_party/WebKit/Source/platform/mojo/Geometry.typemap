@@ -6,6 +6,7 @@ mojom = "//ui/gfx/geometry/mojo/geometry.mojom"
 public_headers = [
   "//third_party/WebKit/public/platform/WebFloatRect.h",
   "//third_party/WebKit/public/platform/WebFloatPoint.h",
+  "//third_party/WebKit/public/platform/WebRect.h",
   "//third_party/WebKit/public/platform/WebSize.h",
 ]
 traits_headers = [
@@ -24,5 +25,6 @@ deps = [
 type_mappings = [
   "gfx.mojom.PointF=::blink::WebFloatPoint",
   "gfx.mojom.RectF=::blink::WebFloatRect",
+  "gfx.mojom.Rect=::blink::WebRect",
   "gfx.mojom.Size=::blink::WebSize",
 ]

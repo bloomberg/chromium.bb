@@ -56,6 +56,7 @@ class MediaControlTextTrackListElement;
 class MediaControlTimelineElement;
 class MediaControlToggleClosedCaptionsButtonElement;
 class MediaControlVolumeSliderElement;
+class MediaDownloadInProductHelpManager;
 class ShadowRoot;
 
 // Default implementation of the core/ MediaControls interface used by
@@ -116,6 +117,11 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void EndScrubbing();
   void UpdateCurrentTimeDisplay();
 
+  // Methods used for Download In-product help.
+  const MediaControlDownloadButtonElement& DownloadButton() const;
+  void DidDismissDownloadInProductHelp();
+  MediaDownloadInProductHelpManager* DownloadInProductHelp();
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -134,6 +140,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
   friend class MediaControlsRotateToFullscreenDelegateTest;
   friend class MediaControlsImplTest;
+  friend class MediaControlsImplInProductHelpTest;
 
   // Need to be members of MediaControls for private member access.
   class BatchedControlUpdate;
@@ -165,6 +172,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   bool ShouldHideMediaControls(unsigned behavior_flags = 0) const;
   void HideMediaControlsTimerFired(TimerBase*);
+  void StartHideMediaControlsIfNecessary();
   void StartHideMediaControlsTimer();
   void StopHideMediaControlsTimer();
   void ResetHideMediaControlsTimer();
@@ -251,6 +259,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   IntSize size_;
 
   bool keep_showing_until_timer_fires_ : 1;
+
+  Member<MediaDownloadInProductHelpManager> download_iph_manager_;
 };
 
 DEFINE_ELEMENT_TYPE_CASTS(MediaControlsImpl, IsMediaControls());

@@ -52,6 +52,7 @@ DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature, "IPH_DownloadPage");
 DEFINE_VARIATION_PARAM(kIPHDownloadPageScreenshotFeature,
                        "IPH_DownloadPageScreenshot");
 DEFINE_VARIATION_PARAM(kIPHChromeHomeExpandFeature, "IPH_ChromeHomeExpand");
+DEFINE_VARIATION_PARAM(kIPHMediaDownloadFeature, "IPH_MediaDownload");
 #endif  // defined(OS_ANDROID)
 #if defined(OS_WIN) || defined(OS_LINUX)
 DEFINE_VARIATION_PARAM(kIPHIncognitoWindowFeature, "IPH_IncognitoWindow");
@@ -77,6 +78,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHDownloadPageFeature),
         VARIATION_ENTRY(kIPHDownloadPageScreenshotFeature),
         VARIATION_ENTRY(kIPHChromeHomeExpandFeature),
+        VARIATION_ENTRY(kIPHMediaDownloadFeature),
 #elif defined(OS_WIN) || defined(OS_LINUX)
         VARIATION_ENTRY(kIPHIncognitoWindowFeature),
         VARIATION_ENTRY(kIPHNewTabFeature),

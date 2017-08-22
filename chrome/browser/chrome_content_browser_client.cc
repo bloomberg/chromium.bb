@@ -142,6 +142,8 @@
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/error_page/common/error_page_switches.h"
+#include "components/feature_engagement/public/feature_constants.h"
+#include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/metrics/call_stack_profile_collector.h"
 #include "components/metrics/client_info.h"
@@ -2513,6 +2515,10 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   web_prefs->video_fullscreen_detection_enabled =
       chrome::android::AppHooks::ShouldDetectVideoFullscreen();
+
+  web_prefs->enable_media_download_in_product_help =
+      base::FeatureList::IsEnabled(
+          feature_engagement::kIPHMediaDownloadFeature);
 #endif  // defined(OS_ANDROID)
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)

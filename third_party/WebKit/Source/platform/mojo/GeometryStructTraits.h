@@ -7,6 +7,7 @@
 
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
 
@@ -26,6 +27,15 @@ struct StructTraits<gfx::mojom::RectFDataView, ::blink::WebFloatRect> {
   static float width(const ::blink::WebFloatRect& rect) { return rect.width; }
   static float height(const ::blink::WebFloatRect& rect) { return rect.height; }
   static bool Read(gfx::mojom::RectFDataView, ::blink::WebFloatRect* out);
+};
+
+template <>
+struct StructTraits<gfx::mojom::RectDataView, ::blink::WebRect> {
+  static int x(const ::blink::WebRect& rect) { return rect.x; }
+  static int y(const ::blink::WebRect& rect) { return rect.y; }
+  static int width(const ::blink::WebRect& rect) { return rect.width; }
+  static int height(const ::blink::WebRect& rect) { return rect.height; }
+  static bool Read(gfx::mojom::RectDataView, ::blink::WebRect* out);
 };
 
 template <>

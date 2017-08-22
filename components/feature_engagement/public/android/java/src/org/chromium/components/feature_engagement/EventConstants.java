@@ -61,6 +61,11 @@ public final class EventConstants {
     public static final String DATA_SAVER_DETAIL_OPENED = "data_saver_overview_opened";
 
     /**
+     * The download button for a media element was displayed.
+     */
+    public static final String MEDIA_DOWNLOAD_BUTTON_DISPLAYED = "media_download_button_displayed";
+
+    /**
      * Do not instantiate.
      */
     private EventConstants() {}

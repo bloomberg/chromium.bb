@@ -14,6 +14,7 @@ include_rules = [
   "+sandbox/linux/seccomp-bpf/sandbox_bpf.h",
   "+sandbox/sandbox_features.h",
   "+third_party/gvr-android-sdk",
+  "+third_party/WebKit/public/platform/media_download_in_product_help.mojom.h",
 ]
 
 specific_include_rules = {

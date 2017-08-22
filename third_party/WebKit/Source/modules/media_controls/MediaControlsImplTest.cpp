@@ -22,6 +22,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/media_controls/MediaDownloadInProductHelpManager.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineElement.h"
@@ -76,11 +77,22 @@ class MockLayoutObject : public LayoutObject {
  public:
   MockLayoutObject(Node* node) : LayoutObject(node) {}
 
+  void SetVisible(bool visible) { visible_ = visible; }
+
   const char* GetName() const override { return "MockLayoutObject"; }
   void UpdateLayout() override {}
   FloatRect LocalBoundingBoxRectForAccessibility() const override {
     return FloatRect();
   }
+  void AbsoluteQuads(Vector<FloatQuad>& quads,
+                     MapCoordinatesFlags mode) const override {
+    if (!visible_)
+      return;
+    quads.push_back(FloatQuad(FloatRect(0.f, 0.f, 10.f, 10.f)));
+  }
+
+ private:
+  bool visible_ = false;
 };
 
 class StubLocalFrameClientForImpl : public EmptyLocalFrameClient {
@@ -109,6 +121,13 @@ Element* GetElementByShadowPseudoId(Node& root_node,
       return &element;
   }
   return nullptr;
+}
+
+MediaControlDownloadButtonElement& GetDownloadButton(
+    MediaControlsImpl& controls) {
+  Element* element = GetElementByShadowPseudoId(
+      controls, "-internal-media-controls-download-button");
+  return static_cast<MediaControlDownloadButtonElement&>(*element);
 }
 
 bool IsElementVisible(Element& element) {
@@ -158,6 +177,8 @@ class MediaControlsImplTest : public ::testing::Test {
     clients.chrome_client = new MockChromeClientForImpl();
     page_holder_ = DummyPageHolder::Create(
         IntSize(800, 600), &clients, StubLocalFrameClientForImpl::Create());
+    GetDocument().GetSettings()->SetMediaDownloadInProductHelpEnabled(
+        EnableDownloadInProductHelp());
 
     GetDocument().write("<video>");
     HTMLVideoElement& video =
@@ -226,6 +247,8 @@ class MediaControlsImplTest : public ::testing::Test {
   bool HasAvailabilityCallbacks(RemotePlayback* remote_playback) {
     return !remote_playback->availability_callbacks_.IsEmpty();
   }
+
+  virtual bool EnableDownloadInProductHelp() { return false; }
 
  private:
   std::unique_ptr<DummyPageHolder> page_holder_;
@@ -511,6 +534,120 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedHLS) {
   testing::RunPendingTasks();
   SimulateLoadedMetadata();
   EXPECT_FALSE(IsElementVisible(*download_button));
+}
+
+TEST_F(MediaControlsImplTest, DownloadButtonInProductHelpDisabled) {
+  EXPECT_FALSE(MediaControls().DownloadInProductHelp());
+}
+
+class MediaControlsImplInProductHelpTest : public MediaControlsImplTest {
+ public:
+  void SetUp() override {
+    MediaControlsImplTest::SetUp();
+    ASSERT_TRUE(MediaControls().DownloadInProductHelp());
+  }
+
+  MediaDownloadInProductHelpManager& Manager() {
+    return *MediaControls().DownloadInProductHelp();
+  }
+
+  void Play() { MediaControls().OnPlay(); }
+
+  bool EnableDownloadInProductHelp() override { return true; }
+};
+
+TEST_F(MediaControlsImplInProductHelpTest, DownloadButtonInProductHelp_Button) {
+  EnsureSizing();
+
+  // Inject the LayoutObject for the button to override the rect returned in
+  // visual viewport.
+  MediaControlDownloadButtonElement& button =
+      GetDownloadButton(MediaControls());
+  MockLayoutObject layout_object(&button);
+  layout_object.SetVisible(true);
+  button.SetLayoutObject(&layout_object);
+
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
+  SimulateLoadedMetadata();
+  Play();
+
+  // Load above should have made the button wanted, which should trigger showing
+  // in-product help.
+  EXPECT_TRUE(Manager().IsShowingInProductHelp());
+
+  // Disable the download button, which dismisses the in-product-help.
+  button.SetIsWanted(false);
+  EXPECT_FALSE(Manager().IsShowingInProductHelp());
+
+  // Toggle again. In-product help is shown only once.
+  button.SetIsWanted(true);
+  EXPECT_FALSE(Manager().IsShowingInProductHelp());
+
+  button.SetLayoutObject(nullptr);
+}
+
+TEST_F(MediaControlsImplInProductHelpTest,
+       DownloadButtonInProductHelp_ControlsVisibility) {
+  EnsureSizing();
+
+  // Inject the LayoutObject for the button to override the rect returned in
+  // visual viewport.
+  MediaControlDownloadButtonElement& button =
+      GetDownloadButton(MediaControls());
+  MockLayoutObject layout_object(&button);
+  layout_object.SetVisible(true);
+  button.SetLayoutObject(&layout_object);
+
+  // The in-product-help should not be shown while the controls are hidden.
+  MediaControls().Hide();
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
+  SimulateLoadedMetadata();
+  Play();
+
+  ASSERT_TRUE(button.IsWanted());
+  EXPECT_FALSE(Manager().IsShowingInProductHelp());
+
+  // Showing the controls initiates showing in-product-help.
+  MediaControls().MaybeShow();
+  EXPECT_TRUE(Manager().IsShowingInProductHelp());
+
+  // Hiding the controls dismissed in-product-help.
+  MediaControls().Hide();
+  EXPECT_FALSE(Manager().IsShowingInProductHelp());
+
+  button.SetLayoutObject(nullptr);
+}
+
+TEST_F(MediaControlsImplInProductHelpTest,
+       DownloadButtonInProductHelp_ButtonVisibility) {
+  EnsureSizing();
+
+  // Inject the LayoutObject for the button to override the rect returned in
+  // visual viewport.
+  MediaControlDownloadButtonElement& button =
+      GetDownloadButton(MediaControls());
+  MockLayoutObject layout_object(&button);
+  button.SetLayoutObject(&layout_object);
+
+  // The in-product-help should not be shown while the button is hidden.
+  layout_object.SetVisible(false);
+  MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
+  testing::RunPendingTasks();
+  SimulateLoadedMetadata();
+  Play();
+
+  ASSERT_TRUE(button.IsWanted());
+  EXPECT_FALSE(Manager().IsShowingInProductHelp());
+
+  // Make the button visible to show in-product-help.
+  layout_object.SetVisible(true);
+  button.SetIsWanted(false);
+  button.SetIsWanted(true);
+  EXPECT_TRUE(Manager().IsShowingInProductHelp());
+
+  button.SetLayoutObject(nullptr);
 }
 
 TEST_F(MediaControlsImplTest, TimelineSeekToRoundedEnd) {
