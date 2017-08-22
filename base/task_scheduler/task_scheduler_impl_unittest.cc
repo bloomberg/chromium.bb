@@ -191,18 +191,20 @@ class TaskSchedulerImplTest
  protected:
   TaskSchedulerImplTest() : scheduler_("Test") {}
 
-  void StartTaskScheduler() {
+  void StartTaskScheduler(
+      TaskScheduler::TaskPriorityAdjustment task_priority_adjustment =
+          TaskScheduler::TaskPriorityAdjustment::NONE) {
     constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
     constexpr int kMaxNumBackgroundThreads = 1;
     constexpr int kMaxNumBackgroundBlockingThreads = 3;
     constexpr int kMaxNumForegroundThreads = 4;
     constexpr int kMaxNumForegroundBlockingThreads = 12;
 
-    scheduler_.Start(
-        {{kMaxNumBackgroundThreads, kSuggestedReclaimTime},
-         {kMaxNumBackgroundBlockingThreads, kSuggestedReclaimTime},
-         {kMaxNumForegroundThreads, kSuggestedReclaimTime},
-         {kMaxNumForegroundBlockingThreads, kSuggestedReclaimTime}});
+    scheduler_.Start({{kMaxNumBackgroundThreads, kSuggestedReclaimTime},
+                      {kMaxNumBackgroundBlockingThreads, kSuggestedReclaimTime},
+                      {kMaxNumForegroundThreads, kSuggestedReclaimTime},
+                      {kMaxNumForegroundBlockingThreads, kSuggestedReclaimTime},
+                      task_priority_adjustment});
   }
 
   void TearDown() override {
@@ -336,6 +338,45 @@ TEST_P(TaskSchedulerImplTest, PostTaskViaTaskRunnerBeforeStart) {
   StartTaskScheduler();
 
   // This should not hang if the task is scheduled after Start().
+  task_running.Wait();
+}
+
+// Verify that all tasks posted to a TaskRunner after Start() run in a
+// USER_BLOCKING environment when |all_tasks_are_user_blocking_in| is true in
+// TaskScheduler::InitParams.
+TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlockingTaskRunner) {
+  StartTaskScheduler(TaskScheduler::TaskPriorityAdjustment::
+                         EXPERIMENTAL_ALL_TASKS_USER_BLOCKING);
+
+  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
+                             WaitableEvent::InitialState::NOT_SIGNALED);
+  CreateTaskRunnerWithTraitsAndExecutionMode(&scheduler_, GetParam().traits,
+                                             GetParam().execution_mode)
+      ->PostTask(FROM_HERE,
+                 BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
+                          TaskTraits::Override(GetParam().traits,
+                                               {TaskPriority::USER_BLOCKING}),
+                          Unretained(&task_running)));
+  task_running.Wait();
+}
+
+// Verify that all tasks posted via PostDelayedTaskWithTraits() after Start()
+// run in a USER_BLOCKING environment when |all_tasks_are_user_blocking_in| is
+// true in TaskScheduler::InitParams.
+TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlocking) {
+  StartTaskScheduler(TaskScheduler::TaskPriorityAdjustment::
+                         EXPERIMENTAL_ALL_TASKS_USER_BLOCKING);
+
+  WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
+                             WaitableEvent::InitialState::NOT_SIGNALED);
+  // Ignore |params.execution_mode| in this test.
+  scheduler_.PostDelayedTaskWithTraits(
+      FROM_HERE, GetParam().traits,
+      BindOnce(&VerifyTaskEnvironmentAndSignalEvent,
+               TaskTraits::Override(GetParam().traits,
+                                    {TaskPriority::USER_BLOCKING}),
+               Unretained(&task_running)),
+      TimeDelta());
   task_running.Wait();
 }
 
