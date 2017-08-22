@@ -17,6 +17,9 @@ size_t GetDailyQuotaForTrigger(const TriggerType trigger_type) {
   switch (trigger_type) {
     case TriggerType::SECURITY_INTERSTITIAL:
       return kUnlimitedTriggerQuota;
+    case TriggerType::AD_SAMPLE:
+      // TODO(lpz): Introduce a finch param to configure quota per-trigger-type.
+      return 0;
   }
   // By default, unhandled trigger types have no quota.
   return 0;

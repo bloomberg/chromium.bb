@@ -238,13 +238,22 @@ static_library("safe_browsing") {
         "services_delegate_impl.h",
         "signature_evaluator_mac.h",
         "signature_evaluator_mac.mm",
+        "trigger_creator.cc",
+        "trigger_creator.h",
         "v4_test_utils.cc",
         "v4_test_utils.h",
       ]
       deps += [
         "//components/content_settings/core/browser:browser",
+        "//components/prefs:prefs",
         "//components/safe_browsing/common:safe_browsing_prefs",
+        "//components/safe_browsing/triggers:ad_sampler_trigger",
+        "//components/safe_browsing/triggers:trigger_throttler",
+        "//components/safe_browsing/triggers:triggers",
         "//components/safe_browsing_db:safe_browsing_db",
+        "//components/security_interstitials/content:security_interstitial_page",
+        "//content/public/browser:browser",
+        "//net:net",
       ]
       if (is_win) {
         deps += [ "//chrome/browser/safe_browsing/incident_reporting:state_store_data_proto" ]

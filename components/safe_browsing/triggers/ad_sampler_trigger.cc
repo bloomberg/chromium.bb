@@ -9,8 +9,12 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/safe_browsing/features.h"
+#include "components/safe_browsing/triggers/trigger_manager.h"
+#include "components/safe_browsing/triggers/trigger_throttler.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(safe_browsing::AdSamplerTrigger);
@@ -23,6 +27,10 @@ const char kAdSamplerFrequencyDenominatorParam[] =
 
 // A frequency denominator with this value indicates sampling is disabled.
 const size_t kSamplerFrequencyDisabled = 0;
+
+// Number of milliseconds to allow data collection to run before sending a
+// report (since this trigger runs in the background).
+const int64_t kAdSampleCollectionPeriodMilliseconds = 5000;
 
 namespace {
 
@@ -77,19 +85,73 @@ bool ShouldCheckForAd(const size_t frequency_denominator) {
 
 }  // namespace
 
-AdSamplerTrigger::AdSamplerTrigger(content::WebContents* web_contents)
+AdSamplerTrigger::AdSamplerTrigger(
+    content::WebContents* web_contents,
+    TriggerManager* trigger_manager,
+    PrefService* prefs,
+    net::URLRequestContextGetter* request_context,
+    history::HistoryService* history_service)
     : content::WebContentsObserver(web_contents),
-      sampler_frequency_denominator_(GetSamplerFrequencyDenominator()) {}
+      sampler_frequency_denominator_(GetSamplerFrequencyDenominator()),
+      trigger_manager_(trigger_manager),
+      prefs_(prefs),
+      request_context_(request_context),
+      history_service_(history_service) {}
 
 AdSamplerTrigger::~AdSamplerTrigger() {}
 
+// static
+void AdSamplerTrigger::CreateForWebContents(
+    content::WebContents* web_contents,
+    TriggerManager* trigger_manager,
+    PrefService* prefs,
+    net::URLRequestContextGetter* request_context,
+    history::HistoryService* history_service) {
+  DCHECK(web_contents);
+  if (!FromWebContents(web_contents)) {
+    web_contents->SetUserData(UserDataKey(),
+                              base::WrapUnique(new AdSamplerTrigger(
+                                  web_contents, trigger_manager, prefs,
+                                  request_context, history_service)));
+  }
+}
+
+// TODO(lpz): In some cases, this event may be too early for ads to finish
+// loading on the page. Investigate later events or possible timer delays.
 void AdSamplerTrigger::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // TODO(lpz): Add UMA metrics for how often we skip checking, find nothing, or
   // take a sample.
   if (ShouldCheckForAd(sampler_frequency_denominator_) &&
       DetectGoogleAd(navigation_handle)) {
-    // TODO(lpz): Call into TriggerManager to sample the ad.
+    SBErrorOptions error_options =
+        TriggerManager::GetSBErrorDisplayOptions(*prefs_, *web_contents());
+
+    security_interstitials::UnsafeResource resource;
+    resource.threat_type = SB_THREAT_TYPE_AD_SAMPLE;
+    resource.url = web_contents()->GetURL();
+    resource.web_contents_getter = resource.GetWebContentsGetter(
+        web_contents()->GetRenderProcessHost()->GetID(),
+        web_contents()->GetMainFrame()->GetRoutingID());
+
+    if (!trigger_manager_->StartCollectingThreatDetails(
+            TriggerType::AD_SAMPLE, web_contents(), resource, request_context_,
+            history_service_, error_options)) {
+      return;
+    }
+
+    // Immediately call FinishCollection but include a short delay to allow data
+    // collection to happen.
+    // TODO(lpz): This is suboptimal because we can send duplicate reports if
+    // there are multiple ads on the page. To improve this, the delay should be
+    // before calling into trigger_manager_, which requires TriggerManager to be
+    // Bind-able.
+    trigger_manager_->FinishCollectingThreatDetails(
+        TriggerType::AD_SAMPLE, web_contents(),
+        base::TimeDelta::FromMilliseconds(
+            kAdSampleCollectionPeriodMilliseconds),
+        /*did_proceed=*/false,
+        /*num_visits=*/0, error_options);
   }
 }
 

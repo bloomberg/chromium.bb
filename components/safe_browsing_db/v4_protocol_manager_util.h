@@ -128,6 +128,9 @@ enum SBThreatType {
 
   // Password reuse detected on low reputation page,
   SB_THREAT_TYPE_PASSWORD_REUSE,
+
+  // A sample of an ad was collected
+  SB_THREAT_TYPE_AD_SAMPLE,
 };
 
 using SBThreatTypeSet = base::flat_set<SBThreatType>;

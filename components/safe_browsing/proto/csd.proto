@@ -934,6 +934,7 @@ message ClientSafeBrowsingReportRequest {
     DANGEROUS_DOWNLOAD_BY_API = 10;
     URL_PASSWORD_PROTECTION_PHISHING = 12;
     DANGEROUS_DOWNLOAD_OPENED = 13;
+    AD_SAMPLE = 14;
   }
 
   message HTTPHeader {

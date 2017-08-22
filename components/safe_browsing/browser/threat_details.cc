@@ -84,6 +84,8 @@ ClientSafeBrowsingReportRequest::ReportType GetReportTypeFromSBThreatType(
       return ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_MALWARE;
     case SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
       return ClientSafeBrowsingReportRequest::URL_PASSWORD_PROTECTION_PHISHING;
+    case SB_THREAT_TYPE_AD_SAMPLE:
+      return ClientSafeBrowsingReportRequest::AD_SAMPLE;
     default:  // Gated by SafeBrowsingBlockingPage::ShouldReportThreatDetails.
       NOTREACHED() << "We should not send report for threat type "
                    << threat_type;
@@ -264,21 +266,11 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
       net::URLRequestContextGetter* request_context_getter,
-      history::HistoryService* history_service) override {
+      history::HistoryService* history_service,
+      bool trim_to_ad_tags) override {
     return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
                              request_context_getter, history_service,
-                             /*trim_to_ad_tags=*/false);
-  }
-
-  ThreatDetails* CreateTrimmedThreatDetails(
-      BaseUIManager* ui_manager,
-      WebContents* web_contents,
-      const security_interstitials::UnsafeResource& unsafe_resource,
-      net::URLRequestContextGetter* request_context_getter,
-      history::HistoryService* history_service) override {
-    return new ThreatDetails(ui_manager, web_contents, unsafe_resource,
-                             request_context_getter, history_service,
-                             /*trim_to_ad_tags=*/true);
+                             trim_to_ad_tags);
   }
 
  private:
@@ -299,13 +291,15 @@ ThreatDetails* ThreatDetails::NewThreatDetails(
     WebContents* web_contents,
     const UnsafeResource& resource,
     net::URLRequestContextGetter* request_context_getter,
-    history::HistoryService* history_service) {
+    history::HistoryService* history_service,
+    bool trim_to_ad_tags) {
   // Set up the factory if this has not been done already (tests do that
   // before this method is called).
   if (!factory_)
     factory_ = g_threat_details_factory_impl.Pointer();
   return factory_->CreateThreatDetails(ui_manager, web_contents, resource,
-                                       request_context_getter, history_service);
+                                       request_context_getter, history_service,
+                                       trim_to_ad_tags);
 }
 
 // Create a ThreatDetails for the given tab. Runs in the UI thread.

@@ -41,6 +41,7 @@
 #include "chrome/browser/previews/previews_infobar_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
+#include "chrome/browser/safe_browsing/trigger_creator.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
@@ -166,7 +167,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 #endif
 
   // --- Common tab helpers ---
-
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
   autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
       web_contents,
@@ -195,10 +195,11 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   ExternalProtocolObserver::CreateForWebContents(web_contents);
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
   FindTabHelper::CreateForWebContents(web_contents);
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
   history::WebContentsTopSitesObserver::CreateForWebContents(
-      web_contents, TopSitesFactory::GetForProfile(
-                        Profile::FromBrowserContext(
-                            web_contents->GetBrowserContext())).get());
+      web_contents, TopSitesFactory::GetForProfile(profile).get());
   HistoryTabHelper::CreateForWebContents(web_contents);
   InfoBarService::CreateForWebContents(web_contents);
   InstallableManager::CreateForWebContents(web_contents);
@@ -223,7 +224,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   sync_sessions::SyncSessionsRouterTabHelper::CreateForWebContents(
       web_contents,
       sync_sessions::SyncSessionsWebContentsRouterFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext())));
+          profile));
   // TODO(vabr): Remove TabSpecificContentSettings from here once their function
   // is taken over by ChromeContentSettingsClient. http://crbug.com/387075
   TabSpecificContentSettings::CreateForWebContents(web_contents);
@@ -259,6 +260,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
       web_contents);
+  safe_browsing::TriggerCreator::MaybeCreateTriggersForWebContents(
+      profile, web_contents);
   TabContentsSyncedTabDelegate::CreateForWebContents(web_contents);
   TabDialogs::CreateForWebContents(web_contents);
   ThumbnailTabHelper::CreateForWebContents(web_contents);
@@ -303,8 +306,7 @@ offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
         web_contents);
   }
 
-  if (predictors::LoadingPredictorFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+  if (predictors::LoadingPredictorFactory::GetForProfile(profile)) {
     predictors::ResourcePrefetchPredictorTabHelper::CreateForWebContents(
         web_contents);
   }
