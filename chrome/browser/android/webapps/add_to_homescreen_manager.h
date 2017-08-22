@@ -45,7 +45,8 @@ class AddToHomescreenManager : public AddToHomescreenDataFetcher::Observer {
 
   // AddToHomescreenDataFetcher::Observer:
   void OnDidDetermineWebApkCompatibility(bool is_webapk_compatible) override;
-  void OnUserTitleAvailable(const base::string16& user_title) override;
+  void OnUserTitleAvailable(const base::string16& user_title,
+                            const GURL& url) override;
   void OnDataAvailable(const ShortcutInfo& info,
                        const SkBitmap& primary_icon,
                        const SkBitmap& badge_icon) override;

@@ -34,9 +34,11 @@ class AddToHomescreenDataFetcher : public content::WebContentsObserver {
     virtual void OnDidDetermineWebApkCompatibility(
         bool is_webapk_compatible) = 0;
 
-    // Called when the title of the page is available. Will be called after
+    // Called when the homescreen icon title (and possibly information from the
+    // web manifest) is available. Will be called after
     // OnDidDetermineWebApkCompatibility.
-    virtual void OnUserTitleAvailable(const base::string16& title) = 0;
+    virtual void OnUserTitleAvailable(const base::string16& title,
+                                      const GURL& url) = 0;
 
     // Called when all the data needed to create a shortcut is available.
     virtual void OnDataAvailable(const ShortcutInfo& info,

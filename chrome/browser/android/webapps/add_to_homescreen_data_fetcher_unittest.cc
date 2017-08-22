@@ -65,7 +65,8 @@ class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
     is_webapk_compatible_ = is_webapk_compatible;
   }
 
-  void OnUserTitleAvailable(const base::string16& title) override {
+  void OnUserTitleAvailable(const base::string16& title,
+                            const GURL& url) override {
     // This should only be called once.
     EXPECT_FALSE(title_available_);
     EXPECT_FALSE(data_available_);
@@ -235,7 +236,8 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
 
   void RunFetcher(AddToHomescreenDataFetcher* fetcher,
                   ObserverWaiter& waiter,
-                  const char* expected_title,
+                  const char* expected_user_title,
+                  const char* expected_name,
                   blink::WebDisplayMode display_mode,
                   bool is_webapk_compatible) {
     WebApplicationInfo web_application_info;
@@ -248,10 +250,23 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
               waiter.determined_webapk_compatibility());
     EXPECT_EQ(is_webapk_compatible, waiter.is_webapk_compatible());
     EXPECT_TRUE(waiter.title_available());
-    EXPECT_TRUE(base::EqualsASCII(waiter.title(), expected_title));
-    EXPECT_TRUE(
-        base::EqualsASCII(fetcher->shortcut_info().user_title, expected_title));
+    if (is_webapk_compatible)
+      EXPECT_TRUE(base::EqualsASCII(waiter.title(), expected_name));
+    else
+      EXPECT_TRUE(base::EqualsASCII(waiter.title(), expected_user_title));
+
+    EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().user_title,
+                                  expected_user_title));
     EXPECT_EQ(display_mode, fetcher->shortcut_info().display);
+  }
+
+  void RunFetcher(AddToHomescreenDataFetcher* fetcher,
+                  ObserverWaiter& waiter,
+                  const char* expected_title,
+                  blink::WebDisplayMode display_mode,
+                  bool is_webapk_compatible) {
+    RunFetcher(fetcher, waiter, expected_title, expected_title, display_mode,
+               is_webapk_compatible);
   }
 
   void SetManifest(const content::Manifest& manifest) {
@@ -373,7 +388,8 @@ TEST_P(AddToHomescreenDataFetcherTestCommon, InstallableManifest) {
   ObserverWaiter waiter;
   std::unique_ptr<AddToHomescreenDataFetcher> fetcher = BuildFetcher(&waiter);
   RunFetcher(fetcher.get(), waiter, kDefaultManifestShortName,
-             blink::kWebDisplayModeStandalone, check_webapk_compatibility());
+             kDefaultManifestName, blink::kWebDisplayModeStandalone,
+             check_webapk_compatibility());
 
   // There should always be a primary icon.
   EXPECT_FALSE(fetcher->primary_icon().drawsNothing());
