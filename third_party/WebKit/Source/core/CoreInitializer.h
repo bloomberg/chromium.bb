@@ -114,6 +114,8 @@ class CORE_EXPORT CoreInitializer {
   virtual void ProvideModulesToPage(Page&, WebViewClient*) const = 0;
   virtual void ForceNextWebGLContextCreationToFail() const = 0;
 
+  virtual void CollectAllGarbageForAnimationWorklet() const = 0;
+
  protected:
   // CoreInitializer is only instantiated by subclass ModulesInitializer.
   CoreInitializer() {}
