@@ -73,9 +73,6 @@ class CronetUploadDataStreamAdapter : public CronetUploadDataStream::Delegate {
   DISALLOW_COPY_AND_ASSIGN(CronetUploadDataStreamAdapter);
 };
 
-// Explicitly register static JNI functions.
-bool CronetUploadDataStreamAdapterRegisterJni(JNIEnv* env);
-
 }  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_ANDROID_CRONET_UPLOAD_DATA_STREAM_ADAPTER_H_

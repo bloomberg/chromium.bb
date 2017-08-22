@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/variations/android/variations_associated_data_android.h"
-
 #include <string>
 
 #include "base/android/jni_string.h"
@@ -37,10 +35,6 @@ ScopedJavaLocalRef<jstring> GetFeedbackVariations(
   const std::string values =
       VariationsHttpHeaderProvider::GetInstance()->GetVariationsString();
   return ConvertUTF8ToJavaString(env, values);
-}
-
-bool RegisterVariationsAssociatedData(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

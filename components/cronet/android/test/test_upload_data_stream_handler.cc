@@ -188,8 +188,4 @@ static jlong CreateTestUploadDataStreamHandler(
   return reinterpret_cast<jlong>(handler);
 }
 
-bool TestUploadDataStreamHandlerRegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace cronet

@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/app/android/chrome_main_delegate_android.h"
-#include "chrome/browser/android/chrome_sync_shell_main_delegate.h"
 
 ChromeMainDelegateAndroid* ChromeMainDelegateAndroid::Create() {
-  return new ChromeSyncShellMainDelegate();
+  return new ChromeMainDelegateAndroid();
 }

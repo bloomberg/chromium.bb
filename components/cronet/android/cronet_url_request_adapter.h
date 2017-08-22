@@ -36,8 +36,6 @@ class CronetURLRequestContextAdapter;
 class IOBufferWithByteBuffer;
 class TestUtil;
 
-bool CronetUrlRequestAdapterRegisterJni(JNIEnv* env);
-
 // An adapter from Java CronetUrlRequest object to net::URLRequest.
 // Created and configured from a Java thread. Start, ReadData, and Destroy are
 // posted to network thread and all callbacks into the Java CronetUrlRequest are

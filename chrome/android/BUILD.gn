@@ -911,8 +911,6 @@ shared_library("chrome_sync_shell") {
   testonly = true
   sources = [
     "../browser/android/chrome_sync_shell_entry_point.cc",
-    "../browser/android/chrome_sync_shell_main_delegate.cc",
-    "../browser/android/chrome_sync_shell_main_delegate.h",
     "../browser/android/chrome_sync_shell_main_delegate_initializer.cc",
   ]
   deps = [

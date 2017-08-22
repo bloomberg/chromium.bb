@@ -40,9 +40,6 @@ class TestUtil {
   // Returns underlying URLRequest.
   static net::URLRequest* GetURLRequest(jlong jrequest_adapter);
 
-  // Register JNI.
-  static bool Register(JNIEnv* env);
-
  private:
   static void RunAfterContextInitOnNetworkThread(jlong jcontext_adapter,
                                                  const base::Closure& task);

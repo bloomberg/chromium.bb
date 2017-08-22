@@ -473,11 +473,6 @@ void InitializeStorageDirectory(const base::FilePath& dir) {
 
 namespace cronet {
 
-// Explicitly register static JNI functions.
-bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
     std::unique_ptr<URLRequestContextConfig> context_config)
     : network_thread_(new base::Thread("network")),

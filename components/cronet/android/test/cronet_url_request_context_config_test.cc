@@ -48,8 +48,4 @@ static void VerifyUrlRequestContextConfig(
            base::android::ConvertJavaStringToUTF8(env, jstorage_path));
 }
 
-bool RegisterCronetUrlRequestContextConfigTest(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace cronet

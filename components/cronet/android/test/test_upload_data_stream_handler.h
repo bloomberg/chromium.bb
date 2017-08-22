@@ -99,8 +99,6 @@ class TestUploadDataStreamHandler {
   DISALLOW_COPY_AND_ASSIGN(TestUploadDataStreamHandler);
 };
 
-bool TestUploadDataStreamHandlerRegisterJni(JNIEnv* env);
-
 }  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_ANDROID_TEST_TEST_UPLOAD_DATA_STREAM_HANDLER_H_

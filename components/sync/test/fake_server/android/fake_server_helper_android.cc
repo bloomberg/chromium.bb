@@ -306,7 +306,3 @@ void FakeServerHelperAndroid::ClearServerData(JNIEnv* env,
   fake_server_ptr->ClearServerData();
 }
 
-// static
-bool FakeServerHelperAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}

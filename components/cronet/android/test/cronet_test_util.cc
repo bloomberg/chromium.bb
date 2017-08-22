@@ -98,8 +98,4 @@ void CleanupNetworkThread(JNIEnv* env,
       ->PostTask(FROM_HERE, base::Bind(&CleanupNetworkThreadOnNetworkThread));
 }
 
-bool TestUtil::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace cronet

@@ -47,8 +47,6 @@ class TestUtil;
 
 struct URLRequestContextConfig;
 
-bool CronetUrlRequestContextAdapterRegisterJni(JNIEnv* env);
-
 // Adapter between Java CronetUrlRequestContext and net::URLRequestContext.
 class CronetURLRequestContextAdapter
     : public net::EffectiveConnectionTypeObserver,

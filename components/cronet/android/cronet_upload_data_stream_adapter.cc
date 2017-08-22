@@ -105,10 +105,6 @@ void CronetUploadDataStreamAdapter::Destroy(JNIEnv* env,
   delete this;
 }
 
-bool CronetUploadDataStreamAdapterRegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 static jlong AttachUploadDataToRequest(
     JNIEnv* env,
     const JavaParamRef<jobject>& jupload_data_stream,
