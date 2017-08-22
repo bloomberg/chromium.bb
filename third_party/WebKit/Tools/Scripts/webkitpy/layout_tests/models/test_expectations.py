@@ -1035,8 +1035,7 @@ class TestExpectations(object):
                 self._expectations += expectations
                 self._model.merge_model(model)
 
-        # FIXME: move ignore_tests into port.skipped_layout_tests()
-        self.add_extra_skipped_tests(port.skipped_layout_tests(tests).union(set(port.get_option('ignore_tests', []))))
+        self.add_extra_skipped_tests(set(port.get_option('ignore_tests', [])))
         self.add_expectations_from_bot()
 
         self._has_warnings = False

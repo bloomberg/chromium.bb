@@ -55,9 +55,6 @@ class FakePort(object):
     def bot_expectations(self):
         return {}
 
-    def skipped_layout_tests(self, _):
-        return set([])
-
     def all_test_configurations(self):
         return []
 
