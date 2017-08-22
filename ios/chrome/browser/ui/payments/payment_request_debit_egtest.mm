@@ -15,7 +15,6 @@
 #include "ios/chrome/browser/payments/payment_request_util.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/payments/payment_request_egtest_base.h"
-#import "ios/chrome/browser/ui/payments/payment_request_view_controller.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
@@ -126,8 +125,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kPaymentRequestCollectionViewID)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
       assertWithMatcher:grey_notNil()];
 
   // Confirm that the Buy button is enabled.
@@ -145,8 +143,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kPaymentRequestCollectionViewID)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
       assertWithMatcher:grey_notNil()];
 
   // Confirm that the Buy button is not enabled.
@@ -168,8 +165,7 @@ std::unique_ptr<autofill::AutofillProfile> _profile;
   [ChromeEarlGrey tapWebViewElementWithID:@"buy"];
 
   // Confirm that the Payment Request UI is showing.
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          kPaymentRequestCollectionViewID)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
       assertWithMatcher:grey_notNil()];
 
   // Select the local card
