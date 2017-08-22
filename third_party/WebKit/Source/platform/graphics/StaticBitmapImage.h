@@ -65,12 +65,11 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
     return gpu::SyncToken();
   }
   virtual void UpdateSyncToken(gpu::SyncToken) { NOTREACHED(); }
+  virtual bool IsPremultiplied() const { return true; }
 
   // Methods have exactly the same implementation for all sub-classes
   bool OriginClean() const { return is_origin_clean_; }
   void SetOriginClean(bool flag) { is_origin_clean_ = flag; }
-  bool IsPremultiplied() const { return is_premultiplied_; }
-  void SetPremultiplied(bool flag) { is_premultiplied_ = flag; }
   RefPtr<StaticBitmapImage> ConvertToColorSpace(sk_sp<SkColorSpace>,
                                                 SkTransferFunctionBehavior);
 
@@ -83,12 +82,11 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
                   ImageClampingMode,
                   const PaintImage&);
 
-  // These two properties are here because the SkImage API doesn't expose the
-  // info. They applied to both UnacceleratedStaticBitmapImage and
-  // AcceleratedStaticBitmapImage. To change these two properties, the call
-  // site would have to call the API setOriginClean() and setPremultiplied().
+  // The following property is here because the SkImage API doesn't expose the
+  // info. It is applied to both UnacceleratedStaticBitmapImage and
+  // AcceleratedStaticBitmapImage. To change this property, the call site would
+  // have to call SetOriginClean().
   bool is_origin_clean_ = true;
-  bool is_premultiplied_ = true;
 };
 
 }  // namespace blink

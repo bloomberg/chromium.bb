@@ -482,7 +482,6 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
 
   image_->SetOriginClean(
       !image->WouldTaintOrigin(document->GetSecurityOrigin()));
-  image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video,
@@ -511,7 +510,6 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
 
   image_->SetOriginClean(
       !video->WouldTaintOrigin(document->GetSecurityOrigin()));
-  image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
@@ -539,7 +537,6 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
     return;
 
   image_->SetOriginClean(canvas->OriginClean());
-  image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
 ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
@@ -567,7 +564,6 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
   if (!image_)
     return;
   image_->SetOriginClean(offscreen_canvas->OriginClean());
-  image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
 ImageBitmap::ImageBitmap(const void* pixel_data,
@@ -585,7 +581,6 @@ ImageBitmap::ImageBitmap(const void* pixel_data,
   image_ = StaticBitmapImage::Create(SkImage::MakeRasterCopy(pixmap));
   if (!image_)
     return;
-  image_->SetPremultiplied(is_image_bitmap_premultiplied);
   image_->SetOriginClean(is_image_bitmap_origin_clean);
 }
 
@@ -667,8 +662,6 @@ ImageBitmap::ImageBitmap(ImageData* data,
         ScaleImage(std::move(image_), parsed_options.resize_width,
                    parsed_options.resize_height, parsed_options.resize_quality);
   }
-
-  image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
@@ -688,7 +681,6 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap,
   if (!image_)
     return;
   image_->SetOriginClean(bitmap->OriginClean());
-  image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
 ImageBitmap::ImageBitmap(RefPtr<StaticBitmapImage> image,
@@ -706,7 +698,6 @@ ImageBitmap::ImageBitmap(RefPtr<StaticBitmapImage> image,
     return;
 
   image_->SetOriginClean(origin_clean);
-  image_->SetPremultiplied(parsed_options.premultiply_alpha);
 }
 
 ImageBitmap::ImageBitmap(RefPtr<StaticBitmapImage> image) {
@@ -807,10 +798,8 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
     return;
   }
   ImageBitmap* bitmap = new ImageBitmap(image);
-  if (bitmap && bitmap->BitmapImage()) {
+  if (bitmap && bitmap->BitmapImage())
     bitmap->BitmapImage()->SetOriginClean(origin_clean);
-    bitmap->BitmapImage()->SetPremultiplied(parsed_options->premultiply_alpha);
-  }
   if (bitmap && bitmap->BitmapImage()) {
     resolver->Resolve(bitmap);
   } else {
@@ -871,7 +860,6 @@ ScriptPromise ImageBitmap::CreateAsync(ImageElementBase* image,
     if (bitmap && bitmap->BitmapImage()) {
       bitmap->BitmapImage()->SetOriginClean(
           !image->WouldTaintOrigin(document->GetSecurityOrigin()));
-      bitmap->BitmapImage()->SetPremultiplied(parsed_options.premultiply_alpha);
     }
     if (bitmap && bitmap->BitmapImage()) {
       resolver->Resolve(bitmap);
