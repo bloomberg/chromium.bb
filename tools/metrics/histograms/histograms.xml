@@ -81138,6 +81138,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.Heuristics.FromBackgroundedToFirstFaviconUpdated"
+    units="ms">
+  <owner>chrisha@chromium.org</owner>
+  <owner>lpy@chromium.org</owner>
+  <summary>
+    Measures the time duration from when the tab is backgrounded to when its
+    favicon is updated. The first-time set of favicon will be ignored; this
+    metric will only be recorded after 5 minutes from main frame navigation
+    committed and when the tab is in the background.
+  </summary>
+</histogram>
+
 <histogram
     name="TabManager.Heuristics.FromBackgroundedToFirstNonPersistentNotificationCreated"
     units="ms">
@@ -81156,7 +81168,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>lpy@chromium.org</owner>
   <summary>
     Measures the time duration from when the tab is backgrounded to when its
-    title is updated. Only recorded when the tab is in the background.
+    title is updated. The first-time set of title will be ignored; this metric
+    will only be recorded after 5 minutes from main frame navigation committed
+    and when the tab is in the background.
   </summary>
 </histogram>
 
