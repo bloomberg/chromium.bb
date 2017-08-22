@@ -308,6 +308,8 @@ class GaiaCookieManagerService : public KeyedService,
   // A worklist for this class. Stores any pending requests that couldn't be
   // executed right away, since this class only permits one request to be
   // executed at a time.
+  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
+  // erase().
   std::deque<GaiaCookieRequest> requests_;
 
   // List of observers to notify when merge session completes.
