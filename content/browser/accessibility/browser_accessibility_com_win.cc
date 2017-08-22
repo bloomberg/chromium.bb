@@ -89,68 +89,8 @@ BrowserAccessibilityComWin::~BrowserAccessibilityComWin() {
 //
 
 STDMETHODIMP BrowserAccessibilityComWin::get_attributes(BSTR* attributes) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_GET_ATTRIBUTES);
-  if (!owner())
-    return E_FAIL;
-  AddAccessibilityModeFlags(kScreenReaderAndHTMLAccessibilityModes);
-  if (!attributes)
-    return E_INVALIDARG;
-  *attributes = nullptr;
-
-  if (!owner())
-    return E_FAIL;
-
-  base::string16 str;
-  for (const base::string16& attribute : ia2_attributes())
-    str += attribute + L';';
-
-  if (str.empty())
-    return S_FALSE;
-
-  *attributes = SysAllocString(str.c_str());
-  DCHECK(*attributes);
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::get_uniqueID(LONG* unique_id) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_UNIQUE_ID);
-  if (!owner())
-    return E_FAIL;
-
-  if (!unique_id)
-    return E_INVALIDARG;
-
-  *unique_id = -AXPlatformNodeWin::unique_id();
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::get_windowHandle(HWND* window_handle) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_WINDOW_HANDLE);
-  if (!owner())
-    return E_FAIL;
-
-  if (!window_handle)
-    return E_INVALIDARG;
-
-  *window_handle =
-      Manager()->ToBrowserAccessibilityManagerWin()->GetParentHWND();
-  if (!*window_handle)
-    return E_FAIL;
-
-  return S_OK;
-}
-
-STDMETHODIMP BrowserAccessibilityComWin::get_indexInParent(
-    LONG* index_in_parent) {
-  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_INDEX_IN_PARENT);
-  if (!owner())
-    return E_FAIL;
-
-  if (!index_in_parent)
-    return E_INVALIDARG;
-
-  *index_in_parent = GetIndexInParent();
-  return S_OK;
+  // This can be removed once the rest of the interface has been removed.
+  return AXPlatformNodeWin::get_attributes(attributes);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::scrollTo(IA2ScrollType scroll_type) {

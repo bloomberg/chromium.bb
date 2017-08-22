@@ -1184,12 +1184,14 @@ STDMETHODIMP AXPlatformNodeWin::get_states(AccessibleStates* states) {
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_uniqueID(LONG* unique_id) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_UNIQUE_ID);
   COM_OBJECT_VALIDATE_1_ARG(unique_id);
   *unique_id = -unique_id_;
   return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_windowHandle(HWND* window_handle) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_WINDOW_HANDLE);
   COM_OBJECT_VALIDATE_1_ARG(window_handle);
   *window_handle = delegate_->GetTargetForNativeAccessibilityEvent();
   return *window_handle ? S_OK : S_FALSE;
@@ -1245,16 +1247,17 @@ STDMETHODIMP AXPlatformNodeWin::get_relationTargetsOfType(
 
 STDMETHODIMP AXPlatformNodeWin::get_attributes(BSTR* attributes) {
   COM_OBJECT_VALIDATE_1_ARG(attributes);
-  base::string16 attributes_str;
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_IA2_GET_ATTRIBUTES);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+  *attributes = nullptr;
 
-  // Text fields need to report the attribute "text-model:a1" to instruct
-  // screen readers to use IAccessible2 APIs to handle text editing in this
-  // object (as opposed to treating it like a native Windows text box).
-  // The text-model:a1 attribute is documented here:
-  // http://www.linuxfoundation.org/collaborate/workgroups/accessibility/ia2/ia2_implementation_guide
-  if (GetData().role == ui::AX_ROLE_TEXT_FIELD) {
-    attributes_str = L"text-model:a1;";
-  }
+  base::string16 attributes_str;
+  std::vector<base::string16> computed_attributes = ComputeIA2Attributes();
+  for (const base::string16& attribute : computed_attributes)
+    attributes_str += attribute + L';';
+
+  if (attributes_str.empty())
+    return S_FALSE;
 
   *attributes = SysAllocString(attributes_str.c_str());
   DCHECK(*attributes);
@@ -1263,6 +1266,7 @@ STDMETHODIMP AXPlatformNodeWin::get_attributes(BSTR* attributes) {
 
 STDMETHODIMP AXPlatformNodeWin::get_indexInParent(LONG* index_in_parent) {
   COM_OBJECT_VALIDATE_1_ARG(index_in_parent);
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_INDEX_IN_PARENT);
   *index_in_parent = GetIndexInParent();
   if (*index_in_parent < 0)
     return E_FAIL;
@@ -3269,6 +3273,15 @@ std::vector<base::string16> AXPlatformNodeWin::ComputeIA2Attributes() {
       GetData().GetHtmlAttribute("src", &src)) {
     SanitizeStringAttributeForIA2(src, &src);
     result.push_back(L"src:" + src);
+  }
+
+  // Text fields need to report the attribute "text-model:a1" to instruct
+  // screen readers to use IAccessible2 APIs to handle text editing in this
+  // object (as opposed to treating it like a native Windows text box).
+  // The text-model:a1 attribute is documented here:
+  // http://www.linuxfoundation.org/collaborate/workgroups/accessibility/ia2/ia2_implementation_guide
+  if (GetData().role == ui::AX_ROLE_TEXT_FIELD) {
+    result.push_back(L"text-model:a1;");
   }
 
   // Expose input-text type attribute.

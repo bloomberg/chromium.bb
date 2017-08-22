@@ -98,21 +98,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   //
   // IAccessible2 methods.
   //
-
-  // Returns the attributes specific to this IAccessible2 object,
-  // such as a cell's formula.
   CONTENT_EXPORT STDMETHODIMP get_attributes(BSTR* attributes) override;
-
-  // Get the unique ID of this object so that the client knows if it's
-  // been encountered previously.
-  CONTENT_EXPORT STDMETHODIMP get_uniqueID(LONG* unique_id) override;
-
-  // Get the window handle of the enclosing window.
-  CONTENT_EXPORT STDMETHODIMP get_windowHandle(HWND* window_handle) override;
-
-  // Get this object's index in its parent object.
-  CONTENT_EXPORT STDMETHODIMP get_indexInParent(LONG* index_in_parent) override;
-
 
   CONTENT_EXPORT STDMETHODIMP scrollTo(enum IA2ScrollType scroll_type) override;
 
