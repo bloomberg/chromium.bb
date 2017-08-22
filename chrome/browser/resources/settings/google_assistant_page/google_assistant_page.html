@@ -21,7 +21,7 @@
         on-change="onGoogleAssistantEnableChange_">
     </settings-toggle-button>
     <template is="dom-if"
-        if="{{prefs.settings.voice_interaction.enabled.value}}">
+        if="[[prefs.settings.voice_interaction.enabled.value]]">
       <settings-toggle-button id="googleAssistantContextEnable"
           class="continuation indented"
           pref="{{prefs.settings.voice_interaction.context.enabled}}"
