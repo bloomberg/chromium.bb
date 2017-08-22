@@ -27,6 +27,9 @@ int FrameTreeNodeIdFromHostIds(int render_process_host_id,
   return render_frame_host ? render_frame_host->GetFrameTreeNodeId() : -1;
 }
 
+// static
+const void* const kResourceRequestInfoImplKey = &kResourceRequestInfoImplKey;
+
 }  // namespace
 
 // ----------------------------------------------------------------------------
@@ -116,7 +119,8 @@ bool ResourceRequestInfo::OriginatedFromServiceWorker(
 // static
 ResourceRequestInfoImpl* ResourceRequestInfoImpl::ForRequest(
     net::URLRequest* request) {
-  return static_cast<ResourceRequestInfoImpl*>(request->GetUserData(NULL));
+  return static_cast<ResourceRequestInfoImpl*>(
+      request->GetUserData(kResourceRequestInfoImplKey));
 }
 
 // static
@@ -317,7 +321,7 @@ NavigationUIData* ResourceRequestInfoImpl::GetNavigationUIData() const {
 }
 
 void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
-  request->SetUserData(nullptr, base::WrapUnique(this));
+  request->SetUserData(kResourceRequestInfoImplKey, base::WrapUnique(this));
   int render_process_id;
   int render_frame_id;
   if (GetAssociatedRenderFrame(&render_process_id, &render_frame_id)) {
