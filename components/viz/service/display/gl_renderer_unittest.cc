@@ -1960,6 +1960,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
       mailbox, std::move(release_callback));
+  bool needs_blending = false;
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -1969,8 +1970,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
-      gfx::Rect(viewport_size), gfx::Rect(viewport_size), resource_id,
-      premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
+      gfx::Rect(viewport_size), gfx::Rect(viewport_size), needs_blending,
+      resource_id, premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
 
   // DirectRenderer::DrawFrame calls into OverlayProcessor::ProcessForOverlays.
@@ -1994,8 +1995,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   overlay_quad = root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
-      gfx::Rect(viewport_size), gfx::Rect(viewport_size), resource_id,
-      premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
+      gfx::Rect(viewport_size), gfx::Rect(viewport_size), needs_blending,
+      resource_id, premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
@@ -2016,8 +2017,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   overlay_quad = root_pass->CreateAndAppendDrawQuad<cc::TextureDrawQuad>();
   overlay_quad->SetNew(
       root_pass->CreateAndAppendSharedQuadState(), gfx::Rect(viewport_size),
-      gfx::Rect(viewport_size), gfx::Rect(viewport_size), resource_id,
-      premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
+      gfx::Rect(viewport_size), gfx::Rect(viewport_size), needs_blending,
+      resource_id, premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
       .Times(1)
@@ -2124,6 +2125,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       cc::SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
   ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
       mailbox, std::move(release_callback));
+  bool needs_blending = false;
   bool premultiplied_alpha = false;
   bool flipped = false;
   bool nearest_neighbor = false;
@@ -2140,9 +2142,9 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                        false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), gfx::Rect(viewport_size),
-                       resource_id, premultiplied_alpha, uv_top_left,
-                       uv_bottom_right, SK_ColorTRANSPARENT, vertex_opacity,
-                       flipped, nearest_neighbor, false);
+                       needs_blending, resource_id, premultiplied_alpha,
+                       uv_top_left, uv_bottom_right, SK_ColorTRANSPARENT,
+                       vertex_opacity, flipped, nearest_neighbor, false);
 
   // Verify that overlay_quad actually gets turned into an overlay, and even
   // though it's not drawn, that its sync point is waited on.
@@ -2334,6 +2336,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
         gfx::Transform(), cc::FilterOperations());
     if (i == 0) {
       gfx::Rect rect(0, 0, 100, 100);
+      bool needs_blending = false;
       gfx::RectF tex_coord_rect(0, 0, 1, 1);
       cc::SharedQuadState* shared_state =
           root_pass->CreateAndAppendSharedQuadState();
@@ -2341,9 +2344,9 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
                            SkBlendMode::kSrcOver, 0);
       cc::YUVVideoDrawQuad* quad =
           root_pass->CreateAndAppendDrawQuad<cc::YUVVideoDrawQuad>();
-      quad->SetNew(shared_state, rect, rect, rect, tex_coord_rect,
-                   tex_coord_rect, rect.size(), rect.size(), resource_id,
-                   resource_id, resource_id, resource_id,
+      quad->SetNew(shared_state, rect, rect, rect, needs_blending,
+                   tex_coord_rect, tex_coord_rect, rect.size(), rect.size(),
+                   resource_id, resource_id, resource_id, resource_id,
                    cc::YUVVideoDrawQuad::REC_601, gfx::ColorSpace(), 0, 1.0, 8);
     }
 

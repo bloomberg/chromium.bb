@@ -113,6 +113,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   gfx::Rect rect(0, 0, 100, 100);
   gfx::Rect opaque_rect(10, 10, 80, 80);
   gfx::Rect visible_rect(0, 0, 100, 100);
+  bool needs_blending = !opaque_rect.Contains(visible_rect);
   const float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
 
   static const gpu::SyncToken kSyncTokenForMailboxTextureQuad(
@@ -186,26 +187,27 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   StreamVideoDrawQuad* stream_video_quad =
       to_pass->CreateAndAppendDrawQuad<StreamVideoDrawQuad>();
   stream_video_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                            resource6, gfx::Size(), gfx::Transform());
+                            needs_blending, resource6, gfx::Size(),
+                            gfx::Transform());
 
   TextureDrawQuad* texture_quad =
       to_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  texture_quad->SetNew(shared_state, rect, opaque_rect, visible_rect, resource1,
-                       false, gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f),
-                       SK_ColorTRANSPARENT, vertex_opacity, false, false,
-                       false);
+  texture_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
+                       needs_blending, resource1, false, gfx::PointF(0.f, 0.f),
+                       gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
+                       vertex_opacity, false, false, false);
 
   TextureDrawQuad* mailbox_texture_quad =
       to_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  mailbox_texture_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                               resource8, false, gfx::PointF(0.f, 0.f),
-                               gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
-                               vertex_opacity, false, false, false);
+  mailbox_texture_quad->SetNew(
+      shared_state, rect, opaque_rect, visible_rect, needs_blending, resource8,
+      false, gfx::PointF(0.f, 0.f), gfx::PointF(1.f, 1.f), SK_ColorTRANSPARENT,
+      vertex_opacity, false, false, false);
 
   TileDrawQuad* scaled_tile_quad =
       to_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   scaled_tile_quad->SetNew(shared_state, rect, opaque_rect, visible_rect,
-                           resource2, gfx::RectF(0, 0, 50, 50),
+                           needs_blending, resource2, gfx::RectF(0, 0, 50, 50),
                            gfx::Size(50, 50), false, false);
 
   SharedQuadState* transformed_state =
@@ -218,17 +220,17 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   TileDrawQuad* transformed_tile_quad =
       to_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
   transformed_tile_quad->SetNew(
-      transformed_state, rect, opaque_rect, visible_rect, resource3,
-      gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false, false);
+      transformed_state, rect, opaque_rect, visible_rect, needs_blending,
+      resource3, gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false, false);
 
   SharedQuadState* shared_state2 = to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
 
   TileDrawQuad* tile_quad = to_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
-  tile_quad->SetNew(shared_state2, rect, opaque_rect, visible_rect, resource4,
-                    gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false,
-                    false);
+  tile_quad->SetNew(shared_state2, rect, opaque_rect, visible_rect,
+                    needs_blending, resource4, gfx::RectF(0, 0, 100, 100),
+                    gfx::Size(100, 100), false, false);
 
   viz::ResourceId plane_resources[4];
   for (int i = 0; i < 4; ++i) {
@@ -242,7 +244,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   YUVVideoDrawQuad* yuv_quad =
       to_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   yuv_quad->SetNew(shared_state2, rect, opaque_rect, visible_rect,
-                   gfx::RectF(.0f, .0f, 100.0f, 100.0f),
+                   needs_blending, gfx::RectF(.0f, .0f, 100.0f, 100.0f),
                    gfx::RectF(.0f, .0f, 50.0f, 50.0f), gfx::Size(100, 100),
                    gfx::Size(50, 50), plane_resources[0], plane_resources[1],
                    plane_resources[2], plane_resources[3], color_space,

@@ -42,6 +42,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
+              bool needs_blending,
               // |*_tex_coord_rect| contains non-normalized coordinates.
               // TODO(reveman): Make the use of normalized vs non-normalized
               // coordinates consistent across all quad types: crbug.com/487370

@@ -25,6 +25,7 @@ class CC_EXPORT StreamVideoDrawQuad : public DrawQuad {
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
+              bool needs_blending,
               unsigned resource_id,
               gfx::Size resource_size_in_pixels,
               const gfx::Transform& matrix);

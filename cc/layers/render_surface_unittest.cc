@@ -64,10 +64,11 @@ class FakePictureLayerImplForRenderSurfaceTest : public FakePictureLayerImpl {
     float max_contents_scale = 1.f;
     PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
                                   max_contents_scale);
+    bool needs_blending = false;
     for (const auto& rect : quad_rects_) {
       TileDrawQuad* quad = render_pass->CreateAndAppendDrawQuad<TileDrawQuad>();
-      quad->SetNew(shared_quad_state, rect, rect, rect, 0, gfx::RectF(rect),
-                   bounds(), false, false);
+      quad->SetNew(shared_quad_state, rect, rect, rect, needs_blending, 0,
+                   gfx::RectF(rect), bounds(), false, false);
     }
   }
 
