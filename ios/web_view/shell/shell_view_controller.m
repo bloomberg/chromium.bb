@@ -425,35 +425,41 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 
 - (BOOL)webView:(CWVWebView*)webView
     shouldStartLoadWithRequest:(NSURLRequest*)request {
-  NSLog(@"shouldStartLoadWithRequest");
+  NSLog(@"%@", NSStringFromSelector(_cmd));
   return YES;
 }
 
 - (BOOL)webView:(CWVWebView*)webView
     shouldContinueLoadWithResponse:(NSURLResponse*)response {
-  NSLog(@"shouldContinueLoadWithResponse");
+  NSLog(@"%@", NSStringFromSelector(_cmd));
   return YES;
 }
 
 - (void)webViewDidStartProvisionalNavigation:(CWVWebView*)webView {
-  NSLog(@"webViewDidStartProvisionalNavigation");
+  NSLog(@"%@", NSStringFromSelector(_cmd));
   [self updateToolbar];
 }
 
 - (void)webViewDidCommitNavigation:(CWVWebView*)webView {
-  NSLog(@"webViewDidCommitNavigation");
+  NSLog(@"%@", NSStringFromSelector(_cmd));
   [self updateToolbar];
 }
 
-- (void)webView:(CWVWebView*)webView didLoadPageWithSuccess:(BOOL)success {
-  NSLog(@"webView:didLoadPageWithSuccess");
+- (void)webViewDidFinishNavigation:(CWVWebView*)webView {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
   // TODO(crbug.com/679895): Add some visual indication that the page load has
   // finished.
   [self updateToolbar];
 }
 
+- (void)webView:(CWVWebView*)webView
+    didFailNavigationWithError:(NSError*)error {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
+  [self updateToolbar];
+}
+
 - (void)webViewWebContentProcessDidTerminate:(CWVWebView*)webView {
-  NSLog(@"webViewWebContentProcessDidTerminate");
+  NSLog(@"%@", NSStringFromSelector(_cmd));
 }
 
 @end
