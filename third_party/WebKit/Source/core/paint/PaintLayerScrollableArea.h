@@ -246,6 +246,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // only a helper.
   GraphicsLayer* LayerForScrolling() const override;
 
+  void DidScroll(const gfx::ScrollOffset&) override;
+
   // GraphicsLayers for the scrolling components.
   //
   // Any function can return nullptr if they are not accelerated.
@@ -597,9 +599,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // MainThreadScrollingReason due to the properties of the LayoutObject
   uint32_t non_composited_main_thread_scrolling_reasons_;
 
-#if DCHECK_IS_ON()
   bool has_been_disposed_;
-#endif
 };
 
 DEFINE_TYPE_CASTS(PaintLayerScrollableArea,
