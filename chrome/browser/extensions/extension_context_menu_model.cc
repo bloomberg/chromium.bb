@@ -176,6 +176,19 @@ bool ExtensionContextMenuModel::IsCommandIdChecked(int command_id) const {
   return false;
 }
 
+bool ExtensionContextMenuModel::IsCommandIdVisible(int command_id) const {
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return false;
+  if (command_id >= IDC_EXTENSIONS_CONTEXT_CUSTOM_FIRST &&
+      command_id <= IDC_EXTENSIONS_CONTEXT_CUSTOM_LAST) {
+    return extension_items_->IsCommandIdVisible(command_id);
+  }
+
+  // Standard menu items are always visible.
+  return true;
+}
+
 bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
   const Extension* extension = GetExtension();
   if (!extension)

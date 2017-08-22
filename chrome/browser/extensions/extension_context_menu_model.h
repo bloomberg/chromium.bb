@@ -78,6 +78,7 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
 
   // SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
+  bool IsCommandIdVisible(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
   void ExecuteCommand(int command_id, int event_flags) override;
 
