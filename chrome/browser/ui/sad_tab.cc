@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/feedback/feedback_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ui_metrics/sadtab_metrics_types.h"
 #include "content/public/browser/browser_context.h"

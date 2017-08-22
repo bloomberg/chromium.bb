@@ -238,7 +238,11 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   const FeedbackInfo& feedback_info = params->feedback;
 
   // Populate feedback data.
-  scoped_refptr<FeedbackData> feedback_data(new FeedbackData());
+  scoped_refptr<FeedbackData> feedback_data =
+      base::MakeRefCounted<FeedbackData>(
+          ExtensionsAPIClient::Get()
+              ->GetFeedbackPrivateDelegate()
+              ->GetFeedbackUploaderForContext(browser_context()));
   feedback_data->set_context(browser_context());
   feedback_data->set_description(feedback_info.description);
 

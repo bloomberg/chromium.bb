@@ -13,16 +13,18 @@
 
 namespace feedback {
 
-using ReportFailureCallback =
-    base::Callback<void(scoped_refptr<FeedbackReport>)>;
+// Type of the callback that gets invoked when uploading a feedback report
+// fails. |should_retry| is set to true when it's OK to retry sending the
+// report; e.g. when the failure is not a client error and retries is likely to
+// fail again.
+using ReportFailureCallback = base::Callback<void(bool should_retry)>;
 
 // FeedbackUploaderDelegate is a simple HTTP uploader for a feedback report.
 // When finished, it runs the appropriate callback passed in via the
 // constructor, and then deletes itself.
 class FeedbackUploaderDelegate : public net::URLFetcherDelegate {
  public:
-  FeedbackUploaderDelegate(scoped_refptr<FeedbackReport> pending_report,
-                           const base::Closure& success_callback,
+  FeedbackUploaderDelegate(const base::Closure& success_callback,
                            const ReportFailureCallback& error_callback);
   ~FeedbackUploaderDelegate() override;
 
@@ -30,7 +32,6 @@ class FeedbackUploaderDelegate : public net::URLFetcherDelegate {
   // Overridden from net::URLFetcherDelegate.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  scoped_refptr<FeedbackReport> pending_report_;
   base::Closure success_callback_;
   ReportFailureCallback error_callback_;
 

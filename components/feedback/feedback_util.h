@@ -8,28 +8,12 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
-#include "build/build_config.h"
-
-#if defined(OS_MACOSX)
-#include "base/sys_info.h"
-#elif defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
-namespace chrome {
-extern const char kAppLauncherCategoryTag[];
-}  // namespace chrome
-
-namespace feedback {
-class FeedbackData;
-}
 
 namespace feedback_util {
 
-  void SendReport(scoped_refptr<feedback::FeedbackData> data);
-  bool ZipString(const base::FilePath& filename,
-                 const std::string& data, std::string* compressed_data);
+bool ZipString(const base::FilePath& filename,
+               const std::string& data,
+               std::string* compressed_data);
 
 }  // namespace feedback_util
 

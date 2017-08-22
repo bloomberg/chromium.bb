@@ -16,8 +16,6 @@ static_library("feedback") {
     "feedback_switches.h",
     "feedback_uploader.cc",
     "feedback_uploader.h",
-    "feedback_uploader_chrome.cc",
-    "feedback_uploader_chrome.h",
     "feedback_uploader_delegate.cc",
     "feedback_uploader_delegate.h",
     "feedback_uploader_factory.cc",
@@ -53,7 +51,7 @@ source_set("unit_tests") {
     "anonymizer_tool_unittest.cc",
     "feedback_common_unittest.cc",
     "feedback_data_unittest.cc",
-    "feedback_uploader_chrome_unittest.cc",
+    "feedback_uploader_dispatch_unittest.cc",
     "feedback_uploader_unittest.cc",
   ]
   deps = [

@@ -9,6 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/feedback/feedback_uploader_chrome.h"
+#include "chrome/browser/feedback/feedback_uploader_factory_chrome.h"
 #include "chrome/browser/feedback/system_logs/chrome_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -143,6 +145,12 @@ void ChromeFeedbackPrivateDelegate::NotifyFeedbackDelayed() const {
   chrome::ShowWarningMessageBox(
       nullptr, l10n_util::GetStringUTF16(IDS_FEEDBACK_OFFLINE_DIALOG_TITLE),
       l10n_util::GetStringUTF16(IDS_FEEDBACK_OFFLINE_DIALOG_TEXT));
+}
+
+feedback::FeedbackUploader*
+ChromeFeedbackPrivateDelegate::GetFeedbackUploaderForContext(
+    content::BrowserContext* context) const {
+  return feedback::FeedbackUploaderFactoryChrome::GetForBrowserContext(context);
 }
 
 }  // namespace extensions
