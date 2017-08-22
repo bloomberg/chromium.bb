@@ -293,7 +293,7 @@ void HeadlessPrintManager::OnDidPrintPage(
       return;
     }
     auto metafile = base::MakeUnique<printing::PdfMetafileSkia>(
-        printing::PDF_SKIA_DOCUMENT_TYPE);
+        printing::SkiaDocumentType::PDF);
     if (!metafile->InitFromData(shared_buf->memory(), params.data_size)) {
       ReleaseJob(METAFILE_INVALID_HEADER);
       return;
