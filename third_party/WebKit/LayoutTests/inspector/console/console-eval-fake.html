@@ -7,15 +7,13 @@ var foo = 'fooValue';
 
 window.eval = "Non-function";
 
-function test()
-{
-    ConsoleTestRunner.evaluateInConsole("foo", step1);
+function test() {
+  ConsoleTestRunner.evaluateInConsole('foo', step1);
 
-    function step1()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

@@ -5,31 +5,26 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    Common.settingForTest("showUAShadowDOM").set(true);
-    ElementsTestRunner.selectNodeWithId("shadow", step1);
+function test() {
+  Common.settingForTest('showUAShadowDOM').set(true);
+  ElementsTestRunner.selectNodeWithId('shadow', step1);
 
-    function step1()
-    {
-        ConsoleTestRunner.evaluateInConsoleAndDump("'Author shadow element: ' + $0.id", step3);
-    }
+  function step1() {
+    ConsoleTestRunner.evaluateInConsoleAndDump('\'Author shadow element: \' + $0.id', step3);
+  }
 
-    function step3()
-    {
-        ElementsTestRunner.selectNodeWithId("user-agent-host", step4);
-    }
+  function step3() {
+    ElementsTestRunner.selectNodeWithId('user-agent-host', step4);
+  }
 
-    function step4(node)
-    {
-        UI.panels.elements.revealAndSelectNode(node.shadowRoots()[0]);
-        ConsoleTestRunner.evaluateInConsoleAndDump("'User agent shadow host: ' + $0.id", step5);
-    }
+  function step4(node) {
+    UI.panels.elements.revealAndSelectNode(node.shadowRoots()[0]);
+    ConsoleTestRunner.evaluateInConsoleAndDump('\'User agent shadow host: \' + $0.id', step5);
+  }
 
-    function step5()
-    {
-        TestRunner.completeTest();
-    }
+  function step5() {
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

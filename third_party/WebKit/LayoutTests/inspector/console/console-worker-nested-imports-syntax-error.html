@@ -8,16 +8,14 @@ function startWorker()
     var worker = new Worker("resources/importScripts-1.js");
 }
 
-function test()
-{
-    ConsoleTestRunner.waitForConsoleMessages(1, step1);
-    TestRunner.evaluateInPage("startWorker();");
+function test() {
+  ConsoleTestRunner.waitForConsoleMessages(1, step1);
+  TestRunner.evaluateInPage('startWorker();');
 
-    function step1()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

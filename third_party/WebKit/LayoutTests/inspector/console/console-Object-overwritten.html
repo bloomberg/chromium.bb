@@ -6,15 +6,13 @@
 
 Object = function() {};
 
-function test()
-{
-    ConsoleTestRunner.evaluateInConsole("var foo = {bar:2012}; foo", step1);
+function test() {
+  ConsoleTestRunner.evaluateInConsole('var foo = {bar:2012}; foo', step1);
 
-    function step1()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

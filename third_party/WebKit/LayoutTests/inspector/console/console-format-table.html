@@ -58,15 +58,13 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("logToConsole()", callback);
+function test() {
+  TestRunner.evaluateInPage('logToConsole()', callback);
 
-    function callback()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function callback() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

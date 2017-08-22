@@ -18,20 +18,18 @@ function addInlineWithSyntaxError()
 //# sourceURL=foo.js
 </script>
 <script>
-function test()
-{
-    TestRunner.evaluateInPage("setTimeout(foo, 0);", ConsoleTestRunner.waitUntilMessageReceived.bind(this, step2));
+function test() {
+  TestRunner.evaluateInPage('setTimeout(foo, 0);', ConsoleTestRunner.waitUntilMessageReceived.bind(this, step2));
 
-    function step2()
-    {
-        TestRunner.evaluateInPage("setTimeout(addInlineWithSyntaxError, 0);", ConsoleTestRunner.waitUntilMessageReceived.bind(this, step3));
-    }
+  function step2() {
+    TestRunner.evaluateInPage(
+        'setTimeout(addInlineWithSyntaxError, 0);', ConsoleTestRunner.waitUntilMessageReceived.bind(this, step3));
+  }
 
-    function step3()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function step3() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

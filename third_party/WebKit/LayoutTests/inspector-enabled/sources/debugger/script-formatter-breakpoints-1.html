@@ -22,76 +22,64 @@ function onload()
     runTest();
 }
 
-var test = function()
-{
-    Bindings.breakpointManager._storage._breakpoints = {};
-    var panel = UI.panels.sources;
-    var scriptFormatter;
-    var sourceFrame;
+var test = function() {
+  Bindings.breakpointManager._storage._breakpoints = {};
+  var panel = UI.panels.sources;
+  var scriptFormatter;
+  var sourceFrame;
 
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSetup(next)
-        {
-            SourcesTestRunner.scriptFormatter().then(function(sf) {
-                scriptFormatter = sf;
-                next();
-            });
-        },
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testSetup(next) {
+      SourcesTestRunner.scriptFormatter().then(function(sf) {
+        scriptFormatter = sf;
+        next();
+      });
+    },
 
-        function testBreakpointsInOriginalAndFormattedSource(next)
-        {
-            SourcesTestRunner.showScriptSource("script-formatter-breakpoints-1.html", didShowScriptSource);
+    function testBreakpointsInOriginalAndFormattedSource(next) {
+      SourcesTestRunner.showScriptSource('script-formatter-breakpoints-1.html', didShowScriptSource);
 
-            function didShowScriptSource(frame)
-            {
-                sourceFrame = frame;
-                SourcesTestRunner.setBreakpoint(sourceFrame, 11, "", true);
-                Promise.all([
-                    SourcesTestRunner.waitBreakpointSidebarPane(true),
-                    SourcesTestRunner.waitUntilPausedPromise()
-                ]).then(pausedInF1);
-                TestRunner.evaluateInPageWithTimeout("f1()");
-            }
+      function didShowScriptSource(frame) {
+        sourceFrame = frame;
+        SourcesTestRunner.setBreakpoint(sourceFrame, 11, '', true);
+        Promise.all([SourcesTestRunner.waitBreakpointSidebarPane(true), SourcesTestRunner.waitUntilPausedPromise()])
+            .then(pausedInF1);
+        TestRunner.evaluateInPageWithTimeout('f1()');
+      }
 
-            function pausedInF1(callFrames)
-            {
-                SourcesTestRunner.dumpBreakpointSidebarPane("while paused in raw");
-                SourcesTestRunner.resumeExecution(resumed);
-            }
+      function pausedInF1(callFrames) {
+        SourcesTestRunner.dumpBreakpointSidebarPane('while paused in raw');
+        SourcesTestRunner.resumeExecution(resumed);
+      }
 
-            function resumed()
-            {
-                TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
-                scriptFormatter._toggleFormatScriptSource();
-            }
+      function resumed() {
+        TestRunner.addSniffer(
+            Sources.ScriptFormatterEditorAction.prototype, '_updateButton', uiSourceCodeScriptFormatted);
+        scriptFormatter._toggleFormatScriptSource();
+      }
 
-            function uiSourceCodeScriptFormatted()
-            {
-                // There should be a breakpoint in f1 although script is pretty-printed.
-                Promise.all([
-                    SourcesTestRunner.waitBreakpointSidebarPane(true),
-                    SourcesTestRunner.waitUntilPausedPromise()
-                ]).then(pausedInF1Again);
-                TestRunner.evaluateInPageWithTimeout("f1()");
-            }
+      function uiSourceCodeScriptFormatted() {
+        // There should be a breakpoint in f1 although script is pretty-printed.
+        Promise.all([SourcesTestRunner.waitBreakpointSidebarPane(true), SourcesTestRunner.waitUntilPausedPromise()])
+            .then(pausedInF1Again);
+        TestRunner.evaluateInPageWithTimeout('f1()');
+      }
 
-            function pausedInF1Again(callFrames)
-            {
-                SourcesTestRunner.dumpBreakpointSidebarPane("while paused in pretty printed");
-                Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
-                SourcesTestRunner.waitBreakpointSidebarPane().then(onBreakpointsUpdated);
-            }
+      function pausedInF1Again(callFrames) {
+        SourcesTestRunner.dumpBreakpointSidebarPane('while paused in pretty printed');
+        Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
+        SourcesTestRunner.waitBreakpointSidebarPane().then(onBreakpointsUpdated);
+      }
 
-            function onBreakpointsUpdated()
-            {
-                SourcesTestRunner.dumpBreakpointSidebarPane("while paused in raw");
-                SourcesTestRunner.removeBreakpoint(sourceFrame, 11);
-                SourcesTestRunner.resumeExecution(next);
-            }
-        }
-    ]);
+      function onBreakpointsUpdated() {
+        SourcesTestRunner.dumpBreakpointSidebarPane('while paused in raw');
+        SourcesTestRunner.removeBreakpoint(sourceFrame, 11);
+        SourcesTestRunner.resumeExecution(next);
+      }
+    }
+  ]);
 
-}
+};
 </script>
 </head>
 <body onload="onload()">

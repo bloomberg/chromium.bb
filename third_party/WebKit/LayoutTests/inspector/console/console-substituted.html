@@ -14,32 +14,27 @@ function substituteConsole()
     Object.defineProperty(window, "__commandLineAPI", { enumerable: false, configurable: false, get: function() { throw "Substituted" }});
 }
 
-var test = function()
-{
-    ConsoleTestRunner.evaluateInConsole("deleteConsole()", step1);
+var test = function() {
+  ConsoleTestRunner.evaluateInConsole('deleteConsole()', step1);
 
-    function step1()
-    {
-        ConsoleTestRunner.evaluateInConsole("1", step2);
-    }
+  function step1() {
+    ConsoleTestRunner.evaluateInConsole('1', step2);
+  }
 
-    function step2(result)
-    {
-        TestRunner.addResult(result);
-        ConsoleTestRunner.evaluateInConsole("substituteConsole()", step3);
-    }
+  function step2(result) {
+    TestRunner.addResult(result);
+    ConsoleTestRunner.evaluateInConsole('substituteConsole()', step3);
+  }
 
-    function step3(result)
-    {
-        ConsoleTestRunner.evaluateInConsole("2", step4);
-    }
+  function step3(result) {
+    ConsoleTestRunner.evaluateInConsole('2', step4);
+  }
 
-    function step4(result)
-    {
-        TestRunner.addResult(result);
-        TestRunner.completeTest();
-    }
-}
+  function step4(result) {
+    TestRunner.addResult(result);
+    TestRunner.completeTest();
+  }
+};
 
 </script>
 </head>

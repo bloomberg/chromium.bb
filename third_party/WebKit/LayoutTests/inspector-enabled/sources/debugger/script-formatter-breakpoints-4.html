@@ -22,54 +22,50 @@ function onload()
     runTest();
 }
 
-var test = function()
-{
-    Bindings.breakpointManager._storage._breakpoints = {};
-    var panel = UI.panels.sources;
-    var scriptFormatter;
+var test = function() {
+  Bindings.breakpointManager._storage._breakpoints = {};
+  var panel = UI.panels.sources;
+  var scriptFormatter;
 
-    SourcesTestRunner.runDebuggerTestSuite([
-        function testSetup(next)
-        {
-            SourcesTestRunner.scriptFormatter().then(function(sf) {
-                scriptFormatter = sf;
-                next();
-            });
-        },
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testSetup(next) {
+      SourcesTestRunner.scriptFormatter().then(function(sf) {
+        scriptFormatter = sf;
+        next();
+      });
+    },
 
-        function testBreakpointSetInOriginalAndRemovedInFormatted(next)
-        {
-            SourcesTestRunner.showScriptSource("script-formatter-breakpoints-4.html", didShowScriptSource);
+    function testBreakpointSetInOriginalAndRemovedInFormatted(next) {
+      SourcesTestRunner.showScriptSource('script-formatter-breakpoints-4.html', didShowScriptSource);
 
-            function didShowScriptSource(sourceFrame)
-            {
-                TestRunner.addResult("Adding breakpoint.");
-                TestRunner.addSniffer(Bindings.BreakpointManager.ModelBreakpoint.prototype, "_addResolvedLocation", breakpointResolved);
-                SourcesTestRunner.setBreakpoint(sourceFrame, 11, "", true);
-            }
+      function didShowScriptSource(sourceFrame) {
+        TestRunner.addResult('Adding breakpoint.');
+        TestRunner.addSniffer(
+            Bindings.BreakpointManager.ModelBreakpoint.prototype, '_addResolvedLocation', breakpointResolved);
+        SourcesTestRunner.setBreakpoint(sourceFrame, 11, '', true);
+      }
 
-            function breakpointResolved()
-            {
-                TestRunner.addResult("Formatting.");
-                TestRunner.addSniffer(Sources.ScriptFormatterEditorAction.prototype, "_updateButton", uiSourceCodeScriptFormatted);
-                scriptFormatter._toggleFormatScriptSource();
-            }
+      function breakpointResolved() {
+        TestRunner.addResult('Formatting.');
+        TestRunner.addSniffer(
+            Sources.ScriptFormatterEditorAction.prototype, '_updateButton', uiSourceCodeScriptFormatted);
+        scriptFormatter._toggleFormatScriptSource();
+      }
 
-            function uiSourceCodeScriptFormatted()
-            {
-                TestRunner.addResult("Removing breakpoint.");
-                var formattedSourceFrame = panel.visibleView;
-                SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 13);
-                TestRunner.addResult("Unformatting.");
-                Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
-                var breakpoints = Bindings.breakpointManager._storage._setting.get();
-                TestRunner.assertEquals(breakpoints.length, 0, "There should not be any breakpoints in the storage.");
-                next();
-            }
-        }
-    ]);
+      function uiSourceCodeScriptFormatted() {
+        TestRunner.addResult('Removing breakpoint.');
+        var formattedSourceFrame = panel.visibleView;
+        SourcesTestRunner.removeBreakpoint(formattedSourceFrame, 13);
+        TestRunner.addResult('Unformatting.');
+        Sources.sourceFormatter.discardFormattedUISourceCode(panel.visibleView.uiSourceCode());
+        var breakpoints = Bindings.breakpointManager._storage._setting.get();
+        TestRunner.assertEquals(breakpoints.length, 0, 'There should not be any breakpoints in the storage.');
+        next();
+      }
+    }
+  ]);
 
-}
+};
 </script>
 </head>
 <body onload="onload()">

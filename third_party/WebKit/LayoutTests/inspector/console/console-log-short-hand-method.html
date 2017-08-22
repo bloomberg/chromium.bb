@@ -17,13 +17,12 @@ var object = {
 }
 console.log(object);
 
-function test()
-{
-    ConsoleTestRunner.expandConsoleMessages(step1);
-    function step1() {
-        ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
-        TestRunner.completeTest();
-    }
+function test() {
+  ConsoleTestRunner.expandConsoleMessages(step1);
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -88,22 +88,19 @@ function logToConsole()
     console.log({null:null, undef:undefined, regexp: /^[regexp]$/g, bool: false});
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("logToConsole()", step2);
+function test() {
+  TestRunner.evaluateInPage('logToConsole()', step2);
 
-    function step2()
-    {
-        ConsoleTestRunner.dumpConsoleMessages(false, true);
-        TestRunner.addResult("Expanded all messages");
-        ConsoleTestRunner.expandConsoleMessages(step3);
-    }
+  function step2() {
+    ConsoleTestRunner.dumpConsoleMessages(false, true);
+    TestRunner.addResult('Expanded all messages');
+    ConsoleTestRunner.expandConsoleMessages(step3);
+  }
 
-    function step3()
-    {
-        ConsoleTestRunner.dumpConsoleMessages(false, true);
-        TestRunner.completeTest();
-    }
+  function step3() {
+    ConsoleTestRunner.dumpConsoleMessages(false, true);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

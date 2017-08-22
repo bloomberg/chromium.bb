@@ -4,21 +4,18 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
-function test()
-{
-    ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
-    TestRunner.evaluateInPage("loadIframe()");
-    function addMessage(viewMessage)
-    {
-        if (viewMessage.element().deepTextContent().indexOf("setTimeout") !== -1)
-            ConsoleTestRunner.expandConsoleMessages(onExpanded);
-    }
+function test() {
+  ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
+  TestRunner.evaluateInPage('loadIframe()');
+  function addMessage(viewMessage) {
+    if (viewMessage.element().deepTextContent().indexOf('setTimeout') !== -1)
+      ConsoleTestRunner.expandConsoleMessages(onExpanded);
+  }
 
-    function onExpanded()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function onExpanded() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 
 function loadIframe()

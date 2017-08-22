@@ -17,19 +17,17 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    function callback()
-    {
-        ApplicationTestRunner.domStorageModel().enable();
-        var storages = ApplicationTestRunner.domStorageModel().storages();
-        for (var i = 0; i < storages.length; ++i) {
-            TestRunner.addResult("SecurityOrigin: " + storages[i].securityOrigin);
-            TestRunner.addResult("IsLocalStorage: " + storages[i].isLocalStorage);
-        }
-        TestRunner.completeTest();
+function test() {
+  function callback() {
+    ApplicationTestRunner.domStorageModel().enable();
+    var storages = ApplicationTestRunner.domStorageModel().storages();
+    for (var i = 0; i < storages.length; ++i) {
+      TestRunner.addResult('SecurityOrigin: ' + storages[i].securityOrigin);
+      TestRunner.addResult('IsLocalStorage: ' + storages[i].isLocalStorage);
     }
-    TestRunner.deprecatedRunAfterPendingDispatches(callback);
+    TestRunner.completeTest();
+  }
+  TestRunner.deprecatedRunAfterPendingDispatches(callback);
 }
 
 </script>

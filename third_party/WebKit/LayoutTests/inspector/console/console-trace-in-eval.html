@@ -27,15 +27,13 @@ function doEvalSource()
     }, 0);
 }
 
-function test()
-{
-    function callback()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
-    TestRunner.evaluateInPage("doEvalSource()");
-    ConsoleTestRunner.addConsoleSniffer(callback);
+function test() {
+  function callback() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+  TestRunner.evaluateInPage('doEvalSource()');
+  ConsoleTestRunner.addConsoleSniffer(callback);
 }
 
 </script>

@@ -4,15 +4,13 @@
 <script src="../../http/tests/inspector/console-test.js"></script>
 <script>
 
-function test()
-{
-    ConsoleTestRunner.evaluateInConsole("1+2", step2);
+function test() {
+  ConsoleTestRunner.evaluateInConsole('1+2', step2);
 
-    function step2()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function step2() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -110,43 +110,40 @@ function domException()
 </script>
 
 <script>
-function test()
-{
-    TestRunner.hideInspectorView();
-    TestRunner.evaluateInPage("globals.length", loopOverGlobals.bind(this, 0));
+function test() {
+  TestRunner.hideInspectorView();
+  TestRunner.evaluateInPage('globals.length', loopOverGlobals.bind(this, 0));
 
-    function loopOverGlobals(current, total)
-    {
-        function advance()
-        {
-            var next = current + 1;
-            if (next == total.description)
-                ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
-            else
-                loopOverGlobals(next, total);
-        }
-
-        function onRemoteObjectsLoaded()
-        {
-            ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-            TestRunner.addResult("Expanded all messages");
-            ConsoleTestRunner.expandConsoleMessages(ConsoleTestRunner.expandConsoleMessagesErrorParameters.bind(this, finish), undefined, function(section) { return section.element.firstChild.textContent !== "#text"; });
-        }
-
-        function finish()
-        {
-            ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
-            TestRunner.completeTest();
-        }
-
-        TestRunner.evaluateInPage("log(" + current + ")");
-        TestRunner.deprecatedRunAfterPendingDispatches(evalInConsole);
-        function evalInConsole()
-        {
-            ConsoleTestRunner.evaluateInConsole("globals[" + current + "]");
-            TestRunner.deprecatedRunAfterPendingDispatches(advance);
-        }
+  function loopOverGlobals(current, total) {
+    function advance() {
+      var next = current + 1;
+      if (next == total.description)
+        ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
+      else
+        loopOverGlobals(next, total);
     }
+
+    function onRemoteObjectsLoaded() {
+      ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+      TestRunner.addResult('Expanded all messages');
+      ConsoleTestRunner.expandConsoleMessages(
+          ConsoleTestRunner.expandConsoleMessagesErrorParameters.bind(this, finish), undefined, function(section) {
+            return section.element.firstChild.textContent !== '#text';
+          });
+    }
+
+    function finish() {
+      ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+      TestRunner.completeTest();
+    }
+
+    TestRunner.evaluateInPage('log(' + current + ')');
+    TestRunner.deprecatedRunAfterPendingDispatches(evalInConsole);
+    function evalInConsole() {
+      ConsoleTestRunner.evaluateInConsole('globals[' + current + ']');
+      TestRunner.deprecatedRunAfterPendingDispatches(advance);
+    }
+  }
 }
 </script>
 </head>

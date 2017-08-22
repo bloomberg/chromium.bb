@@ -116,64 +116,58 @@ function testOverriddenToString(obj, overrideThrow)
     return obj;
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function evaluateInConsole(next)
-        {
-            var expressions = [
-                "testOverriddenArrayPushAndMathMax()",
-                "testOverriddenConstructorName()",
-                "testThrowConstructorName()",
-                "testOverriddenIsFinite()",
-                "testOverriddenError()",
-                "restoreError()",
-                "testOverriddenToString(function func() {}, true)",
-                "testOverriddenToString(function func() {}, false)",
-                "testOverriddenToString(new Function, true)",
-                "testOverriddenToString(new Function, false)",
-                "testOverriddenToString(/^regex$/, true)",
-                "testOverriddenToString(/^regex$/, false)",
-                "testOverriddenToString(new Date, true)",
-                "testOverriddenToString(new Date, false)",
-                "testOverriddenToString({}, true)",
-                "testOverriddenToString({}, false)",
-                "testOverriddenToString(new Number(1), true)",
-                "testOverriddenToString(new Number(1), false)",
-            ];
+function test() {
+  TestRunner.runTestSuite([
+    function evaluateInConsole(next) {
+      var expressions = [
+        'testOverriddenArrayPushAndMathMax()',
+        'testOverriddenConstructorName()',
+        'testThrowConstructorName()',
+        'testOverriddenIsFinite()',
+        'testOverriddenError()',
+        'restoreError()',
+        'testOverriddenToString(function func() {}, true)',
+        'testOverriddenToString(function func() {}, false)',
+        'testOverriddenToString(new Function, true)',
+        'testOverriddenToString(new Function, false)',
+        'testOverriddenToString(/^regex$/, true)',
+        'testOverriddenToString(/^regex$/, false)',
+        'testOverriddenToString(new Date, true)',
+        'testOverriddenToString(new Date, false)',
+        'testOverriddenToString({}, true)',
+        'testOverriddenToString({}, false)',
+        'testOverriddenToString(new Number(1), true)',
+        'testOverriddenToString(new Number(1), false)',
+      ];
 
-            function iterate()
-            {
-                var expr = expressions.shift();
-                if (!expr) {
-                    TestRunner.deprecatedRunAfterPendingDispatches(next);
-                    return;
-                }
-                ConsoleTestRunner.evaluateInConsole(expr, iterate);
-            }
-            iterate();
-        },
-
-        async function testRuntimeAgentCallFunctionOn(next)
-        {
-            var result = await TestRunner.RuntimeAgent.evaluate("({ a : 1, b : 2 })");
-
-            function sum()
-            {
-                return this.a + this.b;
-            }
-            result = await TestRunner.RuntimeAgent.callFunctionOn(result.objectId, sum.toString());
-
-            TestRunner.assertEquals(3, result.value);
-            next();
-        },
-
-        function dumpConsoleMessages(next)
-        {
-            ConsoleTestRunner.dumpConsoleMessages();
-            next();
+      function iterate() {
+        var expr = expressions.shift();
+        if (!expr) {
+          TestRunner.deprecatedRunAfterPendingDispatches(next);
+          return;
         }
-    ]);
+        ConsoleTestRunner.evaluateInConsole(expr, iterate);
+      }
+      iterate();
+    },
+
+    async function testRuntimeAgentCallFunctionOn(next) {
+      var result = await TestRunner.RuntimeAgent.evaluate('({ a : 1, b : 2 })');
+
+      function sum() {
+        return this.a + this.b;
+      }
+      result = await TestRunner.RuntimeAgent.callFunctionOn(result.objectId, sum.toString());
+
+      TestRunner.assertEquals(3, result.value);
+      next();
+    },
+
+    function dumpConsoleMessages(next) {
+      ConsoleTestRunner.dumpConsoleMessages();
+      next();
+    }
+  ]);
 }
 </script>
 </head>

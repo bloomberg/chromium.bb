@@ -15,16 +15,14 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("logToConsole()", callback);
+function test() {
+  TestRunner.evaluateInPage('logToConsole()', callback);
 
-    function callback()
-    {
-        var messages = ConsoleTestRunner.dumpConsoleMessagesIntoArray();
-        messages.map(m => TestRunner.addResult(m.replace(/:\s+\d+/g, ": <number>")));
-        TestRunner.completeTest();
-    }
+  function callback() {
+    var messages = ConsoleTestRunner.dumpConsoleMessagesIntoArray();
+    messages.map(m => TestRunner.addResult(m.replace(/:\s+\d+/g, ': <number>')));
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

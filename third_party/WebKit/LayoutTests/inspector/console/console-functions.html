@@ -31,15 +31,13 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
+function test() {
+  ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
 
-    function dumpConsoleMessages()
-    {
-        ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
-        TestRunner.completeTest();
-    }
+  function dumpConsoleMessages() {
+    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

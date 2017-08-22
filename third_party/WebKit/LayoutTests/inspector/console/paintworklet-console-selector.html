@@ -13,8 +13,7 @@ function setup() {
   return paintWorklet.addModule(URL.createObjectURL(blob));
 }
 
-async function test()
-{
+async function test() {
   await new Promise(f => SourcesTestRunner.startDebuggerTest(f, true));
   await TestRunner.evaluateInPageAsync('setup()');
 

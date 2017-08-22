@@ -11,18 +11,16 @@ function runLogs()
     Framework.log("framework log");
 }
 
-function test()
-{
-    var frameworkRegexString = "/framework\\.js$";
-    Common.settingForTest("skipStackFramesPattern").set(frameworkRegexString);
+function test() {
+  var frameworkRegexString = '/framework\\.js$';
+  Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
 
-    TestRunner.evaluateInPage("runLogs()");
-    TestRunner.deprecatedRunAfterPendingDispatches(callback);
-    function callback()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  TestRunner.evaluateInPage('runLogs()');
+  TestRunner.deprecatedRunAfterPendingDispatches(callback);
+  function callback() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 
 </script>
