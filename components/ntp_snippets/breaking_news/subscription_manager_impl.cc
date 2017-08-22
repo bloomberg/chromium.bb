@@ -269,12 +269,20 @@ void SubscriptionManagerImpl::SigninStatusChanged() {
   }
 }
 
+// static
 void SubscriptionManagerImpl::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kBreakingNewsSubscriptionDataToken,
                                std::string());
   registry->RegisterBooleanPref(
       prefs::kBreakingNewsSubscriptionDataIsAuthenticated, false);
+}
+
+// TODO(vitaliii): Add a test to ensure that this clears everything.
+// static
+void SubscriptionManagerImpl::ClearProfilePrefs(PrefService* pref_service) {
+  pref_service->ClearPref(prefs::kBreakingNewsSubscriptionDataToken);
+  pref_service->ClearPref(prefs::kBreakingNewsSubscriptionDataIsAuthenticated);
 }
 
 }  // namespace ntp_snippets

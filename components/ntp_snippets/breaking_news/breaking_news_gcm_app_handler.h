@@ -77,6 +77,7 @@ class BreakingNewsGCMAppHandler : public BreakingNewsListener,
                           const std::string& message_id) override;
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void ClearProfilePrefs(PrefService* pref_service);
 
  private:
   // If there is no subscription token or |force_token_retrieval|, retrieves a

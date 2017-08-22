@@ -295,11 +295,13 @@ MakeBreakingNewsGCMAppHandlerIfEnabled(
     Profile* profile,
     const std::string& locale,
     variations::VariationsService* variations_service) {
+  PrefService* pref_service = profile->GetPrefs();
+
   if (!AreGCMPushUpdatesEnabled()) {
+    BreakingNewsGCMAppHandler::ClearProfilePrefs(pref_service);
+    SubscriptionManagerImpl::ClearProfilePrefs(pref_service);
     return nullptr;
   }
-
-  PrefService* pref_service = profile->GetPrefs();
 
   gcm::GCMDriver* gcm_driver =
       gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver();
