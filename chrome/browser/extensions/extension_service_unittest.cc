@@ -158,6 +158,7 @@ using extensions::AppSorting;
 using extensions::Blacklist;
 using extensions::CrxInstaller;
 using extensions::Extension;
+using extensions::ExtensionBuilder;
 using extensions::ExtensionCreator;
 using extensions::ExtensionPrefs;
 using extensions::ExtensionRegistry;
@@ -266,23 +267,6 @@ scoped_refptr<Extension> CreateExtension(const base::string16& name,
       Extension::Create(path, location, manifest, Extension::NO_FLAGS, &error);
   EXPECT_TRUE(extension.get() != nullptr) << error;
   return extension;
-}
-
-scoped_refptr<const extensions::Extension> CreateExtensionWithId(
-    const std::string& extension_id) {
-  extensions::DictionaryBuilder manifest;
-  manifest.Set(extensions::manifest_keys::kName, "extension name")
-      .Set(extensions::manifest_keys::kDescription, "extension description")
-      .Set(extensions::manifest_keys::kManifestVersion, 1)
-      .Set(extensions::manifest_keys::kVersion, "1.0.0")
-      .Set(extensions::manifest_keys::kBrowserAction,
-           extensions::DictionaryBuilder().Build());
-
-  return extensions::ExtensionBuilder()
-      .SetManifest(manifest.Build())
-      .SetID(extension_id)
-      .SetLocation(extensions::Manifest::INTERNAL)
-      .Build();
 }
 
 std::unique_ptr<ExternalInstallInfoFile> CreateExternalExtension(
@@ -6894,12 +6878,7 @@ TEST_F(ExtensionServiceTest,
 TEST_F(ExtensionServiceTest, InstallBlacklistedExtension) {
   InitializeEmptyExtensionService();
 
-  scoped_refptr<Extension> extension = extensions::ExtensionBuilder()
-      .SetManifest(extensions::DictionaryBuilder()
-          .Set("name", "extension")
-          .Set("version", "1.0")
-          .Set("manifest_version", 2).Build())
-      .Build();
+  scoped_refptr<Extension> extension = ExtensionBuilder("extension").Build();
   ASSERT_TRUE(extension.get());
   const std::string& id = extension->id();
 
@@ -6957,22 +6936,18 @@ TEST_F(ExtensionServiceTest, CannotEnableBlacklistedExtension) {
 // Test that calls to disable Shared Modules do not work.
 TEST_F(ExtensionServiceTest, CannotDisableSharedModules) {
   InitializeEmptyExtensionService();
-  std::unique_ptr<base::DictionaryValue> manifest =
+  std::unique_ptr<base::DictionaryValue> export_dict =
       extensions::DictionaryBuilder()
-          .Set("name", "Shared Module")
-          .Set("version", "1.0")
-          .Set("manifest_version", 2)
-          .Set("export",
-               extensions::DictionaryBuilder()
-                   .Set("resources",
-                        extensions::ListBuilder().Append("foo.js").Build())
-                   .Build())
+          .Set("resources", extensions::ListBuilder().Append("foo.js").Build())
           .Build();
 
-  scoped_refptr<Extension> extension = extensions::ExtensionBuilder()
-                                           .SetManifest(std::move(manifest))
-                                           .AddFlags(Extension::FROM_WEBSTORE)
-                                           .Build();
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder("Shared Module")
+          .MergeManifest(extensions::DictionaryBuilder()
+                             .Set("export", std::move(export_dict))
+                             .Build())
+          .AddFlags(Extension::FROM_WEBSTORE)
+          .Build();
 
   service()->OnExtensionInstalled(extension.get(), syncer::StringOrdinal(),
                                   extensions::kInstallFlagInstallImmediately);
@@ -7116,9 +7091,15 @@ TEST_F(ExtensionServiceTest, UninstallMigratedExtensions) {
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> cast_extension =
-      CreateExtensionWithId(cast_stable);
+      ExtensionBuilder("stable")
+          .SetID(cast_stable)
+          .SetLocation(Manifest::INTERNAL)
+          .Build();
   scoped_refptr<const Extension> cast_beta_extension =
-      CreateExtensionWithId(cast_beta);
+      ExtensionBuilder("beta")
+          .SetID(cast_beta)
+          .SetLocation(Manifest::INTERNAL)
+          .Build();
   service()->AddExtension(cast_extension.get());
   service()->AddExtension(cast_beta_extension.get());
   ASSERT_TRUE(registry()->enabled_extensions().Contains(cast_stable));
@@ -7135,7 +7116,10 @@ TEST_F(ExtensionServiceTest, UninstallDisabledMigratedExtension) {
   InitializeEmptyExtensionService();
 
   scoped_refptr<const Extension> cast_extension =
-      CreateExtensionWithId(cast_stable);
+      ExtensionBuilder("stable")
+          .SetID(cast_stable)
+          .SetLocation(Manifest::INTERNAL)
+          .Build();
   service()->AddExtension(cast_extension.get());
   service()->DisableExtension(cast_stable,
                               extensions::disable_reason::DISABLE_USER_ACTION);
