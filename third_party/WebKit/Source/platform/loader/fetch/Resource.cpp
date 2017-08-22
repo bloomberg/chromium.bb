@@ -361,8 +361,7 @@ void Resource::CheckResourceIntegrity() {
 }
 
 void Resource::CheckNotify() {
-  if (IsLoading())
-    return;
+  DCHECK(IsLoaded());
 
   TriggerNotificationForFinishObservers();
 
