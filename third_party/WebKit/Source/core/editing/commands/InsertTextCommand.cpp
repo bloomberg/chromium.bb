@@ -80,11 +80,12 @@ void InsertTextCommand::SetEndingSelectionWithoutValidation(
   // We could have inserted a part of composed character sequence,
   // so we are basically treating ending selection as a range to avoid
   // validation. <http://bugs.webkit.org/show_bug.cgi?id=15781>
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(start_position)
-                         .Extend(end_position)
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(SelectionForUndoStep::From(
+      SelectionInDOMTree::Builder()
+          .Collapse(start_position)
+          .Extend(end_position)
+          .SetIsDirectional(EndingSelection().IsDirectional())
+          .Build()));
 }
 
 // This avoids the expense of a full fledged delete operation, and avoids a
@@ -105,10 +106,11 @@ bool InsertTextCommand::PerformTrivialReplace(const String& text,
   SetEndingSelectionWithoutValidation(start, end_position);
   if (select_inserted_text)
     return true;
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(EndingVisibleSelection().End())
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(SelectionForUndoStep::From(
+      SelectionInDOMTree::Builder()
+          .Collapse(EndingVisibleSelection().End())
+          .SetIsDirectional(EndingSelection().IsDirectional())
+          .Build()));
   return true;
 }
 
@@ -134,10 +136,11 @@ bool InsertTextCommand::PerformOverwrite(const String& text,
   SetEndingSelectionWithoutValidation(start, end_position);
   if (select_inserted_text || EndingSelection().IsNone())
     return true;
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(EndingVisibleSelection().End())
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(SelectionForUndoStep::From(
+      SelectionInDOMTree::Builder()
+          .Collapse(EndingVisibleSelection().End())
+          .SetIsDirectional(EndingSelection().IsDirectional())
+          .Build()));
   return true;
 }
 
@@ -289,7 +292,7 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
     builder.SetIsDirectional(EndingSelection().IsDirectional());
     if (EndingVisibleSelection().End().IsNotNull())
       builder.Collapse(EndingVisibleSelection().End());
-    SetEndingSelection(builder.Build());
+    SetEndingSelection(SelectionForUndoStep::From(builder.Build()));
   }
 }
 
