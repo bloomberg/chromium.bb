@@ -34,6 +34,7 @@
 
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/WebLocalFrameImpl.h"
+#include "core/layout/LayoutTestHelper.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Functional.h"
@@ -314,6 +315,13 @@ WebViewImpl* WebViewHelper::InitializeRemote(
   frame->GetFrame()->GetSecurityContext()->SetReplicatedOrigin(
       std::move(security_origin));
   return web_view_;
+}
+
+void WebViewHelper::LoadAhem() {
+  LocalFrame* local_frame =
+      ToLocalFrame(WebFrame::ToCoreFrame(*LocalMainFrame()));
+  DCHECK(local_frame);
+  RenderingTest::LoadAhem(*local_frame);
 }
 
 void WebViewHelper::Reset() {

@@ -321,6 +321,12 @@ class WebViewHelper {
                                 RefPtr<SecurityOrigin> = nullptr,
                                 TestWebViewClient* = nullptr);
 
+  // Load the 'Ahem' font to this WebView.
+  // The 'Ahem' font is the only font whose font metrics is consistent across
+  // platforms, but it's not guaranteed to be available.
+  // See external/wpt/css/fonts/ahem/README for more about the 'Ahem' font.
+  void LoadAhem();
+
   void Resize(WebSize);
 
   void Reset();
