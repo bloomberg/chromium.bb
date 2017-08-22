@@ -90,19 +90,7 @@ public class MainActivity extends Activity {
             return;
         }
 
-        // The WebAPK may have been launched as a result of an intent filter for a different
-        // scheme or top level domain. Rewrite the scheme and host name to the scope's
-        // scheme and host name.
-        String scopeUrl = metadata.getString(WebApkMetaDataKeys.SCOPE);
-        if (!TextUtils.isEmpty(scopeUrl)) {
-            Uri parsedStartUrl = Uri.parse(mStartUrl);
-            Uri parsedScope = Uri.parse(scopeUrl);
-            mStartUrl = parsedStartUrl.buildUpon()
-                                .scheme(parsedScope.getScheme())
-                                .encodedAuthority(parsedScope.getEncodedAuthority())
-                                .build()
-                                .toString();
-        }
+        mStartUrl = WebApkUtils.rewriteIntentUrlIfNecessary(mStartUrl, metadata);
 
         Log.v(TAG, "Url of the WebAPK: " + mStartUrl);
         String packageName = getPackageName();

@@ -7,6 +7,7 @@
     "scope_url_path": "/"
   },
   "start_url": "https://pwa.rocks/",
+  "logged_intent_url_param": "originalUrl",
   "display_mode": "standalone",
   "orientation": "portrait",
   "theme_color": "2147483648L",
