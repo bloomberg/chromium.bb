@@ -34,7 +34,6 @@ import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
-import org.chromium.ui.widget.Toast;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -247,10 +246,7 @@ public class CustomTabIntentDataProvider {
      */
     private int verifiedUiType(int requestedUiType, Context context) {
         if (!mIsTrustedIntent) {
-            if (ChromeVersionInfo.isLocalBuild()) {
-                Toast.makeText(context, FIRST_PARTY_PITFALL_MSG, Toast.LENGTH_LONG).show();
-                Log.w(TAG, FIRST_PARTY_PITFALL_MSG);
-            }
+            if (ChromeVersionInfo.isLocalBuild()) Log.w(TAG, FIRST_PARTY_PITFALL_MSG);
             return CUSTOM_TABS_UI_TYPE_DEFAULT;
         }
 

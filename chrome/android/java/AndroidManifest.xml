@@ -349,6 +349,20 @@ by a child template that "extends" this file.
             {{ self.supports_vr() }}
         </activity>
         {% endfor %}
+        {% if enable_vr == "true" %}
+        <activity android:name="org.chromium.chrome.browser.vr_shell.SeparateTaskCustomTabVrActivity"
+            android:theme="@style/VrSupportTheme"
+            android:exported="false"
+            android:enableVrMode="@string/gvr_vr_mode_component"
+            android:taskAffinity=""
+            android:persistableMode="persistNever"
+            android:autoRemoveFromRecents="false"
+            {{ self.chrome_activity_common() }}
+            {{ self.supports_video_persistence() }}
+        >
+            {{ self.supports_vr() }}
+        </activity>
+        {% endif %}
 
         <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
