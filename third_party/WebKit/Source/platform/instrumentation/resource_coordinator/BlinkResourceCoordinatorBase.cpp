@@ -32,6 +32,13 @@ BlinkResourceCoordinatorBase::BlinkResourceCoordinatorBase(
 
 BlinkResourceCoordinatorBase::BlinkResourceCoordinatorBase() {}
 
+void BlinkResourceCoordinatorBase::SendEvent(
+    const resource_coordinator::mojom::blink::Event event) {
+  if (!service_)
+    return;
+  service_->SendEvent(event);
+}
+
 void BlinkResourceCoordinatorBase::SetProperty(
     const resource_coordinator::mojom::blink::PropertyType property_type,
     int64_t value) {

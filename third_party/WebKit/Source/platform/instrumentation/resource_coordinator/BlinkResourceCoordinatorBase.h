@@ -26,6 +26,7 @@ class PLATFORM_EXPORT BlinkResourceCoordinatorBase {
   static bool IsEnabled();
   virtual ~BlinkResourceCoordinatorBase();
 
+  void SendEvent(const resource_coordinator::mojom::blink::Event);
   void SetProperty(const resource_coordinator::mojom::blink::PropertyType,
                    int64_t);
 
