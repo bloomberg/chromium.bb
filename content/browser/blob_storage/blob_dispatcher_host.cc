@@ -121,6 +121,9 @@ void BlobDispatcherHost::OnRegisterBlob(
         if (!FileSystemURLIsValid(file_system_context_.get(), filesystem_url) ||
             !security_policy->CanReadFileSystemFile(process_id_,
                                                     filesystem_url)) {
+          DVLOG(1) << "BlobDispatcherHost::OnRegisterBlob(" << uuid
+                   << "): Invalid or prohibited FileSystem URL: "
+                   << filesystem_url.DebugString();
           HostedBlobState hosted_state(
               context->AddBrokenBlob(uuid, content_type, content_disposition,
                                      BlobStatus::ERR_FILE_WRITE_FAILED));
@@ -133,6 +136,9 @@ void BlobDispatcherHost::OnRegisterBlob(
       }
       case storage::DataElement::TYPE_FILE: {
         if (!security_policy->CanReadFile(process_id_, item.path())) {
+          DVLOG(1) << "BlobDispatcherHost::OnRegisterBlob(" << uuid
+                   << "): Invalid or prohibited FilePath: "
+                   << item.path().value();
           HostedBlobState hosted_state(
               context->AddBrokenBlob(uuid, content_type, content_disposition,
                                      BlobStatus::ERR_FILE_WRITE_FAILED));
@@ -243,6 +249,8 @@ void BlobDispatcherHost::OnIncrementBlobRefCount(const std::string& uuid) {
     return;
   }
   if (!context->registry().HasEntry(uuid)) {
+    DVLOG(1) << "BlobDispatcherHost::OnIncrementBlobRefCount(" << uuid
+             << "): Unknown UUID.";
     UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_INCREMENT,
                               BDH_TRACING_ENUM_LAST);
     return;
@@ -265,6 +273,8 @@ void BlobDispatcherHost::OnDecrementBlobRefCount(const std::string& uuid) {
   }
   auto state_it = blobs_inuse_map_.find(uuid);
   if (state_it == blobs_inuse_map_.end()) {
+    DVLOG(1) << "BlobDispatcherHost::OnDecrementBlobRefCount(" << uuid
+             << "): Unknown UUID.";
     UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidReference", BDH_DECREMENT,
                               BDH_TRACING_ENUM_LAST);
     return;
@@ -295,6 +305,9 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
   // on the URL is allowed to be rendered in this process.
   if (!public_url.SchemeIsBlob() ||
       !security_policy->CanCommitURL(process_id_, public_url)) {
+    DVLOG(1) << "BlobDispatcherHost::OnRegisterPublicBlobURL("
+             << public_url.spec() << ", " << uuid
+             << "): Invalid or prohibited URL.";
     bad_message::ReceivedBadMessage(this, bad_message::BDH_DISALLOWED_ORIGIN);
     return;
   }
@@ -305,6 +318,8 @@ void BlobDispatcherHost::OnRegisterPublicBlobURL(const GURL& public_url,
   }
   BlobStorageContext* context = this->context();
   if (!IsInUseInHost(uuid) || context->registry().IsURLMapped(public_url)) {
+    DVLOG(1) << "BlobDispatcherHost::OnRegisterPublicBlobURL("
+             << public_url.spec() << ", " << uuid << "): Invalid url or uuid.";
     UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_INCREMENT,
                               BDH_TRACING_ENUM_LAST);
     return;
@@ -321,6 +336,8 @@ void BlobDispatcherHost::OnRevokePublicBlobURL(const GURL& public_url) {
     return;
   }
   if (!IsUrlRegisteredInHost(public_url)) {
+    DVLOG(1) << "BlobDispatcherHost::OnRevokePublicBlobURL("
+             << public_url.spec() << "): Unknown URL.";
     UMA_HISTOGRAM_ENUMERATION("Storage.Blob.InvalidURLRegister", BDH_DECREMENT,
                               BDH_TRACING_ENUM_LAST);
     return;

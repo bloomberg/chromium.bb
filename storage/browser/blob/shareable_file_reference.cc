@@ -95,6 +95,14 @@ scoped_refptr<ShareableFileReference> ShareableFileReference::GetOrCreate(
   typedef std::pair<ShareableFileMap::iterator, bool> InsertResult;
   InsertResult result = g_file_map.Get().Insert(
       ShareableFileMap::value_type(scoped_file.path(), nullptr));
+
+  DVLOG(1) << "ShareableFileReference::GetOrCreate("
+           << scoped_file.path().value() << ", "
+           << (scoped_file.policy() == ScopedFile::DELETE_ON_SCOPE_OUT
+                   ? "DELETE_ON_SCOPE_OUT"
+                   : "DONT_DELETE_ON_SCOPE_OUT")
+           << "): " << (result.second ? "Creation." : "New Reference.");
+
   if (result.second == false) {
     scoped_file.Release();
     return scoped_refptr<ShareableFileReference>(result.first->second);
