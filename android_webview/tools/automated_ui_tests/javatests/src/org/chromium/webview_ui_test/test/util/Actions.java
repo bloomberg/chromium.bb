@@ -47,6 +47,7 @@ public class Actions {
              */
             @Override
             public void perform(UiController uiController, @NonNull View view) {
+                if (!(view instanceof WebView)) return;
                 WebView webview = (WebView) view;
                 webview.getSettings().setUseWideViewPort(useWideViewPort);
                 uiController.loopMainThreadUntilIdle();

@@ -949,6 +949,8 @@ if (enable_java_templates) {
         rebase_path(depfile, root_build_dir),
         "--exclude",
         rebase_path(_exclusions_file, root_build_dir),
+        "--system-jar",
+        rebase_path(android_sdk_jar, root_build_dir),
         "--auxclasspath-gyp",
         "@FileArg($_rebased_build_config:javac:classpath)",
         "--output-file",

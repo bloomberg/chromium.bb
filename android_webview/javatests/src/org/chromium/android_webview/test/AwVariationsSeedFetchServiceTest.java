@@ -25,12 +25,14 @@ import java.util.Arrays;
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // JobService requires API level 21.
 public class AwVariationsSeedFetchServiceTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
+        super.setUp();
         ContextUtils.initApplicationContextForTests(
                 getInstrumentation().getTargetContext().getApplicationContext());
     }
 
     protected void tearDown() throws Exception {
         AwVariationsSeedFetchService.clearDataForTesting();
+        super.tearDown();
     }
 
     /**
