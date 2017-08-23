@@ -18,7 +18,6 @@
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/draw_property_utils.h"
@@ -26,6 +25,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -383,7 +383,7 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
   int sorting_context_id =
       property_trees->transform_tree.Node(TransformTreeIndex())
           ->sorting_context_id;
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(
       draw_transform(), content_rect(), content_rect(),
@@ -444,7 +444,7 @@ void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
 }
 
 void RenderSurfaceImpl::TileMaskLayer(RenderPass* render_pass,
-                                      SharedQuadState* shared_quad_state,
+                                      viz::SharedQuadState* shared_quad_state,
                                       const gfx::Rect& visible_layer_rect) {
   DCHECK(MaskLayer());
   DCHECK(Filters().IsEmpty());

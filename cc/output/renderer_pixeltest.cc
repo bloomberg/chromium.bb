@@ -33,6 +33,7 @@
 #include "ui/gfx/test/icc_profiles.h"
 
 using gpu::gles2::GLES2Interface;
+using viz::SharedQuadState;
 
 namespace cc {
 namespace {

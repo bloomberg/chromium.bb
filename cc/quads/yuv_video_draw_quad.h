@@ -38,7 +38,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   YUVVideoDrawQuad();
   YUVVideoDrawQuad(const YUVVideoDrawQuad& other);
 
-  void SetNew(const SharedQuadState* shared_quad_state,
+  void SetNew(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
@@ -60,7 +60,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               float multiplier,
               uint32_t bits_per_channel);
 
-  void SetAll(const SharedQuadState* shared_quad_state,
+  void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,

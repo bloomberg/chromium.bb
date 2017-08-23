@@ -737,7 +737,7 @@ TEST_F(PictureLayerImplTest, ScaledBoundsOverflowInt) {
   // See http://crbug.com/679035
   active_layer()->draw_properties().visible_layer_rect =
       gfx::Rect(layer_bounds);
-  SharedQuadState state;
+  viz::SharedQuadState state;
   active_layer()->PopulateScaledSharedQuadState(&state, adjusted_scale,
                                                 adjusted_scale);
 }

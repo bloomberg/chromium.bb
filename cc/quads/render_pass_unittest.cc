@@ -90,7 +90,7 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
   pass->copy_requests.push_back(viz::CopyOutputRequest::CreateEmptyRequest());
 
   // Stick a quad in the pass, this should not get copied.
-  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(), gfx::Rect(), gfx::Rect(),
                        false, 1, SkBlendMode::kSrcOver, 0);
 
@@ -141,7 +141,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                cache_render_pass, has_damage_from_contributing_content);
 
   // Two quads using one shared state.
-  SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
   shared_state1->SetAll(gfx::Transform(), gfx::Rect(0, 0, 1, 1), gfx::Rect(),
                         gfx::Rect(), false, 1, SkBlendMode::kSrcOver, 0);
 
@@ -158,7 +158,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                       false);
 
   // And two quads using another shared state.
-  SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
   shared_state2->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2), gfx::Rect(),
                         gfx::Rect(), false, 1, SkBlendMode::kSrcOver, 0);
 
@@ -196,7 +196,7 @@ TEST(RenderPassTest, CopyAllShouldBeIdentical) {
                   contrib_has_transparent_background, contrib_cache_render_pass,
                   contrib_has_damage_from_contributing_content);
 
-  SharedQuadState* contrib_shared_state =
+  viz::SharedQuadState* contrib_shared_state =
       contrib->CreateAndAppendSharedQuadState();
   contrib_shared_state->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2),
                                gfx::Rect(), gfx::Rect(), false, 1,
@@ -248,7 +248,7 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
                cache_render_pass, has_damage_from_contributing_content);
 
   // A shared state with a quad.
-  SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state1 = pass->CreateAndAppendSharedQuadState();
   shared_state1->SetAll(gfx::Transform(), gfx::Rect(0, 0, 1, 1), gfx::Rect(),
                         gfx::Rect(), false, 1, SkBlendMode::kSrcOver, 0);
 
@@ -259,17 +259,17 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
                       false);
 
   // A shared state with no quads, they were culled.
-  SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state2 = pass->CreateAndAppendSharedQuadState();
   shared_state2->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2), gfx::Rect(),
                         gfx::Rect(), false, 1, SkBlendMode::kSrcOver, 0);
 
   // A second shared state with no quads.
-  SharedQuadState* shared_state3 = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state3 = pass->CreateAndAppendSharedQuadState();
   shared_state3->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2), gfx::Rect(),
                         gfx::Rect(), false, 1, SkBlendMode::kSrcOver, 0);
 
   // A last shared state with a quad again.
-  SharedQuadState* shared_state4 = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state4 = pass->CreateAndAppendSharedQuadState();
   shared_state4->SetAll(gfx::Transform(), gfx::Rect(0, 0, 2, 2), gfx::Rect(),
                         gfx::Rect(), false, 1, SkBlendMode::kSrcOver, 0);
 
@@ -289,8 +289,8 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
 }
 
 TEST(RenderPassTest, ReplacedQuadsShouldntMove) {
-  std::unique_ptr<SharedQuadState> quad_state =
-      base::MakeUnique<SharedQuadState>();
+  std::unique_ptr<viz::SharedQuadState> quad_state =
+      base::MakeUnique<viz::SharedQuadState>();
   QuadList quad_list;
   SolidColorDrawQuad* quad =
       quad_list.AllocateAndConstruct<SolidColorDrawQuad>();

@@ -5,13 +5,13 @@
 #ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_SHARED_QUAD_STATE_STRUCT_TRAITS_H_
 
-#include "cc/quads/shared_quad_state.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "services/viz/public/interfaces/compositing/shared_quad_state.mojom-shared.h"
 
 namespace mojo {
 
 struct OptSharedQuadState {
-  const cc::SharedQuadState* sqs;
+  const viz::SharedQuadState* sqs;
 };
 
 template <>
@@ -56,41 +56,41 @@ struct StructTraits<viz::mojom::SharedQuadStateDataView, OptSharedQuadState> {
 };
 
 template <>
-struct StructTraits<viz::mojom::SharedQuadStateDataView, cc::SharedQuadState> {
+struct StructTraits<viz::mojom::SharedQuadStateDataView, viz::SharedQuadState> {
   static const gfx::Transform& quad_to_target_transform(
-      const cc::SharedQuadState& sqs) {
+      const viz::SharedQuadState& sqs) {
     return sqs.quad_to_target_transform;
   }
 
-  static const gfx::Rect& quad_layer_rect(const cc::SharedQuadState& sqs) {
+  static const gfx::Rect& quad_layer_rect(const viz::SharedQuadState& sqs) {
     return sqs.quad_layer_rect;
   }
 
   static const gfx::Rect& visible_quad_layer_rect(
-      const cc::SharedQuadState& sqs) {
+      const viz::SharedQuadState& sqs) {
     return sqs.visible_quad_layer_rect;
   }
 
-  static const gfx::Rect& clip_rect(const cc::SharedQuadState& sqs) {
+  static const gfx::Rect& clip_rect(const viz::SharedQuadState& sqs) {
     return sqs.clip_rect;
   }
 
-  static bool is_clipped(const cc::SharedQuadState& sqs) {
+  static bool is_clipped(const viz::SharedQuadState& sqs) {
     return sqs.is_clipped;
   }
 
-  static float opacity(const cc::SharedQuadState& sqs) { return sqs.opacity; }
+  static float opacity(const viz::SharedQuadState& sqs) { return sqs.opacity; }
 
-  static uint32_t blend_mode(const cc::SharedQuadState& sqs) {
+  static uint32_t blend_mode(const viz::SharedQuadState& sqs) {
     return static_cast<uint32_t>(sqs.blend_mode);
   }
 
-  static int32_t sorting_context_id(const cc::SharedQuadState& sqs) {
+  static int32_t sorting_context_id(const viz::SharedQuadState& sqs) {
     return sqs.sorting_context_id;
   }
 
   static bool Read(viz::mojom::SharedQuadStateDataView data,
-                   cc::SharedQuadState* out) {
+                   viz::SharedQuadState* out) {
     if (!data.ReadQuadToTargetTransform(&out->quad_to_target_transform) ||
         !data.ReadQuadLayerRect(&out->quad_layer_rect) ||
         !data.ReadVisibleQuadLayerRect(&out->visible_quad_layer_rect) ||

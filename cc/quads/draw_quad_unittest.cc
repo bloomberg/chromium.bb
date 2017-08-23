@@ -44,11 +44,11 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   SkBlendMode blend_mode = SkBlendMode::kMultiply;
   int sorting_context_id = 65536;
 
-  std::unique_ptr<SharedQuadState> state(new SharedQuadState);
+  auto state = base::MakeUnique<viz::SharedQuadState>();
   state->SetAll(quad_transform, layer_rect, visible_layer_rect, clip_rect,
                 is_clipped, opacity, blend_mode, sorting_context_id);
 
-  std::unique_ptr<SharedQuadState> copy(new SharedQuadState(*state));
+  auto copy = base::MakeUnique<viz::SharedQuadState>(*state);
   EXPECT_EQ(quad_transform, copy->quad_to_target_transform);
   EXPECT_EQ(visible_layer_rect, copy->visible_quad_layer_rect);
   EXPECT_EQ(opacity, copy->opacity);
@@ -57,7 +57,7 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   EXPECT_EQ(blend_mode, copy->blend_mode);
 }
 
-SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
+viz::SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   gfx::Transform quad_transform = gfx::Transform(1.0, 0.0, 0.5, 1.0, 0.5, 0.0);
   gfx::Rect layer_rect(26, 28);
   gfx::Rect visible_layer_rect(10, 12, 14, 16);
@@ -67,14 +67,14 @@ SharedQuadState* CreateSharedQuadState(RenderPass* render_pass) {
   int sorting_context_id = 65536;
   SkBlendMode blend_mode = SkBlendMode::kSrcOver;
 
-  SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* state = render_pass->CreateAndAppendSharedQuadState();
   state->SetAll(quad_transform, layer_rect, visible_layer_rect, clip_rect,
                 is_clipped, opacity, blend_mode, sorting_context_id);
   return state;
 }
 
-void CompareSharedQuadState(const SharedQuadState* source_sqs,
-                            const SharedQuadState* copy_sqs) {
+void CompareSharedQuadState(const viz::SharedQuadState* source_sqs,
+                            const viz::SharedQuadState* copy_sqs) {
   EXPECT_EQ(source_sqs->quad_to_target_transform,
             copy_sqs->quad_to_target_transform);
   EXPECT_EQ(source_sqs->quad_layer_rect, copy_sqs->quad_layer_rect);
@@ -96,11 +96,12 @@ void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
   CompareSharedQuadState(quad->shared_quad_state, copy->shared_quad_state);
 }
 
-#define CREATE_SHARED_STATE()                                              \
-  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();          \
-  SharedQuadState* shared_state(CreateSharedQuadState(render_pass.get())); \
-  SharedQuadState* copy_shared_state =                                     \
-      render_pass->CreateAndAppendSharedQuadState();                       \
+#define CREATE_SHARED_STATE()                                     \
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create(); \
+  viz::SharedQuadState* shared_state(                             \
+      CreateSharedQuadState(render_pass.get()));                  \
+  viz::SharedQuadState* copy_shared_state =                       \
+      render_pass->CreateAndAppendSharedQuadState();              \
   *copy_shared_state = *shared_state;
 
 #define QUAD_DATA                              \

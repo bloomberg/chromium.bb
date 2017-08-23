@@ -167,7 +167,7 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
       break;
   }
 
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(transform, gfx::Rect(rotated_size),
                             visible_layer_rect(), clip_rect(), is_clipped(),

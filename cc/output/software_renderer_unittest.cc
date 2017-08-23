@@ -102,7 +102,7 @@ TEST_F(SoftwareRendererTest, SolidColorQuad) {
   std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(root_render_pass_id, outer_rect, outer_rect,
                            gfx::Transform());
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       root_render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(gfx::Transform(), outer_rect, outer_rect,
                             outer_rect, false, 1.0, SkBlendMode::kSrcOver, 0);
@@ -169,7 +169,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(root_render_pass_id, root_rect, root_rect,
                            gfx::Transform());
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       root_render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(gfx::Transform(), outer_rect, outer_rect,
                             outer_rect, false, 1.0, SkBlendMode::kSrcOver, 0);
@@ -232,7 +232,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   std::unique_ptr<RenderPass> root_render_pass = RenderPass::Create();
   root_render_pass->SetNew(root_render_pass_id, root_rect, root_rect,
                            gfx::Transform());
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       root_render_pass->CreateAndAppendSharedQuadState();
   shared_quad_state->SetAll(gfx::Transform(), tile_rect, tile_rect, tile_rect,
                             false, 1.0, SkBlendMode::kSrcOver, 0);

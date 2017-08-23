@@ -47,7 +47,7 @@ class SurfaceAggregatorPixelTest : public cc::RendererPixelTest<GLRenderer> {
   std::unique_ptr<CompositorFrameSinkSupport> support_;
 };
 
-cc::SharedQuadState* CreateAndAppendTestSharedQuadState(
+SharedQuadState* CreateAndAppendTestSharedQuadState(
     cc::RenderPass* render_pass,
     const gfx::Transform& transform,
     const gfx::Size& size) {

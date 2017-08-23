@@ -134,7 +134,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
   if (!resources_.back()->id())
     return;
 
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateScaledSharedQuadState(shared_quad_state, internal_contents_scale_,
                                 internal_contents_scale_);

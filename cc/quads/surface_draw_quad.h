@@ -19,14 +19,14 @@ class CC_EXPORT SurfaceDrawQuad : public DrawQuad {
  public:
   SurfaceDrawQuad();
 
-  void SetNew(const SharedQuadState* shared_quad_state,
+  void SetNew(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               const viz::SurfaceId& surface_id,
               SurfaceDrawQuadType surface_draw_quad_type,
               SurfaceDrawQuad* fallback_quad);
 
-  void SetAll(const SharedQuadState* shared_quad_state,
+  void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,

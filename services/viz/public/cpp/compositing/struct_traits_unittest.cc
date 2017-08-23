@@ -176,11 +176,11 @@ TEST_F(StructTraitsTest, SharedQuadState) {
   const float opacity = 0.9f;
   const SkBlendMode blend_mode = SkBlendMode::kSrcOver;
   const int sorting_context_id = 1337;
-  cc::SharedQuadState input_sqs;
+  SharedQuadState input_sqs;
   input_sqs.SetAll(quad_to_target_transform, layer_rect, visible_layer_rect,
                    clip_rect, is_clipped, opacity, blend_mode,
                    sorting_context_id);
-  cc::SharedQuadState output_sqs;
+  SharedQuadState output_sqs;
   SerializeAndDeserialize<mojom::SharedQuadState>(input_sqs, &output_sqs);
   EXPECT_EQ(quad_to_target_transform, output_sqs.quad_to_target_transform);
   EXPECT_EQ(layer_rect, output_sqs.quad_layer_rect);
@@ -212,7 +212,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(1, gfx::Rect(5, 6), gfx::Rect(2, 3), gfx::Transform());
 
-  // cc::SharedQuadState.
+  // SharedQuadState.
   const gfx::Transform sqs_quad_to_target_transform(
       1.f, 2.f, 3.f, 4.f, 5.f, 6.f, 7.f, 8.f, 9.f, 10.f, 11.f, 12.f, 13.f, 14.f,
       15.f, 16.f);
@@ -223,7 +223,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const float sqs_opacity = 0.9f;
   const SkBlendMode sqs_blend_mode = SkBlendMode::kSrcOver;
   const int sqs_sorting_context_id = 1337;
-  cc::SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(sqs_quad_to_target_transform, sqs_layer_rect,
               sqs_visible_layer_rect, sqs_clip_rect, sqs_is_clipped,
               sqs_opacity, sqs_blend_mode, sqs_sorting_context_id);
@@ -298,7 +298,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   ASSERT_EQ(2u, out_render_pass->quad_list.size());
   ASSERT_EQ(1u, out_render_pass->shared_quad_state_list.size());
 
-  const cc::SharedQuadState* out_sqs =
+  const SharedQuadState* out_sqs =
       out_render_pass->shared_quad_state_list.ElementAt(0);
   EXPECT_EQ(sqs_quad_to_target_transform, out_sqs->quad_to_target_transform);
   EXPECT_EQ(sqs_layer_rect, out_sqs->quad_layer_rect);
@@ -499,14 +499,14 @@ TEST_F(StructTraitsTest, RenderPass) {
                 has_transparent_background, cache_render_pass,
                 has_damage_from_contributing_content);
 
-  cc::SharedQuadState* shared_state_1 = input->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state_1 = input->CreateAndAppendSharedQuadState();
   shared_state_1->SetAll(
       gfx::Transform(16.1f, 15.3f, 14.3f, 13.7f, 12.2f, 11.4f, 10.4f, 9.8f,
                      8.1f, 7.3f, 6.3f, 5.7f, 4.8f, 3.4f, 2.4f, 1.2f),
       gfx::Rect(1, 2), gfx::Rect(1337, 5679, 9101112, 131415),
       gfx::Rect(1357, 2468, 121314, 1337), true, 2, SkBlendMode::kSrcOver, 1);
 
-  cc::SharedQuadState* shared_state_2 = input->CreateAndAppendSharedQuadState();
+  SharedQuadState* shared_state_2 = input->CreateAndAppendSharedQuadState();
   shared_state_2->SetAll(
       gfx::Transform(1.1f, 2.3f, 3.3f, 4.7f, 5.2f, 6.4f, 7.4f, 8.8f, 9.1f,
                      10.3f, 11.3f, 12.7f, 13.8f, 14.4f, 15.4f, 16.2f),
@@ -551,7 +551,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(filters, output->filters);
   EXPECT_EQ(background_filters, output->background_filters);
 
-  cc::SharedQuadState* out_sqs1 = output->shared_quad_state_list.ElementAt(0);
+  SharedQuadState* out_sqs1 = output->shared_quad_state_list.ElementAt(0);
   EXPECT_EQ(shared_state_1->quad_to_target_transform,
             out_sqs1->quad_to_target_transform);
   EXPECT_EQ(shared_state_1->quad_layer_rect, out_sqs1->quad_layer_rect);
@@ -563,7 +563,7 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(shared_state_1->blend_mode, out_sqs1->blend_mode);
   EXPECT_EQ(shared_state_1->sorting_context_id, out_sqs1->sorting_context_id);
 
-  cc::SharedQuadState* out_sqs2 = output->shared_quad_state_list.ElementAt(1);
+  SharedQuadState* out_sqs2 = output->shared_quad_state_list.ElementAt(1);
   EXPECT_EQ(shared_state_2->quad_to_target_transform,
             out_sqs2->quad_to_target_transform);
   EXPECT_EQ(shared_state_2->quad_layer_rect, out_sqs2->quad_layer_rect);
@@ -638,7 +638,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(1, gfx::Rect(), gfx::Rect(), gfx::Transform());
 
-  cc::SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
 
   const gfx::Rect rect1(1234, 4321, 1357, 7531);
   const SkColor color1 = SK_ColorRED;
@@ -882,7 +882,7 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
   const uint32_t bits_per_channel = 13;
   const bool require_overlay = true;
 
-  cc::SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* sqs = render_pass->CreateAndAppendSharedQuadState();
   cc::YUVVideoDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<cc::YUVVideoDrawQuad>();
   quad->SetAll(sqs, rect, opaque_rect, visible_rect, needs_blending,

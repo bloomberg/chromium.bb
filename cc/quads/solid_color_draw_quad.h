@@ -17,13 +17,13 @@ class CC_EXPORT SolidColorDrawQuad : public DrawQuad {
  public:
   SolidColorDrawQuad();
 
-  void SetNew(const SharedQuadState* shared_quad_state,
+  void SetNew(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               SkColor color,
               bool force_anti_aliasing_off);
 
-  void SetAll(const SharedQuadState* shared_quad_state,
+  void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,

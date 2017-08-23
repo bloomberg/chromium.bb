@@ -14,7 +14,7 @@ namespace cc {
 StreamVideoDrawQuad::StreamVideoDrawQuad() {
 }
 
-void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void StreamVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& opaque_rect,
                                  const gfx::Rect& visible_rect,
@@ -30,7 +30,7 @@ void StreamVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->matrix = matrix;
 }
 
-void StreamVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void StreamVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& opaque_rect,
                                  const gfx::Rect& visible_rect,

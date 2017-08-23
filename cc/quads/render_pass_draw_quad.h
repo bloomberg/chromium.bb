@@ -27,7 +27,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   RenderPassDrawQuad(const RenderPassDrawQuad& other);
   ~RenderPassDrawQuad() override;
 
-  void SetNew(const SharedQuadState* shared_quad_state,
+  void SetNew(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& visible_rect,
               RenderPassId render_pass_id,
@@ -38,7 +38,7 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               const gfx::PointF& filters_origin,
               const gfx::RectF& tex_coord_rect);
 
-  void SetAll(const SharedQuadState* shared_quad_state,
+  void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,

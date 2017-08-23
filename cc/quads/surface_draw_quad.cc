@@ -13,7 +13,7 @@ namespace cc {
 SurfaceDrawQuad::SurfaceDrawQuad() {
 }
 
-void SurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void SurfaceDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& visible_rect,
                              const viz::SurfaceId& surface_id,
@@ -28,7 +28,7 @@ void SurfaceDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->fallback_quad = fallback_quad;
 }
 
-void SurfaceDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void SurfaceDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
                              const gfx::Rect& visible_rect,

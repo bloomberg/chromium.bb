@@ -27,7 +27,7 @@ TextureDrawQuad::TextureDrawQuad()
 
 TextureDrawQuad::TextureDrawQuad(const TextureDrawQuad& other) = default;
 
-void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void TextureDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
                              const gfx::Rect& visible_rect,
@@ -61,7 +61,7 @@ void TextureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->secure_output_only = secure_output_only;
 }
 
-void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void TextureDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
                              const gfx::Rect& visible_rect,

@@ -23,7 +23,7 @@ class CC_EXPORT SolidColorLayerImpl : public LayerImpl {
 
   static void AppendSolidQuads(RenderPass* render_pass,
                                const Occlusion& occlusion_in_layer_space,
-                               SharedQuadState* shared_quad_state,
+                               viz::SharedQuadState* shared_quad_state,
                                const gfx::Rect& visible_layer_rect,
                                SkColor color,
                                AppendQuadsData* append_quads_data);

@@ -9,13 +9,13 @@
 #include "base/bind.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
 #include "cc/resources/resource_provider.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "ui/gfx/geometry/rect.h"
@@ -38,7 +38,7 @@ RenderPass* AddRenderPass(RenderPassList* pass_list,
 SolidColorDrawQuad* AddQuad(RenderPass* pass,
                             const gfx::Rect& rect,
                             SkColor color) {
-  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
@@ -50,7 +50,7 @@ SolidColorDrawQuad* AddQuad(RenderPass* pass,
 SolidColorDrawQuad* AddClippedQuad(RenderPass* pass,
                                    const gfx::Rect& rect,
                                    SkColor color) {
-  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, rect, true, 1,
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
@@ -63,7 +63,7 @@ SolidColorDrawQuad* AddTransformedQuad(RenderPass* pass,
                                        const gfx::Rect& rect,
                                        SkColor color,
                                        const gfx::Transform& transform) {
-  SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state = pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(transform, rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
   SolidColorDrawQuad* quad =
@@ -74,7 +74,8 @@ SolidColorDrawQuad* AddTransformedQuad(RenderPass* pass,
 
 void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass) {
   gfx::Rect output_rect = contributing_pass->output_rect;
-  SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state =
+      to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), output_rect, output_rect, output_rect,
                        false, 1, SkBlendMode::kSrcOver, 0);
   RenderPassDrawQuad* quad =
@@ -90,7 +91,8 @@ void AddRenderPassQuad(RenderPass* to_pass,
                        gfx::Transform transform,
                        SkBlendMode blend_mode) {
   gfx::Rect output_rect = contributing_pass->output_rect;
-  SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state =
+      to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(transform, output_rect, output_rect, output_rect, false,
                        1, blend_mode, 0);
   RenderPassDrawQuad* quad =
@@ -163,7 +165,8 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
                                                           std::move(callback));
   resource_provider->AllocateForTesting(resource8);
 
-  SharedQuadState* shared_state = to_pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state =
+      to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
 
@@ -210,7 +213,7 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
                            needs_blending, resource2, gfx::RectF(0, 0, 50, 50),
                            gfx::Size(50, 50), false, false);
 
-  SharedQuadState* transformed_state =
+  viz::SharedQuadState* transformed_state =
       to_pass->CreateAndAppendSharedQuadState();
   *transformed_state = *shared_state;
   gfx::Transform rotation;
@@ -223,7 +226,8 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
       transformed_state, rect, opaque_rect, visible_rect, needs_blending,
       resource3, gfx::RectF(0, 0, 100, 100), gfx::Size(100, 100), false, false);
 
-  SharedQuadState* shared_state2 = to_pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* shared_state2 =
+      to_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1,
                        SkBlendMode::kSrcOver, 0);
 

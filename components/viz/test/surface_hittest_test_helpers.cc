@@ -6,9 +6,9 @@
 
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/test/compositor_frame_helpers.h"
 
 namespace viz {
@@ -17,8 +17,7 @@ namespace test {
 void CreateSharedQuadState(cc::RenderPass* pass,
                            const gfx::Transform& transform,
                            const gfx::Rect& root_rect) {
-  cc::SharedQuadState* child_shared_state =
-      pass->CreateAndAppendSharedQuadState();
+  SharedQuadState* child_shared_state = pass->CreateAndAppendSharedQuadState();
   child_shared_state->SetAll(transform, root_rect, root_rect, root_rect, false,
                              1.0f, SkBlendMode::kSrcOver, 0);
 }

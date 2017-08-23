@@ -147,7 +147,7 @@ void LayerImpl::SetScrollTreeIndex(int index) {
   scroll_tree_index_ = index;
 }
 
-void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
+void LayerImpl::PopulateSharedQuadState(viz::SharedQuadState* state) const {
   state->SetAll(draw_properties_.target_space_transform, gfx::Rect(bounds()),
                 draw_properties_.visible_layer_rect, draw_properties_.clip_rect,
                 draw_properties_.is_clipped, draw_properties_.opacity,
@@ -155,7 +155,7 @@ void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
 }
 
 void LayerImpl::PopulateScaledSharedQuadState(
-    SharedQuadState* state,
+    viz::SharedQuadState* state,
     float layer_to_content_scale_x,
     float layer_to_content_scale_y) const {
   gfx::Transform scaled_draw_transform =
@@ -215,7 +215,7 @@ void LayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const {
 void LayerImpl::AppendDebugBorderQuad(
     RenderPass* render_pass,
     const gfx::Size& bounds,
-    const SharedQuadState* shared_quad_state,
+    const viz::SharedQuadState* shared_quad_state,
     AppendQuadsData* append_quads_data) const {
   SkColor color;
   float width;
@@ -224,12 +224,13 @@ void LayerImpl::AppendDebugBorderQuad(
                         append_quads_data, color, width);
 }
 
-void LayerImpl::AppendDebugBorderQuad(RenderPass* render_pass,
-                                      const gfx::Size& bounds,
-                                      const SharedQuadState* shared_quad_state,
-                                      AppendQuadsData* append_quads_data,
-                                      SkColor color,
-                                      float width) const {
+void LayerImpl::AppendDebugBorderQuad(
+    RenderPass* render_pass,
+    const gfx::Size& bounds,
+    const viz::SharedQuadState* shared_quad_state,
+    AppendQuadsData* append_quads_data,
+    SkColor color,
+    float width) const {
   if (!ShowDebugBorders(DebugBorderType::LAYER))
     return;
 

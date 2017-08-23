@@ -66,7 +66,7 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
   if (!primary_surface_info_.is_valid())
     return;
 
-  SharedQuadState* common_shared_quad_state = nullptr;
+  viz::SharedQuadState* common_shared_quad_state = nullptr;
   auto* primary =
       CreateSurfaceDrawQuad(render_pass, SurfaceDrawQuadType::PRIMARY,
                             primary_surface_info_, &common_shared_quad_state);
@@ -94,7 +94,7 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
     RenderPass* render_pass,
     SurfaceDrawQuadType surface_draw_quad_type,
     const viz::SurfaceInfo& surface_info,
-    SharedQuadState** common_shared_quad_state) {
+    viz::SharedQuadState** common_shared_quad_state) {
   DCHECK(surface_info.is_valid());
 
   gfx::Rect quad_rect(surface_info.size_in_pixels());
@@ -128,7 +128,7 @@ SurfaceDrawQuad* SurfaceLayerImpl::CreateSurfaceDrawQuad(
   // allocate a new SharedQuadState. Assign the new SharedQuadState to
   // *|common_shared_quad_state| so that it may be reused by another emitted
   // SurfaceDrawQuad.
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       common_shared_quad_state ? *common_shared_quad_state : nullptr;
   if (!shared_quad_state) {
     shared_quad_state = render_pass->CreateAndAppendSharedQuadState();
@@ -157,7 +157,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(RenderPass* render_pass) {
   if (!ShowDebugBorders(DebugBorderType::SURFACE))
     return;
 
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 

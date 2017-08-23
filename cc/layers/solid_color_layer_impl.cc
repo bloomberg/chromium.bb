@@ -30,7 +30,7 @@ std::unique_ptr<LayerImpl> SolidColorLayerImpl::CreateLayerImpl(
 void SolidColorLayerImpl::AppendSolidQuads(
     RenderPass* render_pass,
     const Occlusion& occlusion_in_layer_space,
-    SharedQuadState* shared_quad_state,
+    viz::SharedQuadState* shared_quad_state,
     const gfx::Rect& visible_layer_rect,
     SkColor color,
     AppendQuadsData* append_quads_data) {
@@ -70,7 +70,7 @@ void SolidColorLayerImpl::AppendSolidQuads(
 void SolidColorLayerImpl::AppendQuads(
     RenderPass* render_pass,
     AppendQuadsData* append_quads_data) {
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 

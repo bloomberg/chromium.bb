@@ -16,9 +16,9 @@
 #include "cc/layers/draw_mode.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/quads/render_pass.h"
-#include "cc/quads/shared_quad_state.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/property_tree.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
@@ -185,7 +185,7 @@ class CC_EXPORT RenderSurfaceImpl {
   gfx::Rect CalculateExpandedClipForFilters(
       const gfx::Transform& target_to_surface);
   void TileMaskLayer(RenderPass* render_pass,
-                     SharedQuadState* shared_quad_state,
+                     viz::SharedQuadState* shared_quad_state,
                      const gfx::Rect& visible_layer_rect);
 
   LayerTreeImpl* layer_tree_impl_;

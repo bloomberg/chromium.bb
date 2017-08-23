@@ -89,7 +89,7 @@ void PaintedOverlayScrollbarLayerImpl::AppendQuads(
                             nearest_neighbor);
   quad_generator_.CheckGeometryLimitations();
 
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 

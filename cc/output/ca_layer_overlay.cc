@@ -262,7 +262,7 @@ class CALayerOverlayProcessor {
   }
 
  private:
-  const SharedQuadState* most_recent_shared_quad_state_ = nullptr;
+  const viz::SharedQuadState* most_recent_shared_quad_state_ = nullptr;
   scoped_refptr<CALayerOverlaySharedState> most_recent_overlay_shared_state_;
 };
 

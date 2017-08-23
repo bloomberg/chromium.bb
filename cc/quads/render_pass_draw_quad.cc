@@ -21,7 +21,7 @@ RenderPassDrawQuad::RenderPassDrawQuad(const RenderPassDrawQuad& other) =
 RenderPassDrawQuad::~RenderPassDrawQuad() {
 }
 
-void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void RenderPassDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& visible_rect,
                                 RenderPassId render_pass_id,
@@ -40,7 +40,7 @@ void RenderPassDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
          filters_scale, filters_origin, tex_coord_rect);
 }
 
-void RenderPassDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void RenderPassDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& opaque_rect,
                                 const gfx::Rect& visible_rect,

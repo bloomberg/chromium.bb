@@ -10,8 +10,8 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
-#include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 
 namespace ui {
 
@@ -125,7 +125,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame() {
   if (high_contrast_mode_enabled_) {
     std::unique_ptr<cc::RenderPass> invert_pass = cc::RenderPass::Create();
     invert_pass->SetNew(2, bounds, bounds, gfx::Transform());
-    cc::SharedQuadState* shared_state =
+    viz::SharedQuadState* shared_state =
         invert_pass->CreateAndAppendSharedQuadState();
     gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
         pixel_size_, window_manager_surface_info_.device_scale_factor(),
@@ -163,7 +163,7 @@ void FrameGenerator::DrawWindow(cc::RenderPass* pass) {
   quad_to_target_transform.Translate(bounds_at_origin.x(),
                                      bounds_at_origin.y());
 
-  cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
 
   gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
       bounds_at_origin.size(),

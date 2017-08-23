@@ -31,12 +31,12 @@
 #include "cc/layers/performance_properties.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/touch_action_region.h"
-#include "cc/quads/shared_quad_state.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host_client.h"
 #include "cc/trees/target_property.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/rect.h"
@@ -125,8 +125,8 @@ class CC_EXPORT LayerImpl {
 
   LayerTreeImpl* layer_tree_impl() const { return layer_tree_impl_; }
 
-  void PopulateSharedQuadState(SharedQuadState* state) const;
-  void PopulateScaledSharedQuadState(SharedQuadState* state,
+  void PopulateSharedQuadState(viz::SharedQuadState* state) const;
+  void PopulateScaledSharedQuadState(viz::SharedQuadState* state,
                                      float layer_to_content_scale_x,
                                      float layer_to_content_scale_y) const;
   // WillDraw must be called before AppendQuads. If WillDraw returns false,
@@ -457,11 +457,11 @@ class CC_EXPORT LayerImpl {
 
   void AppendDebugBorderQuad(RenderPass* render_pass,
                              const gfx::Size& bounds,
-                             const SharedQuadState* shared_quad_state,
+                             const viz::SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data) const;
   void AppendDebugBorderQuad(RenderPass* render_pass,
                              const gfx::Size& bounds,
-                             const SharedQuadState* shared_quad_state,
+                             const viz::SharedQuadState* shared_quad_state,
                              AppendQuadsData* append_quads_data,
                              SkColor color,
                              float width) const;
