@@ -531,6 +531,15 @@ void VRDisplay::BeginPresent() {
   }
 
   if (doc) {
+    // TODO(mthiesse, crbug.com/756476): Remove this hack once crbug.com/756476
+    // is fixed. On Android, page visibilty state is set long after the page
+    // actually becomes visible, and can lead to webVR drawing frames before the
+    // page thinks it's visible. The page must be visible at this point if the
+    // presentation request was granted.
+    doc->GetPage()->SetVisibilityState(kPageVisibilityStateVisible, false);
+  }
+
+  if (doc) {
     Platform::Current()->RecordRapporURL("VR.WebVR.PresentSuccess",
                                          WebURL(doc->Url()));
   }
