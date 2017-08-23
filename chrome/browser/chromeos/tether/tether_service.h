@@ -148,6 +148,7 @@ class TetherService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestDisabled);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestEnabled);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestBluetoothNotification);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestBluetoothNotPresent);
 
   // Reflects InstantTethering_TechnologyStateAndReason enum in enums.xml. Do
   // not rearrange.
@@ -161,6 +162,7 @@ class TetherService : public KeyedService,
     BLUETOOTH_DISABLED = 6,
     USER_PREFERENCE_DISABLED = 7,
     ENABLED = 8,
+    BLE_NOT_PRESENT = 9,
     TETHER_FEATURE_STATE_MAX
   };
 
@@ -179,7 +181,8 @@ class TetherService : public KeyedService,
   bool GetIsBleAdvertisingSupportedPref();
   void SetIsBleAdvertisingSupportedPref(bool is_ble_advertising_supported);
 
-  bool IsBluetoothAvailable() const;
+  bool IsBluetoothPresent() const;
+  bool IsBluetoothPowered() const;
 
   bool IsCellularAvailableButNotEnabled() const;
 
