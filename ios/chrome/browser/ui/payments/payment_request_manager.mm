@@ -72,10 +72,10 @@
 #error "This file requires ARC support."
 #endif
 
-NSString* const kAbortErrorName = @"AbortError";
+NSString* const kAbortError = @"AbortError";
 NSString* const kInvalidStateError = @"InvalidStateError";
-NSString* const kNotAllowedErrorName = @"NotAllowedError";
-NSString* const kNotSupportedErrorName = @"NotSupportedErrorName";
+NSString* const kNotAllowedError = @"NotAllowedError";
+NSString* const kNotSupportedError = @"NotSupportedError";
 
 namespace {
 
@@ -322,7 +322,7 @@ struct PendingPaymentResponse {
   __weak PaymentRequestManager* weakSelf = self;
   ProceduralBlock dismissUICallback = ^() {
     [weakSelf.paymentRequestJsManager
-        rejectRequestPromiseWithErrorName:kAbortErrorName
+        rejectRequestPromiseWithErrorName:kAbortError
                              errorMessage:errorMessage
                         completionHandler:callback];
     weakSelf.paymentRequestCoordinator = nil;
@@ -460,18 +460,27 @@ struct PendingPaymentResponse {
 
   if (![self webStateContentIsSecureHTML]) {
     [_paymentRequestJsManager
-        rejectRequestPromiseWithErrorName:kNotSupportedErrorName
+        rejectRequestPromiseWithErrorName:kNotSupportedError
                              errorMessage:@"Must be in a secure context"
                         completionHandler:nil];
     return YES;
+  }
+
+  if (paymentRequest->state() != payments::PaymentRequest::State::CREATED) {
+    [_paymentRequestJsManager
+        rejectRequestPromiseWithErrorName:kInvalidStateError
+                             errorMessage:@"Already called show() once"
+                        completionHandler:nil];
   }
 
   if (_pendingPaymentRequest) {
     paymentRequest->journey_logger().SetNotShown(
         payments::JourneyLogger::NOT_SHOWN_REASON_CONCURRENT_REQUESTS);
     [_paymentRequestJsManager
-        rejectRequestPromiseWithErrorName:kInvalidStateError
-                             errorMessage:@"Already called show() once"
+        rejectRequestPromiseWithErrorName:kAbortError
+                             errorMessage:
+                                 @"Only one PaymentRequest may be shown at a "
+                                 @"time"
                         completionHandler:nil];
     return YES;
   }
@@ -483,13 +492,14 @@ struct PendingPaymentResponse {
     paymentRequest->journey_logger().SetNotShown(
         payments::JourneyLogger::NOT_SHOWN_REASON_NO_SUPPORTED_PAYMENT_METHOD);
     [_paymentRequestJsManager
-        rejectRequestPromiseWithErrorName:kNotSupportedErrorName
+        rejectRequestPromiseWithErrorName:kNotSupportedError
                              errorMessage:@"The payment method is not supported"
                         completionHandler:nil];
     return YES;
   }
 
   _pendingPaymentRequest = paymentRequest;
+  paymentRequest->set_state(payments::PaymentRequest::State::INTERACTIVE);
 
   paymentRequest->journey_logger().SetEventOccurred(
       payments::JourneyLogger::EVENT_SHOWN);
@@ -554,6 +564,7 @@ struct PendingPaymentResponse {
 - (BOOL)handleRequestAbort:(const base::DictionaryValue&)message {
   DCHECK(_pendingPaymentRequest);
 
+  _pendingPaymentRequest->set_state(payments::PaymentRequest::State::CLOSED);
   _pendingPaymentRequest->journey_logger().SetAborted(
       payments::JourneyLogger::ABORT_REASON_ABORTED_BY_MERCHANT);
 
@@ -597,6 +608,13 @@ struct PendingPaymentResponse {
     return YES;
   }
 
+  if (paymentRequest->state() != payments::PaymentRequest::State::CREATED) {
+    [_paymentRequestJsManager
+        rejectCanMakePaymentPromiseWithErrorName:kInvalidStateError
+                                    errorMessage:@"Cannot query payment request"
+                               completionHandler:nil];
+  }
+
   if (paymentRequest->IsIncognito()) {
     [_paymentRequestJsManager resolveCanMakePaymentPromiseWithValue:YES
                                                   completionHandler:nil];
@@ -622,7 +640,7 @@ struct PendingPaymentResponse {
     // TODO(crbug.com/602666): Warn on console if origin is localhost or file.
   } else {
     [_paymentRequestJsManager
-        rejectCanMakePaymentPromiseWithErrorName:kNotAllowedErrorName
+        rejectCanMakePaymentPromiseWithErrorName:kNotAllowedError
                                     errorMessage:
                                         @"Not allowed to check whether can "
                                         @"make payment"

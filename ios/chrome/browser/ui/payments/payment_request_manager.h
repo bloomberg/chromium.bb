@@ -11,10 +11,10 @@
 // https://www.w3.org/TR/payment-request/
 // A complete list of DOMException error names and descriptions can be found at:
 // https://developer.mozilla.org/en-US/docs/Web/API/DOMException#Error_names
-extern NSString* const kAbortErrorName;
+extern NSString* const kAbortError;
 extern NSString* const kInvalidStateError;
-extern NSString* const kNotAllowedErrorName;
-extern NSString* const kNotSupportedErrorName;
+extern NSString* const kNotAllowedError;
+extern NSString* const kNotSupportedError;
 
 @protocol ApplicationCommands;
 class ToolbarModelIOS;
