@@ -197,7 +197,7 @@ V8Platform::~V8Platform() {}
 
 size_t V8Platform::NumberOfAvailableBackgroundThreads() {
   return std::max(1, base::TaskScheduler::GetInstance()
-                         ->GetMaxConcurrentTasksWithTraitsDeprecated(
+                         ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                              kBackgroundThreadTaskTraits));
 }
 

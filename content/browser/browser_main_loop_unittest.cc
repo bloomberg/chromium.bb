@@ -29,7 +29,7 @@ TEST(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
     browser_main_loop.MainMessageLoopStart();
     browser_main_loop.CreateThreads();
     EXPECT_GE(base::TaskScheduler::GetInstance()
-                  ->GetMaxConcurrentTasksWithTraitsDeprecated(
+                  ->GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                       {base::TaskPriority::USER_VISIBLE}),
               base::SysInfo::NumberOfProcessors());
     browser_main_loop.ShutdownThreadsAndCleanUp();

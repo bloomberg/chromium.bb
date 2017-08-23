@@ -404,19 +404,20 @@ TEST_F(TaskSchedulerImplTest, MultipleTraitsExecutionModePairs) {
   }
 }
 
-TEST_F(TaskSchedulerImplTest, GetMaxConcurrentTasksWithTraitsDeprecated) {
+TEST_F(TaskSchedulerImplTest,
+       GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated) {
   StartTaskScheduler();
-  EXPECT_EQ(1, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+  EXPECT_EQ(1, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                    {TaskPriority::BACKGROUND}));
-  EXPECT_EQ(3, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+  EXPECT_EQ(3, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                    {MayBlock(), TaskPriority::BACKGROUND}));
-  EXPECT_EQ(4, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+  EXPECT_EQ(4, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                    {TaskPriority::USER_VISIBLE}));
-  EXPECT_EQ(12, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+  EXPECT_EQ(12, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                     {MayBlock(), TaskPriority::USER_VISIBLE}));
-  EXPECT_EQ(4, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+  EXPECT_EQ(4, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                    {TaskPriority::USER_BLOCKING}));
-  EXPECT_EQ(12, scheduler_.GetMaxConcurrentTasksWithTraitsDeprecated(
+  EXPECT_EQ(12, scheduler_.GetMaxConcurrentNonBlockedTasksWithTraitsDeprecated(
                     {MayBlock(), TaskPriority::USER_BLOCKING}));
 }
 
