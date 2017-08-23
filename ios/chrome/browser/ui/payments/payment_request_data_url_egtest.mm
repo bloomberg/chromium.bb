@@ -42,42 +42,4 @@
                                        "Must be in a secure context"}];
 }
 
-// Tests that the Promise returned by show() gets rejected with a
-// NotSupportedError if the JS isContextSecure variable is not set in time.
-- (void)testShowDataURL {
-  if (!base::ios::IsRunningOnOrLater(10, 3, 0)) {
-    EARL_GREY_TEST_SKIPPED(
-        @"Disabled on iOS versions below 10.3 because DOMException is not "
-        @"available.");
-  }
-
-  [ChromeEarlGrey
-      loadURL:GURL("data:text/html,<html><head><script>(new "
-                   "PaymentRequest([{supportedMethods: ['basic-card']}], "
-                   "{total: {label: 'Total',  amount: {currency: 'USD', value: "
-                   "'1.00'}}})).show().catch(function(e) "
-                   "{document.getElementById('result').innerHTML = "
-                   "e;});</script></head><body><div "
-                   "id='result'></div></body></html>")];
-
-  [self waitForWebViewContainingTexts:{"NotSupportedError",
-                                       "Must be in a secure context"}];
-}
-
-// Tests that the Promise returned by canMakePayment() gets resolved with false
-// if the JS isContextSecure variable is not set in time.
-// TODO(crbug.com/758038): Reenable this test when underlying issue is fixed.
-- (void)DISABLED_testCanMakePaymentDataURL {
-  [ChromeEarlGrey
-      loadURL:GURL("data:text/html,<html><head><script>(new "
-                   "PaymentRequest([{supportedMethods: ['basic-card']}], "
-                   "{total: {label: 'Total',  amount: {currency: 'USD', value: "
-                   "'1.00'}}})).canMakePayment().then(function(result) "
-                   "{document.getElementById('result').innerHTML = "
-                   "result;});</script></head><body><div "
-                   "id='result'></div></body></html>")];
-
-  [self waitForWebViewContainingTexts:{"false"}];
-}
-
 @end
