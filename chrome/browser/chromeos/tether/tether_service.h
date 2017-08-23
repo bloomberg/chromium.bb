@@ -105,7 +105,8 @@ class TetherService : public KeyedService,
                              bool powered) override;
 
   // chromeos::NetworkStateHandlerObserver:
-  void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
+  void NetworkConnectionStateChanged(
+      const chromeos::NetworkState* network) override;
   void DeviceListChanged() override;
 
   // Callback when the controlling pref changes.
