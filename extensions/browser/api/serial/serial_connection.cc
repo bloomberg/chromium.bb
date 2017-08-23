@@ -173,7 +173,8 @@ SerialConnection::SerialConnection(
       buffer_size_(kDefaultBufferSize),
       receive_timeout_(0),
       send_timeout_(0),
-      paused_(false) {
+      paused_(false),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(io_handler_info.is_valid());
   io_handler_.Bind(std::move(io_handler_info));
@@ -246,16 +247,16 @@ bool SerialConnection::Receive(ReceiveCompleteCallback callback) {
     return false;
   DCHECK(io_handler_);
   receive_complete_ = std::move(callback);
-  io_handler_->Read(
-      buffer_size_,
-      ScopedCallbackRunner(
-          base::BindOnce(&SerialConnection::OnAsyncReadComplete, AsWeakPtr()),
-          std::vector<uint8_t>(),
-          device::mojom::SerialReceiveError::DISCONNECTED));
+  io_handler_->Read(buffer_size_,
+                    ScopedCallbackRunner(
+                        base::BindOnce(&SerialConnection::OnAsyncReadComplete,
+                                       weak_factory_.GetWeakPtr()),
+                        std::vector<uint8_t>(),
+                        device::mojom::SerialReceiveError::DISCONNECTED));
   receive_timeout_task_.Cancel();
   if (receive_timeout_ > 0) {
-    receive_timeout_task_.Reset(
-        base::Bind(&SerialConnection::OnReceiveTimeout, AsWeakPtr()));
+    receive_timeout_task_.Reset(base::Bind(&SerialConnection::OnReceiveTimeout,
+                                           weak_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, receive_timeout_task_.callback(),
         base::TimeDelta::FromMilliseconds(receive_timeout_));
@@ -273,13 +274,14 @@ bool SerialConnection::Send(const std::vector<char>& data,
   io_handler_->Write(
       std::vector<uint8_t>(data.data(), data.data() + data.size()),
       ScopedCallbackRunner(
-          base::BindOnce(&SerialConnection::OnAsyncWriteComplete, AsWeakPtr()),
+          base::BindOnce(&SerialConnection::OnAsyncWriteComplete,
+                         weak_factory_.GetWeakPtr()),
           static_cast<uint32_t>(0),
           device::mojom::SerialSendError::DISCONNECTED));
   send_timeout_task_.Cancel();
   if (send_timeout_ > 0) {
-    send_timeout_task_.Reset(
-        base::Bind(&SerialConnection::OnSendTimeout, AsWeakPtr()));
+    send_timeout_task_.Reset(base::Bind(&SerialConnection::OnSendTimeout,
+                                        weak_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, send_timeout_task_.callback(),
         base::TimeDelta::FromMilliseconds(send_timeout_));
