@@ -23,7 +23,7 @@ TEST_F(DisplayUtilTest, RotatedDisplay) {
     gfx::Rect rect0 = GetNativeEdgeBounds(host0, gfx::Rect(499, 10, 1, 300));
     gfx::Rect rect1 = GetNativeEdgeBounds(host1, gfx::Rect(500, 10, 1, 300));
     EXPECT_EQ("509,20 1x300", rect0.ToString());
-    EXPECT_EQ("1289,10 300x1", rect1.ToString());
+    EXPECT_EQ("1290,10 300x1", rect1.ToString());
   }
   {
     UpdateDisplay("10+10-500x400,600+10-1000x600/l");
@@ -47,7 +47,7 @@ TEST_F(DisplayUtilTest, RotatedDisplay) {
     gfx::Rect rect0 = GetNativeEdgeBounds(host0, gfx::Rect(499, 10, 1, 300));
     gfx::Rect rect1 = GetNativeEdgeBounds(host1, gfx::Rect(500, 10, 1, 300));
     EXPECT_EQ("509,20 1x300", rect0.ToString());
-    EXPECT_EQ("1599,299 1x300", rect1.ToString());
+    EXPECT_EQ("1599,300 1x300", rect1.ToString());
   }
 
   {
@@ -59,7 +59,7 @@ TEST_F(DisplayUtilTest, RotatedDisplay) {
         RootWindowController::ForWindow(root_windows[1])->ash_host();
     gfx::Rect rect0 = GetNativeEdgeBounds(host0, gfx::Rect(399, 10, 1, 300));
     gfx::Rect rect1 = GetNativeEdgeBounds(host1, gfx::Rect(400, 10, 1, 300));
-    EXPECT_EQ("199,409 300x1", rect0.ToString());
+    EXPECT_EQ("200,409 300x1", rect0.ToString());
     EXPECT_EQ("600,20 1x300", rect1.ToString());
   }
   {
@@ -83,7 +83,7 @@ TEST_F(DisplayUtilTest, RotatedDisplay) {
         RootWindowController::ForWindow(root_windows[1])->ash_host();
     gfx::Rect rect0 = GetNativeEdgeBounds(host0, gfx::Rect(499, 10, 1, 300));
     gfx::Rect rect1 = GetNativeEdgeBounds(host1, gfx::Rect(500, 10, 1, 300));
-    EXPECT_EQ("10,99 1x300", rect0.ToString());
+    EXPECT_EQ("10,100 1x300", rect0.ToString());
     EXPECT_EQ("600,20 1x300", rect1.ToString());
   }
 }
