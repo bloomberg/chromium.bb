@@ -16,7 +16,6 @@
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/profile_notification.h"
-#include "chrome/browser/notifications/screen_lock_notification_blocker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -32,6 +31,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/notifications/login_state_notification_blocker_chromeos.h"
+#else
+#include "chrome/browser/notifications/screen_lock_notification_blocker.h"
 #endif
 
 using message_center::NotifierId;
