@@ -5,12 +5,8 @@
 package org.chromium.chrome.browser.vr_shell;
 
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
@@ -24,12 +20,10 @@ import android.widget.FrameLayout;
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.NativePage;
@@ -311,28 +305,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
         addView(mRenderToSurfaceLayoutParent);
     }
 
-    private void setSplashScreenIcon() {
-        new AsyncTask<Void, Void, Bitmap>() {
-            @Override
-            protected Bitmap doInBackground(Void... params) {
-                Drawable drawable = ApiCompatibilityUtils.getDrawable(
-                        mActivity.getResources(), R.mipmap.app_icon);
-                if (drawable instanceof BitmapDrawable) {
-                    BitmapDrawable bd = (BitmapDrawable) drawable;
-                    return bd.getBitmap();
-                }
-                assert false : "The drawable was not a bitmap drawable as expected";
-                return null;
-            }
-            @Override
-            protected void onPostExecute(Bitmap bitmap) {
-                if (mNativeVrShell == 0) return;
-                nativeSetSplashScreenIcon(mNativeVrShell, bitmap);
-            }
-        }
-                .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
     @Override
     public void initializeNative(Tab currentTab, boolean forWebVr,
             boolean webVrAutopresentationExpected, boolean inCct) {
@@ -348,10 +320,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
                 webVrAutopresentationExpected, inCct, getGvrApi().getNativeGvrContext(),
                 mReprojectedRendering, displayWidthMeters, displayHeightMeters, dm.widthPixels,
                 dm.heightPixels);
-
-        // We need to set the icon bitmap from here because we can't read the app icon from native
-        // code.
-        setSplashScreenIcon();
 
         reparentAllTabs(mContentVrWindowAndroid);
         swapToForegroundTab();
@@ -765,7 +733,6 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
             boolean reprojectedRendering, float displayWidthMeters, float displayHeightMeters,
             int displayWidthPixels, int displayHeightPixels);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
-    private native void nativeSetSplashScreenIcon(long nativeVrShell, Bitmap bitmap);
     private native void nativeSwapContents(
             long nativeVrShell, Tab tab, AndroidUiGestureTarget androidUiGestureTarget);
     private native void nativeDestroy(long nativeVrShell);

@@ -158,13 +158,6 @@ VrShell::VrShell(JNIEnv* env,
     UMA_HISTOGRAM_BOOLEAN("VRAutopresentedWebVR", !for_web_vr);
 }
 
-void VrShell::SetSplashScreenIcon(JNIEnv* env,
-                                  const JavaParamRef<jobject>& obj,
-                                  const JavaParamRef<jobject>& bitmap) {
-  ui_->SetSplashScreenIcon(
-      gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(bitmap)));
-}
-
 void VrShell::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }

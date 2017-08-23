@@ -237,7 +237,7 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
   // Initially, the security warnings should not be visible since the first
   // WebVR frame is not received.
   auto initial_elements = kBackgroundElements;
-  initial_elements.insert(kSplashScreenIcon);
+  initial_elements.insert(kSplashScreenText);
 
   VerifyElementsVisible("Initial", initial_elements);
   manager_->OnWebVrFrameAvailable();
@@ -266,7 +266,7 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
 
   // Initially, we should only show the splash screen.
   auto initial_elements = kBackgroundElements;
-  initial_elements.insert(kSplashScreenIcon);
+  initial_elements.insert(kSplashScreenText);
   VerifyElementsVisible("Initial", initial_elements);
 
   // Enter WebVR with autopresentation.

@@ -250,12 +250,6 @@ void VrGLThread::SetIsExiting() {
       base::Bind(&vr::UiSceneManager::SetIsExiting, weak_scene_manager_));
 }
 
-void VrGLThread::SetSplashScreenIcon(const SkBitmap& bitmap) {
-  task_runner()->PostTask(FROM_HERE,
-                          base::Bind(&vr::UiSceneManager::SetSplashScreenIcon,
-                                     weak_scene_manager_, bitmap));
-}
-
 void VrGLThread::OnWebVrFrameAvailable() {
   DCHECK(task_runner()->BelongsToCurrentThread());
   scene_manager_->OnWebVrFrameAvailable();

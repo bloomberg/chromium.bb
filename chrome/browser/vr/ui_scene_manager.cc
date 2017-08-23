@@ -18,7 +18,6 @@
 #include "chrome/browser/vr/elements/loading_indicator.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/screen_dimmer.h"
-#include "chrome/browser/vr/elements/splash_screen_icon.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/transient_url_bar.h"
@@ -108,9 +107,14 @@ static constexpr float kToastOffsetDMM = 0.004;
 static constexpr float kWebVrAngleRadians = 9.88 * M_PI / 180.0;
 static constexpr int kToastTimeoutSeconds = kTransientUrlBarTimeoutSeconds;
 
-static constexpr float kSplashScreenDistance = 2.5;
-static constexpr float kSplashScreenIconSize = 0.405;
-static constexpr float kSplashScreenIconVerticalOffset = -0.18;
+static constexpr float kSplashScreenTextDistance = 2.5;
+static constexpr float kSplashScreenTextFontHeightM =
+    0.05f * kSplashScreenTextDistance;
+static constexpr float kSplashScreenTextWidthM =
+    0.9f * kSplashScreenTextDistance;
+static constexpr float kSplashScreenTextHeightM =
+    0.08f * kSplashScreenTextDistance;
+static constexpr float kSplashScreenTextVerticalOffset = -0.18;
 
 static constexpr float kCloseButtonDistance = 2.4;
 static constexpr float kCloseButtonHeight =
@@ -342,23 +346,30 @@ void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
 }
 
 void UiSceneManager::CreateSplashScreen() {
-  // Chrome icon.
-  std::unique_ptr<SplashScreenIcon> icon =
-      base::MakeUnique<SplashScreenIcon>(256);
-  icon->set_debug_id(kSplashScreenIcon);
-  icon->set_id(AllocateId());
-  icon->set_draw_phase(kPhaseForeground);
-  icon->set_hit_testable(false);
-  icon->SetSize(kSplashScreenIconSize, kSplashScreenIconSize);
-  icon->SetTranslate(0, kSplashScreenIconVerticalOffset,
-                     -kSplashScreenDistance);
-  splash_screen_icon_ = icon.get();
-  scene_->AddUiElement(std::move(icon));
+  // Add "Powered by Chrome" text.
+  auto text = base::MakeUnique<Text>(
+      256, kSplashScreenTextFontHeightM, kSplashScreenTextWidthM,
+      base::Bind([](ColorScheme color_scheme) {
+        return color_scheme.splash_screen_text_color;
+      }),
+      IDS_VR_POWERED_BY_CHROME_MESSAGE);
+  text->set_debug_id(kSplashScreenText);
+  text->set_id(AllocateId());
+  text->set_draw_phase(kPhaseForeground);
+  text->set_hit_testable(false);
+  text->SetSize(kSplashScreenTextWidthM, kSplashScreenTextHeightM);
+  text->SetTranslate(0, kSplashScreenTextVerticalOffset,
+                     -kSplashScreenTextDistance);
+  splash_screen_text_ = text.get();
+  scene_->AddUiElement(std::move(text));
 }
 
 void UiSceneManager::CreateUnderDevelopmentNotice() {
-  std::unique_ptr<Text> text = base::MakeUnique<Text>(
+  auto text = base::MakeUnique<Text>(
       512, kUnderDevelopmentNoticeFontHeightM, kUnderDevelopmentNoticeWidthM,
+      base::Bind([](ColorScheme color_scheme) {
+        return color_scheme.world_background_text;
+      }),
       IDS_VR_UNDER_DEVELOPMENT_NOTICE);
   text->set_debug_id(kUnderDevelopmentNotice);
   text->set_id(AllocateId());
@@ -669,7 +680,7 @@ void UiSceneManager::ConfigureScene() {
   bool showing_web_vr_content = web_vr_mode_ && !showing_web_vr_splash_screen_;
   scene_->set_web_vr_rendering_enabled(showing_web_vr_content);
   // Splash screen.
-  splash_screen_icon_->SetEnabled(showing_web_vr_splash_screen_);
+  splash_screen_text_->SetEnabled(showing_web_vr_splash_screen_);
 
   // Exit warning.
   exit_warning_->SetEnabled(exiting_);
@@ -755,11 +766,6 @@ void UiSceneManager::ConfigureBackgroundColor() {
   floor_->SetCenterColor(color_scheme().floor);
   floor_->SetEdgeColor(color_scheme().world_background);
   floor_->SetGridColor(color_scheme().floor_grid);
-}
-
-void UiSceneManager::SetSplashScreenIcon(const SkBitmap& bitmap) {
-  splash_screen_icon_->SetSplashScreenIconBitmap(bitmap);
-  ConfigureScene();
 }
 
 void UiSceneManager::SetAudioCapturingIndicator(bool enabled) {
