@@ -48,6 +48,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/shadow_types.h"
 
 using wallpaper::ColorProfileType;
@@ -524,11 +525,15 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
   fullscreen_widget_->GetNativeWindow()->SetEventTargeter(
       base::MakeUnique<AppListEventTargeter>());
 
-  // Set bounds directly in screen coordinates to avoid screen position
-  // controller setting bounds in the display where the widget has the largest
-  // intersection.
-  fullscreen_widget_->GetNativeView()->SetBoundsInScreen(
-      app_list_overlay_view_bounds, GetDisplayNearestView());
+  // Set native view's bounds directly to avoid screen position controller
+  // setting bounds in the display where the widget has the largest
+  // intersection. Also, we should not set native view's bounds in screen
+  // coordinates as it causes crash in DesktopScreenPositionClient::SetBounds()
+  // when '--mash' flag is enabled for desktop build (See crbug.com/757573).
+  gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
+  ::wm::ConvertRectFromScreen(native_view->parent(),
+                              &app_list_overlay_view_bounds);
+  native_view->SetBounds(app_list_overlay_view_bounds);
 
   overlay_view_ = new AppListOverlayView(0 /* no corners */);
 
@@ -1213,8 +1218,9 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
     app_list_y_position_in_screen_ =
         std::max(y_position_in_screen, GetDisplayNearestView().bounds().y());
     new_widget_bounds.set_y(app_list_y_position_in_screen_);
-    fullscreen_widget_->GetNativeView()->SetBoundsInScreen(
-        new_widget_bounds, GetDisplayNearestView());
+    gfx::NativeView native_view = fullscreen_widget_->GetNativeView();
+    ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
+    native_view->SetBounds(new_widget_bounds);
   }
 
   DraggingLayout();
