@@ -11,10 +11,8 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
 #include "components/spellcheck/browser/spellcheck_dictionary.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -92,8 +90,7 @@ class SpellcheckHunspellDictionary
     DOWNLOAD_FAILED,
   };
 
-  // Dictionary file information to be passed between the UI thread and the
-  // blocking sequence.
+  // Dictionary file information to be passed between the FILE and UI threads.
   struct DictionaryFile {
    public:
     DictionaryFile();
@@ -143,9 +140,6 @@ class SpellcheckHunspellDictionary
 
   // Notify listeners that the dictionary download failed.
   void InformListenersOfDownloadFailure();
-
-  // Task runner where the file operations takes place.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The language of the dictionary file.
   std::string language_;
