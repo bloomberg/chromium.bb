@@ -974,7 +974,7 @@ bool DesktopWindowTreeHostX11::ShouldUseNativeFrame() const {
 }
 
 bool DesktopWindowTreeHostX11::ShouldWindowContentsBeTransparent() const {
-  return false;
+  return IsTranslucentWindowOpacitySupported();
 }
 
 void DesktopWindowTreeHostX11::FrameTypeChanged() {
