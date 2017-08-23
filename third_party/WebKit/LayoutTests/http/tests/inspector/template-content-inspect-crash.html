@@ -5,19 +5,17 @@
 <script src="console-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.expandElementsTree(function() {
-        var contentNode = ElementsTestRunner.expandedNodeWithId("tpl").templateContent();
-        UI.panels.elements.selectDOMNode(contentNode, true);
-        ConsoleTestRunner.evaluateInConsole("$0", callback);
-    });
+function test() {
+  ElementsTestRunner.expandElementsTree(function() {
+    var contentNode = ElementsTestRunner.expandedNodeWithId('tpl').templateContent();
+    UI.panels.elements.selectDOMNode(contentNode, true);
+    ConsoleTestRunner.evaluateInConsole('$0', callback);
+  });
 
-    function callback(result)
-    {
-        TestRunner.addResult("SUCCESS");
-        TestRunner.completeTest();
-    }
+  function callback(result) {
+    TestRunner.addResult('SUCCESS');
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

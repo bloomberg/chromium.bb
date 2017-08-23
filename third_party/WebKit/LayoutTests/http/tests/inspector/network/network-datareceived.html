@@ -10,50 +10,45 @@ function loadIFrame()
     document.body.appendChild(iframe);
 }
 
-function test()
-{
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "responseReceived", responseReceived);
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFailed", loadingFailed);
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFinished", loadingFinished);
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "dataReceived", dataReceived);
-    TestRunner.evaluateInPage("loadIFrame()");
+function test() {
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'responseReceived', responseReceived);
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFailed', loadingFailed);
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFinished', loadingFinished);
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'dataReceived', dataReceived);
+  TestRunner.evaluateInPage('loadIFrame()');
 
-    var encodedBytesReceived = 0;
-    function responseReceived(requestId, loaderId, time, resourceType, response, frameId)
-    {
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        if (/resource\.php/.exec(request.url())) {
-            TestRunner.addResult("Received response.");
-            encodedBytesReceived += response.encodedDataLength;
-        }
+  var encodedBytesReceived = 0;
+  function responseReceived(requestId, loaderId, time, resourceType, response, frameId) {
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    if (/resource\.php/.exec(request.url())) {
+      TestRunner.addResult('Received response.');
+      encodedBytesReceived += response.encodedDataLength;
     }
+  }
 
-    function loadingFinished(requestId, finishTime, encodedDataLength)
-    {
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        if (/resource\.php/.exec(request.url())) {
-            TestRunner.assertEquals(encodedBytesReceived, encodedDataLength, "Data length mismatch");
-            TestRunner.addResult("SUCCESS");
-            TestRunner.completeTest();
-        }
+  function loadingFinished(requestId, finishTime, encodedDataLength) {
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    if (/resource\.php/.exec(request.url())) {
+      TestRunner.assertEquals(encodedBytesReceived, encodedDataLength, 'Data length mismatch');
+      TestRunner.addResult('SUCCESS');
+      TestRunner.completeTest();
     }
+  }
 
-    function loadingFailed(requestId, time, localizedDescription, canceled)
-    {
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        if (/resource\.php/.exec(request.url())) {
-            TestRunner.addResult("Loading failed!");
-            TestRunner.completeTest();
-        }
+  function loadingFailed(requestId, time, localizedDescription, canceled) {
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    if (/resource\.php/.exec(request.url())) {
+      TestRunner.addResult('Loading failed!');
+      TestRunner.completeTest();
     }
+  }
 
-    function dataReceived(requestId, time, dataLength, encodedDataLength)
-    {
-        TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "dataReceived", dataReceived);
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        if (/resource\.php/.exec(request.url()))
-            encodedBytesReceived += encodedDataLength;
-    }
+  function dataReceived(requestId, time, dataLength, encodedDataLength) {
+    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'dataReceived', dataReceived);
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    if (/resource\.php/.exec(request.url()))
+      encodedBytesReceived += encodedDataLength;
+  }
 }
 </script>
 </head>

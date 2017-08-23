@@ -9,37 +9,34 @@ function navigateFromScript()
     window.location.href = "?foo";
 }
 
-var test = function()
-{
-    TestRunner.evaluateInPage("navigateFromScript()");
-    TestRunner.runWhenPageLoads(step1);
+var test = function() {
+  TestRunner.evaluateInPage('navigateFromScript()');
+  TestRunner.runWhenPageLoads(step1);
 
-    function dumpInitiator(request)
-    {
-        var initiator = request.initiator();
-        TestRunner.addResult(request.url() + ": " + initiator.type);
-        if (initiator.url)
-            TestRunner.addResult("    " + initiator.url + " " + initiator.lineNumber);
-        var stackTrace = initiator.stack;
-        if (!stackTrace)
-            return;
-        for (var i = 0; i < stackTrace.callFrames.length; ++i) {
-            var frame = stackTrace.callFrames[i];
-            if (frame.lineNumber) {
-                TestRunner.addResult("    " + frame.functionName + " " + frame.url + " " + frame.lineNumber);
-                return;
-            }
-        }
+  function dumpInitiator(request) {
+    var initiator = request.initiator();
+    TestRunner.addResult(request.url() + ': ' + initiator.type);
+    if (initiator.url)
+      TestRunner.addResult('    ' + initiator.url + ' ' + initiator.lineNumber);
+    var stackTrace = initiator.stack;
+    if (!stackTrace)
+      return;
+    for (var i = 0; i < stackTrace.callFrames.length; ++i) {
+      var frame = stackTrace.callFrames[i];
+      if (frame.lineNumber) {
+        TestRunner.addResult('    ' + frame.functionName + ' ' + frame.url + ' ' + frame.lineNumber);
+        return;
+      }
     }
+  }
 
-    function step1()
-    {
-        var results = NetworkTestRunner.findRequestsByURLPattern(/\?foo/);
-        TestRunner.assertTrue(results.length !== 0);
-        dumpInitiator(results[0]);
-        TestRunner.completeTest();
-    }
-}
+  function step1() {
+    var results = NetworkTestRunner.findRequestsByURLPattern(/\?foo/);
+    TestRunner.assertTrue(results.length !== 0);
+    dumpInitiator(results[0]);
+    TestRunner.completeTest();
+  }
+};
 
 </script>
 </head>

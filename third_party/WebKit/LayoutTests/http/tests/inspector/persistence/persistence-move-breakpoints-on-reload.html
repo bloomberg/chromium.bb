@@ -12,63 +12,53 @@ function addFooJS() {
     document.body.appendChild(script);
 }
 
-function test()
-{
-    var testMapping = BindingsTestRunner.initializeTestMapping();
-    var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
-    BindingsTestRunner.addFooJSFile(fs);
+function test() {
+  var testMapping = BindingsTestRunner.initializeTestMapping();
+  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  BindingsTestRunner.addFooJSFile(fs);
 
-    TestRunner.runTestSuite([
-        function addFileSystem(next)
-        {
-            fs.reportCreated(next);
-        },
+  TestRunner.runTestSuite([
+    function addFileSystem(next) {
+      fs.reportCreated(next);
+    },
 
-        function addNetworkFooJS(next)
-        {
-            TestRunner.evaluateInPage('addFooJS()');
-            testMapping.addBinding('foo.js');
-            BindingsTestRunner.waitForBinding('foo.js').then(next);
-        },
+    function addNetworkFooJS(next) {
+      TestRunner.evaluateInPage('addFooJS()');
+      testMapping.addBinding('foo.js');
+      BindingsTestRunner.waitForBinding('foo.js').then(next);
+    },
 
-        function setBreakpointInFileSystemUISourceCode(next)
-        {
-            TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem)
-                .then(sourceCode => SourcesTestRunner.showUISourceCodePromise(sourceCode))
-                .then(onSourceFrame);
+    function setBreakpointInFileSystemUISourceCode(next) {
+      TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem)
+          .then(sourceCode => SourcesTestRunner.showUISourceCodePromise(sourceCode))
+          .then(onSourceFrame);
 
-            function onSourceFrame(sourceFrame)
-            {
-                SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
-                SourcesTestRunner.waitBreakpointSidebarPane(true).then(dumpBreakpointSidebarPane).then(next);
-            }
-        },
+      function onSourceFrame(sourceFrame) {
+        SourcesTestRunner.setBreakpoint(sourceFrame, 0, '', true);
+        SourcesTestRunner.waitBreakpointSidebarPane(true).then(dumpBreakpointSidebarPane).then(next);
+      }
+    },
 
-        async function reloadPageAndDumpBreakpoints(next)
-        {
-            testMapping.removeBinding('foo.js');
-            await Promise.all([
-                SourcesTestRunner.waitBreakpointSidebarPane(),
-                TestRunner.reloadPagePromise()
-            ]);
-            testMapping.addBinding('foo.js');
-            dumpBreakpointSidebarPane();
-            next();
-        },
-    ]);
+    async function reloadPageAndDumpBreakpoints(next) {
+      testMapping.removeBinding('foo.js');
+      await Promise.all([SourcesTestRunner.waitBreakpointSidebarPane(), TestRunner.reloadPagePromise()]);
+      testMapping.addBinding('foo.js');
+      dumpBreakpointSidebarPane();
+      next();
+    },
+  ]);
 
-    function dumpBreakpointSidebarPane()
-    {
-        var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
-        var empty = paneElement.querySelector('.gray-info-message');
-        if (empty)
-            return TestRunner.textContentWithLineBreaks(empty);
-        var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
-        for (var entry of entries) {
-            var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
-            TestRunner.addResult("    " + uiLocation.uiSourceCode.url() +":" + uiLocation.lineNumber);
-        }
+  function dumpBreakpointSidebarPane() {
+    var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
+    var empty = paneElement.querySelector('.gray-info-message');
+    if (empty)
+      return TestRunner.textContentWithLineBreaks(empty);
+    var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+    for (var entry of entries) {
+      var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
+      TestRunner.addResult('    ' + uiLocation.uiSourceCode.url() + ':' + uiLocation.lineNumber);
     }
+  }
 };
 </script>
 </head>

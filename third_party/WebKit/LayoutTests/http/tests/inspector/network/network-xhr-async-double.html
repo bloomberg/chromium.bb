@@ -3,44 +3,42 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
-{
-    function initArgs(method, url, async, payload)
-    {
-        var args = {};
-        args.method = method;
-        args.url = url;
-        args.async = async;
-        args.payload = payload;
-        var jsonArgs = JSON.stringify(args).replace(/\"/g, "\\\"");
-        return jsonArgs;
+function test() {
+  function initArgs(method, url, async, payload) {
+    var args = {};
+    args.method = method;
+    args.url = url;
+    args.async = async;
+    args.payload = payload;
+    var jsonArgs = JSON.stringify(args).replace(/\"/g, '\\"');
+    return jsonArgs;
+  }
+
+  NetworkTestRunner.recordNetwork();
+  var jsonArgs1 = initArgs('POST', 'resources/echo-payload.php', true, 'request1');
+  var jsonArgs2 = initArgs('POST', 'resources/echo-payload.php', true, 'request2');
+  ConsoleTestRunner.addConsoleSniffer(step2);
+  TestRunner.evaluateInPage(
+      'makeXHRForJSONArguments("' + jsonArgs1 + '"); makeXHRForJSONArguments("' + jsonArgs2 + '")');
+
+  var totalXHRs = 2;
+  async function step2(msg) {
+    if (msg.messageText.indexOf('XHR loaded') === -1 || (--totalXHRs)) {
+      ConsoleTestRunner.addConsoleSniffer(step2);
+      return;
     }
 
-    NetworkTestRunner.recordNetwork();
-    var jsonArgs1 = initArgs("POST", "resources/echo-payload.php", true, 'request1');
-    var jsonArgs2 = initArgs("POST", "resources/echo-payload.php", true, 'request2');
-    ConsoleTestRunner.addConsoleSniffer(step2);
-    TestRunner.evaluateInPage("makeXHRForJSONArguments(\"" + jsonArgs1 + "\"); makeXHRForJSONArguments(\"" + jsonArgs2 + "\")");
+    var requests = NetworkTestRunner.networkRequests();
+    var request1 = requests[requests.length - 2];
+    var request2 = requests[requests.length - 1];
+    var request1Content = await request1.requestContent();
+    var request2Content = await request2.requestContent();
 
-    var totalXHRs = 2;
-    async function step2(msg)
-    {
-        if (msg.messageText.indexOf("XHR loaded") === -1 || (--totalXHRs)) {
-            ConsoleTestRunner.addConsoleSniffer(step2);
-            return;
-        }
-
-        var requests = NetworkTestRunner.networkRequests();
-        var request1 = requests[requests.length - 2];
-        var request2 = requests[requests.length - 1];
-        var request1Content = await request1.requestContent();
-        var request2Content = await request2.requestContent();
-
-        TestRunner.addResult("resource1.content: " + request1Content);
-        TestRunner.addResult("resource2.content: " + request2Content);
-        TestRunner.assertTrue(request1Content === 'request1' && request2Content === 'request2');
-        TestRunner.completeTest();
-    }
+    TestRunner.addResult('resource1.content: ' + request1Content);
+    TestRunner.addResult('resource2.content: ' + request2Content);
+    TestRunner.assertTrue(request1Content === 'request1' && request2Content === 'request2');
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

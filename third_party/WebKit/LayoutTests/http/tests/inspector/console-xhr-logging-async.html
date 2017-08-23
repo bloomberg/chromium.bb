@@ -4,36 +4,30 @@
 <script src="console-test.js"></script>
 <script src="network-test.js"></script>
 <script>
-function test()
-{
-    step1();
+function test() {
+  step1();
 
-    function makeRequest(callback)
-    {
-        NetworkTestRunner.makeSimpleXHR("GET", "resources/xhr-exists.html", true, callback);
-    }
+  function makeRequest(callback) {
+    NetworkTestRunner.makeSimpleXHR('GET', 'resources/xhr-exists.html', true, callback);
+  }
 
-    function step1()
-    {
-        Common.settingForTest('monitoringXHREnabled').set(true);
-        makeRequest(step2);
-    }
+  function step1() {
+    Common.settingForTest('monitoringXHREnabled').set(true);
+    makeRequest(step2);
+  }
 
-    function step2()
-    {
-        Common.settingForTest('monitoringXHREnabled').set(false);
-        makeRequest(step3);
-    }
+  function step2() {
+    Common.settingForTest('monitoringXHREnabled').set(false);
+    makeRequest(step3);
+  }
 
-    function step3()
-    {
-        function finish()
-        {
-            ConsoleTestRunner.dumpConsoleMessages();
-            TestRunner.completeTest();
-        }
-        TestRunner.deprecatedRunAfterPendingDispatches(finish);
+  function step3() {
+    function finish() {
+      ConsoleTestRunner.dumpConsoleMessages();
+      TestRunner.completeTest();
     }
+    TestRunner.deprecatedRunAfterPendingDispatches(finish);
+  }
 }
 
 </script>

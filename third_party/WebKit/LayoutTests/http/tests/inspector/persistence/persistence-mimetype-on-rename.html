@@ -6,33 +6,29 @@
 <script src="./automapping-test.js"></script>
 <script>
 
-async function test()
-{
-    var foo_js = {
-        content: "console.log('foo.js!');",
-        time: null
-    };
+async function test() {
+  var foo_js = {content: 'console.log(\'foo.js!\');', time: null};
 
-    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
-    BindingsTestRunner.addFiles(fs, {
-        "scripts/foo.js": foo_js,
-    });
-    await new Promise(fulfill => fs.reportCreated(fulfill));
-    TestRunner.markStep('Open foo.js editor');
-    var fileUISourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
-    await dumpEditorMimeType();
+  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  BindingsTestRunner.addFiles(fs, {
+    'scripts/foo.js': foo_js,
+  });
+  await new Promise(fulfill => fs.reportCreated(fulfill));
+  TestRunner.markStep('Open foo.js editor');
+  var fileUISourceCode = await TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem);
+  await dumpEditorMimeType();
 
-    TestRunner.markStep('Rename foo.js => foo.css');
-    await fileUISourceCode.rename('foo.css');
-    await dumpEditorMimeType();
+  TestRunner.markStep('Rename foo.js => foo.css');
+  await fileUISourceCode.rename('foo.css');
+  await dumpEditorMimeType();
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 
-    async function dumpEditorMimeType() {
-        var sourceFrame = await SourcesTestRunner.showUISourceCodePromise(fileUISourceCode);
-        var textEditor = sourceFrame.textEditor;
-        TestRunner.addResult('Text editor mimeType: ' + textEditor.mimeType());
-    }
+  async function dumpEditorMimeType() {
+    var sourceFrame = await SourcesTestRunner.showUISourceCodePromise(fileUISourceCode);
+    var textEditor = sourceFrame.textEditor;
+    TestRunner.addResult('Text editor mimeType: ' + textEditor.mimeType());
+  }
 }
 </script>
 </head>

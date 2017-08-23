@@ -11,21 +11,18 @@ function installWorker()
     new Worker("resources/worker-source.js");
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        TestRunner.evaluateInPage("installWorker()");
-        SourcesTestRunner.waitUntilPaused(paused);
-    }
+  function step1() {
+    TestRunner.evaluateInPage('installWorker()');
+    SourcesTestRunner.waitUntilPaused(paused);
+  }
 
-    function paused(callFrames)
-    {
-        SourcesTestRunner.captureStackTrace(callFrames);
-        SourcesTestRunner.resumeExecution(SourcesTestRunner.completeDebuggerTest);
-    }
+  function paused(callFrames) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    SourcesTestRunner.resumeExecution(SourcesTestRunner.completeDebuggerTest);
+  }
 };
 
 </script>

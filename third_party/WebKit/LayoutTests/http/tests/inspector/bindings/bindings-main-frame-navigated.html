@@ -5,29 +5,28 @@
 
 <script>
 
-async function test()
-{
-    TestRunner.markStep('dumpInitialWorkspace');
-    var snapshot = BindingsTestRunner.dumpWorkspace();
+async function test() {
+  TestRunner.markStep('dumpInitialWorkspace');
+  var snapshot = BindingsTestRunner.dumpWorkspace();
 
-    TestRunner.markStep('attachFrame');
-    await Promise.all([
-        BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html', '_test_attachFrame.js'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
-    ]);
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('attachFrame');
+  await Promise.all([
+    BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html', '_test_attachFrame.js'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
+  ]);
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('navigateMainFrame');
-    var url = "http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html";
-    await TestRunner.navigatePromise(url);
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('navigateMainFrame');
+  var url = 'http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html';
+  await TestRunner.navigatePromise(url);
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('navigateBack');
-    var originalUrl = "http://127.0.0.1:8000/inspector/bindings/bindings-main-frame-navigated.html";
-    await TestRunner.navigatePromise(originalUrl);
+  TestRunner.markStep('navigateBack');
+  var originalUrl = 'http://127.0.0.1:8000/inspector/bindings/bindings-main-frame-navigated.html';
+  await TestRunner.navigatePromise(originalUrl);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

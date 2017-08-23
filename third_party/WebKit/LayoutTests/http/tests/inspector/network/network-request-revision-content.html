@@ -12,32 +12,29 @@ function loadStylesheet()
     document.head.appendChild(css);
 }
 
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, step2);
-    TestRunner.evaluateInPage("loadStylesheet()");
+function test() {
+  NetworkTestRunner.recordNetwork();
+  Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, step2);
+  TestRunner.evaluateInPage('loadStylesheet()');
 
-    var resource;
-    function step2(event)
-    {
-        var eventUISourceCode = event.data;
-        if (eventUISourceCode.url().indexOf("style.css") == -1)
-            return;
-        var request = NetworkTestRunner.networkRequests().pop();
-        uiSourceCode = Workspace.workspace.uiSourceCodeForURL(request.url());
-        if (!uiSourceCode)
-            return;
-        uiSourceCode.addRevision("");
-        uiSourceCode.history()[0].requestContent().then(step3);
-    }
+  var resource;
+  function step2(event) {
+    var eventUISourceCode = event.data;
+    if (eventUISourceCode.url().indexOf('style.css') == -1)
+      return;
+    var request = NetworkTestRunner.networkRequests().pop();
+    uiSourceCode = Workspace.workspace.uiSourceCodeForURL(request.url());
+    if (!uiSourceCode)
+      return;
+    uiSourceCode.addRevision('');
+    uiSourceCode.history()[0].requestContent().then(step3);
+  }
 
-    function step3(content)
-    {
-        TestRunner.addResult(uiSourceCode.url());
-        TestRunner.addResult(content);
-        TestRunner.completeTest();
-    }
+  function step3(content) {
+    TestRunner.addResult(uiSourceCode.url());
+    TestRunner.addResult(content);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

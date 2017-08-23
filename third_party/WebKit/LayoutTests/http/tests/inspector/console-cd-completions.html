@@ -88,96 +88,86 @@ mixin.call(MyClass.prototype);
 window.x = new MyClass();
 
 
-function test()
-{
-    ConsoleTestRunner.changeExecutionContext("myIFrame");
+function test() {
+  ConsoleTestRunner.changeExecutionContext('myIFrame');
 
-    ObjectUI.JavaScriptAutocomplete.completionsForExpression("", "myGlob").then(checkCompletions.bind(this));
-    function checkCompletions(completions)
-    {
-        TestRunner.addResult("myGlob completions:")
-        dumpCompletions(completions, ["myGlobalVar", "myGlobalFunction"]);
-        requestIFrameCompletions();
+  ObjectUI.JavaScriptAutocomplete.completionsForExpression('', 'myGlob').then(checkCompletions.bind(this));
+  function checkCompletions(completions) {
+    TestRunner.addResult('myGlob completions:');
+    dumpCompletions(completions, ['myGlobalVar', 'myGlobalFunction']);
+    requestIFrameCompletions();
+  }
+
+  function requestIFrameCompletions() {
+    ConsoleTestRunner.changeExecutionContext('top');
+    ObjectUI.JavaScriptAutocomplete.completionsForExpression('myIFrame.', '').then(checkIframeCompletions.bind(this));
+  }
+
+  function checkIframeCompletions(completions) {
+    TestRunner.addResult('myIFrame completions:');
+    dumpCompletions(completions, ['self', 'top', 'window']);
+    requestProxyCompletions();
+  }
+
+
+  function requestProxyCompletions() {
+    ConsoleTestRunner.changeExecutionContext('top');
+    ObjectUI.JavaScriptAutocomplete.completionsForExpression('window.proxy2.', '')
+        .then(checkProxyCompletions.bind(this));
+  }
+
+  function checkProxyCompletions(completions) {
+    TestRunner.addResult('proxy completions:');
+    dumpCompletions(completions, ['a']);
+    TestRunner.evaluateInPage('window.counter', dumpCounter);
+  }
+
+  function dumpCounter(result) {
+    TestRunner.addResult('window.counter = ' + result.value);
+    requestMyClassWithMixinCompletions();
+  }
+
+
+  function requestMyClassWithMixinCompletions() {
+    ConsoleTestRunner.changeExecutionContext('top');
+    ObjectUI.JavaScriptAutocomplete.completionsForExpression('window.x.', '')
+        .then(checkMyClassWithMixinCompletions.bind(this));
+  }
+
+  function checkMyClassWithMixinCompletions(completions) {
+    TestRunner.addResult('MyClass with mixin completions:');
+    dumpCompletions(completions, ['myMethod']);
+    requestObjectCompletions();
+  }
+
+
+  function requestObjectCompletions() {
+    ConsoleTestRunner.changeExecutionContext('top');
+    ObjectUI.JavaScriptAutocomplete.completionsForExpression('Object.', '').then(checkObjectCompletions.bind(this));
+  }
+
+  function checkObjectCompletions(completions) {
+    TestRunner.addResult('Object completions:');
+    dumpCompletions(completions, ['getOwnPropertyNames', 'getOwnPropertyDescriptor', 'keys']);
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+
+
+  function dumpCompletions(completions, expected) {
+    var completionSet = new Set(completions.map(c => c.text));
+    var notFound = false;
+    for (var completion of expected) {
+      if (completionSet.has(completion)) {
+        TestRunner.addResult(completion);
+      } else {
+        TestRunner.addResult('NOT FOUND: ' + completion);
+        notFound = true;
+      }
     }
-
-    function requestIFrameCompletions()
-    {
-        ConsoleTestRunner.changeExecutionContext("top");
-        ObjectUI.JavaScriptAutocomplete.completionsForExpression("myIFrame.", "").then(checkIframeCompletions.bind(this));
-    }
-
-    function checkIframeCompletions(completions)
-    {
-        TestRunner.addResult("myIFrame completions:")
-        dumpCompletions(completions, ["self", "top", "window"]);
-        requestProxyCompletions();
-    }
-
-
-    function requestProxyCompletions()
-    {
-        ConsoleTestRunner.changeExecutionContext("top");
-        ObjectUI.JavaScriptAutocomplete.completionsForExpression("window.proxy2.",  "").then(checkProxyCompletions.bind(this));
-    }
-
-    function checkProxyCompletions(completions)
-    {
-        TestRunner.addResult("proxy completions:")
-        dumpCompletions(completions, ["a"]);
-        TestRunner.evaluateInPage("window.counter", dumpCounter);
-    }
-
-    function dumpCounter(result)
-    {
-        TestRunner.addResult("window.counter = " + result.value);
-        requestMyClassWithMixinCompletions();
-    }
-
-
-    function requestMyClassWithMixinCompletions()
-    {
-        ConsoleTestRunner.changeExecutionContext("top");
-        ObjectUI.JavaScriptAutocomplete.completionsForExpression("window.x.", "").then(checkMyClassWithMixinCompletions.bind(this));
-    }
-
-    function checkMyClassWithMixinCompletions(completions)
-    {
-        TestRunner.addResult("MyClass with mixin completions:")
-        dumpCompletions(completions, ["myMethod"]);
-        requestObjectCompletions();
-    }
-
-
-    function requestObjectCompletions()
-    {
-        ConsoleTestRunner.changeExecutionContext("top");
-        ObjectUI.JavaScriptAutocomplete.completionsForExpression("Object.",  "").then(checkObjectCompletions.bind(this));
-    }
-
-    function checkObjectCompletions(completions)
-    {
-        TestRunner.addResult("Object completions:")
-        dumpCompletions(completions, ["getOwnPropertyNames", "getOwnPropertyDescriptor", "keys"]);
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
-
-
-    function dumpCompletions(completions, expected)
-    {
-        var completionSet = new Set(completions.map(c => c.text));
-        var notFound = false;
-        for (var completion of expected) {
-            if (completionSet.has(completion)) {
-                TestRunner.addResult(completion);
-            } else {
-                TestRunner.addResult("NOT FOUND: " + completion);
-                notFound = true;
-            }
-        }
-        if (notFound)
-            TestRunner.addResult(JSON.stringify(completions));
-    }
+    if (notFound)
+      TestRunner.addResult(JSON.stringify(completions));
+  }
 }
 
 </script>

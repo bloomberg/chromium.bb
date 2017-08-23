@@ -15,14 +15,12 @@ function performActions()
     });
 }
 
-function test()
-{
-    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", onTimelineRecorded);
-    function onTimelineRecorded()
-    {
-        PerformanceTestRunner.printTimelineRecordsWithDetails("Layout");
-        TestRunner.completeTest();
-    }
+function test() {
+  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', onTimelineRecorded);
+  function onTimelineRecorded() {
+    PerformanceTestRunner.printTimelineRecordsWithDetails('Layout');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

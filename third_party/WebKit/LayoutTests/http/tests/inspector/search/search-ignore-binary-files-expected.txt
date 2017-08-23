@@ -2,5 +2,5 @@ Verify that search doesn't search in binary resources.
 
 
 Search result #1: uiSourceCode.url = http://127.0.0.1:8000/inspector/search/search-ignore-binary-files.html
-  search match #1: lineNumber = 14, lineContent = '        var searchConfig = new Workspace.SearchConfig("AAAAAAA", true, false);'
+  search match #1: lineNumber = 12, lineContent = '    var searchConfig = new Workspace.SearchConfig('AAAAAAA', true, false);'
 

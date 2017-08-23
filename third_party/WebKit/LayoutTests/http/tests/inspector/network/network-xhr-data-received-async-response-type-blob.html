@@ -4,22 +4,21 @@
 <script src="../network-test.js"></script>
 <script>
 
-function test()
-{
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "dataReceived", dataReceived);
+function test() {
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'dataReceived', dataReceived);
 
-    NetworkTestRunner.recordNetwork();
-    NetworkTestRunner.makeXHR("GET", "resources/resource.php", true, undefined, undefined, [], false, undefined, "blob", function () { });
+  NetworkTestRunner.recordNetwork();
+  NetworkTestRunner.makeXHR(
+      'GET', 'resources/resource.php', true, undefined, undefined, [], false, undefined, 'blob', function() {});
 
-    function dataReceived(requestId, time, dataLength, encodedDataLength)
-    {
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        if (/resource\.php/.exec(request.url())) {
-            TestRunner.addResult("Received data for resource.php");
-            TestRunner.addResult("SUCCESS");
-            TestRunner.completeTest();
-        }
+  function dataReceived(requestId, time, dataLength, encodedDataLength) {
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    if (/resource\.php/.exec(request.url())) {
+      TestRunner.addResult('Received data for resource.php');
+      TestRunner.addResult('SUCCESS');
+      TestRunner.completeTest();
     }
+  }
 }
 </script>
 </head>

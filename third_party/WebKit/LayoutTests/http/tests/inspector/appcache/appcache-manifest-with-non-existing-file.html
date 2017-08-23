@@ -4,35 +4,32 @@
 <script src="../resources-test.js"></script>
 <script src="appcache-test.js"></script>
 <script>
-function test()
-{
-    var frameId1;
-    var frameId2;
-    var frameId3;
+function test() {
+  var frameId1;
+  var frameId2;
+  var frameId3;
 
-    UI.viewManager.showView("resources");
-    ApplicationTestRunner.startApplicationCacheStatusesRecording();
+  UI.viewManager.showView('resources');
+  ApplicationTestRunner.startApplicationCacheStatusesRecording();
+  ApplicationTestRunner.dumpApplicationCache();
+  ApplicationTestRunner.createAndNavigateIFrame(
+      'resources/page-with-manifest.php?manifestId=with-non-existing-file', step1);
+
+  function step1(frameId) {
+    frameId1 = frameId;
+    // Waiting for at least two status events notifications from backend, to make sure
+    // we are not completing test before loading application cache.
+    ApplicationTestRunner.ensureFrameStatusEventsReceived(frameId, 2, step2);
+  }
+
+  function step2() {
+    ApplicationTestRunner.waitForFrameManifestURLAndStatus(frameId1, '', applicationCache.UNCACHED, step3);
+  }
+
+  function step3() {
     ApplicationTestRunner.dumpApplicationCache();
-    ApplicationTestRunner.createAndNavigateIFrame("resources/page-with-manifest.php?manifestId=with-non-existing-file", step1);
-
-    function step1(frameId)
-    {
-        frameId1 = frameId;
-        // Waiting for at least two status events notifications from backend, to make sure
-        // we are not completing test before loading application cache.
-        ApplicationTestRunner.ensureFrameStatusEventsReceived(frameId, 2, step2)
-    }
-
-    function step2()
-    {
-        ApplicationTestRunner.waitForFrameManifestURLAndStatus(frameId1, "", applicationCache.UNCACHED, step3);
-    }
-
-    function step3()
-    {
-        ApplicationTestRunner.dumpApplicationCache();
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

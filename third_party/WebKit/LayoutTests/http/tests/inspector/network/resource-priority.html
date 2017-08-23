@@ -79,45 +79,42 @@ function createIFrame()
     document.head.appendChild(iframe);
 }
 
-function test()
-{
-    var actions = [
-        {"fn": "sendSyncScriptRequest", "requests": 1},
-        {"fn": "sendAsyncScriptRequest", "requests": 1},
-        {"fn": "sendScriptRequestPrecededByImage", "requests": 2},
-        {"fn": "sendScriptRequestPrecededByPreloadedImage", "requests": 2},
-        {"fn": "sendXHRSync", "requests": 1},
-        {"fn": "sendXHRAsync", "requests": 1},
-        {"fn": "sendImageRequest", "requests": 1},
-        {"fn": "sendStyleRequest", "requests": 1},
-        {"fn": "createIFrame", "requests": 1},
-        {"fn": "sendScriptsFromDocumentWriteAfterImage", "requests": 5},
-    ];
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+function test() {
+  var actions = [
+    {'fn': 'sendSyncScriptRequest', 'requests': 1},
+    {'fn': 'sendAsyncScriptRequest', 'requests': 1},
+    {'fn': 'sendScriptRequestPrecededByImage', 'requests': 2},
+    {'fn': 'sendScriptRequestPrecededByPreloadedImage', 'requests': 2},
+    {'fn': 'sendXHRSync', 'requests': 1},
+    {'fn': 'sendXHRAsync', 'requests': 1},
+    {'fn': 'sendImageRequest', 'requests': 1},
+    {'fn': 'sendStyleRequest', 'requests': 1},
+    {'fn': 'createIFrame', 'requests': 1},
+    {'fn': 'sendScriptsFromDocumentWriteAfterImage', 'requests': 5},
+  ];
+  TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
 
-    var nextAction = 0;
-    var expectedRequestCount = 0;
-    performNextAction();
+  var nextAction = 0;
+  var expectedRequestCount = 0;
+  performNextAction();
 
-    function performNextAction()
-    {
-        if (nextAction >= actions.length) {
-            TestRunner.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
-            TestRunner.completeTest();
-            return;
-        }
-        TestRunner.addResult(actions[nextAction].fn);
-        expectedRequestCount = actions[nextAction].requests;
-        TestRunner.evaluateInPage(actions[nextAction++].fn + "()");
+  function performNextAction() {
+    if (nextAction >= actions.length) {
+      TestRunner.networkManager.removeEventListener(SDK.NetworkManager.Events.RequestStarted, onRequestStarted);
+      TestRunner.completeTest();
+      return;
     }
-    function onRequestStarted(event)
-    {
-        var request = event.data;
-        TestRunner.addResult("Request: " + request.name() + " priority: " + request.initialPriority());
-        expectedRequestCount--;
-        if (expectedRequestCount < 1)
-            performNextAction();
-    }
+    TestRunner.addResult(actions[nextAction].fn);
+    expectedRequestCount = actions[nextAction].requests;
+    TestRunner.evaluateInPage(actions[nextAction++].fn + '()');
+  }
+  function onRequestStarted(event) {
+    var request = event.data;
+    TestRunner.addResult('Request: ' + request.name() + ' priority: ' + request.initialPriority());
+    expectedRequestCount--;
+    if (expectedRequestCount < 1)
+      performNextAction();
+  }
 }
 </script>
 </head>

@@ -12,27 +12,24 @@ function loadIframe()
     document.body.appendChild(iframe);
 }
 
-function test()
-{
-    TestRunner.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
-    TestRunner.evaluateInPage("loadIframe()");
+function test() {
+  TestRunner.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
+  TestRunner.evaluateInPage('loadIframe()');
 
-    function waitForResources()
-    {
-        TestRunner.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
-        ApplicationTestRunner.runAfterResourcesAreFinished(["dummy-iframe.html", "inspector-test.js", "resources-test.js", "resource-tree-test.js"], dump);
+  function waitForResources() {
+    TestRunner.resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.FrameNavigated, waitForResources);
+    ApplicationTestRunner.runAfterResourcesAreFinished(
+        ['dummy-iframe.html', 'inspector-test.js', 'resources-test.js', 'resource-tree-test.js'], dump);
+  }
+
+  function dump() {
+    function formatter(resource) {
+      return resource.url + ' => ' + resource.documentURL;
     }
 
-    function dump()
-    {
-        function formatter(resource)
-        {
-            return resource.url + " => " + resource.documentURL;
-        }
-    
-        ApplicationTestRunner.dumpResources(formatter);    
-        TestRunner.completeTest();
-    }
+    ApplicationTestRunner.dumpResources(formatter);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

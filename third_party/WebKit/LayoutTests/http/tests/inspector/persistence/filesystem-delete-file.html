@@ -6,22 +6,21 @@
 <script src="./automapping-test.js"></script>
 <script>
 
-function test()
-{
-    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
-    BindingsTestRunner.addFiles(fs, {
-        "script.js": { content: "testme" },
-        "bar.js": { content: "another" },
-    });
-    fs.reportCreated(function() { });
-    TestRunner.waitForUISourceCode("script.js").then(onUISourceCode);
+function test() {
+  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  BindingsTestRunner.addFiles(fs, {
+    'script.js': {content: 'testme'},
+    'bar.js': {content: 'another'},
+  });
+  fs.reportCreated(function() {});
+  TestRunner.waitForUISourceCode('script.js').then(onUISourceCode);
 
-    function onUISourceCode(uiSourceCode) {
-        TestRunner.addResult("BEFORE:\n" + fs.dumpAsText());
-        uiSourceCode.remove();
-        TestRunner.addResult("\nAFTER:\n" + fs.dumpAsText());
-        TestRunner.completeTest();
-    }
+  function onUISourceCode(uiSourceCode) {
+    TestRunner.addResult('BEFORE:\n' + fs.dumpAsText());
+    uiSourceCode.remove();
+    TestRunner.addResult('\nAFTER:\n' + fs.dumpAsText());
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

@@ -12,19 +12,15 @@ function injectStyleSheet()
     document.head.appendChild(style);
 }
 
-function test()
-{
-    Promise.all([
-        UI.inspectorView.showPanel('sources'),
-        TestRunner.evaluateInPagePromise('injectStyleSheet()')
-    ]).then(onInjected);
+function test() {
+  Promise.all([UI.inspectorView.showPanel('sources'), TestRunner.evaluateInPagePromise('injectStyleSheet()')])
+      .then(onInjected);
 
-    function onInjected()
-    {
-        var sourcesNavigator = new Sources.SourcesNavigatorView();
-        SourcesTestRunner.dumpNavigatorView(sourcesNavigator);
-        TestRunner.completeTest();
-    }
+  function onInjected() {
+    var sourcesNavigator = new Sources.SourcesNavigatorView();
+    SourcesTestRunner.dumpNavigatorView(sourcesNavigator);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

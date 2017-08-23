@@ -3,42 +3,56 @@
 <script src="../inspector-test.js"></script>
 <script src="../security-test.js"></script>
 <script>
-function test()
-{
-    /** @type {!Protocol.Security.InsecureContentStatus} */
-    var insecureContentStatus = { ranMixedContent: false, displayedMixedContent: true, ranContentWithCertErrors: false, displayedContentWithCertErrors: false, ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure, displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral };
+function test() {
+  /** @type {!Protocol.Security.InsecureContentStatus} */
+  var insecureContentStatus = {
+    ranMixedContent: false,
+    displayedMixedContent: true,
+    ranContentWithCertErrors: false,
+    displayedContentWithCertErrors: false,
+    ranInsecureContentStyle: Protocol.Security.SecurityState.Insecure,
+    displayedInsecureContentStyle: Protocol.Security.SecurityState.Neutral
+  };
 
-    TestRunner.addResult("\nBefore Refresh --------------");
+  TestRunner.addResult('\nBefore Refresh --------------');
 
-    var mixedExplanations = [
-        {
-            securityState: Protocol.Security.SecurityState.Neutral,
-            summary: "Neutral Test Summary",
-            description: "Neutral Test Description",
-            mixedContentType: Protocol.Security.MixedContentType.OptionallyBlockable,
-            certificate: []
-        }
-    ];
-    TestRunner.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
+  var mixedExplanations = [{
+    securityState: Protocol.Security.SecurityState.Neutral,
+    summary: 'Neutral Test Summary',
+    description: 'Neutral Test Description',
+    mixedContentType: Protocol.Security.MixedContentType.OptionallyBlockable,
+    certificate: []
+  }];
+  TestRunner.mainTarget.model(Security.SecurityModel)
+      .dispatchEventToListeners(
+          Security.SecurityModel.Events.SecurityStateChanged,
+          new Security.PageSecurityState(
+              Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
 
-    // At this point, the page has mixed content but no mixed requests have been recorded, so the user should be prompted to refresh.
-    var explanations = Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
-    for (var i = 0; i < explanations.length; i++)
-        TestRunner.dumpDeepInnerHTML(explanations[i]);
+  // At this point, the page has mixed content but no mixed requests have been recorded, so the user should be prompted to refresh.
+  var explanations =
+      Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName('security-explanation');
+  for (var i = 0; i < explanations.length; i++)
+    TestRunner.dumpDeepInnerHTML(explanations[i]);
 
-    TestRunner.addResult("\nRefresh --------------");
+  TestRunner.addResult('\nRefresh --------------');
 
-    // Now simulate a refresh.
-    TestRunner.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
+  // Now simulate a refresh.
+  TestRunner.mainTarget.model(Security.SecurityModel)
+      .dispatchEventToListeners(
+          Security.SecurityModel.Events.SecurityStateChanged,
+          new Security.PageSecurityState(
+              Protocol.Security.SecurityState.Neutral, true, mixedExplanations, insecureContentStatus, null));
 
-    var request = new SDK.NetworkRequest(0, "http://foo.test", "https://foo.test", 0, 0, null);
-    request.mixedContentType = "optionally-blockable";
-    SecurityTestRunner.dispatchRequestFinished(request);
+  var request = new SDK.NetworkRequest(0, 'http://foo.test', 'https://foo.test', 0, 0, null);
+  request.mixedContentType = 'optionally-blockable';
+  SecurityTestRunner.dispatchRequestFinished(request);
 
-    var explanations = Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName("security-explanation");
-    for (var i = 0; i < explanations.length; i++)
-        TestRunner.dumpDeepInnerHTML(explanations[i]);
-    TestRunner.completeTest();
+  var explanations =
+      Security.SecurityPanel._instance()._mainView.contentElement.getElementsByClassName('security-explanation');
+  for (var i = 0; i < explanations.length; i++)
+    TestRunner.dumpDeepInnerHTML(explanations[i]);
+  TestRunner.completeTest();
 }
 </script>
 </head>

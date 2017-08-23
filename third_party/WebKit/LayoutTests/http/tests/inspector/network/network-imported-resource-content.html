@@ -11,25 +11,22 @@ function loadData()
     document.head.appendChild(link);
 }
 
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    TestRunner.evaluateInPage("loadData()", step2);
+function test() {
+  NetworkTestRunner.recordNetwork();
+  TestRunner.evaluateInPage('loadData()', step2);
 
-    function step2()
-    {
-        var request = NetworkTestRunner.networkRequests().pop();
-        TestRunner.addResult(request.url());
-        TestRunner.addResult("resource.type: " + request.resourceType());
-        TestRunner.assertTrue(!request.failed, "Resource loading failed.");
-        request.requestContent().then(step3);
-    }
+  function step2() {
+    var request = NetworkTestRunner.networkRequests().pop();
+    TestRunner.addResult(request.url());
+    TestRunner.addResult('resource.type: ' + request.resourceType());
+    TestRunner.assertTrue(!request.failed, 'Resource loading failed.');
+    request.requestContent().then(step3);
+  }
 
-    function step3(content)
-    {
-        TestRunner.addResult("resource.content after requesting content: " + content);
-        TestRunner.completeTest();
-    }
+  function step3(content) {
+    TestRunner.addResult('resource.content after requesting content: ' + content);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

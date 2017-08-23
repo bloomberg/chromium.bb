@@ -6,102 +6,103 @@
 <script src="../debugger-test.js"></script>
 <script src="./search-test.js"></script>
 <script>
-function test()
-{
-    function fileSystemUISourceCodes()
-    {
-        var uiSourceCodes = [];
-        var fileSystemProjects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
-        for (var project of fileSystemProjects)
-            uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
-        return uiSourceCodes;
+function test() {
+  function fileSystemUISourceCodes() {
+    var uiSourceCodes = [];
+    var fileSystemProjects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
+    for (var project of fileSystemProjects)
+      uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
+    return uiSourceCodes;
+  }
+
+  var scope = new Sources.SourcesSearchScope();
+  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  var names = ['search.html', 'search.js', 'search.css'];
+  var resources = {};
+  var jsFileSystemUISourceCode;
+  var jsNetworkUISourceCode;
+
+  var promises = [];
+  for (var name of names)
+    promises.push(loadResource(name));
+
+  Promise.all(promises).then(onAllResourcesLoaded).catch(onResourceError);
+
+  function onResourceError(error) {
+    TestRunner.addResult('ERROR while loading resources: ' + error.message);
+    TestRunner.completeTest();
+  }
+
+  function onAllResourcesLoaded() {
+    for (var resourceName in resources)
+      fs.root.addFile(resourceName, resources[resourceName]);
+    fs.reportCreated(fileSystemCreated);
+  }
+
+  async function fileSystemCreated() {
+    UI.viewManager.showView('sources.search');
+
+    var uiSourceCodes = fileSystemUISourceCodes();
+    for (var i = 0; i < uiSourceCodes.length; ++i) {
+      if (uiSourceCodes[i].name() === 'search.js') {
+        jsFileSystemUISourceCode = uiSourceCodes[i];
+        break;
+      }
     }
 
-    var scope = new Sources.SourcesSearchScope();
-    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
-    var names = ["search.html", "search.js", "search.css"];
-    var resources = {};
-    var jsFileSystemUISourceCode;
-    var jsNetworkUISourceCode;
+    await SourcesTestRunner.addScriptUISourceCode('http://localhost/search.html', resources['search.html']);
+    jsNetworkUISourceCode =
+        await SourcesTestRunner.addScriptUISourceCode('http://localhost/search.js', resources['search.js']);
+    TestRunner.runTestSuite(testSuite);
+  }
 
-    var promises = [];
-    for (var name of names)
-        promises.push(loadResource(name));
+  function loadResource(name) {
+    var urlPrefix =
+        TestRunner.mainTarget.inspectedURL().substr(0, TestRunner.mainTarget.inspectedURL().lastIndexOf('/') + 1);
+    var url = urlPrefix + 'resources/' + name;
+    return Runtime.loadResourcePromise(url).then(function(text) {
+      resources[name] = text;
+    });
+  }
 
-    Promise.all(promises)
-        .then(onAllResourcesLoaded)
-        .catch(onResourceError);
+  InspectorFrontendHost.searchInPath = function(requestId, path, query) {
+    setTimeout(reply);
 
-    function onResourceError(error)
-    {
-        TestRunner.addResult("ERROR while loading resources: " + error.message);
-        TestRunner.completeTest();
+    function reply() {
+      var paths = [];
+      for (var i = 0; i < names.length; ++i)
+        paths.push('/var/www/' + names[i]);
+      Persistence.isolatedFileSystemManager._onSearchCompleted(
+          {data: {requestId: requestId, fileSystemPath: path, files: paths}});
     }
+  };
 
-    function onAllResourcesLoaded()
-    {
-        for (var resourceName in resources)
-            fs.root.addFile(resourceName, resources[resourceName]);
-        fs.reportCreated(fileSystemCreated);
+  var testSuite = [
+    function testSearch(next) {
+      var query = 'searchTest' +
+          'UniqueString';
+      var searchConfig = new Workspace.SearchConfig(query, true, false);
+      SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
+    },
+
+    function testDirtyFiles(next) {
+      jsFileSystemUISourceCode.setWorkingCopy(
+          'FOO ' +
+          'searchTest' +
+          'UniqueString' +
+          ' BAR');
+      jsNetworkUISourceCode.setWorkingCopy(
+          'FOO ' +
+          'searchTest' +
+          'UniqueString' +
+          ' BAR');
+
+      var query = 'searchTest' +
+          'UniqueString';
+      var searchConfig = new Workspace.SearchConfig(query, true, false);
+      SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
     }
-
-    async function fileSystemCreated()
-    {
-        UI.viewManager.showView("sources.search");
-
-        var uiSourceCodes = fileSystemUISourceCodes();
-        for (var i = 0; i < uiSourceCodes.length; ++i) {
-            if (uiSourceCodes[i].name() === "search.js") {
-                jsFileSystemUISourceCode = uiSourceCodes[i];
-                break;
-            }
-        }
-
-        await SourcesTestRunner.addScriptUISourceCode("http://localhost/search.html", resources["search.html"]);
-        jsNetworkUISourceCode = await SourcesTestRunner.addScriptUISourceCode("http://localhost/search.js", resources["search.js"]);
-        TestRunner.runTestSuite(testSuite);
-    }
-
-    function loadResource(name)
-    {
-        var urlPrefix = TestRunner.mainTarget.inspectedURL().substr(0, TestRunner.mainTarget.inspectedURL().lastIndexOf("/") + 1);
-        var url = urlPrefix + "resources/" + name;
-        return Runtime.loadResourcePromise(url).then(function(text) {
-            resources[name] = text;
-        });
-    }
-
-    InspectorFrontendHost.searchInPath = function(requestId, path, query)
-    {
-        setTimeout(reply);
-
-        function reply()
-        {
-            var paths = [];
-            for (var i = 0; i < names.length; ++i)
-                paths.push("/var/www/" + names[i]);
-            Persistence.isolatedFileSystemManager._onSearchCompleted({data: {requestId: requestId, fileSystemPath: path, files: paths}});
-        }
-    }
-
-    var testSuite = [
-        function testSearch(next)
-        {
-            var query = "searchTest" + "UniqueString";
-            var searchConfig = new Workspace.SearchConfig(query, true, false);
-            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
-        },
-
-        function testDirtyFiles(next)
-        {
-            jsFileSystemUISourceCode.setWorkingCopy("FOO " + "searchTest" + "UniqueString" + " BAR");
-            jsNetworkUISourceCode.setWorkingCopy("FOO " + "searchTest" + "UniqueString" + " BAR");
-
-            var query = "searchTest" + "UniqueString";
-            var searchConfig = new Workspace.SearchConfig(query, true, false);
-            SourcesTestRunner.runSearchAndDumpResults(scope, searchConfig, next);
-        }
-    ];
+  ];
 }
 
 </script>

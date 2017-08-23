@@ -6,29 +6,24 @@
 <script src="./automapping-test.js"></script>
 <script>
 
-function test()
-{
-    var app_js = {
-        content: "console.log('foo.js!');",
-        time: null
-    };
+function test() {
+  var app_js = {content: 'console.log(\'foo.js!\');', time: null};
 
-    var automappingTest = new BindingsTestRunner.AutomappingTest(new Workspace.Workspace());
-    automappingTest.addNetworkResources({
-        // Make sure main resource gets mapped.
-        "file:///usr/local/node/app.js": app_js,
-    });
+  var automappingTest = new BindingsTestRunner.AutomappingTest(new Workspace.Workspace());
+  automappingTest.addNetworkResources({
+    // Make sure main resource gets mapped.
+    'file:///usr/local/node/app.js': app_js,
+  });
 
-    var fs = new BindingsTestRunner.TestFileSystem("file:///usr/local/node");
-    BindingsTestRunner.addFiles(fs, {
-        "app.js": app_js,
-    });
-    fs.reportCreated(onFileSystemCreated);
+  var fs = new BindingsTestRunner.TestFileSystem('file:///usr/local/node');
+  BindingsTestRunner.addFiles(fs, {
+    'app.js': app_js,
+  });
+  fs.reportCreated(onFileSystemCreated);
 
-    function onFileSystemCreated()
-    {
-        automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
-    }
+  function onFileSystemCreated() {
+    automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
+  }
 }
 </script>
 </head>

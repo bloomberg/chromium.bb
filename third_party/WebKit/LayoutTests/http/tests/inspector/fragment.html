@@ -16,34 +16,30 @@ function frameLoaded()
     console.log("Done.");
 }
 
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    ConsoleTestRunner.addConsoleSniffer(step2);
-    TestRunner.evaluateInPage("loadIFrame()", function() { });
+function test() {
+  NetworkTestRunner.recordNetwork();
+  ConsoleTestRunner.addConsoleSniffer(step2);
+  TestRunner.evaluateInPage('loadIFrame()', function() {});
 
 
-    function step2()
-    {
-        TestRunner.deprecatedRunAfterPendingDispatches(step3);
+  function step2() {
+    TestRunner.deprecatedRunAfterPendingDispatches(step3);
+  }
+
+  function step3() {
+    var childFrame = TestRunner.resourceTreeModel.mainFrame.childFrames[0];
+    TestRunner.addResult('Child frame url: ' + childFrame.url);
+    var childFrameResource = childFrame.resources()[0];
+    TestRunner.addResult('Child frame resource url: ' + childFrameResource.url);
+
+    function filterFrame(request) {
+      return request.url().indexOf('fragment-frame.html') !== -1;
     }
 
-    function step3()
-    {
-        var childFrame = TestRunner.resourceTreeModel.mainFrame.childFrames[0];
-        TestRunner.addResult("Child frame url: " + childFrame.url);
-        var childFrameResource = childFrame.resources()[0];
-        TestRunner.addResult("Child frame resource url: " + childFrameResource.url);
-
-        function filterFrame(request)
-        {
-            return request.url().indexOf("fragment-frame.html") !== -1
-        }
-
-        var request = NetworkTestRunner.networkRequests().filter(filterFrame)[0];
-        TestRunner.addResult("Child frame request url: " + request.url());
-        TestRunner.completeTest(step2);
-    }
+    var request = NetworkTestRunner.networkRequests().filter(filterFrame)[0];
+    TestRunner.addResult('Child frame request url: ' + request.url());
+    TestRunner.completeTest(step2);
+  }
 }
 </script>
 </head>

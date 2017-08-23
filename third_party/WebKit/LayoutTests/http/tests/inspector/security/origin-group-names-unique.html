@@ -3,19 +3,20 @@
 <script src="../inspector-test.js"></script>
 <script src="../security-test.js"></script>
 <script>
-function test()
-{
-    var originGroupNameSize = Object.keys(Security.SecurityPanelSidebarTree.OriginGroupName).length;
+function test() {
+  var originGroupNameSize = Object.keys(Security.SecurityPanelSidebarTree.OriginGroupName).length;
 
-    var deduplicatedNames = new Set();
-    for (var key in Security.SecurityPanelSidebarTree.OriginGroupName) {
-        var name = Security.SecurityPanelSidebarTree.OriginGroupName[key];
-        deduplicatedNames.add(name);
-    }
+  var deduplicatedNames = new Set();
+  for (var key in Security.SecurityPanelSidebarTree.OriginGroupName) {
+    var name = Security.SecurityPanelSidebarTree.OriginGroupName[key];
+    deduplicatedNames.add(name);
+  }
 
-    TestRunner.addResult("Number of names (" + originGroupNameSize + ") == number of unique names (" + deduplicatedNames.size + "): " + (originGroupNameSize == deduplicatedNames.size) + " (expected: true)");
+  TestRunner.addResult(
+      'Number of names (' + originGroupNameSize + ') == number of unique names (' + deduplicatedNames.size +
+      '): ' + (originGroupNameSize == deduplicatedNames.size) + ' (expected: true)');
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 </script>
 </head>

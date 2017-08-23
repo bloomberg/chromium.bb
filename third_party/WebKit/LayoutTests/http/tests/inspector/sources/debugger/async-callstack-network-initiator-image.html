@@ -12,21 +12,21 @@ function testFunction()
     document.body.appendChild(image);
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("testFunction()");
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, requestFinished);
+function test() {
+  TestRunner.evaluateInPage('testFunction()');
+  TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, requestFinished);
 
-    function requestFinished(event)
-    {
-        if (!event.data.url().endsWith("resources/image.png"))
-            return;
+  function requestFinished(event) {
+    if (!event.data.url().endsWith('resources/image.png'))
+      return;
 
-        var initiatorInfo = NetworkLog.networkLog.initiatorInfoForRequest(event.data);
-        var element = new Components.Linkifier().linkifyScriptLocation(TestRunner.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber - 1, initiatorInfo.columnNumber - 1);
-        TestRunner.addResult(element.textContent);
-        TestRunner.completeTest();
-    }
+    var initiatorInfo = NetworkLog.networkLog.initiatorInfoForRequest(event.data);
+    var element = new Components.Linkifier().linkifyScriptLocation(
+        TestRunner.mainTarget, initiatorInfo.scriptId, initiatorInfo.url, initiatorInfo.lineNumber - 1,
+        initiatorInfo.columnNumber - 1);
+    TestRunner.addResult(element.textContent);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -21,37 +21,34 @@ function createIFrame() {
 }
 
 function test() {
-    function step1()
-    {
-        requestName = "empty.html?xhr";
-        nextStep = step2;
-        TestRunner.evaluateInPage("sendXHRRequest()");
-    }
+  function step1() {
+    requestName = 'empty.html?xhr';
+    nextStep = step2;
+    TestRunner.evaluateInPage('sendXHRRequest()');
+  }
 
-    function step2()
-    {
-        requestName = "empty.html?iframe";
-        nextStep = TestRunner.completeTest;
-        TestRunner.evaluateInPage("createIFrame()");
-    }
+  function step2() {
+    requestName = 'empty.html?iframe';
+    nextStep = TestRunner.completeTest;
+    TestRunner.evaluateInPage('createIFrame()');
+  }
 
-    function onRequest(event)
-    {
-        var request = event.data;
-        if (request.name() !== requestName)
-            return;
-        requestName = undefined;
-        TestRunner.addResult("");
-        TestRunner.addResult("Request: " + request.name());
-        TestRunner.addResult("Type: " + request.resourceType().name());
-        nextStep();
-    }
+  function onRequest(event) {
+    var request = event.data;
+    if (request.name() !== requestName)
+      return;
+    requestName = undefined;
+    TestRunner.addResult('');
+    TestRunner.addResult('Request: ' + request.name());
+    TestRunner.addResult('Type: ' + request.resourceType().name());
+    nextStep();
+  }
 
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
+  TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
 
-    var requestName = "empty-script.js";
-    var nextStep = step1;
-    TestRunner.evaluateInPage("sendScriptRequest()");
+  var requestName = 'empty-script.js';
+  var nextStep = step1;
+  TestRunner.evaluateInPage('sendScriptRequest()');
 }
 </script>
 </head>

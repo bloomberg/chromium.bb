@@ -9,38 +9,34 @@ function loadIFrameWithDownload()
     document.body.appendChild(iframe);
 }
 
-function test()
-{
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "responseReceived", responseReceived);
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFailed", loadingFailed);
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFinished", loadingFinished);
-    TestRunner.evaluateInPage("loadIFrameWithDownload()");
+function test() {
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'responseReceived', responseReceived);
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFailed', loadingFailed);
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFinished', loadingFinished);
+  TestRunner.evaluateInPage('loadIFrameWithDownload()');
 
-    function responseReceived(requestId, time, resourceType, response)
-    {
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        if (/x-frame-options-deny\.cgi/.exec(request.url())) {
-            TestRunner.addResult("Received response for x-frame-options-deny.cgi");
-            TestRunner.addResult("SUCCESS");
-            TestRunner.completeTest();
-        }
+  function responseReceived(requestId, time, resourceType, response) {
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    if (/x-frame-options-deny\.cgi/.exec(request.url())) {
+      TestRunner.addResult('Received response for x-frame-options-deny.cgi');
+      TestRunner.addResult('SUCCESS');
+      TestRunner.completeTest();
     }
+  }
 
-    function loadingFinished(requestId, finishTime)
-    {
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        if (/x-frame-options-deny\.cgi/.exec(request.url()))
-            TestRunner.completeTest();
-    }
+  function loadingFinished(requestId, finishTime) {
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    if (/x-frame-options-deny\.cgi/.exec(request.url()))
+      TestRunner.completeTest();
+  }
 
-    function loadingFailed(requestId, time, localizedDescription, canceled)
-    {
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        if (/x-frame-options-deny\.cgi/.exec(request.url())) {
-            TestRunner.addResult("TODO(mkwst): This started failing when we moved XFO to the browser.");
-            TestRunner.completeTest();
-        }
+  function loadingFailed(requestId, time, localizedDescription, canceled) {
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    if (/x-frame-options-deny\.cgi/.exec(request.url())) {
+      TestRunner.addResult('TODO(mkwst): This started failing when we moved XFO to the browser.');
+      TestRunner.completeTest();
     }
+  }
 }
 </script>
 </head>

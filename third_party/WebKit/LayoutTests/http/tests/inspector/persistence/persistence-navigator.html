@@ -7,64 +7,56 @@
 <script src="./resources/foo.js"></script>
 <script>
 
-function test()
-{
-    var testMapping = BindingsTestRunner.initializeTestMapping();
-    Runtime.experiments.enableForTest("persistence2");
-    var sourcesNavigator = new Sources.SourcesNavigatorView();
-    sourcesNavigator.show(UI.inspectorView.element);
-    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
-    var fsEntry = BindingsTestRunner.addFooJSFile(fs);
+function test() {
+  var testMapping = BindingsTestRunner.initializeTestMapping();
+  Runtime.experiments.enableForTest('persistence2');
+  var sourcesNavigator = new Sources.SourcesNavigatorView();
+  sourcesNavigator.show(UI.inspectorView.element);
+  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  var fsEntry = BindingsTestRunner.addFooJSFile(fs);
 
-    TestRunner.runTestSuite([
-        function addFileSystem(next)
-        {
-            fs.reportCreated(next);
-        },
+  TestRunner.runTestSuite([
+    function addFileSystem(next) {
+      fs.reportCreated(next);
+    },
 
-        function waitForUISourceCodes(next)
-        {
-            var promises = [
-                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
-                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
-            ];
-            Promise.all(promises).then(onUISourceCodesAdded);
+    function waitForUISourceCodes(next) {
+      var promises = [
+        TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.Network),
+        TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem)
+      ];
+      Promise.all(promises).then(onUISourceCodesAdded);
 
-            function onUISourceCodesAdded()
-            {
-                SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
-                next();
-            }
-        },
+      function onUISourceCodesAdded() {
+        SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
+        next();
+      }
+    },
 
-        function addFileMapping(next)
-        {
-            testMapping.addBinding("foo.js");
-            BindingsTestRunner.waitForBinding("foo.js").then(onBindingCreated);
+    function addFileMapping(next) {
+      testMapping.addBinding('foo.js');
+      BindingsTestRunner.waitForBinding('foo.js').then(onBindingCreated);
 
-            function onBindingCreated(binding)
-            {
-                SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
-                next();
-            }
-        },
+      function onBindingCreated(binding) {
+        SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
+        next();
+      }
+    },
 
-        function removeFileMapping(next)
-        {
-            Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
-            testMapping.removeBinding("foo.js");
+    function removeFileMapping(next) {
+      Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
+      testMapping.removeBinding('foo.js');
 
-            function onBindingRemoved(event)
-            {
-                var binding = event.data;
-                if (binding.network.name() !== "foo.js")
-                    return
-                Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
-                SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
-                next();
-            }
-        },
-    ]);
+      function onBindingRemoved(event) {
+        var binding = event.data;
+        if (binding.network.name() !== 'foo.js')
+          return;
+        Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
+        SourcesTestRunner.dumpNavigatorView(sourcesNavigator, true);
+        next();
+      }
+    },
+  ]);
 };
 </script>
 </head>

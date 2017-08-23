@@ -5,51 +5,45 @@
 <script>
 console.log("message from page!");
 
-function test()
-{
-    var filterByExecutionContextSetting = Console.ConsoleView.instance()._filter._filterByExecutionContextSetting;
+function test() {
+  var filterByExecutionContextSetting = Console.ConsoleView.instance()._filter._filterByExecutionContextSetting;
 
-    //we can't use usual ConsoleTestRunner.dumpConsoleMessages(), because it dumps url of message and it flakes in case of iframe
-    function dumpVisibleConsoleMessageText()
-    {
-        var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
-        for (var i = 0; i < messageViews.length; ++i) {
-            TestRunner.addResult(messageViews[i].consoleMessage().messageText);
-        }
+  //we can't use usual ConsoleTestRunner.dumpConsoleMessages(), because it dumps url of message and it flakes in case of iframe
+  function dumpVisibleConsoleMessageText() {
+    var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
+    for (var i = 0; i < messageViews.length; ++i) {
+      TestRunner.addResult(messageViews[i].consoleMessage().messageText);
     }
+  }
 
-    TestRunner.runTestSuite([
+  TestRunner.runTestSuite([
 
-            function testInitialState(next)
-            {
-                if (filterByExecutionContextSetting.get())
-                    TestRunner.addResult("\"Show target messages\" checkbox should be unchecked by default");
-                dumpVisibleConsoleMessageText();
-                next();
-            },
+    function testInitialState(next) {
+      if (filterByExecutionContextSetting.get())
+        TestRunner.addResult('"Show target messages" checkbox should be unchecked by default');
+      dumpVisibleConsoleMessageText();
+      next();
+    },
 
-            function testPageOnlyMessages(next)
-            {
-                ConsoleTestRunner.changeExecutionContext("top");
-                filterByExecutionContextSetting.set(true);
-                dumpVisibleConsoleMessageText();
-                next();
-            },
+    function testPageOnlyMessages(next) {
+      ConsoleTestRunner.changeExecutionContext('top');
+      filterByExecutionContextSetting.set(true);
+      dumpVisibleConsoleMessageText();
+      next();
+    },
 
-            function testFrameOnlyMessages(next)
-            {
-                ConsoleTestRunner.changeExecutionContext("myIFrame");
-                dumpVisibleConsoleMessageText();
-                next();
-            },
+    function testFrameOnlyMessages(next) {
+      ConsoleTestRunner.changeExecutionContext('myIFrame');
+      dumpVisibleConsoleMessageText();
+      next();
+    },
 
-            function testAllMessagesWithFrameContext(next)
-            {
-                filterByExecutionContextSetting.set(false);
-                dumpVisibleConsoleMessageText();
-                next();
-            }
-    ]);
+    function testAllMessagesWithFrameContext(next) {
+      filterByExecutionContextSetting.set(false);
+      dumpVisibleConsoleMessageText();
+      next();
+    }
+  ]);
 }
 
 </script>

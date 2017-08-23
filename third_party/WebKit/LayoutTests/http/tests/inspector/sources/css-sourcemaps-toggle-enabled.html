@@ -12,36 +12,33 @@ function addStyleSheet(href)
     document.head.appendChild(link);
 }
 
-async function test()
-{
-    var sourcesNavigator = new Sources.SourcesNavigatorView();
-    sourcesNavigator.show(UI.inspectorView.element);
+async function test() {
+  var sourcesNavigator = new Sources.SourcesNavigatorView();
+  sourcesNavigator.show(UI.inspectorView.element);
 
-    Common.moduleSetting('cssSourceMapsEnabled').set(true);
-    TestRunner.evaluateInPagePromise('addStyleSheet("resources/sourcemap-style-1.css")');
-    TestRunner.evaluateInPagePromise('addStyleSheet("resources/sourcemap-style-2.css")');
+  Common.moduleSetting('cssSourceMapsEnabled').set(true);
+  TestRunner.evaluateInPagePromise('addStyleSheet("resources/sourcemap-style-1.css")');
+  TestRunner.evaluateInPagePromise('addStyleSheet("resources/sourcemap-style-2.css")');
 
-    await Promise.all([
-        TestRunner.waitForUISourceCode('sourcemap-style-1.scss'),
-        TestRunner.waitForUISourceCode('sourcemap-style-2.scss')
-    ]);
+  await Promise.all([
+    TestRunner.waitForUISourceCode('sourcemap-style-1.scss'), TestRunner.waitForUISourceCode('sourcemap-style-2.scss')
+  ]);
 
-    TestRunner.markStep('dumpInitialNavigator');
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('dumpInitialNavigator');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('disableCSSSourceMaps');
-    Common.moduleSetting('cssSourceMapsEnabled').set(false);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('disableCSSSourceMaps');
+  Common.moduleSetting('cssSourceMapsEnabled').set(false);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('enableCSSSourceMaps');
-    Common.moduleSetting('cssSourceMapsEnabled').set(true);
-    await Promise.all([
-        TestRunner.waitForUISourceCode('sourcemap-style-1.scss'),
-        TestRunner.waitForUISourceCode('sourcemap-style-2.scss')
-    ]);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('enableCSSSourceMaps');
+  Common.moduleSetting('cssSourceMapsEnabled').set(true);
+  await Promise.all([
+    TestRunner.waitForUISourceCode('sourcemap-style-1.scss'), TestRunner.waitForUISourceCode('sourcemap-style-2.scss')
+  ]);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 };
 
 </script>

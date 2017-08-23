@@ -3,36 +3,32 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-var test = function()
-{
-    TestRunner.reloadPage(step1);
+var test = function() {
+  TestRunner.reloadPage(step1);
 
-    function step1()
-    {
-        TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
-        var str = "";
-        str += "var s = document.createElement(\"script\");";
-        str += "s.src = \"resources/silent_script.js\";";
-        str += "document.head.appendChild(s);";
-        UI.context.flavor(SDK.ExecutionContext).evaluate({expression: str, objectGroup: "console"});
-    }
+  function step1() {
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest);
+    var str = '';
+    str += 'var s = document.createElement("script");';
+    str += 's.src = "resources/silent_script.js";';
+    str += 'document.head.appendChild(s);';
+    UI.context.flavor(SDK.ExecutionContext).evaluate({expression: str, objectGroup: 'console'});
+  }
 
-    function onRequest(event)
-    {
-        var request = event.data;
-        if (/silent_script.js/.test(request.url()))
-            step2();
-    }
+  function onRequest(event) {
+    var request = event.data;
+    if (/silent_script.js/.test(request.url()))
+      step2();
+  }
 
-    function step2()
-    {
-        var results = NetworkTestRunner.findRequestsByURLPattern(/silent_script.js/);
-        if (results.length === 0)
-            return;
+  function step2() {
+    var results = NetworkTestRunner.findRequestsByURLPattern(/silent_script.js/);
+    if (results.length === 0)
+      return;
 
-        TestRunner.completeTest();
-    }
-}
+    TestRunner.completeTest();
+  }
+};
 
 </script>
 </head>

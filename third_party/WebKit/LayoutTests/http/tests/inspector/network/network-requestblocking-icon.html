@@ -3,39 +3,38 @@
 <script src="/inspector/inspector-test.js"></script>
 <script>
 
-async function test()
-{
-    SDK.multitargetNetworkManager.setBlockingEnabled(false);
-    SDK.multitargetNetworkManager.setBlockedPatterns([]);
-    dumpIconResult();
-    SDK.multitargetNetworkManager.setBlockingEnabled(true);
-    dumpIconResult();
-    SDK.multitargetNetworkManager.setBlockedPatterns([{url: '*', enabled: true}]);
-    dumpIconResult();
-    SDK.multitargetNetworkManager.setBlockingEnabled(false);
-    dumpIconResult();
+async function test() {
+  SDK.multitargetNetworkManager.setBlockingEnabled(false);
+  SDK.multitargetNetworkManager.setBlockedPatterns([]);
+  dumpIconResult();
+  SDK.multitargetNetworkManager.setBlockingEnabled(true);
+  dumpIconResult();
+  SDK.multitargetNetworkManager.setBlockedPatterns([{url: '*', enabled: true}]);
+  dumpIconResult();
+  SDK.multitargetNetworkManager.setBlockingEnabled(false);
+  dumpIconResult();
 
-    TestRunner.addResult("Loading Network Module");
-    await self.runtime.loadModulePromise('network');
-    TestRunner.addResult("Network Module Loaded");
+  TestRunner.addResult('Loading Network Module');
+  await self.runtime.loadModulePromise('network');
+  TestRunner.addResult('Network Module Loaded');
 
-    SDK.multitargetNetworkManager.setBlockingEnabled(false);
-    SDK.multitargetNetworkManager.setBlockedPatterns([]);
-    dumpIconResult();
-    SDK.multitargetNetworkManager.setBlockingEnabled(true);
-    dumpIconResult();
-    SDK.multitargetNetworkManager.setBlockedPatterns([{url: '*', enabled: true}]);
-    dumpIconResult();
-    SDK.multitargetNetworkManager.setBlockingEnabled(false);
-    dumpIconResult();
-    TestRunner.completeTest();
+  SDK.multitargetNetworkManager.setBlockingEnabled(false);
+  SDK.multitargetNetworkManager.setBlockedPatterns([]);
+  dumpIconResult();
+  SDK.multitargetNetworkManager.setBlockingEnabled(true);
+  dumpIconResult();
+  SDK.multitargetNetworkManager.setBlockedPatterns([{url: '*', enabled: true}]);
+  dumpIconResult();
+  SDK.multitargetNetworkManager.setBlockingEnabled(false);
+  dumpIconResult();
+  TestRunner.completeTest();
 
-    function dumpIconResult() {
-        var hasIcon = !!UI.inspectorView._tabbedPane._tabsElement.getElementsByClassName("smallicon-warning").length;
-        TestRunner.addResult("Is blocking: " + SDK.multitargetNetworkManager.isBlocking());
-        TestRunner.addResult(hasIcon ? "Has Icon" : "Does Not Have Icon");
-        TestRunner.addResult("");
-    }
+  function dumpIconResult() {
+    var hasIcon = !!UI.inspectorView._tabbedPane._tabsElement.getElementsByClassName('smallicon-warning').length;
+    TestRunner.addResult('Is blocking: ' + SDK.multitargetNetworkManager.isBlocking());
+    TestRunner.addResult(hasIcon ? 'Has Icon' : 'Does Not Have Icon');
+    TestRunner.addResult('');
+  }
 }
 </script>
 </head>

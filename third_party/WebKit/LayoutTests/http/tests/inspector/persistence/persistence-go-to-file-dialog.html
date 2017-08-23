@@ -7,52 +7,48 @@
 <script src="./resources/foo.js"></script>
 <script>
 
-function test()
-{
-    var testMapping = BindingsTestRunner.initializeTestMapping();
-    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
-    BindingsTestRunner.addFooJSFile(fs);
-    fs.reportCreated(function() { });
+function test() {
+  var testMapping = BindingsTestRunner.initializeTestMapping();
+  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  BindingsTestRunner.addFooJSFile(fs);
+  fs.reportCreated(function() {});
 
-    TestRunner.runTestSuite([
-        function waitForUISourceCodes(next)
-        {
-            Promise.all([
-                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.Network),
-                TestRunner.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
-            ]).then(next);
-        },
+  TestRunner.runTestSuite([
+    function waitForUISourceCodes(next) {
+      Promise
+          .all([
+            TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.Network),
+            TestRunner.waitForUISourceCode('foo.js', Workspace.projectTypes.FileSystem)
+          ])
+          .then(next);
+    },
 
-        function goToSourceDialogBeforeBinding(next)
-        {
-            dumpGoToSourceDialog(next);
-        },
+    function goToSourceDialogBeforeBinding(next) {
+      dumpGoToSourceDialog(next);
+    },
 
-        function addFileSystemMapping(next)
-        {
-            testMapping.addBinding("foo.js");
-            BindingsTestRunner.waitForBinding("foo.js").then(next);
-        },
+    function addFileSystemMapping(next) {
+      testMapping.addBinding('foo.js');
+      BindingsTestRunner.waitForBinding('foo.js').then(next);
+    },
 
-        function goToSourceAfterBinding(next)
-        {
-            dumpGoToSourceDialog(next);
-        },
-    ]);
+    function goToSourceAfterBinding(next) {
+      dumpGoToSourceDialog(next);
+    },
+  ]);
 
-    function dumpGoToSourceDialog(next)
-    {
-        QuickOpen.QuickOpen.show('');
-        TestRunner.addSnifferPromise(QuickOpen.QuickOpen.prototype, '_providerLoadedForTest').then(provider => {
-            var keys = [];
-            for (var i = 0; i < provider.itemCount(); ++i)
-                keys.push(provider.itemKeyAt(i));
-            keys.sort();
-            TestRunner.addResult(keys.join("\n"));
-            UI.Dialog._instance.hide();
-            next();
-        });
-    }
+  function dumpGoToSourceDialog(next) {
+    QuickOpen.QuickOpen.show('');
+    TestRunner.addSnifferPromise(QuickOpen.QuickOpen.prototype, '_providerLoadedForTest').then(provider => {
+      var keys = [];
+      for (var i = 0; i < provider.itemCount(); ++i)
+        keys.push(provider.itemKeyAt(i));
+      keys.sort();
+      TestRunner.addResult(keys.join('\n'));
+      UI.Dialog._instance.hide();
+      next();
+    });
+  }
 };
 </script>
 </head>

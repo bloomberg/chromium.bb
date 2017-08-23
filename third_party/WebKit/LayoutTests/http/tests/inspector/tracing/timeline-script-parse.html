@@ -17,24 +17,17 @@ function performActions()
     return promise;
 }
 
-function test()
-{
-    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
+function test() {
+  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
 
-    function finish()
-    {
-        const tracingModel = PerformanceTestRunner.tracingModel();
-        tracingModel.sortedProcesses().forEach(
-            p => p.sortedThreads().forEach(
-                t => t.events().forEach(
-                    event => {
-                        if (event.name === TimelineModel.TimelineModel.RecordType.ParseScriptOnBackground)
-                            PerformanceTestRunner.printTraceEventPropertiesWithDetails(event)
-                    })
-            )
-        );
-        TestRunner.completeTest();
-    }
+  function finish() {
+    const tracingModel = PerformanceTestRunner.tracingModel();
+    tracingModel.sortedProcesses().forEach(p => p.sortedThreads().forEach(t => t.events().forEach(event => {
+      if (event.name === TimelineModel.TimelineModel.RecordType.ParseScriptOnBackground)
+        PerformanceTestRunner.printTraceEventPropertiesWithDetails(event);
+    })));
+    TestRunner.completeTest();
+  }
 }
 
 </script>

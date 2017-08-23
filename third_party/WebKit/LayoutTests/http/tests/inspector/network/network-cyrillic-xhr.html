@@ -3,47 +3,40 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
-{
-    function dumpRequest(request, callback)
-    {
-        if (!request)
-            return callback();
-        TestRunner.addResult(request.url());
+function test() {
+  function dumpRequest(request, callback) {
+    if (!request)
+      return callback();
+    TestRunner.addResult(request.url());
 
-        function contentLoaded(content)
-        {
-            TestRunner.addResult("resource.content: " + content);
-            callback();
-        }
-
-        request.requestContent().then(contentLoaded);
+    function contentLoaded(content) {
+      TestRunner.addResult('resource.content: ' + content);
+      callback();
     }
 
-    NetworkTestRunner.recordNetwork();
-    NetworkTestRunner.makeSimpleXHR("GET", "resources/cyrillic.html?sync", false, firstXHRLoaded);
+    request.requestContent().then(contentLoaded);
+  }
 
-    function firstXHRLoaded()
-    {
-        NetworkTestRunner.makeSimpleXHR("GET", "resources/cyrillic.html?async", true, step2);
-    }
+  NetworkTestRunner.recordNetwork();
+  NetworkTestRunner.makeSimpleXHR('GET', 'resources/cyrillic.html?sync', false, firstXHRLoaded);
 
-    function step2()
-    {
-        var requests = NetworkTestRunner.networkRequests();
-        dumpRequest(requests[requests.length - 2], step3);
-    }
+  function firstXHRLoaded() {
+    NetworkTestRunner.makeSimpleXHR('GET', 'resources/cyrillic.html?async', true, step2);
+  }
 
-    function step3()
-    {
-        var requests = NetworkTestRunner.networkRequests();
-        dumpRequest(requests[requests.length - 1], step4);
-    }
+  function step2() {
+    var requests = NetworkTestRunner.networkRequests();
+    dumpRequest(requests[requests.length - 2], step3);
+  }
 
-    function step4()
-    {
-        TestRunner.completeTest();
-    }
+  function step3() {
+    var requests = NetworkTestRunner.networkRequests();
+    dumpRequest(requests[requests.length - 1], step4);
+  }
+
+  function step4() {
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

@@ -65,190 +65,169 @@ function removeIframe()
     element.parentElement.removeChild(element);
 }
 
-function test()
-{
-    var inspectedNode;
+function test() {
+  var inspectedNode;
 
-    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, null);
-    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, null);
-    var headers = TestRunner.cssModel.styleSheetHeaders();
-    TestRunner.addResult(headers.length + " headers known:");
-    sortAndDumpData(headers);
+  TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, styleSheetAdded, null);
+  TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, styleSheetRemoved, null);
+  var headers = TestRunner.cssModel.styleSheetHeaders();
+  TestRunner.addResult(headers.length + ' headers known:');
+  sortAndDumpData(headers);
 
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step0);
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step0);
 
-    function step0(node)
-    {
-        inspectedNode = node;
-        TestRunner.addResult("=== Adding iframe... ===");
-        TestRunner.evaluateInPage("loadIframe()");
-        waitStyleSheetAdded(1, iframeAdded);
+  function step0(node) {
+    inspectedNode = node;
+    TestRunner.addResult('=== Adding iframe... ===');
+    TestRunner.evaluateInPage('loadIframe()');
+    waitStyleSheetAdded(1, iframeAdded);
 
-        function iframeAdded()
-        {
-            TestRunner.addResult("=== Adding iframe stylesheet... ===");
-            waitStyleSheetAdded(2, navigateIframe);
-            TestRunner.evaluateInPage("addIframeStyleSheets()");
-        }
-
-        function navigateIframe()
-        {
-            TestRunner.addResult("=== Navigating iframe... ===");
-            waitStyleSheetRemoved(3, frameNavigated);
-            TestRunner.evaluateInPage("navigateIframe()");
-            
-            function frameNavigated()
-            {
-                waitStyleSheetAdded(1, styleSheetsAdded);
-            }
-
-            function styleSheetsAdded()
-            {
-                TestRunner.addResult("=== Adding iframe stylesheet... ===");
-                waitStyleSheetAdded(2, removeIframeStyleSheets);
-                TestRunner.evaluateInPage("addIframeStyleSheets()");
-            }
-        }
-
-        function removeIframeStyleSheets()
-        {
-            TestRunner.addResult("=== Removing iframe stylesheet... ===");
-            waitStyleSheetRemoved(2, step1)
-            TestRunner.evaluateInPage("removeIframeStyleSheets()");
-        }
+    function iframeAdded() {
+      TestRunner.addResult('=== Adding iframe stylesheet... ===');
+      waitStyleSheetAdded(2, navigateIframe);
+      TestRunner.evaluateInPage('addIframeStyleSheets()');
     }
 
-    function step1()
-    {
-        TestRunner.addResult("=== Adding stylesheet... ===");
-        waitStyleSheetAdded(4, step2);
-        TestRunner.evaluateInPage("addStyleSheet()");
+    function navigateIframe() {
+      TestRunner.addResult('=== Navigating iframe... ===');
+      waitStyleSheetRemoved(3, frameNavigated);
+      TestRunner.evaluateInPage('navigateIframe()');
+
+      function frameNavigated() {
+        waitStyleSheetAdded(1, styleSheetsAdded);
+      }
+
+      function styleSheetsAdded() {
+        TestRunner.addResult('=== Adding iframe stylesheet... ===');
+        waitStyleSheetAdded(2, removeIframeStyleSheets);
+        TestRunner.evaluateInPage('addIframeStyleSheets()');
+      }
     }
 
-    function step2()
-    {
-        TestRunner.addResult("=== Removing @import... ===");
-        waitStyleSheetRemoved(3, step3);
-        TestRunner.evaluateInPage("removeImport()");
+    function removeIframeStyleSheets() {
+      TestRunner.addResult('=== Removing iframe stylesheet... ===');
+      waitStyleSheetRemoved(2, step1);
+      TestRunner.evaluateInPage('removeIframeStyleSheets()');
     }
+  }
 
-    function step3()
-    {
-        TestRunner.addResult("=== Removing stylesheet... ===");
-        waitStyleSheetRemoved(1, step4);
-        TestRunner.evaluateInPage("removeStyleSheet()");
+  function step1() {
+    TestRunner.addResult('=== Adding stylesheet... ===');
+    waitStyleSheetAdded(4, step2);
+    TestRunner.evaluateInPage('addStyleSheet()');
+  }
+
+  function step2() {
+    TestRunner.addResult('=== Removing @import... ===');
+    waitStyleSheetRemoved(3, step3);
+    TestRunner.evaluateInPage('removeImport()');
+  }
+
+  function step3() {
+    TestRunner.addResult('=== Removing stylesheet... ===');
+    waitStyleSheetRemoved(1, step4);
+    TestRunner.evaluateInPage('removeStyleSheet()');
+  }
+
+  function step4() {
+    TestRunner.addResult('=== Adding rule... ===');
+    waitStyleSheetAdded(1);
+    ElementsTestRunner.addNewRule('#inspected', successCallback);
+
+    function successCallback() {
+      TestRunner.addResult('Rule added');
+      step5();
     }
+  }
 
-    function step4()
-    {
-        TestRunner.addResult("=== Adding rule... ===");
-        waitStyleSheetAdded(1);
-        ElementsTestRunner.addNewRule("#inspected", successCallback);
+  function step5() {
+    TestRunner.addResult('=== Removing iframe... ===');
+    TestRunner.evaluateInPage('removeIframe()');
+    waitStyleSheetRemoved(1, step6);
+  }
 
-        function successCallback()
-        {
-            TestRunner.addResult("Rule added");
-            step5();
-        }
+  function step6() {
+    TestRunner.completeTest();
+  }
+
+  var addedCallback;
+  var addedSheetCount;
+  var addedSheets = [];
+
+  function waitStyleSheetAdded(count, next) {
+    addedSheetCount = count;
+    addedCallback = next;
+  }
+
+  function styleSheetAdded(event) {
+    var header = event.data;
+    addedSheets.push(header);
+    --addedSheetCount;
+    if (addedSheetCount > 0)
+      return;
+    else if (addedSheetCount < 0)
+      TestRunner.addResult('Unexpected styleSheetAdded()');
+
+    TestRunner.addResult('Stylesheets added:');
+    sortAndDumpData(addedSheets);
+    addedSheets = [];
+    if (addedCallback) {
+      var callback = addedCallback;
+      addedCallback = null;
+      callback();
     }
+  }
 
-    function step5()
-    {
-        TestRunner.addResult("=== Removing iframe... ===");
-        TestRunner.evaluateInPage("removeIframe()");
-        waitStyleSheetRemoved(1, step6);
+  var removedCallback;
+  var removedSheetCount;
+  var removedSheets = [];
+
+  function waitStyleSheetRemoved(count, next) {
+    removedSheetCount = count;
+    removedCallback = next;
+  }
+
+  function styleSheetRemoved(event) {
+    var header = event.data;
+    removedSheets.push(header);
+    --removedSheetCount;
+    if (removedSheetCount > 0)
+      return;
+    else if (removedSheetCount < 0)
+      TestRunner.addResult('Unexpected styleSheetRemoved()');
+
+    TestRunner.addResult('Stylesheets removed:');
+    sortAndDumpData(removedSheets);
+    removedSheets = [];
+    if (removedCallback) {
+      var callback = removedCallback;
+      removedCallback = null;
+      callback();
     }
+  }
 
-    function step6()
-    {
-        TestRunner.completeTest();
+  function sortAndDumpData(sheets) {
+    function sorter(a, b) {
+      return a.sourceURL.localeCompare(b.sourceURL);
     }
-
-    var addedCallback;
-    var addedSheetCount;
-    var addedSheets = [];
-
-    function waitStyleSheetAdded(count, next)
-    {
-        addedSheetCount = count;
-        addedCallback = next;
+    sheets = sheets.sort(sorter);
+    for (var i = 0; i < sheets.length; ++i) {
+      var header = sheets[i];
+      TestRunner.addResult('    URL=' + trimURL(header.sourceURL));
+      TestRunner.addResult('    origin=' + header.origin);
+      TestRunner.addResult('    isInline=' + header.isInline);
+      TestRunner.addResult('    hasSourceURL=' + header.hasSourceURL);
     }
+  }
 
-    function styleSheetAdded(event)
-    {
-        var header = event.data;
-        addedSheets.push(header);
-        --addedSheetCount;
-        if (addedSheetCount > 0)
-            return;
-        else if (addedSheetCount < 0)
-            TestRunner.addResult("Unexpected styleSheetAdded()");
-
-        TestRunner.addResult("Stylesheets added:");
-        sortAndDumpData(addedSheets);
-        addedSheets = [];
-        if (addedCallback) {
-            var callback = addedCallback;
-            addedCallback = null;
-            callback();
-        }
-    }
-
-    var removedCallback;
-    var removedSheetCount;
-    var removedSheets = [];
-
-    function waitStyleSheetRemoved(count, next)
-    {
-        removedSheetCount = count;
-        removedCallback = next;
-    }
-
-    function styleSheetRemoved(event)
-    {
-        var header = event.data;
-        removedSheets.push(header);
-        --removedSheetCount;
-        if (removedSheetCount > 0)
-            return;
-        else if (removedSheetCount < 0)
-            TestRunner.addResult("Unexpected styleSheetRemoved()");
-
-        TestRunner.addResult("Stylesheets removed:");
-        sortAndDumpData(removedSheets);
-        removedSheets = [];
-        if (removedCallback) {
-            var callback = removedCallback;
-            removedCallback = null;
-            callback();
-        }
-    }
-
-    function sortAndDumpData(sheets)
-    {
-        function sorter(a, b)
-        {
-            return a.sourceURL.localeCompare(b.sourceURL);
-        }
-        sheets = sheets.sort(sorter);
-        for (var i = 0; i < sheets.length; ++i) {
-            var header = sheets[i];
-            TestRunner.addResult("    URL=" + trimURL(header.sourceURL));
-            TestRunner.addResult("    origin=" + header.origin);
-            TestRunner.addResult("    isInline=" + header.isInline);
-            TestRunner.addResult("    hasSourceURL=" + header.hasSourceURL);
-        }
-    }
-
-    function trimURL(url)
-    {
-        if (!url)
-            return url;
-        var lastIndex = url.lastIndexOf("inspector/");
-        if (lastIndex < 0)
-            return url;
-        return ".../" + url.substr(lastIndex);
-    }
+  function trimURL(url) {
+    if (!url)
+      return url;
+    var lastIndex = url.lastIndexOf('inspector/');
+    if (lastIndex < 0)
+      return url;
+    return '.../' + url.substr(lastIndex);
+  }
 }
 </script>
 </head>

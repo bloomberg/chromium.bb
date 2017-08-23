@@ -12,15 +12,14 @@ function addStyleSheet() {
     document.head.appendChild(styleTag);
 }
 
-async function test()
-{
-    TestRunner.markStep('Adding style sheet');
-    await Promise.all([
-        TestRunner.evaluateInPagePromise('addStyleSheet()'),
-        BindingsTestRunner.waitForSourceMap('selector-line.css.map'),
-    ]);
-    TestRunner.addResult("SourceMap successfully loaded.");
-    TestRunner.completeTest();
+async function test() {
+  TestRunner.markStep('Adding style sheet');
+  await Promise.all([
+    TestRunner.evaluateInPagePromise('addStyleSheet()'),
+    BindingsTestRunner.waitForSourceMap('selector-line.css.map'),
+  ]);
+  TestRunner.addResult('SourceMap successfully loaded.');
+  TestRunner.completeTest();
 }
 
 </script>

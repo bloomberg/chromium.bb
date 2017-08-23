@@ -5,43 +5,41 @@
 
 <script>
 
-async function test()
-{
-    TestRunner.markStep('dumpInitialWorkspace');
-    var snapshot = BindingsTestRunner.dumpWorkspace();
+async function test() {
+  TestRunner.markStep('dumpInitialWorkspace');
+  var snapshot = BindingsTestRunner.dumpWorkspace();
 
-    TestRunner.markStep('attachShadow1');
-    await Promise.all([
-        BindingsTestRunner.attachShadowDOM('shadow1', '#template', '_test_attachShadow1.js'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
-    ]);
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('attachShadow1');
+  await Promise.all([
+    BindingsTestRunner.attachShadowDOM('shadow1', '#template', '_test_attachShadow1.js'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
+  ]);
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('attachShadow2');
-    await Promise.all([
-        BindingsTestRunner.attachShadowDOM('shadow2', '#template', '_test_attachShadow2.js'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
-    ]);
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('attachShadow2');
+  await Promise.all([
+    BindingsTestRunner.attachShadowDOM('shadow2', '#template', '_test_attachShadow2.js'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
+  ]);
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('detachShadow1');
-    await Promise.all([
-        BindingsTestRunner.detachShadowDOM('shadow1', '_test_detachShadow1.js'),
-        BindingsTestRunner.waitForStyleSheetRemoved('sourcemap-style.css'),
-    ]);
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('detachShadow1');
+  await Promise.all([
+    BindingsTestRunner.detachShadowDOM('shadow1', '_test_detachShadow1.js'),
+    BindingsTestRunner.waitForStyleSheetRemoved('sourcemap-style.css'),
+  ]);
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('detachShadow2');
-    await Promise.all([
-        BindingsTestRunner.detachShadowDOM('shadow2', '_test_detachShadow2.js'),
-        BindingsTestRunner.waitForStyleSheetRemoved('sourcemap-style.css'),
-    ]);
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('detachShadow2');
+  await Promise.all([
+    BindingsTestRunner.detachShadowDOM('shadow2', '_test_detachShadow2.js'),
+    BindingsTestRunner.waitForStyleSheetRemoved('sourcemap-style.css'),
+  ]);
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.completeTest();
-
+  TestRunner.completeTest();
 }
 
 </script>

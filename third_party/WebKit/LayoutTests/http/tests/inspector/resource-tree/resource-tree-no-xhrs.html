@@ -3,16 +3,15 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
-{
-    NetworkTestRunner.makeSimpleXHR("GET", "resources/resource.php", false, step2);
+function test() {
+  NetworkTestRunner.makeSimpleXHR('GET', 'resources/resource.php', false, step2);
 
-    function step2()
-    {
-        var resource = TestRunner.resourceTreeModel.resourceForURL("http://127.0.0.1:8000/inspector/resource-tree/resources/resource.php");
-        TestRunner.assertTrue(!resource, "XHR resource should not be added to resourceTreeModel.");
-        TestRunner.completeTest();
-    }
+  function step2() {
+    var resource = TestRunner.resourceTreeModel.resourceForURL(
+        'http://127.0.0.1:8000/inspector/resource-tree/resources/resource.php');
+    TestRunner.assertTrue(!resource, 'XHR resource should not be added to resourceTreeModel.');
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

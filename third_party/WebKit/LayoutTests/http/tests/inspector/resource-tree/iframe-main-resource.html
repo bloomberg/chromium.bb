@@ -11,23 +11,22 @@ function createIframe() {
     return new Promise(x => iframe.onload = x);
 }
 
-async function test()
-{
-    await TestRunner.evaluateInPageAsync('createIframe()');
+async function test() {
+  await TestRunner.evaluateInPageAsync('createIframe()');
 
-    var resourceTreeModel = new SDK.ResourceTreeModel(TestRunner.mainTarget);
-    var resources = [];
-    resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, event => resources.push(event.data));
-    resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, function() {
-        resources.sort((a, b) => {
-            if (a.url === b.url)
-                return 0;
-            return a.url < b.url ? -1 : 1;
-        });
-        TestRunner.addResult('Reported resources:');
-        TestRunner.addResult(resources.map(r => '  ' + r.url).join('\n'));
-        TestRunner.completeTest();
+  var resourceTreeModel = new SDK.ResourceTreeModel(TestRunner.mainTarget);
+  var resources = [];
+  resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.ResourceAdded, event => resources.push(event.data));
+  resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, function() {
+    resources.sort((a, b) => {
+      if (a.url === b.url)
+        return 0;
+      return a.url < b.url ? -1 : 1;
     });
+    TestRunner.addResult('Reported resources:');
+    TestRunner.addResult(resources.map(r => '  ' + r.url).join('\n'));
+    TestRunner.completeTest();
+  });
 }
 </script>
 </head>

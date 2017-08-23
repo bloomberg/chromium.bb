@@ -10,21 +10,25 @@ function sendXHRRequest() {
 }
 
 async function test() {
-    var columnsToTest = ["name", "method", "status", "protocol", "scheme", "domain", "remoteaddress", "type", "initiator", "cookies", "setcookies", "priority", "cache-control", "connection", "content-encoding", "content-length", "vary"];
+  var columnsToTest = [
+    'name', 'method', 'status', 'protocol', 'scheme', 'domain', 'remoteaddress', 'type', 'initiator', 'cookies',
+    'setcookies', 'priority', 'cache-control', 'connection', 'content-encoding', 'content-length', 'vary'
+  ];
 
-    // Setup
-    NetworkTestRunner.recordNetwork();
-    await NetworkTestRunner.clearNetworkCache();
+  // Setup
+  NetworkTestRunner.recordNetwork();
+  await NetworkTestRunner.clearNetworkCache();
 
-    TestRunner.evaluateInPage("sendXHRRequest()");
-    var request = await TestRunner.waitForEvent(SDK.NetworkManager.Events.RequestFinished, TestRunner.networkManager,
-        request => request.name() === "empty.html?xhr");
-    var xhrNode = await NetworkTestRunner.waitForNetworkLogViewNodeForRequest(request);
+  TestRunner.evaluateInPage('sendXHRRequest()');
+  var request = await TestRunner.waitForEvent(
+      SDK.NetworkManager.Events.RequestFinished, TestRunner.networkManager,
+      request => request.name() === 'empty.html?xhr');
+  var xhrNode = await NetworkTestRunner.waitForNetworkLogViewNodeForRequest(request);
 
-    UI.panels.network._networkLogView._refresh();
-    for (var columnName of columnsToTest)
-        TestRunner.addResult(columnName + ": " + xhrNode.createCell(columnName).textContent);
-    TestRunner.completeTest();
+  UI.panels.network._networkLogView._refresh();
+  for (var columnName of columnsToTest)
+    TestRunner.addResult(columnName + ': ' + xhrNode.createCell(columnName).textContent);
+  TestRunner.completeTest();
 }
 </script>
 </head>

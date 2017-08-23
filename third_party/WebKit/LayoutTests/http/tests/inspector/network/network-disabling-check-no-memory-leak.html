@@ -3,28 +3,24 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    NetworkTestRunner.makeSimpleXHR("GET", "resources/resource.php", true, step2);
+function test() {
+  NetworkTestRunner.recordNetwork();
+  NetworkTestRunner.makeSimpleXHR('GET', 'resources/resource.php', true, step2);
 
-    async function step2()
-    {
-        await TestRunner.NetworkAgent.disable();
-        var request1 = NetworkTestRunner.networkRequests().pop();
-        request1.requestContent().then(step4);
-    }
+  async function step2() {
+    await TestRunner.NetworkAgent.disable();
+    var request1 = NetworkTestRunner.networkRequests().pop();
+    request1.requestContent().then(step4);
+  }
 
-    function step4(content)
-    {
-        TestRunner.addResult("resource.content after disabling network domain: " + content);
-        TestRunner.NetworkAgent.enable().then(step5);
-    }
+  function step4(content) {
+    TestRunner.addResult('resource.content after disabling network domain: ' + content);
+    TestRunner.NetworkAgent.enable().then(step5);
+  }
 
-    function step5()
-    {
-        TestRunner.completeTest();
-    }
+  function step5() {
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

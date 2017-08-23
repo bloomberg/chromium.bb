@@ -15,39 +15,40 @@ function createCraftedIframe()
     fabricatedFrame.contentDocument.getElementById("d").innerHTML = "<iframe src='resources/dummy-iframe.html'></iframe>";
 }
 
-function test()
-{
-    for (var eventName in SDK.ResourceTreeModel.Events)
-        TestRunner.resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events[eventName], eventHandler.bind(this, eventName));
+function test() {
+  for (var eventName in SDK.ResourceTreeModel.Events)
+    TestRunner.resourceTreeModel.addEventListener(
+        SDK.ResourceTreeModel.Events[eventName], eventHandler.bind(this, eventName));
 
-    var frames = [];
-    function frameId(frame) {
-        var frameId = frames.indexOf(frame) + 1;
-        if (!frameId) {
-            frames.push(frame);
-            frameId = frames.length;
-        }
-        return frameId;
+  var frames = [];
+  function frameId(frame) {
+    var frameId = frames.indexOf(frame) + 1;
+    if (!frameId) {
+      frames.push(frame);
+      frameId = frames.length;
     }
+    return frameId;
+  }
 
-    function eventHandler(eventName, event)
-    {
-        switch (eventName) {
-        case "FrameAdded":
-        case "FrameNavigated":
-        case "FrameDetached":
-        case "MainFrameNavigated":
-            var frame = event.data;
-            var parentFrame = frame.parentFrame;
-            parentFrame = parentFrame ? (", parentFrameId: " + frameId(parentFrame)) : "";
-            TestRunner.addResult("    " + eventName + " id: " + frameId(frame) + parentFrame + ", isMainFrame: " + frame.isMainFrame());
-            break;
-        default:
-        }
+  function eventHandler(eventName, event) {
+    switch (eventName) {
+      case 'FrameAdded':
+      case 'FrameNavigated':
+      case 'FrameDetached':
+      case 'MainFrameNavigated':
+        var frame = event.data;
+        var parentFrame = frame.parentFrame;
+        parentFrame = parentFrame ? (', parentFrameId: ' + frameId(parentFrame)) : '';
+        TestRunner.addResult(
+            '    ' + eventName + ' id: ' + frameId(frame) + parentFrame + ', isMainFrame: ' + frame.isMainFrame());
+        break;
+      default:
     }
+  }
 
-    TestRunner.evaluateInPage("createCraftedIframe()");
-    ApplicationTestRunner.runAfterResourcesAreFinished(["dummy-iframe.html", "resources-test.js", "resource-tree-test.js"], TestRunner.completeTest);
+  TestRunner.evaluateInPage('createCraftedIframe()');
+  ApplicationTestRunner.runAfterResourcesAreFinished(
+      ['dummy-iframe.html', 'resources-test.js', 'resource-tree-test.js'], TestRunner.completeTest);
 }
 
 </script>

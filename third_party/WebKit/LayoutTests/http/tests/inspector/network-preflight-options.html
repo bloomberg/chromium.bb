@@ -59,27 +59,26 @@ function step3()
     sendXHR(targetURL(5, false, true), true, true);
 }
 
-var test = function()
-{
-    var requestMessages = [];
-    var postRequestsCount = 0;
-    function onRequest(event)
-    {
-        var request = event.data;
-        var idMatch = /\?id=([0-9]*)&/.exec(request.url());
-        var requestId = idMatch[1];
-        var requestMessage = requestId + " " + request.resourceType() + ":" + request.requestMethod + " " + request.url().replace(/[&?]date=\d+/, "");
-        requestMessages.push(requestMessage);
-        if (request.requestMethod === "POST" && ++postRequestsCount === 4) {
-            requestMessages.sort();
-            for (var i = 0; i < requestMessages.length; i++)
-                TestRunner.addResult(requestMessages[i]);
-            TestRunner.completeTest();
-        }
+var test = function() {
+  var requestMessages = [];
+  var postRequestsCount = 0;
+  function onRequest(event) {
+    var request = event.data;
+    var idMatch = /\?id=([0-9]*)&/.exec(request.url());
+    var requestId = idMatch[1];
+    var requestMessage = requestId + ' ' + request.resourceType() + ':' + request.requestMethod + ' ' +
+        request.url().replace(/[&?]date=\d+/, '');
+    requestMessages.push(requestMessage);
+    if (request.requestMethod === 'POST' && ++postRequestsCount === 4) {
+      requestMessages.sort();
+      for (var i = 0; i < requestMessages.length; i++)
+        TestRunner.addResult(requestMessages[i]);
+      TestRunner.completeTest();
     }
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
-    TestRunner.evaluateInPage("doCrossOriginXHR();");
-}
+  }
+  TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
+  TestRunner.evaluateInPage('doCrossOriginXHR();');
+};
 </script>
 </head>
 <body onload="runTest()">

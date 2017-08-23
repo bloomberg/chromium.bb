@@ -5,30 +5,30 @@
 <script>
 
 function test() {
-    var cacheStorageModel = TestRunner.mainTarget.model(SDK.ServiceWorkerCacheModel);
-    cacheStorageModel.enable();
+  var cacheStorageModel = TestRunner.mainTarget.model(SDK.ServiceWorkerCacheModel);
+  cacheStorageModel.enable();
 
-    function errorAndExit(error) {
-        if (error)
-            TestRunner.addResult(error);
-        TestRunner.completeTest();
-    }
+  function errorAndExit(error) {
+    if (error)
+      TestRunner.addResult(error);
+    TestRunner.completeTest();
+  }
 
-    function main() {
-        ApplicationTestRunner.clearAllCaches()
-            .then(ApplicationTestRunner.dumpCacheTree)
-            .then(ApplicationTestRunner.createCache.bind(this, "testCache1"))
-            .then(ApplicationTestRunner.dumpCacheTree)
-            .then(ApplicationTestRunner.createCache.bind(this, "testCache2"))
-            .then(ApplicationTestRunner.dumpCacheTree)
-            .then(ApplicationTestRunner.deleteCache.bind(this, "testCache1"))
-            .then(ApplicationTestRunner.dumpCacheTree)
-            .then(ApplicationTestRunner.clearAllCaches)
-            .then(TestRunner.completeTest)
-            .catch(errorAndExit);
-    }
+  function main() {
+    ApplicationTestRunner.clearAllCaches()
+        .then(ApplicationTestRunner.dumpCacheTree)
+        .then(ApplicationTestRunner.createCache.bind(this, 'testCache1'))
+        .then(ApplicationTestRunner.dumpCacheTree)
+        .then(ApplicationTestRunner.createCache.bind(this, 'testCache2'))
+        .then(ApplicationTestRunner.dumpCacheTree)
+        .then(ApplicationTestRunner.deleteCache.bind(this, 'testCache1'))
+        .then(ApplicationTestRunner.dumpCacheTree)
+        .then(ApplicationTestRunner.clearAllCaches)
+        .then(TestRunner.completeTest)
+        .catch(errorAndExit);
+  }
 
-    ApplicationTestRunner.waitForCacheRefresh(main);
+  ApplicationTestRunner.waitForCacheRefresh(main);
 }
 </script>
 </head>

@@ -11,41 +11,38 @@ function loadScript()
     document.body.appendChild(script);
 }
 
-function test()
-{
-    var message = new ConsoleModel.ConsoleMessage(TestRunner.runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.JS, ConsoleModel.ConsoleMessage.MessageLevel.Info, "hello?", null, "http://127.0.0.1:8000/inspector/resources/source2.js");
-    ConsoleModel.consoleModel.addMessage(message);
-    TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
+function test() {
+  var message = new ConsoleModel.ConsoleMessage(
+      TestRunner.runtimeModel, ConsoleModel.ConsoleMessage.MessageSource.JS,
+      ConsoleModel.ConsoleMessage.MessageLevel.Info, 'hello?', null,
+      'http://127.0.0.1:8000/inspector/resources/source2.js');
+  ConsoleModel.consoleModel.addMessage(message);
+  TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
 
-    ConsoleTestRunner.dumpConsoleMessages();
-    TestRunner.evaluateInPage("loadScript()");
+  ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.evaluateInPage('loadScript()');
 
-    function onScriptAdded(event)
-    {
-        if (!event.data.contentURL().endsWith("source2.js"))
-            return;
+  function onScriptAdded(event) {
+    if (!event.data.contentURL().endsWith('source2.js'))
+      return;
 
-        TestRunner.addResult("script was added");
-        var message = Console.ConsoleView.instance()._visibleViewMessages[0];
-        var anchorElement = message.element().querySelector(".devtools-link");
-        anchorElement.click();
-    }
+    TestRunner.addResult('script was added');
+    var message = Console.ConsoleView.instance()._visibleViewMessages[0];
+    var anchorElement = message.element().querySelector('.devtools-link');
+    anchorElement.click();
+  }
 
-    InspectorFrontendHost.openInNewTab = function()
-    {
-        TestRunner.addResult("Failure: Open link in new tab!!");
-        TestRunner.completeTest();
-    };
+  InspectorFrontendHost.openInNewTab = function() {
+    TestRunner.addResult('Failure: Open link in new tab!!');
+    TestRunner.completeTest();
+  };
 
-    UI.inspectorView._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, panelChanged);
+  UI.inspectorView._tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, panelChanged);
 
-    function panelChanged()
-    {
-        TestRunner.addResult("Panel " + UI.inspectorView._tabbedPane._currentTab.id + " was opened");
-        TestRunner.completeTest();
-    }
-
-
+  function panelChanged() {
+    TestRunner.addResult('Panel ' + UI.inspectorView._tabbedPane._currentTab.id + ' was opened');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -17,21 +17,18 @@ function testFunction()
     childWindow.sendRequest();
 }
 
-var test = function()
-{
-    SourcesTestRunner.startDebuggerTest(step1);
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
 
-    function step1()
-    {
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
-    }
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
 
-    function step2(callFrames)
-    {
-        SourcesTestRunner.captureStackTrace(callFrames);
-        SourcesTestRunner.completeDebuggerTest();
-    }
-}
+  function step2(callFrames) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
 
 </script>
 </head>

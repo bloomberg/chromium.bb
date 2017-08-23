@@ -5,32 +5,32 @@
 <script>
 
 async function test() {
-    var cacheStorageModel = InspectorTest.mainTarget.model(SDK.ServiceWorkerCacheModel);
-    cacheStorageModel.enable();
+  var cacheStorageModel = InspectorTest.mainTarget.model(SDK.ServiceWorkerCacheModel);
+  cacheStorageModel.enable();
 
-    function isMarkedDirty() {
-        var view = UI.panels.resources._sidebar.cacheStorageListTreeElement.childAt(0)._view;
-        InspectorTest.addResult("Cache marked dirty = " + view._needsRefresh.visible());
-    }
+  function isMarkedDirty() {
+    var view = UI.panels.resources._sidebar.cacheStorageListTreeElement.childAt(0)._view;
+    InspectorTest.addResult('Cache marked dirty = ' + view._needsRefresh.visible());
+  }
 
-    await new Promise(resolve => InspectorTest.waitForCacheRefresh(resolve));
-    await InspectorTest.clearAllCaches();
-    await InspectorTest.dumpCacheTree();
-    await InspectorTest.createCache("testCache1");
-    await InspectorTest.dumpCacheTree();
-    isMarkedDirty();
-    await InspectorTest.addCacheEntry("testCache1", "http://fake.request.com/1", "OK");
-    InspectorTest.addResult("Added entry")
-    isMarkedDirty();
-    await InspectorTest.dumpCacheTree();
-    isMarkedDirty();
-    await InspectorTest.deleteCacheEntry("testCache1", "http://fake.request.com/1");
-    InspectorTest.addResult("Deleted entry");
-    isMarkedDirty();
-    await InspectorTest.dumpCacheTree();
-    isMarkedDirty();
-    await InspectorTest.clearAllCaches();
-    InspectorTest.completeTest();
+  await new Promise(resolve => InspectorTest.waitForCacheRefresh(resolve));
+  await InspectorTest.clearAllCaches();
+  await InspectorTest.dumpCacheTree();
+  await InspectorTest.createCache('testCache1');
+  await InspectorTest.dumpCacheTree();
+  isMarkedDirty();
+  await InspectorTest.addCacheEntry('testCache1', 'http://fake.request.com/1', 'OK');
+  InspectorTest.addResult('Added entry');
+  isMarkedDirty();
+  await InspectorTest.dumpCacheTree();
+  isMarkedDirty();
+  await InspectorTest.deleteCacheEntry('testCache1', 'http://fake.request.com/1');
+  InspectorTest.addResult('Deleted entry');
+  isMarkedDirty();
+  await InspectorTest.dumpCacheTree();
+  isMarkedDirty();
+  await InspectorTest.clearAllCaches();
+  InspectorTest.completeTest();
 }
 </script>
 </head>

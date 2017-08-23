@@ -12,14 +12,14 @@ function loadIFrame() {
 }
 
 function test() {
-    ConsoleTestRunner.addConsoleSniffer(step1);
-    TestRunner.evaluateInPage("loadIFrame()");
+  ConsoleTestRunner.addConsoleSniffer(step1);
+  TestRunner.evaluateInPage('loadIFrame()');
 
-    function step1() {
-        var requests = NetworkTestRunner.findRequestsByURLPattern(/style.css/);
-        TestRunner.assertTrue(requests.length === 1);
-        TestRunner.completeTest();
-    }
+  function step1() {
+    var requests = NetworkTestRunner.findRequestsByURLPattern(/style.css/);
+    TestRunner.assertTrue(requests.length === 1);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

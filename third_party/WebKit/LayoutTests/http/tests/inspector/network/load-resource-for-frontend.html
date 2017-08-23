@@ -3,68 +3,57 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
-{
-    var loggedHeaders = {
-        "cache-control": true,
-        "expires": true,
-        "last-modified": true,
-        "pragma": true
-    };
+function test() {
+  var loggedHeaders = {'cache-control': true, 'expires': true, 'last-modified': true, 'pragma': true};
 
-    function testLoadForURL(url, headers, next)
-    {
-        TestRunner.addResult("Loading resource from " + url);
-        Host.ResourceLoader.load(url, headers, callback);
+  function testLoadForURL(url, headers, next) {
+    TestRunner.addResult('Loading resource from ' + url);
+    Host.ResourceLoader.load(url, headers, callback);
 
-        function callback(statusCode, headers, content)
-        {
-            TestRunner.addResult("Success: " + statusCode);
-            var headersArray = [];
-            for (var name in headers) {
-                var nameLower = name.toLowerCase();
-                if (nameLower in loggedHeaders)
-                    headersArray.push(nameLower);
-            }
-            headersArray.sort();
-            TestRunner.addResult("Logged headers: " + headersArray.join(", "));
-            TestRunner.addResult("Content: \"" + content + "\"");
+    function callback(statusCode, headers, content) {
+      TestRunner.addResult('Success: ' + statusCode);
+      var headersArray = [];
+      for (var name in headers) {
+        var nameLower = name.toLowerCase();
+        if (nameLower in loggedHeaders)
+          headersArray.push(nameLower);
+      }
+      headersArray.sort();
+      TestRunner.addResult('Logged headers: ' + headersArray.join(', '));
+      TestRunner.addResult('Content: "' + content + '"');
 
-            TestRunner.deprecatedRunAfterPendingDispatches(next);
-        }
+      TestRunner.deprecatedRunAfterPendingDispatches(next);
     }
+  }
 
-    TestRunner.runTestSuite([
-        function testNetworkResourceNonCached(next)
-        {
-            testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php", undefined, next);
-        },
+  TestRunner.runTestSuite([
+    function testNetworkResourceNonCached(next) {
+      testLoadForURL('http://localhost:8080/inspector/network/resources/resource.php', undefined, next);
+    },
 
-        function testNetworkResourceCached(next)
-        {
-            testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php?cached=1", undefined, next);
-        },
+    function testNetworkResourceCached(next) {
+      testLoadForURL('http://localhost:8080/inspector/network/resources/resource.php?cached=1', undefined, next);
+    },
 
-        function testNetworkResourceIfModifiedSince(next)
-        {
-            testLoadForURL("http://localhost:8080/inspector/network/resources/resource.php?cached=1", { "if-modified-since": new Date().toUTCString() }, next);
-        },
+    function testNetworkResourceIfModifiedSince(next) {
+      testLoadForURL(
+          'http://localhost:8080/inspector/network/resources/resource.php?cached=1',
+          {'if-modified-since': new Date().toUTCString()}, next);
+    },
 
-        function testResourceFromIncorrectURL(next)
-        {
-            testLoadForURL("resource.php", undefined, next);
-        },
+    function testResourceFromIncorrectURL(next) {
+      testLoadForURL('resource.php', undefined, next);
+    },
 
-        function testResourceWithCookie(next)
-        {
-            NetworkTestRunner.makeSimpleXHR("GET", "http://127.0.0.1:8000/inspector/network/resources/set-cookie.php", false, callback)
+    function testResourceWithCookie(next) {
+      NetworkTestRunner.makeSimpleXHR(
+          'GET', 'http://127.0.0.1:8000/inspector/network/resources/set-cookie.php', false, callback);
 
-            function callback()
-            {
-                testLoadForURL("http://127.0.0.1:8000/inspector/network/resources/print-cookie.php", undefined, next);
-            }
-        }
-    ]);
+      function callback() {
+        testLoadForURL('http://127.0.0.1:8000/inspector/network/resources/print-cookie.php', undefined, next);
+      }
+    }
+  ]);
 }
 </script>
 </head>

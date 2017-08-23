@@ -4,45 +4,40 @@
 <script src="../network-test.js"></script>
 <script>
 
-function test()
-{
-    var offset;
+function test() {
+  var offset;
 
-    NetworkTestRunner.recordNetwork();
-    offset = NetworkTestRunner.networkRequests().length;
-    NetworkTestRunner.makeSimpleXHRWithPayload("POST",
-        "resources/redirect.cgi?status=301&ttl=1", true, "LOST", step2);
+  NetworkTestRunner.recordNetwork();
+  offset = NetworkTestRunner.networkRequests().length;
+  NetworkTestRunner.makeSimpleXHRWithPayload('POST', 'resources/redirect.cgi?status=301&ttl=1', true, 'LOST', step2);
 
-    function step2()
-    {
-        NetworkTestRunner.networkRequests()[offset].requestContent().then(step3);
+  function step2() {
+    NetworkTestRunner.networkRequests()[offset].requestContent().then(step3);
+  }
+
+  function step3() {
+    NetworkTestRunner.makeSimpleXHRWithPayload(
+        'POST', 'resources/redirect.cgi?status=307&ttl=1', true, 'PRESERVED', step4);
+  }
+
+
+  function step4() {
+    NetworkTestRunner.networkRequests()[offset + 1].requestContent().then(step5);
+  }
+  function step5() {
+    var requests = NetworkTestRunner.networkRequests();
+    for (var i = 0; i < requests.length; ++i) {
+      var request = requests[i];
+      var requestMethod = request.requestMethod;
+      var actualMethod = request.responseHeaderValue('request-method');
+      var body = '[' + (request.requestFormData || '') + ']';
+      TestRunner.addResult(requestMethod + ' ' + request.url());
+      TestRunner.addResult('  actual http method was: ' + actualMethod);
+      TestRunner.addResult('  request body: ' + body);
+      TestRunner.addResult('');
     }
-
-    function step3()
-    {
-        NetworkTestRunner.makeSimpleXHRWithPayload("POST",
-            "resources/redirect.cgi?status=307&ttl=1", true, "PRESERVED", step4);
-    }
-
-
-    function step4()
-    {
-        NetworkTestRunner.networkRequests()[offset + 1].requestContent().then(step5);
-    }
-    function step5() {
-        var requests = NetworkTestRunner.networkRequests();
-        for (var i = 0; i < requests.length; ++i) {
-            var request = requests[i];
-            var requestMethod = request.requestMethod;
-            var actualMethod = request.responseHeaderValue("request-method");
-            var body = "[" + (request.requestFormData || "") + "]";
-            TestRunner.addResult(requestMethod + " " + request.url());
-            TestRunner.addResult("  actual http method was: " + actualMethod);
-            TestRunner.addResult("  request body: " + body);
-            TestRunner.addResult("");
-        }
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

@@ -18,23 +18,20 @@ function addStylesheet()
     document.head.appendChild(linkElement);
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("addStylesheet()");
-    TestRunner.addSniffer(Bindings.CSSWorkspaceBinding.prototype, "updateLocations", sourceMappingSniffer, true);
+function test() {
+  TestRunner.evaluateInPage('addStylesheet()');
+  TestRunner.addSniffer(Bindings.CSSWorkspaceBinding.prototype, 'updateLocations', sourceMappingSniffer, true);
 
-    function sourceMappingSniffer(header)
-    {
-        if (header.resourceURL().includes("selector-line-deprecated.css")) {
-            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step2);
-        }
+  function sourceMappingSniffer(header) {
+    if (header.resourceURL().includes('selector-line-deprecated.css')) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step2);
     }
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        TestRunner.completeTest();
-    }
+  function step2() {
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

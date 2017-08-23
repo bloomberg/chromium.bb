@@ -5,79 +5,72 @@
 <script src="../resources-test.js"></script>
 <script src="../console-test.js"></script>
 <script>
-function test()
-{
-    function waitForTarget()
-    {
-        return new Promise(function(resolve) {
-            var sniffer = {
-                targetAdded: function(target)
-                {
-                    if (TestRunner.isServiceWorker(target)) {
-                        resolve();
-                        SDK.targetManager.unobserveTargets(sniffer);
-                    }
-                },
+function test() {
+  function waitForTarget() {
+    return new Promise(function(resolve) {
+      var sniffer = {
+        targetAdded: function(target) {
+          if (TestRunner.isServiceWorker(target)) {
+            resolve();
+            SDK.targetManager.unobserveTargets(sniffer);
+          }
+        },
 
-                targetRemoved: function(e)
-                {
-                }
-            };
-            SDK.targetManager.observeTargets(sniffer);
-        });
-    }
+        targetRemoved: function(e) {}
+      };
+      SDK.targetManager.observeTargets(sniffer);
+    });
+  }
 
-    function waitForConsoleMessage(regex)
-    {
-        return new Promise(function(resolve) {
-            ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, sniff);
+  function waitForConsoleMessage(regex) {
+    return new Promise(function(resolve) {
+      ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, sniff);
 
-            function sniff(e)
-            {
-                if (e.data && regex.test(e.data.messageText)) {
-                    resolve(e.data);
-                    ConsoleModel.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, sniff);
-                }
-            }
-        });
-    }
+      function sniff(e) {
+        if (e.data && regex.test(e.data.messageText)) {
+          resolve(e.data);
+          ConsoleModel.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, sniff);
+        }
+      }
+    });
+  }
 
-    var scriptURL = "http://127.0.0.1:8000/inspector/service-workers/resources/user-agent-override-worker.js";
-    var scope = "http://127.0.0.1:8000/inspector/service-workers/resources/user-agent-override/";
-    var userAgentString = "Mozilla/5.0 (Overridden User Agent)";
-    var originalUserAgent = navigator.userAgent;
+  var scriptURL = 'http://127.0.0.1:8000/inspector/service-workers/resources/user-agent-override-worker.js';
+  var scope = 'http://127.0.0.1:8000/inspector/service-workers/resources/user-agent-override/';
+  var userAgentString = 'Mozilla/5.0 (Overridden User Agent)';
+  var originalUserAgent = navigator.userAgent;
 
-    TestRunner.addResult("Enable emulation and set User-Agent override");
-    SDK.multitargetNetworkManager.setUserAgentOverride(userAgentString);
+  TestRunner.addResult('Enable emulation and set User-Agent override');
+  SDK.multitargetNetworkManager.setUserAgentOverride(userAgentString);
 
-    ApplicationTestRunner.registerServiceWorker(scriptURL, scope)
-        .then(waitForTarget)
-        .then(ApplicationTestRunner.postToServiceWorker.bind(InspectorTest, scope, "message"))
-        .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
-        .then(function(msg) {
-            TestRunner.addResult("Overriden user agent: " + msg.messageText);
-            TestRunner.addResult("Disable emulation");
-                SDK.multitargetNetworkManager.setUserAgentOverride("");
-            return ApplicationTestRunner.unregisterServiceWorker(scope);
-        })
-        .then(function() {
-            return ApplicationTestRunner.registerServiceWorker(scriptURL + '?2', scope);
-        })
-        .then(waitForTarget)
-        .then(ApplicationTestRunner.postToServiceWorker.bind(InspectorTest, scope, "message"))
-        .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
-        .then(function(msg) {
-            TestRunner.addResult("User agent without override is correct: " + (msg.messageText != userAgentString));
-            return ApplicationTestRunner.unregisterServiceWorker(scope);
-        })
-        .then(function() {
-            TestRunner.addResult("Test complete");
-            TestRunner.completeTest();
-        })
-        .catch(function(err) {
-            console.log(err);
-            TestRunner.completeTest();
-        });
+  ApplicationTestRunner.registerServiceWorker(scriptURL, scope)
+      .then(waitForTarget)
+      .then(ApplicationTestRunner.postToServiceWorker.bind(InspectorTest, scope, 'message'))
+      .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
+      .then(function(msg) {
+        TestRunner.addResult('Overriden user agent: ' + msg.messageText);
+        TestRunner.addResult('Disable emulation');
+        SDK.multitargetNetworkManager.setUserAgentOverride('');
+        return ApplicationTestRunner.unregisterServiceWorker(scope);
+      })
+      .then(function() {
+        return ApplicationTestRunner.registerServiceWorker(scriptURL + '?2', scope);
+      })
+      .then(waitForTarget)
+      .then(ApplicationTestRunner.postToServiceWorker.bind(InspectorTest, scope, 'message'))
+      .then(waitForConsoleMessage.bind(null, /HTTP_USER_AGENT/))
+      .then(function(msg) {
+        TestRunner.addResult('User agent without override is correct: ' + (msg.messageText != userAgentString));
+        return ApplicationTestRunner.unregisterServiceWorker(scope);
+      })
+      .then(function() {
+        TestRunner.addResult('Test complete');
+        TestRunner.completeTest();
+      })
+      .catch(function(err) {
+        console.log(err);
+        TestRunner.completeTest();
+      });
 }
 
 </script>

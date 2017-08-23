@@ -5,29 +5,28 @@
 
 <script>
 
-async function test()
-{
-    TestRunner.markStep('attachFrame');
-    await Promise.all([
-        BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
-    ]);
+async function test() {
+  TestRunner.markStep('attachFrame');
+  await Promise.all([
+    BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
+  ]);
 
-    var jsLiveLocation = BindingsTestRunner.createDebuggerLiveLocation('js', 'sourcemap-script.js');
-    var cssLiveLocation = BindingsTestRunner.createCSSLiveLocation('css', 'sourcemap-style.css');
+  var jsLiveLocation = BindingsTestRunner.createDebuggerLiveLocation('js', 'sourcemap-script.js');
+  var cssLiveLocation = BindingsTestRunner.createCSSLiveLocation('css', 'sourcemap-style.css');
 
-    TestRunner.markStep('navigateMainFrame');
-    var url = "http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html";
-    await TestRunner.navigatePromise(url);
-    BindingsTestRunner.dumpLocation(jsLiveLocation);
-    BindingsTestRunner.dumpLocation(cssLiveLocation);
+  TestRunner.markStep('navigateMainFrame');
+  var url = 'http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html';
+  await TestRunner.navigatePromise(url);
+  BindingsTestRunner.dumpLocation(jsLiveLocation);
+  BindingsTestRunner.dumpLocation(cssLiveLocation);
 
-    TestRunner.markStep('navigateBack');
-    var originalUrl = "http://127.0.0.1:8000/inspector/bindings/bindings-main-frame-navigated.html";
-    await TestRunner.navigatePromise(originalUrl);
+  TestRunner.markStep('navigateBack');
+  var originalUrl = 'http://127.0.0.1:8000/inspector/bindings/bindings-main-frame-navigated.html';
+  await TestRunner.navigatePromise(originalUrl);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>
