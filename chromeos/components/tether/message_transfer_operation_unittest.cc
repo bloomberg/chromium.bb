@@ -268,30 +268,6 @@ TEST_F(MessageTransferOperationTest, TestCannotConnectAndReachesRetryLimit) {
   EXPECT_TRUE(operation_->GetReceivedMessages(test_devices_[0]).empty());
 }
 
-TEST_F(MessageTransferOperationTest, TestFailsAuthentication) {
-  ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
-  InitializeOperation();
-  EXPECT_TRUE(IsDeviceRegistered(test_devices_[0]));
-
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[0], cryptauth::SecureChannel::Status::CONNECTING);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[0], cryptauth::SecureChannel::Status::CONNECTED);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[0], cryptauth::SecureChannel::Status::AUTHENTICATING);
-  fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[0], cryptauth::SecureChannel::Status::DISCONNECTED);
-
-  // When authentication fails, we consider this a fatal error; the device
-  // should be unregistered.
-  EXPECT_FALSE(IsDeviceRegistered(test_devices_[0]));
-  VerifyOperationStartedAndFinished(true /* has_started */,
-                                    true /* has_finished */);
-
-  EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[0]));
-  EXPECT_TRUE(operation_->GetReceivedMessages(test_devices_[0]).empty());
-}
-
 TEST_F(MessageTransferOperationTest, TestFailsThenConnects) {
   ConstructOperation(std::vector<cryptauth::RemoteDevice>{test_devices_[0]});
   InitializeOperation();
@@ -535,17 +511,19 @@ TEST_F(MessageTransferOperationTest, MultipleDevices) {
   EXPECT_TRUE(IsDeviceRegistered(test_devices_[2]));
   VerifyDefaultTimerCreatedForDevice(test_devices_[2]);
 
-  // Fail to authenticate |test_devices_[3]|'s channel.
+  // Fail 3 times to connect to |test_devices_[3]|.
   test_timer_factory_->set_device_id_for_next_timer(
       test_devices_[3].GetDeviceId());
-  fake_ble_connection_manager_->RegisterRemoteDevice(
-      test_devices_[3], MessageType::CONNECT_TETHERING_REQUEST);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[3], cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3], cryptauth::SecureChannel::Status::CONNECTED);
+      test_devices_[3], cryptauth::SecureChannel::Status::DISCONNECTED);
   fake_ble_connection_manager_->SetDeviceStatus(
-      test_devices_[3], cryptauth::SecureChannel::Status::AUTHENTICATING);
+      test_devices_[3], cryptauth::SecureChannel::Status::CONNECTING);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_devices_[3], cryptauth::SecureChannel::Status::DISCONNECTED);
+  fake_ble_connection_manager_->SetDeviceStatus(
+      test_devices_[3], cryptauth::SecureChannel::Status::CONNECTING);
   fake_ble_connection_manager_->SetDeviceStatus(
       test_devices_[3], cryptauth::SecureChannel::Status::DISCONNECTED);
   EXPECT_FALSE(operation_->HasDeviceAuthenticated(test_devices_[3]));
