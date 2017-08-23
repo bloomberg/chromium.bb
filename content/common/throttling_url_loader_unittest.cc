@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
@@ -43,6 +44,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     data.error_code = error_code;
     client_ptr_->OnComplete(data);
   }
+
+  void CloseClientPipe() { client_ptr_.reset(); }
 
  private:
   // mojom::URLLoaderFactory implementation.
@@ -199,12 +202,15 @@ class ThrottlingURLLoaderTest : public testing::Test {
     throttles_.push_back(std::move(throttle));
   }
 
-  void CreateLoaderAndStart() {
+  void CreateLoaderAndStart(bool sync = false) {
+    uint32_t options = 0;
+    if (sync)
+      options |= mojom::kURLLoadOptionSynchronous;
     ResourceRequest request;
     request.url = GURL("http://example.org");
     loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-        factory_.factory_ptr().get(), std::move(throttles_), 0, 0, 0, request,
-        &client_, TRAFFIC_ANNOTATION_FOR_TESTS);
+        factory_.factory_ptr().get(), std::move(throttles_), 0, 0, options,
+        request, &client_, TRAFFIC_ANNOTATION_FOR_TESTS);
     factory_.factory_ptr().FlushForTesting();
   }
 
@@ -448,6 +454,61 @@ TEST_F(ThrottlingURLLoaderTest, DeferBeforeResponse) {
   EXPECT_EQ(1u, throttle_->will_process_response_called());
 
   EXPECT_EQ(1u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(1u, client_.on_complete_called());
+}
+
+TEST_F(ThrottlingURLLoaderTest, PipeClosureBeforeSyncResponse) {
+  base::RunLoop run_loop;
+  client_.set_on_complete_callback(base::Bind(
+      [](const base::Closure& quit_closure, int error) {
+        EXPECT_EQ(net::ERR_FAILED, error);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  CreateLoaderAndStart(true);
+
+  factory_.CloseClientPipe();
+
+  run_loop.Run();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle_->will_process_response_called());
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
+  EXPECT_EQ(0u, client_.on_received_redirect_called());
+  EXPECT_EQ(1u, client_.on_complete_called());
+}
+
+// Once browser-side navigation is the only option these two tests should be
+// merged as the sync and async cases will be identical.
+TEST_F(ThrottlingURLLoaderTest, PipeClosureBeforeAsyncResponse) {
+  // Without browser-side navigation enabled the on complete callback will never
+  // be called if the client pipe is closed.
+  if (!content::IsBrowserSideNavigationEnabled())
+    return;
+
+  base::RunLoop run_loop;
+  client_.set_on_complete_callback(base::Bind(
+      [](const base::Closure& quit_closure, int error) {
+        EXPECT_EQ(net::ERR_FAILED, error);
+        quit_closure.Run();
+      },
+      run_loop.QuitClosure()));
+
+  CreateLoaderAndStart();
+
+  factory_.CloseClientPipe();
+
+  run_loop.Run();
+
+  EXPECT_EQ(1u, throttle_->will_start_request_called());
+  EXPECT_EQ(0u, throttle_->will_redirect_request_called());
+  EXPECT_EQ(0u, throttle_->will_process_response_called());
+
+  EXPECT_EQ(0u, client_.on_received_response_called());
   EXPECT_EQ(0u, client_.on_received_redirect_called());
   EXPECT_EQ(1u, client_.on_complete_called());
 }
