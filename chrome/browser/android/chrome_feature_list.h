@@ -22,6 +22,7 @@ extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kCCTRedirectPreconnect;
 extern const base::Feature kChromeHomeFeature;
+extern const base::Feature kChromeHomeDoodle;
 extern const base::Feature kChromeHomeExpandButton;
 extern const base::Feature kChromeHomeModernLayout;
 extern const base::Feature kChromeHomeSwipeLogic;

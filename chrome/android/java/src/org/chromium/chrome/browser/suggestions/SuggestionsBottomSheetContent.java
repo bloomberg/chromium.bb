@@ -333,7 +333,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
 
     private void updateLogoTransition() {
         boolean showLogo = mSearchProviderHasLogo && mNewTabShown
-                && FeatureUtilities.isChromeHomeModernEnabled() && mBottomSheetObserver.isVisible();
+                && FeatureUtilities.isChromeHomeDoodleEnabled() && mBottomSheetObserver.isVisible();
 
         if (!showLogo) {
             mLogoView.setVisibility(View.GONE);

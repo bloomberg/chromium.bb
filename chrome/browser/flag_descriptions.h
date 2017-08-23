@@ -900,6 +900,9 @@ extern const char kAutofillAccessoryViewDescription[];
 extern const char kBackgroundLoaderForDownloadsName[];
 extern const char kBackgroundLoaderForDownloadsDescription[];
 
+extern const char kChromeHomeDoodleName[];
+extern const char kChromeHomeDoodleDescription[];
+
 extern const char kChromeHomeExpandButtonName[];
 extern const char kChromeHomeExpandButtonDescription[];
 

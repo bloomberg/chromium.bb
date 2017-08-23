@@ -1463,6 +1463,10 @@ const char kBackgroundLoaderForDownloadsDescription[] =
     "Enables downloading pages in the background in case page is not yet "
     "loaded in current tab.";
 
+const char kChromeHomeDoodleName[] = "Chrome Home Doodle.";
+const char kChromeHomeDoodleDescription[] =
+    "Enables showing the Doodle on the NTP for Chrome Home.";
+
 const char kChromeHomeExpandButtonName[] = "Chrome Home Expand Button";
 const char kChromeHomeExpandButtonDescription[] =
     "Enables the expand button for Chrome Home.";

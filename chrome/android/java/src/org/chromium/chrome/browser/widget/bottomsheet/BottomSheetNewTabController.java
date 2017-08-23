@@ -170,7 +170,7 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
                 && mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK
                 && !mTabModelSelector.isIncognitoSelected()
                 && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
-                && !FeatureUtilities.isChromeHomeModernEnabled();
+                && !FeatureUtilities.isChromeHomeDoodleEnabled();
     }
 
     @Override

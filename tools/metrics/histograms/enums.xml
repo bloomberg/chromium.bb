@@ -23066,6 +23066,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1473136627" label="enable-web-payments"/>
   <int value="-1471021059"
       label="OmniboxUIExperimentShowSuggestionFavicons:disabled"/>
+  <int value="-1469536698" label="ChromeHomeDoodle:enabled"/>
   <int value="-1469228683" label="QuickUnlockPinSignin:disabled"/>
   <int value="-1468126425" label="ResourceLoadScheduler:disabled"/>
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
@@ -23767,6 +23768,7 @@ from previous Chrome versions.
   <int value="834326277" label="enable-answers-in-suggest"/>
   <int value="835018878" label="disable-quic"/>
   <int value="838887742" label="manual-enhanced-bookmarks"/>
+  <int value="841276069" label="ChromeHomeDoodle:disabled"/>
   <int value="841343322" label="disable-new-korean-ime"/>
   <int value="842432903" label="CaptureThumbnailOnNavigatingAway:enabled"/>
   <int value="846951416" label="CopylessPaste:enabled"/>
