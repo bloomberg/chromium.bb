@@ -596,15 +596,6 @@ void WallpaperManagerBase::InitInitialUserWallpaper(const AccountId& account_id,
   current_user_wallpaper_info_.type = DEFAULT;
   current_user_wallpaper_info_.date = base::Time::Now().LocalMidnight();
 
-  std::string device_wallpaper_url;
-  std::string device_wallpaper_hash;
-  if (ShouldSetDeviceWallpaper(account_id, &device_wallpaper_url,
-                               &device_wallpaper_hash)) {
-    current_user_wallpaper_info_.location =
-        GetDeviceWallpaperFilePath().value();
-    current_user_wallpaper_info_.type = DEVICE;
-  }
-
   WallpaperInfo info = current_user_wallpaper_info_;
   SetUserWallpaperInfo(account_id, info, is_persistent);
 }
