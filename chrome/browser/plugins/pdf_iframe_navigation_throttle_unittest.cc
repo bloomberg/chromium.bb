@@ -4,30 +4,41 @@
 
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 
-#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/plugin_service.h"
 #include "net/http/http_util.h"
+#include "ppapi/features/features.h"
+
+#if BUILDFLAG(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/chrome_plugin_service_filter.h"
+#include "content/public/browser/plugin_service.h"
+#endif
 
 namespace {
 
 const char kHeader[] = "HTTP/1.1 200 OK\r\n";
 const char kExampleURL[] = "http://example.com";
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 void PluginsLoadedCallback(base::OnceClosure callback,
                            const std::vector<content::WebPluginInfo>& plugins) {
   std::move(callback).Run();
 }
+#endif
 
 }  // namespace
 
 class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetAlwaysOpenPdfExternallyForTests(bool always_open_pdf_externally) {
+#if BUILDFLAG(ENABLE_PLUGINS)
     PluginPrefs::GetForTestingProfile(profile())
         ->SetAlwaysOpenPdfExternallyForTests(always_open_pdf_externally);
+    ChromePluginServiceFilter* filter =
+        ChromePluginServiceFilter::GetInstance();
+    filter->RegisterResourceContext(profile(), profile()->GetResourceContext());
+#endif
   }
 
   std::string GetHeaderWithMimeType(const std::string& mime_type) {
@@ -42,6 +53,7 @@ class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
+#if BUILDFLAG(ENABLE_PLUGINS)
     content::PluginService::GetInstance()->Init();
 
     // Load plugins.
@@ -49,6 +61,7 @@ class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
     content::PluginService::GetInstance()->GetPlugins(
         base::BindOnce(&PluginsLoadedCallback, run_loop.QuitClosure()));
     run_loop.Run();
+#endif
 
     content::RenderFrameHostTester::For(main_rfh())
         ->InitializeRenderFrameIfNeeded();
@@ -62,8 +75,6 @@ class PDFIFrameNavigationThrottleTest : public ChromeRenderViewHostTestHarness {
 TEST_F(PDFIFrameNavigationThrottleTest, OnlyCreateThrottleForSubframes) {
   // Disable the PDF plugin to test main vs. subframes.
   SetAlwaysOpenPdfExternallyForTests(true);
-  ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
-  filter->RegisterResourceContext(profile(), profile()->GetResourceContext());
 
   // Never create throttle for main frames.
   std::unique_ptr<content::NavigationHandle> handle =
@@ -91,8 +102,6 @@ TEST_F(PDFIFrameNavigationThrottleTest, OnlyCreateThrottleForSubframes) {
 TEST_F(PDFIFrameNavigationThrottleTest, InterceptPDFOnly) {
   // Setup
   SetAlwaysOpenPdfExternallyForTests(true);
-  ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
-  filter->RegisterResourceContext(profile(), profile()->GetResourceContext());
 
   std::unique_ptr<content::NavigationHandle> handle =
       content::NavigationHandle::CreateNavigationHandleForTesting(
@@ -147,6 +156,7 @@ TEST_F(PDFIFrameNavigationThrottleTest, InterceptPDFOnly) {
             throttle->WillProcessResponse());
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
 TEST_F(PDFIFrameNavigationThrottleTest, CancelOnlyIfPDFViewerIsDisabled) {
   // Setup
   std::unique_ptr<content::NavigationHandle> handle =
@@ -160,8 +170,6 @@ TEST_F(PDFIFrameNavigationThrottleTest, CancelOnlyIfPDFViewerIsDisabled) {
 
   // Test PDF Viewer enabled.
   SetAlwaysOpenPdfExternallyForTests(false);
-  ChromePluginServiceFilter* filter = ChromePluginServiceFilter::GetInstance();
-  filter->RegisterResourceContext(profile(), profile()->GetResourceContext());
 
   std::unique_ptr<content::NavigationThrottle> throttle =
       PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle.get());
@@ -170,7 +178,6 @@ TEST_F(PDFIFrameNavigationThrottleTest, CancelOnlyIfPDFViewerIsDisabled) {
 
   // Test PDF Viewer disabled.
   SetAlwaysOpenPdfExternallyForTests(true);
-  filter->RegisterResourceContext(profile(), profile()->GetResourceContext());
 
   throttle = PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle.get());
 
@@ -178,3 +185,4 @@ TEST_F(PDFIFrameNavigationThrottleTest, CancelOnlyIfPDFViewerIsDisabled) {
   ASSERT_EQ(content::NavigationThrottle::CANCEL_AND_IGNORE,
             throttle->WillProcessResponse());
 }
+#endif
