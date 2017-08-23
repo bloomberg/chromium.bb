@@ -51,6 +51,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/svg/SVGSVGElement.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/geometry/FloatQuad.h"
@@ -1610,6 +1611,21 @@ DOMRect* Range::getBoundingClientRect() const {
   return DOMRect::FromFloatRect(BoundingRect());
 }
 
+// TODO(editing-dev): We should make
+// |Document::AdjustFloatQuadsForScrollAndAbsoluteZoom()| as const function
+// and takes |const LayoutObject&|.
+static Vector<FloatQuad> ComputeTextQuads(const Document& owner_document,
+                                          const LayoutText& layout_text,
+                                          unsigned start_offset,
+                                          unsigned end_offset) {
+  Vector<FloatQuad> text_quads;
+  layout_text.AbsoluteQuadsForRange(text_quads, start_offset, end_offset);
+  const_cast<Document&>(owner_document)
+      .AdjustFloatQuadsForScrollAndAbsoluteZoom(
+          text_quads, const_cast<LayoutText&>(layout_text));
+  return text_quads;
+}
+
 // https://www.w3.org/TR/cssom-view-1/#dom-range-getclientrects
 void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
   Node* start_container = &start_.Container();
@@ -1653,17 +1669,62 @@ void Range::GetBorderAndTextQuads(Vector<FloatQuad>& quads) const {
     LayoutText* const layout_text = ToText(node)->GetLayoutObject();
     if (!layout_text)
       continue;
-    const unsigned start_offset =
-        (node == start_container) ? start_.Offset() : 0;
-    const unsigned end_offset = (node == end_container)
-                                    ? end_.Offset()
-                                    : std::numeric_limits<unsigned>::max();
-    Vector<FloatQuad> text_quads;
-    layout_text->AbsoluteQuadsForRange(text_quads, start_offset, end_offset);
-    owner_document_->AdjustFloatQuadsForScrollAndAbsoluteZoom(text_quads,
-                                                              *layout_text);
-
-    quads.AppendVector(text_quads);
+    if (!layout_text->IsTextFragment()) {
+      // TODO(editing-dev): Offset in |LayoutText| doesn't match to DOM offset
+      // when |text-transform| applied. We should map DOM offset to offset in
+      // |LayouText| for |start_offset| and |end_offset|.
+      const unsigned start_offset =
+          (node == start_container) ? start_.Offset() : 0;
+      const unsigned end_offset = (node == end_container)
+                                      ? end_.Offset()
+                                      : std::numeric_limits<unsigned>::max();
+      quads.AppendVector(ComputeTextQuads(*owner_document_, *layout_text,
+                                          start_offset, end_offset));
+      continue;
+    }
+    const LayoutTextFragment& first_letter_part =
+        *ToLayoutTextFragment(AssociatedLayoutObjectOf(*node, 0));
+    const LayoutTextFragment& remaining_part =
+        *ToLayoutTextFragment(layout_text);
+    // Set offsets in |LayoutTextFragment| to cover whole text in
+    // |LayoutTextFragment|.
+    unsigned first_letter_part_start = 0;
+    unsigned first_letter_part_end = first_letter_part.FragmentLength();
+    unsigned remaining_part_start = 0;
+    unsigned remaining_part_end = remaining_part.FragmentLength();
+    if (node == start_container) {
+      if (start_.Offset() < first_letter_part_end) {
+        // |this| range starts in first-letter part.
+        first_letter_part_start = start_.Offset();
+      } else {
+        first_letter_part_start = first_letter_part_end;
+        DCHECK_GE(static_cast<unsigned>(start_.Offset()),
+                  remaining_part.Start());
+        remaining_part_start = start_.Offset() - remaining_part.Start();
+      }
+    }
+    if (node == end_container) {
+      if (end_.Offset() <= first_letter_part_end) {
+        // |this| range ends in first-letter part.
+        first_letter_part_end = end_.Offset();
+        remaining_part_end = remaining_part_start;
+      } else {
+        DCHECK_GE(static_cast<unsigned>(end_.Offset()), remaining_part.Start());
+        remaining_part_end = end_.Offset() - remaining_part.Start();
+      }
+    }
+    DCHECK_LE(first_letter_part_start, first_letter_part_end);
+    DCHECK_LE(remaining_part_start, remaining_part_end);
+    if (first_letter_part_start < first_letter_part_end) {
+      quads.AppendVector(ComputeTextQuads(*owner_document_, first_letter_part,
+                                          first_letter_part_start,
+                                          first_letter_part_end));
+    }
+    if (remaining_part_start < remaining_part_end) {
+      quads.AppendVector(ComputeTextQuads(*owner_document_, remaining_part,
+                                          remaining_part_start,
+                                          remaining_part_end));
+    }
   }
 }
 

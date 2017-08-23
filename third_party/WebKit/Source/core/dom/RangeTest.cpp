@@ -301,4 +301,124 @@ TEST_F(RangeTest, BorderAndTextQuadsWithInputInBetween) {
   ASSERT_EQ(3u, quads.size());
 }
 
+static Vector<FloatQuad> GetBorderAndTextQuads(const Position& start,
+                                               const Position& end) {
+  DCHECK_LE(start, end);
+  Range* const range = Range::Create(*start.GetDocument(), start, end);
+  Vector<FloatQuad> quads;
+  range->GetBorderAndTextQuads(quads);
+  return quads;
+}
+
+static Vector<IntSize> ComputeSizesOfQuads(const Vector<FloatQuad>& quads) {
+  Vector<IntSize> sizes;
+  for (const auto& quad : quads)
+    sizes.push_back(quad.EnclosingBoundingBox().Size());
+  return sizes;
+}
+
+TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterOne) {
+  GetDocument().body()->setInnerHTML(
+      "<style>"
+      "  body { font-size: 20px; }"
+      "  #sample::first-letter { font-size: 500%; }"
+      "</style>"
+      "<p id=sample>abc</p>"
+      "<p id=expected><span style='font-size: 500%'>a</span>bc</p>");
+  GetDocument().UpdateStyleAndLayout();
+
+  Element* const expected = GetDocument().getElementById("expected");
+  Element* const sample = GetDocument().getElementById("sample");
+
+  const Vector<FloatQuad> expected_quads =
+      GetBorderAndTextQuads(Position(expected, 0), Position(expected, 2));
+  const Vector<FloatQuad> sample_quads =
+      GetBorderAndTextQuads(Position(sample, 0), Position(sample, 1));
+  ASSERT_EQ(2u, sample_quads.size());
+  ASSERT_EQ(3u, expected_quads.size())
+      << "expected_quads has SPAN, SPAN.firstChild and P.lastChild";
+  EXPECT_EQ(expected_quads[0].EnclosingBoundingBox().Size(),
+            sample_quads[0].EnclosingBoundingBox().Size())
+      << "Check size of first-letter part";
+  EXPECT_EQ(expected_quads[2].EnclosingBoundingBox().Size(),
+            sample_quads[1].EnclosingBoundingBox().Size())
+      << "Check size of first-letter part";
+
+  EXPECT_EQ(ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(expected->firstChild(), 0),
+                                      Position(expected->firstChild(), 1))),
+            ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(sample->firstChild(), 0),
+                                      Position(sample->firstChild(), 1))))
+      << "All first-letter part";
+
+  EXPECT_EQ(ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(expected->lastChild(), 0),
+                                      Position(expected->lastChild(), 2))),
+            ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(sample->firstChild(), 1),
+                                      Position(sample->firstChild(), 3))))
+      << "All remaining part";
+}
+
+TEST_F(RangeTest, GetBorderAndTextQuadsWithFirstLetterThree) {
+  GetDocument().body()->setInnerHTML(
+      "<style>"
+      "  body { font-size: 20px; }"
+      "  #sample::first-letter { font-size: 500%; }"
+      "</style>"
+      "<p id=sample>(a)bc</p>"
+      "<p id=expected><span style='font-size: 500%'>(a)</span>bc</p>");
+  GetDocument().UpdateStyleAndLayout();
+
+  Element* const expected = GetDocument().getElementById("expected");
+  Element* const sample = GetDocument().getElementById("sample");
+
+  const Vector<FloatQuad> expected_quads =
+      GetBorderAndTextQuads(Position(expected, 0), Position(expected, 2));
+  const Vector<FloatQuad> sample_quads =
+      GetBorderAndTextQuads(Position(sample, 0), Position(sample, 1));
+  ASSERT_EQ(2u, sample_quads.size());
+  ASSERT_EQ(3u, expected_quads.size())
+      << "expected_quads has SPAN, SPAN.firstChild and P.lastChild";
+  EXPECT_EQ(expected_quads[0].EnclosingBoundingBox().Size(),
+            sample_quads[0].EnclosingBoundingBox().Size())
+      << "Check size of first-letter part";
+  EXPECT_EQ(expected_quads[2].EnclosingBoundingBox().Size(),
+            sample_quads[1].EnclosingBoundingBox().Size())
+      << "Check size of first-letter part";
+
+  EXPECT_EQ(ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(expected->firstChild(), 0),
+                                      Position(expected->firstChild(), 1))),
+            ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(sample->firstChild(), 0),
+                                      Position(sample->firstChild(), 3))))
+      << "All first-letter part";
+
+  EXPECT_EQ(ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(expected->lastChild(), 0),
+                                      Position(expected->lastChild(), 2))),
+            ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(sample->firstChild(), 3),
+                                      Position(sample->firstChild(), 5))))
+      << "All remaining part";
+
+  EXPECT_EQ(ComputeSizesOfQuads(GetBorderAndTextQuads(
+                Position(expected->firstChild()->firstChild(), 1),
+                Position(expected->firstChild()->firstChild(), 2))),
+            ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(sample->firstChild(), 1),
+                                      Position(sample->firstChild(), 2))))
+      << "Partial first-letter part";
+
+  EXPECT_EQ(ComputeSizesOfQuads(GetBorderAndTextQuads(
+                Position(expected->firstChild()->firstChild(), 1),
+                Position(expected->lastChild(), 1))),
+            ComputeSizesOfQuads(
+                GetBorderAndTextQuads(Position(sample->firstChild(), 1),
+                                      Position(sample->firstChild(), 4))))
+      << "Partial first-letter part and remaining part";
+}
+
 }  // namespace blink
