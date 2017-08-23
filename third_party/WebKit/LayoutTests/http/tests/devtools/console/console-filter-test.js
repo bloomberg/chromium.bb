@@ -109,6 +109,27 @@
       dumpVisibleMessages();
       next();
     },
+    function checkMultiTextFilter(next)
+    {
+      Console.ConsoleView.instance()._filter._textFilterUI.setValue("Group /[2-3]top/");
+      Console.ConsoleView.instance()._filter._textFilterChanged();
+      dumpVisibleMessages();
+      next();
+    },
+    function checkTextUrlFilter(next)
+    {
+      Console.ConsoleView.instance()._filter._textFilterUI.setValue("url:log-source");
+      Console.ConsoleView.instance()._filter._textFilterChanged();
+      dumpVisibleMessages();
+      next();
+    },
+    function checkNegativeTextUrlFilter(next)
+    {
+      Console.ConsoleView.instance()._filter._textFilterUI.setValue("-url:log-source");
+      Console.ConsoleView.instance()._filter._textFilterChanged();
+      dumpVisibleMessages();
+      next();
+    },
     function checkResetFilter(next) {
       Console.ConsoleView.instance()._filter.reset();
       dumpVisibleMessages();
