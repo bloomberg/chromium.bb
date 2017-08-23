@@ -6,6 +6,7 @@
 
 #include "base/mac/bind_objc_block.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #include "ios/web/public/interstitials/web_interstitial.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -33,6 +34,7 @@ class IOSSSLErrorHandlerTest : public web::WebTestWithWebState {
   // web::WebTestWithWebState overrides:
   void SetUp() override {
     web::WebTestWithWebState::SetUp();
+    CaptivePortalDetectorTabHelper::CreateForWebState(web_state());
     ASSERT_TRUE(cert_);
     ASSERT_FALSE(web_state()->IsShowingWebInterstitial());
 

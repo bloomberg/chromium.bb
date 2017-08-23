@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_SSL_IOS_SSL_ERROR_HANDLER_H_
 
 #include "base/callback_forward.h"
+#include "components/captive_portal/captive_portal_types.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -30,14 +31,37 @@ class IOSSSLErrorHandler {
 
  private:
   ~IOSSSLErrorHandler() = delete;
+  // Displays an SSL error page interstitial for the given |request_url| and
+  // |web_state|. The |cert_error| and SSL |info| represent the SSL error
+  // detected which triggered the display of the SSL interstitial. |callback|
+  // will be called after the user is done interacting with this interstitial.
+  static void ShowSSLInterstitial(web::WebState* web_state,
+                                  int cert_error,
+                                  const net::SSLInfo& info,
+                                  const GURL& request_url,
+                                  bool overridable,
+                                  const base::Callback<void(bool)>& callback);
+  // Displays a Captive Portal interstitial for the given |request_url| and
+  // |web_state|. The |landing_url| is the web page which allows the user to
+  // complete their connection to the network. |callback| will be called after
+  // the user is done interacting with this interstitial.
+  static void ShowCaptivePortalInterstitial(
+      web::WebState* web_state,
+      const GURL& request_url,
+      const GURL& landing_url,
+      const base::Callback<void(bool)>& callback);
+  // Detects the current Captive Portal state and records the result with
+  // |LogCaptivePortalResult|.
+  static void RecordCaptivePortalState(web::WebState* web_state);
+  // Records a metric to classify if SSL errors are due to a Captive Portal
+  // state.
+  static void LogCaptivePortalResult(
+      captive_portal::CaptivePortalResult result);
   // Called on SSL interstitial dismissal.
   static void InterstitialWasDismissed(
       web::WebState* web_state,
       const base::Callback<void(bool)>& callback,
       bool proceed);
-  // Records a metric to classify if SSL errors are due to a Captive Portal
-  // state.
-  static void RecordCaptivePortalState(web::WebState* web_state);
   DISALLOW_IMPLICIT_CONSTRUCTORS(IOSSSLErrorHandler);
 };
 
