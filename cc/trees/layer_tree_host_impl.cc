@@ -2321,12 +2321,14 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   if (use_gpu_rasterization_) {
     image_decode_cache_ = base::MakeUnique<GpuImageDecodeCache>(
         layer_tree_frame_sink_->worker_context_provider(),
-        settings_.preferred_tile_format,
+        viz::ResourceFormatToClosestSkColorType(
+            settings_.preferred_tile_format),
         settings_.decoded_image_working_set_budget_bytes,
         settings_.decoded_image_cache_budget_bytes);
   } else {
     image_decode_cache_ = base::MakeUnique<SoftwareImageDecodeCache>(
-        settings_.preferred_tile_format,
+        viz::ResourceFormatToClosestSkColorType(
+            settings_.preferred_tile_format),
         settings_.decoded_image_working_set_budget_bytes);
   }
 
