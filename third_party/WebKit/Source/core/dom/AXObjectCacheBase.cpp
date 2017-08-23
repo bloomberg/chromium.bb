@@ -11,6 +11,7 @@ namespace blink {
 
 AXObjectCacheBase::~AXObjectCacheBase() {}
 
-AXObjectCacheBase::AXObjectCacheBase() {}
+AXObjectCacheBase::AXObjectCacheBase(Document& document)
+    : AXObjectCache(document) {}
 
 }  // namespace blink

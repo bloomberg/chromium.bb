@@ -45,7 +45,9 @@ enum class WebFeaturePolicyFeature {
   kSyncXHR,
   // Controls access to the WebUSB API.
   kUsb,
-  LAST_FEATURE = kUsb
+  // Controls access to AOM event listeners.
+  kAccessibilityEvents,
+  LAST_FEATURE = kAccessibilityEvents
 };
 
 }  // namespace blink

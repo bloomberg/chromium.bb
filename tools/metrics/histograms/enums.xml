@@ -6008,6 +6008,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="35" label="Media engagement setting"/>
   <int value="36" label="Sound setting"/>
   <int value="37" label="Client hints setting"/>
+  <int value="38" label="Sensors setting"/>
+  <int value="39" label="Accessibility events setting"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -30031,6 +30033,7 @@ from previous Chrome versions.
   <int value="12" label="PERMISSION_BUBBLE_PERMISSION_FLASH"/>
   <int value="13" label="PERMISSION_MEDIASTREAM_MIC"/>
   <int value="14" label="PERMISSION_MEDIASTREAM_CAMERA"/>
+  <int value="15" label="PERMISSION_ACCESSIBILITY_EVENTS"/>
 </enum>
 
 <enum name="PermissionStatus">
