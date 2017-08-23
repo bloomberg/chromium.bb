@@ -92,9 +92,6 @@ class VrShell : device::GvrGamepadDataProvider,
                       bool touched);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void SetSplashScreenIcon(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& obj,
-                           const base::android::JavaParamRef<jobject>& bitmap);
   void SetSurface(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   const base::android::JavaParamRef<jobject>& surface);

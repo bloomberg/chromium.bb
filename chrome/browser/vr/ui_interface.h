@@ -8,8 +8,6 @@
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
 
-class SkBitmap;
-
 namespace vr {
 
 struct ToolbarState;
@@ -43,7 +41,6 @@ class UiInterface {
   virtual void SetAudioCapturingIndicator(bool enabled) = 0;
   virtual void SetBluetoothConnectedIndicator(bool enabled) = 0;
   virtual void SetLocationAccessIndicator(bool enabled) = 0;
-  virtual void SetSplashScreenIcon(const SkBitmap& bitmap) = 0;
 
   // Tab handling.
   virtual void InitTabList() {}

@@ -23,7 +23,7 @@ class ExclusiveScreenToast;
 class Grid;
 class LoadingIndicator;
 class Rect;
-class SplashScreenIcon;
+class Text;
 class TransientUrlBar;
 class UiBrowserInterface;
 class UiElement;
@@ -55,7 +55,6 @@ class UiSceneManager {
   void SetScreenCapturingIndicator(bool enabled);
   void SetAudioCapturingIndicator(bool enabled);
   void SetLocationAccessIndicator(bool enabled);
-  void SetSplashScreenIcon(const SkBitmap& bitmap);
   void SetBluetoothConnectedIndicator(bool enabled);
 
   // These methods are currently stubbed.
@@ -124,7 +123,7 @@ class UiSceneManager {
   Rect* ceiling_ = nullptr;
   Grid* floor_ = nullptr;
   UiElement* close_button_ = nullptr;
-  SplashScreenIcon* splash_screen_icon_ = nullptr;
+  Text* splash_screen_text_ = nullptr;
   UrlBar* url_bar_ = nullptr;
   TransientUrlBar* transient_url_bar_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
