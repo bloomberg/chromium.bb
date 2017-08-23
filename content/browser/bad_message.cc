@@ -53,10 +53,9 @@ void ReceivedBadMessage(int render_process_id, BadMessageReason reason) {
   base::debug::DumpWithoutCrashing();
 
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI,
-        FROM_HERE,
-        base::Bind(&ReceivedBadMessageOnUIThread, render_process_id, reason));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&ReceivedBadMessageOnUIThread,
+                                           render_process_id, reason));
     return;
   }
   ReceivedBadMessageOnUIThread(render_process_id, reason);

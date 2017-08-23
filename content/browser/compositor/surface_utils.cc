@@ -67,7 +67,7 @@ void PrepareTextureCopyOutputResult(
 #else
   DCHECK(result->HasTexture());
   base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, SkBitmap(), content::READBACK_FAILED));
+      base::BindOnce(callback, SkBitmap(), content::READBACK_FAILED));
 
   // TODO(siva.gunturi): We should be able to validate the format here using
   // GLHelper::IsReadbackConfigSupported before we processs the result.
@@ -76,7 +76,7 @@ void PrepareTextureCopyOutputResult(
   if (!bitmap->tryAllocPixels(SkImageInfo::Make(
           dst_size_in_pixel.width(), dst_size_in_pixel.height(), color_type,
           kOpaque_SkAlphaType))) {
-    scoped_callback_runner.ReplaceClosure(base::Bind(
+    scoped_callback_runner.ReplaceClosure(base::BindOnce(
         callback, SkBitmap(), content::READBACK_BITMAP_ALLOCATION_FAILURE));
     return;
   }

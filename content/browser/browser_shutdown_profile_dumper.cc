@@ -63,9 +63,9 @@ void BrowserShutdownProfileDumper::WriteTracesToDisc() {
   base::Thread flush_thread("browser_shutdown_trace_event_flush");
   flush_thread.Start();
   flush_thread.task_runner()->PostTask(
-      FROM_HERE, base::Bind(&BrowserShutdownProfileDumper::EndTraceAndFlush,
-                            base::Unretained(this),
-                            base::Unretained(&flush_complete_event)));
+      FROM_HERE, base::BindOnce(&BrowserShutdownProfileDumper::EndTraceAndFlush,
+                                base::Unretained(this),
+                                base::Unretained(&flush_complete_event)));
 
   bool original_wait_allowed = base::ThreadRestrictions::SetWaitAllowed(true);
   flush_complete_event.Wait();

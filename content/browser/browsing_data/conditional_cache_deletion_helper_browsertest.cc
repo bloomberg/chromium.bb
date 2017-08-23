@@ -106,8 +106,8 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
   // Delete the entries whose keys are even numbers.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
-                 base::Unretained(this), base::Bind(&KeyIsEven)));
+      base::BindOnce(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
+                     base::Unretained(this), base::Bind(&KeyIsEven)));
   WaitForTasksOnIOThread();
 
   // Expect that the keys with values 56 and 42 were deleted.
@@ -166,8 +166,8 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
   // Delete the entries.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
-                 base::Unretained(this), base::ConstRef(condition)));
+      base::BindOnce(&ConditionalCacheDeletionHelperBrowserTest::DeleteEntries,
+                     base::Unretained(this), base::ConstRef(condition)));
   WaitForTasksOnIOThread();
 
   // Expect that only "icon2.png" and "icon3.png" were deleted.

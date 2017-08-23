@@ -167,8 +167,10 @@ void FileAPIMessageFilter::OnOpenFileSystem(int request_id,
   }
   storage::OpenFileSystemMode mode =
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT;
-  context_->OpenFileSystem(origin_url, type, mode, base::Bind(
-      &FileAPIMessageFilter::DidOpenFileSystem, this, request_id));
+  context_->OpenFileSystem(
+      origin_url, type, mode,
+      base::BindOnce(&FileAPIMessageFilter::DidOpenFileSystem, this,
+                     request_id));
 }
 
 void FileAPIMessageFilter::OnResolveURL(

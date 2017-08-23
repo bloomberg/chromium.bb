@@ -275,8 +275,8 @@ class RemoveCookieTester {
     get_cookie_success_ = false;
     cookie_store_->GetCookiesWithOptionsAsync(
         kOrigin1, net::CookieOptions(),
-        base::Bind(&RemoveCookieTester::GetCookieCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&RemoveCookieTester::GetCookieCallback,
+                       base::Unretained(this)));
     message_loop_runner->Run();
     return get_cookie_success_;
   }
@@ -287,8 +287,8 @@ class RemoveCookieTester {
     quit_closure_ = message_loop_runner->QuitClosure();
     cookie_store_->SetCookieWithOptionsAsync(
         kOrigin1, "A=1", net::CookieOptions(),
-        base::Bind(&RemoveCookieTester::SetCookieCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&RemoveCookieTester::SetCookieCallback,
+                       base::Unretained(this)));
     message_loop_runner->Run();
   }
 

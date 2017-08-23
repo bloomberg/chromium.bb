@@ -464,7 +464,7 @@ void BrowserThreadImpl::StopRedirectionOfThreadID(
                               base::WaitableEvent::InitialState::NOT_SIGNALED);
   globals.task_runners[identifier]->PostTask(
       FROM_HERE,
-      base::Bind(&base::WaitableEvent::Signal, base::Unretained(&flushed)));
+      base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(&flushed)));
   {
     base::AutoUnlock auto_lock(globals.lock);
     flushed.Wait();

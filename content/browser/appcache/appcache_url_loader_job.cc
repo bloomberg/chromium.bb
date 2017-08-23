@@ -266,7 +266,7 @@ AppCacheURLLoaderJob::AppCacheURLLoaderJob(
     subresource_load_info_ = std::move(subresource_load_info);
 
     binding_.Bind(std::move(subresource_load_info_->url_loader_request));
-    binding_.set_connection_error_handler(base::Bind(
+    binding_.set_connection_error_handler(base::BindOnce(
         &AppCacheURLLoaderJob::OnConnectionError, StaticAsWeakPtr(this)));
 
     client_ = std::move(subresource_load_info_->client);

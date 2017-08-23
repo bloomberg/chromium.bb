@@ -64,7 +64,7 @@ class FileSystemBrowserTestWithLowQuota : public FileSystemBrowserTest {
     if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&FileSystemBrowserTestWithLowQuota::SetLowQuota, qm));
+          base::BindOnce(&FileSystemBrowserTestWithLowQuota::SetLowQuota, qm));
       return;
     }
     DCHECK_CURRENTLY_ON(BrowserThread::IO);

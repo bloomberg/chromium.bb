@@ -50,8 +50,8 @@ void SensorProviderProxyImpl::GetSensor(
     connection->GetConnector()->BindInterface(
         device::mojom::kServiceName, mojo::MakeRequest(&sensor_provider_));
     sensor_provider_.set_connection_error_handler(
-        base::Bind(&device::mojom::SensorProviderPtr::reset,
-                   base::Unretained(&sensor_provider_)));
+        base::BindOnce(&device::mojom::SensorProviderPtr::reset,
+                       base::Unretained(&sensor_provider_)));
   }
   sensor_provider_->GetSensor(type, std::move(sensor_request),
                               std::move(callback));

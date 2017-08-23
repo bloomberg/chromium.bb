@@ -401,10 +401,11 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &SaveSessionStateOnIOThread,
-            make_scoped_refptr(BrowserContext::GetDefaultStoragePartition(
-                browser_context)->GetURLRequestContext()),
+            make_scoped_refptr(
+                BrowserContext::GetDefaultStoragePartition(browser_context)
+                    ->GetURLRequestContext()),
             static_cast<AppCacheServiceImpl*>(
                 storage_partition->GetAppCacheService())));
   }
@@ -420,9 +421,8 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
   // No task runner in unit tests.
   if (indexed_db_context_impl->TaskRunner()) {
     indexed_db_context_impl->TaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&SaveSessionStateOnIndexedDBThread,
-                   make_scoped_refptr(indexed_db_context_impl)));
+        FROM_HERE, base::BindOnce(&SaveSessionStateOnIndexedDBThread,
+                                  make_scoped_refptr(indexed_db_context_impl)));
   }
 }
 

@@ -297,14 +297,10 @@ void ByteStreamWriterImpl::PostToPeer(bool complete, int status) {
     input_contents_size_ = 0;
   }
   peer_task_runner_->PostTask(
-      FROM_HERE, base::Bind(
-          &ByteStreamReaderImpl::TransferData,
-          peer_lifetime_flag_,
-          peer_,
-          base::Passed(&transfer_buffer),
-          buffer_size,
-          complete,
-          status));
+      FROM_HERE,
+      base::BindOnce(&ByteStreamReaderImpl::TransferData, peer_lifetime_flag_,
+                     peer_, base::Passed(&transfer_buffer), buffer_size,
+                     complete, status));
 }
 
 ByteStreamReaderImpl::ByteStreamReaderImpl(
@@ -425,11 +421,9 @@ void ByteStreamReaderImpl::MaybeUpdateInput() {
     return;
 
   peer_task_runner_->PostTask(
-      FROM_HERE, base::Bind(
-          &ByteStreamWriterImpl::UpdateWindow,
-          peer_lifetime_flag_,
-          peer_,
-          unreported_consumed_bytes_));
+      FROM_HERE,
+      base::BindOnce(&ByteStreamWriterImpl::UpdateWindow, peer_lifetime_flag_,
+                     peer_, unreported_consumed_bytes_));
   unreported_consumed_bytes_ = 0;
 }
 

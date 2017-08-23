@@ -181,8 +181,8 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
     fake_sensor_provider_ = base::MakeUnique<FakeSensorProvider>();
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&GenericSensorBrowserTest::SetBinderOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&GenericSensorBrowserTest::SetBinderOnIOThread,
+                       base::Unretained(this)));
 
     io_loop_finished_event_.Wait();
   }

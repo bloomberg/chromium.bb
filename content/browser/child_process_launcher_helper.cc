@@ -82,7 +82,8 @@ void ChildProcessLauncherHelper::StartLaunchOnClientThread() {
 
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(&ChildProcessLauncherHelper::LaunchOnLauncherThread, this));
+      base::BindOnce(&ChildProcessLauncherHelper::LaunchOnLauncherThread,
+                     this));
 }
 
 void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
@@ -124,8 +125,8 @@ void ChildProcessLauncherHelper::PostLaunchOnLauncherThread(
 
   BrowserThread::PostTask(
       client_thread_id_, FROM_HERE,
-      base::Bind(&ChildProcessLauncherHelper::PostLaunchOnClientThread, this,
-                 base::Passed(&process), launch_result));
+      base::BindOnce(&ChildProcessLauncherHelper::PostLaunchOnClientThread,
+                     this, base::Passed(&process), launch_result));
 }
 
 void ChildProcessLauncherHelper::PostLaunchOnClientThread(
@@ -155,8 +156,9 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationAsync(
   // So don't do this on the UI/IO threads.
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(&ChildProcessLauncherHelper::ForceNormalProcessTerminationSync,
-                 base::Passed(&process)));
+      base::BindOnce(
+          &ChildProcessLauncherHelper::ForceNormalProcessTerminationSync,
+          base::Passed(&process)));
 }
 
 }  // namespace internal

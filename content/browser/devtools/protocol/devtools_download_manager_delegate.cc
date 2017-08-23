@@ -116,10 +116,10 @@ bool DevToolsDownloadManagerDelegate::DetermineDownloadTarget(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
        base::TaskPriority::USER_VISIBLE},
-      base::Bind(&DevToolsDownloadManagerDelegate::GenerateFilename,
-                 item->GetURL(), item->GetContentDisposition(),
-                 item->GetSuggestedFilename(), item->GetMimeType(),
-                 download_path, filename_determined_callback));
+      base::BindOnce(&DevToolsDownloadManagerDelegate::GenerateFilename,
+                     item->GetURL(), item->GetContentDisposition(),
+                     item->GetSuggestedFilename(), item->GetMimeType(),
+                     download_path, filename_determined_callback));
   return true;
 }
 
@@ -166,7 +166,7 @@ void DevToolsDownloadManagerDelegate::GenerateFilename(
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::Bind(callback, suggested_path));
+                                   base::BindOnce(callback, suggested_path));
 }
 
 void DevToolsDownloadManagerDelegate::OnDownloadPathGenerated(

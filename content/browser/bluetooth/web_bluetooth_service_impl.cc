@@ -261,9 +261,10 @@ void WebBluetoothServiceImpl::GattCharacteristicValueChanged(
   // in an event being fired before the readValue promise is resolved.
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&WebBluetoothServiceImpl::NotifyCharacteristicValueChanged,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     characteristic->GetIdentifier(), value))) {
+          base::BindOnce(
+              &WebBluetoothServiceImpl::NotifyCharacteristicValueChanged,
+              weak_ptr_factory_.GetWeakPtr(), characteristic->GetIdentifier(),
+              value))) {
     LOG(WARNING) << "No TaskRunner.";
   }
 }

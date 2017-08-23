@@ -232,8 +232,8 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
     // On all other platforms, the DeviceSensorService lives on the IO thread.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&DeviceSensorBrowserTest::SetUpOnIOThread,
-                   base::Unretained(this)));
+        base::BindOnce(&DeviceSensorBrowserTest::SetUpOnIOThread,
+                       base::Unretained(this)));
     io_loop_finished_event_.Wait();
 #endif
   }
