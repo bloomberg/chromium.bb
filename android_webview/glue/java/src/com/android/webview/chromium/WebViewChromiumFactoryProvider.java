@@ -576,14 +576,6 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                         AwContentsStatics.initSafeBrowsing(context, callback);
                     }
 
-                    /**
-                     * Shuts down Safe Browsing. This should only be called once.
-                     */
-                    // TODO(ntfschr): add @Override once next android SDK rolls
-                    public void shutdownSafeBrowsing() {
-                        AwContentsStatics.shutdownSafeBrowsing();
-                    }
-
                     // TODO(ntfschr): add @Override once next android SDK rolls
                     public void setSafeBrowsingWhitelist(
                             List<String> urls, ValueCallback<Boolean> callback) {
