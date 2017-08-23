@@ -139,7 +139,8 @@ class ModuleScriptLoaderTest : public ::testing::Test {
 void ModuleScriptLoaderTest::SetUp() {
   platform_->AdvanceClockSeconds(1.);  // For non-zero DocumentParserTimings
   dummy_page_holder_ = DummyPageHolder::Create(IntSize(500, 500));
-  GetDocument().SetURL(KURL(NullURL(), "https://example.test"));
+  GetDocument().SetURL(KURL(kParsedURLString, "https://example.test"));
+  GetDocument().SetSecurityOrigin(SecurityOrigin::Create(GetDocument().Url()));
   auto* context =
       MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   fetcher_ = ResourceFetcher::Create(context);
@@ -153,7 +154,7 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
 
 void ModuleScriptLoaderTest::InitializeForWorklet() {
   global_scope_ = new MainThreadWorkletGlobalScope(
-      &GetFrame(), KURL(NullURL(), "https://example.test/worklet.js"),
+      &GetFrame(), KURL(kParsedURLString, "https://example.test/worklet.js"),
       "fake user agent", GetDocument().GetSecurityOrigin(),
       ToIsolate(&GetDocument()));
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");
@@ -170,7 +171,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
 void ModuleScriptLoaderTest::TestFetchDataURL(
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
-  KURL url(NullURL(), "data:text/javascript,export default 'grapes';");
+  KURL url(kParsedURLString, "data:text/javascript,export default 'grapes';");
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
   registry->Fetch(module_request, ModuleGraphLevel::kTopLevelModuleFetch,
@@ -218,7 +219,7 @@ TEST_F(ModuleScriptLoaderTest, FetchDataURL_OnWorklet) {
 void ModuleScriptLoaderTest::TestInvalidSpecifier(
     TestModuleScriptLoaderClient* client) {
   ModuleScriptLoaderRegistry* registry = ModuleScriptLoaderRegistry::Create();
-  KURL url(NullURL(),
+  KURL url(kParsedURLString,
            "data:text/javascript,import 'invalid';export default 'grapes';");
   ModuleScriptFetchRequest module_request(
       url, String(), kParserInserted, WebURLRequest::kFetchCredentialsModeOmit);
@@ -288,7 +289,7 @@ TEST_F(ModuleScriptLoaderTest, FetchInvalidURL_OnWorklet) {
 
 void ModuleScriptLoaderTest::TestFetchURL(
     TestModuleScriptLoaderClient* client) {
-  KURL url(kParsedURLString, "http://127.0.0.1:8000/module.js");
+  KURL url(kParsedURLString, "https://example.test/module.js");
   URLTestHelpers::RegisterMockedURLLoad(
       url, testing::CoreTestDataPath("module.js"), "text/javascript");
 
@@ -309,7 +310,7 @@ TEST_F(ModuleScriptLoaderTest, FetchURL) {
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   EXPECT_TRUE(client->WasNotifyFinished());
-  EXPECT_FALSE(client->GetModuleScript());
+  EXPECT_TRUE(client->GetModuleScript());
 }
 
 TEST_F(ModuleScriptLoaderTest, FetchURL_OnWorklet) {
@@ -327,7 +328,7 @@ TEST_F(ModuleScriptLoaderTest, FetchURL_OnWorklet) {
   platform_->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
 
   EXPECT_TRUE(client->WasNotifyFinished());
-  EXPECT_FALSE(client->GetModuleScript());
+  EXPECT_TRUE(client->GetModuleScript());
 }
 
 }  // namespace blink

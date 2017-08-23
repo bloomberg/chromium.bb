@@ -97,13 +97,13 @@ class TouchActionTest : public ::testing::Test {
   TouchActionTest() : base_url_("http://www.test.com/") {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
-        "touch-action-tests.css");
+        "touch-action-tests.css", "text/css");
     URLTestHelpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
-        "touch-action-tests.js");
+        "touch-action-tests.js", "text/javascript");
     URLTestHelpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
-        "white-1x1.png");
+        "white-1x1.png", "image/png");
   }
 
   void TearDown() override {
