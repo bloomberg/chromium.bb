@@ -631,17 +631,8 @@ void LayerTreeImpl::SetCurrentlyScrollingNode(ScrollNode* node) {
   if (old_element_id == new_element_id)
     return;
 
-  ScrollbarAnimationController* old_animation_controller =
-      host_impl_->ScrollbarAnimationControllerForElementId(old_element_id);
-  ScrollbarAnimationController* new_animation_controller =
-      host_impl_->ScrollbarAnimationControllerForElementId(new_element_id);
-
-  if (old_animation_controller)
-    old_animation_controller->DidScrollEnd();
   scroll_tree.set_currently_scrolling_node(node ? node->id
                                                 : ScrollTree::kInvalidNodeId);
-  if (new_animation_controller)
-    new_animation_controller->DidScrollBegin();
 }
 
 void LayerTreeImpl::ClearCurrentlyScrollingNode() {
