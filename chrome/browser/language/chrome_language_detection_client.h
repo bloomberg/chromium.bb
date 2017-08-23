@@ -10,7 +10,7 @@
 #include "components/translate/content/common/translate.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
@@ -47,8 +47,9 @@ class ChromeLanguageDetectionClient
   // owned here.
   language::UrlLanguageHistogram* const language_histogram_;
 
-  // ChromeLanguageDetectionClient only serves the main render frame.
-  mojo::Binding<translate::mojom::ContentTranslateDriver> binding_;
+  // ChromeLanguageDetectionClient is a singleton per web contents, serving
+  // for multiple render frames.
+  mojo::BindingSet<translate::mojom::ContentTranslateDriver> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLanguageDetectionClient);
 };
