@@ -74,8 +74,8 @@ constexpr int kAppListDragVelocityThreshold = 25;
 // The scroll offset in order to transition from PEEKING to FULLSCREEN
 constexpr int kAppListMinScrollToSwitchStates = 20;
 
-// The DIP distance from the bezel that a drag event must end within to transfer
-// the |app_list_state_|.
+// The DIP distance from the bezel in which a gesture drag end results in a
+// closed app list.
 constexpr int kAppListBezelMargin = 50;
 
 // The blur radius of the app list background.
@@ -619,10 +619,8 @@ void AppListView::EndDrag(const gfx::Point& location) {
         case PEEKING:
         case HALF:
         case FULLSCREEN_SEARCH:
-          SetState(CLOSED);
-          break;
         case FULLSCREEN_ALL_APPS:
-          SetState(is_tablet_mode_ || is_side_shelf_ ? CLOSED : PEEKING);
+          SetState(CLOSED);
           break;
         case CLOSED:
           NOTREACHED();
@@ -679,6 +677,12 @@ void AppListView::EndDrag(const gfx::Point& location) {
     const int location_y_in_current_display =
         location_in_screen_coordinates.y() -
         GetDisplayNearestView().bounds().y();
+    // If the drag ended near the bezel, close the app list and return early.
+    if (location_y_in_current_display >=
+        (display_height - kAppListBezelMargin)) {
+      SetState(CLOSED);
+      return;
+    }
     switch (app_list_state_) {
       case FULLSCREEN_ALL_APPS:
         if (std::abs(drag_delta) > app_list_threshold)
@@ -695,10 +699,6 @@ void AppListView::EndDrag(const gfx::Point& location) {
       case HALF:
         if (std::abs(drag_delta) > app_list_threshold) {
           SetState(drag_delta > 0 ? FULLSCREEN_SEARCH : CLOSED);
-        } else if (location_y_in_current_display >=
-                   display_height - kAppListBezelMargin) {
-          // If the user drags to the bezel, close the app list.
-          SetState(CLOSED);
         } else {
           SetState(app_list_state_);
         }
@@ -706,10 +706,6 @@ void AppListView::EndDrag(const gfx::Point& location) {
       case PEEKING:
         if (std::abs(drag_delta) > app_list_threshold) {
           SetState(drag_delta > 0 ? FULLSCREEN_ALL_APPS : CLOSED);
-        } else if (location_y_in_current_display >=
-                   display_height - kAppListBezelMargin) {
-          // If the user drags to the bezel, close the app list.
-          SetState(CLOSED);
         } else {
           SetState(app_list_state_);
         }

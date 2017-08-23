@@ -46,6 +46,19 @@ void EnableTabletMode(bool enable) {
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(enable);
 }
 
+// Generates a fling.
+void FlingUpOrDown(ui::test::EventGenerator& generator,
+                   app_list::AppListView* view,
+                   bool up) {
+  int offset = up ? -100 : 100;
+  gfx::Point start_point = view->GetBoundsInScreen().origin();
+  gfx::Point target_point = start_point;
+  target_point.Offset(0, offset);
+
+  generator.GestureScrollSequence(start_point, target_point,
+                                  base::TimeDelta::FromMilliseconds(10), 2);
+}
+
 }  // namespace
 
 class AppListPresenterDelegateTest : public AshTestBase,
@@ -438,9 +451,9 @@ TEST_F(FullscreenAppListPresenterDelegateTest, AppListViewDragHandler) {
   EXPECT_EQ(app_list->app_list_state(),
             app_list::AppListView::FULLSCREEN_ALL_APPS);
 
-  // Execute a long downward drag, this should transition the app list.
-  generator.GestureScrollSequence(gfx::Point(10, 10), gfx::Point(10, 900),
-                                  base::TimeDelta::FromMilliseconds(100), 10);
+  // Execute a long and slow downward drag to switch to peeking.
+  generator.GestureScrollSequence(gfx::Point(10, 200), gfx::Point(10, 650),
+                                  base::TimeDelta::FromMilliseconds(1500), 100);
   EXPECT_EQ(app_list->app_list_state(), app_list::AppListView::PEEKING);
 
   // Transition to fullscreen.
@@ -835,9 +848,9 @@ TEST_P(FullscreenAppListPresenterDelegateTest,
   }
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::FULLSCREEN_ALL_APPS);
 
-  // Swipe down, the app list should return to peeking mode.
-  generator.GestureScrollSequence(gfx::Point(0, 0), gfx::Point(0, 720),
-                                  base::TimeDelta::FromMilliseconds(100), 10);
+  // Swipe down slowly, the app list should return to peeking mode.
+  generator.GestureScrollSequence(gfx::Point(0, 0), gfx::Point(0, 650),
+                                  base::TimeDelta::FromMilliseconds(1500), 100);
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::PEEKING);
 
   // Move mouse away from the searchbox, mousewheel scroll up.
@@ -901,6 +914,50 @@ TEST_P(FullscreenAppListPresenterDelegateTest, UnhandledEventOnPeeking) {
     generator.GestureTapAt(empty_space);
   }
   EXPECT_EQ(view->app_list_state(), app_list::AppListView::CLOSED);
+}
+
+// Tests that a drag to the bezel from Fullscreen/Peeking will close the app
+// list.
+TEST_P(FullscreenAppListPresenterDelegateTest,
+       DragToBezelClosesAppListFromFullscreenAndPeeking) {
+  const bool test_fullscreen = GetParam();
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* view = app_list_presenter_impl()->GetView();
+  EXPECT_EQ(app_list::AppListView::PEEKING, view->app_list_state());
+
+  if (test_fullscreen) {
+    FlingUpOrDown(GetEventGenerator(), view, true /* up */);
+    EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS,
+              view->app_list_state());
+  }
+
+  // Drag the app list to 50 DIPs from the bottom bezel, relies on the test
+  // display set to 1024x768. Drag slowly in order to not trigger a fling.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.GestureScrollSequence(gfx::Point(0, 700), gfx::Point(0, 750),
+                                  base::TimeDelta::FromMilliseconds(1500), 100);
+
+  ASSERT_EQ(app_list::AppListView::CLOSED, view->app_list_state());
+}
+
+// Tests that a fling from Fullscreen/Peeking closes the app list.
+TEST_P(FullscreenAppListPresenterDelegateTest,
+       FlingDownClosesAppListFromFullscreenAndPeeking) {
+  const bool test_fullscreen = GetParam();
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* view = app_list_presenter_impl()->GetView();
+  EXPECT_EQ(app_list::AppListView::PEEKING, view->app_list_state());
+
+  if (test_fullscreen) {
+    FlingUpOrDown(GetEventGenerator(), view, true /* up */);
+    EXPECT_EQ(app_list::AppListView::FULLSCREEN_ALL_APPS,
+              view->app_list_state());
+  }
+
+  // Fling down, the app list should close.
+  FlingUpOrDown(GetEventGenerator(), view, false /* down */);
+
+  ASSERT_EQ(app_list::AppListView::CLOSED, view->app_list_state());
 }
 
 }  // namespace ash
