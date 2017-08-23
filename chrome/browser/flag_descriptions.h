@@ -379,12 +379,6 @@ extern const char kEffectiveConnectionType4GDescription[];
 extern const char kFillOnAccountSelectName[];
 extern const char kFillOnAccountSelectDescription[];
 
-extern const char kForceTabletModeName[];
-extern const char kForceTabletModeDescription[];
-extern const char kForceTabletModeTouchview[];
-extern const char kForceTabletModeClamshell[];
-extern const char kForceTabletModeAuto[];
-
 extern const char kForceTextDirectionName[];
 extern const char kForceTextDirectionDescription[];
 extern const char kForceDirectionLtr[];
@@ -1411,6 +1405,12 @@ extern const char kFloatingVirtualKeyboardDescription[];
 
 extern const char kForceEnableStylusToolsName[];
 extern const char kForceEnableStylusToolsDescription[];
+
+extern const char kUiModeName[];
+extern const char kUiModeDescription[];
+extern const char kUiModeTablet[];
+extern const char kUiModeClamshell[];
+extern const char kUiModeAuto[];
 
 extern const char kGestureEditingName[];
 extern const char kGestureEditingDescription[];

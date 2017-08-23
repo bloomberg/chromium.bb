@@ -255,7 +255,7 @@ SigninScreenHandler::SigninScreenHandler(
                              ->CapsLockIsEnabled()),
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
-      touch_view_binding_(this),
+      tablet_mode_binding_(this),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
       lock_screen_apps_observer_(this),
       weak_factory_(this) {
@@ -291,10 +291,10 @@ SigninScreenHandler::SigninScreenHandler(
 
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()
-      ->BindInterface(ash::mojom::kServiceName, &touch_view_manager_ptr_);
-  ash::mojom::TouchViewObserverPtr observer;
-  touch_view_binding_.Bind(mojo::MakeRequest(&observer));
-  touch_view_manager_ptr_->AddObserver(std::move(observer));
+      ->BindInterface(ash::mojom::kServiceName, &tablet_mode_manager_ptr_);
+  ash::mojom::TabletModeObserverPtr observer;
+  tablet_mode_binding_.Bind(mojo::MakeRequest(&observer));
+  tablet_mode_manager_ptr_->AddObserver(std::move(observer));
   if (lock_screen_apps::StateController::IsEnabled())
     lock_screen_apps_observer_.Add(lock_screen_apps::StateController::Get());
   // TODO(wzang): Make this work under mash.
@@ -525,8 +525,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("noPodFocused", &SigninScreenHandler::HandleNoPodFocused);
   AddCallback("getPublicSessionKeyboardLayouts",
               &SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts);
-  AddCallback("getTouchViewState",
-              &SigninScreenHandler::HandleGetTouchViewState);
+  AddCallback("getTabletModeState",
+              &SigninScreenHandler::HandleGetTabletModeState);
   AddCallback("logRemoveUserWarningShown",
               &SigninScreenHandler::HandleLogRemoveUserWarningShown);
   AddCallback("firstIncorrectPasswordAttempt",
@@ -1098,9 +1098,9 @@ void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
   }
 }
 
-void SigninScreenHandler::OnTouchViewToggled(bool enabled) {
-  touch_view_enabled_ = enabled;
-  CallJSOrDefer("login.AccountPickerScreen.setTouchViewState", enabled);
+void SigninScreenHandler::OnTabletModeToggled(bool enabled) {
+  tablet_mode_enabled_ = enabled;
+  CallJSOrDefer("login.AccountPickerScreen.setTabletModeState", enabled);
 }
 
 void SigninScreenHandler::OnLockScreenNoteStateChanged(
@@ -1487,8 +1487,8 @@ void SigninScreenHandler::HandleLaunchArcKioskApp(
     delegate_->Login(context, SigninSpecifics());
 }
 
-void SigninScreenHandler::HandleGetTouchViewState() {
-  CallJS("login.AccountPickerScreen.setTouchViewState", touch_view_enabled_);
+void SigninScreenHandler::HandleGetTabletModeState() {
+  CallJS("login.AccountPickerScreen.setTabletModeState", tablet_mode_enabled_);
 }
 
 void SigninScreenHandler::HandleLogRemoveUserWarningShown() {

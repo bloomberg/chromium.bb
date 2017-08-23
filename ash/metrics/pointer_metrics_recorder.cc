@@ -22,7 +22,7 @@ namespace {
 // and new values should be inserted immediately above FORM_FACTOR_COUNT.
 enum class DownEventFormFactor {
   CLAMSHELL = 0,
-  TOUCH_VIEW,
+  TABLET_MODE,
   FORM_FACTOR_COUNT,
 };
 
@@ -50,7 +50,7 @@ void RecordUMA(ui::EventPointerType type, views::Widget* target) {
   if (Shell::Get()
           ->tablet_mode_controller()
           ->IsTabletModeWindowManagerEnabled()) {
-    form_factor = DownEventFormFactor::TOUCH_VIEW;
+    form_factor = DownEventFormFactor::TABLET_MODE;
   }
   UMA_HISTOGRAM_ENUMERATION(
       "Event.DownEventCount.PerFormFactor",

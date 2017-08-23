@@ -138,7 +138,7 @@ class ImeListItemView : public ActionableView {
 // Contains a toggle button to let the user enable/disable whether the
 // on-screen keyboard should be shown when focusing a textfield. This row is
 // shown only under certain conditions, e.g., when an external keyboard is
-// attached and the user is in TouchView mode.
+// attached and the user is in TabletMode mode.
 class KeyboardStatusRow : public views::View {
  public:
   KeyboardStatusRow() {}

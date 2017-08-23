@@ -10,7 +10,7 @@
 #include <set>
 #include <string>
 
-#include "ash/public/interfaces/touch_view.mojom.h"
+#include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -238,7 +238,7 @@ class SigninScreenHandler
       public NetworkStateInformer::NetworkStateInformerObserver,
       public PowerManagerClient::Observer,
       public input_method::ImeKeyboard::Observer,
-      public ash::mojom::TouchViewObserver,
+      public ash::mojom::TabletModeObserver,
       public lock_screen_apps::StateObserver,
       public OobeUI::Observer,
       public ash::WallpaperControllerObserver {
@@ -364,8 +364,8 @@ class SigninScreenHandler
   // PowerManagerClient::Observer implementation:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // ash::mojom::TouchView:
-  void OnTouchViewToggled(bool enabled) override;
+  // ash::mojom::TabletMode:
+  void OnTabletModeToggled(bool enabled) override;
 
   // lock_screen_apps::StateObserver:
   void OnLockScreenNoteStateChanged(ash::mojom::TrayActionState state) override;
@@ -421,7 +421,7 @@ class SigninScreenHandler
   void HandleLaunchArcKioskApp(const AccountId& app_account_id);
   void HandleGetPublicSessionKeyboardLayouts(const AccountId& account_id,
                                              const std::string& locale);
-  void HandleGetTouchViewState();
+  void HandleGetTabletModeState();
   void HandleLogRemoveUserWarningShown();
   void HandleFirstIncorrectPasswordAttempt(const AccountId& account_id);
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
@@ -541,9 +541,9 @@ class SigninScreenHandler
   // TODO(antrim@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_ = nullptr;
 
-  mojo::Binding<ash::mojom::TouchViewObserver> touch_view_binding_;
-  ash::mojom::TouchViewManagerPtr touch_view_manager_ptr_;
-  bool touch_view_enabled_ = false;
+  mojo::Binding<ash::mojom::TabletModeObserver> tablet_mode_binding_;
+  ash::mojom::TabletModeManagerPtr tablet_mode_manager_ptr_;
+  bool tablet_mode_enabled_ = false;
 
   // Input Method Engine state used at signin screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;

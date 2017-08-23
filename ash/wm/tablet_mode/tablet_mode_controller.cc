@@ -86,23 +86,23 @@ bool IsAngleBetweenAccelerometerReadingsStable(
 
 bool IsEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableTouchView);
+      switches::kAshEnableTabletMode);
 }
 
 // Checks the command line to see which force tablet mode is turned on, if
 // any.
-TabletModeController::ForceTabletMode GetTabletMode() {
+TabletModeController::UiMode GetTabletMode() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshForceTabletMode)) {
+  if (command_line->HasSwitch(switches::kAshUiMode)) {
     std::string switch_value =
-        command_line->GetSwitchValueASCII(switches::kAshForceTabletMode);
-    if (switch_value == switches::kAshForceTabletModeClamshell)
-      return TabletModeController::ForceTabletMode::CLAMSHELL;
+        command_line->GetSwitchValueASCII(switches::kAshUiMode);
+    if (switch_value == switches::kAshUiModeClamshell)
+      return TabletModeController::UiMode::CLAMSHELL;
 
-    if (switch_value == switches::kAshForceTabletModeTouchView)
-      return TabletModeController::ForceTabletMode::TOUCHVIEW;
+    if (switch_value == switches::kAshUiModeTablet)
+      return TabletModeController::UiMode::TABLETMODE;
   }
-  return TabletModeController::ForceTabletMode::NONE;
+  return TabletModeController::UiMode::NONE;
 }
 
 std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
@@ -118,7 +118,7 @@ const base::Feature kAutoHideTitleBarsInTabletMode{
 TabletModeController::TabletModeController()
     : have_seen_accelerometer_data_(false),
       can_detect_lid_angle_(false),
-      touchview_usage_interval_start_time_(base::Time::Now()),
+      tabletmode_usage_interval_start_time_(base::Time::Now()),
       tick_clock_(new base::DefaultTickClock()),
       tablet_mode_switch_is_on_(false),
       lid_is_closed_(false),
@@ -159,7 +159,7 @@ TabletModeController::~TabletModeController() {
 bool TabletModeController::CanEnterTabletMode() {
   // If we have ever seen accelerometer data, then HandleHingeRotation may
   // trigger tablet mode at some point in the future.
-  // All TouchView-enabled devices can enter tablet mode.
+  // All TabletMode-enabled devices can enter tablet mode.
   return have_seen_accelerometer_data_ || IsEnabled();
 }
 
@@ -173,12 +173,12 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
   if (should_enable) {
     tablet_mode_window_manager_.reset(new TabletModeWindowManager());
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
-    RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_INACTIVE);
+    RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_INACTIVE);
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeStarted();
 
-    observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
-      observer->OnTouchViewToggled(true);
+    observers_.ForAllPtrs([](mojom::TabletModeObserver* observer) {
+      observer->OnTabletModeToggled(true);
     });
 
   } else {
@@ -188,12 +188,12 @@ void TabletModeController::EnableTabletModeWindowManager(bool should_enable) {
     tablet_mode_window_manager_.reset();
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_MAXIMIZE_MODE_DISABLED);
-    RecordTouchViewUsageInterval(TOUCH_VIEW_INTERVAL_ACTIVE);
+    RecordTabletModeUsageInterval(TABLET_MODE_INTERVAL_ACTIVE);
     for (auto& observer : tablet_mode_observers_)
       observer.OnTabletModeEnded();
 
-    observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
-      observer->OnTouchViewToggled(false);
+    observers_.ForAllPtrs([](mojom::TabletModeObserver* observer) {
+      observer->OnTabletModeToggled(false);
     });
   }
 }
@@ -207,7 +207,8 @@ void TabletModeController::AddWindow(aura::Window* window) {
     tablet_mode_window_manager_->AddWindow(window);
 }
 
-void TabletModeController::BindRequest(mojom::TouchViewManagerRequest request) {
+void TabletModeController::BindRequest(
+    mojom::TabletModeManagerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -298,14 +299,14 @@ void TabletModeController::TabletModeEventReceived(
 }
 
 void TabletModeController::SuspendImminent() {
-  // The system is about to suspend, so record TouchView usage interval metrics
-  // based on whether TouchView mode is currently active.
-  RecordTouchViewUsageInterval(CurrentTouchViewIntervalType());
+  // The system is about to suspend, so record TabletMode usage interval metrics
+  // based on whether TabletMode mode is currently active.
+  RecordTabletModeUsageInterval(CurrentTabletModeIntervalType());
 }
 
 void TabletModeController::SuspendDone(const base::TimeDelta& sleep_duration) {
-  // We do not want TouchView usage metrics to include time spent in suspend.
-  touchview_usage_interval_start_time_ = base::Time::Now();
+  // We do not want TabletMode usage metrics to include time spent in suspend.
+  tabletmode_usage_interval_start_time_ = base::Time::Now();
 }
 
 void TabletModeController::HandleHingeRotation(
@@ -395,8 +396,8 @@ void TabletModeController::LeaveTabletMode() {
 }
 
 void TabletModeController::OnShellInitialized() {
-  force_tablet_mode_ = GetTabletMode();
-  if (force_tablet_mode_ == ForceTabletMode::TOUCHVIEW)
+  force_ui_mode_ = GetTabletMode();
+  if (force_ui_mode_ == UiMode::TABLETMODE)
     EnterTabletMode();
 }
 
@@ -415,61 +416,61 @@ void TabletModeController::OnDisplayConfigurationChanged() {
   }
 }
 
-void TabletModeController::RecordTouchViewUsageInterval(
-    TouchViewIntervalType type) {
+void TabletModeController::RecordTabletModeUsageInterval(
+    TabletModeIntervalType type) {
   if (!CanEnterTabletMode())
     return;
 
   base::Time current_time = base::Time::Now();
-  base::TimeDelta delta = current_time - touchview_usage_interval_start_time_;
+  base::TimeDelta delta = current_time - tabletmode_usage_interval_start_time_;
   switch (type) {
-    case TOUCH_VIEW_INTERVAL_INACTIVE:
+    case TABLET_MODE_INTERVAL_INACTIVE:
       UMA_HISTOGRAM_LONG_TIMES("Ash.TouchView.TouchViewInactive", delta);
-      total_non_touchview_time_ += delta;
+      total_non_tabletmode_time_ += delta;
       break;
-    case TOUCH_VIEW_INTERVAL_ACTIVE:
+    case TABLET_MODE_INTERVAL_ACTIVE:
       UMA_HISTOGRAM_LONG_TIMES("Ash.TouchView.TouchViewActive", delta);
-      total_touchview_time_ += delta;
+      total_tabletmode_time_ += delta;
       break;
   }
 
-  touchview_usage_interval_start_time_ = current_time;
+  tabletmode_usage_interval_start_time_ = current_time;
 }
 
-TabletModeController::TouchViewIntervalType
-TabletModeController::CurrentTouchViewIntervalType() {
+TabletModeController::TabletModeIntervalType
+TabletModeController::CurrentTabletModeIntervalType() {
   if (IsTabletModeWindowManagerEnabled())
-    return TOUCH_VIEW_INTERVAL_ACTIVE;
-  return TOUCH_VIEW_INTERVAL_INACTIVE;
+    return TABLET_MODE_INTERVAL_ACTIVE;
+  return TABLET_MODE_INTERVAL_INACTIVE;
 }
 
-void TabletModeController::AddObserver(mojom::TouchViewObserverPtr observer) {
-  observer->OnTouchViewToggled(IsTabletModeWindowManagerEnabled());
+void TabletModeController::AddObserver(mojom::TabletModeObserverPtr observer) {
+  observer->OnTabletModeToggled(IsTabletModeWindowManagerEnabled());
   observers_.AddPtr(std::move(observer));
 }
 
 bool TabletModeController::AllowEnterExitTabletMode() const {
-  return force_tablet_mode_ == ForceTabletMode::NONE;
+  return force_ui_mode_ == UiMode::NONE;
 }
 
 void TabletModeController::OnChromeTerminating() {
-  // The system is about to shut down, so record TouchView usage interval
-  // metrics based on whether TouchView mode is currently active.
-  RecordTouchViewUsageInterval(CurrentTouchViewIntervalType());
+  // The system is about to shut down, so record TabletMode usage interval
+  // metrics based on whether TabletMode mode is currently active.
+  RecordTabletModeUsageInterval(CurrentTabletModeIntervalType());
 
   if (CanEnterTabletMode()) {
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewActiveTotal",
-                                total_touchview_time_.InMinutes(), 1,
+                                total_tabletmode_time_.InMinutes(), 1,
                                 base::TimeDelta::FromDays(7).InMinutes(), 50);
     UMA_HISTOGRAM_CUSTOM_COUNTS("Ash.TouchView.TouchViewInactiveTotal",
-                                total_non_touchview_time_.InMinutes(), 1,
+                                total_non_tabletmode_time_.InMinutes(), 1,
                                 base::TimeDelta::FromDays(7).InMinutes(), 50);
     base::TimeDelta total_runtime =
-        total_touchview_time_ + total_non_touchview_time_;
+        total_tabletmode_time_ + total_non_tabletmode_time_;
     if (total_runtime.InSeconds() > 0) {
       UMA_HISTOGRAM_PERCENTAGE(
           "Ash.TouchView.TouchViewActivePercentage",
-          100 * total_touchview_time_.InSeconds() / total_runtime.InSeconds());
+          100 * total_tabletmode_time_.InSeconds() / total_runtime.InSeconds());
     }
   }
 }
