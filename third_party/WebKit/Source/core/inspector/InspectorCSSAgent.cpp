@@ -2250,7 +2250,7 @@ Response InspectorCSSAgent::getBackgroundColors(
   if (!response.isSuccess())
     return response;
 
-  LayoutRect text_bounds;
+  LayoutRect content_bounds;
   LayoutObject* element_layout = element->GetLayoutObject();
   if (!element_layout)
     return Response::OK();
@@ -2259,9 +2259,18 @@ Response InspectorCSSAgent::getBackgroundColors(
        child = child->nextSibling()) {
     if (!child->IsTextNode())
       continue;
-    text_bounds.Unite(LayoutRect(child->BoundingBox()));
+    content_bounds.Unite(LayoutRect(child->BoundingBox()));
   }
-  if (text_bounds.Size().IsEmpty())
+  if (content_bounds.Size().IsEmpty() && element_layout->IsBox()) {
+    // Return content box instead - may have indirect text children.
+    LayoutBox* layout_box = ToLayoutBox(element_layout);
+    content_bounds = layout_box->ContentBoxRect();
+    content_bounds = LayoutRect(
+        element_layout->LocalToAbsoluteQuad(FloatRect(content_bounds))
+            .BoundingBox());
+  }
+
+  if (content_bounds.Size().IsEmpty())
     return Response::OK();
 
   Vector<Color> colors;
@@ -2278,15 +2287,15 @@ Response InspectorCSSAgent::getBackgroundColors(
     found_opaque_color = !base_background_color.HasAlpha();
   }
 
-  found_opaque_color =
-      GetColorsFromRect(text_bounds, element->GetDocument(), element, colors);
+  found_opaque_color = GetColorsFromRect(content_bounds, element->GetDocument(),
+                                         element, colors);
 
   if (!found_opaque_color && !is_main_frame) {
     for (HTMLFrameOwnerElement* owner_element = document.LocalOwner();
          !found_opaque_color && owner_element;
          owner_element = owner_element->GetDocument().LocalOwner()) {
       found_opaque_color = GetColorsFromRect(
-          text_bounds, owner_element->GetDocument(), nullptr, colors);
+          content_bounds, owner_element->GetDocument(), nullptr, colors);
     }
   }
 
