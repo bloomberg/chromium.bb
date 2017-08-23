@@ -99,6 +99,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
         bug=1619) # angle bug ID
 
+    # Timing out on multiple platforms right now.
+    self.Skip('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
+        bug=757097)
+
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
     self.Fail('conformance/textures/misc/tex-sub-image-2d-bad-args.html',
