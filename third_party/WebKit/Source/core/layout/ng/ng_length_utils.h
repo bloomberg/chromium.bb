@@ -7,8 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/MinMaxSize.h"
-#include "core/layout/ng/geometry/ng_box_strut.h"
-#include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Optional.h"
@@ -16,9 +14,12 @@
 namespace blink {
 class ComputedStyle;
 class LayoutObject;
+class LayoutUnit;
 class Length;
 class NGConstraintSpace;
 class NGLayoutInputNode;
+struct NGBoxStrut;
+struct NGLogicalSize;
 
 enum class LengthResolveType {
   kMinSize,
@@ -130,42 +131,6 @@ CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
 
 // Returns scrollbar sizes or this layout object.
 NGBoxStrut GetScrollbarSizes(const LayoutObject*);
-
-inline NGBoxStrut CalculateBorderScrollbarPadding(
-    const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style,
-    const LayoutObject* layout_object) {
-  return ComputeBorders(constraint_space, style) +
-         ComputePadding(constraint_space, style) +
-         GetScrollbarSizes(layout_object);
-}
-
-inline NGLogicalSize CalculateBorderBoxSize(
-    const NGConstraintSpace& constraint_space,
-    const ComputedStyle& style,
-    const Optional<MinMaxSize>& min_and_max,
-    LayoutUnit block_content_size = NGSizeIndefinite) {
-  return NGLogicalSize(
-      ComputeInlineSizeForFragment(constraint_space, style, min_and_max),
-      ComputeBlockSizeForFragment(constraint_space, style, block_content_size));
-}
-
-inline NGLogicalSize CalculateContentBoxSize(
-    const NGLogicalSize border_box_size,
-    const NGBoxStrut& border_scrollbar_padding) {
-  NGLogicalSize size = border_box_size;
-  size.inline_size -= border_scrollbar_padding.InlineSum();
-  size.inline_size = std::max(size.inline_size, LayoutUnit());
-
-  // Our calculated block-axis size may still be indefinite. If so, just leave
-  // the size as NGSizeIndefinite instead of subtracting borders and padding.
-  if (size.block_size != NGSizeIndefinite) {
-    size.block_size -= border_scrollbar_padding.BlockSum();
-    size.block_size = std::max(size.block_size, LayoutUnit());
-  }
-
-  return size;
-}
 
 }  // namespace blink
 
