@@ -932,7 +932,9 @@ FileGridSelectionController.prototype.handlePointerDownUp = function(e, index) {
 FileGridSelectionController.prototype.handleTouchEvents = function(e, index) {
   if (!this.enableTouchMode_)
     return;
-  this.tapHandler_.handleTouchEvents(e, index, filelist.handleTap.bind(this));
+  if (this.tapHandler_.handleTouchEvents(
+          e, index, filelist.handleTap.bind(this)))
+    filelist.focusParentList(e);
 };
 
 /** @override */
