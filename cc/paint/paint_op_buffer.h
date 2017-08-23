@@ -62,7 +62,6 @@ enum class PaintOpType : uint8_t {
   ClipRect,
   ClipRRect,
   Concat,
-  DrawArc,
   DrawColor,
   DrawDRRect,
   DrawImage,
@@ -341,39 +340,6 @@ class CC_PAINT_EXPORT ConcatOp final : public PaintOp {
 
  private:
   ConcatOp() = default;
-};
-
-class CC_PAINT_EXPORT DrawArcOp final : public PaintOpWithFlags {
- public:
-  static constexpr PaintOpType kType = PaintOpType::DrawArc;
-  static constexpr bool kIsDrawOp = true;
-  DrawArcOp(const SkRect& oval,
-            SkScalar start_angle,
-            SkScalar sweep_angle,
-            bool use_center,
-            const PaintFlags& flags)
-      : PaintOpWithFlags(flags),
-        oval(oval),
-        start_angle(start_angle),
-        sweep_angle(sweep_angle),
-        use_center(use_center) {}
-  static void RasterWithFlags(const DrawArcOp* op,
-                              const PaintFlags* flags,
-                              SkCanvas* canvas,
-                              const PlaybackParams& params);
-  bool IsValid() const {
-    return flags.IsValid() && oval.isFinite() && std::isfinite(start_angle) &&
-           std::isfinite(sweep_angle);
-  }
-  HAS_SERIALIZATION_FUNCTIONS();
-
-  SkRect oval;
-  SkScalar start_angle;
-  SkScalar sweep_angle;
-  bool use_center;
-
- private:
-  DrawArcOp() = default;
 };
 
 class CC_PAINT_EXPORT DrawColorOp final : public PaintOp {
