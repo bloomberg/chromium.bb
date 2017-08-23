@@ -465,7 +465,6 @@ if (!is_android) {
       "../browser/ui/passwords/manage_passwords_test.cc",
       "../browser/ui/passwords/manage_passwords_test.h",
       "../browser/ui/search/instant_extended_interactive_uitest.cc",
-      "../browser/ui/search/instant_extended_manual_interactive_uitest.cc",
       "../browser/ui/search/instant_test_base.cc",
       "../browser/ui/search/instant_test_base.h",
       "../browser/ui/search/instant_test_utils.cc",
