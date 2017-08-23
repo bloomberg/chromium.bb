@@ -32,9 +32,6 @@ class DBMessageFilter : public IPC::MessageFilter {
   void OnDatabaseUpdateSize(const url::Origin& origin,
                             const base::string16& database_name,
                             int64_t database_size);
-  void OnDatabaseUpdateSpaceAvailable(const url::Origin& origin,
-                                      int64_t space_available);
-  void OnDatabaseResetSpaceAvailable(const url::Origin& origin);
   void OnDatabaseCloseImmediately(const url::Origin& origin,
                                   const base::string16& database_name);
 };

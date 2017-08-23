@@ -24,10 +24,6 @@ bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DBMessageFilter, message)
     IPC_MESSAGE_HANDLER(DatabaseMsg_UpdateSize, OnDatabaseUpdateSize)
-    IPC_MESSAGE_HANDLER(DatabaseMsg_UpdateSpaceAvailable,
-                        OnDatabaseUpdateSpaceAvailable)
-    IPC_MESSAGE_HANDLER(DatabaseMsg_ResetSpaceAvailable,
-                        OnDatabaseResetSpaceAvailable)
     IPC_MESSAGE_HANDLER(DatabaseMsg_CloseImmediately,
                         OnDatabaseCloseImmediately)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -41,17 +37,6 @@ void DBMessageFilter::OnDatabaseUpdateSize(const url::Origin& origin,
   DCHECK(!origin.unique());
   blink::WebDatabase::UpdateDatabaseSize(
       origin, WebString::FromUTF16(database_name), database_size);
-}
-
-void DBMessageFilter::OnDatabaseUpdateSpaceAvailable(const url::Origin& origin,
-                                                     int64_t space_available) {
-  DCHECK(!origin.unique());
-  blink::WebDatabase::UpdateSpaceAvailable(origin, space_available);
-}
-
-void DBMessageFilter::OnDatabaseResetSpaceAvailable(const url::Origin& origin) {
-  DCHECK(!origin.unique());
-  blink::WebDatabase::ResetSpaceAvailable(origin);
 }
 
 void DBMessageFilter::OnDatabaseCloseImmediately(
