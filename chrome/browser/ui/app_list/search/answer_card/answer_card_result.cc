@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/answer_card/answer_card_contents.h"
+#include "chrome/browser/ui/app_list/search/search_util.h"
 
 namespace app_list {
 
@@ -48,6 +49,7 @@ std::unique_ptr<SearchResult> AnswerCardResult::Duplicate() const {
 void AnswerCardResult::Open(int event_flags) {
   list_controller_->OpenURL(profile_, GURL(id()), ui::PAGE_TRANSITION_GENERATED,
                             ui::DispositionFromEventFlags(event_flags));
+  RecordHistogram(ANSWER_CARD);
 }
 
 }  // namespace app_list
