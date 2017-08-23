@@ -40,8 +40,6 @@ class MemlogReceiverPipe
   friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
   ~MemlogReceiverPipe() override;
 
-  void OnIOCompleted(size_t bytes_transfered, DWORD error);
-
   void ReadUntilBlocking();
   void ZeroOverlapped();
 

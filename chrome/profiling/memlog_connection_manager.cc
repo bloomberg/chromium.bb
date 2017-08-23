@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "chrome/profiling/allocation_tracker.h"
 #include "chrome/profiling/json_exporter.h"
@@ -43,11 +44,8 @@ struct MemlogConnectionManager::Connection {
   AllocationTracker tracker;
 };
 
-MemlogConnectionManager::MemlogConnectionManager(
-    scoped_refptr<base::SequencedTaskRunner> io_runner)
-    : io_runner_(std::move(io_runner)) {}
-
-MemlogConnectionManager::~MemlogConnectionManager() {}
+MemlogConnectionManager::MemlogConnectionManager() : weak_factory_(this) {}
+MemlogConnectionManager::~MemlogConnectionManager() = default;
 
 void MemlogConnectionManager::OnNewConnection(base::ScopedPlatformFile file,
                                               base::ProcessId pid) {
@@ -71,7 +69,7 @@ void MemlogConnectionManager::OnNewConnection(base::ScopedPlatformFile file,
 
   connections_[pid] = std::move(connection);
 
-  io_runner_->PostTask(
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&MemlogReceiverPipe::StartReadingOnIOThread, new_pipe));
 }
@@ -86,14 +84,11 @@ void MemlogConnectionManager::OnConnectionComplete(base::ProcessId pid) {
 
 // Posts back to the given thread the connection complete message.
 void MemlogConnectionManager::OnConnectionCompleteThunk(
-    scoped_refptr<base::SingleThreadTaskRunner> main_loop,
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::ProcessId pid) {
-  // This code is called by the allocation tracker which is owned by the
-  // connection manager. When we tell the connection manager a connection is
-  // done, we know the connection manager will still be in scope.
-  main_loop->PostTask(FROM_HERE,
-                      base::Bind(&MemlogConnectionManager::OnConnectionComplete,
-                                 base::Unretained(this), pid));
+  task_runner->PostTask(
+      FROM_HERE, base::Bind(&MemlogConnectionManager::OnConnectionComplete,
+                            weak_factory_.GetWeakPtr(), pid));
 }
 
 void MemlogConnectionManager::DumpProcess(
