@@ -18,6 +18,8 @@ enum class UiSuppressedElement : int {
   kPermissionRequest,
   kQuotaPermission,
   kHttpAuth,
+  kDownloadPermission,
+  kFileAccessPermission,
 
   // This must be last.
   kCount,
