@@ -1398,32 +1398,6 @@
             ]
         }
     ],
-    "MaxDelayableRequestsNetworkOverride": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "MaxDelayable4",
-                    "params": {
-                        "MaxBDPKbits1": "10",
-                        "MaxBDPKbits2": "5000",
-                        "MaxDelayableRequests1": "10",
-                        "MaxDelayableRequests2": "4",
-                        "MaxEffectiveConnectionType": "3G"
-                    },
-                    "enable_features": [
-                        "MaxDelayableRequestsNetworkOverride"
-                    ]
-                }
-            ]
-        }
-    ],
     "MediaFoundationH264Encoding": [
         {
             "platforms": [
@@ -1822,29 +1796,6 @@
                     },
                     "enable_features": [
                         "NoStatePrefetch"
-                    ]
-                }
-            ]
-        }
-    ],
-    "NonDelayableThrottlesDelayable": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "NonDelayableWeight2",
-                    "params": {
-                        "MaxEffectiveConnectionType": "3G",
-                        "NonDelayableWeight": "2.0"
-                    },
-                    "enable_features": [
-                        "NonDelayableThrottlesDelayable"
                     ]
                 }
             ]
@@ -3107,6 +3058,33 @@
             "experiments": [
                 {
                     "name": "Enabled"
+                }
+            ]
+        }
+    ],
+    "ThrottleDelayable": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "MaxBDPKbits1": "10",
+                        "MaxBDPKbits2": "5000",
+                        "MaxDelayableRequests1": "10",
+                        "MaxDelayableRequests2": "6",
+                        "MaxEffectiveConnectionType": "3G",
+                        "NonDelayableWeight": "2.0"
+                    },
+                    "enable_features": [
+                        "ThrottleDelayable"
+                    ]
                 }
             ]
         }
