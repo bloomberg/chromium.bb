@@ -194,6 +194,18 @@ enum Verb {
   share_with
 };
 
+// Recent file sources allowed in getRecentFiles().
+enum SourceRestriction {
+  // Allows any source.
+  any_source,
+
+  // Allows source with native local file system only.
+  native_source,
+
+  // Allows native source and Drive source.
+  native_or_drive_source
+};
+
 // A file task represents an action that the file manager can perform over the
 // currently selected files. See
 // chrome/browser/chromeos/extensions/file_manager/file_tasks.h for details
@@ -997,8 +1009,11 @@ interface Functions {
                                GetDirectorySizeCallback callback);
 
   // Gets recently modified files across file systems.
+  // |restriction| Flag to restrict sources of recent files.
+  // |callback|
   [nocompile]
-  static void getRecentFiles(GetRecentFilesCallback callback);
+  static void getRecentFiles(SourceRestriction restriction,
+                             GetRecentFilesCallback callback);
 };
 
 interface Events {
