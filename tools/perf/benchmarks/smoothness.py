@@ -236,6 +236,10 @@ class SmoothnessKeyMobileSites(_Smoothness):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
             [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
+        self.DisableStory(
+            'http://digg.com',
+            [story_module.expectations.ALL_ANDROID],
+            'crbug.com/756119')
     return StoryExpectations()
 
 
@@ -422,6 +426,10 @@ class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
       def SetExpectations(self):
         self.PermanentlyDisableBenchmark(
             [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
+        self.DisableStory(
+            'http://digg.com',
+            [story_module.expectations.ALL],
+            'crbug.com/756119')
     return StoryExpectations()
 
 
