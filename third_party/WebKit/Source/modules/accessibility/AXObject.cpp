@@ -608,20 +608,26 @@ bool AXObject::IsPasswordFieldAndShouldHideValue() const {
 }
 
 bool AXObject::IsClickable() const {
+  if (IsButton() || IsLink() || IsTextControl())
+    return true;
+
+  // TODO(dmazzoni): Ensure that kColorWellRole and kSpinButtonRole are
+  // correctly handled here via their constituent parts.
   switch (RoleValue()) {
-    case kButtonRole:
-    case kCheckBoxRole:
-    case kColorWellRole:
+    // TODO(dmazzoni): Replace kComboBoxRole with two new combo box roles.
+    // Composite widget and text field.
     case kComboBoxRole:
-    case kLinkRole:
+    case kCheckBoxRole:
+    case kDisclosureTriangleRole:
+    case kListBoxRole:
     case kListBoxOptionRole:
-    case kMenuButtonRole:
-    case kPopUpButtonRole:
+    case kMenuItemCheckBoxRole:
+    case kMenuItemRadioRole:
+    case kMenuItemRole:
+    case kMenuListOptionRole:
     case kRadioButtonRole:
-    case kSpinButtonRole:
+    case kSwitchRole:
     case kTabRole:
-    case kTextFieldRole:
-    case kToggleButtonRole:
       return true;
     default:
       return false;
@@ -1363,28 +1369,37 @@ AXDefaultActionVerb AXObject::Action() const {
   if (!ActionElement())
     return AXDefaultActionVerb::kNone;
 
+  // TODO(dmazzoni): Ensure that combo box text field is handled here.
+  if (IsTextControl())
+    return AXDefaultActionVerb::kActivate;
+
+  if (IsCheckable()) {
+    return CheckedState() != kCheckedStateTrue ? AXDefaultActionVerb::kCheck
+                                               : AXDefaultActionVerb::kUncheck;
+  }
+
   switch (RoleValue()) {
     case kButtonRole:
+    case kDisclosureTriangleRole:
     case kToggleButtonRole:
       return AXDefaultActionVerb::kPress;
-    case kTextFieldRole:
-      return AXDefaultActionVerb::kActivate;
+    case kListBoxOptionRole:
     case kMenuItemRadioRole:
-    case kRadioButtonRole:
+    case kMenuItemRole:
+    case kMenuListOptionRole:
       return AXDefaultActionVerb::kSelect;
     case kLinkRole:
       return AXDefaultActionVerb::kJump;
+    // TODO(dmazzoni): Change kComboBoxRole to combo box composite widget.
+    case kComboBoxRole:
+    case kListBoxRole:
     case kPopUpButtonRole:
       return AXDefaultActionVerb::kOpen;
     default:
-      if (IsCheckable()) {
-        return CheckedState() != kCheckedStateTrue
-                   ? AXDefaultActionVerb::kCheck
-                   : AXDefaultActionVerb::kUncheck;
-      }
       return AXDefaultActionVerb::kClick;
   }
 }
+
 bool AXObject::AriaPressedIsPresent() const {
   AtomicString result;
   return HasAOMPropertyOrARIAAttribute(AOMStringProperty::kPressed, result);
@@ -1795,8 +1810,9 @@ bool AXObject::Press() {
                                     UserGestureToken::kNewGesture);
   Element* action_elem = ActionElement();
   Event* event = Event::CreateCancelable(EventTypeNames::accessibleclick);
-  if (DispatchEventToAOMEventListeners(*event, action_elem))
+  if (DispatchEventToAOMEventListeners(*event, action_elem)) {
     return true;
+  }
 
   if (action_elem) {
     action_elem->AccessKeyAction(true);

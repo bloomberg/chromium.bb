@@ -9,14 +9,25 @@ rootWebArea name='Action verbs'
 ++link name='Link' defaultActionVerb=jump
 ++++staticText name='Link' defaultActionVerb=click
 ++++++inlineTextBox name='Link'
-++textField
+++textField defaultActionVerb=activate
+++searchBox defaultActionVerb=activate
+++textField multiline defaultActionVerb=activate
+++textField defaultActionVerb=activate
 ++checkBox defaultActionVerb=check checkedState=false
 ++checkBox defaultActionVerb=uncheck checkedState=true
-++radioButton defaultActionVerb=select checkedState=false
+++radioButton defaultActionVerb=check checkedState=false
 ++switch name='ARIA Switch' defaultActionVerb=check checkedState=false
+++details
+++++disclosureTriangle collapsed name='Summary' defaultActionVerb=press
+++++++staticText name='Summary'
+++++++++inlineTextBox name='Summary'
 ++popUpButton collapsed haspopup defaultActionVerb=open
 ++++menuListPopup invisible activedescendantId=menuListOption
-++++++menuListOption selectable selected name='Pop-up button' defaultActionVerb=click
+++++++menuListOption selectable selected name='Pop-up button' defaultActionVerb=select
 ++genericContainer defaultActionVerb=click
 ++++staticText name='Div with click handler' defaultActionVerb=click
 ++++++inlineTextBox name='Div with click handler'
+++menu
+++++menuItem name='Menu item 1' defaultActionVerb=select
+++++menuItemCheckBox name='Menu item 2' defaultActionVerb=uncheck checkedState=true
+++++menuItemRadio name='Menu item 3' defaultActionVerb=check checkedState=false
