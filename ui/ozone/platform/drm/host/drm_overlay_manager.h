@@ -45,6 +45,17 @@ class DrmOverlayManager : public OverlayManagerOzone {
       gfx::AcceleratedWidget widget);
 
  private:
+  // Value for the request cache, that keeps track of how many times a
+  // specific validation has been requested, if there is a GPU validation
+  // in flight, and at last the result of the validation.
+  struct OverlayValidationCacheValue {
+    OverlayValidationCacheValue();
+    OverlayValidationCacheValue(const OverlayValidationCacheValue&);
+    ~OverlayValidationCacheValue();
+    int request_num = 0;
+    std::vector<OverlayStatus> status;
+  };
+
   void SendOverlayValidationRequest(
       const OverlaySurfaceCandidateList& candidates,
       gfx::AcceleratedWidget widget) const;
@@ -54,11 +65,9 @@ class DrmOverlayManager : public OverlayManagerOzone {
   GpuThreadAdapter* proxy_;               // Not owned.
   DrmWindowHostManager* window_manager_;  // Not owned.
 
-  // List of all OverlaySurfaceCandidate instances which have been validated in
-  // GPU side.  Value is set to true if we are waiting for validation results
-  // from GPU.
-  base::MRUCache<std::vector<OverlaySurfaceCandidate>,
-                 std::vector<OverlayStatus>>
+  // List of all OverlaySurfaceCandidate instances which have been requested
+  // for validation and/or validated.
+  base::MRUCache<OverlaySurfaceCandidateList, OverlayValidationCacheValue>
       cache_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmOverlayManager);
