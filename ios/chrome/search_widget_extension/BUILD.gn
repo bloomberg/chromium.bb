@@ -35,7 +35,7 @@ ios_appex_bundle("search_widget_extension") {
   extra_substitutions = [
     "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
     "CHROMIUM_SHORT_NAME=$chromium_short_name",
-    "WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.SearchTodayExtension",
+    "WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.TodayExtension",
   ]
 
   entitlements_target = ":entitlements"

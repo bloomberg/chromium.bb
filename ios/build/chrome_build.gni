@@ -8,9 +8,8 @@ import("//build/config/mac/symbols.gni")
 
 declare_args() {
   # Enable widget extensions.
-  ios_enable_today_extension = false
-  ios_enable_search_widget_extension = true
   ios_enable_content_widget_extension = true
+  ios_enable_search_widget_extension = true
 
   # Enable share extension.
   ios_enable_share_extension = true
