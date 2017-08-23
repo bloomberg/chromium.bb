@@ -2151,6 +2151,7 @@ test("base_unittests") {
     "task_scheduler/scheduler_lock_unittest.cc",
     "task_scheduler/scheduler_single_thread_task_runner_manager_unittest.cc",
     "task_scheduler/scheduler_worker_pool_impl_unittest.cc",
+    "task_scheduler/scheduler_worker_pool_unittest.cc",
     "task_scheduler/scheduler_worker_stack_unittest.cc",
     "task_scheduler/scheduler_worker_unittest.cc",
     "task_scheduler/scoped_set_task_priority_for_current_thread_unittest.cc",

@@ -109,46 +109,17 @@ class TaskSchedulerWorkerPoolImplTest
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerWorkerPoolImplTest);
 };
 
-scoped_refptr<TaskRunner> CreateTaskRunnerWithExecutionMode(
-    SchedulerWorkerPoolImpl* worker_pool,
-    test::ExecutionMode execution_mode) {
-  // Allow tasks posted to the returned TaskRunner to wait on a WaitableEvent.
-  const TaskTraits traits = {WithBaseSyncPrimitives()};
-  switch (execution_mode) {
-    case test::ExecutionMode::PARALLEL:
-      return worker_pool->CreateTaskRunnerWithTraits(traits);
-    case test::ExecutionMode::SEQUENCED:
-      return worker_pool->CreateSequencedTaskRunnerWithTraits(traits);
-    default:
-      // Fall through.
-      break;
-  }
-  ADD_FAILURE() << "Unexpected ExecutionMode";
-  return nullptr;
-}
-
 using PostNestedTask = test::TestTaskFactory::PostNestedTask;
 
-class ThreadPostingTasks : public SimpleThread {
+class ThreadPostingTasksWaitIdle : public SimpleThread {
  public:
-  enum class WaitBeforePostTask {
-    NO_WAIT,
-    WAIT_FOR_ALL_WORKERS_IDLE,
-  };
-
   // Constructs a thread that posts tasks to |worker_pool| through an
-  // |execution_mode| task runner. If |wait_before_post_task| is
-  // WAIT_FOR_ALL_WORKERS_IDLE, the thread waits until all workers in
-  // |worker_pool| are idle before posting a new task. If |post_nested_task| is
-  // YES, each task posted by this thread posts another task when it runs.
-  ThreadPostingTasks(SchedulerWorkerPoolImpl* worker_pool,
-                     test::ExecutionMode execution_mode,
-                     WaitBeforePostTask wait_before_post_task,
-                     PostNestedTask post_nested_task)
-      : SimpleThread("ThreadPostingTasks"),
+  // |execution_mode| task runner. The thread waits until all workers in
+  // |worker_pool| are idle before posting a new task.
+  ThreadPostingTasksWaitIdle(SchedulerWorkerPoolImpl* worker_pool,
+                             test::ExecutionMode execution_mode)
+      : SimpleThread("ThreadPostingTasksWaitIdle"),
         worker_pool_(worker_pool),
-        wait_before_post_task_(wait_before_post_task),
-        post_nested_task_(post_nested_task),
         factory_(CreateTaskRunnerWithExecutionMode(worker_pool, execution_mode),
                  execution_mode) {
     DCHECK(worker_pool_);
@@ -161,83 +132,29 @@ class ThreadPostingTasks : public SimpleThread {
     EXPECT_FALSE(factory_.task_runner()->RunsTasksInCurrentSequence());
 
     for (size_t i = 0; i < kNumTasksPostedPerThread; ++i) {
-      if (wait_before_post_task_ ==
-          WaitBeforePostTask::WAIT_FOR_ALL_WORKERS_IDLE) {
-        worker_pool_->WaitForAllWorkersIdleForTesting();
-      }
-      EXPECT_TRUE(factory_.PostTask(post_nested_task_, Closure()));
+      worker_pool_->WaitForAllWorkersIdleForTesting();
+      EXPECT_TRUE(factory_.PostTask(PostNestedTask::NO, Closure()));
     }
   }
 
   SchedulerWorkerPoolImpl* const worker_pool_;
   const scoped_refptr<TaskRunner> task_runner_;
-  const WaitBeforePostTask wait_before_post_task_;
-  const PostNestedTask post_nested_task_;
   test::TestTaskFactory factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ThreadPostingTasks);
+  DISALLOW_COPY_AND_ASSIGN(ThreadPostingTasksWaitIdle);
 };
 
-using WaitBeforePostTask = ThreadPostingTasks::WaitBeforePostTask;
-
-void ShouldNotRun() {
-  ADD_FAILURE() << "Ran a task that shouldn't run.";
-}
-
 }  // namespace
-
-TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasks) {
-  // Create threads to post tasks.
-  std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
-  for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(std::make_unique<ThreadPostingTasks>(
-        worker_pool_.get(), GetParam(), WaitBeforePostTask::NO_WAIT,
-        PostNestedTask::NO));
-    threads_posting_tasks.back()->Start();
-  }
-
-  // Wait for all tasks to run.
-  for (const auto& thread_posting_tasks : threads_posting_tasks) {
-    thread_posting_tasks->Join();
-    thread_posting_tasks->factory()->WaitForAllTasksToRun();
-  }
-
-  // Wait until all workers are idle to be sure that no task accesses
-  // its TestTaskFactory after |thread_posting_tasks| is destroyed.
-  worker_pool_->WaitForAllWorkersIdleForTesting();
-}
 
 TEST_P(TaskSchedulerWorkerPoolImplTest, PostTasksWaitAllWorkersIdle) {
   // Create threads to post tasks. To verify that workers can sleep and be woken
   // up when new tasks are posted, wait for all workers to become idle before
   // posting a new task.
-  std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
+  std::vector<std::unique_ptr<ThreadPostingTasksWaitIdle>>
+      threads_posting_tasks;
   for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(std::make_unique<ThreadPostingTasks>(
-        worker_pool_.get(), GetParam(),
-        WaitBeforePostTask::WAIT_FOR_ALL_WORKERS_IDLE, PostNestedTask::NO));
-    threads_posting_tasks.back()->Start();
-  }
-
-  // Wait for all tasks to run.
-  for (const auto& thread_posting_tasks : threads_posting_tasks) {
-    thread_posting_tasks->Join();
-    thread_posting_tasks->factory()->WaitForAllTasksToRun();
-  }
-
-  // Wait until all workers are idle to be sure that no task accesses its
-  // TestTaskFactory after |thread_posting_tasks| is destroyed.
-  worker_pool_->WaitForAllWorkersIdleForTesting();
-}
-
-TEST_P(TaskSchedulerWorkerPoolImplTest, NestedPostTasks) {
-  // Create threads to post tasks. Each task posted by these threads will post
-  // another task when it runs.
-  std::vector<std::unique_ptr<ThreadPostingTasks>> threads_posting_tasks;
-  for (size_t i = 0; i < kNumThreadsPostingTasks; ++i) {
-    threads_posting_tasks.push_back(std::make_unique<ThreadPostingTasks>(
-        worker_pool_.get(), GetParam(), WaitBeforePostTask::NO_WAIT,
-        PostNestedTask::YES));
+    threads_posting_tasks.push_back(
+        MakeUnique<ThreadPostingTasksWaitIdle>(worker_pool_.get(), GetParam()));
     threads_posting_tasks.back()->Start();
   }
 
@@ -308,63 +225,6 @@ TEST_P(TaskSchedulerWorkerPoolImplTest, Saturate) {
   // Wait until all workers are idle to be sure that no task accesses
   // its TestTaskFactory after it is destroyed.
   worker_pool_->WaitForAllWorkersIdleForTesting();
-}
-
-// Verify that a Task can't be posted after shutdown.
-TEST_P(TaskSchedulerWorkerPoolImplTest, PostTaskAfterShutdown) {
-  auto task_runner =
-      CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam());
-  task_tracker_.Shutdown();
-  EXPECT_FALSE(task_runner->PostTask(FROM_HERE, BindOnce(&ShouldNotRun)));
-}
-
-// Verify that a Task runs shortly after its delay expires.
-TEST_P(TaskSchedulerWorkerPoolImplTest, PostDelayedTask) {
-  TimeTicks start_time = TimeTicks::Now();
-
-  // Post a task with a short delay.
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
-  EXPECT_TRUE(CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam())
-                  ->PostDelayedTask(
-                      FROM_HERE,
-                      BindOnce(&WaitableEvent::Signal, Unretained(&task_ran)),
-                      TestTimeouts::tiny_timeout()));
-
-  // Wait until the task runs.
-  task_ran.Wait();
-
-  // Expect the task to run after its delay expires, but not more than 250 ms
-  // after that.
-  const TimeDelta actual_delay = TimeTicks::Now() - start_time;
-  EXPECT_GE(actual_delay, TestTimeouts::tiny_timeout());
-  EXPECT_LT(actual_delay,
-            TimeDelta::FromMilliseconds(250) + TestTimeouts::tiny_timeout());
-}
-
-// Verify that the RunsTasksInCurrentSequence() method of a SEQUENCED TaskRunner
-// returns false when called from a task that isn't part of the sequence. Note:
-// Tests that use TestTaskFactory already verify that
-// RunsTasksInCurrentSequence() returns true when appropriate so this method
-// complements it to get full coverage of that method.
-TEST_P(TaskSchedulerWorkerPoolImplTest, SequencedRunsTasksInCurrentSequence) {
-  auto task_runner =
-      CreateTaskRunnerWithExecutionMode(worker_pool_.get(), GetParam());
-  auto sequenced_task_runner =
-      worker_pool_->CreateSequencedTaskRunnerWithTraits(TaskTraits());
-
-  WaitableEvent task_ran(WaitableEvent::ResetPolicy::MANUAL,
-                         WaitableEvent::InitialState::NOT_SIGNALED);
-  task_runner->PostTask(
-      FROM_HERE,
-      BindOnce(
-          [](scoped_refptr<TaskRunner> sequenced_task_runner,
-             WaitableEvent* task_ran) {
-            EXPECT_FALSE(sequenced_task_runner->RunsTasksInCurrentSequence());
-            task_ran->Signal();
-          },
-          sequenced_task_runner, Unretained(&task_ran)));
-  task_ran.Wait();
 }
 
 INSTANTIATE_TEST_CASE_P(Parallel,
