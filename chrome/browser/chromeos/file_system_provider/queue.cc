@@ -15,11 +15,11 @@ namespace file_system_provider {
 Queue::Task::Task() : token(0) {
 }
 
-Queue::Task::Task(size_t token, const AbortableCallback& callback)
-    : token(token), callback(callback) {
-}
+Queue::Task::Task(size_t token, AbortableCallback callback)
+    : token(token), callback(std::move(callback)) {}
 
-Queue::Task::Task(const Task& other) = default;
+Queue::Task::Task(Task&& other) = default;
+Queue::Task& Queue::Task::operator=(Task&& other) = default;
 
 Queue::Task::~Task() {
 }
@@ -38,14 +38,14 @@ size_t Queue::NewToken() {
   return next_token_++;
 }
 
-void Queue::Enqueue(size_t token, const AbortableCallback& callback) {
+void Queue::Enqueue(size_t token, AbortableCallback callback) {
 #if !NDEBUG
   CHECK(executed_.find(token) == executed_.end());
   for (auto& task : pending_) {
     CHECK(token != task.token);
   }
 #endif
-  pending_.push_back(Task(token, callback));
+  pending_.push_back(Task(token, std::move(callback)));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&Queue::MaybeRun, weak_ptr_factory_.GetWeakPtr()));
@@ -65,11 +65,12 @@ void Queue::MaybeRun() {
     return;
 
   CHECK_GT(max_in_parallel_, executed_.size());
-  Task task = pending_.front();
+  Task task = std::move(pending_.front());
   pending_.pop_front();
 
-  executed_[task.token] = task;
-  AbortCallback abort_callback = task.callback.Run();
+  auto callback = std::move(task.callback);
+  executed_[task.token] = std::move(task);
+  AbortCallback abort_callback = std::move(callback).Run();
 
   // It may happen that the task is completed and removed synchronously. Hence,
   // we need to check if the task is still in the executed collection.
