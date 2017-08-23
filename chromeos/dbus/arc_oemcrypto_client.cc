@@ -29,7 +29,7 @@ class ArcOemCryptoClientImpl : public ArcOemCryptoClient {
     dbus::MethodCall method_call(arc_oemcrypto::kArcOemCryptoServiceInterface,
                                  arc_oemcrypto::kBootstrapMojoConnection);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendFileDescriptor(fd.release());
+    writer.AppendFileDescriptor(fd.get());
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&ArcOemCryptoClientImpl::OnVoidDBusMethod,
                                   weak_ptr_factory_.GetWeakPtr(),
