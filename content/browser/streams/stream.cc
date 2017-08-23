@@ -81,7 +81,7 @@ void Stream::Abort() {
   // STREAM_ABORTED.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&Stream::OnDataAvailable, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&Stream::OnDataAvailable, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void Stream::AddData(scoped_refptr<net::IOBuffer> buffer, size_t size) {
@@ -128,7 +128,7 @@ void Stream::Finalize(int status) {
   // Continue asynchronously.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&Stream::OnDataAvailable, weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&Stream::OnDataAvailable, weak_ptr_factory_.GetWeakPtr()));
 }
 
 Stream::StreamState Stream::ReadRawData(net::IOBuffer* buf,

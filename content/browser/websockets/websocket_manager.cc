@@ -78,13 +78,10 @@ void WebSocketManager::CreateWebSocket(
     DCHECK(handle->manager());
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&WebSocketManager::DoCreateWebSocket,
-                 base::Unretained(handle->manager()),
-                 frame_id,
-                 base::Passed(&request)));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(&WebSocketManager::DoCreateWebSocket,
+                                         base::Unretained(handle->manager()),
+                                         frame_id, base::Passed(&request)));
 }
 
 WebSocketManager::WebSocketManager(int process_id,
@@ -102,11 +99,9 @@ WebSocketManager::WebSocketManager(int process_id,
     // only via WebSocketManager::Handle::RenderProcessHostDestroyed which
     // posts a deletion task to the IO thread.
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(
-            &WebSocketManager::ObserveURLRequestContextGetter,
-            base::Unretained(this)));
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&WebSocketManager::ObserveURLRequestContextGetter,
+                       base::Unretained(this)));
   }
 }
 

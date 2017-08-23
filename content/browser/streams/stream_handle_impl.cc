@@ -30,8 +30,8 @@ StreamHandleImpl::StreamHandleImpl(const base::WeakPtr<Stream>& stream)
 
 StreamHandleImpl::~StreamHandleImpl() {
   stream_task_runner_->PostTaskAndReply(
-      FROM_HERE, base::Bind(&Stream::CloseHandle, stream_),
-      base::Bind(&RunCloseListeners, close_listeners_));
+      FROM_HERE, base::BindOnce(&Stream::CloseHandle, stream_),
+      base::BindOnce(&RunCloseListeners, close_listeners_));
 }
 
 const GURL& StreamHandleImpl::GetURL() {
