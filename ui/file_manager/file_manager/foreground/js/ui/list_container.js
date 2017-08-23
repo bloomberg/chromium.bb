@@ -105,6 +105,13 @@ function ListContainer(element, table, grid) {
    */
   this.textSearchState = new TextSearchState();
 
+  /**
+   * Whtehter to allow or cancel a context menu event.
+   * @type {boolean}
+   * @private
+   */
+  this.allowContextMenuByTouch_ = false;
+
   // Overriding the default role 'list' to 'listbox' for better accessibility
   // on ChromeOS.
   this.table.list.setAttribute('role', 'listbox');
@@ -118,12 +125,7 @@ function ListContainer(element, table, grid) {
   util.isTouchModeEnabled().then(function(enabled) {
     if (!enabled)
       return;
-    // Prevent opening context menu in file list by tap.
-    this.element.addEventListener('contextmenu', function(e) {
-      if (e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents) {
-        e.stopPropagation();
-      }
-    }, true);
+    this.disableContextMenuByLongTap_();
   }.bind(this));
 }
 
@@ -239,6 +241,34 @@ ListContainer.prototype.setCurrentListType = function(listType) {
       break;
   }
   this.endBatchUpdates();
+};
+
+/**
+ * Disables context menu by long-tap but not two-finger tap.
+ * @private
+ */
+ListContainer.prototype.disableContextMenuByLongTap_ = function() {
+  this.element.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) {
+      this.allowContextMenuByTouch_ = true;
+    }
+  }.bind(this));
+  this.element.addEventListener('touchend', function(e) {
+    if (e.touches.length == 0) {
+      // contextmenu event will be sent right after touchend.
+      setTimeout(function() {
+        this.allowContextMenuByTouch_ = false;
+      }.bind(this));
+    }
+  }.bind(this));
+  this.element.addEventListener('contextmenu', function(e) {
+    // Block context menu triggered by touch event unless it is right after
+    // multi-touch.
+    if (!this.allowContextMenuByTouch_ && e.sourceCapabilities &&
+        e.sourceCapabilities.firesTouchEvents) {
+      e.stopPropagation();
+    }
+  }.bind(this), true);
 };
 
 /**

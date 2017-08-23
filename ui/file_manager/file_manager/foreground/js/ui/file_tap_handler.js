@@ -108,13 +108,17 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
     case 'touchstart':
       // Only process single touches.  If there is already a touch happening, or
       // two simultaneous touches then just ignore them.
-      if (event.touches.length > 1)
+      if (event.touches.length > 1) {
         // Note that we could cancel an active touch here.  That would make
         // simultaneous touch behave similar to near-simultaneous. However, if
         // the user is dragging something, an accidental second touch could be
         // quite disruptive if it cancelled their drag.  Better to just ignore
         // it.
+
+        // Invalidate current touch to distinguish it from normal tap.
+        this.tapStarted_ = false;
         return false;
+      }
 
       // It's still possible there could be an active "touch" if the user is
       // simultaneously using a mouse and a touch input.
@@ -142,8 +146,6 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
       break;
 
     case 'touchmove':
-      assert(this.findActiveTouch_(event.touches), 'Missing touchEnd');
-
       var touch = this.findActiveTouch_(event.changedTouches);
       if (!touch)
         break;
