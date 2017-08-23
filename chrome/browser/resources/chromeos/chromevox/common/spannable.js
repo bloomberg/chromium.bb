@@ -6,6 +6,7 @@
  * @fileoverview Class which allows construction of annotated strings.
  */
 
+goog.provide('MultiSpannable');
 goog.provide('Spannable');
 
 goog.scope(function() {
@@ -60,6 +61,16 @@ Spannable.prototype = {
    */
   setSpan: function(value, start, end) {
     this.removeSpan(value);
+    this.setSpanInternal(value, start, end);
+  },
+
+  /**
+   * @param {*} value Annotation.
+   * @param {number} start Starting index (inclusive).
+   * @param {number} end Ending index (exclusive).
+   * @protected
+   */
+  setSpanInternal: function(value, start, end) {
     if (0 <= start && start <= end && end <= this.string_.length) {
       // Zero-length spans are explicitly allowed, because it is possible to
       // query for position by annotation as well as the reverse.
@@ -172,6 +183,15 @@ Spannable.prototype = {
    */
   getSpanEnd: function(value) {
     return this.getSpanByValueOrThrow_(value).end;
+  },
+
+  /**
+   * @param {*} value Annotation.
+   * @return {!Array<{start: number, end: number}>}
+   */
+  getSpanIntervals: function(value) {
+    return this.spans_.filter(function(s) { return s.value == value; })
+        .map(function(s) { return {start: s.start, end: s.end}; });
   },
 
   /**
@@ -306,6 +326,36 @@ Spannable.prototype = {
     });
     return result;
   }
+};
+
+/**
+ * A spannable that allows a span value to annotate discontinuous regions of the
+ * string. In effect, a span value can be set multiple times.
+ * Note that most methods that assume a span value is unique such as
+ * |getSpanStart| will use the first span value.
+ * @constructor
+ * @param {string|!Spannable=} opt_string Initial value of the spannable.
+ * @param {*=} opt_annotation Initial annotation for the entire string.
+ * @extends {Spannable}
+ */
+MultiSpannable = function(opt_string, opt_annotation) {
+  Spannable.call(this, opt_string, opt_annotation);
+};
+
+MultiSpannable.prototype = {
+  __proto__: Spannable.prototype,
+
+  /** @override */
+  setSpan: function(value, start, end) {
+    this.setSpanInternal(value, start, end);
+  },
+
+  /** @override */
+  substring: function(start, opt_end) {
+    var ret = Spannable.prototype.substring.call(this, start, opt_end);
+    return new MultiSpannable(ret);
+  },
+
 };
 
 /**

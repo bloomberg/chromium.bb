@@ -635,7 +635,6 @@ Background.prototype = {
   brailleRoutingCommand_: function(text, position) {
     var actionNodeSpan = null;
     var selectionSpan = null;
-
     var selSpans = text.getSpansInstanceOf(Output.SelectionSpan);
     var nodeSpans = text.getSpansInstanceOf(Output.NodeSpan);
     for (var i = 0, selSpan; selSpan = selSpans[i]; i++) {
@@ -646,14 +645,22 @@ Background.prototype = {
       }
     }
 
+    var interval;
     for (var j = 0, nodeSpan; nodeSpan = nodeSpans[j]; j++) {
-      if (text.getSpanStart(nodeSpan) <= position &&
-          position <= text.getSpanEnd(nodeSpan))
+      var intervals = text.getSpanIntervals(nodeSpan);
+      var tempInterval = intervals.find(function(innerInterval) {
+        return innerInterval.start <= position &&
+            position <= innerInterval.end;
+      });
+      if (tempInterval) {
         actionNodeSpan = nodeSpan;
+        interval = tempInterval;
+      }
     }
 
     if (!actionNodeSpan)
       return;
+
     var actionNode = actionNodeSpan.node;
     var offset = actionNodeSpan.offset;
     if (actionNode.role === RoleType.INLINE_TEXT_BOX)
@@ -667,10 +674,9 @@ Background.prototype = {
     if (!selectionSpan)
       selectionSpan = actionNodeSpan;
 
-    var start = text.getSpanStart(selectionSpan);
-    var targetPosition = position - start + offset;
-
     if (actionNode.state.richlyEditable) {
+      var start = interval ? interval.start : text.getSpanStart(selectionSpan);
+      var targetPosition = position - start + offset;
       chrome.automation.setDocumentSelection({
         anchorObject: actionNode,
         anchorOffset: targetPosition,
@@ -678,6 +684,8 @@ Background.prototype = {
         focusOffset: targetPosition
       });
     } else {
+      var start = text.getSpanStart(selectionSpan);
+      var targetPosition = position - start + offset;
       actionNode.setSelection(targetPosition, targetPosition);
     }
   },

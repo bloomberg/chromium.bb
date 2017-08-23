@@ -506,3 +506,31 @@ TEST_F('CvoxSpannableUnitTest', 'Serialize', function() {
   assertThat(freshNonStatelessSerializable,
              eqJSON(thawnNonStatelessSerializable));
 });
+
+TEST_F('CvoxSpannableUnitTest', 'GetSpanIntervals', function() {
+  function Foo() {}
+  function Bar() {}
+  var ms = new MultiSpannable('f12b45f78b01');
+  var foo = new Foo();
+  var bar = new Bar();
+  ms.setSpan(foo, 0, 3);
+  ms.setSpan(bar, 3, 6);
+  ms.setSpan(foo, 6, 9);
+  ms.setSpan(bar, 9, 12);
+  assertEquals(2, ms.getSpansInstanceOf(Foo).length);
+  assertEquals(2, ms.getSpansInstanceOf(Bar).length);
+
+  var fooIntervals = ms.getSpanIntervals(foo);
+  assertEquals(2, fooIntervals.length);
+  assertEquals(0, fooIntervals[0].start);
+  assertEquals(3, fooIntervals[0].end);
+  assertEquals(6, fooIntervals[1].start);
+  assertEquals(9, fooIntervals[1].end);
+
+  var barIntervals = ms.getSpanIntervals(bar);
+  assertEquals(2, barIntervals.length);
+  assertEquals(3, barIntervals[0].start);
+  assertEquals(6, barIntervals[0].end);
+  assertEquals(9, barIntervals[1].start);
+  assertEquals(12, barIntervals[1].end);
+});
