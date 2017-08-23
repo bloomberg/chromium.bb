@@ -103,7 +103,7 @@ drm_private void kgsl_pipe_post_submit(struct kgsl_pipe *pipe,
 drm_private void kgsl_pipe_process_pending(struct kgsl_pipe *pipe,
 		uint32_t timestamp);
 drm_private struct fd_pipe * kgsl_pipe_new(struct fd_device *dev,
-		enum fd_pipe_id id);
+		enum fd_pipe_id id, uint32_t prio);
 
 drm_private struct fd_ringbuffer * kgsl_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size);

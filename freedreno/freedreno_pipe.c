@@ -33,8 +33,12 @@
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 
+/**
+ * priority of zero is highest priority, and higher numeric values are
+ * lower priorities
+ */
 struct fd_pipe *
-fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
+fd_pipe_new2(struct fd_device *dev, enum fd_pipe_id id, uint32_t prio)
 {
 	struct fd_pipe *pipe;
 	uint64_t val;
@@ -44,7 +48,12 @@ fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 		return NULL;
 	}
 
-	pipe = dev->funcs->pipe_new(dev, id);
+	if ((prio != 1) && (fd_device_version(dev) < FD_VERSION_SUBMIT_QUEUES)) {
+		ERROR_MSG("invalid priority!");
+		return NULL;
+	}
+
+	pipe = dev->funcs->pipe_new(dev, id, prio);
 	if (!pipe) {
 		ERROR_MSG("allocation failed");
 		return NULL;
@@ -57,6 +66,12 @@ fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
 	pipe->gpu_id = val;
 
 	return pipe;
+}
+
+struct fd_pipe *
+fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id)
+{
+	return fd_pipe_new2(dev, id, 1);
 }
 
 void fd_pipe_del(struct fd_pipe *pipe)

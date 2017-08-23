@@ -401,6 +401,7 @@ static int msm_ringbuffer_flush(struct fd_ringbuffer *ring, uint32_t *last_start
 	struct msm_ringbuffer *msm_ring = to_msm_ringbuffer(ring);
 	struct drm_msm_gem_submit req = {
 			.flags = to_msm_pipe(ring->pipe)->pipe,
+			.queueid = to_msm_pipe(ring->pipe)->queue_id,
 	};
 	uint32_t i;
 	int ret;

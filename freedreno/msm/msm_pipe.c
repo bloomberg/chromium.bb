@@ -71,6 +71,8 @@ static int msm_pipe_get_param(struct fd_pipe *pipe,
 		return query_param(pipe, MSM_PARAM_MAX_FREQ, value);
 	case FD_TIMESTAMP:
 		return query_param(pipe, MSM_PARAM_TIMESTAMP, value);
+	case FD_NR_RINGS:
+		return query_param(pipe, MSM_PARAM_NR_RINGS, value);
 	default:
 		ERROR_MSG("invalid param id: %d", param);
 		return -1;
@@ -83,6 +85,7 @@ static int msm_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp,
 	struct fd_device *dev = pipe->dev;
 	struct drm_msm_wait_fence req = {
 			.fence = timestamp,
+			.queueid = to_msm_pipe(pipe)->queue_id,
 	};
 	int ret;
 
@@ -97,9 +100,42 @@ static int msm_pipe_wait(struct fd_pipe *pipe, uint32_t timestamp,
 	return 0;
 }
 
+static int open_submitqueue(struct fd_device *dev, uint32_t prio,
+		uint32_t *queue_id)
+{
+	struct drm_msm_submitqueue req = {
+		.flags = 0,
+		.prio = prio,
+	};
+	int ret;
+
+	if (fd_device_version(dev) < FD_VERSION_SUBMIT_QUEUES) {
+		*queue_id = 0;
+		return 0;
+	}
+
+	ret = drmCommandWriteRead(dev->fd, DRM_MSM_SUBMITQUEUE_NEW, &req, sizeof(req));
+	if (ret) {
+		ERROR_MSG("could not create submitqueue! %d (%s)", ret, strerror(errno));
+		return ret;
+	}
+
+	*queue_id = req.id;
+	return 0;
+}
+
+static void close_submitqueue(struct fd_device *dev, uint32_t queue_id)
+{
+	if (fd_device_version(dev) < FD_VERSION_SUBMIT_QUEUES)
+		return;
+
+	drmCommandWrite(dev->fd, DRM_MSM_SUBMITQUEUE_CLOSE, &queue_id, sizeof(queue_id));
+}
+
 static void msm_pipe_destroy(struct fd_pipe *pipe)
 {
 	struct msm_pipe *msm_pipe = to_msm_pipe(pipe);
+	close_submitqueue(pipe->dev, msm_pipe->queue_id);
 	free(msm_pipe);
 }
 
@@ -122,7 +158,7 @@ static uint64_t get_param(struct fd_pipe *pipe, uint32_t param)
 }
 
 drm_private struct fd_pipe * msm_pipe_new(struct fd_device *dev,
-		enum fd_pipe_id id)
+		enum fd_pipe_id id, uint32_t prio)
 {
 	static const uint32_t pipe_id[] = {
 			[FD_PIPE_3D] = MSM_PIPE_3D0,
@@ -156,6 +192,9 @@ drm_private struct fd_pipe * msm_pipe_new(struct fd_device *dev,
 	INFO_MSG(" GPU-id:          %d", msm_pipe->gpu_id);
 	INFO_MSG(" Chip-id:         0x%08x", msm_pipe->chip_id);
 	INFO_MSG(" GMEM size:       0x%08x", msm_pipe->gmem);
+
+	if (open_submitqueue(dev, prio, &msm_pipe->queue_id))
+		goto fail;
 
 	return pipe;
 fail:

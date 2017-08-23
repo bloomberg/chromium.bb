@@ -61,6 +61,7 @@ enum fd_param_id {
 	FD_CHIP_ID,
 	FD_MAX_FREQ,
 	FD_TIMESTAMP,
+	FD_NR_RINGS,      /* # of rings == # of distinct priority levels */
 };
 
 /* bo flags: */
@@ -93,6 +94,7 @@ enum fd_version {
 	FD_VERSION_MADVISE = 1,            /* kernel supports madvise */
 	FD_VERSION_UNLIMITED_CMDS = 1,     /* submits w/ >4 cmd buffers (growable ringbuffer) */
 	FD_VERSION_FENCE_FD = 2,           /* submit command supports in/out fences */
+	FD_VERSION_SUBMIT_QUEUES = 3,      /* submit queues and multiple priority levels */
 };
 enum fd_version fd_device_version(struct fd_device *dev);
 
@@ -100,6 +102,7 @@ enum fd_version fd_device_version(struct fd_device *dev);
  */
 
 struct fd_pipe * fd_pipe_new(struct fd_device *dev, enum fd_pipe_id id);
+struct fd_pipe * fd_pipe_new2(struct fd_device *dev, enum fd_pipe_id id, uint32_t prio);
 void fd_pipe_del(struct fd_pipe *pipe);
 int fd_pipe_get_param(struct fd_pipe *pipe, enum fd_param_id param,
 		uint64_t *value);

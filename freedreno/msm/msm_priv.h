@@ -56,6 +56,7 @@ struct msm_pipe {
 	uint32_t gpu_id;
 	uint32_t gmem;
 	uint32_t chip_id;
+	uint32_t queue_id;
 };
 
 static inline struct msm_pipe * to_msm_pipe(struct fd_pipe *x)
@@ -64,7 +65,7 @@ static inline struct msm_pipe * to_msm_pipe(struct fd_pipe *x)
 }
 
 drm_private struct fd_pipe * msm_pipe_new(struct fd_device *dev,
-		enum fd_pipe_id id);
+		enum fd_pipe_id id, uint32_t prio);
 
 drm_private struct fd_ringbuffer * msm_ringbuffer_new(struct fd_pipe *pipe,
 		uint32_t size);

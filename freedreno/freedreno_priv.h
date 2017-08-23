@@ -66,7 +66,8 @@ struct fd_device_funcs {
 			uint32_t flags, uint32_t *handle);
 	struct fd_bo * (*bo_from_handle)(struct fd_device *dev,
 			uint32_t size, uint32_t handle);
-	struct fd_pipe * (*pipe_new)(struct fd_device *dev, enum fd_pipe_id id);
+	struct fd_pipe * (*pipe_new)(struct fd_device *dev, enum fd_pipe_id id,
+			unsigned prio);
 	void (*destroy)(struct fd_device *dev);
 };
 
