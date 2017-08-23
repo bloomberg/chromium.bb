@@ -65,7 +65,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     power_manager_client_ = new chromeos::FakePowerManagerClient();
     dbus_setter->SetPowerManagerClient(base::WrapUnique(power_manager_client_));
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAshEnableTouchView);
+        switches::kAshEnableTabletMode);
     AshTestBase::SetUp();
     // Trigger an accelerometer update so that |tablet_controller_| can be
     // initialized.

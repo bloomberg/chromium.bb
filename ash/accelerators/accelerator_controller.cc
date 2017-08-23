@@ -979,7 +979,7 @@ bool AcceleratorController::CanPerformAction(
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
-    case DEBUG_TOGGLE_TOUCH_VIEW:
+    case DEBUG_TOGGLE_TABLET_MODE:
     case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TRIGGER_CRASH:
       return debug::DebugAcceleratorsEnabled();
@@ -1120,7 +1120,7 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEBUG_TOGGLE_TOUCH_PAD:
     case DEBUG_TOGGLE_TOUCH_SCREEN:
-    case DEBUG_TOGGLE_TOUCH_VIEW:
+    case DEBUG_TOGGLE_TABLET_MODE:
     case DEBUG_TOGGLE_WALLPAPER_MODE:
     case DEBUG_TRIGGER_CRASH:
       debug::PerformDebugActionIfEnabled(action);

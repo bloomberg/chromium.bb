@@ -837,7 +837,7 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
   if (GetAshConfig() != ash::Config::MASH) {
     // Note that there are two versions of the on-screen keyboard. A full layout
     // is provided for accessibility, which includes sticky modifier keys to
-    // enable typing of hotkeys. A compact version is used in touchview mode
+    // enable typing of hotkeys. A compact version is used in tablet mode
     // to provide a layout with larger keys to facilitate touch typing. In the
     // event that the a11y keyboard is being disabled, an on-screen keyboard
     // might still be enabled and a forced reset is required to pick up the

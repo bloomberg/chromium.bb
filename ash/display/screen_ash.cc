@@ -189,7 +189,7 @@ display::DisplayManager* ScreenAsh::CreateDisplayManager() {
   display::DisplayManager* manager =
       new display::DisplayManager(std::move(screen));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTouchView)) {
+          switches::kAshEnableTabletMode)) {
     manager->set_internal_display_has_accelerometer(true);
   }
   return manager;

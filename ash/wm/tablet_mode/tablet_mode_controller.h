@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/touch_view.mojom.h"
+#include "ash/public/interfaces/tablet_mode.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
 #include "base/compiler_specific.h"
@@ -54,17 +54,18 @@ ASH_EXPORT extern const base::Feature kAutoHideTitleBarsInTabletMode;
 class ASH_EXPORT TabletModeController
     : public chromeos::AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
-      public mojom::TouchViewManager,
+      public mojom::TabletModeManager,
       public ShellObserver,
       public WindowTreeHostManager::Observer,
       public SessionObserver {
  public:
   // Used for keeping track if the user wants the machine to behave as a
-  // clamshell/touchview regardless of hardware orientation.
-  enum class ForceTabletMode {
+  // clamshell/tabletmode regardless of hardware orientation.
+  // TODO(oshima): Move this to common place.
+  enum class UiMode {
     NONE = 0,
     CLAMSHELL,
-    TOUCHVIEW,
+    TABLETMODE,
   };
 
   TabletModeController();
@@ -91,8 +92,8 @@ class ASH_EXPORT TabletModeController
   // If the tablet mode is not enabled no action will be performed.
   void AddWindow(aura::Window* window);
 
-  // Binds the mojom::TouchViewManager interface request to this object.
-  void BindRequest(mojom::TouchViewManagerRequest request);
+  // Binds the mojom::TabletModeManager interface request to this object.
+  void BindRequest(mojom::TabletModeManagerRequest request);
 
   void AddObserver(TabletModeObserver* observer);
   void RemoveObserver(TabletModeObserver* observer);
@@ -129,10 +130,10 @@ class ASH_EXPORT TabletModeController
   friend class VirtualKeyboardControllerTest;
 
   // Used for recording metrics for intervals of time spent in
-  // and out of TouchView.
-  enum TouchViewIntervalType {
-    TOUCH_VIEW_INTERVAL_INACTIVE,
-    TOUCH_VIEW_INTERVAL_ACTIVE
+  // and out of TabletMode.
+  enum TabletModeIntervalType {
+    TABLET_MODE_INTERVAL_INACTIVE,
+    TABLET_MODE_INTERVAL_ACTIVE
   };
 
   // Set the TickClock. This is only to be used by tests that need to
@@ -158,19 +159,19 @@ class ASH_EXPORT TabletModeController
   // is no rotation lock.
   void LeaveTabletMode();
 
-  // Record UMA stats tracking TouchView usage. If |type| is
-  // TOUCH_VIEW_INTERVAL_INACTIVE, then record that TouchView has been
-  // inactive from |touchview_usage_interval_start_time_| until now.
-  // Similarly, record that TouchView has been active if |type| is
-  // TOUCH_VIEW_INTERVAL_ACTIVE.
-  void RecordTouchViewUsageInterval(TouchViewIntervalType type);
+  // Record UMA stats tracking TabletMode usage. If |type| is
+  // TABLET_MODE_INTERVAL_INACTIVE, then record that TabletMode has been
+  // inactive from |tabletmode_usage_interval_start_time_| until now.
+  // Similarly, record that TabletMode has been active if |type| is
+  // TABLET_MODE_INTERVAL_ACTIVE.
+  void RecordTabletModeUsageInterval(TabletModeIntervalType type);
 
-  // Returns TOUCH_VIEW_INTERVAL_ACTIVE if TouchView is currently active,
-  // otherwise returns TOUCH_VIEW_INTERNAL_INACTIVE.
-  TouchViewIntervalType CurrentTouchViewIntervalType();
+  // Returns TABLET_MODE_INTERVAL_ACTIVE if TabletMode is currently active,
+  // otherwise returns TABLET_MODE_INTERNAL_INACTIVE.
+  TabletModeIntervalType CurrentTabletModeIntervalType();
 
-  // mojom::TouchViewManager:
-  void AddObserver(mojom::TouchViewObserverPtr observer) override;
+  // mojom::TabletModeManager:
+  void AddObserver(mojom::TabletModeObserverPtr observer) override;
 
   // Checks whether we want to allow entering and exiting tablet mode. This
   // returns false if the user set a flag for the software to behave in a
@@ -190,10 +191,10 @@ class ASH_EXPORT TabletModeController
   // Whether both accelerometers are available.
   bool can_detect_lid_angle_;
 
-  // Tracks time spent in (and out of) touchview mode.
-  base::Time touchview_usage_interval_start_time_;
-  base::TimeDelta total_touchview_time_;
-  base::TimeDelta total_non_touchview_time_;
+  // Tracks time spent in (and out of) tabletmode mode.
+  base::Time tabletmode_usage_interval_start_time_;
+  base::TimeDelta total_tabletmode_time_;
+  base::TimeDelta total_non_tabletmode_time_;
 
   // Tracks the last time we received a lid open event. This is used to suppress
   // erroneous accelerometer readings as the lid is opened but the accelerometer
@@ -218,14 +219,14 @@ class ASH_EXPORT TabletModeController
   gfx::Vector3dF base_smoothed_;
   gfx::Vector3dF lid_smoothed_;
 
-  // Bindings for the TouchViewManager interface.
-  mojo::BindingSet<mojom::TouchViewManager> bindings_;
+  // Bindings for the TabletModeManager interface.
+  mojo::BindingSet<mojom::TabletModeManager> bindings_;
 
-  // The set of touchview observers to be notified about mode changes.
-  mojo::InterfacePtrSet<mojom::TouchViewObserver> observers_;
+  // The set of tabletmode observers to be notified about mode changes.
+  mojo::InterfacePtrSet<mojom::TabletModeObserver> observers_;
 
-  // Tracks whether a flag is used to force tablet mode.
-  ForceTabletMode force_tablet_mode_ = ForceTabletMode::NONE;
+  // Tracks whether a flag is used to force ui mode.
+  UiMode force_ui_mode_ = UiMode::NONE;
 
   ScopedSessionObserver scoped_session_observer_;
 

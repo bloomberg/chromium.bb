@@ -99,7 +99,8 @@ void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
   Shell::Get()->system_tray_controller()->BindRequest(std::move(request));
 }
 
-void BindTouchViewRequestOnMainThread(mojom::TouchViewManagerRequest request) {
+void BindTabletModeRequestOnMainThread(
+    mojom::TabletModeManagerRequest request) {
   Shell::Get()->tablet_mode_controller()->BindRequest(std::move(request));
 }
 
@@ -158,7 +159,7 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayRequestOnMainThread),
                          main_thread_task_runner);
-  registry->AddInterface(base::Bind(&BindTouchViewRequestOnMainThread),
+  registry->AddInterface(base::Bind(&BindTabletModeRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindTrayActionRequestOnMainThread),
                          main_thread_task_runner);

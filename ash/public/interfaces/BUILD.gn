@@ -30,7 +30,7 @@ mojom("interfaces_internal") {
     "shelf.mojom",
     "shutdown.mojom",
     "system_tray.mojom",
-    "touch_view.mojom",
+    "tablet_mode.mojom",
     "tray_action.mojom",
     "update.mojom",
     "user_info.mojom",
