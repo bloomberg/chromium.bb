@@ -184,6 +184,13 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       // No additional accessibility states currently for these menu states.
       break;
   }
+
+  base::char16 mnemonic = GetMnemonic();
+  if (mnemonic != '\0') {
+    node_data->AddStringAttribute(
+        ui::AX_ATTR_KEY_SHORTCUTS,
+        base::UTF16ToUTF8(base::string16(1, mnemonic)));
+  }
 }
 
 // static
