@@ -93,11 +93,13 @@ NSString* const kSaveTouchBarId = @"SAVE";
 
 // Focus handler for editable username field.
 - (void)controlTextDidEndEditing:(NSNotification*)notification {
-  PendingPasswordItemView* row =
-      [[passwordItemContainer_ subviews] objectAtIndex:0];
-  self.model->OnUsernameEdited(
-      base::SysNSStringToUTF16([[row usernameField] stringValue]));
-  [self disableEditMode];
+  if (editMode_) {
+    PendingPasswordItemView* row =
+        [[passwordItemContainer_ subviews] objectAtIndex:0];
+    self.model->OnUsernameEdited(
+        base::SysNSStringToUTF16([[row usernameField] stringValue]));
+    [self disableEditMode];
+  }
 }
 
 - (BOOL)disableEditMode {
