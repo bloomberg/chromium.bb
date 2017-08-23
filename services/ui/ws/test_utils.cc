@@ -709,6 +709,9 @@ void TestPlatformDisplay::UpdateViewportMetrics(
     const display::ViewportMetrics& metrics) {
   metrics_ = metrics;
 }
+const display::ViewportMetrics& TestPlatformDisplay::GetViewportMetrics() {
+  return metrics_;
+}
 gfx::AcceleratedWidget TestPlatformDisplay::GetAcceleratedWidget() const {
   return gfx::kNullAcceleratedWidget;
 }

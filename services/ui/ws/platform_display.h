@@ -65,6 +65,8 @@ class PlatformDisplay : public ui::EventSource {
   virtual void UpdateViewportMetrics(
       const display::ViewportMetrics& metrics) = 0;
 
+  virtual const display::ViewportMetrics& GetViewportMetrics() = 0;
+
   // Returns the AcceleratedWidget associated with the Display. It can return
   // kNullAcceleratedWidget if the accelerated widget is not available yet.
   virtual gfx::AcceleratedWidget GetAcceleratedWidget() const = 0;

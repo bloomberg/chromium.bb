@@ -51,6 +51,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
   void UpdateTextInputState(const ui::TextInputState& state) override;
   void SetImeVisibility(bool visible) override;
   void UpdateViewportMetrics(const display::ViewportMetrics& metrics) override;
+  const display::ViewportMetrics& GetViewportMetrics() override;
   gfx::AcceleratedWidget GetAcceleratedWidget() const override;
   FrameGenerator* GetFrameGenerator() override;
   void SetCursorConfig(display::Display::Rotation rotation,

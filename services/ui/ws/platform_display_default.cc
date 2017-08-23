@@ -199,6 +199,10 @@ void PlatformDisplayDefault::UpdateViewportMetrics(
   }
 }
 
+const display::ViewportMetrics& PlatformDisplayDefault::GetViewportMetrics() {
+  return metrics_;
+}
+
 gfx::AcceleratedWidget PlatformDisplayDefault::GetAcceleratedWidget() const {
   return widget_;
 }
