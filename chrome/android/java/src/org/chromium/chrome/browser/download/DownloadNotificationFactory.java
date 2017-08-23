@@ -273,10 +273,10 @@ public final class DownloadNotificationFactory {
         if (!downloadUpdate.getIsTransient() && downloadUpdate.getNotificationId() != -1
                 && downloadStatus != DownloadStatus.SUCCESSFUL
                 && downloadStatus != DownloadStatus.FAILED) {
-            Intent downloadHomeIntent =
-                    buildActionIntent(context, ACTION_NOTIFICATION_CLICKED, null, false);
+            Intent downloadHomeIntent = buildActionIntent(
+                    context, ACTION_NOTIFICATION_CLICKED, null, downloadUpdate.getIsOffTheRecord());
             builder.setContentIntent(
-                    PendingIntent.getBroadcast(context, downloadUpdate.getNotificationId(),
+                    PendingIntent.getService(context, downloadUpdate.getNotificationId(),
                             downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
 
