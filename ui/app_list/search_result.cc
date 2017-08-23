@@ -62,12 +62,6 @@ void SearchResult::SetFormattedPrice(const base::string16& formatted_price) {
     observer.OnFormattedPriceChanged();
 }
 
-void SearchResult::SetIsMouseInView(bool mouse_is_inside) {
-  mouse_is_in_view_ = mouse_is_inside;
-  for (auto& observer : observers_)
-    observer.OnViewHoverStateChanged();
-}
-
 void SearchResult::SetActions(const Actions& sets) {
   actions_ = sets;
   for (auto& observer : observers_)

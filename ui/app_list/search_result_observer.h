@@ -38,13 +38,6 @@ class APP_LIST_EXPORT SearchResultObserver {
   // Invoked just before the SearchResult is destroyed.
   virtual void OnResultDestroying() {}
 
-  // Invoked when SearchResult has an associated view, and the mouse cursor
-  // enters or exits that view. This is needed because the view is
-  // views::WebView and existing views mouse enter/exit events that are sent to
-  // its parent indicate the mouse "exited" the parent when it's actually over
-  // the WebView child.
-  virtual void OnViewHoverStateChanged() {}
-
  protected:
   virtual ~SearchResultObserver() {}
 };
