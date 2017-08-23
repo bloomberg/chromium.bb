@@ -22,7 +22,7 @@ class URLLoaderFactoryGetter
     : public base::RefCountedThreadSafe<URLLoaderFactoryGetter,
                                         BrowserThread::DeleteOnIOThread> {
  public:
-  URLLoaderFactoryGetter();
+  CONTENT_EXPORT URLLoaderFactoryGetter();
 
   // Initializes this object on the UI thread. The |partition| is used to
   // initialize the URLLoaderFactories for the network service and AppCache.
