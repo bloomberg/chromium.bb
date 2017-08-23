@@ -11,10 +11,12 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
@@ -142,6 +144,22 @@ class HidingWindowAnimationObserverBase : public aura::WindowObserver {
 
   DISALLOW_COPY_AND_ASSIGN(HidingWindowAnimationObserverBase);
 };
+
+class HidingWindowMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  HidingWindowMetricsReporter() = default;
+  ~HidingWindowMetricsReporter() override = default;
+
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE("Ash.Window.AnimationSmoothness.Hide", value);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HidingWindowMetricsReporter);
+};
+
+base::LazyInstance<HidingWindowMetricsReporter>::Leaky g_reporter_hide =
+    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -301,6 +319,8 @@ void AnimateHideWindowCommon(aura::Window* window,
 
   // Property sets within this scope will be implicitly animated.
   ScopedHidingAnimationSettings hiding_settings(window);
+  hiding_settings.layer_animation_settings()->SetAnimationMetricsReporter(
+      g_reporter_hide.Pointer());
   base::TimeDelta duration = GetWindowVisibilityAnimationDuration(*window);
   if (duration > base::TimeDelta())
     hiding_settings.layer_animation_settings()->SetTransitionDuration(duration);
