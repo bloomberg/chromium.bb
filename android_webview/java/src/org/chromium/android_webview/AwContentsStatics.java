@@ -134,18 +134,6 @@ public class AwContentsStatics {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    @TargetApi(19)
-    public static void shutdownSafeBrowsing() {
-        try {
-            Class cls = Class.forName(sSafeBrowsingWarmUpHelper);
-            Method m = cls.getDeclaredMethod("coolDownSafeBrowsing");
-            m.invoke(null);
-        } catch (ReflectiveOperationException e) {
-            // This is not an error; it just means this device doesn't have specialized services.
-        }
-    }
-
     public static Uri getSafeBrowsingPrivacyPolicyUrl() {
         return Uri.parse(nativeGetSafeBrowsingPrivacyPolicyUrl());
     }
