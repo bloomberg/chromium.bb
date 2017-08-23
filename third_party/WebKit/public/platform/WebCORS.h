@@ -164,6 +164,19 @@ BLINK_PLATFORM_EXPORT void ExtractCorsExposedHeaderNamesList(
 BLINK_PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(
     const WebString&);
 
+// TODO(hintzed): The following three methods delegate to SchemeRegistry and
+// FetchUtils respectively to expose them for outofblink-CORS in CORSURLLoader.
+// This is a temporary solution with the mid-term goal being to move e.g.
+// FetchUtils somewhere where it can be used from /content. The long term goal
+// is that CORS will be handled ouf of blink (https://crbug/736308).
+
+BLINK_PLATFORM_EXPORT WebString ListOfCORSEnabledURLSchemes();
+
+BLINK_PLATFORM_EXPORT bool IsCORSSafelistedMethod(const WebString&);
+
+BLINK_PLATFORM_EXPORT bool ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+    const HTTPHeaderMap&);
+
 }  // namespace WebCORS
 
 }  // namespace blink
