@@ -24,6 +24,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
@@ -48,6 +49,9 @@
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_style.h"
 #include "ui/strings/grit/ui_strings.h"
 
 namespace {
@@ -593,7 +597,7 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
     optional_field.use_image_as_icon = true;
   }
 
-  return new Notification(
+  Notification* notification = new Notification(
       image.IsEmpty() ? message_center::NOTIFICATION_TYPE_SIMPLE
                       : message_center::NOTIFICATION_TYPE_IMAGE,
       l10n_util::GetStringUTF16(
@@ -608,6 +612,15 @@ Notification* ChromeScreenshotGrabber::CreateNotification(
       GURL(kNotificationOriginUrl), notification_id, optional_field,
       new ScreenshotGrabberNotificationDelegate(success, GetProfile(),
                                                 screenshot_path));
+  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+    notification->set_accent_color(
+        message_center::kSystemNotificationColorNormal);
+    notification->set_small_image(gfx::Image(
+        gfx::CreateVectorIcon(kNotificationImageIcon,
+                              message_center::kSystemNotificationColorNormal)));
+    notification->set_vector_small_image(kNotificationImageIcon);
+  }
+  return notification;
 }
 
 Profile* ChromeScreenshotGrabber::GetProfile() {
