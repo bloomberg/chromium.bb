@@ -27,6 +27,8 @@ function test() {
   }
 
   TestRunner.addResult('Console messages with timestamps disabled:');
+  addMessageWithFixedTimestamp('<Before> First Command', baseTimestamp + 789, ConsoleModel.ConsoleMessage.MessageType.Command);
+  addMessageWithFixedTimestamp('<Before> First Result', baseTimestamp + 789, ConsoleModel.ConsoleMessage.MessageType.Result);
   addMessageWithFixedTimestamp('<Before>');
   addMessageWithFixedTimestamp('<Before>', baseTimestamp + 456);
   addMessageWithFixedTimestamp('<Before>');

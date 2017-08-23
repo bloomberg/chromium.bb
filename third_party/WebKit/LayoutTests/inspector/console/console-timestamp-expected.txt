@@ -1,10 +1,14 @@
 Tests the console timestamp setting.
 
 Console messages with timestamps disabled:
+<Before> First Command
+"<Before> First Result"
 3<Before>
 <Before> Command
 "<Before> Result"
 Console messages with timestamps enabled:
+16:53:20.789 <Before> First Command
+16:53:20.789 "<Before> First Result"
 16:53:20.123 <Before>
 16:53:20.123 <Before>
 16:53:20.456 <Before>
