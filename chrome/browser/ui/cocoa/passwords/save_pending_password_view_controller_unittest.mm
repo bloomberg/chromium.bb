@@ -147,6 +147,9 @@ TEST_F(SavePendingPasswordViewControllerTest,
   feature_list.InitAndEnableFeature(
       password_manager::features::kEnableUsernameCorrection);
   SetUpSavePendingState(false);
+  // We need a window to be able to focus on username field and have an editor.
+  [[test_window() contentView] addSubview:[controller() view]];
+
   [controller().editButton performClick:nil];
   PendingPasswordItemView* row =
       [[controller().passwordItemContainer subviews] objectAtIndex:0];
@@ -154,10 +157,6 @@ TEST_F(SavePendingPasswordViewControllerTest,
   // User modifies the username and presses escape. We expect old username
   // restored in the label.
   [[row usernameField] setStringValue:@"tempusername"];
-  // TODO(irmakk): Use passwordItemContainer as subview after crbug.com/757752
-  // is fixed.
-  [[test_window() contentView] addSubview:[row usernameField]];
-  [test_window() makePretendKeyWindowAndSetFirstResponder:[row usernameField]];
   [[[row usernameField] currentEditor]
       keyDown:cocoa_test_event_utils::KeyEventWithKeyCode(kVK_Escape, '\e',
                                                           NSKeyDown, 0)];
