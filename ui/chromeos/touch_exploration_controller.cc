@@ -100,6 +100,9 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   if (touch_accessibility_enabler_)
     touch_accessibility_enabler_->HandleTouchEvent(touch_event);
 
+  if (event.type() == ui::ET_TOUCH_PRESSED)
+    seen_press_ = true;
+
   if (!exclude_bounds_.IsEmpty()) {
     gfx::Point location = touch_event.location();
     root_window_->GetHost()->ConvertScreenInPixelsToDIP(&location);
@@ -152,8 +155,25 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
 
     // Can happen if touch exploration is enabled while fingers were down
     // or if an additional press occurred within the exclusion bounds.
-    if (it == current_touch_ids_.end())
+    if (it == current_touch_ids_.end()) {
+      // If we get a RELEASE event and we've never seen a PRESS event
+      // since TouchExplorationController was instantiated, cancel the
+      // event so that touch gestures that enable spoken feedback
+      // don't accidentally trigger other behaviors on release.
+      if (!seen_press_) {
+        std::unique_ptr<ui::TouchEvent> new_event(new ui::TouchEvent(
+            ui::ET_TOUCH_CANCELLED, gfx::Point(), touch_event.time_stamp(),
+            touch_event.pointer_details()));
+        new_event->set_location_f(touch_event.location_f());
+        new_event->set_root_location_f(touch_event.root_location_f());
+        new_event->set_flags(touch_event.flags());
+        *rewritten_event = std::move(new_event);
+        return ui::EVENT_REWRITE_REWRITTEN;
+      }
+
+      // Otherwise just pass it through.
       return ui::EVENT_REWRITE_CONTINUE;
+    }
 
     current_touch_ids_.erase(it);
     touch_locations_.erase(touch_id);

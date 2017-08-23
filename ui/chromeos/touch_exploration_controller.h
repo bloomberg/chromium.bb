@@ -543,6 +543,9 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
   // the anchor point on release.
   gfx::Rect lift_activation_bounds_;
 
+  // Whether or not we've seen a touch press event yet.
+  bool seen_press_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };
 
