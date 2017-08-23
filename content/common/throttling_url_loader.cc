@@ -5,6 +5,7 @@
 #include "content/common/throttling_url_loader.h"
 
 #include "base/single_thread_task_runner.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 
 namespace content {
 
@@ -93,10 +94,12 @@ void ThrottlingURLLoader::FollowRedirect() {
 
 void ThrottlingURLLoader::SetPriority(net::RequestPriority priority,
                                       int32_t intra_priority_value) {
-  if (!url_loader_ && !loader_cancelled_) {
-    DCHECK_EQ(DEFERRED_START, deferred_stage_);
-    priority_info_ =
-        base::MakeUnique<PriorityInfo>(priority, intra_priority_value);
+  if (!url_loader_) {
+    if (!loader_cancelled_) {
+      DCHECK_EQ(DEFERRED_START, deferred_stage_);
+      priority_info_ =
+          base::MakeUnique<PriorityInfo>(priority, intra_priority_value);
+    }
     return;
   }
 
@@ -136,6 +139,9 @@ void ThrottlingURLLoader::Start(
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
 
+  if (options & mojom::kURLLoadOptionSynchronous)
+    is_synchronous_ = true;
+
   if (throttle_) {
     bool deferred = false;
     throttle_->WillStartRequest(url_request, &deferred);
@@ -167,6 +173,8 @@ void ThrottlingURLLoader::StartNow(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
+  client_binding_.set_connection_error_handler(base::Bind(
+      &ThrottlingURLLoader::OnClientConnectionError, base::Unretained(this)));
 
   if (factory) {
     DCHECK(!start_loader_callback);
@@ -284,7 +292,19 @@ void ThrottlingURLLoader::OnComplete(
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
 
+  // This is the last expected message. Pipe closure before this is an error
+  // (see OnClientConnectionError). After this it is expected and should be
+  // ignored.
+  DisconnectClient();
   forwarding_client_->OnComplete(status);
+}
+
+void ThrottlingURLLoader::OnClientConnectionError() {
+  // TODO(reillyg): Temporary workaround for crbug.com/756751 where without
+  // browser-side navigation this error on async loads will confuse the loading
+  // of cross-origin iframes.
+  if (is_synchronous_ || content::IsBrowserSideNavigationEnabled())
+    CancelWithError(net::ERR_FAILED);
 }
 
 void ThrottlingURLLoader::CancelWithError(int error_code) {
