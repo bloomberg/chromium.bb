@@ -30,6 +30,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -783,7 +784,10 @@ TEST_F(
 
   // Create a pending navigation, but don't commit it.
   GURL pending_url("http://slow.example.com/");
-  content::WebContentsTester::For(web_contents())->StartNavigation(pending_url);
+  auto pending_navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(pending_url,
+                                                           web_contents());
+  pending_navigation->Start();
 
   WaitAndCheckPreClassificationChecks();
 

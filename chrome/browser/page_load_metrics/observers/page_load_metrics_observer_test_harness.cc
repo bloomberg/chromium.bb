@@ -13,6 +13,7 @@
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/web_contents_tester.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "url/gurl.h"
@@ -39,9 +40,10 @@ void PageLoadMetricsObserverTestHarness::SetUp() {
 }
 
 void PageLoadMetricsObserverTestHarness::StartNavigation(const GURL& gurl) {
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  web_contents_tester->StartNavigation(gurl);
+  std::unique_ptr<content::NavigationSimulator> navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(gurl,
+                                                           web_contents());
+  navigation->Start();
 }
 
 void PageLoadMetricsObserverTestHarness::SimulateTimingUpdate(

@@ -58,8 +58,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
   void Detach() override;
   void SimulateNavigationCommit(const GURL& url) override;
-  void SimulateNavigationError(const GURL& url, int error_code) override;
-  void SimulateNavigationErrorPageCommit() override;
   void SimulateNavigationStop() override;
   void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,
@@ -95,6 +93,14 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       const ModificationCallback& callback);
   void SendNavigateWithParams(
       FrameHostMsg_DidCommitProvisionalLoad_Params* params);
+
+  // Simulates a navigation to |url| failing with the error code |error_code|.
+  // DEPRECATED: use NavigationSimulator instead.
+  void SimulateNavigationError(const GURL& url, int error_code);
+
+  // Simulates the commit of an error page following a navigation failure.
+  // DEPRECATED: use NavigationSimulator instead.
+  void SimulateNavigationErrorPageCommit();
 
   // With the current navigation logic this method is a no-op.
   // Simulates a renderer-initiated navigation to |url| starting in the

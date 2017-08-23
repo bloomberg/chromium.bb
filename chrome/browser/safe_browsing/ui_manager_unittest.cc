@@ -19,6 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,7 +130,9 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
 
     // The WC doesn't have a URL without a navigation. A main-frame malware
     // unsafe resource must be a pending navigation.
-    content::WebContentsTester::For(web_contents())->StartNavigation(GURL(url));
+    auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
+        GURL(url), web_contents());
+    navigation->Start();
     return resource;
   }
 
@@ -248,14 +251,16 @@ TEST_F(SafeBrowsingUIManagerTest, MAYBE_WhitelistIgnoresThreatType) {
 TEST_F(SafeBrowsingUIManagerTest, MAYBE_WhitelistWithUnrelatedPendingLoad) {
   // Commit load of landing page.
   NavigateAndCommit(GURL(kLandingURL));
+  auto unrelated_navigation =
+      content::NavigationSimulator::CreateBrowserInitiated(GURL(kGoodURL),
+                                                           web_contents());
   {
     // Simulate subresource malware hit on the landing page.
     security_interstitials::UnsafeResource resource =
         MakeUnsafeResource(kBadURL, true /* is_subresource */);
 
     // Start pending load to unrelated site.
-    content::WebContentsTester::For(web_contents())
-        ->StartNavigation(GURL(kGoodURL));
+    unrelated_navigation->Start();
 
     // Whitelist the resource on the landing page.
     AddToWhitelist(resource);
@@ -263,7 +268,7 @@ TEST_F(SafeBrowsingUIManagerTest, MAYBE_WhitelistWithUnrelatedPendingLoad) {
   }
 
   // Commit the pending load of unrelated site.
-  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+  unrelated_navigation->Commit();
   {
     // The unrelated site is not on the whitelist, even if the same subresource
     // was on it.

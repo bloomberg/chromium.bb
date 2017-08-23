@@ -13,14 +13,14 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
-#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using content::NavigationSimulator;
 using content::WebContents;
-using content::WebContentsTester;
 using content::TestBrowserThreadBundle;
 using content::TestWebContentsFactory;
 using testing::IsEmpty;
@@ -37,8 +37,9 @@ TEST(BookmarkLastVisitUpdaterTest, DoesNotCrashForNoBookmarkModel) {
       tab, /*bookmark_model=*/nullptr);
 
   // Visit a URL.
-  WebContentsTester* tester = WebContentsTester::For(tab);
-  tester->StartNavigation(GURL("http://foo.org/"));
+  auto navigation =
+      NavigationSimulator::CreateBrowserInitiated(GURL("http://foo.org/"), tab);
+  navigation->Start();
 
   // The only expectation is that it does not crash.
 }
@@ -63,8 +64,8 @@ TEST(BookmarkLastVisitUpdaterTest, IsTrackingVisits) {
       tab, bookmark_model);
 
   // Visit the bookmarked URL.
-  WebContentsTester* tester = WebContentsTester::For(tab);
-  tester->StartNavigation(url);
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(url, tab);
+  navigation->Start();
 
   EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
                   bookmark_model, 2, base::Time::UnixEpoch(),
@@ -93,8 +94,8 @@ TEST(BookmarkLastVisitUpdaterTest, IsNotTrackingIncognitoVisits) {
       tab, bookmark_model);
 
   // Visit the bookmarked URL.
-  WebContentsTester* tester = WebContentsTester::For(tab);
-  tester->StartNavigation(url);
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(url, tab);
+  navigation->Start();
 
   // The incognito visit should _not_ appear in recent bookmarks.
   EXPECT_THAT(ntp_snippets::GetRecentlyVisitedBookmarks(
