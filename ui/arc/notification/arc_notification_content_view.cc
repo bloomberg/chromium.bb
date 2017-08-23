@@ -498,11 +498,11 @@ void ArcNotificationContentView::Layout() {
   // Scale notification surface if necessary.
   gfx::Transform transform;
   const gfx::Size surface_size = surface_->GetSize();
-  const gfx::Size contents_size = contents_bounds.size();
-  if (!surface_size.IsEmpty() && !contents_size.IsEmpty()) {
-    transform.Scale(
-        static_cast<float>(contents_size.width()) / surface_size.width(),
-        static_cast<float>(contents_size.height()) / surface_size.height());
+  if (!surface_size.IsEmpty()) {
+    const float factor =
+        static_cast<float>(message_center::kNotificationWidth) /
+        surface_size.width();
+    transform.Scale(factor, factor);
   }
 
   // Apply the transform to the surface content so that close button can
