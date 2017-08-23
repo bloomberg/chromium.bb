@@ -1525,12 +1525,16 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_ExtensionInstallBlacklistWildcard) {
                blacklist.CreateDeepCopy(), nullptr);
   UpdateProviderPolicy(policies);
 
-  // AdBlock was automatically removed.
-  ASSERT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  // AdBlock should be disabled.
+  EXPECT_TRUE(service->GetExtensionById(kAdBlockCrxId, true));
+  EXPECT_FALSE(service->IsExtensionEnabled(kAdBlockCrxId));
 
-  // And can't be installed again, nor can good.crx.
-  EXPECT_FALSE(InstallExtension(kAdBlockCrxName));
-  EXPECT_FALSE(service->GetExtensionById(kAdBlockCrxId, true));
+  // It shouldn't be possible to re-enable AdBlock, until it satisfies
+  // management policy.
+  service->EnableExtension(kAdBlockCrxId);
+  EXPECT_FALSE(service->IsExtensionEnabled(kAdBlockCrxId));
+
+  // It shouldn't be possible to install good.crx.
   EXPECT_FALSE(InstallExtension(kGoodCrxName));
   EXPECT_FALSE(service->GetExtensionById(kGoodCrxId, true));
 }

@@ -2320,7 +2320,7 @@
           'id': 32,
           'caption': '''Configure extension installation blacklist''',
           'tags': [],
-          'desc': '''Allows you to specify which extensions the users can NOT install. Extensions already installed will be removed if blacklisted.
+          'desc': '''Allows you to specify which extensions the users can NOT install. Extensions already installed will be disabled if blacklisted, without a way for the user to enable them. Once an extension disabled due to the blacklist is removed from it, it will automatically get re-enabled.
 
           A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
 

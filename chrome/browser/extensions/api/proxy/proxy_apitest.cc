@@ -4,6 +4,7 @@
 
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -11,6 +12,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/test_management_policy.h"
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
 
@@ -25,6 +28,9 @@ const char kNoPac[] = "";
 }  // namespace
 
 class ProxySettingsApiTest : public ExtensionApiTest {
+ public:
+  ProxySettingsApiTest() {}
+
  protected:
   void ValidateSettings(int expected_mode,
                         const std::string& expected_server,
@@ -84,6 +90,13 @@ class ProxySettingsApiTest : public ExtensionApiTest {
     }
     return true;
   }
+
+  extensions::ManagementPolicy* GetManagementPolicy() {
+    return ExtensionSystem::Get(profile())->management_policy();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProxySettingsApiTest);
 };
 
 // Tests direct connection settings.
@@ -99,6 +112,82 @@ IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, ProxyDirectSettings) {
   // As the extension is executed with incognito permission, the settings
   // should propagate to incognito mode.
   pref_service = browser()->profile()->GetOffTheRecordProfile()->GetPrefs();
+  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
+}
+
+// Tests that proxy settings are changed appropriately when the extension is
+// disabled or enabled.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsChangeOnDisableEnable) {
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/direct")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
+
+  DisableExtension(extension->id());
+  ExpectNoSettings(pref_service);
+
+  EnableExtension(extension->id());
+  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
+}
+
+// Tests that proxy settings corresponding to an extension are removed when
+// the extension is uninstalled.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsRemovedOnUninstall) {
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/direct")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
+
+  UninstallExtension(extension->id());
+  ExpectNoSettings(pref_service);
+}
+
+// Tests that proxy settings corresponding to an extension are removed when
+// the extension is blacklisted by management policy. Regression test for
+// crbug.com/709264.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest,
+                       PRE_SettingsRemovedOnPolicyBlacklist) {
+  ASSERT_TRUE(RunExtensionTestIncognito("proxy/direct")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension);
+
+  PrefService* pref_service = browser()->profile()->GetPrefs();
+  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
+
+  GetManagementPolicy()->UnregisterAllProviders();
+  extensions::TestManagementPolicyProvider provider(
+      extensions::TestManagementPolicyProvider::PROHIBIT_LOAD);
+  GetManagementPolicy()->RegisterProvider(&provider);
+
+  // Run the policy check.
+  extension_service()->CheckManagementPolicy();
+  ExpectNoSettings(pref_service);
+
+  // Remove the extension from policy blacklist. It should get enabled again.
+  GetManagementPolicy()->UnregisterAllProviders();
+  extension_service()->CheckManagementPolicy();
+  ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
+                   pref_service);
+
+  // Block the extension again for the next test.
+  GetManagementPolicy()->RegisterProvider(&provider);
+  extension_service()->CheckManagementPolicy();
+  ExpectNoSettings(pref_service);
+}
+
+// Tests that proxy settings corresponding to an extension take effect again
+// on browser restart, when the extension is removed from the policy blacklist.
+IN_PROC_BROWSER_TEST_F(ProxySettingsApiTest, SettingsRemovedOnPolicyBlacklist) {
+  PrefService* pref_service = browser()->profile()->GetPrefs();
   ValidateSettings(ProxyPrefs::MODE_DIRECT, kNoServer, kNoBypass, kNoPac,
                    pref_service);
 }

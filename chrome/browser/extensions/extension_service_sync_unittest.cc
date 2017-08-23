@@ -2167,8 +2167,10 @@ TEST_F(ExtensionServiceTestSupervised,
   profile()->AsTestingProfile()->SetSupervisedUserId(
       supervised_users::kChildAccountSUID);
 
-  // The extension should not be loaded anymore.
-  EXPECT_FALSE(registry()->GetInstalledExtension(id));
+  // The extension should now be disabled.
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
+  EXPECT_EQ(extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
+            ExtensionPrefs::Get(profile())->GetDisableReasons(id));
 }
 
 TEST_F(ExtensionServiceTestSupervised, ExtensionApprovalBeforeInstallation) {
