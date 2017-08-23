@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/audio_player.h"
+#include "remoting/client/audio/audio_player.h"
 
 #include <stdint.h>
 
@@ -19,6 +19,7 @@ const int kAudioSampleBytes = 4;
 const int kAudioFrameBytes = kAudioSamplesPerFrame * kAudioSampleBytes;
 const int kPaddingBytes = 16;
 
+// TODO(nicholss): Update legacy audio player to use new audio buffer code.
 // TODO(garykac): Generate random audio data in the tests rather than having
 // a single constant value.
 const uint8_t kDefaultBufferData = 0x5A;
@@ -30,8 +31,7 @@ namespace remoting {
 
 class FakeAudioPlayer : public AudioPlayer {
  public:
-  FakeAudioPlayer() {
-  }
+  FakeAudioPlayer() {}
 
   bool ResetAudioPlayer(AudioPacket::SamplingRate) override { return true; }
 
@@ -80,9 +80,7 @@ class AudioPlayerTest : public ::testing::Test {
     return static_cast<int>(audio_->queued_packets_.size());
   }
 
-  int GetBytesConsumed() {
-    return static_cast<int>(audio_->bytes_consumed_);
-  }
+  int GetBytesConsumed() { return static_cast<int>(audio_->bytes_consumed_); }
 
   std::unique_ptr<AudioPlayer> audio_;
   std::unique_ptr<char[]> buffer_;

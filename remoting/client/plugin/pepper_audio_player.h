@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ppapi/cpp/audio.h"
 #include "ppapi/cpp/instance.h"
-#include "remoting/client/audio_player.h"
+#include "remoting/client/audio/audio_player.h"
 #include "remoting/proto/audio.pb.h"
 
 namespace remoting {

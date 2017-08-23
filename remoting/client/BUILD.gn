@@ -4,10 +4,6 @@
 
 static_library("client") {
   sources = [
-    "audio_player.cc",
-    "audio_player.h",
-    "audio_player_android.cc",
-    "audio_player_android.h",
     "chromoting_client.cc",
     "chromoting_client.h",
     "chromoting_session.cc",
@@ -41,6 +37,7 @@ static_library("client") {
 
   deps = [
     "//remoting/base",
+    "//remoting/client/audio",
     "//remoting/codec:decoder",
     "//remoting/protocol",
     "//third_party/libyuv",
@@ -66,20 +63,14 @@ static_library("client") {
     ]
   }
   if (is_android) {
-    libs += [
-      "android",
-      "OpenSLES",
-    ]
+    libs += [ "android" ]
   }
 }
 
 source_set("unit_tests") {
   testonly = true
 
-  # Disabled the source filters because there are _mac files that need to
-  # be compiled on all platforms.
   sources = [
-    "audio_player_unittest.cc",
     "chromoting_client_runtime_unittest.cc",
     "client_telemetry_logger_unittest.cc",
     "dual_buffer_frame_consumer_unittest.cc",

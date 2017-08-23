@@ -23,7 +23,7 @@ class AudioDecoder {
   virtual ~AudioDecoder() {}
 
   // Returns the decoded packet. If the packet is invalid, then a NULL
-  // scoped_ptr is returned.
+  // std::unique_ptr is returned.
   virtual std::unique_ptr<AudioPacket> Decode(
       std::unique_ptr<AudioPacket> packet) = 0;
 };

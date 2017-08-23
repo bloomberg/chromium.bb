@@ -16,7 +16,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/url_request_context_getter.h"
-#include "remoting/client/audio_player.h"
+#include "remoting/client/audio/audio_player.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/client_context.h"
 #include "remoting/protocol/chromium_port_allocator_factory.h"

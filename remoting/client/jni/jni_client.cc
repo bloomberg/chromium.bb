@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "jni/Client_jni.h"
-#include "remoting/client/audio_player_android.h"
+#include "remoting/client/audio/audio_player_android.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/connect_to_host_info.h"

@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_AUDIO_PLAYER_ANDROID_H_
-#define REMOTING_CLIENT_AUDIO_PLAYER_ANDROID_H_
+#ifndef REMOTING_CLIENT_AUDIO_AUDIO_PLAYER_ANDROID_H_
+#define REMOTING_CLIENT_AUDIO_AUDIO_PLAYER_ANDROID_H_
 
 #include <SLES/OpenSLES.h>
 #include <SLES/OpenSLES_Android.h>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "remoting/client/audio_player.h"
+#include "remoting/client/audio/audio_player.h"
 
 namespace remoting {
+
+// TODO(nicholss): Update legacy audio player to use new audio buffer code.
 
 class AudioPlayerAndroid : public AudioPlayer {
  public:
@@ -52,4 +54,4 @@ class AudioPlayerAndroid : public AudioPlayer {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_AUDIO_PLAYER_ANDROID_H_
+#endif  // REMOTING_CLIENT_AUDIO_AUDIO_PLAYER_ANDROID_H_

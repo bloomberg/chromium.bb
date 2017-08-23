@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_CLIENT_AUDIO_PLAYER_H_
-#define REMOTING_CLIENT_AUDIO_PLAYER_H_
+#ifndef REMOTING_CLIENT_AUDIO_AUDIO_PLAYER_H_
+#define REMOTING_CLIENT_AUDIO_AUDIO_PLAYER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -18,6 +18,7 @@
 
 namespace remoting {
 
+// TODO(nicholss): Update legacy audio player to use new audio buffer code.
 class AudioPlayer : public protocol::AudioStub {
  public:
   // The number of channels in the audio stream (only supporting stereo audio
@@ -77,4 +78,4 @@ class AudioPlayer : public protocol::AudioStub {
 
 }  // namespace remoting
 
-#endif  // REMOTING_CLIENT_AUDIO_PLAYER_H_
+#endif  // REMOTING_CLIENT_AUDIO_AUDIO_PLAYER_H_
