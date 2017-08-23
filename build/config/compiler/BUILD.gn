@@ -454,7 +454,7 @@ config("compiler") {
   # C11/C++11 compiler flags setup.
   # ---------------------------
   if (is_linux || is_android || (is_nacl && is_clang) || current_os == "aix") {
-    if (is_android) {
+    if (target_os == "android") {
       cxx11_override = use_cxx11_on_android
     } else {
       cxx11_override = use_cxx11
@@ -472,12 +472,18 @@ config("compiler") {
       cflags_cc += [ "-std=gnu++14" ]
     }
   } else if (!is_win && !is_nacl) {
+    if (target_os == "android") {
+      cxx11_override = use_cxx11_on_android
+    } else {
+      cxx11_override = use_cxx11
+    }
+
     # TODO(mcgrathr) - the NaCl GCC toolchain doesn't support either gnu11/gnu++11
     # or c11/c++11; we technically don't need this toolchain any more, but there
     # are still a few buildbots using it, so until those are turned off
     # we need the !is_nacl clause and the (is_nacl && is_clang) clause, above.
     cflags_c += [ "-std=c11" ]
-    if (use_cxx11) {
+    if (cxx11_override) {
       cflags_cc += [ "-std=c++11" ]
     } else {
       cflags_cc += [ "-std=c++14" ]
