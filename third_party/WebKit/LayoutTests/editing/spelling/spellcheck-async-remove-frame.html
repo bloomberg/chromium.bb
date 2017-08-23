@@ -1,29 +1,24 @@
 <!DOCTYPE html>
-<html>
-<head>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 <script>
-if (window.testRunner) {
-    testRunner.waitUntilDone();
-    testRunner.dumpAsText();
-    testRunner.setMockSpellCheckerEnabled(true);
-}
+spellcheck_test(
+    '<iframe></iframe>',
+    parentDocument => {
+      const iframe = parentDocument.querySelector('iframe');
+      const document = iframe.contentDocument;
+      document.documentElement.contentEditable = true;
+      document.documentElement.focus();
+      document.execCommand('insertText', false, 'zz.');
 
-function runTest() {
-    var textToSelect = "This text should be selected, but this frame shouldn't be focused.";
-    var frame = document.getElementById("frame");
-    var s = frame.contentDocument.getSelection();
-    s.collapse(frame.contentDocument.body, 0);
-    frame.contentDocument.execCommand("InsertText", false, textToSelect);
-    frame.parentNode.removeChild(frame);
-    window.setTimeout(function() {
-        if (window.testRunner)
-            testRunner.notifyDone();
-    }, 50);
-}
+      if (window.internals && internals.runtimeFlags.idleTimeSpellCheckingEnabled)
+        internals.runIdleTimeSpellChecker(document);
+
+      // Remove frame after sending the spellcheck request and before its response.
+      iframe.remove();
+    },
+    '',
+    'Spellchecker should not crash when frame is removed.');
 </script>
-</head>
-<body>
-<div>PASS unless crash.</div>
-<iframe id="frame" src="../resources/contenteditable-iframe-src.html" onload="runTest();"></iframe>
-</body>
-</html>
