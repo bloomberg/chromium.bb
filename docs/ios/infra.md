@@ -324,7 +324,7 @@ A bot may be configured to upload compiled artifacts. This is defined by the
     },
     {
       "artifact": "Chromium.breakpad",
-      "symupload": true,
+      "symupload": "https://clients2.google.com/cr/symbol",
     }
   ]
 }
