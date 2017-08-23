@@ -888,10 +888,10 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   EXPECT_EQ(origin_port, alternative_host_port_pair.port());
 }
 
-// Tests that if |request_| is destroyed when an alternative job is pending,
+// Tests that if an orphaned job completes after |request_| is gone,
 // JobController will be cleaned up.
 TEST_F(HttpStreamFactoryImplJobControllerTest,
-       RequestCompletesControllerDestroyed) {
+       OrphanedJobCompletesControllerDestroyed) {
   quic_data_ = base::MakeUnique<MockQuicData>();
   quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
   // Use cold start and complete alt job manually.
@@ -926,10 +926,21 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   // Complete main job now.
   base::RunLoop().RunUntilIdle();
 
-  // Resetting |request_| will terminate the alt job, even though it has not
-  // yet finished and will delete |job_controller_| from |factory_|.
+  // Invoke OnRequestComplete() which should not delete |job_controller_| from
+  // |factory_| because alt job is yet to finish.
   request_.reset();
-  ASSERT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+  ASSERT_FALSE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+  EXPECT_FALSE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  // Make |alternative_job| succeed.
+  HttpStream* http_stream =
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false, false);
+  job_factory_.alternative_job()->SetStream(http_stream);
+  // This should not call request_delegate_::OnStreamReady.
+  job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
+  // Make sure that controller does not leak.
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
 TEST_F(HttpStreamFactoryImplJobControllerTest,
