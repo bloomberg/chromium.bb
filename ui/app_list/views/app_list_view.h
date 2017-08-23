@@ -54,7 +54,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   static constexpr float kNumOfShelfSize = 2.0;
 
   // The opacity of the app list background.
-  static constexpr float kAppListOpacity = 0.8;
+  static constexpr float kAppListOpacity = 0.95;
 
   // The opacity of the app list background with blur.
   static constexpr float kAppListOpacityWithBlur = 0.7;
@@ -334,6 +334,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   float last_fling_velocity_ = 0;
   // Whether the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;
+  // Whether the background blur is enabled.
+  const bool is_background_blur_enabled_;
   // The state of the app list, controlled via SetState().
   AppListState app_list_state_ = PEEKING;
   // An observer that notifies AppListView when the display has changed.
