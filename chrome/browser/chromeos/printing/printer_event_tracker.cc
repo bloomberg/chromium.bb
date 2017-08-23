@@ -61,12 +61,14 @@ PrinterEventTracker::PrinterEventTracker() = default;
 PrinterEventTracker::~PrinterEventTracker() = default;
 
 void PrinterEventTracker::set_logging(bool logging) {
+  base::AutoLock l(lock_);
   logging_ = logging;
 }
 
 void PrinterEventTracker::RecordUsbPrinterInstalled(
     const PrinterDetector::DetectedPrinter& detected,
     SetupMode mode) {
+  base::AutoLock l(lock_);
   if (!logging_) {
     return;
   }
@@ -80,6 +82,7 @@ void PrinterEventTracker::RecordUsbPrinterInstalled(
 
 void PrinterEventTracker::RecordIppPrinterInstalled(const Printer& printer,
                                                     SetupMode mode) {
+  base::AutoLock l(lock_);
   if (!logging_) {
     return;
   }
@@ -93,6 +96,7 @@ void PrinterEventTracker::RecordIppPrinterInstalled(const Printer& printer,
 
 void PrinterEventTracker::RecordUsbSetupAbandoned(
     const PrinterDetector::DetectedPrinter& detected) {
+  base::AutoLock l(lock_);
   if (!logging_) {
     return;
   }
@@ -104,6 +108,7 @@ void PrinterEventTracker::RecordUsbSetupAbandoned(
 }
 
 void PrinterEventTracker::RecordSetupAbandoned(const Printer& printer) {
+  base::AutoLock l(lock_);
   if (!logging_) {
     return;
   }
@@ -115,6 +120,7 @@ void PrinterEventTracker::RecordSetupAbandoned(const Printer& printer) {
 }
 
 void PrinterEventTracker::RecordPrinterRemoved(const Printer& printer) {
+  base::AutoLock l(lock_);
   if (!logging_) {
     return;
   }
@@ -128,6 +134,7 @@ void PrinterEventTracker::RecordPrinterRemoved(const Printer& printer) {
 
 void PrinterEventTracker::FlushPrinterEvents(
     std::vector<metrics::PrinterEventProto>* events) {
+  base::AutoLock l(lock_);
   events->swap(events_);
   events_.clear();
 }
