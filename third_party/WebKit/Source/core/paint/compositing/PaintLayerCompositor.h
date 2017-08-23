@@ -174,8 +174,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   void FrameViewScrollbarsExistenceDidChange();
   void RootFixedBackgroundsChanged();
 
-  bool ScrollingLayerDidChange(PaintLayer*);
-
   std::unique_ptr<JSONObject> LayerTreeAsJSON(LayerTreeFlags) const;
 
   void SetTracksRasterInvalidations(bool);
