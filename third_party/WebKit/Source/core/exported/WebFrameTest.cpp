@@ -4128,22 +4128,25 @@ TEST_P(ParameterizedWebFrameTest, CharacterIndexAtPointWithPinchZoom) {
 
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "sometext.html");
-  // TODO(kojii): This is needed to test consistently on machines without Ahem
-  // installed, but test expectations also need to be adjusted.
-  // web_view_helper.LoadAhem();
+  web_view_helper.LoadAhem();
   web_view_helper.Resize(WebSize(640, 480));
 
+  // Move the visual viewport to the start of the target div containing the
+  // text.
   web_view_helper.WebView()->SetPageScaleFactor(2);
-  web_view_helper.WebView()->SetVisualViewportOffset(WebFloatPoint(50, 60));
+  web_view_helper.WebView()->SetVisualViewportOffset(WebFloatPoint(100, 50));
 
   WebRect base_rect;
   WebRect extent_rect;
 
   WebLocalFrame* main_frame =
       web_view_helper.WebView()->MainFrame()->ToWebLocalFrame();
-  size_t ix = main_frame->CharacterIndexForPoint(WebPoint(320, 388));
 
-  EXPECT_EQ(2ul, ix);
+  // Since we're zoomed in to 2X, each char of Ahem is 20px wide/tall in
+  // viewport space. We expect to hit the fifth char on the first line.
+  size_t ix = main_frame->CharacterIndexForPoint(WebPoint(100, 15));
+
+  EXPECT_EQ(5ul, ix);
 }
 
 TEST_P(ParameterizedWebFrameTest, FirstRectForCharacterRangeWithPinchZoom) {
