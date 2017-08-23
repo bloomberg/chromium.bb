@@ -79,7 +79,7 @@
             {
                 "domain": "Page",
                 "exclude": ["getNavigationHistory", "navigateToHistoryEntry", "captureScreenshot", "screencastFrameAck", "handleJavaScriptDialog", "setColorPickerEnabled",
-                            "getAppManifest", "requestAppBanner", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront"],
+                            "getAppManifest", "requestAppBanner", "setControlNavigations", "processNavigation", "printToPDF", "bringToFront", "setDownloadBehavior"],
                 "async": ["getResourceContent", "searchInResource"],
                 "exclude_events": ["screencastFrame", "screencastVisibilityChanged", "colorPicked", "interstitialShown", "interstitialHidden", "javascriptDialogOpening", "javascriptDialogClosed", "navigationRequested"]
             },
