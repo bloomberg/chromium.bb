@@ -34,5 +34,7 @@ PASS The WheelEvent interface object should not be exposed.
 PASS The InputEvent interface object should not be exposed. 
 PASS The KeyboardEvent interface object should not be exposed. 
 PASS The CompositionEvent interface object should not be exposed. 
+PASS The VTTCue interface object should not be exposed. 
+PASS The VTTRegion interface object should not be exposed. 
 Harness: the test ran to completion.
 
