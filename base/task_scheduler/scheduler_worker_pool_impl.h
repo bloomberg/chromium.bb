@@ -81,10 +81,11 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   void GetHistograms(std::vector<const HistogramBase*>* histograms) const;
 
-  // Returns the maximum number of tasks that can run concurrently in this pool.
+  // Returns the maximum number of non-blocked tasks that can run concurrently
+  // in this pool.
   //
   // TODO(fdoray): Remove this method. https://crbug.com/687264
-  int GetMaxConcurrentTasksDeprecated() const;
+  int GetMaxConcurrentNonBlockedTasksDeprecated() const;
 
   // Waits until at least |n| workers are idle.
   void WaitForWorkersIdleForTesting(size_t n);
