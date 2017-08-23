@@ -945,6 +945,13 @@ public class VrShellDelegate
             if (isDaydreamCurrentViewer() && showDoff(false /* optional */)) return false;
             shutdownVr(true /* disableVrMode */, true /* stayingInChrome */);
         } else {
+            if (mAutopresentWebVr) {
+                // For autopresent from Daydream home, we do NOT want to show ChromeVR. So if we
+                // ever exit WebVR for whatever reason(navigation, call exitPresent etc), go back to
+                // Daydream home.
+                mVrDaydreamApi.launchVrHomescreen();
+                return true;
+            }
             mVrBrowserUsed = true;
             mAutopresentWebVr = false;
             mVrShell.setWebVrModeEnabled(false, false);
