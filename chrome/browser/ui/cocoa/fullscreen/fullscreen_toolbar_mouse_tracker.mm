@@ -88,7 +88,8 @@ initWithFullscreenToolbarController:(FullscreenToolbarController*)owner
 }
 
 - (void)updateToolbarFrame:(NSRect)frame {
-  NSRect contentBounds = [contentView_ bounds];
+  NSRect contentBounds =
+      [[[[owner_ browserWindowController] window] contentView] bounds];
   trackingAreaFrame_ = frame;
   trackingAreaFrame_.origin.y -= kTrackingAreaAdditionalThreshold;
   trackingAreaFrame_.size.height =
