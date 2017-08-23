@@ -213,9 +213,6 @@ bool SendBeaconCommon(LocalFrame* frame,
   beacon.Serialize(request);
   FetchParameters params(request);
   params.MutableOptions().initiator_info.name = FetchInitiatorTypeNames::beacon;
-  params.SetCrossOriginAccessControl(
-      frame->GetDocument()->GetSecurityOrigin(),
-      WebURLRequest::kFetchCredentialsModeInclude);
 
   Resource* resource =
       RawResource::Fetch(params, frame->GetDocument()->Fetcher());
