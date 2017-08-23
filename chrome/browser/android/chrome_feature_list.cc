@@ -178,7 +178,7 @@ const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsVideoOverlay{
-    "ContentSuggestionsVideoOverlay", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ContentSuggestionsVideoOverlay", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsSettings{
     "ContentSuggestionsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
