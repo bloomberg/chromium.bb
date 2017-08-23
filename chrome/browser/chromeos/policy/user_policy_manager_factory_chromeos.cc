@@ -256,10 +256,6 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
   if (force_immediate_load)
     store->LoadImmediately();
 
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::FILE);
-
   if (is_active_directory) {
     std::unique_ptr<ActiveDirectoryPolicyManager> manager =
         ActiveDirectoryPolicyManager::CreateForUserPolicy(
@@ -275,8 +271,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
         base::MakeUnique<UserCloudPolicyManagerChromeOS>(
             std::move(store), std::move(external_data_manager),
             component_policy_cache_dir, initial_policy_fetch_timeout,
-            base::ThreadTaskRunnerHandle::Get(), file_task_runner,
-            io_task_runner);
+            base::ThreadTaskRunnerHandle::Get(), io_task_runner);
 
     // TODO(tnagel): Enable whitelist for Active Directory.
     bool wildcard_match = false;

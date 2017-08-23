@@ -72,7 +72,6 @@ UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
     content::BrowserContext* context,
     bool force_immediate_load,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   UserCloudPolicyManagerFactory* factory = GetInstance();
   // If there's a testing factory set, don't bother creating a new one.
@@ -82,7 +81,6 @@ UserCloudPolicyManagerFactory::CreateForOriginalBrowserContext(
       context,
       force_immediate_load,
       background_task_runner,
-      file_task_runner,
       io_task_runner);
 }
 
@@ -135,7 +133,6 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
     content::BrowserContext* context,
     bool force_immediate_load,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
   DCHECK(!context->IsOffTheRecord());
 
@@ -155,7 +152,7 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
   manager.reset(new UserCloudPolicyManager(
       std::move(store), component_policy_cache_dir,
       std::unique_ptr<CloudExternalDataManager>(),
-      base::ThreadTaskRunnerHandle::Get(), file_task_runner, io_task_runner));
+      base::ThreadTaskRunnerHandle::Get(), io_task_runner));
   manager->Init(
       SchemaRegistryServiceFactory::GetForContext(context)->registry());
   manager_wrappers_[context] = new ManagerWrapper(manager.get());

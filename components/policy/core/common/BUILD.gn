@@ -259,6 +259,7 @@ static_library("test_support") {
   public_deps = [
     ":common",
     "//base",
+    "//base/test:test_support",
 
     # Explicitly link in the generated policy target into the test support
     # so it will be linked to dependent targets. Otherwise in component

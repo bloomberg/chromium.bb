@@ -36,8 +36,6 @@ class UserCloudPolicyStore;
 class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
  public:
   // |task_runner| is the runner for policy refresh tasks.
-  // |file_task_runner| is used for file operations. Currently this must be
-  // the FILE BrowserThread.
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
   UserCloudPolicyManager(
@@ -45,7 +43,6 @@ class POLICY_EXPORT UserCloudPolicyManager : public CloudPolicyManager {
       const base::FilePath& component_policy_cache_path,
       std::unique_ptr<CloudExternalDataManager> external_data_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~UserCloudPolicyManager() override;
 

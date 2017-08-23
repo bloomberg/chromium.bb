@@ -779,8 +779,8 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   }
 
   bool Matches(const PolicyBundle& expected) {
-    PolicyLoaderWin loader(loop_.task_runner(), kTestPolicyKey,
-                           gpo_list_provider_);
+    PolicyLoaderWin loader(scoped_task_environment_.GetMainThreadTaskRunner(),
+                           kTestPolicyKey, gpo_list_provider_);
     std::unique_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));
     return loaded->Equals(expected);
