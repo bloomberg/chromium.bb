@@ -642,12 +642,14 @@ SkColor SearchBoxView::GetBackgroundColorForState(
   return background_color_;
 }
 
-void SearchBoxView::UpdateOpacity(int app_list_y_position_in_screen) {
+void SearchBoxView::UpdateOpacity() {
   // The opacity of searchbox is a function of the fractional displacement of
   // the app list from collapsed(0) to peeking(1) state. When the fraction
   // changes from |kOpacityStartFraction| to |kOpaticyEndFraction|, the opacity
   // of searchbox changes from 0.f to 1.0f.
   ContentsView* contents_view = static_cast<ContentsView*>(contents_view_);
+  int app_list_y_position_in_screen =
+      contents_view->app_list_view()->app_list_y_position_in_screen();
   float fraction =
       std::max<float>(0, contents_view->app_list_view()->work_area_bottom() -
                              app_list_y_position_in_screen) /

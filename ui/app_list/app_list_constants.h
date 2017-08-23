@@ -95,6 +95,8 @@ APP_LIST_EXPORT extern const size_t kNumStartPageTiles;
 APP_LIST_EXPORT extern const size_t kNumStartPageTilesFullscreen;
 APP_LIST_EXPORT extern const size_t kMaxSearchResults;
 
+APP_LIST_EXPORT extern const size_t kExpandArrowTopPadding;
+
 APP_LIST_EXPORT extern const int kReorderDroppingCircleRadius;
 
 APP_LIST_EXPORT extern const int kAppsGridPadding;

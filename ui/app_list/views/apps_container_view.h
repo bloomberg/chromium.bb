@@ -71,8 +71,10 @@ class AppsContainerView : public AppListPage, public TopIconAnimationObserver {
 
   // AppListPage overrides:
   void OnWillBeShown() override;
-  gfx::Rect GetPageBoundsForState(AppListModel::State state) const override;
   gfx::Rect GetSearchBoxBounds() const override;
+  gfx::Rect GetSearchBoxBoundsForState(
+      AppListModel::State state) const override;
+  gfx::Rect GetPageBoundsForState(AppListModel::State state) const override;
   gfx::Rect GetPageBoundsDuringDragging(
       AppListModel::State state) const override;
 

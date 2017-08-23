@@ -21,6 +21,7 @@
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/pagination_model_observer.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -49,6 +50,7 @@ class SuggestionsContainerView;
 class PageSwitcher;
 class PaginationController;
 class PulsingBlockView;
+class ExpandArrowView;
 
 // AppsGridView displays a grid for AppListItemList sub model.
 class APP_LIST_EXPORT AppsGridView : public views::View,
@@ -144,6 +146,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   bool CanDrop(const OSExchangeData& data) override;
   int OnDragUpdated(const ui::DropTargetEvent& event) override;
 
+  // Updates the visibility of app list items according to |app_list_state| and
+  // |is_in_drag|.
+  void UpdateControlVisibility(AppListView::AppListState app_list_state,
+                               bool is_in_drag);
+
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
@@ -197,7 +204,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void OnFolderItemRemoved();
 
   // Updates the opacity of all the items in the grid during dragging.
-  void UpdateOpacity(int app_list_y_position_in_screen);
+  void UpdateOpacity();
 
   // Return the view model for test purposes.
   const views::ViewModelT<AppListItemView>* view_model_for_test() const {
@@ -263,9 +270,6 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Updates suggestions from app list model.
   void UpdateSuggestions();
-
-  // Helper method for layouting indicator based on the given bounds |rect|.
-  void LayoutAllAppsIndicator(gfx::Rect* rect);
 
   // Returns all apps tiles per page based on |page|.
   int TilesPerPage(int page) const;
@@ -509,6 +513,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Views below are owned by views hierarchy.
   SuggestionsContainerView* suggestions_container_ = nullptr;
   IndicatorChipView* all_apps_indicator_ = nullptr;
+  ExpandArrowView* expand_arrow_view_ = nullptr;
 
   int cols_ = 0;
   int rows_per_page_ = 0;

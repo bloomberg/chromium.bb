@@ -30,14 +30,19 @@ void AppListPage::OnAnimationUpdated(double progress,
                                      AppListModel::State from_state,
                                      AppListModel::State to_state) {}
 
-gfx::Rect AppListPage::GetPageBoundsDuringDragging(
-    AppListModel::State state) const {
-  return GetPageBoundsForState(state);
-}
-
 gfx::Rect AppListPage::GetSearchBoxBounds() const {
   DCHECK(contents_view_);
   return contents_view_->GetDefaultSearchBoxBounds();
+}
+
+gfx::Rect AppListPage::GetSearchBoxBoundsForState(
+    AppListModel::State state) const {
+  return GetSearchBoxBounds();
+}
+
+gfx::Rect AppListPage::GetPageBoundsDuringDragging(
+    AppListModel::State state) const {
+  return GetPageBoundsForState(state);
 }
 
 int AppListPage::GetSearchBoxZHeight() const {

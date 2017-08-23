@@ -607,7 +607,6 @@ void AppListView::EndDrag(const gfx::Point& location) {
   if (app_list_state_ == CLOSED)
     return;
 
-  DraggingLayout();
   // Change the app list state based on where the drag ended. If fling velocity
   // was over the threshold, snap to the next state in the direction of the
   // fling.
@@ -720,6 +719,8 @@ void AppListView::EndDrag(const gfx::Point& location) {
         break;
     }
   }
+
+  DraggingLayout();
 }
 
 void AppListView::RecordStateTransitionForUma(AppListState new_state) {
@@ -900,7 +901,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
 
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
-      is_in_drag_ = false;
+      SetIsInDrag(false);
       event->SetHandled();
       HandleClickOrTap(event);
       break;
@@ -914,13 +915,13 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
       // threshold. So avoid resetting the initial drag point in drag.
       if (!is_in_drag_)
         StartDrag(event->location());
-      is_in_drag_ = true;
+      SetIsInDrag(true);
       event->SetHandled();
       break;
     case ui::ET_GESTURE_SCROLL_UPDATE:
       if (is_side_shelf_)
         return;
-      is_in_drag_ = true;
+      SetIsInDrag(true);
       last_fling_velocity_ = event->details().scroll_y();
       UpdateDrag(event->location());
       event->SetHandled();
@@ -930,7 +931,7 @@ void AppListView::OnGestureEvent(ui::GestureEvent* event) {
         break;
       if (is_side_shelf_)
         return;
-      is_in_drag_ = false;
+      SetIsInDrag(false);
       EndDrag(event->location());
       event->SetHandled();
       break;
@@ -1084,13 +1085,16 @@ void AppListView::SetState(AppListState new_state) {
     case PEEKING: {
       switch (app_list_state_) {
         case HALF:
-        case FULLSCREEN_ALL_APPS:
+        case PEEKING:
+        case FULLSCREEN_ALL_APPS: {
           app_list_main_view_->contents_view()->SetActiveState(
               AppListModel::STATE_START);
-          break;
-        case PEEKING: {
-          app_list_main_view_->contents_view()->SetActiveState(
-              AppListModel::STATE_START);
+          // Set the apps to first page at STATE_START state.
+          PaginationModel* pagination_model = GetAppsPaginationModel();
+          if (pagination_model->total_pages() > 0 &&
+              pagination_model->selected_page() != 0) {
+            pagination_model->SelectPage(0, false /* animate */);
+          }
           break;
         }
         case FULLSCREEN_SEARCH:
@@ -1131,6 +1135,13 @@ void AppListView::SetState(AppListState new_state) {
   StartAnimationForState(new_state_override);
   RecordStateTransitionForUma(new_state_override);
   app_list_state_ = new_state_override;
+
+  // Updates the visibility of app list items according to the change of
+  // |app_list_state_|.
+  app_list_main_view_->contents_view()
+      ->apps_container_view()
+      ->apps_grid_view()
+      ->UpdateControlVisibility(app_list_state_, is_in_drag_);
 }
 
 void AppListView::StartAnimationForState(AppListState target_state) {
@@ -1210,7 +1221,7 @@ void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty) {
 void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
                                             float background_opacity,
                                             bool is_end_gesture) {
-  is_in_drag_ = !is_end_gesture;
+  SetIsInDrag(!is_end_gesture);
   background_opacity_ = background_opacity;
   if (is_end_gesture) {
     SetState(FULLSCREEN_ALL_APPS);
@@ -1238,6 +1249,17 @@ gfx::Rect AppListView::GetAppInfoDialogBounds() const {
   app_info_bounds.ClampToCenteredSize(
       gfx::Size(kAppInfoDialogWidth, kAppInfoDialogHeight));
   return app_info_bounds;
+}
+
+void AppListView::SetIsInDrag(bool is_in_drag) {
+  if (is_in_drag == is_in_drag_)
+    return;
+
+  is_in_drag_ = is_in_drag;
+  app_list_main_view_->contents_view()
+      ->apps_container_view()
+      ->apps_grid_view()
+      ->UpdateControlVisibility(app_list_state_, is_in_drag_);
 }
 
 void AppListView::OnSpeechRecognitionStateChanged(
@@ -1328,15 +1350,10 @@ void AppListView::DraggingLayout() {
       is_in_drag_ ? background_opacity_ : kAppListOpacity);
 
   // Updates the opacity of the items in the app list.
-  search_box_view_->UpdateOpacity(app_list_y_position_in_screen_);
-  GetAppsGridView()->UpdateOpacity(app_list_y_position_in_screen_);
+  search_box_view_->UpdateOpacity();
+  GetAppsGridView()->UpdateOpacity();
 
-  app_list_main_view_->contents_view()->Layout();
-
-  if (app_list_state_ == PEEKING) {
-    app_list_main_view_->contents_view()->start_page_view()->UpdateOpacity(
-        work_area_bottom_, !is_in_drag_);
-  }
+  Layout();
 }
 
 float AppListView::GetAppListBackgroundOpacityDuringDragging() {
