@@ -48,6 +48,11 @@ class PaintControllerTestBase : public ::testing::Test {
   int NumIndexedItems() const { return paint_controller_->num_indexed_items_; }
 #endif
 
+  using SubsequenceMarkers = PaintController::SubsequenceMarkers;
+  SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient& client) {
+    return paint_controller_->GetSubsequenceMarkers(client);
+  }
+
  private:
   std::unique_ptr<PaintController> paint_controller_;
 };
@@ -141,7 +146,10 @@ class PaintControllerTest
 
 INSTANTIATE_TEST_CASE_P(All,
                         PaintControllerTest,
-                        ::testing::Values(kSPv2, kUnderInvalidationChecking));
+                        ::testing::Values(0,
+                                          kSPv2,
+                                          kUnderInvalidationChecking,
+                                          kSPv2 | kUnderInvalidationChecking));
 
 TEST_P(PaintControllerTest, NestedRecorders) {
   GraphicsContext context(GetPaintController());
@@ -1090,7 +1098,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
 }
 
 TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
+      RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     return;
 
   GraphicsContext context(GetPaintController());
@@ -1208,13 +1217,12 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
                       TestDisplayItem(content2, kForegroundDrawingType),
                       TestDisplayItem(container2, kForegroundDrawingType));
 
-  PaintController::SubsequenceMarkers* markers =
-      GetPaintController().GetSubsequenceMarkers(container1);
+  auto* markers = GetSubsequenceMarkers(container1);
   CHECK(markers);
   EXPECT_EQ(0u, markers->start);
   EXPECT_EQ(4u, markers->end);
 
-  markers = GetPaintController().GetSubsequenceMarkers(container2);
+  markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
   EXPECT_EQ(4u, markers->start);
   EXPECT_EQ(8u, markers->end);
@@ -1303,12 +1311,12 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
                       TestDisplayItem(content1, kForegroundDrawingType),
                       TestDisplayItem(container1, kForegroundDrawingType));
 
-  markers = GetPaintController().GetSubsequenceMarkers(container2);
+  markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
   EXPECT_EQ(0u, markers->start);
   EXPECT_EQ(4u, markers->end);
 
-  markers = GetPaintController().GetSubsequenceMarkers(container1);
+  markers = GetSubsequenceMarkers(container1);
   CHECK(markers);
   EXPECT_EQ(4u, markers->start);
   EXPECT_EQ(8u, markers->end);
@@ -1325,6 +1333,108 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
     EXPECT_THAT(GetPaintController().PaintChunks()[1].raster_invalidation_rects,
                 UnorderedElementsAre());
   }
+}
+
+TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
+  FakeDisplayItemClient root("root", LayoutRect(0, 0, 300, 300));
+  FakeDisplayItemClient content1("content1", LayoutRect(100, 100, 50, 200));
+  FakeDisplayItemClient container2("container2",
+                                   LayoutRect(100, 200, 100, 100));
+  FakeDisplayItemClient content2("content2", LayoutRect(100, 200, 50, 200));
+  GraphicsContext context(GetPaintController());
+
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    GetPaintController().UpdateCurrentPaintChunkProperties(
+        &root_paint_chunk_id_, DefaultPaintChunkProperties());
+  }
+
+  DrawRect(context, content1, kBackgroundDrawingType,
+           FloatRect(100, 100, 50, 200));
+  {
+    SubsequenceRecorder r(context, container2);
+    DrawRect(context, container2, kBackgroundDrawingType,
+             FloatRect(100, 200, 100, 100));
+    DrawRect(context, content2, kBackgroundDrawingType,
+             FloatRect(100, 200, 50, 200));
+    DrawRect(context, content2, kForegroundDrawingType,
+             FloatRect(100, 200, 50, 200));
+    DrawRect(context, container2, kForegroundDrawingType,
+             FloatRect(100, 200, 100, 100));
+  }
+  DrawRect(context, content1, kForegroundDrawingType,
+           FloatRect(100, 100, 50, 200));
+  GetPaintController().CommitNewDisplayItems();
+
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(content1, kBackgroundDrawingType),
+                      TestDisplayItem(container2, kBackgroundDrawingType),
+                      TestDisplayItem(content2, kBackgroundDrawingType),
+                      TestDisplayItem(content2, kForegroundDrawingType),
+                      TestDisplayItem(container2, kForegroundDrawingType),
+                      TestDisplayItem(content1, kForegroundDrawingType));
+
+  auto* markers = GetSubsequenceMarkers(container2);
+  CHECK(markers);
+  EXPECT_EQ(1u, markers->start);
+  EXPECT_EQ(5u, markers->end);
+
+  // Simulate the situation when |container2| gets a z-index that is smaller
+  // than that of |content1|.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    GetPaintController().UpdateCurrentPaintChunkProperties(
+        &root_paint_chunk_id_, DefaultPaintChunkProperties());
+  }
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+    // When under-invalidation-checking is enabled,
+    // useCachedSubsequenceIfPossible is forced off, and the client is expected
+    // to create the same painting as in the previous paint.
+    EXPECT_FALSE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
+        context, container2));
+    {
+      SubsequenceRecorder r(context, container2);
+      DrawRect(context, container2, kBackgroundDrawingType,
+               FloatRect(100, 200, 100, 100));
+      DrawRect(context, content2, kBackgroundDrawingType,
+               FloatRect(100, 200, 50, 200));
+      DrawRect(context, content2, kForegroundDrawingType,
+               FloatRect(100, 200, 50, 200));
+      DrawRect(context, container2, kForegroundDrawingType,
+               FloatRect(100, 200, 100, 100));
+    }
+    DrawRect(context, content1, kBackgroundDrawingType,
+             FloatRect(100, 100, 50, 200));
+    DrawRect(context, content1, kForegroundDrawingType,
+             FloatRect(100, 100, 50, 200));
+  } else {
+    EXPECT_TRUE(SubsequenceRecorder::UseCachedSubsequenceIfPossible(
+        context, container2));
+    EXPECT_TRUE(DrawingRecorder::UseCachedDrawingIfPossible(
+        context, content1, kBackgroundDrawingType));
+    EXPECT_TRUE(DrawingRecorder::UseCachedDrawingIfPossible(
+        context, content1, kForegroundDrawingType));
+  }
+
+  EXPECT_EQ(6, NumCachedNewItems());
+#ifndef NDEBUG
+  EXPECT_EQ(2, NumSequentialMatches());
+  EXPECT_EQ(0, NumOutOfOrderMatches());
+  EXPECT_EQ(0, NumIndexedItems());
+#endif
+
+  GetPaintController().CommitNewDisplayItems();
+
+  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
+                      TestDisplayItem(container2, kBackgroundDrawingType),
+                      TestDisplayItem(content2, kBackgroundDrawingType),
+                      TestDisplayItem(content2, kForegroundDrawingType),
+                      TestDisplayItem(container2, kForegroundDrawingType),
+                      TestDisplayItem(content1, kBackgroundDrawingType),
+                      TestDisplayItem(content1, kForegroundDrawingType));
+
+  markers = GetSubsequenceMarkers(container2);
+  CHECK(markers);
+  EXPECT_EQ(0u, markers->start);
+  EXPECT_EQ(4u, markers->end);
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
@@ -1562,23 +1672,22 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
                       TestDisplayItem(container2, kBackgroundDrawingType),
                       TestDisplayItem(content2, kBackgroundDrawingType));
 
-  PaintController::SubsequenceMarkers* markers =
-      GetPaintController().GetSubsequenceMarkers(container1);
+  auto* markers = GetSubsequenceMarkers(container1);
   CHECK(markers);
   EXPECT_EQ(0u, markers->start);
   EXPECT_EQ(4u, markers->end);
 
-  markers = GetPaintController().GetSubsequenceMarkers(content1);
+  markers = GetSubsequenceMarkers(content1);
   CHECK(markers);
   EXPECT_EQ(1u, markers->start);
   EXPECT_EQ(3u, markers->end);
 
-  markers = GetPaintController().GetSubsequenceMarkers(container2);
+  markers = GetSubsequenceMarkers(container2);
   CHECK(markers);
   EXPECT_EQ(4u, markers->start);
   EXPECT_EQ(6u, markers->end);
 
-  markers = GetPaintController().GetSubsequenceMarkers(content2);
+  markers = GetSubsequenceMarkers(content2);
   CHECK(markers);
   EXPECT_EQ(5u, markers->start);
   EXPECT_EQ(6u, markers->end);
@@ -1687,17 +1796,17 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
                       TestDisplayItem(content1, kForegroundDrawingType),
                       TestDisplayItem(container1, kForegroundDrawingType));
 
-  markers = GetPaintController().GetSubsequenceMarkers(content2);
+  markers = GetSubsequenceMarkers(content2);
   CHECK(markers);
   EXPECT_EQ(0u, markers->start);
   EXPECT_EQ(1u, markers->end);
 
-  markers = GetPaintController().GetSubsequenceMarkers(container1);
+  markers = GetSubsequenceMarkers(container1);
   CHECK(markers);
   EXPECT_EQ(1u, markers->start);
   EXPECT_EQ(4u, markers->end);
 
-  markers = GetPaintController().GetSubsequenceMarkers(content1);
+  markers = GetSubsequenceMarkers(content1);
   CHECK(markers);
   EXPECT_EQ(1u, markers->start);
   EXPECT_EQ(3u, markers->end);
