@@ -281,9 +281,6 @@ ios_app_bundle("chrome") {
   bundle_deps = [ "//ios/chrome/app/resources" ]
 
   if (current_toolchain == default_toolchain) {
-    if (ios_enable_today_extension) {
-      deps += [ ":today_extension_bundle" ]
-    }
     if (ios_enable_search_widget_extension) {
       deps += [ ":search_widget_extension_bundle" ]
     }
@@ -314,20 +311,6 @@ ios_app_bundle("chrome") {
 }
 
 if (current_toolchain == default_toolchain) {
-  if (ios_enable_today_extension) {
-    bundle_data("today_extension_bundle") {
-      public_deps = [
-        "//ios/chrome/today_extension",
-      ]
-      sources = [
-        "$root_out_dir/today_extension.appex",
-      ]
-      outputs = [
-        "{{bundle_plugins_dir}}/{{source_file_part}}",
-      ]
-    }
-  }
-
   if (ios_enable_content_widget_extension) {
     bundle_data("content_widget_extension_bundle") {
       public_deps = [
