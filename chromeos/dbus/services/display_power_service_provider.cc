@@ -23,30 +23,21 @@ void RunConfigurationCallback(
 }  // namespace
 
 DisplayPowerServiceProvider::DisplayPowerServiceProvider(
-    const std::string& service_interface,
     std::unique_ptr<Delegate> delegate)
-    : service_interface_(service_interface),
-      delegate_(std::move(delegate)),
-      weak_ptr_factory_(this) {}
+    : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
 
 DisplayPowerServiceProvider::~DisplayPowerServiceProvider() {}
 
 void DisplayPowerServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
-  // TODO(lannm): Remove this once methods are removed from LibCrosService.
-  bool use_libcros_methods = (service_interface_ == kLibCrosServiceInterface);
-
   exported_object->ExportMethod(
-      service_interface_,
-      (use_libcros_methods ? kSetDisplayPower : kDisplayServiceSetPowerMethod),
+      kDisplayServiceInterface, kDisplayServiceSetPowerMethod,
       base::Bind(&DisplayPowerServiceProvider::SetDisplayPower,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DisplayPowerServiceProvider::OnExported,
                  weak_ptr_factory_.GetWeakPtr()));
   exported_object->ExportMethod(
-      service_interface_,
-      (use_libcros_methods ? kSetDisplaySoftwareDimming
-                           : kDisplayServiceSetSoftwareDimmingMethod),
+      kDisplayServiceInterface, kDisplayServiceSetSoftwareDimmingMethod,
       base::Bind(&DisplayPowerServiceProvider::SetDisplaySoftwareDimming,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&DisplayPowerServiceProvider::OnExported,

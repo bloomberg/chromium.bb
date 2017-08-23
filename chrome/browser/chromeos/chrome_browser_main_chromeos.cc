@@ -284,16 +284,8 @@ class DBusServices {
 
     if (GetAshConfig() == ash::Config::CLASSIC) {
       // TODO(lannm): This will eventually be served by mus-ws.
-
-      // TODO(lannm): Remove this provider once all callers are using
-      // |display_service_| instead: http://crbug.com/644319
-      service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
-          kLibCrosServiceInterface,
-          base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
-
       display_service_providers.push_back(
           base::MakeUnique<DisplayPowerServiceProvider>(
-              kDisplayServiceInterface,
               base::MakeUnique<ChromeDisplayPowerServiceProviderDelegate>()));
     }
     // TODO(teravest): Remove this provider once all callers are using
@@ -302,14 +294,9 @@ class DBusServices {
         base::MakeUnique<LivenessServiceProvider>(kLibCrosServiceInterface));
     service_providers.push_back(base::MakeUnique<ScreenLockServiceProvider>());
 
-    // TODO(lannm): Remove this provider once all callers are using
-    // |display_service_| instead: http://crbug.com/644319
-    service_providers.push_back(base::MakeUnique<ConsoleServiceProvider>(
-        kLibCrosServiceInterface, &console_service_provider_delegate_));
-
     display_service_providers.push_back(
         base::MakeUnique<ConsoleServiceProvider>(
-            kDisplayServiceInterface, &console_service_provider_delegate_));
+            &console_service_provider_delegate_));
 
     // TODO(teravest): Remove this provider once all callers are using
     // |kiosk_info_service_| instead: http://crbug.com/703229

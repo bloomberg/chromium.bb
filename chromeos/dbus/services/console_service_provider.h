@@ -38,8 +38,7 @@ class CHROMEOS_EXPORT ConsoleServiceProvider
   };
 
   // The caller must ensure that |delegate| outlives this object.
-  ConsoleServiceProvider(const std::string& service_interface,
-                         Delegate* delegate);
+  explicit ConsoleServiceProvider(Delegate* delegate);
   ~ConsoleServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -65,14 +64,7 @@ class CHROMEOS_EXPORT ConsoleServiceProvider
                   const std::string& method_name,
                   bool success);
 
-  // Name of the service interface to install ConsoleService on.
-  // TODO(lannm): Remove this once these methods are removed from
-  // LibCrosService.
-  const std::string service_interface_;
-
-  // TODO(lannm): Revert to a unique_ptr after this is removed from
-  // LibCrosService.
-  Delegate* delegate_;
+  Delegate* delegate_;  // Not owned.
 
   base::WeakPtrFactory<ConsoleServiceProvider> weak_ptr_factory_;
 
