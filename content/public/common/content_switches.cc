@@ -943,6 +943,12 @@ const char kDisableWebRtcHWEncoding[] = "disable-webrtc-hw-encoding";
 // See https://tools.ietf.org/html/rfc7714 for further information.
 const char kEnableWebRtcSrtpAesGcm[] = "enable-webrtc-srtp-aes-gcm";
 
+// Enables negotiation of encrypted header extensions from RFC 6904 for SRTP
+// in WebRTC.
+// See https://tools.ietf.org/html/rfc6904 for further information.
+const char kEnableWebRtcSrtpEncryptedHeaders[] =
+    "enable-webrtc-srtp-encrypted-headers";
+
 // Enables Origin header in Stun messages for WebRTC.
 const char kEnableWebRtcStunOrigin[]        = "enable-webrtc-stun-origin";
 
