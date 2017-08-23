@@ -41,6 +41,7 @@ class OortOnline(perf_benchmark.PerfBenchmark):
   Info: http://v8project.blogspot.de/2015/10/jank-busters-part-one.html
   """
   test = _OortOnlineMeasurement
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
   def Name(cls):
@@ -52,9 +53,7 @@ class OortOnline(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_MOBILE], 'Desktop Benchmark')
-
+        pass
     return StoryExpectations()
 
 @benchmark.Owner(emails=['ulan@chromium.org'])

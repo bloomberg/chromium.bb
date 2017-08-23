@@ -17,6 +17,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power test."""
   test = power.Power
   page_set = page_sets.Typical10MobilePageSet
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
 
   def SetExtraBrowserOptions(self, options):
     options.full_performance_mode = False
@@ -38,8 +39,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
+        pass
     return StoryExpectations()
 
 
@@ -48,6 +48,7 @@ class PowerScrollingTrivialPage(perf_benchmark.PerfBenchmark):
   """Measure power consumption for some very simple pages."""
   test = power.QuiescentPower
   page_set = page_sets.TrivialSitesStorySet
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MAC]
 
   @classmethod
   def Name(cls):
@@ -56,9 +57,7 @@ class PowerScrollingTrivialPage(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_MOBILE, story.expectations.ALL_LINUX,
-             story.expectations.ALL_WIN], 'Mac Benchmark')
+        pass
     return StoryExpectations()
 
 
@@ -67,6 +66,7 @@ class PowerSteadyStatePages(perf_benchmark.PerfBenchmark):
   interactions)."""
   test = power.QuiescentPower
   page_set = page_sets.IdleAfterLoadingStories
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MAC]
 
   @classmethod
   def Name(cls):
@@ -75,9 +75,6 @@ class PowerSteadyStatePages(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_MOBILE, story.expectations.ALL_LINUX,
-             story.expectations.ALL_WIN], 'Mac Benchmark')
         self.DisableStory('http://abcnews.go.com/', [story.expectations.ALL],
                           'crbug.com/505990')
     return StoryExpectations()

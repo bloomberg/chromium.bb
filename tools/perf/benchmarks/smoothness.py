@@ -198,6 +198,7 @@ class SmoothnessMaps(perf_benchmark.PerfBenchmark):
 @benchmark.Owner(emails=['ssid@chromium.org'])
 class SmoothnessKeyDesktopMoveCases(_Smoothness):
   page_set = page_sets.KeyDesktopMoveCasesPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_DESKTOP]
 
   @classmethod
   def Name(cls):
@@ -206,8 +207,6 @@ class SmoothnessKeyDesktopMoveCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_MOBILE], 'Desktop Benchmark')
         self.DisableStory('https://mail.google.com/mail/',
                           [story_module.expectations.ALL_WIN],
                           'crbug.com/750131')
@@ -221,6 +220,7 @@ class SmoothnessKeyMobileSites(_Smoothness):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks
   """
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   @classmethod
   def Name(cls):
@@ -234,8 +234,6 @@ class SmoothnessKeyMobileSites(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory(
             'http://digg.com',
             [story_module.expectations.ALL_ANDROID],
@@ -284,6 +282,7 @@ class SmoothnessKeySilkCases(_Smoothness):
   rasterization.
   """
   page_set = page_sets.KeySilkCasesPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   @classmethod
   def Name(cls):
@@ -301,8 +300,6 @@ class SmoothnessKeySilkCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory('https://polymer-topeka.appspot.com/',
                           [story_module.expectations.ALL], 'crbug.com/507865')
         self.DisableStory('http://plus.google.com/app/basic/stream',
@@ -318,6 +315,7 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
   """
   tag = 'gpu_rasterization'
   page_set = page_sets.Top25SmoothPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
@@ -334,8 +332,6 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory('http://www.cnn.com', [story_module.expectations.ALL],
                           'crbug.com/528474')
         self.DisableStory('http://www.amazon.com',
@@ -379,6 +375,14 @@ class SmoothnessGpuRasterizationFiltersCases(_Smoothness):
   tag = 'gpu_rasterization'
   page_set = page_sets.ToughFiltersCasesPageSet
 
+  # With GPU Raster enabled on Mac, there's no reason to run this
+  # benchmark in addition to SmoothnessFiltersCases.
+  SUPPORTED_PLATFORMS = [
+      story_module.expectations.ALL_LINUX,
+      story_module.expectations.ALL_MOBILE,
+      story_module.expectations.ALL_WIN
+  ]
+
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
@@ -394,10 +398,7 @@ class SmoothnessGpuRasterizationFiltersCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        # With GPU Raster enabled on Mac, there's no reason to run this
-        # benchmark in addition to SmoothnessFiltersCases.
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_MAC], 'Redundunt on Mac')
+        pass
     return StoryExpectations()
 
 
@@ -408,6 +409,7 @@ class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
   """
   tag = 'sync_scroll'
   page_set = page_sets.KeyMobileSitesSmoothPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForSyncScrolling(options)
@@ -424,8 +426,6 @@ class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory(
             'http://digg.com',
             [story_module.expectations.ALL],
@@ -438,6 +438,7 @@ class SmoothnessSimpleMobilePages(_Smoothness):
   """Measures rendering statistics for simple mobile sites page set.
   """
   page_set = page_sets.SimpleMobileSitesPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   @classmethod
   def Name(cls):
@@ -446,8 +447,6 @@ class SmoothnessSimpleMobilePages(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory('https://www.flickr.com/',
                           [story_module.expectations.ANDROID_WEBVIEW],
                           'crbug.com/750833')
@@ -460,6 +459,7 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
   cases.
   """
   page_set = page_sets.AndroidToughPinchZoomCasesPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   @classmethod
   def Name(cls):
@@ -468,9 +468,6 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
-
         self.DisableStory('https://www.google.com/#hl=en&q=barack+obama',
                           [story_module.expectations.ALL_ANDROID],
                           'crbug.com/631015')
@@ -537,6 +534,7 @@ class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
   cases. Uses lower zoom levels customized for desktop limits.
   """
   page_set = page_sets.DesktopToughPinchZoomCasesPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_DESKTOP]
 
   @classmethod
   def Name(cls):
@@ -545,8 +543,7 @@ class SmoothnessDesktopToughPinchZoomCases(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_MOBILE], 'Desktop Benchmark')
+        pass
     return StoryExpectations()
 
 
@@ -558,6 +555,7 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
   page_set = page_sets.AndroidToughPinchZoomCasesPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   def SetExtraBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
@@ -571,8 +569,6 @@ class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
     class StoryExpectations(story_module.expectations.StoryExpectations):
 
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory('https://www.google.com/#hl=en&q=barack+obama',
                           [story_module.expectations.ALL_ANDROID],
                           'crbug.com/610021')
@@ -758,6 +754,7 @@ class SmoothnessPathologicalMobileSites(_Smoothness):
   """Measures task execution statistics while scrolling pathological sites.
   """
   page_set = page_sets.PathologicalMobileSitesPageSet
+  SUPPORTED_PLATFORMS = [story_module.expectations.ALL_MOBILE]
 
   @classmethod
   def Name(cls):
@@ -773,8 +770,7 @@ class SmoothnessPathologicalMobileSites(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story_module.expectations.ALL_DESKTOP], 'Mobile Benchmark')
+        pass
     return StoryExpectations()
 
 

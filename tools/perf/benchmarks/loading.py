@@ -27,6 +27,7 @@ class _LoadingBase(perf_benchmark.PerfBenchmark):
 @benchmark.Owner(emails=['kouhei@chormium.org', 'ksakamoto@chromium.org'])
 class LoadingDesktop(_LoadingBase):
   """ A benchmark measuring loading performance of desktop sites. """
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -40,8 +41,6 @@ class LoadingDesktop(_LoadingBase):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_MOBILE], 'Desktop Benchmark')
         self.DisableStory(
             'uol.com.br', [story.expectations.ALL_LINUX], 'crbug.com/752611')
         self.DisableStory(
@@ -56,6 +55,7 @@ class LoadingDesktop(_LoadingBase):
 @benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class LoadingMobile(_LoadingBase):
   """ A benchmark measuring loading performance of mobile sites. """
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
@@ -79,8 +79,6 @@ class LoadingMobile(_LoadingBase):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_DESKTOP], 'Mobile Benchmark')
         self.DisableStory('GFK', [story.expectations.ALL],
                           'N5X Timeout issue: crbug.com/702175')
         self.DisableStory('MLSMatrix', [story.expectations.ALL],
