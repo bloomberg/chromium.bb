@@ -51,50 +51,47 @@ var initialize_Animations = function()
     InspectorTest.preloadModule("animation");
 }
 
-function test()
-{
-    var groupIds = [];
-    var i = 0;
-    var stepNumber = 0;
-    var model = TestRunner.mainTarget.model(Animation.AnimationModel);
-    model.ensureEnabled();
-    model.addEventListener(Animation.AnimationModel.Events.AnimationGroupStarted, groupStarted);
-    // Each step triggers a new transition group.
-    var steps = [
-        "resetElement('node1'); startTransition('node1')",
-        "resetElement('node2'); startTransition('node2')",
-        "resetElement('node3'); startTransition('node3')",
-        "resetElement('node1'); toggleClass('node1', 'duration'); startTransition('node1')",
-        "resetElement('node1'); toggleClass('node1', 'duration'); startTransition('node1')",
-        "resetElement('node2'); toggleClass('node2', 'duration'); startTransition('node2')",
-        "resetElement('node1'); toggleClass('node1', 'expand')",
-        "resetElement('node1'); toggleClass('node1', 'expand')",
-        "resetElement('node3'); toggleClass('node3', 'expand')",
-        "resetElement('node4'); startTransition('node4')",
-        "resetElement('node4'); toggleClass('node4', 'expand')",
-        "resetElement('node4'); toggleClass('node4', 'expand')",
-        "resetElement('node4'); toggleClass('node4', 'duration'); toggleClass('node4', 'expand')",
-        "resetElement('node4'); toggleClass('node4', 'expand')"
-    ];
-    TestRunner.evaluateInPage(steps[0]);
+function test() {
+  var groupIds = [];
+  var i = 0;
+  var stepNumber = 0;
+  var model = TestRunner.mainTarget.model(Animation.AnimationModel);
+  model.ensureEnabled();
+  model.addEventListener(Animation.AnimationModel.Events.AnimationGroupStarted, groupStarted);
+  // Each step triggers a new transition group.
+  var steps = [
+    'resetElement(\'node1\'); startTransition(\'node1\')', 'resetElement(\'node2\'); startTransition(\'node2\')',
+    'resetElement(\'node3\'); startTransition(\'node3\')',
+    'resetElement(\'node1\'); toggleClass(\'node1\', \'duration\'); startTransition(\'node1\')',
+    'resetElement(\'node1\'); toggleClass(\'node1\', \'duration\'); startTransition(\'node1\')',
+    'resetElement(\'node2\'); toggleClass(\'node2\', \'duration\'); startTransition(\'node2\')',
+    'resetElement(\'node1\'); toggleClass(\'node1\', \'expand\')',
+    'resetElement(\'node1\'); toggleClass(\'node1\', \'expand\')',
+    'resetElement(\'node3\'); toggleClass(\'node3\', \'expand\')',
+    'resetElement(\'node4\'); startTransition(\'node4\')',
+    'resetElement(\'node4\'); toggleClass(\'node4\', \'expand\')',
+    'resetElement(\'node4\'); toggleClass(\'node4\', \'expand\')',
+    'resetElement(\'node4\'); toggleClass(\'node4\', \'duration\'); toggleClass(\'node4\', \'expand\')',
+    'resetElement(\'node4\'); toggleClass(\'node4\', \'expand\')'
+  ];
+  TestRunner.evaluateInPage(steps[0]);
 
-    function groupStarted(event)
-    {
-        TestRunner.addResult(">> " + steps[stepNumber]);
-        var group = event.data;
+  function groupStarted(event) {
+    TestRunner.addResult('>> ' + steps[stepNumber]);
+    var group = event.data;
 
-        if (groupIds.indexOf(group.id()) !== -1) {
-            TestRunner.addResult("Group #" + groupIds.indexOf(group.id()) + " started again!\n");
-        } else {
-            TestRunner.addResult("New group #" + groupIds.length + " started.\n");
-            groupIds.push(group.id());
-        }
-        stepNumber++;
-        if (stepNumber < steps.length)
-            TestRunner.evaluateInPage(steps[stepNumber]);
-        else
-            TestRunner.completeTest();
+    if (groupIds.indexOf(group.id()) !== -1) {
+      TestRunner.addResult('Group #' + groupIds.indexOf(group.id()) + ' started again!\n');
+    } else {
+      TestRunner.addResult('New group #' + groupIds.length + ' started.\n');
+      groupIds.push(group.id());
     }
+    stepNumber++;
+    if (stepNumber < steps.length)
+      TestRunner.evaluateInPage(steps[stepNumber]);
+    else
+      TestRunner.completeTest();
+  }
 }
 
 </script>

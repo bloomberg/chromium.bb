@@ -8,29 +8,27 @@
 <link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
 
 <script>
-async function test()
-{
-    CoverageTestRunner.startCoverage();
-    await TestRunner.evaluateInPagePromise("performActions()");
-    await CoverageTestRunner.stopCoverage();
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
 
-    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
-    setFilter("inspector");
-    CoverageTestRunner.dumpCoverageListView();
-    setFilter("CES/COV");
-    CoverageTestRunner.dumpCoverageListView();
-    setFilter("no pasaran");
-    CoverageTestRunner.dumpCoverageListView();
-    setFilter("");
-    CoverageTestRunner.dumpCoverageListView();
-    TestRunner.completeTest();
+  var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+  setFilter('inspector');
+  CoverageTestRunner.dumpCoverageListView();
+  setFilter('CES/COV');
+  CoverageTestRunner.dumpCoverageListView();
+  setFilter('no pasaran');
+  CoverageTestRunner.dumpCoverageListView();
+  setFilter('');
+  CoverageTestRunner.dumpCoverageListView();
+  TestRunner.completeTest();
 
-    function setFilter(text)
-    {
-        coverageView._filterInput.setValue(text);
-        coverageView._filterInput._onChangeCallback();
-        TestRunner.addResult(`Filter: ${text}`);
-    }
+  function setFilter(text) {
+    coverageView._filterInput.setValue(text);
+    coverageView._filterInput._onChangeCallback();
+    TestRunner.addResult(`Filter: ${text}`);
+  }
 }
 
 </script>

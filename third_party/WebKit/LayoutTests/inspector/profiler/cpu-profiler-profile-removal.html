@@ -13,25 +13,24 @@ function pageFunction() {
     console.profileEnd("p2");
 }
 
-function test()
-{
-    ProfilerTestRunner.startProfilerTest(function() {
-        function viewLoaded() {
-            var profiles = UI.panels.js_profiler;
-            var type = Profiler.ProfileTypeRegistry.instance.cpuProfileType;
-            while (type.getProfiles().length !== 0)
-                type.removeProfile(type.getProfiles()[0]);
-            TestRunner.addResult("Profile groups after removal:");
-            for (var key in profiles._profileGroups)
-                TestRunner.addResult(key + ": " + profiles._profileGroups[key].length);
-            var section = profiles._typeIdToSidebarSection[type.id];
-            TestRunner.assertEquals(0, section.children.length, "All children has been removed");
-            ProfilerTestRunner.completeProfilerTest();
-        }
-        TestRunner.evaluateInPage("pageFunction()", function() {});
-        ProfilerTestRunner.showProfileWhenAdded("p2");
-        ProfilerTestRunner.waitUntilProfileViewIsShown("p2", setTimeout.bind(null, viewLoaded, 0));
-    });
+function test() {
+  ProfilerTestRunner.startProfilerTest(function() {
+    function viewLoaded() {
+      var profiles = UI.panels.js_profiler;
+      var type = Profiler.ProfileTypeRegistry.instance.cpuProfileType;
+      while (type.getProfiles().length !== 0)
+        type.removeProfile(type.getProfiles()[0]);
+      TestRunner.addResult('Profile groups after removal:');
+      for (var key in profiles._profileGroups)
+        TestRunner.addResult(key + ': ' + profiles._profileGroups[key].length);
+      var section = profiles._typeIdToSidebarSection[type.id];
+      TestRunner.assertEquals(0, section.children.length, 'All children has been removed');
+      ProfilerTestRunner.completeProfilerTest();
+    }
+    TestRunner.evaluateInPage('pageFunction()', function() {});
+    ProfilerTestRunner.showProfileWhenAdded('p2');
+    ProfilerTestRunner.waitUntilProfileViewIsShown('p2', setTimeout.bind(null, viewLoaded, 0));
+  });
 }
 
 </script>

@@ -7,20 +7,19 @@ function initialize_TestObject() {
     InspectorTest.preloadModule("object_ui");
 }
 
-function test()
-{
-    var d = [];
-    for (var i = 1000; i < 1256; ++i)
-        d.push(i);
-    var object = {a: "b", c: d};
-    var localObject = SDK.RemoteObject.fromLocalObject(object);
+function test() {
+  var d = [];
+  for (var i = 1000; i < 1256; ++i)
+    d.push(i);
+  var object = {a: 'b', c: d};
+  var localObject = SDK.RemoteObject.fromLocalObject(object);
 
-    var propertiesSection = new ObjectUI.ObjectPropertiesSection(localObject, "local object");
-    propertiesSection.expand();
-    propertiesSection.objectTreeElement().childAt(1).expand();
+  var propertiesSection = new ObjectUI.ObjectPropertiesSection(localObject, 'local object');
+  propertiesSection.expand();
+  propertiesSection.objectTreeElement().childAt(1).expand();
 
-    TestRunner.addResult(TestRunner.textContentWithLineBreaks(propertiesSection.element));
-    TestRunner.completeTest();
+  TestRunner.addResult(TestRunner.textContentWithLineBreaks(propertiesSection.element));
+  TestRunner.completeTest();
 }
 
 </script>

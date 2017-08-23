@@ -10,16 +10,14 @@ function loadExternalScript()
     document.body.appendChild(scriptElement);
 }
 
-function test()
-{
-    ConsoleTestRunner.addConsoleSniffer(step1);
-    TestRunner.evaluateInPage("loadExternalScript()", function(){});
+function test() {
+  ConsoleTestRunner.addConsoleSniffer(step1);
+  TestRunner.evaluateInPage('loadExternalScript()', function() {});
 
-    function step1()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

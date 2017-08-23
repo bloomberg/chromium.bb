@@ -12,54 +12,46 @@ function insertStyleSheet()
     link.setAttribute("href", "resources/test-ssp-editing.css");
 }
 
-function test()
-{
-    var sourceCode;
-    TestRunner.evaluateInPage("insertStyleSheet()", onStyleSheet);
+function test() {
+  var sourceCode;
+  TestRunner.evaluateInPage('insertStyleSheet()', onStyleSheet);
 
-    function onStyleSheet()
-    {
-        SourcesTestRunner.waitForScriptSource("test-ssp-editing.scss", onSASS);
-    }
+  function onStyleSheet() {
+    SourcesTestRunner.waitForScriptSource('test-ssp-editing.scss', onSASS);
+  }
 
-    function onSASS(sc)
-    {
-        sourceCode = sc;
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", setInvalidValue);
-    }
+  function onSASS(sc) {
+    sourceCode = sc;
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', setInvalidValue);
+  }
 
-    function setInvalidValue()
-    {
-        setColorPropertyValue("!!!<invalid>", false, setEmptyValue);
-    }
+  function setInvalidValue() {
+    setColorPropertyValue('!!!<invalid>', false, setEmptyValue);
+  }
 
-    function setEmptyValue()
-    {
-        setColorPropertyValue("", false, setValidValue);
-    }
+  function setEmptyValue() {
+    setColorPropertyValue('', false, setValidValue);
+  }
 
-    function setValidValue()
-    {
-        setColorPropertyValue("magenta", true, onEditingEnded);
-    }
+  function setValidValue() {
+    setColorPropertyValue('magenta', true, onEditingEnded);
+  }
 
-    function onEditingEnded()
-    {
-        TestRunner.addResult(sourceCode.workingCopy());
-        TestRunner.completeTest();
-    }
+  function onEditingEnded() {
+    TestRunner.addResult(sourceCode.workingCopy());
+    TestRunner.completeTest();
+  }
 
-    function setColorPropertyValue(value, commit, callback)
-    {
-        var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
-        treeElement.startEditing(treeElement.valueElement);
-        treeElement.valueElement.textContent = value;
-        if (commit)
-            treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        else
-            treeElement.kickFreeFlowStyleEditForTest();
-        ElementsTestRunner.waitForStyleApplied(callback);
-    }
+  function setColorPropertyValue(value, commit, callback) {
+    var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
+    treeElement.startEditing(treeElement.valueElement);
+    treeElement.valueElement.textContent = value;
+    if (commit)
+      treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    else
+      treeElement.kickFreeFlowStyleEditForTest();
+    ElementsTestRunner.waitForStyleApplied(callback);
+  }
 }
 
 </script>

@@ -8,26 +8,21 @@
 <script src="./sass-test.js"></script>
 <script>
 
-function test()
-{
-    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+function test() {
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
 
-    SASSTestRunner.runCSSEditTests(header, [
-        function testPrependProperty(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "{", "{ border: 1px solid black;")
-            ];
-        },
+  SASSTestRunner.runCSSEditTests(header, [
+    function testPrependProperty(text) {
+      return [SASSTestRunner.createEdit(text, '{', '{ border: 1px solid black;')];
+    },
 
-        function testPrependAndAppendProperties(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "{", "{ color: blue;"),
-                SASSTestRunner.createEdit(text, "}", "background: white;}"),
-            ];
-        },
-    ]);
+    function testPrependAndAppendProperties(text) {
+      return [
+        SASSTestRunner.createEdit(text, '{', '{ color: blue;'),
+        SASSTestRunner.createEdit(text, '}', 'background: white;}'),
+      ];
+    },
+  ]);
 }
 
 </script>

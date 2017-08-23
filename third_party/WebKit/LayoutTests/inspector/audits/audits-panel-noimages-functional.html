@@ -19,28 +19,25 @@ JSON = {};
 <script src="resources/audits-script1.js"></script>
 <script src="resources/audits-script2.js"></script>
 <script>
-var test = function()
-{
-    TestRunner.reloadPage();
-    TestRunner.addSniffer(SDK.CSSModel.prototype, "_styleSheetAdded", onStyleSheetAdded, true);
+var test = function() {
+  TestRunner.reloadPage();
+  TestRunner.addSniffer(SDK.CSSModel.prototype, '_styleSheetAdded', onStyleSheetAdded, true);
 
-    var pendingStyleSheetsCount = 5;
-    function onStyleSheetAdded()
-    {
-        if (--pendingStyleSheetsCount)
-            return;
-        Audits.AuditRuleResult.resourceDomain = function() {
-            return "[domain]";
-        };
+  var pendingStyleSheetsCount = 5;
+  function onStyleSheetAdded() {
+    if (--pendingStyleSheetsCount)
+      return;
+    Audits.AuditRuleResult.resourceDomain = function() {
+      return '[domain]';
+    };
 
-        AuditsTestRunner.launchAllAudits(false, onAuditsFinished);
-    }
+    AuditsTestRunner.launchAllAudits(false, onAuditsFinished);
+  }
 
-    function onAuditsFinished()
-    {
-        AuditsTestRunner.collectAuditResults(TestRunner.completeTest);
-    }
-}
+  function onAuditsFinished() {
+    AuditsTestRunner.collectAuditResults(TestRunner.completeTest);
+  }
+};
 </script>
 </head>
 

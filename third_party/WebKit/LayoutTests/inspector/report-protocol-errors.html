@@ -3,46 +3,44 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-async function test()
-{
-    var messages = [
-        'some wrong string',
-        '{}',
-        '{"id":"not a number"}',
-        '{"id":1,"method":1}',
-        '{"id":2,"method":"resourceContent"}',
-        '{"id":3,"method":"DOM.test"}',
-        '{"id":4,"method":"DOM.requestChildNodes"}',
-        '{"id":5,"method":"DOM.requestChildNodes","params":[]}',
-        '{"id":6,"method":"DOM.requestChildNodes","params":{}}',
-        '{"id":7,"method":"DOM.requestChildNodes","params":{"nodeId":"not a number"}}',
-        '{"id":8,"method":"DOM.test"}',
-        '{"id":9,"method":"DOM.test" }',
-        '{"id":10,"method": "DOM.test" }',
-        '{"id":11,"method" : "DOM.test" }',
-        '{"id":12, "method" : "DOM.test" }',
-        '{"id": 13, "method" : "DOM.test" }',
-        '{"id" : 14, "method" : "DOM.test" }',
-        '{ "id" : 15, "method" : "DOM.test" }',
-        '{  "id"\n :\r 16,\t "method" : "DOM.test" }',
-    ];
+async function test() {
+  var messages = [
+    'some wrong string',
+    '{}',
+    '{"id":"not a number"}',
+    '{"id":1,"method":1}',
+    '{"id":2,"method":"resourceContent"}',
+    '{"id":3,"method":"DOM.test"}',
+    '{"id":4,"method":"DOM.requestChildNodes"}',
+    '{"id":5,"method":"DOM.requestChildNodes","params":[]}',
+    '{"id":6,"method":"DOM.requestChildNodes","params":{}}',
+    '{"id":7,"method":"DOM.requestChildNodes","params":{"nodeId":"not a number"}}',
+    '{"id":8,"method":"DOM.test"}',
+    '{"id":9,"method":"DOM.test" }',
+    '{"id":10,"method": "DOM.test" }',
+    '{"id":11,"method" : "DOM.test" }',
+    '{"id":12, "method" : "DOM.test" }',
+    '{"id": 13, "method" : "DOM.test" }',
+    '{"id" : 14, "method" : "DOM.test" }',
+    '{ "id" : 15, "method" : "DOM.test" }',
+    '{  "id"\n :\r 16,\t "method" : "DOM.test" }',
+  ];
 
-    var numberOfReports = 0;
+  var numberOfReports = 0;
 
-    Protocol.InspectorBackend.reportProtocolError = function(error, message)
-    {
-        if (numberOfReports < messages.length) {
-            TestRunner.addObject(message);
-            TestRunner.addResult("-------------------------------------------------------");
-        }
-
-        if (++numberOfReports === messages.length)
-            TestRunner.completeTest();
+  Protocol.InspectorBackend.reportProtocolError = function(error, message) {
+    if (numberOfReports < messages.length) {
+      TestRunner.addObject(message);
+      TestRunner.addResult('-------------------------------------------------------');
     }
 
-    await TestRunner.DebuggerAgent.disable();
-    for (var message of messages)
-        InspectorFrontendHost.sendMessageToBackend(message);
+    if (++numberOfReports === messages.length)
+      TestRunner.completeTest();
+  };
+
+  await TestRunner.DebuggerAgent.disable();
+  for (var message of messages)
+    InspectorFrontendHost.sendMessageToBackend(message);
 }
 
 </script>

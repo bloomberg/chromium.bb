@@ -71,25 +71,24 @@ InspectorTest.FlameChartProvider = class {
 }
 
 
-function test()
-{
-    var entries = [
-        {start: 1000, end: 5000, level: 0, title: "AAAAAAAAAAAAAAAAAAAAAA"},
-        {start: 2000, end: 3000, level: 1, title: "bbbb"},
-        {start: 2000, end: 3000, level: 2, title: "cccc"},
-        {start: 4000, end: 5000, level: 1, title: "dddd"},
-        {start: 6000, end: 7000, level: 0, title: "eeee"},
-    ];
+function test() {
+  var entries = [
+    {start: 1000, end: 5000, level: 0, title: 'AAAAAAAAAAAAAAAAAAAAAA'},
+    {start: 2000, end: 3000, level: 1, title: 'bbbb'},
+    {start: 2000, end: 3000, level: 2, title: 'cccc'},
+    {start: 4000, end: 5000, level: 1, title: 'dddd'},
+    {start: 6000, end: 7000, level: 0, title: 'eeee'},
+  ];
 
-    try {
-        var provider = new InspectorTest.FlameChartProvider(entries, null);
-        var flameChart = new PerfUI.FlameChart(provider, new PerfUI.FlameChartDelegate());
-        flameChart.update();
-        TestRunner.addResult("PASSED")
-    } catch (e) {
-        TestRunner.addResult("Failed: " + e.stack);
-    }
-    TestRunner.completeTest();
+  try {
+    var provider = new InspectorTest.FlameChartProvider(entries, null);
+    var flameChart = new PerfUI.FlameChart(provider, new PerfUI.FlameChartDelegate());
+    flameChart.update();
+    TestRunner.addResult('PASSED');
+  } catch (e) {
+    TestRunner.addResult('Failed: ' + e.stack);
+  }
+  TestRunner.completeTest();
 }
 
 </script>

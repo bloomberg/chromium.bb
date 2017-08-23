@@ -52,18 +52,17 @@ Tests the coverage highlight in sources after the recording finishes.
 49: +   used2();
 50: + }
 51:   
-52: - async function test()
-53: - {
-54: -     CoverageTestRunner.startCoverage();
-55: -     await TestRunner.evaluateInPagePromise("performActions()");
-56: -     await CoverageTestRunner.stopCoverage();
-57: -     await CoverageTestRunner.dumpDecorations("gutter-html.html");
-58: -     TestRunner.completeTest();
-59: - }
-60:   </script>
-61:   </head>
-62:   <body onload="runTest()">
-63:   <p class="used" id="also-used">Tests the coverage highlight in sources after the recording finishes.</p>
-64:   </body>
-65:   </html>
+52: - async function test() {
+53: -   CoverageTestRunner.startCoverage();
+54: -   await TestRunner.evaluateInPagePromise('performActions()');
+55: -   await CoverageTestRunner.stopCoverage();
+56: -   await CoverageTestRunner.dumpDecorations('gutter-html.html');
+57: -   TestRunner.completeTest();
+58: - }
+59:   </script>
+60:   </head>
+61:   <body onload="runTest()">
+62:   <p class="used" id="also-used">Tests the coverage highlight in sources after the recording finishes.</p>
+63:   </body>
+64:   </html>
 

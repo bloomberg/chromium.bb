@@ -22,23 +22,20 @@ var initialize_Animations = function() {
     InspectorTest.preloadModule("animation");
 }
 
-function test()
-{
-    UI.viewManager.showView("animations");
-    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
-    TestRunner.evaluateInPage("startAnimationWithKeyframeEffect()");
-    ElementsTestRunner.waitForAnimationAdded(step2);
+function test() {
+  UI.viewManager.showView('animations');
+  var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
+  TestRunner.evaluateInPage('startAnimationWithKeyframeEffect()');
+  ElementsTestRunner.waitForAnimationAdded(step2);
 
-    function step2(group)
-    {
-        ElementsTestRunner.waitForAnimationAdded(step3);
-        TestRunner.evaluateInPage("startAnimationWithKeyframeEffectReadOnly()");
-    }
+  function step2(group) {
+    ElementsTestRunner.waitForAnimationAdded(step3);
+    TestRunner.evaluateInPage('startAnimationWithKeyframeEffectReadOnly()');
+  }
 
-    function step3(group)
-    {
-        TestRunner.completeTest();
-    }
+  function step3(group) {
+    TestRunner.completeTest();
+  }
 }
 
 </script>

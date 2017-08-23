@@ -8,33 +8,25 @@
 <script src="./sass-test.js"></script>
 <script>
 
-function test()
-{
-    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+function test() {
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
 
-    SASSTestRunner.runCSSEditTests(header, [
-        function testDisableProperty(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "margin: 10px;", "/* margin: 10px; */")
-            ];
-        },
+  SASSTestRunner.runCSSEditTests(header, [
+    function testDisableProperty(text) {
+      return [SASSTestRunner.createEdit(text, 'margin: 10px;', '/* margin: 10px; */')];
+    },
 
-        function testEnableProperty(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "/*color: red;*/", "color: red;")
-            ];
-        },
+    function testEnableProperty(text) {
+      return [SASSTestRunner.createEdit(text, '/*color: red;*/', 'color: red;')];
+    },
 
-        function testDisableMultipleProperties(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "margin: 10px;", "/* margin: 10px; */", 0),
-                SASSTestRunner.createEdit(text, "margin: 10px;", "/* margin: 10px; */", 2)
-            ];
-        },
-    ]);
+    function testDisableMultipleProperties(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'margin: 10px;', '/* margin: 10px; */', 0),
+        SASSTestRunner.createEdit(text, 'margin: 10px;', '/* margin: 10px; */', 2)
+      ];
+    },
+  ]);
 }
 
 </script>

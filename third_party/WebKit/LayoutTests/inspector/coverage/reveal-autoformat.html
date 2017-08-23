@@ -9,30 +9,29 @@
 <link rel="stylesheet" type="text/css" href="resources/long-mangled.css">
 
 <script>
-async function test()
-{
-    CoverageTestRunner.startCoverage();
-    await TestRunner.evaluateInPagePromise("performActions()");
-    await CoverageTestRunner.stopCoverage();
-    var node = CoverageTestRunner.findCoverageNodeForURL("long-mangled.css");
-    var coverageListView = self.runtime.sharedInstance(Coverage.CoverageView)._listView;
-    var decoratePromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
-    node.select();
-    coverageListView._revealSourceForSelectedNode();
-    await decoratePromise;
-    TestRunner.addResult("The below should be formatted");
-    CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+  var node = CoverageTestRunner.findCoverageNodeForURL('long-mangled.css');
+  var coverageListView = self.runtime.sharedInstance(Coverage.CoverageView)._listView;
+  var decoratePromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, '_innerDecorate');
+  node.select();
+  coverageListView._revealSourceForSelectedNode();
+  await decoratePromise;
+  TestRunner.addResult('The below should be formatted');
+  CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
 
 
-    node = CoverageTestRunner.findCoverageNodeForURL("decorations-after-inplace-formatter.css");
-    node.select();
-    decoratePromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
-    coverageListView._revealSourceForSelectedNode();
-    await decoratePromise;
-    TestRunner.addResult("The below should NOT be formatted");
-    CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
+  node = CoverageTestRunner.findCoverageNodeForURL('decorations-after-inplace-formatter.css');
+  node.select();
+  decoratePromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, '_innerDecorate');
+  coverageListView._revealSourceForSelectedNode();
+  await decoratePromise;
+  TestRunner.addResult('The below should NOT be formatted');
+  CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 </script>
 </head>

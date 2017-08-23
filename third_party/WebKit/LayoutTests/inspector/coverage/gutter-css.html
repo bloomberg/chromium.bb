@@ -11,13 +11,12 @@ var initialize_Coverage = function() {
     InspectorTest.preloadModule("coverage");
 }
 
-async function test()
-{
-    CoverageTestRunner.startCoverage();
-    await TestRunner.evaluateInPagePromise("performActions()");
-    await CoverageTestRunner.stopCoverage();
-    await CoverageTestRunner.dumpDecorations("highlight-in-source.css");
-    TestRunner.completeTest();
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+  await CoverageTestRunner.dumpDecorations('highlight-in-source.css');
+  TestRunner.completeTest();
 }
 </script>
 </head>

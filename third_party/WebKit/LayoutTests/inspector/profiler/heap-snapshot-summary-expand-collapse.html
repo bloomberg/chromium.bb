@@ -4,39 +4,31 @@
   <script src="heap-snapshot-test.js"></script>
 <script>
 
-function test()
-{
-    var instanceCount = 25;
-    function createHeapSnapshot()
-    {
-        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+function test() {
+  var instanceCount = 25;
+  function createHeapSnapshot() {
+    return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+  }
+
+  ProfilerTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
+    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+    function step1() {
+      ProfilerTestRunner.switchToView('Summary', step2);
     }
 
-    ProfilerTestRunner.runHeapSnapshotTestSuite([
-        function testShowAll(next)
-        {
-            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+    function step2() {
+      ProfilerTestRunner.findAndExpandRow('A', step3);
+    }
 
-            function step1()
-            {
-                ProfilerTestRunner.switchToView("Summary", step2);
-            }
-
-            function step2()
-            {
-                ProfilerTestRunner.findAndExpandRow("A", step3);
-            }
-
-            function step3(row)
-            {
-                row.collapse();
-                row.expand();
-                var visibleChildren = row.children.filter(c => c._element.classList.contains('revealed'));
-                TestRunner.assertEquals(11, visibleChildren.length);
-                next();
-            }
-        }
-    ]);
+    function step3(row) {
+      row.collapse();
+      row.expand();
+      var visibleChildren = row.children.filter(c => c._element.classList.contains('revealed'));
+      TestRunner.assertEquals(11, visibleChildren.length);
+      next();
+    }
+  }]);
 }
 
 </script>

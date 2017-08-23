@@ -2,27 +2,26 @@
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script type="text/javascript">
-async function test()
-{
-    var target = TestRunner.mainTarget;
-    var domains = await target.schemaAgent().getDomains();
+async function test() {
+  var target = TestRunner.mainTarget;
+  var domains = await target.schemaAgent().getDomains();
 
-    if (!domains) {
-        TestRunner.addResult("error getting domains");
-        TestRunner.completeTest();
-        return;
-    }
-    var domainNames = domains.map(domain => domain.name).sort();
-    var agentNames = Object.keys(target._agents).sort();
-    for (var domain of domainNames) {
-        if (agentNames.indexOf(domain) === -1)
-            TestRunner.addResult("agent " + domain + " is missing from target");
-    }
-    for (var agent of agentNames) {
-        if (domainNames.indexOf(agent) === -1)
-            TestRunner.addResult("domain " + agent + " is missing from schema.getDomains");
-    }
+  if (!domains) {
+    TestRunner.addResult('error getting domains');
     TestRunner.completeTest();
+    return;
+  }
+  var domainNames = domains.map(domain => domain.name).sort();
+  var agentNames = Object.keys(target._agents).sort();
+  for (var domain of domainNames) {
+    if (agentNames.indexOf(domain) === -1)
+      TestRunner.addResult('agent ' + domain + ' is missing from target');
+  }
+  for (var agent of agentNames) {
+    if (domainNames.indexOf(agent) === -1)
+      TestRunner.addResult('domain ' + agent + ' is missing from schema.getDomains');
+  }
+  TestRunner.completeTest();
 }
 
 </script>

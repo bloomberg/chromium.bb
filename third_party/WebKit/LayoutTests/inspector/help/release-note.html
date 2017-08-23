@@ -3,53 +3,53 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
 function test() {
-     Help.releaseNoteText = [
-         {
-             version: 99,
-             header: 'Highlights from Chrome 100 update',
-             highlights: [
-                 {
-                     title: 'Improved Performance and Memory panels',
-                     subtitle: '',
-                     link: 'https://developers.google.com/web/tools/chrome-devtools/',
-                 },
-                 {
-                     title: 'Edit cookies directly from the Application panel',
-                     subtitle: '',
-                     link: 'https://developers.google.com/web/tools/chrome-devtools/',
-                 },
-             ],
-             link: 'https://developers.google.com/web/tools/chrome-devtools/',
-         },
-    ];
+  Help.releaseNoteText = [
+    {
+      version: 99,
+      header: 'Highlights from Chrome 100 update',
+      highlights: [
+        {
+          title: 'Improved Performance and Memory panels',
+          subtitle: '',
+          link: 'https://developers.google.com/web/tools/chrome-devtools/',
+        },
+        {
+          title: 'Edit cookies directly from the Application panel',
+          subtitle: '',
+          link: 'https://developers.google.com/web/tools/chrome-devtools/',
+        },
+      ],
+      link: 'https://developers.google.com/web/tools/chrome-devtools/',
+    },
+  ];
 
-    TestRunner.addSniffer(UI.viewManager, "showView", onShowView);
+  TestRunner.addSniffer(UI.viewManager, 'showView', onShowView);
 
-    TestRunner.addResult("Last release note version seen:");
-    Help.releaseNoteVersionSetting().set(1);
-    TestRunner.addResult(Help.releaseNoteVersionSetting().get() + "\n");
-    Help.showReleaseNoteIfNeeded();
+  TestRunner.addResult('Last release note version seen:');
+  Help.releaseNoteVersionSetting().set(1);
+  TestRunner.addResult(Help.releaseNoteVersionSetting().get() + '\n');
+  Help.showReleaseNoteIfNeeded();
 
-    function onShowView(viewId, isUserGesture, viewPromise) {
-      viewPromise.then(() => {
-            var releaseNoteView = UI.viewManager.view("release-note");
-            var releaseNoteElement = releaseNoteView[UI.View._widgetSymbol].contentElement;
-            TestRunner.addResult("Dumping release note text:");
-            TestRunner.addResult(releaseNoteElement.innerText);
-            TestRunner.addResult("Last version of release note seen should be updated:");
-            TestRunner.addResult(Help.releaseNoteVersionSetting().get() + "\n");
+  function onShowView(viewId, isUserGesture, viewPromise) {
+    viewPromise.then(() => {
+      var releaseNoteView = UI.viewManager.view('release-note');
+      var releaseNoteElement = releaseNoteView[UI.View._widgetSymbol].contentElement;
+      TestRunner.addResult('Dumping release note text:');
+      TestRunner.addResult(releaseNoteElement.innerText);
+      TestRunner.addResult('Last version of release note seen should be updated:');
+      TestRunner.addResult(Help.releaseNoteVersionSetting().get() + '\n');
 
-            TestRunner.addSniffer(UI.InspectorView.prototype, "closeDrawerTab", onClose);
-            TestRunner.addResult("Click on hide button");
-            var closeButton = releaseNoteElement.querySelector(".close-release-note");
-            closeButton.click();
-        });
-    }
+      TestRunner.addSniffer(UI.InspectorView.prototype, 'closeDrawerTab', onClose);
+      TestRunner.addResult('Click on hide button');
+      var closeButton = releaseNoteElement.querySelector('.close-release-note');
+      closeButton.click();
+    });
+  }
 
-    function onClose(view) {
-        TestRunner.addResult(`Hiding view: ${view}`);
-        TestRunner.completeTest();
-    }
+  function onClose(view) {
+    TestRunner.addResult(`Hiding view: ${view}`);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

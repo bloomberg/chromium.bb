@@ -15,19 +15,17 @@ function importStyle()
     return new Promise((fulfill) => link.onload = fulfill);
 }
 
-function test()
-{
-    PerformanceTestRunner.invokeWithTracing("importStyle", processTracingEvents);
+function test() {
+  PerformanceTestRunner.invokeWithTracing('importStyle', processTracingEvents);
 
-    function processTracingEvents()
-    {
-        var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.ParseAuthorStyleSheet);
-        if (event)
-            TestRunner.addResult("SUCCESS: found ParseAuthorStyleSheet record");
-        else
-            TestRunner.addResult("FAIL: ParseAuthorStyleSheet record not found");
-        TestRunner.completeTest();
-    }
+  function processTracingEvents() {
+    var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.ParseAuthorStyleSheet);
+    if (event)
+      TestRunner.addResult('SUCCESS: found ParseAuthorStyleSheet record');
+    else
+      TestRunner.addResult('FAIL: ParseAuthorStyleSheet record not found');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

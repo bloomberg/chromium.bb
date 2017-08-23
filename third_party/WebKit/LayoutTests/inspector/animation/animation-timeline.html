@@ -53,70 +53,68 @@ var initialize_Animations = function() {
     InspectorTest.preloadModule("animation");
 }
 
-function test()
-{
-    // Override timeline width for testing
-    Animation.AnimationTimeline.prototype.width = function() { return 1000; }
-    // Override animation color for testing
-    // FIXME: Set animation name of Web Animation instead; not supported yet
-    Animation.AnimationUI.Color = function() { return "black"; }
+function test() {
+  // Override timeline width for testing
+  Animation.AnimationTimeline.prototype.width = function() {
+    return 1000;
+  };
+  // Override animation color for testing
+  // FIXME: Set animation name of Web Animation instead; not supported yet
+  Animation.AnimationUI.Color = function() {
+    return 'black';
+  };
 
-    UI.viewManager.showView("animations");
-    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
-    TestRunner.evaluateInPage("startAnimationWithDelay()");
-    ElementsTestRunner.waitForAnimationAdded(step2);
+  UI.viewManager.showView('animations');
+  var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
+  TestRunner.evaluateInPage('startAnimationWithDelay()');
+  ElementsTestRunner.waitForAnimationAdded(step2);
 
-    function step2(group)
-    {
-        timeline._selectAnimationGroup(group);
-        timeline._render();
-        TestRunner.addResult(">>>> Animation with start delay only");
-        ElementsTestRunner.dumpAnimationTimeline(timeline);
-        timeline._reset();
-        ElementsTestRunner.waitForAnimationAdded(step3);
-        TestRunner.evaluateInPage("startAnimationWithEndDelay()");
-    }
+  function step2(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> Animation with start delay only');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    timeline._reset();
+    ElementsTestRunner.waitForAnimationAdded(step3);
+    TestRunner.evaluateInPage('startAnimationWithEndDelay()');
+  }
 
-    function step3(group)
-    {
-        timeline._selectAnimationGroup(group);
-        timeline._render();
-        TestRunner.addResult(">>>> Animation with start and end delay");
-        ElementsTestRunner.dumpAnimationTimeline(timeline);
-        ElementsTestRunner.waitForAnimationAdded(step5);
-        TestRunner.evaluateInPage("startAnimationWithStepTiming()");
-    }
+  function step3(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> Animation with start and end delay');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    ElementsTestRunner.waitForAnimationAdded(step5);
+    TestRunner.evaluateInPage('startAnimationWithStepTiming()');
+  }
 
-    function step5(group)
-    {
-        timeline._selectAnimationGroup(group);
-        timeline._render();
-        TestRunner.addResult(">>>> Animation with step timing function");
-        ElementsTestRunner.dumpAnimationTimeline(timeline);
-        timeline._reset();
-        ElementsTestRunner.waitForAnimationAdded(step6);
-        TestRunner.evaluateInPage("startCSSAnimation()");
-    }
+  function step5(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> Animation with step timing function');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    timeline._reset();
+    ElementsTestRunner.waitForAnimationAdded(step6);
+    TestRunner.evaluateInPage('startCSSAnimation()');
+  }
 
-    function step6(group)
-    {
-        timeline._selectAnimationGroup(group);
-        timeline._render();
-        TestRunner.addResult(">>>> CSS animation started");
-        ElementsTestRunner.dumpAnimationTimeline(timeline);
-        timeline._reset();
-        ElementsTestRunner.waitForAnimationAdded(step7);
-        TestRunner.evaluateInPage("startCSSTransition()");
-    }
+  function step6(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> CSS animation started');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    timeline._reset();
+    ElementsTestRunner.waitForAnimationAdded(step7);
+    TestRunner.evaluateInPage('startCSSTransition()');
+  }
 
-    function step7(group)
-    {
-        timeline._selectAnimationGroup(group);
-        timeline._render();
-        TestRunner.addResult(">>>> CSS transition started");
-        ElementsTestRunner.dumpAnimationTimeline(timeline);
-        TestRunner.completeTest();
-    }
+  function step7(group) {
+    timeline._selectAnimationGroup(group);
+    timeline._render();
+    TestRunner.addResult('>>>> CSS transition started');
+    ElementsTestRunner.dumpAnimationTimeline(timeline);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

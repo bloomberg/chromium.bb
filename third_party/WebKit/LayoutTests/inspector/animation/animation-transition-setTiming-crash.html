@@ -21,14 +21,14 @@ var initialize_Animations = function() {
 }
 
 function test() {
-    UI.viewManager.showView("animations");
-    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
-    TestRunner.evaluateInPage("startCSSTransition()");
-    ElementsTestRunner.waitForAnimationAdded(animationAdded);
-    function animationAdded(group) {
-        group.animations()[0].setTiming(1, 0);
-        TestRunner.completeTest();
-    }
+  UI.viewManager.showView('animations');
+  var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
+  TestRunner.evaluateInPage('startCSSTransition()');
+  ElementsTestRunner.waitForAnimationAdded(animationAdded);
+  function animationAdded(group) {
+    group.animations()[0].setTiming(1, 0);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

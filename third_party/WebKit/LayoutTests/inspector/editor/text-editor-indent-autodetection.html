@@ -11,39 +11,34 @@ function codeSnippetsNumber() {
     return document.getElementsByClassName("test").length;
 }
 
-function test()
-{
-    var textEditor = SourcesTestRunner.createTestEditor();
-    textEditor.setMimeType("text/javascript");
-    textEditor.setReadOnly(false);
-    textEditor.element.focus();
-    Common.settingForTest("textEditorAutoDetectIndent").set(true);
-    function genericTest(snippetName, next)
-    {
-        var command = "codeSnippet('" + snippetName + "');";
-        TestRunner.evaluateInPage(command, step2);
-        function step2(result)
-        {
-            textEditor.setText(result.value);
-            var indent = textEditor.indent();
-            var description = indent === TextUtils.TextUtils.Indent.TabCharacter ? "Tab" : indent.length + " spaces";
-            TestRunner.addResult("Autodetected indentation for " + snippetName + ": " +
-                description);
-            next();
-        }
+function test() {
+  var textEditor = SourcesTestRunner.createTestEditor();
+  textEditor.setMimeType('text/javascript');
+  textEditor.setReadOnly(false);
+  textEditor.element.focus();
+  Common.settingForTest('textEditorAutoDetectIndent').set(true);
+  function genericTest(snippetName, next) {
+    var command = 'codeSnippet(\'' + snippetName + '\');';
+    TestRunner.evaluateInPage(command, step2);
+    function step2(result) {
+      textEditor.setText(result.value);
+      var indent = textEditor.indent();
+      var description = indent === TextUtils.TextUtils.Indent.TabCharacter ? 'Tab' : indent.length + ' spaces';
+      TestRunner.addResult('Autodetected indentation for ' + snippetName + ': ' + description);
+      next();
     }
+  }
 
-    function onTestNumberReceived(result)
-    {
-        var testSuite = [];
-        TestRunner.addResult("Tests number: " + result.value);
-        for(var i = 1; i <= result.value; ++i)
-            testSuite.push(genericTest.bind(this, "test" + i));
+  function onTestNumberReceived(result) {
+    var testSuite = [];
+    TestRunner.addResult('Tests number: ' + result.value);
+    for (var i = 1; i <= result.value; ++i)
+      testSuite.push(genericTest.bind(this, 'test' + i));
 
-        TestRunner.runTestSuite(testSuite);
-    }
+    TestRunner.runTestSuite(testSuite);
+  }
 
-    TestRunner.evaluateInPage("codeSnippetsNumber()", onTestNumberReceived);
+  TestRunner.evaluateInPage('codeSnippetsNumber()', onTestNumberReceived);
 }
 
 </script>

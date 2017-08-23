@@ -38,37 +38,38 @@ function changeSubframeStylesAndDisplay()
     return waitForFrame();
 }
 
-function test()
-{
-    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+function test() {
+  Runtime.experiments.enableForTest('timelineInvalidationTracking');
 
-    TestRunner.runTestSuite([
-        function testLocalFrame(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changeStylesAndDisplay", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
-                next();
-            });
-        },
+  TestRunner.runTestSuite([
+    function testLocalFrame(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeStylesAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalc style invalidations');
+        next();
+      });
+    },
 
-        function multipleStyleRecalcs(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changeMultipleStylesAndDisplay", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, "second recalc style invalidations");
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, "third recalc style invalidations");
-                next();
-            });
-        },
+    function multipleStyleRecalcs(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeMultipleStylesAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalc style invalidations');
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 1, 'second recalc style invalidations');
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 2, 'third recalc style invalidations');
+        next();
+      });
+    },
 
-        function testSubframe(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changeSubframeStylesAndDisplay", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, "first recalc style invalidations");
-                next();
-            });
-        }
-    ]);
+    function testSubframe(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeSubframeStylesAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0, 'first recalc style invalidations');
+        next();
+      });
+    }
+  ]);
 }
 </script>
 </head>

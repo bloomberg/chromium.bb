@@ -2,14 +2,14 @@ Test that checks location resolving mechanics for TimerInstall TimerRemove and F
 
 It expects two FunctionCall for InjectedScript, two TimerInstall events, two FunctionCall events and one TimerRemove event to be logged with performActions.js script name and some line number.
 
+detailsTextContent for TimerInstall event: 'performActions.js:4'
+details.textContent for TimerInstall event: 'performActions.js:4'
 detailsTextContent for TimerInstall event: 'performActions.js:5'
 details.textContent for TimerInstall event: 'performActions.js:5'
-detailsTextContent for TimerInstall event: 'performActions.js:6'
-details.textContent for TimerInstall event: 'performActions.js:6'
-detailsTextContent for FunctionCall event: 'performActions.js:10'
-details.textContent for FunctionCall event: 'intervalTimerWork @ performActions.js:10'
-detailsTextContent for FunctionCall event: 'performActions.js:10'
-details.textContent for FunctionCall event: 'intervalTimerWork @ performActions.js:10'
-detailsTextContent for TimerRemove event: 'performActions.js:14'
-details.textContent for TimerRemove event: 'performActions.js:14'
+detailsTextContent for FunctionCall event: 'performActions.js:9'
+details.textContent for FunctionCall event: 'intervalTimerWork @ performActions.js:9'
+detailsTextContent for FunctionCall event: 'performActions.js:9'
+details.textContent for FunctionCall event: 'intervalTimerWork @ performActions.js:9'
+detailsTextContent for TimerRemove event: 'performActions.js:12'
+details.textContent for TimerRemove event: 'performActions.js:12'
 

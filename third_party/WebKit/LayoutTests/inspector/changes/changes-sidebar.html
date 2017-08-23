@@ -5,17 +5,19 @@
 <script>
 
 function test() {
-  var fulfill = function(){};
+  var fulfill = function() {};
   var workspace = new Workspace.Workspace();
-  var project = new Bindings.ContentProviderBasedProject(workspace, "mockProject", Workspace.projectTypes.Network, "", false);
+  var project =
+      new Bindings.ContentProviderBasedProject(workspace, 'mockProject', Workspace.projectTypes.Network, '', false);
   var workspaceDiff = new WorkspaceDiff.WorkspaceDiff(workspace);
-  TestRunner.addSniffer(WorkspaceDiff.WorkspaceDiff.prototype, "_uiSourceCodeProcessedForTest", modifiedStatusChanged, true);
+  TestRunner.addSniffer(
+      WorkspaceDiff.WorkspaceDiff.prototype, '_uiSourceCodeProcessedForTest', modifiedStatusChanged, true);
 
   var uiSourceCodeList = new Changes.ChangesSidebar(workspaceDiff);
 
-  var firstUISC = addUISourceCode("first.css", ".first {color: red}");
-  var secondUISC = addUISourceCode("second.css", ".second {color: red}");
-  var thirdUISC = addUISourceCode("third.css", ".third {color: red}");
+  var firstUISC = addUISourceCode('first.css', '.first {color: red}');
+  var secondUISC = addUISourceCode('second.css', '.second {color: red}');
+  var thirdUISC = addUISourceCode('third.css', '.third {color: red}');
   uiSourceCodeList.show(UI.inspectorView.element);
 
   TestRunner.runTestSuite([
@@ -23,18 +25,18 @@ function test() {
       dumpAfterLoadingFinished().then(next);
     },
     function workingCopyChanged(next) {
-      firstUISC.setWorkingCopy(".first {color: blue}");
+      firstUISC.setWorkingCopy('.first {color: blue}');
       dumpAfterLoadingFinished().then(next);
     },
     function workingCopyComitted(next) {
       firstUISC.commitWorkingCopy();
-      secondUISC.addRevision(".second {color: blue}");
+      secondUISC.addRevision('.second {color: blue}');
       dumpAfterLoadingFinished().then(next);
     },
     function resetAll(next) {
-      firstUISC.addRevision(".first {color: red}");
-      secondUISC.addRevision(".second {color: red}");
-      thirdUISC.addRevision(".third {color: red}");
+      firstUISC.addRevision('.first {color: red}');
+      secondUISC.addRevision('.second {color: red}');
+      thirdUISC.addRevision('.third {color: red}');
       dumpAfterLoadingFinished().then(next);
     }
 
@@ -58,7 +60,8 @@ function test() {
   }
 
   function addUISourceCode(url, content) {
-    return project.addContentProvider(url, Common.StaticContentProvider.fromString(url, Common.resourceTypes.Stylesheet, content));
+    return project.addContentProvider(
+        url, Common.StaticContentProvider.fromString(url, Common.resourceTypes.Stylesheet, content));
   }
 }
 </script>

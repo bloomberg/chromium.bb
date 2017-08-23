@@ -3,22 +3,19 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/layers-test.js"></script>
 <script>
-function test()
-{
-    LayersTestRunner.requestLayers(onGotLayers);
+function test() {
+  LayersTestRunner.requestLayers(onGotLayers);
 
-    function onGotLayers()
-    {
-        var layer = LayersTestRunner.findLayerByNodeIdAttribute("a");
-        layer.snapshots()[0].then(snapshotWithRect => snapshotWithRect.snapshot.commandLog()).then(onHistoryReceived);
-    }
+  function onGotLayers() {
+    var layer = LayersTestRunner.findLayerByNodeIdAttribute('a');
+    layer.snapshots()[0].then(snapshotWithRect => snapshotWithRect.snapshot.commandLog()).then(onHistoryReceived);
+  }
 
-    function onHistoryReceived(items)
-    {
-        TestRunner.addResult("Canvas log:");
-        TestRunner.addObject(items, {"uniqueID": "skip"});
-        TestRunner.completeTest();
-    }
+  function onHistoryReceived(items) {
+    TestRunner.addResult('Canvas log:');
+    TestRunner.addObject(items, {'uniqueID': 'skip'});
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

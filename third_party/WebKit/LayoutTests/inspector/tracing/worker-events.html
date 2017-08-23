@@ -32,32 +32,29 @@ function startSecondWorker()
     return new Promise((fulfill) => worker2.onmessage = fulfill);
 }
 
-function test()
-{
-    PerformanceTestRunner.invokeWithTracing("startSecondWorker", TestRunner.safeWrap(processTracingEvents));
+function test() {
+  PerformanceTestRunner.invokeWithTracing('startSecondWorker', TestRunner.safeWrap(processTracingEvents));
 
-    var workerMetadataEventCount = 0;
-    function processTracingEvents()
-    {
-        PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process) {
-            process.sortedThreads().forEach(function(thread) {
-                thread.events().forEach(processEvent);
-            });
-        });
-        TestRunner.assertEquals(2, workerMetadataEventCount);
-        TestRunner.completeTest();
-    }
+  var workerMetadataEventCount = 0;
+  function processTracingEvents() {
+    PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process) {
+      process.sortedThreads().forEach(function(thread) {
+        thread.events().forEach(processEvent);
+      });
+    });
+    TestRunner.assertEquals(2, workerMetadataEventCount);
+    TestRunner.completeTest();
+  }
 
-    function processEvent(event)
-    {
-        if (!event.hasCategory(SDK.TracingModel.DevToolsMetadataEventCategory) || event.name !== TimelineModel.TimelineModel.DevToolsMetadataEvent.TracingSessionIdForWorker)
-            return;
+  function processEvent(event) {
+    if (!event.hasCategory(SDK.TracingModel.DevToolsMetadataEventCategory) ||
+        event.name !== TimelineModel.TimelineModel.DevToolsMetadataEvent.TracingSessionIdForWorker)
+      return;
 
-        ++workerMetadataEventCount;
-        TestRunner.assertEquals(PerformanceTestRunner.timelineModel().sessionId(), event.args["data"]["sessionId"]);
-        TestRunner.addResult("Got DevTools worker metadata event(" + workerMetadataEventCount +  "): " + event.name);
-    }
-
+    ++workerMetadataEventCount;
+    TestRunner.assertEquals(PerformanceTestRunner.timelineModel().sessionId(), event.args['data']['sessionId']);
+    TestRunner.addResult('Got DevTools worker metadata event(' + workerMetadataEventCount + '): ' + event.name);
+  }
 }
 
 </script>

@@ -3,44 +3,124 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function test()
-{
-    var mainThread = 1;
-    var pid = 100;
-    var sessionId = "1";
+function test() {
+  var mainThread = 1;
+  var pid = 100;
+  var sessionId = '1';
 
-    var testData = [
-        {"cat": "disabled-by-default-devtools.timeline","name": "TracingStartedInPage","ph": "I","pid": pid,"tid": mainThread,"ts": 100,"args":{ "sessionId": sessionId }},
-        {"cat": "disabled-by-default-devtools.timeline","name": "SetLayerTreeId","ph": "I","pid": pid,"tid": mainThread,"ts": 101,"args":{ "sessionId": sessionId, "layerTreeId": 17 }},
+  var testData = [
+    {
+      'cat': 'disabled-by-default-devtools.timeline',
+      'name': 'TracingStartedInPage',
+      'ph': 'I',
+      'pid': pid,
+      'tid': mainThread,
+      'ts': 100,
+      'args': {'sessionId': sessionId}
+    },
+    {
+      'cat': 'disabled-by-default-devtools.timeline',
+      'name': 'SetLayerTreeId',
+      'ph': 'I',
+      'pid': pid,
+      'tid': mainThread,
+      'ts': 101,
+      'args': {'sessionId': sessionId, 'layerTreeId': 17}
+    },
 
-        {"cat": "toplevel", "name": "Program", "ph": "X", "ts": 100000,"dur":3000,"tid": mainThread, "pid": pid, args:{}},
-        {"cat": "disabled-by-default-devtools.timeline", "name": "FunctionCall", "ph": "X", "ts": 100500,dur:1500,"tid": mainThread, "pid": pid, args:{}},
-        {"cat": "disabled-by-default-devtools.timeline", "name": "Layout", "ph": "X", "ts": 101000,dur:1000,"tid": mainThread, "pid": pid, args:{beginData:{}, endData:{}}},
+    {
+      'cat': 'toplevel',
+      'name': 'Program',
+      'ph': 'X',
+      'ts': 100000,
+      'dur': 3000,
+      'tid': mainThread,
+      'pid': pid,
+      args: {}
+    },
+    {
+      'cat': 'disabled-by-default-devtools.timeline',
+      'name': 'FunctionCall',
+      'ph': 'X',
+      'ts': 100500,
+      dur: 1500,
+      'tid': mainThread,
+      'pid': pid,
+      args: {}
+    },
+    {
+      'cat': 'disabled-by-default-devtools.timeline',
+      'name': 'Layout',
+      'ph': 'X',
+      'ts': 101000,
+      dur: 1000,
+      'tid': mainThread,
+      'pid': pid,
+      args: {beginData: {}, endData: {}}
+    },
 
-        {"cat": "toplevel", "name": "Program", "ph": "X", "ts": 104000,"dur":4000,"tid": mainThread, "pid": pid, args:{}},
-        {"cat": "disabled-by-default-devtools.timeline", "name": "FunctionCall", "ph": "X", "ts": 104000,"dur":1000,"tid": mainThread, "pid": pid, args:{}},
-        {"cat": "disabled-by-default-devtools.timeline", "name": "CommitLoad", "ph": "X", "ts": 105000,"dur":1000,"tid": mainThread, "pid": pid, args:{}},
-        {"cat": "disabled-by-default-devtools.timeline", "name": "Layout", "ph": "X", "ts": 107000,"dur":1000, "tid": mainThread, "pid": pid, args:{beginData:{}, endData:{}}},
-    ];
+    {
+      'cat': 'toplevel',
+      'name': 'Program',
+      'ph': 'X',
+      'ts': 104000,
+      'dur': 4000,
+      'tid': mainThread,
+      'pid': pid,
+      args: {}
+    },
+    {
+      'cat': 'disabled-by-default-devtools.timeline',
+      'name': 'FunctionCall',
+      'ph': 'X',
+      'ts': 104000,
+      'dur': 1000,
+      'tid': mainThread,
+      'pid': pid,
+      args: {}
+    },
+    {
+      'cat': 'disabled-by-default-devtools.timeline',
+      'name': 'CommitLoad',
+      'ph': 'X',
+      'ts': 105000,
+      'dur': 1000,
+      'tid': mainThread,
+      'pid': pid,
+      args: {}
+    },
+    {
+      'cat': 'disabled-by-default-devtools.timeline',
+      'name': 'Layout',
+      'ph': 'X',
+      'ts': 107000,
+      'dur': 1000,
+      'tid': mainThread,
+      'pid': pid,
+      args: {beginData: {}, endData: {}}
+    },
+  ];
 
-    var timelineModel = PerformanceTestRunner.createPerformanceModelWithEvents(testData).timelineModel();
-    for (var startTime = 100000; startTime <= 109000; startTime += 1000) {
-        for (var endTime = startTime + 1000; endTime <= 109000; endTime += 1000) {
-            dumpStats(startTime, endTime, Timeline.TimelineUIUtils.statsForTimeRange(timelineModel, startTime / 1000, endTime / 1000));
-        }
+  var timelineModel = PerformanceTestRunner.createPerformanceModelWithEvents(testData).timelineModel();
+  for (var startTime = 100000; startTime <= 109000; startTime += 1000) {
+    for (var endTime = startTime + 1000; endTime <= 109000; endTime += 1000) {
+      dumpStats(
+          startTime, endTime,
+          Timeline.TimelineUIUtils.statsForTimeRange(timelineModel, startTime / 1000, endTime / 1000));
     }
-    function dumpStats(t1, t2, obj) {
-        var keys = Object.keys(obj).sort();
-        var str = "";
-        var total = 0;
-        for (var k of keys) {
-            total += obj[k];
-            str += `${k}: ${obj[k]} `;
-        }
-        str += `total: ${total}`;
-        TestRunner.addResult(`${t1}-${t2}: ${str}`);
+  }
+  function dumpStats(t1, t2, obj) {
+    var keys = Object.keys(obj).sort();
+    var str = '';
+    var total = 0;
+    for (var k of keys) {
+      total += obj[k];
+      str += `${k}: ${obj[k]} `;
     }
-    TestRunner.completeTest();
+    str += `total: ${total}`;
+    TestRunner.addResult(`${t1}-${t2}: ${str}`);
+  }
+  TestRunner.completeTest();
 }
 
 </script>

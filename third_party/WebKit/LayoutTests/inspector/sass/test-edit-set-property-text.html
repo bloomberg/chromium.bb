@@ -8,52 +8,40 @@
 <script src="./sass-test.js"></script>
 <script>
 
-function test()
-{
-    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+function test() {
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
 
-    SASSTestRunner.runCSSEditTests(header, [
-        function testEditPropertyName(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "color", "border")
-            ];
-        },
+  SASSTestRunner.runCSSEditTests(header, [
+    function testEditPropertyName(text) {
+      return [SASSTestRunner.createEdit(text, 'color', 'border')];
+    },
 
-        function testEditPropertyValue(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "red", "blue")
-            ];
-        },
+    function testEditPropertyValue(text) {
+      return [SASSTestRunner.createEdit(text, 'red', 'blue')];
+    },
 
-        function testEditPropertyNames(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "color", "border", 0),
-                SASSTestRunner.createEdit(text, "color", "border", 1),
-                SASSTestRunner.createEdit(text, "color", "border", 2),
-            ];
-        },
+    function testEditPropertyNames(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'color', 'border', 0),
+        SASSTestRunner.createEdit(text, 'color', 'border', 1),
+        SASSTestRunner.createEdit(text, 'color', 'border', 2),
+      ];
+    },
 
-        function testEditPropertyValues(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "red", "blue", 0),
-                SASSTestRunner.createEdit(text, "red", "blue", 1),
-                SASSTestRunner.createEdit(text, "red", "blue", 2)
-            ];
-        },
+    function testEditPropertyValues(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'red', 'blue', 0), SASSTestRunner.createEdit(text, 'red', 'blue', 1),
+        SASSTestRunner.createEdit(text, 'red', 'blue', 2)
+      ];
+    },
 
-        function testConflictingEdits(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "red", "green", 0),
-                SASSTestRunner.createEdit(text, "red", "magenta", 1),
-                SASSTestRunner.createEdit(text, "red", "yellow", 2)
-            ];
-        },
-    ]);
+    function testConflictingEdits(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'red', 'green', 0), SASSTestRunner.createEdit(text, 'red', 'magenta', 1),
+        SASSTestRunner.createEdit(text, 'red', 'yellow', 2)
+      ];
+    },
+  ]);
 }
 
 </script>

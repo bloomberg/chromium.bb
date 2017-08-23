@@ -7,13 +7,12 @@
 
 <script>
 
-async function test()
-{
-    CoverageTestRunner.startCoverage();
-    await TestRunner.evaluateInPagePromise("performActions()");
-    await CoverageTestRunner.stopCoverage();
-    await CoverageTestRunner.dumpDecorations("coverage.js");
-    TestRunner.completeTest();
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+  await CoverageTestRunner.dumpDecorations('coverage.js');
+  TestRunner.completeTest();
 }
 </script>
 </head>

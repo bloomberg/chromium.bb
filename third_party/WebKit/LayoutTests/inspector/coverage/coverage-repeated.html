@@ -8,27 +8,26 @@
 <link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
 
 <script>
-async function test()
-{
-    CoverageTestRunner.startCoverage();
-    await TestRunner.evaluateInPagePromise("performActions()");
-    await CoverageTestRunner.stopCoverage();
-    TestRunner.addResult('Initial');
-    CoverageTestRunner.dumpCoverageListView();
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+  TestRunner.addResult('Initial');
+  CoverageTestRunner.dumpCoverageListView();
 
-    CoverageTestRunner.startCoverage();
-    await CoverageTestRunner.stopCoverage();
-    TestRunner.addResult('After second session');
-    CoverageTestRunner.dumpCoverageListView();
+  CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.stopCoverage();
+  TestRunner.addResult('After second session');
+  CoverageTestRunner.dumpCoverageListView();
 
-    var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
-    coverageView._clear();
-    CoverageTestRunner.startCoverage();
-    await CoverageTestRunner.stopCoverage();
-    TestRunner.addResult('After clear');
-    CoverageTestRunner.dumpCoverageListView();
+  var coverageView = self.runtime.sharedInstance(Coverage.CoverageView);
+  coverageView._clear();
+  CoverageTestRunner.startCoverage();
+  await CoverageTestRunner.stopCoverage();
+  TestRunner.addResult('After clear');
+  CoverageTestRunner.dumpCoverageListView();
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

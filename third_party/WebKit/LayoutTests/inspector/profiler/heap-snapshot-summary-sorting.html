@@ -4,65 +4,57 @@
   <script src="heap-snapshot-test.js"></script>
 <script>
 
-function test()
-{
-    var instanceCount = 25;
-    function createHeapSnapshot()
-    {
-        return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+function test() {
+  var instanceCount = 25;
+  function createHeapSnapshot() {
+    return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+  }
+
+  ProfilerTestRunner.runHeapSnapshotTestSuite([function testSorting(next) {
+    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+    function step1() {
+      ProfilerTestRunner.switchToView('Summary', step2);
     }
 
-    ProfilerTestRunner.runHeapSnapshotTestSuite([
-        function testSorting(next)
-        {
-            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+    var columns;
+    var currentColumn;
+    var currentColumnOrder;
 
-            function step1()
-            {
-                ProfilerTestRunner.switchToView("Summary", step2);
-            }
+    function step2() {
+      columns = ProfilerTestRunner.viewColumns();
+      currentColumn = 0;
+      currentColumnOrder = false;
+      setTimeout(step3, 0);
+    }
 
-            var columns;
-            var currentColumn;
-            var currentColumnOrder;
+    function step3() {
+      if (currentColumn >= columns.length) {
+        setTimeout(next, 0);
+        return;
+      }
 
-            function step2()
-            {
-                columns = ProfilerTestRunner.viewColumns();
-                currentColumn = 0;
-                currentColumnOrder = false;
-                setTimeout(step3, 0);
-            }
+      ProfilerTestRunner.clickColumn(columns[currentColumn], step4);
+    }
 
-            function step3()
-            {
-                if (currentColumn >= columns.length) {
-                    setTimeout(next, 0);
-                    return;
-                }
+    function step4(newColumnState) {
+      columns[currentColumn] = newColumnState;
+      var contents = ProfilerTestRunner.columnContents(columns[currentColumn]);
+      TestRunner.assertEquals(true, !!contents.length, 'column contents');
+      var sortTypes = {object: 'text', distance: 'number', count: 'number', shallowSize: 'size', retainedSize: 'size'};
+      TestRunner.assertEquals(true, !!sortTypes[columns[currentColumn].id], 'sort by id');
+      ProfilerTestRunner.checkArrayIsSorted(
+          contents, sortTypes[columns[currentColumn].id], columns[currentColumn].sort);
 
-                ProfilerTestRunner.clickColumn(columns[currentColumn], step4);
-            }
-
-            function step4(newColumnState)
-            {
-                columns[currentColumn] = newColumnState;
-                var contents = ProfilerTestRunner.columnContents(columns[currentColumn]);
-                TestRunner.assertEquals(true, !!contents.length, "column contents");
-                var sortTypes = { object: "text", distance: "number", count: "number", shallowSize: "size", retainedSize: "size" };
-                TestRunner.assertEquals(true, !!sortTypes[columns[currentColumn].id], "sort by id");
-                ProfilerTestRunner.checkArrayIsSorted(contents, sortTypes[columns[currentColumn].id], columns[currentColumn].sort);
-
-                if (!currentColumnOrder)
-                    currentColumnOrder = true;
-                else {
-                    currentColumnOrder = false;
-                    ++currentColumn;
-                }
-                setTimeout(step3, 0);
-            }
-        }
-    ]);
+      if (!currentColumnOrder)
+        currentColumnOrder = true;
+      else {
+        currentColumnOrder = false;
+        ++currentColumn;
+      }
+      setTimeout(step3, 0);
+    }
+  }]);
 }
 
 </script>

@@ -20,22 +20,20 @@ function doActions()
     return new Promise((fulfill) => testRunner.layoutAndPaintAsyncThen(fulfill));
 }
 
-function test()
-{
-    PerformanceTestRunner.invokeWithTracing("doActions", onTracingComplete);
-    function onTracingComplete()
-    {
-        var events = PerformanceTestRunner.timelineModel().inspectedTargetEvents();
-        for (var i = 0; i < events.length; ++i) {
-            var event = events[i];
-            if (events[i].name === TimelineModel.TimelineModel.RecordType.UpdateLayerTree) {
-                TestRunner.addResult("Got UpdateLayerTree event, phase: " + events[i].phase);
-                break;
-            }
-        }
-        TestRunner.addResult("Done");
-        TestRunner.completeTest();
+function test() {
+  PerformanceTestRunner.invokeWithTracing('doActions', onTracingComplete);
+  function onTracingComplete() {
+    var events = PerformanceTestRunner.timelineModel().inspectedTargetEvents();
+    for (var i = 0; i < events.length; ++i) {
+      var event = events[i];
+      if (events[i].name === TimelineModel.TimelineModel.RecordType.UpdateLayerTree) {
+        TestRunner.addResult('Got UpdateLayerTree event, phase: ' + events[i].phase);
+        break;
+      }
     }
+    TestRunner.addResult('Done');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

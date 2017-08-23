@@ -11,13 +11,12 @@ pre {
 </style>
 <script>
 
-function test()
-{
-    TestRunner.evaluateInPagePromise("getCSS()")
-        .then(result => SASSTestRunner.parseCSS("", result.value))
-        .then(ast => SASSTestRunner.runEditingTests(ast))
-        .catch(console.error.bind(console))
-        .then(TestRunner.completeTest);
+function test() {
+  TestRunner.evaluateInPagePromise('getCSS()')
+      .then(result => SASSTestRunner.parseCSS('', result.value))
+      .then(ast => SASSTestRunner.runEditingTests(ast))
+      .catch(console.error.bind(console))
+      .then(TestRunner.completeTest);
 }
 
 function getCSS()

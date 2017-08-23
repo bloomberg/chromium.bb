@@ -12,43 +12,37 @@ function insertStyleSheet()
     link.setAttribute("href", "resources/test-ssp-breaking-edits.css");
 }
 
-function test()
-{
-    var sourceCode;
-    TestRunner.evaluateInPage("insertStyleSheet()", onStyleSheet);
+function test() {
+  var sourceCode;
+  TestRunner.evaluateInPage('insertStyleSheet()', onStyleSheet);
 
-    function onStyleSheet()
-    {
-        SourcesTestRunner.waitForScriptSource("test-ssp-breaking-edits.scss", onSASS);
-    }
+  function onStyleSheet() {
+    SourcesTestRunner.waitForScriptSource('test-ssp-breaking-edits.scss', onSASS);
+  }
 
-    function onSASS(sc)
-    {
-        sourceCode = sc;
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
-    }
+  function onSASS(sc) {
+    sourceCode = sc;
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
+  }
 
-    function step1()
-    {
-        var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("font-family");
-        treeElement.startEditing(treeElement.valueElement);
-        treeElement.valueElement.textContent = "\"Times";
-        treeElement.kickFreeFlowStyleEditForTest();
-        ElementsTestRunner.waitForStyleApplied(step2.bind(null, treeElement));
-    }
+  function step1() {
+    var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem('font-family');
+    treeElement.startEditing(treeElement.valueElement);
+    treeElement.valueElement.textContent = '"Times';
+    treeElement.kickFreeFlowStyleEditForTest();
+    ElementsTestRunner.waitForStyleApplied(step2.bind(null, treeElement));
+  }
 
-    function step2(treeElement)
-    {
-        treeElement.valueElement.textContent = "\"Times New Roman\"";
-        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        ElementsTestRunner.waitForStyleApplied(step3);
-    }
+  function step2(treeElement) {
+    treeElement.valueElement.textContent = '"Times New Roman"';
+    treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    ElementsTestRunner.waitForStyleApplied(step3);
+  }
 
-    function step3()
-    {
-        TestRunner.addResult(sourceCode.workingCopy());
-        TestRunner.completeTest();
-    }
+  function step3() {
+    TestRunner.addResult(sourceCode.workingCopy());
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -4,13 +4,12 @@
 <script src="../http/tests/inspector/resources-test.js"></script>
 <script>
 
-function test()
-{
-    var tableName = "table-name-with-dashes-and-\"quotes\"";
-    var escapedTableName = Resources.DatabaseTableView.prototype._escapeTableName(tableName, "", true);
-    TestRunner.addResult("Original value: " + tableName);
-    TestRunner.addResult("Escaped value: " + escapedTableName);
-    TestRunner.completeTest();
+function test() {
+  var tableName = 'table-name-with-dashes-and-"quotes"';
+  var escapedTableName = Resources.DatabaseTableView.prototype._escapeTableName(tableName, '', true);
+  TestRunner.addResult('Original value: ' + tableName);
+  TestRunner.addResult('Escaped value: ' + escapedTableName);
+  TestRunner.completeTest();
 }
 </script>
 </head>

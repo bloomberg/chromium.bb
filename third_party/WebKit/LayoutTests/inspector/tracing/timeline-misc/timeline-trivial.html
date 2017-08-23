@@ -5,13 +5,12 @@
 <script>
 
 function test() {
-    /* This test seems silly, but originally it tickled bug 31080 */
-    function callback()
-    {
-        TestRunner.addResult("Timeline started");
-        TestRunner.completeTest();
-    }
-    PerformanceTestRunner.startTimeline(callback);
+  /* This test seems silly, but originally it tickled bug 31080 */
+  function callback() {
+    TestRunner.addResult('Timeline started');
+    TestRunner.completeTest();
+  }
+  PerformanceTestRunner.startTimeline(callback);
 }
 
 

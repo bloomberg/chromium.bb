@@ -49,37 +49,33 @@ JSON = {};
 <link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
 <script src="resources/audits-script2.js"></script>
 <script>
-var test = function()
-{
-    TestRunner.reloadPage(onPageReloaded);
-    var pendingStyleSheetsCount = 4;
-    TestRunner.addSniffer(SDK.CSSModel.prototype, "_styleSheetAdded", maybeStylesheetsLoaded, true);
+var test = function() {
+  TestRunner.reloadPage(onPageReloaded);
+  var pendingStyleSheetsCount = 4;
+  TestRunner.addSniffer(SDK.CSSModel.prototype, '_styleSheetAdded', maybeStylesheetsLoaded, true);
 
-    var pageReloaded = false;
-    function onPageReloaded()
-    {
-        pageReloaded = true;
-        maybeStylesheetsLoaded();
-    }
+  var pageReloaded = false;
+  function onPageReloaded() {
+    pageReloaded = true;
+    maybeStylesheetsLoaded();
+  }
 
-    function maybeStylesheetsLoaded()
-    {
-        if (!pageReloaded)
-            return;
-        if (TestRunner.cssModel.styleSheetHeaders().length !== pendingStyleSheetsCount)
-            return;
-        Audits.AuditRuleResult.resourceDomain = function() {
-            return "[domain]";
-        };
+  function maybeStylesheetsLoaded() {
+    if (!pageReloaded)
+      return;
+    if (TestRunner.cssModel.styleSheetHeaders().length !== pendingStyleSheetsCount)
+      return;
+    Audits.AuditRuleResult.resourceDomain = function() {
+      return '[domain]';
+    };
 
-        AuditsTestRunner.launchAllAudits(false, onAuditsFinished);
-    }
+    AuditsTestRunner.launchAllAudits(false, onAuditsFinished);
+  }
 
-    function onAuditsFinished()
-    {
-        AuditsTestRunner.collectAuditResults(TestRunner.completeTest);
-    }
-}
+  function onAuditsFinished() {
+    AuditsTestRunner.collectAuditResults(TestRunner.completeTest);
+  }
+};
 </script>
 </head>
 

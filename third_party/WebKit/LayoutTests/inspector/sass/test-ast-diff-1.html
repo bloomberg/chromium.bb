@@ -10,28 +10,25 @@ pre {
 </style>
 <script>
 
-function test()
-{
-    var parseCSS = SASSTestRunner.parseCSS.bind(InspectorTest, "");
-    var loadCSS = TestRunner.evaluateInPagePromise.bind(InspectorTest);
-    var ast1, ast2;
+function test() {
+  var parseCSS = SASSTestRunner.parseCSS.bind(InspectorTest, '');
+  var loadCSS = TestRunner.evaluateInPagePromise.bind(InspectorTest);
+  var ast1, ast2;
 
-    loadCSS("getCSS('.initial')")
-        .then(result => parseCSS(result.value))
-        .then(ast => ast1 = ast)
-        .then(() => loadCSS("getCSS('.changed')"))
-        .then(result => parseCSS(result.value))
-        .then(ast => ast2 = ast)
-        .then(onParsed)
-        .catch(error => console.error(error))
-        .then(TestRunner.completeTest);
+  loadCSS('getCSS(\'.initial\')')
+      .then(result => parseCSS(result.value))
+      .then(ast => ast1 = ast)
+      .then(() => loadCSS('getCSS(\'.changed\')'))
+      .then(result => parseCSS(result.value))
+      .then(ast => ast2 = ast)
+      .then(onParsed)
+      .catch(error => console.error(error))
+      .then(TestRunner.completeTest);
 
-    function onParsed()
-    {
-        var diff = Sass.SASSSupport.diffModels(ast1, ast2);
-        SASSTestRunner.dumpASTDiff(diff);
-    }
-
+  function onParsed() {
+    var diff = Sass.SASSSupport.diffModels(ast1, ast2);
+    SASSTestRunner.dumpASTDiff(diff);
+  }
 }
 
 function getCSS(className)

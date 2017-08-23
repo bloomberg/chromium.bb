@@ -17,33 +17,32 @@ function updateSubframeAndDisplay()
     return waitForFrame();
 }
 
-function test()
-{
-    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+function test() {
+  Runtime.experiments.enableForTest('timelineInvalidationTracking');
 
-    TestRunner.runTestSuite([
-        function testLocalFrame(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("display", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 0, "first paint invalidations");
-                next();
-            });
-        },
+  TestRunner.runTestSuite([
+    function testLocalFrame(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('display', function() {
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Paint, 0, 'first paint invalidations');
+        next();
+      });
+    },
 
-        function testSubframe(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("updateSubframeAndDisplay", function() {
-                // The first paint corresponds to the local frame and should have no invalidations.
-                var firstPaintEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
-                var firstInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(firstPaintEvent);
-                TestRunner.assertEquals(firstInvalidations, null);
+    function testSubframe(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('updateSubframeAndDisplay', function() {
+        // The first paint corresponds to the local frame and should have no invalidations.
+        var firstPaintEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+        var firstInvalidations = TimelineModel.InvalidationTracker.invalidationEventsFor(firstPaintEvent);
+        TestRunner.assertEquals(firstInvalidations, null);
 
-                // The second paint corresponds to the subframe and should have our style invalidations.
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.Paint, 1, "second paint invalidations");
-                next();
-            });
-        }
-    ]);
+        // The second paint corresponds to the subframe and should have our style invalidations.
+        PerformanceTestRunner.dumpInvalidations(
+            TimelineModel.TimelineModel.RecordType.Paint, 1, 'second paint invalidations');
+        next();
+      });
+    }
+  ]);
 }
 </script>
 </head>

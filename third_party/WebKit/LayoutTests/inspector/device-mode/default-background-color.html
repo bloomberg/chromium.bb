@@ -10,20 +10,20 @@ html {
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 
 <script>
-function test()
-{
-    TestRunner.evaluateInPage("testRunner.dumpAsTextWithPixelResults();", () => {
-        TestRunner.EmulationAgent.invoke_setDefaultBackgroundColorOverride({color: {r: 0x12, g: 0x34, b: 0x56, a: 1.0}}).then(backgroundColorSet);
-    });
+function test() {
+  TestRunner.evaluateInPage('testRunner.dumpAsTextWithPixelResults();', () => {
+    TestRunner.EmulationAgent.invoke_setDefaultBackgroundColorOverride({color: {r: 0x12, g: 0x34, b: 0x56, a: 1.0}})
+        .then(backgroundColorSet);
+  });
 
-    function backgroundColorSet(messageObject) {
-      if (messageObject[Protocol.Error])
-          InspectorTest.log("FAIL: unexpected exception: " + messageObject[Protocol.Error]);
+  function backgroundColorSet(messageObject) {
+    if (messageObject[Protocol.Error])
+      InspectorTest.log('FAIL: unexpected exception: ' + messageObject[Protocol.Error]);
 
-      // Complete the test without closing the inspector, so that the override stays active for the picture.
-      TestRunner.flushResults();
-      TestRunner.evaluateInPage("testRunner.notifyDone();");
-    }
+    // Complete the test without closing the inspector, so that the override stays active for the picture.
+    TestRunner.flushResults();
+    TestRunner.evaluateInPage('testRunner.notifyDone();');
+  }
 }
 </script>
 

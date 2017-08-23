@@ -2,12 +2,11 @@
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
-async function test()
-{
-    var initialModules = TestRunner.loadedModules();
-    await UI.inspectorView.panel("network");
-    TestRunner.dumpLoadedModules(initialModules);
-    TestRunner.completeTest();
+async function test() {
+  var initialModules = TestRunner.loadedModules();
+  await UI.inspectorView.panel('network');
+  TestRunner.dumpLoadedModules(initialModules);
+  TestRunner.completeTest();
 }
 </script>
 </head>

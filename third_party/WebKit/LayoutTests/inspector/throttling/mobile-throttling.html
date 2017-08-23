@@ -24,19 +24,14 @@ function test() {
     TestRunner.addResult('=== THROTTLING STATE ===');
     var {download, upload, latency} = SDK.multitargetNetworkManager.networkConditions();
     TestRunner.addResult(`Network throttling - download: ${download} upload: ${upload} latency: ${latency}`);
-    TestRunner.addResult('CPU throttling rate: ' +
-                            MobileThrottling.throttlingManager().cpuThrottlingRate());
+    TestRunner.addResult('CPU throttling rate: ' + MobileThrottling.throttlingManager().cpuThrottlingRate());
     TestRunner.addResult('Device mode throttling: ' + deviceModeThrottling._text);
-    TestRunner.addResult('Network panel offline checkbox: ' +
-                            networkPanelOfflineCheckbox.checked);
-    TestRunner.addResult('Network panel throttling: ' +
-                            networkPanelThrottling.selectedOption().text);
-    TestRunner.addResult('Network conditions drawer throttling: ' +
-                            networkConditionsDrawerThrottlingSelector.value);
-    TestRunner.addResult('Performance panel network throttling: ' +
-                            performancePanelNetworkThrottling.selectedOption().text);
-    TestRunner.addResult('Performance panel CPU throttling: ' +
-                            performancePanelCPUThrottling.selectedOption().text);
+    TestRunner.addResult('Network panel offline checkbox: ' + networkPanelOfflineCheckbox.checked);
+    TestRunner.addResult('Network panel throttling: ' + networkPanelThrottling.selectedOption().text);
+    TestRunner.addResult('Network conditions drawer throttling: ' + networkConditionsDrawerThrottlingSelector.value);
+    TestRunner.addResult(
+        'Performance panel network throttling: ' + performancePanelNetworkThrottling.selectedOption().text);
+    TestRunner.addResult('Performance panel CPU throttling: ' + performancePanelCPUThrottling.selectedOption().text);
     TestRunner.addResult('========================\n');
   }
 
@@ -45,8 +40,7 @@ function test() {
 
   TestRunner.addResult('Change to offline in device mode');
   SDK.multitargetNetworkManager.setNetworkConditions(MobileThrottling.OfflineConditions.network);
-  MobileThrottling.throttlingManager().setCPUThrottlingRate(
-      MobileThrottling.OfflineConditions.cpuThrottlingRate);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(MobileThrottling.OfflineConditions.cpuThrottlingRate);
   dumpThrottlingState();
 
   TestRunner.addResult('Toggle network offline checkbox');
@@ -55,8 +49,7 @@ function test() {
 
   TestRunner.addResult('Change to low-end mobile in device mode');
   SDK.multitargetNetworkManager.setNetworkConditions(MobileThrottling.LowEndMobileConditions.network);
-  MobileThrottling.throttlingManager().setCPUThrottlingRate(
-      MobileThrottling.LowEndMobileConditions.cpuThrottlingRate);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(MobileThrottling.LowEndMobileConditions.cpuThrottlingRate);
   dumpThrottlingState();
 
   TestRunner.addResult('Change network to Fast 3G');
@@ -73,8 +66,7 @@ function test() {
 
   TestRunner.addResult('Change to mid-tier mobile in device mode');
   SDK.multitargetNetworkManager.setNetworkConditions(MobileThrottling.MidTierMobileConditions.network);
-  MobileThrottling.throttlingManager().setCPUThrottlingRate(
-      MobileThrottling.MidTierMobileConditions.cpuThrottlingRate);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(MobileThrottling.MidTierMobileConditions.cpuThrottlingRate);
   dumpThrottlingState();
 
   TestRunner.addResult('Change CPU throttling to low-end mobile');
@@ -82,14 +74,12 @@ function test() {
   dumpThrottlingState();
 
   TestRunner.addResult('Change CPU throttling to mid-tier mobile');
-  MobileThrottling.throttlingManager().setCPUThrottlingRate(
-      MobileThrottling.CPUThrottlingRates.MidTierMobile);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(MobileThrottling.CPUThrottlingRates.MidTierMobile);
   dumpThrottlingState();
 
   TestRunner.addResult('Change to no throttling in device mode');
   SDK.multitargetNetworkManager.setNetworkConditions(MobileThrottling.NoThrottlingConditions.network);
-  MobileThrottling.throttlingManager().setCPUThrottlingRate(
-      MobileThrottling.NoThrottlingConditions.cpuThrottlingRate);
+  MobileThrottling.throttlingManager().setCPUThrottlingRate(MobileThrottling.NoThrottlingConditions.cpuThrottlingRate);
   dumpThrottlingState();
 
   TestRunner.completeTest();

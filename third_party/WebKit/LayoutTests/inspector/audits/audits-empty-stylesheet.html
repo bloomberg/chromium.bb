@@ -8,23 +8,20 @@
 <script src="../../http/tests/inspector/audits-test.js"></script>
 
 <script>
-function test()
-{
-    TestRunner.reloadPage(step1);
+function test() {
+  TestRunner.reloadPage(step1);
 
-    function step1()
-    {
-        Audits.AuditRuleResult.resourceDomain = function() {
-            return "[domain]";
-        };
+  function step1() {
+    Audits.AuditRuleResult.resourceDomain = function() {
+      return '[domain]';
+    };
 
-        AuditsTestRunner.launchAllAudits(false, step2);
-    }
+    AuditsTestRunner.launchAllAudits(false, step2);
+  }
 
-    function step2()
-    {
-        AuditsTestRunner.collectAuditResults(TestRunner.completeTest);
-    }
+  function step2() {
+    AuditsTestRunner.collectAuditResults(TestRunner.completeTest);
+  }
 }
 </script>
 </head>
