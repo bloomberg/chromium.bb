@@ -141,6 +141,10 @@ void PipelineIntegrationTestBase::OnSeeked(base::TimeDelta seek_time,
 
 void PipelineIntegrationTestBase::OnStatusCallback(PipelineStatus status) {
   pipeline_status_ = status;
+
+  if (pipeline_status_ != PIPELINE_OK && pipeline_->IsRunning())
+    pipeline_->Stop();
+
   scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
