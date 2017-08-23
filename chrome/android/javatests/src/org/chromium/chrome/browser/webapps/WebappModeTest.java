@@ -13,7 +13,6 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,7 +42,6 @@ import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.net.test.EmbeddedTestServer;
 
 /**
  * Tests that WebappActivities are launched correctly.
@@ -76,8 +74,6 @@ public class WebappModeTest {
     private static final String WEBAPP_ICON = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXB"
             + "IWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wQIFB4cxOfiSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdG"
             + "ggR0lNUFeBDhcAAAAMSURBVAjXY2AUawEAALcAnI/TkI8AAAAASUVORK5CYII=";
-
-    private EmbeddedTestServer mTestServer;
 
     private Intent createIntent(String id, String url, String title, String icon, boolean addMac) {
         Intent intent = new Intent();
@@ -135,14 +131,6 @@ public class WebappModeTest {
                                 WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
                     }
                 });
-
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
     }
 
     /**

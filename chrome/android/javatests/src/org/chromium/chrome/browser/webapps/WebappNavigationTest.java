@@ -14,9 +14,7 @@ import android.graphics.Color;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +40,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.base.PageTransition;
 
 /**
@@ -60,17 +58,8 @@ public class WebappNavigationTest {
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
-    private EmbeddedTestServer mTestServer;
-
-    @Before
-    public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
-    }
+    @Rule
+    public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
 
     @Test
     @SmallTest
@@ -133,7 +122,7 @@ public class WebappNavigationTest {
     public void testInScopeNewTabLinkOpensInCct() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
-        addAnchor("testId", mTestServer.getURL(IN_SCOPE_PAGE_PATH), "_blank");
+        addAnchor("testId", mTestServerRule.getServer().getURL(IN_SCOPE_PAGE_PATH), "_blank");
         DOMUtils.clickNode(
                 mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
         CustomTabActivity customTab = waitFor(CustomTabActivity.class);
@@ -178,7 +167,7 @@ public class WebappNavigationTest {
     public void testInScopeNavigationStaysInWebapp() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        String otherPageUrl = mTestServer.getURL(IN_SCOPE_PAGE_PATH);
+        String otherPageUrl = mTestServerRule.getServer().getURL(IN_SCOPE_PAGE_PATH);
         mActivityTestRule.loadUrlInTab(otherPageUrl, PageTransition.LINK,
                 mActivityTestRule.getActivity().getActivityTab());
 
@@ -231,7 +220,8 @@ public class WebappNavigationTest {
         mActivityTestRule.waitUntilIdle(tabbedChrome);
 
         Assert.assertEquals("Tab in tabbed activity should show the Web App page",
-                mTestServer.getURL(WEB_APP_PATH), tabbedChrome.getActivityTab().getUrl());
+                mTestServerRule.getServer().getURL(WEB_APP_PATH),
+                tabbedChrome.getActivityTab().getUrl());
         Assert.assertSame("WebContents should be reparented from Web App to tabbed Chrome",
                 webAppWebContents, tabbedChrome.getActivityTab().getWebContents());
     }
@@ -270,8 +260,8 @@ public class WebappNavigationTest {
     }
 
     private void runWebappActivityAndWaitForIdle(Intent intent) throws Exception {
-        mActivityTestRule.startWebappActivity(
-                intent.putExtra(ShortcutHelper.EXTRA_URL, mTestServer.getURL(WEB_APP_PATH)));
+        mActivityTestRule.startWebappActivity(intent.putExtra(
+                ShortcutHelper.EXTRA_URL, mTestServerRule.getServer().getURL(WEB_APP_PATH)));
 
         mActivityTestRule.waitUntilSplashscreenHides();
         mActivityTestRule.waitUntilIdle();

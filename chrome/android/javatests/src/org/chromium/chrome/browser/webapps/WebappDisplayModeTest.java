@@ -6,14 +6,11 @@ package org.chromium.chrome.browser.webapps;
 
 import android.graphics.Color;
 import android.net.Uri;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.TextView;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +23,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.EmbeddedTestServerRule;
 
 /**
  * Test for various Display Modes of Web Apps.
@@ -41,17 +38,8 @@ public class WebappDisplayModeTest {
     @Rule
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
-    private EmbeddedTestServer mTestServer;
-
-    @Before
-    public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
-    }
+    @Rule
+    public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
 
     @Test
     @SmallTest
@@ -86,7 +74,7 @@ public class WebappDisplayModeTest {
         Assert.assertEquals("Web App title should be displayed on the title bar",
                 WEB_APP_PAGE_TITLE, ((TextView) activity.findViewById(R.id.title_bar)).getText());
         Assert.assertEquals("URL Bar should display URL authority",
-                Uri.parse(mTestServer.getURL(WEB_APP_PATH)).getAuthority(),
+                Uri.parse(mTestServerRule.getServer().getURL(WEB_APP_PATH)).getAuthority(),
                 ((UrlBar) activity.findViewById(R.id.url_bar)).getText().toString());
         Assert.assertEquals("CCT Close button should not be visible", View.GONE,
                 activity.findViewById(R.id.close_button).getVisibility());
@@ -95,7 +83,8 @@ public class WebappDisplayModeTest {
     private WebappActivity startActivity(int displayMode) throws Exception {
         mActivityTestRule.startWebappActivity(
                 mActivityTestRule.createIntent()
-                        .putExtra(ShortcutHelper.EXTRA_URL, mTestServer.getURL(WEB_APP_PATH))
+                        .putExtra(ShortcutHelper.EXTRA_URL,
+                                mTestServerRule.getServer().getURL(WEB_APP_PATH))
                         .putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, displayMode)
                         .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
 
