@@ -713,11 +713,8 @@ bool PasswordProtectionService::ParseVerdictEntry(
 bool PasswordProtectionService::PathVariantsMatchCacheExpression(
     const std::vector<std::string>& generated_paths,
     const std::string& cache_expression_path) {
-  for (const auto& path : generated_paths) {
-    if (cache_expression_path == path)
-      return true;
-  }
-  return false;
+  return std::find(generated_paths.begin(), generated_paths.end(),
+                   cache_expression_path) != generated_paths.end();
 }
 
 bool PasswordProtectionService::IsCacheExpired(int cache_creation_time,
