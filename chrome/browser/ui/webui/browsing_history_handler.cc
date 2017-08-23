@@ -13,13 +13,17 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -27,11 +31,14 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/features.h"
+#include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon/core/large_icon_service.h"
+#include "components/keyed_service/core/service_access_type.h"
+#include "components/prefs/pref_service.h"
 #include "components/query_parser/snippet.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/device_info/device_info.h"
@@ -39,7 +46,6 @@
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui.h"
-#include "extensions/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -51,6 +57,10 @@
 #endif
 
 using bookmarks::BookmarkModel;
+using history::BrowsingHistoryService;
+using history::HistoryService;
+using history::WebHistoryService;
+using syncer::SyncService;
 
 namespace {
 
@@ -110,15 +120,16 @@ void GetDeviceNameAndType(const browser_sync::ProfileSyncService* sync_service,
 }
 
 // Formats |entry|'s URL and title and adds them to |result|.
-void SetHistoryEntryUrlAndTitle(BrowsingHistoryService::HistoryEntry* entry,
-                                base::DictionaryValue* result) {
-  result->SetString("url", entry->url.spec());
+void SetHistoryEntryUrlAndTitle(
+    const BrowsingHistoryService::HistoryEntry& entry,
+    base::DictionaryValue* result) {
+  result->SetString("url", entry.url.spec());
 
   bool using_url_as_the_title = false;
-  base::string16 title_to_set(entry->title);
-  if (entry->title.empty()) {
+  base::string16 title_to_set(entry.title);
+  if (entry.title.empty()) {
     using_url_as_the_title = true;
-    title_to_set = base::UTF8ToUTF16(entry->url.spec());
+    title_to_set = base::UTF8ToUTF16(entry.url.spec());
   }
 
   // Since the title can contain BiDi text, we need to mark the text as either
@@ -142,18 +153,18 @@ void SetHistoryEntryUrlAndTitle(BrowsingHistoryService::HistoryEntry* entry,
 
 // Converts |entry| to a DictionaryValue to be owned by the caller.
 std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
-    BrowsingHistoryService::HistoryEntry* entry,
+    const BrowsingHistoryService::HistoryEntry& entry,
     BookmarkModel* bookmark_model,
     SupervisedUserService* supervised_user_service,
     const browser_sync::ProfileSyncService* sync_service) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetHistoryEntryUrlAndTitle(entry, result.get());
 
-  base::string16 domain = url_formatter::IDNToUnicode(entry->url.host());
+  base::string16 domain = url_formatter::IDNToUnicode(entry.url.host());
   // When the domain is empty, use the scheme instead. This allows for a
   // sensible treatment of e.g. file: URLs when group by domain is on.
   if (domain.empty())
-    domain = base::UTF8ToUTF16(entry->url.scheme() + ":");
+    domain = base::UTF8ToUTF16(entry.url.scheme() + ":");
 
   // The items which are to be written into result are also described in
   // chrome/browser/resources/history/history.js in @typedef for
@@ -163,21 +174,21 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
 
   result->SetString(
       "fallbackFaviconText",
-      base::UTF16ToASCII(favicon::GetFallbackIconText(entry->url)));
+      base::UTF16ToASCII(favicon::GetFallbackIconText(entry.url)));
 
-  result->SetDouble("time", entry->time.ToJsTime());
+  result->SetDouble("time", entry.time.ToJsTime());
 
   // Pass the timestamps in a list.
   std::unique_ptr<base::ListValue> timestamps(new base::ListValue);
-  for (std::set<int64_t>::const_iterator it = entry->all_timestamps.begin();
-       it != entry->all_timestamps.end(); ++it) {
-    timestamps->AppendDouble(base::Time::FromInternalValue(*it).ToJsTime());
+  for (int64_t timestamp : entry.all_timestamps) {
+    timestamps->AppendDouble(
+        base::Time::FromInternalValue(timestamp).ToJsTime());
   }
   result->Set("allTimestamps", std::move(timestamps));
 
   // Always pass the short date since it is needed both in the search and in
   // the monthly view.
-  result->SetString("dateShort", base::TimeFormatShortDate(entry->time));
+  result->SetString("dateShort", base::TimeFormatShortDate(entry.time));
 
   base::string16 snippet_string;
   base::string16 date_relative_day;
@@ -188,28 +199,27 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   // Only pass in the strings we need (search results need a shortdate
   // and snippet, browse results need day and time information). Makes sure that
   // values of result are never undefined
-  if (entry->is_search_result) {
-    snippet_string = entry->snippet;
+  if (entry.is_search_result) {
+    snippet_string = entry.snippet;
   } else {
-    base::Time midnight = entry->clock->Now().LocalMidnight();
-    base::string16 date_str = ui::TimeFormat::RelativeDate(entry->time,
-                                                           &midnight);
+    base::Time midnight = entry.clock->Now().LocalMidnight();
+    base::string16 date_str =
+        ui::TimeFormat::RelativeDate(entry.time, &midnight);
     if (date_str.empty()) {
-      date_str = base::TimeFormatFriendlyDate(entry->time);
+      date_str = base::TimeFormatFriendlyDate(entry.time);
     } else {
       date_str = l10n_util::GetStringFUTF16(
-          IDS_HISTORY_DATE_WITH_RELATIVE_TIME,
-          date_str,
-          base::TimeFormatFriendlyDate(entry->time));
+          IDS_HISTORY_DATE_WITH_RELATIVE_TIME, date_str,
+          base::TimeFormatFriendlyDate(entry.time));
     }
     date_relative_day = date_str;
-    date_time_of_day = base::TimeFormatTimeOfDay(entry->time);
+    date_time_of_day = base::TimeFormatTimeOfDay(entry.time);
   }
 
   std::string device_name;
   std::string device_type;
-  if (!entry->client_id.empty())
-    GetDeviceNameAndType(sync_service, entry->client_id, &device_name,
+  if (!entry.client_id.empty())
+    GetDeviceNameAndType(sync_service, entry.client_id, &device_name,
                          &device_type);
   result->SetString("deviceName", device_name);
   result->SetString("deviceType", device_type);
@@ -219,8 +229,8 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
     const SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
     int filtering_behavior =
-        url_filter->GetFilteringBehaviorForURL(entry->url.GetWithEmptyPath());
-    is_blocked_visit = entry->blocked_visit;
+        url_filter->GetFilteringBehaviorForURL(entry.url.GetWithEmptyPath());
+    is_blocked_visit = entry.blocked_visit;
     host_filtering_behavior = filtering_behavior;
   }
 #endif
@@ -228,7 +238,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   result->SetString("dateTimeOfDay", date_time_of_day);
   result->SetString("dateRelativeDay", date_relative_day);
   result->SetString("snippet", snippet_string);
-  result->SetBoolean("starred", bookmark_model->IsBookmarked(entry->url));
+  result->SetBoolean("starred", bookmark_model->IsBookmarked(entry.url));
   result->SetInteger("hostFilteringBehavior", host_filtering_behavior);
   result->SetBoolean("blockedVisit", is_blocked_visit);
 
@@ -241,15 +251,18 @@ BrowsingHistoryHandler::BrowsingHistoryHandler()
     : clock_(new base::DefaultClock()),
       browsing_history_service_(nullptr) {}
 
-BrowsingHistoryHandler::~BrowsingHistoryHandler() {
-}
+BrowsingHistoryHandler::~BrowsingHistoryHandler() {}
 
 void BrowsingHistoryHandler::RegisterMessages() {
+  Profile* profile = GetProfile();
+  HistoryService* local_history = HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS);
+  SyncService* sync_service =
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile);
   browsing_history_service_ = base::MakeUnique<BrowsingHistoryService>(
-      Profile::FromWebUI(web_ui()), this);
+      this, local_history, sync_service);
 
   // Create our favicon data source.
-  Profile* profile = Profile::FromWebUI(web_ui());
   content::URLDataSource::Add(profile, new FaviconSource(profile));
 
   web_ui()->RegisterMessageCallback("queryHistory",
@@ -295,8 +308,7 @@ void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {
 }
 
 void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
-  std::vector<std::unique_ptr<BrowsingHistoryService::HistoryEntry>>
-      items_to_remove;
+  std::vector<BrowsingHistoryService::HistoryEntry> items_to_remove;
   items_to_remove.reserve(args->GetSize());
   for (base::ListValue::const_iterator it = args->begin();
        it != args->end(); ++it) {
@@ -311,10 +323,8 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
       return;
     }
     DCHECK_GT(timestamps->GetSize(), 0U);
-    std::unique_ptr<BrowsingHistoryService::HistoryEntry> entry(
-            new BrowsingHistoryService::HistoryEntry());
-
-    entry->url = GURL(url);
+    BrowsingHistoryService::HistoryEntry entry;
+    entry.url = GURL(url);
 
     double timestamp;
     for (base::ListValue::const_iterator ts_iterator = timestamps->begin();
@@ -325,14 +335,13 @@ void BrowsingHistoryHandler::HandleRemoveVisits(const base::ListValue* args) {
       }
 
       base::Time visit_time = base::Time::FromJsTime(timestamp);
-      entry->all_timestamps.insert(visit_time.ToInternalValue());
+      entry.all_timestamps.insert(visit_time.ToInternalValue());
     }
 
-    items_to_remove.push_back(std::move(entry));
+    items_to_remove.push_back(entry);
   }
 
-  browsing_history_service_->RemoveVisits(&items_to_remove);
-  items_to_remove.clear();
+  browsing_history_service_->RemoveVisits(items_to_remove);
 }
 
 void BrowsingHistoryHandler::HandleClearBrowsingData(
@@ -346,14 +355,14 @@ void BrowsingHistoryHandler::HandleClearBrowsingData(
 
 void BrowsingHistoryHandler::HandleRemoveBookmark(const base::ListValue* args) {
   base::string16 url = ExtractStringValue(args);
-  Profile* profile = Profile::FromWebUI(web_ui());
+  Profile* profile = GetProfile();
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
   bookmarks::RemoveAllBookmarks(model, GURL(url));
 }
 
 void BrowsingHistoryHandler::OnQueryComplete(
-    std::vector<BrowsingHistoryService::HistoryEntry>* results,
-    BrowsingHistoryService::QueryResultsInfo* query_results_info) {
+    const std::vector<BrowsingHistoryService::HistoryEntry>& results,
+    const BrowsingHistoryService::QueryResultsInfo& query_results_info) {
   Profile* profile = Profile::FromWebUI(web_ui());
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
@@ -368,10 +377,9 @@ void BrowsingHistoryHandler::OnQueryComplete(
 
   // Convert the result vector into a ListValue.
   base::ListValue results_value;
-  for (std::vector<BrowsingHistoryService::HistoryEntry>::iterator it =
-           results->begin(); it != results->end(); ++it) {
+  for (const BrowsingHistoryService::HistoryEntry& entry : results) {
     std::unique_ptr<base::Value> value(HistoryEntryToValue(
-        &(*it), bookmark_model, supervised_user_service, sync_service));
+        entry, bookmark_model, supervised_user_service, sync_service));
     results_value.Append(std::move(value));
   }
 
@@ -380,19 +388,19 @@ void BrowsingHistoryHandler::OnQueryComplete(
   // described in chrome/browser/resources/history/history.js in @typedef for
   // HistoryQuery. Please update it whenever you add or remove any keys in
   // results_info_value_.
-  results_info.SetString("term", query_results_info->search_text);
-  results_info.SetBoolean("finished", query_results_info->reached_beginning);
+  results_info.SetString("term", query_results_info.search_text);
+  results_info.SetBoolean("finished", query_results_info.reached_beginning);
   results_info.SetBoolean("hasSyncedResults",
-                          query_results_info->has_synced_results);
+                          query_results_info.has_synced_results);
 
   // Add the specific dates that were searched to display them.
   // TODO(sergiu): Put today if the start is in the future.
   results_info.SetString(
       "queryStartTime",
-      GetRelativeDateLocalized(clock_.get(), query_results_info->start_time));
+      GetRelativeDateLocalized(clock_.get(), query_results_info.start_time));
   results_info.SetString(
       "queryEndTime",
-      GetRelativeDateLocalized(clock_.get(), query_results_info->end_time));
+      GetRelativeDateLocalized(clock_.get(), query_results_info.end_time));
 
   web_ui()->CallJavascriptFunctionUnsafe("historyResult", results_info,
                                          results_value);
@@ -416,4 +424,8 @@ void BrowsingHistoryHandler::HasOtherFormsOfBrowsingHistory(
   web_ui()->CallJavascriptFunctionUnsafe("showNotification",
                                          base::Value(has_synced_results),
                                          base::Value(has_other_forms));
+}
+
+Profile* BrowsingHistoryHandler::GetProfile() {
+  return Profile::FromWebUI(web_ui());
 }

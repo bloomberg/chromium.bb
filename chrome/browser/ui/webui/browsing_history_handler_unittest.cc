@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
-#include "chrome/browser/history/browsing_history_service.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/test_profile_sync_service.h"
+#include "components/history/core/browser/browsing_history_service.h"
 #include "components/history/core/test/fake_web_history_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -214,7 +214,7 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     web_history_service()->ExpireHistoryBetween(
         std::set<GURL>(), base::Time(), base::Time::Max(),
         base::Bind(
-            &BrowsingHistoryService::RemoveWebHistoryComplete,
+            &history::BrowsingHistoryService::RemoveWebHistoryComplete,
             handler.browsing_history_service_->weak_factory_.GetWeakPtr()),
         PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS);
 
