@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -140,6 +141,13 @@ jboolean TemplateUrlServiceAndroid::DoesDefaultSearchEngineHaveLogo(
           search_provider_logos::features::kThirdPartyDoodles)) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             search_provider_logos::switches::kThirdPartyDoodleURL)) {
+      return true;
+    }
+    if (!base::GetFieldTrialParamValueByFeature(
+             search_provider_logos::features::kThirdPartyDoodles,
+             search_provider_logos::features::
+                 kThirdPartyDoodlesOverrideUrlParam)
+             .empty()) {
       return true;
     }
     if (default_search_provider &&

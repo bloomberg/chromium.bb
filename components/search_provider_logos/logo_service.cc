@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/search_engines/search_terms_data.h"
@@ -143,11 +144,20 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
         GURL(template_url_service_->search_terms_data().GoogleBaseURLValue());
     doodle_url = search_provider_logos::GetGoogleDoodleURL(base_url);
   } else if (base::FeatureList::IsEnabled(features::kThirdPartyDoodles)) {
+    // First try to get the Doodle URL from the command line, then from a
+    // feature param, and finally the "real" one from TemplateURL.
     if (command_line->HasSwitch(switches::kThirdPartyDoodleURL)) {
       doodle_url = GURL(
           command_line->GetSwitchValueASCII(switches::kThirdPartyDoodleURL));
     } else {
-      doodle_url = template_url->doodle_url();
+      std::string override_url = base::GetFieldTrialParamValueByFeature(
+          features::kThirdPartyDoodles,
+          features::kThirdPartyDoodlesOverrideUrlParam);
+      if (!override_url.empty()) {
+        doodle_url = GURL(override_url);
+      } else {
+        doodle_url = template_url->doodle_url();
+      }
     }
     base_url = doodle_url.GetOrigin();
   }

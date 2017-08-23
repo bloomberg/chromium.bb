@@ -22,6 +22,10 @@ extern const char kDdljsonOverrideUrlParam[];
 // a doodle_url in prepopulated_engines.json.
 extern const base::Feature kThirdPartyDoodles;
 
+// This parameter can be used to override the URL of the doodle API for
+// third-party search engines. Useful for testing.
+extern const char kThirdPartyDoodlesOverrideUrlParam[];
+
 }  // namespace features
 }  // namespace search_provider_logos
 
