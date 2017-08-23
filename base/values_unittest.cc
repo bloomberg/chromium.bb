@@ -603,11 +603,11 @@ TEST(ValuesTest, FindPath) {
   EXPECT_TRUE(found->is_dict());
 
   // Double key, second not found.
-  found = root.FindPath({"foo", "notfound"});
+  found = root.FindPath(std::vector<StringPiece>{"foo", "notfound"});
   EXPECT_FALSE(found);
 
   // Double key, found.
-  found = root.FindPath({"foo", "bar"});
+  found = root.FindPath(std::vector<StringPiece>{"foo", "bar"});
   EXPECT_TRUE(found);
   EXPECT_TRUE(found->is_int());
   EXPECT_EQ(123, found->GetInt());
@@ -622,7 +622,7 @@ TEST(ValuesTest, SetPath) {
   EXPECT_EQ(inserted, found);
   EXPECT_EQ(123, found->GetInt());
 
-  inserted = root.SetPath({"foo", "bar"}, Value(123));
+  inserted = root.SetPath(std::vector<StringPiece>{"foo", "bar"}, Value(123));
   found = root.FindPathOfType({"foo", "bar"}, Value::Type::INTEGER);
   ASSERT_TRUE(found);
   EXPECT_EQ(inserted, found);
@@ -630,12 +630,14 @@ TEST(ValuesTest, SetPath) {
 
   // Overwrite with a different value.
   root.SetPath({"foo", "bar"}, Value("hello"));
-  found = root.FindPathOfType({"foo", "bar"}, Value::Type::STRING);
+  found = root.FindPathOfType(std::vector<StringPiece>{"foo", "bar"},
+                              Value::Type::STRING);
   ASSERT_TRUE(found);
   EXPECT_EQ("hello", found->GetString());
 
   // Can't change existing non-dictionary keys to dictionaries.
-  found = root.SetPath({"foo", "bar", "baz"}, Value(123));
+  found =
+      root.SetPath(std::vector<StringPiece>{"foo", "bar", "baz"}, Value(123));
   EXPECT_FALSE(found);
 }
 
