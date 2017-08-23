@@ -530,6 +530,11 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   oobe_ui_md_mode_ =
       g_browser_process->local_state()->GetBoolean(prefs::kOobeMdMode);
   localized_strings->SetString("newOobeUI", oobe_ui_md_mode_ ? "on" : "off");
+  localized_strings->SetString(
+      "errorScreenMDMode", base::CommandLine::ForCurrentProcess()->HasSwitch(
+                               chromeos::switches::kDisableMdErrorScreen)
+                               ? "off"
+                               : "on");
 }
 
 void OobeUI::AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler) {
