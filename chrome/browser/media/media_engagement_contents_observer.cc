@@ -32,10 +32,6 @@ void SendEngagementLevelToFrame(const url::Origin& origin,
 
 }  // namespace.
 
-// Origins with scores higher than this will be allowed to bypass autoplay
-// policies.
-constexpr double kScoreAutoplayAllowed = 0.7;
-
 // This is the minimum size (in px) of each dimension that a media
 // element has to be in order to be determined significant.
 const gfx::Size MediaEngagementContentsObserver::kSignificantSize =
@@ -103,7 +99,7 @@ void MediaEngagementContentsObserver::RecordUkmMetrics() {
   ukm::builders::Media_Engagement_SessionFinished(source_id)
       .SetPlaybacks_Total(score.media_playbacks())
       .SetVisits_Total(score.visits())
-      .SetEngagement_Score(ConvertScoreToPercentage(score.GetTotalScore()))
+      .SetEngagement_Score(ConvertScoreToPercentage(score.actual_score()))
       .SetPlaybacks_Delta(significant_playback_recorded_)
       .Record(ukm_recorder);
 }
@@ -388,7 +384,7 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* handle) {
   // TODO(beccahughes): Convert MEI API to using origin.
   GURL url = handle->GetWebContents()->GetURL();
-  if (service_->GetEngagementScore(url) >= kScoreAutoplayAllowed) {
+  if (service_->HasHighEngagement(url)) {
     SendEngagementLevelToFrame(url::Origin(handle->GetURL()),
                                handle->GetRenderFrameHost());
   }

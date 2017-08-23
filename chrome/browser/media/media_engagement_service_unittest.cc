@@ -179,8 +179,8 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
     score.Commit();
   }
 
-  double GetTotalScore(GURL url) {
-    return service_->CreateEngagementScore(url).GetTotalScore();
+  double GetActualScore(GURL url) {
+    return service_->CreateEngagementScore(url).actual_score();
   }
 
   std::map<GURL, double> GetScoreMapForTesting() const {
@@ -200,6 +200,10 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness {
   std::vector<media::mojom::MediaEngagementScoreDetailsPtr> GetAllScoreDetails()
       const {
     return service_->GetAllScoreDetails();
+  }
+
+  bool HasHighEngagement(const GURL& url) const {
+    return service_->HasHighEngagement(url);
   }
 
  private:
@@ -331,14 +335,14 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
   // Check that the scores are valid at the beginning.
   ExpectScores(origin1, 0.25, MediaEngagementScore::kScoreMinVisits + 3, 2,
                TimeNotSet());
-  EXPECT_TRUE(GetTotalScore(origin1));
+  EXPECT_TRUE(GetActualScore(origin1));
   ExpectScores(origin2, 0.0, 2, 1, TimeNotSet());
-  EXPECT_FALSE(GetTotalScore(origin2));
+  EXPECT_FALSE(GetActualScore(origin2));
   ExpectScores(origin3, 0.0, 2, 1, TimeNotSet());
-  EXPECT_FALSE(GetTotalScore(origin3));
+  EXPECT_FALSE(GetActualScore(origin3));
   ExpectScores(origin4, 0.4, MediaEngagementScore::kScoreMinVisits, 2,
                TimeNotSet());
-  EXPECT_TRUE(GetTotalScore(origin4));
+  EXPECT_TRUE(GetActualScore(origin4));
 
   {
     MediaEngagementChangeWaiter waiter(profile());
@@ -356,9 +360,9 @@ TEST_F(MediaEngagementServiceTest, CleanupOriginsOnHistoryDeletion) {
     // visits. origin4 should have the old score.
     ExpectScores(origin1, 1.0 / 6.0, MediaEngagementScore::kScoreMinVisits + 1,
                  1, TimeNotSet());
-    EXPECT_TRUE(GetTotalScore(origin1));
+    EXPECT_TRUE(GetActualScore(origin1));
     ExpectScores(origin2, 0.0, 1, 0, TimeNotSet());
-    EXPECT_FALSE(GetTotalScore(origin2));
+    EXPECT_FALSE(GetActualScore(origin2));
     ExpectScores(origin3, 0.0, 1, 0, TimeNotSet());
     ExpectScores(origin4, 0.4, MediaEngagementScore::kScoreMinVisits, 2,
                  TimeNotSet());
@@ -486,4 +490,17 @@ TEST_F(MediaEngagementServiceTest, LogScoresOnStartupToHistogram) {
       MediaEngagementService::kHistogramScoreAtStartupName, 50, 1);
   histogram_tester.ExpectBucketCount(
       MediaEngagementService::kHistogramScoreAtStartupName, 83, 1);
+}
+
+TEST_F(MediaEngagementServiceTest, HasHighEngagement) {
+  GURL url1("https://www.google.com");
+  GURL url2("https://www.google.co.uk");
+  GURL url3("https://www.example.com");
+
+  SetScores(url1, 6, 5);
+  SetScores(url2, 6, 3);
+
+  EXPECT_TRUE(HasHighEngagement(url1));
+  EXPECT_FALSE(HasHighEngagement(url2));
+  EXPECT_FALSE(HasHighEngagement(url3));
 }

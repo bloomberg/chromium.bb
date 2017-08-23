@@ -15,6 +15,7 @@ const char MediaEngagementScore::kVisitsKey[] = "visits";
 const char MediaEngagementScore::kMediaPlaybacksKey[] = "mediaPlaybacks";
 const char MediaEngagementScore::kLastMediaPlaybackTimeKey[] =
     "lastMediaPlaybackTime";
+const char MediaEngagementScore::kHasHighScoreKey[] = "hasHighScore";
 
 const int MediaEngagementScore::kScoreMinVisits = 5;
 
@@ -57,17 +58,32 @@ MediaEngagementScore::MediaEngagementScore(
 
   score_dict_->GetInteger(kVisitsKey, &visits_);
   score_dict_->GetInteger(kMediaPlaybacksKey, &media_playbacks_);
+  score_dict_->GetBoolean(kHasHighScoreKey, &is_high_);
 
   double internal_time;
   if (score_dict_->GetDouble(kLastMediaPlaybackTimeKey, &internal_time))
     last_media_playback_time_ = base::Time::FromInternalValue(internal_time);
+
+  // Recalculate the total score and high bit. If the high bit changed we
+  // should commit this. This should only happen if we change the threshold
+  // or if we have data from before the bit was introduced.
+  bool was_high = is_high_;
+  Recalculate();
+  if (is_high_ != was_high) {
+    if (settings_map_) {
+      Commit();
+    } else {
+      // Update the internal dictionary for testing.
+      score_dict_->SetBoolean(kHasHighScoreKey, is_high_);
+    }
+  }
 }
 
 // TODO(beccahughes): Add typemap.
 media::mojom::MediaEngagementScoreDetailsPtr
 MediaEngagementScore::GetScoreDetails() const {
   return media::mojom::MediaEngagementScoreDetails::New(
-      origin_, GetTotalScore(), visits(), media_playbacks(),
+      origin_, actual_score(), visits(), media_playbacks(),
       last_media_playback_time().ToJsTime());
 }
 
@@ -76,12 +92,6 @@ MediaEngagementScore::~MediaEngagementScore() = default;
 MediaEngagementScore::MediaEngagementScore(MediaEngagementScore&&) = default;
 MediaEngagementScore& MediaEngagementScore::operator=(MediaEngagementScore&&) =
     default;
-
-double MediaEngagementScore::GetTotalScore() const {
-  if (visits() < kScoreMinVisits)
-    return 0;
-  return static_cast<double>(media_playbacks_) / static_cast<double>(visits_);
-}
 
 void MediaEngagementScore::Commit() {
   DCHECK(settings_map_);
@@ -94,7 +104,7 @@ void MediaEngagementScore::Commit() {
 }
 
 void MediaEngagementScore::IncrementMediaPlaybacks() {
-  media_playbacks_++;
+  SetMediaPlaybacks(media_playbacks() + 1);
   last_media_playback_time_ = clock_->Now();
 }
 
@@ -102,14 +112,17 @@ bool MediaEngagementScore::UpdateScoreDict() {
   int stored_visits = 0;
   int stored_media_playbacks = 0;
   double stored_last_media_playback_internal = 0;
+  bool is_high = false;
 
   score_dict_->GetInteger(kVisitsKey, &stored_visits);
   score_dict_->GetInteger(kMediaPlaybacksKey, &stored_media_playbacks);
   score_dict_->GetDouble(kLastMediaPlaybackTimeKey,
                          &stored_last_media_playback_internal);
+  score_dict_->GetBoolean(kHasHighScoreKey, &is_high);
 
   bool changed = stored_visits != visits() ||
                  stored_media_playbacks != media_playbacks() ||
+                 is_high_ != is_high ||
                  stored_last_media_playback_internal !=
                      last_media_playback_time_.ToInternalValue();
   if (!changed)
@@ -119,6 +132,32 @@ bool MediaEngagementScore::UpdateScoreDict() {
   score_dict_->SetInteger(kMediaPlaybacksKey, media_playbacks_);
   score_dict_->SetDouble(kLastMediaPlaybackTimeKey,
                          last_media_playback_time_.ToInternalValue());
+  score_dict_->SetBoolean(kHasHighScoreKey, is_high_);
 
   return true;
+}
+
+void MediaEngagementScore::Recalculate() {
+  // Update the engagement score.
+  actual_score_ = 0;
+  if (visits() >= kScoreMinVisits) {
+    actual_score_ =
+        static_cast<double>(media_playbacks()) / static_cast<double>(visits());
+  }
+
+  // Recalculate whether the engagement score is considered high.
+  if (is_high_)
+    is_high_ = actual_score_ >= kHighScoreLowerThreshold;
+  else
+    is_high_ = actual_score_ >= kHighScoreUpperThreshold;
+}
+
+void MediaEngagementScore::SetVisits(int visits) {
+  visits_ = visits;
+  Recalculate();
+}
+
+void MediaEngagementScore::SetMediaPlaybacks(int media_playbacks) {
+  media_playbacks_ = media_playbacks;
+  Recalculate();
 }

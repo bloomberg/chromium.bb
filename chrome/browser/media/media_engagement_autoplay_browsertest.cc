@@ -168,3 +168,12 @@ IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
   LoadTestPageSecondaryOrigin("engagement_autoplay_test.html");
   ExpectAutoplayAllowed();
 }
+
+// Test have high score threshold.
+IN_PROC_BROWSER_TEST_F(MediaEngagementAutoplayBrowserTest,
+                       HasHighScoreThreshold) {
+  SetScores(PrimaryOrigin(), 10, 8);
+  SetScores(PrimaryOrigin(), 10, 5);
+  LoadTestPage("engagement_autoplay_test.html");
+  ExpectAutoplayAllowed();
+}
