@@ -125,9 +125,10 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   def SetExtraBrowserOptions(self, options):
     super(DesktopMemorySystemHealth, self).SetExtraBrowserOptions(
           options)
-    options.AppendExtraBrowserArgs([
-      '--enable-heap-profiling=native',
-    ])
+    # Heap profiling is disabled because of crbug.com/757847.
+    #options.AppendExtraBrowserArgs([
+    #  '--enable-heap-profiling=native',
+    #])
 
   def GetExpectations(self):
     return page_sets.SystemHealthDesktopMemoryExpectations()

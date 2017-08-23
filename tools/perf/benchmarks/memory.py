@@ -90,9 +90,10 @@ class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
   def SetExtraBrowserOptions(self, options):
     super(MemoryBenchmarkTrivialSitesDesktop, self).SetExtraBrowserOptions(
           options)
-    options.AppendExtraBrowserArgs([
-      '--enable-heap-profiling=native',
-    ])
+    # Heap profiling is disabled because of crbug.com/757847.
+    #options.AppendExtraBrowserArgs([
+    #  '--enable-heap-profiling=native',
+    #])
 
   @classmethod
   def Name(cls):
