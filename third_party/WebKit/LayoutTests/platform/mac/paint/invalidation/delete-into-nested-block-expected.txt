@@ -38,12 +38,12 @@
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 137, 28, 19],
+          "rect": [8, 119, 28, 19],
           "reason": "disappeared"
         },
         {
           "object": "LayoutText #text",
-          "rect": [8, 119, 28, 19],
+          "rect": [8, 137, 24, 19],
           "reason": "disappeared"
         }
       ]

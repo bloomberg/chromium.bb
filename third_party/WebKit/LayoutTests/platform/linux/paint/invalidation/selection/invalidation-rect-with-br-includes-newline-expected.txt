@@ -7,14 +7,14 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
+          "object": "LayoutText #text",
+          "rect": [8, 24, 32, 17],
+          "reason": "geometry"
+        },
+        {
           "object": "LayoutBR BR",
           "rect": [24, 8, 16, 16],
           "reason": "appeared"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 24, 16, 16],
-          "reason": "selection"
         },
         {
           "object": "LayoutText #text",
@@ -55,11 +55,11 @@
     },
     {
       "object": "LayoutText #text",
-      "reason": "selection"
+      "reason": "geometry"
     },
     {
       "object": "InlineTextBox 'b'",
-      "reason": "selection"
+      "reason": "geometry"
     }
   ]
 }
