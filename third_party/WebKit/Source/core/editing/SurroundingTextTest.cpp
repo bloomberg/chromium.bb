@@ -11,6 +11,7 @@
 #include "core/editing/Position.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -283,6 +284,26 @@ TEST_F(SurroundingTextTest, TreeRangeSelection) {
     EXPECT_EQ(20u, surrounding_text.StartOffsetInContent());
     EXPECT_EQ(27u, surrounding_text.EndOffsetInContent());
   }
+}
+
+TEST_F(SurroundingTextTest, TextAreaSelection) {
+  SetHTML(
+      String("<p>First paragraph</p>"
+             "<textarea id='selection'>abc def ghi</textarea>"
+             "<p>Second paragraph</p>"));
+
+  TextControlElement* text_ctrl =
+      (TextControlElement*)GetDocument().getElementById("selection");
+
+  text_ctrl->SetSelectionRange(4, 7);
+  VisibleSelection selection = CreateVisibleSelection(text_ctrl->Selection());
+
+  SurroundingText surrounding_text(
+      *CreateRange(FirstEphemeralRangeOf(selection)), 20);
+
+  EXPECT_EQ("abc def ghi", surrounding_text.Content().SimplifyWhiteSpace());
+  EXPECT_EQ(4u, surrounding_text.StartOffsetInContent());
+  EXPECT_EQ(7u, surrounding_text.EndOffsetInContent());
 }
 
 }  // namespace blink
