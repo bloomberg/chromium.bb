@@ -19,7 +19,8 @@ from webkitpy.common.net.git_cl import GitCL
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.w3c.common import read_credentials, exportable_commits_over_last_n_commits
+from webkitpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
+from webkitpy.w3c.common import read_credentials
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_copier import TestCopier
