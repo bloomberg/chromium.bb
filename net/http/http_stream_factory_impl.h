@@ -139,8 +139,8 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
   virtual void OnPreconnectsCompleteInternal() {}
 
   // Called when the JobController finishes service. Delete the JobController
-  // from |job_controller_set_|.
-  void OnJobControllerComplete(JobController* controller);
+  // from |pending_preconnects_set_|.
+  void OnPreconnectsComplete(JobController* controller);
 
   // Returns true if a connection to the proxy server contained in |proxy_info|
   // that has privacy mode |privacy_mode| can be skipped by a job controlled by
@@ -164,12 +164,10 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
 
   HttpNetworkSession* const session_;
 
-  // All Requests/Preconnects are assigned with a JobController to manage
-  // serving Job(s). JobController might outlive Request when Request
-  // is served while there's some working Job left. JobController will be
-  // deleted from |job_controller_set_| when it determines the completion of
-  // its work.
-  JobControllerSet job_controller_set_;
+  // All Preconnects are assigned with a JobController to manage
+  // serving Job(s). JobController will be deleted from
+  // |pending_preconnects_set_| when preconnect completes.
+  JobControllerSet pending_preconnects_set_;
 
   // Factory used by job controllers for creating jobs.
   std::unique_ptr<JobFactory> job_factory_;

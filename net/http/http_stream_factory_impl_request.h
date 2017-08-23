@@ -25,57 +25,31 @@ class HttpStream;
 
 class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
  public:
-  class NET_EXPORT_PRIVATE Helper {
-   public:
-    virtual ~Helper() {}
-
-    // Returns the LoadState for Request.
-    virtual LoadState GetLoadState() const = 0;
-
-    // Called when Request is destructed.
-    virtual void OnRequestComplete() = 0;
-
-    // Called to resume the HttpStream creation process when necessary
-    // Proxy authentication credentials are collected.
-    virtual int RestartTunnelWithProxyAuth() = 0;
-
-    // Called when the priority of transaction changes.
-    virtual void SetPriority(RequestPriority priority) = 0;
-
-    // Called when SpdySessionPool notifies the Request
-    // that it can be served on a SpdySession created by another Request,
-    // therefore the Jobs can be destroyed.
-    virtual void OnStreamReadyOnPooledConnection(
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& proxy_info,
-        std::unique_ptr<HttpStream> stream) = 0;
-    virtual void OnBidirectionalStreamImplReadyOnPooledConnection(
-        const SSLConfig& used_ssl_config,
-        const ProxyInfo& used_proxy_info,
-        std::unique_ptr<BidirectionalStreamImpl> stream) = 0;
-  };
-
   // Request will notify |job_controller| when it's destructed.
   // Thus |job_controller| is valid for the lifetime of the |this| Request.
   Request(const GURL& url,
-          Helper* helper,
           HttpStreamRequest::Delegate* delegate,
           WebSocketHandshakeStreamBase::CreateHelper*
               websocket_handshake_stream_create_helper,
           const NetLogWithSource& net_log,
-          StreamType stream_type);
+          std::unique_ptr<JobController> job_controller,
+          StreamType stream_type,
+          RequestPriority priority);
 
   ~Request() override;
+
+  // TODO(xunjieli): Add Start() to the parent class. crbug.com/475060.
+  void Start();
 
   // The GURL from the HttpRequestInfo the started the Request.
   const GURL& url() const { return url_; }
 
   const NetLogWithSource& net_log() const { return net_log_; }
 
-  // Called when the |helper_| determines the appropriate |spdy_session_key|
-  // for the Request. Note that this does not mean that SPDY is necessarily
-  // supported for this SpdySessionKey, since we may need to wait for NPN to
-  // complete before knowing if SPDY is available.
+  // Called when the |job_controller_| determines the appropriate
+  // |spdy_session_key| for the Request. Note that this does not mean that SPDY
+  // is necessarily supported for this SpdySessionKey, since we may need to wait
+  // for NPN to complete before knowing if SPDY is available.
   void SetSpdySessionKey(const SpdySessionKey& spdy_session_key) {
     spdy_session_key_ = spdy_session_key;
   }
@@ -93,8 +67,8 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
                 NextProto negotiated_protocol,
                 bool using_spdy);
 
-  // Called by |helper_| to record connection attempts made by the socket
-  // layer in an attached Job for this stream request.
+  // Called by |job_controller_| to record connection attempts made by the
+  // socket layer in an attached Job for this stream request.
   void AddConnectionAttempts(const ConnectionAttempts& attempts);
 
   WebSocketHandshakeStreamBase::CreateHelper*
@@ -124,12 +98,12 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
  private:
   const GURL url_;
 
-  // Unowned. The helper must outlive this request.
-  Helper* helper_;
-
+  HttpStreamRequest::Delegate* delegate_;
   WebSocketHandshakeStreamBase::CreateHelper* const
       websocket_handshake_stream_create_helper_;
   const NetLogWithSource net_log_;
+
+  std::unique_ptr<JobController> job_controller_;
 
   base::Optional<SpdySessionKey> spdy_session_key_;
 
@@ -141,6 +115,8 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   ConnectionAttempts connection_attempts_;
 
   const HttpStreamRequest::StreamType stream_type_;
+  const RequestPriority priority_;
+
   DISALLOW_COPY_AND_ASSIGN(Request);
 };
 
