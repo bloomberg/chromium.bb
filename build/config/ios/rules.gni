@@ -1802,9 +1802,6 @@ template("ios_xcuitest_test_runner_bundle") {
 # test runner application bundle.
 #
 template("ios_xcuitest_test") {
-  assert(false,
-         "ios_xcuitest_test is incomplete and should not be used, see " +
-             "crbug.com/709289 for tracking")
   assert(defined(invoker.deps), "deps must be defined for $target_name")
   assert(defined(invoker.xcode_test_application_name),
          "xcode_test_application_name must be defined for $target_name")
