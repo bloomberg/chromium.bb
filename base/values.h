@@ -30,6 +30,7 @@
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/manual_constructor.h"
 #include "base/strings/string16.h"
@@ -187,14 +188,21 @@ class BASE_EXPORT Value {
   //
   // Example:
   //   auto* found = FindPath({"foo", "bar"});
-  Value* FindPath(std::initializer_list<const char*> path);
-  const Value* FindPath(std::initializer_list<const char*> path) const;
+  //
+  //   std::vector<StringPiece> components = ...
+  //   auto* found = FindPath(components);
+  Value* FindPath(std::initializer_list<StringPiece> path);
+  Value* FindPath(span<const StringPiece> path);
+  const Value* FindPath(std::initializer_list<StringPiece> path) const;
+  const Value* FindPath(span<const StringPiece> path) const;
 
   // Like FindPath but will only return the value if the leaf Value type
   // matches the given type. Will return nullptr otherwise.
-  Value* FindPathOfType(std::initializer_list<const char*> path, Type type);
-  const Value* FindPathOfType(std::initializer_list<const char*> path,
+  Value* FindPathOfType(std::initializer_list<StringPiece> path, Type type);
+  Value* FindPathOfType(span<const StringPiece> path, Type type);
+  const Value* FindPathOfType(std::initializer_list<StringPiece> path,
                               Type type) const;
+  const Value* FindPathOfType(span<const StringPiece> path, Type type) const;
 
   // Sets the given path, expanding and creating dictionary keys as necessary.
   //
@@ -206,7 +214,11 @@ class BASE_EXPORT Value {
   //
   // Example:
   //   value.SetPath({"foo", "bar"}, std::move(myvalue));
-  Value* SetPath(std::initializer_list<const char*> path, Value value);
+  //
+  //   std::vector<StringPiece> components = ...
+  //   value.SetPath(components, std::move(myvalue));
+  Value* SetPath(std::initializer_list<StringPiece> path, Value value);
+  Value* SetPath(span<const StringPiece> path, Value value);
 
   using dict_iterator_proxy = detail::dict_iterator_proxy;
   using const_dict_iterator_proxy = detail::const_dict_iterator_proxy;

@@ -285,26 +285,44 @@ Value* Value::SetKey(const char* key, Value value) {
   return SetKey(StringPiece(key), std::move(value));
 }
 
-Value* Value::FindPath(std::initializer_list<const char*> path) {
+Value* Value::FindPath(std::initializer_list<StringPiece> path) {
   return const_cast<Value*>(const_cast<const Value*>(this)->FindPath(path));
 }
 
-const Value* Value::FindPath(std::initializer_list<const char*> path) const {
+Value* Value::FindPath(span<const StringPiece> path) {
+  return const_cast<Value*>(const_cast<const Value*>(this)->FindPath(path));
+}
+
+const Value* Value::FindPath(std::initializer_list<StringPiece> path) const {
+  return FindPath(make_span(path.begin(), path.size()));
+}
+
+const Value* Value::FindPath(span<const StringPiece> path) const {
   const Value* cur = this;
-  for (const char* component : path) {
+  for (const StringPiece component : path) {
     if (!cur->is_dict() || (cur = cur->FindKey(component)) == nullptr)
       return nullptr;
   }
   return cur;
 }
 
-Value* Value::FindPathOfType(std::initializer_list<const char*> path,
+Value* Value::FindPathOfType(std::initializer_list<StringPiece> path,
                              Type type) {
   return const_cast<Value*>(
       const_cast<const Value*>(this)->FindPathOfType(path, type));
 }
 
-const Value* Value::FindPathOfType(std::initializer_list<const char*> path,
+Value* Value::FindPathOfType(span<const StringPiece> path, Type type) {
+  return const_cast<Value*>(
+      const_cast<const Value*>(this)->FindPathOfType(path, type));
+}
+
+const Value* Value::FindPathOfType(std::initializer_list<StringPiece> path,
+                                   Type type) const {
+  return FindPathOfType(make_span(path.begin(), path.size()), type);
+}
+
+const Value* Value::FindPathOfType(span<const StringPiece> path,
                                    Type type) const {
   const Value* result = FindPath(path);
   if (!result || !result->IsType(type))
@@ -312,24 +330,29 @@ const Value* Value::FindPathOfType(std::initializer_list<const char*> path,
   return result;
 }
 
-Value* Value::SetPath(std::initializer_list<const char*> path, Value value) {
+Value* Value::SetPath(std::initializer_list<StringPiece> path, Value value) {
+  return SetPath(make_span(path.begin(), path.size()), std::move(value));
+}
+
+Value* Value::SetPath(span<const StringPiece> path, Value value) {
   DCHECK_NE(path.begin(), path.end());  // Can't be empty path.
 
   // Walk/construct intermediate dictionaries. The last element requires
   // special handling so skip it in this loop.
   Value* cur = this;
-  const char* const* cur_path = path.begin();
+  const StringPiece* cur_path = path.begin();
   for (; (cur_path + 1) < path.end(); ++cur_path) {
     if (!cur->is_dict())
       return nullptr;
 
     // Use lower_bound to avoid doing the search twice for missing keys.
-    const char* path_component = *cur_path;
+    const StringPiece path_component = *cur_path;
     auto found = cur->dict_->lower_bound(path_component);
     if (found == cur->dict_->end() || found->first != path_component) {
       // No key found, insert one.
-      auto inserted = cur->dict_->emplace_hint(
-          found, path_component, std::make_unique<Value>(Type::DICTIONARY));
+      auto inserted =
+          cur->dict_->emplace_hint(found, path_component.as_string(),
+                                   std::make_unique<Value>(Type::DICTIONARY));
       cur = inserted->second.get();
     } else {
       cur = found->second.get();
