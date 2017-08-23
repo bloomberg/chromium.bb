@@ -23,6 +23,7 @@ class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   metric. The pages were chosen from Alexa top ranking sites.
   """
   test = tab_switching.TabSwitching
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
   def AddBenchmarkCommandLineArgs(cls, parser):
@@ -45,8 +46,6 @@ class TabSwitchingTypical25(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark([story.expectations.ALL_MOBILE],
-                                         'Desktop Benchmark')
         self.DisableStory('multitab:misc:typical24',
                           [story.expectations.ALL_MAC], 'crbug.com/747026')
     return StoryExpectations()

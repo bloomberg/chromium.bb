@@ -6,8 +6,6 @@ from telemetry.story import expectations
 
 class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.PermanentlyDisableBenchmark(
-        [expectations.ALL_MOBILE], 'Desktop Benchmark')
     self.DisableStory('browse:news:hackernews',
                       [expectations.ALL_WIN, expectations.ALL_MAC],
                       'crbug.com/676336')
@@ -30,8 +28,6 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
 
 class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.PermanentlyDisableBenchmark(
-        [expectations.ALL_MOBILE], 'Desktop Benchmark')
     self.DisableStory('browse:news:hackernews',
                       [expectations.ALL_WIN, expectations.ALL_MAC],
                       'crbug.com/676336')
@@ -59,8 +55,6 @@ class SystemHealthDesktopMemoryExpectations(expectations.StoryExpectations):
 
 class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.PermanentlyDisableBenchmark(
-        [expectations.ALL_DESKTOP], 'Mobile Benchmark')
     self.DisableStory('background:tools:gmail', [expectations.ALL_ANDROID],
                       'crbug.com/723783')
     self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
@@ -99,8 +93,6 @@ class SystemHealthMobileCommonExpectations(expectations.StoryExpectations):
 
 class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.PermanentlyDisableBenchmark(
-        [expectations.ALL_DESKTOP], 'Mobile Benchmark')
     self.DisableStory('background:tools:gmail', [expectations.ALL_ANDROID],
                       'crbug.com/723783')
     self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
@@ -138,8 +130,6 @@ class SystemHealthMobileMemoryExpectations(expectations.StoryExpectations):
 # Should only include browse:*:* stories.
 class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.PermanentlyDisableBenchmark(
-        [expectations.ALL_MOBILE], 'Desktop Benchmark')
     self.DisableStory('browse:news:hackernews',
                       [expectations.ALL_WIN, expectations.ALL_MAC],
                       'crbug.com/676336')
@@ -154,8 +144,6 @@ class V8BrowsingDesktopExpecations(expectations.StoryExpectations):
 # Should only include browse:*:* stories.
 class V8BrowsingMobileExpecations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.PermanentlyDisableBenchmark(
-        [expectations.ALL_DESKTOP], 'Mobile Benchmark')
     self.DisableStory('browse:shopping:flipkart', [expectations.ALL_ANDROID],
                       'crbug.com/708300')
     self.DisableStory('browse:news:globo', [expectations.ALL_ANDROID],
@@ -176,6 +164,4 @@ class V8BrowsingMobileExpecations(expectations.StoryExpectations):
 
 class SystemHealthWebviewStartupExpectations(expectations.StoryExpectations):
   def SetExpectations(self):
-    self.PermanentlyDisableBenchmark(
-        [expectations.ANDROID_NOT_WEBVIEW, expectations.ALL_DESKTOP],
-        'Webview Benchmark')
+    pass

@@ -35,6 +35,7 @@ class _BattOrBenchmark(perf_benchmark.PerfBenchmark):
 
 @benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrTrivialPages(_BattOrBenchmark):
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MAC]
 
   def CreateStorySet(self, options):
     # We want it to wait for 30 seconds to be comparable to legacy power tests.
@@ -47,14 +48,13 @@ class BattOrTrivialPages(_BattOrBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_MOBILE, story.expectations.ALL_LINUX,
-             story.expectations.ALL_WIN], 'Mac Benchmark')
+        pass
     return StoryExpectations()
 
 
 @benchmark.Owner(emails=['charliea@chromium.org'])
 class BattOrSteadyStatePages(_BattOrBenchmark):
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MAC]
 
   def CreateStorySet(self, options):
     # We want it to wait for 30 seconds to be comparable to legacy power tests.
@@ -67,9 +67,6 @@ class BattOrSteadyStatePages(_BattOrBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL_MOBILE, story.expectations.ALL_LINUX,
-             story.expectations.ALL_WIN], 'Mac Benchmark')
         self.DisableStory('http://abcnews.go.com/', [story.expectations.ALL],
                           'crbug.com/505990')
     return StoryExpectations()

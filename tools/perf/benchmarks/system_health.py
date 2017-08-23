@@ -9,6 +9,7 @@ from benchmarks import loading_metrics_category
 from core import perf_benchmark
 
 from telemetry import benchmark
+from telemetry import story
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
@@ -59,6 +60,7 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Desktop Chrome Energy System Health Benchmark."""
   PLATFORM = 'desktop'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
   def Name(cls):
@@ -72,6 +74,7 @@ class DesktopCommonSystemHealth(_CommonSystemHealthBenchmark):
 class MobileCommonSystemHealth(_CommonSystemHealthBenchmark):
   """Mobile Chrome Energy System Health Benchmark."""
   PLATFORM = 'mobile'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
 
   @classmethod
   def Name(cls):
@@ -117,6 +120,7 @@ class _MemorySystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Desktop Chrome Memory System Health Benchmark."""
   PLATFORM = 'desktop'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   @classmethod
   def Name(cls):
@@ -138,6 +142,7 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):
   """Mobile Chrome Memory System Health Benchmark."""
   PLATFORM = 'mobile'
+  SUPPORTED_PLATFORMS = [story.expectations.ALL_MOBILE]
 
   def SetExtraBrowserOptions(self, options):
     # Just before we measure memory we flush the system caches
@@ -166,6 +171,7 @@ class WebviewStartupSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   benchmark.
   """
   options = {'pageset_repeat': 20}
+  SUPPORTED_PLATFORMS = [story.expectations.ANDROID_WEBVIEW]
 
   def CreateStorySet(self, options):
     return page_sets.SystemHealthBlankStorySet()
