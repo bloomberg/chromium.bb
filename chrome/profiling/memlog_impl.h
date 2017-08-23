@@ -37,20 +37,6 @@ class MemlogImpl : public mojom::Memlog {
                    std::unique_ptr<base::DictionaryValue> metadata) override;
 
  private:
-  // Helper for managing lifetime of MemlogConnectionManager.
-  struct DeleteOnRunner {
-    DeleteOnRunner(const tracked_objects::Location& location,
-                   base::SequencedTaskRunner* runner)
-        : location(location), runner(runner) {}
-
-    void operator()(MemlogConnectionManager* ptr) {
-      runner->DeleteSoon(location, ptr);
-    }
-
-    const tracked_objects::Location& location;
-    base::SequencedTaskRunner* runner;
-  };
-
   void OnGetVmRegionsComplete(
       base::ProcessId pid,
       std::unique_ptr<base::DictionaryValue> metadata,
@@ -58,8 +44,7 @@ class MemlogImpl : public mojom::Memlog {
       bool success,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 
-  scoped_refptr<base::SequencedTaskRunner> io_runner_;
-  std::unique_ptr<MemlogConnectionManager, DeleteOnRunner> connection_manager_;
+  std::unique_ptr<MemlogConnectionManager> connection_manager_;
 
   // Must be last.
   base::WeakPtrFactory<MemlogImpl> weak_factory_;
