@@ -55,6 +55,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPUITest, FakeboxRedirectsToOmnibox) {
   // on Mac it isn't; see crbug.com/641969.
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
 
+  // Make sure that the omnibox doesn't have focus already.
+  ui_test_utils::ClickOnView(browser(), VIEW_ID_TAB_CONTAINER);
+  ASSERT_EQ(OMNIBOX_FOCUS_NONE, omnibox()->model()->focus_state());
+
   bool result = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab, "!!setupAdvancedTest()", &result));
@@ -76,23 +80,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPUITest, FakeboxRedirectsToOmnibox) {
                                                gfx::Vector2d(1, 1)));
 
   // Click on the fakebox, and wait for the omnibox to receive invisible focus.
-  // Note that simply waiting for the first OMNIBOX_FOCUS_CHANGED notification
-  // is not sufficient: If the omnibox had focus before, it will first lose the
-  // focus before gaining invisible focus.
-  ASSERT_NE(OMNIBOX_FOCUS_INVISIBLE, omnibox()->model()->focus_state());
   content::WindowedNotificationObserver focus_observer(
       chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
-      base::Bind(
-          [](const OmniboxEditModel* omnibox_model) {
-            return omnibox_model->focus_state() == OMNIBOX_FOCUS_INVISIBLE;
-          },
-          omnibox()->model()));
-
+      content::NotificationService::AllSources());
   ASSERT_TRUE(
       ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::DOWN));
   ASSERT_TRUE(
       ui_test_utils::SendMouseEventsSync(ui_controls::LEFT, ui_controls::UP));
-
   focus_observer.Wait();
   EXPECT_EQ(OMNIBOX_FOCUS_INVISIBLE, omnibox()->model()->focus_state());
 
@@ -101,14 +95,17 @@ IN_PROC_BROWSER_TEST_F(LocalNTPUITest, FakeboxRedirectsToOmnibox) {
       active_tab, "!!fakeboxIsFocused()", &result));
   EXPECT_TRUE(result);
 
-  // Type "a".
+  // Type "a" and wait for the omnibox to receive visible focus.
+  content::WindowedNotificationObserver focus_observer2(
+      chrome::NOTIFICATION_OMNIBOX_FOCUS_CHANGED,
+      content::NotificationService::AllSources());
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(
       browser(), ui::KeyboardCode::VKEY_A,
       /*control=*/false, /*shift=*/false, /*alt=*/false, /*command=*/false));
-
-  // The omnibox should have received visible focus.
+  focus_observer2.Wait();
   EXPECT_EQ(OMNIBOX_FOCUS_VISIBLE, omnibox()->model()->focus_state());
-  // ...and the typed text should have arrived there.
+
+  // The typed text should have arrived in the omnibox.
   EXPECT_EQ("a", GetOmniboxText());
 
   // On the JS side, the fakebox should have been hidden.
