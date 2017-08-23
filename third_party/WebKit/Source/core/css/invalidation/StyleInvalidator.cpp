@@ -401,18 +401,6 @@ bool StyleInvalidator::Invalidate(Element& element,
     element.SetNeedsStyleRecalc(kLocalStyleChange,
                                 StyleChangeReasonForTracing::Create(
                                     StyleChangeReason::kStyleInvalidator));
-  } else if (recursion_data.HasInvalidationSets() &&
-             some_children_need_style_recalc) {
-    // Clone the ComputedStyle in order to preserve correct style sharing, if
-    // possible. Otherwise recalc style.
-    if (LayoutObject* layout_object = element.GetLayoutObject()) {
-      layout_object->SetStyleInternal(
-          ComputedStyle::Clone(layout_object->StyleRef()));
-    } else {
-      element.SetNeedsStyleRecalc(kLocalStyleChange,
-                                  StyleChangeReasonForTracing::Create(
-                                      StyleChangeReason::kStyleInvalidator));
-    }
   }
 
   if (recursion_data.InsertionPointCrossing() && element.IsV0InsertionPoint())
