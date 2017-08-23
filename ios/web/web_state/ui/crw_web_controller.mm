@@ -4559,24 +4559,24 @@ registerLoadRequestForURL:(const GURL&)requestURL
 #pragma mark -
 #pragma mark CRWWebContextMenuControllerDelegate methods
 
-- (BOOL)webView:(WKWebView*)webView
+- (void)webView:(WKWebView*)webView
     handleContextMenu:(const web::ContextMenuParams&)params {
   DCHECK(webView == _webView);
   if (_isBeingDestroyed) {
-    return NO;
+    return;
   }
-  return self.webStateImpl->HandleContextMenu(params);
+  self.webStateImpl->HandleContextMenu(params);
 }
 
 #pragma mark -
 #pragma mark CRWNativeContentDelegate methods
 
-- (BOOL)nativeContent:(id)content
+- (void)nativeContent:(id)content
     handleContextMenu:(const web::ContextMenuParams&)params {
   if (_isBeingDestroyed) {
-    return NO;
+    return;
   }
-  return self.webStateImpl->HandleContextMenu(params);
+  self.webStateImpl->HandleContextMenu(params);
 }
 
 #pragma mark -

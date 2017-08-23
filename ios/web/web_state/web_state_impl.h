@@ -225,7 +225,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Notifies the delegate that the load progress was updated.
   void SendChangeLoadProgress(double progress);
   // Notifies the delegate that a context menu needs handling.
-  bool HandleContextMenu(const ContextMenuParams& params);
+  void HandleContextMenu(const ContextMenuParams& params);
 
   // Notifies the delegate that a Form Repost dialog needs to be presented.
   void ShowRepostFormWarningDialog(const base::Callback<void(bool)>& callback);
