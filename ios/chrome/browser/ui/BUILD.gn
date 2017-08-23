@@ -25,19 +25,15 @@ source_set("ui") {
     "prerender_final_status.h",
     "reversed_animation.h",
     "reversed_animation.mm",
-    "rtl_geometry.h",
-    "rtl_geometry.mm",
     "show_mail_composer_util.h",
     "show_mail_composer_util.mm",
     "side_swipe_gesture_recognizer.h",
     "side_swipe_gesture_recognizer.mm",
-    "ui_util.h",
-    "ui_util.mm",
-    "uikit_ui_util.h",
-    "uikit_ui_util.mm",
     "url_loader.h",
   ]
   public_deps = [
+    ":ui_util",
+    "//ios/chrome/browser/ui/captive_portal",
     "//ios/chrome/browser/ui/util:constraints_ui",
   ]
   deps = [
@@ -48,9 +44,28 @@ source_set("ui") {
     "//ios/chrome/browser/ui/commands",
     "//ios/web",
     "//ui/base",
-    "//ui/gfx",
   ]
   allow_circular_includes_from = [ "//ios/chrome/browser/ui/commands" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("ui_util") {
+  sources = [
+    "rtl_geometry.h",
+    "rtl_geometry.mm",
+    "ui_util.h",
+    "ui_util.mm",
+    "uikit_ui_util.h",
+    "uikit_ui_util.mm",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//ios/chrome/browser",
+    "//ios/web",
+    "//ui/base",
+    "//ui/gfx",
+  ]
   libs = [
     "Accelerate.framework",
     "CoreGraphics.framework",
@@ -371,6 +386,7 @@ source_set("ui_internal") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/snapshots:snapshots_internal",
+    "//ios/chrome/browser/ssl",
     "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui/activity_services:coordinator",

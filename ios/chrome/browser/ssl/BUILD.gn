@@ -7,6 +7,9 @@ source_set("ssl") {
   sources = [
     "captive_portal_detector_tab_helper.h",
     "captive_portal_detector_tab_helper.mm",
+    "ios_captive_portal_blocking_page.h",
+    "ios_captive_portal_blocking_page.mm",
+    "ios_captive_portal_blocking_page_delegate.h",
     "ios_security_state_tab_helper.h",
     "ios_security_state_tab_helper.mm",
     "ios_ssl_blocking_page.h",
@@ -17,13 +20,18 @@ source_set("ssl") {
   deps = [
     ":features",
     "//base",
+    "//base:i18n",
     "//components/captive_portal",
     "//components/security_interstitials/core",
     "//components/security_state/core",
     "//components/strings",
+    "//components/url_formatter",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/interstitials",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui/captive_portal",
+    "//ios/chrome/browser/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//net",
@@ -47,11 +55,14 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "ios_captive_portal_blocking_page_unittest.mm",
     "ios_ssl_error_handler_unittest.mm",
   ]
   deps = [
     ":ssl",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/web:test_support",
+    "//ios/testing:ios_test_support",
     "//ios/web",
     "//ios/web/public/test",
     "//net",

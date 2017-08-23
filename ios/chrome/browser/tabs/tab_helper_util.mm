@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 #import "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
 #import "ios/chrome/browser/signin/account_consistency_service_factory.h"
+#import "ios/chrome/browser/ssl/captive_portal_detector_tab_helper.h"
 #import "ios/chrome/browser/ssl/ios_security_state_tab_helper.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
@@ -65,6 +66,7 @@ void AttachTabHelpers(web::WebState* web_state) {
   StoreKitTabHelper::CreateForWebState(web_state);
   SadTabTabHelper::CreateForWebState(web_state);
   PagePlaceholderTabHelper::CreateForWebState(web_state, tab);
+  CaptivePortalDetectorTabHelper::CreateForWebState(web_state);
 
   ReadingListModel* model =
       ReadingListModelFactory::GetForBrowserState(browser_state);
