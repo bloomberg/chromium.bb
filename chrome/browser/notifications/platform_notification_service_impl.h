@@ -26,7 +26,6 @@
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 class NotificationDelegate;
-class NotificationDisplayService;
 class ScopedKeepAlive;
 
 namespace base {
@@ -134,15 +133,6 @@ class PlatformNotificationServiceImpl
   base::string16 DisplayNameForContextMessage(Profile* profile,
                                               const GURL& origin) const;
 
-  // Returns the notification display service to use.
-  // This can be overriden in tests.
-  // TODO(miguelg): Remove this method in favor of providing a testing factory
-  // to the NotificationDisplayServiceFactory.
-  NotificationDisplayService* GetNotificationDisplayService(Profile* profile);
-
-  void SetNotificationDisplayServiceForTesting(
-      NotificationDisplayService* service);
-
   void RecordSiteEngagement(content::BrowserContext* browser_context,
                             const GURL& origin);
 
@@ -159,9 +149,6 @@ class PlatformNotificationServiceImpl
   // Tracks the id of persistent notifications that have been closed
   // programmatically to avoid dispatching close events for them.
   std::unordered_set<std::string> closed_notifications_;
-
-  // Only set and used for tests, owned by the caller in that case.
-  NotificationDisplayService* test_display_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformNotificationServiceImpl);
 };

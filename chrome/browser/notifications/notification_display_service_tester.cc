@@ -26,6 +26,11 @@ NotificationDisplayServiceTester::~NotificationDisplayServiceTester() {
                                                                       nullptr);
 }
 
+void NotificationDisplayServiceTester::SetNotificationAddedClosure(
+    base::RepeatingClosure closure) {
+  display_service_->SetNotificationAddedClosure(std::move(closure));
+}
+
 std::vector<Notification>
 NotificationDisplayServiceTester::GetDisplayedNotificationsForType(
     NotificationCommon::Type type) {
