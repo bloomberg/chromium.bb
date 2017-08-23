@@ -99,6 +99,8 @@ class APP_LIST_EXPORT StartPageView : public AppListPage {
       suggestions_container_;  // Owned by views hierarchy.
   ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by views hierarchy.
 
+  // TODO(minch|weidong): Remove fullscreen related code in StartPageView and
+  // corresponding tests. http://crbug.com/757704.
   const bool is_fullscreen_app_list_enabled_;
 
   // The bottom of work area.

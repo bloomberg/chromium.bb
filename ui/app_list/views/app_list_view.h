@@ -177,6 +177,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // screen coordinates.
   gfx::Rect GetAppInfoDialogBounds() const;
 
+  // Sets |is_in_drag_| and updates the visibility of app list items.
+  void SetIsInDrag(bool is_in_drag);
+
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
   }

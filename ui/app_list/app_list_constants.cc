@@ -125,6 +125,9 @@ const size_t kNumStartPageTilesFullscreen = 5;
 // Maximum number of results to show in the launcher Search UI.
 const size_t kMaxSearchResults = 6;
 
+// Top padding of expand arrow.
+const size_t kExpandArrowTopPadding = 29;
+
 // Radius of the circle, in which if entered, show re-order preview.
 const int kReorderDroppingCircleRadius = 35;
 

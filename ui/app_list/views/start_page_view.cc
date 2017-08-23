@@ -56,7 +56,6 @@ constexpr int kPreferredHeightFullscreen = 272;
 constexpr int kWebViewWidth = 700;
 constexpr int kWebViewHeight = 224;
 
-constexpr int kExpandArrowTopPadding = 29;
 constexpr int kLauncherPageBackgroundWidth = 400;
 
 }  // namespace
