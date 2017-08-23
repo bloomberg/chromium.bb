@@ -36,7 +36,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/CompositorElementId.h"
-#include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/graphics/GraphicsLayerDebugInfo.h"
@@ -48,6 +47,7 @@
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/Vector.h"
 #include "public/platform/WebContentLayer.h"
+#include "public/platform/WebContentLayerClient.h"
 #include "public/platform/WebImageLayer.h"
 #include "public/platform/WebLayerStickyPositionConstraint.h"
 #include "public/platform/WebScrollBoundaryBehavior.h"
@@ -70,7 +70,8 @@ typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
 class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
-                                      public DisplayItemClient {
+                                      public DisplayItemClient,
+                                      private WebContentLayerClient {
   WTF_MAKE_NONCOPYABLE(GraphicsLayer);
   USING_FAST_MALLOC(GraphicsLayer);
 
@@ -260,7 +261,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void didUpdateMainThreadScrollingReasons() override;
   void didChangeScrollbarsHidden(bool);
 
-  PaintController& GetPaintController();
+  PaintController& GetPaintController() const;
 
   // Exposed for tests.
   WebLayer* ContentsLayer() const { return contents_layer_; }
@@ -270,9 +271,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void SetCompositorMutableProperties(uint32_t);
 
-  ContentLayerDelegate* ContentLayerDelegateForTesting() const {
-    return content_layer_delegate_.get();
-  }
+  WebContentLayerClient& WebContentLayerClientForTesting() { return *this; }
 
   // DisplayItemClient methods
   String DebugName() const final { return client_->DebugName(this); }
@@ -293,6 +292,12 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   friend class PaintControllerPaintTestBase;
 
  private:
+  // WebContentLayerClient implementation.
+  gfx::Rect PaintableRegion() final { return InterestRect(); }
+  void PaintContents(WebDisplayItemList*,
+                     PaintingControlSetting = kPaintDefaultBehavior) final;
+  size_t ApproximateUnsharedMemoryUsage() const final;
+
   // Returns true if PaintController::paintArtifact() changed and needs commit.
   bool PaintWithoutCommit(
       const IntRect* interest_rect,
@@ -389,13 +394,11 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   Vector<LinkHighlight*> link_highlights_;
 
-  std::unique_ptr<ContentLayerDelegate> content_layer_delegate_;
-
   WeakPersistent<ScrollableArea> scrollable_area_;
   GraphicsLayerDebugInfo debug_info_;
   int rendering_context3d_;
 
-  std::unique_ptr<PaintController> paint_controller_;
+  mutable std::unique_ptr<PaintController> paint_controller_;
 
   IntRect previous_interest_rect_;
 };

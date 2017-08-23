@@ -33,6 +33,8 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/layers/layer.h"
 #include "platform/DragImage.h"
+#include "platform/bindings/RuntimeCallStats.h"
+#include "platform/bindings/V8PerIsolateData.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
@@ -114,9 +116,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
   if (client_)
     client_->VerifyNotPainting();
 #endif
-  content_layer_delegate_ = WTF::MakeUnique<ContentLayerDelegate>(this);
-  layer_ = Platform::Current()->CompositorSupport()->CreateContentLayer(
-      content_layer_delegate_.get());
+  layer_ = Platform::Current()->CompositorSupport()->CreateContentLayer(this);
   layer_->Layer()->SetDrawsContent(draws_content_ && contents_visible_);
   layer_->Layer()->SetLayerClient(this);
 }
@@ -1173,7 +1173,7 @@ void GraphicsLayer::didChangeScrollbarsHidden(bool hidden) {
     scrollable_area_->SetScrollbarsHidden(hidden);
 }
 
-PaintController& GraphicsLayer::GetPaintController() {
+PaintController& GraphicsLayer::GetPaintController() const {
   CHECK(DrawsContent());
   if (!paint_controller_)
     paint_controller_ = PaintController::Create();
@@ -1206,6 +1206,53 @@ sk_sp<PaintRecord> GraphicsLayer::CaptureRecord() {
   graphics_context.BeginRecording(bounds);
   GetPaintController().GetPaintArtifact().Replay(bounds, graphics_context);
   return graphics_context.EndRecording();
+}
+
+void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
+                                  PaintingControlSetting painting_control) {
+  TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
+  RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
+                           RuntimeCallStats::CounterId::kPaintContents);
+
+  PaintController& paint_controller = GetPaintController();
+  paint_controller.SetDisplayItemConstructionIsDisabled(
+      painting_control == kDisplayListConstructionDisabled);
+  paint_controller.SetSubsequenceCachingIsDisabled(painting_control ==
+                                                   kSubsequenceCachingDisabled);
+
+  if (painting_control == kPartialInvalidation)
+    client_->InvalidateTargetElementForTesting();
+
+  // We also disable caching when Painting or Construction are disabled. In both
+  // cases we would like to compare assuming the full cost of recording, not the
+  // cost of re-using cached content.
+  if (painting_control == kDisplayListCachingDisabled ||
+      painting_control == kDisplayListPaintingDisabled ||
+      painting_control == kDisplayListConstructionDisabled)
+    paint_controller.InvalidateAll();
+
+  GraphicsContext::DisabledMode disabled_mode =
+      GraphicsContext::kNothingDisabled;
+  if (painting_control == kDisplayListPaintingDisabled ||
+      painting_control == kDisplayListConstructionDisabled)
+    disabled_mode = GraphicsContext::kFullyDisabled;
+
+  // Anything other than PaintDefaultBehavior is for testing. In non-testing
+  // scenarios, it is an error to call GraphicsLayer::paint. Actual painting
+  // occurs in FrameView::paintTree(); this method merely copies the painted
+  // output to the WebDisplayItemList.
+  if (painting_control != kPaintDefaultBehavior)
+    Paint(nullptr, disabled_mode);
+
+  paint_controller.GetPaintArtifact().AppendToWebDisplayItemList(
+      OffsetFromLayoutObjectWithSubpixelAccumulation(), web_display_item_list);
+
+  paint_controller.SetDisplayItemConstructionIsDisabled(false);
+  paint_controller.SetSubsequenceCachingIsDisabled(false);
+}
+
+size_t GraphicsLayer::ApproximateUnsharedMemoryUsage() const {
+  return GetPaintController().ApproximateUnsharedMemoryUsage();
 }
 
 bool ScopedSetNeedsDisplayInRectForTrackingOnly::s_enabled_ = false;

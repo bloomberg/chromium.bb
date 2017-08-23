@@ -3300,7 +3300,7 @@ void CompositedLayerMapping::PaintContents(
   // https://code.google.com/p/chromium/issues/detail?id=343772
   DisableCompositingQueryAsserts disabler;
   // Allow throttling to make sure no painting paths (e.g.,
-  // ContentLayerDelegate::paintContents) try to paint throttled content.
+  // GraphicsLayer::PaintContents) try to paint throttled content.
   DocumentLifecycle::AllowThrottlingScope allow_throttling(
       owning_layer_.GetLayoutObject().GetDocument().Lifecycle());
 #if DCHECK_IS_ON()

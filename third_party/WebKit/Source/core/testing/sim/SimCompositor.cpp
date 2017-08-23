@@ -13,7 +13,6 @@
 #include "core/paint/compositing/CompositedLayerMapping.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/testing/sim/SimDisplayItemList.h"
-#include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
@@ -23,8 +22,7 @@ namespace blink {
 static void PaintLayers(GraphicsLayer& layer,
                         SimDisplayItemList& display_list) {
   if (layer.DrawsContent() && layer.HasTrackedRasterInvalidations()) {
-    ContentLayerDelegate* delegate = layer.ContentLayerDelegateForTesting();
-    delegate->PaintContents(&display_list);
+    layer.WebContentLayerClientForTesting().PaintContents(&display_list);
     layer.ResetTrackedRasterInvalidations();
   }
 
