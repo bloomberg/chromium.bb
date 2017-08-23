@@ -294,10 +294,11 @@ bool Editor::CanEdit() const {
 }
 
 bool Editor::CanEditRichly() const {
-  return GetFrame()
-      .Selection()
-      .ComputeVisibleSelectionInDOMTreeDeprecated()
-      .IsContentRichlyEditable();
+  return IsRichlyEditablePosition(
+      GetFrame()
+          .Selection()
+          .ComputeVisibleSelectionInDOMTreeDeprecated()
+          .Base());
 }
 
 // WinIE uses onbeforecut and onbeforepaste to enables the cut and paste menu
