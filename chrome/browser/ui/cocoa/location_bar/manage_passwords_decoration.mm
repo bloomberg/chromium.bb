@@ -108,5 +108,5 @@ const gfx::VectorIcon* ManagePasswordsDecoration::GetMaterialVectorIcon()
     const {
   // Note: update unit tests if this vector icon ever changes (it's hard-coded
   // there).
-  return &kAutologinIcon;
+  return &kKeyIcon;
 }

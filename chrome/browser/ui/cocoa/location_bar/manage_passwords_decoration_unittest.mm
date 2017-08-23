@@ -104,13 +104,13 @@ TEST_P(ManagePasswordsDecorationStateTest, TestState) {
   NSImage* expected_image = nil;
   if (GetParam().image) {
     // IDR_SAVE_PASSWORD_ACTIVE and IDR_SAVE_PASSWORD_INACTIVE map to
-    // kAutologinIcon in Material Design; fail the test if somehow some other
+    // kKeyIcon in Material Design; fail the test if somehow some other
     // value is present.
     EXPECT_TRUE(GetParam().image == IDR_SAVE_PASSWORD_ACTIVE ||
                 GetParam().image == IDR_SAVE_PASSWORD_INACTIVE);
     const int kIconSize = 16;
     expected_image = NSImageFromImageSkia(
-        gfx::CreateVectorIcon(kAutologinIcon, kIconSize, gfx::kChromeIconGrey));
+        gfx::CreateVectorIcon(kKeyIcon, kIconSize, gfx::kChromeIconGrey));
   }
   EXPECT_TRUE(ImagesEqual(expected_image, decoration()->GetImage()));
   EXPECT_NSEQ(GetParam().toolTip

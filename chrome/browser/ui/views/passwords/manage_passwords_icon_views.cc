@@ -84,7 +84,7 @@ views::BubbleDialogDelegateView* ManagePasswordsIconViews::GetBubble() const {
 }
 
 const gfx::VectorIcon& ManagePasswordsIconViews::GetVectorIcon() const {
-  return kAutologinIcon;
+  return kKeyIcon;
 }
 
 void ManagePasswordsIconViews::AboutToRequestFocusFromTabTraversal(
