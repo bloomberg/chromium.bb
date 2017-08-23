@@ -2084,7 +2084,7 @@ PaintLayer* PaintLayer::HitTestLayer(
     DCHECK(frame_view);
 
     IntPoint frame_point =
-        frame_view->ContentsToFrame(result.RoundedPointInContent());
+        frame_view->ContentsToFrame(RoundedIntPoint(hit_test_location.Point()));
     IntPoint local_point = frame_view->ConvertToLayoutItem(
         LayoutBoxItem(GetLayoutBox()), frame_point);
 
@@ -2093,7 +2093,7 @@ PaintLayer* PaintLayer::HitTestLayer(
 
     // If hit overflow controls, innerNode should be the scrollable_area_ node.
     if (hit_overflow_controls) {
-      if (scrollable_area_->GetLayoutBox() &&
+      if (scrollable_area_ && scrollable_area_->GetLayoutBox() &&
           scrollable_area_->GetLayoutBox()->GetNode()) {
         Node* node = scrollable_area_->GetLayoutBox()->GetNode();
 
