@@ -221,6 +221,7 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
 
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
+      model_(delegate->GetModel()),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
       display_observer_(this),
@@ -1021,6 +1022,7 @@ void AppListView::SchedulePaintInRect(const gfx::Rect& rect) {
 void AppListView::OnTabletModeChanged(bool started) {
   is_tablet_mode_ = started;
   search_box_view_->OnTabletModeChanged(started);
+  model_->SetTabletMode(started);
   if (is_tablet_mode_ && !is_fullscreen()) {
     // Set |app_list_state_| to a tablet mode friendly state.
     SetState(app_list_state_ == PEEKING ? FULLSCREEN_ALL_APPS
@@ -1130,6 +1132,7 @@ void AppListView::SetState(AppListState new_state) {
   }
   StartAnimationForState(new_state_override);
   RecordStateTransitionForUma(new_state_override);
+  model_->SetStateFullscreen(new_state_override);
   app_list_state_ = new_state_override;
 
   // Updates the visibility of app list items according to the change of
