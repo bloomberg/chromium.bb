@@ -203,7 +203,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
 #endif
 
   void UpdateIfNeededRecursiveInternal(
-      DocumentLifecycle::LifecycleState target_state);
+      DocumentLifecycle::LifecycleState target_state,
+      CompositingReasonsStats&);
 
   // GraphicsLayerClient implementation
   bool NeedsRepaint(const GraphicsLayer&) const { return true; }
@@ -217,7 +218,8 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   bool IsTrackingRasterInvalidations() const override;
 
   void UpdateWithoutAcceleratedCompositing(CompositingUpdateType);
-  void UpdateIfNeeded(DocumentLifecycle::LifecycleState target_state);
+  void UpdateIfNeeded(DocumentLifecycle::LifecycleState target_state,
+                      CompositingReasonsStats&);
 
   void EnsureRootLayer();
   void DestroyRootLayer();
