@@ -34,7 +34,8 @@ CWV_EXPORT
 
 // Instructs the delegate to present context menu in response to user’s long
 // press gesture at |location| in |view| coordinate space. |element| is an HTML
-// element which received the gesture.
+// element which received the gesture. If this method is not implemented, no
+// context menu will be displayed.
 - (void)webView:(CWVWebView*)webView
     runContextMenuWithTitle:(NSString*)menuTitle
              forHTMLElement:(CWVHTMLElement*)element

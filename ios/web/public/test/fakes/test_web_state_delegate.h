@@ -80,7 +80,7 @@ class TestWebStateDelegate : public WebStateDelegate {
   WebState* OpenURLFromWebState(WebState*,
                                 const WebState::OpenURLParams&) override;
   JavaScriptDialogPresenter* GetJavaScriptDialogPresenter(WebState*) override;
-  bool HandleContextMenu(WebState* source,
+  void HandleContextMenu(WebState* source,
                          const ContextMenuParams& params) override;
   void ShowRepostFormWarningDialog(
       WebState* source,

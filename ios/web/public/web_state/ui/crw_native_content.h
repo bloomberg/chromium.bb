@@ -105,9 +105,7 @@ struct ContextMenuParams;
 - (void)nativeContent:(id)content titleDidChange:(NSString*)title;
 
 // Called when the content triggers a context menu.
-// The client must return whether the context menu event was handled and the
-// system menu must be suppressed.
-- (BOOL)nativeContent:(id)content
+- (void)nativeContent:(id)content
     handleContextMenu:(const web::ContextMenuParams&)params;
 
 @end

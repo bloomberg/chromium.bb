@@ -206,13 +206,12 @@
 #pragma mark -
 #pragma mark CRWContextMenuDelegate implementation
 
-- (BOOL)webView:(WKWebView*)webView
+- (void)webView:(WKWebView*)webView
     handleContextMenu:(const web::ContextMenuParams&)params {
   if ([delegate_
           respondsToSelector:@selector(nativeContent:handleContextMenu:)]) {
-    return [delegate_ nativeContent:self handleContextMenu:params];
+    [delegate_ nativeContent:self handleContextMenu:params];
   }
-  return NO;
 }
 
 #pragma mark -
