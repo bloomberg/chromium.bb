@@ -12,10 +12,8 @@
 #include "base/cancelable_callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/sequenced_task_runner.h"
 #include "components/spellcheck/browser/spellcheck_dictionary.h"
 #include "components/sync/model/sync_data.h"
 #include "components/sync/model/sync_error.h"
@@ -197,9 +195,6 @@ class SpellcheckCustomDictionary : public SpellcheckDictionary,
   // Notifies observers of the dictionary change if the dictionary has been
   // changed.
   void Notify(const Change& dictionary_change);
-
-  // Task runner where the file operations takes place.
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // In-memory cache of the custom words file.
   std::set<std::string> words_;
