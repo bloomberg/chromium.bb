@@ -3,12 +3,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# Script that can be used to register native messaging hosts in the output
+# Script that can be used to register native messaging hosts in the GN output
 # directory.
 
 set -e
 
-SRC_DIR="$(readlink -f "$(dirname "$0")/../..")"
+# 'readlink' works differently on macOS, so 'pwd -P' is used instead to
+# resolve symlinks.
+SRC_DIR="$(cd "$(dirname "$0")/../.." && pwd -P)"
 ME2ME_HOST_NAME="com.google.chrome.remote_desktop"
 IT2ME_HOST_NAME="com.google.chrome.remote_assistance"
 
@@ -32,14 +34,21 @@ register_hosts() {
   local build_dir="$1"
   local chrome_data_dir="$2"
 
+  local nm_host="remoting_native_messaging_host"
+  local ra_host="remote_assistance_host"
+  if [[ $(uname -s) == "Darwin" ]]; then
+    nm_host="native_messaging_host.app/Contents/MacOS/native_messaging_host"
+    ra_host="remote_assistance_host.app/Contents/MacOS/remote_assistance_host"
+  fi
+
   install_manifest \
      "${SRC_DIR}/remoting/host/setup/${ME2ME_HOST_NAME}.json.jinja2" \
-     "${build_dir}/remoting_native_messaging_host" \
+     "${build_dir}/${nm_host}" \
      ME2ME_HOST_PATH "${chrome_data_dir}"
 
   install_manifest \
      "${SRC_DIR}/remoting/host/it2me/${IT2ME_HOST_NAME}.json.jinja2" \
-     "${build_dir}/remote_assistance_host" \
+     "${build_dir}/${ra_host}" \
      IT2ME_HOST_PATH "${chrome_data_dir}"
 }
 
@@ -92,29 +101,26 @@ unregister_hosts_for_all_channels() {
 }
 
 print_usage() {
-  echo "Usage: $0 [-r|-u]" >&2
-  echo "   -r   Register Release build instead of Debug" >&2
+  echo "Usage: $0 <GN-output-dir>|-u" >&2
   echo "   -u   Unregister" >&2
 }
 
-build_dir="Debug"
-
-if [[ $# -gt 1 ]]; then
+if [[ $# -ne 1 ]]; then
   print_usage
-elif [[ $# -eq 1 ]]; then
-  case "$1" in
-    "-r")
-      build_dir="Release"
-      ;;
-    "-u")
-      unregister_hosts_for_all_channels
-      exit 0
-      ;;
-    *)
-      print_usage
-      exit 1
-      ;;
-  esac
+  exit 1
 fi
 
-register_hosts_for_all_channels "${SRC_DIR}/out/${build_dir}"
+if [[ "$1" == "-u" ]]; then
+  unregister_hosts_for_all_channels
+  exit 0
+fi
+
+if [[ ! -f "$1/args.gn" ]]; then
+  echo "$1 is not a GN output directory."
+  print_usage
+  exit 1
+fi
+
+# The manifests need an absolute path.
+gn_out_dir="$(cd "$1" && pwd -P)"
+register_hosts_for_all_channels "$gn_out_dir"
