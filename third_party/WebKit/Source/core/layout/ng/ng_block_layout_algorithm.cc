@@ -191,19 +191,26 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   if (NeedMinMaxSize(ConstraintSpace(), Style()))
     min_max_size = ComputeMinMaxSize();
 
-  border_scrollbar_padding_ = CalculateBorderScrollbarPadding(
-      ConstraintSpace(), Style(), Node().GetLayoutObject());
-
-  // TODO(layout-ng): For quirks mode, should we pass blockSize instead of
-  // NGSizeIndefinite?
-  NGLogicalSize size = CalculateBorderBoxSize(ConstraintSpace(), Style(),
-                                              min_max_size, NGSizeIndefinite);
+  border_scrollbar_padding_ = ComputeBorders(ConstraintSpace(), Style()) +
+                              ComputePadding(ConstraintSpace(), Style()) +
+                              GetScrollbarSizes(Node().GetLayoutObject());
+  // TODO(layout-ng): For quirks mode, should we pass blockSize instead of -1?
+  NGLogicalSize size(
+      ComputeInlineSizeForFragment(ConstraintSpace(), Style(), min_max_size),
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
+                                  NGSizeIndefinite));
 
   // Our calculated block-axis size may be indefinite at this point.
   // If so, just leave the size as NGSizeIndefinite instead of subtracting
   // borders and padding.
-  NGLogicalSize adjusted_size =
-      CalculateContentBoxSize(size, border_scrollbar_padding_);
+  NGLogicalSize adjusted_size(size);
+  if (size.block_size == NGSizeIndefinite) {
+    adjusted_size.inline_size -= border_scrollbar_padding_.InlineSum();
+  } else {
+    adjusted_size -= border_scrollbar_padding_;
+    adjusted_size.block_size = std::max(adjusted_size.block_size, LayoutUnit());
+  }
+  adjusted_size.inline_size = std::max(adjusted_size.inline_size, LayoutUnit());
 
   child_available_size_ = adjusted_size;
   child_percentage_size_ = adjusted_size;

@@ -7,9 +7,10 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/ng_layout_result.h"
 
 namespace blink {
+
+class NGLayoutResult;
 
 // Contains the information necessary for copying back data to a FloatingObject.
 struct CORE_EXPORT NGPositionedFloat {
