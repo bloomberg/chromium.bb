@@ -443,36 +443,6 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
     const gfx::Rect& rect) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  VLOG(1) << "Start voice interaction.";
-  if (!Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
-          prefs::kArcVoiceInteractionValuePropAccepted)) {
-    VLOG(1) << "Voice interaction feature not accepted.";
-    // If voice interaction value prop already showing, return.
-    if (chromeos::LoginDisplayHost::default_host())
-      return;
-    // If voice interaction value prop has not been accepted, show the value
-    // prop OOBE page again.
-    gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
-    // The display host will be destructed at the end of OOBE flow.
-    chromeos::LoginDisplayHostImpl* display_host =
-        new chromeos::LoginDisplayHostImpl(screen_bounds);
-    display_host->StartVoiceInteractionOobe();
-    return;
-  }
-
-  if (state_ == ash::VoiceInteractionState::NOT_READY) {
-    // If the container side is not ready, we will be waiting for a while.
-    ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(
-        ash::VoiceInteractionState::NOT_READY);
-  }
-
-  if (!arc_bridge_service_->voice_interaction_framework()->has_instance()) {
-    VLOG(1) << "Instance not ready.";
-    SetArcCpuRestriction(false);
-    is_request_pending_ = true;
-    return;
-  }
-
   if (!InitiateUserInteraction())
     return;
 
@@ -492,6 +462,20 @@ void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
     framework_instance->StartVoiceInteractionSessionForRegion(rect);
   }
   VLOG(1) << "Sent voice interaction request.";
+}
+
+void ArcVoiceInteractionFrameworkService::ToggleSessionFromUserInteraction() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!InitiateUserInteraction())
+    return;
+
+  mojom::VoiceInteractionFrameworkInstance* framework_instance =
+      ARC_GET_INSTANCE_FOR_METHOD(
+          arc_bridge_service_->voice_interaction_framework(),
+          ToggleVoiceInteractionSession);
+  DCHECK(framework_instance);
+  framework_instance->ToggleVoiceInteractionSession();
 }
 
 bool ArcVoiceInteractionFrameworkService::ValidateTimeSinceUserInteraction() {
@@ -525,6 +509,36 @@ bool ArcVoiceInteractionFrameworkService::ValidateTimeSinceUserInteraction() {
 }
 
 bool ArcVoiceInteractionFrameworkService::InitiateUserInteraction() {
+  VLOG(1) << "Start voice interaction.";
+  if (!Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
+          prefs::kArcVoiceInteractionValuePropAccepted)) {
+    VLOG(1) << "Voice interaction feature not accepted.";
+    // If voice interaction value prop already showing, return.
+    if (chromeos::LoginDisplayHost::default_host())
+      return false;
+    // If voice interaction value prop has not been accepted, show the value
+    // prop OOBE page again.
+    gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+    // The display host will be destructed at the end of OOBE flow.
+    chromeos::LoginDisplayHostImpl* display_host =
+        new chromeos::LoginDisplayHostImpl(screen_bounds);
+    display_host->StartVoiceInteractionOobe();
+    return false;
+  }
+
+  if (state_ == ash::VoiceInteractionState::NOT_READY) {
+    // If the container side is not ready, we will be waiting for a while.
+    ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(
+        ash::VoiceInteractionState::NOT_READY);
+  }
+
+  if (!arc_bridge_service_->voice_interaction_framework()->has_instance()) {
+    VLOG(1) << "Instance not ready.";
+    SetArcCpuRestriction(false);
+    is_request_pending_ = true;
+    return false;
+  }
+
   auto start_time = base::TimeTicks::Now();
   if ((start_time - user_interaction_start_time_) <
           kAllowedTimeSinceUserInteraction &&

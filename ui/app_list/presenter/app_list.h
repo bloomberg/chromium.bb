@@ -34,6 +34,7 @@ class APP_LIST_PRESENTER_EXPORT AppList : public mojom::AppList {
   void Dismiss();
   void ToggleAppList(int64_t display_id);
   void StartVoiceInteractionSession();
+  void ToggleVoiceInteractionSession();
 
   // Helper functions to get the cached state as reported by the presenter.
   bool IsVisible() const;

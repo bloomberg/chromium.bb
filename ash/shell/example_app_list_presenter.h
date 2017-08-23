@@ -27,6 +27,7 @@ class ExampleAppListPresenter : public app_list::mojom::AppListPresenter {
   void Dismiss() override;
   void ToggleAppList(int64_t display_id) override;
   void StartVoiceInteractionSession() override;
+  void ToggleVoiceInteractionSession() override;
   void UpdateYPositionAndOpacity(int new_y_position,
                                  float background_opacity,
                                  bool is_end_gesture) override;
