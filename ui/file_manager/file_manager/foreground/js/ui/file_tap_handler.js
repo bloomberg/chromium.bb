@@ -100,6 +100,8 @@ FileTapHandler.TapEvent = {
  * @param {function(!Event, number, !FileTapHandler.TapEvent)} callback called
  *     when a tap event is detected. Should return ture if it has taken any
  *     action, and false if it ignroes the event.
+ * @return {boolean} true if a tap or longtap event was detected and the
+ *     callback processed it. False otherwise.
  */
 FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
   switch (event.type) {
@@ -112,7 +114,7 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
         // the user is dragging something, an accidental second touch could be
         // quite disruptive if it cancelled their drag.  Better to just ignore
         // it.
-        return;
+        return false;
 
       // It's still possible there could be an active "touch" if the user is
       // simultaneously using a mouse and a touch input.
@@ -168,6 +170,8 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
       break;
 
     case 'touchend':
+      // Mark as no longer being touched
+      this.activeTouch_ = undefined;
       if (this.longTapDetectorTimerId_ != -1) {
         clearTimeout(this.longTapDetectorTimerId_);
         this.longTapDetectorTimerId_ = -1;
@@ -178,16 +182,17 @@ FileTapHandler.prototype.handleTouchEvents = function(event, index, callback) {
         if (this.hasLongPressProcessed_ ||
             callback(event, index, FileTapHandler.TapEvent.LONG_TAP)) {
           event.preventDefault();
+          return true;
         }
       } else {
         if (callback(event, index, FileTapHandler.TapEvent.TAP)) {
           event.preventDefault();
+          return true;
         }
       }
-      // Mark as no longer being touched
-      this.activeTouch_ = undefined;
       break;
   }
+  return false;
 };
 
 /**

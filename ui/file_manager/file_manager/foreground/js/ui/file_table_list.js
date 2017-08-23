@@ -107,7 +107,12 @@ FileListSelectionController.prototype.handlePointerDownUp = function(e, index) {
 FileListSelectionController.prototype.handleTouchEvents = function(e, index) {
   if (!this.enableTouchMode_)
     return;
-  this.tapHandler_.handleTouchEvents(e, index, filelist.handleTap.bind(this));
+  if (this.tapHandler_.handleTouchEvents(
+          e, index, filelist.handleTap.bind(this)))
+    // If a tap event is processed, FileTapHandler cancels the event to prevent
+    // triggering click events. Then it results not moving the focus to the
+    // list. So we do that here explicitly.
+    filelist.focusParentList(e);
 };
 
 /** @override */
@@ -494,5 +499,19 @@ filelist.handleKeyDown = function(e) {
 
     if (prevent)
       e.preventDefault();
+  }
+};
+
+/**
+ * Focus on the file list that contains the event target.
+ * @param {!Event} event the touch event.
+ */
+filelist.focusParentList = function(event) {
+  var element = event.target;
+  while (element && !(element instanceof cr.ui.List)) {
+    element = element.parentElement;
+  }
+  if (element) {
+    element.focus();
   }
 };
