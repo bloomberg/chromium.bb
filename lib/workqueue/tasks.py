@@ -117,5 +117,5 @@ class ProcessPoolTaskManager(TaskManager):
         yield request_id, result.get()
 
   def Close(self):
-    self._pool.close()
+    self._pool.terminate()
     self._pool.join()
