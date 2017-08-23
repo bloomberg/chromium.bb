@@ -6,12 +6,13 @@
 
 #include <cstdint>
 #include <memory>
+#include <unordered_set>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/time/time.h"
-#include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/browser/sessions/session_restore.h"
 #include "content/public/browser/swap_metrics_driver.h"
@@ -55,8 +56,9 @@ class TabManagerStatsCollector::SessionRestoreSwapMetricsDelegate
   TabManagerStatsCollector* tab_manager_stats_collector_;
 };
 
-TabManagerStatsCollector::TabManagerStatsCollector(TabManager* tab_manager)
-    : tab_manager_(tab_manager), is_session_restore_loading_tabs_(false) {
+TabManagerStatsCollector::TabManagerStatsCollector()
+    : is_session_restore_loading_tabs_(false),
+      is_in_background_tab_opening_session_(false) {
   std::unique_ptr<content::SwapMetricsDriver::Delegate> delegate(
       base::WrapUnique<content::SwapMetricsDriver::Delegate>(
           new SessionRestoreSwapMetricsDelegate(this)));
@@ -70,25 +72,46 @@ TabManagerStatsCollector::~TabManagerStatsCollector() {
 }
 
 void TabManagerStatsCollector::RecordSwitchToTab(
-    content::WebContents* contents) const {
-  if (tab_manager_->IsSessionRestoreLoadingTabs()) {
-    auto* data = TabManager::WebContentsData::FromWebContents(contents);
-    DCHECK(data);
-    UMA_HISTOGRAM_ENUMERATION("TabManager.SessionRestore.SwitchToTab",
-                              data->tab_loading_state(), TAB_LOADING_STATE_MAX);
+    content::WebContents* old_contents,
+    content::WebContents* new_contents) {
+  if (!is_session_restore_loading_tabs_ &&
+      !is_in_background_tab_opening_session_) {
+    return;
+  }
+
+  auto* new_data = TabManager::WebContentsData::FromWebContents(new_contents);
+  DCHECK(new_data);
+
+  if (is_session_restore_loading_tabs_) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramSessionRestoreSwitchToTab,
+                              new_data->tab_loading_state(),
+                              TAB_LOADING_STATE_MAX);
+  }
+  if (is_in_background_tab_opening_session_) {
+    UMA_HISTOGRAM_ENUMERATION(kHistogramBackgroundTabOpeningSwitchToTab,
+                              new_data->tab_loading_state(),
+                              TAB_LOADING_STATE_MAX);
+  }
+  if (old_contents)
+    foreground_contents_switched_to_times_.erase(old_contents);
+  DCHECK(
+      !base::ContainsKey(foreground_contents_switched_to_times_, new_contents));
+  if (new_data->tab_loading_state() != TAB_IS_LOADED) {
+    foreground_contents_switched_to_times_.insert(
+        std::make_pair(new_contents, base::TimeTicks::Now()));
   }
 }
 
 void TabManagerStatsCollector::RecordExpectedTaskQueueingDuration(
     content::WebContents* contents,
     base::TimeDelta queueing_time) {
-  if (tab_manager_->IsSessionRestoreLoadingTabs() && contents->IsVisible()) {
+  if (is_session_restore_loading_tabs_ && contents->IsVisible()) {
     UMA_HISTOGRAM_TIMES(
         kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration,
         queueing_time);
   }
 
-  if (tab_manager_->IsLoadingBackgroundTabs() && contents->IsVisible()) {
+  if (is_in_background_tab_opening_session_ && contents->IsVisible()) {
     UMA_HISTOGRAM_TIMES(
         kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration,
         queueing_time);
@@ -107,6 +130,16 @@ void TabManagerStatsCollector::OnSessionRestoreFinishedLoadingTabs() {
   if (session_restore_swap_metrics_driver_)
     session_restore_swap_metrics_driver_->UpdateMetrics();
   is_session_restore_loading_tabs_ = false;
+}
+
+void TabManagerStatsCollector::OnBackgroundTabOpeningSessionStarted() {
+  DCHECK(!is_in_background_tab_opening_session_);
+  is_in_background_tab_opening_session_ = true;
+}
+
+void TabManagerStatsCollector::OnBackgroundTabOpeningSessionEnded() {
+  DCHECK(is_in_background_tab_opening_session_);
+  is_in_background_tab_opening_session_ = false;
 }
 
 void TabManagerStatsCollector::OnSessionRestoreSwapInCount(
@@ -152,6 +185,28 @@ void TabManagerStatsCollector::OnSessionRestoreUpdateMetricsFailed() {
   session_restore_swap_metrics_driver_.reset();
 }
 
+void TabManagerStatsCollector::OnDidStopLoading(
+    content::WebContents* contents) {
+  if (!base::ContainsKey(foreground_contents_switched_to_times_, contents))
+    return;
+  if (is_session_restore_loading_tabs_) {
+    UMA_HISTOGRAM_TIMES(kHistogramSessionRestoreTabSwitchLoadTime,
+                        base::TimeTicks::Now() -
+                            foreground_contents_switched_to_times_[contents]);
+  }
+  if (is_in_background_tab_opening_session_) {
+    UMA_HISTOGRAM_TIMES(kHistogramBackgroundTabOpeningTabSwitchLoadTime,
+                        base::TimeTicks::Now() -
+                            foreground_contents_switched_to_times_[contents]);
+  }
+  foreground_contents_switched_to_times_.erase(contents);
+}
+
+void TabManagerStatsCollector::OnWebContentsDestroyed(
+    content::WebContents* contents) {
+  foreground_contents_switched_to_times_.erase(contents);
+}
+
 // static
 const char TabManagerStatsCollector::
     kHistogramSessionRestoreForegroundTabExpectedTaskQueueingDuration[] =
@@ -162,5 +217,24 @@ const char TabManagerStatsCollector::
     kHistogramBackgroundTabOpeningForegroundTabExpectedTaskQueueingDuration[] =
         "TabManager.BackgroundTabOpening.ForegroundTab."
         "ExpectedTaskQueueingDuration";
+
+// Static
+const char TabManagerStatsCollector::kHistogramSessionRestoreSwitchToTab[] =
+    "TabManager.SessionRestore.SwitchToTab";
+
+// Static
+const char
+    TabManagerStatsCollector::kHistogramBackgroundTabOpeningSwitchToTab[] =
+        "TabManager.BackgroundTabOpening.SwitchToTab";
+
+// Static
+const char
+    TabManagerStatsCollector::kHistogramSessionRestoreTabSwitchLoadTime[] =
+        "TabManager.Experimental.SessionRestore.TabSwitchLoadTime";
+
+// Static
+const char TabManagerStatsCollector::
+    kHistogramBackgroundTabOpeningTabSwitchLoadTime[] =
+        "TabManager.Experimental.BackgroundTabOpening.TabSwitchLoadTime";
 
 }  // namespace resource_coordinator

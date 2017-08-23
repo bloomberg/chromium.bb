@@ -81065,6 +81065,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="TabManager.BackgroundTabOpening.SwitchToTab"
+    enum="TabLoadingState">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    The loading state of a tab at the time the user switches to it when the
+    browser is opening background tabs. Backround tab opening excludes session
+    restore; this metric is tracked separately in that case
+    (TabManager.SessionRestore.SwitchToTab). The metric is only recorded when a
+    tab is switched to from another tab within the same tabstrip. As a result,
+    the case when switching between different windows is not included, either
+    between two tabs in different browser windows, or when switching to a
+    different application and switching back to the browser.
+  </summary>
+</histogram>
+
 <histogram name="TabManager.Discarding.DiscardCount" units="Discards">
   <owner>georgesak@chromium.org</owner>
   <summary>
@@ -81154,6 +81169,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram
+    name="TabManager.Experimental.BackgroundTabOpening.TabSwitchLoadTime"
+    units="ms">
+  <owner>zhenw@chromium.org</owner>
+  <summary>
+    The tab load time of a tab that is switched to when the browser is opening
+    background tabs. Backround tab opening excludes session restore; this metric
+    is tracked separately in that case
+    (TabManager.Experimental.SessionRestore.TabSwitchLoadTime). Tab load time is
+    defined as the time between when the user switches to a backround tab, and
+    the time when that tab finishes loading in the foreground. If the user
+    switches away before the tab finishes loading, a metric will not be recorded
+    unless the user switches back, in which case the tab load time is measured
+    from that point in time. The metric is only recorded when a tab is switched
+    to from another tab within the same tabstrip. As a result, the initial
+    forground tab is not included in this metric since it was not switched to
+    from another tab.
+  </summary>
+</histogram>
+
+<histogram
     name="TabManager.Experimental.SessionRestore.ForegroundTab.FirstContentfulPaint"
     units="ms">
   <owner>fmeawad@chromium.org</owner>
@@ -81183,6 +81218,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Elapsed time between the start of the loading and the first paint of
     foreground tabs when the browser loads tabs in session restore.
+  </summary>
+</histogram>
+
+<histogram name="TabManager.Experimental.SessionRestore.TabSwitchLoadTime"
+    units="ms">
+  <owner>fmeawad@chromium.org</owner>
+  <summary>
+    The tab load time of a tab that is switched to during a session restore. Tab
+    load time is defined as the time between when the user switches to a
+    backround tab, and the time when that tab finishes loading in the
+    foreground. If the user switches away before the tab finishes loading, a
+    metric will not be recorded unless the user switches back, in which case the
+    tab load time is measured from that point in time. The metric is only
+    recorded when a tab is switched to from another tab within the same
+    tabstrip. As a result, the initial forground tab is not included in this
+    metric since it was not switched to from another tab. The metric is only
+    recorded when session restore is actively loading tabs, which ends when
+    either all tabs have been loaded and their pages rendered, or tab loading
+    needs to be deferred in cases where the system is under memory pressure.
   </summary>
 </histogram>
 
