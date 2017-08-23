@@ -3,6 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/safe_browsing/db/safe_browsing_api_handler_util.h"
+
+#include <string>
+
+#include "base/strings/stringprintf.h"
 #include "components/safe_browsing_db/metadata.pb.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_test_util.h"
@@ -148,7 +152,7 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, PopulationId) {
   EXPECT_NE(empty_meta_, meta_);
 }
 
-TEST_F(SafeBrowsingApiHandlerUtilTest, SubresourceFilterSubTypes) {
+TEST_F(SafeBrowsingApiHandlerUtilTest, NoSubresourceFilterSubTypes) {
   ThreatMetadata expected;
 
   EXPECT_EQ(UMA_STATUS_MATCH,
@@ -156,6 +160,42 @@ TEST_F(SafeBrowsingApiHandlerUtilTest, SubresourceFilterSubTypes) {
   EXPECT_EQ(SB_THREAT_TYPE_SUBRESOURCE_FILTER, threat_);
   expected.threat_pattern_type = ThreatPatternType::NONE;
   EXPECT_EQ(expected, meta_);
+
+  EXPECT_EQ(UMA_STATUS_MATCH,
+            ResetAndParseJson("{\"matches\":[{\"threat_type\":\"13\", "
+                              "\"se_pattern_type\":\"junk\"}]}"));
+  EXPECT_EQ(SB_THREAT_TYPE_SUBRESOURCE_FILTER, threat_);
+  expected.threat_pattern_type = ThreatPatternType::NONE;
+  EXPECT_EQ(expected, meta_);
+}
+
+TEST_F(SafeBrowsingApiHandlerUtilTest, SubresourceFilterSubTypes) {
+  const struct {
+    const char* pattern_type;
+    const char* experimental;
+    ThreatPatternType expected_pattern_type;
+    bool expected_experimental;
+  } test_cases[] = {
+      {"BETTER_ADS", "true", ThreatPatternType::SUBRESOURCE_FILTER_BETTER_ADS,
+       true},
+      {"ALL_ADS", "asdf", ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS, false},
+      {"ABUSIVE_ADS", "false",
+       ThreatPatternType::SUBRESOURCE_FILTER_ABUSIVE_ADS, false},
+      {"", "false", ThreatPatternType::NONE, false},
+  };
+  for (const auto& test_case : test_cases) {
+    std::string json = base::StringPrintf(
+        "{\"matches\":[{\"threat_type\":\"13\", "
+        "\"sf_pattern_type\":\"%s\", \"experimental\":\"%s\"}]}",
+        test_case.pattern_type, test_case.experimental);
+    ASSERT_EQ(UMA_STATUS_MATCH, ResetAndParseJson(json));
+    EXPECT_EQ(SB_THREAT_TYPE_SUBRESOURCE_FILTER, threat_);
+
+    ThreatMetadata expected;
+    expected.threat_pattern_type = test_case.expected_pattern_type;
+    expected.experimental = test_case.expected_experimental;
+    EXPECT_EQ(expected, meta_);
+  }
 }
 
 TEST_F(SafeBrowsingApiHandlerUtilTest, NoUnwantedSoftwareSubTypes) {

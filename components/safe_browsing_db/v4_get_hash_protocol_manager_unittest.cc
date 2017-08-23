@@ -71,8 +71,8 @@ class V4GetHashProtocolManagerTest : public PlatformTest {
     StoresToCheck stores_to_check(
         {GetUrlMalwareId(), GetChromeUrlApiId(),
          ListIdentifier(CHROME_PLATFORM, URL, SOCIAL_ENGINEERING_PUBLIC),
-         ListIdentifier(CHROME_PLATFORM, URL,
-                        POTENTIALLY_HARMFUL_APPLICATION)});
+         ListIdentifier(CHROME_PLATFORM, URL, POTENTIALLY_HARMFUL_APPLICATION),
+         ListIdentifier(CHROME_PLATFORM, URL, SUBRESOURCE_FILTER)});
     return V4GetHashProtocolManager::Create(NULL, stores_to_check,
                                             GetTestV4ProtocolConfig());
   }
@@ -285,9 +285,9 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetHashRequest) {
 
   info->add_threat_entry_types(URL);
 
-  for (const ThreatType& tt :
-       std::set<ThreatType>{MALWARE_THREAT, SOCIAL_ENGINEERING_PUBLIC,
-                            POTENTIALLY_HARMFUL_APPLICATION, API_ABUSE}) {
+  for (const ThreatType& tt : std::set<ThreatType>{
+           MALWARE_THREAT, SOCIAL_ENGINEERING_PUBLIC,
+           POTENTIALLY_HARMFUL_APPLICATION, API_ABUSE, SUBRESOURCE_FILTER}) {
     info->add_threat_types(tt);
   }
 
@@ -493,6 +493,49 @@ TEST_F(V4GetHashProtocolManagerTest, TestParseHashThreatPatternType) {
         fhi.list_id);
     EXPECT_EQ(ThreatPatternType::NONE, fhi.metadata.threat_pattern_type);
   }
+}
+
+TEST_F(V4GetHashProtocolManagerTest, TestParseSubresourceFilterMetadata) {
+  std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
+
+  base::Time now = base::Time::UnixEpoch();
+  SetTestClock(now, pm.get());
+  FindFullHashesResponse sf_res;
+  sf_res.mutable_negative_cache_duration()->set_seconds(600);
+  ThreatMatch* sf = sf_res.add_matches();
+  sf->set_threat_type(SUBRESOURCE_FILTER);
+  sf->set_platform_type(CHROME_PLATFORM);
+  sf->set_threat_entry_type(URL);
+  FullHash full_hash("Everything's shiny, Cap'n.");
+  sf->mutable_threat()->set_hash(full_hash);
+
+  // sf_pattern_type
+  ThreatEntryMetadata::MetadataEntry* sf_pattern_meta =
+      sf->mutable_threat_entry_metadata()->add_entries();
+  sf_pattern_meta->set_key("sf_pattern_type");
+  sf_pattern_meta->set_value("ALL_ADS");
+  // experimental
+  ThreatEntryMetadata::MetadataEntry* sf_experimental_meta =
+      sf->mutable_threat_entry_metadata()->add_entries();
+  sf_experimental_meta->set_key("experimental");
+  sf_experimental_meta->set_value("true");
+
+  std::string sf_data;
+  sf_res.SerializeToString(&sf_data);
+
+  std::vector<FullHashInfo> full_hash_infos;
+  base::Time cache_expire;
+  EXPECT_TRUE(pm->ParseHashResponse(sf_data, &full_hash_infos, &cache_expire));
+  EXPECT_EQ(now + base::TimeDelta::FromSeconds(600), cache_expire);
+
+  ASSERT_EQ(1ul, full_hash_infos.size());
+  const FullHashInfo& fhi = full_hash_infos[0];
+  EXPECT_EQ(full_hash, fhi.full_hash);
+  const ListIdentifier list_id(CHROME_PLATFORM, URL, SUBRESOURCE_FILTER);
+  EXPECT_EQ(list_id, fhi.list_id);
+  EXPECT_EQ(ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS,
+            fhi.metadata.threat_pattern_type);
+  EXPECT_TRUE(fhi.metadata.experimental);
 }
 
 // Adds metadata with a key value that is not "permission".

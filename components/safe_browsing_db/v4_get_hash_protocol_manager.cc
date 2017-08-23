@@ -124,11 +124,16 @@ const char kPermission[] = "permission";
 const char kPhaPatternType[] = "pha_pattern_type";
 const char kMalwareThreatType[] = "malware_threat_type";
 const char kSePatternType[] = "se_pattern_type";
+const char kSfPatternType[] = "sf_pattern_type";
+const char kExperimentalKey[] = "experimental";
 const char kLanding[] = "LANDING";
 const char kDistribution[] = "DISTRIBUTION";
 const char kSocialEngineeringAds[] = "SOCIAL_ENGINEERING_ADS";
 const char kSocialEngineeringLanding[] = "SOCIAL_ENGINEERING_LANDING";
 const char kPhishing[] = "PHISHING";
+const char kSubresourceFilterBetterAds[] = "BETTER_ADS";
+const char kSubresourceFilterAbusiveAds[] = "ABUSIVE_ADS";
+const char kSubresourceFilterAll[] = "ALL_ADS";
 
 }  // namespace
 
@@ -663,6 +668,24 @@ void V4GetHashProtocolManager::ParseMetadata(const ThreatMatch& match,
           RecordParseGetHashResult(UNEXPECTED_METADATA_VALUE_ERROR);
           return;
         }
+      }
+    }
+  } else if (match.threat_type() == SUBRESOURCE_FILTER) {
+    for (const ThreatEntryMetadata::MetadataEntry& m :
+         match.threat_entry_metadata().entries()) {
+      if (m.key() == kSfPatternType) {
+        if (m.value() == kSubresourceFilterBetterAds) {
+          metadata->threat_pattern_type =
+              ThreatPatternType::SUBRESOURCE_FILTER_BETTER_ADS;
+        } else if (m.value() == kSubresourceFilterAbusiveAds) {
+          metadata->threat_pattern_type =
+              ThreatPatternType::SUBRESOURCE_FILTER_ABUSIVE_ADS;
+        } else if (m.value() == kSubresourceFilterAll) {
+          metadata->threat_pattern_type =
+              ThreatPatternType::SUBRESOURCE_FILTER_ALL_ADS;
+        }
+      } else if (m.key() == kExperimentalKey) {
+        metadata->experimental = m.value() == "true";
       }
     }
   } else if (match.has_threat_entry_metadata() &&
