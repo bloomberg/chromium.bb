@@ -123,9 +123,10 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
 #pragma mark - CollectionViewFooterLinkDelegate
 
 - (void)cell:(CollectionViewFooterCell*)cell didTapLinkURL:(GURL)URL {
+  // Subclass must have a valid dispatcher assigned.
+  DCHECK(self.dispatcher);
   OpenUrlCommand* command = [[OpenUrlCommand alloc] initWithURLFromChrome:URL];
-  [command setTag:IDC_CLOSE_SETTINGS_AND_OPEN_URL];
-  [self chromeExecuteCommand:command];
+  [self.dispatcher closeSettingsUIAndOpenURL:command];
 }
 
 #pragma mark - Status bar

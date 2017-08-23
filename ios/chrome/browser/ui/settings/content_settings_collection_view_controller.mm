@@ -201,8 +201,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeSettingsTranslate: {
-      UIViewController* controller = [[TranslateCollectionViewController alloc]
-          initWithPrefs:browserState_->GetPrefs()];
+      TranslateCollectionViewController* controller =
+          [[TranslateCollectionViewController alloc]
+              initWithPrefs:browserState_->GetPrefs()];
+      controller.dispatcher = self.dispatcher;
       [self.navigationController pushViewController:controller animated:YES];
       break;
     }

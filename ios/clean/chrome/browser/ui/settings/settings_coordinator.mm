@@ -57,12 +57,6 @@ void TraverseCoordinatorHierarchy(BrowserCoordinator* coordinator,
 
 #pragma mark - SettingsNavigationControllerDelegate
 
-- (void)closeSettingsAndOpenUrl:(OpenUrlCommand*)command {
-  // Placeholder implementation to conform to the delegate protocol;
-  // for now this just closes the settings without opening a URL.
-  [self closeSettings];
-}
-
 - (void)closeSettingsAndOpenNewIncognitoTab {
   // Placeholder implementation to conform to the delegate protocol;
   // for now this just closes the settings without opening a new tab.

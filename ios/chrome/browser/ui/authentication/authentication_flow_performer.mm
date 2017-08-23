@@ -441,10 +441,6 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
   NOTREACHED();
 }
 
-- (void)closeSettingsAndOpenUrl:(OpenUrlCommand*)command {
-  NOTREACHED();
-}
-
 - (id<ApplicationCommands, BrowserCommands>)dispatcherForSettings {
   NOTREACHED();
   return nil;

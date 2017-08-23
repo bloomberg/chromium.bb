@@ -28,7 +28,6 @@
 #define IDC_SHOW_SYNC_SETTINGS                         40914
 #define IDC_OPEN_URL                                   40915
 #define IDC_SHOW_OTHER_DEVICES                         40917
-#define IDC_CLOSE_SETTINGS_AND_OPEN_URL                40920
 #define IDC_REQUEST_DESKTOP_SITE                       40921
 #define IDC_REQUEST_MOBILE_SITE                        40922
 #define IDC_CLEAR_BROWSING_DATA_IOS                    40924
