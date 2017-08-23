@@ -83,7 +83,7 @@ remoting.initHomeScreenUi = function() {
   remoting.updateLocalHostState();
   remoting.hostList.refresh().then(remoting.updateLocalHostState);
 
-  remoting.butterBar = new remoting.ButterBar();
+  remoting.butterBar = remoting.ButterBar.create();
   remoting.butterBar.init();
 };
 
