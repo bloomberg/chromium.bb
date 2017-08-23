@@ -287,7 +287,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
       base::File::Error rv,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<storage::ShareableFileReference>& file_ref);
+      scoped_refptr<storage::ShareableFileReference> file_ref);
 
   void OnCopyProgress(const OperationHandle& handle,
                       const CopyProgressCallback& callback,

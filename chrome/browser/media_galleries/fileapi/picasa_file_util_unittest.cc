@@ -180,7 +180,7 @@ void CreateSnapshotFileTestHelperCallback(
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
+    scoped_refptr<storage::ShareableFileReference> file_ref) {
   DCHECK(run_loop);
   DCHECK(error);
   DCHECK(platform_path_result);

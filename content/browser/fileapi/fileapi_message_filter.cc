@@ -571,7 +571,7 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     base::File::Error result,
     const base::File::Info& info,
     const base::FilePath& platform_path,
-    const scoped_refptr<storage::ShareableFileReference>& /* unused */) {
+    scoped_refptr<storage::ShareableFileReference> /* unused */) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   operations_.erase(request_id);
 

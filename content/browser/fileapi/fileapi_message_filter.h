@@ -149,7 +149,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
       base::File::Error result,
       const base::File::Info& info,
       const base::FilePath& platform_path,
-      const scoped_refptr<storage::ShareableFileReference>& file_ref);
+      scoped_refptr<storage::ShareableFileReference> file_ref);
 
   // Sends a FileSystemMsg_DidFail and returns false if |url| is invalid.
   bool ValidateFileSystemURL(int request_id, const storage::FileSystemURL& url);

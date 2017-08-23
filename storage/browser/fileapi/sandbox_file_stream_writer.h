@@ -56,7 +56,7 @@ class STORAGE_EXPORT SandboxFileStreamWriter : public FileStreamWriter {
       base::File::Error file_error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<storage::ShareableFileReference>& file_ref);
+      scoped_refptr<storage::ShareableFileReference> file_ref);
   void DidGetUsageAndQuota(const net::CompletionCallback& callback,
                            storage::QuotaStatusCode status,
                            int64_t usage,

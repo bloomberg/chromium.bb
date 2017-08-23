@@ -137,7 +137,7 @@ class SnapshotCopyOrMoveImpl
       base::File::Error error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<storage::ShareableFileReference>& file_ref) {
+      scoped_refptr<storage::ShareableFileReference> file_ref) {
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
 
@@ -152,8 +152,8 @@ class SnapshotCopyOrMoveImpl
 
     if (!validator_factory_) {
       // No validation is needed.
-      RunAfterPreWriteValidation(platform_path, file_info, file_ref, callback,
-                                 base::File::FILE_OK);
+      RunAfterPreWriteValidation(platform_path, file_info, std::move(file_ref),
+                                 callback, base::File::FILE_OK);
       return;
     }
 
@@ -161,14 +161,14 @@ class SnapshotCopyOrMoveImpl
     PreWriteValidation(
         platform_path,
         base::Bind(&SnapshotCopyOrMoveImpl::RunAfterPreWriteValidation,
-                   weak_factory_.GetWeakPtr(),
-                   platform_path, file_info, file_ref, callback));
+                   weak_factory_.GetWeakPtr(), platform_path, file_info,
+                   std::move(file_ref), callback));
   }
 
   void RunAfterPreWriteValidation(
       const base::FilePath& platform_path,
       const base::File::Info& file_info,
-      const scoped_refptr<storage::ShareableFileReference>& file_ref,
+      scoped_refptr<storage::ShareableFileReference> file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::File::Error error) {
     if (cancel_requested_)
@@ -184,12 +184,13 @@ class SnapshotCopyOrMoveImpl
     operation_runner_->CopyInForeignFile(
         platform_path, dest_url_,
         base::Bind(&SnapshotCopyOrMoveImpl::RunAfterCopyInForeignFile,
-                   weak_factory_.GetWeakPtr(), file_info, file_ref, callback));
+                   weak_factory_.GetWeakPtr(), file_info, std::move(file_ref),
+                   callback));
   }
 
   void RunAfterCopyInForeignFile(
       const base::File::Info& file_info,
-      const scoped_refptr<storage::ShareableFileReference>& file_ref,
+      scoped_refptr<storage::ShareableFileReference> file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::File::Error error) {
     if (cancel_requested_)
@@ -316,7 +317,7 @@ class SnapshotCopyOrMoveImpl
       base::File::Error error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<storage::ShareableFileReference>& file_ref) {
+      scoped_refptr<storage::ShareableFileReference> file_ref) {
     if (cancel_requested_)
       error = base::File::FILE_ERROR_ABORT;
 
@@ -331,13 +332,13 @@ class SnapshotCopyOrMoveImpl
     validator_->StartPostWriteValidation(
         platform_path,
         base::Bind(&SnapshotCopyOrMoveImpl::DidPostWriteValidation,
-                   weak_factory_.GetWeakPtr(), file_ref, callback));
+                   weak_factory_.GetWeakPtr(), std::move(file_ref), callback));
   }
 
   // |file_ref| is unused; it is passed here to make sure the reference is
   // alive until after post-write validation is complete.
   void DidPostWriteValidation(
-      const scoped_refptr<storage::ShareableFileReference>& file_ref,
+      scoped_refptr<storage::ShareableFileReference> file_ref,
       const CopyOrMoveOperationDelegate::StatusCallback& callback,
       base::File::Error error) {
     callback.Run(error);

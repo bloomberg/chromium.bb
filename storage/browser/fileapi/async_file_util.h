@@ -72,11 +72,11 @@ class AsyncFileUtil {
            const EntryList& file_list,
            bool has_more)> ReadDirectoryCallback;
 
-  typedef base::Callback<
-      void(base::File::Error result,
-           const base::File::Info& file_info,
-           const base::FilePath& platform_path,
-           const scoped_refptr<storage::ShareableFileReference>& file_ref)>
+  typedef base::Callback<void(
+      base::File::Error result,
+      const base::File::Info& file_info,
+      const base::FilePath& platform_path,
+      scoped_refptr<storage::ShareableFileReference> file_ref)>
       CreateSnapshotFileCallback;
 
   typedef base::Callback<void(int64_t size)> CopyFileProgressCallback;

@@ -192,7 +192,7 @@ void SnapshotManager::OnCreateSnapshotFile(
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
+    scoped_refptr<storage::ShareableFileReference> file_ref) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (result != base::File::FILE_OK) {
@@ -200,7 +200,8 @@ void SnapshotManager::OnCreateSnapshotFile(
     return;
   }
 
-  file_refs_.push_back(FileReferenceWithSizeInfo(file_ref, file_info.size));
+  file_refs_.push_back(
+      FileReferenceWithSizeInfo(std::move(file_ref), file_info.size));
   callback.Run(platform_path);
 }
 

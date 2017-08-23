@@ -64,7 +64,7 @@ class STORAGE_EXPORT FileSystemFileStreamReader
       base::File::Error file_error,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
-      const scoped_refptr<storage::ShareableFileReference>& file_ref);
+      scoped_refptr<storage::ShareableFileReference> file_ref);
 
   scoped_refptr<FileSystemContext> file_system_context_;
   FileSystemURL url_;

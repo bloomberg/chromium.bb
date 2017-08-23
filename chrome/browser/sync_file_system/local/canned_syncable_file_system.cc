@@ -107,7 +107,7 @@ void OnCreateSnapshotFileAndVerifyData(
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<storage::ShareableFileReference>& /* file_ref */) {
+    scoped_refptr<storage::ShareableFileReference> /* file_ref */) {
   if (result != base::File::FILE_OK) {
     callback.Run(result);
     return;
@@ -127,7 +127,7 @@ void OnCreateSnapshotFile(
     base::File::Error result,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
+    scoped_refptr<storage::ShareableFileReference> file_ref) {
   DCHECK(!file_ref.get());
   DCHECK(file_info_out);
   DCHECK(platform_path_out);
