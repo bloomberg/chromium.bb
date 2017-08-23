@@ -58,9 +58,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
   void Detach() override;
   void SimulateNavigationStop() override;
-  void SendNavigate(int nav_entry_id,
-                    bool did_create_new_entry,
-                    const GURL& url) override;
   void SendFailedNavigate(int nav_entry_id,
                           bool did_create_new_entry,
                           const GURL& url) override;
@@ -85,6 +82,9 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   using ModificationCallback =
       base::Callback<void(FrameHostMsg_DidCommitProvisionalLoad_Params*)>;
 
+  void SendNavigate(int nav_entry_id,
+                    bool did_create_new_entry,
+                    const GURL& url);
   void SendNavigateWithModificationCallback(
       int nav_entry_id,
       bool did_create_new_entry,
