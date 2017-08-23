@@ -74,9 +74,12 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
   if (state == SignalStrategy::CONNECTED) {
     DCHECK(!callback_.is_null());
+    // The host_jid will be written to the SupportHostStore for lookup. Use id()
+    // instead of jid() so that we can write the lcs address instead of the
+    // remoting bot JID.
+    std::string host_jid = signal_strategy_->GetLocalAddress().id();
     request_ = iq_sender_->SendIq(
-        buzz::STR_SET, directory_bot_jid_,
-        CreateRegistrationRequest(signal_strategy_->GetLocalAddress().jid()),
+        buzz::STR_SET, directory_bot_jid_, CreateRegistrationRequest(host_jid),
         base::Bind(&RegisterSupportHostRequest::ProcessResponse,
                    base::Unretained(this)));
     if (!request_) {

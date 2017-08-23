@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "remoting/base/remoting_bot.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/libjingle_xmpp/xmllite/xmlelement.h"
 
@@ -19,6 +20,10 @@ std::unique_ptr<buzz::XmlElement> GetEmptyJingleMessage() {
   return std::unique_ptr<buzz::XmlElement>(buzz::XmlElement::ForStr(
       "<iq xmlns='jabber:client'><jingle xmlns='urn:xmpp:jingle:1'/></iq>"));
 }
+
+constexpr char kLcsAddress[] =
+    "user@domain.com/EhprZWx2aW4udGVzdC5nYWlhQGdtYWlsLmN"
+    "vbRoOY2hyb21vdGluZ19sY3MiHgoKY2hyb21vdGluZxIQaEEwZF9LZ3dvR1IwMXRJdg==";
 
 }  // namespace
 
@@ -140,31 +145,30 @@ TEST(SignalingAddressTest, ParseMissingEndpointId) {
   EXPECT_FALSE(error.empty());
 }
 
-TEST(SignalingAddressTest, FormatToDirect) {
+TEST(SignalingAddressTest, SetInMessageToXmpp) {
   std::unique_ptr<buzz::XmlElement> message = GetEmptyJingleMessage();
-  SignalingAddress addr("user@domain.com/resource");
+  SignalingAddress addr("user@domain.com/chromoting12345");
   addr.SetInMessage(message.get(), SignalingAddress::TO);
-  EXPECT_EQ("user@domain.com/resource", message->Attr(QName("", "to")));
+  EXPECT_EQ("user@domain.com/chromoting12345", message->Attr(QName("", "to")));
   buzz::XmlElement* jingle =
       message->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
   EXPECT_EQ("", jingle->Attr(QName("", "to-channel")));
   EXPECT_EQ("", jingle->Attr(QName("", "to-endpoint-id")));
 }
 
-TEST(SignalingAddressTest, FormatToLcs) {
+TEST(SignalingAddressTest, SetInMessageToLcs) {
   std::unique_ptr<buzz::XmlElement> message = GetEmptyJingleMessage();
-  SignalingAddress addr("remoting@bot.server.com", "user_id",
-                        SignalingAddress::Channel::LCS);
+  SignalingAddress addr(kLcsAddress);
 
   addr.SetInMessage(message.get(), SignalingAddress::TO);
-  EXPECT_EQ("remoting@bot.server.com", message->Attr(QName("", "to")));
+  EXPECT_EQ(remoting::kRemotingBotJid, message->Attr(QName("", "to")));
   buzz::XmlElement* jingle =
       message->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
   EXPECT_EQ("lcs", jingle->Attr(QName("", "to-channel")));
-  EXPECT_EQ("user_id", jingle->Attr(QName("", "to-endpoint-id")));
+  EXPECT_EQ(kLcsAddress, jingle->Attr(QName("", "to-endpoint-id")));
 }
 
-TEST(SignalingAddressTest, FormatFromDirect) {
+TEST(SignalingAddressTest, SetInMessageFromXmpp) {
   std::unique_ptr<buzz::XmlElement> message = GetEmptyJingleMessage();
   SignalingAddress addr("user@domain.com/resource");
   addr.SetInMessage(message.get(), SignalingAddress::FROM);
@@ -175,17 +179,16 @@ TEST(SignalingAddressTest, FormatFromDirect) {
   EXPECT_EQ("", jingle->Attr(QName("", "from-endpoint-id")));
 }
 
-TEST(SignalingAddressTest, FormatFromLcs) {
+TEST(SignalingAddressTest, SetInMessageFromLcs) {
   std::unique_ptr<buzz::XmlElement> message = GetEmptyJingleMessage();
-  SignalingAddress addr("remoting@bot.server.com", "user_id",
-                        SignalingAddress::Channel::LCS);
+  SignalingAddress addr(kLcsAddress);
 
   addr.SetInMessage(message.get(), SignalingAddress::FROM);
-  EXPECT_EQ("remoting@bot.server.com", message->Attr(QName("", "from")));
+  EXPECT_EQ(kLcsAddress, message->Attr(QName("", "from")));
   buzz::XmlElement* jingle =
       message->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
   EXPECT_EQ("lcs", jingle->Attr(QName("", "from-channel")));
-  EXPECT_EQ("user_id", jingle->Attr(QName("", "from-endpoint-id")));
+  EXPECT_EQ(kLcsAddress, jingle->Attr(QName("", "from-endpoint-id")));
 }
 
 }  // namespace remoting
