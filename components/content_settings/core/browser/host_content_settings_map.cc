@@ -767,7 +767,7 @@ void HostContentSettingsMap::AddSettingsForOneType(
       setting_value =
           content_settings::ContentSettingToValue(CONTENT_SETTING_ALLOW);
     } else {
-      setting_value = base::MakeUnique<base::Value>(*(rule.value));
+      setting_value = base::MakeUnique<base::Value>(rule.value->Clone());
     }
     settings->push_back(ContentSettingPatternSource(
         rule.primary_pattern, rule.secondary_pattern, std::move(setting_value),

@@ -269,7 +269,7 @@ Status DevToolsClientImpl::SendCommandInternal(
   base::DictionaryValue command;
   command.SetInteger("id", command_id);
   command.SetString("method", method);
-  command.Set("params", base::MakeUnique<base::Value>(params));
+  command.SetKey("params", params.Clone());
   std::string message = SerializeValue(&command);
   if (IsVLogOn(1)) {
     VLOG(1) << "DEVTOOLS COMMAND " << method << " (id=" << command_id << ") "

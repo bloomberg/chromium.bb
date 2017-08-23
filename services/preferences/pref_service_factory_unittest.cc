@@ -503,7 +503,7 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
   };
   int current_value = kInitialValue + 1;
   for (auto& mutation : updates) {
-    base::DictionaryValue expected_value;
+    base::Value expected_value;
     {
       ScopedDictionaryPrefUpdate update(pref_service.get(), kDictionaryKey);
       EXPECT_EQ(update->AsConstDictionary()->empty(), update->empty());
@@ -511,7 +511,7 @@ TEST_F(PrefServiceFactoryTest, MultipleClients_SubPrefUpdates_Basic) {
       mutation(&update);
       EXPECT_EQ(update->AsConstDictionary()->empty(), update->empty());
       EXPECT_EQ(update->AsConstDictionary()->size(), update->size());
-      expected_value = *update->AsConstDictionary();
+      expected_value = update->AsConstDictionary()->Clone();
     }
 
     EXPECT_EQ(expected_value, *pref_service->GetDictionary(kDictionaryKey));

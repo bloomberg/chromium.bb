@@ -2403,7 +2403,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, AllTypesAreGettingDeleted) {
     // Create an exception.
     map->SetWebsiteSettingDefaultScope(
         url, url, info->type(), std::string(),
-        base::MakeUnique<base::Value>(some_value));
+        base::MakeUnique<base::Value>(some_value.Clone()));
 
     // Check that the exception was created.
     std::unique_ptr<base::Value> value =

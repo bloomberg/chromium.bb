@@ -121,7 +121,7 @@ ContentSettingPatternSource& ContentSettingPatternSource::operator=(
   primary_pattern = other.primary_pattern;
   secondary_pattern = other.secondary_pattern;
   if (other.setting_value)
-    setting_value = base::MakeUnique<base::Value>(*(other.setting_value));
+    setting_value = base::MakeUnique<base::Value>(other.setting_value->Clone());
   source = other.source;
   incognito = other.incognito;
   return *this;

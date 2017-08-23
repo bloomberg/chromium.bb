@@ -165,8 +165,8 @@ void MigratePrefsFromOldToNewStore(const std::set<std::string>& pref_names,
         // |new_store| having equivalently been successfully flushed to disk
         // (e.g., on crash or in cases where |new_store| is read-only following
         // a read error on startup).
-        new_store->Set(pref_name,
-                       base::MakeUnique<base::Value>(*value_in_old_store));
+        new_store->Set(pref_name, base::MakeUnique<base::Value>(
+                                      value_in_old_store->Clone()));
         migrated_value = true;
         *new_store_altered = true;
       }

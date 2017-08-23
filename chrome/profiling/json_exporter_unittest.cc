@@ -174,7 +174,7 @@ TEST(ProfilingJsonExporterTest, Metadata) {
       new base::DictionaryValue);
   metadata_dict->SetKey("product-version", base::Value("asdf1"));
   metadata_dict->SetKey("user-agent", base::Value("\"\"\"9283hfa--+,/asdf2"));
-  base::DictionaryValue metadata_dict_copy = *metadata_dict;
+  base::Value metadata_dict_copy = metadata_dict->Clone();
 
   std::ostringstream stream;
   ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream,
@@ -191,10 +191,8 @@ TEST(ProfilingJsonExporterTest, Metadata) {
   base::Value* found_metadatas =
       root->FindKeyOfType("metadata", base::Value::Type::DICTIONARY);
   ASSERT_TRUE(found_metadatas) << "Array contains no metadata";
-  base::DictionaryValue* metadata;
-  ASSERT_TRUE(found_metadatas->GetAsDictionary(&metadata));
 
-  EXPECT_EQ(metadata_dict_copy, *metadata);
+  EXPECT_EQ(metadata_dict_copy, *found_metadatas);
 }
 
 }  // namespace profiling

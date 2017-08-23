@@ -74,9 +74,13 @@ class BASE_EXPORT Value {
   static std::unique_ptr<Value> CreateWithCopiedBuffer(const char* buffer,
                                                        size_t size);
 
-  Value(const Value& that);
   Value(Value&& that) noexcept;
   Value() noexcept;  // A null value.
+
+  // Value's copy constructor and copy assignment operator are deleted. Use this
+  // to obtain a deep copy explicitly.
+  Value Clone() const;
+
   explicit Value(Type type);
   explicit Value(bool in_bool);
   explicit Value(int in_int);
@@ -98,12 +102,12 @@ class BASE_EXPORT Value {
   explicit Value(const BlobStorage& in_blob);
   explicit Value(BlobStorage&& in_blob) noexcept;
 
+  explicit Value(const DictStorage& in_dict);
   explicit Value(DictStorage&& in_dict) noexcept;
 
   explicit Value(const ListStorage& in_list);
   explicit Value(ListStorage&& in_list) noexcept;
 
-  Value& operator=(const Value& that);
   Value& operator=(Value&& that) noexcept;
 
   ~Value();
@@ -121,6 +125,7 @@ class BASE_EXPORT Value {
 
   // Returns true if the current object represents a given type.
   bool IsType(Type type) const { return type == type_; }
+  bool is_none() const { return type() == Type::NONE; }
   bool is_bool() const { return type() == Type::BOOLEAN; }
   bool is_int() const { return type() == Type::INTEGER; }
   bool is_double() const { return type() == Type::DOUBLE; }
@@ -259,10 +264,10 @@ class BASE_EXPORT Value {
   // to the copy. The caller gets ownership of the copy, of course.
   // Subclasses return their own type directly in their overrides;
   // this works because C++ supports covariant return types.
-  // DEPRECATED, use Value's copy constructor instead.
+  // DEPRECATED, use Value::Clone() instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   Value* DeepCopy() const;
-  // DEPRECATED, use Value's copy constructor instead.
+  // DEPRECATED, use Value::Clone() instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   std::unique_ptr<Value> CreateDeepCopy() const;
 
@@ -296,11 +301,10 @@ class BASE_EXPORT Value {
   };
 
  private:
-  void InternalCopyFundamentalValue(const Value& that);
-  void InternalCopyConstructFrom(const Value& that);
   void InternalMoveConstructFrom(Value&& that);
-  void InternalCopyAssignFromSameType(const Value& that);
   void InternalCleanup();
+
+  DISALLOW_COPY_AND_ASSIGN(Value);
 };
 
 // DictionaryValue provides a key-value dictionary with (optional) "path"
@@ -315,6 +319,8 @@ class BASE_EXPORT DictionaryValue : public Value {
   static std::unique_ptr<DictionaryValue> From(std::unique_ptr<Value> value);
 
   DictionaryValue();
+  explicit DictionaryValue(const DictStorage& in_dict);
+  explicit DictionaryValue(DictStorage&& in_dict) noexcept;
 
   // Returns true if the current dictionary has a value for the given key.
   bool HasKey(StringPiece key) const;
@@ -483,10 +489,10 @@ class BASE_EXPORT DictionaryValue : public Value {
   const_iterator begin() const { return dict_->begin(); }
   const_iterator end() const { return dict_->end(); }
 
-  // DEPRECATED, use DictionaryValue's copy constructor instead.
+  // DEPRECATED, use Value::Clone() instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   DictionaryValue* DeepCopy() const;
-  // DEPRECATED, use DictionaryValue's copy constructor instead.
+  // DEPRECATED, use Value::Clone() instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   std::unique_ptr<DictionaryValue> CreateDeepCopy() const;
 };
@@ -634,10 +640,10 @@ class BASE_EXPORT ListValue : public Value {
   // DEPRECATED, use GetList()::end() instead.
   const_iterator end() const { return list_->end(); }
 
-  // DEPRECATED, use ListValue's copy constructor instead.
+  // DEPRECATED, use Value::Clone() instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   ListValue* DeepCopy() const;
-  // DEPRECATED, use ListValue's copy constructor instead.
+  // DEPRECATED, use Value::Clone() instead.
   // TODO(crbug.com/646113): Delete this and migrate callsites.
   std::unique_ptr<ListValue> CreateDeepCopy() const;
 };

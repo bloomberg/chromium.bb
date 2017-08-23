@@ -71,7 +71,7 @@ class MouseLatencyBrowserTest : public ContentBrowserTest {
     std::unique_ptr<base::Value> trace_data =
         base::JSONReader::Read(trace_data_string->data());
     ASSERT_TRUE(trace_data);
-    trace_data_ = *trace_data;
+    trace_data_ = trace_data->Clone();
     runner_->Quit();
   }
 
@@ -159,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(MouseLatencyBrowserTest,
 
   StartTracing();
   DoSyncClick(gfx::PointF(100, 100));
-  const base::Value trace_data = StopTracing();
+  const base::Value& trace_data = StopTracing();
 
   const base::DictionaryValue* trace_data_dict;
   trace_data.GetAsDictionary(&trace_data_dict);

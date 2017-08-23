@@ -591,8 +591,7 @@ TEST_F(ArcSessionManagerArcAlwaysStartTest, BaseWorkflow) {
 
 class ArcSessionManagerPolicyTest
     : public ArcSessionManagerTestBase,
-      public testing::WithParamInterface<
-          std::tuple<bool, bool, base::Value, base::Value>> {
+      public testing::WithParamInterface<std::tuple<bool, bool, int, int>> {
  public:
   void SetUp() override {
     ArcSessionManagerTestBase::SetUp();
@@ -612,12 +611,30 @@ class ArcSessionManagerPolicyTest
 
   bool is_active_directory_user() const { return std::get<1>(GetParam()); }
 
-  const base::Value& backup_restore_pref_value() const {
-    return std::get<2>(GetParam());
+  base::Value backup_restore_pref_value() const {
+    switch (std::get<2>(GetParam())) {
+      case 0:
+        return base::Value();
+      case 1:
+        return base::Value(false);
+      case 2:
+        return base::Value(true);
+    };
+    NOTREACHED();
+    return base::Value();
   }
 
-  const base::Value& location_service_pref_value() const {
-    return std::get<3>(GetParam());
+  base::Value location_service_pref_value() const {
+    switch (std::get<3>(GetParam())) {
+      case 0:
+        return base::Value();
+      case 1:
+        return base::Value(false);
+      case 2:
+        return base::Value(true);
+    };
+    NOTREACHED();
+    return base::Value();
   }
 };
 
@@ -723,15 +740,19 @@ TEST_P(ArcSessionManagerPolicyTest, ReenableManagedArc) {
 INSTANTIATE_TEST_CASE_P(
     ,
     ArcSessionManagerPolicyTest,
-    testing::Combine(
-        testing::Bool() /* arc_enabled_pref_managed */,
-        testing::Bool() /* is_active_directory_user */,
-        testing::Values(base::Value(),
-                        base::Value(false),
-                        base::Value(true)) /* backup_restore_pref_value */,
-        testing::Values(base::Value(),
-                        base::Value(false),
-                        base::Value(true)) /* location_service_pref_value */));
+    // testing::Values is incompatible with move-only types, hence ints are used
+    // as a proxy for base::Value.
+    testing::Combine(testing::Bool() /* arc_enabled_pref_managed */,
+                     testing::Bool() /* is_active_directory_user */,
+                     /* backup_restore_pref_value */
+                     testing::Values(0,   // base::Value()
+                                     1,   // base::Value(false)
+                                     2),  // base::Value(true)
+                     /* location_service_pref_value */
+                     testing::Values(0,  // base::Value()
+                                     1,  // base::Value(false)
+                                     2)  // base::Value(true)
+                     ));
 
 class ArcSessionManagerKioskTest : public ArcSessionManagerTestBase {
  public:

@@ -19,12 +19,10 @@ std::string ValueStoreChange::ToJson(
     std::unique_ptr<base::DictionaryValue> change_value =
         base::MakeUnique<base::DictionaryValue>();
     if (it->old_value()) {
-      change_value->Set("oldValue",
-                        base::MakeUnique<base::Value>(*it->old_value()));
+      change_value->SetKey("oldValue", it->old_value()->Clone());
     }
     if (it->new_value()) {
-      change_value->Set("newValue",
-                        base::MakeUnique<base::Value>(*it->new_value()));
+      change_value->SetKey("newValue", it->new_value()->Clone());
     }
     changes_value.SetWithoutPathExpansion(it->key(), std::move(change_value));
   }

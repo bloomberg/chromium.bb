@@ -32,8 +32,7 @@ DeviceState::~DeviceState() {
 bool DeviceState::PropertyChanged(const std::string& key,
                                   const base::Value& value) {
   // All property values get stored in |properties_|.
-  properties_.SetWithoutPathExpansion(key,
-                                      base::MakeUnique<base::Value>(value));
+  properties_.SetKey(key, value.Clone());
 
   if (ManagedStatePropertyChanged(key, value))
     return true;

@@ -353,10 +353,8 @@ void NotificationChannelsProviderAndroid::CreateChannelForRule(
   url::Origin origin = url::Origin(GURL(rule.primary_pattern.ToString()));
   DCHECK(!origin.unique());
   const std::string origin_string = origin.Serialize();
-  std::unique_ptr<base::Value> setting_value =
-      base::MakeUnique<base::Value>(*(rule.value));
   ContentSetting content_setting =
-      content_settings::ValueToContentSetting(setting_value.get());
+      content_settings::ValueToContentSetting(rule.value.get());
   switch (content_setting) {
     case CONTENT_SETTING_ALLOW:
       CreateChannelIfRequired(origin_string,

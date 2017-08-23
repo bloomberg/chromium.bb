@@ -371,25 +371,24 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   for (int i = 0; i < 2; ++i) {
     auto dict = base::MakeUnique<base::DictionaryValue>();
     dict->SetInteger("subdictindex", i);
-    dict->Set("subdict", base::MakeUnique<base::Value>(policy_dict));
+    dict->SetKey("subdict", policy_dict.Clone());
     list->Append(std::move(dict));
   }
   policy_dict.Set("list", std::move(list));
-  policy_dict.Set("dict", base::MakeUnique<base::Value>(policy_dict));
+  policy_dict.SetKey("dict", policy_dict.Clone());
 
   // Install these policies as a Chrome policy.
   test_harness_->InstallDictionaryPolicy(test_keys::kKeyDictionary,
                                          &policy_dict);
   // Install them as 3rd party policies too.
   base::DictionaryValue policy_3rdparty;
-  policy_3rdparty.Set("extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-                      base::MakeUnique<base::Value>(policy_dict));
-  policy_3rdparty.Set("extensions.bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-                      base::MakeUnique<base::Value>(policy_dict));
+  policy_3rdparty.SetPath({"extensions", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+                          policy_dict.Clone());
+  policy_3rdparty.SetPath({"extensions", "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+                          policy_dict.Clone());
   // Install invalid 3rd party policies that shouldn't be loaded. These also
   // help detecting memory leaks in the code paths that detect invalid input.
-  policy_3rdparty.Set("invalid-domain.component",
-                      base::MakeUnique<base::Value>(policy_dict));
+  policy_3rdparty.SetPath({"invalid-domain", "component"}, policy_dict.Clone());
   policy_3rdparty.SetString("extensions.cccccccccccccccccccccccccccccccc",
                             "invalid-value");
   test_harness_->Install3rdPartyPolicy(&policy_3rdparty);

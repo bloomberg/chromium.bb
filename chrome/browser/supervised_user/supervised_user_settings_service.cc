@@ -283,8 +283,7 @@ SyncMergeResult SupervisedUserSettingsService::MergeDataAndStartSyncing(
         dict->HasKey(key_suffix) ? SyncChange::ACTION_UPDATE
                                  : SyncChange::ACTION_ADD;
     change_list.push_back(SyncChange(FROM_HERE, change_type, data));
-    dict->SetWithoutPathExpansion(key_suffix,
-                                  base::MakeUnique<base::Value>(it.value()));
+    dict->SetKey(key_suffix, it.value().Clone());
     if (added_sync_keys.find(name_key) != added_sync_keys.end()) {
       num_added--;
     }
@@ -476,7 +475,7 @@ SupervisedUserSettingsService::GetSettings() {
     if (!SettingShouldApplyToPrefs(it.key()))
       continue;
 
-    settings->Set(it.key(), base::MakeUnique<base::Value>(it.value()));
+    settings->Set(it.key(), base::MakeUnique<base::Value>(it.value().Clone()));
   }
 
   base::DictionaryValue* split_settings = GetSplitSettings();
@@ -485,7 +484,7 @@ SupervisedUserSettingsService::GetSettings() {
     if (!SettingShouldApplyToPrefs(it.key()))
       continue;
 
-    settings->Set(it.key(), base::MakeUnique<base::Value>(it.value()));
+    settings->Set(it.key(), base::MakeUnique<base::Value>(it.value().Clone()));
   }
 
   return settings;

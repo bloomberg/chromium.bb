@@ -694,8 +694,7 @@ void ShillToONCTranslator::SetNestedOncValue(
     nested = onc_object_->SetDictionaryWithoutPathExpansion(
         onc_dictionary_name, base::MakeUnique<base::DictionaryValue>());
   }
-  nested->SetWithoutPathExpansion(onc_field_name,
-                                  base::MakeUnique<base::Value>(value));
+  nested->SetKey(onc_field_name, value.Clone());
 }
 
 void ShillToONCTranslator::TranslateAndAddListOfObjects(
@@ -771,9 +770,7 @@ void ShillToONCTranslator::CopyProperty(
     return;
   }
 
-  onc_object_->SetWithoutPathExpansion(
-      field_signature->onc_field_name,
-      base::MakeUnique<base::Value>(*shill_value));
+  onc_object_->SetKey(field_signature->onc_field_name, shill_value->Clone());
 }
 
 void ShillToONCTranslator::TranslateWithTableAndSet(

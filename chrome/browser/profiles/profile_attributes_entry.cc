@@ -326,7 +326,7 @@ bool ProfileAttributesEntry::SetString(const char* key, std::string value) {
       return false;
   }
 
-  base::Value new_data = old_data ? base::Value(*GetEntryData())
+  base::Value new_data = old_data ? GetEntryData()->Clone()
                                   : base::Value(base::Value::Type::DICTIONARY);
   new_data.SetKey(key, base::Value(value));
   SetEntryData(std::move(new_data));
@@ -343,7 +343,7 @@ bool ProfileAttributesEntry::SetString16(const char* key,
       return false;
   }
 
-  base::Value new_data = old_data ? base::Value(*GetEntryData())
+  base::Value new_data = old_data ? GetEntryData()->Clone()
                                   : base::Value(base::Value::Type::DICTIONARY);
   new_data.SetKey(key, base::Value(value));
   SetEntryData(std::move(new_data));
@@ -358,7 +358,7 @@ bool ProfileAttributesEntry::SetDouble(const char* key, double value) {
       return false;
   }
 
-  base::Value new_data = old_data ? base::Value(*GetEntryData())
+  base::Value new_data = old_data ? GetEntryData()->Clone()
                                   : base::Value(base::Value::Type::DICTIONARY);
   new_data.SetKey(key, base::Value(value));
   SetEntryData(std::move(new_data));
@@ -373,7 +373,7 @@ bool ProfileAttributesEntry::SetBool(const char* key, bool value) {
       return false;
   }
 
-  base::Value new_data = old_data ? base::Value(*GetEntryData())
+  base::Value new_data = old_data ? GetEntryData()->Clone()
                                   : base::Value(base::Value::Type::DICTIONARY);
   new_data.SetKey(key, base::Value(value));
   SetEntryData(std::move(new_data));

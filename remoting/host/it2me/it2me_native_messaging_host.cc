@@ -137,7 +137,7 @@ void It2MeNativeMessagingHost::OnMessage(const std::string& message) {
   // might be a string or a number, so cope with both.
   const base::Value* id;
   if (message_dict->Get("id", &id))
-    response->Set("id", base::MakeUnique<base::Value>(*id));
+    response->SetKey("id", id->Clone());
 
   std::string type;
   if (!message_dict->GetString("type", &type)) {

@@ -45,12 +45,12 @@ void FirstRunHandler::RemoveBackgroundHoles() {
 void FirstRunHandler::ShowStepPositioned(const std::string& name,
                                          const StepPosition& position) {
   base::DictionaryValue step_params;
-  step_params.SetString("name", name);
-  step_params.Set("position",
-                  base::MakeUnique<base::Value>(*position.AsValue()));
-  step_params.SetList("pointWithOffset", base::MakeUnique<base::ListValue>());
-  step_params.SetBoolean("voiceInteractionEnabled",
-                         chromeos::switches::IsVoiceInteractionEnabled());
+  step_params.SetKey("name", base::Value(name));
+  step_params.SetKey("position", position.AsValue());
+  step_params.SetKey("pointWithOffset", base::Value(base::Value::Type::LIST));
+  step_params.SetKey(
+      "voiceInteractionEnabled",
+      base::Value(chromeos::switches::IsVoiceInteractionEnabled()));
 
   web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.showStep", step_params);
 }
@@ -60,16 +60,16 @@ void FirstRunHandler::ShowStepPointingTo(const std::string& name,
                                          int y,
                                          int offset) {
   base::DictionaryValue step_params;
-  step_params.SetString("name", name);
-  step_params.Set("position", base::MakeUnique<base::Value>());
+  step_params.SetKey("name", base::Value(name));
+  step_params.SetKey("position", base::Value());
   base::ListValue point_with_offset;
   point_with_offset.AppendInteger(x);
   point_with_offset.AppendInteger(y);
   point_with_offset.AppendInteger(offset);
-  step_params.SetList("pointWithOffset",
-                      base::MakeUnique<base::ListValue>(point_with_offset));
-  step_params.SetBoolean("voiceInteractionEnabled",
-                         chromeos::switches::IsVoiceInteractionEnabled());
+  step_params.SetKey("pointWithOffset", std::move(point_with_offset));
+  step_params.SetKey(
+      "voiceInteractionEnabled",
+      base::Value(chromeos::switches::IsVoiceInteractionEnabled()));
 
   web_ui()->CallJavascriptFunctionUnsafe("cr.FirstRun.showStep", step_params);
 }

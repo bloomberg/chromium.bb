@@ -4364,18 +4364,17 @@ IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcLocationServiceEnabled) {
   PrefService* const pref = browser()->profile()->GetPrefs();
 
   // Values of the ArcLocationServiceEnabled policy to be tested.
-  const std::vector<base::Value> test_policy_values = {
-      base::Value(),       // unset
-      base::Value(false),  // disabled
-      base::Value(true),   // enabled
-  };
+  std::vector<base::Value> test_policy_values;
+  test_policy_values.emplace_back();       // unset
+  test_policy_values.emplace_back(false);  // disabled
+  test_policy_values.emplace_back(true);   // enabled
+
   // Values of the DefaultGeolocationSetting policy to be tested.
-  const std::vector<base::Value> test_default_geo_policy_values = {
-      base::Value(),   // unset
-      base::Value(1),  // 'AllowGeolocation'
-      base::Value(2),  // 'BlockGeolocation'
-      base::Value(3),  // 'AskGeolocation'
-  };
+  std::vector<base::Value> test_default_geo_policy_values;
+  test_default_geo_policy_values.emplace_back();   // unset
+  test_default_geo_policy_values.emplace_back(1);  // 'AllowGeolocation'
+  test_default_geo_policy_values.emplace_back(2);  // 'BlockGeolocation'
+  test_default_geo_policy_values.emplace_back(3);  // 'AskGeolocation'
 
   // The pref is switched off by default.
   EXPECT_FALSE(pref->GetBoolean(prefs::kArcLocationServiceEnabled));

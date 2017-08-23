@@ -599,7 +599,7 @@ static bool ConvertEventToUpdate(int render_process_id,
     dict.SetString("params.pipeline_error",
                    media::MediaLog::PipelineStatusToString(error));
   } else {
-    dict.Set("params", base::MakeUnique<base::Value>(event.params));
+    dict.SetKey("params", event.params.Clone());
   }
 
   *update = SerializeUpdate("media.onMediaEvent", &dict);
@@ -787,8 +787,8 @@ void MediaInternals::UpdateAudioLog(AudioLogUpdateType type,
       return;
     } else if (!has_entry) {
       DCHECK_EQ(type, CREATE);
-      audio_streams_cached_data_.Set(cache_key,
-                                     base::MakeUnique<base::Value>(*value));
+      audio_streams_cached_data_.Set(
+          cache_key, base::MakeUnique<base::Value>(value->Clone()));
     } else if (type == UPDATE_AND_DELETE) {
       std::unique_ptr<base::Value> out_value;
       CHECK(audio_streams_cached_data_.Remove(cache_key, &out_value));

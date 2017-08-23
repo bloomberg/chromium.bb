@@ -70,7 +70,11 @@ TEST_F(ActivityLoggerTest, DontCrashOnUnconvertedValues) {
   ASSERT_TRUE(
       ExtensionHostMsg_AddAPIActionToActivityLog::Read(message, &full_params));
   std::string extension_id = std::get<0>(full_params);
-  ExtensionHostMsg_APIActionOrEvent_Params params = std::get<1>(full_params);
+  ExtensionHostMsg_APIActionOrEvent_Params params;
+  params.api_call = std::get<1>(full_params).api_call;
+  params.arguments =
+      base::ListValue(std::get<1>(full_params).arguments.GetList());
+  params.extra = std::get<1>(full_params).extra;
   EXPECT_EQ(extension->id(), extension_id);
   ASSERT_EQ(1u, params.arguments.GetList().size());
   EXPECT_EQ(base::Value::Type::NONE, params.arguments.GetList()[0].type());

@@ -355,8 +355,7 @@ void LocalTranslator::CopyFieldFromONCToShill(
         << "Attempt to translate a field that is not part of the ONC format.";
     return;
   }
-  shill_dictionary_->SetWithoutPathExpansion(
-      shill_property_name, base::MakeUnique<base::Value>(*value));
+  shill_dictionary_->SetKey(shill_property_name, value->Clone());
 }
 
 void LocalTranslator::AddValueAccordingToSignature(

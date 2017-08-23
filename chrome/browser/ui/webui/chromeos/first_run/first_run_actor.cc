@@ -43,17 +43,16 @@ FirstRunActor::StepPosition& FirstRunActor::StepPosition::SetLeft(int left) {
   return *this;
 }
 
-std::unique_ptr<base::DictionaryValue> FirstRunActor::StepPosition::AsValue()
-    const {
-  auto result = base::MakeUnique<base::DictionaryValue>();
+base::DictionaryValue FirstRunActor::StepPosition::AsValue() const {
+  base::DictionaryValue result;
   if (top_ != kNoneValue)
-    result->SetInteger("top", top_);
+    result.SetInteger("top", top_);
   if (right_ != kNoneValue)
-    result->SetInteger("right", right_);
+    result.SetInteger("right", right_);
   if (bottom_ != kNoneValue)
-    result->SetInteger("bottom", bottom_);
+    result.SetInteger("bottom", bottom_);
   if (left_ != kNoneValue)
-    result->SetInteger("left", left_);
+    result.SetInteger("left", left_);
   return result;
 }
 

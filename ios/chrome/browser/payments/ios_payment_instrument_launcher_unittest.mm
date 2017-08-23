@@ -140,28 +140,22 @@ TEST_F(IOSPaymentInstrumentLauncherTest,
                                      &personal_data_manager);
 
   base::DictionaryValue expected_dict;
-  std::unique_ptr<base::ListValue> jef_data_list =
-      base::MakeUnique<base::ListValue>();
-  std::unique_ptr<base::DictionaryValue> jef_data =
-      base::MakeUnique<base::DictionaryValue>();
-  jef_data->SetString("Some data", "Some stringified data");
+  base::ListValue jef_data_list;
+  base::DictionaryValue jef_data;
+  jef_data.SetString("Some data", "Some stringified data");
   std::string jef_stringified_data;
-  base::JSONWriter::Write(*jef_data, &jef_stringified_data);
-  jef_data_list->GetList().emplace_back(jef_stringified_data);
-  expected_dict.SetKey("https://jefpay.com", *jef_data_list);
-  std::unique_ptr<base::ListValue> bob_data_list =
-      base::MakeUnique<base::ListValue>();
-  std::unique_ptr<base::DictionaryValue> bob_data =
-      base::MakeUnique<base::DictionaryValue>();
-  bob_data->SetString("Some data", "Some stringified data");
+  base::JSONWriter::Write(jef_data, &jef_stringified_data);
+  jef_data_list.GetList().emplace_back(jef_stringified_data);
+  expected_dict.SetKey("https://jefpay.com", std::move(jef_data_list));
+  base::ListValue bob_data_list;
+  base::DictionaryValue bob_data;
+  bob_data.SetString("Some data", "Some stringified data");
   std::string bob_stringified_data;
-  base::JSONWriter::Write(*bob_data, &bob_stringified_data);
-  bob_data_list->GetList().emplace_back(bob_stringified_data);
-  expected_dict.SetListWithoutPathExpansion("https://bobpay.com",
-                                            std::move(bob_data_list));
-  std::unique_ptr<base::ListValue> alice_data_list =
-      base::MakeUnique<base::ListValue>();
-  expected_dict.SetKey("https://alicepay.com", *alice_data_list);
+  base::JSONWriter::Write(bob_data, &bob_stringified_data);
+  bob_data_list.GetList().emplace_back(bob_stringified_data);
+  expected_dict.SetKey("https://bobpay.com", std::move(bob_data_list));
+  base::ListValue alice_data_list;
+  expected_dict.SetKey("https://alicepay.com", std::move(alice_data_list));
 
   EXPECT_TRUE(expected_dict.Equals(
       SerializeMethodDataWrapper(payment_request.stringified_method_data())

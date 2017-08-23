@@ -197,17 +197,14 @@ std::unique_ptr<base::DictionaryValue> WebRequestEventDetails::GetFilteredDict(
     int extra_info_spec) const {
   std::unique_ptr<base::DictionaryValue> result = dict_.CreateDeepCopy();
   if ((extra_info_spec & ExtraInfoSpec::REQUEST_BODY) && request_body_) {
-    result->Set(keys::kRequestBodyKey,
-                base::MakeUnique<base::Value>(*request_body_));
+    result->SetKey(keys::kRequestBodyKey, request_body_->Clone());
   }
   if ((extra_info_spec & ExtraInfoSpec::REQUEST_HEADERS) && request_headers_) {
-    result->Set(keys::kRequestHeadersKey,
-                base::MakeUnique<base::Value>(*request_headers_));
+    result->SetKey(keys::kRequestHeadersKey, request_headers_->Clone());
   }
   if ((extra_info_spec & ExtraInfoSpec::RESPONSE_HEADERS) &&
       response_headers_) {
-    result->Set(keys::kResponseHeadersKey,
-                base::MakeUnique<base::Value>(*response_headers_));
+    result->SetKey(keys::kResponseHeadersKey, response_headers_->Clone());
   }
   return result;
 }

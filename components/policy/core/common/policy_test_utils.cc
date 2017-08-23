@@ -49,8 +49,7 @@ bool PolicyServiceIsEmpty(const PolicyService* service) {
   if (!map.empty()) {
     base::DictionaryValue dict;
     for (PolicyMap::const_iterator it = map.begin(); it != map.end(); ++it)
-      dict.SetWithoutPathExpansion(
-          it->first, base::MakeUnique<base::Value>(*it->second.value));
+      dict.SetKey(it->first, it->second.value->Clone());
     LOG(WARNING) << "There are pre-existing policies in this machine: " << dict;
   }
   return map.empty();
