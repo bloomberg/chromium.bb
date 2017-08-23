@@ -266,6 +266,9 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
+  EXPECT_EQ(ScheduleInvalidationsForRules(*shadow_root,
+                                          ":host(div) { background: green}"),
+            kRuleSetInvalidationsScheduled);
 
   EXPECT_EQ(ScheduleInvalidationsForRules(*shadow_root,
                                           ":host(*) { background: green}"),
