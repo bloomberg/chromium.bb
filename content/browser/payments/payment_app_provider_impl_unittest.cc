@@ -106,10 +106,10 @@ TEST_F(PaymentAppProviderTest, AbortPaymentTest) {
   PaymentHandlerStatus status;
   SetPaymentInstrument(manager, "payment_instrument_key",
                        payments::mojom::PaymentInstrument::New(),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentAppProvider::PaymentApps apps;
-  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+  GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(1U, apps.size());
 
   bool payment_aborted = false;
@@ -125,10 +125,10 @@ TEST_F(PaymentAppProviderTest, CanMakePaymentTest) {
   PaymentHandlerStatus status;
   SetPaymentInstrument(manager, "payment_instrument_key",
                        payments::mojom::PaymentInstrument::New(),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentAppProvider::PaymentApps apps;
-  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+  GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(1U, apps.size());
 
   payments::mojom::CanMakePaymentEventDataPtr event_data =
@@ -154,16 +154,16 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   PaymentHandlerStatus status;
   SetPaymentInstrument(manager1, "test_key1",
                        payments::mojom::PaymentInstrument::New(),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
   SetPaymentInstrument(manager2, "test_key2",
                        payments::mojom::PaymentInstrument::New(),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
   SetPaymentInstrument(manager2, "test_key3",
                        payments::mojom::PaymentInstrument::New(),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentAppProvider::PaymentApps apps;
-  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+  GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
   ASSERT_EQ(2U, apps.size());
 
   int64_t bobpay_registration_id = last_sw_registration_id();
@@ -177,7 +177,7 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
 
   bool called = false;
   InvokePaymentApp(bobpay_registration_id, std::move(event_data),
-                   base::Bind(&InvokePaymentAppCallback, &called));
+                   base::BindOnce(&InvokePaymentAppCallback, &called));
   ASSERT_TRUE(called);
 }
 
@@ -194,20 +194,20 @@ TEST_F(PaymentAppProviderTest, GetAllPaymentAppsTest) {
   PaymentInstrumentPtr instrument_1 = PaymentInstrument::New();
   instrument_1->enabled_methods.push_back("hellopay");
   SetPaymentInstrument(manager1, "test_key1", std::move(instrument_1),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentInstrumentPtr instrument_2 = PaymentInstrument::New();
   instrument_2->enabled_methods.push_back("hellopay");
   SetPaymentInstrument(manager2, "test_key2", std::move(instrument_2),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentInstrumentPtr instrument_3 = PaymentInstrument::New();
   instrument_3->enabled_methods.push_back("bobpay");
   SetPaymentInstrument(manager2, "test_key3", std::move(instrument_3),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentAppProvider::PaymentApps apps;
-  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+  GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
 
   ASSERT_EQ(2U, apps.size());
   ASSERT_EQ(1U, apps[hellopay_registration_id]->enabled_methods.size());
@@ -227,20 +227,20 @@ TEST_F(PaymentAppProviderTest, GetAllPaymentAppsFromTheSameOriginTest) {
   PaymentInstrumentPtr instrument_1 = PaymentInstrument::New();
   instrument_1->enabled_methods.push_back("hellopay");
   SetPaymentInstrument(manager1, "test_key1", std::move(instrument_1),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentInstrumentPtr instrument_2 = PaymentInstrument::New();
   instrument_2->enabled_methods.push_back("hellopay");
   SetPaymentInstrument(manager2, "test_key2", std::move(instrument_2),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentInstrumentPtr instrument_3 = PaymentInstrument::New();
   instrument_3->enabled_methods.push_back("bobpay");
   SetPaymentInstrument(manager2, "test_key3", std::move(instrument_3),
-                       base::Bind(&SetPaymentInstrumentCallback, &status));
+                       base::BindOnce(&SetPaymentInstrumentCallback, &status));
 
   PaymentAppProvider::PaymentApps apps;
-  GetAllPaymentApps(base::Bind(&GetAllPaymentAppsCallback, &apps));
+  GetAllPaymentApps(base::BindOnce(&GetAllPaymentAppsCallback, &apps));
 
   ASSERT_EQ(2U, apps.size());
   ASSERT_EQ(1U, apps[bobpay_a_registration_id]->enabled_methods.size());

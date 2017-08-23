@@ -197,10 +197,10 @@ void PaymentAppDatabase::WritePaymentInstrument(
         base::MakeRefCounted<PaymentInstrumentIconFetcher>();
     instrument_icon_fetcher_->Start(
         instrument->icons, service_worker_context_,
-        base::Bind(&PaymentAppDatabase::DidFetchedPaymentInstrumentIcon,
-                   weak_ptr_factory_.GetWeakPtr(), scope, instrument_key,
-                   base::Passed(std::move(instrument)),
-                   base::Passed(std::move(callback))));
+        base::BindOnce(&PaymentAppDatabase::DidFetchedPaymentInstrumentIcon,
+                       weak_ptr_factory_.GetWeakPtr(), scope, instrument_key,
+                       base::Passed(std::move(instrument)),
+                       base::Passed(std::move(callback))));
   } else {
     service_worker_context_->FindReadyRegistrationForPattern(
         scope,

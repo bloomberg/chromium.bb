@@ -73,7 +73,7 @@ class PaymentManagerTest : public PaymentAppContentUnitTestBase {
                                PaymentHandlerStatus* out_status) {
     manager_->DeletePaymentInstrument(
         instrument_key,
-        base::Bind(&DeletePaymentInstrumentCallback, out_status));
+        base::BindOnce(&DeletePaymentInstrumentCallback, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -82,36 +82,37 @@ class PaymentManagerTest : public PaymentAppContentUnitTestBase {
                             PaymentHandlerStatus* out_status) {
     manager_->SetPaymentInstrument(
         instrument_key, std::move(instrument),
-        base::Bind(&SetPaymentInstrumentCallback, out_status));
+        base::BindOnce(&SetPaymentInstrumentCallback, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
   void KeysOfPaymentInstruments(std::vector<std::string>* out_keys,
                                 PaymentHandlerStatus* out_status) {
-    manager_->KeysOfPaymentInstruments(
-        base::Bind(&KeysOfPaymentInstrumentsCallback, out_keys, out_status));
+    manager_->KeysOfPaymentInstruments(base::BindOnce(
+        &KeysOfPaymentInstrumentsCallback, out_keys, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
   void HasPaymentInstrument(const std::string& instrument_key,
                             PaymentHandlerStatus* out_status) {
     manager_->HasPaymentInstrument(
-        instrument_key, base::Bind(&HasPaymentInstrumentCallback, out_status));
+        instrument_key,
+        base::BindOnce(&HasPaymentInstrumentCallback, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
   void GetPaymentInstrument(const std::string& instrument_key,
                             PaymentInstrumentPtr* out_instrument,
                             PaymentHandlerStatus* out_status) {
-    manager_->GetPaymentInstrument(
-        instrument_key,
-        base::Bind(&GetPaymentInstrumentCallback, out_instrument, out_status));
+    manager_->GetPaymentInstrument(instrument_key,
+                                   base::BindOnce(&GetPaymentInstrumentCallback,
+                                                  out_instrument, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
   void ClearPaymentInstruments(PaymentHandlerStatus* out_status) {
     manager_->ClearPaymentInstruments(
-        base::Bind(&ClearPaymentInstrumentsCallback, out_status));
+        base::BindOnce(&ClearPaymentInstrumentsCallback, out_status));
     base::RunLoop().RunUntilIdle();
   }
 
