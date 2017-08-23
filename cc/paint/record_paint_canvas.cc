@@ -241,14 +241,6 @@ void RecordPaintCanvas::drawDRRect(const SkRRect& outer,
   list_->push<DrawDRRectOp>(outer, inner, flags);
 }
 
-void RecordPaintCanvas::drawArc(const SkRect& oval,
-                                SkScalar start_angle,
-                                SkScalar sweep_angle,
-                                bool use_center,
-                                const PaintFlags& flags) {
-  list_->push<DrawArcOp>(oval, start_angle, sweep_angle, use_center, flags);
-}
-
 void RecordPaintCanvas::drawRoundRect(const SkRect& rect,
                                       SkScalar rx,
                                       SkScalar ry,

@@ -74,11 +74,6 @@ class CC_PAINT_EXPORT RecordPaintCanvas final : public PaintCanvas {
   void drawDRRect(const SkRRect& outer,
                   const SkRRect& inner,
                   const PaintFlags& flags) override;
-  void drawArc(const SkRect& oval,
-               SkScalar start_angle,
-               SkScalar sweep_angle,
-               bool use_center,
-               const PaintFlags& flags) override;
   void drawRoundRect(const SkRect& rect,
                      SkScalar rx,
                      SkScalar ry,

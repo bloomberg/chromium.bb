@@ -184,7 +184,6 @@ void RasterWithAlpha(const PaintOp* op,
   M(ClipRectOp)       \
   M(ClipRRectOp)      \
   M(ConcatOp)         \
-  M(DrawArcOp)        \
   M(DrawColorOp)      \
   M(DrawDRRectOp)     \
   M(DrawImageOp)      \
@@ -353,8 +352,6 @@ std::string PaintOpTypeToString(PaintOpType type) {
       return "ClipRRect";
     case PaintOpType::Concat:
       return "Concat";
-    case PaintOpType::DrawArc:
-      return "DrawArc";
     case PaintOpType::DrawColor:
       return "DrawColor";
     case PaintOpType::DrawDRRect:
@@ -463,20 +460,6 @@ size_t ConcatOp::Serialize(const PaintOp* op,
                            size_t size,
                            const SerializeOptions& options) {
   return SimpleSerialize<ConcatOp>(op, memory, size);
-}
-
-size_t DrawArcOp::Serialize(const PaintOp* base_op,
-                            void* memory,
-                            size_t size,
-                            const SerializeOptions& options) {
-  auto* op = static_cast<const DrawArcOp*>(base_op);
-  PaintOpWriter helper(memory, size);
-  helper.Write(op->flags);
-  helper.Write(op->oval);
-  helper.Write(op->start_angle);
-  helper.Write(op->sweep_angle);
-  helper.Write(op->use_center);
-  return helper.size();
 }
 
 size_t DrawColorOp::Serialize(const PaintOp* op,
@@ -779,27 +762,6 @@ PaintOp* ConcatOp::Deserialize(const volatile void* input,
                                size_t output_size) {
   DCHECK_GE(output_size, sizeof(ConcatOp));
   return SimpleDeserialize<ConcatOp>(input, input_size, output, output_size);
-}
-
-PaintOp* DrawArcOp::Deserialize(const volatile void* input,
-                                size_t input_size,
-                                void* output,
-                                size_t output_size) {
-  DCHECK_GE(output_size, sizeof(DrawArcOp));
-  DrawArcOp* op = new (output) DrawArcOp;
-
-  PaintOpReader helper(input, input_size);
-  helper.Read(&op->flags);
-  helper.Read(&op->oval);
-  helper.Read(&op->start_angle);
-  helper.Read(&op->sweep_angle);
-  helper.Read(&op->use_center);
-  if (!helper.valid() || !op->IsValid()) {
-    op->~DrawArcOp();
-    return nullptr;
-  }
-  UpdateTypeAndSkip(op);
-  return op;
 }
 
 PaintOp* DrawColorOp::Deserialize(const volatile void* input,
@@ -1146,15 +1108,6 @@ void ConcatOp::Raster(const ConcatOp* op,
   canvas->concat(op->matrix);
 }
 
-void DrawArcOp::RasterWithFlags(const DrawArcOp* op,
-                                const PaintFlags* flags,
-                                SkCanvas* canvas,
-                                const PlaybackParams& params) {
-  SkPaint paint = flags->ToSkPaint();
-  canvas->drawArc(op->oval, op->start_angle, op->sweep_angle, op->use_center,
-                  paint);
-}
-
 void DrawColorOp::Raster(const DrawColorOp* op,
                          SkCanvas* canvas,
                          const PlaybackParams& params) {
@@ -1440,12 +1393,6 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
   DCHECK(op->IsDrawOp());
 
   switch (op->GetType()) {
-    case PaintOpType::DrawArc: {
-      auto* arc_op = static_cast<const DrawArcOp*>(op);
-      *rect = arc_op->oval;
-      rect->sort();
-      return true;
-    }
     case PaintOpType::DrawColor:
       return false;
     case PaintOpType::DrawDRRect: {

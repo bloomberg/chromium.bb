@@ -197,7 +197,6 @@ base::Optional<SkColor> SolidColorAnalyzer::DetermineIfSolidColor(
       }
 
       // Any of the following ops result in non solid content.
-      case PaintOpType::DrawArc:
       case PaintOpType::DrawDRRect:
       case PaintOpType::DrawImage:
       case PaintOpType::DrawImageRect:

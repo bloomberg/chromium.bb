@@ -59,12 +59,6 @@ class MockPaintCanvas : public PaintCanvas {
                void(const SkRRect& outer,
                     const SkRRect& inner,
                     const PaintFlags& flags));
-  MOCK_METHOD5(drawArc,
-               void(const SkRect& oval,
-                    SkScalar start_angle,
-                    SkScalar sweep_angle,
-                    bool use_center,
-                    const PaintFlags& flags));
   MOCK_METHOD4(drawRoundRect,
                void(const SkRect& rect,
                     SkScalar rx,

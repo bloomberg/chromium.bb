@@ -46,6 +46,16 @@ namespace network_icon {
 
 namespace {
 
+SkPath CreateArcPath(gfx::RectF oval, float start_angle, float sweep_angle) {
+  SkPath path;
+  path.setIsVolatile(true);
+  path.setFillType(SkPath::kWinding_FillType);
+  path.moveTo(oval.CenterPoint().x(), oval.CenterPoint().y());
+  path.arcTo(gfx::RectFToSkRect(oval), start_angle, sweep_angle, false);
+  path.close();
+  return path;
+}
+
 // Constants for offseting the badge displayed on top of the signal strength
 // icon. The badge will extend outside of the base icon bounds by these amounts.
 // All values are in dp.
@@ -705,8 +715,8 @@ void SignalStrengthImageSource::DrawArcs(gfx::Canvas* canvas) {
   // Background. Skip drawing for full signal.
   if (signal_strength_ != kNumNetworkImages - 1) {
     flags.setColor(SkColorSetA(color_, kSignalStrengthImageBgAlpha));
-    canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
-                                 kSweepAngle, true, flags);
+    canvas->sk_canvas()->drawPath(
+        CreateArcPath(oval_bounds, kStartAngle, kSweepAngle), flags);
   }
   // Foreground (signal strength).
   if (signal_strength_ != 0) {
@@ -718,8 +728,8 @@ void SignalStrengthImageSource::DrawArcs(gfx::Canvas* canvas) {
     const float wedge_percent = kWedgeHeightPercentages[signal_strength_];
     oval_bounds.Inset(
         gfx::InsetsF((oval_bounds.height() / 2) * (1.f - wedge_percent)));
-    canvas->sk_canvas()->drawArc(gfx::RectFToSkRect(oval_bounds), kStartAngle,
-                                 kSweepAngle, true, flags);
+    canvas->sk_canvas()->drawPath(
+        CreateArcPath(oval_bounds, kStartAngle, kSweepAngle), flags);
   }
 }
 
