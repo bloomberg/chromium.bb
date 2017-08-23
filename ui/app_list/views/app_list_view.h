@@ -156,6 +156,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // in progress it will be interrupted.
   void StartAnimationForState(AppListState new_state);
 
+  // Starts the close animation.
+  void StartCloseAnimation(base::TimeDelta animation_duration);
+
   // Changes the app list state depending on the current |app_list_state_| and
   // whether the search box is empty.
   void SetStateFromSearchBoxView(bool search_box_is_empty);

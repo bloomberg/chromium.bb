@@ -1142,6 +1142,7 @@ void AppListView::StartAnimationForState(AppListState target_state) {
       target_state_y = display_height - kHalfAppListHeight;
       break;
     case CLOSED:
+      // The close animation is handled by the delegate.
       return;
     default:
       break;
@@ -1163,6 +1164,14 @@ void AppListView::StartAnimationForState(AppListState target_state) {
   animator->StopAnimating();
   animator->ScheduleAnimation(
       new ui::LayerAnimationSequence(std::move(bounds_animation_element)));
+}
+
+void AppListView::StartCloseAnimation(base::TimeDelta animation_duration) {
+  DCHECK(is_fullscreen_app_list_enabled_);
+  if (is_side_shelf_ || !is_fullscreen_app_list_enabled_)
+    return;
+
+  app_list_main_view_->contents_view()->FadeOutOnClose(animation_duration);
 }
 
 void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty) {

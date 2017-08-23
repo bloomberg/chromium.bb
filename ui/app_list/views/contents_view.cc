@@ -24,6 +24,7 @@
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/search_result_tile_item_list_view.h"
 #include "ui/app_list/views/start_page_view.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -36,6 +37,15 @@ namespace {
 
 // Layout constants.
 constexpr int kDefaultContentsViewHeight = 623;
+
+void DoCloseAnimation(base::TimeDelta animation_duration, ui::Layer* layer) {
+  ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
+  animation.SetTransitionDuration(animation_duration);
+  animation.SetTweenType(gfx::Tween::EASE_OUT);
+  animation.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  layer->SetOpacity(0.0f);
+}
 
 }  // namespace
 
@@ -551,6 +561,12 @@ int ContentsView::GetDisplayHeight() const {
       .work_area()
       .size()
       .height();
+}
+
+void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
+  DCHECK(is_fullscreen_app_list_enabled_);
+  DoCloseAnimation(animation_duration, this->layer());
+  DoCloseAnimation(animation_duration, GetSearchBoxView()->layer());
 }
 
 }  // namespace app_list
