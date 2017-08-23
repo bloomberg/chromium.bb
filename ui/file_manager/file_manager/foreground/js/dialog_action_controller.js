@@ -302,8 +302,6 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
   }.bind(this);
 
   var currentRootType = this.directoryModel_.getCurrentRootType();
-  var currentVolumeType = currentRootType !== null ?
-      VolumeManagerCommon.getVolumeTypeFromRootType(currentRootType) : null;
   if (currentRootType !== VolumeManagerCommon.VolumeType.DRIVE ||
       this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
     callSelectFilesApiAndClose(function() {});

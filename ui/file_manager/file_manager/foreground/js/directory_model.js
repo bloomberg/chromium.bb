@@ -208,7 +208,7 @@ DirectoryModel.prototype.isOnMTP = function() {
  */
 DirectoryModel.prototype.isCurrentRootVolumeType_ = function(volumeType) {
   var rootType = this.getCurrentRootType();
-  return rootType != null &&
+  return rootType != null && rootType != VolumeManagerCommon.RootType.RECENT &&
       VolumeManagerCommon.getVolumeTypeFromRootType(rootType) === volumeType;
 };
 
@@ -980,7 +980,7 @@ DirectoryModel.prototype.changeDirectoryEntry = function(
           event.volumeChanged = previousVolumeInfo !== currentVolumeInfo;
           this.dispatchEvent(event);
 
-          if (event.volumeChanged) {
+          if (currentVolumeInfo && event.volumeChanged) {
             this.onVolumeChanged_(assert(currentVolumeInfo));
           }
         }.bind(this));
@@ -1192,21 +1192,29 @@ DirectoryModel.prototype.createDirectoryContents_ =
     function(context, entry, opt_query) {
   var query = (opt_query || '').trimLeft();
   var locationInfo = this.volumeManager_.getLocationInfo(entry);
-  if (!locationInfo)
-    return null;
   var canUseDriveSearch = this.volumeManager_.getDriveConnectionState().type !==
-      VolumeManagerCommon.DriveConnectionType.OFFLINE &&
-      locationInfo.isDriveBased;
+          VolumeManagerCommon.DriveConnectionType.OFFLINE &&
+      (locationInfo && locationInfo.isDriveBased);
 
+  if (entry.rootType == VolumeManagerCommon.RootType.RECENT) {
+    return DirectoryContents.createForRecent(
+        context, /** @type {!FakeEntry} */ (entry), query);
+  }
   if (query && canUseDriveSearch) {
     // Drive search.
     return DirectoryContents.createForDriveSearch(
         context, /** @type {!DirectoryEntry} */ (entry), query);
-  } else if (query) {
+  }
+  if (query) {
     // Local search.
     return DirectoryContents.createForLocalSearch(
         context, /** @type {!DirectoryEntry} */ (entry), query);
-  } if (locationInfo.isSpecialSearchRoot) {
+  }
+
+  if (!locationInfo)
+    return null;
+
+  if (locationInfo.isSpecialSearchRoot) {
     // Drive special search.
     var searchType;
     switch (locationInfo.rootType) {
@@ -1230,11 +1238,10 @@ DirectoryModel.prototype.createDirectoryContents_ =
         context,
         /** @type {!FakeEntry} */ (entry),
         searchType);
-  } else {
-    // Local fetch or search.
-    return DirectoryContents.createForDirectory(
-        context, /** @type {!DirectoryEntry} */ (entry));
   }
+  // Local fetch or search.
+  return DirectoryContents.createForDirectory(
+      context, /** @type {!DirectoryEntry} */ (entry));
 };
 
 /**

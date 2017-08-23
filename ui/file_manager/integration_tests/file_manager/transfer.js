@@ -141,28 +141,6 @@ testcase.transferFromSharedToDrive = copyBetweenVolumes.bind(
     BASIC_DRIVE_ENTRY_SET);
 
 /**
- * Tests copy from drive's recent to local's downloads.
- */
-testcase.transferFromRecentToDownloads = copyBetweenVolumes.bind(
-    null,
-    ENTRIES.hello,
-    'drive_recent',
-    RECENT_ENTRY_SET,
-    'downloads',
-    BASIC_LOCAL_ENTRY_SET);
-
-/**
- * Tests copy from drive's recent to drive's root.
- */
-testcase.transferFromRecentToDrive = copyBetweenVolumes.bind(
-    null,
-    ENTRIES.hello,
-    'drive_recent',
-    RECENT_ENTRY_SET,
-    'drive',
-    BASIC_DRIVE_ENTRY_SET);
-
-/**
  * Tests copy from drive's offline to local's downloads.
  */
 testcase.transferFromOfflineToDownloads = copyBetweenVolumes.bind(

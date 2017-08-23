@@ -835,7 +835,8 @@ CommandHandler.COMMANDS_['delete'] = (function() {
       }
 
       event.canExecute = entries.length > 0 &&
-          !this.containsReadOnlyEntry_(entries, fileManager);
+          !this.containsReadOnlyEntry_(entries, fileManager) &&
+          !fileManager.directoryModel.isReadOnly();
       event.command.setHidden(false);
     },
 

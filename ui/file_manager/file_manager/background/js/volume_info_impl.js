@@ -70,11 +70,6 @@ function VolumeInfoImpl(
       rootType: VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME,
       toURL: function() { return 'fake-entry://drive_shared_with_me'; }
     };
-    this.fakeEntries_[VolumeManagerCommon.RootType.DRIVE_RECENT] = {
-      isDirectory: true,
-      rootType: VolumeManagerCommon.RootType.DRIVE_RECENT,
-      toURL: function() { return 'fake-entry://drive_recent'; }
-    };
   }
 
   // Note: This represents if the mounting of the volume is successfully done

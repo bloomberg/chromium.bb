@@ -252,7 +252,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_DriveSpecific,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "openSidebarRecent"),
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarSharedWithMe"),
         TestParameter(NOT_IN_GUEST_MODE, "autocomplete"),
@@ -274,8 +273,6 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "transferFromDownloadsToDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "transferFromSharedToDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromRecentToDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "transferFromRecentToDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDrive")));
 

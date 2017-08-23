@@ -92,6 +92,9 @@ VolumeManagerCommon.RootType = {
 
   // Root for media views.
   MEDIA_VIEW: 'media_view',
+
+  // Fake root for the mixed "Recent" view.
+  RECENT: 'recent',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -279,12 +282,14 @@ VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = function(volumeId) {
 };
 
 /**
- * Fake entries for Google Drive's virtual folders.
- * (OFFLINE, RECENT, and SHARED_WITH_ME)
+ * Fake entries for virtual folders which hold Google Drive offline files,
+ * Google Drive "Shared with me" files, and mixed Recent files.
+ * |sourceRestriction| is valid only for the Recent folder.
  * @typedef {{
  *   isDirectory: boolean,
  *   rootType: VolumeManagerCommon.RootType,
- *   toURL: function(): string
+ *   toURL: function(): string,
+ *   sourceRestriction: (string|undefined)
  * }}
  */
 var FakeEntry;

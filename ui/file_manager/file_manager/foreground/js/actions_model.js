@@ -573,14 +573,22 @@ ActionsModel.prototype.initialize = function() {
     }
     this.initializePromiseReject_ = reject;
 
-    // All entries are expected to be on the same volume. It's assumed, and not
-    // checked.
-    var volumeInfo = this.entries_.length &&
+    var volumeInfo = this.entries_.length >= 1 &&
         this.volumeManager_.getVolumeInfo(this.entries_[0]);
-
-    if (!this.entries_.length || !volumeInfo) {
+    if (!volumeInfo) {
       fulfill({});
       return;
+    }
+    // All entries need to be on the same volume to execute ActionsModel
+    // commands.
+    for (var i = 1; i < this.entries_.length; i++) {
+      var volumeInfoToCompare =
+          this.volumeManager_.getVolumeInfo(this.entries_[i]);
+      if (!volumeInfoToCompare ||
+          volumeInfoToCompare.volumeId != volumeInfo.volumeId) {
+        fulfill({});
+        return;
+      }
     }
 
     var actions = {};
