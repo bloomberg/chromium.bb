@@ -417,7 +417,7 @@ void GpuProcessHost::GetHasGpuProcess(
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&GpuProcessHost::GetHasGpuProcess, callback));
+        base::BindOnce(&GpuProcessHost::GetHasGpuProcess, callback));
     return;
   }
   bool has_gpu = false;
@@ -429,7 +429,7 @@ void GpuProcessHost::GetHasGpuProcess(
     }
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, has_gpu));
+                          base::BindOnce(callback, has_gpu));
 }
 
 // static
@@ -442,7 +442,7 @@ void GpuProcessHost::CallOnIO(
 #endif
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&RunCallbackOnIO, kind, force_create, callback));
+      base::BindOnce(&RunCallbackOnIO, kind, force_create, callback));
 }
 
 void GpuProcessHost::BindInterface(
@@ -582,7 +582,7 @@ GpuProcessHost::~GpuProcessHost() {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
+      base::BindOnce(&OnGpuProcessHostDestroyedOnUI, host_id_, message));
 }
 
 bool GpuProcessHost::Init() {
@@ -667,7 +667,7 @@ bool GpuProcessHost::OnMessageReceived(const IPC::Message& message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 #if defined(USE_OZONE)
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&RouteMessageToOzoneOnUI, message));
+                          base::BindOnce(&RouteMessageToOzoneOnUI, message));
 #endif
   return true;
 }
@@ -706,8 +706,8 @@ void GpuProcessHost::EstablishGpuChannel(
   channel_requests_.push(callback);
   gpu_service_ptr_->EstablishGpuChannel(
       client_id, client_tracing_id, is_gpu_host,
-      base::Bind(&GpuProcessHost::OnChannelEstablished,
-                 weak_ptr_factory_.GetWeakPtr(), client_id, callback));
+      base::BindOnce(&GpuProcessHost::OnChannelEstablished,
+                     weak_ptr_factory_.GetWeakPtr(), client_id, callback));
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuShaderDiskCache)) {
@@ -729,8 +729,8 @@ void GpuProcessHost::CreateGpuMemoryBuffer(
   create_gpu_memory_buffer_requests_.push(callback);
   gpu_service_ptr_->CreateGpuMemoryBuffer(
       id, size, format, usage, client_id, surface_handle,
-      base::Bind(&GpuProcessHost::OnGpuMemoryBufferCreated,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&GpuProcessHost::OnGpuMemoryBufferCreated,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void GpuProcessHost::DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,

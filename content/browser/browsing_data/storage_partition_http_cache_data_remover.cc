@@ -72,7 +72,7 @@ void StoragePartitionHttpCacheDataRemover::Remove(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &StoragePartitionHttpCacheDataRemover::ClearHttpCacheOnIOThread,
           base::Unretained(this)));
 }
@@ -181,8 +181,9 @@ void StoragePartitionHttpCacheDataRemover::DoClearCache(int rv) {
         // Notify the UI thread that we are done.
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&StoragePartitionHttpCacheDataRemover::ClearedHttpCache,
-                       base::Unretained(this)));
+            base::BindOnce(
+                &StoragePartitionHttpCacheDataRemover::ClearedHttpCache,
+                base::Unretained(this)));
         return;
       }
       case CacheState::NONE: {

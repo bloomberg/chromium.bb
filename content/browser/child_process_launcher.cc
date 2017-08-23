@@ -68,7 +68,7 @@ void ChildProcessLauncher::SetProcessPriority(
   base::Process to_pass = process_.process.Duplicate();
   BrowserThread::PostTask(
       BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread,
           helper_, base::Passed(&to_pass), background, boost_for_pending_views,
           importance));

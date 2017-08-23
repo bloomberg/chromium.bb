@@ -1190,8 +1190,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   base::ThreadRestrictions::SetIOAllowed(true);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed),
-                 true));
+      base::BindOnce(
+          base::IgnoreResult(&base::ThreadRestrictions::SetIOAllowed), true));
 
 #if defined(OS_ANDROID)
   g_browser_main_loop_shutting_down = true;
@@ -1606,9 +1606,9 @@ int BrowserMainLoop::BrowserThreadsStarted() {
                          TRACE_EVENT_SCOPE_THREAD);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(base::IgnoreResult(&GpuProcessHost::Get),
-                   GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
-                   true /* force_create */));
+        base::BindOnce(base::IgnoreResult(&GpuProcessHost::Get),
+                       GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+                       true /* force_create */));
   }
 
 #if defined(OS_MACOSX)

@@ -181,8 +181,9 @@ BrowserChildProcessHostImpl::~BrowserChildProcessHostImpl() {
   g_child_process_list.Get().remove(this);
 
   if (notify_child_disconnected_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&NotifyProcessHostDisconnected, data_));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&NotifyProcessHostDisconnected, data_));
   }
 }
 
@@ -344,15 +345,15 @@ void BrowserChildProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
 #endif
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&NotifyProcessHostConnected, data_));
+                          base::BindOnce(&NotifyProcessHostConnected, data_));
 
   delegate_->OnChannelConnected(peer_pid);
 
   if (IsProcessLaunched()) {
     ShareMetricsAllocatorToProcess();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&NotifyProcessLaunchedAndConnected,
-                                       data_));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&NotifyProcessLaunchedAndConnected, data_));
   }
 }
 
@@ -407,7 +408,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
         delegate_->OnProcessCrashed(exit_code);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&NotifyProcessCrashed, data_, exit_code));
+            base::BindOnce(&NotifyProcessCrashed, data_, exit_code));
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Crashed2",
                                   static_cast<ProcessType>(data_.process_type),
                                   PROCESS_TYPE_MAX);
@@ -423,7 +424,7 @@ void BrowserChildProcessHostImpl::OnChildDisconnected() {
         delegate_->OnProcessCrashed(exit_code);
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
-            base::Bind(&NotifyProcessKilled, data_, exit_code));
+            base::BindOnce(&NotifyProcessKilled, data_, exit_code));
         // Report that this child process was killed.
         UMA_HISTOGRAM_ENUMERATION("ChildProcess.Killed2",
                                   static_cast<ProcessType>(data_.process_type),
@@ -560,9 +561,9 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
 
   if (is_channel_connected_) {
     ShareMetricsAllocatorToProcess();
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&NotifyProcessLaunchedAndConnected,
-                                       data_));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&NotifyProcessLaunchedAndConnected, data_));
   }
 }
 
@@ -579,8 +580,8 @@ void BrowserChildProcessHostImpl::OnMojoError(
     const std::string& error) {
   if (!task_runner->BelongsToCurrentThread()) {
     task_runner->PostTask(
-        FROM_HERE, base::Bind(&BrowserChildProcessHostImpl::OnMojoError,
-                              process, task_runner, error));
+        FROM_HERE, base::BindOnce(&BrowserChildProcessHostImpl::OnMojoError,
+                                  process, task_runner, error));
     return;
   }
   if (!process)

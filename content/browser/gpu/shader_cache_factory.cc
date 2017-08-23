@@ -25,7 +25,7 @@ void InitShaderCacheFactorySingleton(
   if (task_runner->BelongsToCurrentThread()) {
     CreateFactoryInstance();
   } else {
-    task_runner->PostTask(FROM_HERE, base::Bind(&CreateFactoryInstance));
+    task_runner->PostTask(FROM_HERE, base::BindOnce(&CreateFactoryInstance));
   }
 }
 

@@ -53,12 +53,12 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     DCHECK(out_registration);
 
     base::RunLoop run_loop;
-    service_->Fetch(registration_id.service_worker_registration_id(),
-                    registration_id.origin(), registration_id.id(), requests,
-                    options,
-                    base::Bind(&BackgroundFetchServiceTest::DidGetRegistration,
-                               base::Unretained(this), run_loop.QuitClosure(),
-                               out_error, out_registration));
+    service_->Fetch(
+        registration_id.service_worker_registration_id(),
+        registration_id.origin(), registration_id.id(), requests, options,
+        base::BindOnce(&BackgroundFetchServiceTest::DidGetRegistration,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error, out_registration));
 
     run_loop.Run();
   }
@@ -73,11 +73,11 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     DCHECK(out_error);
 
     base::RunLoop run_loop;
-    service_->Abort(
-        registration_id.service_worker_registration_id(),
-        registration_id.origin(), registration_id.id(),
-        base::Bind(&BackgroundFetchServiceTest::DidAbort,
-                   base::Unretained(this), run_loop.QuitClosure(), out_error));
+    service_->Abort(registration_id.service_worker_registration_id(),
+                    registration_id.origin(), registration_id.id(),
+                    base::BindOnce(&BackgroundFetchServiceTest::DidAbort,
+                                   base::Unretained(this),
+                                   run_loop.QuitClosure(), out_error));
 
     run_loop.Run();
   }
@@ -94,9 +94,9 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     service_->GetRegistration(
         registration_id.service_worker_registration_id(),
         registration_id.origin(), registration_id.id(),
-        base::Bind(&BackgroundFetchServiceTest::DidGetRegistration,
-                   base::Unretained(this), run_loop.QuitClosure(), out_error,
-                   out_registration));
+        base::BindOnce(&BackgroundFetchServiceTest::DidGetRegistration,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error, out_registration));
 
     run_loop.Run();
   }
@@ -109,11 +109,12 @@ class BackgroundFetchServiceTest : public BackgroundFetchTestBase {
     DCHECK(out_ids);
 
     base::RunLoop run_loop;
-    service_->GetIds(registration_id.service_worker_registration_id(),
-                     registration_id.origin(),
-                     base::Bind(&BackgroundFetchServiceTest::DidGetIds,
-                                base::Unretained(this), run_loop.QuitClosure(),
-                                out_error, out_ids));
+    service_->GetIds(
+        registration_id.service_worker_registration_id(),
+        registration_id.origin(),
+        base::BindOnce(&BackgroundFetchServiceTest::DidGetIds,
+                       base::Unretained(this), run_loop.QuitClosure(),
+                       out_error, out_ids));
 
     run_loop.Run();
   }

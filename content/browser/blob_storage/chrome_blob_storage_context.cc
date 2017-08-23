@@ -112,16 +112,16 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
       // Removes our old blob directories if they exist.
       BrowserThread::PostAfterStartupTask(
           FROM_HERE, file_task_runner,
-          base::Bind(&RemoveOldBlobStorageDirectories,
-                     base::Passed(&blob_storage_parent), blob_storage_dir));
+          base::BindOnce(&RemoveOldBlobStorageDirectories,
+                         base::Passed(&blob_storage_parent), blob_storage_dir));
     }
 
     if (io_thread_valid) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread, blob,
-                     base::Passed(&blob_storage_dir),
-                     base::Passed(&file_task_runner)));
+          base::BindOnce(&ChromeBlobStorageContext::InitializeOnIOThread, blob,
+                         base::Passed(&blob_storage_dir),
+                         base::Passed(&file_task_runner)));
     }
   }
 
@@ -139,8 +139,8 @@ void ChromeBlobStorageContext::InitializeOnIOThread(
   // storage limits.
   BrowserThread::PostAfterStartupTask(
       FROM_HERE, BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-      base::Bind(&storage::BlobMemoryController::CalculateBlobStorageLimits,
-                 context_->mutable_memory_controller()->GetWeakPtr()));
+      base::BindOnce(&storage::BlobMemoryController::CalculateBlobStorageLimits,
+                     context_->mutable_memory_controller()->GetWeakPtr()));
 }
 
 std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(

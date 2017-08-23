@@ -1630,11 +1630,11 @@ bool AppCacheStorageImpl::FindResponseForMainRequestInGroup(
   if (!entry || entry->IsForeign())
     return false;
 
-  ScheduleSimpleTask(
-      base::Bind(&AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
-                 weak_factory_.GetWeakPtr(), url, *entry,
-                 make_scoped_refptr(group), make_scoped_refptr(cache),
-                 make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
+  ScheduleSimpleTask(base::BindOnce(
+      &AppCacheStorageImpl::DeliverShortCircuitedFindMainResponse,
+      weak_factory_.GetWeakPtr(), url, *entry, make_scoped_refptr(group),
+      make_scoped_refptr(cache),
+      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
   return true;
 }
 

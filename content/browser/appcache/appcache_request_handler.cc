@@ -369,8 +369,8 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::CreateJob(
     net::NetworkDelegate* network_delegate) {
   std::unique_ptr<AppCacheJob> job = AppCacheJob::Create(
       is_main_resource(), host_, storage(), request_.get(), network_delegate,
-      base::Bind(&AppCacheRequestHandler::OnPrepareToRestart,
-                 base::Unretained(this)),
+      base::BindOnce(&AppCacheRequestHandler::OnPrepareToRestart,
+                     base::Unretained(this)),
       std::move(subresource_load_info_),
       network_url_loader_factory_getter_.get());
   job_ = job->GetWeakPtr();

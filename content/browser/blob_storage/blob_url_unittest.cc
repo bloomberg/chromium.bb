@@ -200,8 +200,8 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
     file_system_context_->OpenFileSystem(
         GURL(kFileSystemURLOrigin), kFileSystemType,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind(&BlobURLRequestJobTest::OnValidateFileSystem,
-                   base::Unretained(this)));
+        base::BindOnce(&BlobURLRequestJobTest::OnValidateFileSystem,
+                       base::Unretained(this)));
     base::RunLoop().RunUntilIdle();
     ASSERT_TRUE(file_system_root_url_.is_valid());
 
@@ -284,8 +284,8 @@ class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
       TestURLLoaderClient url_loader_client;
       scoped_refptr<BlobURLLoaderFactory> factory =
           BlobURLLoaderFactory::Create(
-              base::Bind(&BlobURLRequestJobTest::GetStorageContext,
-                         base::Unretained(this)),
+              base::BindOnce(&BlobURLRequestJobTest::GetStorageContext,
+                             base::Unretained(this)),
               file_system_context_);
       base::RunLoop().RunUntilIdle();
       factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader), 0, 0,

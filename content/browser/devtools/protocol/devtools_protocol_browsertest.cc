@@ -2171,7 +2171,7 @@ class CountingDownloadFile : public DownloadFileImpl {
     int result = -1;
     GetDownloadTaskRunner()->PostTaskAndReply(
         FROM_HERE,
-        base::Bind(&CountingDownloadFile::GetNumberActiveFiles, &result),
+        base::BindOnce(&CountingDownloadFile::GetNumberActiveFiles, &result),
         base::MessageLoop::current()->QuitWhenIdleClosure());
     base::RunLoop().Run();
     DCHECK_NE(-1, result);
@@ -2297,12 +2297,12 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&net::URLRequestSlowDownloadJob::AddUrlHandler));
+        base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
     base::FilePath mock_base(GetTestFilePath("download", ""));
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
+        base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -2350,7 +2350,7 @@ class DevToolsDownloadContentTest : public DevToolsProtocolTest {
     bool result = true;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&EnsureNoPendingDownloadJobsOnIO, &result));
+        base::BindOnce(&EnsureNoPendingDownloadJobsOnIO, &result));
     base::RunLoop().Run();
     return result &&
            (CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0);

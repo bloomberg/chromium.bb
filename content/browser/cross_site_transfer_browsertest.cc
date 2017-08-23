@@ -78,7 +78,7 @@ class TrackingResourceDispatcherHostDelegate
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &TrackingResourceDispatcherHostDelegate::SetTrackedURLOnIOThread,
             base::Unretained(this), tracked_url, run_loop_->QuitClosure()));
   }
@@ -186,8 +186,9 @@ class CrossSiteTransferTest
   void SetUpOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&CrossSiteTransferTest::InjectResourceDispatcherHostDelegate,
-                   base::Unretained(this)));
+        base::BindOnce(
+            &CrossSiteTransferTest::InjectResourceDispatcherHostDelegate,
+            base::Unretained(this)));
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -196,7 +197,7 @@ class CrossSiteTransferTest
   void TearDownOnMainThread() override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
+        base::BindOnce(
             &CrossSiteTransferTest::RestoreResourceDisptcherHostDelegate,
             base::Unretained(this)));
   }

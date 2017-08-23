@@ -610,8 +610,8 @@ void BluetoothDeviceChooserController::PostSuccessCallback(
     const std::string& device_address) {
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(success_callback_, base::Passed(std::move(options_)),
-                     device_address))) {
+          base::BindOnce(success_callback_, base::Passed(std::move(options_)),
+                         device_address))) {
     LOG(WARNING) << "No TaskRunner.";
   }
 }
@@ -619,7 +619,7 @@ void BluetoothDeviceChooserController::PostSuccessCallback(
 void BluetoothDeviceChooserController::PostErrorCallback(
     blink::mojom::WebBluetoothResult error) {
   if (!base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(error_callback_, error))) {
+          FROM_HERE, base::BindOnce(error_callback_, error))) {
     LOG(WARNING) << "No TaskRunner.";
   }
 }

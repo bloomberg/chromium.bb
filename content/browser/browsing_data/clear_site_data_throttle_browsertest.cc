@@ -263,9 +263,9 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
     base::RunLoop run_loop;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ServiceWorkerActivationObserver::SignalActivation,
-                   base::Unretained(service_worker_context),
-                   run_loop.QuitClosure()));
+        base::BindOnce(&ServiceWorkerActivationObserver::SignalActivation,
+                       base::Unretained(service_worker_context),
+                       run_loop.QuitClosure()));
     run_loop.Run();
   }
 

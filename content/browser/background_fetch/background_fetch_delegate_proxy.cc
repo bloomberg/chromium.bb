@@ -170,8 +170,8 @@ class BackgroundFetchDelegateProxy::Core {
     request->PopulateDownloadStateOnUI(download_item, interrupt_reason);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&BackgroundFetchRequestInfo::SetDownloadStatePopulated,
-                   request));
+        base::BindOnce(&BackgroundFetchRequestInfo::SetDownloadStatePopulated,
+                       request));
 
     // TODO(peter): The above two DCHECKs are assumptions our implementation
     // currently makes, but are not fit for production. We need to handle such
@@ -184,8 +184,9 @@ class BackgroundFetchDelegateProxy::Core {
     // Inform the host about the |request| having started.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&BackgroundFetchDelegateProxy::DidStartRequest, io_parent_,
-                   job_controller, request, download_item->GetGuid()));
+        base::BindOnce(&BackgroundFetchDelegateProxy::DidStartRequest,
+                       io_parent_, job_controller, request,
+                       download_item->GetGuid()));
 
     // Associate the |download_item| with the |request| so that we can retrieve
     // its information when further updates happen.
@@ -230,14 +231,15 @@ void BackgroundFetchDelegateProxy::Core::DownloadItemObserver::
       request->PopulateResponseFromDownloadItemOnUI(download_item);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&BackgroundFetchRequestInfo::SetResponseDataPopulated,
-                     request));
+          base::BindOnce(&BackgroundFetchRequestInfo::SetResponseDataPopulated,
+                         request));
 
       // Inform the host about |host| having completed.
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&BackgroundFetchDelegateProxy::DidCompleteRequest,
-                     core_->io_parent_, job_controller_, std::move(request)));
+          base::BindOnce(&BackgroundFetchDelegateProxy::DidCompleteRequest,
+                         core_->io_parent_, job_controller_,
+                         std::move(request)));
 
       // Clear the local state for the |request|, it no longer is our
       // concern.
@@ -301,11 +303,11 @@ void BackgroundFetchDelegateProxy::StartRequest(
     scoped_refptr<BackgroundFetchRequestInfo> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&Core::StartRequest, ui_core_ptr_,
-                                     job_controller->GetWeakPtr(),
-                                     job_controller->registration_id().origin(),
-                                     std::move(request)));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &Core::StartRequest, ui_core_ptr_, job_controller->GetWeakPtr(),
+          job_controller->registration_id().origin(), std::move(request)));
 }
 
 void BackgroundFetchDelegateProxy::UpdateUI(const std::string& title) {

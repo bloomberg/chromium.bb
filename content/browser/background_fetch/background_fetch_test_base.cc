@@ -147,10 +147,10 @@ class BackgroundFetchTestBase::RespondingDownloadManager
     // dealing with the response in this class.
     BrowserThread::PostTaskAndReply(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(params->callback(), download_item.get(),
-                   DOWNLOAD_INTERRUPT_REASON_NONE),
-        base::Bind(&RespondingDownloadManager::DidStartDownload,
-                   weak_ptr_factory_.GetWeakPtr(), download_item.get()));
+        base::BindOnce(params->callback(), download_item.get(),
+                       DOWNLOAD_INTERRUPT_REASON_NONE),
+        base::BindOnce(&RespondingDownloadManager::DidStartDownload,
+                       weak_ptr_factory_.GetWeakPtr(), download_item.get()));
 
     download_items_.push_back(std::move(download_item));
   }

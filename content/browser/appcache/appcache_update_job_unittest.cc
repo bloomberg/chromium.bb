@@ -642,7 +642,7 @@ class MockURLLoaderFactory : public mojom::URLLoaderFactory {
  private:
   MockURLLoaderFactory(mojom::URLLoaderFactoryRequest request)
       : binding_(this, std::move(request)) {
-    binding_.set_connection_error_handler(base::Bind(
+    binding_.set_connection_error_handler(base::BindOnce(
         &MockURLLoaderFactory::OnConnectionError, base::Unretained(this)));
   }
 
@@ -717,15 +717,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&IOThread::Init, base::Unretained(io_thread_.get())));
+        base::BindOnce(&IOThread::Init, base::Unretained(io_thread_.get())));
 
     if (request_handler_type_ == URLLOADER) {
       loader_factory_getter_ = new URLLoaderFactoryGetter();
       feature_list_.InitAndEnableFeature(features::kNetworkService);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&AppCacheUpdateJobTest::InitializeFactory,
-                     base::Unretained(this)));
+          base::BindOnce(&AppCacheUpdateJobTest::InitializeFactory,
+                         base::Unretained(this)));
     }
   }
 
@@ -736,7 +736,7 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     // Unretained pointer here.
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&IOThread::CleanUp, base::Unretained(io_thread_.get())));
+        base::BindOnce(&IOThread::CleanUp, base::Unretained(io_thread_.get())));
   }
 
   // Use a separate IO thread to run a test. Thread will be destroyed
@@ -2868,8 +2868,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     if (request_handler_type_ == URLLOADER) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                     update));
+          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                         update));
     } else {
       VerifyHeadersAndDeleteUpdate(update);
     }
@@ -2919,8 +2919,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     if (request_handler_type_ == URLLOADER) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                     update));
+          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                         update));
     } else {
       VerifyHeadersAndDeleteUpdate(update);
     }
@@ -2971,8 +2971,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     if (request_handler_type_ == URLLOADER) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                     update));
+          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                         update));
     } else {
       VerifyHeadersAndDeleteUpdate(update);
     }
@@ -3155,8 +3155,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     if (request_handler_type_ == URLLOADER) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                     update));
+          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                         update));
     } else {
       VerifyHeadersAndDeleteUpdate(update);
     }
@@ -3209,8 +3209,8 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
     if (request_handler_type_ == URLLOADER) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
-                     update));
+          base::BindOnce(&AppCacheUpdateJobTest::VerifyHeadersAndDeleteUpdate,
+                         update));
     } else {
       VerifyHeadersAndDeleteUpdate(update);
     }

@@ -80,7 +80,7 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   // thread because it needs to be able to access PrefService.
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
+      base::BindOnce(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
       base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
 #endif
 }
