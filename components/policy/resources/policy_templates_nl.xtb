@@ -590,11 +590,6 @@
       Als het beleid niet is ingesteld of is ingesteld op 'onwaar', worden de DHE-coderingssuites in TLS niet ingeschakeld. Anders kan het worden ingesteld op 'waar' om DHE-coderingssuites in te schakelen en de compatibiliteit met een verouderde server te behouden. Dit is een tijdelijke oplossing en de server moet opnieuw worden geconfigureerd.
 
       Servers kunnen het beste worden gemigreerd naar ECDHE-coderingssuites. Indien deze niet beschikbaar zijn, moet je ervoor zorgen dat er een coderingssuite is ingeschakeld die gebruikmaakt van RSA-sleuteluitwisseling.</translation>
-<translation id="3153348162326497318">Hiermee kun je specificeren welke extensies gebruikers NIET kunnen installeren. Als geïnstalleerde extensies op de zwarte lijst voorkomen, worden ze verwijderd.
-
-          De waarde '*' van een zwarte lijst houdt in dat alle extensies op de zwarte lijst worden geplaatst, tenzij ze expliciet op de witte lijst worden vermeld.
-
-          Als dit beleid niet wordt ingesteld, kan de gebruiker alle extensies installeren in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Deze instelling wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 29. De aanbevolen manier om verzamelingen van extensies/apps die door de organisatie worden gehost in te stellen, is het opnemen van de site die de CRX-pakketten in ExtensionInstallSources host en het plaatsen van rechtstreekse downloadlinks naar de pakketten op een webpagina. Je kunt voor die webpagina een startprogramma maken met het beleid ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sinds versie <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apps hebben geen toegang tot zakelijke sleutels. Dit beleid is niet van invloed op deze apps.</translation>

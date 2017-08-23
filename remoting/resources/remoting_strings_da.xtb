@@ -79,6 +79,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="2676780859508944670">Arbejder...</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Softwareopdateringer udføres sædvanligvis automatisk, men de kan i sjældne tilfælde mislykkes. Det bør ikke tage mere end et par minutter at opdatere softwaren, og opdateringen kan udføres, mens du er forbundet til din computer via en fjernforbindelse.</translation>
+<translation id="2758123043070977469">Der opstod et problem med godkendelse. Log ind igen.</translation>
 <translation id="2803375539583399270">Indtast pinkode</translation>
 <translation id="2841013758207633010">Tid</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -194,6 +195,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="5708869785009007625">Dit skrivebord deles i øjeblikket med <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Dato for parring</translation>
 <translation id="579702532610384533">Genopret forbindelse</translation>
+<translation id="5810269635982033450">Skærmen fungere som trackpad</translation>
 <translation id="5841343754884244200">Valgmuligheder for visning</translation>
 <translation id="5843054235973879827">Hvorfor er det sikkert?</translation>
 <translation id="5859141382851488196">Nyt vindue...</translation>
@@ -245,6 +247,7 @@ Du kan få flere oplysninger om privatliv i privatlivspolitikkerne for Google (h
 <translation id="7019153418965365059">Fejl – hosten genkendes ikke: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Fjernsupport</translation>
 <translation id="7038683108611689168">Hjælp os med at forbedre Chromoting ved at lade os indsamle brugsstatistikker og rapporter om nedbrud.</translation>
+<translation id="7067321367069083429">Skærmen fungerer som touchskærm</translation>
 <translation id="7144878232160441200">Prøv igen</translation>
 <translation id="7149517134817561223">Applikation til oprettelse af kommandoer til hosten for Chrome Fjernskrivebord.</translation>
 <translation id="7215059001581613786">Indtast en pinkode, der består af seks eller flere cifre.</translation>

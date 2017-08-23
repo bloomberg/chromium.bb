@@ -79,6 +79,7 @@
 <translation id="2676780859508944670">कार्य कर रहा है…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">सॉफ़्टवेयर अपडेट आमतौर पर स्वचालित रूप से ही होते हैं, लेकिन कुछ दुर्लभ मामलों में वे असफल भी हो सकते हैं. सॉफ़्टवेयर को अपडेट होने में कुछ ही मिनट लगेंगे और इसे अपने कंप्यूटर से दूरस्थ रूप से कनेक्ट रहते हुए भी पूर्ण किया जा सकता है.</translation>
+<translation id="2758123043070977469">प्रमाणीकरण करते समय कोई समस्या हुई, कृपया फिर से लॉगिन करें.</translation>
 <translation id="2803375539583399270">पिन डालें</translation>
 <translation id="2841013758207633010">समय</translation>
 <translation id="2851754573186462851">क्रोमियम ऐप स्‍ट्रीमिंग</translation>
@@ -194,6 +195,7 @@
 <translation id="5708869785009007625">आपका डेस्कटॉप वर्तमान में <ph name="USER" /> के साथ साझा किया गया है.</translation>
 <translation id="5773590752998175013">युग्मन दिनांक</translation>
 <translation id="579702532610384533">पुन: कनेक्‍ट करें</translation>
+<translation id="5810269635982033450">स्क्रीन किसी ट्रैकपैड की तरह काम करती है</translation>
 <translation id="5841343754884244200">प्रदर्शन विकल्प</translation>
 <translation id="5843054235973879827">यह सुरक्षित क्यों है?</translation>
 <translation id="5859141382851488196">नई विंडो...</translation>
@@ -245,6 +247,7 @@
 <translation id="7019153418965365059">अपरिचित होस्‍ट गड़बड़ी: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">दूरस्थ सहायता</translation>
 <translation id="7038683108611689168">हमें उपयोग के आंकड़े और क्रैश रिपोर्ट एकत्रित करने की अनुमति देकर Chromoting को सुधारने में हमारी सहायता करें.</translation>
+<translation id="7067321367069083429">स्क्रीन किसी टच स्क्रीन की तरह काम करती है</translation>
 <translation id="7144878232160441200">पुन: प्रयास करें</translation>
 <translation id="7149517134817561223">ऐप्‍लिकेशन, Chrome दूरस्‍थ डेस्‍कटॉप होस्‍ट को आदेश जारी करेगा.</translation>
 <translation id="7215059001581613786">कृपया छः या अधिक अंकों वाला पिन दर्ज करें.</translation>

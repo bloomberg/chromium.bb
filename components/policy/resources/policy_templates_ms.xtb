@@ -590,11 +590,6 @@
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, maka suit sifer DHE dalam TLS tidak akan didayakan. Jika tidak, dasar mungkin ditetapkan kepada benar untuk mendayakan suit sifer DHE dan mengekalkan keserasian dengan pelayan yang sudah lapuk. Ini merupakan langkah sementara dan pelayan harus dikonfigurasikan semula.
 
       Pelayan digalakkan supaya berhijrah kepada suit sifer ECDHE. Jika tidak boleh, pastikan suit sifer yang menggunakan pertukaran kunci RSA didayakan.</translation>
-<translation id="3153348162326497318">Membolehkan anda menentukan sambungan yang TIDAK boleh dipasang oleh pengguna. Sambungan yang telah dipasang akan dialih keluar jika telah disenaraihitamkan.
-
-          Nilai senarai hitam '*' bermaksud semua sambungan telah disenaraihitamkan kecuali ia disenaraikan dengan jelas dalam senarai putih.
-
-          Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memasang sebarang sambungan dalam <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Penetapan ini telah dihentikan bermula pada <ph name="PRODUCT_NAME" /> versi 29. Cara yang disyorkan untuk menyediakan koleksi sambungan/apl yang dihoskan organisasi ialah dengan memasukkan tapak yang mengehoskan pakej CRX dalam ExtensionInstallSources dan meletakkan pautan muat turun terus kepada pakej tersebut di halaman web. Pelancar untuk halaman web tersebut boleh dihasilkan menggunakan dasar ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">sejak versi <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Apl Android tidak boleh mendapatkan akses kepada kunci korporat. Dasar ini tidak berkesan terhadapnya.</translation>

@@ -174,6 +174,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="4272631900155121838">Če želite optično prebrati kodo QR, v nastavitvah omogočite fotoaparat</translation>
 <translation id="4281844954008187215">Pogoji storitve</translation>
 <translation id="430793432425771671">Sinhroniziraj vse</translation>
+<translation id="4342284590510997375">Novo</translation>
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Obvestilo o zasebnosti</translation>
@@ -247,6 +248,7 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="5982717868370722439">Dodajanje obstoječih podatkov v račun <ph name="USER_EMAIL" />.</translation>
 <translation id="6012140227487808125">Šifriranje ...</translation>
 <translation id="6021332621416007159">Odpri v ...</translation>
+<translation id="6039429417015973673"><ph name="TITLE" />, <ph name="PUBLISHER_INFORMATION" />, <ph name="PUBLICATION_DATE" /></translation>
 <translation id="6039694632319341016">Ali želite, da <ph name="PASSWORD_MANAGER_BRAND" /> posodobi vaše geslo za uporabniško ime <ph name="USERNAME" /> za to spletno mesto?</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6042308850641462728">Več</translation>

@@ -79,6 +79,7 @@
 <translation id="2676780859508944670">В процес на работа…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Софтуерните актуализации обикновено се извършват автоматично, но в някои редки случаи може да не са успешни. Актуализирането не трябва да отнеме повече от няколко минути и може да се изпълни при отдалечена връзка с компютъра ви.</translation>
+<translation id="2758123043070977469">При удостоверяването възникна проблем. Моля, влезте отново в профила си.</translation>
 <translation id="2803375539583399270">Въведете ПИН кодa</translation>
 <translation id="2841013758207633010">Време</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -194,6 +195,7 @@
 <translation id="5708869785009007625">Понастоящем <ph name="USER" /> споделя работния ви плот.</translation>
 <translation id="5773590752998175013">Дата на сдвояване</translation>
 <translation id="579702532610384533">Повторно свързване</translation>
+<translation id="5810269635982033450">Екранът работи като тракпад</translation>
 <translation id="5841343754884244200">Опции за изгледа</translation>
 <translation id="5843054235973879827">Защо това е безопасно?</translation>
 <translation id="5859141382851488196">Нов прозорец…</translation>
@@ -245,6 +247,7 @@
 <translation id="7019153418965365059">Неразпозната грешка в хоста: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Отдалечено съдействие</translation>
 <translation id="7038683108611689168">Помогнете ни да подобрим Chromoting, като ни разрешите да събираме статистически данни за употребата и сигнали за сривове.</translation>
+<translation id="7067321367069083429">Екранът работи като сензорен</translation>
 <translation id="7144878232160441200">Нов опит</translation>
 <translation id="7149517134817561223">Приложение, което да издава команди към хоста на отдалечения работен плот на Chrome.</translation>
 <translation id="7215059001581613786">Моля, въведете ПИН код, състоящ се от шест или повече цифри.</translation>

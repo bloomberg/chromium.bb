@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">Turn on Bluetooth to discover nearby devices</translation>
 <translation id="2352467521400612932">Stylus settings</translation>
 <translation id="2354174487190027830">Activating <ph name="NAME" /></translation>
+<translation id="2365393535144473978">Enabling mobile data will enable Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">An error occurred</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">Casting to an unknown receiver</translation>
 <translation id="5947494881799873997">Revert</translation>
 <translation id="595202126637698455">Performance tracing enabled</translation>
+<translation id="5957083217255311415">Mobile data is turned off.</translation>
 <translation id="5958529069007801266">Supervised user</translation>
 <translation id="5977415296283489383">Headphone</translation>
 <translation id="5978382165065462689">Sharing control of your screen via Remote Assistance.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME menu button</translation>
 <translation id="6713285437468012787">Bluetooth device "<ph name="DEVICE_NAME" />" has been paired and is now available to all users. You may remove this pairing using Settings.</translation>
+<translation id="6715542151869432661">No mobile devices found.</translation>
 <translation id="6785414152754474415">Battery is <ph name="PERCENTAGE" />% full and charging.</translation>
 <translation id="6803622936009808957">Could not mirror displays since no supported resolutions found. Entered extended desktop instead.</translation>
 <translation id="683971173229319003">Search+L</translation>

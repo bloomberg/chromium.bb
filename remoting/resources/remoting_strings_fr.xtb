@@ -79,6 +79,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="2676780859508944670">Traitement en cours…</translation>
 <translation id="2699970397166997657">Google Chromoting</translation>
 <translation id="2747641796667576127">En règle générale, les mises à jour logicielles sont automatiques, mais des problèmes d'installation surviennent parfois. Sachez que quelques minutes devraient suffire pour mettre à jour le logiciel à distance.</translation>
+<translation id="2758123043070977469">Une erreur s'est produite lors de l'authentification. Veuillez vous connecter à nouveau.</translation>
 <translation id="2803375539583399270">Saisir le code</translation>
 <translation id="2841013758207633010">Heure</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -194,6 +195,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="5708869785009007625">Vous partagez actuellement votre bureau avec <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Date d'association</translation>
 <translation id="579702532610384533">Reconnexion</translation>
+<translation id="5810269635982033450">L'écran se comporte comme un pavé tactile</translation>
 <translation id="5841343754884244200">Options d'affichage</translation>
 <translation id="5843054235973879827">En quoi est-ce sûr ?</translation>
 <translation id="5859141382851488196">Nouvelle fenêtre…</translation>
@@ -245,6 +247,7 @@ Pour en savoir plus sur la confidentialité, veuillez consulter les règles de c
 <translation id="7019153418965365059">Erreur d'hôte non reconnue : <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistance à distance</translation>
 <translation id="7038683108611689168">Aidez-nous à améliorer Google Chromoting en nous autorisant à recueillir des statistiques d'utilisation et des rapports d'erreur.</translation>
+<translation id="7067321367069083429">L'écran se comporte comme un écran tactile</translation>
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="7149517134817561223">Demande pour émettre des commandes à l'hôte du Bureau à distance Chrome</translation>
 <translation id="7215059001581613786">Veuillez saisir un code d'accès composé d'au moins six chiffres.</translation>

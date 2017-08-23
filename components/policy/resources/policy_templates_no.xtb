@@ -579,11 +579,6 @@
       Hvis regelen ikke er angitt eller er satt til false (usann), er ikke DHE-chifferserier i TLS slått på. Den kan angis som true (sann) for å sikre kompatibilitet med utdaterte tjenere. Dette er en midlertidig løsning, og eventuelle slike tjenere bør konfigureres på nytt.
 
       Vi anbefaler at tjenere overføres til ECDHE-chifferserier. Hvis det ikke er mulig, bør du sikre at nøkkelutveksling er slått på for chifferserien.</translation>
-<translation id="3153348162326497318">Gjør at du kan angi hvilke utvidelser brukerne IKKE kan installere. Utvidelser som allerede er installert, fjernes eller svartelistes.
-
-          En svartelisteverdi på * betyr at alle utvidelser er svartelistet med mindre de er uttrykkelig oppført på godkjenningslisten.
-
-         Hvis denne retningslinjen ikke er angitt, kan brukeren installere alle utvidelse i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_NAME" /> versjon 29. Den anbefalte måten å konfigurere utvidelses- og appsamlinger fra organisasjoner på, er å inkludere nettstedet som leverer CRX-pakkene i ExtensionInstallSources, og legge direktenedlastingslinkene til pakkene på en nettside. En appvelger for denne nettsiden kan opprettes ved hjelp av innstillingen for ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">siden versjon <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apper har ikke tilgang til bedriftsnøkler. Denne regelen har ingen innvirkning på slike.</translation>

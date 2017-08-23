@@ -79,6 +79,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="2676780859508944670">Notiek apstrāde...</translation>
 <translation id="2699970397166997657">Chrome saite</translation>
 <translation id="2747641796667576127">Programmatūras atjauninājumi parasti tiek veikti automātiski, taču dažkārt šis process var neizdoties. Programmatūras atjaunināšana ilgst ne vairāk kā dažas minūtes un var tikt veikta, kamēr esat izveidojis attālu savienojumu ar datoru.</translation>
+<translation id="2758123043070977469">Autentificēšanas laikā radās problēma. Lūdzu, piesakieties vēlreiz.</translation>
 <translation id="2803375539583399270">Ievadiet PIN</translation>
 <translation id="2841013758207633010">Laiks</translation>
 <translation id="2851754573186462851">Chromium lietotnes straumēšana</translation>
@@ -194,6 +195,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="5708869785009007625">Jūsu darbvirsma šobrīd tiek koplietota ar lietotāju <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Datums, kad savienots pārī</translation>
 <translation id="579702532610384533">Atkārtoti savienot</translation>
+<translation id="5810269635982033450">Ekrāns darbojas kā skārienpaliktnis</translation>
 <translation id="5841343754884244200">Attēlojuma opcijas</translation>
 <translation id="5843054235973879827">Kāpēc tas ir droši?</translation>
 <translation id="5859141382851488196">Jauns logs...</translation>
@@ -245,6 +247,7 @@ Lai saņemtu informāciju par konfidencialitāti, skatiet Google konfidencialit�
 <translation id="7019153418965365059">Neatpazīta saimniekdatora kļūda: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Attālā palīdzība</translation>
 <translation id="7038683108611689168">Palīdziet mums uzlabot Chrome saiti, ļaujot mums apkopot lietojuma statistiku un avāriju pārskatus.</translation>
+<translation id="7067321367069083429">Ekrāns darbojas kā skārienekrāns</translation>
 <translation id="7144878232160441200">Mēģināt vēlreiz</translation>
 <translation id="7149517134817561223">Lietojumprogramma, kas paredzēta komandu sniegšanai Chrome attālās darbvirsmas saimniekdatoram.</translation>
 <translation id="7215059001581613786">Lūdzu, ievadiet PIN, kura garums ir vismaz seši cipari.</translation>

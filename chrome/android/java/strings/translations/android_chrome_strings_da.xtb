@@ -42,6 +42,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="138361230106469022">Hej <ph name="FULL_NAME" /></translation>
 <translation id="1383876407941801731">Søg</translation>
 <translation id="1384959399684842514">Download er midlertidigt standset</translation>
+<translation id="1389236224998445076">Sparet data:</translation>
 <translation id="1389974829397082527">Der er ingen bogmærker her</translation>
 <translation id="1397811292916898096">Søg med <ph name="PRODUCT_NAME" /></translation>
 <translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> Chrome-forslag</translation>
@@ -130,6 +131,7 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="219985413780390209">Beskyt dig selv og din enhed mod farlige websites</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, webapp. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Fortsæt som <ph name="USER_FULL_NAME" /></translation>
+<translation id="2266890032547182881">Fordeling af dataforbrug</translation>
 <translation id="2268044343513325586">Juster</translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
 <translation id="2315043854645842844">Klientens certifikatvalg understøttes ikke af operativsystemet.</translation>
@@ -348,6 +350,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="4526249700380860531">Se og administrer gemte adgangskoder på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Vælg mappe</translation>
+<translation id="4550003330909367850">Indstil en skærmlås på denne enhed for at se eller kopiere din adgangkode her.</translation>
 <translation id="4558311620361989323">Genveje på websider</translation>
 <translation id="4572422548854449519">Log ind på administreret konto</translation>
 <translation id="4581964774250883625">Du er nu i inkognito.</translation>
@@ -382,6 +385,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4885273946141277891">Der er flere forekomster af Chrome, end der understøttes.</translation>
 <translation id="4910889077668685004">Betalingsapps</translation>
+<translation id="4913161338056004800">Nulstil statistik</translation>
 <translation id="4913169188695071480">Stop med at opdatere</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" />, mens der scannes efter enheder…</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
@@ -652,6 +656,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}one{Del # valgt element}other{Del # valgte elementer}}</translation>
 <translation id="7366340029385295517">Caster til <ph name="SCREEN_NAME" /></translation>
+<translation id="7374228672268453233">Brugt data:</translation>
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7378627244592794276">Nej</translation>
 <translation id="7400418766976504921">Webadresse</translation>
@@ -796,6 +801,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8812260976093120287">På nogle websites kan du betale med ovenstående understøttede betalingsapps på din enhed.</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="883635517171802338">Bloker visning af pop up-vinduer på websites (anbefales)</translation>
+<translation id="883806473910249246">Der opstod en fejl under download af indholdet.</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="885701979325669005">Lagerplads</translation>

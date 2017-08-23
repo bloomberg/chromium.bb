@@ -42,6 +42,7 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好！</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1384959399684842514">已暂停下载</translation>
+<translation id="1389236224998445076">已节省的流量：</translation>
 <translation id="1389974829397082527">该文件夹中没有书签</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 进行搜索</translation>
 <translation id="1402229579576898974"><ph name="NUMBER_OF_SUGGESTIONS" /> 条 Chrome 建议</translation>
@@ -130,6 +131,7 @@
 <translation id="219985413780390209">保护您和您的设备不受危险网站的侵害</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，网络应用。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以“<ph name="USER_FULL_NAME" />”的身份继续</translation>
+<translation id="2266890032547182881">流量消耗明细</translation>
 <translation id="2268044343513325586">优化</translation>
 <translation id="2286841657746966508">帐单邮寄地址</translation>
 <translation id="2315043854645842844">操作系统不支持选择客户端证书。</translation>
@@ -348,6 +350,7 @@
 <translation id="4522570452068850558">详细信息</translation>
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4532845899244822526">选择文件夹</translation>
+<translation id="4550003330909367850">要想在此处查看或复制您的密码，请在此设备上设置屏幕锁定。</translation>
 <translation id="4558311620361989323">网页快捷键</translation>
 <translation id="4572422548854449519">请登录受管理的帐号</translation>
 <translation id="4581964774250883625">您已进入无痕模式。</translation>
@@ -382,6 +385,7 @@
 <translation id="4881695831933465202">打开</translation>
 <translation id="4885273946141277891">Chrome 实例数量已超出上限。</translation>
 <translation id="4910889077668685004">付款应用</translation>
+<translation id="4913161338056004800">重置统计信息</translation>
 <translation id="4913169188695071480">停止刷新</translation>
 <translation id="4915549754973153784">正在搜寻设备…<ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="4943872375798546930">找不到结果</translation>
@@ -652,6 +656,7 @@
 <translation id="7352939065658542140">视频</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
 <translation id="7366340029385295517">正在投射至<ph name="SCREEN_NAME" /></translation>
+<translation id="7374228672268453233">已耗用的流量：</translation>
 <translation id="7375125077091615385">类型：</translation>
 <translation id="7378627244592794276">否</translation>
 <translation id="7400418766976504921">网址</translation>
@@ -796,6 +801,7 @@
 <translation id="8812260976093120287">在某些网站上，您可以使用自己的设备通过上述支持的付款应用付款。</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="883635517171802338">禁止网站显示弹出式窗口（推荐）</translation>
+<translation id="883806473910249246">下载此内容时出错。</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />，标签页</translation>
 <translation id="885701979325669005">存储空间</translation>

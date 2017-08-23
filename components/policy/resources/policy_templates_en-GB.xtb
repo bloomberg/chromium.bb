@@ -592,11 +592,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If the policy is not set, or is set to false, then DHE cipher suites in TLS will not be enabled. Otherwise it may be set to true to enable DHE cipher suites and retain compatibility with an outdated server. This is a stopgap measure and the server should be reconfigured.
 
       Servers are encouraged to migrate to ECDHE cipher suites. If these are unavailable, ensure a cipher suite using RSA key exchange is enabled.</translation>
-<translation id="3153348162326497318">Allows you to specify which extensions the users CANNOT install. Extensions already installed will be removed if blacklisted.
-
-          A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
-
-          If this policy is left unset, the user can install any extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">This setting has been retired as of <ph name="PRODUCT_NAME" /> version 29. The recommended way to set up organisation-hosted extension/app collections is to include the site hosting the CRX packages in ExtensionInstallSources and put direct download links to the packages on a web page. A launcher for that web page can be created using the ExtensionInstallForcelist policy.</translation>
 <translation id="3185009703220253572">since version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android apps cannot get access to corporate keys. This policy has no effect on them.</translation>

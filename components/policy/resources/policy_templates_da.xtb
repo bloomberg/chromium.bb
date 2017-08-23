@@ -562,11 +562,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis politikken ikke er angivet eller er angivet til Falsk, aktiveres DHE-krypteringsprogrammer i TLS ikke. Alternativt kan den angives til Sandt for at aktivere DHE-krypteringsprogrammer og for at bevare kompatibiliteten med en forældet server. Dette er en midlertidig løsning, og serveren bør konfigureres igen.
 
       Servere bør migreres til ECDHE-krypteringsprogrammer. Hvis disse ikke er tilgængelige, skal du sørge for, at et krypteringsprogram, der bruger RSA-hovedudveksling, er aktiveret.</translation>
-<translation id="3153348162326497318">Giver dig mulighed for at angive, hvilke udvidelser brugerne IKKE kan installere. Udvidelser, der allerede er installeret, fjernes, hvis de bliver sortlistet.
-
-          Sortlisteværdien "*" betyder, at alle udvidelser er sortlistet, medmindre de er tydeligt angivet på hvidlisten.
-
-          Hvis denne politik ikke er angivet, kan brugeren installere alle udvidelser i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Denne indstilling er blevet trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 29. Den anbefalede metode til konfiguration af organisationshostede udvidelse-/app-samlinger er at medtage det website, der hoster CRX-pakkerne, i ExtensionInstallSources og placere direkte downloadlinks til pakkerne på en webside. Du kan oprette en applikationsliste for denne webside vha. politikken ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">siden version <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Android-apps kan ikke få adgang til virksomhedsnøgler. De påvirkes ikke af denne politik.</translation>

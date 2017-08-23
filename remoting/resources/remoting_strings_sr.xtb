@@ -79,6 +79,7 @@
 <translation id="2676780859508944670">Обрада...</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Ажурирања софтвера се обично обављају аутоматски, али могу да буду неуспешна у неким ретким случајевима. Ажурирање софтвера не би требало да траје дуже од неколико минута и може да се обавља док сте даљински повезани са рачунаром.</translation>
+<translation id="2758123043070977469">Дошло је до проблема при потврди идентитета. Пријавите се поново.</translation>
 <translation id="2803375539583399270">Унесите PIN</translation>
 <translation id="2841013758207633010">Време</translation>
 <translation id="2851754573186462851">Стримовање Chromium апликација</translation>
@@ -194,6 +195,7 @@
 <translation id="5708869785009007625">Рачунар тренутно делите са корисником <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Датум упаривања</translation>
 <translation id="579702532610384533">Поново се повежи</translation>
+<translation id="5810269635982033450">Екран служи као додирна табла</translation>
 <translation id="5841343754884244200">Опције приказа</translation>
 <translation id="5843054235973879827">Зашто је ово безбедно?</translation>
 <translation id="5859141382851488196">Нови прозор...</translation>
@@ -245,6 +247,7 @@
 <translation id="7019153418965365059">Непозната грешка у вези са хостом: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Даљинска помоћ</translation>
 <translation id="7038683108611689168">Помозите нам да побољшамо Chromoting тако што ћете нам дозволити да прикупљамо статистику коришћења и извештаје о отказивању.</translation>
+<translation id="7067321367069083429">Екран служи као додирни екран</translation>
 <translation id="7144878232160441200">Пробај поново</translation>
 <translation id="7149517134817561223">Апликација издаје команде хосту за Chrome удаљени рачунар.</translation>
 <translation id="7215059001581613786">Унесите PIN који се састоји од шест или више цифара.</translation>

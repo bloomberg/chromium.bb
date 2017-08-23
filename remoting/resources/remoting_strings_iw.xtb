@@ -79,6 +79,7 @@
 <translation id="2676780859508944670">עובד…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">עדכוני תוכנה מתבצעים בדרך כלל באופן אוטומטי, אבל במקרים נדירים הם עשויים להיכשל. עדכון התוכנה לא אמור לקחת יותר ממספר דקות, וניתן לבצע אותו כשאתה מחובר למחשב באופן מרוחק.</translation>
+<translation id="2758123043070977469">אירעה בעיה באימות. יש להתחבר שוב.</translation>
 <translation id="2803375539583399270">‏הזן PIN</translation>
 <translation id="2841013758207633010">שעה</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -194,6 +195,7 @@
 <translation id="5708869785009007625">שולחן העבודה שלך משותף כעת עם <ph name="USER" />.</translation>
 <translation id="5773590752998175013">תאריך ההתאמה</translation>
 <translation id="579702532610384533">התחבר מחדש</translation>
+<translation id="5810269635982033450">המסך פועל כמשטח מגע</translation>
 <translation id="5841343754884244200">אפשרויות תצוגה</translation>
 <translation id="5843054235973879827">מדוע פעולה זו בטוחה?</translation>
 <translation id="5859141382851488196">חלון חדש…</translation>
@@ -245,6 +247,7 @@
 <translation id="7019153418965365059">שגיאת מארח לא מזוהה: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">סיוע מרחוק</translation>
 <translation id="7038683108611689168">‏עזור לנו לשפר את Chromoting בכך שתאפשר לנו לאסוף סטטיסטיקות שימוש ודוחות קריסה.</translation>
+<translation id="7067321367069083429">המסך פועל כמסך מגע</translation>
 <translation id="7144878232160441200">נסה שוב</translation>
 <translation id="7149517134817561223">‏יישום לשליחת פקודות אל המארח של שולחן העבודה המרוחק של Chrome.</translation>
 <translation id="7215059001581613786">‏הזן PIN המורכב משש ספרות או יותר.</translation>

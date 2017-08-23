@@ -42,6 +42,7 @@
 <translation id="138361230106469022"><ph name="FULL_NAME" />，您好：</translation>
 <translation id="1383876407941801731">搜尋</translation>
 <translation id="1384959399684842514">已暫停下載</translation>
+<translation id="1389236224998445076">節省的流量：</translation>
 <translation id="1389974829397082527">這裡沒有任何書籤</translation>
 <translation id="1397811292916898096">使用 <ph name="PRODUCT_NAME" /> 搜尋</translation>
 <translation id="1402229579576898974">Chrome 建議的 <ph name="NUMBER_OF_SUGGESTIONS" /> 個離線頁面</translation>
@@ -130,6 +131,7 @@
 <translation id="219985413780390209">保護您和您的裝置不受危險網站攻擊</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />，網路應用程式。<ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">以<ph name="USER_FULL_NAME" />的身分繼續使用</translation>
+<translation id="2266890032547182881">數據用量解析</translation>
 <translation id="2268044343513325586">修正搜尋</translation>
 <translation id="2286841657746966508">帳單地址</translation>
 <translation id="2315043854645842844">作業系統不允許您在用戶端選取憑證。</translation>
@@ -348,6 +350,7 @@
 <translation id="4522570452068850558">詳細資訊</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4532845899244822526">選擇資料夾</translation>
+<translation id="4550003330909367850">如要在這裡查看或複製你的密碼，請為這個裝置設定螢幕鎖定功能。</translation>
 <translation id="4558311620361989323">網頁快速鍵</translation>
 <translation id="4572422548854449519">登入受管理的帳戶</translation>
 <translation id="4581964774250883625">你已啟用無痕模式。</translation>
@@ -382,6 +385,7 @@
 <translation id="4881695831933465202">開啟</translation>
 <translation id="4885273946141277891">Chrome 實例的數量已超出上限。</translation>
 <translation id="4910889077668685004">付款應用程式</translation>
+<translation id="4913161338056004800">重設統計資料</translation>
 <translation id="4913169188695071480">停止重新整理</translation>
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />查看說明<ph name="END_LINK" />。正在掃描裝置…</translation>
 <translation id="4943872375798546930">沒有結果</translation>
@@ -652,6 +656,7 @@
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
 <translation id="7366340029385295517">正在投放到 <ph name="SCREEN_NAME" /></translation>
+<translation id="7374228672268453233">數據用量：</translation>
 <translation id="7375125077091615385">類型：</translation>
 <translation id="7378627244592794276">不需要</translation>
 <translation id="7400418766976504921">網址</translation>
@@ -796,6 +801,7 @@
 <translation id="8812260976093120287">在部分網站上，你可以在你的裝置上使用上述支援的付款應用程式付款。</translation>
 <translation id="8820817407110198400">書籤</translation>
 <translation id="883635517171802338">禁止網站顯示彈出式視窗 (建議)</translation>
+<translation id="883806473910249246">下載這項內容時發生錯誤。</translation>
 <translation id="8847988622838149491">USB</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> (分頁)</translation>
 <translation id="885701979325669005">儲存空間</translation>

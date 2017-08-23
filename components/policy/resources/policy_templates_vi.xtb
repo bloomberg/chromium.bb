@@ -583,11 +583,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này không được đặt hoặc được đặt thành false thì bộ mã hóa DHE trong TLS sẽ không được bật. Ngoài ra, chính sách có thể được đặt thành true để bật bộ mã hóa DHE và duy trì khả năng tương thích với các máy chủ lỗi thời. Đây là một biện pháp tạm thời và cần phải định cấu hình lại máy chủ.
 
       Nên di chuyển máy chủ sang bộ mã hóa ECDHE. Nếu các bộ mã hóa này không khả dụng, hãy đảm bảo bộ mã hóa sử dụng trao đổi khóa RSA được bật.</translation>
-<translation id="3153348162326497318">Cho phép bạn chỉ định những tiện ích mà người dùng KHÔNG thể cài đặt. Các tiện ích đã được cài đặt sẽ bị xóa nếu nằm trong danh sách đen.
-
-          Giá trị danh sách đen của '*' có nghĩa là tất cả tiện ích đều nằm trong danh sách đen trừ khi chúng được liệt kê rõ ràng trong danh sách trắng.
-
-          Nếu không thiết lập chính sách này, người dùng có thể cài đặt mọi tiện ích trong <ph name="PRODUCT_NAME" />.</translation>
 <translation id="316778957754360075">Cài đặt này đã bị xóa kể từ phiên bản <ph name="PRODUCT_NAME" /> 29. Phương thức được đề xuất để thiết lập bộ sưu tập tiện ích/ứng dụng được tổ chức lưu trữ là đưa trang web lưu trữ gói CRX vào ExtensionInstallSources và đặt liên kết tải xuống trực tiếp vào trong các gói trên trang web. Có thể tạo trình chạy cho trang web đó bằng chính sách ExtensionInstallForcelist.</translation>
 <translation id="3185009703220253572">kể từ phiên bản <ph name="SINCE_VERSION" /></translation>
 <translation id="3187220842205194486">Các ứng dụng Android không thể truy cập vào khóa công ty. Chính sách này không ảnh hưởng đến các ứng dụng đó.</translation>

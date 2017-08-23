@@ -593,11 +593,6 @@
       Politika ayarlanmamışsa veya yanlış seçeneğine ayarlanmışsa, TLS'deki DHE şifre paketleri etkinleştirilmez. Aksi takdirde, DHE şifre paketlerinin etkinleştirilmesi ve eski bir sunucuyla uyumluluğun korunması için doğru seçeneğine ayarlanabilir. Bu geçici bir tedbirdir ve sunucu yeniden yapılandırılmalıdır.
 
       Sunucuların ECDHE şifre paketi sürümüne taşınması önerilir. Bunlar kullanılamıyorsa RSA anahtar değiş tokuşunu kullanan bir şifre paketinin etkinleştirildiğinden emin olun.</translation>
-<translation id="3153348162326497318">Kullanıcıların YÜKLEYEMEYECEĞİ uzantıları belirtmenize olanak tanır. Önceden yüklenen uzantılar, kara listeye alınırlarsa kaldırılırlar.
-
-          '*' kara liste değeri, açık bir şekilde beyaz listede listelenmedikçe tüm uzantıların kara listeye alınacağını belirtir.
-
-          Bu politika ayarlanmadan bırakılırsa, kullanıcı <ph name="PRODUCT_NAME" /> ürününe herhangi bir uzantıyı yükleyebilir.</translation>
 <translation id="316778957754360075">Bu ayar, <ph name="PRODUCT_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır. Kuruluş tarafından barındırılan uzantı/uygulama koleksiyonları oluşturmanın önerilen yöntemi, CRX paketlerini barındıran siteyi ExtensionInstallSources içine eklemek ve web sayfasına paketler için doğrudan indirme bağlantıları koymaktır. ExtensionInstallForcelist politikası kullanılarak bu web sayfası için bir başlatıcı oluşturulabilir.</translation>
 <translation id="3185009703220253572">Sürüm <ph name="SINCE_VERSION" /> ve sonrasında</translation>
 <translation id="3187220842205194486">Android uygulamaları şirket anahtarlarına erişemez. Bu politikanın şirket anahtarları üzerinde hiçbir etkisi yoktur.</translation>
