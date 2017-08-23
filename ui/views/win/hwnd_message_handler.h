@@ -701,11 +701,11 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   // native SetFocus calls invoked in the views code.
   int touch_down_contexts_;
 
-  // Time the last touch message was received. Used to flag mouse messages
-  // synthesized by Windows for touch which are not flagged by the OS as
-  // synthesized mouse messages. For more information please refer to
-  // the IsMouseEventFromTouch function.
-  static long last_touch_message_time_;
+  // Time the last touch or pen message was received. Used to flag mouse
+  // messages synthesized by Windows for touch which are not flagged by the OS
+  // as synthesized mouse messages. For more information please refer to the
+  // IsMouseEventFromTouch function.
+  static long last_touch_or_pen_message_time_;
 
   // Time the last WM_MOUSEHWHEEL message is received. Please refer to the
   // HandleMouseEventInternal function as to why this is needed.
