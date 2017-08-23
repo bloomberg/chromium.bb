@@ -925,6 +925,10 @@ if (is_ios) {
       "src/common/mac",
     ]
 
+    deps = [
+      "//third_party/google_toolbox_for_mac",
+    ]
+
     public_configs = [ ":client_config" ]
 
     if (is_clang) {
