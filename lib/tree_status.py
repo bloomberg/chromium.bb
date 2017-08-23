@@ -222,6 +222,11 @@ def GetExperimentalBuilders(status_url=None, timeout=1):
             logging.warning(
                 'Got unknown build config "%s" in list of '
                 'EXPERIMENTAL-BUILDERS.', builder)
+
+    if experimental:
+      logging.info('Got experimental build configs %s from tree status.',
+                   experimental)
+
     return experimental
 
   try:

@@ -140,6 +140,15 @@ class SlaveStatus(object):
   def UpdateSlaveStatus(self):
     """Update slave statuses by querying CIDB and Buildbucket(if supported)."""
     logging.info('Updating slave status...')
+
+    # Fetch experimental builders from tree status and update experimental
+    # builders in metedata before querying and updating any slave status.
+    if self.metadata is not None:
+      experimental_builders = tree_status.GetExperimentalBuilders()
+      self.metadata.UpdateWithDict({
+          constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
+      })
+
     if (self.config is not None and
         self.metadata is not None and
         config_lib.UseBuildbucketScheduler(self.config)):
@@ -165,11 +174,7 @@ class SlaveStatus(object):
     self.builds_to_retry = self._GetBuildsToRetry()
     self.completed_builds = self._GetCompletedBuilds()
 
-    if self.metadata is not None:
-      experimental_builders = tree_status.GetExperimentalBuilders()
-      self.metadata.UpdateWithDict({
-          constants.METADATA_EXPERIMENTAL_BUILDERS: experimental_builders
-      })
+
 
   def GetBuildbucketBuilds(self, build_status):
     """Get the buildbucket builds which are in the build_status status.
