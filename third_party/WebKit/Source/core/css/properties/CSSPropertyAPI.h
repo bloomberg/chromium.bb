@@ -31,6 +31,8 @@ class CSSPropertyAPI {
                               const CSSParserContext&,
                               const CSSParserLocalContext&,
                               HeapVector<CSSProperty, 256>&) const;
+
+  virtual bool IsInterpolable() const { return false; }
 };
 
 }  // namespace blink
