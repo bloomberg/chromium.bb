@@ -738,35 +738,29 @@ CGFloat minFaviconSizePt = 16;
 // The size of the cell at |indexPath|.
 - (CGSize)cellSizeForIndexPath:(NSIndexPath*)indexPath {
   if ([self isPromoSection:indexPath.section]) {
-    UICollectionViewCell* cell =
-        [self.collectionView cellForItemAtIndexPath:indexPath];
-    if (!base::ios::IsRunningOnIOS10OrLater() &&
-        [cell isKindOfClass:[BookmarkSigninPromoCell class]]) {
-      // With iOS 9, UICollectionView keeps asking the size of the cell, if the
-      // current cell size is updated in this method. To avoid this, a new cell
-      // should be created to not change the current cell.
-      // See crbug.com/754874
-      cell = nil;
+    UICollectionViewCell* cellToMeasureHeight = nil;
+    // -[UICollectionView
+    // dequeueReusableCellWithReuseIdentifier:forIndexPath:] cannot be used
+    // here since this method is called by -[id<UICollectionViewDelegate>
+    // collectionView:layout:sizeForItemAtIndexPath:]. This would generate
+    // crash: SIGFPE, EXC_I386_DIV.
+    // The cell used currently by UICollectionView should not be used to compute
+    // the size. There is an issue with iOS 9 to modify the height of the
+    // current cell while being asked for its size. This leads to an infinite
+    // loop.
+    if (experimental_flags::IsSigninPromoEnabled()) {
+      DCHECK(_signinPromoViewMediator);
+      BookmarkSigninPromoCell* signinPromoCell =
+          [[BookmarkSigninPromoCell alloc]
+              initWithFrame:CGRectMake(0, 0, 1000, 1000)];
+      [[_signinPromoViewMediator createConfigurator]
+          configureSigninPromoView:signinPromoCell.signinPromoView];
+      cellToMeasureHeight = signinPromoCell;
+    } else {
+      cellToMeasureHeight = [[BookmarkPromoCell alloc] init];
     }
-    if (!cell) {
-      // -[UICollectionView
-      // dequeueReusableCellWithReuseIdentifier:forIndexPath:] cannot be used
-      // here since this method is called by -[id<UICollectionViewDelegate>
-      // collectionView:layout:sizeForItemAtIndexPath:]. This would generate
-      // crash: SIGFPE, EXC_I386_DIV.
-      if (experimental_flags::IsSigninPromoEnabled()) {
-        DCHECK(_signinPromoViewMediator);
-        BookmarkSigninPromoCell* signinPromoCell =
-            [[BookmarkSigninPromoCell alloc]
-                initWithFrame:CGRectMake(0, 0, 1000, 1000)];
-        [[_signinPromoViewMediator createConfigurator]
-            configureSigninPromoView:signinPromoCell.signinPromoView];
-        cell = signinPromoCell;
-      } else {
-        cell = [[BookmarkPromoCell alloc] init];
-      }
-    }
-    return PreferredCellSizeForWidth(cell, CGRectGetWidth(self.bounds));
+    return PreferredCellSizeForWidth(cellToMeasureHeight,
+                                     CGRectGetWidth(self.bounds));
   }
   DCHECK(![self isPromoSection:indexPath.section]);
   UIEdgeInsets insets = [self insetForSectionAtIndex:indexPath.section];
