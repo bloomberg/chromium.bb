@@ -54,6 +54,13 @@
 -DataUrlNavigationBrowserTest.UnknownMimeType_NavigationFromFrame_Download
 -DataUrlNavigationBrowserTest.UnknownMimeType_Navigation_Download
 -DataUrlNavigationBrowserTest.UnknownMimeType_WindowOpen_Download
+-DevToolsDownloadContentTest.MultiDownload
+-DevToolsDownloadContentTest.DefaultDownload
+-DevToolsDownloadContentTest.ResetDownloadState
+-DevToolsDownloadContentTest.DownloadCancelled
+-DevToolsDownloadContentTest.DeniedDownload
+-DevToolsDownloadContentTest.DefaultDownloadHeadless
+-DevToolsDownloadContentTest.SingleDownload
 -DevToolsProtocolTest.CertificateError
 -DevToolsProtocolTest.CertificateExplanations
 -DevToolsProtocolTest.ControlNavigationsMainFrame
@@ -127,6 +134,11 @@
 -WebContentsImplBrowserTest.UserAgentOverride
 -WebContentsViewAuraTest.ScreenshotForSwappedOutRenderViews
 -WorkerFetchTest.*
+
+# content/network/url_loader_impl.cc should handle failure in
+# URLLoaderImpl::OnResponseBodyStreamRead(). Note this is flaky, so it will pass
+# sometimes.
+-SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
 
 # https://crbug.com/754827
 -ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_Cancelled
