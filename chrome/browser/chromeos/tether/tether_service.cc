@@ -29,8 +29,6 @@
 
 namespace {
 
-// TODO (hansberry): Experiment with intervals to determine ideal advertising
-//                   interval parameters. See crbug.com/753215.
 constexpr int64_t kMinAdvertisingIntervalMilliseconds = 100;
 constexpr int64_t kMaxAdvertisingIntervalMilliseconds = 100;
 
