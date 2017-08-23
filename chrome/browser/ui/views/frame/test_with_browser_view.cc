@@ -19,7 +19,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_io_thread_state.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
@@ -80,7 +79,6 @@ void TestWithBrowserView::SetUp() {
   chromeos::input_method::InitializeForTesting(
       new chromeos::input_method::MockInputMethodManagerImpl);
 #endif
-  testing_io_thread_state_.reset(new chrome::TestingIOThreadState());
   BrowserWithTestWindowTest::SetUp();
   browser_view_ = static_cast<BrowserView*>(browser()->window());
 }
@@ -98,7 +96,6 @@ void TestWithBrowserView::TearDown() {
   browser_view_ = nullptr;
   content::RunAllBlockingPoolTasksUntilIdle();
   BrowserWithTestWindowTest::TearDown();
-  testing_io_thread_state_.reset();
 #if defined(OS_CHROMEOS)
   chromeos::input_method::Shutdown();
 #endif

@@ -279,8 +279,7 @@ SystemRequestContextLeakChecker::SystemRequestContextLeakChecker(
 
 IOThread::Globals::
 SystemRequestContextLeakChecker::~SystemRequestContextLeakChecker() {
-  if (globals_->system_request_context)
-    globals_->system_request_context->AssertNoURLRequests();
+  globals_->system_request_context->AssertNoURLRequests();
 }
 
 IOThread::Globals::Globals()
@@ -575,29 +574,20 @@ void IOThread::CleanUp() {
   // Unlink the ct_tree_tracker_ from the global cert_transparency_verifier
   // and unregister it from new STH notifications so it will take no actions
   // on anything observed during CleanUp process.
-  //
-  // Null checks are just for tests that use TestingIOThreadState.
-  if (globals()->system_request_context) {
-    globals()
-        ->system_request_context->cert_transparency_verifier()
-        ->SetObserver(nullptr);
-  }
-  if (ct_tree_tracker_.get()) {
-    UnregisterSTHObserver(ct_tree_tracker_.get());
-    ct_tree_tracker_.reset();
-  }
+  globals()->system_request_context->cert_transparency_verifier()->SetObserver(
+      nullptr);
+  UnregisterSTHObserver(ct_tree_tracker_.get());
+  ct_tree_tracker_.reset();
 
-  if (globals_->system_request_context) {
-    globals_->system_request_context->proxy_service()->OnShutdown();
+  globals_->system_request_context->proxy_service()->OnShutdown();
 
 #if defined(USE_NSS_CERTS)
-    net::SetURLRequestContextForNSSHttpIO(nullptr);
+  net::SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
 
 #if defined(OS_ANDROID)
-    net::CertVerifyProcAndroid::ShutdownCertNetFetcher();
+  net::CertVerifyProcAndroid::ShutdownCertNetFetcher();
 #endif
-  }
 
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
@@ -695,13 +685,9 @@ void IOThread::ClearHostCache(
     const base::Callback<bool(const std::string&)>& host_filter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!globals_->system_request_context)
-    return;
-
-  net::HostCache* host_cache =
-      globals_->system_request_context->host_resolver()->GetHostCache();
-  if (host_cache)
-    host_cache->ClearForHosts(host_filter);
+  globals_->system_request_context->host_resolver()
+      ->GetHostCache()
+      ->ClearForHosts(host_filter);
 }
 
 void IOThread::DisableQuic() {

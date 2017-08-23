@@ -51,10 +51,6 @@ namespace certificate_transparency {
 class TreeStateTracker;
 }
 
-namespace chrome {
-class TestingIOThreadState;
-}
-
 namespace chrome_browser_net {
 class DnsProbeService;
 }
@@ -230,7 +226,6 @@ class IOThread : public content::BrowserThreadDelegate {
 
  private:
   friend class test::IOThreadPeer;
-  friend class chrome::TestingIOThreadState;
 
   // BrowserThreadDelegate implementation, runs on the IO thread.
   // This handles initialization and destruction of state that must
