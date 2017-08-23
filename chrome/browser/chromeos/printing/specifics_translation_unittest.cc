@@ -52,7 +52,6 @@ TEST(SpecificsTranslationTest, SpecificsToPrinter) {
   EXPECT_EQ(kMakeAndModel, result->make_and_model());
   EXPECT_EQ(kUri, result->uri());
   EXPECT_EQ(kUuid, result->uuid());
-  EXPECT_EQ(kUpdateTime, result->last_updated());
 
   EXPECT_EQ(kEffectiveMakeAndModel,
             result->ppd_reference().effective_make_and_model);

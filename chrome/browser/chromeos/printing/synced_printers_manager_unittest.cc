@@ -220,12 +220,12 @@ TEST_F(SyncedPrintersManagerTest, GetEnterprisePrinter) {
 }
 
 TEST_F(SyncedPrintersManagerTest, PrinterNotInstalled) {
-  Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
+  Printer printer(kTestPrinterId);
   EXPECT_FALSE(manager_->IsConfigurationCurrent(printer));
 }
 
 TEST_F(SyncedPrintersManagerTest, PrinterIsInstalled) {
-  Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
+  Printer printer(kTestPrinterId);
   manager_->PrinterInstalled(printer);
   EXPECT_TRUE(manager_->IsConfigurationCurrent(printer));
 }
@@ -244,7 +244,7 @@ TEST_F(SyncedPrintersManagerTest, PrinterInstalledConfiguresPrinter) {
   // Figure out the id of the enterprise printer that was just installed.
   std::string enterprise_id = manager_->GetEnterprisePrinters().at(0).id();
 
-  Printer configured(kTestPrinterId, base::Time::Now());
+  Printer configured(kTestPrinterId);
 
   // Install a Configured printer
   manager_->UpdateConfiguredPrinter(configured);
@@ -256,21 +256,48 @@ TEST_F(SyncedPrintersManagerTest, PrinterInstalledConfiguresPrinter) {
 
   // Installing the enterprise printer should *not* generate a configuration
   // update.
-  manager_->PrinterInstalled(Printer(enterprise_id, base::Time::Now()));
+  manager_->PrinterInstalled(Printer(enterprise_id));
   EXPECT_EQ(1U, manager_->GetConfiguredPrinters().size());
 
   // Installing a printer we don't know about *should* generate a configuration
   // update.
-  manager_->PrinterInstalled(Printer(kTestPrinterId2, base::Time::Now()));
+  manager_->PrinterInstalled(Printer(kTestPrinterId2));
   EXPECT_EQ(2U, manager_->GetConfiguredPrinters().size());
 }
 
+// Test that we detect that the configuration is stale when any of the relevant
+// fields change.
 TEST_F(SyncedPrintersManagerTest, UpdatedPrinterConfiguration) {
-  Printer printer(kTestPrinterId, base::Time::FromInternalValue(1000));
+  Printer printer(kTestPrinterId);
   manager_->PrinterInstalled(printer);
 
-  Printer updated_printer(kTestPrinterId, base::Time::FromInternalValue(2000));
-  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated_printer));
+  Printer updated(printer);
+  updated.set_uri("different value");
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
+
+  updated = printer;
+  updated.set_effective_uri("different value");
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
+
+  updated = printer;
+  updated.mutable_ppd_reference()->autoconf = true;
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
+
+  updated = printer;
+  updated.mutable_ppd_reference()->user_supplied_ppd_url = "different value";
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
+
+  updated = printer;
+  updated.mutable_ppd_reference()->effective_make_and_model = "different value";
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
+
+  updated = printer;
+  updated.mutable_ppd_reference()->autoconf = true;
+  EXPECT_FALSE(manager_->IsConfigurationCurrent(updated));
+
+  // Sanity check, configuration for the original printers should still be
+  // current.
+  EXPECT_TRUE(manager_->IsConfigurationCurrent(printer));
 }
 
 }  // namespace

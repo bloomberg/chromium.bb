@@ -83,17 +83,14 @@ bool DictionaryToPrinter(const DictionaryValue& value, Printer* printer) {
 const char kPrinterId[] = "id";
 
 std::unique_ptr<Printer> RecommendedPrinterToPrinter(
-    const base::DictionaryValue& pref,
-    const base::Time& timestamp) {
-  DCHECK(!timestamp.is_null());
-
+    const base::DictionaryValue& pref) {
   std::string id;
   if (!pref.GetString(kPrinterId, &id)) {
     LOG(WARNING) << "Record id required";
     return nullptr;
   }
 
-  std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(id, timestamp);
+  std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(id);
   if (!DictionaryToPrinter(pref, printer.get())) {
     LOG(WARNING) << "Failed to parse policy printer.";
     return nullptr;

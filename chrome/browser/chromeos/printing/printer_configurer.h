@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PRINTER_CONFIGURER_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "chromeos/printing/printer_configuration.h"
@@ -50,6 +51,12 @@ class PrinterConfigurer {
   // UI thread.
   virtual void SetUpPrinter(const Printer& printer,
                             const PrinterSetupCallback& callback) = 0;
+
+  // Return an opaque fingerprint of the fields used to set up a printer with
+  // CUPS.  The idea here is that if this fingerprint changes for a printer, we
+  // need to reconfigure CUPS.  This fingerprint is not guaranteed to be stable
+  // across reboots.
+  static std::string SetupFingerprint(const Printer& printer);
 
  protected:
   PrinterConfigurer() = default;

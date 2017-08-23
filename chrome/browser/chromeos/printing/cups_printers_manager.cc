@@ -56,16 +56,6 @@ class PrinterDetectorObserverProxy : public PrinterDetector::Observer {
   ScopedObserver<PrinterDetector, PrinterDetector::Observer> observer_;
 };
 
-// Return the set of ids for the given list of printers.
-std::unordered_set<std::string> GetIdsSet(
-    const std::vector<Printer>& printers) {
-  std::unordered_set<std::string> ret;
-  for (const Printer& printer : printers) {
-    ret.insert(printer.id());
-  }
-  return ret;
-}
-
 // This is akin to python's filter() builtin, but with reverse polarity on the
 // test function -- *remove* all entries in printers for which test_fn returns
 // true, discard the rest.
@@ -105,6 +95,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
         weak_ptr_factory_(this) {
     // Prime the printer cache with the configured and enterprise printers.
     printers_[kConfigured] = synced_printers_manager_->GetConfiguredPrinters();
+    RebuildConfiguredPrintersIndex();
     printers_[kEnterprise] = synced_printers_manager_->GetEnterprisePrinters();
     synced_printers_manager_observer_.Add(synced_printers_manager_);
 
@@ -192,7 +183,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   void OnConfiguredPrintersChanged(
       const std::vector<Printer>& printers) override {
     printers_[kConfigured] = printers;
-    configured_printer_ids_ = GetIdsSet(printers);
+    RebuildConfiguredPrintersIndex();
+    UpdateConfiguredPrinterURIs();
     for (auto& observer : observer_list_) {
       observer.OnPrintersChanged(kConfigured, printers_[kConfigured]);
     }
@@ -225,6 +217,41 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
  private:
+  // Rebuild the index from printer id to index for configured printers.
+  void RebuildConfiguredPrintersIndex() {
+    configured_printers_index_.clear();
+    for (size_t i = 0; i < printers_[kConfigured].size(); ++i) {
+      configured_printers_index_[printers_[kConfigured][i].id()] = i;
+    }
+  }
+
+  // Cross reference the Configured printers with the raw detected printer
+  // lists.
+  void UpdateConfiguredPrinterURIs() {
+    bool updated = false;
+    for (const auto* printer_list : {&usb_detections_, &zeroconf_detections_}) {
+      for (const auto& detected : *printer_list) {
+        auto configured =
+            configured_printers_index_.find(detected.printer.id());
+        if (configured != configured_printers_index_.end()) {
+          Printer* configured_printer =
+              &printers_[kConfigured][configured->second];
+          if (configured_printer->effective_uri() !=
+              detected.printer.effective_uri()) {
+            configured_printer->set_effective_uri(
+                detected.printer.effective_uri());
+            updated = true;
+          }
+        }
+      }
+    }
+    if (updated) {
+      for (auto& observer : observer_list_) {
+        observer.OnPrintersChanged(kAutomatic, printers_[kConfigured]);
+      }
+    }
+  }
+
   // Look through all sources for the detected printer with the given id.
   // Return a pointer to the printer on found, null if no entry is found.
   const PrinterDetector::DetectedPrinter* FindDetectedPrinter(
@@ -301,9 +328,10 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   void AddDetectedList(
       const std::vector<PrinterDetector::DetectedPrinter>& detected_list) {
     for (const PrinterDetector::DetectedPrinter& detected : detected_list) {
-      if (base::ContainsKey(configured_printer_ids_, detected.printer.id())) {
-        // It's already in the configured classes, so neither automatic nor
-        // discovered is appropriate.  Skip it.
+      if (base::ContainsKey(configured_printers_index_,
+                            detected.printer.id())) {
+        // It's already in the configured class, don't need to do anything
+        // else here.
         continue;
       }
       auto it = detected_printer_ppd_references_.find(detected.printer.id());
@@ -379,6 +407,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
       value.reset(new Printer::PpdReference(ref));
     }
     RebuildDetectedLists();
+    UpdateConfiguredPrinterURIs();
   }
 
   // Source lists for detected printers.
@@ -421,8 +450,9 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // reference, but have not yet gotten a response.
   std::unordered_set<std::string> inflight_ppd_reference_resolutions_;
 
-  // Ids of all printers in the configured class.
-  std::unordered_set<std::string> configured_printer_ids_;
+  // Map from printer id to printers_[kConfigured] index for configured
+  // printers.
+  std::unordered_map<std::string, int> configured_printers_index_;
 
   base::ObserverList<CupsPrintersManager::Observer> observer_list_;
 

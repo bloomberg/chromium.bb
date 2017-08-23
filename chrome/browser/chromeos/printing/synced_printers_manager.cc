@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
 #include "chrome/browser/chromeos/printing/specifics_translation.h"
 #include "chrome/browser/profiles/profile.h"
@@ -140,8 +141,8 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager {
   }
 
   void PrinterInstalled(const Printer& printer) override {
-    DCHECK(!printer.last_updated().is_null());
-    installed_printer_timestamps_[printer.id()] = printer.last_updated();
+    installed_printer_fingerprints_[printer.id()] =
+        PrinterConfigurer::SetupFingerprint(printer);
 
     // Register this printer if it's the first time we're using it.
     if (GetPrinter(printer.id()) == nullptr) {
@@ -150,11 +151,11 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager {
   }
 
   bool IsConfigurationCurrent(const Printer& printer) const override {
-    auto found = installed_printer_timestamps_.find(printer.id());
-    if (found == installed_printer_timestamps_.end())
+    auto found = installed_printer_fingerprints_.find(printer.id());
+    if (found == installed_printer_fingerprints_.end())
       return false;
 
-    return found->second == printer.last_updated();
+    return found->second == PrinterConfigurer::SetupFingerprint(printer);
   }
 
   PrintersSyncBridge* GetSyncBridge() override { return sync_bridge_.get(); }
@@ -167,7 +168,6 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager {
 
     const base::ListValue* values =
         prefs->GetList(prefs::kRecommendedNativePrinters);
-    const base::Time timestamp = base::Time::Now();
 
     // Parse the policy JSON into new structures.
     std::vector<std::string> new_ids;
@@ -207,8 +207,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager {
       if (old != enterprise_printers_.end()) {
         new_printers[id] = std::move(old->second);
       } else {
-        auto printer =
-            RecommendedPrinterToPrinter(*printer_dictionary, timestamp);
+        auto printer = RecommendedPrinterToPrinter(*printer_dictionary);
         printer->set_source(Printer::SRC_POLICY);
 
         new_printers[id] = std::move(printer);
@@ -249,8 +248,9 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager {
   std::vector<std::string> enterprise_printer_ids_;
   std::map<std::string, std::unique_ptr<Printer>> enterprise_printers_;
 
-  // Map of printer ids to installation timestamps.
-  std::map<std::string, base::Time> installed_printer_timestamps_;
+  // Map of printer ids to PrinterConfigurer setup fingerprints at the time
+  // the printers was last installed with CUPS.
+  std::map<std::string, std::string> installed_printer_fingerprints_;
 
   base::ObserverList<Observer> observers_;
 };
