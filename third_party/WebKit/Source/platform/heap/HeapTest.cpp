@@ -196,13 +196,13 @@ struct PairWithWeakHandling : public StrongWeakPair {
   // deleted
   // with a pointer to -1 in the first field.
   PairWithWeakHandling(WTF::HashTableDeletedValueType)
-      : StrongWeakPair(reinterpret_cast<IntWrapper*>(-1), nullptr) {}
+      : StrongWeakPair(WTF::kHashTableDeletedValue, nullptr) {}
 
   // Used by the HashTable (via the HashTrait) to skip deleted slots in the
   // table. Recognizes objects that were 'constructed' using the above
   // constructor.
   bool IsHashTableDeletedValue() const {
-    return first == reinterpret_cast<IntWrapper*>(-1);
+    return first.IsHashTableDeletedValue();
   }
 
   // Since we don't allocate independent objects of this type, we don't need
@@ -5819,12 +5819,9 @@ class AllocatesOnAssignment {
     value_ = new IntWrapper(other.value_->Value());
   }
 
-  AllocatesOnAssignment(DeletedMarker)
-      : value_(reinterpret_cast<IntWrapper*>(-1)) {}
+  AllocatesOnAssignment(DeletedMarker) : value_(WTF::kHashTableDeletedValue) {}
 
-  inline bool IsDeleted() const {
-    return value_ == reinterpret_cast<IntWrapper*>(-1);
-  }
+  inline bool IsDeleted() const { return value_.IsHashTableDeletedValue(); }
 
   DEFINE_INLINE_TRACE() { visitor->Trace(value_); }
 
