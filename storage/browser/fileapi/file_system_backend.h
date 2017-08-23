@@ -51,9 +51,9 @@ const int64_t kMaximumLength = INT64_MAX;
 class STORAGE_EXPORT FileSystemBackend {
  public:
   // Callback for InitializeFileSystem.
-  typedef base::Callback<void(const GURL& root_url,
-                              const std::string& name,
-                              base::File::Error error)>
+  typedef base::OnceCallback<void(const GURL& root_url,
+                                  const std::string& name,
+                                  base::File::Error error)>
       OpenFileSystemCallback;
   virtual ~FileSystemBackend() {}
 
@@ -74,7 +74,7 @@ class STORAGE_EXPORT FileSystemBackend {
   // doesn't exist.
   virtual void ResolveURL(const FileSystemURL& url,
                           OpenFileSystemMode mode,
-                          const OpenFileSystemCallback& callback) = 0;
+                          OpenFileSystemCallback callback) = 0;
 
   // Returns the specialized AsyncFileUtil for this backend.
   virtual AsyncFileUtil* GetAsyncFileUtil(FileSystemType type) = 0;

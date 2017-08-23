@@ -37,7 +37,7 @@ class SyncFileSystemBackend : public storage::FileSystemBackend {
   void Initialize(storage::FileSystemContext* context) override;
   void ResolveURL(const storage::FileSystemURL& url,
                   storage::OpenFileSystemMode mode,
-                  const OpenFileSystemCallback& callback) override;
+                  OpenFileSystemCallback callback) override;
   storage::AsyncFileUtil* GetAsyncFileUtil(
       storage::FileSystemType type) override;
   storage::WatcherManager* GetWatcherManager(
@@ -115,13 +115,12 @@ class SyncFileSystemBackend : public storage::FileSystemBackend {
   void InitializeSyncFileSystemService(
       const GURL& origin_url,
       const SyncStatusCallback& callback);
-  void DidInitializeSyncFileSystemService(
-      storage::FileSystemContext* context,
-      const GURL& origin_url,
-      storage::FileSystemType type,
-      storage::OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback,
-      SyncStatusCode status);
+  void DidInitializeSyncFileSystemService(storage::FileSystemContext* context,
+                                          const GURL& origin_url,
+                                          storage::FileSystemType type,
+                                          storage::OpenFileSystemMode mode,
+                                          OpenFileSystemCallback callback,
+                                          SyncStatusCode status);
 
   DISALLOW_COPY_AND_ASSIGN(SyncFileSystemBackend);
 };

@@ -557,14 +557,12 @@ void CannedSyncableFileSystem::OnWriteEnabled(const FileSystemURL& url) {
 }
 
 void CannedSyncableFileSystem::DoOpenFileSystem(
-    const OpenFileSystemCallback& callback) {
+    OpenFileSystemCallback callback) {
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_FALSE(is_filesystem_opened_);
   file_system_context_->OpenFileSystem(
-      origin_,
-      type_,
-      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-      callback);
+      origin_, type_, storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      std::move(callback));
 }
 
 void CannedSyncableFileSystem::DoCreateDirectory(

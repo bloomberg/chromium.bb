@@ -62,24 +62,21 @@ void SandboxFileSystemBackend::Initialize(FileSystemContext* context) {
       storage::kFileSystemTypePersistent, delegate_->quota_observer(), NULL);
 }
 
-void SandboxFileSystemBackend::ResolveURL(
-    const FileSystemURL& url,
-    OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+void SandboxFileSystemBackend::ResolveURL(const FileSystemURL& url,
+                                          OpenFileSystemMode mode,
+                                          OpenFileSystemCallback callback) {
   DCHECK(CanHandleType(url.type()));
   DCHECK(delegate_);
   if (delegate_->file_system_options().is_incognito() &&
       !(url.type() == kFileSystemTypeTemporary &&
         enable_temporary_file_system_in_incognito_)) {
     // TODO(kinuko): return an isolated temporary directory.
-    callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
+    std::move(callback).Run(GURL(), std::string(),
+                            base::File::FILE_ERROR_SECURITY);
     return;
   }
 
-  delegate_->OpenFileSystem(url.origin(),
-                            url.type(),
-                            mode,
-                            callback,
+  delegate_->OpenFileSystem(url.origin(), url.type(), mode, std::move(callback),
                             GetFileSystemRootURI(url.origin(), url.type()));
 }
 

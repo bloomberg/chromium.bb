@@ -184,9 +184,8 @@ class STORAGE_EXPORT FileSystemContext
   ExternalFileSystemBackend* external_backend() const;
 
   // Used for OpenFileSystem.
-  typedef base::Callback<void(const GURL& root,
-                              const std::string& name,
-                              base::File::Error result)>
+  typedef base::OnceCallback<
+      void(const GURL& root, const std::string& name, base::File::Error result)>
       OpenFileSystemCallback;
 
   // Used for ResolveURL.
@@ -208,11 +207,10 @@ class STORAGE_EXPORT FileSystemContext
   // If |create| is true this may actually set up a filesystem instance
   // (e.g. by creating the root directory or initializing the database
   // entry etc).
-  void OpenFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback);
+  void OpenFileSystem(const GURL& origin_url,
+                      FileSystemType type,
+                      OpenFileSystemMode mode,
+                      OpenFileSystemCallback callback);
 
   // Opens the filesystem for the given |url| as read-only, if the filesystem
   // backend referred by the URL allows opening by resolveURL. Otherwise it

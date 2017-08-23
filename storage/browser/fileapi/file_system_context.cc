@@ -333,30 +333,30 @@ FileSystemContext::external_backend() const {
       GetFileSystemBackend(kFileSystemTypeExternal));
 }
 
-void FileSystemContext::OpenFileSystem(
-    const GURL& origin_url,
-    FileSystemType type,
-    OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+void FileSystemContext::OpenFileSystem(const GURL& origin_url,
+                                       FileSystemType type,
+                                       OpenFileSystemMode mode,
+                                       OpenFileSystemCallback callback) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!callback.is_null());
 
   if (!FileSystemContext::IsSandboxFileSystem(type)) {
     // Disallow opening a non-sandboxed filesystem.
-    callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
+    std::move(callback).Run(GURL(), std::string(),
+                            base::File::FILE_ERROR_SECURITY);
     return;
   }
 
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend) {
-    callback.Run(GURL(), std::string(), base::File::FILE_ERROR_SECURITY);
+    std::move(callback).Run(GURL(), std::string(),
+                            base::File::FILE_ERROR_SECURITY);
     return;
   }
 
   backend->ResolveURL(
-      CreateCrackedFileSystemURL(origin_url, type, base::FilePath()),
-      mode,
-      callback);
+      CreateCrackedFileSystemURL(origin_url, type, base::FilePath()), mode,
+      std::move(callback));
 }
 
 void FileSystemContext::ResolveURL(

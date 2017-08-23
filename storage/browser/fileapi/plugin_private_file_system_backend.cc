@@ -152,13 +152,12 @@ void PluginPrivateFileSystemBackend::Initialize(FileSystemContext* context) {
 void PluginPrivateFileSystemBackend::ResolveURL(
     const FileSystemURL& url,
     OpenFileSystemMode mode,
-    const OpenFileSystemCallback& callback) {
+    OpenFileSystemCallback callback) {
   // We never allow opening a new plugin-private filesystem via usual
   // ResolveURL.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, GURL(), std::string(),
-                 base::File::FILE_ERROR_SECURITY));
+      FROM_HERE, base::BindOnce(std::move(callback), GURL(), std::string(),
+                                base::File::FILE_ERROR_SECURITY));
 }
 
 AsyncFileUtil*

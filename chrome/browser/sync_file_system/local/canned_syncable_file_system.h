@@ -60,9 +60,8 @@ class SyncFileSystemBackend;
 class CannedSyncableFileSystem
     : public LocalFileSyncStatus::Observer {
  public:
-  typedef base::Callback<void(const GURL& root,
-                              const std::string& name,
-                              base::File::Error result)>
+  typedef base::OnceCallback<
+      void(const GURL& root, const std::string& name, base::File::Error result)>
       OpenFileSystemCallback;
   typedef base::Callback<void(base::File::Error)> StatusCallback;
   typedef base::Callback<void(int64_t)> WriteCallback;
@@ -169,7 +168,7 @@ class CannedSyncableFileSystem
 
   // Operation methods body.
   // They can be also called directly if the caller is already on IO thread.
-  void DoOpenFileSystem(const OpenFileSystemCallback& callback);
+  void DoOpenFileSystem(OpenFileSystemCallback callback);
   void DoCreateDirectory(const storage::FileSystemURL& url,
                          const StatusCallback& callback);
   void DoCreateFile(const storage::FileSystemURL& url,
