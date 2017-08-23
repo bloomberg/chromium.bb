@@ -185,7 +185,9 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
     mock_adapter_ =
         make_scoped_refptr(new NiceMock<MockExtendedBluetoothAdapter>());
     SetIsBluetoothPowered(true);
-    ON_CALL(*mock_adapter_, IsPresent()).WillByDefault(Return(true));
+    is_adapter_present_ = true;
+    ON_CALL(*mock_adapter_, IsPresent())
+        .WillByDefault(Invoke(this, &TetherServiceTest::IsBluetoothPresent));
     ON_CALL(*mock_adapter_, IsPowered())
         .WillByDefault(Invoke(this, &TetherServiceTest::IsBluetoothPowered));
     device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
@@ -263,6 +265,9 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
       observer.AdapterPoweredChanged(mock_adapter_.get(), powered);
   }
 
+  void set_is_adapter_present(bool present) { is_adapter_present_ = present; }
+
+  bool IsBluetoothPresent() { return is_adapter_present_; }
   bool IsBluetoothPowered() { return is_adapter_powered_; }
 
   void DisconnectDefaultShillNetworks() {
@@ -296,6 +301,7 @@ class TetherServiceTest : public chromeos::NetworkStateTest {
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
 
   scoped_refptr<MockExtendedBluetoothAdapter> mock_adapter_;
+  bool is_adapter_present_;
   bool is_adapter_powered_;
 
   std::unique_ptr<TestTetherService> tether_service_;
@@ -514,6 +520,20 @@ TEST_F(TetherServiceTest, TestProhibitedByPolicy) {
 
   ShutdownAndVerifyFinalTetherFeatureState(
       TetherService::TetherFeatureState::PROHIBITED);
+}
+
+TEST_F(TetherServiceTest, TestBluetoothNotPresent) {
+  set_is_adapter_present(false);
+
+  CreateTetherService();
+
+  EXPECT_EQ(
+      chromeos::NetworkStateHandler::TechnologyState::TECHNOLOGY_UNAVAILABLE,
+      network_state_handler()->GetTechnologyState(
+          chromeos::NetworkTypePattern::Tether()));
+
+  ShutdownAndVerifyFinalTetherFeatureState(
+      TetherService::TetherFeatureState::BLE_NOT_PRESENT);
 }
 
 TEST_F(TetherServiceTest, TestIsBluetoothPowered) {

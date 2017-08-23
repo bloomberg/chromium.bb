@@ -21009,6 +21009,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="6" label="Bluetooth disabled"/>
   <int value="7" label="User preference disabled"/>
   <int value="8" label="Enabled"/>
+  <int value="9" label="BLE not present"/>
 </enum>
 
 <enum name="InstantTethering_HostScanResult">
