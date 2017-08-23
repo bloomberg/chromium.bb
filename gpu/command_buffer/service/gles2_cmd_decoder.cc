@@ -480,6 +480,10 @@ bool GLES2Decoder::GetServiceTextureId(uint32_t client_texture_id,
   return false;
 }
 
+TextureBase* GLES2Decoder::GetTextureBase(uint32_t client_id) {
+  return nullptr;
+}
+
 uint32_t GLES2Decoder::GetAndClearBackbufferClearBitsForTest() {
   return 0;
 }
@@ -614,6 +618,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   bool GetServiceTextureId(uint32_t client_texture_id,
                            uint32_t* service_texture_id) override;
+  TextureBase* GetTextureBase(uint32_t client_id) override;
 
   // Restores the current state to the user's settings.
   void RestoreCurrentFramebufferBindings();
@@ -1037,6 +1042,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                          const volatile GLbyte* key);
   void DoApplyScreenSpaceAntialiasingCHROMIUM();
 
+  void BindImage(uint32_t client_texture_id,
+                 uint32_t texture_target,
+                 gl::GLImage* image,
+                 bool can_bind_to_sampler) override;
   void DoBindTexImage2DCHROMIUM(
       GLenum target,
       GLint image_id);
@@ -4738,6 +4747,11 @@ bool GLES2DecoderImpl::GetServiceTextureId(uint32_t client_texture_id,
     return true;
   }
   return false;
+}
+
+TextureBase* GLES2DecoderImpl::GetTextureBase(uint32_t client_id) {
+  TextureRef* texture_ref = texture_manager()->GetTexture(client_id);
+  return texture_ref ? texture_ref->texture() : nullptr;
 }
 
 void GLES2DecoderImpl::Destroy(bool have_context) {
@@ -17940,6 +17954,26 @@ void GLES2DecoderImpl::DoPushGroupMarkerEXT(
 }
 
 void GLES2DecoderImpl::DoPopGroupMarkerEXT(void) {
+}
+
+void GLES2DecoderImpl::BindImage(uint32_t client_texture_id,
+                                 uint32_t texture_target,
+                                 gl::GLImage* image,
+                                 bool can_bind_to_sampler) {
+  TextureRef* ref = texture_manager()->GetTexture(client_texture_id);
+  if (!ref) {
+    return;
+  }
+
+  GLenum bind_target = GLES2Util::GLFaceTargetToTextureTarget(texture_target);
+  if (ref->texture()->target() != bind_target) {
+    return;
+  }
+
+  texture_manager()->SetLevelImage(ref, texture_target, 0, image,
+                                   can_bind_to_sampler
+                                       ? gpu::gles2::Texture::BOUND
+                                       : gpu::gles2::Texture::UNBOUND);
 }
 
 void GLES2DecoderImpl::DoBindTexImage2DCHROMIUM(
