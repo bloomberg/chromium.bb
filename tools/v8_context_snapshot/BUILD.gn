@@ -28,7 +28,7 @@ if (is_android) {
 }
 
 group("v8_context_snapshot") {
-  if (!is_chromeos) {
+  if (!is_chromeos && !is_android) {
     public_deps = [
       ":generate_v8_context_snapshot",
     ]
