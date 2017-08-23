@@ -323,16 +323,7 @@ static INLINE void get_base_ctx_set(const tran_low_t *tcoeffs,
   }
 
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
-    ctx_set[i] = (ctx_set[i] + 1) >> 1;
-
-    if (row == 0 && col == 0)
-      ctx_set[i] = (ctx_set[i] << 1) + mag[i];
-    else if (row == 0)
-      ctx_set[i] = 8 + (ctx_set[i] << 1) + mag[i];
-    else if (col == 0)
-      ctx_set[i] = 18 + (ctx_set[i] << 1) + mag[i];
-    else
-      ctx_set[i] = 28 + (ctx_set[i] << 1) + mag[i];
+    ctx_set[i] = get_base_ctx_from_count_mag(row, col, ctx_set[i], mag[i]);
   }
   return;
 }
