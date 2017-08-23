@@ -53,7 +53,11 @@ bool FakeMessageCenter::HasClickedListener(const std::string& id) {
 
 message_center::Notification* FakeMessageCenter::FindVisibleNotificationById(
     const std::string& id) {
-  return NULL;
+  for (auto* notification : GetVisibleNotifications()) {
+    if (id == notification->id())
+      return notification;
+  }
+  return nullptr;
 }
 
 const NotificationList::Notifications&

@@ -668,26 +668,19 @@ void MessageCenterView::UpdateNotification(const std::string& id) {
   if (view_iter == notification_views_.end())
     return;
 
-  // TODO(dimich): add MessageCenter::GetVisibleNotificationById(id)
   MessageView* view = view_iter->second;
-  const NotificationList::Notifications& notifications =
-      message_center_->GetVisibleNotifications();
-  for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin();
-       iter != notifications.end(); ++iter) {
-    if ((*iter)->id() == id) {
-      int old_width = view->width();
-      int old_height = view->height();
-      bool old_pinned = view->GetPinned();
-      message_list_view_->UpdateNotification(view, **iter);
-      if (view->GetHeightForWidth(old_width) != old_height) {
-        Update(true /* animate */);
-      } else if (view->GetPinned() != old_pinned) {
-        // Animate flag is false, since the pinned flag transition doesn't need
-        // animation.
-        Update(false /* animate */);
-      }
-      break;
+  Notification* notification = message_center_->FindVisibleNotificationById(id);
+  if (notification) {
+    int old_width = view->width();
+    int old_height = view->height();
+    bool old_pinned = view->GetPinned();
+    message_list_view_->UpdateNotification(view, *notification);
+    if (view->GetHeightForWidth(old_width) != old_height) {
+      Update(true /* animate */);
+    } else if (view->GetPinned() != old_pinned) {
+      // Animate flag is false, since the pinned flag transition doesn't need
+      // animation.
+      Update(false /* animate */);
     }
   }
 

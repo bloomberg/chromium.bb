@@ -947,22 +947,15 @@ Profile* DownloadItemNotification::profile() const {
 }
 
 bool DownloadItemNotification::IsNotificationVisible() const {
-  const std::string& notification_id = watcher()->id();
+  const std::string& delegate_id = watcher()->id();
   const ProfileID profile_id = NotificationUIManager::GetProfileID(profile());
   if (!g_browser_process->notification_ui_manager())
     return false;
-  const Notification* notification = g_browser_process->
-      notification_ui_manager()->FindById(notification_id, profile_id);
+  const Notification* notification =
+      g_browser_process->notification_ui_manager()->FindById(delegate_id,
+                                                             profile_id);
   if (!notification)
     return false;
 
-  const std::string notification_id_in_message_center = notification->id();
-
-  message_center::NotificationList::Notifications visible_notifications =
-      message_center_->GetVisibleNotifications();
-  for (auto* notification : visible_notifications) {
-    if (notification->id() == notification_id_in_message_center)
-      return true;
-  }
-  return false;
+  return !!message_center_->FindVisibleNotificationById(notification->id());
 }

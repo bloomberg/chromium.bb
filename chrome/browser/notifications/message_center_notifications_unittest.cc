@@ -21,7 +21,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center_tray_delegate.h"
-#include "ui/message_center/message_center_impl.h"
 #include "ui/message_center/message_center_tray.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_types.h"
