@@ -18,6 +18,10 @@
     {
       "object": "LayoutImage IMG",
       "reason": "selection"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
     }
   ]
 }

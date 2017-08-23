@@ -135,7 +135,7 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectTruncateVisibilityHidden) {
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
-TEST_F(LayoutSelectionTest, TraverseLayoutObjectTruncateBR) {
+TEST_F(LayoutSelectionTest, TraverseLayoutObjectBRs) {
   SetBodyContent("<br><br>foo<br><br>");
   Selection().SetSelection(SelectionInDOMTree::Builder()
                                .SelectAllChildren(*GetDocument().body())
@@ -145,8 +145,8 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectTruncateBR) {
   TEST_NEXT(IsBR, kStart, ShouldInvalidate);
   TEST_NEXT(IsBR, kInside, ShouldInvalidate);
   TEST_NEXT("foo", kInside, ShouldInvalidate);
+  TEST_NEXT(IsBR, kInside, ShouldInvalidate);
   TEST_NEXT(IsBR, kEnd, ShouldInvalidate);
-  TEST_NEXT(IsBR, kNone, NotInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
@@ -238,15 +238,28 @@ TEST_F(LayoutSelectionTest,
           .Build());
   // This commit should not crash.
   Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(IsLayoutBlock, kEnd, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlockFlow, kStart, ShouldInvalidate);
-  TEST_NEXT("div1", kStart, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlockFlow, kEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlock, kNone, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT("div1", kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT(IsLayoutBlockFlow, kNone, ShouldInvalidate);
   TEST_NEXT("foo", kNone, NotInvalidate);
   TEST_NEXT(IsLayoutInline, kNone, NotInvalidate);
   TEST_NEXT("bar", kNone, ShouldInvalidate);
   TEST_NEXT("baz", kNone, NotInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
+}
+
+TEST_F(LayoutSelectionTest, TraverseLayoutObjectLineWrap) {
+  SetBodyContent("bar\n");
+  Selection().SetSelection(SelectionInDOMTree::Builder()
+                               .SelectAllChildren(*GetDocument().body())
+                               .Build());
+  Selection().CommitAppearanceIfNeeded();
+  TEST_NEXT(IsLayoutBlock, kStartAndEnd, ShouldInvalidate);
+  TEST_NEXT("bar\n", kStartAndEnd, ShouldInvalidate);
+  TEST_NO_NEXT_LAYOUT_OBJECT();
+  EXPECT_EQ(Selection().LayoutSelectionStart(), 0);
+  EXPECT_EQ(Selection().LayoutSelectionEnd(), 4);
 }
 
 }  // namespace blink

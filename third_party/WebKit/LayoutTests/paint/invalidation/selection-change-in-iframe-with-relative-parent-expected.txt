@@ -121,6 +121,14 @@
     {
       "object": "InlineTextBox '\n'",
       "reason": "appeared"
+    },
+    {
+      "object": "LayoutBR BR",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "selection"
     }
   ]
 }
