@@ -428,6 +428,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
   [MAX_MIB_SIZE] =
       (TX_SIZE(*)[MAX_MIB_SIZE]) & mbmi->inter_tx_size[tx_row][tx_col];
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
+  assert(tx_size > TX_4X4);
 
   if (depth == MAX_VARTX_DEPTH) {
     int idx, idy;
@@ -437,7 +438,6 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
         inter_tx_size[idy][idx] = tx_size;
     mbmi->tx_size = tx_size;
     mbmi->min_tx_size = AOMMIN(mbmi->min_tx_size, get_min_tx_size(tx_size));
-    if (counts) ++counts->txfm_partition[ctx][0];
     txfm_partition_update(xd->above_txfm_context + blk_col,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
     return;
@@ -456,7 +456,7 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
 
     if (counts) ++counts->txfm_partition[ctx][1];
 
-    if (tx_size == TX_8X8) {
+    if (sub_txs == TX_4X4) {
       int idx, idy;
       inter_tx_size[0][0] = sub_txs;
       for (idy = 0; idy < tx_size_high_unit[tx_size] / 2; ++idy)
@@ -2861,7 +2861,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 #else
         bsize >= BLOCK_8X8 &&
 #endif
-        !mbmi->skip && inter_block) {
+        !mbmi->skip && inter_block && !xd->lossless[mbmi->segment_id]) {
       const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
       const int bh = tx_size_high_unit[max_tx_size];
       const int bw = tx_size_wide_unit[max_tx_size];

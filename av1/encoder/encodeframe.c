@@ -5806,6 +5806,18 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
   const TX_SIZE plane_tx_size = mbmi->inter_tx_size[tx_row][tx_col];
 
   if (blk_row >= max_blocks_high || blk_col >= max_blocks_wide) return;
+  assert(tx_size > TX_4X4);
+
+  if (depth == MAX_VARTX_DEPTH) {
+// Don't add to counts in this case
+#if CONFIG_RECT_TX_EXT
+    if (tx_size == plane_tx_size)
+#endif
+      mbmi->tx_size = tx_size;
+    txfm_partition_update(xd->above_txfm_context + blk_col,
+                          xd->left_txfm_context + blk_row, tx_size, tx_size);
+    return;
+  }
 
 #if CONFIG_RECT_TX_EXT
   if (tx_size == plane_tx_size ||
@@ -5829,7 +5841,7 @@ static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
     ++counts->txfm_partition[ctx][1];
     ++x->txb_split_count;
 
-    if (tx_size == TX_8X8) {
+    if (sub_txs == TX_4X4) {
       mbmi->inter_tx_size[tx_row][tx_col] = TX_4X4;
       mbmi->tx_size = TX_4X4;
       txfm_partition_update(xd->above_txfm_context + blk_col,

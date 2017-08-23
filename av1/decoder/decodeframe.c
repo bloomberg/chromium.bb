@@ -4926,8 +4926,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
 #if !CONFIG_NEW_MULTISYMBOL
 #if CONFIG_VAR_TX
-  for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
-    av1_diff_update_prob(&r, &fc->txfm_partition_prob[i], ACCT_STR);
+  if (cm->tx_mode == TX_MODE_SELECT)
+    for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
+      av1_diff_update_prob(&r, &fc->txfm_partition_prob[i], ACCT_STR);
 #endif  // CONFIG_VAR_TX
   for (i = 0; i < SKIP_CONTEXTS; ++i)
     av1_diff_update_prob(&r, &fc->skip_probs[i], ACCT_STR);

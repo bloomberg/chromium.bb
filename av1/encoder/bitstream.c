@@ -376,7 +376,7 @@ static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
     aom_write(w, 1, cm->fc->txfm_partition_prob[ctx]);
 #endif
 
-    if (tx_size == TX_8X8) {
+    if (sub_txs == TX_4X4) {
       txfm_partition_update(xd->above_txfm_context + blk_col,
                             xd->left_txfm_context + blk_row, sub_txs, tx_size);
       return;
@@ -401,7 +401,7 @@ static void update_txfm_partition_probs(AV1_COMMON *cm, aom_writer *w,
                               counts->txfm_partition[k], probwt);
 }
 #endif  // CONFIG_NEW_MULTISYMBOL
-#endif
+#endif  // CONFIG_VAR_TX
 
 static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                    aom_writer *w) {
@@ -4701,7 +4701,8 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif  // CONFIG_LV_MAP
 
 #if CONFIG_VAR_TX && !CONFIG_NEW_MULTISYMBOL
-  update_txfm_partition_probs(cm, header_bc, counts, probwt);
+  if (cm->tx_mode == TX_MODE_SELECT)
+    update_txfm_partition_probs(cm, header_bc, counts, probwt);
 #endif
 
 #if !CONFIG_NEW_MULTISYMBOL

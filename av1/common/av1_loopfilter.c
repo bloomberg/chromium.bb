@@ -2739,7 +2739,7 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
                                       const uint32_t scale_horz,
                                       const uint32_t scale_vert) {
   const MB_MODE_INFO *mbmi = &mi->mbmi;
-  TX_SIZE tx_size = (plane == PLANE_TYPE_Y)
+  TX_SIZE tx_size = (plane == AOM_PLANE_Y)
                         ? mbmi->tx_size
                         : av1_get_uv_tx_size(mbmi, plane_ptr);
   assert(tx_size < TX_SIZES_ALL);
@@ -2774,9 +2774,9 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
 
     assert(mb_tx_size < TX_SIZES_ALL);
 
-    tx_size = (plane == PLANE_TYPE_UV)
-                  ? uv_txsize_lookup[bsize][mb_tx_size][0][0]
-                  : mb_tx_size;
+    tx_size = (plane == AOM_PLANE_Y)
+                  ? mb_tx_size
+                  : uv_txsize_lookup[bsize][mb_tx_size][0][0];
     assert(tx_size < TX_SIZES_ALL);
   }
 #else
