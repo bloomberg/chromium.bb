@@ -826,10 +826,6 @@ void NavigatorImpl::RequestTransferURL(
     post_body = nullptr;
   }
 
-  // This call only makes sense for subframes if OOPIFs are possible.
-  DCHECK(!render_frame_host->GetParent() ||
-         SiteIsolationPolicy::AreCrossProcessFramesPossible());
-
   // Allow the delegate to cancel the transfer.
   if (!delegate_->ShouldTransferNavigation(
           render_frame_host->frame_tree_node()->IsMainFrame()))

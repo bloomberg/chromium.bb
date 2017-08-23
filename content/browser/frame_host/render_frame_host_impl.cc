@@ -2349,7 +2349,6 @@ void RenderFrameHostImpl::OnAbortNavigation() {
 void RenderFrameHostImpl::OnDispatchLoad() {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnDispatchLoad",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
-  CHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
   // Don't forward the load event if this RFH is pending deletion.  This can
   // happen in a race where this RenderFrameHost finishes loading just after
@@ -2551,8 +2550,7 @@ void RenderFrameHostImpl::OnToggleFullscreen(bool enter_fullscreen) {
   // A-B-A-B hierarchy, if the bottom frame goes fullscreen, this only needs to
   // notify its parent, and Blink-side logic will take care of applying
   // necessary changes to the other two ancestors.
-  if (enter_fullscreen &&
-      SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
+  if (enter_fullscreen) {
     std::set<SiteInstance*> notified_instances;
     notified_instances.insert(GetSiteInstance());
     for (FrameTreeNode* node = frame_tree_node_; node->parent();

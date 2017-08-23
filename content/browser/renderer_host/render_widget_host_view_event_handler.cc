@@ -891,10 +891,6 @@ bool RenderWidgetHostViewEventHandler::ShouldRouteEvent(
   if (host_->delegate() && !host_->delegate()->IsWidgetForMainFrame(host_))
     return false;
 
-  // ScrollEvents get transformed into MouseWheel events, and so are treated
-  // the same as mouse events for routing purposes.
-  if (event->IsMouseEvent() || event->type() == ui::ET_SCROLL)
-    result = result && SiteIsolationPolicy::AreCrossProcessFramesPossible();
   return result;
 }
 

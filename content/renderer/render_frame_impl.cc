@@ -1089,8 +1089,6 @@ void RenderFrameImpl::CreateFrame(
   CHECK(parent_routing_id != MSG_ROUTING_NONE || !web_frame->Parent());
 
   if (widget_params.routing_id != MSG_ROUTING_NONE) {
-    CHECK(!web_frame->Parent() ||
-          SiteIsolationPolicy::AreCrossProcessFramesPossible());
     render_frame->render_widget_ = RenderWidget::CreateForFrame(
         widget_params.routing_id, widget_params.hidden,
         render_frame->render_view_->screen_info(), compositor_deps, web_frame);
@@ -1799,9 +1797,6 @@ void RenderFrameImpl::OnSwapOut(
   TRACE_EVENT1("navigation,rail", "RenderFrameImpl::OnSwapOut",
                "id", routing_id_);
   RenderFrameProxy* proxy = NULL;
-
-  // This codepath should only be hit for subframes when in --site-per-process.
-  CHECK(is_main_frame_ || SiteIsolationPolicy::AreCrossProcessFramesPossible());
 
   // Swap this RenderFrame out so the frame can navigate to a page rendered by
   // a different process.  This involves running the unload handler and
