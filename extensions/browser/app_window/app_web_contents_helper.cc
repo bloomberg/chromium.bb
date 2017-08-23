@@ -42,7 +42,7 @@ content::WebContents* AppWebContentsHelper::OpenURLFromTab(
   // anchor tags (even those without target="_blank") to new tabs, but right
   // now we can't distinguish between those and <meta> refreshes or window.href
   // navigations, which we don't want to allow.
-  // TOOD(mihaip): Can we check for user gestures instead?
+  // TODO(mihaip): Can we check for user gestures instead?
   WindowOpenDisposition disposition = params.disposition;
   if (disposition == WindowOpenDisposition::CURRENT_TAB) {
     web_contents_->GetMainFrame()->AddMessageToConsole(

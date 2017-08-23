@@ -242,7 +242,7 @@ void PepperBroker::ConnectPluginToBroker(PPB_Broker_Impl* client) {
     result = PP_ERROR_FAILED;
   }
 
-  // TOOD(ddorwin): Change the IPC to asynchronous: Queue an object containing
+  // TODO(ddorwin): Change the IPC to asynchronous: Queue an object containing
   // client and plugin_socket.release(), then return.
   // That message handler will then call client->BrokerConnected() with the
   // saved pipe handle.

@@ -334,7 +334,7 @@ std::string GetLanguage(const std::string& locale) {
   return std::string(locale, 0, hyphen_pos);
 }
 
-// TOOD(jshin): revamp this function completely to use a more sytematic
+// TODO(jshin): revamp this function completely to use a more sytematic
 // and generic locale fallback based on ICU/CLDR.
 bool CheckAndResolveLocale(const std::string& locale,
                            std::string* resolved_locale) {

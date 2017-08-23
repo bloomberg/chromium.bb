@@ -198,7 +198,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
   const bool kNeedsBlending = true;
   gfx::Rect opaque_rect(0, 0);
 
-  // TOOD(crbug.com/645993): this should be inherited from WebGL context's
+  // TODO(crbug.com/645993): this should be inherited from WebGL context's
   // creation settings.
   const bool kPremultipliedAlpha = true;
   const gfx::PointF uv_top_left(0.f, 0.f);

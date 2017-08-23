@@ -18,7 +18,7 @@ ShellDesktopControllerMac::ShellDesktopControllerMac()
 }
 
 ShellDesktopControllerMac::~ShellDesktopControllerMac() {
-  // TOOD(yoz): This is actually too late to close app windows (for tests).
+  // TODO(yoz): This is actually too late to close app windows (for tests).
   // Maybe this is useful for non-tests.
   CloseAppWindows();
 }

@@ -661,7 +661,7 @@ void BridgedNativeWidget::AcquireCapture() {
   // will reset the mouse cursor to an arrow. Asking the window for an update
   // here will restore what we want. However, it can sometimes cause the cursor
   // to flicker, once, on the initial mouseDown.
-  // TOOD(tapted): Make this unnecessary by only asking for global mouse capture
+  // TODO(tapted): Make this unnecessary by only asking for global mouse capture
   // for the cases that need it (e.g. menus, but not drag and drop).
   [window_ cursorUpdate:[NSApp currentEvent]];
 }

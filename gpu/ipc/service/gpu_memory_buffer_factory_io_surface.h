@@ -65,7 +65,7 @@ class GPU_EXPORT GpuMemoryBufferFactoryIOSurface
   typedef std::pair<gfx::IOSurfaceId, int> IOSurfaceMapKey;
   typedef base::hash_map<IOSurfaceMapKey, base::ScopedCFTypeRef<IOSurfaceRef>>
       IOSurfaceMap;
-  // TOOD(reveman): Remove |io_surfaces_| and allow IOSurface backed GMBs to be
+  // TODO(reveman): Remove |io_surfaces_| and allow IOSurface backed GMBs to be
   // used with any GPU process by passing a mach_port to CreateImageCHROMIUM.
   IOSurfaceMap io_surfaces_;
   base::Lock io_surfaces_lock_;
