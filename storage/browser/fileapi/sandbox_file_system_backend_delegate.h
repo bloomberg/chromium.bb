@@ -106,12 +106,11 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
       bool create);
 
   // FileSystemBackend helpers.
-  void OpenFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      OpenFileSystemMode mode,
-      const OpenFileSystemCallback& callback,
-      const GURL& root_url);
+  void OpenFileSystem(const GURL& origin_url,
+                      FileSystemType type,
+                      OpenFileSystemMode mode,
+                      OpenFileSystemCallback callback,
+                      const GURL& root_url);
   std::unique_ptr<FileSystemOperationContext> CreateFileSystemOperationContext(
       const FileSystemURL& url,
       FileSystemContext* context,
