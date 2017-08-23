@@ -6,10 +6,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <string>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "components/gcm_driver/crypto/gcm_decryption_result.h"
 #include "components/gcm_driver/crypto/gcm_encryption_provider.h"
 #include "google_apis/gcm/engine/mcs_client.h"
@@ -298,26 +298,24 @@ class GCMStatsRecorderImplTest : public testing::Test {
   }
 
  protected:
-  void VerifyCheckin(
-      const std::deque<CheckinActivity>& queue,
-      const std::string& event,
-      const std::string& details,
-      const std::string& remark) {
+  void VerifyCheckin(const base::circular_deque<CheckinActivity>& queue,
+                     const std::string& event,
+                     const std::string& details,
+                     const std::string& remark) {
     EXPECT_EQ(event, queue.front().event) << remark;
     EXPECT_EQ(details, queue.front().details) << remark;
   }
 
-  void VerifyConnection(
-      const std::deque<ConnectionActivity>& queue,
-      const std::string& event,
-      const std::string& details,
-      const std::string& remark) {
+  void VerifyConnection(const base::circular_deque<ConnectionActivity>& queue,
+                        const std::string& event,
+                        const std::string& details,
+                        const std::string& remark) {
     EXPECT_EQ(event, queue.front().event) << remark;
     EXPECT_EQ(details, queue.front().details) << remark;
   }
 
   void VerifyRegistration(
-      const std::deque<RegistrationActivity>& queue,
+      const base::circular_deque<RegistrationActivity>& queue,
       const std::string& source,
       const std::string& event,
       const std::string& details,
@@ -328,11 +326,10 @@ class GCMStatsRecorderImplTest : public testing::Test {
     EXPECT_EQ(details, queue.front().details) << remark;
   }
 
-  void VerifyReceivingData(
-      const std::deque<ReceivingActivity>& queue,
-      const std::string& event,
-      const std::string& details,
-      const std::string& remark) {
+  void VerifyReceivingData(const base::circular_deque<ReceivingActivity>& queue,
+                           const std::string& event,
+                           const std::string& details,
+                           const std::string& remark) {
     EXPECT_EQ(kAppId, queue.front().app_id) << remark;
     EXPECT_EQ(kFrom, queue.front().from) << remark;
     EXPECT_EQ(kByteSize, queue.front().message_byte_size) << remark;
@@ -340,10 +337,10 @@ class GCMStatsRecorderImplTest : public testing::Test {
     EXPECT_EQ(details, queue.front().details) << remark;
   }
 
-  void VerifySendingData(
-      const std::deque<SendingActivity>& queue,
-      const std::string& event, const std::string& details,
-      const std::string& remark) {
+  void VerifySendingData(const base::circular_deque<SendingActivity>& queue,
+                         const std::string& event,
+                         const std::string& details,
+                         const std::string& remark) {
     EXPECT_EQ(kAppId, queue.front().app_id) << remark;
     EXPECT_EQ(kReceiverId, queue.front().receiver_id) << remark;
     EXPECT_EQ(kMessageId, queue.front().message_id) << remark;
