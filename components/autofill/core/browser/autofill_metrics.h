@@ -21,69 +21,6 @@
 #include "components/autofill/core/common/signatures_util.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
-namespace internal {
-// Name constants are exposed here so they can be referenced from tests.
-extern const char kUKMCardUploadDecisionEntryName[];
-extern const char kUKMCardUploadDecisionMetricName[];
-extern const char kUKMDeveloperEngagementEntryName[];
-extern const char kUKMDeveloperEngagementMetricName[];
-
-// Each form interaction event has a separate |UkmEntry|.
-
-// The first form event |UkmEntry| contains metrics for metadata that apply
-// to all subsequent events.
-extern const char kUKMInteractedWithFormEntryName[];
-extern const char kUKMIsForCreditCardMetricName[];
-extern const char kUKMLocalRecordTypeCountMetricName[];
-extern const char kUKMServerRecordTypeCountMetricName[];
-
-// |UkmEntry| when we show suggestions and when user edits text field. See
-// |kUkmTextFieldDidChangeEntryName|.
-extern const char kUKMSuggestionsShownEntryName[];
-extern const char kUKMHeuristicTypeMetricName[];
-extern const char kUKMHtmlFieldTypeMetricName[];
-extern const char kUKMServerTypeMetricName[];
-
-// |UkmEntry| when user selects a masked server credit card.
-extern const char kUKMSelectedMaskedServerCardEntryName[];
-
-// Each |UkmEntry|, except the first interaction with the form, has a metric for
-// time elapsed, in milliseconds, since we loaded the form.
-extern const char kUKMMillisecondsSinceFormParsedMetricName[];
-
-// |FormEvent| for FORM_EVENT_*_SUGGESTION_FILLED in credit card forms include a
-// |CreditCard| |record_type()| to indicate if the suggestion was for a local
-// card, masked server card or full server card. Similarly, address/profile
-// forms include a |AutofillProfile| |record_type()| to indicate if the
-// profile was a local profile or server profile.
-extern const char kUKMSuggestionFilledEntryName[];
-extern const char kUKMRecordTypeMetricName[];
-
-// |UkmEntry| for user editing text field. Metrics contain field's attributes.
-extern const char kUKMTextFieldDidChangeEntryName[];
-extern const char kUKMFieldTypeGroupMetricName[];
-extern const char kUKMHtmlFieldModeMetricName[];
-extern const char kUKMIsAutofilledMetricName[];
-extern const char kUKMIsEmptyMetricName[];
-
-// |UkmEntry| for |AutofillFormSubmittedState|.
-extern const char kUKMFormSubmittedEntryName[];
-extern const char kUKMAutofillFormSubmittedStateMetricName[];
-
-// |UkmEntry| for capturing field fill status and type prediction quality.
-extern const char kUKMFieldTypeEntryName[];
-extern const char kUKMFieldFillStatusEntryName[];
-extern const char kUKMFormSignatureMetricName[];
-extern const char kUKMFieldSignatureMetricName[];
-extern const char kUKMValidationEventMetricName[];
-extern const char kUKMPredictionSourceMetricName[];
-extern const char kUKMPredictedTypeMetricName[];
-extern const char kUKMActualTypeMetricName[];
-extern const char kUKMWasSuggestionShownMetricName[];
-extern const char kUKMWasPreviouslyAutofilledMetricName[];
-
-}  // namespace internal
-
 namespace autofill {
 
 class AutofillField;

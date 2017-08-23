@@ -42,6 +42,7 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "components/webdata/common/web_data_results.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect.h"
@@ -56,6 +57,18 @@ using ::testing::UnorderedPointwise;
 
 namespace autofill {
 namespace {
+
+using UkmCardUploadDecisionType = ukm::builders::Autofill_CardUploadDecision;
+using UkmDeveloperEngagementType = ukm::builders::Autofill_DeveloperEngagement;
+using UkmInteractedWithFormType = ukm::builders::Autofill_InteractedWithForm;
+using UkmSuggestionsShownType = ukm::builders::Autofill_SuggestionsShown;
+using UkmSelectedMaskedServerCardType =
+    ukm::builders::Autofill_SelectedMaskedServerCard;
+using UkmSuggestionFilledType = ukm::builders::Autofill_SuggestionFilled;
+using UkmTextFieldDidChangeType = ukm::builders::Autofill_TextFieldDidChange;
+using UkmFormSubmittedType = ukm::builders::Autofill_FormSubmitted;
+using UkmFieldTypeValidationType = ukm::builders::Autofill_FieldTypeValidation;
+using UkmFieldFillStatusType = ukm::builders::Autofill_FieldFillStatus;
 
 using ExpectedUkmMetrics =
     std::vector<std::vector<std::pair<const char*, int64_t>>>;
@@ -349,8 +362,8 @@ void VerifyDeveloperEngagementUkm(
     const ukm::TestAutoSetUkmRecorder& ukm_recorder,
     const FormData& form,
     const std::vector<int64_t>& expected_metric_values) {
-  const ukm::mojom::UkmEntry* entry = ukm_recorder.GetEntryForEntryName(
-      internal::kUKMDeveloperEngagementEntryName);
+  const ukm::mojom::UkmEntry* entry =
+      ukm_recorder.GetEntryForEntryName(UkmDeveloperEngagementType::kEntryName);
   ASSERT_NE(nullptr, entry);
   const ukm::UkmSource* source =
       ukm_recorder.GetSourceForSourceId(entry->source_id);
@@ -362,7 +375,8 @@ void VerifyDeveloperEngagementUkm(
     expected_metric_value |= 1 << it;
 
   const std::vector<std::pair<const char*, int64_t>> expected_metrics{
-      {internal::kUKMDeveloperEngagementMetricName, expected_metric_value}};
+      {UkmDeveloperEngagementType::kDeveloperEngagementName,
+       expected_metric_value}};
 
   EXPECT_THAT(entry->metrics,
               UnorderedPointwise(CompareMetrics(), expected_metrics));
@@ -374,7 +388,8 @@ MATCHER(CompareMetricsIgnoringMillisecondsSinceFormParsed, "") {
   return lhs->metric_hash == base::HashMetricName(rhs.first) &&
          (lhs->value == rhs.second ||
           (lhs->value > 0 &&
-           rhs.first == internal::kUKMMillisecondsSinceFormParsedMetricName));
+           rhs.first ==
+               UkmSuggestionFilledType::kMillisecondsSinceFormParsedName));
 }
 
 void VerifyFormInteractionUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
@@ -404,9 +419,9 @@ void VerifySubmitFormUkm(const ukm::TestAutoSetUkmRecorder& ukm_recorder,
                          const FormData& form,
                          AutofillMetrics::AutofillFormSubmittedState state) {
   VerifyFormInteractionUkm(
-      ukm_recorder, form, internal::kUKMFormSubmittedEntryName,
-      {{{internal::kUKMAutofillFormSubmittedStateMetricName, state},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+      ukm_recorder, form, UkmFormSubmittedType::kEntryName,
+      {{{UkmFormSubmittedType::kAutofillFormSubmittedStateName, state},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
 }
 
 void AppendFieldFillStatusUkm(const FormData& form,
@@ -417,12 +432,13 @@ void AppendFieldFillStatusUkm(const FormData& form,
     int64_t field_signature =
         static_cast<int64_t>(CalculateFieldSignatureForField(field));
     expected_metrics->push_back(
-        {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-         {internal::kUKMFormSignatureMetricName, form_signature},
-         {internal::kUKMFieldSignatureMetricName, field_signature},
-         {internal::kUKMValidationEventMetricName, metric_type},
-         {internal::kUKMIsAutofilledMetricName, field.is_autofilled ? 1 : 0},
-         {internal::kUKMWasPreviouslyAutofilledMetricName, 0}});
+        {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+         {UkmFieldFillStatusType::kFormSignatureName, form_signature},
+         {UkmFieldFillStatusType::kFieldSignatureName, field_signature},
+         {UkmFieldFillStatusType::kValidationEventName, metric_type},
+         {UkmTextFieldDidChangeType::kIsAutofilledName,
+          field.is_autofilled ? 1 : 0},
+         {UkmFieldFillStatusType::kWasPreviouslyAutofilledName, 0}});
   }
 }
 
@@ -451,13 +467,13 @@ void AppendFieldTypeUkm(const FormData& form,
                : heuristic_types)[i]);
       int64_t actual_type = static_cast<int64_t>(actual_types[i]);
       expected_metrics->push_back(
-          {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-           {internal::kUKMFormSignatureMetricName, form_signature},
-           {internal::kUKMFieldSignatureMetricName, field_signature},
-           {internal::kUKMValidationEventMetricName, metric_type},
-           {internal::kUKMPredictionSourceMetricName, source},
-           {internal::kUKMPredictedTypeMetricName, predicted_type},
-           {internal::kUKMActualTypeMetricName, actual_type}});
+          {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+           {UkmFieldFillStatusType::kFormSignatureName, form_signature},
+           {UkmFieldFillStatusType::kFieldSignatureName, field_signature},
+           {UkmFieldFillStatusType::kValidationEventName, metric_type},
+           {UkmFieldTypeValidationType::kPredictionSourceName, source},
+           {UkmFieldTypeValidationType::kPredictedTypeName, predicted_type},
+           {UkmFieldTypeValidationType::kActualTypeName, actual_type}});
     }
   }
 }
@@ -913,7 +929,7 @@ TEST_P(QualityMetricsTest, Classification) {
   AppendFieldTypeUkm(form, heuristic_types, server_types, actual_types,
                      &expected_ukm_metrics);
   VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                           internal::kUKMFieldTypeEntryName,
+                           UkmFieldTypeValidationType::kEntryName,
                            expected_ukm_metrics);
 
   // Validate the total samples and the crossed (predicted-to-actual) samples.
@@ -2229,24 +2245,24 @@ TEST_F(AutofillMetricsTest, CreditCardCheckoutFlowUserActions) {
   }
 
   VerifyFormInteractionUkm(
-      test_ukm_recorder_, form, internal::kUKMSuggestionsShownEntryName,
-      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-        {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NAME_FULL},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMServerTypeMetricName, CREDIT_CARD_NAME_FULL}},
-       {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-        {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NUMBER},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMServerTypeMetricName, CREDIT_CARD_NUMBER}}});
+      test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+      {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NAME_FULL},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NAME_FULL}},
+       {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER}}});
   // Expect 2 |FORM_EVENT_LOCAL_SUGGESTION_FILLED| events. First, from
   // call to |external_delegate_->DidAcceptSuggestion|. Second, from call to
   // |autofill_manager_->FillOrPreviewForm|.
   VerifyFormInteractionUkm(
-      test_ukm_recorder_, form, internal::kUKMSuggestionFilledEntryName,
-      {{{internal::kUKMRecordTypeMetricName, CreditCard::LOCAL_CARD},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}},
-       {{internal::kUKMRecordTypeMetricName, CreditCard::LOCAL_CARD},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+      test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
+      {{{UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+       {{UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
   // Expect |NON_FILLABLE_FORM_OR_NEW_DATA| in |AutofillFormSubmittedState|
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
   VerifySubmitFormUkm(test_ukm_recorder_, form,
@@ -2340,24 +2356,26 @@ TEST_F(AutofillMetricsTest, ProfileCheckoutFlowUserActions) {
   }
 
   VerifyFormInteractionUkm(
-      test_ukm_recorder_, form, internal::kUKMSuggestionsShownEntryName,
-      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-        {internal::kUKMHeuristicTypeMetricName, ADDRESS_HOME_STATE},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMServerTypeMetricName, ADDRESS_HOME_STATE}},
-       {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-        {internal::kUKMHeuristicTypeMetricName, ADDRESS_HOME_CITY},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMServerTypeMetricName, ADDRESS_HOME_CITY}}});
+      test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+      {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName, ADDRESS_HOME_STATE},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kServerTypeName, ADDRESS_HOME_STATE}},
+       {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName, ADDRESS_HOME_CITY},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kServerTypeName, ADDRESS_HOME_CITY}}});
   // Expect 2 |FORM_EVENT_LOCAL_SUGGESTION_FILLED| events. First, from
   // call to |external_delegate_->DidAcceptSuggestion|. Second, from call to
   // |autofill_manager_->FillOrPreviewForm|.
   VerifyFormInteractionUkm(
-      test_ukm_recorder_, form, internal::kUKMSuggestionFilledEntryName,
-      {{{internal::kUKMRecordTypeMetricName, AutofillProfile::LOCAL_PROFILE},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}},
-       {{internal::kUKMRecordTypeMetricName, AutofillProfile::LOCAL_PROFILE},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+      test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
+      {{{UkmSuggestionFilledType::kRecordTypeName,
+         AutofillProfile::LOCAL_PROFILE},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+       {{UkmSuggestionFilledType::kRecordTypeName,
+         AutofillProfile::LOCAL_PROFILE},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
   // Expect |NON_FILLABLE_FORM_OR_NEW_DATA| in |AutofillFormSubmittedState|
   // because |field.value| is empty in |DeterminePossibleFieldTypesForUpload|.
   VerifySubmitFormUkm(test_ukm_recorder_, form,
@@ -3095,11 +3113,12 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         AutofillMetrics::FORM_EVENT_SUGGESTION_SHOWN_WILL_SUBMIT_ONCE, 1);
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMSuggestionsShownEntryName,
-        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-          {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NUMBER},
-          {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-          {internal::kUKMServerTypeMetricName, CREDIT_CARD_NUMBER}}});
+        test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+        {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
+          {UkmTextFieldDidChangeType::kHtmlFieldTypeName,
+           HTML_TYPE_UNSPECIFIED},
+          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   }
@@ -3131,11 +3150,12 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         AutofillMetrics::FORM_EVENT_SUGGESTION_SHOWN_WILL_SUBMIT_ONCE, 1);
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMSuggestionsShownEntryName,
-        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-          {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NUMBER},
-          {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-          {internal::kUKMServerTypeMetricName, CREDIT_CARD_NUMBER}}});
+        test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+        {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
+          {UkmTextFieldDidChangeType::kHtmlFieldTypeName,
+           HTML_TYPE_UNSPECIFIED},
+          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   }
@@ -3163,9 +3183,9 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE, 1);
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMSuggestionFilledEntryName,
-        {{{internal::kUKMRecordTypeMetricName, CreditCard::LOCAL_CARD},
-          {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+        test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
+        {{{UkmSuggestionFilledType::kRecordTypeName, CreditCard::LOCAL_CARD},
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   }
@@ -3194,9 +3214,10 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE, 1);
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMSuggestionFilledEntryName,
-        {{{internal::kUKMRecordTypeMetricName, CreditCard::FULL_SERVER_CARD},
-          {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+        test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
+        {{{UkmSuggestionFilledType::kRecordTypeName,
+           CreditCard::FULL_SERVER_CARD},
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   }
@@ -3227,13 +3248,13 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         1);
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMSuggestionFilledEntryName,
-        {{{internal::kUKMRecordTypeMetricName, CreditCard::MASKED_SERVER_CARD},
-          {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+        test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
+        {{{UkmSuggestionFilledType::kRecordTypeName,
+           CreditCard::MASKED_SERVER_CARD},
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form,
-        internal::kUKMSelectedMaskedServerCardEntryName,
-        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+        test_ukm_recorder_, form, UkmSelectedMaskedServerCardType::kEntryName,
+        {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   }
@@ -3260,21 +3281,21 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMFormSubmittedEntryName,
-        {{{internal::kUKMAutofillFormSubmittedStateMetricName,
+        test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
+        {{{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
            AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
-          {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
 
     autofill_manager_->SubmitForm(form, TimeTicks::Now());
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMFormSubmittedEntryName,
-        {{{internal::kUKMAutofillFormSubmittedStateMetricName,
+        test_ukm_recorder_, form, UkmFormSubmittedType::kEntryName,
+        {{{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
            AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
-          {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}},
-         {{internal::kUKMAutofillFormSubmittedStateMetricName,
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+         {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
            AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
-          {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+          {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
 
     histogram_tester.ExpectBucketCount(
         "Autofill.FormEvents.CreditCard",
@@ -3360,11 +3381,12 @@ TEST_F(AutofillMetricsTest, CreditCardSubmittedFormEvents) {
         0);
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMSuggestionsShownEntryName,
-        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-          {internal::kUKMHeuristicTypeMetricName, CREDIT_CARD_NUMBER},
-          {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-          {internal::kUKMServerTypeMetricName, CREDIT_CARD_NUMBER}}});
+        test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+        {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmTextFieldDidChangeType::kHeuristicTypeName, CREDIT_CARD_NUMBER},
+          {UkmTextFieldDidChangeType::kHtmlFieldTypeName,
+           HTML_TYPE_UNSPECIFIED},
+          {UkmTextFieldDidChangeType::kServerTypeName, CREDIT_CARD_NUMBER}}});
     VerifySubmitFormUkm(test_ukm_recorder_, form,
                         AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA);
   }
@@ -4416,16 +4438,16 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
                      "Autofill_FormSubmitted_NonFillable"));
 
     expected_form_submission_ukm_metrics.push_back(
-        {{internal::kUKMAutofillFormSubmittedStateMetricName,
+        {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
           AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
-         {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}});
+         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFormSubmittedEntryName,
+                             UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
 
     AppendFieldFillStatusUkm(form, &expected_field_fill_status_ukm_metrics);
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFieldFillStatusEntryName,
+                             UkmFieldFillStatusType::kEntryName,
                              expected_field_fill_status_ukm_metrics);
   }
 
@@ -4445,16 +4467,16 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
                      "Autofill_FormSubmitted_NonFillable"));
 
     expected_form_submission_ukm_metrics.push_back(
-        {{internal::kUKMAutofillFormSubmittedStateMetricName,
+        {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
           AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
-         {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}});
+         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFormSubmittedEntryName,
+                             UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
 
     AppendFieldFillStatusUkm(form, &expected_field_fill_status_ukm_metrics);
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFieldFillStatusEntryName,
+                             UkmFieldFillStatusType::kEntryName,
                              expected_field_fill_status_ukm_metrics);
   }
 
@@ -4475,18 +4497,18 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
                      "Autofill_FormSubmitted_FilledNone_SuggestionsNotShown"));
 
     expected_form_submission_ukm_metrics.push_back(
-        {{internal::kUKMAutofillFormSubmittedStateMetricName,
+        {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
           AutofillMetrics::
               FILLABLE_FORM_AUTOFILLED_NONE_DID_NOT_SHOW_SUGGESTIONS},
-         {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}});
+         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
 
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFormSubmittedEntryName,
+                             UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
 
     AppendFieldFillStatusUkm(form, &expected_field_fill_status_ukm_metrics);
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFieldFillStatusEntryName,
+                             UkmFieldFillStatusType::kEntryName,
                              expected_field_fill_status_ukm_metrics);
   }
 
@@ -4503,23 +4525,25 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
                      "Autofill_FormSubmitted_FilledNone_SuggestionsShown"));
 
     VerifyFormInteractionUkm(
-        test_ukm_recorder_, form, internal::kUKMSuggestionsShownEntryName,
-        {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-          {internal::kUKMHeuristicTypeMetricName, PHONE_HOME_WHOLE_NUMBER},
-          {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-          {internal::kUKMServerTypeMetricName, NO_SERVER_DATA}}});
+        test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+        {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+          {UkmTextFieldDidChangeType::kHeuristicTypeName,
+           PHONE_HOME_WHOLE_NUMBER},
+          {UkmTextFieldDidChangeType::kHtmlFieldTypeName,
+           HTML_TYPE_UNSPECIFIED},
+          {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}}});
 
     expected_form_submission_ukm_metrics.push_back(
-        {{internal::kUKMAutofillFormSubmittedStateMetricName,
+        {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
           AutofillMetrics::FILLABLE_FORM_AUTOFILLED_NONE_DID_SHOW_SUGGESTIONS},
-         {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}});
+         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFormSubmittedEntryName,
+                             UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
 
     AppendFieldFillStatusUkm(form, &expected_field_fill_status_ukm_metrics);
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFieldFillStatusEntryName,
+                             UkmFieldFillStatusType::kEntryName,
                              expected_field_fill_status_ukm_metrics);
   }
 
@@ -4539,16 +4563,16 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
                      "Autofill_FormSubmitted_FilledSome"));
 
     expected_form_submission_ukm_metrics.push_back(
-        {{internal::kUKMAutofillFormSubmittedStateMetricName,
+        {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
           AutofillMetrics::FILLABLE_FORM_AUTOFILLED_SOME},
-         {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}});
+         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFormSubmittedEntryName,
+                             UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
 
     AppendFieldFillStatusUkm(form, &expected_field_fill_status_ukm_metrics);
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFieldFillStatusEntryName,
+                             UkmFieldFillStatusType::kEntryName,
                              expected_field_fill_status_ukm_metrics);
   }
 
@@ -4569,16 +4593,16 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
                      "Autofill_FormSubmitted_FilledAll"));
 
     expected_form_submission_ukm_metrics.push_back(
-        {{internal::kUKMAutofillFormSubmittedStateMetricName,
+        {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
           AutofillMetrics::FILLABLE_FORM_AUTOFILLED_ALL},
-         {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}});
+         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFormSubmittedEntryName,
+                             UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
 
     AppendFieldFillStatusUkm(form, &expected_field_fill_status_ukm_metrics);
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFieldFillStatusEntryName,
+                             UkmFieldFillStatusType::kEntryName,
                              expected_field_fill_status_ukm_metrics);
   }
 
@@ -4598,16 +4622,16 @@ TEST_F(AutofillMetricsTest, AutofillFormSubmittedState) {
                      "Autofill_FormSubmitted_NonFillable"));
 
     expected_form_submission_ukm_metrics.push_back(
-        {{internal::kUKMAutofillFormSubmittedStateMetricName,
+        {{UkmFormSubmittedType::kAutofillFormSubmittedStateName,
           AutofillMetrics::NON_FILLABLE_FORM_OR_NEW_DATA},
-         {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}});
+         {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}});
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFormSubmittedEntryName,
+                             UkmFormSubmittedType::kEntryName,
                              expected_form_submission_ukm_metrics);
 
     AppendFieldFillStatusUkm(form, &expected_field_fill_status_ukm_metrics);
     VerifyFormInteractionUkm(test_ukm_recorder_, form,
-                             internal::kUKMFieldFillStatusEntryName,
+                             UkmFieldFillStatusType::kEntryName,
                              expected_field_fill_status_ukm_metrics);
   }
 }
@@ -4719,52 +4743,55 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction) {
   autofill_manager_->Reset();
 
   VerifyFormInteractionUkm(
-      test_ukm_recorder_, form, internal::kUKMInteractedWithFormEntryName,
-      {{{internal::kUKMIsForCreditCardMetricName, false},
-        {internal::kUKMLocalRecordTypeCountMetricName, 0},
-        {internal::kUKMServerRecordTypeCountMetricName, 0}}});
+      test_ukm_recorder_, form, UkmInteractedWithFormType::kEntryName,
+      {{{UkmInteractedWithFormType::kIsForCreditCardName, false},
+        {UkmInteractedWithFormType::kLocalRecordTypeCountName, 0},
+        {UkmInteractedWithFormType::kServerRecordTypeCountName, 0}}});
   VerifyFormInteractionUkm(
-      test_ukm_recorder_, form, internal::kUKMSuggestionsShownEntryName,
-      {{{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-        {internal::kUKMHeuristicTypeMetricName, PHONE_HOME_WHOLE_NUMBER},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMServerTypeMetricName, NO_SERVER_DATA}},
-       {{internal::kUKMMillisecondsSinceFormParsedMetricName, 0},
-        {internal::kUKMHeuristicTypeMetricName, EMAIL_ADDRESS},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMServerTypeMetricName, NO_SERVER_DATA}}});
+      test_ukm_recorder_, form, UkmSuggestionsShownType::kEntryName,
+      {{{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName,
+         PHONE_HOME_WHOLE_NUMBER},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}},
+       {{UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName, EMAIL_ADDRESS},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA}}});
   VerifyFormInteractionUkm(
-      test_ukm_recorder_, form, internal::kUKMSuggestionFilledEntryName,
-      {{{internal::kUKMRecordTypeMetricName, AutofillProfile::LOCAL_PROFILE},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}},
-       {{internal::kUKMRecordTypeMetricName, AutofillProfile::LOCAL_PROFILE},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+      test_ukm_recorder_, form, UkmSuggestionFilledType::kEntryName,
+      {{{UkmSuggestionFilledType::kRecordTypeName,
+         AutofillProfile::LOCAL_PROFILE},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+       {{UkmSuggestionFilledType::kRecordTypeName,
+         AutofillProfile::LOCAL_PROFILE},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
   VerifyFormInteractionUkm(
-      test_ukm_recorder_, form, internal::kUKMTextFieldDidChangeEntryName,
-      {{{internal::kUKMFieldTypeGroupMetricName, NAME},
-        {internal::kUKMHeuristicTypeMetricName, NAME_FULL},
-        {internal::kUKMServerTypeMetricName, NO_SERVER_DATA},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMHtmlFieldModeMetricName, HTML_MODE_NONE},
-        {internal::kUKMIsAutofilledMetricName, false},
-        {internal::kUKMIsEmptyMetricName, true},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}},
-       {{internal::kUKMFieldTypeGroupMetricName, NAME},
-        {internal::kUKMHeuristicTypeMetricName, NAME_FULL},
-        {internal::kUKMServerTypeMetricName, NO_SERVER_DATA},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMHtmlFieldModeMetricName, HTML_MODE_NONE},
-        {internal::kUKMIsAutofilledMetricName, true},
-        {internal::kUKMIsEmptyMetricName, true},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}},
-       {{internal::kUKMFieldTypeGroupMetricName, EMAIL},
-        {internal::kUKMHeuristicTypeMetricName, EMAIL_ADDRESS},
-        {internal::kUKMServerTypeMetricName, NO_SERVER_DATA},
-        {internal::kUKMHtmlFieldTypeMetricName, HTML_TYPE_UNSPECIFIED},
-        {internal::kUKMHtmlFieldModeMetricName, HTML_MODE_NONE},
-        {internal::kUKMIsAutofilledMetricName, true},
-        {internal::kUKMIsEmptyMetricName, true},
-        {internal::kUKMMillisecondsSinceFormParsedMetricName, 0}}});
+      test_ukm_recorder_, form, UkmTextFieldDidChangeType::kEntryName,
+      {{{UkmTextFieldDidChangeType::kFieldTypeGroupName, NAME},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName, NAME_FULL},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kHtmlFieldModeName, HTML_MODE_NONE},
+        {UkmTextFieldDidChangeType::kIsAutofilledName, false},
+        {UkmTextFieldDidChangeType::kIsEmptyName, true},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+       {{UkmTextFieldDidChangeType::kFieldTypeGroupName, NAME},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName, NAME_FULL},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kHtmlFieldModeName, HTML_MODE_NONE},
+        {UkmTextFieldDidChangeType::kIsAutofilledName, true},
+        {UkmTextFieldDidChangeType::kIsEmptyName, true},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}},
+       {{UkmTextFieldDidChangeType::kFieldTypeGroupName, EMAIL},
+        {UkmTextFieldDidChangeType::kHeuristicTypeName, EMAIL_ADDRESS},
+        {UkmTextFieldDidChangeType::kServerTypeName, NO_SERVER_DATA},
+        {UkmTextFieldDidChangeType::kHtmlFieldTypeName, HTML_TYPE_UNSPECIFIED},
+        {UkmTextFieldDidChangeType::kHtmlFieldModeName, HTML_MODE_NONE},
+        {UkmTextFieldDidChangeType::kIsAutofilledName, true},
+        {UkmTextFieldDidChangeType::kIsEmptyName, true},
+        {UkmSuggestionFilledType::kMillisecondsSinceFormParsedName, 0}}});
 }
 
 // Verify that we correctly log metrics tracking the duration of form fill.
@@ -5315,12 +5342,9 @@ TEST_F(AutofillMetricsTest,
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
   GURL url("https://www.google.com");
   int upload_decision = 1;
-  std::vector<std::pair<const char*, int>> metrics = {
-      {internal::kUKMCardUploadDecisionMetricName, upload_decision}};
 
-  EXPECT_TRUE(AutofillMetrics::LogUkm(&test_ukm_recorder_, url,
-                                      internal::kUKMCardUploadDecisionEntryName,
-                                      metrics));
+  AutofillMetrics::LogCardUploadDecisionsUkm(&test_ukm_recorder_, url,
+                                             upload_decision);
 
   ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
   const ukm::UkmSource* source =
@@ -5332,13 +5356,13 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
 
   // Make sure that a card upload decision entry was logged.
   EXPECT_EQ(source->id(), entry->source_id);
-  EXPECT_EQ(base::HashMetricName(internal::kUKMCardUploadDecisionEntryName),
+  EXPECT_EQ(base::HashMetricName(UkmCardUploadDecisionType::kEntryName),
             entry->event_hash);
   EXPECT_EQ(1U, entry->metrics.size());
 
   // Make sure that the correct upload decision was logged.
   const ukm::mojom::UkmMetric* metric = ukm::TestUkmRecorder::FindMetric(
-      entry, internal::kUKMCardUploadDecisionMetricName);
+      entry, UkmCardUploadDecisionType::kUploadDecisionName);
   ASSERT_NE(nullptr, metric);
   EXPECT_EQ(upload_decision, metric->value);
 }
@@ -5347,12 +5371,9 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric) {
 TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
   GURL url("https://www.google.com");
   int form_structure_metric = 1;
-  std::vector<std::pair<const char*, int>> metrics = {
-      {internal::kUKMDeveloperEngagementMetricName, form_structure_metric}};
 
-  EXPECT_TRUE(AutofillMetrics::LogUkm(
-      &test_ukm_recorder_, url, internal::kUKMDeveloperEngagementEntryName,
-      metrics));
+  AutofillMetrics::LogDeveloperEngagementUkm(&test_ukm_recorder_, url,
+                                             form_structure_metric);
 
   ASSERT_EQ(1U, test_ukm_recorder_.sources_count());
   const ukm::UkmSource* source =
@@ -5364,13 +5385,13 @@ TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
 
   // Make sure that a developer engagement entry was logged.
   EXPECT_EQ(source->id(), entry->source_id);
-  EXPECT_EQ(base::HashMetricName(internal::kUKMDeveloperEngagementEntryName),
+  EXPECT_EQ(base::HashMetricName(UkmDeveloperEngagementType::kEntryName),
             entry->event_hash);
   EXPECT_EQ(1U, entry->metrics.size());
 
   // Make sure that the correct developer engagement metric was logged.
   const ukm::mojom::UkmMetric* metric = ukm::TestUkmRecorder::FindMetric(
-      entry, internal::kUKMDeveloperEngagementMetricName);
+      entry, UkmDeveloperEngagementType::kDeveloperEngagementName);
   ASSERT_NE(nullptr, metric);
   EXPECT_EQ(form_structure_metric, metric->value);
 }
@@ -5378,29 +5399,14 @@ TEST_F(AutofillMetricsTest, RecordDeveloperEngagementMetric) {
 // Tests that no UKM is logged when the URL is not valid.
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_InvalidUrl) {
   GURL url("");
-  std::vector<std::pair<const char*, int>> metrics = {{"metric", 1}};
-
-  EXPECT_FALSE(
-      AutofillMetrics::LogUkm(&test_ukm_recorder_, url, "test_ukm", metrics));
-  EXPECT_EQ(0U, test_ukm_recorder_.sources_count());
-}
-
-// Tests that no UKM is logged when the metrics map is empty.
-TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoMetrics) {
-  GURL url("https://www.google.com");
-  std::vector<std::pair<const char*, int>> metrics;
-
-  EXPECT_FALSE(
-      AutofillMetrics::LogUkm(&test_ukm_recorder_, url, "test_ukm", metrics));
+  AutofillMetrics::LogCardUploadDecisionsUkm(&test_ukm_recorder_, url, 1);
   EXPECT_EQ(0U, test_ukm_recorder_.sources_count());
 }
 
 // Tests that no UKM is logged when the ukm service is null.
 TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
   GURL url("https://www.google.com");
-  std::vector<std::pair<const char*, int>> metrics = {{"metric", 1}};
-
-  EXPECT_FALSE(AutofillMetrics::LogUkm(nullptr, url, "test_ukm", metrics));
+  AutofillMetrics::LogCardUploadDecisionsUkm(nullptr, url, 1);
   ASSERT_EQ(0U, test_ukm_recorder_.sources_count());
 }
 

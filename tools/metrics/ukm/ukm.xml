@@ -258,7 +258,12 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="IsAutofilled">
     <summary>
-      True whether field was autofilled. See |AutofillField.is_autofilled|.
+      True if the field was autofilled. See |AutofillField.is_autofilled|.
+    </summary>
+  </metric>
+  <metric name="IsEmpty">
+    <summary>
+      True if the field was empty. See |AutofillField.IsEmpty()|.
     </summary>
   </metric>
   <metric name="MillisecondsSinceFormParsed">
