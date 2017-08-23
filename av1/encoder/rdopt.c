@@ -146,9 +146,15 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 
 #if CONFIG_EXT_REFS
 #if CONFIG_EXT_COMP_REFS
+#if CONFIG_ALTREF2
+#define SECOND_REF_FRAME_MASK                                         \
+  ((1 << ALTREF_FRAME) | (1 << ALTREF2_FRAME) | (1 << BWDREF_FRAME) | \
+   (1 << GOLDEN_FRAME) | (1 << LAST2_FRAME) | 0x01)
+#else  // !CONFIG_ALTREF2
 #define SECOND_REF_FRAME_MASK                                        \
   ((1 << ALTREF_FRAME) | (1 << BWDREF_FRAME) | (1 << GOLDEN_FRAME) | \
    (1 << LAST2_FRAME) | 0x01)  // NOLINT
+#endif                         // CONFIG_ALTREF2
 #else                          // !CONFIG_EXT_COMP_REFS
 #if CONFIG_ALTREF2
 #define SECOND_REF_FRAME_MASK \
@@ -6751,7 +6757,11 @@ static void estimate_ref_frame_costs(
 #else
               base_cost;
 #endif  // USE_UNI_COMP_REFS
-      ref_bicomp_costs[BWDREF_FRAME] = ref_bicomp_costs[ALTREF_FRAME] = 0;
+      ref_bicomp_costs[BWDREF_FRAME] =
+#if CONFIG_ALTREF2
+          ref_bicomp_costs[ALTREF2_FRAME] = 0;
+#endif  // CONFIG_ALTREF2
+      ref_bicomp_costs[ALTREF_FRAME] = 0;
 
       ref_bicomp_costs[LAST_FRAME] += av1_cost_bit(ref_comp_p, 0);
       ref_bicomp_costs[LAST2_FRAME] += av1_cost_bit(ref_comp_p, 0);
@@ -6765,14 +6775,22 @@ static void estimate_ref_frame_costs(
       ref_bicomp_costs[GOLDEN_FRAME] += av1_cost_bit(ref_comp_p2, 1);
 
       ref_bicomp_costs[BWDREF_FRAME] += av1_cost_bit(bwdref_comp_p, 0);
+#if CONFIG_ALTREF2
+      ref_bicomp_costs[ALTREF2_FRAME] += av1_cost_bit(bwdref_comp_p, 0);
+#endif  // CONFIG_ALTREF2
       ref_bicomp_costs[ALTREF_FRAME] += av1_cost_bit(bwdref_comp_p, 1);
 
-      int ref0;
+#if CONFIG_ALTREF2
+      ref_bicomp_costs[BWDREF_FRAME] += av1_cost_bit(bwdref_comp_p1, 0);
+      ref_bicomp_costs[ALTREF2_FRAME] += av1_cost_bit(bwdref_comp_p1, 1);
+#endif  // CONFIG_ALTREF2
+
+      int ref0, ref1;
       for (ref0 = LAST_FRAME; ref0 <= GOLDEN_FRAME; ++ref0) {
-        ref_costs_comp[ref0][BWDREF_FRAME] =
-            ref_bicomp_costs[ref0] + ref_bicomp_costs[BWDREF_FRAME];
-        ref_costs_comp[ref0][ALTREF_FRAME] =
-            ref_bicomp_costs[ref0] + ref_bicomp_costs[ALTREF_FRAME];
+        for (ref1 = BWDREF_FRAME; ref1 <= ALTREF_FRAME; ++ref1) {
+          ref_costs_comp[ref0][ref1] =
+              ref_bicomp_costs[ref0] + ref_bicomp_costs[ref1];
+        }
       }
 
       aom_prob uni_comp_ref_p = av1_get_pred_prob_uni_comp_ref_p(cm, xd);
@@ -6842,10 +6860,10 @@ static void estimate_ref_frame_costs(
 #endif  // CONFIG_EXT_COMP_REFS
     } else {
 #if CONFIG_EXT_COMP_REFS
-      int ref0;
+      int ref0, ref1;
       for (ref0 = LAST_FRAME; ref0 <= GOLDEN_FRAME; ++ref0) {
-        ref_costs_comp[ref0][BWDREF_FRAME] = 512;
-        ref_costs_comp[ref0][ALTREF_FRAME] = 512;
+        for (ref1 = BWDREF_FRAME; ref1 <= ALTREF_FRAME; ++ref1)
+          ref_costs_comp[ref0][ref1] = 512;
       }
       ref_costs_comp[LAST_FRAME][LAST2_FRAME] = 512;
       ref_costs_comp[LAST_FRAME][LAST3_FRAME] = 512;
