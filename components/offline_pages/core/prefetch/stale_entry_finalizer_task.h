@@ -24,7 +24,7 @@ class StaleEntryFinalizerTask : public Task {
  public:
   using NowGetter = base::RepeatingCallback<base::Time()>;
 
-  StaleEntryFinalizerTask(PrefetchStore* prefetch_store);
+  explicit StaleEntryFinalizerTask(PrefetchStore* prefetch_store);
   ~StaleEntryFinalizerTask() override;
 
   void Run() override;
