@@ -5973,7 +5973,7 @@ def CMDformat(parser, args):
       cmd = [os.path.join(tool_dir, 'pretty_print.py'), '--non-interactive']
       if opts.dry_run or opts.diff:
         cmd.append('--diff')
-        stdout = RunCommand(cmd, cwd=top_dir)
+      stdout = RunCommand(cmd, cwd=top_dir)
       if opts.diff:
         sys.stdout.write(stdout)
       if opts.dry_run and stdout:
