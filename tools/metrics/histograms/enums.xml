@@ -11655,6 +11655,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="8192" label="EXTERNAL_EXTENSION"/>
   <int value="16384" label="UPDATE_REQUIRED_BY_POLICY"/>
   <int value="32768" label="CUSTODIAN_APPROVAL_REQUIRED"/>
+  <int value="65536" label="BLOCKED_BY_POLICY"/>
 </enum>
 
 <enum name="ExtensionEvents">

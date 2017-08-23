@@ -28,6 +28,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/common/disable_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest.h"
@@ -171,7 +172,9 @@ void SetWasInstalledByCustodian(const std::string& extension_id,
   if (installed_by_custodian == WasInstalledByCustodian(extension_id, context))
     return;
 
-  ExtensionPrefs::Get(context)->UpdateExtensionPref(
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
+
+  prefs->UpdateExtensionPref(
       extension_id, kWasInstalledByCustodianPrefName,
       installed_by_custodian ? base::MakeUnique<base::Value>(true) : nullptr);
   ExtensionService* service =
@@ -189,11 +192,15 @@ void SetWasInstalledByCustodian(const std::string& extension_id,
   if (registry->enabled_extensions().Contains(extension_id))
     return;
 
-  // If the extension is not loaded, it may need to be reloaded.
-  // Example is a pre-installed extension that was unloaded when a
+  // If the extension was disabled due to management policy, try to re-enable
+  // it. Example is a pre-installed extension that was disabled when a
   // supervised user flag has been received.
-  if (!registry->GetInstalledExtension(extension_id)) {
-    service->ReloadExtension(extension_id);
+  // Note: EnableExtension will fail if the extension still needs to be disabled
+  // due to manangement policy.
+  if (registry->disabled_extensions().Contains(extension_id) &&
+      prefs->GetDisableReasons(extension_id) ==
+          disable_reason::DISABLE_BLOCKED_BY_POLICY) {
+    service->EnableExtension(extension_id);
   }
 }
 

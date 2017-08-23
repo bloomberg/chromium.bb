@@ -273,7 +273,6 @@ extern const char kCannotUninstallManagedExtension[];
 extern const char kChromeVersionTooLow[];
 extern const char kDeclarativeNetRequestPermissionNeeded[];
 extern const char kDevToolsExperimental[];
-extern const char kDisabledByPolicy[];
 extern const char kExpectString[];
 extern const char kFileNotFound[];
 extern const char kInvalidAboutPage[];

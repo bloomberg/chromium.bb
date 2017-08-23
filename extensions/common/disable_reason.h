@@ -5,6 +5,8 @@
 #ifndef EXTENSIONS_COMMON_DISABLE_REASON_H_
 #define EXTENSIONS_COMMON_DISABLE_REASON_H_
 
+#include <limits>
+
 namespace extensions {
 namespace disable_reason {
 
@@ -37,9 +39,14 @@ enum DisableReason {
   DISABLE_UPDATE_REQUIRED_BY_POLICY = 1 << 14,
   // Supervised user needs approval by custodian.
   DISABLE_CUSTODIAN_APPROVAL_REQUIRED = 1 << 15,
+  // Blocked due to management policy.
+  DISABLE_BLOCKED_BY_POLICY = 1 << 16,
   // This should always be the last value.
-  DISABLE_REASON_LAST = 1 << 16,
+  DISABLE_REASON_LAST = 1LL << 17,
 };
+
+static_assert(DISABLE_REASON_LAST - 1 <= std::numeric_limits<int>::max(),
+              "The DisableReason bitmask cannot be stored in an int.");
 
 }  // namespace disable_reason
 }  // namespace extensions

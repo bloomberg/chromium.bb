@@ -3874,7 +3874,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsUninstall) {
 }
 
 // Tests that previously installed extensions that are now prohibited from
-// being installed are removed.
+// being installed are disabled.
 TEST_F(ExtensionServiceTest, ManagementPolicyUnloadsAllProhibited) {
   InitializeEmptyExtensionService();
 
@@ -3888,9 +3888,21 @@ TEST_F(ExtensionServiceTest, ManagementPolicyUnloadsAllProhibited) {
       extensions::TestManagementPolicyProvider::PROHIBIT_LOAD);
   GetManagementPolicy()->RegisterProvider(&provider);
 
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
   // Run the policy check.
   service()->CheckManagementPolicy();
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
+  EXPECT_EQ(2u, registry()->disabled_extensions().size());
+  EXPECT_EQ(extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
+            prefs->GetDisableReasons(good_crx));
+  EXPECT_EQ(extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
+            prefs->GetDisableReasons(page_action));
+
+  // Removing the extensions from policy blacklist should re-enable them.
+  GetManagementPolicy()->UnregisterAllProviders();
+  service()->CheckManagementPolicy();
+  EXPECT_EQ(2u, registry()->enabled_extensions().size());
   EXPECT_EQ(0u, registry()->disabled_extensions().size());
 }
 
