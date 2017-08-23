@@ -1838,7 +1838,7 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
     xOffset += NSWidth([appsPageShortcutButton_ frame]) +
                bookmarks::kBookmarkHorizontalPadding;
   }
-  if (!managedBookmarkService_->managed_node()->empty()) {
+  if ([self shouldShowManagedBookmarksButton]) {
     layout.visible_elements |=
         bookmarks::kVisibleElementsMaskManagedBookmarksButton;
     layout.managed_bookmarks_button_offset = xOffset;
@@ -2694,6 +2694,13 @@ static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
 // For testing.
 - (const BookmarkBarLayout&)currentLayout {
   return layout_;
+}
+
+- (BOOL)shouldShowManagedBookmarksButton {
+  PrefService* prefs = browser_->profile()->GetPrefs();
+  bool prefIsSet =
+      prefs->GetBoolean(bookmarks::prefs::kShowManagedBookmarksInBookmarkBar);
+  return prefIsSet && !managedBookmarkService_->managed_node()->empty();
 }
 
 @end
