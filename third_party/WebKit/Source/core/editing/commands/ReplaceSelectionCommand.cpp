@@ -1001,28 +1001,10 @@ ElementToSplitToAvoidPastingIntoInlineElementsWithStyle(
       containing_block));
 }
 
-void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
-  TRACE_EVENT0("blink", "ReplaceSelectionCommand::doApply");
-  const VisibleSelection selection = EndingVisibleSelection();
-  DCHECK(!selection.IsNone());
-  DCHECK(selection.Start().AnchorNode());
-  if (!selection.IsNonOrphanedCaretOrRange() || !selection.Start().AnchorNode())
-    return;
-
-  if (!selection.RootEditableElement())
-    return;
-
-  ReplacementFragment fragment(&GetDocument(), document_fragment_.Get(),
-                               selection);
-  bool trivial_replace_result = PerformTrivialReplace(fragment, editing_state);
-  if (editing_state->IsAborted())
-    return;
-  if (trivial_replace_result)
-    return;
-
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-
+void ReplaceSelectionCommand::SetUpStyle(const VisibleSelection& selection) {
   // We can skip matching the style if the selection is plain text.
+  // TODO(editing-dev): Use IsEditablePosition instead of using UserModify
+  // directly.
   if ((selection.Start().AnchorNode()->GetLayoutObject() &&
        selection.Start()
                .AnchorNode()
@@ -1038,7 +1020,12 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
     insertion_style_ = EditingStyle::Create(selection.Start());
     insertion_style_->MergeTypingStyle(&GetDocument());
   }
+}
 
+void ReplaceSelectionCommand::InsertParagraphSeparatorIfNeeds(
+    const VisibleSelection& selection,
+    const ReplacementFragment& fragment,
+    EditingState* editing_state) {
   const VisiblePosition visible_start = selection.VisibleStart();
   const VisiblePosition visible_end = selection.VisibleEnd();
 
@@ -1046,13 +1033,13 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
   const bool selection_start_was_start_of_paragraph =
       IsStartOfParagraph(visible_start);
 
-  Element* enclosing_block_of_visible_start =
+  Element* const enclosing_block_of_visible_start =
       EnclosingBlock(visible_start.DeepEquivalent().AnchorNode());
 
   const bool start_is_inside_mail_blockquote = EnclosingNodeOfType(
       selection.Start(), IsMailHTMLBlockquoteElement, kCanCrossEditingBoundary);
   const bool selection_is_plain_text = !IsRichlyEditablePosition(selection.Base());
-  Element* current_root = selection.RootEditableElement();
+  Element* const current_root = selection.RootEditableElement();
 
   if ((selection_start_was_start_of_paragraph &&
        selection_end_was_end_of_paragraph &&
@@ -1141,6 +1128,42 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
               .Build());
     }
   }
+}
+
+void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
+  TRACE_EVENT0("blink", "ReplaceSelectionCommand::doApply");
+  const VisibleSelection selection = EndingVisibleSelection();
+  DCHECK(!selection.IsNone());
+  DCHECK(selection.Start().AnchorNode());
+  if (!selection.IsNonOrphanedCaretOrRange() || !selection.Start().AnchorNode())
+    return;
+
+  if (!selection.RootEditableElement())
+    return;
+
+  ReplacementFragment fragment(&GetDocument(), document_fragment_.Get(),
+                               selection);
+  bool trivial_replace_result = PerformTrivialReplace(fragment, editing_state);
+  if (editing_state->IsAborted())
+    return;
+  if (trivial_replace_result)
+    return;
+
+  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  SetUpStyle(selection);
+  Element* const current_root = selection.RootEditableElement();
+  const bool start_is_inside_mail_blockquote = EnclosingNodeOfType(
+      selection.Start(), IsMailHTMLBlockquoteElement, kCanCrossEditingBoundary);
+  const bool selection_is_plain_text =
+      !IsRichlyEditablePosition(selection.Base());
+  const bool selection_end_was_end_of_paragraph =
+      IsEndOfParagraph(selection.VisibleEnd());
+  const bool selection_start_was_start_of_paragraph =
+      IsStartOfParagraph(selection.VisibleStart());
+  InsertParagraphSeparatorIfNeeds(selection, fragment, editing_state);
+  if (editing_state->IsAborted())
+    return;
 
   Position insertion_pos = EndingVisibleSelection().Start();
   // We don't want any of the pasted content to end up nested in a Mail
