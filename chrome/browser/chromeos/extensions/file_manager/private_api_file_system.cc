@@ -609,6 +609,30 @@ bool FileManagerPrivateFormatVolumeFunction::RunAsync() {
   return true;
 }
 
+bool FileManagerPrivateRenameVolumeFunction::RunAsync() {
+  using extensions::api::file_manager_private::RenameVolume::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  using file_manager::VolumeManager;
+  using file_manager::Volume;
+  VolumeManager* const volume_manager = VolumeManager::Get(GetProfile());
+  if (!volume_manager)
+    return false;
+
+  base::WeakPtr<Volume> volume =
+      volume_manager->FindVolumeById(params->volume_id);
+  if (!volume)
+    return false;
+
+  // TODO(klemenko): Uncomment the code below when RenameMountedDevice is
+  // implemented
+  /*DiskMountManager::GetInstance()->RenameMountedDevice(
+    volume->mount_path().AsUTF8Unsafe(), params->new_name);*/
+  SendResponse(true);
+  return true;
+}
+
 // Obtains file size of URL.
 void GetFileMetadataOnIOThread(
     scoped_refptr<storage::FileSystemContext> file_system_context,

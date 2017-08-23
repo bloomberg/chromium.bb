@@ -1127,6 +1127,60 @@ util.validateFileName = function(parentEntry, name, filterHiddenOn) {
 };
 
 /**
+ * Verifies the user entered name for external drive to be
+ * renamed to. Name restrictions must correspond to the target filesystem
+ * restrictions.
+ *
+ * It also verifies that name length is in the limits of the filesystem.
+ *
+ * @param {string} name New external drive name.
+ * @param {!VolumeInfo} volumeInfo
+ * @return {Promise} Promise fulfilled on success, or rejected with the error
+ *     message.
+ */
+util.validateExternalDriveName = function(name, volumeInfo) {
+  // Verify if entered name for external drive respects restrictions provided by
+  // the target filesystem
+
+  var fileSystem = volumeInfo.diskFileSystemType;
+  var nameLength = name.length;
+
+  // Verify length for the target file system type
+  if (fileSystem == VolumeManagerCommon.FileSystemType.VFAT &&
+      nameLength >
+          VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.VFAT) {
+    return Promise.reject(strf(
+        'ERROR_EXTERNAL_DRIVE_LONG_NAME',
+        VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.VFAT));
+  } else if (
+      fileSystem == VolumeManagerCommon.FileSystemType.EXFAT &&
+      nameLength >
+          VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.EXFAT) {
+    return Promise.reject(strf(
+        'ERROR_EXTERNAL_DRIVE_LONG_NAME',
+        VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit.EXFAT));
+  }
+
+  // Only printable ASCII (from ' ' to '~')
+  var containsNonPrintableAscii = /[\x00-\x1F\x7F-\x7F]/.exec(name);
+  if (containsNonPrintableAscii) {
+    return Promise.reject(strf(
+        'ERROR_EXTERNAL_DRIVE_INVALID_CHARACTER',
+        containsNonPrintableAscii[0]));
+  }
+
+  var containsForbiddenCharacters =
+      /[\*\?\.\,\;\:\/\\\|\+\=\<\>\[\]\"\'\t]/.exec(name);
+  if (containsForbiddenCharacters) {
+    return Promise.reject(strf(
+        'ERROR_EXTERNAL_DRIVE_INVALID_CHARACTER',
+        containsForbiddenCharacters[0]));
+  }
+
+  return Promise.resolve();
+};
+
+/**
  * Adds a foregorund listener to the background page components.
  * The lisner will be removed when the foreground window is closed.
  * @param {!cr.EventTarget} target

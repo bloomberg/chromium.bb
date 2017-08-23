@@ -74,7 +74,8 @@ var ProfileInfo;
  *   configurable: boolean,
  *   watchable: boolean,
  *   mountCondition: (string|undefined),
- *   mountContext: (string|undefined)
+ *   mountContext: (string|undefined),
+ *   diskFileSystemType: (string|undefined)
  * }}
  */
 var VolumeMetadata;
@@ -437,6 +438,14 @@ chrome.fileManagerPrivate.getSizeStats = function(volumeId, callback) {};
  * @param {string} volumeId
  */
 chrome.fileManagerPrivate.formatVolume = function(volumeId) {};
+
+/**
+ * Renames a mounted volume. |volumeId| ID of the volume to be renamed to
+ * |newName|.
+ * @param {string} volumeId
+ * @param {string} newName
+ */
+chrome.fileManagerPrivate.renameVolume = function(volumeId, newName) {};
 
 /**
  * Retrieves file manager preferences. |callback|

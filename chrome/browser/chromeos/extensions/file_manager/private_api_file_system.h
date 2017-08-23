@@ -224,6 +224,21 @@ class FileManagerPrivateFormatVolumeFunction
   bool RunAsync() override;
 };
 
+// Implements the chrome.fileManagerPrivate.renameVolume method.
+// Renames Volume given its mount path and new Volume name.
+class FileManagerPrivateRenameVolumeFunction
+    : public LoggedAsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivate.renameVolume",
+                             FILEMANAGERPRIVATE_RENAMEVOLUME)
+
+ protected:
+  ~FileManagerPrivateRenameVolumeFunction() override {}
+
+  // AsyncExtensionFunction overrides.
+  bool RunAsync() override;
+};
+
 // Implements the chrome.fileManagerPrivate.startCopy method.
 class FileManagerPrivateInternalStartCopyFunction
     : public LoggedAsyncExtensionFunction {

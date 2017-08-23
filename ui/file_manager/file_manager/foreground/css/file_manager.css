@@ -168,6 +168,17 @@ div.splitter {
   text-overflow: ellipsis;
 }
 
+#directory-tree .tree-row .rename-placeholder {
+  display: block;
+  flex: auto;
+  font-weight: 500;
+  margin: 0 6px;
+}
+
+#directory-tree .tree-row .rename-placeholder > input {
+  width: 100%;
+}
+
 #directory-tree [renaming] > .tree-row > .label {
   display: none;
 }
@@ -1421,6 +1432,7 @@ html[dir='rtl'] .badge {
 }
 
 input.rename:focus,
+#directory-tree .tree-row .rename-placeholder > input:focus,
 #directory-tree .tree-row > input:focus {
   outline-color: rgb(77, 144, 254);
 }
@@ -2229,7 +2241,7 @@ li#progress-center-close-view.error.single button.dismiss,
   color: white;
   display: flex;
   flex: 0 0 14px;
-  font-size; 14px;
+  font-size: 14px;
   padding: 20px 15px;
 }
 

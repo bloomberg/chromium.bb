@@ -542,11 +542,15 @@ function VolumeItem(modelItem, tree) {
 
   item.setupIcon_(item.querySelector('.icon'), item.volumeInfo_);
 
-  // Attach the "eject" icon if the volume is ejectable.
+  // Attach a placeholder for rename input text box and the eject icon if the
+  // volume is ejectable
   if ((modelItem.volumeInfo_.source === VolumeManagerCommon.Source.DEVICE &&
        modelItem.volumeInfo_.volumeType !==
            VolumeManagerCommon.VolumeType.MTP) ||
       modelItem.volumeInfo_.source === VolumeManagerCommon.Source.FILE) {
+    // This placeholder is added to allow to put textbox before eject button
+    // while executing renaming action on external drive.
+    item.setupRenamePlaceholder_(item.rowElement);
     item.setupEjectButton_(item.rowElement);
   }
 
@@ -682,6 +686,16 @@ VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
   ejectButton.appendChild(ripple);
 };
 
+/**
+ * Set up rename input textbox placeholder if needed.
+ * @param {HTMLElement} rowElement The parent element for placeholder.
+ * @private
+ */
+VolumeItem.prototype.setupRenamePlaceholder_ = function(rowElement) {
+  var placeholder = cr.doc.createElement('span');
+  placeholder.className = 'rename-placeholder';
+  rowElement.appendChild(placeholder);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // DriveVolumeItem
