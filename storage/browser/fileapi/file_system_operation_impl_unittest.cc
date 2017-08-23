@@ -240,11 +240,11 @@ class FileSystemOperationImplTest
       base::File::Error actual,
       const base::File::Info& info,
       const base::FilePath& platform_path,
-      const scoped_refptr<ShareableFileReference>& shareable_file_ref) {
+      scoped_refptr<ShareableFileReference> shareable_file_ref) {
     info_ = info;
     path_ = platform_path;
     *status = actual;
-    shareable_file_ref_ = shareable_file_ref;
+    shareable_file_ref_ = std::move(shareable_file_ref);
     closure.Run();
   }
 

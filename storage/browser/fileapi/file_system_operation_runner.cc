@@ -643,16 +643,16 @@ void FileSystemOperationRunner::DidCreateSnapshot(
     base::File::Error rv,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
-    const scoped_refptr<storage::ShareableFileReference>& file_ref) {
+    scoped_refptr<storage::ShareableFileReference> file_ref) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&FileSystemOperationRunner::DidCreateSnapshot,
                               AsWeakPtr(), handle, callback, rv, file_info,
-                              platform_path, file_ref));
+                              platform_path, std::move(file_ref)));
     return;
   }
-  callback.Run(rv, file_info, platform_path, file_ref);
+  callback.Run(rv, file_info, platform_path, std::move(file_ref));
   FinishOperation(handle.id);
 }
 

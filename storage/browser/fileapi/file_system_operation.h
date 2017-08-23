@@ -114,11 +114,11 @@ class FileSystemOperation {
   // longer necessary in the javascript world.
   // Please see the comment for ShareableFileReference for details.
   //
-  typedef base::Callback<
-      void(base::File::Error result,
-           const base::File::Info& file_info,
-           const base::FilePath& platform_path,
-           const scoped_refptr<storage::ShareableFileReference>& file_ref)>
+  typedef base::Callback<void(
+      base::File::Error result,
+      const base::File::Info& file_info,
+      const base::FilePath& platform_path,
+      scoped_refptr<storage::ShareableFileReference> file_ref)>
       SnapshotFileCallback;
 
   // Used to specify how recursive operation delegate behaves for errors.

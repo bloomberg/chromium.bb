@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "content/public/test/test_browser_thread.h"
+#include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -544,12 +545,11 @@ TEST_F(NativeMediaFileUtilTest, RemoveFileFiltering) {
   }
 }
 
-void CreateSnapshotCallback(
-    base::File::Error* error,
-    base::File::Error result,
-    const base::File::Info&,
-    const base::FilePath&,
-    const scoped_refptr<storage::ShareableFileReference>&) {
+void CreateSnapshotCallback(base::File::Error* error,
+                            base::File::Error result,
+                            const base::File::Info&,
+                            const base::FilePath&,
+                            scoped_refptr<storage::ShareableFileReference>) {
   *error = result;
 }
 
