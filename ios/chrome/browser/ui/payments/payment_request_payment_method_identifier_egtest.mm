@@ -92,9 +92,9 @@ const char kPaymentMethodIdentifierPage[] =
 
   web::test::ExecuteJavaScript(GetCurrentWebState(),
                                "buyHelper([{"
-                               "  supportedMethods: ['mastercard'],"
+                               "  supportedMethods: 'mastercard',"
                                "}, {"
-                               "  supportedMethods: ['basic-card']"
+                               "  supportedMethods: 'basic-card'"
                                "}]);");
 
   const payments::PaymentRequestCache::PaymentRequestSet& requests =
@@ -157,7 +157,7 @@ const char kPaymentMethodIdentifierPage[] =
       "buyHelper([{"
       "  supportedMethods: ['mastercard', 'visa']"
       "}, {"
-      "  supportedMethods: ['basic-card'],"
+      "  supportedMethods: 'basic-card',"
       "  data: {"
       "    supportedNetworks: ['visa', 'mastercard', 'jcb'],"
       "  }"
@@ -177,17 +177,16 @@ const char kPaymentMethodIdentifierPage[] =
 
 // A url-based payment method identifier is only supported if it has an https
 // scheme.
-- (void)testURLBasedPaymentMethodIdentifierWithInvalidScheme {
+- (void)testValidURLBasedPaymentMethodIdentifier {
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
-  web::test::ExecuteJavaScript(
-      GetCurrentWebState(),
-      "buyHelper([{"
-      "  supportedMethods: ['https://bobpay.xyz', 'http://bobpay.xyz']"
-      "}, {"
-      "  supportedMethods: ['basic-card']"
-      "}]);");
+  web::test::ExecuteJavaScript(GetCurrentWebState(),
+                               "buyHelper([{"
+                               "  supportedMethods: 'https://bobpay.xyz',"
+                               "}, {"
+                               "  supportedMethods: 'basic-card'"
+                               "}]);");
 
   const payments::PaymentRequestCache::PaymentRequestSet& requests =
       [self paymentRequestsForWebState:GetCurrentWebState()];
@@ -200,9 +199,8 @@ const char kPaymentMethodIdentifierPage[] =
                   @"");
 }
 
-// A url-based payment method identifier is only supported if it has an https
-// scheme.
-- (void)testMultiplePaymentMethodIdentifiers {
+// An invalid URL-based payment method identifier results in a RangeError.
+- (void)testURLBasedPaymentMethodIdentifierWithInvalidScheme {
   [ChromeEarlGrey
       loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
 
@@ -211,34 +209,37 @@ const char kPaymentMethodIdentifierPage[] =
       "buyHelper([{"
       "  supportedMethods: ['https://bobpay.xyz', 'http://bobpay.xyz']"
       "}, {"
-      "  supportedMethods: ['mastercard', 'visa', 'https://alicepay.com']"
-      "}, {"
-      "  supportedMethods: ['basic-card'],"
+      "  supportedMethods: 'basic-card'"
+      "}]);");
+
+  [self waitForWebViewContainingTexts:{"RangeError",
+                                       "A payment method identifier must "
+                                       "either be valid URL with a https "
+                                       "scheme and empty username and password "
+                                       "or a lower-case alphanumeric string "
+                                       "with optional hyphens"}];
+}
+
+// An invalid standard payment method identifier results in a RangeError.
+- (void)testStandardPaymentMethodIdentifierWithInvalidCharacters {
+  [ChromeEarlGrey
+      loadURL:web::test::HttpServer::MakeUrl(kPaymentMethodIdentifierPage)];
+
+  web::test::ExecuteJavaScript(
+      GetCurrentWebState(),
+      "buyHelper([{"
+      "  supportedMethods: 'BASIC-CARD',"
       "  data: {"
       "    supportedNetworks: ['visa', 'mastercard', 'jcb'],"
       "  }"
       "}]);");
 
-  const payments::PaymentRequestCache::PaymentRequestSet& requests =
-      [self paymentRequestsForWebState:GetCurrentWebState()];
-  GREYAssertEqual(1U, requests.size(), @"Expected one request.");
-
-  std::vector<std::string> supportedCardNetworks =
-      (*requests.begin())->supported_card_networks();
-  GREYAssertEqual(3U, supportedCardNetworks.size(),
-                  @"Expected three supported card networks.");
-  GREYAssertEqual("mastercard", supportedCardNetworks[0], @"");
-  GREYAssertEqual("visa", supportedCardNetworks[1], @"");
-  GREYAssertEqual("jcb", supportedCardNetworks[2], @"");
-
-  const std::vector<GURL>& urlPaymentMethodIdentifiers =
-      (*requests.begin())->url_payment_method_identifiers();
-  GREYAssertEqual(2U, urlPaymentMethodIdentifiers.size(),
-                  @"Expected two URL-based payment method identifier.");
-  GREYAssertEqual(GURL("https://bobpay.xyz"), urlPaymentMethodIdentifiers[0],
-                  @"");
-  GREYAssertEqual(GURL("https://alicepay.com"), urlPaymentMethodIdentifiers[1],
-                  @"");
+  [self waitForWebViewContainingTexts:{"RangeError",
+                                       "A payment method identifier must "
+                                       "either be valid URL with a https "
+                                       "scheme and empty username and password "
+                                       "or a lower-case alphanumeric string "
+                                       "with optional hyphens"}];
 }
 
 @end

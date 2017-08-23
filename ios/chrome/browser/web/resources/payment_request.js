@@ -5,7 +5,7 @@
 /**
  * @fileoverview JavaScript implementation of the Payment Request API. When
  * loaded, installs the API onto the window object. Conforms
- * to https://www.w3.org/TR/payment-request/. Note: This is a work in progress.
+ * to https://w3c.github.io/payment-request/. Note: This is a work in progress.
  */
 
 /**
@@ -131,6 +131,7 @@ __gCrWeb['PromiseResolver'] = __gCrWeb.PromiseResolver;
  * A simple object representation of |PaymentRequest| meant for
  * communication to the app side.
  * @typedef {{
+ *   id: string,
  *   methodData: !Array<!window.PaymentMethodData>,
  *   details: !window.PaymentDetails,
  *   options: (window.PaymentOptions|undefined)
@@ -160,6 +161,386 @@ var SerializedPaymentResponse;
   // already
   // been defined.
   __gCrWeb.paymentRequestManager = {};
+
+  /** @const {number} */
+  __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH = 1024;
+
+  /** @const {number} */
+  __gCrWeb['paymentRequestManager'].MAX_JSON_STRING_LENGTH = 1048576;
+
+  /** @const {number} */
+  __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE = 1024;
+
+  /**
+   * Validates a PaymentCurrencyAmount which is used to supply monetary amounts.
+   * https://w3c.github.io/payment-request/#dfn-valid-decimal-monetary-value
+   * @param {!window.PaymentCurrencyAmount} amount
+   * @param {string} amountName The name of |amount| to use in the error.
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validatePaymentCurrencyAmount = function(
+      amount, amountName) {
+    if (typeof amount.value !== 'string')
+      throw new TypeError(amountName + ' value must be a string');
+    if (amount.value.length >
+        __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+      throw new TypeError(
+          amountName + ' value cannot be longer than ' +
+          __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH + ' characters');
+    }
+    if (!/^-?[0-9]+(\.[0-9]+)?$/.test(amount.value)) {
+      throw new TypeError(
+          amountName + ' value is not a valid decimal monetary value');
+    }
+
+    if (typeof amount.currency !== 'string')
+      throw new TypeError(amountName + ' currency must be a string');
+    if (amount.currency.length >
+        __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+      throw new TypeError(
+          amountName + ' currency cannot be longer than ' +
+          __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH + ' characters');
+    }
+    if ((typeof amount.currencySystem === 'undefined' ||
+        amount.currencySystem == 'urn:iso:std:iso:4217') &&
+        !/^[a-zA-Z]{3}$/.test(amount.currency)) {
+      throw new RangeError(
+          amountName + ' currency is not a valid ISO 4217 currency code');
+    }
+  };
+
+  /**
+   * Validates a window.PaymentItem which indicates a monetary amount along with
+   * a human-readable description of the amount.
+   * @param {!window.PaymentItem} paymentItem
+   * @param {string} paymentItemName The name of |paymentItem| to use in the
+   *     error.
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validatePaymentItem = function(
+      paymentItem, paymentItemName) {
+    if (typeof paymentItem.label !== 'string')
+      throw new TypeError(paymentItemName + ' label must be a string');
+    if (paymentItem.label.length >
+        __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+      throw new TypeError(
+          paymentItemName + ' label cannot be longer than ' +
+          __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH + ' characters');
+    }
+
+    if (!paymentItem.amount)
+      throw new TypeError(paymentItemName + ' amount is missing');
+    __gCrWeb['paymentRequestManager'].validatePaymentCurrencyAmount(
+        paymentItem.amount, paymentItemName + ' amount');
+  };
+
+  /**
+   * Validates a Payment method identifier according to:
+   * https://w3c.github.io/payment-method-id/
+   * @param {string} identifier Payment method identifier to validate.
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validatePaymentMethodIdentifier = function(
+      identifier) {
+    if (typeof identifier !== 'string')
+      throw new TypeError('A payment method identifier must be a string');
+    if (identifier.length >
+        __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+      throw new TypeError(
+          'A payment method identifier cannot be longer than ' +
+          __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH + ' characters');
+    }
+    try {
+      var url = new URL(identifier);
+      var invalidIdentifier =
+          (url.protocol != 'https:' || url.username || url.password);
+    } catch (error) {
+      invalidIdentifier = !/^[a-z0-9-]+$/.test(identifier);
+    } finally {
+      if (invalidIdentifier) {
+        throw new RangeError(
+            'A payment method identifier must either be valid URL with a ' +
+            'https scheme and empty username and password or a lower-case ' +
+            'alphanumeric string with optional hyphens');
+      }
+    }
+  };
+
+  /**
+   * Validates the supportedMethods property and its associated data property in
+   * a window.PaymentMethodData or window.PaymentDetailsModifier.
+   * @param {(!Array<string>|string)} supportedMethods
+   * @param {(window.BasicCardData|Object)} data
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validateSupportedMethods = function(
+      supportedMethods, data) {
+    var hasBasicCardMethod = false;
+
+    if (supportedMethods instanceof Array) {
+      if (supportedMethods.length == 0) {
+        throw new TypeError(
+            'Each payment method needs to include at least one payment ' +
+            'method identifier');
+      }
+      if (supportedMethods.length >
+          __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
+        throw new TypeError(
+            'At most' + __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE +
+            ' payment method identifiers are supported');
+      }
+      for (var i = 0; i < supportedMethods.length; i++) {
+        if (typeof supportedMethods[i] !== 'string') {
+          throw new TypeError('A payment method identifier must be a string');
+        }
+        __gCrWeb['paymentRequestManager'].validatePaymentMethodIdentifier(
+            supportedMethods[i]);
+
+        hasBasicCardMethod =
+            hasBasicCardMethod || supportedMethods[i] == 'basic-card';
+      }
+    } else if (typeof supportedMethods !== 'string') {
+      throw new TypeError('A payment method identifier must be a string');
+    } else {
+      __gCrWeb['paymentRequestManager'].validatePaymentMethodIdentifier(
+          supportedMethods);
+    }
+
+    if (typeof data === 'undefined')
+      return;
+
+    if (!(data instanceof Object)) {
+      throw new TypeError('Payment method data must be of type \'Object\'');
+    }
+    if (JSON.stringify(data).length >
+        __gCrWeb['paymentRequestManager'].MAX_JSON_STRING_LENGTH) {
+      throw new TypeError(
+          'JSON serialization of payment method data should be no longer ' +
+          'than ' + __gCrWeb['paymentRequestManager'].MAX_JSON_STRING_LENGTH +
+          ' characters');
+    }
+
+    // Validate basic-card data.
+    if (hasBasicCardMethod || supportedMethods == 'basic-card') {
+      // Validate basic-card supportedNetworks.
+      if (data.supportedNetworks) {
+        if (!(data.supportedNetworks instanceof Array)) {
+          throw new TypeError('basic-card supportedNetworks must be an array');
+        }
+        if (data.supportedNetworks.length >
+            __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
+          throw new TypeError(
+              'basic-card supportedNetworks cannot be longer than ' +
+              __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE + ' elements');
+        }
+        for (var i = 0; i < data.supportedNetworks.length; i++) {
+          if (typeof data.supportedNetworks[i] !== 'string') {
+            throw new TypeError(
+                'A basic-card supported network must be a string');
+          }
+          if (data.supportedNetworks[i].length >
+              __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+            throw new TypeError(
+                'A basic-card supported network cannot be longer than ' +
+                __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH +
+                ' characters');
+          }
+        }
+      }
+      // Validate basic-card supportedTypes.
+      if (data.supportedTypes) {
+        if (!(data.supportedTypes instanceof Array)) {
+          throw new TypeError('basic-card supportedTypes must be an array');
+        }
+        if (data.supportedTypes.length >
+            __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
+          throw new TypeError(
+              'basic-card supportedTypes cannot be longer than ' +
+              __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE + ' elements');
+        }
+        for (var i = 0; i < data.supportedTypes.length; i++) {
+          if (typeof data.supportedTypes[i] !== 'string') {
+            throw new TypeError('A basic-card supported type must be a string');
+          }
+          if (data.supportedTypes[i].length >
+              __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+            throw new TypeError(
+                'A basic-card supported type cannot be longer than ' +
+                __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH +
+                ' characters');
+          }
+        }
+      }
+    }
+  };
+
+  /**
+   * Validates a list of window.PaymentDetailsModifier instances.
+   * @param {!Array<!window.PaymentDetailsModifier>} modifiers
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validatePaymentDetailsModifiers = function(
+      modifiers) {
+    if (!(modifiers instanceof Array))
+      throw new TypeError('Modifiers must be an array');
+    if (modifiers.length > __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
+      throw new TypeError(
+          'At most ' + __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE +
+          ' modifiers allowed');
+    }
+    for (var i = 0; i < modifiers.length; i++) {
+      if (!modifiers[i].supportedMethods) {
+        throw new TypeError(
+            'Must specify at least one payment method identifier');
+      }
+      // Validate PaymentDetailsModifier.supportedMethods and
+      // PaymentDetailsModifier.data.
+      __gCrWeb['paymentRequestManager'].validateSupportedMethods(
+          modifiers[i].supportedMethods, modifiers[i].data);
+
+      if (typeof modifiers[i].total !== 'undefined') {
+        __gCrWeb['paymentRequestManager'].validatePaymentItem(
+            modifiers[i].total, 'Modifier total');
+        if (modifiers[i].total.amount.value[0] == '-')
+          throw new TypeError('Modifier total value should be non-negative');
+      }
+
+      if (typeof modifiers[i].additionalDisplayItems === 'undefined')
+        continue;
+
+      if (!(modifiers[i].additionalDisplayItems instanceof Array)) {
+        throw new TypeError('additionalDisplayItems must be an array');
+      }
+      if (modifiers[i].additionalDisplayItems.length >
+          __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
+        throw new TypeError(
+            'At most ' + __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE +
+            ' additionalDisplayItems allowed');
+      }
+      for (var j = 0; j < modifiers[i].additionalDisplayItems.length; j++) {
+        __gCrWeb['paymentRequestManager'].validatePaymentItem(
+            modifiers[i].additionalDisplayItems[j],
+            'Additional display items in modifier');
+      }
+    }
+  };
+
+  /**
+   * Validates the shipping options passed to the PaymentRequest constructor and
+   * returns the validate values.
+   * @param {(Array<!window.PaymentShippingOption>|undefined)} shippingOptions
+   * @return {!Array<!window.PaymentShippingOption>} Validated shipping options.
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validateShippingOptions = function(
+      shippingOptions) {
+    if (!shippingOptions || !(shippingOptions instanceof Array)) {
+      return [];
+    }
+    if (shippingOptions.length >
+        __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
+      throw new TypeError(
+          'At most ' + __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE +
+          ' shipping options allowed');
+    }
+
+    var uniqueIDS = {};
+    for (var i = 0; i < shippingOptions.length; i++) {
+      // Validate window.PaymentShippingOption.
+      if (typeof shippingOptions[i].id !== 'string') {
+        throw new TypeError('Shipping option ID must be a string');
+      }
+      if (shippingOptions[i].id.length >
+          __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+        throw new TypeError(
+            'Shipping option ID cannot be longer than ' +
+            __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH +
+            ' characters');
+      }
+      if (uniqueIDS[shippingOptions[i].id]) {
+        // Return an empty array instead of throwing an error.
+        return [];
+      }
+      uniqueIDS[shippingOptions[i].id] = true;
+
+      if (typeof shippingOptions[i].label !== 'string') {
+        throw new TypeError('Shipping option label must be a string');
+      }
+
+      if (!shippingOptions[i].amount)
+        throw new TypeError('Shipping option amount is missing');
+      __gCrWeb['paymentRequestManager'].validatePaymentCurrencyAmount(
+          shippingOptions[i].amount, 'Shipping option amount');
+    }
+    return shippingOptions;
+  };
+
+  /**
+   * Validates an instance of PaymentDetailsBase and returns the validated
+   * shipping options.
+   * @param {!window.PaymentDetails} details
+   * @return {!Array<!window.PaymentShippingOption>} The validated shipping
+   *     options.
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validatePaymentDetailsBase = function(
+      details) {
+    // Validate the details.displayItems.
+    if (typeof details.displayItems !== 'undefined') {
+      if (!(details.displayItems instanceof Array))
+        throw new TypeError('display items must be an array');
+      if (details.displayItems.length >
+          __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
+        throw new TypeError(
+            'At most ' + __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE +
+            'display items allowed');
+      }
+      for (var i = 0; i < details.displayItems.length; i++) {
+        __gCrWeb['paymentRequestManager'].validatePaymentItem(
+            details.displayItems[i], 'display items');
+      }
+    }
+
+    // Validate the details.modifiers.
+    if (typeof details.modifiers !== 'undefined') {
+      __gCrWeb['paymentRequestManager'].validatePaymentDetailsModifiers(
+          details.modifiers);
+    }
+
+    // Validate the details.shippingOptions.
+    return __gCrWeb['paymentRequestManager'].validateShippingOptions(
+        details.shippingOptions);
+  };
+
+  /**
+   * Validates the array of PaymentMethodData instances passed to the
+   * PaymentRequest constructor.
+   * @param {!Array<!window.PaymentMethodData>} methodData
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validatePaymentMethodData = function(
+      methodData) {
+    if (!(methodData instanceof Array))
+      throw new TypeError('methodData must be an array');
+    if (methodData.length == 0) {
+      throw new TypeError('Needs to include at least one payment method');
+    }
+    if (methodData.length > __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE) {
+      throw new TypeError(
+          'At most ' + __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE +
+          ' payment methods are supported');
+    }
+    for (var i = 0; i < methodData.length; i++) {
+      if (!methodData[i].supportedMethods) {
+        throw new TypeError(
+            'Each payment method needs to include at least one payment ' +
+            'method identifier');
+      }
+      // Validate PaymentMethodData.supportedMethods and PaymentMethodData.data.
+      __gCrWeb['paymentRequestManager'].validateSupportedMethods(
+          methodData[i].supportedMethods, methodData[i].data);
+    }
+  };
 
   /**
    * Generates a random string identfier resembling a GUID.
@@ -512,7 +893,7 @@ var SerializedPaymentResponse;
  * @constructor
  * @implements {EventTarget}
  * @extends {__gCrWeb.EventTarget}
- * @throws {DOMException}
+ * @throws {DOMException|TypeError|RangeError}
  * @suppress {checkTypes} Required for DOMException's constructor.
  */
 function PaymentRequest(methodData, details, opt_options) {
@@ -527,10 +908,10 @@ function PaymentRequest(methodData, details, opt_options) {
   // https://w3c.github.io/webappsec-secure-contexts/#is-origin-trustworthy
   var isOriginPotentiallyTrustworthy = window.location.origin !== 'null' &&
       (window.location.protocol === 'https:' ||
-          window.location.hostname === '127.0.0.1' ||
-          window.location.hostname === '::1' ||
-          window.location.hostname === 'localhost' ||
-          window.location.protocol === 'file:');
+       window.location.hostname === '127.0.0.1' ||
+       window.location.hostname === '::1' ||
+       window.location.hostname === 'localhost' ||
+       window.location.protocol === 'file:');
 
   if (!__gCrWeb['paymentRequestManager'].isContextSecure ||
       !isOriginPotentiallyTrustworthy) {
@@ -539,42 +920,10 @@ function PaymentRequest(methodData, details, opt_options) {
         'SecurityError');
   }
 
-  if (methodData.length == 0)
-    throw new Error('The length of the methodData parameter must be > 0.');
-
-  for (var i = 0; i < methodData.length; i++) {
-    if (methodData[i].supportedMethods.length == 0)
-      throw new Error(
-          'The length of the supportedMethods parameter must be > 0.');
-  }
-
-  // TODO(crbug.com/602666): Perform other validation per spec.
-
-  // TODO(crbug.com/602666): Process payment methods then set parsedMethodData
-  // instead of methodData on this instance.
-  // /**
-  //  * @type {!Object<!Array<string>, ?string>}
-  //  * @private
-  //  */
-  // this.parsedMethodData = ...;
-
-  /**
-   * @type {!Array<!window.PaymentMethodData>}
-   * @private
-   */
-  this.methodData = methodData;
-
-  /**
-   * @type {!window.PaymentDetails}
-   * @private
-   */
-  this.details = details;
-
-  /**
-   * @type {?window.PaymentOptions}
-   * @private
-   */
-  this.options = opt_options || null;
+  // Initialize these properties to make them own (vs. inherited) properties.
+  this.shippingAddress = null;
+  this.shippingOption = null;
+  this.shippingType = null;
 
   /**
    * The state of this request, used to govern its lifecycle.
@@ -594,20 +943,61 @@ function PaymentRequest(methodData, details, opt_options) {
    */
   this.updating = false;
 
+  // Validate methodData.
+  __gCrWeb['paymentRequestManager'].validatePaymentMethodData(methodData);
+
+  /**
+   * @type {!Array<!window.PaymentMethodData>}
+   * @private
+   */
+  this.methodData = methodData;
+
+  // Validate details.
+  var validatedShippingOptions =
+      __gCrWeb['paymentRequestManager'].validatePaymentDetailsBase(details);
+
   this.id = details.id ? details.id : __gCrWeb['paymentRequestManager'].guid();
 
-  // Initialize these properties to make them own (vs. inherited) properties.
-  this.shippingAddress = null;
-  this.shippingOption = null;
-  this.shippingType = null;
+  // Validate details.total.
+  if (!details.total)
+    throw new TypeError('Total is missing.');
+  __gCrWeb['paymentRequestManager'].validatePaymentItem(details.total, 'Total');
+  if (details.total.amount.value[0] == '-')
+    throw new TypeError('Total value should be non-negative');
 
-  if (opt_options && opt_options.requestShipping) {
-    if (opt_options.shippingType != PaymentShippingType.SHIPPING &&
-        opt_options.shippingType != PaymentShippingType.DELIVERY &&
-        opt_options.shippingType != PaymentShippingType.PICKUP) {
-      this.shippingType = PaymentShippingType.SHIPPING;
-    }
+  /**
+   * @type {!window.PaymentDetails}
+   * @private
+   */
+  this.details = details;
+
+  // Pick the last selected shipping option as the selected shipping option.
+  for (var i = 0; i < validatedShippingOptions.length; i++) {
+    if (validatedShippingOptions[i].selected)
+      this.shippingOption = validatedShippingOptions[i].id;
   }
+
+  // Validate the opt_options.shippingType.
+  if (opt_options && opt_options.shippingType &&
+      opt_options.shippingType != PaymentShippingType.SHIPPING &&
+      opt_options.shippingType != PaymentShippingType.DELIVERY &&
+      opt_options.shippingType != PaymentShippingType.PICKUP) {
+    throw new TypeError(
+        'The provided shipping type is not a valid enum value of type ' +
+        'PaymentShippingType');
+  }
+
+  // Use the provided shipping type. Otherwise default to "shipping".
+  if (opt_options && opt_options.requestShipping) {
+    this.shippingType = opt_options.shippingType ? opt_options.shippingType :
+                                                   PaymentShippingType.SHIPPING;
+  }
+
+  /**
+   * @type {?window.PaymentOptions}
+   * @private
+   */
+  this.options = opt_options || null;
 
   var message = {
     'command': 'paymentRequest.createPaymentRequest',
@@ -744,8 +1134,16 @@ PaymentRequest.prototype.canMakePayment = function() {
 
 /**
  * @typedef {{
- *   supportedMethods: !Array<string>,
- *   data: (Object|undefined)
+ *   supportedNetworks: !Array<string>,
+ *   supportedTypes: !Array<string>
+ * }}
+ */
+window.BasicCardData;
+
+/**
+ * @typedef {{
+ *   supportedMethods: (!Array<string>|string),
+ *   data: (!window.BasicCardData|Object)
  * }}
  */
 window.PaymentMethodData;
@@ -773,9 +1171,10 @@ window.PaymentDetails;
 
 /**
  * @typedef {{
- *   supportedMethods: !Array<string>,
+ *   supportedMethods: (!Array<string>|string),
  *   total: (window.PaymentItem|undefined),
- *   additionalDisplayItems: (!Array<!window.PaymentItem>|undefined)
+ *   additionalDisplayItems: (!Array<!window.PaymentItem>|undefined),
+ *   data: (!window.BasicCardData|Object)
  * }}
  */
 window.PaymentDetailsModifier;
