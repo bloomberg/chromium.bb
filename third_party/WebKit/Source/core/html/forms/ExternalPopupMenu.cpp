@@ -161,7 +161,7 @@ void ExternalPopupMenu::UpdateFromElement(UpdateReason reason) {
       break;
 
     case kByStyleChange:
-      // TOOD(tkent): We should update the popup location/content in some
+      // TODO(tkent): We should update the popup location/content in some
       // cases.  e.g. Updating ComputedStyle of the SELECT element affects
       // popup position and OPTION style.
       break;

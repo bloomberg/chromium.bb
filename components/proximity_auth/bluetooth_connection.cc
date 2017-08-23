@@ -129,7 +129,7 @@ void BluetoothConnection::OnAdapterInitialized(
   if (!bluetooth_device) {
     PA_LOG(WARNING) << "Device with address " << address
                     << " is not known to the system Bluetooth daemon.";
-    // TOOD(isherman): Optimistically attempt to seek the device and connect
+    // TODO(isherman): Optimistically attempt to seek the device and connect
     // anyway, as was previously implemented in BluetoothConnectionFinder.
     Disconnect();
     return;

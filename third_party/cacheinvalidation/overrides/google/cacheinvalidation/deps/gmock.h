@@ -76,7 +76,7 @@ WhenDeserializedAs(const InnerMatcher& inner_matcher) {
 }  // namespace proto
 
 MATCHER_P(EqualsProto, message, "") {
-  // TOOD(ghc): This implementation assume protobuf serialization is
+  // TODO(ghc): This implementation assume protobuf serialization is
   // deterministic, which is true in practice but technically not something that
   // code is supposed to rely on.  However, it vastly simplifies the
   // implementation...

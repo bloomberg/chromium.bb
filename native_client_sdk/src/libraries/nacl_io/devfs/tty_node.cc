@@ -169,7 +169,7 @@ Error TtyNode::Echo(const char* string, int count) {
   HandleAttr data;
   Error error = Write(data, string, count, &wrote);
   if (error != 0 || wrote != count) {
-    // TOOD(sbc): Do something more useful in response to a
+    // TODO(sbc): Do something more useful in response to a
     // failure to echo.
     return error;
   }

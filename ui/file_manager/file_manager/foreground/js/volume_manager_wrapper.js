@@ -17,7 +17,7 @@
  * @param {boolean} writableOnly If true, only writable volumes are returned.
  * @param {Window=} opt_backgroundPage Window object of the background
  *     page. If this is specified, the class skips to get background page.
- *     TOOD(hirono): Let all clients of the class pass the background page and
+ *     TODO(hirono): Let all clients of the class pass the background page and
  *     make the argument not optional.
  */
 function VolumeManagerWrapper(allowedPaths, writableOnly, opt_backgroundPage) {

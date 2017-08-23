@@ -555,7 +555,7 @@ void WindowManagerState::ScheduleInputEventTimeout(WindowTree* tree,
       base::MakeUnique<InFlightEventDispatchDetails>(this, tree, display_id,
                                                      event, phase);
 
-  // TOOD(sad): Adjust this delay, possibly make this dynamic.
+  // TODO(sad): Adjust this delay, possibly make this dynamic.
   const base::TimeDelta max_delay = base::debug::BeingDebugged()
                                         ? base::TimeDelta::FromDays(1)
                                         : GetDefaultAckTimerDelay();

@@ -444,7 +444,7 @@ TEST_P(CertVerifyProcInternalTest, DISABLED_PaypalNullCertParsing) {
     // ERR_CERT_AUTHORITY_INVALID on the real device.
     EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
   } else {
-    // TOOD(bulach): investigate why macosx and win aren't returning
+    // TODO(bulach): investigate why macosx and win aren't returning
     // ERR_CERT_INVALID or ERR_CERT_COMMON_NAME_INVALID.
     EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
   }

@@ -57,7 +57,7 @@ class BlobBytesStreamer {
       } else if (write_result == MOJO_RESULT_SHOULD_WAIT) {
         break;
       } else {
-        // TOOD(mek): Something went wrong, log this error somewhere.
+        // TODO(mek): Something went wrong, log this error somewhere.
         delete this;
         return;
       }

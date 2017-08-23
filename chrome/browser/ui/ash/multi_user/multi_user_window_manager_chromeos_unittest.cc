@@ -68,7 +68,7 @@ const char kBAccountIdString[] =
 const char kArrowBAccountIdString[] =
     "->{\"account_type\":\"unknown\",\"email\":\"B\"}";
 
-// TOOD(beng): This implementation seems only superficially different to the
+// TODO(beng): This implementation seems only superficially different to the
 //             production impl. Evaluate whether or not we can just use that
 //             one.
 class TestShellContentState : public ash::ShellContentState {
