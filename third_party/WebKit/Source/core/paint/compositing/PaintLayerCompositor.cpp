@@ -759,16 +759,6 @@ void PaintLayerCompositor::RootFixedBackgroundsChanged() {
     container_layer_->AddChildBelow(background_layer, scroll_layer_.get());
 }
 
-bool PaintLayerCompositor::ScrollingLayerDidChange(PaintLayer* layer) {
-  auto* scrollable_area = layer->GetScrollableArea();
-  auto* scrolling_coordinator = this->GetScrollingCoordinator();
-  if (scrolling_coordinator && scrollable_area) {
-    return scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
-        scrollable_area);
-  }
-  return false;
-}
-
 std::unique_ptr<JSONObject> PaintLayerCompositor::LayerTreeAsJSON(
     LayerTreeFlags flags) const {
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean ||

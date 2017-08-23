@@ -653,11 +653,8 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
                            needs_descendants_clipping_layer))
     layer_config_changed = true;
 
-  bool scrolling_config_changed = false;
-  if (UpdateScrollingLayers(owning_layer_.NeedsCompositedScrolling())) {
+  if (UpdateScrollingLayers(owning_layer_.NeedsCompositedScrolling()))
     layer_config_changed = true;
-    scrolling_config_changed = true;
-  }
 
   // If the outline needs to draw over the composited scrolling contents layer
   // or scrollbar layers it needs to be drawn into a separate layer.
@@ -693,11 +690,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration() {
 
   if (layer_config_changed)
     UpdateInternalHierarchy();
-
-  if (scrolling_config_changed) {
-    if (layout_object.View())
-      compositor->ScrollingLayerDidChange(&owning_layer_);
-  }
 
   // A mask layer is not part of the hierarchy proper, it's an auxiliary layer
   // that's plugged into another GraphicsLayer that is part of the hierarchy.
@@ -1527,8 +1519,14 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   // fractional scroll offset change can be propagated to compositor.
   if (scrolling_contents_offset != scrolling_contents_offset_ ||
       scroll_size != scrolling_contents_layer_->Size()) {
-    bool coordinator_handles_offset =
-        Compositor()->ScrollingLayerDidChange(&owning_layer_);
+    bool coordinator_handles_offset = false;
+    auto scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
+    auto* scrollable_area = owning_layer_.GetScrollableArea();
+    if (scrolling_coordinator && scrollable_area) {
+      coordinator_handles_offset =
+          scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
+              scrollable_area);
+    }
     scrolling_contents_layer_->SetPosition(
         coordinator_handles_offset ? FloatPoint()
                                    : FloatPoint(-ToFloatSize(scroll_position)));
