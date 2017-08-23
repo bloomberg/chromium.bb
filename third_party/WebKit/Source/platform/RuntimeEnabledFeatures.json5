@@ -1092,6 +1092,10 @@
       name: "VideoRotateToFullscreen",
     },
     {
+      name: "VisibilityCollapseColumn",
+      status: "experimental",
+    },
+    {
       name: "VisibilityCollapseRow",
       status: "stable",
     },

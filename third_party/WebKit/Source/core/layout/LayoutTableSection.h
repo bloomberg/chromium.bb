@@ -285,6 +285,11 @@ class CORE_EXPORT LayoutTableSection final : public LayoutTableBoxComponent {
     is_repeating_footer_group_ = FooterGroupShouldRepeat();
   }
 
+  // Update widths of cells affected by collapsed columns and sets whether cells
+  // are spanning any collapsed columns.
+  void UpdateLogicalWidthForCollapsedCells(
+      const Vector<int>& col_collapsed_width);
+
  protected:
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   bool NodeAtPoint(HitTestResult&,

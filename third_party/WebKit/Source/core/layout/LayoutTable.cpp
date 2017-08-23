@@ -45,6 +45,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/TablePaintInvalidator.h"
 #include "core/paint/TablePainter.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -62,6 +63,7 @@ LayoutTable::LayoutTable(Element* element)
       needs_invalidate_collapsed_borders_for_all_cells_(false),
       collapsed_outer_borders_valid_(false),
       should_paint_all_collapsed_borders_(false),
+      is_any_column_ever_collapsed_(false),
       has_col_elements_(false),
       needs_section_recalc_(false),
       column_logical_width_changed_(false),
@@ -709,6 +711,10 @@ void LayoutTable::UpdateLayout() {
     state.SetHeightOffsetForTableHeaders(LayoutUnit());
     state.SetHeightOffsetForTableFooters(LayoutUnit());
 
+    // Change logical width according to any collapsed columns.
+    Vector<int> col_collapsed_width;
+    AdjustWidthsForCollapsedColumns(col_collapsed_width);
+
     // Lay out table footer.
     if (LayoutTableSection* section = Footer()) {
       LayoutSection(*section, layouter, section_logical_left,
@@ -736,6 +742,12 @@ void LayoutTable::UpdateLayout() {
          section = SectionBelow(section)) {
       section->SetLogicalTop(logical_offset);
       section->LayoutRows();
+      if (!IsAnyColumnEverCollapsed()) {
+        if (col_collapsed_width.size())
+          SetIsAnyColumnEverCollapsed();
+      }
+      if (IsAnyColumnEverCollapsed())
+        section->UpdateLogicalWidthForCollapsedCells(col_collapsed_width);
       logical_offset += section->LogicalHeight();
     }
 
@@ -792,6 +804,54 @@ void LayoutTable::UpdateLayout() {
 
   column_logical_width_changed_ = false;
   ClearNeedsLayout();
+}
+
+void LayoutTable::AdjustWidthsForCollapsedColumns(
+    Vector<int>& col_collapsed_width) {
+  DCHECK(!col_collapsed_width.size());
+  if (!RuntimeEnabledFeatures::VisibilityCollapseColumnEnabled())
+    return;
+
+  unsigned n_eff_cols = NumEffectiveColumns();
+
+  // Update vector of collapsed widths.
+  for (size_t i = 0; i < n_eff_cols; ++i) {
+    // TODO(joysyu): Here, we are at O(n^2) for every table that has ever had a
+    // collapsed column. ColElementAtAbsoluteColumn() is currently O(n);
+    // ideally, it would be O(1). We have to improve the runtime before shipping
+    // visibility:collapse for columns. See discussion at
+    // https://chromium-review.googlesource.com/c/chromium/src/+/602506/18/third_party/WebKit/Source/core/layout/LayoutTable.cpp
+    if (IsAbsoluteColumnCollapsed(EffectiveColumnToAbsoluteColumn(i))) {
+      if (!col_collapsed_width.size())
+        col_collapsed_width.Grow(n_eff_cols);
+      col_collapsed_width[i] =
+          EffectiveColumnPositions()[i + 1] - EffectiveColumnPositions()[i];
+    }
+  }
+
+  if (!col_collapsed_width.size())
+    return;
+
+  // Adjust column positions according to collapsed widths.
+  int total_collapsed_width = 0;
+  for (size_t i = 0; i < n_eff_cols; ++i) {
+    total_collapsed_width += col_collapsed_width[i];
+    SetEffectiveColumnPosition(
+        i + 1, EffectiveColumnPositions()[i + 1] - total_collapsed_width);
+  }
+
+  SetLogicalWidth(LogicalWidth() - total_collapsed_width);
+  DCHECK_GE(LogicalWidth(), 0);
+}
+
+bool LayoutTable::IsAbsoluteColumnCollapsed(
+    unsigned absolute_column_index) const {
+  ColAndColGroup colElement = ColElementAtAbsoluteColumn(absolute_column_index);
+  LayoutTableCol* col = colElement.col;
+  LayoutTableCol* colgroup = colElement.colgroup;
+  return (col && col->Style()->Visibility() == EVisibility::kCollapse) ||
+         (colgroup &&
+          colgroup->Style()->Visibility() == EVisibility::kCollapse);
 }
 
 void LayoutTable::InvalidateCollapsedBorders() {
@@ -1041,6 +1101,8 @@ void LayoutTable::UpdateColumnCache() const {
     column_layout_objects_.push_back(column_layout_object);
   }
   column_layout_objects_valid_ = true;
+  // TODO(joysyu): There may be an optimization opportunity to set
+  // is_any_column_ever_collapsed_ to false here.
 }
 
 LayoutTable::ColAndColGroup LayoutTable::SlowColElementAtAbsoluteColumn(
