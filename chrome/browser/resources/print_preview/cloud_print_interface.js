@@ -334,7 +334,7 @@ cr.define('cloudprint', function() {
         if (account) {
           var index = this.userSessionIndex_[account] || 0;
           if (index > 0) {
-            url += '&user=' + index;
+            url += '&authuser=' + index;
           }
         }
       }

@@ -1281,7 +1281,7 @@ cr.define('print_preview', function() {
       this.appState_.persistIsGcpPromoDismissed(true);
       window.open(
           this.cloudPrintInterface_.baseUrl +
-          '?user=' + this.userInfo_.activeUser + '#printers');
+          '?authuser=' + this.userInfo_.activeUser + '#printers');
       this.close_(false);
     }
   };
