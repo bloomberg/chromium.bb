@@ -61,38 +61,6 @@ void DisableQuicOnIOThread(
 base::LazyInstance<SystemNetworkContextManager>::Leaky
     g_system_network_context_manager = LAZY_INSTANCE_INITIALIZER;
 
-content::mojom::NetworkContext* SystemNetworkContextManager::Context() {
-  return GetInstance()->GetContext();
-}
-
-void SystemNetworkContextManager::SetUp(
-    content::mojom::NetworkContextRequest* network_context_request,
-    content::mojom::NetworkContextParamsPtr* network_context_params,
-    bool* is_quic_allowed) {
-  SystemNetworkContextManager* manager = GetInstance();
-  *network_context_request =
-      mojo::MakeRequest(&manager->io_thread_network_context_);
-  *network_context_params = CreateNetworkContextParams();
-  *is_quic_allowed = manager->is_quic_allowed_;
-}
-
-SystemNetworkContextManager* SystemNetworkContextManager::GetInstance() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  return g_system_network_context_manager.Pointer();
-}
-
-SystemNetworkContextManager::SystemNetworkContextManager() {
-  const base::Value* value =
-      g_browser_process->policy_service()
-          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
-                                                std::string()))
-          .GetValue(policy::key::kQuicAllowed);
-  if (value)
-    value->GetAsBoolean(&is_quic_allowed_);
-}
-
-SystemNetworkContextManager::~SystemNetworkContextManager() {}
-
 content::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
   if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
     // SetUp should already have been called.
@@ -112,12 +80,29 @@ content::mojom::NetworkContext* SystemNetworkContextManager::GetContext() {
   return network_service_network_context_.get();
 }
 
-void SystemNetworkContextManager::DisableQuic() {
-  SystemNetworkContextManager* manager = GetInstance();
-  if (!manager->is_quic_allowed_)
-    return;
+void SystemNetworkContextManager::SetUp(
+    content::mojom::NetworkContextRequest* network_context_request,
+    content::mojom::NetworkContextParamsPtr* network_context_params,
+    bool* is_quic_allowed) {
+  *network_context_request = mojo::MakeRequest(&io_thread_network_context_);
+  *network_context_params = CreateNetworkContextParams();
+  *is_quic_allowed = is_quic_allowed_;
+}
 
-  manager->is_quic_allowed_ = false;
+SystemNetworkContextManager::SystemNetworkContextManager() {
+  const base::Value* value =
+      g_browser_process->policy_service()
+          ->GetPolicies(policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME,
+                                                std::string()))
+          .GetValue(policy::key::kQuicAllowed);
+  if (value)
+    value->GetAsBoolean(&is_quic_allowed_);
+}
+
+SystemNetworkContextManager::~SystemNetworkContextManager() {}
+
+void SystemNetworkContextManager::DisableQuic() {
+  is_quic_allowed_ = false;
 
   // Disabling QUIC for a profile disables QUIC globally. As a side effect, new
   // Profiles will also have QUIC disabled (because both IOThread's
@@ -127,6 +112,10 @@ void SystemNetworkContextManager::DisableQuic() {
     content::GetNetworkService()->DisableQuic();
 
   IOThread* io_thread = g_browser_process->io_thread();
+  // Nothing more to do if IOThread has already been shut down.
+  if (!io_thread)
+    return;
+
   safe_browsing::SafeBrowsingService* safe_browsing_service =
       g_browser_process->safe_browsing_service();
 

@@ -59,6 +59,7 @@
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/net/chrome_net_log_helper.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -388,6 +389,9 @@ void BrowserProcessImpl::PostDestroyThreads() {
   webrtc_log_uploader_.reset();
 #endif
 
+  // This observes |local_state_|, so should be destroyed before it.
+  system_network_context_manager_.reset();
+
   // Reset associated state right after actual thread is stopped,
   // as io_thread_.global_ cleanup happens in CleanUp on the IO
   // thread, i.e. as the thread exits its message loop.
@@ -563,6 +567,13 @@ IOThread* BrowserProcessImpl::io_thread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_thread_.get());
   return io_thread_.get();
+}
+
+SystemNetworkContextManager*
+BrowserProcessImpl::system_network_context_manager() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(system_network_context_manager_.get());
+  return system_network_context_manager_.get();
 }
 
 WatchDogThread* BrowserProcessImpl::watchdog_thread() {
@@ -1078,9 +1089,15 @@ void BrowserProcessImpl::PreCreateThreads() {
       extensions::kExtensionScheme, true);
 #endif
 
-  io_thread_.reset(
-      new IOThread(local_state(), policy_service(), net_log_.get(),
-                   extension_event_router_forwarder()));
+  // Must be created before the IOThread.
+  // TODO(mmenke): Once IOThread class is no longer needed (not the thread
+  // itself), this can be created on first use.
+  system_network_context_manager_ =
+      base::MakeUnique<SystemNetworkContextManager>();
+  io_thread_ = base::MakeUnique<IOThread>(
+      local_state(), policy_service(), net_log_.get(),
+      extension_event_router_forwarder(),
+      system_network_context_manager_.get());
 }
 
 void BrowserProcessImpl::PreMainMessageLoopRun() {

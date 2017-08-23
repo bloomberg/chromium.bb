@@ -134,6 +134,11 @@ IOThread* TestingBrowserProcess::io_thread() {
   return io_thread_;
 }
 
+SystemNetworkContextManager*
+TestingBrowserProcess::system_network_context_manager() {
+  return nullptr;
+}
+
 WatchDogThread* TestingBrowserProcess::watchdog_thread() {
   return nullptr;
 }
