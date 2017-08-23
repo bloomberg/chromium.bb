@@ -268,16 +268,20 @@ LayoutBox* CollectInlinesInternal(
   LayoutBox* next_box = nullptr;
   while (node) {
     if (node->IsText()) {
-      builder->SetIsSVGText(node->IsSVGInlineText());
-
       LayoutText* layout_text = ToLayoutText(node);
-      const String& text =
-          GetTextForInlineCollection<OffsetMappingBuilder>(*layout_text);
-      builder->Append(text, node->Style(), layout_text);
+      if (UNLIKELY(layout_text->IsWordBreak())) {
+        builder->Append(NGInlineItem::kControl, kZeroWidthSpaceCharacter,
+                        node->Style(), layout_text);
+      } else {
+        builder->SetIsSVGText(node->IsSVGInlineText());
+        const String& text =
+            GetTextForInlineCollection<OffsetMappingBuilder>(*layout_text);
+        builder->Append(text, node->Style(), layout_text);
+        AppendTextTransformedOffsetMapping(
+            &builder->GetConcatenatedOffsetMappingBuilder(), layout_text, text);
+      }
       ClearNeedsLayoutIfUpdatingLayout<OffsetMappingBuilder>(layout_text);
 
-      AppendTextTransformedOffsetMapping(
-          &builder->GetConcatenatedOffsetMappingBuilder(), layout_text, text);
 
     } else if (node->IsFloating()) {
       // Add floats and positioned objects in the same way as atomic inlines.

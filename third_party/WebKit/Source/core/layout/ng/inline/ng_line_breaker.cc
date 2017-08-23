@@ -409,18 +409,27 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleControlItem(
   line_.should_create_line_box = true;
 
   UChar character = node_.Text()[item.StartOffset()];
-  if (character == kNewlineCharacter) {
-    MoveToNextOf(item);
-    return LineBreakState::kForcedBreak;
+  switch (character) {
+    case kNewlineCharacter:
+      MoveToNextOf(item);
+      return LineBreakState::kForcedBreak;
+    case kTabulationCharacter: {
+      DCHECK(item.Style());
+      const ComputedStyle& style = *item.Style();
+      const Font& font = style.GetFont();
+      item_result->inline_size =
+          font.TabWidth(style.GetTabSize(), line_.position);
+      line_.position += item_result->inline_size;
+      MoveToNextOf(item);
+      // TODO(kojii): Implement break around the tab character.
+      return LineBreakState::kIsBreakable;
+    }
+    case kZeroWidthSpaceCharacter:
+      // <wbr> tag creates break opportunities regardless of auto_wrap.
+      MoveToNextOf(item);
+      return LineBreakState::kIsBreakable;
   }
-  DCHECK_EQ(character, kTabulationCharacter);
-  DCHECK(item.Style());
-  const ComputedStyle& style = *item.Style();
-  const Font& font = style.GetFont();
-  item_result->inline_size = font.TabWidth(style.GetTabSize(), line_.position);
-  line_.position += item_result->inline_size;
-  MoveToNextOf(item);
-  // TODO(kojii): Implement break around the tab character.
+  NOTREACHED();
   return LineBreakState::kIsBreakable;
 }
 
