@@ -760,6 +760,12 @@ void Layer::SetFallbackSurface(const viz::SurfaceInfo& surface_info) {
     mirror->dest()->SetFallbackSurface(surface_info);
 }
 
+const viz::SurfaceInfo* Layer::GetPrimarySurfaceInfo() const {
+  if (surface_layer_)
+    return &surface_layer_->primary_surface_info();
+  return nullptr;
+}
+
 const viz::SurfaceInfo* Layer::GetFallbackSurfaceInfo() const {
   if (surface_layer_)
     return &surface_layer_->fallback_surface_info();

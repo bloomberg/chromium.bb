@@ -316,6 +316,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // display compositor, the fallback surface will be used.
   void SetFallbackSurface(const viz::SurfaceInfo& surface_info);
 
+  // Returns the primary SurfaceInfo set by SetShowPrimarySurface.
+  const viz::SurfaceInfo* GetPrimarySurfaceInfo() const;
+
   // Returns the fallback SurfaceInfo set by SetFallbackSurface.
   const viz::SurfaceInfo* GetFallbackSurfaceInfo() const;
 
