@@ -17,6 +17,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_constants.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_controller.h"
@@ -32,6 +33,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/bookmarks/managed/managed_bookmark_service.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -693,9 +695,65 @@ TEST_F(BookmarkBarControllerTest, LayoutNoBookmarks) {
 
   // And the apps button is at the correct offset
   EXPECT_EQ(layout.apps_button_offset, bookmarks::kBookmarkLeftMargin);
+}
 
-  // TODO(lgrey): It seems prohibitively difficult/maybe impossible
-  // to test the managed/supervised buttons at this time.
+TEST_F(BookmarkBarControllerTest, LayoutManagedBookmarksButton) {
+  PrefService* prefs = profile()->GetPrefs();
+  // Doesn't show by default.
+  bookmarks::ManagedBookmarkService* managedBookmarkService =
+      ManagedBookmarkServiceFactory::GetForProfile(profile());
+  EXPECT_TRUE(managedBookmarkService->managed_node()->empty());
+
+  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
+  EXPECT_FALSE(layout.IsManagedBookmarksButtonVisible());
+
+  // Add a managed bookmark.
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("name", "Google");
+  dict->SetString("url", "http://google.com");
+  base::ListValue list;
+  list.Append(std::move(dict));
+  prefs->Set(bookmarks::prefs::kManagedBookmarks, list);
+  EXPECT_FALSE(managedBookmarkService->managed_node()->empty());
+
+  layout = [bar_ layoutFromCurrentState];
+  EXPECT_TRUE(layout.IsManagedBookmarksButtonVisible());
+
+  // Toggle the button off via pref.
+  prefs->SetBoolean(bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
+                    false);
+
+  layout = [bar_ layoutFromCurrentState];
+  EXPECT_FALSE(layout.IsManagedBookmarksButtonVisible());
+
+  // Toggle it back.
+  prefs->SetBoolean(bookmarks::prefs::kShowManagedBookmarksInBookmarkBar, true);
+
+  layout = [bar_ layoutFromCurrentState];
+  EXPECT_TRUE(layout.IsManagedBookmarksButtonVisible());
+}
+
+TEST_F(BookmarkBarControllerTest, LayoutSupervisedBookmarksButton) {
+  PrefService* prefs = profile()->GetPrefs();
+  // Doesn't show by default.
+  bookmarks::ManagedBookmarkService* managedBookmarkService =
+      ManagedBookmarkServiceFactory::GetForProfile(profile());
+  EXPECT_TRUE(managedBookmarkService->supervised_node()->empty());
+
+  bookmarks::BookmarkBarLayout layout = [bar_ layoutFromCurrentState];
+  EXPECT_FALSE(layout.IsSupervisedBookmarksButtonVisible());
+
+  // Add a managed bookmark.
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  dict->SetString("name", "Google");
+  dict->SetString("url", "http://google.com");
+  base::ListValue list;
+  list.Append(std::move(dict));
+  prefs->Set(bookmarks::prefs::kSupervisedBookmarks, list);
+  EXPECT_FALSE(managedBookmarkService->supervised_node()->empty());
+
+  layout = [bar_ layoutFromCurrentState];
+  EXPECT_TRUE(layout.IsSupervisedBookmarksButtonVisible());
 }
 
 TEST_F(BookmarkBarControllerTest, LayoutManagedAppsButton) {
