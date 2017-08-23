@@ -348,8 +348,10 @@ void ContentsView::UpdateSearchBox(double progress,
         gfx::Tween::ColorValueBetween(progress, original_shadow.color(),
                                       target_shadow.color())));
   }
-  if (is_fullscreen_app_list_enabled_)
+  if (is_fullscreen_app_list_enabled_) {
+    search_box->UpdateLayout(progress, current_state, target_state);
     search_box->UpdateBackground(progress, current_state, target_state);
+  }
   search_box->GetWidget()->SetBounds(
       search_box->GetViewBoundsForSearchBoxContentsBounds(
           ConvertRectToWidget(search_box_rect)));

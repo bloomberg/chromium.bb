@@ -52,7 +52,9 @@ namespace app_list {
 namespace {
 
 constexpr int kPadding = 12;
+constexpr int kPaddingSearchResult = 16;
 constexpr int kInnerPadding = 24;
+constexpr int kInnerPaddingFullscreen = 16;
 constexpr int kPreferredWidth = 360;
 constexpr int kPreferredWidthFullscreen = 544;
 constexpr int kSearchBoxBorderWidth = 4;
@@ -77,6 +79,13 @@ constexpr float kOpacityEndFraction = 0.6f;
 // Color of placeholder text in zero query state.
 constexpr SkColor kZeroQuerySearchboxColor =
     SkColorSetARGBMacro(0x8A, 0x00, 0x00, 0x00);
+
+// Gets the box layout inset horizontal padding for the state of AppListModel.
+int GetBoxLayoutPaddingForState(AppListModel::State state) {
+  if (state == AppListModel::STATE_SEARCH_RESULTS)
+    return kPaddingSearchResult;
+  return kPadding;
+}
 
 }  // namespace
 
@@ -185,13 +194,15 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   content_container_->SetBackground(
       base::MakeUnique<SearchBoxBackground>(background_color_));
 
-  views::BoxLayout* layout = new views::BoxLayout(
+  box_layout_ = new views::BoxLayout(
       views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
-      kInnerPadding - views::Textfield::kTextPadding);
-  content_container_->SetLayoutManager(layout);
-  layout->set_cross_axis_alignment(
+      (is_fullscreen_app_list_enabled_ ? kInnerPaddingFullscreen
+                                       : kInnerPadding) -
+          views::Textfield::kTextPadding);
+  content_container_->SetLayoutManager(box_layout_);
+  box_layout_->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  layout->set_minimum_cross_axis_size(kSearchBoxPreferredHeight);
+  box_layout_->set_minimum_cross_axis_size(kSearchBoxPreferredHeight);
 
   search_box_->SetBorder(views::NullBorder());
   search_box_->SetTextColor(kSearchTextColor);
@@ -222,7 +233,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
     search_box_->set_placeholder_text_color(kHintTextColor);
   }
   content_container_->AddChildView(search_box_);
-  layout->SetFlexForView(search_box_, 1);
+  box_layout_->SetFlexForView(search_box_, 1);
 
   if (is_fullscreen_app_list_enabled_) {
     close_button_ = new SearchBoxImageButton(this);
@@ -618,6 +629,16 @@ void SearchBoxView::UpdateBackground(double progress,
       progress, GetBackgroundColorForState(current_state),
       GetBackgroundColorForState(target_state));
   UpdateBackgroundColor(color);
+}
+
+void SearchBoxView::UpdateLayout(double progress,
+                                 AppListModel::State current_state,
+                                 AppListModel::State target_state) {
+  box_layout_->set_inside_border_insets(
+      gfx::Insets(0, gfx::Tween::LinearIntValueBetween(
+                         progress, GetBoxLayoutPaddingForState(current_state),
+                         GetBoxLayoutPaddingForState(target_state))));
+  InvalidateLayout();
 }
 
 void SearchBoxView::OnTabletModeChanged(bool started) {

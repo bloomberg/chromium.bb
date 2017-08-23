@@ -19,6 +19,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class BoxLayout;
 class ImageView;
 class Textfield;
 }  // namespace views
@@ -120,10 +121,16 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Updates the search box's background corner radius and color.
+  // Updates the search box's background corner radius and color based on the
+  // state of AppListModel.
   void UpdateBackground(double progress,
                         AppListModel::State current_state,
                         AppListModel::State target_state);
+
+  // Updates the search box's layout based on the state of AppListModel.
+  void UpdateLayout(double progress,
+                    AppListModel::State current_state,
+                    AppListModel::State target_state);
 
   // Called when tablet mode starts and ends.
   void OnTabletModeChanged(bool started);
@@ -223,6 +230,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   views::Textfield* search_box_;
   views::View* contents_view_ = nullptr;
   app_list::AppListView* app_list_view_;
+
+  // Owned by |content_container_|. It is deleted when the view is deleted.
+  views::BoxLayout* box_layout_ = nullptr;
 
   // Whether the fullscreen app list feature is enabled.
   const bool is_fullscreen_app_list_enabled_;
