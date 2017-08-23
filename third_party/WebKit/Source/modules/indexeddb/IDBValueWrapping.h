@@ -121,7 +121,11 @@ class MODULES_EXPORT IDBValueWrapper {
   // storage for IndexedDB, was not designed with large values in mind. At the
   // very least, large values will slow down compaction, causing occasional I/O
   // spikes.
-  static constexpr unsigned kWrapThreshold = 64 * 1024;
+  //
+  // TODO(crbug.com/756754): 128MB is the maximum IPC size, so this threshold
+  // effectively disables wrapping. Set the threshold back to 64 * 1024 after
+  // the Blob leak issue is fixed.
+  static constexpr unsigned kWrapThreshold = 128 * 1024 * 1024;
 
   // MIME type used for Blobs that wrap IDBValues.
   static constexpr const char* kWrapMimeType =
