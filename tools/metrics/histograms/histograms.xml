@@ -33408,6 +33408,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram base="true" name="Memory.Experimental.Extension2" units="MB">
+<!-- Name completed by histogram_suffixes name="RendererMemoryAllocator2" -->
+
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    The extension process's memory usage reported by the memory instrumentation
+    service.
+  </summary>
+</histogram>
+
 <histogram name="Memory.Experimental.Gpu.PhysicalFootprint.MacOS" units="MB">
   <owner>erikchen@chromium.org</owner>
   <summary>
@@ -33518,6 +33528,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The private working set used by each extension process.  Each process
     provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="Memory.Extension.PrivateMemoryFootprint" units="MB">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    A rough estimate of the private memory footprint of the extension process.
+    Recorded once per UMA ping.
   </summary>
 </histogram>
 
@@ -99401,6 +99419,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="PartitionAlloc" label="Constrained to partition allocator."/>
   <suffix name="BlinkGC" label="Constrained to blink GC allocator."/>
   <suffix name="V8" label="Constrained to v8 allocator."/>
+  <affected-histogram name="Memory.Experimental.Extension2"/>
   <affected-histogram name="Memory.Experimental.Renderer2"/>
 </histogram_suffixes>
 
