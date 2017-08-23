@@ -314,8 +314,6 @@ int av1_get_reference_mode_context(const AV1_COMMON *cm,
 }
 
 #if CONFIG_EXT_COMP_REFS
-#define CHECK_BWDREF_OR_ALTREF(ref_frame) \
-  ((ref_frame) == BWDREF_FRAME || (ref_frame) == ALTREF_FRAME)
 // TODO(zoeliu): To try on the design of 3 contexts, instead of 5:
 //               COMP_REF_TYPE_CONTEXTS = 3
 int av1_get_comp_reference_type_context(const MACROBLOCKD *xd) {
@@ -345,9 +343,9 @@ int av1_get_comp_reference_type_context(const MACROBLOCKD *xd) {
       const MV_REFERENCE_FRAME frfl = left_mbmi->ref_frame[0];
 
       if (a_sg && l_sg) {  // single/single
-        pred_context = 1 +
-                       2 * (!(CHECK_BWDREF_OR_ALTREF(frfa) ^
-                              CHECK_BWDREF_OR_ALTREF(frfl)));
+        pred_context =
+            1 +
+            2 * (!(IS_BACKWARD_REF_FRAME(frfa) ^ IS_BACKWARD_REF_FRAME(frfl)));
       } else if (l_sg || a_sg) {  // single/comp
         const int uni_rfc =
             a_sg ? has_uni_comp_refs(left_mbmi) : has_uni_comp_refs(above_mbmi);
@@ -355,8 +353,8 @@ int av1_get_comp_reference_type_context(const MACROBLOCKD *xd) {
         if (!uni_rfc)  // comp bidir
           pred_context = 1;
         else  // comp unidir
-          pred_context = 3 + (!(CHECK_BWDREF_OR_ALTREF(frfa) ^
-                                CHECK_BWDREF_OR_ALTREF(frfl)));
+          pred_context = 3 + (!(IS_BACKWARD_REF_FRAME(frfa) ^
+                                IS_BACKWARD_REF_FRAME(frfl)));
       } else {  // comp/comp
         const int a_uni_rfc = has_uni_comp_refs(above_mbmi);
         const int l_uni_rfc = has_uni_comp_refs(left_mbmi);
