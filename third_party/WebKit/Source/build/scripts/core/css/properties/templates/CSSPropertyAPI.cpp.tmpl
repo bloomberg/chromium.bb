@@ -51,14 +51,15 @@ const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
 
 #endif
 
-  return *property_apis[id - {{first_property_id}}];
+  // Subtract 1 because CSSPropertyInvalid does not appear in the array.
+  return *property_apis[id - 1];
 
 }
 
 } // namespace
 
 const CSSPropertyAPI& CSSPropertyAPI::Get(CSSPropertyID id) {
-  DCHECK_GE(id, {{first_property_id}});  // first_property_id
+  DCHECK_NE(id, CSSPropertyInvalid);
   DCHECK_LE(id, {{last_property_id}});  // last_property_id
   return GetAPI(id);
 }
