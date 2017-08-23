@@ -101,40 +101,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1674
     'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1852
-    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
-    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInAFrame',
-    'ClickScrollingTest.testShouldBeAbleToClickElementInAFrameThatIsOutOfView',
-    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInAFrameThatIsOutOfView',
-    'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
-    'ClickTest.testShouldSetRelatedTargetForMouseOver',
-    'ClickTest.testShouldBeAbleToClickOnAnElementGreaterThanTwoViewports',
-    'CorrectEventFiringTest.testShouldNotThrowIfEventHandlerThrows',
-    'ElementFindingTest.testRemovingAnElementDynamicallyFromTheDomShouldCauseAStaleRefException',
-    'JavascriptEnabledDriverTest.testShouldBeAbleToClickALinkThatClosesAWindow',
-    'VisibilityTest.testShouldModifyTheVisibilityOfAnElementDynamically',
-    'WindowSwitchingTest.testClickingOnAButtonThatClosesAnOpenWindowDoesNotCauseTheBrowserToHang',
-    'WindowSwitchingTest.testCanCallGetWindowHandlesAfterClosingAWindow',
-    'BasicKeyboardInterfaceTest.testBasicKeyboardInput',
-    'CombinedInputActionsTest.testChordControlCutAndPaste',
-    'CorrectEventFiringTest.testShouldFireMouseOverEventWhenClicking',
-    'CorrectEventFiringTest.testSendingKeysToAFocusedElementShouldNotBlurThatElement',
-    'CorrectEventFiringTest.testShouldFireTwoClickEventsWhenClickingOnALabel',
-    'CorrectEventFiringTest.testShouldIssueClickEvents',
-    'CorrectEventFiringTest.testShouldFireMouseMoveEventWhenClicking',
-    'JavascriptEnabledDriverTest.testShouldBeAbleToSubmitFormsByCausingTheOnClickEventToFire',
-    'JavascriptEnabledDriverTest.testShouldBeAbleToClickIfEvenSomethingHorribleHappens',
-    'JavascriptEnabledDriverTest.testShouldBeAbleToClickOnSubmitButtons',
-    'JavascriptEnabledDriverTest.testShouldBeAbleToSwitchToFocusedElement',
-    'JavascriptEnabledDriverTest.testChangeEventIsFiredAppropriatelyWhenFocusIsLost',
-    'BasicKeyboardInterfaceTest.testSendingKeysWithShiftPressed',
-    'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
-    'BasicKeyboardInterfaceTest.testSendingKeyUp',
-    'BasicKeyboardInterfaceTest.testSendingKeyDownOnly',
-    'BasicMouseInterfaceTest.testShouldClickElementInIFrame',
-    'CombinedInputActionsTest.testCanClickOnLinks',
-    'CombinedInputActionsTest.testCanClickOnLinksWithAnOffset',
-    'CombinedInputActionsTest.testMouseMovementWorksWhenNavigatingToAnotherPage',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1138
     'AlertsTest.testSettingTheValueOfAnAlertThrows',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1910
@@ -274,8 +240,6 @@ _OS_NEGATIVE_FILTER['android:chrome_stable'] = (
     _OS_NEGATIVE_FILTER['android:chrome'] + [
          # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
         'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
-         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1852
-        'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
     ]
 )
 
@@ -285,18 +249,6 @@ _OS_NEGATIVE_FILTER['android:chromium'] = (
         'CorrectEventFiringTest.testShouldFireMouseDownEventWhenClicking',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=998
         'ImplicitWaitTest.testShouldImplicitlyWaitForASingleElement',
-        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1852
-        'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
-        'BasicKeyboardInterfaceTest.testBasicKeyboardInput',
-        'CombinedInputActionsTest.testChordControlCutAndPaste',
-        'ElementFindingTest.testRemovingAnElementDynamicallyFromTheDomShouldCauseAStaleRefException',
-        'CorrectEventFiringTest.testShouldNotThrowIfEventHandlerThrows',
-        'ClickTest.testShouldBeAbleToClickOnAnElementGreaterThanTwoViewports',
-        'ClickTest.testShouldSetRelatedTargetForMouseOver',
-        'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInAFrameThatIsOutOfView',
-        'ClickScrollingTest.testShouldBeAbleToClickElementInAFrameThatIsOutOfView',
-        'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInAFrame',
-        'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
     ]
 )
 _OS_NEGATIVE_FILTER['android:chrome_beta'] = (
