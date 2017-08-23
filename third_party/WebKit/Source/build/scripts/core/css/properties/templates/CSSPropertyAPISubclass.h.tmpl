@@ -25,6 +25,10 @@ class {{api_classname}} : public CSSPropertyAPI {
   {% for api_method in methods_for_class %}
   {{api_method.return_type}} {{api_method.name}}{{api_method.parameters}} const override;
   {% endfor %}
+
+  {% if is_interpolable %}
+  bool IsInterpolable() const override { return true; }
+  {% endif %}
 };
 
 }  // namespace blink
