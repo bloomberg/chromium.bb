@@ -69,13 +69,9 @@ void ConvertEventLocationToTarget(ui::EventTarget* event_target,
     return;
 
   gfx::Point location = event->AsLocatedEvent()->location();
-  gfx::Point root_location = event->AsLocatedEvent()->root_location();
   Window::ConvertPointToTarget(static_cast<Window*>(event_target),
                                static_cast<Window*>(target), &location);
-  Window::ConvertPointToTarget(static_cast<Window*>(event_target),
-                               static_cast<Window*>(target), &root_location);
   event->AsLocatedEvent()->set_location(location);
-  event->AsLocatedEvent()->set_root_location(root_location);
 }
 
 }  // namespace

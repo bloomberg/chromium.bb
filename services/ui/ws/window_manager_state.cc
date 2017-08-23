@@ -571,8 +571,11 @@ bool WindowManagerState::ConvertPointToScreen(int64_t display_id,
   Display* display = display_manager()->GetDisplayById(display_id);
   if (display) {
     const display::Display& originated_display = display->GetDisplay();
-    *point = gfx::ConvertPointToDIP(originated_display.device_scale_factor(),
-                                    *point);
+    const display::ViewportMetrics metrics =
+        display->platform_display()->GetViewportMetrics();
+    *point = gfx::ConvertPointToDIP(
+        originated_display.device_scale_factor() / metrics.ui_scale_factor,
+        *point);
     *point += originated_display.bounds().origin().OffsetFromOrigin();
     return true;
   }

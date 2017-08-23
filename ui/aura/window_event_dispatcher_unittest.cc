@@ -2907,6 +2907,65 @@ TEST_F(WindowEventDispatcherMusTest, UseDefaultTargeterToFindTarget2) {
   EXPECT_EQ(gfx::Point(), last_event_location_delegate2.last_mouse_location());
 }
 
+namespace {
+
+class LocationRecordingEventHandler : public ui::EventHandler {
+ public:
+  LocationRecordingEventHandler() = default;
+  ~LocationRecordingEventHandler() override = default;
+
+  const gfx::Point& event_root_location() const { return event_root_location_; }
+
+  const gfx::Point& env_root_location() const { return env_root_location_; }
+
+  int mouse_event_count() const { return mouse_event_count_; }
+
+  // ui::EventHandler:
+  void OnMouseEvent(ui::MouseEvent* event) override {
+    ++mouse_event_count_;
+    event_root_location_ = event->root_location();
+    env_root_location_ = Env::GetInstance()->last_mouse_location();
+  }
+
+ private:
+  int mouse_event_count_ = 0;
+  gfx::Point event_root_location_;
+  gfx::Point env_root_location_;
+
+  DISALLOW_COPY_AND_ASSIGN(LocationRecordingEventHandler);
+};
+
+}  // namespace
+
+TEST_F(WindowEventDispatcherMusTest, RootLocationDoesntChange) {
+  std::unique_ptr<Window> window(
+      test::CreateTestWindowWithBounds(gfx::Rect(0, 0, 10, 20), root_window()));
+  std::unique_ptr<Window> child_window(
+      test::CreateTestWindowWithBounds(gfx::Rect(5, 6, 10, 20), window.get()));
+
+  test::EnvTestHelper().SetAlwaysUseLastMouseLocation(false);
+
+  LocationRecordingEventHandler event_handler;
+  root_window()->AddPreTargetHandler(&event_handler);
+
+  const gfx::Point mouse_location(1, 2);
+  gfx::Point root_location(mouse_location);
+
+  ui::MouseEvent mouse(ui::ET_MOUSE_PRESSED, mouse_location, root_location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  ui::Event::DispatcherApi(&mouse).set_target(child_window.get());
+  DispatchEventUsingWindowDispatcher(&mouse);
+  EXPECT_EQ(1, event_handler.mouse_event_count());
+
+  // The root location during dispatch of the event and Env should match the
+  // one that was dispatched.
+  EXPECT_EQ(root_location, event_handler.event_root_location());
+  EXPECT_EQ(root_location, event_handler.env_root_location());
+
+  root_window()->RemovePreTargetHandler(&event_handler);
+}
+
 class NestedLocationDelegate : public test::TestWindowDelegate {
  public:
   NestedLocationDelegate() {}
