@@ -1,11 +1,19 @@
 Test that page performance metrics are retrieved.
 Received metrics:
 Received metrics:
+	AudioHandlerCount
 	DocumentCount
 	FrameCount
 	JSEventListenerCount
+	LayoutObjectCount
+	MediaKeySessionCount
+	MediaKeysCount
 	NodeCount
 	ResourceCount
+	ScriptPromiseCount
+	SuspendableObjectCount
+	V8PerContextDataCount
+	WorkerGlobalScopeCount
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -15,11 +23,19 @@ Received metrics:
 	FirstMeaningfulPaint
 	DomContentLoaded
 Received metrics:
+	AudioHandlerCount
 	DocumentCount
 	FrameCount
 	JSEventListenerCount
+	LayoutObjectCount
+	MediaKeySessionCount
+	MediaKeysCount
 	NodeCount
 	ResourceCount
+	ScriptPromiseCount
+	SuspendableObjectCount
+	V8PerContextDataCount
+	WorkerGlobalScopeCount
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
