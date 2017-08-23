@@ -6251,9 +6251,13 @@ void Document::RemoveFromTopLayer(Element* element) {
 }
 
 HTMLDialogElement* Document::ActiveModalDialog() const {
-  if (top_layer_elements_.IsEmpty())
-    return 0;
-  return toHTMLDialogElement(top_layer_elements_.back().Get());
+  for (auto it = top_layer_elements_.rbegin(); it != top_layer_elements_.rend();
+       ++it) {
+    if (isHTMLDialogElement(*it))
+      return toHTMLDialogElement((*it).Get());
+  }
+
+  return nullptr;
 }
 
 void Document::exitPointerLock() {
