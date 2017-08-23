@@ -2197,52 +2197,6 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_NEW_LOCK_SCREEN_NOTE_BUTTON_TITLE" desc="Title for the button on the Chrome OS lock screen that launches an app for taking notes (the action of creating a new note is delegated to the app). The string is primarily intended to be spoken out by accessibility tools - the button is represented by an icon in the lock screen UI.">
     Create new note
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECONDARY_USER_BANNER" desc="Banner displayed in settings page when the user is secondary in a multi-profile session.">
-    Some settings belonging to <ph name="PRIMARY_EMAIL">$1<ex>john@google.com</ex></ph> are being shared with you. These settings only affect your account when using multiple sign-in.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_DATETIME">
-    Date and time
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRED_NETWORK" desc="Title for section in settings/internet for list of wired networks (usually one)">
-    Wired network
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIRELESS_NETWORK" desc="Title for section in settings/internet for list of wireless networks (wifi and cellular)">
-    Wireless networks
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIFI_NETWORK" desc="Title for the Wifi network group on the settings page.">
-    Wi-Fi network
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_WIMAX_NETWORK" desc="Title for the WiMAX network group on the settings page.">
-    WiMAX network
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_CELLULAR_NETWORK" desc="Title for the cellular network group on the settings page.">
-    Mobile data
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_VIRTUAL_NETWORK" desc="Title for section in settings/internet for list of Virtual Private Networks (VPN)">
-    Private networks
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_PRIVATE_NETWORK" desc="Title for Virtual Private Network (VPN) group on the settings page">
-    Private network
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_THIRD_PARTY_VPN_NAME_TEMPLATE" desc="Template for constructing the name of a VPN network that is handled by a third-party VPN provider from the provider name and the network name.">
-    <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>: <ph name="NETWORK_NAME">$2<ex>Work Network</ex></ph>
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_DEFAULT_THIRD_PARTY_PROVIDER_NAME" desc="Default Third Party VPN Provider Name used when the extension is uninstalled or for non primary users." >
-    Third Party VPN
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_ADD_CONNECTION" desc="Title for control to add a new network connection." >
-    Add connection
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_ADD_CONNECTION_WIFI" desc="Menu item for adding a new Wi-Fi connection" >
-    Add Wi-Fi...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_REMEMBERED_NETWORK" desc="Title for section in settings/internet for list of remembered (favirote) networks">
-    Remembered networks
-
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_ADD_VPN_TEMPLATE" desc="Template for constructing a menu item that will ask a given VPN provider to show its 'add network' dialog.">
-    Add <ph name="PROVIDER_NAME">$1<ex>OpenVPN</ex></ph>...
-  </message>
 
   <!-- Network state strings -->
   <message name="IDS_CHROMEOS_NETWORK_STATE_NOT_CONNECTED" desc="Displayed state for a network when not connected.">
@@ -2414,132 +2368,9 @@ Press any key to continue exploring.
     To use Instant Tethering, turn on Bluetooth
   </message>
 
-  <!-- Options strings -->
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLED" desc="Message displayed when a type of network connection is disabled">
-    Disabled
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_PROHIBITED" desc="Message displayed when a type of network connection is prohibited">
-    Disabled by administrator
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_OTHER" desc="Menu option for connecting to a network that is not listed in the menu.">
-    Join other...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_PROHIBITED_NETWORK" desc="Message displayed when a specific network is prohibited">
-    Connecting to this network is disabled by your administrator.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_PROHIBITED_NETWORK_OTHER" desc="Message displayed when a connecting to other networks is prohibited">
-    Connecting to other networks is disabled by your administrator.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIFI" desc="Menu option in the Wi-Fi menu when there is a connected Wi-Fi network.">
-    Disable Wi-Fi
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_WIMAX" desc="Menu option in the WiMAX menu when there is a connected WiMAX network.">
-    Disable WiMAX
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_DISABLE_CELLULAR" desc="Menu option in the Cellular menu when there is a connected cellular network.">
-    Disable mobile data
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_AIRPLANE_MODE" desc="Control on the settings page for disabling all wireless communication.">
-    Airplane mode
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NETWORK_AIRPLANE_MODE_LABEL" desc="Description shown on the airplane mode control.">
-    Turn off all wireless connections.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_LABEL" desc="Menu item for activating the preferred networks dialog.">
-    Preferred networks...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_PREFERRED_NETWORKS_TITLE" desc="Title for the preferred networks dialog.">
-    Preferred Networks
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_NAME">
-    Device
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_DESCRIPTION">
-    Change settings specific to your device and peripherals.
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SECTION">
-    Keyboard:
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_KEYBOARD_SETTINGS_BUTTON_TITLE">
-    Keyboard settings
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_STORAGE_MANAGER_BUTTON_TITLE">
-    Storage management
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SECTION">
-    Pointer speed:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_MOUSE_SPEED_DESCRIPTION">
-    Mouse speed:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_TOUCHPAD_SPEED_DESCRIPTION">
-    Touchpad speed:
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_POINTER_SETTINGS_BUTTON_TITLE">
-    Pointer settings
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_TOUCHPAD">
-    Touchpad
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_POINTER">
-    Pointer
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_MOUSE">
-    Mouse
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_SCREEN" desc="Title for section in settings/system for screen brightness control">
-    Screen
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SECTION_TITLE_BLUETOOTH">
-    Bluetooth
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_BATTERY_STATUS_LABEL" desc="The prefix to the battery status in the device section.">
-    Battery - <ph name="status">$1<ex>56% - 2:03 left</ex></ph>
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_POWER_SETTINGS_BUTTON" desc="Text on button to take user to the 'Power' overlay.">
-    Manage power source...
-  </message>
-  <message name="IDS_OPTIONS_POWER_OVERLAY_TITLE" desc="The title for the 'Power' overlay.">
-    Power
-  </message>
-  <message name="IDS_OPTIONS_POWER_OVERLAY_CALCULATING" desc="The description in the 'Power' overlay when the power status is being determined.">
-    Checking...
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_LABEL" desc="The label for the power source dropdown in the Power overlay.">
-    Power source:
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_BATTERY" desc="The text referring to the battery as the power source.">
-    Battery
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_AC_ADAPTER" desc="The text referring to a dedicated charger like an AC adapter as the power source.">
-    AC adapter
-  </message>
-  <message name="IDS_OPTIONS_POWER_SOURCE_LOW_POWER_CHARGER" desc="The text referring to a low-power charger like a USB charger as the power source.">
-    Low-power charger
-  </message>
-  <message name="IDS_OPTIONS_BATTERY_STATUS_LABEL" desc="The label for the battery information in the 'Power' overlay.">
-    Battery:
-  </message>
-  <message name="IDS_OPTIONS_DEVICE_GROUP_STYLUS_SETTINGS_BUTTON" desc="Text on button/link to take user to the 'Stylus' overlay.">
-    Stylus settings
-  </message>
-  <message name="IDS_OPTIONS_STYLUS_NOTE_TAKING_APP_LABEL" desc="Label for dropdown menu in 'Stylus' overlay that lets the user set a preferred note-taking app.">
-    Note-taking app:
-  </message>
-  <message name="IDS_OPTIONS_STYLUS_NOTE_TAKING_APP_NONE_AVAILABLE" desc="Entry in 'Stylus' overlay's note-taking app menu when no apps are available.">
-    None available
-  </message>
-  <message name="IDS_OPTIONS_STYLUS_NOTE_TAKING_APP_WAITING_FOR_ANDROID" desc="Entry in 'Stylus' overlay's note-taking app menu when Android isn't ready yet.">
-    Loading apps...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SET_TIME_BUTTON" desc="In the settings tab, the prompt on the button to open a dialog to set date and time.">
-    Set date and time
-  </message>
+  <!-- Misc settings related strings -->
   <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION" desc="In the settings tab, the text next to the timezone combobox.">
     Time zone:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_USE_24HOUR_CLOCK_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables 24-hour clock.">
-    Use 24-hour clock
   </message>
   <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_TEMPLATE" desc="In the settings tab, the display template of a timezone in the pull-down list of timezones">
     (<ph name="UTCOffset">$1<ex>UTC-8:00</ex></ph>) <ph name="LongTZName">$2<ex>Pacific Standard Time</ex></ph> (<ph name="ExemplarCity">$3<ex>Los Angeles</ex></ph>)
@@ -2547,236 +2378,10 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_TIMEZONE_DISPLAY_NAME_UTC" desc="This is the display name of UTC/GMT timezone for timezone option in user settings.">
     Coordinated Universal Time (UTC/GMT)
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_BRIGHTNESS_DESCRIPTION" desc="In the settings tab, the text next to the buttons for screen brightness.">
-    Brightness:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BRIGHTNESS_DECREASE" desc="In the settings tab, the text of the button to decrease the screen brightness.">
-    Decrease
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BRIGHTNESS_INCREASE" desc="In the settings tab, the text of the button to increase the screen brightness.">
-    Increase
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_TAP_TO_CLICK_ENABLED_DESCRIPTION" desc="In the settings tab, the text next to the checkbox that enables tap-to-click.">
-    Enable tap-to-click
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_NATURAL_SCROLL_DESCRIPTION" desc="In the settings tab, the text next to the radio button that enables natural scrolling.">
-    Australian scrolling <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_TRADITIONAL_SCROLL_DESCRIPTION" desc="In the settings tab, the text next to the radio button that enables traditional scrolling.">
-    Traditional scrolling
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad touch sensitivity.">
-    Speed:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_LESS_DESCRIPTION" desc="In the settings tab, the text under the left (less sensitive) side of the slider for the touchpad touch sensitivity.">
-    Slow
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SENSITIVITY_MORE_DESCRIPTION" desc="In the settings tab, the text under the right (more sensitive) side of the slider for the touchpad touch sensitivity.">
-    Fast
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_PRIMARY_MOUSE_RIGHT_DESCRIPTION" desc="In the settings tab, the text next to the checkbox to set the primary mouse button to the right button.">
-    Swap primary mouse button
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_WAKE_ON_WIFI_DESCRIPTION" desc="In the settings tab, the text next to the checkbox for enabling quickly reconnecting to known Wi-Fi SSIDs.">
-    Keep Wi-Fi on during sleep
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISABLE">
-    Disable Bluetooth
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENABLE">
-    Enable Bluetooth
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_ADD_BLUETOOTH_DEVICE">
-    Add a device
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING">
-    Searching for devices...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_SCAN_STOPPED">
-    Device scan stopped.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES">
-    No devices
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND">
-    No devices found
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING">
-    <ph name="DEVICE_NAME">$1<ex>Apple Magic Mouse</ex></ph>: Connecting...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE">
-    Add Bluetooth device
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT">
-    Connect
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT">
-    Disconnect
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET">
-    Forget
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CANCEL">
-    Cancel
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ACCEPT_PASSKEY">
-    Accept
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REJECT_PASSKEY">
-    Reject
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISMISS_ERROR">
-    OK
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_KEY">
-    enter
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PIN_CODE_REQUEST" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.0 and older device has no display or means of input.">
-    Please enter the PIN for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ENTER_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when the external Bluetooth 2.1 and later device has no display or means of input, and does not support SSP.">
-    Please enter the passkey for "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PIN_CODE_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.0 and older wireless keyboard.">
-    Please enter this PIN code on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_REMOTE_PASSKEY_REQUEST" desc="Bluetooth pairing message typically displayed when pairing a Bluetooth 2.1 and later wireless keyboard.">
-    Please enter this passkey on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY_REQUEST" desc="Bluetooth pairing message typically shown when pairing with a device that has a display.">
-    Please confirm this passkey is shown on "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>":
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_START_CONNECTING">
-    Connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_START_DISCOVERY_FAILED">
-    Failed to start Bluetooth device discovery.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_STOP_DISCOVERY_FAILED">
-    Failed to stop Bluetooth device discovery.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CHANGE_POWER_FAILED">
-    Failed to change the power state of the Bluetooth adapter.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_UNKNOWN_ERROR">
-    An unknown error occurred trying to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_IN_PROGRESS">
-    Connection to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>" still in progress.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_FAILED">
-    Failed to connect to "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_FAILED">
-    Authentication failed while connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_CANCELED">
-    Authentication canceled while connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_REJECTED">
-    Authentication code rejected while connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_AUTH_TIMEOUT">
-    Authentication timeout while connecting to "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT_UNSUPPORTED_DEVICE">
-    Unsupported Bluetooth device: "<ph name="DEVICE_NAME">%1<ex>Nexus 4</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT_FAILED">
-    Failed to disconnect from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET_FAILED">
-    Failed to disconnect and unpair from "<ph name="DEVICE_NAME">%1<ex>Nexus S</ex></ph>".
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_BUTTON_LABEL" desc="Label for the button opening display settings tab.">
-    Display settings
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_TAB_TITLE" desc="Title for the display settings tab.">
-    Manage displays
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_OPTIONS" desc="The section title for general options for a selected display.">
-    Options:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION" desc="The section title for resolution option for a selected display.">
-    Resolution:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION" desc="The section title for display orientation option for a selected display.">
-    Orientation:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_OVERSCAN" desc="The section title for TV alignment (calibration of display overscan) option for a selected display.">
-    TV alignment:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_COLOR_PROFILE" desc="The section title for color calibration profile selection.">
-    Color profile:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_EXTENDED_MODE_LABEL" desc="The text for the option for extended desktop mode.">
-    Extended Desktop
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_MIRRORING_MODE_LABEL" desc="The text for the option for mirroring desktop mode.">
-    Mirrored
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_MIRRORING_DISPLAY_NAME" desc="The text shown at display name field when mirroring.">
-    Mirroring
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ENABLE_UNIFIED_DESKTOP" desc="The section title for the option to enable unified desktop mode.">
-    Windows can span displays.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_SET_PRIMARY" desc="Button label to set a display primary.">
-    Make primary
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION_ANNOTATION_BEST" desc="The text shown for resolution options to annotate this is the best resolution.">
-    (Best)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_RESOLUTION_ANNOTATION_NATIVE" desc="The text shown for resolution options to annotate this is the native resolution.">
-    (Native)
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STANDARD_ORIENTATION" desc="The default value of display orientation option item.">
-    Standard
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN" desc="Button label to start calibrating the overscan preference.">
-    Adjust...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_TAB_TITLE" desc="Title for the display overscan calibration tab.">
-    TV alignment
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_SHRINK_EXPAND" desc="Lable to describe the overscan calibration operation, to shrink or expand the region.">
-    Shrink/Expand
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_MOVE" desc="Lable to describe the overscan calibration operation, to move the region.">
-    Move
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_RESET_BUTTON_LABEL" desc="Button label to reset the display overscan settings.">
-    Reset
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_OK_BUTTON_LABEL" desc="Button label to finish the display overscan settings.">
-    OK
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OVERSCAN_CANCEL_BUTTON_LABEL" desc="Button label to cancel the display overscan settings.">
-    Cancel
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layout label.">
-    Keyboard layout:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_CONNECT" desc="In the settings tab, the text on the button to connect to a network.">
-    Connect
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISCONNECT" desc="In the settings tab, the text on the button to disconnect from a network.">
-    Disconnect
-  </message>
+
+  <!-- Network Configuration Views UI -->
   <message name="IDS_OPTIONS_SETTINGS_CONFIGURE" desc="In the settings tab, the text on the button to configure a network.">
     Configure
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_FORGET" desc="In the settings tab, the text on the button to forget this network.">
-    Forget this network
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SHARED_NETWORK" desc="In settings Internet options, the label for shared networks.">
-    Shared
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_ACTIVATE" desc="In the settings tab, the text on the button to activate a cellular network.">
-    Activate
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
-    Options...
   </message>
   <message name="IDS_OPTIONS_SETTINGS_OTHER_WIFI_NETWORKS" desc="In the settings tab, the text on the button to display other Wi-Fi networks.">
     Other Wi-Fi network...
@@ -2799,162 +2404,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_JOIN_VPN" desc="The title for the dialog to join a VPN.">
     Join private network
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_MANAGED_NETWORK" desc="Help text to show in the bubble shown on click of the controlled setting indicator on the internet settings page.">
-    This network is configured by your administrator.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES" desc="In the settings tab, the text next to the checkbox for allowing proxy settings for shared networks.">
-    Allow proxies for shared networks
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_ENABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settings tab.">
-    Allow mobile data roaming
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_TOGGLE_DATA_ROAMING_RESTRICTION" desc="Tooltip for the 'enable data roaming' entry in the Mobile Data drop-down menu indicating why the command is disabled.">
-    This setting may only be modified by the owner.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISABLE_DATA_ROAMING" desc="Appears in the Mobile Data drop-down menu in the Internet Connections section of the Settings tab.">
-    Disable mobile data roaming
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_MANAGER_TAB_TITLE" desc="Title for the storage manager tab.">
-    Storage management
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_TITLE" desc="Title of a warning message indicating device's available disk space is low.">
-    Device is low on space
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_1" desc="The first paragraph of a warning message indicating device's available disk space is low.">
-    To free up space, delete files from device storage.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_LOW_MESSAGE_LINE_2" desc="The second paragraph of a warning message indicating device's available disk space is low.">
-    If space isn’t made available, users and data may be automatically removed.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_TITLE" desc="Title of a warning message indicating device's available disk space is critically low.">
-    Device space critically low
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_1" desc="The first paragraph of a warning message indicating device's available disk space is critically low.">
-    Free up at least 512 MB of space or your device will become unresponsive. To free up space, delete files from device storage.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2" desc="The second paragraph of a warning message indicating device's available disk space is critically low.">
-    If you don’t free up space, users and data may be automatically removed.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_TAB_TITLE" desc="Tab title for the storage manager confirmation dialog tab to remove Google Drive offline files.">
-    Offline files
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DIALOG_TITLE" desc="Title for the storage manager confirmation dialog tab to remove Google Drive offline files.">
-    Delete offline files?
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION" desc="Description in the storage manager confirmation dialog to remove Google Drive offline files.">
-    Temporary Google Drive offline files will be deleted. Files that you’ve set as available offline won’t be deleted from this device.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_USER_LIST_TITLE" desc="Title for the storage manager's user list dialog.">
-    Users
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_REMOVE_USER_DIALOG_TITLE" desc="Title for the storage manager confirmation dialog to remove a user from the device.">
-    Remove User
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_REMOVE_USER_DIALOG_DESCRIPTION" desc="Description in the storage manager confirmation dialog to remove a user from the device.">
-    This action will permanently delete this user’s downloads, offline files, browsing data, and Android storage. This cannot be undone.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_REMOVE_USER_DIALOG_DESCRIPTION_WITHOUT_ANDROID" desc="Description in the storage manager confirmation dialog to remove a user from the device. This description doesn't mention Android.">
-    This action will permanently delete this user’s downloads, offline files, and browsing data. This cannot be undone.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_REMOVE_USER_DIALOG_REMOVE_BUTTON_LABEL" desc="In storage manager confirmation dialog, label for the button to delete offline files.">
-    Remove
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SIZE_CALCULATING" desc="In storage manager overlay, label for storage item's size indicating the size is being calculated.">
-    Calculating...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SIZE_UNKNOWN" desc="In storage manager overlay, label for storage item's size indicating the size is unknown">
-    Unknown
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_CAPACITY" desc="In storage manager overlay, label for the total size of Chrome OS internal storage.">
-    Capacity
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_IN_USE" desc="In storage manager overlay, label for the used storage size of Chrome OS internal storage.">
-    In use
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_ITEM_LABEL_AVAILABLE" desc="In storage manager overlay, label for the available storage size of Chrome OS internal storage.">
-    Available
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_DOWNLOADS" desc="In storage manager overlay, label for the size of Downloads directory.">
-    Downloads
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_DRIVE_CACHE" desc="In storage manager overlay, label for the size of Google Drive's offline files.">
-    Offline files
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_BROWSING_DATA" desc="In storage manager overlay, label for the size of browsing data.">
-    Browsing data
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_OTHER_USERS" desc="In storage manager overlay, label for the total size of other users' data directories.">
-    Other users
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_SUBITEM_LABEL_ARC" desc="In storage manager overlay, label for the total size size of Android apps and cache.">
-    Android storage
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE" desc="In storage manager confirmation dialog, label for the button to delete offline files.">
-    Delete files
-  </message>
-  <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
-    Enable Guest browsing
-  </message>
-  <message name="IDS_OPTIONS_ACCOUNTS_ENABLE_SUPERVISED_USERS" desc="In the Users settings dialog, the text on the checkbox to allow creation and sign-in of supervised users.">
-    Enable supervised users
-  </message>
-  <message name="IDS_OPTIONS_ACCOUNTS_USE_WHITELIST_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to restrict allowed user to a whitelist.">
-    Restrict sign-in to the following users:
-  </message>
-  <message name="IDS_OPTIONS_ACCOUNTS_SHOW_USER_NAMES_ON_SINGIN_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to show user names and pictures on sign-in screen.">
-    Show usernames and photos on the sign-in screen
-  </message>
-  <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_EDIT_HINT" desc="In the Accounts settings tab, the instruction text on an empty username edit.">
-    Enter names or addresses.
-  </message>
-  <message name="IDS_OPTIONS_ACCOUNTS_USERNAME_FORMAT" desc="In the Accounts settings tab, the text format to create user name and owner tag.">
-    <ph name="NAME">$1<ex>John Doe</ex></ph> - Owner
-  </message>
-  <message name="IDS_OPTIONS_ACCOUNTS_ADD_USERS" desc="In the Accounts settings tab, the label text above the user name edit box.">
-    Add users
-  </message>
-  <message name="IDS_OPTIONS_ACCOUNTS_OWNER_ONLY" desc="In the Accounts settings tab, the warning text noticing that only the owner can modify these settings.">
-    These settings may only be modified by the owner:
-  </message>
-  <message name="IDS_OPTIONS_PERSONAL_ACCOUNT_GROUP_NAME" desc="In sentence case: In the Personal Stuff settings tab, the title text for Account section.">
-    Account
-  </message>
-  <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user.">
-    Require password to wake from sleep
-  </message>
-  <message name="IDS_OPTIONS_ENABLE_SCREENLOCKER_CHECKBOX_WITH_QUICK_UNLOCK" desc="In the Personal Stuff settings tab, the text on the checkbox to enable screenlocker for current user with option of quick unlock.">
-    Require screen lock to wake from sleep.
-  </message>
-  <message name="IDS_OPTIONS_MANAGE_SCREENLOCKER" desc="The link that is clicked to manage screen lock">
-    Manage screen lock
-  </message>
-  <message name="IDS_SET_WALLPAPER_BUTTON" desc="The button to set wallpaper.">
-    Set wallpaper...
-  </message>
-  <message name="IDS_OPTIONS_SET_WALLPAPER_AUTHOR_TEXT" desc="Author label.">
-    Photo by
-  </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE" desc="In the settings tab, the text on the button to change picture for the current user." meaning="Hint text">
-    Change...
-  </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE_CAPTION" desc="Caption on the user picture that user must click to change it, must be short.">
-    Change
-  </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TITLE" desc="Title of the dialog shown when user wants to change their picture.">
-    Change picture
-  </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT" desc="Text with description of what to do on Change picture dialog.">
-    Choose a picture to display for your account on the sign-in screen.
-  </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE_CHOOSE_FILE" desc="Text on a button that shows file dialog to choose a picture from file.">
-    Choose a file
-  </message>
-  <message name="IDS_OPTIONS_CROP_IMAGE_DIALOG_TITLE" desc="Title of the dialog shown when user wants to crop their picture.">
-    Crop image
-  </message>
-  <message name="IDS_OPTIONS_CROP_IMAGE_DIALOG_TEXT" desc="Text with description of what to do on Crop image dialog.">
-    Select a square region of the image.
-  </message>
+
+  <!-- OOBE supervised user Change picture UI -->
   <message name="IDS_OPTIONS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
     Take photo
   </message>
@@ -2979,12 +2430,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce horizontal back-flip of camera image to not-flipped state.">
     Photo flipped back
   </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE_PREVIEW_ALT" desc="Alt text for the big preview of user image.">
-    User image preview
-  </message>
-  <message name="IDS_OPTIONS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
-    Google Profile photo
-  </message>
   <message name="IDS_IMAGE_SCREEN_PROFILE_PHOTO" desc="The title of the Google profile photo of the user on image selection screen. Please keep in sync with IDS_OPTIONS_CHANGE_PICTURE_PROFILE_PHOTO.">
     Google Profile photo
   </message>
@@ -2994,47 +2439,14 @@ Press any key to continue exploring.
   <message name="IDS_IMAGE_SCREEN_SYNCING_PREFERENCES" desc="The message displayed on the image screen of the GAIA flow while user preferences are syncing.">
     Syncing your preferences...
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_WIMAX" desc="In settings Internet options, the title for the WiMAX tab.">
-    WiMAX
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_VPN" desc="In settings Internet options, the title for the VPN (Virtual Private Network) tab.">
-    VPN
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_CONNECTION" desc="In settings Internet options, the title for buy cellular data plan button.">
-    Connection
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_DEVICE" desc="In settings Internet options, the title for buy cellular data plan button.">
-    Device
-  </message>
+
+  <!-- More Network Configuration Views UI -->
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_NETWORK" desc="In settings Internet options, the title for buy cellular data plan button.">
     Network
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_SECURITY" desc="In settings Internet options, the title for security tab.">
-    Security
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_TAB_PROXY" desc="In settings Internet options, the title for proxy tab.">
-    Proxy
-  </message>
+
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_ID" desc="In settings Internet options, the label for the network id.">
     SSID:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_BSSID" desc="In settings Internet options, the label for the network BSSID.">
-    BSSID:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY" desc="In settings Internet options, the label for the WiFi frequency.">
-    Frequency:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_FREQUENCY_MHZ" desc="In Internet settings, the formatting for the WiFi frequency.">
-    <ph name="MHZ">$1<ex>2400</ex></ph> MHz
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH" desc="In Internet settings, the label for the WiFi signal strength.">
-    Signal Strength:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_STRENGTH_PERCENTAGE" desc="In Internet settings, the formatting for the WiFi signal strength.">
-    <ph name="PRECENTAGE">$1<ex>100</ex></ph>%
-  </message>
-  <message name="IDS_OPTIONS_SETTIGNS_INTERNET_OPTIONS_NETWORK_ENCRYPTION" desc="Label in the network details dialog for showing the encryption method.">
-    Security:
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_METHOD" desc="In settings Internet options, the label for the EAP method.">
     EAP method:
@@ -3114,77 +2526,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_SUBJECT_MATCH" desc="In settings Internet options, the label for the EAP Subject Match field.">
     Subject Match:
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NET_PROTECTED" desc="In settings Internet options, the message in network details page for password protected networks.">
-    Access to this network is protected.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PREFER_NETWORK" desc="In settings Internet options, the label for prefer network checkbox.">
-    Prefer this network
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_AUTO_CONNECT" desc="In settings Internet options, the label for the auto-connect checkbox.">
-    Automatically connect to this network
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SHARE_NETWORK" desc="In settings Internet options, the label for the share checkbox.">
     Share this network with other users
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_NETWORK_SHARED" desc="In settings Internet options, text for when a network is shared.">
-    This network is shared with other users.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CONNECTION_STATE" desc="In settings Internet options, the label for connection status.">
-    Connection status:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_IP_AUTOMATIC_CONFIGURATION" desc="In the IP address fields, labels automatic connection toggle">
-    Configure automatically
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_AUTOMATIC_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the automatic DNS selection.">
-    Automatic name servers
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_GOOGLE_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the Google DNS selection.">
-    Google name servers - <ph name="BEGIN_LINK">&lt;a href="https://developers.google.com/speed/public-dns" target="_blank"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVERS" desc="In the name server type radio for static ip configuration, labels the user DNS selection.">
-    Custom name servers
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_1" desc="In the name server type radio for static ip configuration, is placeholder text for server 1">
-    Server 1
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_2" desc="In the name server type radio for static ip configuration, is placeholder text for server 2">
-    Server 2
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_3" desc="In the name server type radio for static ip configuration, is placeholder text for server 3">
-    Server 3
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_USER_NAME_SERVER_4" desc="In the name server type radio for static ip configuration, is placeholder text for server 4">
-    Server 4
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS" desc="In settings Internet options, the label for IP address.">
-    IP address:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADDRESS_IPV6" desc="In settings Internet options, the label for the IPv6 address.">
-    IPv6 address:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SUBNETMASK" desc="In settings Internet options, the label for subnet mask.">
-    Subnet mask:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_GATEWAY" desc="In settings Internet options, the label for gateway.">
-    Gateway:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_DNSSERVER" desc="In settings Internet options, the label dns server.">
-    DNS server:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_POLICY" desc="In settings Internet options, banner displayed when the proxy settings are enforced by a policy.">
-    The proxy is enforced by your administrator.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_EXTENSION" desc="In settings Internet options, banner displayed when the proxy settings are enforced by an extension.">
-    The proxy is enforced by an extension.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_OTHER_PRECEDE" desc="In settings Internet options, banner displayed when the proxy settings cannot be changed as they are enforced by a higher-precedence source.">
-    The proxy cannot be modified by the user.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_PROXY_ENABLE_SHARED_HINT" desc="In settings Internet options, banner displayed when the proxy settings cannot be changed as the user needs to enable the setting for IDS_OPTIONS_SETTINGS_USE_SHARED_PROXIES first.">
-    To change proxy, enable "<ph name="USE_SHARED_PROXIES">$1<ex>Allow proxies for shared networks</ex></ph>" setting.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_HARDWARE_ADDRESS" desc="In settings Internet options, the label hardware address.">
-    Hardware address:
   </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_SECURITY_NONE" desc="In settings Internet options, a string specifying security none.">
     None
@@ -3252,10 +2595,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_REQUIRE_HARDWARE_BACKED" desc="In the network connect dialog, when creating a VPN or enterprise Wi-Fi connection, error message to display when a non hardware-backed user certificate is selected.">
     User certificate must be hardware-backed.
   </message>
-  <message name="IDS_OPTIONS_ENABLE_CONTENT_PROTECTION_ATTESTATION" desc="description label for verified access about premium contents">
-    Enable Verified Access
-  </message>
 
+  <!-- Choose mobile network -->
   <message name="IDS_NETWORK_CHOOSE_MOBILE_NETWORK" desc="Title of the window for choosing mobile network.">
     Choose a mobile network
   </message>
@@ -3269,6 +2610,7 @@ Press any key to continue exploring.
     No networks found.
   </message>
 
+  <!-- SIM unlock -->
   <message name="IDS_SIM_UNLOCK_CHANGE_PIN_TITLE" desc="Cellular device change PIN dialog title in chrome:settings/internet.">
     Change SIM card PIN
   </message>
@@ -3577,180 +2919,6 @@ Press any key to continue exploring.
     This setting belongs to <ph name="OWNER_EMAIL">$1<ex>john@google.com</ex></ph>.
   </message>
 
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_CONFIGURE"
-           desc="The label for the configure button for input methods">
-    Configure...
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD"
-           desc="The label for the section header for input methods">
-    Input Method
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_NO_INPUT_METHODS"
-           desc="The label for languages with no Input Methods">
-    This language doesn't have any input methods
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU"
-           desc="The label for showing expanded IME menu in the shelf.">
-    Show input options in the shelf
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_TITLE"
-           desc="The title showing in the warning dialog when enabling a 3rd party Input Method">
-    Third party input method
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_THIRD_PARTY_WARNING_MESSAGE"
-           desc="The description showing in the warning dialog when enabling a 3rd party Input Method">
-    This input method may be able to collect all the text you type, including personal data like passwords and credit card numbers. It comes from the extension &quot;<ph name="EXTENSION_NAME">$1<ex>Google Input Tools extension</ex></ph>&quot;. Use this input method?
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SIGN_OUT_BUTTON"
-           desc="The label for the sign out button for changing UI language">
-    Sign out
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_PLEASE_ADD_ANOTHER_INPUT_METHOD"
-           desc="Warning invoked when the user tries to remove the last input method">
-    Please add another input method before removing this one.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_INSTRUCTIONS"
-           desc="Explanatory message about how to select input methods">
-    For text input, select a language to see available input methods.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SWITCH_INPUT_METHODS_HINT"
-           desc="Explanatory message about how to switch input methods">
-    Press Ctrl+Shift+Space to switch between input methods.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SELECT_PREVIOUS_INPUT_METHOD_HINT"
-           desc="Explanatory message about how to select the previous input method">
-    Press Ctrl+Space to select the previous input method.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_IME"
-           desc="Label for extension IMEs">
-    Extension IMEs
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_INPUT_METHOD_EXTENSION_DESCRIPTION"
-           desc="Description of extension IMEs">
-    Select which extension IMEs will be available in the language menu.
-  </message>
-  <message name="IDS_OPTIONS_KEYBOARD_OVERLAY_TITLE"
-           desc="The title for 'Keyboard settings' overlay">
-    Keyboard settings
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH_LABEL"
-           desc="The label for customizing the search key in the 'Keyboard settings' overlay">
-    Search
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_CTRL_LABEL"
-           desc="The label for customizing the left ctrl key in the 'Keyboard settings' overlay">
-    Ctrl
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_ALT_LABEL"
-           desc="The label for customizing the left alt key in the 'Keyboard settings' overlay">
-    Alt
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK_LABEL"
-           desc="The label for customizing the caps-lock key in the 'Keyboard settings' overlay">
-    Caps Lock
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_ESCAPE_KEY_LABEL"
-           desc="The label for customizing the escape key in the 'Keyboard settings' overlay">
-    Escape
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_BACKSPACE_KEY_LABEL"
-           desc="The label for customizing the backspace key in the 'Keyboard settings' overlay">
-    Backspace
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_DIAMOND_KEY_LABEL"
-           desc="The label for customizing the diamond key in the 'Keyboard settings' overlay">
-    Diamond
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_SEARCH"
-           desc="The dropdown list item for the search key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
-    Search
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_CTRL"
-           desc="The dropdown list item for the left ctrl key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
-    Ctrl
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_LEFT_ALT"
-           desc="The dropdown list item for the left alt key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
-    Alt
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_VOID"
-           desc="The dropdown list item for disabling the remapping in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
-    Disabled
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_CAPS_LOCK"
-           desc="The dropdown list item for the caps-lock key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
-    Caps Lock
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_ESCAPE"
-           desc="The dropdown list item for the escape key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
-    Escape
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_KEY_BACKSPACE"
-           desc="The dropdown list item for the backspace key in the 'Customize modifier keys' section in the 'Keyboard settings' overlay">
-    Backspace
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SEND_FUNCTION_KEYS"
-           desc="The checkbox label for a setting to interpret the top-row keys as function keys instead.">
-    Treat top-row keys as function keys
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_SEND_FUNCTION_KEYS_DESCRIPTION"
-           desc="A label describing how to use the top-row keys' original actions when the treat-as-function-keys setting is enabled.">
-    Hold the Search key to switch the behavior of the top-row keys.
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_ENABLE"
-           desc="The checkbox label for enabling keyboard auto-repeat.">
-    Enable auto-repeat
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_DELAY"
-           desc="The label for the slider for the delay before auto-repeat begins. The delay is the amount of time a key must be held down before auto-repeating begins.">
-    Delay before repeat:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_DELAY_LONG"
-           desc="The label for the beginning of the auto-repeat delay slider, representing a long delay.">
-    Long
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_DELAY_SHORT"
-           desc="The label for the end of the auto-repeat delay slider, representing a short delay.">
-    Short
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_RATE"
-           desc="The label for the slider for the auto-repeat rate. The rate is how many times a key repeats per second once auto-repeating has begun.">
-    Repeat rate:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_RATE_SLOW"
-           desc="The label for the beginning of the auto-repeat rate slider, representing a slow repeat rate.">
-    Slow
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_AUTO_REPEAT_RATE_FAST"
-           desc="The label for the end of the auto-repeat rate slider, representing a fast repeat rate.">
-    Fast
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_CHANGE_LANGUAGE_AND_INPUT_SETTINGS"
-           desc="The link to open 'Language and input settings' window.">
-    Change language and input settings
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_SHOW_KEYBOARD_SHORTCUTS"
-           desc="The link to open the keyboard overlay.">
-    View keyboard shortcuts
-  </message>
-  <message name="IDS_OPTIONS_NO_POINTING_DEVICES" desc="Text shown when there is neither a touchpad nor a mouse.">
-    No mouse or touchpad was detected.
-  </message>
-  <message name="IDS_OPTIONS_POINTER_MOUSE_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Mouse only.">
-    Mouse settings
-  </message>
-  <message name="IDS_OPTIONS_POINTER_TOUCHPAD_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Touchpad only.">
-    Touchpad settings
-  </message>
-  <message name="IDS_OPTIONS_POINTER_TOUCHPAD_MOUSE_OVERLAY_TITLE" desc="The title for 'Pointer settings' overlay for Touchpad and Mouse.">
-    Touchpad and mouse settings
-  </message>
-  <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_TOUCHPAD" desc="The title for 'Touchpad' section of the Pointer Settings overlay.">
-    Touchpad
-  </message>
-  <message name="IDS_OPTIONS_POINTER_OVERLAY_SECTION_TITLE_MOUSE" desc="The title for 'Mouse' section of the Pointer Settings overlay.">
-    Mouse
-  </message>
   <message name="IDS_STATUSBAR_SPOKEN_FEEDBACK_ENABLED" desc="The tooltip for the status bar button to indicate that spoken feedback has been enabled.">
     ChromeVox (spoken feedback) is enabled. Press Ctrl+Alt+Z to disable.
   </message>
@@ -3766,6 +2934,8 @@ Press any key to continue exploring.
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR" desc="Label for a cellular network device.">
     Mobile data
   </message>
+
+  <!-- Common Network type strings -->
   <message name="IDS_NETWORK_TYPE_ETHERNET" desc="Label for Ethernet networks.">
     Ethernet
   </message>
@@ -3787,6 +2957,8 @@ Press any key to continue exploring.
   <message name="IDS_NETWORK_TYPE_VPN_BUILTIN" desc="The built-in VPN types (Open VPN and L2TP/IPSec).">
     OpenVPN / L2TP
   </message>
+
+  <!-- Status bar -->
   <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
     Connecting...
   </message>
@@ -4141,48 +3313,7 @@ Battery full
     Roaming
   </message>
 
-  <!-- Cellular network details -->
-  <message name="IDS_CHROMEOS_NETWORK_STATE" desc="Label for network state field under in chrome://options/internet">
-    Network status:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR" desc="Label for cellular network operator name under chrome://options/internet">
-    Operator:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_OPERATOR_CODE" desc="Label for cellular network operator code under chrome://options/internet">
-    Operator code:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_NETWORK_TECHNOLOGY" desc="Label for cellular network technology type under chrome://options/internet">
-    Technology:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ACTIVATION_STATE" desc="Label for cellular network activation status under chrome://options/internet">
-    Activation status:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ROAMING_STATE" desc="Label for cellular network roaming status under chrome://options/internet">
-    Roaming status:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_RESTRICTED_POOL" desc="Label for cellular network restricted network access under chrome://options/internet">
-    Restricted IP:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_ERROR_STATE" desc="Label for cellular network error details under chrome://options/internet">
-    Error details:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MANUFACTURER" desc="Label for cellular network modem manufacturer under chrome://options/internet">
-    Device manufacturer:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_MODEL_ID" desc="Label for cellular network modem model under chrome://options/internet">
-    Device model:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_FIRMWARE_REVISION" desc="Label for cellular network modem firmware revision under chrome://options/internet">
-    Firmware revision:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_HARDWARE_REVISION" desc="Label for cellular network modem hardware revision under chrome://options/internet">
-    Hardware revision:
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_INTERNET_CELLULAR_PRL_VERSION" desc="Label for cellular network modem PRL (Preferred Roaming List) version under chrome://options/internet">
-    PRL version:
-  </message>
-
-  <!-- Extensions page: Kiosk apps -->
+  <!-- Extensions Kiosk apps -->
   <message name="IDS_EXTENSIONS_ADD_KIOSK_APP_BUTTON" desc="Label of the button to bring up kiosk management overlay on chrome extensions page.">
     Manage kiosk applications...
   </message>
@@ -5731,9 +4862,6 @@ All users must sign out to continue.
     System time
   </message>
 
-  <message name="IDS_OPTIONS_RESOLVE_TIMEZONE_BY_GEOLOCATION_DESCRIPTION" desc="Label for checkbox to allow automatic timezone update by user geolocation.">
-    Set time zone automatically using your location
-  </message>
   <message name="IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_TITLE" desc="Title of a prompt dialog for granting permissions to a volume (eg. USB drive, SD card, MTP device) with the specified name. Only used for screen readers (a11y); not visible.">
     Permission requested
   </message>
@@ -5777,17 +4905,8 @@ All users must sign out to continue.
   </message>
 
   <!-- Android Apps -->
-  <message name="IDS_OPTIONS_ARC_TITLE" desc="The title of Google Play Store section.">
-    Google Play Store (beta)
-  </message>
   <message name="IDS_ARC_PLAYSTORE_ICON_TITLE_BETA" desc="The Play Store icon title with the beta label in the launcher.">
     Play Store (beta)
-  </message>
-  <message name="IDS_OPTIONS_ARC_ENABLE" desc="Label for the checkbox that enables Google Play Store apps.">
-    Enable Google Play Store on your Chromebook.
-  </message>
-  <message name="IDS_OPTIONS_ARC_MANAGE_APPS" desc="Label for launching  Android apps settings.">
-    Manage your Android <ph name="BEGIN_LINK">&lt;a is="action-link" id="android-apps-settings-link" role="link"&gt;</ph>preferences<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_ARC_NOTIFICATION_TITLE" desc="Title of the first-run notification that enables Android apps.">
     Google Play on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
