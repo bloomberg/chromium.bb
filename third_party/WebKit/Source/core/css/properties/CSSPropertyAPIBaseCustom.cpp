@@ -10,7 +10,6 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
-#include "core/css/properties/CSSPropertyAPIBaseHelper.h"
 #include "core/css/properties/CSSPropertyAnimationTimingFunctionUtils.h"
 #include "core/css/properties/CSSPropertyBackgroundUtils.h"
 #include "core/css/properties/CSSPropertyBorderImageUtils.h"
@@ -24,27 +23,7 @@
 
 namespace blink {
 
-using namespace CSSPropertyAPIBaseHelper;
 using namespace CSSPropertyParserHelpers;
-
-namespace {
-
-bool ConsumeRepeatStyle(CSSParserTokenRange& range,
-                        CSSValue*& result_x,
-                        CSSValue*& result_y,
-                        bool& implicit) {
-  do {
-    CSSValue* repeat_x = nullptr;
-    CSSValue* repeat_y = nullptr;
-    if (!ConsumeRepeatStyleComponent(range, repeat_x, repeat_y, implicit))
-      return false;
-    CSSPropertyBackgroundUtils::AddBackgroundValue(result_x, repeat_x);
-    CSSPropertyBackgroundUtils::AddBackgroundValue(result_y, repeat_y);
-  } while (ConsumeCommaIncludingWhitespace(range));
-  return true;
-}
-
-}  // namespace
 
 const CSSValue* CSSPropertyAPI::ParseSingleValue(
     CSSPropertyID property,
@@ -70,41 +49,7 @@ bool CSSPropertyAPI::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context,
     HeapVector<CSSProperty, 256>& properties) const {
-  // This is the legacy ParseShorthand code.
-  // TODO(jiameng): Move all of this to individual CSSPropertyAPI subclasses.
-  switch (property) {
-    case CSSPropertyBorder:
-      return ConsumeBorder(important, range, context, properties);
-    case CSSPropertyBackgroundRepeat:
-    case CSSPropertyWebkitMaskRepeat: {
-      CSSValue* result_x = nullptr;
-      CSSValue* result_y = nullptr;
-      bool implicit = false;
-      if (!ConsumeRepeatStyle(range, result_x, result_y, implicit) ||
-          !range.AtEnd())
-        return false;
-      IsImplicitProperty enum_implicit = implicit
-                                             ? IsImplicitProperty::kImplicit
-                                             : IsImplicitProperty::kNotImplicit;
-      AddProperty(property == CSSPropertyBackgroundRepeat
-                      ? CSSPropertyBackgroundRepeatX
-                      : CSSPropertyWebkitMaskRepeatX,
-                  property, *result_x, important, enum_implicit, properties);
-      AddProperty(property == CSSPropertyBackgroundRepeat
-                      ? CSSPropertyBackgroundRepeatY
-                      : CSSPropertyWebkitMaskRepeatY,
-                  property, *result_y, important, enum_implicit, properties);
-      return true;
-    }
-    case CSSPropertyBackground:
-      return ConsumeBackgroundShorthand(backgroundShorthand(), important, range,
-                                        context, properties);
-    case CSSPropertyWebkitMask:
-      return ConsumeBackgroundShorthand(webkitMaskShorthand(), important, range,
-                                        context, properties);
-    default:
-      return false;
-  }
+  return false;
 }
 
 }  // namespace blink

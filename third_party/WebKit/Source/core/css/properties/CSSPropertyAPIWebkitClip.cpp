@@ -17,7 +17,7 @@ const CSSValue* CSSPropertyAPIWebkitClip::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return CSSPropertyParserHelpers::ConsumeCommaSeparatedList(
       CSSPropertyBackgroundUtils::ConsumePrefixedBackgroundBox, range,
-      true /* allow_text_value */);
+      AllowTextValue::kAllowed);
 }
 
 }  // namespace blink

@@ -121,15 +121,62 @@ bool CSSPropertyBackgroundUtils::ConsumeBackgroundPosition(
 
 CSSValue* CSSPropertyBackgroundUtils::ConsumePrefixedBackgroundBox(
     CSSParserTokenRange& range,
-    bool allow_text_value) {
+    AllowTextValue allow_text_value) {
   // The values 'border', 'padding' and 'content' are deprecated and do not
   // apply to the version of the property that has the -webkit- prefix removed.
   if (CSSValue* value = CSSPropertyParserHelpers::ConsumeIdentRange(
           range, CSSValueBorder, CSSValuePaddingBox))
     return value;
-  if (allow_text_value && range.Peek().Id() == CSSValueText)
+  if (allow_text_value == AllowTextValue::kAllowed &&
+      range.Peek().Id() == CSSValueText)
     return CSSPropertyParserHelpers::ConsumeIdent(range);
   return nullptr;
+}
+
+bool CSSPropertyBackgroundUtils::ConsumeRepeatStyleComponent(
+    CSSParserTokenRange& range,
+    CSSValue*& value1,
+    CSSValue*& value2,
+    bool& implicit) {
+  if (CSSPropertyParserHelpers::ConsumeIdent<CSSValueRepeatX>(range)) {
+    value1 = CSSIdentifierValue::Create(CSSValueRepeat);
+    value2 = CSSIdentifierValue::Create(CSSValueNoRepeat);
+    implicit = true;
+    return true;
+  }
+  if (CSSPropertyParserHelpers::ConsumeIdent<CSSValueRepeatY>(range)) {
+    value1 = CSSIdentifierValue::Create(CSSValueNoRepeat);
+    value2 = CSSIdentifierValue::Create(CSSValueRepeat);
+    implicit = true;
+    return true;
+  }
+  value1 = CSSPropertyParserHelpers::ConsumeIdent<
+      CSSValueRepeat, CSSValueNoRepeat, CSSValueRound, CSSValueSpace>(range);
+  if (!value1)
+    return false;
+
+  value2 = CSSPropertyParserHelpers::ConsumeIdent<
+      CSSValueRepeat, CSSValueNoRepeat, CSSValueRound, CSSValueSpace>(range);
+  if (!value2) {
+    value2 = value1;
+    implicit = true;
+  }
+  return true;
+}
+
+bool CSSPropertyBackgroundUtils::ConsumeRepeatStyle(CSSParserTokenRange& range,
+                                                    CSSValue*& result_x,
+                                                    CSSValue*& result_y,
+                                                    bool& implicit) {
+  do {
+    CSSValue* repeat_x = nullptr;
+    CSSValue* repeat_y = nullptr;
+    if (!ConsumeRepeatStyleComponent(range, repeat_x, repeat_y, implicit))
+      return false;
+    AddBackgroundValue(result_x, repeat_x);
+    AddBackgroundValue(result_y, repeat_y);
+  } while (CSSPropertyParserHelpers::ConsumeCommaIncludingWhitespace(range));
+  return true;
 }
 
 }  // namespace blink
