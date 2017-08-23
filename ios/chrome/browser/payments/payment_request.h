@@ -79,6 +79,18 @@ namespace payments {
 class PaymentRequest : public PaymentOptionsProvider,
                        public PaymentRequestBaseDelegate {
  public:
+  // Represents the state of the payment request.
+  enum class State {
+    // The payment request is constructed but has not been presented.
+    CREATED,
+
+    // The payment request is being presented to the user.
+    INTERACTIVE,
+
+    // The payment request completed.
+    CLOSED,
+  };
+
   // |personal_data_manager| should not be null and should outlive this object.
   PaymentRequest(const web::PaymentRequest& web_payment_request,
                  ios::ChromeBrowserState* browser_state,
@@ -109,6 +121,10 @@ class PaymentRequest : public PaymentOptionsProvider,
   ukm::UkmRecorder* GetUkmRecorder() override;
   std::string GetAuthenticatedEmail() const override;
   PrefService* GetPrefService() override;
+
+  State state() const { return state_; }
+
+  void set_state(State state) { state_ = state; }
 
   // Returns the web::PaymentRequest that was used to build this PaymentRequest.
   const web::PaymentRequest& web_payment_request() const {
@@ -300,6 +316,9 @@ class PaymentRequest : public PaymentOptionsProvider,
 
   // Sets the selected shipping option, if any.
   void SetSelectedShippingOption();
+
+  // The current state of the payment request.
+  State state_;
 
   // The web::PaymentRequest object as provided by the page invoking the Payment
   // Request API, owned by this object.

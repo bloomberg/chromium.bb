@@ -738,6 +738,8 @@ var SerializedPaymentResponse;
 
     __gCrWeb['paymentRequestManager'].abortPromiseResolver.resolve();
     __gCrWeb['paymentRequestManager'].abortPromiseResolver = null;
+    __gCrWeb['paymentRequestManager'].pendingRequest = null;
+    __gCrWeb['paymentRequestManager'].updateEvent = null;
   };
 
   /**
@@ -881,6 +883,17 @@ var SerializedPaymentResponse;
 }());  // End of anonymous object
 
 /**
+ * Possible values for the state of the payment request according to:
+ * https://w3c.github.io/payment-request/#dfn-x%5B%5Bstate%5D%5D
+ * @enum {string}
+ */
+var PaymentRequestState = {
+  CREATED: 'created',
+  INTERACTIVE: 'interactive',
+  CLOSED: 'closed'
+};
+
+/**
  * A request to make a payment.
  * @param {!Array<!window.PaymentMethodData>} methodData Payment method
  *     identifiers for the payment methods that the web site accepts and any
@@ -927,11 +940,10 @@ function PaymentRequest(methodData, details, opt_options) {
 
   /**
    * The state of this request, used to govern its lifecycle.
-   * TODO(crbug.com/602666): Implement state transitions per spec.
-   * @type {string}
+   * @type {PaymentRequestState}
    * @private
    */
-  this.state = 'created';
+  this.state = PaymentRequestState.CREATED;
 
   /**
    * True if there is a pending updateWith call to update the payment request
@@ -1047,12 +1059,21 @@ PaymentRequest.prototype.show = function() {
         'InvalidStateError'));
   }
 
-  if (__gCrWeb['paymentRequestManager'].pendingRequest ||
-      __gCrWeb['paymentRequestManager'].requestPromiseResolver) {
+  if (this.state != PaymentRequestState.CREATED) {
     return Promise.reject(
         new DOMException('Already called show() once', 'InvalidStateError'));
   }
+
+  if (__gCrWeb['paymentRequestManager'].pendingRequest ||
+      __gCrWeb['paymentRequestManager'].requestPromiseResolver) {
+    return Promise.reject(new DOMException(
+        'Only one PaymentRequest may be shown at a time', 'AbortError'));
+  }
+
   __gCrWeb['paymentRequestManager'].pendingRequest = this;
+  __gCrWeb['paymentRequestManager'].requestPromiseResolver =
+      new __gCrWeb.PromiseResolver();
+  this.state = PaymentRequestState.INTERACTIVE;
 
   var message = {
     'command': 'paymentRequest.requestShow',
@@ -1061,8 +1082,6 @@ PaymentRequest.prototype.show = function() {
   };
   __gCrWeb.message.invokeOnHost(message);
 
-  __gCrWeb['paymentRequestManager'].requestPromiseResolver =
-      new __gCrWeb.PromiseResolver();
   return __gCrWeb['paymentRequestManager'].requestPromiseResolver.promise;
 };
 
@@ -1092,13 +1111,15 @@ PaymentRequest.prototype.abort = function() {
         'rejected'));
   }
 
+  __gCrWeb['paymentRequestManager'].abortPromiseResolver =
+      new __gCrWeb.PromiseResolver();
+  this.state = PaymentRequestState.CLOSED;
+
   var message = {
     'command': 'paymentRequest.requestAbort',
   };
   __gCrWeb.message.invokeOnHost(message);
 
-  __gCrWeb['paymentRequestManager'].abortPromiseResolver =
-      new __gCrWeb.PromiseResolver();
   return __gCrWeb['paymentRequestManager'].abortPromiseResolver.promise;
 };
 
@@ -1116,8 +1137,10 @@ PaymentRequest.prototype.canMakePayment = function() {
         'InvalidStateError'));
   }
 
-  // TODO(crbug.com/602666): return a promise rejected with InvalidStateError if
-  // |this.state| != 'created'.
+  if (this.state != PaymentRequestState.CREATED) {
+    return Promise.reject(
+        new DOMException('Cannot query payment request', 'InvalidStateError'));
+  }
 
   var message = {
     'command': 'paymentRequest.requestCanMakePayment',
