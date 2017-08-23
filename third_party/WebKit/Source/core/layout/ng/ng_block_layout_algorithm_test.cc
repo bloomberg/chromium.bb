@@ -1407,9 +1407,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFit) {
   EXPECT_EQ(LayoutUnit(kWidthChild2), frag->Size().width);
 }
 
-// TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
-// is checked in.
-TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyMulticol) {
+TEST_F(NGBlockLayoutAlgorithmTest, EmptyMulticol) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1439,15 +1437,23 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyMulticol) {
   EXPECT_FALSE(iterator.NextChild());
 
   // There should be nothing inside the multicol container.
+  // TODO(mstensho): Get rid of this column fragment. It shouldn't be here.
+  fragment = FragmentChildIterator(fragment).NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
+  EXPECT_EQ(0UL, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
+
   EXPECT_FALSE(FragmentChildIterator(fragment).NextChild());
 }
 
-// TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
-// is checked in.
-TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyBlock) {
+TEST_F(NGBlockLayoutAlgorithmTest, EmptyBlock) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
+        columns: 2;
+        column-fill: auto;
+        column-gap: 10px;
         height: 100px;
         width: 210px;
       }
@@ -1473,7 +1479,15 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyBlock) {
   EXPECT_FALSE(iterator.NextChild());
   iterator.SetParent(fragment);
 
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit()), fragment->Size());
+  EXPECT_FALSE(iterator.NextChild());
+
   // #child fragment in first column
+  iterator.SetParent(fragment);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
@@ -1482,8 +1496,6 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_EmptyBlock) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
-// is checked in.
 TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInOneColumn) {
   SetBodyInnerHTML(R"HTML(
     <style>
@@ -1517,7 +1529,15 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
   iterator.SetParent(fragment);
 
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(100)), fragment->Size());
+  EXPECT_FALSE(iterator.NextChild());
+
   // #child fragment in first column
+  iterator.SetParent(fragment);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
@@ -1526,9 +1546,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInOneColumn) {
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
-// is checked in.
-TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInTwoColumns) {
+TEST_F(NGBlockLayoutAlgorithmTest, BlockInTwoColumns) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1536,7 +1554,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInTwoColumns) {
         column-fill: auto;
         column-gap: 10px;
         height: 100px;
-        width: 20px;
+        width: 210px;
       }
     </style>
     <div id="container">
@@ -1560,7 +1578,24 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInTwoColumns) {
   EXPECT_FALSE(iterator.NextChild());
 
   iterator.SetParent(fragment);
+
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit(100)), fragment->Size());
+
+  // second column fragment
+  const auto* column2 = iterator.NextChild();
+  ASSERT_TRUE(column2);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()), column2->Offset());
+  // TODO(mstensho): Make this work.
+  // EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit(100)),
+  // column2->Size());
+  EXPECT_FALSE(iterator.NextChild());
+
   // #child fragment in first column
+  iterator.SetParent(fragment);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
@@ -1568,18 +1603,16 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInTwoColumns) {
   EXPECT_EQ(0UL, fragment->Children().size());
 
   // #child fragment in second column
+  iterator.SetParent(column2);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(50)), fragment->Size());
   EXPECT_EQ(0U, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
-// is checked in.
-TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInThreeColumns) {
+TEST_F(NGBlockLayoutAlgorithmTest, BlockInThreeColumns) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1611,36 +1644,59 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_BlockInThreeColumns) {
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(320), LayoutUnit(100)), fragment->Size());
   EXPECT_FALSE(iterator.NextChild());
 
+  // first column fragment
   iterator.SetParent(fragment);
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+  EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit(100)), fragment->Size());
+
+  // second column fragment
+  const auto* column2 = iterator.NextChild();
+  ASSERT_TRUE(column2);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()), column2->Offset());
+  // TODO(mstensho): Make this work.
+  // EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit(100)),
+  // column2->Size());
+
+  // third column fragment
+  const auto* column3 = iterator.NextChild();
+  ASSERT_TRUE(column3);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(220), LayoutUnit()), column3->Offset());
+  // TODO(mstensho): Make this work.
+  // EXPECT_EQ(NGPhysicalSize(LayoutUnit(100), LayoutUnit(100)),
+  // column3->Size());
+  EXPECT_FALSE(iterator.NextChild());
+
   // #child fragment in first column
+  iterator.SetParent(fragment);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(100)), fragment->Size());
   EXPECT_EQ(0UL, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in second column
+  iterator.SetParent(column2);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(100)), fragment->Size());
   EXPECT_EQ(0U, fragment->Children().size());
+  EXPECT_FALSE(iterator.NextChild());
 
   // #child fragment in third column
+  iterator.SetParent(column3);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(220), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(75), LayoutUnit(50)), fragment->Size());
   EXPECT_EQ(0U, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
-// is checked in.
-TEST_F(NGBlockLayoutAlgorithmTest,
-       DISABLED_ActualColumnCountGreaterThanSpecified) {
+TEST_F(NGBlockLayoutAlgorithmTest, ActualColumnCountGreaterThanSpecified) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1673,7 +1729,25 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   EXPECT_FALSE(iterator.NextChild());
 
   iterator.SetParent(fragment);
+
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+
+  // second column fragment
+  const auto* column2 = iterator.NextChild();
+  ASSERT_TRUE(column2);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()), column2->Offset());
+
+  // third column fragment
+  const auto* column3 = iterator.NextChild();
+  ASSERT_TRUE(column3);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(220), LayoutUnit()), column3->Offset());
+  EXPECT_FALSE(iterator.NextChild());
+
   // #child fragment in first column
+  iterator.SetParent(fragment);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
@@ -1681,26 +1755,24 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   EXPECT_EQ(0UL, fragment->Children().size());
 
   // #child fragment in second column
+  iterator.SetParent(column2);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(1), LayoutUnit(100)), fragment->Size());
   EXPECT_EQ(0U, fragment->Children().size());
 
   // #child fragment in third column
+  iterator.SetParent(column3);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(220), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(1), LayoutUnit(50)), fragment->Size());
   EXPECT_EQ(0U, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
 }
 
-// TODO(glebl): reenable multicol after new margin collapsing/floats algorithm
-// is checked in.
-TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoBlocksInTwoColumns) {
+TEST_F(NGBlockLayoutAlgorithmTest, TwoBlocksInTwoColumns) {
   SetBodyInnerHTML(R"HTML(
     <style>
       #parent {
@@ -1735,7 +1807,20 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoBlocksInTwoColumns) {
   EXPECT_FALSE(iterator.NextChild());
 
   iterator.SetParent(fragment);
+
+  // first column fragment
+  fragment = iterator.NextChild();
+  ASSERT_TRUE(fragment);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
+
+  // second column fragment
+  const auto* column2 = iterator.NextChild();
+  ASSERT_TRUE(column2);
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()), column2->Offset());
+  EXPECT_FALSE(iterator.NextChild());
+
   // #child1 fragment in first column
+  iterator.SetParent(fragment);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
   EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
@@ -1749,10 +1834,10 @@ TEST_F(NGBlockLayoutAlgorithmTest, DISABLED_TwoBlocksInTwoColumns) {
   EXPECT_EQ(0UL, fragment->Children().size());
 
   // #child2 fragment in second column
+  iterator.SetParent(column2);
   fragment = iterator.NextChild();
   ASSERT_TRUE(fragment);
-  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(110), LayoutUnit()),
-            fragment->Offset());
+  EXPECT_EQ(NGPhysicalOffset(LayoutUnit(), LayoutUnit()), fragment->Offset());
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(85), LayoutUnit(20)), fragment->Size());
   EXPECT_EQ(0U, fragment->Children().size());
   EXPECT_FALSE(iterator.NextChild());
