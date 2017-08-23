@@ -720,53 +720,50 @@ function emptyBounds()
     return bounds;
 }
 
-function _sumWithGap(values, gap) {
-    var sum = -gap;  // number of gaps is 1 less then the number of values
-    for (var value of values)
-        sum += gap + value;
-    return sum;
-}
-
 function _drawLayoutGridHighlight(highlight, context)
 {
-    var left = highlight.columns.origin - 0.5;
-    var top = highlight.rows.origin - 0.5;
+    var originX = highlight.columns.origin - 0.5;
+    var originY = highlight.rows.origin - 0.5;
 
     var columnGap = highlight.columns.gap;
     var rowGap = highlight.rows.gap;
 
-    var rowHeights = highlight.rows.spans;
-    var colWidths = highlight.columns.spans;
+    var rows = highlight.rows.positions;
+    var columns = highlight.columns.positions;
 
+    if (!rows.length || !columns.length)
+        return;
 
     if (columnGap > 1 && highlight.isPrimaryGrid) {
-        var height = _sumWithGap(rowHeights, rowGap) + 1;
-        var x = left - columnGap; // Adjust for no gap before the first column
-        for (var i = 0; i < colWidths.length - 1; i++) {
-            x += columnGap + colWidths[i];
-            context.clearRect(x, top - 1, columnGap - 1, height);
-        }
+        var top = rows[0] + originY;
+        var height = rows[rows.length - 1] - rows[0] + 1;
+        for (var i = 1; i < columns.length - 1; i++)
+            context.clearRect(columns[i] - columnGap + originX, top, columnGap, height);
     }
+
     if (rowGap > 1 && highlight.isPrimaryGrid) {
-        var width = _sumWithGap(colWidths, columnGap) + 1;
-        var y = top - rowGap; // Adjust for not gap before the first row
-        for (var i = 0; i < rowHeights.length - 1; i++) {
-            y += rowGap + rowHeights[i];
-            context.clearRect(left - 1, y, width, rowGap - 1);
-        }
+        var left = columns[0] + originX;
+        var width = columns[columns.length - 1] - columns[0] + 1;
+        for (var i = 1; i < rows.length - 1; i++)
+            context.clearRect(left, rows[i] - rowGap + originY, width, rowGap);
     }
 
     context.setLineDash([3, 3]);
     context.strokeStyle = highlight.color;
 
-    var x = left;
-    for (var width of colWidths) {
-        var y = top;
-        for (var height of rowHeights) {
-            context.strokeRect(x, y, width + 1, height + 1);
-            y += rowGap + height;
+    for (var column = 1; column < columns.length; column++) {
+        var x = originX + columns[column - 1];
+        var width = columns[column] - columns[column - 1] + 1;
+        if (column !== columns.length - 1)
+            width -= columnGap;
+
+        for (var row = 1; row < rows.length; row++) {
+            var y = originY + rows[row - 1];
+            var height = rows[row] - rows[row - 1] + 1;
+            if (row !== rows.length - 1)
+                height -= rowGap;
+            context.strokeRect(x, y, width, height);
         }
-        x += columnGap + width;
     }
 }
 

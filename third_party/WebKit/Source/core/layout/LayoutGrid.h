@@ -104,6 +104,7 @@ class LayoutGrid final : public LayoutBlock {
                                                 GridAxis) const;
 
   LayoutUnit GridGap(GridTrackSizingDirection) const;
+  LayoutUnit GridItemOffset(GridTrackSizingDirection) const;
 
  protected:
   ItemPosition SelfAlignmentNormalBehavior(

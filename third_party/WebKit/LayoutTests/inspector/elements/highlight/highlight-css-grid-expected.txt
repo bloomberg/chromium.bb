@@ -14,17 +14,17 @@ paddedGrid{
     {
       "path": [
         "M",
-        60,
-        50,
+        75,
+        65,
         "L",
-        1060,
-        50,
+        1075,
+        65,
         "L",
-        1060,
-        100,
+        1075,
+        130,
         "L",
-        60,
-        100,
+        75,
+        130,
         "Z"
       ],
       "fillColor": "rgba(255, 0, 0, 0)",
@@ -34,17 +34,17 @@ paddedGrid{
     {
       "path": [
         "M",
-        0,
-        0,
+        15,
+        15,
         "L",
-        1120,
-        0,
+        1135,
+        15,
         "L",
-        1120,
-        150,
+        1135,
+        180,
         "L",
-        0,
-        150,
+        15,
+        180,
         "Z"
       ],
       "fillColor": "rgba(0, 255, 0, 0)",
@@ -53,17 +53,17 @@ paddedGrid{
     {
       "path": [
         "M",
-        0,
-        0,
+        10,
+        10,
         "L",
-        1120,
-        0,
+        1140,
+        10,
         "L",
-        1120,
-        150,
+        1140,
+        185,
         "L",
-        0,
-        150,
+        10,
+        185,
         "Z"
       ],
       "fillColor": "rgba(0, 0, 255, 0)",
@@ -75,14 +75,14 @@ paddedGrid{
         0,
         0,
         "L",
-        1120,
+        1150,
         0,
         "L",
-        1120,
-        150,
+        1150,
+        195,
         "L",
         0,
-        150,
+        195,
         "Z"
       ],
       "fillColor": "rgba(255, 255, 255, 0)",
@@ -95,26 +95,28 @@ paddedGrid{
     "tagName": "div",
     "idValue": "paddedGrid",
     "className": ".grid.padded.fixed",
-    "nodeWidth": "1120",
-    "nodeHeight": "150"
+    "nodeWidth": "1130",
+    "nodeHeight": "175"
   },
   "displayAsMaterial": false,
   "gridInfo": [
     {
       "rows": {
-        "origin": 50,
-        "gap": 0,
-        "spans": [
-          25,
-          25
+        "origin": 10,
+        "gap": 15,
+        "positions": [
+          55,
+          95,
+          120
         ]
       },
       "columns": {
-        "origin": 60,
-        "gap": 0,
-        "spans": [
-          50,
-          200
+        "origin": 10,
+        "gap": 25,
+        "positions": [
+          790,
+          865,
+          1065
         ]
       },
       "color": "rgba(128, 128, 128, 0)",
@@ -217,17 +219,19 @@ nestedGrid{
       "rows": {
         "origin": 120,
         "gap": 0,
-        "spans": [
+        "positions": [
+          0,
           25,
-          25
+          50
         ]
       },
       "columns": {
         "origin": 100,
         "gap": 0,
-        "spans": [
+        "positions": [
+          0,
           50,
-          200
+          250
         ]
       },
       "color": "rgba(128, 128, 128, 0)",
@@ -237,17 +241,19 @@ nestedGrid{
       "rows": {
         "origin": 0,
         "gap": 20,
-        "spans": [
-          100,
-          100
+        "positions": [
+          0,
+          120,
+          220
         ]
       },
       "columns": {
         "origin": 0,
         "gap": 50,
-        "spans": [
-          50,
-          1200
+        "positions": [
+          0,
+          100,
+          1300
         ]
       },
       "color": "rgba(128, 128, 128, 0)",
