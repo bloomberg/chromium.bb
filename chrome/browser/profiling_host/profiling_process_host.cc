@@ -126,19 +126,18 @@ void ProfilingProcessHost::SendPipeToClientProcess(
 // static
 ProfilingProcessHost::Mode ProfilingProcessHost::GetCurrentMode() {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  std::string mode =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kMemlog);
-  if (mode.empty())
-    return Mode::kNone;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kMemlog)) {
+    std::string mode =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kMemlog);
+    if (mode == switches::kMemlogModeAll)
+      return Mode::kAll;
+    if (mode == switches::kMemlogModeBrowser)
+      return Mode::kBrowser;
 
-  if (mode == switches::kMemlogModeAll)
-    return Mode::kAll;
-  if (mode == switches::kMemlogModeBrowser)
-    return Mode::kBrowser;
-
-  LOG(ERROR) << "Unsupported value: \"" << mode << "\" passed to --"
-             << switches::kMemlog;
+    LOG(ERROR) << "Unsupported value: \"" << mode << "\" passed to --"
+               << switches::kMemlog;
+  }
   return Mode::kNone;
 #else
   LOG_IF(ERROR,
