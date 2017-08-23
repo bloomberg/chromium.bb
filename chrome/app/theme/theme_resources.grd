@@ -191,9 +191,6 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_FROZEN_TAB_ICON" file="common/frozen_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_FULLSCREEN_MENU_BUTTON" file="common/fullscreen_menu_button.png" />
-      <if expr="is_macosx">
-        <structure type="chrome_scaled_image" name="IDR_GENERATE_PASSWORD_KEY" file="legacy/password_generation_key.png" />
-      </if>
       <if expr="_google_chrome">
         <structure type="chrome_scaled_image" name="IDR_GOOGLE_ICON" file="google_chrome/google_icon.png" />
       </if>

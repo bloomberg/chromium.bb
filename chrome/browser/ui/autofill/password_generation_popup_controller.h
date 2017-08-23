@@ -20,7 +20,7 @@ class PasswordGenerationPopupController : public AutofillPopupViewDelegate {
   static const int kHelpVerticalPadding = 15;
 
   // Spacing between the border of the popup and any text.
-  static const int kHorizontalPadding = 10;
+  static const int kHorizontalPadding = 16;
 
   // Desired height of the password section.
   static const int kPopupPasswordSectionHeight = 62;
