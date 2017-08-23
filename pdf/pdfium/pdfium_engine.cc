@@ -518,6 +518,19 @@ void FormatStringForOS(base::string16* text) {
 #endif
 }
 
+// For double clicks, look for work breaks.
+// For triple clicks, look for line breaks.
+// The actual algorithm used in Blink is much more complicated, so do a simple
+// approximation.
+bool FindMultipleClickBoundary(bool is_double_click, base::char16 cur) {
+  if (!is_double_click)
+    return cur == '\n';
+
+  if (base::IsAsciiAlpha(cur) || base::IsAsciiDigit(cur) || cur == '_')
+    return false;
+  return cur < 128;
+};
+
 // Returns a VarDictionary (representing a bookmark), which in turn contains
 // child VarDictionaries (representing the child bookmarks).
 // If nullptr is passed in as the bookmark then we traverse from the "root".
@@ -1767,14 +1780,15 @@ void PDFiumEngine::OnSingleClick(int page_index, int char_index) {
 void PDFiumEngine::OnMultipleClick(int click_count,
                                    int page_index,
                                    int char_index) {
+  DCHECK_GE(click_count, 2);
+  bool is_double_click = click_count == 2;
+
   // It would be more efficient if the SDK could support finding a space, but
   // now it doesn't.
   int start_index = char_index;
   do {
     base::char16 cur = pages_[page_index]->GetCharAtIndex(start_index);
-    // For double click, we want to select one word so we look for whitespace
-    // boundaries.  For triple click, we want the whole line.
-    if (cur == '\n' || (click_count == 2 && (cur == ' ' || cur == '\t')))
+    if (FindMultipleClickBoundary(is_double_click, cur))
       break;
   } while (--start_index >= 0);
   if (start_index)
@@ -1784,7 +1798,7 @@ void PDFiumEngine::OnMultipleClick(int click_count,
   int total = pages_[page_index]->GetCharCount();
   while (end_index++ <= total) {
     base::char16 cur = pages_[page_index]->GetCharAtIndex(end_index);
-    if (cur == '\n' || (click_count == 2 && (cur == ' ' || cur == '\t')))
+    if (FindMultipleClickBoundary(is_double_click, cur))
       break;
   }
 
@@ -1846,11 +1860,10 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
   if (area != PDFiumPage::TEXT_AREA)
     return true;  // Return true so WebKit doesn't do its own highlighting.
 
-  if (event.GetClickCount() == 1) {
+  if (event.GetClickCount() == 1)
     OnSingleClick(page_index, char_index);
-  } else if (event.GetClickCount() == 2 || event.GetClickCount() == 3) {
+  else if (event.GetClickCount() == 2 || event.GetClickCount() == 3)
     OnMultipleClick(event.GetClickCount(), page_index, char_index);
-  }
 
   return true;
 }
