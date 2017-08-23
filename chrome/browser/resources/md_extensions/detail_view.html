@@ -25,6 +25,14 @@
         overflow: auto;
       }
 
+      #enable-section {
+        margin-bottom: 8px;
+      }
+
+      #enable-section cr-tooltip-icon {
+        -webkit-margin-end: 20px;
+      }
+
       #main {
         background-color: white;
         margin: auto;
@@ -57,28 +65,28 @@
         align-items: center;
         display: flex;
         justify-content: space-between;
+        width: 100%;
       }
 
       .control-line span {
         color: #333;
       }
 
-      #enable-section {
-        height: 48px;
-        margin-bottom: 8px;
-        padding: 0 20px;
-      }
-
-      #enable-section cr-tooltip-icon {
-        -webkit-margin-end: 20px;
-      }
-
       .section {
-        border-bottom: 1px solid var(--paper-grey-400);
-        padding: 16px 20px;
+        @apply(--section);
       }
 
-      .section:last-child {
+      .section.block {
+        display: block;
+        padding-bottom: 16px;
+        padding-top: 16px;
+      }
+
+      .section.continuation {
+        border-top: none;
+      }
+
+      .section:first-child {
         border: none;
       }
 
@@ -89,14 +97,6 @@
 
       .section-content {
         color: #646464;
-      }
-
-      #options-section {
-        padding: 7px 20px;
-      }
-
-      #options-section .control-line {
-        height: 52px;
       }
 
       .actionable {
@@ -122,30 +122,32 @@
         <img alt="" id="icon" src="[[data.iconUrl]]">
         <span id="name">[[data.name]]</span>
       </div>
-      <div class="control-line" id="enable-section">
-        <span>[[computeEnabledText_(data.*)]]</span>
-        <div class="layout horizontal">
-          <cr-tooltip-icon hidden$="[[!data.controlledInfo]]"
-              tooltip-text="[[data.controlledInfo.text]]"
-              icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
-              icon-aria-label="[[data.controlledInfo.type]]">
-          </cr-tooltip-icon>
-          <paper-toggle-button id="enable-toggle"
-              checked="[[isEnabled_(data.state)]]"
-              on-change="onEnableChange_"
-              disabled="[[!isEnableToggleEnabled_(data.*)]]">
-          </paper-toggle-button>
+      <div class="section continuation" id="enable-section">
+        <div class="control-line">
+          <span>[[computeEnabledText_(data.*)]]</span>
+          <div class="layout horizontal">
+            <cr-tooltip-icon hidden$="[[!data.controlledInfo]]"
+                tooltip-text="[[data.controlledInfo.text]]"
+                icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
+                icon-aria-label="[[data.controlledInfo.type]]">
+            </cr-tooltip-icon>
+            <paper-toggle-button id="enable-toggle"
+                checked="[[isEnabled_(data.state)]]"
+                on-change="onEnableChange_"
+                disabled="[[!isEnableToggleEnabled_(data.*)]]">
+            </paper-toggle-button>
+          </div>
         </div>
       </div>
-      <div class="section">
+      <div class="section continuation block">
         <div class="section-title">$i18n{itemDescriptionLabel}</div>
         <div class="section-content">[[data.description]]</div>
       </div>
-      <div class="section">
+      <div class="section block">
         <div class="section-title">$i18n{itemVersion}</div>
         <div class="section-content">[[data.version]]</div>
       </div>
-      <div class="section" id="id-section" hidden$="[[!inDevMode]]">
+      <div class="section block" id="id-section" hidden$="[[!inDevMode]]">
         <div class="section-title">$i18n{itemIdHeading}</div>
         <div class="section-content">[[data.id]]</div>
       </div>
@@ -164,7 +166,7 @@
           </ul>
         </div>
       </div>
-      <div class="section">
+      <div class="section block">
         <div class="section-title">$i18n{itemPermissions}</div>
         <div class="section-content">
           <span id="no-permissions"
@@ -181,7 +183,7 @@
       </div>
       <template is="dom-if"
           if="[[hasDependentExtensions_(data.dependentExtensions.splices)]]">
-        <div class="section">
+        <div class="section block">
           <div class="section-title">$i18n{itemDependencies}</div>
           <div class="section-content">
             <ul id="dependent-extensions-list">
@@ -193,7 +195,7 @@
         </div>
       </template>
       <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
-        <div class="section layout vertical" id="options-section">
+        <div class="section">
           <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
             <div class="control-line">
               <span>$i18n{itemAllowIncognito}</span>
@@ -236,14 +238,15 @@
           <button class="icon-external" is="paper-icon-button-light"></button>
         </div>
       </div>
-      <div class="section" hidden="[[isControlled_(data.controlledInfo)]]">
-        <div class="control-line actionable" id="remove-extension"
-            on-tap="onRemoveTap_">
+      <div class="section actionable"
+          hidden="[[isControlled_(data.controlledInfo)]]" id="remove-extension"
+          on-tap="onRemoveTap_">
+        <div class="control-line">
           <span>$i18n{itemRemoveExtension}</span>
           <button class="subpage-arrow" is="paper-icon-button-light"></button>
         </div>
       </div>
-      <div class="section">
+      <div class="section block">
         <div class="section-title">$i18n{itemSource}</div>
         <div class="section-content">
           [[computeSourceString_(data.*)]]

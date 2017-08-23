@@ -37,6 +37,23 @@
       -webkit-margin-start: var(--cr-icon-button-margin-start);
     }
 
+    /* TODO (scottchen): re-implement with paddings instead; */
+    /* These are used for row items such as radio buttons, check boxes, list
+     * items etc. */
+    --cr-section-min-height: 48px;
+    --cr-section-two-line-min-height: 64px;
+    --cr-section-three-line-min-height: 84px;
+
+    --cr-section-padding: 20px;
+
+    --cr-section: {
+      align-items: center;
+      border-top: var(--cr-separator-line);
+      display: flex;
+      min-height: var(--cr-section-min-height);
+      padding: 0 var(--cr-section-padding);
+    };
+
     --cr-toggle-color: var(--google-blue-500);
 
     --cr-selectable-focus: {
