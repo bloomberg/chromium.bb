@@ -210,6 +210,7 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
           DocumentLifecycle::kUninitialized),
       past_layout_lifecycle_update_(false),
       scroll_anchor_(this),
+      in_perform_scroll_anchoring_adjustments_(false),
       scrollbar_manager_(*this),
       needs_scrollbars_update_(false),
       suppress_adjust_view_size_(false),
@@ -3247,6 +3248,11 @@ void LocalFrameView::EnqueueScrollAnchoringAdjustment(
 }
 
 void LocalFrameView::PerformScrollAnchoringAdjustments() {
+  // TODO(bokan): Temporary to get more information about crash in
+  // crbug.com/745686.
+  CHECK(!in_perform_scroll_anchoring_adjustments_);
+  in_perform_scroll_anchoring_adjustments_ = true;
+
   for (WeakMember<ScrollableArea>& scroller : anchoring_adjustment_queue_) {
     if (scroller) {
       DCHECK(scroller->GetScrollAnchor());
@@ -3254,6 +3260,8 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
     }
   }
   anchoring_adjustment_queue_.clear();
+
+  in_perform_scroll_anchoring_adjustments_ = false;
 }
 
 void LocalFrameView::PrePaint() {

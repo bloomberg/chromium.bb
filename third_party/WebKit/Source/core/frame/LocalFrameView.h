@@ -1195,6 +1195,10 @@ class CORE_EXPORT LocalFrameView final
       HeapLinkedHashSet<WeakMember<ScrollableArea>>;
   AnchoringAdjustmentQueue anchoring_adjustment_queue_;
 
+  // TODO(bokan): Temporary to get more information about crash in
+  // crbug.com/745686.
+  bool in_perform_scroll_anchoring_adjustments_;
+
   // ScrollbarManager holds the Scrollbar instances.
   ScrollbarManager scrollbar_manager_;
 
