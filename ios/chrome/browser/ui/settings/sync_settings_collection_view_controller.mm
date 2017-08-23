@@ -690,7 +690,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self shouldDisableSettingsOnSyncError])
     return;
 
-  UIViewController* controllerToPush;
+  SettingsRootCollectionViewController* controllerToPush;
   // If there was a sync error, prompt the user to enter the passphrase.
   // Otherwise, show the full encryption options.
   if (syncService->IsPassphraseRequired()) {
@@ -700,6 +700,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     controllerToPush = [[SyncEncryptionCollectionViewController alloc]
         initWithBrowserState:_browserState];
   }
+  controllerToPush.dispatcher = self.dispatcher;
   [self.navigationController pushViewController:controllerToPush animated:YES];
 }
 
