@@ -4196,6 +4196,120 @@ static void write_compound_tools(const AV1_COMMON *cm,
 }
 #endif  // CONFIG_EXT_INTER
 
+#if CONFIG_GLOBAL_MOTION
+static void write_global_motion_params(WarpedMotionParams *params,
+                                       WarpedMotionParams *ref_params,
+                                       struct aom_write_bit_buffer *wb,
+                                       int allow_hp) {
+  TransformationType type = params->wmtype;
+  int trans_bits;
+  int trans_prec_diff;
+
+  aom_wb_write_bit(wb, type != IDENTITY);
+  if (type != IDENTITY) {
+#if GLOBAL_TRANS_TYPES > 4
+    aom_wb_write_literal(wb, type - 1, GLOBAL_TYPE_BITS);
+#else
+    aom_wb_write_bit(wb, type == ROTZOOM);
+    if (type != ROTZOOM) aom_wb_write_bit(wb, type == TRANSLATION);
+#endif  // GLOBAL_TRANS_TYPES > 4
+  }
+
+  switch (type) {
+    case HOMOGRAPHY:
+    case HORTRAPEZOID:
+    case VERTRAPEZOID:
+      if (type != HORTRAPEZOID)
+        aom_wb_write_signed_primitive_refsubexpfin(
+            wb, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
+            (ref_params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF),
+            (params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF));
+      if (type != VERTRAPEZOID)
+        aom_wb_write_signed_primitive_refsubexpfin(
+            wb, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
+            (ref_params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF),
+            (params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF));
+    // fallthrough intended
+    case AFFINE:
+    case ROTZOOM:
+      aom_wb_write_signed_primitive_refsubexpfin(
+          wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+          (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
+              (1 << GM_ALPHA_PREC_BITS),
+          (params->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
+      if (type != VERTRAPEZOID)
+        aom_wb_write_signed_primitive_refsubexpfin(
+            wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+            (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
+            (params->wmmat[3] >> GM_ALPHA_PREC_DIFF));
+      if (type >= AFFINE) {
+        if (type != HORTRAPEZOID)
+          aom_wb_write_signed_primitive_refsubexpfin(
+              wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+              (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF),
+              (params->wmmat[4] >> GM_ALPHA_PREC_DIFF));
+        aom_wb_write_signed_primitive_refsubexpfin(
+            wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+            (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
+                (1 << GM_ALPHA_PREC_BITS),
+            (params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
+                (1 << GM_ALPHA_PREC_BITS));
+      }
+    // fallthrough intended
+    case TRANSLATION:
+      trans_bits = (type == TRANSLATION) ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
+                                         : GM_ABS_TRANS_BITS;
+      trans_prec_diff = (type == TRANSLATION)
+                            ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
+                            : GM_TRANS_PREC_DIFF;
+      aom_wb_write_signed_primitive_refsubexpfin(
+          wb, (1 << trans_bits) + 1, SUBEXPFIN_K,
+          (ref_params->wmmat[0] >> trans_prec_diff),
+          (params->wmmat[0] >> trans_prec_diff));
+      aom_wb_write_signed_primitive_refsubexpfin(
+          wb, (1 << trans_bits) + 1, SUBEXPFIN_K,
+          (ref_params->wmmat[1] >> trans_prec_diff),
+          (params->wmmat[1] >> trans_prec_diff));
+      break;
+    case IDENTITY: break;
+    default: assert(0);
+  }
+}
+
+static void write_global_motion(AV1_COMP *cpi,
+                                struct aom_write_bit_buffer *wb) {
+  AV1_COMMON *const cm = &cpi->common;
+  int frame;
+  for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
+    write_global_motion_params(&cm->global_motion[frame],
+                               &cm->prev_frame->global_motion[frame], wb,
+                               cm->allow_high_precision_mv);
+    // TODO(sarahparker, debargha): The logic in the commented out code below
+    // does not work currently and causes mismatches when resize is on.
+    // Fix it before turning the optimization back on.
+    /*
+    YV12_BUFFER_CONFIG *ref_buf = get_ref_frame_buffer(cpi, frame);
+    if (cpi->source->y_crop_width == ref_buf->y_crop_width &&
+        cpi->source->y_crop_height == ref_buf->y_crop_height) {
+      write_global_motion_params(&cm->global_motion[frame],
+                                 &cm->prev_frame->global_motion[frame], wb,
+                                 cm->allow_high_precision_mv);
+    } else {
+      assert(cm->global_motion[frame].wmtype == IDENTITY &&
+             "Invalid warp type for frames of different resolutions");
+    }
+    */
+    /*
+    printf("Frame %d/%d: Enc Ref %d: %d %d %d %d\n",
+           cm->current_video_frame, cm->show_frame, frame,
+           cm->global_motion[frame].wmmat[0],
+           cm->global_motion[frame].wmmat[1], cm->global_motion[frame].wmmat[2],
+           cm->global_motion[frame].wmmat[3]);
+           */
+  }
+}
+#endif
+
 static void write_uncompressed_header(AV1_COMP *cpi,
                                       struct aom_write_bit_buffer *wb) {
   AV1_COMMON *const cm = &cpi->common;
@@ -4474,119 +4588,12 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   aom_wb_write_bit(wb, cm->reduced_tx_set_used);
 #endif  // CONFIG_EXT_TX
 
+#if CONFIG_GLOBAL_MOTION
+  write_global_motion(cpi, wb);
+#endif  // CONFIG_GLOBAL_MOTION
+
   write_tile_info(cm, wb);
 }
-
-#if CONFIG_GLOBAL_MOTION
-static void write_global_motion_params(WarpedMotionParams *params,
-                                       WarpedMotionParams *ref_params,
-                                       aom_writer *w, int allow_hp) {
-  TransformationType type = params->wmtype;
-  int trans_bits;
-  int trans_prec_diff;
-  aom_write_bit(w, type != IDENTITY);
-  if (type != IDENTITY) {
-#if GLOBAL_TRANS_TYPES > 4
-    aom_write_literal(w, type - 1, GLOBAL_TYPE_BITS);
-#else
-    aom_write_bit(w, type == ROTZOOM);
-    if (type != ROTZOOM) aom_write_bit(w, type == TRANSLATION);
-#endif  // GLOBAL_TRANS_TYPES > 4
-  }
-
-  switch (type) {
-    case HOMOGRAPHY:
-    case HORTRAPEZOID:
-    case VERTRAPEZOID:
-      if (type != HORTRAPEZOID)
-        aom_write_signed_primitive_refsubexpfin(
-            w, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF),
-            (params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF));
-      if (type != VERTRAPEZOID)
-        aom_write_signed_primitive_refsubexpfin(
-            w, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF),
-            (params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF));
-    // fallthrough intended
-    case AFFINE:
-    case ROTZOOM:
-      aom_write_signed_primitive_refsubexpfin(
-          w, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-          (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
-              (1 << GM_ALPHA_PREC_BITS),
-          (params->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
-      if (type != VERTRAPEZOID)
-        aom_write_signed_primitive_refsubexpfin(
-            w, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
-            (params->wmmat[3] >> GM_ALPHA_PREC_DIFF));
-      if (type >= AFFINE) {
-        if (type != HORTRAPEZOID)
-          aom_write_signed_primitive_refsubexpfin(
-              w, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-              (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF),
-              (params->wmmat[4] >> GM_ALPHA_PREC_DIFF));
-        aom_write_signed_primitive_refsubexpfin(
-            w, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
-                (1 << GM_ALPHA_PREC_BITS),
-            (params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -
-                (1 << GM_ALPHA_PREC_BITS));
-      }
-    // fallthrough intended
-    case TRANSLATION:
-      trans_bits = (type == TRANSLATION) ? GM_ABS_TRANS_ONLY_BITS - !allow_hp
-                                         : GM_ABS_TRANS_BITS;
-      trans_prec_diff = (type == TRANSLATION)
-                            ? GM_TRANS_ONLY_PREC_DIFF + !allow_hp
-                            : GM_TRANS_PREC_DIFF;
-      aom_write_signed_primitive_refsubexpfin(
-          w, (1 << trans_bits) + 1, SUBEXPFIN_K,
-          (ref_params->wmmat[0] >> trans_prec_diff),
-          (params->wmmat[0] >> trans_prec_diff));
-      aom_write_signed_primitive_refsubexpfin(
-          w, (1 << trans_bits) + 1, SUBEXPFIN_K,
-          (ref_params->wmmat[1] >> trans_prec_diff),
-          (params->wmmat[1] >> trans_prec_diff));
-      break;
-    case IDENTITY: break;
-    default: assert(0);
-  }
-}
-
-static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
-  AV1_COMMON *const cm = &cpi->common;
-  int frame;
-  for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
-    write_global_motion_params(&cm->global_motion[frame],
-                               &cm->prev_frame->global_motion[frame], w,
-                               cm->allow_high_precision_mv);
-    // TODO(sarahparker, debargha): The logic in the commented out code below
-    // does not work currently and causes mismatches when resize is on.
-    // Fix it before turning the optimization back on.
-    /*
-    YV12_BUFFER_CONFIG *ref_buf = get_ref_frame_buffer(cpi, frame);
-    if (cpi->source->y_crop_width == ref_buf->y_crop_width &&
-        cpi->source->y_crop_height == ref_buf->y_crop_height) {
-      write_global_motion_params(&cm->global_motion[frame],
-                                 &cm->prev_frame->global_motion[frame], w,
-                                 cm->allow_high_precision_mv);
-    } else {
-      assert(cm->global_motion[frame].wmtype == IDENTITY &&
-             "Invalid warp type for frames of different resolutions");
-    }
-    */
-    /*
-    printf("Frame %d/%d: Enc Ref %d (used %d): %d %d %d %d\n",
-           cm->current_video_frame, cm->show_frame, frame,
-           cpi->global_motion_used[frame], cm->global_motion[frame].wmmat[0],
-           cm->global_motion[frame].wmmat[1], cm->global_motion[frame].wmmat[2],
-           cm->global_motion[frame].wmmat[3]);
-           */
-  }
-}
-#endif
 
 static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   AV1_COMMON *const cm = &cpi->common;
@@ -4750,9 +4757,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #if CONFIG_SUPERTX
     if (!xd->lossless[0]) update_supertx_probs(cm, probwt, header_bc);
 #endif  // CONFIG_SUPERTX
-#if CONFIG_GLOBAL_MOTION
-    write_global_motion(cpi, header_bc);
-#endif  // CONFIG_GLOBAL_MOTION
   }
   aom_stop_encode(header_bc);
   assert(header_bc->pos <= 0xffff);
