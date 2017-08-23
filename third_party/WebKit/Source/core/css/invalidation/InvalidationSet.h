@@ -99,6 +99,7 @@ class CORE_EXPORT InvalidationSet {
   static void CacheTracingFlag();
 
   bool InvalidatesElement(Element&) const;
+  bool InvalidatesTagName(Element&) const;
 
   void AddClass(const AtomicString& class_name);
   void AddId(const AtomicString& id);
