@@ -7989,6 +7989,10 @@ long long Block::GetTime(const Cluster* pCluster) const {
   const long long scale = pInfo->GetTimeCodeScale();
   assert(scale >= 1);
 
+  // Check if tc * scale could overflow.
+  if (tc != 0 && scale > LLONG_MAX / tc) {
+    return -1;
+  }
   const long long ns = tc * scale;
 
   return ns;
