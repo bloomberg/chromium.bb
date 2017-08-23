@@ -136,7 +136,9 @@
         "frameScheduledNavigation",
         "frameStartedLoading",
         "frameStoppedLoading",
+        "lifecycleEvent",
         "loadEventFired",
+        "paintTiming",
         "RecalculateStyle",
         "UpdateLayout",
         "willRunJavaScriptDialog",
@@ -170,11 +172,12 @@
       class: "InspectorTraceEvents",
       probes: [
         "CallFunction",
+        "ParseHTML",
         "didFailLoading",
         "didFinishLoading",
         "didReceiveData",
         "didReceiveResourceResponse",
-        "ParseHTML",
+        "paintTiming",
         "willSendRequest",
       ]
     },

@@ -149,7 +149,7 @@ interface CoreProbes {
   void documentWriteFetchScript([Keep] Document*);
   void didChangeViewport(LocalFrame* document);
   void breakableLocation(ExecutionContext* context, const char* name);
-  RecalculateStyle(Document* document);
+  RecalculateStyle(Document*);
   UpdateLayout(Document*);
   ExecuteScript([Keep] ExecutionContext* context);
   CallFunction([Keep] ExecutionContext* context, v8::Local<v8::Function> function, int depth = 0);
@@ -161,4 +161,6 @@ interface CoreProbes {
   void shouldForceCORSPreflight(ExecutionContext*, bool* result);
   void shouldBlockRequest(ExecutionContext*, const KURL&, bool* result);
   void consoleTimeStamp(ExecutionContext*, const String& title);
+  void lifecycleEvent(Document* document, const char* name, double timestamp);
+  void paintTiming([Keep] Document* document, const char* name, double timestamp);
 }

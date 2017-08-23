@@ -16,6 +16,7 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/probe/CoreProbes.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Histogram.h"
@@ -235,9 +236,7 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
 void PaintTiming::SetFirstPaintSwap(double stamp) {
   DCHECK_EQ(first_paint_swap_, 0.0);
   first_paint_swap_ = stamp;
-  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-      "loading,rail,devtools.timeline", "firstPaint", TRACE_EVENT_SCOPE_PROCESS,
-      TraceEvent::ToTraceTimestamp(first_paint_swap_), "frame", GetFrame());
+  probe::paintTiming(GetSupplementable(), "firstPaint", first_paint_swap_);
   Performance* performance = GetPerformanceInstance(GetFrame());
   if (performance)
     performance->AddFirstPaintTiming(first_paint_swap_);
@@ -254,11 +253,8 @@ void PaintTiming::SetFirstPaintSwap(double stamp) {
 void PaintTiming::SetFirstContentfulPaintSwap(double stamp) {
   DCHECK_EQ(first_contentful_paint_swap_, 0.0);
   first_contentful_paint_swap_ = stamp;
-  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
-      "loading,rail,devtools.timeline", "firstContentfulPaint",
-      TRACE_EVENT_SCOPE_PROCESS,
-      TraceEvent::ToTraceTimestamp(first_contentful_paint_swap_), "frame",
-      GetFrame());
+  probe::paintTiming(GetSupplementable(), "firstContentfulPaint",
+                     first_contentful_paint_swap_);
   Performance* performance = GetPerformanceInstance(GetFrame());
   if (performance)
     performance->AddFirstContentfulPaintTiming(first_contentful_paint_swap_);
@@ -273,10 +269,8 @@ void PaintTiming::SetFirstContentfulPaintSwap(double stamp) {
 void PaintTiming::SetFirstTextPaintSwap(double stamp) {
   DCHECK_EQ(first_text_paint_swap_, 0.0);
   first_text_paint_swap_ = stamp;
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-      "loading,rail,devtools.timeline", "firstTextPaint",
-      TraceEvent::ToTraceTimestamp(first_text_paint_swap_), "frame",
-      GetFrame());
+  probe::paintTiming(GetSupplementable(), "firstTextPaint",
+                     first_text_paint_swap_);
   ReportSwapTimeDeltaHistogram(first_text_paint_, first_text_paint_swap_);
   NotifyPaintTimingChanged();
 }
@@ -284,10 +278,8 @@ void PaintTiming::SetFirstTextPaintSwap(double stamp) {
 void PaintTiming::SetFirstImagePaintSwap(double stamp) {
   DCHECK_EQ(first_image_paint_swap_, 0.0);
   first_image_paint_swap_ = stamp;
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1(
-      "loading,rail,devtools.timeline", "firstImagePaint",
-      TraceEvent::ToTraceTimestamp(first_image_paint_swap_), "frame",
-      GetFrame());
+  probe::paintTiming(GetSupplementable(), "firstImagePaint",
+                     first_image_paint_swap_);
   ReportSwapTimeDeltaHistogram(first_image_paint_, first_image_paint_swap_);
   NotifyPaintTimingChanged();
 }

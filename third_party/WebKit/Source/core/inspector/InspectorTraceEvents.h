@@ -105,6 +105,8 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
   void Will(const probe::CallFunction&);
   void Did(const probe::CallFunction&);
 
+  void PaintTiming(Document*, const char* name, double timestamp);
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
