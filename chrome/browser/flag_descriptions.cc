@@ -1928,6 +1928,12 @@ const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
 
+const char kThirdPartyDoodlesName[] =
+    "Enable Doodles for third-party search engines";
+const char kThirdPartyDoodlesDescription[] =
+    "Enables fetching and displaying Doodles on the NTP for third-party search "
+    "engines.";
+
 const char kXGEOVisibleNetworksName[] = "Enable XGEO Visible Networks";
 const char kXGEOVisibleNetworksDescription[] =
     "If location permissions are granted, include visible networks in the XGEO "
