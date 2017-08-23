@@ -397,7 +397,10 @@ component("headless") {
 
     deps += [
       "//components/security_state/content",
+      "//gin",
+      "//third_party/WebKit/public:blink",
       "//third_party/WebKit/public:blink_headers",
+      "//v8",
     ]
 
     if (!is_fuchsia) {
