@@ -16,6 +16,7 @@ MouseInterpreter::MouseInterpreter(PropRegistry* prop_reg, Tracer* tracer)
       wheel_emulation_accu_x_(0.0),
       wheel_emulation_accu_y_(0.0),
       wheel_emulation_active_(false),
+      reverse_scrolling_(prop_reg, "Mouse Reverse Scrolling", false),
       scroll_max_allowed_input_speed_(prop_reg,
                                       "Mouse Scroll Max Input Speed",
                                       177.0,
@@ -160,8 +161,10 @@ void MouseInterpreter::InterpretScrollWheelEvent(const HardwareState& hwstate,
 
     if (is_vertical) {
       // For historical reasons the vertical wheel (REL_WHEEL) is inverted
-      ProduceGesture(Gesture(kGestureScroll, start_time, end_time, 0,
-                             -offset));
+      if (!reverse_scrolling_.val_) {
+        offset = -offset;
+      }
+      ProduceGesture(Gesture(kGestureScroll, start_time, end_time, 0, offset));
     } else {
       ProduceGesture(Gesture(kGestureScroll, start_time, end_time, offset, 0));
     }

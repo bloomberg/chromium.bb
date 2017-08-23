@@ -61,6 +61,9 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
   // True while wheel emulation is locked in.
   bool wheel_emulation_active_;
 
+  // Reverse wheel scrolling.
+  BoolProperty reverse_scrolling_;
+
   // We use normal CDF to simulate scroll wheel acceleration curve. Use the
   // following method to generate the coefficients of a degree-4 polynomial
   // regression for a specific normal cdf in matlab.
