@@ -8,6 +8,7 @@ aggregate_vector_icons("components_vector_icons") {
   icon_directory = "."
 
   icons = [
+    "accessibility.icon",
     "back_arrow.1x.icon",
     "back_arrow.icon",
     "bluetooth_connected.icon",
