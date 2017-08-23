@@ -289,10 +289,10 @@ Float = FloatMetric
 
 @_Metric
 def CumulativeDistributionMetric(name, reset_after=False, description=None,
-                                 field_spec=_MISSING):
+                                 bucketer=None, field_spec=_MISSING):
   """Returns a metric handle for a cumulative distribution named |name|."""
-  return ts_mon.CumulativeDistributionMetric(name, description=description,
-                                             field_spec=field_spec)
+  return ts_mon.CumulativeDistributionMetric(
+      name, description=description, bucketer=bucketer, field_spec=field_spec)
 CumulativeDistribution = CumulativeDistributionMetric
 
 

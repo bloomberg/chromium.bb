@@ -13,11 +13,15 @@ import pprint
 import time
 
 from googleapiclient import discovery
+import google.protobuf.internal.well_known_types as types
+from infra_libs import ts_mon
 import inotify_simple
 from oauth2client.client import GoogleCredentials
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as log
+from chromite.lib import metrics
+from chromite.lib import ts_mon_config
 
 
 BATCH_PATIENCE = 10 * 60
@@ -25,6 +29,8 @@ MIN_BATCH_SIZE = 300
 SPAN_LOG_DIR = '/var/log/trace'
 CREDS_PATH = '/creds/service_accounts/service-account-trace.json'
 SCOPES = ['https://www.googleapis.com/auth/trace.append']
+_SPAN_DURATION_METRIC = 'chromeos/trace/span_durations'
+_BATCH_SIZE_METRIC = 'chromeos/trace/batch_sizes'
 
 
 def GetParser():
@@ -183,8 +189,16 @@ def _BatchAndSendSpans(project_id, client, batch_sequence):
     client: The google python api client
     batch_sequence: An iterable of Span batches represented as JSON objects.
   """
+  batch_size_metric = metrics.CumulativeDistribution(
+      _BATCH_SIZE_METRIC,
+      description="The size of batches emitted by export_to_cloud_trace",
+      bucketer=ts_mon.FixedWidthBucketer(1, MIN_BATCH_SIZE*2),
+      field_spec=None)
+
   for batch in _ImpatientlyRebatched(batch_sequence, MIN_BATCH_SIZE,
                                      BATCH_PATIENCE):
+    batch_size_metric.add(len(batch))
+
     traces = []
     groups = _GroupBy(batch, key=lambda span: span.get('traceId'))
     for trace_id, spans in groups:
@@ -193,6 +207,7 @@ def _BatchAndSendSpans(project_id, client, batch_sequence):
           'projectId': project_id,
           'spans': spans
       })
+
     if traces:
       client.projects().patchTraces(
           projectId=project_id, body={'traces': traces})
@@ -211,6 +226,49 @@ def _ReadAndDeletePreexisting(log_dir):
   preexisting_lines = tuple(_ReadBatch(preexisting_files))
   _CleanupBatch(preexisting_files)
   return preexisting_lines
+
+
+def _RecordDurationMetric(batches):
+  """Records a span duration metric for each span.
+
+  Args:
+    batches: A sequence of span batches (lists)
+
+  Yields:
+    Re-yields the same batches
+  """
+  m = metrics.SecondsDistribution(
+      _SPAN_DURATION_METRIC,
+      description="The durations of Spans consumed by export_to_cloud_trace",
+      field_spec=[ts_mon.StringField('name')])
+
+  for batch in batches:
+    batch = tuple(batch)  # Needed because we will consume the iterator.
+    for span in batch:
+      try:
+        time_delta = (_ParseDatetime(span['endTime']) -
+                      _ParseDatetime(span['startTime']))
+        m.add(time_delta.total_seconds(), fields={'name': span['name']})
+      except KeyError:
+        log.error("Span %s did not have required fields 'endTime', "
+                  "'startTime', and 'name'.", json.dumps(span))
+
+    yield batch
+
+
+def _ParseDatetime(date_str):
+  """Parses a RFC 3339 datetime string into a datetime object.
+
+  Args:
+    date_str: A date string in RFC 3339 format (such as the .startTime or
+        .endTime field of a Span.)
+
+  Returns:
+    A datetime object at the same timestamp as the date_str.
+  """
+  time_pb = types.Timestamp()
+  time_pb.FromJsonString(date_str)
+  return time_pb.ToDatetime()
 
 
 def _WatchAndSendSpans(project_id, client):
@@ -233,6 +291,8 @@ def _WatchAndSendSpans(project_id, client):
             batch,
             exception_type=ValueError)
         for batch in all_batches))
+
+    batches = _RecordDurationMetric(batches)
 
     # Rebatch the lines.
     _BatchAndSendSpans(project_id, client, batches)
@@ -262,4 +322,5 @@ def main(argv):
   project_id = options.project_id
   client = _Client(creds_path=creds_file)
 
-  _WatchAndSendSpans(project_id, client)
+  with ts_mon_config.SetupTsMonGlobalState('export_to_cloud_trace'):
+    _WatchAndSendSpans(project_id, client)
