@@ -98,8 +98,10 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   bool ShouldRefetchInTheBackgroundNow(base::Time last_fetch_attempt_time,
                                        TriggerType trigger);
 
-  // Returns whether background fetching (for the given |trigger|) is disabled.
-  bool BackgroundFetchesDisabled(TriggerType trigger) const;
+  // Returns whether all components are ready for background fetches.
+  bool IsReadyForBackgroundFetches() const;
+  // Runs any queued triggers if the system is ready for background fetches.
+  void RunQueuedTriggersIfReady();
 
   // Returns true if quota is available for another request.
   bool AcquireQuota(bool interactive_request);
@@ -158,6 +160,7 @@ class RemoteSuggestionsSchedulerImpl : public RemoteSuggestionsScheduler {
   PrefService* profile_prefs_;
   std::unique_ptr<base::Clock> clock_;
   std::set<TriggerType> enabled_triggers_;
+  std::set<TriggerType> queued_triggers_;
 
   base::Time background_fetches_allowed_after_;
 
