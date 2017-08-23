@@ -5489,7 +5489,7 @@ weston_compositor_add_pending_output(struct weston_output *output,
 /** Constructs a weston_output object that can be used by the compositor.
  *
  * \param output The weston_output object that needs to be enabled. Must not
- * be enabled already.
+ * be enabled already. Must have at least one head attached.
  *
  * Output coordinates are calculated and each new output is by default
  * assigned to the right of previous one.
@@ -5525,10 +5525,15 @@ weston_output_enable(struct weston_output *output)
 	struct weston_compositor *c = output->compositor;
 	struct weston_output *iterator;
 	int x = 0, y = 0;
-	int ret;
 
 	if (output->enabled) {
 		weston_log("Error: attempt to enable an enabled output '%s'\n",
+			   output->name);
+		return -1;
+	}
+
+	if (wl_list_empty(&output->head_list)) {
+		weston_log("Error: cannot enable output '%s' without heads.\n",
 			   output->name);
 		return -1;
 	}
@@ -5560,12 +5565,6 @@ weston_output_enable(struct weston_output *output)
 	wl_signal_init(&output->destroy_signal);
 	wl_list_init(&output->animation_list);
 	wl_list_init(&output->feedback_list);
-
-	/* XXX: Temporary until all backends are converted. */
-	if (wl_list_empty(&output->head_list)) {
-		ret = weston_output_attach_head(output, &output->head);
-		assert(ret == 0);
-	}
 
 	/* Enable the output (set up the crtc or create a
 	 * window representing the output, set up the
