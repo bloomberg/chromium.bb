@@ -222,6 +222,7 @@ class HideViewAnimationObserver : public ui::ImplicitAnimationObserver {
 AppListView::AppListView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      is_background_blur_enabled_(features::IsBackgroundBlurEnabled()),
       display_observer_(this),
       animation_observer_(new HideViewAnimationObserver()),
       app_list_animation_duration_ms_(kAppListAnimationDurationMs) {
@@ -417,10 +418,10 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
     app_list_background_shield_ = new views::View;
     app_list_background_shield_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     app_list_background_shield_->layer()->SetOpacity(
-        is_fullscreen_app_list_enabled_ ? kAppListOpacityWithBlur
-                                        : kAppListOpacity);
+        is_background_blur_enabled_ ? kAppListOpacityWithBlur
+                                    : kAppListOpacity);
     SetBackgroundShieldColor();
-    if (features::IsBackgroundBlurEnabled()) {
+    if (is_background_blur_enabled_) {
       app_list_background_shield_->layer()->SetBackgroundBlur(
           kAppListBlurRadius);
     }
