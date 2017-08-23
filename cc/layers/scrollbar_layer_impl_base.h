@@ -60,8 +60,6 @@ class CC_EXPORT ScrollbarLayerImplBase : public LayerImpl {
 
   virtual int ThumbThickness() const = 0;
 
-  // TODO(crbug.com/702832): No need for this function once there is element id
-  // on overlay scrollbar layers.
   void SetOverlayScrollbarLayerOpacityAnimated(float opacity);
 
   virtual LayerTreeSettings::ScrollbarAnimator GetScrollbarAnimator() const;
