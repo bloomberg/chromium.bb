@@ -84,14 +84,6 @@ class RenderFrameHostTester {
   // DEPRECATED: use NavigationSimulator instead.
   virtual void SimulateNavigationCommit(const GURL& url) = 0;
 
-  // Simulates a navigation to |url| failing with the error code |error_code|.
-  // DEPRECATED: use NavigationSimulator instead.
-  virtual void SimulateNavigationError(const GURL& url, int error_code) = 0;
-
-  // Simulates the commit of an error page following a navigation failure.
-  // DEPRECATED: use NavigationSimulator instead.
-  virtual void SimulateNavigationErrorPageCommit() = 0;
-
   // Simulates a navigation stopping in the RenderFrameHost.
   virtual void SimulateNavigationStop() = 0;
 

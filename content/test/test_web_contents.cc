@@ -69,26 +69,6 @@ TestRenderFrameHost* TestWebContents::GetPendingMainFrame() const {
       GetRenderManager()->pending_frame_host());
 }
 
-void TestWebContents::StartNavigation(const GURL& url) {
-  GetController().LoadURL(url, Referrer(), ui::PAGE_TRANSITION_LINK,
-                          std::string());
-  GURL loaded_url(url);
-  bool reverse_on_redirect = false;
-  BrowserURLHandlerImpl::GetInstance()->RewriteURLIfNecessary(
-      &loaded_url, GetBrowserContext(), &reverse_on_redirect);
-
-  if (GetMainFrame()->is_waiting_for_beforeunload_ack())
-    GetMainFrame()->SendBeforeUnloadACK(true);
-
-  // This will simulate receiving the DidStartProvisionalLoad IPC from the
-  // renderer.
-  if (!IsBrowserSideNavigationEnabled()) {
-    TestRenderFrameHost* rfh =
-        GetPendingMainFrame() ? GetPendingMainFrame() : GetMainFrame();
-    rfh->SimulateNavigationStart(url);
-  }
-}
-
 int TestWebContents::DownloadImage(const GURL& url,
                                    bool is_favicon,
                                    uint32_t max_bitmap_size,

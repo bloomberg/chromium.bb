@@ -30,6 +30,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using content::NavigationSimulator;
+
 namespace page_load_metrics {
 
 namespace {
@@ -580,20 +582,20 @@ TEST_F(MetricsWebContentsObserverTest, ObservePartialNavigation) {
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(10);
 
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
-
   // Start the navigation, then start observing the web contents. This used to
   // crash us. Make sure we bail out and don't log histograms.
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
+  std::unique_ptr<NavigationSimulator> navigation =
+      NavigationSimulator::CreateBrowserInitiated(GURL(kDefaultTestUrl),
+                                                  web_contents());
+  navigation->Start();
   AttachObserver();
-  rfh_tester->SimulateNavigationCommit(GURL(kDefaultTestUrl));
+  navigation->Commit();
 
   SimulateTimingUpdate(timing);
 
   // Navigate again to force histogram logging.
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
   web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
   ASSERT_EQ(0, CountCompleteTimingReported());
   ASSERT_EQ(0, CountUpdatedTimingReported());
@@ -611,24 +613,19 @@ TEST_F(MetricsWebContentsObserverTest, DontLogAbortChains) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, LogAbortChains) {
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
   // Start and abort three loads before one finally commits.
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl), net::ERR_ABORTED);
 
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl2));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl2), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl2), net::ERR_ABORTED);
 
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl), net::ERR_ABORTED);
 
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kDefaultTestUrl2));
+
   histogram_tester_.ExpectTotalCount(internal::kAbortChainSizeNewNavigation, 1);
   histogram_tester_.ExpectBucketCount(internal::kAbortChainSizeNewNavigation, 3,
                                       1);
@@ -636,24 +633,18 @@ TEST_F(MetricsWebContentsObserverTest, LogAbortChains) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, LogAbortChainsSameURL) {
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
   // Start and abort three loads before one finally commits.
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl), net::ERR_ABORTED);
 
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl), net::ERR_ABORTED);
 
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl), net::ERR_ABORTED);
 
-  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                    GURL(kDefaultTestUrl));
   histogram_tester_.ExpectTotalCount(internal::kAbortChainSizeNewNavigation, 1);
   histogram_tester_.ExpectBucketCount(internal::kAbortChainSizeNewNavigation, 3,
                                       1);
@@ -662,22 +653,15 @@ TEST_F(MetricsWebContentsObserverTest, LogAbortChainsSameURL) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, LogAbortChainsNoCommit) {
-  content::WebContentsTester* web_contents_tester =
-      content::WebContentsTester::For(web_contents());
-  content::RenderFrameHostTester* rfh_tester =
-      content::RenderFrameHostTester::For(main_rfh());
   // Start and abort three loads before one finally commits.
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl), net::ERR_ABORTED);
 
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl2));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl2), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl2), net::ERR_ABORTED);
 
-  web_contents_tester->StartNavigation(GURL(kDefaultTestUrl));
-  rfh_tester->SimulateNavigationError(GURL(kDefaultTestUrl), net::ERR_ABORTED);
-  rfh_tester->SimulateNavigationStop();
+  NavigationSimulator::NavigateAndFailFromBrowser(
+      web_contents(), GURL(kDefaultTestUrl), net::ERR_ABORTED);
 
   web_contents()->Stop();
 

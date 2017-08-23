@@ -59,6 +59,8 @@ class PageLoadMetricsObserverTestHarness
 
   // Simulates starting a navigation to the given gurl, without committing the
   // navigation.
+  // Note: The navigation is left in a pending state and cannot be successfully
+  // completed.
   void StartNavigation(const GURL& gurl);
 
   // Simulates committing a navigation to the given URL with the given
