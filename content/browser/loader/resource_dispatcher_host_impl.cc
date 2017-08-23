@@ -135,7 +135,7 @@ using SyncLoadResultCallback =
 namespace {
 
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
-    net::DefineNetworkTrafficAnnotation("resource_dispather_host",
+    net::DefineNetworkTrafficAnnotation("resource_dispatcher_host",
                                         R"(
         semantics {
           sender: "Resource Dispatcher Host"

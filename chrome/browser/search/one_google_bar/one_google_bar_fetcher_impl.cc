@@ -203,7 +203,7 @@ void OneGoogleBarFetcherImpl::AuthenticatedURLFetcher::Start() {
         }
         policy {
           cookies_allowed: YES
-          cookie_store: "user"
+          cookies_store: "user"
           setting:
             "Users can control this feature via selecting a non-Google default "
             "search engine in Chrome settings under 'Search Engine'."
