@@ -37462,6 +37462,11 @@ would be helpful to identify which type is being sent.
   <int value="1" label="Touch gesture event filtered"/>
 </enum>
 
+<enum name="TouchHandleVerticallyFlipped">
+  <int value="0" label="Should not flip"/>
+  <int value="1" label="Should flip"/>
+</enum>
+
 <enum name="TouchpadDeviceState">
   <int value="0" label="NO_TP_PRESENT_NO_TP_EXPECTED">
     No touchpad detected on a device without built-in touchpad
