@@ -838,8 +838,6 @@ public class BottomToolbarPhone extends ToolbarPhone {
                 ApiCompatibilityUtils.getPaddingStart(otherToolbar),
                 otherToolbar.getPaddingTop() + extraTopMargin,
                 ApiCompatibilityUtils.getPaddingEnd(otherToolbar), otherToolbar.getPaddingBottom());
-
-        otherToolbar.requestLayout();
     }
 
     private void animateToolbarButtonVisibility(final boolean visible) {

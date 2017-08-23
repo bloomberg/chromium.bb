@@ -13,6 +13,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.os.Build;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -752,8 +753,23 @@ public class BottomSheet
                     // This shrinks the content size while retaining the default background color
                     // where the keyboard is appearing. If the sheet is not showing, resize the
                     // sheet to its default state.
-                    mBottomSheetContentContainer.setPadding(
-                            0, 0, 0, (int) mBottomNavHeight + keyboardHeight);
+                    // Setting the padding is posted in a runnable for the sake of Android J.
+                    // See crbug.com/751013.
+                    final int finalKeyboardHeight = keyboardHeight;
+                    post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mBottomSheetContentContainer.setPadding(
+                                    0, 0, 0, (int) mBottomNavHeight + finalKeyboardHeight);
+
+                            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+                                // A layout on the toolbar holder is requested so that the toolbar
+                                // doesn't disappear under certain scenarios on Android J.
+                                // See crbug.com/751013.
+                                mToolbarHolder.requestLayout();
+                            }
+                        }
+                    });
                 }
 
                 if (previousHeight != mContainerHeight
@@ -1173,6 +1189,7 @@ public class BottomSheet
             @Override
             public void run() {
                 mBottomSheetContentContainer.requestLayout();
+                mToolbarHolder.requestLayout();
             }
         });
     }
