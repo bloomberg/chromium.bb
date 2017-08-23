@@ -90,12 +90,12 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
   if (new_status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
     StartTimerForDevice(remote_device);
     OnDeviceAuthenticated(remote_device);
-  } else if (old_status == cryptauth::SecureChannel::Status::AUTHENTICATING) {
-    // If authentication fails, account details (e.g., BeaconSeeds) are not
-    // synced, and there is no way to continue. Unregister the device and give
-    // up.
-    UnregisterDevice(remote_device);
   } else if (new_status == cryptauth::SecureChannel::Status::DISCONNECTED) {
+    // Note: In success cases, the channel advances from DISCONNECTED to
+    // CONNECTING to CONNECTED to AUTHENTICATING to AUTHENTICATED. If the
+    // channel fails to advance at any of those stages, it transitions back to
+    // DISCONNECTED and starts over.
+
     uint32_t num_attempts_so_far;
     if (remote_device_to_num_attempts_map_.find(remote_device) ==
         remote_device_to_num_attempts_map_.end()) {
