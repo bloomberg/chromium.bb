@@ -2,21 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
+
+namespace {
+
+const char kShortcutNameKey[] = "shortcut_name";
+
+}  // namespace
 
 ProfileAttributesEntry::ProfileAttributesEntry()
-    : profile_info_cache_(nullptr), profile_path_(base::FilePath()) {}
+    : profile_info_cache_(nullptr),
+      prefs_(nullptr),
+      profile_path_(base::FilePath()) {}
 
-void ProfileAttributesEntry::Initialize(
-    ProfileInfoCache* cache, const base::FilePath& path) {
+void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
+                                        const base::FilePath& path,
+                                        PrefService* prefs) {
   DCHECK(!profile_info_cache_);
   DCHECK(cache);
   profile_info_cache_ = cache;
+
   DCHECK(profile_path_.empty());
   DCHECK(!path.empty());
   profile_path_ = path;
+
+  DCHECK(!prefs_);
+  DCHECK(prefs);
+  prefs_ = prefs;
+
+  DCHECK(profile_info_cache_->GetUserDataDir() == profile_path_.DirName());
+  storage_key_ = profile_path_.BaseName().MaybeAsASCII();
+
   is_force_signin_enabled_ = signin_util::IsForceSigninEnabled();
   if (!IsAuthenticated() && is_force_signin_enabled_)
     is_force_signin_profile_locked_ = true;
@@ -27,7 +51,7 @@ base::string16 ProfileAttributesEntry::GetName() const {
 }
 
 base::string16 ProfileAttributesEntry::GetShortcutName() const {
-  return profile_info_cache_->GetShortcutNameOfProfileAtIndex(profile_index());
+  return GetString16(kShortcutNameKey);
 }
 
 base::FilePath ProfileAttributesEntry::GetPath() const {
@@ -144,7 +168,7 @@ void ProfileAttributesEntry::SetName(const base::string16& name) {
 }
 
 void ProfileAttributesEntry::SetShortcutName(const base::string16& name) {
-  profile_info_cache_->SetShortcutNameOfProfileAtIndex(profile_index(), name);
+  SetString16(kShortcutNameKey, name);
 }
 
 void ProfileAttributesEntry::SetActiveTimeToNow() {
@@ -239,4 +263,119 @@ size_t ProfileAttributesEntry::profile_index() const {
   size_t index = profile_info_cache_->GetIndexOfProfileWithPath(profile_path_);
   DCHECK(index < profile_info_cache_->GetNumberOfProfiles());
   return index;
+}
+
+const base::Value* ProfileAttributesEntry::GetEntryData() const {
+  const base::DictionaryValue* cache =
+      prefs_->GetDictionary(prefs::kProfileInfoCache);
+  return cache->FindKeyOfType(storage_key_, base::Value::Type::DICTIONARY);
+}
+
+void ProfileAttributesEntry::SetEntryData(base::Value data) {
+  DCHECK(data.is_dict());
+
+  DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
+  base::DictionaryValue* cache = update.Get();
+  cache->SetKey(storage_key_, std::move(data));
+}
+
+const base::Value* ProfileAttributesEntry::GetValue(const char* key) const {
+  const base::Value* entry_data = GetEntryData();
+  return entry_data ? entry_data->FindKey(key) : nullptr;
+}
+
+std::string ProfileAttributesEntry::GetString(const char* key) const {
+  const base::Value* value = GetValue(key);
+  if (!value || !value->is_string())
+    return std::string();
+  return value->GetString();
+}
+
+base::string16 ProfileAttributesEntry::GetString16(const char* key) const {
+  const base::Value* value = GetValue(key);
+  if (!value || !value->is_string())
+    return base::string16();
+  return base::UTF8ToUTF16(value->GetString());
+}
+
+double ProfileAttributesEntry::GetDouble(const char* key) const {
+  const base::Value* value = GetValue(key);
+  if (!value || !value->is_double())
+    return 0.0;
+  return value->GetDouble();
+}
+
+bool ProfileAttributesEntry::GetBool(const char* key) const {
+  const base::Value* value = GetValue(key);
+  return value && value->is_bool() && value->GetBool();
+}
+
+// Type checking. Only IsDouble is implemented because others do not have
+// callsites.
+bool ProfileAttributesEntry::IsDouble(const char* key) const {
+  const base::Value* value = GetValue(key);
+  return value && value->is_double();
+}
+
+// Internal setters using keys;
+bool ProfileAttributesEntry::SetString(const char* key, std::string value) {
+  const base::Value* old_data = GetEntryData();
+  if (old_data) {
+    const base::Value* old_value = old_data->FindKey(key);
+    if (old_value && old_value->is_string() && old_value->GetString() == value)
+      return false;
+  }
+
+  base::Value new_data = old_data ? base::Value(*GetEntryData())
+                                  : base::Value(base::Value::Type::DICTIONARY);
+  new_data.SetKey(key, base::Value(value));
+  SetEntryData(std::move(new_data));
+  return true;
+}
+
+bool ProfileAttributesEntry::SetString16(const char* key,
+                                         base::string16 value) {
+  const base::Value* old_data = GetEntryData();
+  if (old_data) {
+    const base::Value* old_value = old_data->FindKey(key);
+    if (old_value && old_value->is_string() &&
+        base::UTF8ToUTF16(old_value->GetString()) == value)
+      return false;
+  }
+
+  base::Value new_data = old_data ? base::Value(*GetEntryData())
+                                  : base::Value(base::Value::Type::DICTIONARY);
+  new_data.SetKey(key, base::Value(value));
+  SetEntryData(std::move(new_data));
+  return true;
+}
+
+bool ProfileAttributesEntry::SetDouble(const char* key, double value) {
+  const base::Value* old_data = GetEntryData();
+  if (old_data) {
+    const base::Value* old_value = old_data->FindKey(key);
+    if (old_value && old_value->is_double() && old_value->GetDouble() == value)
+      return false;
+  }
+
+  base::Value new_data = old_data ? base::Value(*GetEntryData())
+                                  : base::Value(base::Value::Type::DICTIONARY);
+  new_data.SetKey(key, base::Value(value));
+  SetEntryData(std::move(new_data));
+  return true;
+}
+
+bool ProfileAttributesEntry::SetBool(const char* key, bool value) {
+  const base::Value* old_data = GetEntryData();
+  if (old_data) {
+    const base::Value* old_value = old_data->FindKey(key);
+    if (old_value && old_value->is_bool() && old_value->GetBool() == value)
+      return false;
+  }
+
+  base::Value new_data = old_data ? base::Value(*GetEntryData())
+                                  : base::Value(base::Value::Type::DICTIONARY);
+  new_data.SetKey(key, base::Value(value));
+  SetEntryData(std::move(new_data));
+  return true;
 }

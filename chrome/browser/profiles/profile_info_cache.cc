@@ -46,7 +46,6 @@ using content::BrowserThread;
 namespace {
 
 const char kNameKey[] = "name";
-const char kShortcutNameKey[] = "shortcut_name";
 const char kGAIANameKey[] = "gaia_name";
 const char kGAIAGivenNameKey[] = "gaia_given_name";
 const char kGAIAIdKey[] = "gaia_id";
@@ -273,14 +272,6 @@ base::string16 ProfileInfoCache::GetNameOfProfileAtIndex(size_t index) const {
   if (name.empty())
     GetInfoForProfileAtIndex(index)->GetString(kNameKey, &name);
   return name;
-}
-
-base::string16 ProfileInfoCache::GetShortcutNameOfProfileAtIndex(size_t index)
-    const {
-  base::string16 shortcut_name;
-  GetInfoForProfileAtIndex(index)->GetString(
-      kShortcutNameKey, &shortcut_name);
-  return shortcut_name;
 }
 
 base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
@@ -518,17 +509,6 @@ void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
     for (auto& observer : observer_list_)
       observer.OnProfileNameChanged(profile_path, old_display_name);
   }
-}
-
-void ProfileInfoCache::SetShortcutNameOfProfileAtIndex(
-    size_t index,
-    const base::string16& shortcut_name) {
-  if (shortcut_name == GetShortcutNameOfProfileAtIndex(index))
-    return;
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetString(kShortcutNameKey, shortcut_name);
-  SetInfoForProfileAtIndex(index, std::move(info));
 }
 
 void ProfileInfoCache::SetAuthInfoOfProfileAtIndex(
@@ -1137,7 +1117,7 @@ bool ProfileInfoCache::GetProfileAttributesWithPath(
     // The profile info is in the cache but its entry isn't created yet, insert
     // it in the map.
     current_entry.reset(new ProfileAttributesEntry());
-    current_entry->Initialize(this, path);
+    current_entry->Initialize(this, path, prefs_);
   }
 
   *entry = current_entry.get();
