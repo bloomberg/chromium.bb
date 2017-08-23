@@ -21,7 +21,7 @@ bool IsCaptureFormatSmaller(const media::VideoCaptureFormat& format1,
     if (format1.frame_size.width() == format2.frame_size.width()) {
       return format1.frame_rate > format2.frame_rate;
     }
-    return format1.frame_size.width() < format2.frame_size.width();
+    return format1.frame_size.width() > format2.frame_size.width();
   }
   return format1.frame_size.GetCheckedArea().ValueOrDefault(0) <
          format2.frame_size.GetCheckedArea().ValueOrDefault(0);
