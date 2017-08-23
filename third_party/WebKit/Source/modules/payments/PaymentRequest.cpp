@@ -937,6 +937,13 @@ void PaymentRequest::OnUpdatePaymentDetails(
     return;
   }
 
+  if (!details.hasTotal()) {
+    show_resolver_->Reject(
+        DOMException::Create(kSyntaxError, "Total required"));
+    ClearResolversAndCloseMojoConnection();
+    return;
+  }
+
   PaymentDetailsPtr validated_details =
       payments::mojom::blink::PaymentDetails::New();
   ValidateAndConvertPaymentDetailsUpdate(

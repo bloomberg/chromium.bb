@@ -176,6 +176,13 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
     OnConnectionTerminated();
     return;
   }
+
+  if (!details->total) {
+    LOG(ERROR) << "Missing total";
+    OnConnectionTerminated();
+    return;
+  }
+
   spec_->UpdateWith(std::move(details));
 }
 
