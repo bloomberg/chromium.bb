@@ -615,7 +615,7 @@ bool DragController::ConcludeEditDrag(DragData* drag_data) {
       DragAndDropCommand::Create(*inner_frame->GetDocument()));
 
   if (DragIsMove(inner_frame->Selection(), drag_data) ||
-      drag_caret.IsContentRichlyEditable()) {
+      IsRichlyEditablePosition(drag_caret.Base())) {
     DragSourceType drag_source_type = DragSourceType::kHTMLSource;
     DocumentFragment* fragment = DocumentFragmentFromDragData(
         drag_data, inner_frame, range, true, drag_source_type);
