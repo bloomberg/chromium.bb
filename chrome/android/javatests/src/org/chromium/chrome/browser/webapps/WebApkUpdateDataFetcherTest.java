@@ -4,11 +4,8 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,7 +23,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
-import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.EmbeddedTestServerRule;
 
 import java.util.HashMap;
 
@@ -41,6 +38,9 @@ import java.util.HashMap;
 public class WebApkUpdateDataFetcherTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+
+    @Rule
+    public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
 
     private static final String WEB_MANIFEST_URL1 = "/chrome/test/data/banners/manifest.json";
     // Name for Web Manifest at {@link WEB_MANIFEST_URL1}.
@@ -61,7 +61,6 @@ public class WebApkUpdateDataFetcherTest {
     // {@link WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH}.
     private static final String WEB_MANIFEST_SCOPE = "/chrome/test/data";
 
-    private EmbeddedTestServer mTestServer;
     private Tab mTab;
 
     // CallbackHelper which blocks until the {@link ManifestUpgradeDetectorFetcher.Callback}
@@ -98,14 +97,7 @@ public class WebApkUpdateDataFetcherTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        mTestServer = EmbeddedTestServer.createAndStartServer(context);
         mTab = mActivityTestRule.getActivity().getActivityTab();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
     }
 
     /** Creates and starts a WebApkUpdateDataFetcher. */
@@ -131,11 +123,11 @@ public class WebApkUpdateDataFetcherTest {
     @Feature({"WebApk"})
     public void testLaunchWithDesiredManifestUrl() throws Exception {
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
-                mTestServer, mTab, WEB_MANIFEST_URL1);
+                mTestServerRule.getServer(), mTab, WEB_MANIFEST_URL1);
 
         CallbackWaiter waiter = new CallbackWaiter();
-        startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
-                mTestServer.getURL(WEB_MANIFEST_URL1), waiter);
+        startWebApkUpdateDataFetcher(mTestServerRule.getServer().getURL(WEB_MANIFEST_SCOPE),
+                mTestServerRule.getServer().getURL(WEB_MANIFEST_URL1), waiter);
         waiter.waitForCallback(0);
 
         Assert.assertTrue(waiter.isWebApkCompatible());
@@ -153,14 +145,14 @@ public class WebApkUpdateDataFetcherTest {
     @RetryOnFailure
     public void testLaunchWithDifferentManifestUrl() throws Exception {
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
-                mTestServer, mTab, WEB_MANIFEST_URL1);
+                mTestServerRule.getServer(), mTab, WEB_MANIFEST_URL1);
 
         CallbackWaiter waiter = new CallbackWaiter();
-        startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
-                mTestServer.getURL(WEB_MANIFEST_URL2), waiter);
+        startWebApkUpdateDataFetcher(mTestServerRule.getServer().getURL(WEB_MANIFEST_SCOPE),
+                mTestServerRule.getServer().getURL(WEB_MANIFEST_URL2), waiter);
 
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
-                mTestServer, mTab, WEB_MANIFEST_URL2);
+                mTestServerRule.getServer(), mTab, WEB_MANIFEST_URL2);
         waiter.waitForCallback(0);
         Assert.assertTrue(waiter.isWebApkCompatible());
         Assert.assertEquals(WEB_MANIFEST_NAME2, waiter.name());
@@ -175,11 +167,12 @@ public class WebApkUpdateDataFetcherTest {
     @Feature({"Webapps"})
     public void testLargeIconMurmur2Hash() throws Exception {
         WebappTestPage.navigateToPageWithServiceWorkerAndManifest(
-                mTestServer, mTab, WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH);
+                mTestServerRule.getServer(), mTab, WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH);
 
         CallbackWaiter waiter = new CallbackWaiter();
-        startWebApkUpdateDataFetcher(mTestServer.getURL(WEB_MANIFEST_SCOPE),
-                mTestServer.getURL(WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH), waiter);
+        startWebApkUpdateDataFetcher(mTestServerRule.getServer().getURL(WEB_MANIFEST_SCOPE),
+                mTestServerRule.getServer().getURL(WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH),
+                waiter);
         waiter.waitForCallback(0);
 
         Assert.assertEquals(LONG_ICON_MURMUR2_HASH, waiter.primaryIconMurmur2Hash());

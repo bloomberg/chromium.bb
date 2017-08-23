@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -31,7 +30,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.NativeLibraryTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /** Integration tests for WebAPK feature. */
@@ -46,9 +45,10 @@ public class WebApkIntegrationTest {
     @Rule
     public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
 
-    private static final long STARTUP_TIMEOUT = ScalableTimeout.scaleTimeout(10000);
+    @Rule
+    public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
 
-    private EmbeddedTestServer mTestServer;
+    private static final long STARTUP_TIMEOUT = ScalableTimeout.scaleTimeout(10000);
 
     public void startWebApkActivity(String webApkPackageName, final String startUrl)
             throws InterruptedException {
@@ -95,14 +95,7 @@ public class WebApkIntegrationTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
         WebApkUpdateManager.setUpdatesEnabledForTesting(false);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        mTestServer.stopAndDestroyServer();
     }
 
     /**
@@ -114,7 +107,7 @@ public class WebApkIntegrationTest {
     @Feature({"WebApk"})
     public void testLaunchAndNavigateOffOrigin() throws Exception {
         startWebApkActivity("org.chromium.webapk.test",
-                mTestServer.getURL("/chrome/test/data/android/test.html"));
+                mTestServerRule.getServer().getURL("/chrome/test/data/android/test.html"));
         waitUntilSplashscreenHides();
 
         // We navigate outside origin and expect Custom Tab to open on top of WebApkActivity.
@@ -148,7 +141,8 @@ public class WebApkIntegrationTest {
     public void testLaunchIntervalHistogramNotRecordedOnFirstLaunch() throws Exception {
         final String histogramName = "WebApk.LaunchInterval";
         final String packageName = "org.chromium.webapk.test";
-        startWebApkActivity(packageName, mTestServer.getURL("/chrome/test/data/android/test.html"));
+        startWebApkActivity(packageName,
+                mTestServerRule.getServer().getURL("/chrome/test/data/android/test.html"));
 
         CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
             @Override
@@ -178,7 +172,8 @@ public class WebApkIntegrationTest {
         storage.updateLastUsedTime();
         Assert.assertEquals(0, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
 
-        startWebApkActivity(packageName, mTestServer.getURL("/chrome/test/data/android/test.html"));
+        startWebApkActivity(packageName,
+                mTestServerRule.getServer().getURL("/chrome/test/data/android/test.html"));
 
         CriteriaHelper.pollUiThread(new Criteria("Deferred startup never completed") {
             @Override
