@@ -345,11 +345,10 @@ void ReportTimeUntilPersistentFetch(
 
 class EulaState : public web_resource::EulaAcceptedNotifier::Observer {
  public:
-  EulaState(PrefService* local_state_prefs,
-            RemoteSuggestionsScheduler* scheduler)
+  EulaState(PrefService* local_state_prefs, base::Closure eula_accepted)
       : eula_notifier_(
             web_resource::EulaAcceptedNotifier::Create(local_state_prefs)),
-        scheduler_(scheduler) {
+        eula_accepted_(eula_accepted) {
     // EulaNotifier is not constructed on some platforms (such as desktop).
     if (!eula_notifier_) {
       return;
@@ -370,15 +369,17 @@ class EulaState : public web_resource::EulaAcceptedNotifier::Observer {
 
   // EulaAcceptedNotifier::Observer implementation.
   void OnEulaAccepted() override {
-    // Emulate a persistent fetch - we really want to fetch, initially!
-    // TODO(jkrcal): Find a cleaner solution. This is somewhat hacky and can
-    // mess up with metrics.
-    scheduler_->OnPersistentSchedulerWakeUp();
+    // Note that this code is only run if a previous call to IsEulaAccepted()
+    // returned false. In that case, the prefs are watched and this method gets
+    // executed once the setting flips to accepted. Hence, we can assume that
+    // at the time this code runs, a background-fetch trigger is queued in the
+    // scheduler.
+    eula_accepted_.Run();
   }
 
  private:
   std::unique_ptr<web_resource::EulaAcceptedNotifier> eula_notifier_;
-  RemoteSuggestionsScheduler* scheduler_;
+  base::Callback<void()> eula_accepted_;
 
   DISALLOW_COPY_AND_ASSIGN(EulaState);
 };
@@ -450,7 +451,10 @@ RemoteSuggestionsSchedulerImpl::RemoteSuggestionsSchedulerImpl(
               CONTENT_SUGGESTION_FETCHER_ACTIVE_SUGGESTIONS_CONSUMER),
       time_until_first_shown_trigger_reported_(false),
       time_until_first_startup_trigger_reported_(false),
-      eula_state_(base::MakeUnique<EulaState>(local_state_prefs, this)),
+      eula_state_(base::MakeUnique<EulaState>(
+          local_state_prefs,
+          base::Bind(&RemoteSuggestionsSchedulerImpl::RunQueuedTriggersIfReady,
+                     base::Unretained(this)))),
       profile_prefs_(profile_prefs),
       clock_(std::move(clock)),
       enabled_triggers_(GetEnabledTriggerTypes()) {
@@ -494,6 +498,18 @@ void RemoteSuggestionsSchedulerImpl::SetProvider(
 
 void RemoteSuggestionsSchedulerImpl::OnProviderActivated() {
   StartScheduling();
+  RunQueuedTriggersIfReady();
+}
+
+void RemoteSuggestionsSchedulerImpl::RunQueuedTriggersIfReady() {
+  // Process any queued triggers if we're now ready for background fetches.
+  if (IsReadyForBackgroundFetches()) {
+    std::set<TriggerType> queued_triggers_copy;
+    queued_triggers_copy.swap(queued_triggers_);
+    for (const TriggerType trigger : queued_triggers_copy) {
+      RefetchInTheBackgroundIfAppropriate(trigger);
+    }
+  }
 }
 
 void RemoteSuggestionsSchedulerImpl::OnProviderDeactivated() {
@@ -655,6 +671,10 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
     return;
   }
 
+  if (enabled_triggers_.count(trigger) == 0) {
+    return;
+  }
+
   if (net::NetworkChangeNotifier::IsOffline()) {
     // Do not let a request fail due to lack of internet connection. Then, such
     // a failure would get logged and further requests would be blocked for a
@@ -662,7 +682,8 @@ void RemoteSuggestionsSchedulerImpl::RefetchInTheBackgroundIfAppropriate(
     return;
   }
 
-  if (BackgroundFetchesDisabled(trigger)) {
+  if (!IsReadyForBackgroundFetches()) {
+    queued_triggers_.insert(trigger);
     return;
   }
 
@@ -742,25 +763,20 @@ bool RemoteSuggestionsSchedulerImpl::ShouldRefetchInTheBackgroundNow(
          first_allowed_fetch_time <= now;
 }
 
-bool RemoteSuggestionsSchedulerImpl::BackgroundFetchesDisabled(
-    TriggerType trigger) const {
+bool RemoteSuggestionsSchedulerImpl::IsReadyForBackgroundFetches() const {
   if (!provider_) {
-    return true;  // Cannot fetch as remote suggestions provider does not exist.
+    return false;  // Cannot fetch as remote suggestions provider does not
+                   // exist.
   }
 
   if (schedule_.is_empty()) {
-    return true;  // Background fetches are disabled in general.
+    return false;  // Background fetches are disabled in general.
   }
-
-  if (enabled_triggers_.count(trigger) == 0) {
-    return true;  // Background fetches for |trigger| are not enabled.
-  }
-
   if (!eula_state_->IsEulaAccepted()) {
-    return true;  // No background fetches are allowed before EULA is accepted.
+    return false;  // No background fetches are allowed before EULA is accepted.
   }
 
-  return false;
+  return true;
 }
 
 bool RemoteSuggestionsSchedulerImpl::AcquireQuota(bool interactive_request) {
