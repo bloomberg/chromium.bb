@@ -12,16 +12,14 @@ function setupEventListeners()
     node.addEventListener("click", function() { console.log("addEventListener"); });
 }
 
-function test()
-{
-    Common.settingForTest("showEventListenersForAncestors").set(true);
-    ElementsTestRunner.selectNodeWithId("node", step1);
+function test() {
+  Common.settingForTest('showEventListenersForAncestors').set(true);
+  ElementsTestRunner.selectNodeWithId('node', step1);
 
-    function step1()
-    {
-        ElementsTestRunner.showEventListenersWidget();
-        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(TestRunner.completeTest.bind(this));
-    }
+  function step1() {
+    ElementsTestRunner.showEventListenersWidget();
+    ElementsTestRunner.expandAndDumpSelectedElementEventListeners(TestRunner.completeTest.bind(this));
+  }
 }
 
 function onloadHandler()

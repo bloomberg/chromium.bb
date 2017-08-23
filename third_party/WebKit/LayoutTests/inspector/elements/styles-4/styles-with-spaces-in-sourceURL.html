@@ -6,15 +6,13 @@
 
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", onNodeSelected);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', onNodeSelected);
 
-    function onNodeSelected()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        TestRunner.completeTest();
-    }
+  function onNodeSelected() {
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
+  }
 }
 </script>
 

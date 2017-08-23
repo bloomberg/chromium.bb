@@ -13,35 +13,30 @@ function typeText()
     eventSender.keyDown("r");
 }
 
-function test()
-{
-    var containerNode;
-    Common.settingForTest("showUAShadowDOM").set(true);
-    TestRunner.runTestSuite([
-        function testDumpInitial(next)
-        {
-            function callback(node)
-            {
-                containerNode = ElementsTestRunner.expandedNodeWithId("container");
-                TestRunner.addResult("========= Original ========");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            ElementsTestRunner.expandElementsTree(callback);
-        },
+function test() {
+  var containerNode;
+  Common.settingForTest('showUAShadowDOM').set(true);
+  TestRunner.runTestSuite([
+    function testDumpInitial(next) {
+      function callback(node) {
+        containerNode = ElementsTestRunner.expandedNodeWithId('container');
+        TestRunner.addResult('========= Original ========');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      ElementsTestRunner.expandElementsTree(callback);
+    },
 
-        function testAppend(next)
-        {
-            TestRunner.evaluateInPage("typeText()", callback);
+    function testAppend(next) {
+      TestRunner.evaluateInPage('typeText()', callback);
 
-            function callback()
-            {
-                TestRunner.addResult("======== Type text =========");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-        }
-    ]);
+      function callback() {
+        TestRunner.addResult('======== Type text =========');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+    }
+  ]);
 }
 
 </script>

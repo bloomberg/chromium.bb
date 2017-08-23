@@ -4,44 +4,40 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    var containerNode;
+function test() {
+  var containerNode;
 
-    TestRunner.runTestSuite([
-        function testDumpInitial(next)
-        {
-            function callback(node)
-            {
-                containerNode = ElementsTestRunner.expandedNodeWithId("container");
+  TestRunner.runTestSuite([
+    function testDumpInitial(next) {
+      function callback(node) {
+        containerNode = ElementsTestRunner.expandedNodeWithId('container');
 
-                TestRunner.addResult("========= Original ========");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            ElementsTestRunner.expandElementsTree(callback);
-        },
+        TestRunner.addResult('========= Original ========');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      ElementsTestRunner.expandElementsTree(callback);
+    },
 
-        function testDragAndDrop(next)
-        {
-            var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
-            treeOutline.addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectionChanged);
+    function testDragAndDrop(next) {
+      var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+      treeOutline.addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectionChanged);
 
-            function selectionChanged()
-            {
-                TestRunner.addResult("===== Moved child2 =====");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                TestRunner.addResult("Selection: " + Components.DOMPresentationUtils.fullQualifiedSelector(treeOutline.selectedDOMNode()));
-                next();
-            }
+      function selectionChanged() {
+        TestRunner.addResult('===== Moved child2 =====');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        TestRunner.addResult(
+            'Selection: ' + Components.DOMPresentationUtils.fullQualifiedSelector(treeOutline.selectedDOMNode()));
+        next();
+      }
 
-            var child2 = ElementsTestRunner.expandedNodeWithId("child2");
-            var child4 = ElementsTestRunner.expandedNodeWithId("child4");
-            treeOutline._treeElementBeingDragged = child2[treeOutline._treeElementSymbol];
-            var treeElementToDropOn = child4[treeOutline._treeElementSymbol];
-            treeOutline._doMove(treeElementToDropOn);
-        }
-    ]);
+      var child2 = ElementsTestRunner.expandedNodeWithId('child2');
+      var child4 = ElementsTestRunner.expandedNodeWithId('child4');
+      treeOutline._treeElementBeingDragged = child2[treeOutline._treeElementSymbol];
+      var treeElementToDropOn = child4[treeOutline._treeElementSymbol];
+      treeOutline._doMove(treeElementToDropOn);
+    }
+  ]);
 }
 
 </script>

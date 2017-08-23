@@ -7,7 +7,7 @@
 var test = function() {
 
   // make sure the tree is loaded
-  ElementsTestRunner.selectNodeAndWaitForStyles("node-to-copy",nodeSelected);
+  ElementsTestRunner.selectNodeAndWaitForStyles('node-to-copy', nodeSelected);
   var input = document.body.createChild('input');
 
   function nodeSelected() {
@@ -20,7 +20,7 @@ var test = function() {
     TestRunner.addResult(input.value);
     TestRunner.completeTest();
   }
-}
+};
 </script>
 </head>
 <body onload="runTest()">

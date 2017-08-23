@@ -21,25 +21,22 @@ div {
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("inspected", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('inspected', step1);
 
-    function step1()
-    {
-        var treeElement = ElementsTestRunner.findComputedPropertyWithName("display");
-        treeElement.expand();
-        TestRunner.addResult("\n#inspected computed styles: ");
-        ElementsTestRunner.dumpComputedStyle(true);
-        ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("other", step2);
-    }
+  function step1() {
+    var treeElement = ElementsTestRunner.findComputedPropertyWithName('display');
+    treeElement.expand();
+    TestRunner.addResult('\n#inspected computed styles: ');
+    ElementsTestRunner.dumpComputedStyle(true);
+    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('other', step2);
+  }
 
-    function step2()
-    {
-        TestRunner.addResult("\n#other computed styles: ");
-        ElementsTestRunner.dumpComputedStyle(true);
-        TestRunner.completeTest();
-    }
+  function step2() {
+    TestRunner.addResult('\n#other computed styles: ');
+    ElementsTestRunner.dumpComputedStyle(true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

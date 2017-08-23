@@ -4,40 +4,35 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    var containerNode;
-    ElementsTestRunner.expandElementsTree(step1);
+function test() {
+  var containerNode;
+  ElementsTestRunner.expandElementsTree(step1);
 
-    function step1(node)
-    {
-        containerNode = ElementsTestRunner.expandedNodeWithId("container");
-        TestRunner.addResult("========= Original ========");
-        ElementsTestRunner.dumpElementsTree(containerNode);
-        step2();
+  function step1(node) {
+    containerNode = ElementsTestRunner.expandedNodeWithId('container');
+    TestRunner.addResult('========= Original ========');
+    ElementsTestRunner.dumpElementsTree(containerNode);
+    step2();
+  }
+
+  function step2() {
+    function callback() {
+      TestRunner.addResult('===== Modified element =====');
+      ElementsTestRunner.dumpElementsTree(containerNode);
+      step3();
     }
+    containerNode.setAttribute('', 'foo="bar"', callback);
+  }
 
-    function step2()
-    {
-        function callback()
-        {
-            TestRunner.addResult("===== Modified element =====");
-            ElementsTestRunner.dumpElementsTree(containerNode);
-            step3();
-        }
-        containerNode.setAttribute("", "foo=\"bar\"", callback);
-    }
+  async function step3() {
+    await TestRunner.domModel.undo();
+    TestRunner.addResult('===== Undo 1 =====');
+    ElementsTestRunner.dumpElementsTree(containerNode);
 
-    async function step3()
-    {
-        await TestRunner.domModel.undo();
-        TestRunner.addResult("===== Undo 1 =====");
-        ElementsTestRunner.dumpElementsTree(containerNode);
-
-        TestRunner.addResult("===== Undo 2 =====");
-        ElementsTestRunner.dumpElementsTree(containerNode);
-        TestRunner.completeTest();
-    }
+    TestRunner.addResult('===== Undo 2 =====');
+    ElementsTestRunner.dumpElementsTree(containerNode);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

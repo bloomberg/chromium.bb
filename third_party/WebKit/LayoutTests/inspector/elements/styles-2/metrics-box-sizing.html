@@ -39,111 +39,107 @@ function dumpDimensions()
     document.getElementById("output-border").textContent = "border-box rendered dimensions: " + element.offsetWidth + " x " + element.offsetHeight;
 }
 
-function test()
-{
-    var contentWidthElement;
-    var contentHeightElement;
+function test() {
+  var contentWidthElement;
+  var contentHeightElement;
 
-    function getChildTextByClassName(element, className)
-    {
-        var children = element.children;
-        for (var i = 0; i < children.length; ++i) {
-            if (children[i].classList && children[i].classList.contains(className))
-                return children[i].textContent;
-        }
-        return null;
+  function getChildTextByClassName(element, className) {
+    var children = element.children;
+    for (var i = 0; i < children.length; ++i) {
+      if (children[i].classList && children[i].classList.contains(className))
+        return children[i].textContent;
     }
+    return null;
+  }
 
-    function dumpMetrics(sectionElement)
-    {
-        var marginElement = sectionElement.getElementsByClassName("margin")[0];
-        var borderElement = sectionElement.getElementsByClassName("border")[0];
-        var paddingElement = sectionElement.getElementsByClassName("padding")[0];
-        var contentDimensions = sectionElement.getElementsByClassName("content")[0].getElementsByTagName("span");
-        TestRunner.addResult("margin: " + getChildTextByClassName(marginElement, "top") + " " + getChildTextByClassName(marginElement, "right") + " " + getChildTextByClassName(marginElement, "bottom") + " " + getChildTextByClassName(marginElement, "left"));
-        TestRunner.addResult("border: " + getChildTextByClassName(borderElement, "top") + " " + getChildTextByClassName(borderElement, "right") + " " + getChildTextByClassName(borderElement, "bottom") + " " + getChildTextByClassName(borderElement, "left"));
-        TestRunner.addResult("padding: " + getChildTextByClassName(paddingElement, "top") + " " + getChildTextByClassName(paddingElement, "right") + " " + getChildTextByClassName(paddingElement, "bottom") + " " + getChildTextByClassName(paddingElement, "left"));
-        TestRunner.addResult("content: " + contentDimensions[0].textContent + " x " + contentDimensions[1].textContent);
+  function dumpMetrics(sectionElement) {
+    var marginElement = sectionElement.getElementsByClassName('margin')[0];
+    var borderElement = sectionElement.getElementsByClassName('border')[0];
+    var paddingElement = sectionElement.getElementsByClassName('padding')[0];
+    var contentDimensions = sectionElement.getElementsByClassName('content')[0].getElementsByTagName('span');
+    TestRunner.addResult(
+        'margin: ' + getChildTextByClassName(marginElement, 'top') + ' ' +
+        getChildTextByClassName(marginElement, 'right') + ' ' + getChildTextByClassName(marginElement, 'bottom') + ' ' +
+        getChildTextByClassName(marginElement, 'left'));
+    TestRunner.addResult(
+        'border: ' + getChildTextByClassName(borderElement, 'top') + ' ' +
+        getChildTextByClassName(borderElement, 'right') + ' ' + getChildTextByClassName(borderElement, 'bottom') + ' ' +
+        getChildTextByClassName(borderElement, 'left'));
+    TestRunner.addResult(
+        'padding: ' + getChildTextByClassName(paddingElement, 'top') + ' ' +
+        getChildTextByClassName(paddingElement, 'right') + ' ' + getChildTextByClassName(paddingElement, 'bottom') +
+        ' ' + getChildTextByClassName(paddingElement, 'left'));
+    TestRunner.addResult('content: ' + contentDimensions[0].textContent + ' x ' + contentDimensions[1].textContent);
+  }
+
+  function createDoubleClickEvent() {
+    var event = document.createEvent('MouseEvent');
+    event.initMouseEvent('dblclick', true, true, null, 2, 0, 0, 0, 0, false, false, false, false, 0, null);
+    return event;
+  }
+
+  TestRunner.runTestSuite([
+    function testBorderBoxInit1(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('border-box', next);
+    },
+
+    function testBorderBoxInit2(next) {
+      section = UI.panels.elements._metricsWidget;
+      section.expand();
+      TestRunner.addSniffer(section._updateController._updateThrottler, '_processCompletedForTests', next);
+    },
+
+    function testInitialBorderBoxMetrics(next) {
+      var spanElements = section.element.getElementsByClassName('content')[0].getElementsByTagName('span');
+      contentWidthElement = spanElements[0];
+      contentHeightElement = spanElements[1];
+      TestRunner.addResult('=== Initial border-box ===');
+      dumpMetrics(section.element);
+      contentWidthElement.dispatchEvent(createDoubleClickEvent());
+      contentWidthElement.textContent = '60';
+      contentWidthElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+      TestRunner.deprecatedRunAfterPendingDispatches(next);
+    },
+
+    function testModifiedBorderBoxMetrics(next) {
+      TestRunner.addResult('=== Modified border-box ===');
+      dumpMetrics(section.element);
+      next();
+    },
+
+    function testContentBoxInit1(next) {
+      ElementsTestRunner.selectNodeWithId('content-box', next);
+    },
+
+    function testContentBoxInit2(next) {
+      section = UI.panels.elements._metricsWidget;
+      section.expand();
+      TestRunner.addSniffer(section._updateController._updateThrottler, '_processCompletedForTests', next);
+    },
+
+    function testInitialContentBoxMetrics(next) {
+      var spanElements = section.element.getElementsByClassName('content')[0].getElementsByTagName('span');
+      contentWidthElement = spanElements[0];
+      contentHeightElement = spanElements[1];
+      TestRunner.addResult('=== Initial content-box ===');
+      dumpMetrics(section.element);
+      contentWidthElement.dispatchEvent(createDoubleClickEvent());
+      contentWidthElement.textContent = '60';
+      contentWidthElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+      TestRunner.deprecatedRunAfterPendingDispatches(next);
+      next();
+    },
+
+    function testModifiedContentBoxMetrics(next) {
+      function callback() {
+        next();
+      }
+
+      TestRunner.addResult('=== Modified content-box ===');
+      dumpMetrics(section.element);
+      TestRunner.evaluateInPage('dumpDimensions()', callback);
     }
-
-    function createDoubleClickEvent()
-    {
-        var event = document.createEvent("MouseEvent");
-        event.initMouseEvent("dblclick", true, true, null, 2, 0, 0, 0, 0, false, false, false, false, 0, null);
-        return event;
-    }
-
-    TestRunner.runTestSuite([
-        function testBorderBoxInit1(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("border-box", next);
-        },
-
-        function testBorderBoxInit2(next)
-        {
-            section = UI.panels.elements._metricsWidget;
-            section.expand();
-            TestRunner.addSniffer(section._updateController._updateThrottler, "_processCompletedForTests", next);
-        },
-
-        function testInitialBorderBoxMetrics(next)
-        {
-            var spanElements = section.element.getElementsByClassName("content")[0].getElementsByTagName("span");
-            contentWidthElement = spanElements[0];
-            contentHeightElement = spanElements[1];
-            TestRunner.addResult("=== Initial border-box ===");
-            dumpMetrics(section.element);
-            contentWidthElement.dispatchEvent(createDoubleClickEvent());
-            contentWidthElement.textContent = "60";
-            contentWidthElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-            TestRunner.deprecatedRunAfterPendingDispatches(next);
-        },
-
-        function testModifiedBorderBoxMetrics(next)
-        {
-            TestRunner.addResult("=== Modified border-box ===");
-            dumpMetrics(section.element);
-            next();
-        },
-
-        function testContentBoxInit1(next)
-        {
-            ElementsTestRunner.selectNodeWithId("content-box", next);
-        },
-
-        function testContentBoxInit2(next)
-        {
-            section = UI.panels.elements._metricsWidget;
-            section.expand();
-            TestRunner.addSniffer(section._updateController._updateThrottler, "_processCompletedForTests", next);
-        },
-
-        function testInitialContentBoxMetrics(next)
-        {
-            var spanElements = section.element.getElementsByClassName("content")[0].getElementsByTagName("span");
-            contentWidthElement = spanElements[0];
-            contentHeightElement = spanElements[1];
-            TestRunner.addResult("=== Initial content-box ===");
-            dumpMetrics(section.element);
-            contentWidthElement.dispatchEvent(createDoubleClickEvent());
-            contentWidthElement.textContent = "60";
-            contentWidthElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-            TestRunner.deprecatedRunAfterPendingDispatches(next);
-            next();
-        },
-
-        function testModifiedContentBoxMetrics(next)
-        {
-            function callback()
-            {
-                next();
-            }
-
-            TestRunner.addResult("=== Modified content-box ===");
-            dumpMetrics(section.element);
-            TestRunner.evaluateInPage("dumpDimensions()", callback);
-        }
-    ]);
+  ]);
 }
 </script>
 </head>

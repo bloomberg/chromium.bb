@@ -46,84 +46,72 @@ function addDistributedNodeToOldest()
     addDistributedNode(true);
 }
 
-function test()
-{
-    var shadowHostNode;
-    var treeOutline;
-    var shadowHostTreeElement;
-    var innerShadowHostNode;
-    var innerShadowHostTreeElement;
+function test() {
+  var shadowHostNode;
+  var treeOutline;
+  var shadowHostTreeElement;
+  var innerShadowHostNode;
+  var innerShadowHostTreeElement;
 
-    ElementsTestRunner.expandElementsTree(elementsTreeExpanded);
+  ElementsTestRunner.expandElementsTree(elementsTreeExpanded);
 
-    function elementsTreeExpanded(node)
-    {
-        treeOutline = ElementsTestRunner.firstElementsTreeOutline();
-        shadowHostNode = ElementsTestRunner.expandedNodeWithId("shadowHost");
-        shadowHostTreeElement = treeOutline.findTreeElement(shadowHostNode)
-        expandAndDumpShadowHostNode("========= Original ========", originalElementsTreeDumped);
+  function elementsTreeExpanded(node) {
+    treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+    shadowHostNode = ElementsTestRunner.expandedNodeWithId('shadowHost');
+    shadowHostTreeElement = treeOutline.findTreeElement(shadowHostNode);
+    expandAndDumpShadowHostNode('========= Original ========', originalElementsTreeDumped);
+  }
+
+  function originalElementsTreeDumped(node) {
+    TestRunner.evaluateInPage('initOldestShadowRoot()', onOldestShadowRootInitialized);
+  }
+
+  function onOldestShadowRootInitialized() {
+    expandAndDumpShadowHostNode('========= After shadow root created ========', onOldestShadowRootDumped);
+  }
+
+  function onOldestShadowRootDumped() {
+    waitForModifiedNodesUpdate('After adding distributed node', distributedNodeChangedAfterFirstAdding);
+    TestRunner.evaluateInPage('addDistributedNodeToOldest()');
+  }
+
+  function distributedNodeChangedAfterFirstAdding() {
+    waitForModifiedNodesUpdate('After adding another distributed node', distributedNodeChangedAfterSecondAdding);
+    TestRunner.evaluateInPage('addDistributedNodeToOldest()');
+  }
+
+  function distributedNodeChangedAfterSecondAdding() {
+    waitForModifiedNodesUpdate(
+        'After adding youngest shadow root', distributedNodeChangedAfterAddingYoungestShadowRoot);
+    TestRunner.evaluateInPage('initYoungestShadowRoot()');
+  }
+
+  function distributedNodeChangedAfterAddingYoungestShadowRoot() {
+    waitForModifiedNodesUpdate('After adding inner shadow root node', distributedNodeChangedAfterAddingInnerShadowRoot);
+    TestRunner.evaluateInPage('initInnerShadowRoot()');
+  }
+
+  function distributedNodeChangedAfterAddingInnerShadowRoot() {
+    TestRunner.completeTest();
+  }
+
+  function waitForModifiedNodesUpdate(title, next) {
+    TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, '_updateModifiedNodes', callback);
+
+    function callback() {
+      expandAndDumpShadowHostNode('========= ' + title + ' ========', next);
     }
+  }
 
-    function originalElementsTreeDumped(node)
-    {
-        TestRunner.evaluateInPage("initOldestShadowRoot()", onOldestShadowRootInitialized);
+  function expandAndDumpShadowHostNode(title, next) {
+    TestRunner.addResult(title);
+    ElementsTestRunner.expandElementsTree(callback);
+
+    function callback() {
+      ElementsTestRunner.dumpElementsTree(shadowHostNode);
+      next();
     }
-
-    function onOldestShadowRootInitialized()
-    {
-        expandAndDumpShadowHostNode("========= After shadow root created ========", onOldestShadowRootDumped);
-    }
-
-    function onOldestShadowRootDumped()
-    {
-        waitForModifiedNodesUpdate("After adding distributed node", distributedNodeChangedAfterFirstAdding);
-        TestRunner.evaluateInPage("addDistributedNodeToOldest()");
-    }
-
-    function distributedNodeChangedAfterFirstAdding()
-    {
-        waitForModifiedNodesUpdate("After adding another distributed node", distributedNodeChangedAfterSecondAdding);
-        TestRunner.evaluateInPage("addDistributedNodeToOldest()");
-    }
-
-    function distributedNodeChangedAfterSecondAdding()
-    {
-        waitForModifiedNodesUpdate("After adding youngest shadow root", distributedNodeChangedAfterAddingYoungestShadowRoot);
-        TestRunner.evaluateInPage("initYoungestShadowRoot()");
-    }
-
-    function distributedNodeChangedAfterAddingYoungestShadowRoot()
-    {
-        waitForModifiedNodesUpdate("After adding inner shadow root node", distributedNodeChangedAfterAddingInnerShadowRoot);
-        TestRunner.evaluateInPage("initInnerShadowRoot()");
-    }
-
-    function distributedNodeChangedAfterAddingInnerShadowRoot()
-    {
-        TestRunner.completeTest();
-    }
-
-    function waitForModifiedNodesUpdate(title, next)
-    {
-        TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", callback);
-
-        function callback()
-        {
-            expandAndDumpShadowHostNode("========= " + title + " ========", next);
-        }
-    }
-
-    function expandAndDumpShadowHostNode(title, next)
-    {
-        TestRunner.addResult(title);
-        ElementsTestRunner.expandElementsTree(callback);
-
-        function callback()
-        {
-            ElementsTestRunner.dumpElementsTree(shadowHostNode);
-            next();
-        }
-    }
+  }
 }
 </script>
 </head>

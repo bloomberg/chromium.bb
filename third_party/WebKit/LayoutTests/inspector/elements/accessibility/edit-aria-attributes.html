@@ -5,40 +5,40 @@
 <script src="accessibility-pane-test.js"></script>
 <script>
 
-function test()
-{
-    UI.viewManager.showView("accessibility.view")
-        .then(() => AccessibilityTestRunner.selectNodeAndWaitForAccessibility("inspected"))
-        .then(editAriaChecked);
+function test() {
+  UI.viewManager.showView('accessibility.view')
+      .then(() => AccessibilityTestRunner.selectNodeAndWaitForAccessibility('inspected'))
+      .then(editAriaChecked);
 
-    function editAriaChecked()
-    {
-        TestRunner.addResult("=== Before attribute modification ===");
-        AccessibilityTestRunner.dumpSelectedElementAccessibilityNode();
-        var treeElement = AccessibilityTestRunner.findARIAAttributeTreeElement("aria-checked");
-        treeElement._startEditing();
-        treeElement._prompt._element.textContent = "false";
-        treeElement._prompt._element.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        self.runtime.sharedInstance(Accessibility.AccessibilitySidebarView).doUpdate().then(() => { editRole(); });
-    }
+  function editAriaChecked() {
+    TestRunner.addResult('=== Before attribute modification ===');
+    AccessibilityTestRunner.dumpSelectedElementAccessibilityNode();
+    var treeElement = AccessibilityTestRunner.findARIAAttributeTreeElement('aria-checked');
+    treeElement._startEditing();
+    treeElement._prompt._element.textContent = 'false';
+    treeElement._prompt._element.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    self.runtime.sharedInstance(Accessibility.AccessibilitySidebarView).doUpdate().then(() => {
+      editRole();
+    });
+  }
 
-    function editRole()
-    {
-        TestRunner.addResult("=== After attribute modification ===");
-        AccessibilityTestRunner.dumpSelectedElementAccessibilityNode();
-        var treeElement = AccessibilityTestRunner.findARIAAttributeTreeElement("role");
-        treeElement._startEditing();
-        treeElement._prompt._element.textContent = "radio";
-        treeElement._prompt._element.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        self.runtime.sharedInstance(Accessibility.AccessibilitySidebarView).doUpdate().then(() => { postRoleChange(); });
-    }
+  function editRole() {
+    TestRunner.addResult('=== After attribute modification ===');
+    AccessibilityTestRunner.dumpSelectedElementAccessibilityNode();
+    var treeElement = AccessibilityTestRunner.findARIAAttributeTreeElement('role');
+    treeElement._startEditing();
+    treeElement._prompt._element.textContent = 'radio';
+    treeElement._prompt._element.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    self.runtime.sharedInstance(Accessibility.AccessibilitySidebarView).doUpdate().then(() => {
+      postRoleChange();
+    });
+  }
 
-    function postRoleChange()
-    {
-        TestRunner.addResult("=== After role modification ===");
-        AccessibilityTestRunner.dumpSelectedElementAccessibilityNode();
-        TestRunner.completeTest();
-    }
+  function postRoleChange() {
+    TestRunner.addResult('=== After role modification ===');
+    AccessibilityTestRunner.dumpSelectedElementAccessibilityNode();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

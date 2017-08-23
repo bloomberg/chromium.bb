@@ -12,19 +12,18 @@ function embedInlineStyleSheet()
     document.head.appendChild(style);
 }
 
-function test()
-{
-    SDK.targetManager.addModelListener(SDK.CSSModel, SDK.CSSModel.Events.StyleSheetAdded, function() { });
-    TestRunner.evaluateInPage("embedInlineStyleSheet()", onEvaluated);
+function test() {
+  SDK.targetManager.addModelListener(SDK.CSSModel, SDK.CSSModel.Events.StyleSheetAdded, function() {});
+  TestRunner.evaluateInPage('embedInlineStyleSheet()', onEvaluated);
 
-    function onEvaluated() {
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspect", onSelected);
-    }
+  function onEvaluated() {
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspect', onSelected);
+  }
 
-    function onSelected() {
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, false);
-        TestRunner.completeTest();
-    }
+  function onSelected() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, false);
+    TestRunner.completeTest();
+  }
 };
 
 </script>

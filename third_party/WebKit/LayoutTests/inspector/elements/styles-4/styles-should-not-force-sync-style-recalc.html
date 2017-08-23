@@ -25,19 +25,17 @@ function performActions()
         styleElement.sheet.deleteRule(0);
 }
 
-function test()
-{
-    UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
-    PerformanceTestRunner.evaluateWithTimeline("performActions()", callback);
+function test() {
+  UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
+  PerformanceTestRunner.evaluateWithTimeline('performActions()', callback);
 
-    function callback()
-    {
-        PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
-            if (event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree)
-                TestRunner.addResult(event.name);
-        });
-        TestRunner.completeTest();
-    }
+  function callback() {
+    PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+      if (event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree)
+        TestRunner.addResult(event.name);
+    });
+    TestRunner.completeTest();
+  }
 }
 
 </script>

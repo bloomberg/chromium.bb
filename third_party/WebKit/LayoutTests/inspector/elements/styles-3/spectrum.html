@@ -4,65 +4,57 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script type="text/javascript">
 
-var test = function()
-{
-    function setColor(inputColor, format)
-    {
-        TestRunner.addResult("Testing: " + inputColor);
-        var color = Common.Color.parse(inputColor);
-        spectrum.setColor(color, format);
-    }
+var test = function() {
+  function setColor(inputColor, format) {
+    TestRunner.addResult('Testing: ' + inputColor);
+    var color = Common.Color.parse(inputColor);
+    spectrum.setColor(color, format);
+  }
 
-    function checkColorString(inputColor, format)
-    {
-        setColor(inputColor, format)
-        TestRunner.addResult(spectrum.colorString());
-    }
+  function checkColorString(inputColor, format) {
+    setColor(inputColor, format);
+    TestRunner.addResult(spectrum.colorString());
+  }
 
-    function checkAlphaChange(inputColor, format)
-    {
-        setColor(inputColor, format)
-        spectrum._hsv[3] = 0;
-        spectrum._innerSetColor(spectrum._hsv, undefined, undefined, ColorPicker.Spectrum._ChangeSource.Other);
-        TestRunner.addResult(spectrum.colorString());
-    }
+  function checkAlphaChange(inputColor, format) {
+    setColor(inputColor, format);
+    spectrum._hsv[3] = 0;
+    spectrum._innerSetColor(spectrum._hsv, undefined, undefined, ColorPicker.Spectrum._ChangeSource.Other);
+    TestRunner.addResult(spectrum.colorString());
+  }
 
-    function checkNextFormat(inputColor, format)
-    {
-        setColor(inputColor, format);
-        spectrum._formatViewSwitch();
-        TestRunner.addResult(spectrum._colorFormat);
-        spectrum._formatViewSwitch();
-        TestRunner.addResult(spectrum._colorFormat);
-    }
+  function checkNextFormat(inputColor, format) {
+    setColor(inputColor, format);
+    spectrum._formatViewSwitch();
+    TestRunner.addResult(spectrum._colorFormat);
+    spectrum._formatViewSwitch();
+    TestRunner.addResult(spectrum._colorFormat);
+  }
 
-    var spectrum = new ColorPicker.Spectrum();
-    var cf = Common.Color.Format;
-    var inputColors = [
-        { string: "red", format: cf.Nickname },
-        { string: "#ABC", format: cf.ShortHEX },
-        { string: "#ABCA", format: cf.ShortHEXA },
-        { string: "#ABCDEF", format: cf.HEX },
-        { string: "#ABCDEFAA", format: cf.HEXA },
-        { string: "rgb(1, 2, 3)", format: cf.RGB },
-        { string: "rgba(1, 2, 3, 0.2)", format: cf.RGB },
-        { string: "hsl(1, 100%, 50%)", format: cf.HSL },
-        { string: "hsla(1, 100%, 50%, 0.2)", format: cf.HSLA }];
+  var spectrum = new ColorPicker.Spectrum();
+  var cf = Common.Color.Format;
+  var inputColors = [
+    {string: 'red', format: cf.Nickname}, {string: '#ABC', format: cf.ShortHEX},
+    {string: '#ABCA', format: cf.ShortHEXA}, {string: '#ABCDEF', format: cf.HEX},
+    {string: '#ABCDEFAA', format: cf.HEXA}, {string: 'rgb(1, 2, 3)', format: cf.RGB},
+    {string: 'rgba(1, 2, 3, 0.2)', format: cf.RGB}, {string: 'hsl(1, 100%, 50%)', format: cf.HSL},
+    {string: 'hsla(1, 100%, 50%, 0.2)', format: cf.HSLA}
+  ];
 
-    TestRunner.addResult("--- Testing colorString()");
-    for (var color of inputColors)
-        checkColorString(color.string, color.format);
+  TestRunner.addResult('--- Testing colorString()');
+  for (var color of inputColors)
+    checkColorString(color.string, color.format);
 
-    TestRunner.addResult("--- Testing alpha changes");
-    for (var color of inputColors)
-        checkAlphaChange(color.string, color.format);
+  TestRunner.addResult('--- Testing alpha changes');
+  for (var color of inputColors)
+    checkAlphaChange(color.string, color.format);
 
-    TestRunner.addResult("--- Testing _formatViewSwitch()");
-    for (var color of inputColors)
-        checkNextFormat(color.string, color.format);
+  TestRunner.addResult('--- Testing _formatViewSwitch()');
+  for (var color of inputColors)
+    checkNextFormat(color.string, color.format);
 
-    TestRunner.completeTest();
-}
+  TestRunner.completeTest();
+};
 
 </script>
 </head>

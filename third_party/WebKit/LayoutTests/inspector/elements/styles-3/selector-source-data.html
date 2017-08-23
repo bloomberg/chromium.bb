@@ -15,20 +15,18 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.nodeWithId("inspected", nodeFound);
+function test() {
+  ElementsTestRunner.nodeWithId('inspected', nodeFound);
 
-    async function nodeFound(node)
-    {
-        var response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
-        if (response[Protocol.Error]) {
-            TestRunner.addResult("Failed to get styles: " + response[Protocol.Error]);
-            return;
-        }
-        ElementsTestRunner.dumpRuleMatchesArray(response.matchedCSSRules);
-        TestRunner.completeTest();
+  async function nodeFound(node) {
+    var response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
+    if (response[Protocol.Error]) {
+      TestRunner.addResult('Failed to get styles: ' + response[Protocol.Error]);
+      return;
     }
+    ElementsTestRunner.dumpRuleMatchesArray(response.matchedCSSRules);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

@@ -61,16 +61,15 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    var list = ["circle", "insetSimpleRound", "insetComplexRound", "ellipse", "contentBox", "polygon", "raster"];
-    var index = 0;
-    function nextNode()
-    {
-        var nodeId = String(list[index++]);
-        ElementsTestRunner.dumpInspectorHighlightJSON(nodeId, (index == list.length)  ? TestRunner.completeTest.bind(InspectorTest): nextNode);
-    }
-    nextNode();
+function test() {
+  var list = ['circle', 'insetSimpleRound', 'insetComplexRound', 'ellipse', 'contentBox', 'polygon', 'raster'];
+  var index = 0;
+  function nextNode() {
+    var nodeId = String(list[index++]);
+    ElementsTestRunner.dumpInspectorHighlightJSON(
+        nodeId, (index == list.length) ? TestRunner.completeTest.bind(InspectorTest) : nextNode);
+  }
+  nextNode();
 }
 
 </script>

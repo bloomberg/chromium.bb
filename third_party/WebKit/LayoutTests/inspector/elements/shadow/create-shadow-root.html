@@ -18,50 +18,42 @@ function createShadowRootV1(containerId, id, mode)
     root.innerHTML = "<div id='" + id + "'></div>";
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testCreateShadowRoot(next)
-        {
-            testShadowRoot("container", "createShadowRoot('shadow-1')", next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function testCreateShadowRoot(next) {
+      testShadowRoot('container', 'createShadowRoot(\'shadow-1\')', next);
+    },
 
-        function testCreateSecondShadowRoot(next)
-        {
-            testShadowRoot("container", "createShadowRoot('shadow-2')", next);
-        },
+    function testCreateSecondShadowRoot(next) {
+      testShadowRoot('container', 'createShadowRoot(\'shadow-2\')', next);
+    },
 
-        function testCreateOpenShadowRoot(next)
-        {
-            testShadowRoot("containerOpen", "createShadowRootV1('containerOpen', 'shadow-3', 'open')", next);
-        },
+    function testCreateOpenShadowRoot(next) {
+      testShadowRoot('containerOpen', 'createShadowRootV1(\'containerOpen\', \'shadow-3\', \'open\')', next);
+    },
 
-        function testCreateCloseShadowRoot(next)
-        {
-            testShadowRoot("containerClosed", "createShadowRootV1('containerClosed', 'shadow-4', 'closed')", next);
-        },
-    ]);
+    function testCreateCloseShadowRoot(next) {
+      testShadowRoot('containerClosed', 'createShadowRootV1(\'containerClosed\', \'shadow-4\', \'closed\')', next);
+    },
+  ]);
 
-    function testShadowRoot(containerId, code, next)
-    {
-        var containerNode;
-        ElementsTestRunner.expandElementsTree(dumpBefore);
+  function testShadowRoot(containerId, code, next) {
+    var containerNode;
+    ElementsTestRunner.expandElementsTree(dumpBefore);
 
-        function dumpBefore()
-        {
-            containerNode = ElementsTestRunner.expandedNodeWithId(containerId);
-            TestRunner.addResult("==== before ====");
-            ElementsTestRunner.dumpElementsTree(containerNode);
-            TestRunner.evaluateInPage(code, ElementsTestRunner.expandElementsTree.bind(InspectorTest, dumpAfter));
-        }
-
-        function dumpAfter()
-        {
-            TestRunner.addResult("==== after ====");
-            ElementsTestRunner.dumpElementsTree(containerNode);
-            next();
-        }
+    function dumpBefore() {
+      containerNode = ElementsTestRunner.expandedNodeWithId(containerId);
+      TestRunner.addResult('==== before ====');
+      ElementsTestRunner.dumpElementsTree(containerNode);
+      TestRunner.evaluateInPage(code, ElementsTestRunner.expandElementsTree.bind(InspectorTest, dumpAfter));
     }
+
+    function dumpAfter() {
+      TestRunner.addResult('==== after ====');
+      ElementsTestRunner.dumpElementsTree(containerNode);
+      next();
+    }
+  }
 }
 
 </script>

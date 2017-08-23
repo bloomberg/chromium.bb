@@ -8,32 +8,27 @@ var initialize_AdditionalPreload = function() {
     InspectorTest.preloadModule("source_frame");
 }
 
-function test()
-{
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('nested', step1);
 
-    ElementsTestRunner.selectNodeAndWaitForStyles("nested", step1);
+  function step1() {
+    var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem('font-weight');
+    TestRunner.addResult('Before disable');
+    ElementsTestRunner.dumpSelectedElementStyles(true);
 
-    function step1()
-    {
-        var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem("font-weight");
-        TestRunner.addResult("Before disable");
-        ElementsTestRunner.dumpSelectedElementStyles(true);
+    ElementsTestRunner.selectNodeAndWaitForStyles('container', step2);
+  }
 
-        ElementsTestRunner.selectNodeAndWaitForStyles("container", step2);
-    }
+  function step2() {
+    ElementsTestRunner.toggleStyleProperty('font-weight', false);
+    ElementsTestRunner.selectNodeAndWaitForStyles('nested', step3);
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.toggleStyleProperty("font-weight", false);
-        ElementsTestRunner.selectNodeAndWaitForStyles("nested", step3);
-    }
-
-    function step3()
-    {
-        TestRunner.addResult("After disable:");
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        TestRunner.completeTest();
-    }
+  function step3() {
+    TestRunner.addResult('After disable:');
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

@@ -19,30 +19,26 @@
 </style>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function selectNodeWithPseudoElements(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("pseudo", next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function selectNodeWithPseudoElements(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('pseudo', next);
+    },
 
-        function testPseudoSectionPropertyEdit(next)
-        {
-            var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("pseudo-property");
-            var treeElement = treeItem.section().addNewBlankProperty(1);
-            ElementsTestRunner.waitForStyleApplied(onPropertyInserted);
-            treeElement.applyStyleText("PROPERTY: INSERTED;", true);
+    function testPseudoSectionPropertyEdit(next) {
+      var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('pseudo-property');
+      var treeElement = treeItem.section().addNewBlankProperty(1);
+      ElementsTestRunner.waitForStyleApplied(onPropertyInserted);
+      treeElement.applyStyleText('PROPERTY: INSERTED;', true);
 
-            function onPropertyInserted()
-            {
-                TestRunner.addResult("\n\n#### AFTER PROPERTY INSERTED ####\n\n");
-                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-                var rules = ElementsTestRunner.getMatchedRules();
-                ElementsTestRunner.validateRuleRanges("pseudo", rules, next);
-            }
-        }
-    ]);
+      function onPropertyInserted() {
+        TestRunner.addResult('\n\n#### AFTER PROPERTY INSERTED ####\n\n');
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        var rules = ElementsTestRunner.getMatchedRules();
+        ElementsTestRunner.validateRuleRanges('pseudo', rules, next);
+      }
+    }
+  ]);
 }
 </script>
 <link rel="stylesheet" href="../styles/resources/styles-update-links-2.css"></link>

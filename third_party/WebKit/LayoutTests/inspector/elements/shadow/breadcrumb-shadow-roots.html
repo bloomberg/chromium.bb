@@ -15,58 +15,48 @@ function loaded()
     runTest();
 }
 
-function test()
-{
-    Common.settingForTest("showUAShadowDOM").set(true);
-    ElementsTestRunner.expandElementsTree(step0);
+function test() {
+  Common.settingForTest('showUAShadowDOM').set(true);
+  ElementsTestRunner.expandElementsTree(step0);
 
-    function step0()
-    {
-        selectNode(matchUserAgentShadowRoot, step1);
-    }
+  function step0() {
+    selectNode(matchUserAgentShadowRoot, step1);
+  }
 
-    function step1()
-    {
-        ElementsTestRunner.dumpBreadcrumb("User-agent shadow root breadcrumb");
-        selectNode(matchOpenShadowRoot, step2);
-    }
+  function step1() {
+    ElementsTestRunner.dumpBreadcrumb('User-agent shadow root breadcrumb');
+    selectNode(matchOpenShadowRoot, step2);
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.dumpBreadcrumb("Open shadow root breadcrumb");
-        selectNode(matchClosedShadowRoot, step3);
-    }
+  function step2() {
+    ElementsTestRunner.dumpBreadcrumb('Open shadow root breadcrumb');
+    selectNode(matchClosedShadowRoot, step3);
+  }
 
-    function step3()
-    {
-        ElementsTestRunner.dumpBreadcrumb("Closed shadow root breadcrumb");
-        TestRunner.completeTest();
-    }
+  function step3() {
+    ElementsTestRunner.dumpBreadcrumb('Closed shadow root breadcrumb');
+    TestRunner.completeTest();
+  }
 
-    function selectNode(matchFunction, next)
-    {
-        ElementsTestRunner.findNode(matchFunction, callback);
-        function callback(node)
-        {
-            TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", next);
-            Common.Revealer.revealPromise(node);
-        }
+  function selectNode(matchFunction, next) {
+    ElementsTestRunner.findNode(matchFunction, callback);
+    function callback(node) {
+      TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, 'update', next);
+      Common.Revealer.revealPromise(node);
     }
+  }
 
-    function matchUserAgentShadowRoot(node)
-    {
-        return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent;
-    }
+  function matchUserAgentShadowRoot(node) {
+    return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent;
+  }
 
-    function matchOpenShadowRoot(node)
-    {
-        return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Open;
-    }
+  function matchOpenShadowRoot(node) {
+    return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Open;
+  }
 
-    function matchClosedShadowRoot(node)
-    {
-        return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
-    }
+  function matchClosedShadowRoot(node) {
+    return node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
+  }
 }
 
 </script>

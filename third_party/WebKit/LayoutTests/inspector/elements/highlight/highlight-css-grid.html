@@ -45,16 +45,15 @@ function onload()
     runTest();
 }
 
-async function test()
-{
-    function dumpGridHighlight(id) {
-        return new Promise(resolve => ElementsTestRunner.dumpInspectorHighlightJSON(id, resolve));
-    }
+async function test() {
+  function dumpGridHighlight(id) {
+    return new Promise(resolve => ElementsTestRunner.dumpInspectorHighlightJSON(id, resolve));
+  }
 
-    await dumpGridHighlight('paddedGrid');
-    await dumpGridHighlight('nestedGrid');
+  await dumpGridHighlight('paddedGrid');
+  await dumpGridHighlight('nestedGrid');
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

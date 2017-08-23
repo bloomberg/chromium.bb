@@ -5,35 +5,29 @@
 <script src="./elements-panel-shadow-selection-on-refresh.js"></script>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function setup(next)
-        {
-            Common.settingForTest("showUAShadowDOM").set(true);
-            ElementsTestRunner.expandElementsTree(next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function setup(next) {
+      Common.settingForTest('showUAShadowDOM').set(true);
+      ElementsTestRunner.expandElementsTree(next);
+    },
 
-        function testOpenShadowRoot(next)
-        {
-            ElementsTestRunner.findNode(isOpenShadowRoot, ElementsTestRunner.selectReloadAndDump.bind(null, next));
-        },
+    function testOpenShadowRoot(next) {
+      ElementsTestRunner.findNode(isOpenShadowRoot, ElementsTestRunner.selectReloadAndDump.bind(null, next));
+    },
 
-        function testClosedShadowRoot(next)
-        {
-            ElementsTestRunner.findNode(isClosedShadowRoot, ElementsTestRunner.selectReloadAndDump.bind(null, next));
-        },
-    ]);
+    function testClosedShadowRoot(next) {
+      ElementsTestRunner.findNode(isClosedShadowRoot, ElementsTestRunner.selectReloadAndDump.bind(null, next));
+    },
+  ]);
 
-    function isOpenShadowRoot(node)
-    {
-        return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Open;
-    }
+  function isOpenShadowRoot(node) {
+    return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Open;
+  }
 
-    function isClosedShadowRoot(node)
-    {
-        return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
-    }
+  function isClosedShadowRoot(node) {
+    return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
+  }
 }
 
 </script>

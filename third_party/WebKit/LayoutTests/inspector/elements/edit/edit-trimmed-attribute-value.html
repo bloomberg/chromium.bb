@@ -4,32 +4,31 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeWithId("inspected", execute);
+function test() {
+  ElementsTestRunner.selectNodeWithId('inspected', execute);
 
-    function execute()
-    {
-        var treeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(ElementsTestRunner.expandedNodeWithId("inspected"));
-        var textElement = treeElement.listItemElement.getElementsByClassName("webkit-html-attribute")[0];
-        TestRunner.addResult("Original textContent");
-        TestRunner.addResult(treeElement.title.textContent);
+  function execute() {
+    var treeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(
+        ElementsTestRunner.expandedNodeWithId('inspected'));
+    var textElement = treeElement.listItemElement.getElementsByClassName('webkit-html-attribute')[0];
+    TestRunner.addResult('Original textContent');
+    TestRunner.addResult(treeElement.title.textContent);
 
-        treeElement._startEditingTarget(textElement);
-        TestRunner.addResult("textContent when editing 'href'");
-        TestRunner.addResult(treeElement.title.textContent);
+    treeElement._startEditingTarget(textElement);
+    TestRunner.addResult('textContent when editing \'href\'');
+    TestRunner.addResult(treeElement.title.textContent);
 
-        eventSender.keyDown("Tab");
-        TestRunner.addResult("textContent after moving to 'id'");
-        TestRunner.addResult(treeElement.title.textContent);
+    eventSender.keyDown('Tab');
+    TestRunner.addResult('textContent after moving to \'id\'');
+    TestRunner.addResult(treeElement.title.textContent);
 
-        textElement = treeElement.listItemElement.getElementsByClassName("webkit-html-attribute")[1];
-        textElement.dispatchEvent(TestRunner.createKeyEvent("Escape"));
-        TestRunner.addResult("textContent after canceling the edit (equal to the original one)");
-        TestRunner.addResult(treeElement.title.textContent);
+    textElement = treeElement.listItemElement.getElementsByClassName('webkit-html-attribute')[1];
+    textElement.dispatchEvent(TestRunner.createKeyEvent('Escape'));
+    TestRunner.addResult('textContent after canceling the edit (equal to the original one)');
+    TestRunner.addResult(treeElement.title.textContent);
 
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 
 </script>

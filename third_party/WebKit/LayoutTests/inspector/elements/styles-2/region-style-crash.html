@@ -13,15 +13,13 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("p1", dumpAllStyles);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('p1', dumpAllStyles);
 
-    function dumpAllStyles()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles();
-        TestRunner.completeTest();
-    }
+  function dumpAllStyles() {
+    ElementsTestRunner.dumpSelectedElementStyles();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

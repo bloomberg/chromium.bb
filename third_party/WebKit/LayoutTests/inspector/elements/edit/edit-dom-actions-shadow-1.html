@@ -5,30 +5,27 @@
 <script src="edit-dom-test.js"></script>
 <script>
 
-function test()
-{
-    // Save time on style updates.
-    UI.viewManager.showView("elements");
+function test() {
+  // Save time on style updates.
+  UI.viewManager.showView('elements');
 
-    Elements.StylesSidebarPane.prototype.update = function() {};
-    Elements.MetricsSidebarPane.prototype.update = function() {};
+  Elements.StylesSidebarPane.prototype.update = function() {};
+  Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    TestRunner.runTestSuite([
-        function testSetUp(next)
-        {
-            ElementsTestRunner.expandElementsTree(next);
-        },
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      ElementsTestRunner.expandElementsTree(next);
+    },
 
-        function testSetAuthorShadowDOMElementAttribute(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testSetAuthorShadowDOMElementAttribute", "shadow-node-to-set-attribute", testBody, next);
+    function testSetAuthorShadowDOMElementAttribute(next) {
+      ElementsTestRunner.domActionTestForNodeId(
+          'testSetAuthorShadowDOMElementAttribute', 'shadow-node-to-set-attribute', testBody, next);
 
-            function testBody(node, done)
-            {
-                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
-            }
-        },
-    ]);
+      function testBody(node, done) {
+        ElementsTestRunner.editNodePartAndRun(node, 'webkit-html-attribute', 'bar="edited attribute"', done, true);
+      }
+    },
+  ]);
 }
 
 </script>

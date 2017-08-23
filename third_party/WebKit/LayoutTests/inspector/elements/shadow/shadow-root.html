@@ -4,13 +4,12 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.expandElementsTree(function() {
-        var container = ElementsTestRunner.expandedNodeWithId("container");
-        ElementsTestRunner.dumpElementsTree(container);
-        TestRunner.completeTest();
-    });
+function test() {
+  ElementsTestRunner.expandElementsTree(function() {
+    var container = ElementsTestRunner.expandedNodeWithId('container');
+    ElementsTestRunner.dumpElementsTree(container);
+    TestRunner.completeTest();
+  });
 }
 </script>
 </head>

@@ -3,16 +3,16 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-async function test()
-{
-    var result = await TestRunner.RuntimeAgent.evaluate("var doc = document.implementation.createHTMLDocument(''); doc.lastChild.innerHTML = '<span></span>'; doc.lastChild");
+async function test() {
+  var result = await TestRunner.RuntimeAgent.evaluate(
+      'var doc = document.implementation.createHTMLDocument(\'\'); doc.lastChild.innerHTML = \'<span></span>\'; doc.lastChild');
 
-    var spanWrapper = TestRunner.runtimeModel.createRemoteObject(result);
-    var node = await TestRunner.domModel.pushObjectAsNodeToFrontend(spanWrapper);
-    TestRunner.assertTrue(node, "Node object should be resovled");
-    var remoteObject = await node.resolveToObject();
-    TestRunner.addResult("Alien node should resolve to null: " + remoteObject);
-    TestRunner.completeTest();
+  var spanWrapper = TestRunner.runtimeModel.createRemoteObject(result);
+  var node = await TestRunner.domModel.pushObjectAsNodeToFrontend(spanWrapper);
+  TestRunner.assertTrue(node, 'Node object should be resovled');
+  var remoteObject = await node.resolveToObject();
+  TestRunner.addResult('Alien node should resolve to null: ' + remoteObject);
+  TestRunner.completeTest();
 }
 
 </script>

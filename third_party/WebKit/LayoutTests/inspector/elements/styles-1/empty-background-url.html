@@ -4,15 +4,13 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <link rel="stylesheet" href="../styles/resources/empty-background-url.css">
 <script>
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("inspected", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('inspected', step1);
 
-    function step1()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true, false);
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, false);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

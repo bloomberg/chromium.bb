@@ -8,7 +8,7 @@ Tests that elements panel shows all types of elements in the correct case.
           <script src="../../http/tests/inspector/inspector-test.js"></script>
           <script src="../../http/tests/inspector/elements-test.js"></script>
         - <script>
-              function test()\n{\n    ElementsTestRunner.expandElementsTree(step1);\n\n    function step1()\n    {\n        ElementsTestRunner.dumpElementsTree();\n        TestRunner.completeTest();\n    }\n}\n
+              function test() {\n  ElementsTestRunner.expandElementsTree(step1);\n\n  function step1() {\n    ElementsTestRunner.dumpElementsTree();\n    TestRunner.completeTest();\n  }\n}\n
           </script>
       </head>
     - <body onload="runTest()">

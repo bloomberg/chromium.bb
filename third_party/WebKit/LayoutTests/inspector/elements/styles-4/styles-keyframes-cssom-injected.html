@@ -11,10 +11,9 @@ function injectAnimation()
     styleSheet.insertRule("@keyframes injected { 0% {opacity:0} 100% {opacity:1} }", 0);
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("injectAnimation()");
-    ElementsTestRunner.selectNodeAndWaitForStyles("element", TestRunner.completeTest.bind(InspectorTest));
+function test() {
+  TestRunner.evaluateInPage('injectAnimation()');
+  ElementsTestRunner.selectNodeAndWaitForStyles('element', TestRunner.completeTest.bind(InspectorTest));
 }
 </script>
 </head>

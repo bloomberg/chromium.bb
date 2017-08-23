@@ -12,10 +12,9 @@ function performActions()
         testDiv.style.visibility = "";
 }
 
-function test()
-{
-    UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
-    PerformanceTestRunner.performActionsAndPrint("performActions()", "RecalculateStyles");
+function test() {
+  UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
+  PerformanceTestRunner.performActionsAndPrint('performActions()', 'RecalculateStyles');
 }
 
 </script>

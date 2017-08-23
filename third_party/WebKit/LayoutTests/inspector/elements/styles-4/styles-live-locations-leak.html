@@ -20,54 +20,49 @@
 }
 </style>
 <script>
-function test()
-{
-    var initialLiveLocationsCount;
-    TestRunner.runTestSuite([
-        function selectInitialNode(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("first", next);
-        },
+function test() {
+  var initialLiveLocationsCount;
+  TestRunner.runTestSuite([
+    function selectInitialNode(next) {
+      ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('first', next);
+    },
 
-        function saveInitialLiveLocationsCount(next)
-        {
-            initialLiveLocationsCount = countLiveLocations();
-            next();
-        },
+    function saveInitialLiveLocationsCount(next) {
+      initialLiveLocationsCount = countLiveLocations();
+      next();
+    },
 
-        function rebuildStylesSidebarPaneMultipleTimes(next)
-        {
-            var elementsToSelect = ["second", "third", "second", "first", "third", "first"];
-            function loopThroughElements()
-            {
-                if (!elementsToSelect.length) {
-                    next();
-                    return;
-                }
-                ElementsTestRunner.selectNodeAndWaitForStylesWithComputed(elementsToSelect.shift(), loopThroughElements);
-            }
-            loopThroughElements();
-        },
-
-        function compareLiveLocationsCount(next)
-        {
-            var liveLocationsCount = countLiveLocations();
-            if (liveLocationsCount !== initialLiveLocationsCount)
-                TestRunner.addResult(String.sprintf("ERROR: LiveLocations count is growing! Expected: %d found: %d", initialLiveLocationsCount, liveLocationsCount));
-            else
-                TestRunner.addResult("SUCCESS: LiveLocations count do not grow.");
-            next();
+    function rebuildStylesSidebarPaneMultipleTimes(next) {
+      var elementsToSelect = ['second', 'third', 'second', 'first', 'third', 'first'];
+      function loopThroughElements() {
+        if (!elementsToSelect.length) {
+          next();
+          return;
         }
-    ]);
+        ElementsTestRunner.selectNodeAndWaitForStylesWithComputed(elementsToSelect.shift(), loopThroughElements);
+      }
+      loopThroughElements();
+    },
 
-    function countLiveLocations()
-    {
-        var locationsCount = 0;
-        var modelInfos = Bindings.cssWorkspaceBinding._modelToInfo.valuesArray();
-        for (var modelInfo of modelInfos)
-            locationsCount += modelInfo._locations.valuesArray().length;
-        return locationsCount;
+    function compareLiveLocationsCount(next) {
+      var liveLocationsCount = countLiveLocations();
+      if (liveLocationsCount !== initialLiveLocationsCount)
+        TestRunner.addResult(String.sprintf(
+            'ERROR: LiveLocations count is growing! Expected: %d found: %d', initialLiveLocationsCount,
+            liveLocationsCount));
+      else
+        TestRunner.addResult('SUCCESS: LiveLocations count do not grow.');
+      next();
     }
+  ]);
+
+  function countLiveLocations() {
+    var locationsCount = 0;
+    var modelInfos = Bindings.cssWorkspaceBinding._modelToInfo.valuesArray();
+    for (var modelInfo of modelInfos)
+      locationsCount += modelInfo._locations.valuesArray().length;
+    return locationsCount;
+  }
 }
 
 </script>

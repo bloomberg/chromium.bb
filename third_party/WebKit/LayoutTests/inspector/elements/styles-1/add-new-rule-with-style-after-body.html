@@ -10,43 +10,38 @@ function addStyle()
     style.sheet.insertRule("foo {display: none;}", 0);
 }
 
-function test()
-{
-    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetAdded);
-    TestRunner.evaluateInPage("addStyle()");
+function test() {
+  TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetAdded);
+  TestRunner.evaluateInPage('addStyle()');
 
-    function stylesheetAdded()
-    {
-        TestRunner.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetAdded);
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
-    }
+  function stylesheetAdded() {
+    TestRunner.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetAdded, stylesheetAdded);
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
+  }
 
-    var treeElement;
-    var hasResourceChanged;
+  var treeElement;
+  var hasResourceChanged;
 
-    function step1()
-    {
-        ElementsTestRunner.addNewRule("inspected", step2);
-    }
+  function step1() {
+    ElementsTestRunner.addNewRule('inspected', step2);
+  }
 
-    function step2()
-    {
-        var section = ElementsTestRunner.firstMatchedStyleSection();
-        var newProperty = section.addNewBlankProperty();
-        newProperty.startEditing();
-        newProperty.nameElement.textContent = "color";
-        newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        newProperty.valueElement.textContent = "maroon";
-        newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        ElementsTestRunner.waitForStyles("inspected", step3);
-    }
+  function step2() {
+    var section = ElementsTestRunner.firstMatchedStyleSection();
+    var newProperty = section.addNewBlankProperty();
+    newProperty.startEditing();
+    newProperty.nameElement.textContent = 'color';
+    newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    newProperty.valueElement.textContent = 'maroon';
+    newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    ElementsTestRunner.waitForStyles('inspected', step3);
+  }
 
-    function step3()
-    {
-        TestRunner.addResult("After adding new rule:");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        TestRunner.completeTest();
-    }
+  function step3() {
+    TestRunner.addResult('After adding new rule:');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

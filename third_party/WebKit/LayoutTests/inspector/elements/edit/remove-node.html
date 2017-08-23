@@ -15,79 +15,66 @@ function removeTextNode(id)
     document.getElementById(id).textContent = "";
 }
 
-function test()
-{
-    var containerNode;
+function test() {
+  var containerNode;
 
-    TestRunner.runTestSuite([
-        function testDumpInitial(next)
-        {
-            function callback(node)
-            {
-                containerNode = ElementsTestRunner.expandedNodeWithId("container");
+  TestRunner.runTestSuite([
+    function testDumpInitial(next) {
+      function callback(node) {
+        containerNode = ElementsTestRunner.expandedNodeWithId('container');
 
-                TestRunner.addResult("========= Original ========");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            ElementsTestRunner.expandElementsTree(callback);
-        },
+        TestRunner.addResult('========= Original ========');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      ElementsTestRunner.expandElementsTree(callback);
+    },
 
-        function testRemoveTextNode(next)
-        {
-            function callback()
-            {
-                TestRunner.addResult("===== Removed Text node =====");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            TestRunner.evaluateInPage("removeTextNode('child1')", callback);
-        },
+    function testRemoveTextNode(next) {
+      function callback() {
+        TestRunner.addResult('===== Removed Text node =====');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      TestRunner.evaluateInPage('removeTextNode(\'child1\')', callback);
+    },
 
-        function testRemoveFirst(next)
-        {
-            function callback()
-            {
-                TestRunner.addResult("===== Removed first =====");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            TestRunner.evaluateInPage("removeNode('child1')", callback);
-        },
+    function testRemoveFirst(next) {
+      function callback() {
+        TestRunner.addResult('===== Removed first =====');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      TestRunner.evaluateInPage('removeNode(\'child1\')', callback);
+    },
 
-        function testRemoveMiddle(next)
-        {
-            function callback()
-            {
-                TestRunner.addResult("===== Removed middle =====");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            TestRunner.evaluateInPage("removeNode('child3')", callback);
-        },
+    function testRemoveMiddle(next) {
+      function callback() {
+        TestRunner.addResult('===== Removed middle =====');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      TestRunner.evaluateInPage('removeNode(\'child3\')', callback);
+    },
 
-        function testRemoveLast(next)
-        {
-            function callback()
-            {
-                TestRunner.addResult("===== Removed last =====");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            TestRunner.evaluateInPage("removeNode('child4')", callback);
-        },
+    function testRemoveLast(next) {
+      function callback() {
+        TestRunner.addResult('===== Removed last =====');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      TestRunner.evaluateInPage('removeNode(\'child4\')', callback);
+    },
 
-        function testRemoveTheOnly(next)
-        {
-            function callback()
-            {
-                TestRunner.addResult("===== Removed the only =====");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            TestRunner.evaluateInPage("removeNode('child2')", callback);
-        }
-    ]);
+    function testRemoveTheOnly(next) {
+      function callback() {
+        TestRunner.addResult('===== Removed the only =====');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      TestRunner.evaluateInPage('removeNode(\'child2\')', callback);
+    }
+  ]);
 }
 
 </script>

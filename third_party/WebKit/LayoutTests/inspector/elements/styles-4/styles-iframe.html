@@ -18,29 +18,25 @@ function loadIframe()
     document.getElementById("main").appendChild(iframe);
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("loadIframe()");
-    ConsoleTestRunner.addConsoleSniffer(step0);
+function test() {
+  TestRunner.evaluateInPage('loadIframe()');
+  ConsoleTestRunner.addConsoleSniffer(step0);
 
-    function step0()
-    {
-        ElementsTestRunner.selectNodeAndWaitForStyles("main", step1);
-    }
+  function step0() {
+    ElementsTestRunner.selectNodeAndWaitForStyles('main', step1);
+  }
 
-    function step1()
-    {
-        TestRunner.addResult("Main frame style:");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        ElementsTestRunner.selectNodeAndWaitForStyles("iframeBody", step2);
-    }
+  function step1() {
+    TestRunner.addResult('Main frame style:');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    ElementsTestRunner.selectNodeAndWaitForStyles('iframeBody', step2);
+  }
 
-    function step2()
-    {
-        TestRunner.addResult("iframe style:");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        TestRunner.completeTest();
-    }
+  function step2() {
+    TestRunner.addResult('iframe style:');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

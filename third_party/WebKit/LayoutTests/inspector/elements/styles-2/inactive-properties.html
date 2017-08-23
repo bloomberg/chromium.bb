@@ -4,15 +4,13 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("inspected", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('inspected', step1);
 
-    function step1()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(false, false);
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles(false, false);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

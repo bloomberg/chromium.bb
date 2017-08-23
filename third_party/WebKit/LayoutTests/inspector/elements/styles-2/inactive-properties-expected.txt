@@ -4,13 +4,13 @@ Test
 display: block;
     block - div user agent stylesheet
 text-align: right;
-    right - #inspected inactive-properties.html:20 -> inactive-properties.html:20:13
+    right - #inspected inactive-properties.html:18 -> inactive-properties.html:18:13
     OVERLOADED -webkit-left - element.style
 [expanded] 
 element.style { ()
 
 [expanded] 
-#inspected { (inactive-properties.html:20 -> inactive-properties.html:20:13)
+#inspected { (inactive-properties.html:18 -> inactive-properties.html:18:13)
 /-- overloaded --/     text-align: left;
 /-- overloaded --/     text-align: bar;
     text-align: right;

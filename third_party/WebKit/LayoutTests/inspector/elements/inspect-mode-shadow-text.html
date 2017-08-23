@@ -17,23 +17,22 @@ function click()
     }
 }
 
-function test()
-{
-    TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
+function test() {
+  TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
 
-    function step2()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
-        TestRunner.evaluateInPage("click()");
-    }
+  function step2() {
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+    TestRunner.evaluateInPage('click()');
+  }
 
-    function step3()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
-        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
-        TestRunner.addResult("Node selected: " + selectedElement.node().getAttribute("id"));
-        TestRunner.completeTest();
-    }
+  function step3() {
+    ElementsTestRunner.firstElementsTreeOutline().removeEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+    var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
+    TestRunner.addResult('Node selected: ' + selectedElement.node().getAttribute('id'));
+    TestRunner.completeTest();
+  }
 }
 
 </script>

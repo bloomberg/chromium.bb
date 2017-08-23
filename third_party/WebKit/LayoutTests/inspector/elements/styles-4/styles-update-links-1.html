@@ -19,31 +19,27 @@
 </style>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function selectInitialNode(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("container", next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function selectInitialNode(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('container', next);
+    },
 
-        function testInsertProperty(next)
-        {
-            ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-            var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
-            var treeElement = treeItem.section().addNewBlankProperty(1);
-            ElementsTestRunner.waitForStyleApplied(onPropertyInserted);
-            treeElement.applyStyleText("PROPERTY: INSERTED;", true);
+    function testInsertProperty(next) {
+      ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+      var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
+      var treeElement = treeItem.section().addNewBlankProperty(1);
+      ElementsTestRunner.waitForStyleApplied(onPropertyInserted);
+      treeElement.applyStyleText('PROPERTY: INSERTED;', true);
 
-            function onPropertyInserted()
-            {
-                TestRunner.addResult("\n\n#### AFTER PROPERTY INSERTION ####\n\n");
-                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-                var rules = ElementsTestRunner.getMatchedRules();
-                ElementsTestRunner.validateRuleRanges("container", rules, next);
-            }
-        }
-    ]);
+      function onPropertyInserted() {
+        TestRunner.addResult('\n\n#### AFTER PROPERTY INSERTION ####\n\n');
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        var rules = ElementsTestRunner.getMatchedRules();
+        ElementsTestRunner.validateRuleRanges('container', rules, next);
+      }
+    }
+  ]);
 }
 </script>
 <link rel="stylesheet" href="../styles/resources/styles-update-links-2.css"></link>

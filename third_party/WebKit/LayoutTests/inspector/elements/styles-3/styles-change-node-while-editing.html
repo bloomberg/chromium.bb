@@ -4,35 +4,31 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
-    var treeElement;
-    var section;
+  var treeElement;
+  var section;
 
-    function step1()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true, true, true);
-        treeElement = ElementsTestRunner.getElementStylePropertyTreeItem("color");
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, true, true);
+    treeElement = ElementsTestRunner.getElementStylePropertyTreeItem('color');
 
-        treeElement.startEditing();
-        treeElement.nameElement.textContent = "background";
+    treeElement.startEditing();
+    treeElement.nameElement.textContent = 'background';
 
-        ElementsTestRunner.selectNodeAndWaitForStyles("other", step2);
-    }
+    ElementsTestRunner.selectNodeAndWaitForStyles('other', step2);
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true, true, true);
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step3);
-    }
+  function step2() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, true, true);
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step3);
+  }
 
-    function step3()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true, true, true);
-        TestRunner.completeTest();
-    }
+  function step3() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, true, true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

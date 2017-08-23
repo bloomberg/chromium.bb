@@ -4,25 +4,21 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function init(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function init(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
+    },
 
-        function keyframesRuleSelector(next)
-        {
-            ElementsTestRunner.addNewRule("@-webkit-keyframes shake", callback);
+    function keyframesRuleSelector(next) {
+      ElementsTestRunner.addNewRule('@-webkit-keyframes shake', callback);
 
-            function callback()
-            {
-                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-                next();
-            }
-        }
-    ]);
+      function callback() {
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        next();
+      }
+    }
+  ]);
 }
 
 </script>

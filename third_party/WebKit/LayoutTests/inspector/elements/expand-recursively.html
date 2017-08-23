@@ -4,34 +4,32 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
-    ElementsTestRunner.findNode(function() { return false; }, firstStep);
-        
-    function firstStep()
-    {
-        TestRunner.addResult("===== Initial state of tree outline =====\n");
-        dump();
+function test() {
+  var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+  ElementsTestRunner.findNode(function() {
+    return false;
+  }, firstStep);
 
-        var topNode = treeOutline.rootElement().childAt(0).childAt(1).childAt(1);
-        topNode.expandRecursively();
-        TestRunner.deprecatedRunAfterPendingDispatches(secondStep);
-    };
-        
-    function secondStep()
-    {
-        TestRunner.addResult("\n===== State of tree outline after calling .expandRecursively() =====\n");
-        dump();
+  function firstStep() {
+    TestRunner.addResult('===== Initial state of tree outline =====\n');
+    dump();
 
-        TestRunner.completeTest();
-    };
+    var topNode = treeOutline.rootElement().childAt(0).childAt(1).childAt(1);
+    topNode.expandRecursively();
+    TestRunner.deprecatedRunAfterPendingDispatches(secondStep);
+  };
 
-    function dump()
-    {
-        var node = ElementsTestRunner.expandedNodeWithId("depth-1");
-        ElementsTestRunner.dumpElementsTree(node);
-    };
+  function secondStep() {
+    TestRunner.addResult('\n===== State of tree outline after calling .expandRecursively() =====\n');
+    dump();
+
+    TestRunner.completeTest();
+  };
+
+  function dump() {
+    var node = ElementsTestRunner.expandedNodeWithId('depth-1');
+    ElementsTestRunner.dumpElementsTree(node);
+  };
 }
 
 </script>

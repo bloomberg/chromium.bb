@@ -5,18 +5,16 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    // Warm up highlighter module.
-    runtime.loadModulePromise("source_frame").then(function() {
-        ElementsTestRunner.expandElementsTree(step1)
-    });
+function test() {
+  // Warm up highlighter module.
+  runtime.loadModulePromise('source_frame').then(function() {
+    ElementsTestRunner.expandElementsTree(step1);
+  });
 
-    function step1()
-    {
-        ElementsTestRunner.dumpElementsTree();
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ElementsTestRunner.dumpElementsTree();
+    TestRunner.completeTest();
+  }
 }
 
 function prepareTest()

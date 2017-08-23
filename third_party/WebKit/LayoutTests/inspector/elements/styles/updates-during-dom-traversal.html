@@ -4,35 +4,31 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    var updateCount = 0;
-    var keydownCount = 5;
+function test() {
+  var updateCount = 0;
+  var keydownCount = 5;
 
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", selectCallback);
-    function selectCallback()
-    {
-        TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffUpdate, true);
-        var element = ElementsTestRunner.firstElementsTreeOutline().element;
-        for (var i = 0; i < keydownCount; ++i)
-            element.dispatchEvent(TestRunner.createKeyEvent("ArrowUp"));
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', selectCallback);
+  function selectCallback() {
+    TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, '_innerRebuildUpdate', sniffUpdate, true);
+    var element = ElementsTestRunner.firstElementsTreeOutline().element;
+    for (var i = 0; i < keydownCount; ++i)
+      element.dispatchEvent(TestRunner.createKeyEvent('ArrowUp'));
 
-        TestRunner.deprecatedRunAfterPendingDispatches(completeCallback);
-    }
+    TestRunner.deprecatedRunAfterPendingDispatches(completeCallback);
+  }
 
-    function completeCallback()
-    {
-        if (updateCount >= keydownCount)
-            TestRunner.addResult("ERROR: got " + updateCount + " updates for " + keydownCount + " consecutive keydowns");
-        else
-            TestRunner.addResult("OK: updates throttled");
-        TestRunner.completeTest();
-    }
+  function completeCallback() {
+    if (updateCount >= keydownCount)
+      TestRunner.addResult('ERROR: got ' + updateCount + ' updates for ' + keydownCount + ' consecutive keydowns');
+    else
+      TestRunner.addResult('OK: updates throttled');
+    TestRunner.completeTest();
+  }
 
-    function sniffUpdate()
-    {
-        ++updateCount;
-    }
+  function sniffUpdate() {
+    ++updateCount;
+  }
 }
 
 </script>

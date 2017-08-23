@@ -23,56 +23,47 @@ function modifyViaRange()
     range.insertNode(span);
 }
 
-function test()
-{
-    var targetNode;
+function test() {
+  var targetNode;
 
-    TestRunner.runTestSuite([
-        function testDumpInitial(next)
-        {
-            function callback(node)
-            {
-                targetNode = node;
-                TestRunner.addResult("========= Original for normal mutation ========");
-                ElementsTestRunner.dumpElementsTree(targetNode);
-                next();
-            }
-            ElementsTestRunner.selectNodeWithId("node", callback);
-        },
+  TestRunner.runTestSuite([
+    function testDumpInitial(next) {
+      function callback(node) {
+        targetNode = node;
+        TestRunner.addResult('========= Original for normal mutation ========');
+        ElementsTestRunner.dumpElementsTree(targetNode);
+        next();
+      }
+      ElementsTestRunner.selectNodeWithId('node', callback);
+    },
 
-        function testSetAttribute(next)
-        {
-            function callback()
-            {
-                TestRunner.addResult("===== Mutated text node =====");
-                ElementsTestRunner.dumpElementsTree(targetNode);
-                next();
-            }
-            TestRunner.evaluateInPage("modifyChars()", callback);
-        },
+    function testSetAttribute(next) {
+      function callback() {
+        TestRunner.addResult('===== Mutated text node =====');
+        ElementsTestRunner.dumpElementsTree(targetNode);
+        next();
+      }
+      TestRunner.evaluateInPage('modifyChars()', callback);
+    },
 
-        function testModifyViaRange(next)
-        {
-            function callback()
-            {
-                TestRunner.addResult("===== Contents modified via Range =====");
-                ElementsTestRunner.dumpElementsTree(targetNode);
-                next();
-            }
-            function expandCallback()
-            {
-                ElementsTestRunner.expandElementsTree(callback);
-            }
-            function selectCallback(node)
-            {
-                targetNode = node;
-                TestRunner.addResult("========= Original for Range mutation ========");
-                ElementsTestRunner.dumpElementsTree(targetNode);
-                TestRunner.evaluateInPage("modifyViaRange()", expandCallback);
-            }
-            ElementsTestRunner.selectNodeWithId("rangenode", selectCallback);
-        }
-    ]);
+    function testModifyViaRange(next) {
+      function callback() {
+        TestRunner.addResult('===== Contents modified via Range =====');
+        ElementsTestRunner.dumpElementsTree(targetNode);
+        next();
+      }
+      function expandCallback() {
+        ElementsTestRunner.expandElementsTree(callback);
+      }
+      function selectCallback(node) {
+        targetNode = node;
+        TestRunner.addResult('========= Original for Range mutation ========');
+        ElementsTestRunner.dumpElementsTree(targetNode);
+        TestRunner.evaluateInPage('modifyViaRange()', expandCallback);
+      }
+      ElementsTestRunner.selectNodeWithId('rangenode', selectCallback);
+    }
+  ]);
 }
 
 </script>

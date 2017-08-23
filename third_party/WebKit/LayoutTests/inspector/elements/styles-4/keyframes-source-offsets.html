@@ -18,43 +18,46 @@
 </style>
 <script>
 
-function test()
-{
-    function dumpRule(rule)
-    {
-        TestRunner.addResult("\n" + rule.animationName.text + " @" + ElementsTestRunner.rangeText(rule.animationName.range));
-        for (var keyframe of rule.keyframes) {
-            TestRunner.addResult(keyframe.keyText.text + " @" + ElementsTestRunner.rangeText(keyframe.keyText.range)
-                + " {} @" + ElementsTestRunner.rangeText(keyframe.style.range));
-            var allProperties = keyframe.style.cssProperties;
-            for (var i = 0; i < allProperties.length; ++i) {
-                var property = allProperties[i];
-                if (!property.range)
-                    continue;
-                TestRunner.addResult(property.name + ":" + property.value + (property.important ? " !important" : "") + (("parsedOk" in property) ? " non-parsed" : "") +" @" + ElementsTestRunner.rangeText(property.range));
-            }
-        }
+function test() {
+  function dumpRule(rule) {
+    TestRunner.addResult(
+        '\n' + rule.animationName.text + ' @' + ElementsTestRunner.rangeText(rule.animationName.range));
+    for (var keyframe of rule.keyframes) {
+      TestRunner.addResult(
+          keyframe.keyText.text + ' @' + ElementsTestRunner.rangeText(keyframe.keyText.range) + ' {} @' +
+          ElementsTestRunner.rangeText(keyframe.style.range));
+      var allProperties = keyframe.style.cssProperties;
+      for (var i = 0; i < allProperties.length; ++i) {
+        var property = allProperties[i];
+        if (!property.range)
+          continue;
+        TestRunner.addResult(
+            property.name + ':' + property.value + (property.important ? ' !important' : '') +
+            (('parsedOk' in property) ? ' non-parsed' : '') + ' @' + ElementsTestRunner.rangeText(property.range));
+      }
     }
+  }
 
-    ElementsTestRunner.selectNodeWithId("element", step1);
+  ElementsTestRunner.selectNodeWithId('element', step1);
 
-    async function step1(node)
-    {
-        var response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
+  async function step1(node) {
+    var response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
 
-        for (var animation of response.cssKeyframesRules)
-            dumpRule(animation);
+    for (var animation of response.cssKeyframesRules)
+      dumpRule(animation);
 
-        TestRunner.addResult("\n>> Modifying keyframe rule");
-        var style = new SDK.CSSStyleDeclaration(TestRunner.cssModel, null, response.cssKeyframesRules[1].keyframes[0].style, SDK.CSSStyleDeclaration.Type.Regular);
-        await style.setText("width: 123px");
+    TestRunner.addResult('\n>> Modifying keyframe rule');
+    var style = new SDK.CSSStyleDeclaration(
+        TestRunner.cssModel, null, response.cssKeyframesRules[1].keyframes[0].style,
+        SDK.CSSStyleDeclaration.Type.Regular);
+    await style.setText('width: 123px');
 
-        response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
+    response = await TestRunner.CSSAgent.invoke_getMatchedStylesForNode({nodeId: node.id});
 
-        for (var animation of response.cssKeyframesRules)
-            dumpRule(animation);
-        TestRunner.completeTest();
-    }
+    for (var animation of response.cssKeyframesRules)
+      dumpRule(animation);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

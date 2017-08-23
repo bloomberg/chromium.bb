@@ -5,32 +5,28 @@
 <link rel="stylesheet" href="../styles/resources/different-rule-types.css">
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspect", fetchStyleSheet);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspect', fetchStyleSheet);
 
-    function fetchStyleSheet()
-    {
-        var styleSheets = TestRunner.cssModel.allStyleSheets();
-        for (var i = 0; i < styleSheets.length; ++i) {
-            var styleSheetHeader = styleSheets[i];
-            if (styleSheetHeader.sourceURL.indexOf("different-rule-types.css") === -1)
-                continue;
-            ElementsTestRunner.addNewRuleInStyleSheet(styleSheetHeader, "#other, div", onRuleAdded);
-            return;
-        }
+  function fetchStyleSheet() {
+    var styleSheets = TestRunner.cssModel.allStyleSheets();
+    for (var i = 0; i < styleSheets.length; ++i) {
+      var styleSheetHeader = styleSheets[i];
+      if (styleSheetHeader.sourceURL.indexOf('different-rule-types.css') === -1)
+        continue;
+      ElementsTestRunner.addNewRuleInStyleSheet(styleSheetHeader, '#other, div', onRuleAdded);
+      return;
     }
+  }
 
-    function onRuleAdded()
-    {
-        ElementsTestRunner.selectNodeAndWaitForStyles("other", onNodeSelected);
-    }
+  function onRuleAdded() {
+    ElementsTestRunner.selectNodeAndWaitForStyles('other', onNodeSelected);
+  }
 
-    function onNodeSelected()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        TestRunner.completeTest();
-    }
+  function onNodeSelected() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

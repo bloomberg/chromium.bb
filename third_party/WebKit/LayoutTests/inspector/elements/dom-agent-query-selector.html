@@ -5,58 +5,51 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeWithId("container", step1);
+function test() {
+  ElementsTestRunner.selectNodeWithId('container', step1);
 
-    function step1(node)
-    {
-        var containerId = node.id;
-        var documentId = node.ownerDocument.id;
+  function step1(node) {
+    var containerId = node.id;
+    var documentId = node.ownerDocument.id;
 
-        TestRunner.runTestSuite([
-            function testDocumentQuerySelector(next)
-            {
-                TestRunner.DOMAgent.querySelector(documentId, "div.foo").then(dumpNodes.bind(null, next));
-            },
+    TestRunner.runTestSuite([
+      function testDocumentQuerySelector(next) {
+        TestRunner.DOMAgent.querySelector(documentId, 'div.foo').then(dumpNodes.bind(null, next));
+      },
 
-            function testDocumentQuerySelectorAll(next)
-            {
-                TestRunner.DOMAgent.querySelectorAll(documentId, "div.foo").then(dumpNodes.bind(null, next));
-            },
+      function testDocumentQuerySelectorAll(next) {
+        TestRunner.DOMAgent.querySelectorAll(documentId, 'div.foo').then(dumpNodes.bind(null, next));
+      },
 
-            function testQuerySelector(next)
-            {
-                TestRunner.DOMAgent.querySelector(containerId, "div.foo").then(dumpNodes.bind(null, next));
-            },
+      function testQuerySelector(next) {
+        TestRunner.DOMAgent.querySelector(containerId, 'div.foo').then(dumpNodes.bind(null, next));
+      },
 
-            function testQuerySelectorAll(next)
-            {
-                TestRunner.DOMAgent.querySelectorAll(containerId, "div.foo").then(dumpNodes.bind(null, next));
-            }
-        ]);
+      function testQuerySelectorAll(next) {
+        TestRunner.DOMAgent.querySelectorAll(containerId, 'div.foo').then(dumpNodes.bind(null, next));
+      }
+    ]);
+  }
+
+  function dumpNodes(next, nodeIds) {
+    if (!nodeIds) {
+      next();
+      return;
     }
 
-    function dumpNodes(next, nodeIds)
-    {
-        if (!nodeIds) {
-            next();
-            return;
-        }
+    if (!(nodeIds.constructor && nodeIds.constructor.name === 'Array'))
+      nodeIds = [nodeIds];
 
-        if (!(nodeIds.constructor && nodeIds.constructor.name === "Array"))
-            nodeIds = [nodeIds];
-
-        for (var i = 0; i < nodeIds.length; ++i) {
-            if (!nodeIds[i])
-                TestRunner.addResult("no results");
-            else {
-                var node = TestRunner.domModel.nodeForId(nodeIds[i]);
-                TestRunner.addResult("node id: " + node.getAttribute("id"));
-            }
-        }
-        next();
+    for (var i = 0; i < nodeIds.length; ++i) {
+      if (!nodeIds[i])
+        TestRunner.addResult('no results');
+      else {
+        var node = TestRunner.domModel.nodeForId(nodeIds[i]);
+        TestRunner.addResult('node id: ' + node.getAttribute('id'));
+      }
     }
+    next();
+  }
 }
 </script>
 </head>

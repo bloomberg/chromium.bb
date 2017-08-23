@@ -2,12 +2,11 @@
 <head>
 <script type="text/javascript" src="../../../http/tests/inspector/inspector-test.js"></script>
 <script>
-function test()
-{
-    var marginLonghands = SDK.cssMetadata().longhands("margin");
-    marginLonghands.sort();
-    TestRunner.addResult("Margin longhands: " + marginLonghands.join(", "));
-    TestRunner.completeTest();
+function test() {
+  var marginLonghands = SDK.cssMetadata().longhands('margin');
+  marginLonghands.sort();
+  TestRunner.addResult('Margin longhands: ' + marginLonghands.join(', '));
+  TestRunner.completeTest();
 }
 </script>
 </head>

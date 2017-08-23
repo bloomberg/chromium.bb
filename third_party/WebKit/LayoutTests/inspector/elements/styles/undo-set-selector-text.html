@@ -9,44 +9,39 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
-    function step1()
-    {
-        TestRunner.addResult("=== Before selector modification ===");
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        var section = ElementsTestRunner.firstMatchedStyleSection();
-        section.startEditingSelector();
-        section._selectorElement.textContent = "#inspected, #other";
-        section._selectorElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        ElementsTestRunner.selectNodeAndWaitForStyles("other", step2);
-    }
+  function step1() {
+    TestRunner.addResult('=== Before selector modification ===');
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    var section = ElementsTestRunner.firstMatchedStyleSection();
+    section.startEditingSelector();
+    section._selectorElement.textContent = '#inspected, #other';
+    section._selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    ElementsTestRunner.selectNodeAndWaitForStyles('other', step2);
+  }
 
-    function step2()
-    {
-        TestRunner.addResult("=== After selector modification ===");
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        TestRunner.domModel.undo();
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step3);
-    }
+  function step2() {
+    TestRunner.addResult('=== After selector modification ===');
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.domModel.undo();
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step3);
+  }
 
-    function step3()
-    {
-        TestRunner.addResult("=== After undo ===");
-        ElementsTestRunner.dumpSelectedElementStyles(true);
+  function step3() {
+    TestRunner.addResult('=== After undo ===');
+    ElementsTestRunner.dumpSelectedElementStyles(true);
 
-        TestRunner.domModel.redo();
-        ElementsTestRunner.selectNodeAndWaitForStyles("other", step4);
-    }
+    TestRunner.domModel.redo();
+    ElementsTestRunner.selectNodeAndWaitForStyles('other', step4);
+  }
 
-    function step4()
-    {
-        TestRunner.addResult("=== After redo ===");
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        TestRunner.completeTest();
-    }
+  function step4() {
+    TestRunner.addResult('=== After redo ===');
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

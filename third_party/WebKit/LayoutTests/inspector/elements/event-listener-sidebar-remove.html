@@ -16,39 +16,34 @@ function setupEventListeners()
     sibling.addEventListener("mouseover", g, false);
 }
 
-function test()
-{
-    Common.settingForTest("showEventListenersForAncestors").set(false);
+function test() {
+  Common.settingForTest('showEventListenersForAncestors').set(false);
 
 
-    function step1()
-    {
-        ElementsTestRunner.selectNodeWithId("node", function () {
-            ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step2);
-        });
-    }
+  function step1() {
+    ElementsTestRunner.selectNodeWithId('node', function() {
+      ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step2);
+    });
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.removeFirstEventListener();
-        TestRunner.addResult("Listeners after removal:");
-        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step3, true);
-    }
+  function step2() {
+    ElementsTestRunner.removeFirstEventListener();
+    TestRunner.addResult('Listeners after removal:');
+    ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step3, true);
+  }
 
-    function step3()
-    {
-        ElementsTestRunner.selectNodeWithId("node-sibling", function () {
-            TestRunner.addResult("Listeners for sibling node:");
-            ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step4);
-        });
-    }
+  function step3() {
+    ElementsTestRunner.selectNodeWithId('node-sibling', function() {
+      TestRunner.addResult('Listeners for sibling node:');
+      ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step4);
+    });
+  }
 
-    function step4()
-    {
-        TestRunner.completeTest();
-    }
+  function step4() {
+    TestRunner.completeTest();
+  }
 
-    step1();
+  step1();
 }
 
 function onloadHandler()

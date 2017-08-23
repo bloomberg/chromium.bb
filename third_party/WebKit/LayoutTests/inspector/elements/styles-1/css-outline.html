@@ -62,22 +62,19 @@ function getCSS()
     return document.querySelector("#styler").textContent;
 }
 
-function test()
-{
-    function onRulesParsed(isLastChunk, rules)
-    {
-        for (var i = 0; i < rules.length; ++i)
-            TestRunner.addObject(rules[i]);
-        if (isLastChunk)
-            TestRunner.completeTest();
-    }
+function test() {
+  function onRulesParsed(isLastChunk, rules) {
+    for (var i = 0; i < rules.length; ++i)
+      TestRunner.addObject(rules[i]);
+    if (isLastChunk)
+      TestRunner.completeTest();
+  }
 
-    function onStyleFetched(result)
-    {
-        Formatter.formatterWorkerPool().parseCSS(result.value, onRulesParsed);
-    }
+  function onStyleFetched(result) {
+    Formatter.formatterWorkerPool().parseCSS(result.value, onRulesParsed);
+  }
 
-    TestRunner.evaluateInPage("getCSS()", onStyleFetched);
+  TestRunner.evaluateInPage('getCSS()', onStyleFetched);
 }
 
 </script>

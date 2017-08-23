@@ -3,20 +3,19 @@
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-function test()
-{
-    var badNames = [];
-    for (var nickname in Common.Color.Nicknames) {
-        if (nickname.toLowerCase() !== nickname)
-            badNames.push(nickname);
-    }
+function test() {
+  var badNames = [];
+  for (var nickname in Common.Color.Nicknames) {
+    if (nickname.toLowerCase() !== nickname)
+      badNames.push(nickname);
+  }
 
-    if (badNames.length === 0)
-        TestRunner.addResult("PASSED");
-    else
-        TestRunner.addResult("Non-lowercase color nicknames: " + badNames.join(", "));
+  if (badNames.length === 0)
+    TestRunner.addResult('PASSED');
+  else
+    TestRunner.addResult('Non-lowercase color nicknames: ' + badNames.join(', '));
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

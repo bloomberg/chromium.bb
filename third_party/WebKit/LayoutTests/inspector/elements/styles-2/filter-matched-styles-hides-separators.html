@@ -28,52 +28,45 @@
 
 </style>
 <script>
-function test()
-{
-    TestRunner.runTestSuite([
-        function selectInitialNode(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("third", next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function selectInitialNode(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('third', next);
+    },
 
-        function onNodeSelected(next)
-        {
-            ElementsTestRunner.dumpRenderedMatchedStyles();
-            next();
-        },
+    function onNodeSelected(next) {
+      ElementsTestRunner.dumpRenderedMatchedStyles();
+      next();
+    },
 
-        function testFilterFontFamily(next)
-        {
-            ElementsTestRunner.filterMatchedStyles("font-family");
-            dumpSidebarSeparators();
-            next();
-        },
+    function testFilterFontFamily(next) {
+      ElementsTestRunner.filterMatchedStyles('font-family');
+      dumpSidebarSeparators();
+      next();
+    },
 
-        function testContentProperty(next)
-        {
-            ElementsTestRunner.filterMatchedStyles("content");
-            dumpSidebarSeparators();
-            next();
-        },
+    function testContentProperty(next) {
+      ElementsTestRunner.filterMatchedStyles('content');
+      dumpSidebarSeparators();
+      next();
+    },
 
-        function testDisplayProperty(next)
-        {
-            ElementsTestRunner.filterMatchedStyles("display");
-            dumpSidebarSeparators();
-            next();
-        }
-    ]);
-
-    function dumpSidebarSeparators()
-    {
-        var separators = UI.panels.elements._stylesWidget.contentElement.querySelectorAll(".sidebar-separator");
-        for (var i = 0; i < separators.length; ++i) {
-            var separator = separators[i];
-            var hidden = separator.classList.contains("hidden");
-            var text = String.sprintf("%s %s", hidden ? "[ HIDDEN ] " : "[ VISIBLE ]", separator.deepTextContent());
-            TestRunner.addResult(text);
-        }
+    function testDisplayProperty(next) {
+      ElementsTestRunner.filterMatchedStyles('display');
+      dumpSidebarSeparators();
+      next();
     }
+  ]);
+
+  function dumpSidebarSeparators() {
+    var separators = UI.panels.elements._stylesWidget.contentElement.querySelectorAll('.sidebar-separator');
+    for (var i = 0; i < separators.length; ++i) {
+      var separator = separators[i];
+      var hidden = separator.classList.contains('hidden');
+      var text = String.sprintf('%s %s', hidden ? '[ HIDDEN ] ' : '[ VISIBLE ]', separator.deepTextContent());
+      TestRunner.addResult(text);
+    }
+  }
 }
 </script>
 </head>

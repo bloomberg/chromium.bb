@@ -17,20 +17,17 @@ function setupEventListeners()
     body.addEventListener("wheel", f, {"passive": true});
 }
 
-function test()
-{
-    Common.settingForTest("showEventListenersForAncestors").set(true);
-    TestRunner.evaluateInPage("setupEventListeners()", step1);
+function test() {
+  Common.settingForTest('showEventListenersForAncestors').set(true);
+  TestRunner.evaluateInPage('setupEventListeners()', step1);
 
-    function step1()
-    {
-        ElementsTestRunner.selectNodeWithId("div-in-iframe", step2);
-    }
+  function step1() {
+    ElementsTestRunner.selectNodeWithId('div-in-iframe', step2);
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(TestRunner.completeTest.bind(InspectorTest));
-    }
+  function step2() {
+    ElementsTestRunner.expandAndDumpSelectedElementEventListeners(TestRunner.completeTest.bind(InspectorTest));
+  }
 }
 
 </script>

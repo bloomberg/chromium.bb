@@ -9,16 +9,13 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('nested', step1);
 
-    ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("nested", step1);
-
-    function step1()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles();
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>
