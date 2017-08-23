@@ -175,7 +175,7 @@ std::unique_ptr<net::URLFetcher> ContextualSuggestionsService::CreateRequest(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: false
+          cookies_allowed: NO
           setting:
             "Users can control this feature via the 'Use a prediction service "
             "to help complete searches and URLs typed in the address bar' "
@@ -202,7 +202,7 @@ std::unique_ptr<net::URLFetcher> ContextualSuggestionsService::CreateRequest(
           destination: GOOGLE_OWNED_SERVICE
         }
         policy {
-          cookies_allowed: true
+          cookies_allowed: YES
           cookies_store: "user"
           setting:
             "Users can control this feature via the 'Use a prediction service "
