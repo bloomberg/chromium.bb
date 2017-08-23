@@ -11,6 +11,37 @@
 
 namespace predictors {
 
+namespace {
+
+bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if ((mode & mask) == 0)
+    return false;
+
+  if (!profile || !profile->GetPrefs() ||
+      chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs()) !=
+          chrome_browser_net::NetworkPredictionStatus::ENABLED) {
+    return false;
+  }
+
+  return true;
+}
+
+bool IsPreconnectEnabledInternal(Profile* profile, int mode, int mask) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if ((mode & mask) == 0)
+    return false;
+
+  if (!profile || !profile->GetPrefs() ||
+      !chrome_browser_net::CanPreresolveAndPreconnectUI(profile->GetPrefs())) {
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
+
 const char kSpeculativePreconnectFeatureName[] = "SpeculativePreconnect";
 
 const base::Feature kSpeculativePreconnectFeature{
@@ -71,7 +102,7 @@ bool LoadingPredictorConfig::IsLearningEnabled() const {
 bool LoadingPredictorConfig::IsPrefetchingEnabledForSomeOrigin(
     Profile* profile) const {
   int mask = PREFETCHING_FOR_NAVIGATION | PREFETCHING_FOR_EXTERNAL;
-  return internal::IsPrefetchingEnabledInternal(profile, mode, mask);
+  return IsPrefetchingEnabledInternal(profile, mode, mask);
 }
 
 bool LoadingPredictorConfig::IsPrefetchingEnabledForOrigin(
@@ -86,22 +117,18 @@ bool LoadingPredictorConfig::IsPrefetchingEnabledForOrigin(
       mask = PREFETCHING_FOR_EXTERNAL;
       break;
   }
-  return internal::IsPrefetchingEnabledInternal(profile, mode, mask);
+  return IsPrefetchingEnabledInternal(profile, mode, mask);
+}
+
+bool LoadingPredictorConfig::IsPreconnectEnabledForSomeOrigin(
+    Profile* profile) const {
+  return IsPreconnectEnabledInternal(profile, mode, PRECONNECT);
 }
 
 bool LoadingPredictorConfig::IsPreconnectEnabledForOrigin(
     Profile* profile,
     HintOrigin origin) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if ((mode & PRECONNECT) == 0)
-    return false;
-
-  if (!profile || !profile->GetPrefs() ||
-      !chrome_browser_net::CanPreresolveAndPreconnectUI(profile->GetPrefs())) {
-    return false;
-  }
-
-  return true;
+  return IsPreconnectEnabledInternal(profile, mode, PRECONNECT);
 }
 
 bool LoadingPredictorConfig::IsLowConfidenceForTest() const {
