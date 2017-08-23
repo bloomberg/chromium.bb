@@ -200,15 +200,17 @@ Polymer({
   },
 
   /**
-   * Opens the Unlock PIN dialog.
+   * Opens the Unlock PIN / PUK dialog.
    * @param {!Event} event
    * @private
    */
   onUnlockPinTap_: function(event) {
     event.preventDefault();
-    this.error_ = ErrorType.NONE;
-    this.$.unlockPin.value = '';
-    this.$.unlockPinDialog.showModal();
+    if (this.pukRequired_) {
+      this.showUnlockPukDialog_();
+    } else {
+      this.showUnlockPinDialog_();
+    }
   },
 
   /**
@@ -231,6 +233,13 @@ Polymer({
         this.$.unlockPinDialog.close();
       }
     });
+  },
+
+  /** @private */
+  showUnlockPinDialog_: function() {
+    this.error_ = ErrorType.NONE;
+    this.$.unlockPin.value = '';
+    this.$.unlockPinDialog.showModal();
   },
 
   /** @private */
