@@ -375,8 +375,8 @@ WebSocketImpl::WebSocketImpl(Delegate* delegate,
       frame_id_(frame_id),
       handshake_succeeded_(false),
       weak_ptr_factory_(this) {
-  binding_.set_connection_error_handler(
-      base::Bind(&WebSocketImpl::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &WebSocketImpl::OnConnectionError, base::Unretained(this)));
 }
 
 WebSocketImpl::~WebSocketImpl() {}
@@ -413,9 +413,10 @@ void WebSocketImpl::AddChannelRequest(
   if (delay_ > base::TimeDelta()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&WebSocketImpl::AddChannel, weak_ptr_factory_.GetWeakPtr(),
-                   socket_url, requested_protocols, origin, site_for_cookies,
-                   user_agent_override),
+        base::BindOnce(&WebSocketImpl::AddChannel,
+                       weak_ptr_factory_.GetWeakPtr(), socket_url,
+                       requested_protocols, origin, site_for_cookies,
+                       user_agent_override),
         delay_);
   } else {
     AddChannel(socket_url, requested_protocols, origin, site_for_cookies,
