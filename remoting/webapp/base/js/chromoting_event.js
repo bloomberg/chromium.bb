@@ -128,6 +128,8 @@ remoting.ChromotingEvent = function(type) {
   this.client_window_size;
   /** @type {boolean} */
   this.client_fullscreen;
+  /** @type {remoting.ChromotingEvent.ChromotingDotComMigration} */
+  this.chromoting_dot_com_migration;
 
   this.init_();
 };
@@ -248,7 +250,7 @@ remoting.ChromotingEvent.FeatureTracker = function() {
  * @struct
  * @constructor
  */
-  remoting.ChromotingEvent.ScreenResolution = function(width, height, dpi) {
+remoting.ChromotingEvent.ScreenResolution = function(width, height, dpi) {
   /** @type {number} */
   this.width = width;
   /** @type {number} */
@@ -257,7 +259,52 @@ remoting.ChromotingEvent.FeatureTracker = function() {
   this.dpi = dpi;
 };
 
-})();
+/**
+ * Event for Chromoting.com migration.
+ *
+ * @param {!remoting.ChromotingEvent.ChromotingDotComMigration.Event} event
+ * @param {!remoting.ChromotingEvent.ChromotingDotComMigration.Phase} phase
+ * @struct
+ * @constructor
+ */
+remoting.ChromotingEvent.ChromotingDotComMigration = function(event, phase) {
+  /** @type {!remoting.ChromotingEvent.ChromotingDotComMigration.Event} */
+  this.event = event;
+  /** @type {!remoting.ChromotingEvent.ChromotingDotComMigration.Phase} */
+  this.phase = phase;
+};
+
+/** @enum {number} */
+remoting.ChromotingEvent.ChromotingDotComMigration.Event = {
+  // Unspecified migration event.
+  UNSPECIFIED_MIGRATION_EVENT: 0,
+  // The deprecation notice is shown in the Chrome App.
+  DEPRECATION_NOTICE_IMPRESSION: 1,
+  // The deprecation notice is dismissed in the Chrome App.
+  DEPRECATION_NOTICE_DISMISSAL: 2,
+  // The deprecation notice is clicked in the Chrome App.
+  DEPRECATION_NOTICE_CLICKED: 3,
+  // The user settings are migrated in Chromoting.com.
+  USER_OPTIONS_MIGRATION: 4,
+  // The extension upsell is shown in Chromoting.com.
+  COMPANION_EXTENSION_UPSELL_IMPRESSION: 5,
+  // The extension upsell is clicked in Chromoting.com.
+  COMPANION_EXTENSION_UPSELL_CLICKED: 6,
+};
+
+/** @enum {number} */
+remoting.ChromotingEvent.ChromotingDotComMigration.Phase = {
+  // Unspecified phase.
+  UNSPECIFIED_PHASE: 0,
+  // Chromoting.com is available for early adopters.
+  BETA: 1,
+  // Chromoting.com is available for the general public.
+  STABLE: 2,
+  // Chrome App deprecation is announced.
+  DEPRECATION_1: 3,
+  // Chrome App is deprecated.
+  DEPRECATION_2: 4,
+};
 
 /**
  * @enum {number}
@@ -274,6 +321,7 @@ remoting.ChromotingEvent.Type = {
   SIGNAL_STRATEGY_PROGRESS: 9,
   FEATURE_TRACKING: 10,
   SCREEN_RESOLUTIONS: 11,
+  CHROMOTING_DOT_COM_MIGRATION: 12,
 };
 
 /** @enum {number} */
@@ -408,3 +456,5 @@ remoting.ChromotingEvent.AuthMethod = {
   PINLESS: 3,
   THIRD_PARTY: 4,
 };
+
+})();

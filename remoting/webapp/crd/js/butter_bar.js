@@ -8,15 +8,19 @@
  * Each message is displayed for at most one week.
  */
 
-'use strict';
-
 /** @suppress {duplicate} */
 var remoting = remoting || {};
 
+(function() {
+
+'use strict';
+
 /**
+ * @param {function(!remoting.ChromotingEvent)} writeLogFunction Callback for
+ *    reporting telemetry events to the backend.
  * @constructor
  */
-remoting.ButterBar = function() {
+remoting.ButterBar = function(writeLogFunction) {
   /** @private @const */
   this.messages_ = [
     {id: /*i18n-content*/'WEBSITE_INVITE_BETA', dismissable: true},
@@ -32,7 +36,14 @@ remoting.ButterBar = function() {
   this.message_ = document.getElementById(remoting.ButterBar.kMessageId_);
   /** @private {!Element} */
   this.dismiss_ = document.getElementById(remoting.ButterBar.kDismissId_);
+  /** @private {function(!remoting.ChromotingEvent)} */
+  this.writeLogFunction_ = writeLogFunction;
 }
+
+/** @return {!remoting.ButterBar} */
+remoting.ButterBar.create  = function() {
+  return new remoting.ButterBar(remoting.TelemetryEventWriter.Client.write);
+};
 
 remoting.ButterBar.prototype.init = function() {
   var result = new base.Deferred();
@@ -91,10 +102,19 @@ remoting.ButterBar.prototype.init = function() {
  * @private
  */
 remoting.ButterBar.prototype.show_ = function(url) {
+  var MigrationEvent = remoting.ChromotingEvent.ChromotingDotComMigration.Event;
+  this.reportTelemetry_(MigrationEvent.DEPRECATION_NOTICE_IMPRESSION);
+
   var messageId = this.messages_[this.currentMessage_].id;
   var substitutions = [`<a href="${url}" target="_blank">`, '</a>'];
   var dismissable = this.messages_[this.currentMessage_].dismissable;
   l10n.localizeElementFromTag(this.message_, messageId, substitutions, true);
+
+  var anchorTags = this.message_.getElementsByTagName('a');
+  if (anchorTags.length == 1) {
+    anchorTags[0].addEventListener(
+        'click', this.onLinkClicked_.bind(this), false);
+  }
   if (dismissable) {
     this.dismiss_.addEventListener('click', this.dismiss.bind(this), false);
   } else {
@@ -105,10 +125,45 @@ remoting.ButterBar.prototype.show_ = function(url) {
 }
 
 /**
-  * @param {Object} syncValues
-  * @param {string} url The website URL.
-  * @private
-  */
+ * @param {remoting.ChromotingEvent.ChromotingDotComMigration.Event} eventType
+ * @private
+ */
+remoting.ButterBar.prototype.reportTelemetry_ = function(eventType) {
+  var event =
+      new remoting.ChromotingEvent(
+          remoting.ChromotingEvent.Type.CHROMOTING_DOT_COM_MIGRATION);
+  event.chromoting_dot_com_migration =
+      new remoting.ChromotingEvent.ChromotingDotComMigration(
+          eventType, this.getMigrationPhase_());
+  event.role = remoting.ChromotingEvent.Role.CLIENT;
+  this.writeLogFunction_(event);
+};
+
+/**
+ * @return {remoting.ChromotingEvent.ChromotingDotComMigration.Phase}
+ * @private
+ */
+remoting.ButterBar.prototype.getMigrationPhase_ = function() {
+  var Phase = remoting.ChromotingEvent.ChromotingDotComMigration.Phase
+  switch (this.currentMessage_) {
+    case 0:
+      return Phase.BETA;
+    case 1:
+      return Phase.STABLE;
+    case 2:
+      return Phase.DEPRECATION_1;
+    case 3:
+      return Phase.DEPRECATION_2;
+    default:
+      return Phase.UNSPECIFIED_PHASE;
+  }
+};
+
+/**
+ * @param {Object} syncValues
+ * @param {string} url The website URL.
+ * @private
+ */
 remoting.ButterBar.prototype.onStateLoaded_ = function(syncValues, url) {
   /** @type {!Object|undefined} */
   var messageState = syncValues[remoting.ButterBar.kStorageKey_];
@@ -146,9 +201,22 @@ remoting.ButterBar.prototype.onStateLoaded_ = function(syncValues, url) {
 };
 
 /**
+ * Click handler of the migration link.
+ *
+ * @param {Event} e
+ * @private
+ */
+remoting.ButterBar.prototype.onLinkClicked_ = function(e) {
+  var MigrationEvent = remoting.ChromotingEvent.ChromotingDotComMigration.Event;
+  this.reportTelemetry_(MigrationEvent.DEPRECATION_NOTICE_CLICKED);
+};
+
+/**
  * Hide the butter bar request and record the message that was being displayed.
  */
 remoting.ButterBar.prototype.dismiss = function() {
+  var MigrationEvent = remoting.ChromotingEvent.ChromotingDotComMigration.Event;
+  this.reportTelemetry_(MigrationEvent.DEPRECATION_NOTICE_DISMISSAL);
   var value = {};
   value[remoting.ButterBar.kStorageKey_] = {
     index: this.currentMessage_,
@@ -202,3 +270,5 @@ remoting.ButterBar.kMessageIndexUrl_ =
 
 /** @const @private */
 remoting.ButterBar.kTimeout_ = 7 * 24 * 60 * 60 * 1000;   // 1 week
+
+})();
