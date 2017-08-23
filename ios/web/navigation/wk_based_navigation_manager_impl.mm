@@ -96,9 +96,11 @@ CRWSessionController* WKBasedNavigationManagerImpl::GetSessionController()
 }
 
 void WKBasedNavigationManagerImpl::AddTransientItem(const GURL& url) {
+  NavigationItem* last_committed_item = GetLastCommittedItem();
   transient_item_ = CreateNavigationItemWithRewriters(
       url, Referrer(), ui::PAGE_TRANSITION_CLIENT_REDIRECT,
       NavigationInitiationType::USER_INITIATED,
+      last_committed_item ? last_committed_item->GetURL() : GURL::EmptyGURL(),
       nullptr /* use default rewriters only */);
   transient_item_->SetTimestamp(
       time_smoother_.GetSmoothedTime(base::Time::Now()));
@@ -118,8 +120,10 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
     UserAgentOverrideOption user_agent_override_option) {
   DiscardNonCommittedItems();
 
+  NavigationItem* last_committed_item = GetLastCommittedItem();
   pending_item_ = CreateNavigationItemWithRewriters(
       url, referrer, navigation_type, initiation_type,
+      last_committed_item ? last_committed_item->GetURL() : GURL::EmptyGURL(),
       &transient_url_rewriters_);
   RemoveTransientURLRewriters();
 
@@ -374,6 +378,11 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetNavigationItemImplAtIndex(
                         : web::Referrer()),
           ui::PageTransition::PAGE_TRANSITION_LINK,
           NavigationInitiationType::RENDERER_INITIATED,
+          // Not using GetLastCommittedItem()->GetURL() in case the last
+          // committed item in the WKWebView hasn't been linked to a
+          // NavigationItem and this method is called in that code path to avoid
+          // an infinite cycle.
+          net::GURLWithNSURL(prev_wk_item.URL),
           nullptr /* use default rewriters only */);
   SetNavigationItemInWKItem(wk_item, std::move(new_item));
   return GetNavigationItemFromWKItem(wk_item);
