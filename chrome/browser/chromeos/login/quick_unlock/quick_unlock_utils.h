@@ -32,8 +32,10 @@ base::TimeDelta PasswordConfirmationFrequencyToTimeDelta(
 // Register quick unlock prefs.
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
-// Returns true if PIN unlock is allowed by policy and the quick unlock feature
-// flag is present.
+// Returns true if PIN unlock is disabled by policy.
+bool IsPinDisabledByPolicy(PrefService* pref_service);
+
+// Returns true if the quick unlock feature flag is present.
 bool IsPinEnabled(PrefService* pref_service);
 
 // What subsystem should provide pin storage and authentication?
