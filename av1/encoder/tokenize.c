@@ -264,16 +264,21 @@ const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS] = {
 };
 #endif
 
+/* clang-format off */
+typedef aom_cdf_prob (*MapCdf)[PALETTE_COLOR_INDEX_CONTEXTS]
+                              [CDF_SIZE(PALETTE_COLORS)];
+typedef const int (*ColorCost)[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
+                              [PALETTE_COLORS];
+/* clang-format on */
+
 typedef struct {
   int rows;
   int cols;
   int n_colors;
   int plane_width;
   uint8_t *color_map;
-  aom_cdf_prob (
-      *map_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)];
-  const int (
-      *color_cost)[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS];
+  MapCdf map_cdf;
+  ColorCost color_cost;
 } ColorMapParam;
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX
@@ -344,11 +349,8 @@ static INLINE void add_token(TOKENEXTRA **t,
 static int cost_and_tokenize_map(ColorMapParam *param, TOKENEXTRA **t,
                                  int calc_rate) {
   const uint8_t *const color_map = param->color_map;
-  aom_cdf_prob(
-      *map_cdf)[PALETTE_COLOR_INDEX_CONTEXTS][CDF_SIZE(PALETTE_COLORS)] =
-      param->map_cdf;
-  const int(*color_cost)[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
-                        [PALETTE_COLORS] = param->color_cost;
+  MapCdf map_cdf = param->map_cdf;
+  ColorCost color_cost = param->color_cost;
   const int plane_block_width = param->plane_width;
   const int rows = param->rows;
   const int cols = param->cols;
