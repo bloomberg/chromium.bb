@@ -603,19 +603,6 @@ const char kPpapiFlashPath[]                = "ppapi-flash-path";
 // defaults to "10.2.999.999".
 const char kPpapiFlashVersion[]             = "ppapi-flash-version";
 
-// Triggers prerendering of pages from suggestions in the omnibox. Only has an
-// effect when Instant is either disabled or restricted to search, and when
-// prerender is enabled.
-const char kPrerenderFromOmnibox[]          = "prerender-from-omnibox";
-
-// These are the values the kPrerenderFromOmnibox switch may have, as in
-// "--prerender-from-omnibox=auto". auto: Allow field trial selection.
-const char kPrerenderFromOmniboxSwitchValueAuto[] = "auto";
-//   disabled: No prerendering.
-const char kPrerenderFromOmniboxSwitchValueDisabled[] = "disabled";
-//   enabled: Guaranteed prerendering.
-const char kPrerenderFromOmniboxSwitchValueEnabled[] = "enabled";
-
 // Use IPv6 only for privet HTTP.
 const char kPrivetIPv6Only[]                   = "privet-ipv6-only";
 
