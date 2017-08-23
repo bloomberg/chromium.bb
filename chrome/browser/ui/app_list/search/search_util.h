@@ -28,6 +28,8 @@ enum SearchResultType {
   PLAY_STORE_UNINSTALLED_APP,
   // A result that is an instant app from a Play Store app search.
   PLAY_STORE_INSTANT_APP,
+  // A result that is an answer card.
+  ANSWER_CARD,
   // Boundary is always last.
   SEARCH_RESULT_TYPE_BOUNDARY
 };
