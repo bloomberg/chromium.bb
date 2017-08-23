@@ -154,8 +154,13 @@ int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd) {
 #endif  // CONFIG_EXT_INTRA
 
 #if CONFIG_PALETTE_DELTA_ENCODING
-int av1_get_palette_cache(const MODE_INFO *above_mi, const MODE_INFO *left_mi,
-                          int plane, uint16_t *cache) {
+int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
+                          uint16_t *cache) {
+  const int row = -xd->mb_to_top_edge >> 3;
+  // Do not refer to above SB row when on SB boundary.
+  const MODE_INFO *const above_mi =
+      (row % (1 << MIN_SB_SIZE_LOG2)) ? xd->above_mi : NULL;
+  const MODE_INFO *const left_mi = xd->left_mi;
   int above_n = 0, left_n = 0;
   if (above_mi)
     above_n = above_mi->mbmi.palette_mode_info.palette_size[plane != 0];
@@ -166,8 +171,9 @@ int av1_get_palette_cache(const MODE_INFO *above_mi, const MODE_INFO *left_mi,
   int left_idx = plane * PALETTE_MAX_SIZE;
   int n = 0;
   const uint16_t *above_colors =
-      above_mi->mbmi.palette_mode_info.palette_colors;
-  const uint16_t *left_colors = left_mi->mbmi.palette_mode_info.palette_colors;
+      above_mi ? above_mi->mbmi.palette_mode_info.palette_colors : NULL;
+  const uint16_t *left_colors =
+      left_mi ? left_mi->mbmi.palette_mode_info.palette_colors : NULL;
   // Merge the sorted lists of base colors from above and left to get
   // combined sorted color cache.
   while (above_n > 0 && left_n > 0) {

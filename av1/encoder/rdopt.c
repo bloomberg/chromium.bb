@@ -3051,11 +3051,8 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (rows * cols > PALETTE_MAX_BLOCK_SIZE) return 0;
 
 #if CONFIG_PALETTE_DELTA_ENCODING
-    const MODE_INFO *above_mi = xd->above_mi;
-    const MODE_INFO *left_mi = xd->left_mi;
     uint16_t color_cache[2 * PALETTE_MAX_SIZE];
-    const int n_cache =
-        av1_get_palette_cache(above_mi, left_mi, 0, color_cache);
+    const int n_cache = av1_get_palette_cache(xd, 0, color_cache);
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
 
     for (n = colors > PALETTE_MAX_SIZE ? PALETTE_MAX_SIZE : colors; n >= 2;
@@ -5526,10 +5523,8 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_HIGHBITDEPTH
 
 #if CONFIG_PALETTE_DELTA_ENCODING
-  const MODE_INFO *above_mi = xd->above_mi;
-  const MODE_INFO *left_mi = xd->left_mi;
   uint16_t color_cache[2 * PALETTE_MAX_SIZE];
-  const int n_cache = av1_get_palette_cache(above_mi, left_mi, 1, color_cache);
+  const int n_cache = av1_get_palette_cache(xd, 1, color_cache);
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
 
   colors = colors_u > colors_v ? colors_u : colors_v;

@@ -91,8 +91,8 @@ int av1_get_pred_context_intra_interp(const MACROBLOCKD *xd);
 // referred to as "color cache". The return value is the number of colors in the
 // cache (<= 2 * PALETTE_MAX_SIZE). The color values are stored in "cache"
 // in ascending order.
-int av1_get_palette_cache(const MODE_INFO *above_mi, const MODE_INFO *left_mi,
-                          int plane, uint16_t *cache);
+int av1_get_palette_cache(const MACROBLOCKD *const xd, int plane,
+                          uint16_t *cache);
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
 
 int av1_get_intra_inter_context(const MACROBLOCKD *xd);
