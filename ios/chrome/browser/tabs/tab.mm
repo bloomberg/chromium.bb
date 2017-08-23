@@ -1720,17 +1720,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       [_parentTabModel tabUsageRecorder]->RendererTerminated(self, _visible);
   }
 
-  auto* sadTabTabHelper = SadTabTabHelper::FromWebState(self.webState);
-  if (_visible) {
-    if (!applicationIsNotActive)
-      [_fullScreenController disableFullScreen];
-  } else {
-    sadTabTabHelper->set_requires_reload_on_becoming_visible(true);
+  if (_visible && !applicationIsNotActive) {
+    [_fullScreenController disableFullScreen];
   }
-  // Returning to the app (after the renderer crashed in the background) and
-  // having the page reload is much less confusing for the user.
-  sadTabTabHelper->set_requires_reload_on_becoming_active(
-      _visible && applicationIsNotActive);
   [self.dialogDelegate cancelDialogForTab:self];
 }
 
