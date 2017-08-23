@@ -32,9 +32,9 @@ size_t kGpuMemoryLimitBytes = 96 * 1024 * 1024;
 class TestGpuImageDecodeCache : public GpuImageDecodeCache {
  public:
   explicit TestGpuImageDecodeCache(viz::ContextProvider* context,
-                                   viz::ResourceFormat format)
+                                   SkColorType color_type)
       : GpuImageDecodeCache(context,
-                            format,
+                            color_type,
                             kGpuMemoryLimitBytes,
                             kGpuMemoryLimitBytes) {}
 };
@@ -78,7 +78,7 @@ SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {
   return matrix;
 }
 
-using GpuImageDecodeCacheTest = ::testing::TestWithParam<viz::ResourceFormat>;
+using GpuImageDecodeCacheTest = ::testing::TestWithParam<SkColorType>;
 
 TEST_P(GpuImageDecodeCacheTest, GetTaskForImageSameImage) {
   auto context_provider = TestContextProvider::Create();
@@ -1525,8 +1525,7 @@ TEST_P(GpuImageDecodeCacheTest, ZeroCacheNormalWorkingSet) {
   // Setup - Image cache has a normal working set, but zero cache size.
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeCache cache(context_provider.get(),
-                            viz::ResourceFormat::RGBA_8888,
+  GpuImageDecodeCache cache(context_provider.get(), kN32_SkColorType,
                             kGpuMemoryLimitBytes, 0);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -1583,8 +1582,7 @@ TEST_P(GpuImageDecodeCacheTest, SmallCacheNormalWorkingSet) {
 
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
-  GpuImageDecodeCache cache(context_provider.get(),
-                            viz::ResourceFormat::RGBA_8888,
+  GpuImageDecodeCache cache(context_provider.get(), kN32_SkColorType,
                             kGpuMemoryLimitBytes, cache_size);
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
@@ -1837,8 +1835,8 @@ TEST_P(GpuImageDecodeCacheTest, RemoveUnusedImage) {
 
 INSTANTIATE_TEST_CASE_P(GpuImageDecodeCacheTests,
                         GpuImageDecodeCacheTest,
-                        ::testing::Values(viz::ResourceFormat::RGBA_8888,
-                                          viz::ResourceFormat::RGBA_4444));
+                        ::testing::Values(kN32_SkColorType,
+                                          kARGB_4444_SkColorType));
 
 }  // namespace
 }  // namespace cc

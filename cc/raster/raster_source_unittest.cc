@@ -575,7 +575,7 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
   scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource();
   SoftwareImageDecodeCache controller(
-      viz::ResourceFormat::RGBA_8888,
+      kN32_SkColorType,
       LayerTreeSettings().decoded_image_working_set_budget_bytes);
   PlaybackImageProvider image_provider(false, PaintImageIdFlatSet(),
                                        &controller, gfx::ColorSpace());

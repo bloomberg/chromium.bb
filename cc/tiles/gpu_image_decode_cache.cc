@@ -21,7 +21,6 @@
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/mipmap_util.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu_image_decode_cache.h"
@@ -400,10 +399,10 @@ GpuImageDecodeCache::ImageData::~ImageData() {
 }
 
 GpuImageDecodeCache::GpuImageDecodeCache(viz::ContextProvider* context,
-                                         viz::ResourceFormat decode_format,
+                                         SkColorType color_type,
                                          size_t max_working_set_bytes,
                                          size_t max_cache_bytes)
-    : format_(decode_format),
+    : color_type_(color_type),
       context_(context),
       persistent_cache_(PersistentCache::NO_AUTO_EVICT),
       max_working_set_bytes_(max_working_set_bytes),
@@ -1192,8 +1191,7 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
         SkImage* image = draw_image.paint_image().GetSkImage().get();
         if (!image->getDeferredTextureImageData(
                 *context_threadsafe_proxy_.get(), &image_data->upload_params, 1,
-                backing_memory->data(), nullptr,
-                viz::ResourceFormatToClosestSkColorType(format_))) {
+                backing_memory->data(), nullptr, color_type_)) {
           DLOG(ERROR) << "getDeferredTextureImageData failed despite params "
                       << "having validated.";
           backing_memory->Unlock();
@@ -1298,7 +1296,7 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
   SkImage* image = draw_image.paint_image().GetSkImage().get();
   size_t data_size = image->getDeferredTextureImageData(
       *context_threadsafe_proxy_.get(), &params, 1, nullptr, nullptr,
-      viz::ResourceFormatToClosestSkColorType(format_));
+      color_type_);
 
   if (data_size == 0) {
     // Can't upload image, too large or other failure. Try to use SW fallback.
@@ -1325,8 +1323,7 @@ SkImageInfo GpuImageDecodeCache::CreateImageInfoForDrawImage(
     int upload_scale_mip_level) const {
   gfx::Size mip_size =
       CalculateSizeForMipLevel(draw_image, upload_scale_mip_level);
-  return SkImageInfo::Make(mip_size.width(), mip_size.height(),
-                           viz::ResourceFormatToClosestSkColorType(format_),
+  return SkImageInfo::Make(mip_size.width(), mip_size.height(), color_type_,
                            kPremul_SkAlphaType,
                            draw_image.target_color_space().ToSkColorSpace());
 }
