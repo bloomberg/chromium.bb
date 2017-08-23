@@ -331,7 +331,7 @@ std::vector<NinePatchGenerator::Patch> NinePatchGenerator::GeneratePatches()
 void NinePatchGenerator::AppendQuads(LayerImpl* layer_impl,
                                      UIResourceId ui_resource_id,
                                      RenderPass* render_pass,
-                                     SharedQuadState* shared_quad_state,
+                                     viz::SharedQuadState* shared_quad_state,
                                      const std::vector<Patch>& patches) {
   if (!ui_resource_id)
     return;

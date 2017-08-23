@@ -15,7 +15,7 @@ DebugBorderDrawQuad::DebugBorderDrawQuad()
       width(0) {
 }
 
-void DebugBorderDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void DebugBorderDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& visible_rect,
                                  SkColor color,
@@ -28,7 +28,7 @@ void DebugBorderDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->width = width;
 }
 
-void DebugBorderDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void DebugBorderDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& opaque_rect,
                                  const gfx::Rect& visible_rect,

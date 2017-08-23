@@ -19,7 +19,7 @@ PictureDrawQuad::PictureDrawQuad(const PictureDrawQuad& other) = default;
 PictureDrawQuad::~PictureDrawQuad() {
 }
 
-void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void PictureDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
                              const gfx::Rect& visible_rect,
@@ -42,7 +42,7 @@ void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->texture_format = texture_format;
 }
 
-void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void PictureDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                              const gfx::Rect& rect,
                              const gfx::Rect& opaque_rect,
                              const gfx::Rect& visible_rect,

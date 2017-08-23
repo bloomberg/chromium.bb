@@ -110,11 +110,10 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
                          gfx::Rect* damage_rect_in_quad_space,
                          bool* damage_rect_in_quad_space_valid);
 
-  cc::SharedQuadState* CopySharedQuadState(
-      const cc::SharedQuadState* source_sqs,
-      const gfx::Transform& target_transform,
-      const ClipData& clip_rect,
-      cc::RenderPass* dest_render_pass);
+  SharedQuadState* CopySharedQuadState(const SharedQuadState* source_sqs,
+                                       const gfx::Transform& target_transform,
+                                       const ClipData& clip_rect,
+                                       cc::RenderPass* dest_render_pass);
   void CopyQuadsToPass(
       const cc::QuadList& source_quad_list,
       const cc::SharedQuadStateList& source_shared_quad_state_list,

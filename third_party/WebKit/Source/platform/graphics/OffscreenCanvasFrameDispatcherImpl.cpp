@@ -140,7 +140,7 @@ void OffscreenCanvasFrameDispatcherImpl::DispatchFrame(
                          damage_rect.height()),
                gfx::Transform());
 
-  cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(gfx::Transform(), bounds, bounds, bounds, false, 1.f,
               SkBlendMode::kSrcOver, 0);
 

@@ -130,7 +130,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
   render_pass->SetNew(1, gfx::Rect(viewport), clip, gfx::Transform());
   render_pass->has_transparent_background = false;
 
-  cc::SharedQuadState* quad_state =
+  viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->quad_to_target_transform = transform;
   quad_state->quad_layer_rect = gfx::Rect(frame_size);
@@ -186,7 +186,7 @@ void SurfacesInstance::SetSolidColorRootFrame() {
   gfx::Rect rect(surface_size_);
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   render_pass->SetNew(1, rect, rect, gfx::Transform());
-  cc::SharedQuadState* quad_state =
+  viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(gfx::Transform(), rect, rect, rect, false, 1.f,
                      SkBlendMode::kSrcOver, 0);

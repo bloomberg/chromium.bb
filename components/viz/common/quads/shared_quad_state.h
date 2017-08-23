@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_QUADS_SHARED_QUAD_STATE_H_
-#define CC_QUADS_SHARED_QUAD_STATE_H_
+#ifndef COMPONENTS_VIZ_COMMON_QUADS_SHARED_QUAD_STATE_H_
+#define COMPONENTS_VIZ_COMMON_QUADS_SHARED_QUAD_STATE_H_
 
 #include <memory>
 
-#include "cc/cc_export.h"
+#include "components/viz/common/viz_common_export.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
@@ -16,16 +16,16 @@ namespace base {
 namespace trace_event {
 class TracedValue;
 }
-}
+}  // namespace base
 
-namespace cc {
+namespace viz {
 
 // SharedQuadState holds a set of properties that are common across multiple
 // DrawQuads. It's purely an optimization - the properties behave in exactly the
 // same way as if they were replicated on each DrawQuad. A given SharedQuadState
 // can only be shared by DrawQuads that are adjacent in their RenderPass'
 // QuadList.
-class CC_EXPORT SharedQuadState {
+class VIZ_COMMON_EXPORT SharedQuadState {
  public:
   SharedQuadState();
   SharedQuadState(const SharedQuadState& other);
@@ -56,6 +56,6 @@ class CC_EXPORT SharedQuadState {
   int sorting_context_id;
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_QUADS_SHARED_QUAD_STATE_H_
+#endif  // COMPONENTS_VIZ_COMMON_QUADS_SHARED_QUAD_STATE_H_

@@ -16,7 +16,7 @@ TileDrawQuad::TileDrawQuad() {
 TileDrawQuad::~TileDrawQuad() {
 }
 
-void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void TileDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                           const gfx::Rect& rect,
                           const gfx::Rect& opaque_rect,
                           const gfx::Rect& visible_rect,
@@ -34,7 +34,7 @@ void TileDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   resources.count = 1;
 }
 
-void TileDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void TileDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                           const gfx::Rect& rect,
                           const gfx::Rect& opaque_rect,
                           const gfx::Rect& visible_rect,

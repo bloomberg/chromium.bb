@@ -18,7 +18,7 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
   TileDrawQuad();
   ~TileDrawQuad() override;
 
-  void SetNew(const SharedQuadState* shared_quad_state,
+  void SetNew(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
@@ -32,7 +32,7 @@ class CC_EXPORT TileDrawQuad : public ContentDrawQuadBase {
               bool swizzle_contents,
               bool nearest_neighbor);
 
-  void SetAll(const SharedQuadState* shared_quad_state,
+  void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,

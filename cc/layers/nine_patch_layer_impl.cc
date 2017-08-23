@@ -53,7 +53,7 @@ void NinePatchLayerImpl::AppendQuads(
     RenderPass* render_pass,
     AppendQuadsData* append_quads_data) {
   quad_generator_.CheckGeometryLimitations();
-  SharedQuadState* shared_quad_state =
+  viz::SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   PopulateSharedQuadState(shared_quad_state);
 

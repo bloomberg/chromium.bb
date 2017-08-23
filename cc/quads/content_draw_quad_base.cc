@@ -18,7 +18,7 @@ ContentDrawQuadBase::ContentDrawQuadBase()
 ContentDrawQuadBase::~ContentDrawQuadBase() {
 }
 
-void ContentDrawQuadBase::SetNew(const SharedQuadState* shared_quad_state,
+void ContentDrawQuadBase::SetNew(const viz::SharedQuadState* shared_quad_state,
                                  DrawQuad::Material material,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& opaque_rect,
@@ -36,7 +36,7 @@ void ContentDrawQuadBase::SetNew(const SharedQuadState* shared_quad_state,
   this->nearest_neighbor = nearest_neighbor;
 }
 
-void ContentDrawQuadBase::SetAll(const SharedQuadState* shared_quad_state,
+void ContentDrawQuadBase::SetAll(const viz::SharedQuadState* shared_quad_state,
                                  DrawQuad::Material material,
                                  const gfx::Rect& rect,
                                  const gfx::Rect& opaque_rect,

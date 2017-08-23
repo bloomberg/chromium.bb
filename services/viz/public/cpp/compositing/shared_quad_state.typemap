@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 mojom = "//services/viz/public/interfaces/compositing/shared_quad_state.mojom"
-public_headers = [ "//cc/quads/shared_quad_state.h" ]
+public_headers = [ "//components/viz/common/quads/shared_quad_state.h" ]
 traits_headers = [ "//services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h" ]
-type_mappings = [ "viz.mojom.SharedQuadState=cc::SharedQuadState" ]
+type_mappings = [ "viz.mojom.SharedQuadState=viz::SharedQuadState" ]

@@ -13,7 +13,7 @@ namespace cc {
 SolidColorDrawQuad::SolidColorDrawQuad()
     : color(0), force_anti_aliasing_off(false) {}
 
-void SolidColorDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void SolidColorDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& visible_rect,
                                 SkColor color,
@@ -26,7 +26,7 @@ void SolidColorDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->force_anti_aliasing_off = force_anti_aliasing_off;
 }
 
-void SolidColorDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void SolidColorDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                                 const gfx::Rect& rect,
                                 const gfx::Rect& opaque_rect,
                                 const gfx::Rect& visible_rect,

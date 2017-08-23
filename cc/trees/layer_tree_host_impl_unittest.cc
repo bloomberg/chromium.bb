@@ -7608,7 +7608,7 @@ class BlendStateCheckLayer : public LayerImpl {
     gfx::Rect visible_quad_rect = quad_visible_rect_;
     bool needs_blending = !opaque_rect.Contains(visible_quad_rect);
 
-    SharedQuadState* shared_quad_state =
+    viz::SharedQuadState* shared_quad_state =
         render_pass->CreateAndAppendSharedQuadState();
     PopulateSharedQuadState(shared_quad_state);
 
@@ -8403,7 +8403,7 @@ class FakeLayerWithQuads : public LayerImpl {
 
   void AppendQuads(RenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override {
-    SharedQuadState* shared_quad_state =
+    viz::SharedQuadState* shared_quad_state =
         render_pass->CreateAndAppendSharedQuadState();
     PopulateSharedQuadState(shared_quad_state);
 

@@ -44,6 +44,7 @@
 
 using testing::_;
 using testing::Mock;
+using viz::SharedQuadState;
 
 namespace cc {
 namespace {

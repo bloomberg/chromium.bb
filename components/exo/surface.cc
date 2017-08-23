@@ -15,13 +15,13 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/output/layer_tree_frame_sink.h"
 #include "cc/quads/render_pass.h"
-#include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "components/exo/buffer.h"
 #include "components/exo/pointer.h"
 #include "components/exo/surface_delegate.h"
 #include "components/exo/surface_observer.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/single_release_callback.h"
 #include "components/viz/common/surfaces/sequence_surface_reference_factory.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -669,7 +669,7 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   }
 
   render_pass->damage_rect.Union(damage_rect);
-  cc::SharedQuadState* quad_state =
+  viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(
       gfx::Transform() /* quad_to_target_transform */,

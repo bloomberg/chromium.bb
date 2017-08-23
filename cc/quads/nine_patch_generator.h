@@ -20,11 +20,14 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace viz {
+class SharedQuadState;
+}
+
 namespace cc {
 
 class LayerImpl;
 class RenderPass;
-class SharedQuadState;
 
 class CC_EXPORT NinePatchGenerator {
  public:
@@ -100,7 +103,7 @@ class CC_EXPORT NinePatchGenerator {
   void AppendQuads(LayerImpl* layer_impl,
                    UIResourceId ui_resource_id,
                    RenderPass* render_pass,
-                   SharedQuadState* shared_quad_state,
+                   viz::SharedQuadState* shared_quad_state,
                    const std::vector<Patch>& patches);
 
   void AsJson(base::DictionaryValue* dictionary) const;

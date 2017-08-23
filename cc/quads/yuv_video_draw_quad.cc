@@ -18,7 +18,7 @@ YUVVideoDrawQuad::YUVVideoDrawQuad(const YUVVideoDrawQuad& other) = default;
 
 YUVVideoDrawQuad::~YUVVideoDrawQuad() {}
 
-void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
+void YUVVideoDrawQuad::SetNew(const viz::SharedQuadState* shared_quad_state,
                               const gfx::Rect& rect,
                               const gfx::Rect& opaque_rect,
                               const gfx::Rect& visible_rect,
@@ -54,7 +54,7 @@ void YUVVideoDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
   this->bits_per_channel = bits_per_channel;
 }
 
-void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void YUVVideoDrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                               const gfx::Rect& rect,
                               const gfx::Rect& opaque_rect,
                               const gfx::Rect& visible_rect,

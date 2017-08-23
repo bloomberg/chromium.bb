@@ -10,7 +10,6 @@
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
-#include "cc/quads/shared_quad_state.h"
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/surface_draw_quad.h"
@@ -127,7 +126,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TileDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(nearest_neighbor)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(cc::SharedQuadState)
+IPC_STRUCT_TRAITS_BEGIN(viz::SharedQuadState)
   IPC_STRUCT_TRAITS_MEMBER(quad_to_target_transform)
   IPC_STRUCT_TRAITS_MEMBER(quad_layer_rect)
   IPC_STRUCT_TRAITS_MEMBER(visible_quad_layer_rect)

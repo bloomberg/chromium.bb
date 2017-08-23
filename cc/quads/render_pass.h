@@ -31,13 +31,13 @@ class TracedValue;
 
 namespace viz {
 class CopyOutputRequest;
+class SharedQuadState;
 }
 
 namespace cc {
 
 class DrawQuad;
 class RenderPassDrawQuad;
-class SharedQuadState;
 
 // A list of DrawQuad objects, sorted internally in front-to-back order.
 class CC_EXPORT QuadList : public ListContainer<DrawQuad> {
@@ -58,7 +58,7 @@ class CC_EXPORT QuadList : public ListContainer<DrawQuad> {
   void ReplaceExistingQuadWithOpaqueTransparentSolidColor(Iterator at);
 };
 
-typedef ListContainer<SharedQuadState> SharedQuadStateList;
+using SharedQuadStateList = ListContainer<viz::SharedQuadState>;
 
 using RenderPassId = uint64_t;
 
@@ -100,7 +100,7 @@ class CC_EXPORT RenderPass {
 
   void AsValueInto(base::trace_event::TracedValue* dict) const;
 
-  SharedQuadState* CreateAndAppendSharedQuadState();
+  viz::SharedQuadState* CreateAndAppendSharedQuadState();
 
   template <typename DrawQuadType>
   DrawQuadType* CreateAndAppendDrawQuad() {

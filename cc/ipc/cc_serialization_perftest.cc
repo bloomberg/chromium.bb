@@ -309,7 +309,7 @@ class CCSerializationPerfTest : public testing::Test {
 
     // Texture quads
     for (uint32_t i = 0; i < 10; ++i) {
-      SharedQuadState* shared_state1_in =
+      viz::SharedQuadState* shared_state1_in =
           pass_in->CreateAndAppendSharedQuadState();
       shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_rect1,
                                arbitrary_rect1, arbitrary_rect2,
@@ -355,7 +355,7 @@ class CCSerializationPerfTest : public testing::Test {
 
     // Tiled quads
     for (uint32_t i = 0; i < 10; ++i) {
-      SharedQuadState* shared_state2_in =
+      viz::SharedQuadState* shared_state2_in =
           pass_in->CreateAndAppendSharedQuadState();
       shared_state2_in->SetAll(arbitrary_matrix2, arbitrary_rect2,
                                arbitrary_rect2, arbitrary_rect3,
@@ -374,7 +374,7 @@ class CCSerializationPerfTest : public testing::Test {
 
     // Solid color quads
     for (uint32_t i = 0; i < 5; ++i) {
-      SharedQuadState* shared_state3_in =
+      viz::SharedQuadState* shared_state3_in =
           pass_in->CreateAndAppendSharedQuadState();
       shared_state3_in->SetAll(arbitrary_matrix1, arbitrary_rect3,
                                arbitrary_rect3, arbitrary_rect1,

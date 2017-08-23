@@ -25,7 +25,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
   PictureDrawQuad(const PictureDrawQuad& other);
   ~PictureDrawQuad() override;
 
-  void SetNew(const SharedQuadState* shared_quad_state,
+  void SetNew(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,
@@ -38,7 +38,7 @@ class CC_EXPORT PictureDrawQuad : public ContentDrawQuadBase {
               float contents_scale,
               scoped_refptr<RasterSource> raster_source);
 
-  void SetAll(const SharedQuadState* shared_quad_state,
+  void SetAll(const viz::SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
               const gfx::Rect& opaque_rect,
               const gfx::Rect& visible_rect,

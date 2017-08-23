@@ -30,7 +30,6 @@ using cc::PictureDrawQuad;
 using cc::RenderPass;
 using cc::RenderPassDrawQuad;
 using cc::ResourceProvider;
-using cc::SharedQuadState;
 using cc::SolidColorDrawQuad;
 using cc::SurfaceDrawQuad;
 using cc::TextureDrawQuad;
@@ -39,6 +38,7 @@ using cc::StreamVideoDrawQuad;
 using cc::YUVVideoDrawQuad;
 using gfx::Transform;
 using viz::ResourceId;
+using viz::SharedQuadState;
 using viz::TransferableResource;
 
 namespace content {

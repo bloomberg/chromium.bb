@@ -367,7 +367,7 @@ void FastInkView::UpdateSurface() {
                       buffer_to_screen_transform);
   surface_damage_rect_ = gfx::Rect();
 
-  cc::SharedQuadState* quad_state =
+  viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(buffer_to_screen_transform,
                      /*quad_layer_rect=*/output_rect,

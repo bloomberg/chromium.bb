@@ -37,7 +37,7 @@ bool StructTraits<viz::mojom::RenderPassDataView,
 
   mojo::ArrayDataView<viz::mojom::DrawQuadDataView> quads;
   data.GetQuadListDataView(&quads);
-  cc::SharedQuadState* last_sqs = nullptr;
+  viz::SharedQuadState* last_sqs = nullptr;
   cc::DrawQuad* last_draw_quad = nullptr;
   for (size_t i = 0; i < quads.size(); ++i) {
     viz::mojom::DrawQuadDataView quad_data_view;

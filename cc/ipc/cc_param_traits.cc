@@ -460,7 +460,7 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
 
   // Shared quad state is only written when a quad contains a shared quad state
   // that has not been written.
-  to_reserve += p.shared_quad_state_list.size() * sizeof(cc::SharedQuadState);
+  to_reserve += p.shared_quad_state_list.size() * sizeof(viz::SharedQuadState);
 
   // The largest quad type, verified by a unit test.
   to_reserve += p.quad_list.size() * cc::LargestDrawQuadSize();
@@ -580,7 +580,7 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
 
     // If the quad has a new shared quad state, read it in.
     if (has_new_shared_quad_state) {
-      cc::SharedQuadState* state = p->CreateAndAppendSharedQuadState();
+      viz::SharedQuadState* state = p->CreateAndAppendSharedQuadState();
       if (!ReadParam(m, iter, state))
         return false;
     }

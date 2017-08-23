@@ -434,7 +434,7 @@ struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, cc::DrawQuad> {
 
 struct DrawQuadWithSharedQuadState {
   const cc::DrawQuad* quad;
-  const cc::SharedQuadState* shared_quad_state;
+  const viz::SharedQuadState* shared_quad_state;
 };
 
 template <>
@@ -481,7 +481,7 @@ struct ArrayTraits<cc::QuadList> {
         : it(it), last_shared_quad_state(nullptr) {}
 
     cc::QuadList::ConstIterator it;
-    const cc::SharedQuadState* last_shared_quad_state;
+    const viz::SharedQuadState* last_shared_quad_state;
   };
 
   static ConstIterator GetBegin(const cc::QuadList& input) {
@@ -497,7 +497,7 @@ struct ArrayTraits<cc::QuadList> {
     DrawQuadWithSharedQuadState dq = {*iterator.it, nullptr};
     // Only serialize the SharedQuadState if we haven't seen it before and
     // therefore have not already serialized it.
-    const cc::SharedQuadState* current_sqs = (*iterator.it)->shared_quad_state;
+    const viz::SharedQuadState* current_sqs = (*iterator.it)->shared_quad_state;
     if (current_sqs != iterator.last_shared_quad_state)
       dq.shared_quad_state = current_sqs;
     return dq;

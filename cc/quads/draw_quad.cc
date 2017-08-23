@@ -21,7 +21,7 @@ DrawQuad::DrawQuad()
 
 DrawQuad::DrawQuad(const DrawQuad& other) = default;
 
-void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
+void DrawQuad::SetAll(const viz::SharedQuadState* shared_quad_state,
                       Material material,
                       const gfx::Rect& rect,
                       const gfx::Rect& opaque_rect,
