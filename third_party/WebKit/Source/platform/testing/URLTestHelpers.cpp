@@ -33,6 +33,7 @@
 #include <string>
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "platform/HTTPNames.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/Platform.h"
@@ -68,6 +69,7 @@ void RegisterMockedURLLoad(const WebURL& full_url,
 
   WebURLResponse response(full_url);
   response.SetMIMEType(mime_type);
+  response.SetHTTPHeaderField(HTTPNames::Content_Type, mime_type);
   response.SetHTTPStatusCode(200);
   response.SetLoadTiming(timing);
 
@@ -80,6 +82,7 @@ void RegisterMockedErrorURLLoad(const WebURL& full_url) {
 
   WebURLResponse response;
   response.SetMIMEType("image/png");
+  response.SetHTTPHeaderField(HTTPNames::Content_Type, "image/png");
   response.SetHTTPStatusCode(404);
   response.SetLoadTiming(timing);
 
