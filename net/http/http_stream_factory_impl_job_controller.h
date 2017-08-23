@@ -25,8 +25,7 @@ class JobControllerPeer;
 
 // HttpStreamFactoryImpl::JobController manages Request and Job(s).
 class HttpStreamFactoryImpl::JobController
-    : public HttpStreamFactoryImpl::Job::Delegate,
-      public HttpStreamFactoryImpl::Request::Helper {
+    : public HttpStreamFactoryImpl::Job::Delegate {
  public:
   JobController(HttpStreamFactoryImpl* factory,
                 HttpStreamRequest::Delegate* delegate,
@@ -52,42 +51,41 @@ class HttpStreamFactoryImpl::JobController
   // Methods below are called by HttpStreamFactoryImpl only.
   // Creates request and hands out to HttpStreamFactoryImpl, this will also
   // create Job(s) and start serving the created request.
-  std::unique_ptr<Request> Start(HttpStreamRequest::Delegate* delegate,
-                                 WebSocketHandshakeStreamBase::CreateHelper*
-                                     websocket_handshake_stream_create_helper,
-                                 const NetLogWithSource& source_net_log,
-                                 HttpStreamRequest::StreamType stream_type,
-                                 RequestPriority priority);
+  void Start(HttpStreamRequest::Delegate* delegate,
+             WebSocketHandshakeStreamBase::CreateHelper*
+                 websocket_handshake_stream_create_helper,
+             const NetLogWithSource& source_net_log,
+             HttpStreamRequest::StreamType stream_type,
+             RequestPriority priority,
+             HttpStreamFactoryImpl::Request* request);
 
   void Preconnect(int num_streams);
 
-  // From HttpStreamFactoryImpl::Request::Helper.
   // Returns the LoadState for Request.
-  LoadState GetLoadState() const override;
+  LoadState GetLoadState() const;
 
   // Called when Request is destructed. Job(s) associated with but not bound to
   // |request_| will be deleted. |request_| and |bound_job_| will be nulled if
   // ever set.
-  void OnRequestComplete() override;
+  void OnRequestComplete();
 
   // Called to resume the HttpStream creation process when necessary
   // Proxy authentication credentials are collected.
-  int RestartTunnelWithProxyAuth() override;
+  int RestartTunnelWithProxyAuth();
 
   // Called when the priority of transaction changes.
-  void SetPriority(RequestPriority priority) override;
+  void SetPriority(RequestPriority priority);
 
   // Called when SpdySessionPool notifies the Request
   // that it can be served on a SpdySession created by another Request,
   // therefore the Jobs can be destroyed.
-  void OnStreamReadyOnPooledConnection(
-      const SSLConfig& used_ssl_config,
-      const ProxyInfo& proxy_info,
-      std::unique_ptr<HttpStream> stream) override;
+  void OnStreamReadyOnPooledConnection(const SSLConfig& used_ssl_config,
+                                       const ProxyInfo& proxy_info,
+                                       std::unique_ptr<HttpStream> stream);
   void OnBidirectionalStreamImplReadyOnPooledConnection(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      std::unique_ptr<BidirectionalStreamImpl> stream) override;
+      std::unique_ptr<BidirectionalStreamImpl> stream);
 
   // From HttpStreamFactoryImpl::Job::Delegate.
   // Invoked when |job| has an HttpStream ready.
@@ -253,8 +251,6 @@ class HttpStreamFactoryImpl::JobController
   // broken.
   void ReportBrokenAlternativeService();
 
-  void MaybeNotifyFactoryOfCompletion();
-
   void NotifyRequestFailed(int rv);
 
   // Called to resume the main job with delay. Main job is resumed only when
@@ -315,10 +311,6 @@ class HttpStreamFactoryImpl::JobController
   HttpNetworkSession* session_;
   JobFactory* job_factory_;
 
-  // Request will be handed out to factory once created. This just keeps an
-  // reference and is safe as |request_| will notify |this| JobController
-  // when it's destructed by calling OnRequestComplete(), which nulls
-  // |request_|.
   Request* request_;
 
   HttpStreamRequest::Delegate* const delegate_;
