@@ -346,7 +346,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         std::move(store),
         base::WrapUnique<MockCloudExternalDataManager>(external_data_manager_),
         base::FilePath(), base::TimeDelta::FromSeconds(fetch_timeout_seconds),
-        task_runner_, task_runner_, task_runner_));
+        task_runner_, task_runner_));
     manager_->AddObserver(&observer_);
     should_create_token_forwarder_ = (fetch_timeout_seconds == 0);
   }

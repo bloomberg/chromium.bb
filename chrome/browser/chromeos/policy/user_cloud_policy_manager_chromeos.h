@@ -50,8 +50,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // from the server or |initial_policy_fetch_timeout| has expired. (The timeout
   // may be set to TimeDelta::Max() to block permanently.)
   // |task_runner| is the runner for policy refresh tasks.
-  // |file_task_runner| is used for file operations. Currently this must be the
-  // FILE BrowserThread.
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
   UserCloudPolicyManagerChromeOS(
@@ -60,7 +58,6 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
       const base::FilePath& component_policy_cache_path,
       base::TimeDelta initial_policy_fetch_timeout,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~UserCloudPolicyManagerChromeOS() override;
 

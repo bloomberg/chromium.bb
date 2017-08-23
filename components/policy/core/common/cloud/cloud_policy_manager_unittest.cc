@@ -10,8 +10,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/sequenced_task_runner.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
@@ -81,7 +81,7 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
   store_.NotifyStoreLoaded();
   ConfigurationPolicyProvider* provider =
       new CloudPolicyManager(dm_protocol::kChromeUserPolicyType, std::string(),
-                             &store_, task_runner, task_runner, task_runner);
+                             &store_, task_runner, task_runner);
   Mock::VerifyAndClearExpectations(&store_);
   return provider;
 }
@@ -150,7 +150,6 @@ class TestCloudPolicyManager : public CloudPolicyManager {
                            std::string(),
                            store,
                            task_runner,
-                           task_runner,
                            task_runner) {}
   ~TestCloudPolicyManager() override {}
 
@@ -185,7 +184,8 @@ class CloudPolicyManagerTest : public testing::Test {
     policy_.Build();
 
     EXPECT_CALL(store_, Load());
-    manager_.reset(new TestCloudPolicyManager(&store_, loop_.task_runner()));
+    manager_.reset(new TestCloudPolicyManager(
+        &store_, scoped_task_environment_.GetMainThreadTaskRunner()));
     manager_->Init(&schema_registry_);
     Mock::VerifyAndClearExpectations(&store_);
     manager_->AddObserver(&observer_);
@@ -196,8 +196,8 @@ class CloudPolicyManagerTest : public testing::Test {
     manager_->Shutdown();
   }
 
-  // Required by the refresh scheduler that's created by the manager.
-  base::MessageLoop loop_;
+  // Needs to be the first member.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   // Testing policy.
   const std::string policy_type_;

@@ -44,8 +44,6 @@ class POLICY_EXPORT CloudPolicyManager
       public ComponentCloudPolicyService::Delegate {
  public:
   // |task_runner| is the runner for policy refresh tasks.
-  // |file_task_runner| is used for file operations. Currently this must be the
-  // FILE BrowserThread.
   // |io_task_runner| is used for network IO. Currently this must be the IO
   // BrowserThread.
   CloudPolicyManager(
@@ -53,7 +51,6 @@ class POLICY_EXPORT CloudPolicyManager
       const std::string& settings_entity_id,
       CloudPolicyStore* cloud_policy_store,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
       const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
   ~CloudPolicyManager() override;
 
@@ -114,7 +111,6 @@ class POLICY_EXPORT CloudPolicyManager
   // policy update notifications are deferred until after it completes.
   bool waiting_for_policy_refresh_;
 
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyManager);

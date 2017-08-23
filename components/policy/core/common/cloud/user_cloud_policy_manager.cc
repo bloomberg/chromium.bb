@@ -29,13 +29,11 @@ UserCloudPolicyManager::UserCloudPolicyManager(
     const base::FilePath& component_policy_cache_path,
     std::unique_ptr<CloudExternalDataManager> external_data_manager,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner)
     : CloudPolicyManager(dm_protocol::kChromeUserPolicyType,
                          std::string(),
                          store.get(),
                          task_runner,
-                         file_task_runner,
                          io_task_runner),
       store_(std::move(store)),
       component_policy_cache_path_(component_policy_cache_path),
