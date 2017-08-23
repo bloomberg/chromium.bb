@@ -26,6 +26,9 @@ UA_IOS="Mozilla/5.0%20%28iPhone%3B%20CPU%20iPhone%20OS%2011_0%20like%20Mac%20OS\
 %20X%29%20AppleWebKit/603.1.30%20%28KHTML%2C%20like%20Gecko%29%20CriOS/60.0.311\
 2.72%20Mobile/15A5304i%20Safari/602.1"
 
+UA_DESKTOP="Mozilla%2F5.0%20%28X11%3B%20Linux%20x86_64%29%20AppleWebKit%2F537.3\
+6%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F61.0.3163.49%20Safari%2F537.36"
+
 for i in `seq 0 4`; do
   DOODLE_PARAM="data_push_epoch=200000000$i"
 
@@ -46,5 +49,14 @@ for i in `seq 0 4`; do
   FINGERPRINT=`sed -n $FINGERPRINT_PATTERN $OUTPATH/ddljson\_ios$i.json`
   URL="$API_URL,es_dfp:$FINGERPRINT&useragent=$UA_IOS&$DOODLE_PARAM"
   curl $URL > $OUTPATH/ddljson\_ios$i\_fp.json
+
+  # Desktop UA.
+  URL="$API_URL&useragent=$UA_DESKTOP&$DOODLE_PARAM"
+  curl $URL > $OUTPATH/ddljson\_desktop$i.json
+
+  # Desktop UA, with fingerprint.
+  FINGERPRINT=`sed -n $FINGERPRINT_PATTERN $OUTPATH/ddljson\_desktop$i.json`
+  URL="$API_URL,es_dfp:$FINGERPRINT&useragent=$UA_DESKTOP&$DOODLE_PARAM"
+  curl $URL > $OUTPATH/ddljson\_desktop$i\_fp.json
 done
 
