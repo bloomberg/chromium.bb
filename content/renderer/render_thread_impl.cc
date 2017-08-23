@@ -46,7 +46,6 @@
 #include "cc/base/switches.h"
 #include "cc/blink/web_layer_impl.h"
 #include "cc/output/layer_tree_frame_sink.h"
-#include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -57,6 +56,7 @@
 #include "components/viz/client/client_shared_bitmap_manager.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/local_surface_id_provider.h"
+#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/quads/copy_output_request.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/common/switches.h"
@@ -1985,8 +1985,8 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
       mojo::MakeRequest(&client);
 
   if (command_line.HasSwitch(switches::kEnableVulkan)) {
-    scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider =
-        cc::VulkanInProcessContextProvider::Create();
+    scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider =
+        viz::VulkanInProcessContextProvider::Create();
     if (vulkan_context_provider) {
       DCHECK(!layout_test_mode());
       frame_sink_provider_->CreateForWidget(routing_id, std::move(sink_request),

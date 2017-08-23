@@ -21,13 +21,13 @@
 #include "cc/base/histograms.h"
 #include "cc/base/switches.h"
 #include "cc/output/texture_mailbox_deleter.h"
-#include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/raster/task_graph_runner.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gl_helper.h"
+#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
 #include "components/viz/service/display/display.h"
@@ -425,7 +425,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       compositor->widget());
 #endif
 
-  scoped_refptr<cc::VulkanInProcessContextProvider> vulkan_context_provider =
+  scoped_refptr<viz::VulkanInProcessContextProvider> vulkan_context_provider =
       SharedVulkanContextProvider();
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider;
   if (create_gpu_output_surface && !vulkan_context_provider) {
@@ -667,7 +667,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
           ? base::MakeUnique<viz::DirectLayerTreeFrameSink>(
                 compositor->frame_sink_id(), GetHostFrameSinkManager(),
                 GetFrameSinkManager(), data->display.get(),
-                static_cast<scoped_refptr<cc::VulkanContextProvider>>(
+                static_cast<scoped_refptr<viz::VulkanContextProvider>>(
                     vulkan_context_provider))
           : base::MakeUnique<viz::DirectLayerTreeFrameSink>(
                 compositor->frame_sink_id(), GetHostFrameSinkManager(),
@@ -1009,13 +1009,13 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   lost_shared_main_thread_contexts  = NULL;
 }
 
-scoped_refptr<cc::VulkanInProcessContextProvider>
+scoped_refptr<viz::VulkanInProcessContextProvider>
 GpuProcessTransportFactory::SharedVulkanContextProvider() {
   if (!shared_vulkan_context_provider_initialized_) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableVulkan)) {
       shared_vulkan_context_provider_ =
-          cc::VulkanInProcessContextProvider::Create();
+          viz::VulkanInProcessContextProvider::Create();
     }
 
     shared_vulkan_context_provider_initialized_ = true;

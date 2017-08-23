@@ -62,7 +62,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   // Constructor used by the Vulkan implementation.
   BrowserCompositorOutputSurface(
-      const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
+      const scoped_refptr<viz::VulkanContextProvider>& vulkan_context_provider,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
 
   const UpdateVSyncParametersCallback update_vsync_parameters_callback_;

@@ -38,7 +38,7 @@ class ClientLayerTreeFrameSink : public cc::LayerTreeFrameSink,
       bool enable_surface_synchronization);
 
   ClientLayerTreeFrameSink(
-      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
+      scoped_refptr<VulkanContextProvider> vulkan_context_provider,
       std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
       mojom::CompositorFrameSinkPtrInfo compositor_frame_sink_info,
       mojom::CompositorFrameSinkClientRequest client_request,

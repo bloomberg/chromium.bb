@@ -36,13 +36,13 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
 #include "cc/output/texture_mailbox_deleter.h"
-#include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -127,7 +127,7 @@ struct CompositorDependencies {
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_impl;
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider;
+  scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider;
 #endif
 };
 
@@ -137,13 +137,13 @@ base::LazyInstance<CompositorDependencies>::DestructorAtExit
 const unsigned int kMaxDisplaySwapBuffers = 1U;
 
 #if BUILDFLAG(ENABLE_VULKAN)
-scoped_refptr<cc::VulkanContextProvider> GetSharedVulkanContextProvider() {
+scoped_refptr<viz::VulkanContextProvider> GetSharedVulkanContextProvider() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableVulkan)) {
-    scoped_refptr<cc::VulkanContextProvider> context_provider =
+    scoped_refptr<viz::VulkanContextProvider> context_provider =
         g_compositor_dependencies.Get().vulkan_context_provider;
     if (!*context_provider)
-      *context_provider = cc::VulkanInProcessContextProvider::Create();
+      *context_provider = viz::VulkanInProcessContextProvider::Create();
     return *context_provider;
   }
   return nullptr;
@@ -360,7 +360,7 @@ class AndroidOutputSurface : public cc::OutputSurface {
 class VulkanOutputSurface : public cc::OutputSurface {
  public:
   explicit VulkanOutputSurface(
-      scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
+      scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
       : OutputSurface(std::move(vulkan_context_provider)),
         task_runner_(std::move(task_runner)),
@@ -735,7 +735,7 @@ void CompositorImpl::CreateVulkanOutputSurface() {
           switches::kEnableVulkan))
     return;
 
-  scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider =
+  scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider =
       GetSharedVulkanContextProvider();
   if (!vulkan_context_provider)
     return;
@@ -813,7 +813,7 @@ void CompositorImpl::OnGpuChannelEstablished(
 
 void CompositorImpl::InitializeDisplay(
     std::unique_ptr<cc::OutputSurface> display_output_surface,
-    scoped_refptr<cc::VulkanContextProvider> vulkan_context_provider,
+    scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
     scoped_refptr<viz::ContextProvider> context_provider) {
   DCHECK(layer_tree_frame_sink_request_pending_);
 

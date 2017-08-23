@@ -32,7 +32,7 @@ OutputSurface::OutputSurface(
 }
 
 OutputSurface::OutputSurface(
-    scoped_refptr<VulkanContextProvider> vulkan_context_provider)
+    scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider)
     : vulkan_context_provider_(std::move(vulkan_context_provider)) {
   DCHECK(vulkan_context_provider_);
 }

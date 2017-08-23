@@ -38,7 +38,7 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       reflector_(nullptr) {}
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
+    const scoped_refptr<viz::VulkanContextProvider>& vulkan_context_provider,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback)
     : OutputSurface(std::move(vulkan_context_provider)),
       update_vsync_parameters_callback_(update_vsync_parameters_callback),
