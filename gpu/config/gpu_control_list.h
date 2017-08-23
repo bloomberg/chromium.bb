@@ -23,7 +23,15 @@ class GPU_EXPORT GpuControlList {
  public:
   typedef base::hash_map<int, std::string> FeatureMap;
 
-  enum OsType { kOsLinux, kOsMacosx, kOsWin, kOsChromeOS, kOsAndroid, kOsAny };
+  enum OsType {
+    kOsLinux,
+    kOsMacosx,
+    kOsWin,
+    kOsChromeOS,
+    kOsAndroid,
+    kOsFuchsia,
+    kOsAny
+  };
 
   enum OsFilter {
     // In loading, ignore all entries that belong to other OS.

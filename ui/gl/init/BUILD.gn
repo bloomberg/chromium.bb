@@ -49,11 +49,6 @@ component("init") {
     ]
 
     libs = [ "OpenGL.framework" ]
-  } else if (is_fuchsia) {
-    sources += [
-      "gl_factory_fuchsia.cc",
-      "gl_initializer_fuchsia.cc",
-    ]
   } else if (use_x11) {
     sources += [
       "gl_factory_x11.cc",
