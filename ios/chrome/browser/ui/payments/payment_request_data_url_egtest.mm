@@ -66,7 +66,8 @@
 
 // Tests that the Promise returned by canMakePayment() gets resolved with false
 // if the JS isContextSecure variable is not set in time.
-- (void)testCanMakePaymentDataURL {
+// TODO(crbug.com/758038): Reenable this test when underlying issue is fixed.
+- (void)DISABLED_testCanMakePaymentDataURL {
   [ChromeEarlGrey
       loadURL:GURL("data:text/html,<html><head><script>(new "
                    "PaymentRequest([{supportedMethods: ['basic-card']}], "
