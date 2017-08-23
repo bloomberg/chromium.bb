@@ -28305,9 +28305,11 @@ from previous Chrome versions.
 </enum>
 
 <enum name="OsSuite">
-  <int value="0" label="Windows Home Edition"/>
-  <int value="1" label="Windows Professional Edition (or better)"/>
+  <int value="0" label="Windows Home Edition (or unknown)"/>
+  <int value="1" label="Windows Professional/Ultimate Editions"/>
   <int value="2" label="Windows Server Edition"/>
+  <int value="3" label="Windows Enterprise Edition"/>
+  <int value="4" label="Windows Education Edition"/>
 </enum>
 
 <enum name="OSXExceptionHandlerEvents">
