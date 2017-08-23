@@ -80,6 +80,7 @@ struct ShapeResult::RunInfo {
         width_(other.width_) {}
 
   bool Rtl() const { return HB_DIRECTION_IS_BACKWARD(direction_); }
+  bool IsHorizontal() const { return HB_DIRECTION_IS_HORIZONTAL(direction_); }
   float XPositionForVisualOffset(unsigned, AdjustMidCluster) const;
   float XPositionForOffset(unsigned, AdjustMidCluster) const;
   int CharacterIndexForXPosition(float, bool include_partial_glyphs) const;
