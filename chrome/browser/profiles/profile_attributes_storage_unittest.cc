@@ -269,6 +269,92 @@ TEST_F(ProfileAttributesStorageTest, EntryAccessors) {
   TEST_BOOL_ACCESSORS(ProfileAttributesEntry, entry, IsAuthError);
 }
 
+TEST_F(ProfileAttributesStorageTest, EntryInternalAccessors) {
+  AddTestingProfile();
+
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
+      GetProfilePath("testing_profile_path0"), &entry));
+
+  EXPECT_EQ(GetProfilePath("testing_profile_path0"), entry->GetPath());
+
+  const char key[] = "test";
+
+  // Tests whether the accessors store and retrieve values correctly.
+  EXPECT_TRUE(entry->SetString(key, std::string("abcd")));
+  ASSERT_TRUE(entry->GetValue(key));
+  EXPECT_EQ(base::Value::Type::STRING, entry->GetValue(key)->type());
+  EXPECT_EQ(std::string("abcd"), entry->GetString(key));
+  EXPECT_EQ(base::UTF8ToUTF16("abcd"), entry->GetString16(key));
+  EXPECT_EQ(0.0, entry->GetDouble(key));
+  EXPECT_FALSE(entry->GetBool(key));
+  EXPECT_FALSE(entry->IsDouble(key));
+
+  EXPECT_TRUE(entry->SetString16(key, base::UTF8ToUTF16("efgh")));
+  ASSERT_TRUE(entry->GetValue(key));
+  EXPECT_EQ(base::Value::Type::STRING, entry->GetValue(key)->type());
+  EXPECT_EQ(std::string("efgh"), entry->GetString(key));
+  EXPECT_EQ(base::UTF8ToUTF16("efgh"), entry->GetString16(key));
+  EXPECT_EQ(0.0, entry->GetDouble(key));
+  EXPECT_FALSE(entry->GetBool(key));
+  EXPECT_FALSE(entry->IsDouble(key));
+
+  EXPECT_TRUE(entry->SetDouble(key, 12.5));
+  ASSERT_TRUE(entry->GetValue(key));
+  EXPECT_EQ(base::Value::Type::DOUBLE, entry->GetValue(key)->type());
+  EXPECT_EQ(std::string(), entry->GetString(key));
+  EXPECT_EQ(base::UTF8ToUTF16(""), entry->GetString16(key));
+  EXPECT_EQ(12.5, entry->GetDouble(key));
+  EXPECT_FALSE(entry->GetBool(key));
+  EXPECT_TRUE(entry->IsDouble(key));
+
+  EXPECT_TRUE(entry->SetBool(key, true));
+  ASSERT_TRUE(entry->GetValue(key));
+  EXPECT_EQ(base::Value::Type::BOOLEAN, entry->GetValue(key)->type());
+  EXPECT_EQ(std::string(), entry->GetString(key));
+  EXPECT_EQ(base::UTF8ToUTF16(""), entry->GetString16(key));
+  EXPECT_EQ(0.0, entry->GetDouble(key));
+  EXPECT_TRUE(entry->GetBool(key));
+  EXPECT_FALSE(entry->IsDouble(key));
+
+  // Test whether the setters returns correctly. Setters should return true if
+  // the previously stored value is different from the new value.
+  entry->SetBool(key, true);
+  EXPECT_TRUE(entry->SetString(key, std::string("abcd")));
+  EXPECT_FALSE(entry->SetString(key, std::string("abcd")));
+  EXPECT_FALSE(entry->SetString16(key, base::UTF8ToUTF16("abcd")));
+
+  EXPECT_TRUE(entry->SetString16(key, base::UTF8ToUTF16("efgh")));
+  EXPECT_FALSE(entry->SetString16(key, base::UTF8ToUTF16("efgh")));
+  EXPECT_FALSE(entry->SetString(key, std::string("efgh")));
+
+  EXPECT_TRUE(entry->SetDouble(key, 12.5));
+  EXPECT_FALSE(entry->SetDouble(key, 12.5));
+  EXPECT_TRUE(entry->SetDouble(key, 15.0));
+
+  EXPECT_TRUE(entry->SetString(key, std::string("abcd")));
+
+  EXPECT_TRUE(entry->SetBool(key, true));
+  EXPECT_FALSE(entry->SetBool(key, true));
+  EXPECT_TRUE(entry->SetBool(key, false));
+
+  EXPECT_TRUE(entry->SetString16(key, base::UTF8ToUTF16("efgh")));
+
+  // If previous data is not there, setters should returns true even if the
+  // defaults (empty string, 0.0, or false) are written.
+  EXPECT_TRUE(entry->SetString("test1", std::string()));
+  EXPECT_TRUE(entry->SetString16("test2", base::string16()));
+  EXPECT_TRUE(entry->SetDouble("test3", 0.0));
+  EXPECT_TRUE(entry->SetBool("test4", false));
+
+  // If previous data is in a wrong type, setters should returns true even if
+  // the defaults (empty string, 0.0, or false) are written.
+  EXPECT_TRUE(entry->SetString("test3", std::string()));
+  EXPECT_TRUE(entry->SetString16("test4", base::string16()));
+  EXPECT_TRUE(entry->SetDouble("test1", 0.0));
+  EXPECT_TRUE(entry->SetBool("test2", false));
+}
+
 TEST_F(ProfileAttributesStorageTest, AuthInfo) {
   AddTestingProfile();
 

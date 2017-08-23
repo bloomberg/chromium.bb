@@ -7,17 +7,21 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "base/values.h"
 
 namespace gfx {
 class Image;
 }
 
+class PrefService;
 class ProfileInfoCache;
 
 class ProfileAttributesEntry {
@@ -62,7 +66,7 @@ class ProfileAttributesEntry {
   bool IsUsingGAIAPicture() const;
   // Returns true if a GAIA picture has been loaded or has failed to load.
   bool IsGAIAPictureLoaded() const;
-  // Returns true if the profile is signed in as a supervised user..
+  // Returns true if the profile is signed in as a supervised user.
   bool IsSupervised() const;
   // Returns true if the profile is signed in as a child account.
   bool IsChild() const;
@@ -114,17 +118,54 @@ class ProfileAttributesEntry {
   void LockForceSigninProfile(bool is_lock);
 
  private:
+  friend class ProfileInfoCache;
+  FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
+                           EntryInternalAccessors);
+
+  void Initialize(ProfileInfoCache* cache,
+                  const base::FilePath& path,
+                  PrefService* prefs);
+
+  // Loads and saves the data to the local state.
+  const base::Value* GetEntryData() const;
+  void SetEntryData(base::Value data);
+
+  // Internal getter that returns a base::Value*, or nullptr if the key is not
+  // present.
+  const base::Value* GetValue(const char* key) const;
+
+  // Internal getters that return basic data types. If the key is not present,
+  // or if the data is in a wrong data type, return empty string, 0.0, or false
+  // depending on the target data type. We do not assume that the data type is
+  // correct because the local state file can be modified by a third party.
+  std::string GetString(const char* key) const;
+  base::string16 GetString16(const char* key) const;
+  double GetDouble(const char* key) const;
+  bool GetBool(const char* key) const;
+
+  // Type checking. Only IsDouble is implemented because others do not have
+  // callsites.
+  bool IsDouble(const char* key) const;
+
+  // Internal setters that accept basic data types. Return if the original data
+  // is different from the new data, i.e. whether actual update is done.
+  bool SetString(const char* key, std::string value);
+  bool SetString16(const char* key, base::string16 value);
+  bool SetDouble(const char* key, double value);
+  bool SetBool(const char* key, bool value);
+
   // These members are an implementation detail meant to smooth the migration
   // of the ProfileInfoCache to the ProfileAttributesStorage interface. They can
   // be safely removed once the ProfileInfoCache stops using indices
   // internally.
   // TODO(anthonyvd): Remove ProfileInfoCache related implementation details
   // when this class holds the members required to fulfill its own contract.
-  friend class ProfileInfoCache;
-  void Initialize(ProfileInfoCache* cache, const base::FilePath& path);
   size_t profile_index() const;
+
   ProfileInfoCache* profile_info_cache_;
+  PrefService* prefs_;
   base::FilePath profile_path_;
+  std::string storage_key_;
 
   // A separate boolean flag indicates whether the signin is required when force
   // signin is enabled. So that the profile locked status will be stored in

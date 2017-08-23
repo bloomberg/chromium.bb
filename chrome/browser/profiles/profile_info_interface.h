@@ -34,9 +34,6 @@ class ProfileInfoInterface {
 
   virtual base::string16 GetNameOfProfileAtIndex(size_t index) const = 0;
 
-  virtual base::string16 GetShortcutNameOfProfileAtIndex(
-      size_t index) const = 0;
-
   virtual base::FilePath GetPathOfProfileAtIndex(size_t index) const = 0;
 
   virtual base::string16 GetUserNameOfProfileAtIndex(size_t index) const = 0;
