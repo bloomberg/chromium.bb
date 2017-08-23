@@ -1391,8 +1391,8 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
   return dtmf_sender;
 }
 
-void RTCPeerConnection::close(ExceptionState& exception_state) {
-  if (ThrowExceptionIfSignalingStateClosed(signaling_state_, exception_state))
+void RTCPeerConnection::close() {
+  if (signaling_state_ == RTCPeerConnection::kSignalingStateClosed)
     return;
 
   CloseInternal();
