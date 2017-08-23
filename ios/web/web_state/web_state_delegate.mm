@@ -37,7 +37,9 @@ WebState* WebStateDelegate::OpenURLFromWebState(
   return nullptr;
 }
 
-void WebStateDelegate::HandleContextMenu(WebState*, const ContextMenuParams&) {}
+bool WebStateDelegate::HandleContextMenu(WebState*, const ContextMenuParams&) {
+  return false;
+}
 
 void WebStateDelegate::ShowRepostFormWarningDialog(
     WebState*,

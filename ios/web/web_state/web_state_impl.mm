@@ -403,10 +403,11 @@ void WebStateImpl::SendChangeLoadProgress(double progress) {
     observer.LoadProgressChanged(progress);
 }
 
-void WebStateImpl::HandleContextMenu(const web::ContextMenuParams& params) {
+bool WebStateImpl::HandleContextMenu(const web::ContextMenuParams& params) {
   if (delegate_) {
-    delegate_->HandleContextMenu(this, params);
+    return delegate_->HandleContextMenu(this, params);
   }
+  return false;
 }
 
 void WebStateImpl::ShowRepostFormWarningDialog(

@@ -47,12 +47,13 @@ WebState* WebStateDelegateBridge::OpenURLFromWebState(
   return nullptr;
 }
 
-void WebStateDelegateBridge::HandleContextMenu(
+bool WebStateDelegateBridge::HandleContextMenu(
     WebState* source,
     const ContextMenuParams& params) {
   if ([delegate_ respondsToSelector:@selector(webState:handleContextMenu:)]) {
-    [delegate_ webState:source handleContextMenu:params];
+    return [delegate_ webState:source handleContextMenu:params];
   }
+  return NO;
 }
 
 void WebStateDelegateBridge::ShowRepostFormWarningDialog(

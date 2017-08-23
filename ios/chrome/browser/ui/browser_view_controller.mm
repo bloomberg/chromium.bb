@@ -2728,17 +2728,17 @@ bubblePresenterForFeature:(const base::Feature&)feature
   };
 }
 
-- (void)webState:(web::WebState*)webState
+- (BOOL)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
   // Prevent context menu from displaying for a tab which is no longer the
   // current one.
   if (webState != [_model currentTab].webState) {
-    return;
+    return NO;
   }
 
   // No custom context menu if no valid url is available in |params|.
   if (!params.link_url.is_valid() && !params.src_url.is_valid()) {
-    return;
+    return NO;
   }
 
   DCHECK(_browserState);
@@ -2870,6 +2870,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
   }
 
   [_contextMenuCoordinator start];
+  return YES;
 }
 
 - (void)webState:(web::WebState*)webState
