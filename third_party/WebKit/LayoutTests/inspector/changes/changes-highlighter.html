@@ -9,31 +9,30 @@
 <script>
 
 function test() {
-    TestRunner.waitForUISourceCode("after.css").then(uiSourceCode => uiSourceCode.requestContent()).then(onAfterContent);
+  TestRunner.waitForUISourceCode('after.css').then(uiSourceCode => uiSourceCode.requestContent()).then(onAfterContent);
 
-    function onAfterContent(content) {
-      SourcesTestRunner.waitForScriptSource("before.css", uiSourceCode => uiSourceCode.setWorkingCopy(content));
-      TestRunner.addSniffer(Changes.ChangesView.prototype, "_renderDiffRows", rowsRendered, true);
-      UI.viewManager.showView("changes.changes");
+  function onAfterContent(content) {
+    SourcesTestRunner.waitForScriptSource('before.css', uiSourceCode => uiSourceCode.setWorkingCopy(content));
+    TestRunner.addSniffer(Changes.ChangesView.prototype, '_renderDiffRows', rowsRendered, true);
+    UI.viewManager.showView('changes.changes');
+  }
+
+  function rowsRendered() {
+    var codeMirror = this._editor._codeMirror;
+    for (var i = 0; i < codeMirror.lineCount(); i++) {
+      codeMirror.scrollIntoView(i);  // Ensure highlighting
+      var lineInfo = codeMirror.lineInfo(i);
+      var prefix = '';
+      if (lineInfo.handle.styleClasses.bgClass === 'deletion')
+        prefix = '-';
+      else if (lineInfo.handle.styleClasses.bgClass === 'addition')
+        prefix = '+';
+      else if (lineInfo.handle.styleClasses.bgClass === 'equal')
+        prefix = ' ';
+      TestRunner.addResult(prefix + ' ' + lineInfo.text);
     }
-
-    function rowsRendered() {
-      var codeMirror = this._editor._codeMirror;
-      for (var i = 0; i < codeMirror.lineCount(); i++) {
-        codeMirror.scrollIntoView(i); // Ensure highlighting
-        var lineInfo = codeMirror.lineInfo(i);
-        var prefix = "";
-        if (lineInfo.handle.styleClasses.bgClass === "deletion")
-          prefix = "-";
-        else if (lineInfo.handle.styleClasses.bgClass === "addition")
-          prefix = "+";
-        else if (lineInfo.handle.styleClasses.bgClass === "equal")
-          prefix = " ";
-        TestRunner.addResult(prefix + " " + lineInfo.text);
-
-      }
-      TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

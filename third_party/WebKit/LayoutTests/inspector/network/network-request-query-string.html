@@ -4,22 +4,21 @@
 <script src="../../http/tests/inspector/network-test.js"></script>
 <script>
 function test() {
-    function checkURL(url)
-    {
-        var request = new SDK.NetworkRequest(url, url, "", "", "");
-        TestRunner.addResult("URL: " + url);
-        TestRunner.addResult("Query: " + request.queryString());
-        TestRunner.addResult("");
-    }
+  function checkURL(url) {
+    var request = new SDK.NetworkRequest(url, url, '', '', '');
+    TestRunner.addResult('URL: ' + url);
+    TestRunner.addResult('Query: ' + request.queryString());
+    TestRunner.addResult('');
+  }
 
-    checkURL("http://webkit.org");
-    checkURL("http://webkit.org?foo");
-    checkURL("http://webkit.org#bar");
-    checkURL("http://webkit.org?foo#bar");
-    checkURL("http://webkit.org?foo=bar?baz");
-    checkURL("http://webkit.org?foo?bar#baz");
+  checkURL('http://webkit.org');
+  checkURL('http://webkit.org?foo');
+  checkURL('http://webkit.org#bar');
+  checkURL('http://webkit.org?foo#bar');
+  checkURL('http://webkit.org?foo=bar?baz');
+  checkURL('http://webkit.org?foo?bar#baz');
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

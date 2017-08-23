@@ -19,42 +19,38 @@ function performActions()
     var unused = element.offsetHeight;
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("var unused = document.body.offsetWidth;", function() {
-         PerformanceTestRunner.evaluateWithTimeline("performActions()", onTimelineRecorded);
-    });
+function test() {
+  TestRunner.evaluateInPage('var unused = document.body.offsetWidth;', function() {
+    PerformanceTestRunner.evaluateWithTimeline('performActions()', onTimelineRecorded);
+  });
 
-    async function clickValueLink(event, row)
-    {
-        var model = UI.panels.timeline._performanceModel.timelineModel();
-        var element = await Timeline.TimelineUIUtils.buildTraceEventDetails(event, model, new Components.Linkifier(), true);
-        var rows = element.querySelectorAll(".timeline-details-view-row");
-        for (var i = 0; i < rows.length; ++i) {
-            if (rows[i].firstChild.textContent.indexOf(row) !== -1) {
-	        rows[i].lastChild.firstChild.shadowRoot.lastChild.click();
-	        return;
-	    }
-        }
+  async function clickValueLink(event, row) {
+    var model = UI.panels.timeline._performanceModel.timelineModel();
+    var element = await Timeline.TimelineUIUtils.buildTraceEventDetails(event, model, new Components.Linkifier(), true);
+    var rows = element.querySelectorAll('.timeline-details-view-row');
+    for (var i = 0; i < rows.length; ++i) {
+      if (rows[i].firstChild.textContent.indexOf(row) !== -1) {
+        rows[i].lastChild.firstChild.shadowRoot.lastChild.click();
+        return;
+      }
     }
+  }
 
-    function onTimelineRecorded(records)
-    {
-        var layoutEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
-        UI.context.addFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
-        clickValueLink(layoutEvent, "Layout root");
-    }
+  function onTimelineRecorded(records) {
+    var layoutEvent = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Layout);
+    UI.context.addFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
+    clickValueLink(layoutEvent, 'Layout root');
+  }
 
-    function onSelectedNodeChanged()
-    {
-        var node = UI.panels.elements.selectedDOMNode();
-        // We may first get an old selected node while switching to the Elements panel.
-        if (node.nodeName() === "BODY")
-            return;
-        UI.context.removeFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
-        TestRunner.addResult("Layout root node id: " + node.getAttribute("id"));
-        TestRunner.completeTest();
-    }
+  function onSelectedNodeChanged() {
+    var node = UI.panels.elements.selectedDOMNode();
+    // We may first get an old selected node while switching to the Elements panel.
+    if (node.nodeName() === 'BODY')
+      return;
+    UI.context.removeFlavorChangeListener(SDK.DOMNode, onSelectedNodeChanged);
+    TestRunner.addResult('Layout root node id: ' + node.getAttribute('id'));
+    TestRunner.completeTest();
+  }
 }
 
 </script>

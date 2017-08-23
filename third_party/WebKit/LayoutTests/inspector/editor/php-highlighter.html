@@ -3,17 +3,15 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="editor-test.js"></script>
 <script>
-function test()
-{
-    var mimeType = "text/x-php";
-    var textEditor = SourcesTestRunner.createTestEditor();
-    TestRunner.addSnifferPromise(SourceFrame.SourcesTextEditor.prototype, "rewriteMimeType").then(onModesLoaded);
-    textEditor.setMimeType(mimeType);
-    function onModesLoaded()
-    {
-        TestRunner.addResult("Mode loaded: " + !!CodeMirror.mimeModes[mimeType]);
-        TestRunner.completeTest();
-    }
+function test() {
+  var mimeType = 'text/x-php';
+  var textEditor = SourcesTestRunner.createTestEditor();
+  TestRunner.addSnifferPromise(SourceFrame.SourcesTextEditor.prototype, 'rewriteMimeType').then(onModesLoaded);
+  textEditor.setMimeType(mimeType);
+  function onModesLoaded() {
+    TestRunner.addResult('Mode loaded: ' + !!CodeMirror.mimeModes[mimeType]);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

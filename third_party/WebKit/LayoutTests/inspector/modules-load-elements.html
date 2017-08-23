@@ -2,15 +2,14 @@
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
-async function test()
-{
-    var initialModules = TestRunner.loadedModules();
-    await UI.inspectorView.panel("elements");
-    var elementsModules = TestRunner.dumpLoadedModules(initialModules);
-    TestRunner.addResult("Now with animations pane");
-    await self.runtime.loadModulePromise("animation");
-    TestRunner.dumpLoadedModules(elementsModules);
-    TestRunner.completeTest();
+async function test() {
+  var initialModules = TestRunner.loadedModules();
+  await UI.inspectorView.panel('elements');
+  var elementsModules = TestRunner.dumpLoadedModules(initialModules);
+  TestRunner.addResult('Now with animations pane');
+  await self.runtime.loadModulePromise('animation');
+  TestRunner.dumpLoadedModules(elementsModules);
+  TestRunner.completeTest();
 }
 </script>
 </head>

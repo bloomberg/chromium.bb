@@ -14,23 +14,21 @@ function B() {
 B.prototype = new A();
 b = new B();
 
-async function test()
-{
-    var result = await TestRunner.RuntimeAgent.evaluate("window.b");
-    var properties = await TestRunner.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false);
+async function test() {
+  var result = await TestRunner.RuntimeAgent.evaluate('window.b');
+  var properties = await TestRunner.RuntimeAgent.getProperties(result.objectId, /* isOwnProperty */ false);
 
-    if (!properties) {
-        TestRunner.addResult("Properties do not exist");
-        TestRunner.completeTest();
-        return;
-    }
- 
-    for (var property of properties) {
-        if (property.name.match(/^test/)) 
-            TestRunner.addResult("property.name==\"" + property.name + "\" isOwn==\"" + property.isOwn + "\"");
-    }
+  if (!properties) {
+    TestRunner.addResult('Properties do not exist');
     TestRunner.completeTest();
+    return;
+  }
 
+  for (var property of properties) {
+    if (property.name.match(/^test/))
+      TestRunner.addResult('property.name=="' + property.name + '" isOwn=="' + property.isOwn + '"');
+  }
+  TestRunner.completeTest();
 }
 </script>
 </head>

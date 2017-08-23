@@ -8,21 +8,19 @@
 <script src="./sass-test.js"></script>
 <script>
 
-function test()
-{
-    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
-    SASSTestRunner.loadASTMapping(header, onMappingLoaded);
+function test() {
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
+  SASSTestRunner.loadASTMapping(header, onMappingLoaded);
 
-    function onMappingLoaded(map)
-    {
-        if (!map) {
-            TestRunner.addResult("ERROR: mapping is not valid.");
-            TestRunner.completeTest();
-            return;
-        }
-        SASSTestRunner.validateMapping(map);
-        TestRunner.completeTest();
+  function onMappingLoaded(map) {
+    if (!map) {
+      TestRunner.addResult('ERROR: mapping is not valid.');
+      TestRunner.completeTest();
+      return;
     }
+    SASSTestRunner.validateMapping(map);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -3,7 +3,7 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script type="text/javascript">
 
-var test = function () {
+var test = function() {
   function dumpCookies(cookies) {
     TestRunner.addResult(cookies.map(x => x.name()).join(','));
   }
@@ -31,11 +31,11 @@ var test = function () {
       deselect: () => undefined,
       traverseNextNode: () => options.nextNeighbor,
       traversePreviousNode: () => options.previousNeighbor,
-      appendChild: function (node) {
+      appendChild: function(node) {
         node.dataGrid = mockNode.dataGrid;
         calls.appendChild.push(node);
       },
-      removeChildren: function () {
+      removeChildren: function() {
         if (mockNode.dataGrid) {
           mockNode.dataGrid.selectedNode = null;
         }
@@ -55,15 +55,17 @@ var test = function () {
 
     var dataGrid = {
       rootNode: () => {
-        options.rootNode.dataGrid = dataGrid
+        options.rootNode.dataGrid = dataGrid;
         return options.rootNode;
       },
       selectedNode: options.selectedNode,
       isSortOrderAscending: () => options.isAsc,
       sortColumnId: () => options.sortColumn,
-      addCreationNode: function () { calls.addCreationNode.push(arguments); },
+      addCreationNode: function() {
+        calls.addCreationNode.push(arguments);
+      },
       dispatchEventToListeners: () => undefined,
-      startEditingNextEditableColumnOfDataGridNode: function () {
+      startEditingNextEditableColumnOfDataGridNode: function() {
         calls.startEditingNextEditableColumnOfDataGridNode.push(arguments);
       },
       _calls: calls,
@@ -127,9 +129,11 @@ var test = function () {
     TestRunner.addResult('\n--- Neighbor selection test ---\n');
     createBuildAndDumpTable(cookieData, mockNode({nextNeighbor: {cookie: createCookie(cookieData[0])}}), true);
     TestRunner.addResult('\n--- Previous neighbor selection test ---\n');
-    createBuildAndDumpTable(cookieData, mockNode({nextNeighbor: {}, previousNeighbor: {cookie: createCookie(cookieData[4])}}), true);
+    createBuildAndDumpTable(
+        cookieData, mockNode({nextNeighbor: {}, previousNeighbor: {cookie: createCookie(cookieData[4])}}), true);
     TestRunner.addResult('\n--- Inactive node test ---\n');
-    createBuildAndDumpTable(cookieData, mockNode({cookie: createCookie({name: 'missing', value: 'cookie'})}), true, 'name');
+    createBuildAndDumpTable(
+        cookieData, mockNode({cookie: createCookie({name: 'missing', value: 'cookie'})}), true, 'name');
   }
 
   function run() {

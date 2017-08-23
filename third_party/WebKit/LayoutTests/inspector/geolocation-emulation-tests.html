@@ -65,49 +65,42 @@ function overridenTimestampGeolocation()
     navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testPermissionGranted(next)
-        {
-            ConsoleTestRunner.addConsoleSniffer(next);
-            TestRunner.evaluateInPage("grantGeolocationPermission()");
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function testPermissionGranted(next) {
+      ConsoleTestRunner.addConsoleSniffer(next);
+      TestRunner.evaluateInPage('grantGeolocationPermission()');
+    },
 
-        function testGeolocationUnavailable(next)
-        {
-            TestRunner.EmulationAgent.setGeolocationOverride();
-            ConsoleTestRunner.addConsoleSniffer(next);
-            TestRunner.evaluateInPage("overrideGeolocation()");
-        },
+    function testGeolocationUnavailable(next) {
+      TestRunner.EmulationAgent.setGeolocationOverride();
+      ConsoleTestRunner.addConsoleSniffer(next);
+      TestRunner.evaluateInPage('overrideGeolocation()');
+    },
 
-        function testOverridenGeolocation(next)
-        {
-            TestRunner.EmulationAgent.setGeolocationOverride(50, 100, 95);
-            ConsoleTestRunner.addConsoleSniffer(next);
-            TestRunner.evaluateInPage("overrideGeolocation()");
-        },
+    function testOverridenGeolocation(next) {
+      TestRunner.EmulationAgent.setGeolocationOverride(50, 100, 95);
+      ConsoleTestRunner.addConsoleSniffer(next);
+      TestRunner.evaluateInPage('overrideGeolocation()');
+    },
 
-        function testInvalidParam(next)
-        {
-            TestRunner.EmulationAgent.setGeolocationOverride(true, 100, 95);
-            next();
-        },
+    function testInvalidParam(next) {
+      TestRunner.EmulationAgent.setGeolocationOverride(true, 100, 95);
+      next();
+    },
 
-        function testInvalidGeolocation(next)
-        {
-            TestRunner.EmulationAgent.setGeolocationOverride(200, 300, 95);
-            ConsoleTestRunner.addConsoleSniffer(next);
-            TestRunner.evaluateInPage("overrideGeolocation()");
-        },
+    function testInvalidGeolocation(next) {
+      TestRunner.EmulationAgent.setGeolocationOverride(200, 300, 95);
+      ConsoleTestRunner.addConsoleSniffer(next);
+      TestRunner.evaluateInPage('overrideGeolocation()');
+    },
 
-        function testTimestampOfOverridenPosition(next)
-        {
-            TestRunner.EmulationAgent.setGeolocationOverride(50, 100, 95);
-            ConsoleTestRunner.addConsoleSniffer(next);
-            TestRunner.evaluateInPage("overridenTimestampGeolocation()");
-        }
-    ]);
+    function testTimestampOfOverridenPosition(next) {
+      TestRunner.EmulationAgent.setGeolocationOverride(50, 100, 95);
+      ConsoleTestRunner.addConsoleSniffer(next);
+      TestRunner.evaluateInPage('overridenTimestampGeolocation()');
+    }
+  ]);
 }
 </script>
 </head>

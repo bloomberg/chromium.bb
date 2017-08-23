@@ -10,18 +10,16 @@ pre {
 </style>
 <script>
 
-function test()
-{
-    TestRunner.evaluateInPage("getCSS()", onCSS);
+function test() {
+  TestRunner.evaluateInPage('getCSS()', onCSS);
 
-    function onCSS(result)
-    {
-        SASSTestRunner.parseCSS("", result.value)
-            .then(SASSTestRunner.dumpAST)
-            .then(SASSTestRunner.validateASTRanges)
-            .catch(console.error.bind(console))
-            .then(TestRunner.completeTest);
-    }
+  function onCSS(result) {
+    SASSTestRunner.parseCSS('', result.value)
+        .then(SASSTestRunner.dumpAST)
+        .then(SASSTestRunner.validateASTRanges)
+        .catch(console.error.bind(console))
+        .then(TestRunner.completeTest);
+  }
 }
 
 function getCSS()

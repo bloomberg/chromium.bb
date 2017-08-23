@@ -4,52 +4,46 @@
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
 
-function test()
-{
-    TestTimelineControllerClient = function()
-    {
-        this._hadLoadingProgress = false;
+function test() {
+  TestTimelineControllerClient = function() {
+    this._hadLoadingProgress = false;
+  };
+
+  TestTimelineControllerClient.prototype = {
+    recordingProgress: function() {
+      if (!controller)
+        return;
+      TestRunner.addResult('TimelineControllerClient.recordingProgress');
+      controller.stopRecording();
+      controller = null;
+    },
+
+    loadingStarted: function() {
+      TestRunner.addResult('TimelineControllerClient.loadingStarted');
+    },
+
+    loadingProgress: function() {
+      if (this._hadLoadingProgress)
+        return;
+      this._hadLoadingProgress = true;
+      TestRunner.addResult('TimelineControllerClient.loadingProgress');
+    },
+
+    processingStarted: function() {
+      TestRunner.addResult('TimelineControllerClient.processingStarted');
+    },
+
+    loadingComplete: function() {
+      TestRunner.addResult('TimelineControllerClient.loadingComplete');
+      TestRunner.completeTest();
     }
-
-    TestTimelineControllerClient.prototype = {
-        recordingProgress: function()
-        {
-            if (!controller)
-                return;
-            TestRunner.addResult("TimelineControllerClient.recordingProgress");
-            controller.stopRecording();
-            controller = null;
-        },
-
-        loadingStarted: function()
-        {
-            TestRunner.addResult("TimelineControllerClient.loadingStarted");
-        },
-
-        loadingProgress: function()
-        {
-            if (this._hadLoadingProgress)
-                return;
-            this._hadLoadingProgress = true;
-            TestRunner.addResult("TimelineControllerClient.loadingProgress");
-        },
-
-        processingStarted: function()
-        {
-            TestRunner.addResult("TimelineControllerClient.processingStarted");
-        },
-
-        loadingComplete: function()
-        {
-            TestRunner.addResult("TimelineControllerClient.loadingComplete");
-            TestRunner.completeTest();
-        }
-    };
-    var performanceModel = new Timeline.PerformanceModel();
-    var controller = new Timeline.TimelineController(TestRunner.tracingManager, performanceModel, new TestTimelineControllerClient());
-    controller.startRecording({}, []).then(() => {
-        TestRunner.addResult("TimelineControllerClient.recordingStarted");
-    });
+  };
+  var performanceModel = new Timeline.PerformanceModel();
+  var controller =
+      new Timeline.TimelineController(TestRunner.tracingManager, performanceModel, new TestTimelineControllerClient());
+  controller.startRecording({}, []).then(() => {
+    TestRunner.addResult('TimelineControllerClient.recordingStarted');
+  });
 }
 
 </script>

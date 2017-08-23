@@ -12,18 +12,18 @@ function scrollAndDisplay()
     return Promise.reject();
 }
 
-function test()
-{
-    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+function test() {
+  Runtime.experiments.enableForTest('timelineInvalidationTracking');
 
-    PerformanceTestRunner.invokeAsyncWithTimeline("scrollAndDisplay", onRecordingDone);
+  PerformanceTestRunner.invokeAsyncWithTimeline('scrollAndDisplay', onRecordingDone);
 
-    function onRecordingDone()
-    {
-        var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
-        TestRunner.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(event), PerformanceTestRunner.InvalidationFormatters, "", "Scroll invalidations");
-        TestRunner.completeTest();
-    };
+  function onRecordingDone() {
+    var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.Paint);
+    TestRunner.addArray(
+        TimelineModel.InvalidationTracker.invalidationEventsFor(event), PerformanceTestRunner.InvalidationFormatters,
+        '', 'Scroll invalidations');
+    TestRunner.completeTest();
+  };
 }
 </script>
 </head>

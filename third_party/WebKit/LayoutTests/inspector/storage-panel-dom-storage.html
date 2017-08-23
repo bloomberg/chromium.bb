@@ -16,54 +16,51 @@ function populateDOMStorage()
     }
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("populateDOMStorage()", function(result) {
-        TestRunner.addResult("Populated local and session storage");
-    });
-    function name(storage)
-    {
-        return storage.isLocalStorage ? "Local storage" : "Session storage";
-    }
+function test() {
+  TestRunner.evaluateInPage('populateDOMStorage()', function(result) {
+    TestRunner.addResult('Populated local and session storage');
+  });
+  function name(storage) {
+    return storage.isLocalStorage ? 'Local storage' : 'Session storage';
+  }
 
-    function dumpDataGridContent(dataGrid)
-    {
-        var nodes = dataGrid.rootNode().children;
-        var rows = [];
-        for (var i = 0; i < nodes.length; ++i) {
-            var node = nodes[i];
-            if (!node.isCreationNode)
-                rows.push(node._data.key + node._data.value);
-        }
-        rows.sort();
-        TestRunner.addResult("KeyValue pairs: " + rows.join(''));
+  function dumpDataGridContent(dataGrid) {
+    var nodes = dataGrid.rootNode().children;
+    var rows = [];
+    for (var i = 0; i < nodes.length; ++i) {
+      var node = nodes[i];
+      if (!node.isCreationNode)
+        rows.push(node._data.key + node._data.value);
     }
+    rows.sort();
+    TestRunner.addResult('KeyValue pairs: ' + rows.join(''));
+  }
 
-    function testStorageInView(storages) {
-        var storage = storages.shift();
-        if (!storage) {
-            TestRunner.addResult("DONE");
-            TestRunner.completeTest();
-            return;
-        }
-        UI.panels.resources.showDOMStorage(storage);
-        TestRunner.addResult("Did show: " + name(storage));
-        TestRunner.deprecatedRunAfterPendingDispatches(function() {
-            TestRunner.addResult(name(storage) + " content: ");
-            var view = UI.panels.resources._domStorageView;
-            dumpDataGridContent(view._dataGrid);
-            TestRunner.deprecatedRunAfterPendingDispatches(() => testStorageInView(storages));
-        });
+  function testStorageInView(storages) {
+    var storage = storages.shift();
+    if (!storage) {
+      TestRunner.addResult('DONE');
+      TestRunner.completeTest();
+      return;
     }
-
+    UI.panels.resources.showDOMStorage(storage);
+    TestRunner.addResult('Did show: ' + name(storage));
     TestRunner.deprecatedRunAfterPendingDispatches(function() {
-        var storages = ApplicationTestRunner.domStorageModel().storages();
-        if (storages)
-            testStorageInView(storages.slice());
-        else
-            TestRunner.addResult("FAIL: no DOM storages found.");
-
+      TestRunner.addResult(name(storage) + ' content: ');
+      var view = UI.panels.resources._domStorageView;
+      dumpDataGridContent(view._dataGrid);
+      TestRunner.deprecatedRunAfterPendingDispatches(() => testStorageInView(storages));
     });
+  }
+
+  TestRunner.deprecatedRunAfterPendingDispatches(function() {
+    var storages = ApplicationTestRunner.domStorageModel().storages();
+    if (storages)
+      testStorageInView(storages.slice());
+    else
+      TestRunner.addResult('FAIL: no DOM storages found.');
+
+  });
 }
 
 </script>

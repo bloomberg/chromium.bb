@@ -58,38 +58,34 @@ function startSecondWorker()
     return promise;
 }
 
-function test()
-{
-    PerformanceTestRunner.invokeWithTracing("startSecondWorker", processTracingEvents,
-        "disabled-by-default-devtools.timeline.stack", true);
+function test() {
+  PerformanceTestRunner.invokeWithTracing(
+      'startSecondWorker', processTracingEvents, 'disabled-by-default-devtools.timeline.stack', true);
 
-    function processTracingEvents()
-    {
-        var mainThread = { name: "Main Thread", events: PerformanceTestRunner.timelineModel()._mainThreadEvents };
-        processThread(new Set(["startSecondWorker", "worker2.onmessage"]), mainThread);
-        for (var thread of PerformanceTestRunner.timelineModel()._virtualThreads) {
-            if (!thread.isWorker())
-                continue;
-            processThread(new Set(["Function Call"]), thread);
-        }
-        TestRunner.completeTest();
+  function processTracingEvents() {
+    var mainThread = {name: 'Main Thread', events: PerformanceTestRunner.timelineModel()._mainThreadEvents};
+    processThread(new Set(['startSecondWorker', 'worker2.onmessage']), mainThread);
+    for (var thread of PerformanceTestRunner.timelineModel()._virtualThreads) {
+      if (!thread.isWorker())
+        continue;
+      processThread(new Set(['Function Call']), thread);
     }
+    TestRunner.completeTest();
+  }
 
-    function processThread(expectedEvents, thread)
-    {
-        TestRunner.addResult(thread.name);
-        var missingEvents = thread.events.reduce(processEvent, expectedEvents);
-        if (missingEvents.size) {
-            TestRunner.addResult("FAIL: missing events:");
-            missingEvents.forEach(TestRunner.addResult);
-        }
+  function processThread(expectedEvents, thread) {
+    TestRunner.addResult(thread.name);
+    var missingEvents = thread.events.reduce(processEvent, expectedEvents);
+    if (missingEvents.size) {
+      TestRunner.addResult('FAIL: missing events:');
+      missingEvents.forEach(TestRunner.addResult);
     }
+  }
 
-    function processEvent(expectedEvents, event)
-    {
-        expectedEvents.delete(Timeline.TimelineUIUtils.eventTitle(event));
-        return expectedEvents;
-    }
+  function processEvent(expectedEvents, event) {
+    expectedEvents.delete(Timeline.TimelineUIUtils.eventTitle(event));
+    return expectedEvents;
+  }
 }
 
 </script>

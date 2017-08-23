@@ -17,18 +17,17 @@ function simulateBrowserSync()
     setTimeout(() => link.href = "resources/test-mapping-good.css?rel=123412341234", 0);
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("simulateBrowserSync()", function() { });
-    TestRunner.cssModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onSourceMapAttached);
+function test() {
+  TestRunner.evaluateInPage('simulateBrowserSync()', function() {});
+  TestRunner.cssModel.sourceMapManager().addEventListener(
+      SDK.SourceMapManager.Events.SourceMapAttached, onSourceMapAttached);
 
-    function onSourceMapAttached(event)
-    {
-        var header = event.data.client;
-        var sourceMap = event.data.sourceMap;
-        TestRunner.addResult("SourceMap is editable: " + sourceMap.editable());
-        TestRunner.completeTest();
-    }
+  function onSourceMapAttached(event) {
+    var header = event.data.client;
+    var sourceMap = event.data.sourceMap;
+    TestRunner.addResult('SourceMap is editable: ' + sourceMap.editable());
+    TestRunner.completeTest();
+  }
 }
 
 </script>

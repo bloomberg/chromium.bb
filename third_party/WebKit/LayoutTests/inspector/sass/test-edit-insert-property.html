@@ -8,62 +8,48 @@
 <script src="./sass-test.js"></script>
 <script>
 
-function test()
-{
-    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+function test() {
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
 
-    SASSTestRunner.runCSSEditTests(header, [
-        function testPrependProperty(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "color", "border: 1px solid black;color")
-            ];
-        },
+  SASSTestRunner.runCSSEditTests(header, [
+    function testPrependProperty(text) {
+      return [SASSTestRunner.createEdit(text, 'color', 'border: 1px solid black;color')];
+    },
 
-        function testInsertMiddleProperty(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "red;", "red;border: 1px solid black;")
-            ];
-        },
+    function testInsertMiddleProperty(text) {
+      return [SASSTestRunner.createEdit(text, 'red;', 'red;border: 1px solid black;')];
+    },
 
-        function testInsertTrailingProperty(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "10px;", "10px;border: 1px solid black;")
-            ];
-        },
+    function testInsertTrailingProperty(text) {
+      return [SASSTestRunner.createEdit(text, '10px;', '10px;border: 1px solid black;')];
+    },
 
-        function testInsertDuplicateProperties(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "color", "border: 1px solid black;color", 0),
-                SASSTestRunner.createEdit(text, "color", "border: 1px solid black;color", 2),
-            ];
-        },
+    function testInsertDuplicateProperties(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'color', 'border: 1px solid black;color', 0),
+        SASSTestRunner.createEdit(text, 'color', 'border: 1px solid black;color', 2),
+      ];
+    },
 
-        function testPrependDifferentPropertiesSameRule(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "color", "display:flex;overflow:hidden;color"),
-            ];
-        },
+    function testPrependDifferentPropertiesSameRule(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'color', 'display:flex;overflow:hidden;color'),
+      ];
+    },
 
-        function testInsertTrailingDifferentPropertiesSameRule(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "10px;", "10px;display:flex;overflow:hidden;"),
-            ];
-        },
+    function testInsertTrailingDifferentPropertiesSameRule(text) {
+      return [
+        SASSTestRunner.createEdit(text, '10px;', '10px;display:flex;overflow:hidden;'),
+      ];
+    },
 
-        function testInsertDifferentPropertiesDifferentRules(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "color", "margin:10px;color", 0),
-                SASSTestRunner.createEdit(text, "10px;", "10px;border: 1px solid black;", 2)
-            ];
-        },
-    ]);
+    function testInsertDifferentPropertiesDifferentRules(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'color', 'margin:10px;color', 0),
+        SASSTestRunner.createEdit(text, '10px;', '10px;border: 1px solid black;', 2)
+      ];
+    },
+  ]);
 }
 
 </script>

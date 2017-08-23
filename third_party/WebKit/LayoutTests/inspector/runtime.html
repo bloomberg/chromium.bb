@@ -3,43 +3,37 @@
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
 
-function test()
-{
-    function findLoadedModule()
-    {
-        var modules = self.runtime._modules;
-        for (var module of modules) {
-            if (module._loadedForTest)
-                return module;
-        }
-
-        TestRunner.addResult("Fail: not a single module loaded");
-        TestRunner.completeTest();
+function test() {
+  function findLoadedModule() {
+    var modules = self.runtime._modules;
+    for (var module of modules) {
+      if (module._loadedForTest)
+        return module;
     }
 
-    TestRunner.runTestSuite([
-        function substituteURL(next)
-        {
-            var module = findLoadedModule();
-            var moduleName = module._name;
-            module._name = "fake_module";
+    TestRunner.addResult('Fail: not a single module loaded');
+    TestRunner.completeTest();
+  }
 
-            testValue("no url here");
-            testValue("@url()");
-            testValue("@url(file.js)");
-            testValue("before @url(long/path/to/the/file.png) after");
-            testValue("@url(first.png)@url(second.gif)");
-            testValue("a lot of @url(stuff) in a@url(single)line and more url() @@url (not/a/resource.gif)");
+  TestRunner.runTestSuite([function substituteURL(next) {
+    var module = findLoadedModule();
+    var moduleName = module._name;
+    module._name = 'fake_module';
 
-            function testValue(value)
-            {
-                TestRunner.addResult("\"" + value + "\" -> \"" + module.substituteURL(value) + "\"");
-            }
+    testValue('no url here');
+    testValue('@url()');
+    testValue('@url(file.js)');
+    testValue('before @url(long/path/to/the/file.png) after');
+    testValue('@url(first.png)@url(second.gif)');
+    testValue('a lot of @url(stuff) in a@url(single)line and more url() @@url (not/a/resource.gif)');
 
-            module._name = moduleName;
-            next();
-        }
-    ]);
+    function testValue(value) {
+      TestRunner.addResult('"' + value + '" -> "' + module.substituteURL(value) + '"');
+    }
+
+    module._name = moduleName;
+    next();
+  }]);
 }
 
 </script>

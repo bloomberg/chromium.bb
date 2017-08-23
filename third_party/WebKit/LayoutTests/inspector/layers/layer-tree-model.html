@@ -26,37 +26,32 @@ function updateGeometry()
     document.getElementById("c").style.width = "80px";
 }
 
-function test()
-{
-    function addDepthMarker(layer)
-    {
-        layer.__extraData = layer.parent() ? layer.parent().__extraData + 1 : 0;
-    }
+function test() {
+  function addDepthMarker(layer) {
+    layer.__extraData = layer.parent() ? layer.parent().__extraData + 1 : 0;
+  }
 
-    LayersTestRunner.requestLayers(step1);
+  LayersTestRunner.requestLayers(step1);
 
-    function step1()
-    {
-        // Assure layer objects are not re-created during updates.
-        LayersTestRunner.layerTreeModel().layerTree().forEachLayer(addDepthMarker);
-        TestRunner.addResult("Initial layer tree");
-        LayersTestRunner.dumpLayerTree();
-        LayersTestRunner.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateTree)", step2);
-    }
+  function step1() {
+    // Assure layer objects are not re-created during updates.
+    LayersTestRunner.layerTreeModel().layerTree().forEachLayer(addDepthMarker);
+    TestRunner.addResult('Initial layer tree');
+    LayersTestRunner.dumpLayerTree();
+    LayersTestRunner.evaluateAndRunWhenTreeChanges('requestAnimationFrame(updateTree)', step2);
+  }
 
-    function step2()
-    {
-        TestRunner.addResult("Updated layer tree");
-        LayersTestRunner.dumpLayerTree();
-        LayersTestRunner.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateGeometry)", step3);
-    }
+  function step2() {
+    TestRunner.addResult('Updated layer tree');
+    LayersTestRunner.dumpLayerTree();
+    LayersTestRunner.evaluateAndRunWhenTreeChanges('requestAnimationFrame(updateGeometry)', step3);
+  }
 
-    function step3()
-    {
-        TestRunner.addResult("Updated layer geometry");
-        LayersTestRunner.dumpLayerTree();
-        TestRunner.completeTest();
-    }
+  function step3() {
+    TestRunner.addResult('Updated layer geometry');
+    LayersTestRunner.dumpLayerTree();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

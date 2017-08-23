@@ -8,41 +8,32 @@
 <script src="./sass-test.js"></script>
 <script>
 
-function test()
-{
-    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
+function test() {
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
 
-    SASSTestRunner.runCSSEditTests(header, [
-        function testRemoveProperty(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "margin: 10px;", "")
-            ];
-        },
+  SASSTestRunner.runCSSEditTests(header, [
+    function testRemoveProperty(text) {
+      return [SASSTestRunner.createEdit(text, 'margin: 10px;', '')];
+    },
 
-        function testRemovePropertyVariable(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "color: red;", "")
-            ];
-        },
+    function testRemovePropertyVariable(text) {
+      return [SASSTestRunner.createEdit(text, 'color: red;', '')];
+    },
 
-        function testRemoveMultipleProperties(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "margin: 10px;", "", 0),
-                SASSTestRunner.createEdit(text, "margin: 10px;", "", 2),
-            ];
-        },
+    function testRemoveMultipleProperties(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'margin: 10px;', '', 0),
+        SASSTestRunner.createEdit(text, 'margin: 10px;', '', 2),
+      ];
+    },
 
-        function testRemoveMultipleDifferentProperties(text)
-        {
-            return [
-                SASSTestRunner.createEdit(text, "margin: 10px;", "", 1),
-                SASSTestRunner.createEdit(text, "color: red;", "", 2),
-            ];
-        },
-    ]);
+    function testRemoveMultipleDifferentProperties(text) {
+      return [
+        SASSTestRunner.createEdit(text, 'margin: 10px;', '', 1),
+        SASSTestRunner.createEdit(text, 'color: red;', '', 2),
+      ];
+    },
+  ]);
 }
 
 </script>

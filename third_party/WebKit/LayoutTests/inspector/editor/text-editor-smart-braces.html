@@ -3,66 +3,56 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="editor-test.js"></script>
 <script>
-function test()
-{
-    var textEditor = SourcesTestRunner.createTestEditor();
-    textEditor.setMimeType("text/javascript");
-    textEditor.setReadOnly(false);
-    textEditor.element.focus();
+function test() {
+  var textEditor = SourcesTestRunner.createTestEditor();
+  textEditor.setMimeType('text/javascript');
+  textEditor.setReadOnly(false);
+  textEditor.element.focus();
 
-    function clearEditor()
-    {
-        textEditor.setText("");
-        textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
+  function clearEditor() {
+    textEditor.setText('');
+    textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 0));
+  }
+
+  TestRunner.runTestSuite([
+    function testTypeBraceSequence(next) {
+      clearEditor();
+      SourcesTestRunner.typeIn(textEditor, '({[', onTypedIn);
+      function onTypedIn() {
+        SourcesTestRunner.dumpTextWithSelection(textEditor);
+        next();
+      }
+    },
+
+    function testBraceOverride(next) {
+      clearEditor();
+      SourcesTestRunner.typeIn(textEditor, '({[]})', onTypedIn);
+      function onTypedIn() {
+        SourcesTestRunner.dumpTextWithSelection(textEditor);
+        next();
+      }
+    },
+
+    function testQuotesToCloseStringLiterals(next) {
+      textEditor.setText('\'Hello');
+      textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 6));
+      SourcesTestRunner.typeIn(textEditor, '"\'', onTypedIn);
+      function onTypedIn() {
+        SourcesTestRunner.dumpTextWithSelection(textEditor);
+        next();
+      }
+    },
+
+    function testQuotesToCloseStringLiteralInsideLine(next) {
+      textEditor.setText('console.log("information");');
+      textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 24));
+      SourcesTestRunner.typeIn(textEditor, '"', onTypedIn);
+      function onTypedIn() {
+        SourcesTestRunner.dumpTextWithSelection(textEditor);
+        next();
+      }
     }
-
-    TestRunner.runTestSuite([
-        function testTypeBraceSequence(next)
-        {
-            clearEditor();
-            SourcesTestRunner.typeIn(textEditor, "({[", onTypedIn);
-            function onTypedIn()
-            {
-                SourcesTestRunner.dumpTextWithSelection(textEditor);
-                next();
-            }
-        },
-
-        function testBraceOverride(next)
-        {
-            clearEditor();
-            SourcesTestRunner.typeIn(textEditor, "({[]})", onTypedIn);
-            function onTypedIn()
-            {
-                SourcesTestRunner.dumpTextWithSelection(textEditor);
-                next();
-            }
-        },
-
-        function testQuotesToCloseStringLiterals(next)
-        {
-            textEditor.setText("'Hello");
-            textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 6));
-            SourcesTestRunner.typeIn(textEditor, "\"'", onTypedIn);
-            function onTypedIn()
-            {
-                SourcesTestRunner.dumpTextWithSelection(textEditor);
-                next();
-            }
-        },
-
-        function testQuotesToCloseStringLiteralInsideLine(next)
-        {
-            textEditor.setText("console.log(\"information\");");
-            textEditor.setSelection(TextUtils.TextRange.createFromLocation(0, 24));
-            SourcesTestRunner.typeIn(textEditor, "\"", onTypedIn);
-            function onTypedIn()
-            {
-                SourcesTestRunner.dumpTextWithSelection(textEditor);
-                next();
-            }
-        }
-    ]);
+  ]);
 }
 
 </script>

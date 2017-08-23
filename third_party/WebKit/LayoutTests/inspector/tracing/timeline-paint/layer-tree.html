@@ -19,23 +19,20 @@ function doActions()
     return generateFrames(3);
 }
 
-function test()
-{
-    UI.panels.timeline._captureLayersAndPicturesSetting.set(true);
+function test() {
+  UI.panels.timeline._captureLayersAndPicturesSetting.set(true);
 
-    PerformanceTestRunner.invokeAsyncWithTimeline("doActions", step1);
-    function step1()
-    {
-        var frames = PerformanceTestRunner.timelineFrameModel().frames();
-        var lastFrame = PerformanceTestRunner.timelineFrameModel().frames().peekLast();
-        lastFrame.layerTree.layerTreePromise().then(TestRunner.safeWrap(layerTreeResolved))
-    }
+  PerformanceTestRunner.invokeAsyncWithTimeline('doActions', step1);
+  function step1() {
+    var frames = PerformanceTestRunner.timelineFrameModel().frames();
+    var lastFrame = PerformanceTestRunner.timelineFrameModel().frames().peekLast();
+    lastFrame.layerTree.layerTreePromise().then(TestRunner.safeWrap(layerTreeResolved));
+  }
 
-    function layerTreeResolved(layerTreeModel)
-    {
-        LayersTestRunner.dumpLayerTree(undefined, layerTreeModel.contentRoot());
-        TestRunner.completeTest();
-    }
+  function layerTreeResolved(layerTreeModel) {
+    LayersTestRunner.dumpLayerTree(undefined, layerTreeModel.contentRoot());
+    TestRunner.completeTest();
+  }
 }
 </script>
 

@@ -57,47 +57,45 @@ var initialize_Animations = function()
     InspectorTest.preloadModule("animation");
 }
 
-function test()
-{
-    var groupIds = [];
-    var i = 0;
-    var stepNumber = 0;
-    var model = TestRunner.mainTarget.model(Animation.AnimationModel);
-    model.ensureEnabled();
-    model.addEventListener(Animation.AnimationModel.Events.AnimationGroupStarted, groupStarted);
-    // Each step triggers a new animation group.
-    var steps = [
-        "restartAnimation('node1', 'expandWidth')",
-        "restartAnimation('node2', 'expandWidth')",
-        "toggleClass('node1', 'expandWidth', false); restartAnimation('node1', 'expand')",
-        "restartAnimation('node3', 'expand')",
-        "restartAnimation('node3', 'expand')",
-        "restartAnimation('node2', 'expand')", // expandWidthAnim doesn't restart, new group.
-        "toggleClass('node1', 'long', true); restartAnimation('node1', 'expand')",
-        "toggleClass('node3', 'long', true); restartAnimation('node3', 'expand')",
-        "toggleClass('node2', 'long', true); restartAnimation('node2', 'expand')",
-        "toggleClass('node2', 'expandWidth', false); toggleClass('node2', 'long', true); restartAnimation('node2', 'expand')",
+function test() {
+  var groupIds = [];
+  var i = 0;
+  var stepNumber = 0;
+  var model = TestRunner.mainTarget.model(Animation.AnimationModel);
+  model.ensureEnabled();
+  model.addEventListener(Animation.AnimationModel.Events.AnimationGroupStarted, groupStarted);
+  // Each step triggers a new animation group.
+  var steps = [
+    'restartAnimation(\'node1\', \'expandWidth\')',
+    'restartAnimation(\'node2\', \'expandWidth\')',
+    'toggleClass(\'node1\', \'expandWidth\', false); restartAnimation(\'node1\', \'expand\')',
+    'restartAnimation(\'node3\', \'expand\')',
+    'restartAnimation(\'node3\', \'expand\')',
+    'restartAnimation(\'node2\', \'expand\')',  // expandWidthAnim doesn't restart, new group.
+    'toggleClass(\'node1\', \'long\', true); restartAnimation(\'node1\', \'expand\')',
+    'toggleClass(\'node3\', \'long\', true); restartAnimation(\'node3\', \'expand\')',
+    'toggleClass(\'node2\', \'long\', true); restartAnimation(\'node2\', \'expand\')',
+    'toggleClass(\'node2\', \'expandWidth\', false); toggleClass(\'node2\', \'long\', true); restartAnimation(\'node2\', \'expand\')',
 
-    ];
-    TestRunner.evaluateInPage(steps[0]);
+  ];
+  TestRunner.evaluateInPage(steps[0]);
 
-    function groupStarted(event)
-    {
-        TestRunner.addResult(">> " + steps[stepNumber]);
-        var group = event.data;
+  function groupStarted(event) {
+    TestRunner.addResult('>> ' + steps[stepNumber]);
+    var group = event.data;
 
-        if (groupIds.indexOf(group.id()) !== -1) {
-            TestRunner.addResult("Group #" + groupIds.indexOf(group.id()) + " started again!\n");
-        } else {
-            TestRunner.addResult("New group #" + groupIds.length + " started.\n");
-            groupIds.push(group.id());
-        }
-        stepNumber++;
-        if (stepNumber < steps.length)
-            TestRunner.evaluateInPage(steps[stepNumber]);
-        else
-            TestRunner.completeTest();
+    if (groupIds.indexOf(group.id()) !== -1) {
+      TestRunner.addResult('Group #' + groupIds.indexOf(group.id()) + ' started again!\n');
+    } else {
+      TestRunner.addResult('New group #' + groupIds.length + ' started.\n');
+      groupIds.push(group.id());
     }
+    stepNumber++;
+    if (stepNumber < steps.length)
+      TestRunner.evaluateInPage(steps[stepNumber]);
+    else
+      TestRunner.completeTest();
+  }
 }
 
 </script>

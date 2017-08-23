@@ -77,111 +77,91 @@ function startTimeline()
     console.timeStamp("timestamp 2");
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testStartStopTimeline(next)
-        {
-            PerformanceTestRunner.evaluateWithTimeline("startStopTimeline()", allEventsReceived);
+function test() {
+  TestRunner.runTestSuite([
+    function testStartStopTimeline(next) {
+      PerformanceTestRunner.evaluateWithTimeline('startStopTimeline()', allEventsReceived);
 
-            function allEventsReceived()
-            {
-                printTimelineAndTimestampEvents();
-                next();
-            }
-        },
+      function allEventsReceived() {
+        printTimelineAndTimestampEvents();
+        next();
+      }
+    },
 
-        function testStartStopMultiple(next)
-        {
-            PerformanceTestRunner.evaluateWithTimeline("startStopMultiple()", allEventsReceived);
+    function testStartStopMultiple(next) {
+      PerformanceTestRunner.evaluateWithTimeline('startStopMultiple()', allEventsReceived);
 
-            function allEventsReceived()
-            {
-                printTimelineAndTimestampEvents();
-                next();
-            }
-        },
+      function allEventsReceived() {
+        printTimelineAndTimestampEvents();
+        next();
+      }
+    },
 
-        function testStartMultipleStopInsideEvals(next)
-        {
-            PerformanceTestRunner.startTimeline(step1);
+    function testStartMultipleStopInsideEvals(next) {
+      PerformanceTestRunner.startTimeline(step1);
 
-            function step1()
-            {
-                TestRunner.evaluateInPage("startMultiple()", step2);
-            }
+      function step1() {
+        TestRunner.evaluateInPage('startMultiple()', step2);
+      }
 
-            function step2()
-            {
-                TestRunner.evaluateInPage("stopTwo()", step3);
-            }
+      function step2() {
+        TestRunner.evaluateInPage('stopTwo()', step3);
+      }
 
-            function step3()
-            {
-                TestRunner.evaluateInPage("stopOne()", step4);
-            }
+      function step3() {
+        TestRunner.evaluateInPage('stopOne()', step4);
+      }
 
-            function step4()
-            {
-                PerformanceTestRunner.stopTimeline(finish);
-            }
+      function step4() {
+        PerformanceTestRunner.stopTimeline(finish);
+      }
 
-            function finish()
-            {
-                printTimelineAndTimestampEvents();
-                next();
-            }
-       },
+      function finish() {
+        printTimelineAndTimestampEvents();
+        next();
+      }
+    },
 
-        function testStopUnknown(next)
-        {
-            PerformanceTestRunner.evaluateWithTimeline("stopUnknown()", allEventsReceived);
+    function testStopUnknown(next) {
+      PerformanceTestRunner.evaluateWithTimeline('stopUnknown()', allEventsReceived);
 
-            function allEventsReceived()
-            {
-                printTimelineAndTimestampEvents();
-                next();
-            }
-        },
+      function allEventsReceived() {
+        printTimelineAndTimestampEvents();
+        next();
+      }
+    },
 
-        function testStartFromPanel(next)
-        {
-            PerformanceTestRunner.evaluateWithTimeline("startStopTimeline()", finish)
+    function testStartFromPanel(next) {
+      PerformanceTestRunner.evaluateWithTimeline('startStopTimeline()', finish);
 
-            function finish()
-            {
-                printTimelineAndTimestampEvents();
-                next();
-            }
-        },
+      function finish() {
+        printTimelineAndTimestampEvents();
+        next();
+      }
+    },
 
-        function testStopFromPanel(next)
-        {
-            PerformanceTestRunner.evaluateWithTimeline("startTimeline()", finish)
+    function testStopFromPanel(next) {
+      PerformanceTestRunner.evaluateWithTimeline('startTimeline()', finish);
 
-            function finish()
-            {
-                printTimelineAndTimestampEvents();
-                next();
-            }
-       }
-    ]);
-
-    function printTimelineAndTimestampEvents() {
-        PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process)
-        {
-            process.sortedThreads().forEach(function(thread)
-            {
-                thread.events().forEach(function(event)
-                {
-                   if (event.hasCategory(TimelineModel.TimelineModel.Category.Console))
-                       TestRunner.addResult(event.name);
-                   else if (event.name === TimelineModel.TimelineModel.RecordType.TimeStamp)
-                       TestRunner.addResult(event.args["data"]["message"]);
-                });
-            });
-        });
+      function finish() {
+        printTimelineAndTimestampEvents();
+        next();
+      }
     }
+  ]);
+
+  function printTimelineAndTimestampEvents() {
+    PerformanceTestRunner.tracingModel().sortedProcesses().forEach(function(process) {
+      process.sortedThreads().forEach(function(thread) {
+        thread.events().forEach(function(event) {
+          if (event.hasCategory(TimelineModel.TimelineModel.Category.Console))
+            TestRunner.addResult(event.name);
+          else if (event.name === TimelineModel.TimelineModel.RecordType.TimeStamp)
+            TestRunner.addResult(event.args['data']['message']);
+        });
+      });
+    });
+  }
 }
 
 </script>

@@ -2,43 +2,45 @@
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script type="text/javascript">
-var test = function()
-{
-    var tabbedLocation = UI.viewManager.createTabbedLocation();
-    logPersistenceSetting();
+var test = function() {
+  var tabbedLocation = UI.viewManager.createTabbedLocation();
+  logPersistenceSetting();
 
-    // Show a closeable tab.
-    var sensors = new UI.SimpleView("sensors");
-    sensors.isCloseable = function() { return true; }
-    tabbedLocation.showView(sensors);
-    logPersistenceSetting();
+  // Show a closeable tab.
+  var sensors = new UI.SimpleView('sensors');
+  sensors.isCloseable = function() {
+    return true;
+  };
+  tabbedLocation.showView(sensors);
+  logPersistenceSetting();
 
-    // Repeat.
-    tabbedLocation.showView(sensors);
-    logPersistenceSetting();
+  // Repeat.
+  tabbedLocation.showView(sensors);
+  logPersistenceSetting();
 
-    // Show a permanent tab.
-    var console = new UI.SimpleView("console");
-    tabbedLocation.showView(console);
-    logPersistenceSetting();
+  // Show a permanent tab.
+  var console = new UI.SimpleView('console');
+  tabbedLocation.showView(console);
+  logPersistenceSetting();
 
-    // Show transient tab.
-    var history = new UI.SimpleView("history");
-    history.isTransient = function() { return true; }
-    tabbedLocation.showView(history);
-    logPersistenceSetting();
+  // Show transient tab.
+  var history = new UI.SimpleView('history');
+  history.isTransient = function() {
+    return true;
+  };
+  tabbedLocation.showView(history);
+  logPersistenceSetting();
 
-    // Close closeable tab.
-    tabbedLocation.tabbedPane().closeTab("sensors");
-    logPersistenceSetting();
+  // Close closeable tab.
+  tabbedLocation.tabbedPane().closeTab('sensors');
+  logPersistenceSetting();
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 
-    function logPersistenceSetting()
-    {
-        TestRunner.addResult("Closeable tabs to restore: " + JSON.stringify(tabbedLocation._closeableTabSetting.get()));
-    }
-}
+  function logPersistenceSetting() {
+    TestRunner.addResult('Closeable tabs to restore: ' + JSON.stringify(tabbedLocation._closeableTabSetting.get()));
+  }
+};
 </script>
 </head>
 <body onload="runTest()">

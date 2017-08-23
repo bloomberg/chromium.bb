@@ -17,37 +17,37 @@ function display()
     return promise;
 }
 
-function test()
-{
-    UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-    PerformanceTestRunner.startTimeline(function() { TestRunner.reloadPage(pageReloaded); });
+function test() {
+  UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
+  PerformanceTestRunner.startTimeline(function() {
+    TestRunner.reloadPage(pageReloaded);
+  });
 
-    function pageReloaded()
-    {
-        TestRunner.callFunctionInPageAsync("display").then(displayDone);
-    }
+  function pageReloaded() {
+    TestRunner.callFunctionInPageAsync('display').then(displayDone);
+  }
 
-    function displayDone()
-    {
-        PerformanceTestRunner.stopTimeline(TestRunner.safeWrap(finish))
-    }
+  function displayDone() {
+    PerformanceTestRunner.stopTimeline(TestRunner.safeWrap(finish));
+  }
 
-    function finish()
-    {
-        TestRunner.addResult("Model records:");
-        PerformanceTestRunner.printTimelineRecords("MarkDOMContent");
-        PerformanceTestRunner.printTimelineRecords("MarkLoad");
-        TestRunner.addResult("Timestamp records:");
-        PerformanceTestRunner.printTimestampRecords("MarkDOMContent");
-        PerformanceTestRunner.printTimestampRecords("MarkLoad");
-        PerformanceTestRunner.printTimestampRecords("MarkFirstPaint");
+  function finish() {
+    TestRunner.addResult('Model records:');
+    PerformanceTestRunner.printTimelineRecords('MarkDOMContent');
+    PerformanceTestRunner.printTimelineRecords('MarkLoad');
+    TestRunner.addResult('Timestamp records:');
+    PerformanceTestRunner.printTimestampRecords('MarkDOMContent');
+    PerformanceTestRunner.printTimestampRecords('MarkLoad');
+    PerformanceTestRunner.printTimestampRecords('MarkFirstPaint');
 
-        var eventDividers = PerformanceTestRunner.timelineModel().eventDividers();
-        for (var i = 1; i < eventDividers.length; ++i)
-            TestRunner.assertGreaterOrEqual(eventDividers[i].startTime, eventDividers[i - 1].startTime, "Event divider timestamps should be monotonically non-decreasing");
+    var eventDividers = PerformanceTestRunner.timelineModel().eventDividers();
+    for (var i = 1; i < eventDividers.length; ++i)
+      TestRunner.assertGreaterOrEqual(
+          eventDividers[i].startTime, eventDividers[i - 1].startTime,
+          'Event divider timestamps should be monotonically non-decreasing');
 
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 
 </script>

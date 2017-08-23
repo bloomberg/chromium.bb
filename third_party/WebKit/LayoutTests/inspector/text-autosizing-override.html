@@ -15,52 +15,48 @@ function getAutosizing()
     return JSON.stringify({ textHeight: document.getElementById('measure').offsetHeight });
 }
 
-function test()
-{
-    function assertAutosizingResult(expected, callback)
-    {
-        function resultCallback(jsonResult) {
-            var result = JSON.parse(jsonResult.value);
-            var actual = result.textHeight > 200;
-            TestRunner.addResult('Text ' + (actual ? 'was' : 'was not') + ' autosized. ' + (expected == actual ? 'PASS' : 'FAIL'));
-            if (callback)
-                callback();
-        }
-        TestRunner.evaluateInPage("getAutosizing()", resultCallback);
+function test() {
+  function assertAutosizingResult(expected, callback) {
+    function resultCallback(jsonResult) {
+      var result = JSON.parse(jsonResult.value);
+      var actual = result.textHeight > 200;
+      TestRunner.addResult(
+          'Text ' + (actual ? 'was' : 'was not') + ' autosized. ' + (expected == actual ? 'PASS' : 'FAIL'));
+      if (callback)
+        callback();
     }
+    TestRunner.evaluateInPage('getAutosizing()', resultCallback);
+  }
 
-    TestRunner.runTestSuite([
-        function checkNotAutosizedWithoutPageAgent(next)
-        {
-            TestRunner.PageAgent.disable();
-            assertAutosizingResult(false, next);
-        },
+  TestRunner.runTestSuite([
+    function checkNotAutosizedWithoutPageAgent(next) {
+      TestRunner.PageAgent.disable();
+      assertAutosizingResult(false, next);
+    },
 
-        function checkNotAutosizedWithPageAgent(next)
-        {
-            TestRunner.PageAgent.enable();
-            assertAutosizingResult(false, next);
-        },
+    function checkNotAutosizedWithPageAgent(next) {
+      TestRunner.PageAgent.enable();
+      assertAutosizingResult(false, next);
+    },
 
-        function checkNotAutosizedWithZeroDeviceMetrics(next)
-        {
-            TestRunner.PageAgent.invoke_setDeviceMetricsOverride({width: 0, height: 0, deviceScaleFactor: 0, mobile: false, fitWindow: true});
-            assertAutosizingResult(false, next);
-        },
+    function checkNotAutosizedWithZeroDeviceMetrics(next) {
+      TestRunner.PageAgent.invoke_setDeviceMetricsOverride(
+          {width: 0, height: 0, deviceScaleFactor: 0, mobile: false, fitWindow: true});
+      assertAutosizingResult(false, next);
+    },
 
-        function checkAutosizedWhenDeviceMetrics(next)
-        {
-            TestRunner.PageAgent.invoke_setDeviceMetricsOverride({width: 320, height: 480, deviceScaleFactor: 0, mobile: true, fitWindow: true});
-            assertAutosizingResult(true, next);
-        },
+    function checkAutosizedWhenDeviceMetrics(next) {
+      TestRunner.PageAgent.invoke_setDeviceMetricsOverride(
+          {width: 320, height: 480, deviceScaleFactor: 0, mobile: true, fitWindow: true});
+      assertAutosizingResult(true, next);
+    },
 
-        function checkCleanupOverrides(next)
-        {
-            TestRunner.PageAgent.clearDeviceMetricsOverride();
-            assertAutosizingResult(false);
-            TestRunner.evaluateInPage("document.getElementById('measure').remove();", next);
-        }
-    ]);
+    function checkCleanupOverrides(next) {
+      TestRunner.PageAgent.clearDeviceMetricsOverride();
+      assertAutosizingResult(false);
+      TestRunner.evaluateInPage('document.getElementById(\'measure\').remove();', next);
+    }
+  ]);
 }
 </script>
 </head>

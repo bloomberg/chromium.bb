@@ -10,41 +10,38 @@ pre {
 </style>
 <script>
 
-function test()
-{
-    TestRunner.evaluateInPagePromise("getSASS()")
-        .then(result => SASSTestRunner.parseSCSS("", result.value))
-        .then(ast => onAST(ast))
-        .then(() => TestRunner.completeTest());
+function test() {
+  TestRunner.evaluateInPagePromise('getSASS()')
+      .then(result => SASSTestRunner.parseSCSS('', result.value))
+      .then(ast => onAST(ast))
+      .then(() => TestRunner.completeTest());
 
-    function onAST(ast)
-    {
-        var text = ast.document.text;
-        var offsetToNode = new Map();
-        ast.visit(onNode);
+  function onAST(ast) {
+    var text = ast.document.text;
+    var offsetToNode = new Map();
+    ast.visit(onNode);
 
-        function onNode(node)
-        {
-            if (!(node instanceof Sass.SASSSupport.TextNode))
-                return;
-            var startOffset = text.offsetFromPosition(node.range.startLine, node.range.startColumn);
-            var endOffset = text.offsetFromPosition(node.range.endLine, node.range.endColumn);
-            for (var i = startOffset; i <= endOffset; ++i)
-                offsetToNode.set(i, node);
-        }
-
-        var cursor = new TextUtils.TextCursor(text.lineEndings());
-        for (var i = 0; i < text.value().length; ++i) {
-            var canonical = offsetToNode.get(i) || null;
-            cursor.advance(i);
-            var fastSearch = ast.findNodeForPosition(cursor.lineNumber(), cursor.columnNumber());
-            if (fastSearch !== canonical) {
-                TestRunner.addResult("Results differ for offset " + i);
-                return;
-            }
-        }
-        TestRunner.addResult("All nodes found correctly.");
+    function onNode(node) {
+      if (!(node instanceof Sass.SASSSupport.TextNode))
+        return;
+      var startOffset = text.offsetFromPosition(node.range.startLine, node.range.startColumn);
+      var endOffset = text.offsetFromPosition(node.range.endLine, node.range.endColumn);
+      for (var i = startOffset; i <= endOffset; ++i)
+        offsetToNode.set(i, node);
     }
+
+    var cursor = new TextUtils.TextCursor(text.lineEndings());
+    for (var i = 0; i < text.value().length; ++i) {
+      var canonical = offsetToNode.get(i) || null;
+      cursor.advance(i);
+      var fastSearch = ast.findNodeForPosition(cursor.lineNumber(), cursor.columnNumber());
+      if (fastSearch !== canonical) {
+        TestRunner.addResult('Results differ for offset ' + i);
+        return;
+      }
+    }
+    TestRunner.addResult('All nodes found correctly.');
+  }
 }
 
 function getSASS()

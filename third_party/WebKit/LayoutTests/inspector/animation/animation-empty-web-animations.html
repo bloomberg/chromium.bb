@@ -13,18 +13,16 @@ var initialize_Animations = function() {
     InspectorTest.preloadModule("animation");
 }
 
-function test()
-{
-    UI.viewManager.showView("animations");
-    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
-    TestRunner.evaluateInPage("startAnimation()");
-    TestRunner.addSniffer(Animation.AnimationModel.prototype, "animationStarted", animationStarted);
+function test() {
+  UI.viewManager.showView('animations');
+  var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
+  TestRunner.evaluateInPage('startAnimation()');
+  TestRunner.addSniffer(Animation.AnimationModel.prototype, 'animationStarted', animationStarted);
 
-    function animationStarted()
-    {
-        TestRunner.addResult(timeline._previewMap.size);
-        TestRunner.completeTest();
-    }
+  function animationStarted() {
+    TestRunner.addResult(timeline._previewMap.size);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

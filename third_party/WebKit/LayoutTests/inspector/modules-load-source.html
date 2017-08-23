@@ -2,24 +2,23 @@
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script>
-async function test()
-{
-    var initialModules = TestRunner.loadedModules();
-    await UI.inspectorView.panel("sources");
-    var sourcesModules = TestRunner.dumpLoadedModules(initialModules);
+async function test() {
+  var initialModules = TestRunner.loadedModules();
+  await UI.inspectorView.panel('sources');
+  var sourcesModules = TestRunner.dumpLoadedModules(initialModules);
 
-    var resource;
-    TestRunner.resourceTreeModel.forAllResources(function(r) {
-        if (r.url.indexOf("inspector-test.js") !== -1) {
-            resource = r;
-            return true;
-        }
-    });
-    TestRunner.addResult("Now with source code opened");
-    var uiLocation = Workspace.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
-    Common.Revealer.reveal(uiLocation);
-    TestRunner.dumpLoadedModules(sourcesModules);
-    TestRunner.completeTest();
+  var resource;
+  TestRunner.resourceTreeModel.forAllResources(function(r) {
+    if (r.url.indexOf('inspector-test.js') !== -1) {
+      resource = r;
+      return true;
+    }
+  });
+  TestRunner.addResult('Now with source code opened');
+  var uiLocation = Workspace.workspace.uiSourceCodeForURL(resource.url).uiLocation(2, 1);
+  Common.Revealer.reveal(uiLocation);
+  TestRunner.dumpLoadedModules(sourcesModules);
+  TestRunner.completeTest();
 }
 </script>
 </head>

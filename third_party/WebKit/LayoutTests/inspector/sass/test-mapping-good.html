@@ -8,36 +8,33 @@
 <script src="./sass-test.js"></script>
 <script>
 
-function test()
-{
-    var mapping;
+function test() {
+  var mapping;
 
-    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
-    SASSTestRunner.loadASTMapping(header, onMappingLoaded);
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
+  SASSTestRunner.loadASTMapping(header, onMappingLoaded);
 
-    function onMappingLoaded(map)
-    {
-        mapping = map;
-        if (!map) {
-            TestRunner.addResult("ERROR: mapping is not valid.");
-            TestRunner.completeTest();
-            return;
-        }
-        SASSTestRunner.validateMapping(mapping);
-        TestRunner.runTestSuite(testSuite);
+  function onMappingLoaded(map) {
+    mapping = map;
+    if (!map) {
+      TestRunner.addResult('ERROR: mapping is not valid.');
+      TestRunner.completeTest();
+      return;
     }
+    SASSTestRunner.validateMapping(mapping);
+    TestRunner.runTestSuite(testSuite);
+  }
 
-    var testSuite = [
-        function testRebase(next)
-        {
-            var cssClone = mapping.compiledModel().clone();
-            var sassAST = mapping.sourceModels().valuesArray()[0];
-            var sassClone = sassAST.clone();
-            var newMapping = mapping.rebase([cssClone, sassClone]);
-            SASSTestRunner.validateMapping(newMapping);
-            next();
-        },
-    ];
+  var testSuite = [
+    function testRebase(next) {
+      var cssClone = mapping.compiledModel().clone();
+      var sassAST = mapping.sourceModels().valuesArray()[0];
+      var sassClone = sassAST.clone();
+      var newMapping = mapping.rebase([cssClone, sassClone]);
+      SASSTestRunner.validateMapping(newMapping);
+      next();
+    },
+  ];
 }
 
 </script>

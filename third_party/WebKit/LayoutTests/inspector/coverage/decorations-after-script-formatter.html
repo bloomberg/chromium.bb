@@ -8,25 +8,24 @@
 <script src="resources/coverage.js"></script>
 
 <script>
-async function test()
-{
-    CoverageTestRunner.startCoverage();
-    await TestRunner.evaluateInPagePromise("performActions()");
-    await CoverageTestRunner.stopCoverage();
-    await UI.inspectorView.showPanel("sources");
-    await CoverageTestRunner.sourceDecorated("coverage.js");
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+  await UI.inspectorView.showPanel('sources');
+  await CoverageTestRunner.sourceDecorated('coverage.js');
 
-    var decoratorPromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, "_innerDecorate");
-    var editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
-    for (action of editorActions) {
-        if (action instanceof Sources.ScriptFormatterEditorAction) {
-            action._toggleFormatScriptSource();
-            break;
-        }
+  var decoratorPromise = TestRunner.addSnifferPromise(Coverage.CoverageView.LineDecorator.prototype, '_innerDecorate');
+  var editorActions = await self.runtime.allInstances(Sources.SourcesView.EditorAction);
+  for (action of editorActions) {
+    if (action instanceof Sources.ScriptFormatterEditorAction) {
+      action._toggleFormatScriptSource();
+      break;
     }
-    await decoratorPromise;
-    CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
-    TestRunner.completeTest();
+  }
+  await decoratorPromise;
+  CoverageTestRunner.dumpDecorationsInSourceFrame(UI.panels.sources.visibleView);
+  TestRunner.completeTest();
 }
 </script>
 </head>

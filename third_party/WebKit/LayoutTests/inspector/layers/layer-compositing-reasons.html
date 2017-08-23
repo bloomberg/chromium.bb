@@ -25,40 +25,28 @@ if (window.internals) {
     });
 }
 
-function test()
-{
-    async function dumpCompositingReasons(layer)
-    {
-        var reasons = await layer.requestCompositingReasons();
-        var node = layer.nodeForSelfOrAncestor();
-        var label = Components.DOMPresentationUtils.fullQualifiedSelector(node, false);
-        TestRunner.addResult(`Compositing reasons for ${label}: ` + reasons.sort().join(","));
-    }
+function test() {
+  async function dumpCompositingReasons(layer) {
+    var reasons = await layer.requestCompositingReasons();
+    var node = layer.nodeForSelfOrAncestor();
+    var label = Components.DOMPresentationUtils.fullQualifiedSelector(node, false);
+    TestRunner.addResult(`Compositing reasons for ${label}: ` + reasons.sort().join(','));
+  }
 
-    var idsToTest = [
-        "transform3d",
-        "transform3d-individual",
-        "iframe",
-        "backface-visibility",
-        "animation",
-        "animation-individual",
-        "transformWithCompositedDescendants",
-        "transformWithCompositedDescendants-individual",
-        "opacityWithCompositedDescendants",
-        "reflectionWithCompositedDescendants",
-        "perspective",
-        "preserve3d"
-    ];
+  var idsToTest = [
+    'transform3d', 'transform3d-individual', 'iframe', 'backface-visibility', 'animation', 'animation-individual',
+    'transformWithCompositedDescendants', 'transformWithCompositedDescendants-individual',
+    'opacityWithCompositedDescendants', 'reflectionWithCompositedDescendants', 'perspective', 'preserve3d'
+  ];
 
-    async function onGotLayers()
-    {
-        dumpCompositingReasons(LayersTestRunner.layerTreeModel().layerTree().contentRoot());
-        for (var i = 0; i < idsToTest.length - 1; ++i)
-            dumpCompositingReasons(LayersTestRunner.findLayerByNodeIdAttribute(idsToTest[i]));
-        await dumpCompositingReasons(LayersTestRunner.findLayerByNodeIdAttribute(idsToTest[idsToTest.length - 1]));
-        TestRunner.completeTest();
-    }
-    LayersTestRunner.requestLayers(onGotLayers);
+  async function onGotLayers() {
+    dumpCompositingReasons(LayersTestRunner.layerTreeModel().layerTree().contentRoot());
+    for (var i = 0; i < idsToTest.length - 1; ++i)
+      dumpCompositingReasons(LayersTestRunner.findLayerByNodeIdAttribute(idsToTest[i]));
+    await dumpCompositingReasons(LayersTestRunner.findLayerByNodeIdAttribute(idsToTest[idsToTest.length - 1]));
+    TestRunner.completeTest();
+  }
+  LayersTestRunner.requestLayers(onGotLayers);
 }
 
 </script>

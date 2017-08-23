@@ -12,18 +12,16 @@ function readBlob()
     reader.readAsArrayBuffer(new Blob([ 'test' ]));
 }
 
-function test()
-{
-    ConsoleTestRunner.addConsoleSniffer(messageAdded);
-    TestRunner.evaluateInPage("readBlob();");
+function test() {
+  ConsoleTestRunner.addConsoleSniffer(messageAdded);
+  TestRunner.evaluateInPage('readBlob();');
 
-    function messageAdded(payload)
-    {
-        var requests = NetworkTestRunner.networkRequests();
-        TestRunner.addResult("requests in the network panel: " + requests.length);
-        TestRunner.assertTrue(requests.length == 0, "Blob load request to the browser is shown in the network panel.");
-        TestRunner.completeTest();
-    }
+  function messageAdded(payload) {
+    var requests = NetworkTestRunner.networkRequests();
+    TestRunner.addResult('requests in the network panel: ' + requests.length);
+    TestRunner.assertTrue(requests.length == 0, 'Blob load request to the browser is shown in the network panel.');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

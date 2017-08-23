@@ -8,20 +8,18 @@
 <script src="./sass-test.js"></script>
 <script>
 
-function test()
-{
-    var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL)
-    SASSTestRunner.loadASTMapping(header, onMapping);
+function test() {
+  var header = TestRunner.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
+  SASSTestRunner.loadASTMapping(header, onMapping);
 
-    function onMapping(map)
-    {
-        if (map) {
-            TestRunner.addResult("ERROR: a valid mapping created for misaligned sourcemap.");
-        } else {
-            TestRunner.addResult("OK: the mapping successfully reported misalignment.");
-        }
-        TestRunner.completeTest();
+  function onMapping(map) {
+    if (map) {
+      TestRunner.addResult('ERROR: a valid mapping created for misaligned sourcemap.');
+    } else {
+      TestRunner.addResult('OK: the mapping successfully reported misalignment.');
     }
+    TestRunner.completeTest();
+  }
 }
 
 </script>

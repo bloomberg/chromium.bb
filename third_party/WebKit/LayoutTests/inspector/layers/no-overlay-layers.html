@@ -15,30 +15,31 @@ function updateGeometry()
     document.getElementById("a").style.width = "300px";
 }
 
-function test()
-{
-    var layersBeforeHighlight = [];
-    
-    LayersTestRunner.requestLayers(step1);
+function test() {
+  var layersBeforeHighlight = [];
 
-    function step1()
-    {
-        // Assure layer objects are not re-created during updates.
-        LayersTestRunner.layerTreeModel().layerTree().forEachLayer(function(layer) { layersBeforeHighlight.push(layer.id()); });
-        TestRunner.OverlayAgent.highlightRect(0, 0, 200, 200, {r:255, g:0, b:0});
-        LayersTestRunner.evaluateAndRunWhenTreeChanges("requestAnimationFrame(updateGeometry)", step2);
-    }
+  LayersTestRunner.requestLayers(step1);
 
-    function step2()
-    {
-        var layersAfterHighlight = [];
-        LayersTestRunner.layerTreeModel().layerTree().forEachLayer(function(layer) { layersAfterHighlight.push(layer.id()); });
-        layersBeforeHighlight.sort();
-        layersAfterHighlight.sort();
-        TestRunner.assertEquals(JSON.stringify(layersBeforeHighlight), JSON.stringify(layersAfterHighlight));
-        TestRunner.addResult("DONE");
-        TestRunner.completeTest();
-    }
+  function step1() {
+    // Assure layer objects are not re-created during updates.
+    LayersTestRunner.layerTreeModel().layerTree().forEachLayer(function(layer) {
+      layersBeforeHighlight.push(layer.id());
+    });
+    TestRunner.OverlayAgent.highlightRect(0, 0, 200, 200, {r: 255, g: 0, b: 0});
+    LayersTestRunner.evaluateAndRunWhenTreeChanges('requestAnimationFrame(updateGeometry)', step2);
+  }
+
+  function step2() {
+    var layersAfterHighlight = [];
+    LayersTestRunner.layerTreeModel().layerTree().forEachLayer(function(layer) {
+      layersAfterHighlight.push(layer.id());
+    });
+    layersBeforeHighlight.sort();
+    layersAfterHighlight.sort();
+    TestRunner.assertEquals(JSON.stringify(layersBeforeHighlight), JSON.stringify(layersAfterHighlight));
+    TestRunner.addResult('DONE');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

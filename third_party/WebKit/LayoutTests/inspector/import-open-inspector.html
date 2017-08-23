@@ -10,30 +10,25 @@ function getGreeting()
     return window.greeting;
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function checkGreetingSet(next)
-        {
-            TestRunner.evaluateInPage("getGreeting()", callback);
-            function callback(result)
-            {
-                TestRunner.addResult("Received: " + result.value);
-                next();
-            }
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function checkGreetingSet(next) {
+      TestRunner.evaluateInPage('getGreeting()', callback);
+      function callback(result) {
+        TestRunner.addResult('Received: ' + result.value);
+        next();
+      }
+    },
 
-        function reloadPage(next)
-        {
-            TestRunner.reloadPage(next);
-        },
+    function reloadPage(next) {
+      TestRunner.reloadPage(next);
+    },
 
-        function checkReloaded(next)
-        {
-            TestRunner.addResult("Page successfully reloaded");
-            next();
-        }
-    ]);
+    function checkReloaded(next) {
+      TestRunner.addResult('Page successfully reloaded');
+      next();
+    }
+  ]);
 }
 
 </script>

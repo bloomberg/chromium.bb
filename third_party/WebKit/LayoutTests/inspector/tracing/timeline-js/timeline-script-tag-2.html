@@ -11,25 +11,21 @@ function performActions()
     document.body.appendChild(script);
 }
 
-function test() 
-{
-    PerformanceTestRunner.startTimeline(step1);
-    function step1()
-    {
-        ConsoleTestRunner.addConsoleSniffer(step2);
-        TestRunner.evaluateInPage("performActions()");
-    }
+function test() {
+  PerformanceTestRunner.startTimeline(step1);
+  function step1() {
+    ConsoleTestRunner.addConsoleSniffer(step2);
+    TestRunner.evaluateInPage('performActions()');
+  }
 
-    function step2()
-    {
-        PerformanceTestRunner.stopTimeline(step3);
-    }
+  function step2() {
+    PerformanceTestRunner.stopTimeline(step3);
+  }
 
-    function step3()
-    {
-        PerformanceTestRunner.printTimelineRecords("EvaluateScript");
-        TestRunner.completeTest();
-    }
+  function step3() {
+    PerformanceTestRunner.printTimelineRecords('EvaluateScript');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

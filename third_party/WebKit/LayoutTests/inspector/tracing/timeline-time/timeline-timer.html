@@ -22,20 +22,18 @@ function performActions()
     return promise;
 }
 
-function test()
-{
-    UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
-    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
+function test() {
+  UI.panels.timeline._disableCaptureJSProfileSetting.set(true);
+  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
 
-    function finish()
-    {
-        PerformanceTestRunner.printTimelineRecordsWithDetails("TimerInstall");
-        PerformanceTestRunner.printTimelineRecordsWithDetails("TimerFire");
-        PerformanceTestRunner.printTimelineRecordsWithDetails("TimerRemove");
-        PerformanceTestRunner.printTimelineRecords("FunctionCall");
-        PerformanceTestRunner.printTimelineRecordsWithDetails("EvaluateScript");
-        TestRunner.completeTest();
-    }
+  function finish() {
+    PerformanceTestRunner.printTimelineRecordsWithDetails('TimerInstall');
+    PerformanceTestRunner.printTimelineRecordsWithDetails('TimerFire');
+    PerformanceTestRunner.printTimelineRecordsWithDetails('TimerRemove');
+    PerformanceTestRunner.printTimelineRecords('FunctionCall');
+    PerformanceTestRunner.printTimelineRecordsWithDetails('EvaluateScript');
+    TestRunner.completeTest();
+  }
 }
 
 if (!window.testRunner)

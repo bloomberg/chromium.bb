@@ -3,60 +3,56 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/debugger-test.js"></script>
 <script>
-function test()
-{
-    var script;
+function test() {
+  var script;
 
-    SourcesTestRunner.startDebuggerTest(waitForScripts);
+  SourcesTestRunner.startDebuggerTest(waitForScripts);
 
-    function waitForScripts()
-    {
-        SourcesTestRunner.showScriptSource("linkifier.html", debuggerTest);
+  function waitForScripts() {
+    SourcesTestRunner.showScriptSource('linkifier.html', debuggerTest);
+  }
+
+  function debuggerTest() {
+    var target = SDK.targetManager.mainTarget();
+    var url = target.inspectedURL();
+    for (var scriptCandidate of TestRunner.debuggerModel.scripts()) {
+      if (scriptCandidate.sourceURL === url) {
+        script = scriptCandidate;
+        break;
+      }
     }
 
-    function debuggerTest()
-    {
-        var target = SDK.targetManager.mainTarget();
-        var url = target.inspectedURL();
-        for (var scriptCandidate of TestRunner.debuggerModel.scripts()) {
-            if (scriptCandidate.sourceURL === url) {
-                script = scriptCandidate;
-                break;
-            }
-        }
+    dumpLiveLocationsCount();
 
-        dumpLiveLocationsCount();
+    var linkifier = new Components.Linkifier();
+    TestRunner.addResult('Created linkifier');
+    dumpLiveLocationsCount();
 
-        var linkifier = new Components.Linkifier();
-        TestRunner.addResult("Created linkifier");
-        dumpLiveLocationsCount();
+    var linkA = linkifier.linkifyScriptLocation(target, null, url, 10);
+    TestRunner.addResult('Linkified script location A');
+    dumpLiveLocationsCount();
 
-        var linkA = linkifier.linkifyScriptLocation(target, null, url, 10);
-        TestRunner.addResult("Linkified script location A");
-        dumpLiveLocationsCount();
+    var linkB = linkifier.linkifyScriptLocation(target, null, url, 15);
+    TestRunner.addResult('Linkified script location B');
+    dumpLiveLocationsCount();
 
-        var linkB = linkifier.linkifyScriptLocation(target, null, url, 15);
-        TestRunner.addResult("Linkified script location B");
-        dumpLiveLocationsCount();
+    linkifier.reset();
+    TestRunner.addResult('Reseted linkifier');
+    dumpLiveLocationsCount();
 
-        linkifier.reset();
-        TestRunner.addResult("Reseted linkifier");
-        dumpLiveLocationsCount();
+    linkifier.dispose();
+    TestRunner.addResult('Disposed linkifier');
+    dumpLiveLocationsCount();
 
-        linkifier.dispose();
-        TestRunner.addResult("Disposed linkifier");
-        dumpLiveLocationsCount();
+    TestRunner.completeTest();
+  }
 
-        TestRunner.completeTest();
-    }
-
-    function dumpLiveLocationsCount()
-    {
-        var modelData = Bindings.debuggerWorkspaceBinding._debuggerModelToData.get(script.debuggerModel);
-        var locations = modelData._locations.get(script);
-        TestRunner.addResult("Live locations count: " + locations.size);
-        TestRunner.addResult("");
-    }
+  function dumpLiveLocationsCount() {
+    var modelData = Bindings.debuggerWorkspaceBinding._debuggerModelToData.get(script.debuggerModel);
+    var locations = modelData._locations.get(script);
+    TestRunner.addResult('Live locations count: ' + locations.size);
+    TestRunner.addResult('');
+  }
 }
 
 </script>

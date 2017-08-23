@@ -55,60 +55,53 @@ function changePseudoAndDisplay()
     });
 }
 
-function test()
-{
-    Runtime.experiments.enableForTest("timelineInvalidationTracking");
+function test() {
+  Runtime.experiments.enableForTest('timelineInvalidationTracking');
 
-    TestRunner.runTestSuite([
-        function testClassName(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changeClassNameAndDisplay", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
-                next();
-            });
-        },
+  TestRunner.runTestSuite([
+    function testClassName(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeClassNameAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
+        next();
+      });
+    },
 
-        function testIdWithoutStyleChange(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changeIdWithoutStyleChangeAndDisplay", function() {
-                var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree);
-                TestRunner.assertTrue(!event, "There should be no style recalculation for an id change without style changes.");
-                next();
-            });
-        },
+    function testIdWithoutStyleChange(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeIdWithoutStyleChangeAndDisplay', function() {
+        var event = PerformanceTestRunner.findTimelineEvent(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree);
+        TestRunner.assertTrue(!event, 'There should be no style recalculation for an id change without style changes.');
+        next();
+      });
+    },
 
-        function testId(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changeIdAndDisplay", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
-                next();
-            });
-        },
+    function testId(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeIdAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
+        next();
+      });
+    },
 
-        function testStyleAttributeChange(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changeStyleAttributeAndDisplay", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
-                next();
-            });
-        },
+    function testStyleAttributeChange(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeStyleAttributeAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
+        next();
+      });
+    },
 
-        function testAttributeChange(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changeAttributeAndDisplay", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
-                next();
-            });
-        },
+    function testAttributeChange(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changeAttributeAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
+        next();
+      });
+    },
 
-        function testPseudoChange(next)
-        {
-            PerformanceTestRunner.invokeAsyncWithTimeline("changePseudoAndDisplay", function() {
-                PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
-                next();
-            });
-        }
-    ]);
+    function testPseudoChange(next) {
+      PerformanceTestRunner.invokeAsyncWithTimeline('changePseudoAndDisplay', function() {
+        PerformanceTestRunner.dumpInvalidations(TimelineModel.TimelineModel.RecordType.UpdateLayoutTree, 0);
+        next();
+      });
+    }
+  ]);
 }
 </script>
 <style>

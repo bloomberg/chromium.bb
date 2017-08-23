@@ -22,16 +22,15 @@ function performActions()
     }).then(promiseResolved);
 }
 
-function test()
-{
-    PerformanceTestRunner.invokeAsyncWithTimeline("performActions", finish);
+function test() {
+  PerformanceTestRunner.invokeAsyncWithTimeline('performActions', finish);
 
-    function finish()
-    {
-        var event = PerformanceTestRunner.timelineModel().mainThreadEvents().find(e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
-        PerformanceTestRunner.printTraceEventProperties(event);
-        TestRunner.completeTest();
-    }
+  function finish() {
+    var event = PerformanceTestRunner.timelineModel().mainThreadEvents().find(
+        e => e.name === TimelineModel.TimelineModel.RecordType.RunMicrotasks);
+    PerformanceTestRunner.printTraceEventProperties(event);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

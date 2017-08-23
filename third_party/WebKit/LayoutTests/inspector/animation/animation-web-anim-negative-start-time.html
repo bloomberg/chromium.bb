@@ -19,31 +19,32 @@ var initialize_Animations = function() {
     InspectorTest.preloadModule("animation");
 }
 
-function test()
-{
-    // Override timeline width for testing
-    Animation.AnimationTimeline.prototype.width = function() { return 50; }
-    // Override animation color for testing
-    // FIXME: Set animation name of Web Animation instead; not supported yet
-    Animation.AnimationUI.Color = function() { return "black"; }
+function test() {
+  // Override timeline width for testing
+  Animation.AnimationTimeline.prototype.width = function() {
+    return 50;
+  };
+  // Override animation color for testing
+  // FIXME: Set animation name of Web Animation instead; not supported yet
+  Animation.AnimationUI.Color = function() {
+    return 'black';
+  };
 
-    UI.viewManager.showView("animations");
-    var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
-    TestRunner.evaluateInPage("startAnimation()");
-    ElementsTestRunner.waitForAnimationAdded(step2);
+  UI.viewManager.showView('animations');
+  var timeline = self.runtime.sharedInstance(Animation.AnimationTimeline);
+  TestRunner.evaluateInPage('startAnimation()');
+  ElementsTestRunner.waitForAnimationAdded(step2);
 
-    function step2(group)
-    {
-        TestRunner.addResult(timeline._groupBuffer.indexOf(group) !== -1);
-        ElementsTestRunner.waitForAnimationAdded(step3);
-        TestRunner.evaluateInPage("startAnimationWithNegativeStartTime()");
-    }
+  function step2(group) {
+    TestRunner.addResult(timeline._groupBuffer.indexOf(group) !== -1);
+    ElementsTestRunner.waitForAnimationAdded(step3);
+    TestRunner.evaluateInPage('startAnimationWithNegativeStartTime()');
+  }
 
-    function step3(group)
-    {
-        TestRunner.addResult(timeline._groupBuffer.indexOf(group) !== -1);
-        TestRunner.completeTest();
-    }
+  function step3(group) {
+    TestRunner.addResult(timeline._groupBuffer.indexOf(group) !== -1);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

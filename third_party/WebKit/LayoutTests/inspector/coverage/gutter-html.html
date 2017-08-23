@@ -50,13 +50,12 @@ function performActions() {
   used2();
 }
 
-async function test()
-{
-    CoverageTestRunner.startCoverage();
-    await TestRunner.evaluateInPagePromise("performActions()");
-    await CoverageTestRunner.stopCoverage();
-    await CoverageTestRunner.dumpDecorations("gutter-html.html");
-    TestRunner.completeTest();
+async function test() {
+  CoverageTestRunner.startCoverage();
+  await TestRunner.evaluateInPagePromise('performActions()');
+  await CoverageTestRunner.stopCoverage();
+  await CoverageTestRunner.dumpDecorations('gutter-html.html');
+  TestRunner.completeTest();
 }
 </script>
 </head>

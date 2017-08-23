@@ -5,22 +5,20 @@
 
 localStorage.testProperty = "testPropertyValue";
 
-async function test()
-{
-    var result = await TestRunner.RuntimeAgent.evaluate("localStorage");
-    var localStorageHandle = TestRunner.runtimeModel.createRemoteObject(result);
-    localStorageHandle.getOwnProperties(false, step2);
+async function test() {
+  var result = await TestRunner.RuntimeAgent.evaluate('localStorage');
+  var localStorageHandle = TestRunner.runtimeModel.createRemoteObject(result);
+  localStorageHandle.getOwnProperties(false, step2);
 
-    function step2(properties)
-    {
-        for (var property of properties) {
-            if (property.name !== "testProperty")
-                continue;
-            property.value = { type: property.value.type, description: property.value.description };
-            TestRunner.dump(property);
-        }
-        TestRunner.completeTest();
+  function step2(properties) {
+    for (var property of properties) {
+      if (property.name !== 'testProperty')
+        continue;
+      property.value = {type: property.value.type, description: property.value.description};
+      TestRunner.dump(property);
     }
+    TestRunner.completeTest();
+  }
 }
 
 </script>

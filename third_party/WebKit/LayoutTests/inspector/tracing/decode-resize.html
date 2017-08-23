@@ -75,38 +75,34 @@ function showImages()
     }
 }
 
-function test()
-{
-    PerformanceTestRunner.invokeWithTracing("showImages", TestRunner.safeWrap(onTracingComplete));
-    function onTracingComplete()
-    {
-        function isDecodeImageEvent(event)
-        {
-            return event.name === TimelineModel.TimelineModel.RecordType.DecodeImage;
-        }
-        function compareImageURLs(a, b)
-        {
-            var urlA = TimelineModel.TimelineData.forEvent(a).url;
-            var urlB = TimelineModel.TimelineData.forEvent(b).url;
-            urlA = TestRunner.formatters.formatAsURL(urlA || "<missing>");
-            urlB = TestRunner.formatters.formatAsURL(urlB || "<missing>");
-            return urlA.localeCompare(urlB);
-        }
-        var events = PerformanceTestRunner.timelineModel().inspectedTargetEvents();
-        var sortedDecodeEvents = events.filter(isDecodeImageEvent).sort(compareImageURLs);
-        for (var i = 0; i < sortedDecodeEvents.length; ++i) {
-            var event = sortedDecodeEvents[i];
-            var timlelineData = TimelineModel.TimelineData.forEvent(event);
-            var url = timlelineData.url;
-            // Skip duplicate events, as long as they have the imageURL
-            if (i && url && url === TimelineModel.TimelineData.forEvent(sortedDecodeEvents[i - 1]).url)
-                continue;
-            TestRunner.addResult("event: " + event.name);
-            TestRunner.addResult("imageURL: " + TestRunner.formatters.formatAsURL(url));
-            TestRunner.addResult("backendNodeId: " + (timlelineData.backendNodeId > 0 ? "present" : "absent"));
-        }
-        TestRunner.completeTest();
+function test() {
+  PerformanceTestRunner.invokeWithTracing('showImages', TestRunner.safeWrap(onTracingComplete));
+  function onTracingComplete() {
+    function isDecodeImageEvent(event) {
+      return event.name === TimelineModel.TimelineModel.RecordType.DecodeImage;
     }
+    function compareImageURLs(a, b) {
+      var urlA = TimelineModel.TimelineData.forEvent(a).url;
+      var urlB = TimelineModel.TimelineData.forEvent(b).url;
+      urlA = TestRunner.formatters.formatAsURL(urlA || '<missing>');
+      urlB = TestRunner.formatters.formatAsURL(urlB || '<missing>');
+      return urlA.localeCompare(urlB);
+    }
+    var events = PerformanceTestRunner.timelineModel().inspectedTargetEvents();
+    var sortedDecodeEvents = events.filter(isDecodeImageEvent).sort(compareImageURLs);
+    for (var i = 0; i < sortedDecodeEvents.length; ++i) {
+      var event = sortedDecodeEvents[i];
+      var timlelineData = TimelineModel.TimelineData.forEvent(event);
+      var url = timlelineData.url;
+      // Skip duplicate events, as long as they have the imageURL
+      if (i && url && url === TimelineModel.TimelineData.forEvent(sortedDecodeEvents[i - 1]).url)
+        continue;
+      TestRunner.addResult('event: ' + event.name);
+      TestRunner.addResult('imageURL: ' + TestRunner.formatters.formatAsURL(url));
+      TestRunner.addResult('backendNodeId: ' + (timlelineData.backendNodeId > 0 ? 'present' : 'absent'));
+    }
+    TestRunner.completeTest();
+  }
 }
 
 </script>

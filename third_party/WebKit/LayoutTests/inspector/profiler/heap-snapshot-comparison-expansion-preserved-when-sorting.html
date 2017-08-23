@@ -4,112 +4,92 @@
   <script src="heap-snapshot-test.js"></script>
 <script>
 
-function test()
-{
-    var instanceCount = 24;
-    function createHeapSnapshotA()
-    {
-        return ProfilerTestRunner.createHeapSnapshot(instanceCount, 5);
+function test() {
+  var instanceCount = 24;
+  function createHeapSnapshotA() {
+    return ProfilerTestRunner.createHeapSnapshot(instanceCount, 5);
+  }
+  function createHeapSnapshotB() {
+    return ProfilerTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
+  }
+
+  ProfilerTestRunner.runHeapSnapshotTestSuite([function testExpansionPreservedWhenSorting(next) {
+    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+    function createSnapshotB() {
+      ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
     }
-    function createHeapSnapshotB()
-    {
-        return ProfilerTestRunner.createHeapSnapshot(instanceCount + 1, 5 + instanceCount);
+
+    function step1() {
+      ProfilerTestRunner.switchToView('Comparison', step2);
     }
 
-    ProfilerTestRunner.runHeapSnapshotTestSuite([
-        function testExpansionPreservedWhenSorting(next)
-        {
-            ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
-            function createSnapshotB() {
-                ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
-            }
+    function step2() {
+      var row = ProfilerTestRunner.findRow('B');
+      TestRunner.assertEquals(true, !!row, '"B" row');
+      ProfilerTestRunner.expandRow(row, expandB);
+      function expandB() {
+        var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+        TestRunner.assertEquals(true, !!buttonsNode, 'no buttons node found!');
+        ProfilerTestRunner.clickShowMoreButton('showAll', buttonsNode, step4);
+      }
+    }
 
-            function step1()
-            {
-                ProfilerTestRunner.switchToView("Comparison", step2);
-            }
+    var columns;
+    function step4() {
+      columns = ProfilerTestRunner.viewColumns();
+      ProfilerTestRunner.clickColumn(columns[0], step5);
+    }
 
-            function step2()
-            {
-                var row = ProfilerTestRunner.findRow("B");
-                TestRunner.assertEquals(true, !!row, "\"B\" row");
-                ProfilerTestRunner.expandRow(row, expandB);
-                function expandB()
-                {
-                    var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
-                    TestRunner.assertEquals(true, !!buttonsNode, "no buttons node found!");
-                    ProfilerTestRunner.clickShowMoreButton("showAll", buttonsNode, step4);
-                }
-            }
-
-            var columns;
-            function step4()
-            {
-                columns = ProfilerTestRunner.viewColumns();
-                ProfilerTestRunner.clickColumn(columns[0], step5);
-            }
-
-            function step5()
-            {
-                var row = ProfilerTestRunner.findRow("B");
-                TestRunner.assertEquals(true, !!row, "\"B\" row");
-                var bInstanceRow = row.children[0];
-                TestRunner.assertEquals(true, !!bInstanceRow, "\"B\" instance row");
-                ProfilerTestRunner.expandRow(bInstanceRow, expandA);
-                function expandA(row)
-                {
-                    function propertyMatcher(node)
-                    {
-                        return node._referenceName === "a" && node._name.charAt(0) === "A";
-                    }
-                    var aRow = ProfilerTestRunner.findMatchingRow(propertyMatcher, row);
-                    TestRunner.assertEquals(true, !!aRow, "\"a: A\" row");
-                    ProfilerTestRunner.expandRow(aRow, step6);
-                }
-            }
-
-            function step6()
-            {
-                var row = ProfilerTestRunner.findRow("B");
-                TestRunner.assertEquals(true, !!row, "\"B\" row");
-                function deletedNodeMatcher(data)
-                {
-                    return data._isDeletedNode && data._name.charAt(0) === "B";
-                }
-                var bInstanceRow = ProfilerTestRunner.findMatchingRow(deletedNodeMatcher, row);
-                TestRunner.assertEquals(true, !!bInstanceRow, "\"B\" instance row");
-                ProfilerTestRunner.expandRow(bInstanceRow, expandA);
-                function expandA(row)
-                {
-                    function propertyMatcher(data)
-                    {
-                        return data._referenceName === "a" && data._name.charAt(0) === "A";
-                    }
-                    var aRow = ProfilerTestRunner.findMatchingRow(propertyMatcher, row);
-                    TestRunner.assertEquals(true, !!aRow, "\"a: A\" row");
-                    ProfilerTestRunner.expandRow(aRow, step7);
-                }
-            }
-
-            var columnContents;
-            function step7()
-            {
-                columnContents = ProfilerTestRunner.columnContents(columns[0]);
-                ProfilerTestRunner.clickColumn(columns[0], clickTwice);
-                function clickTwice()
-                {
-                    ProfilerTestRunner.clickColumn(columns[0], step8);
-                }
-            }
-
-            function step8()
-            {
-                var newColumnContents = ProfilerTestRunner.columnContents(columns[0]);
-                ProfilerTestRunner.assertColumnContentsEqual(columnContents, newColumnContents);
-                setTimeout(next, 0);
-            }
+    function step5() {
+      var row = ProfilerTestRunner.findRow('B');
+      TestRunner.assertEquals(true, !!row, '"B" row');
+      var bInstanceRow = row.children[0];
+      TestRunner.assertEquals(true, !!bInstanceRow, '"B" instance row');
+      ProfilerTestRunner.expandRow(bInstanceRow, expandA);
+      function expandA(row) {
+        function propertyMatcher(node) {
+          return node._referenceName === 'a' && node._name.charAt(0) === 'A';
         }
-    ]);
+        var aRow = ProfilerTestRunner.findMatchingRow(propertyMatcher, row);
+        TestRunner.assertEquals(true, !!aRow, '"a: A" row');
+        ProfilerTestRunner.expandRow(aRow, step6);
+      }
+    }
+
+    function step6() {
+      var row = ProfilerTestRunner.findRow('B');
+      TestRunner.assertEquals(true, !!row, '"B" row');
+      function deletedNodeMatcher(data) {
+        return data._isDeletedNode && data._name.charAt(0) === 'B';
+      }
+      var bInstanceRow = ProfilerTestRunner.findMatchingRow(deletedNodeMatcher, row);
+      TestRunner.assertEquals(true, !!bInstanceRow, '"B" instance row');
+      ProfilerTestRunner.expandRow(bInstanceRow, expandA);
+      function expandA(row) {
+        function propertyMatcher(data) {
+          return data._referenceName === 'a' && data._name.charAt(0) === 'A';
+        }
+        var aRow = ProfilerTestRunner.findMatchingRow(propertyMatcher, row);
+        TestRunner.assertEquals(true, !!aRow, '"a: A" row');
+        ProfilerTestRunner.expandRow(aRow, step7);
+      }
+    }
+
+    var columnContents;
+    function step7() {
+      columnContents = ProfilerTestRunner.columnContents(columns[0]);
+      ProfilerTestRunner.clickColumn(columns[0], clickTwice);
+      function clickTwice() {
+        ProfilerTestRunner.clickColumn(columns[0], step8);
+      }
+    }
+
+    function step8() {
+      var newColumnContents = ProfilerTestRunner.columnContents(columns[0]);
+      ProfilerTestRunner.assertColumnContentsEqual(columnContents, newColumnContents);
+      setTimeout(next, 0);
+    }
+  }]);
 }
 
 </script>
