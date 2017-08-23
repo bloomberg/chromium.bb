@@ -115,7 +115,7 @@
 
 #pragma mark - CRWWebStateDelegate
 
-- (BOOL)webState:(web::WebState*)webState
+- (void)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
   ContextMenuContextImpl* context =
       [[ContextMenuContextImpl alloc] initWithParams:params];
@@ -123,7 +123,6 @@
       [[WebContextMenuCoordinator alloc] initWithContext:context];
   [self addChildCoordinator:contextMenu];
   [contextMenu start];
-  return YES;
 }
 
 #pragma mark -
