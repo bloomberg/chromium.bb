@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.suggestions;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Promise;
@@ -358,17 +356,12 @@ public class ImageFetcher {
         }
 
         @Override
-        public @Nullable String getFilePath() {
+        public String getFilePath() {
             return mSuggestion.getAssetDownloadFile().getAbsolutePath();
         }
 
         @Override
-        public @Nullable String getContentId() {
-            return mSuggestion.getAssetDownloadGuid();
-        }
-
-        @Override
-        public void onThumbnailRetrieved(@NonNull String contentId, @Nullable Bitmap thumbnail) {
+        public void onThumbnailRetrieved(String filePath, Bitmap thumbnail) {
             mThumbnailReceivedPromise.fulfill(thumbnail);
         }
 
