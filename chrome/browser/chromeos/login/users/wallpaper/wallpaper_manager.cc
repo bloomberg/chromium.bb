@@ -1120,14 +1120,16 @@ void WallpaperManager::OnCheckDeviceWallpaperMatchHash(
 void WallpaperManager::OnDeviceWallpaperDecoded(
     const AccountId& account_id,
     std::unique_ptr<user_manager::UserImage> user_image) {
-  WallpaperInfo wallpaper_info = {GetDeviceWallpaperFilePath().value(),
-                                  wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
-                                  wallpaper::DEVICE,
-                                  base::Time::Now().LocalMidnight()};
-  DCHECK(!user_manager::UserManager::Get()->IsUserLoggedIn());
-  // In the login screen set the device wallpaper as the wallpaper.
-  GetPendingWallpaper(user_manager::SignInAccountId(), false)
-      ->ResetSetWallpaperImage(user_image->image(), wallpaper_info);
+  // It might be possible that the device policy controlled wallpaper finishes
+  // decoding after the user logs in. In this case do nothing.
+  if (!user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    WallpaperInfo wallpaper_info = {GetDeviceWallpaperFilePath().value(),
+                                    wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
+                                    wallpaper::DEVICE,
+                                    base::Time::Now().LocalMidnight()};
+    GetPendingWallpaper(user_manager::SignInAccountId(), false)
+        ->ResetSetWallpaperImage(user_image->image(), wallpaper_info);
+  }
 }
 
 void WallpaperManager::InitializeRegisteredDeviceWallpaper() {
