@@ -37,7 +37,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
-#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/api/manifest_types.h"
 #include "chrome/common/pref_names.h"
@@ -56,6 +55,7 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "google_apis/drive/auth_service.h"
+#include "storage/common/fileapi/file_system_types.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "url/gurl.h"
 
@@ -152,6 +152,25 @@ bool ConvertURLsToProvidedInfo(
   paths->erase(std::unique(paths->begin(), paths->end()), paths->end());
 
   return true;
+}
+
+bool IsAllowedSource(storage::FileSystemType type,
+                     api::file_manager_private::SourceRestriction restriction) {
+  switch (restriction) {
+    case api::file_manager_private::SOURCE_RESTRICTION_NONE:
+      NOTREACHED();
+      return false;
+
+    case api::file_manager_private::SOURCE_RESTRICTION_ANY_SOURCE:
+      return true;
+
+    case api::file_manager_private::SOURCE_RESTRICTION_NATIVE_SOURCE:
+      return type == storage::kFileSystemTypeNativeLocal;
+
+    case api::file_manager_private::SOURCE_RESTRICTION_NATIVE_OR_DRIVE_SOURCE:
+      return type == storage::kFileSystemTypeNativeLocal ||
+             type == storage::kFileSystemTypeDrive;
+  }
 }
 
 }  // namespace
@@ -707,6 +726,10 @@ FileManagerPrivateInternalGetRecentFilesFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalGetRecentFilesFunction::Run() {
+  using extensions::api::file_manager_private_internal::GetRecentFiles::Params;
+  const std::unique_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
   const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           chrome_details_.GetProfile(), render_frame_host());
@@ -719,11 +742,12 @@ FileManagerPrivateInternalGetRecentFilesFunction::Run() {
       Extension::GetBaseURLFromExtensionId(extension_id()),
       base::BindOnce(
           &FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles,
-          this));
+          this, params->restriction));
   return RespondLater();
 }
 
 void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
+    api::file_manager_private::SourceRestriction restriction,
     const std::vector<storage::FileSystemURL>& urls) {
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
@@ -737,6 +761,15 @@ void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
   file_manager::util::FileDefinitionList file_definition_list;
   for (const storage::FileSystemURL& url : urls) {
     DCHECK(external_backend->CanHandleType(url.type()));
+
+    // Filter out files from non-allowed sources.
+    // We do this filtering here rather than in RecentModel so that the set of
+    // files returned with some restriction is a subset of what would be
+    // returned without restriction. Anyway, the maximum number of files
+    // returned from RecentModel is large enough.
+    if (!IsAllowedSource(url.type(), restriction))
+      continue;
+
     file_manager::util::FileDefinition file_definition;
     const bool result =
         file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
@@ -744,6 +777,7 @@ void FileManagerPrivateInternalGetRecentFilesFunction::OnGetRecentFiles(
             &file_definition.virtual_path);
     if (!result)
       continue;
+
     // Recent file system only lists regular files, not directories.
     file_definition.is_directory = false;
     file_definition_list.emplace_back(std::move(file_definition));

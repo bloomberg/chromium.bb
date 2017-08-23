@@ -93,6 +93,7 @@ namespace fileManagerPrivateInternal {
         ValidatePathNameLengthCallback callback);
     static void getDirectorySize(DOMString url,
                                  GetDirectorySizeCallback callback);
-    static void getRecentFiles(GetRecentFilesCallback callback);
+    static void getRecentFiles(fileManagerPrivate.SourceRestriction restriction,
+                               GetRecentFilesCallback callback);
   };
 };

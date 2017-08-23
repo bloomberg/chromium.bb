@@ -18,7 +18,9 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "google_apis/drive/drive_api_error_codes.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace file_manager {
 namespace util {
@@ -290,7 +292,9 @@ class FileManagerPrivateInternalGetRecentFilesFunction
 
  private:
   ResponseAction Run() override;
-  void OnGetRecentFiles(const std::vector<storage::FileSystemURL>& urls);
+  void OnGetRecentFiles(
+      api::file_manager_private::SourceRestriction restriction,
+      const std::vector<storage::FileSystemURL>& urls);
   void OnConvertFileDefinitionListToEntryDefinitionList(
       std::unique_ptr<file_manager::util::EntryDefinitionList>
           entry_definition_list);

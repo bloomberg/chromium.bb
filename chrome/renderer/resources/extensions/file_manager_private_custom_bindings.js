@@ -206,8 +206,10 @@ binding.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.getDirectorySize(url, callback);
   });
 
-  apiFunctions.setHandleRequest('getRecentFiles', function(callback) {
-    fileManagerPrivateInternal.getRecentFiles(function(entryDescriptions) {
+  apiFunctions.setHandleRequest('getRecentFiles', function(
+        restriction, callback) {
+    fileManagerPrivateInternal.getRecentFiles(restriction, function(
+          entryDescriptions) {
       callback(entryDescriptions.map(function(description) {
         return GetExternalFileEntry(description);
       }));
