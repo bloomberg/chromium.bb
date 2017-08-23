@@ -595,6 +595,12 @@ be describing additional metrics about the same event.
       Measure of memory allocated by malloc.
     </summary>
   </metric>
+  <metric name="NumberOfExtensions">
+    <summary>
+      The number of extensions that are served from the associated renderer
+      process.
+    </summary>
+  </metric>
   <metric name="PartitionAlloc">
     <summary>
       Measure of memory allocated by PartitionAlloc.
