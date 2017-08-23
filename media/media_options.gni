@@ -22,7 +22,6 @@ media_subcomponent_deps = [
   "//media/base/android",
   "//media/cdm",
   "//media/device_monitors",
-  "//media/ffmpeg",
   "//media/filters",
   "//media/formats",
   "//media/muxers",
@@ -95,6 +94,10 @@ declare_args() {
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
 assert(enable_mse_mpeg2ts_stream_parser || !enable_hls_sample_aes)
+
+if (media_use_ffmpeg) {
+  media_subcomponent_deps += [ "//media/ffmpeg" ]
+}
 
 # Use a second declare_args() to pick up possible overrides of |use_cras|.
 declare_args() {
