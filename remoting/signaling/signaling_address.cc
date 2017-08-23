@@ -4,7 +4,9 @@
 
 #include "remoting/signaling/signaling_address.h"
 
+#include "base/base64.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "remoting/base/name_value_map.h"
 #include "remoting/base/remoting_bot.h"
 #include "remoting/base/service_urls.h"
@@ -45,14 +47,40 @@ buzz::QName GetQNameByField(Field attr, SignalingAddress::Direction direction) {
   return buzz::QName("", attribute_name);
 }
 
+SignalingAddress::Channel GetChannelType(std::string address) {
+  std::string bare_jid;
+  std::string resource;
+  std::string decoded_resource;
+  if (SplitJidResource(address, &bare_jid, &resource) &&
+      base::Base64Decode(resource, &decoded_resource) &&
+      decoded_resource.find("chromoting_lcs") != std::string::npos) {
+    return SignalingAddress::Channel::LCS;
+  }
+  return SignalingAddress::Channel::XMPP;
+}
+
 }  // namespace
 
 SignalingAddress::SignalingAddress()
     : channel_(SignalingAddress::Channel::XMPP) {}
 
-SignalingAddress::SignalingAddress(const std::string& jid)
-    : jid_(NormalizeJid(jid)), channel_(SignalingAddress::Channel::XMPP) {
-  DCHECK(!jid.empty());
+SignalingAddress::SignalingAddress(const std::string& address) {
+  channel_ = GetChannelType(address);
+  switch (channel_) {
+    case SignalingAddress::Channel::XMPP:
+      jid_ = NormalizeJid(address);
+      break;
+    case SignalingAddress::Channel::LCS:
+      endpoint_id_ = NormalizeJid(address);
+      jid_ = remoting::ServiceUrls::GetInstance()->directory_bot_jid();
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  DCHECK(!jid_.empty()) << "Missing JID.";
+  DCHECK(endpoint_id_.empty() != (channel_ == Channel::LCS))
+      << "EndpointId should be set if and only if the Channel is LCS";
 }
 
 SignalingAddress::SignalingAddress(const std::string& jid,
@@ -126,10 +154,17 @@ SignalingAddress SignalingAddress::Parse(const buzz::XmlElement* iq,
 
 void SignalingAddress::SetInMessage(buzz::XmlElement* iq,
                                     Direction direction) const {
-  DCHECK(!empty());
+  DCHECK(!empty()) << "Signaling Address is empty";
 
-  // Always set the JID.
-  iq->SetAttr(GetQNameByField(Field::JID, direction), jid_);
+  if (direction == FROM) {
+    // The from JID is not used for routing but for sender identification on the
+    // receiving end. Use the ID for specificity.
+    iq->SetAttr(GetQNameByField(Field::JID, direction), id());
+  } else {
+    // The to JID is used for routing and must be a valid XMPP endpoint.  Always
+    // use the XMPP JID.
+    iq->SetAttr(GetQNameByField(Field::JID, direction), jid_);
+  }
 
   // Do not tamper the routing-info in the jingle tag for error IQ's, as
   // it corresponds to the original message.
@@ -145,17 +180,14 @@ void SignalingAddress::SetInMessage(buzz::XmlElement* iq,
     // Start from a fresh slate regardless of the previous address format.
     jingle->ClearAttr(GetQNameByField(Field::CHANNEL, direction));
     jingle->ClearAttr(GetQNameByField(Field::ENDPOINT_ID, direction));
-  }
 
-  // Only set the channel and endpoint_id in the LCS channel.
-  if (channel_ == SignalingAddress::Channel::LCS) {
-    // Can't set LCS address in a non-jingle message;
-    CHECK(jingle);
-
-    jingle->AddAttr(GetQNameByField(Field::ENDPOINT_ID, direction),
-                    endpoint_id_);
-    jingle->AddAttr(GetQNameByField(Field::CHANNEL, direction),
-                    ValueToName(kChannelTypes, channel_));
+    // Only set the channel and endpoint_id in the LCS channel.
+    if (channel_ == SignalingAddress::Channel::LCS) {
+      jingle->AddAttr(GetQNameByField(Field::ENDPOINT_ID, direction),
+                      endpoint_id_);
+      jingle->AddAttr(GetQNameByField(Field::CHANNEL, direction),
+                      ValueToName(kChannelTypes, channel_));
+    }
   }
 }
 

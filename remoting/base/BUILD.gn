@@ -71,7 +71,6 @@ source_set("base") {
     sources -= [
       "chromium_url_request.cc",
       "chromoting_event.cc",
-      "service_urls.cc",
       "telemetry_log_writer.cc",
       "url_request_context_getter.cc",
     ]

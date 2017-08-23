@@ -38,6 +38,7 @@
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/cpp/var_dictionary.h"
 #include "remoting/base/constants.h"
+#include "remoting/base/service_urls.h"
 #include "remoting/base/util.h"
 #include "remoting/client/chromoting_client.h"
 #include "remoting/client/input/normalizing_input_filter_cros.h"
@@ -564,6 +565,7 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
   std::string local_jid;
   std::string host_jid;
   std::string host_public_key;
+  std::string directory_bot_jid;
   if (!data.GetString("hostJid", &host_jid) ||
       !data.GetString("hostPublicKey", &host_public_key) ||
       !data.GetString("localJid", &local_jid) ||
@@ -574,6 +576,12 @@ void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
 
   data.GetString("clientPairingId", &client_auth_config.pairing_client_id);
   data.GetString("clientPairedSecret", &client_auth_config.pairing_secret);
+
+#if !defined(NDEBUG)
+  if (data.GetString("directoryBotJid", &directory_bot_jid)) {
+    ServiceUrls::GetInstance()->set_directory_bot_jid(directory_bot_jid);
+  }
+#endif
 
   if (use_async_pin_dialog_) {
     client_auth_config.fetch_secret_callback = base::Bind(

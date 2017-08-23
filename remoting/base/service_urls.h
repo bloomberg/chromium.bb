@@ -45,6 +45,13 @@ class ServiceUrls {
   // ICE config URL.
   const std::string& ice_config_url() const { return ice_config_url_; }
 
+#if !defined(NDEBUG)
+  // Override the directory bot JID for testing.
+  void set_directory_bot_jid(const std::string& bot_jid) {
+    directory_bot_jid_ = bot_jid;
+  }
+#endif
+
  private:
   friend struct base::DefaultSingletonTraits<ServiceUrls>;
 

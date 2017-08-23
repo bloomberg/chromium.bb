@@ -42,30 +42,33 @@ ServiceUrls::ServiceUrls()
       directory_bot_jid_(kRemotingBotJid),
       gcd_jid_(kGcdJid) {
 #if !defined(NDEBUG)
-  // Allow debug builds to override urls via command line.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  CHECK(command_line);
-  if (command_line->HasSwitch(kDirectoryBaseUrlSwitch)) {
-    directory_base_url_ =
-        command_line->GetSwitchValueASCII(kDirectoryBaseUrlSwitch);
-  }
-  if (command_line->HasSwitch(kGcdBaseUrlSwitch)) {
-    gcd_base_url_ = command_line->GetSwitchValueASCII(kGcdBaseUrlSwitch);
-  }
-  if (command_line->HasSwitch(kXmppServerAddressSwitch)) {
-    xmpp_server_address_ =
-        command_line->GetSwitchValueASCII(kXmppServerAddressSwitch);
-    xmpp_server_address_for_me2me_host_ = xmpp_server_address_;
-  }
-  if (command_line->HasSwitch(kXmppServerDisableTlsSwitch)) {
-    xmpp_server_use_tls_ = false;
-  }
-  if (command_line->HasSwitch(kDirectoryBotJidSwitch)) {
-    directory_bot_jid_ =
-        command_line->GetSwitchValueASCII(kDirectoryBotJidSwitch);
-  }
-  if (command_line->HasSwitch(kGcdJidSwitch)) {
-    gcd_jid_ = command_line->GetSwitchValueASCII(kGcdJidSwitch);
+  // The command line may not be initialized when running as a PNaCl plugin.
+  if (base::CommandLine::InitializedForCurrentProcess()) {
+    // Allow debug builds to override urls via command line.
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    CHECK(command_line);
+    if (command_line->HasSwitch(kDirectoryBaseUrlSwitch)) {
+      directory_base_url_ =
+          command_line->GetSwitchValueASCII(kDirectoryBaseUrlSwitch);
+    }
+    if (command_line->HasSwitch(kGcdBaseUrlSwitch)) {
+      gcd_base_url_ = command_line->GetSwitchValueASCII(kGcdBaseUrlSwitch);
+    }
+    if (command_line->HasSwitch(kXmppServerAddressSwitch)) {
+      xmpp_server_address_ =
+          command_line->GetSwitchValueASCII(kXmppServerAddressSwitch);
+      xmpp_server_address_for_me2me_host_ = xmpp_server_address_;
+    }
+    if (command_line->HasSwitch(kXmppServerDisableTlsSwitch)) {
+      xmpp_server_use_tls_ = false;
+    }
+    if (command_line->HasSwitch(kDirectoryBotJidSwitch)) {
+      directory_bot_jid_ =
+          command_line->GetSwitchValueASCII(kDirectoryBotJidSwitch);
+    }
+    if (command_line->HasSwitch(kGcdJidSwitch)) {
+      gcd_jid_ = command_line->GetSwitchValueASCII(kGcdJidSwitch);
+    }
   }
 #endif  // !defined(NDEBUG)
 
