@@ -12,14 +12,10 @@
 @interface SearchActionView : UIView
 
 // Designated initializer, creates the action view with a |target| and
-// |selector| to act on. The |primaryVibrancyEffect| and
-// |secondaryVibrancyEffect| are used to display view elements. The image with
-// name |imageName| is shown in the circular icon. The |title| is shown beneath
-// the icon.
+// |selector| to act on. The image with name |imageName| is shown in the
+// circular icon. The |title| is shown beneath the icon.
 - (instancetype)initWithActionTarget:(id)target
                       actionSelector:(SEL)actionSelector
-                       primaryEffect:(UIVisualEffect*)primaryEffect
-                     secondaryEffect:(UIVisualEffect*)secondaryEffect
                                title:(NSString*)title
                            imageName:(NSString*)imageName
     NS_DESIGNATED_INITIALIZER;

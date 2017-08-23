@@ -30,10 +30,6 @@ const CGFloat kMaxContentSize = 421;
 @property(nonatomic) CGFloat compactHeight;
 // The target for actions in the view.
 @property(nonatomic, weak) id<SearchWidgetViewActionTarget> target;
-// The primary effect of the widget. Use for a more opaque appearance.
-@property(nonatomic, strong) UIVisualEffect* primaryEffect;
-// The secondary effect of the widget. Use for a more transparent appearance.
-@property(nonatomic, strong) UIVisualEffect* secondaryEffect;
 // The actions section height constraint. Set its constant to modify the action
 // section's height.
 @property(nonatomic, strong) NSLayoutConstraint* actionsSectionHeightConstraint;
@@ -60,8 +56,6 @@ const CGFloat kMaxContentSize = 421;
 @implementation SearchWidgetView
 
 @synthesize target = _target;
-@synthesize primaryEffect = _primaryEffect;
-@synthesize secondaryEffect = _secondaryEffect;
 @synthesize copiedURLSection = _copiedURLSection;
 @synthesize actionsSection = _actionsSection;
 @synthesize actionsContent = _actionsContent;
@@ -69,16 +63,12 @@ const CGFloat kMaxContentSize = 421;
 @synthesize actionsSectionHeightConstraint = _actionsSectionHeightConstraint;
 
 - (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target
-               primaryVibrancyEffect:(UIVibrancyEffect*)primaryVibrancyEffect
-             secondaryVibrancyEffect:(UIVibrancyEffect*)secondaryVibrancyEffect
                        compactHeight:(CGFloat)compactHeight
                     initiallyCompact:(BOOL)compact {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(target);
     _target = target;
-    _primaryEffect = primaryVibrancyEffect;
-    _secondaryEffect = secondaryVibrancyEffect;
     _compactHeight = compactHeight;
     [self createUI:compact];
   }
@@ -94,9 +84,7 @@ const CGFloat kMaxContentSize = 421;
 
   _copiedURLSection =
       [[CopiedURLView alloc] initWithActionTarget:self.target
-                                   actionSelector:@selector(openCopiedURL:)
-                                    primaryEffect:self.primaryEffect
-                                  secondaryEffect:self.secondaryEffect];
+                                   actionSelector:@selector(openCopiedURL:)];
   [self addSubview:_copiedURLSection];
 
   _actionsSectionHeightConstraint = [self.actionsSection.heightAnchor
@@ -154,32 +142,24 @@ const CGFloat kMaxContentSize = 421;
         [[SearchActionView alloc]
             initWithActionTarget:self.target
                   actionSelector:@selector(openSearch:)
-                   primaryEffect:self.primaryEffect
-                 secondaryEffect:self.secondaryEffect
                            title:NSLocalizedString(@"IDS_IOS_NEW_SEARCH",
                                                    @"New Search")
                        imageName:@"quick_action_search"],
         [[SearchActionView alloc]
             initWithActionTarget:self.target
                   actionSelector:@selector(openIncognito:)
-                   primaryEffect:self.primaryEffect
-                 secondaryEffect:self.secondaryEffect
                            title:NSLocalizedString(@"IDS_IOS_INCOGNITO_SEARCH",
                                                    @"Incognito Search")
                        imageName:@"quick_action_incognito_search"],
         [[SearchActionView alloc]
             initWithActionTarget:self.target
                   actionSelector:@selector(openVoice:)
-                   primaryEffect:self.primaryEffect
-                 secondaryEffect:self.secondaryEffect
                            title:NSLocalizedString(@"IDS_IOS_VOICE_SEARCH",
                                                    @"Voice Search")
                        imageName:@"quick_action_voice_search"],
         [[SearchActionView alloc]
             initWithActionTarget:self.target
                   actionSelector:@selector(openQRCode:)
-                   primaryEffect:self.primaryEffect
-                 secondaryEffect:self.secondaryEffect
                            title:NSLocalizedString(@"IDS_IOS_SCAN_QR_CODE",
                                                    @"Scan QR Code")
                        imageName:@"quick_action_scan_qr_code"],

@@ -29,13 +29,9 @@
 @interface SearchWidgetView : UIView
 
 // Designated initializer, creates the widget view with a |target| for user
-// actions. The |primaryVibrancyEffect| and |secondaryVibrancyEffect| are used
-// to display view elements. |compactHeight| indicates the size to use in
-// compact display. |initiallyCompact| indicates which mode to display on
-// initialization.
+// actions. |compactHeight| indicates the size to use in compact display.
+// |initiallyCompact| indicates which mode to display on initialization.
 - (instancetype)initWithActionTarget:(id<SearchWidgetViewActionTarget>)target
-               primaryVibrancyEffect:(UIVibrancyEffect*)primaryVibrancyEffect
-             secondaryVibrancyEffect:(UIVibrancyEffect*)secondaryVibrancyEffect
                        compactHeight:(CGFloat)compactHeight
                     initiallyCompact:(BOOL)compact NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
