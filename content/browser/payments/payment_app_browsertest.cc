@@ -116,8 +116,8 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     bool payment_aborted = false;
     PaymentAppProvider::GetInstance()->AbortPayment(
         shell()->web_contents()->GetBrowserContext(), registration_id,
-        base::Bind(&PaymentEventResultCallback, run_loop.QuitClosure(),
-                   &payment_aborted));
+        base::BindOnce(&PaymentEventResultCallback, run_loop.QuitClosure(),
+                       &payment_aborted));
     run_loop.Run();
 
     return payment_aborted;
@@ -133,8 +133,8 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     PaymentAppProvider::GetInstance()->CanMakePayment(
         shell()->web_contents()->GetBrowserContext(), registration_id,
         std::move(event_data),
-        base::Bind(&PaymentEventResultCallback, run_loop.QuitClosure(),
-                   &can_make_payment));
+        base::BindOnce(&PaymentEventResultCallback, run_loop.QuitClosure(),
+                       &can_make_payment));
     run_loop.Run();
 
     return can_make_payment;
@@ -149,8 +149,8 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     PaymentAppProvider::GetInstance()->InvokePaymentApp(
         shell()->web_contents()->GetBrowserContext(), registration_id,
         CreatePaymentRequestEventData(supported_method, instrument_key),
-        base::Bind(&InvokePaymentAppCallback, run_loop.QuitClosure(),
-                   &response));
+        base::BindOnce(&InvokePaymentAppCallback, run_loop.QuitClosure(),
+                       &response));
     run_loop.Run();
 
     return response;

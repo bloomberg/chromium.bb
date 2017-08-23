@@ -30,8 +30,8 @@ PaymentManager::PaymentManager(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(payment_app_context);
 
-  binding_.set_connection_error_handler(
-      base::Bind(&PaymentManager::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(base::BindOnce(
+      &PaymentManager::OnConnectionError, base::Unretained(this)));
 }
 
 void PaymentManager::Init(const std::string& context,

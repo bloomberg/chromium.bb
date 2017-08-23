@@ -25,8 +25,8 @@ void PaymentAppContextImpl::Init(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PaymentAppContextImpl::CreatePaymentAppDatabaseOnIO, this,
-                 service_worker_context));
+      base::BindOnce(&PaymentAppContextImpl::CreatePaymentAppDatabaseOnIO, this,
+                     service_worker_context));
 }
 
 void PaymentAppContextImpl::Shutdown() {
@@ -34,8 +34,8 @@ void PaymentAppContextImpl::Shutdown() {
 
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PaymentAppContextImpl::ShutdownOnIO, this),
-      base::Bind(&PaymentAppContextImpl::DidShutdown, this));
+      base::BindOnce(&PaymentAppContextImpl::ShutdownOnIO, this),
+      base::BindOnce(&PaymentAppContextImpl::DidShutdown, this));
 }
 
 void PaymentAppContextImpl::CreatePaymentManager(
@@ -44,8 +44,8 @@ void PaymentAppContextImpl::CreatePaymentManager(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PaymentAppContextImpl::CreatePaymentManagerOnIO, this,
-                 base::Passed(&request)));
+      base::BindOnce(&PaymentAppContextImpl::CreatePaymentManagerOnIO, this,
+                     base::Passed(&request)));
 }
 
 void PaymentAppContextImpl::PaymentManagerHadConnectionError(
