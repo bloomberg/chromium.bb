@@ -127,6 +127,7 @@ const CGFloat kButtonHeight = 36;
     NSArray* visualConstraints = @[
       @"V:|-vpx2-[imageView]-vp-[textLabel]-vp_bvp-[primaryButton(bh)]",
       @"H:|-hp-[primaryButton]-hp-|",
+      @"H:|-hp-[textLabel]-hp-|",
     ];
     ApplyVisualConstraintsWithMetricsAndOptions(
         visualConstraints, views, metrics, NSLayoutFormatAlignAllCenterX);
