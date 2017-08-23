@@ -478,9 +478,6 @@ TEST_F(GeolocationPermissionContextTests, AndroidEnabledCantPrompt) {
 }
 
 TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
-
   GURL requesting_frame("https://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   RequestManagerDocumentLoadCompleted();
@@ -494,9 +491,6 @@ TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDDisabled) {
 }
 
 TEST_F(GeolocationPermissionContextTests, SystemLocationOnNoLSD) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
-
   GURL requesting_frame("https://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
   RequestManagerDocumentLoadCompleted();
@@ -512,8 +506,6 @@ TEST_F(GeolocationPermissionContextTests, SystemLocationOnNoLSD) {
 
 TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDAccept) {
   base::HistogramTester tester;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
 
   GURL requesting_frame("https://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
@@ -538,8 +530,6 @@ TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDAccept) {
 
 TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDReject) {
   base::HistogramTester tester;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
 
   GURL requesting_frame("https://www.example.com/geolocation");
   NavigateAndCommit(requesting_frame);
@@ -564,8 +554,6 @@ TEST_F(GeolocationPermissionContextTests, SystemLocationOffLSDReject) {
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffDifferentSites) {
   base::HistogramTester tester;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
 
   GURL requesting_frame_1("https://www.example.com/geolocation");
   GURL requesting_frame_2("https://www.example-2.com/geolocation");
@@ -622,8 +610,6 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffDifferentSites) {
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffTiming) {
   base::HistogramTester tester;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
 
   GURL requesting_frame("https://www.example.com/geolocation");
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
@@ -709,9 +695,6 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffTiming) {
 }
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffPermissionStatus) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
-
   GURL requesting_frame("https://www.example.com/geolocation");
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
                                CONTENT_SETTING_ALLOW);
@@ -738,9 +721,6 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffPermissionStatus) {
 }
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffAskPromptsDespiteBackOff) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
-
   GURL requesting_frame("https://www.example.com/geolocation");
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
                                CONTENT_SETTING_ALLOW);
@@ -769,9 +749,6 @@ TEST_F(GeolocationPermissionContextTests, LSDBackOffAskPromptsDespiteBackOff) {
 
 TEST_F(GeolocationPermissionContextTests,
        LSDBackOffAcceptPermissionResetsBackOff) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
-
   GURL requesting_frame("https://www.example.com/geolocation");
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
                                CONTENT_SETTING_ALLOW);
@@ -809,9 +786,6 @@ TEST_F(GeolocationPermissionContextTests,
 }
 
 TEST_F(GeolocationPermissionContextTests, LSDBackOffAcceptLSDResetsBackOff) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
-
   GURL requesting_frame("https://www.example.com/geolocation");
   SetGeolocationContentSetting(requesting_frame, requesting_frame,
                                CONTENT_SETTING_ALLOW);
@@ -1136,40 +1110,7 @@ TEST_F(GeolocationPermissionContextTests, SearchGeolocationInIncognito) {
                 .content_setting);
 }
 
-TEST_F(GeolocationPermissionContextTests,
-       GeolocationStatusAndroidDisabledLegacy) {
-  GURL requesting_frame("https://www.example.com/geolocation");
-
-  // In these tests the Android permission status should not be taken into
-  // account, only the content setting.
-  SetGeolocationContentSetting(requesting_frame, requesting_frame,
-                               CONTENT_SETTING_ALLOW);
-  MockLocationSettings::SetLocationStatus(false /* android */,
-                                          true /* system */);
-  ASSERT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
-
-  SetGeolocationContentSetting(requesting_frame, requesting_frame,
-                               CONTENT_SETTING_ASK);
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
-
-  SetGeolocationContentSetting(requesting_frame, requesting_frame,
-                               CONTENT_SETTING_BLOCK);
-  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
-}
-
 TEST_F(GeolocationPermissionContextTests, GeolocationStatusAndroidDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
-
   GURL requesting_frame("https://www.example.com/geolocation");
 
   // With the Android permission off, but location allowed for a domain, the
@@ -1202,40 +1143,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationStatusAndroidDisabled) {
                 requesting_frame));
 }
 
-TEST_F(GeolocationPermissionContextTests,
-       GeolocationStatusSystemDisabledLegacy) {
-  GURL requesting_frame("https://www.example.com/geolocation");
-
-  // In these tests the system permission status should not be taken into
-  // account, only the content setting.
-  SetGeolocationContentSetting(requesting_frame, requesting_frame,
-                               CONTENT_SETTING_ALLOW);
-  MockLocationSettings::SetLocationStatus(true /* android */,
-                                          false /* system */);
-  ASSERT_EQ(blink::mojom::PermissionStatus::GRANTED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
-
-  SetGeolocationContentSetting(requesting_frame, requesting_frame,
-                               CONTENT_SETTING_ASK);
-  ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
-
-  SetGeolocationContentSetting(requesting_frame, requesting_frame,
-                               CONTENT_SETTING_BLOCK);
-  ASSERT_EQ(blink::mojom::PermissionStatus::DENIED,
-            PermissionManager::Get(profile())->GetPermissionStatus(
-                content::PermissionType::GEOLOCATION, requesting_frame,
-                requesting_frame));
-}
-
 TEST_F(GeolocationPermissionContextTests, GeolocationStatusSystemDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kLsdPermissionPrompt);
-
   GURL requesting_frame("https://www.example.com/geolocation");
 
   // With the system permission off, but location allowed for a domain, the

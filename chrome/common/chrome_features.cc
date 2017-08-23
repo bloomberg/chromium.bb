@@ -223,7 +223,7 @@ const base::Feature kLinuxObsoleteSystemIsEndOfTheLine{
 // Enables or disables the Location Settings Dialog (LSD). The LSD is an Android
 // system-level geolocation permission prompt.
 const base::Feature kLsdPermissionPrompt{"LsdPermissionPrompt",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if defined(OS_MACOSX)
 // Enables RTL layout in macOS top chrome.

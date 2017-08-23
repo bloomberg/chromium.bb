@@ -20,6 +20,11 @@
 #include "device/vr/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/mock_location_settings.h"
+#include "chrome/browser/geolocation/geolocation_permission_context_android.h"
+#endif  // defined(OS_ANDROID)
+
 using blink::mojom::PermissionStatus;
 using content::PermissionType;
 
@@ -110,6 +115,17 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     profile_.reset(new PermissionManagerTestingProfile());
+#if defined(OS_ANDROID)
+    GeolocationPermissionContextAndroid* geolocation_permission_context_ =
+        static_cast<GeolocationPermissionContextAndroid*>(
+            GetPermissionManager()->GetPermissionContext(
+                CONTENT_SETTINGS_TYPE_GEOLOCATION));
+    geolocation_permission_context_->SetLocationSettingsForTesting(
+        std::unique_ptr<LocationSettings>(new MockLocationSettings()));
+    MockLocationSettings::SetLocationStatus(
+        true /* has_android_location_permission */,
+        true /* is_system_location_setting_enabled */);
+#endif
   }
 
   void TearDown() override {
