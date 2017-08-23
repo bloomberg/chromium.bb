@@ -761,6 +761,12 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
   bool is_pen = event.Event().pointer_type ==
                 blink::WebPointerProperties::PointerType::kPen;
 
+  WebPointerProperties::Button pen_drag_button =
+      WebPointerProperties::Button::kLeft;
+  if (frame_->GetSettings() &&
+      frame_->GetSettings()->GetBarrelButtonForDragEnabled())
+    pen_drag_button = WebPointerProperties::Button::kBarrel;
+
   // While resetting m_mousePressed here may seem out of place, it turns out
   // to be needed to handle some bugs^Wfeatures in Blink mouse event handling:
   // 1. Certain elements, such as <embed>, capture mouse events. They do not
@@ -779,8 +785,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
   //    we get a mouse leave event here
   if ((!is_pen &&
        event.Event().button != WebPointerProperties::Button::kLeft) ||
-      (is_pen &&
-       event.Event().button != WebPointerProperties::Button::kBarrel) ||
+      (is_pen && event.Event().button != pen_drag_button) ||
       event.Event().GetType() == WebInputEvent::kMouseLeave) {
     mouse_pressed_ = false;
   }

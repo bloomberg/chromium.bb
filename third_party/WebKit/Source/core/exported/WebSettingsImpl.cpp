@@ -430,6 +430,10 @@ void WebSettingsImpl::SetTouchDragDropEnabled(bool enabled) {
   settings_->SetTouchDragDropEnabled(enabled);
 }
 
+void WebSettingsImpl::SetBarrelButtonForDragEnabled(bool enabled) {
+  settings_->SetBarrelButtonForDragEnabled(enabled);
+}
+
 void WebSettingsImpl::SetOfflineWebApplicationCacheEnabled(bool enabled) {
   settings_->SetOfflineWebApplicationCacheEnabled(enabled);
 }

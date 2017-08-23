@@ -181,6 +181,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetTextTrackTextSize(const WebString&) override;
   void SetThreadedScrollingEnabled(bool) override;
   void SetTouchDragDropEnabled(bool) override;
+  void SetBarrelButtonForDragEnabled(bool) override;
   void SetUseLegacyBackgroundSizeShorthandBehavior(bool) override;
   void SetViewportStyle(WebViewportStyle) override;
   void SetUseSolidColorScrollbars(bool) override;
