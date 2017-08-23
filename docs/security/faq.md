@@ -398,6 +398,14 @@ controls the proxy (e.g. the enterprise’s IT administrator). If the client doe
 not trust the private trust anchor, the proxy’s attempt to mediate the
 connection will fail as it should.
 
+<a name="TOC-How-does-certificate-transparency-interact-with-local-proxies-and-filters-"></a>
+## How does Certificate Transparency interact with local proxies and filters?
+
+Just as pinning only applies to publicly-trusted trust anchors, Chrome only
+requires Certificate Transparency (CT) for publicly-trusted trust anchors. Thus
+private trust anchors, such as for enterprise middle-boxes and AV proxies, do
+not need to be publicly logged in a CT log.
+
 <a name="TOC-Can-I-use-EMET-to-help-protect-Chrome-against-attack-on-Microsoft-Windows-"></a>
 ## Can I use EMET to help protect Chrome against attack on Microsoft Windows?
 
