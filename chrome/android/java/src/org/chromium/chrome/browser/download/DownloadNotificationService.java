@@ -70,16 +70,28 @@ public class DownloadNotificationService {
 
     private NotificationManager mNotificationManager;
     private SharedPreferences mSharedPrefs;
-    private Context mContext;
     private int mNextNotificationId;
     private Bitmap mDownloadSuccessLargeIcon;
     private DownloadSharedPreferenceHelper mDownloadSharedPreferenceHelper;
     private DownloadForegroundServiceManager mDownloadForegroundServiceManager;
 
-    public DownloadNotificationService() {
-        mContext = ContextUtils.getApplicationContext();
-        mNotificationManager = (NotificationManager) mContext.getSystemService(
-                Context.NOTIFICATION_SERVICE);
+    private static class LazyHolder {
+        private static final DownloadNotificationService INSTANCE =
+                new DownloadNotificationService();
+    }
+
+    /**
+     * Creates DownloadNotificationService.
+     */
+    public static DownloadNotificationService getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+
+    @VisibleForTesting
+    DownloadNotificationService() {
+        mNotificationManager =
+                (NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.NOTIFICATION_SERVICE);
         mSharedPrefs = ContextUtils.getAppSharedPreferences();
         mDownloadSharedPreferenceHelper = DownloadSharedPreferenceHelper.getInstance();
         mNextNotificationId = mSharedPrefs.getInt(
@@ -188,6 +200,8 @@ public class DownloadNotificationService {
             boolean canDownloadWhileMetered, boolean isDownloadPending, boolean isTransient,
             Bitmap icon) {
         int notificationId = getNotificationId(id);
+        Context context = ContextUtils.getApplicationContext();
+
         DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
                                                 .setContentId(id)
                                                 .setFileName(fileName)
@@ -201,13 +215,13 @@ public class DownloadNotificationService {
                                                 .setNotificationId(notificationId)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                mContext, DownloadNotificationFactory.DownloadStatus.IN_PROGRESS, downloadUpdate);
+                context, DownloadNotificationFactory.DownloadStatus.IN_PROGRESS, downloadUpdate);
 
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, true, isTransient));
         // TODO(jming): do we want to handle the pending option in a different manner?
-        mDownloadForegroundServiceManager.updateDownloadStatus(mContext,
+        mDownloadForegroundServiceManager.updateDownloadStatus(context,
                 DownloadForegroundServiceManager.DownloadStatus.IN_PROGRESS, notificationId,
                 notification);
 
@@ -240,7 +254,7 @@ public class DownloadNotificationService {
                 mDownloadSharedPreferenceHelper.getDownloadSharedPreferenceEntry(id);
         if (entry == null) return;
         cancelNotification(entry.notificationId, id);
-        mDownloadForegroundServiceManager.updateDownloadStatus(mContext,
+        mDownloadForegroundServiceManager.updateDownloadStatus(ContextUtils.getApplicationContext(),
                 DownloadForegroundServiceManager.DownloadStatus.CANCEL, entry.notificationId, null);
     }
 
@@ -274,6 +288,7 @@ public class DownloadNotificationService {
             return;
         }
         int notificationId = entry == null ? getNotificationId(id) : entry.notificationId;
+        Context context = ContextUtils.getApplicationContext();
 
         DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
                                                 .setContentId(id)
@@ -285,12 +300,12 @@ public class DownloadNotificationService {
                                                 .build();
 
         Notification notification = DownloadNotificationFactory.buildNotification(
-                mContext, DownloadNotificationFactory.DownloadStatus.PAUSED, downloadUpdate);
+                context, DownloadNotificationFactory.DownloadStatus.PAUSED, downloadUpdate);
 
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
-        mDownloadForegroundServiceManager.updateDownloadStatus(mContext,
+        mDownloadForegroundServiceManager.updateDownloadStatus(context,
                 DownloadForegroundServiceManager.DownloadStatus.PAUSE, notificationId,
                 notification);
 
@@ -315,10 +330,11 @@ public class DownloadNotificationService {
     public int notifyDownloadSuccessful(ContentId id, String filePath, String fileName,
             long systemDownloadId, boolean isOffTheRecord, boolean isSupportedMimeType,
             boolean isOpenable, Bitmap icon, String originalUrl, String referrer) {
+        Context context = ContextUtils.getApplicationContext();
         int notificationId = getNotificationId(id);
         if (icon == null && mDownloadSuccessLargeIcon == null) {
-            Bitmap bitmap = BitmapFactory.decodeResource(
-                    mContext.getResources(), R.drawable.offline_pin);
+            Bitmap bitmap =
+                    BitmapFactory.decodeResource(context.getResources(), R.drawable.offline_pin);
             mDownloadSuccessLargeIcon = getLargeNotificationIcon(bitmap);
         }
         if (icon == null) icon = mDownloadSuccessLargeIcon;
@@ -337,10 +353,10 @@ public class DownloadNotificationService {
                                                 .setReferrer(referrer)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                mContext, DownloadNotificationFactory.DownloadStatus.SUCCESSFUL, downloadUpdate);
+                context, DownloadNotificationFactory.DownloadStatus.SUCCESSFUL, downloadUpdate);
 
         updateNotification(notificationId, notification, id, null);
-        mDownloadForegroundServiceManager.updateDownloadStatus(mContext,
+        mDownloadForegroundServiceManager.updateDownloadStatus(context,
                 DownloadForegroundServiceManager.DownloadStatus.COMPLETE, notificationId,
                 notification);
         stopTrackingInProgressDownload(id);
@@ -365,6 +381,7 @@ public class DownloadNotificationService {
         }
 
         int notificationId = getNotificationId(id);
+        Context context = ContextUtils.getApplicationContext();
 
         DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
                                                 .setContentId(id)
@@ -372,17 +389,17 @@ public class DownloadNotificationService {
                                                 .setIcon(icon)
                                                 .build();
         Notification notification = DownloadNotificationFactory.buildNotification(
-                mContext, DownloadNotificationFactory.DownloadStatus.FAILED, downloadUpdate);
+                context, DownloadNotificationFactory.DownloadStatus.FAILED, downloadUpdate);
 
         updateNotification(notificationId, notification, id, null);
-        mDownloadForegroundServiceManager.updateDownloadStatus(mContext,
+        mDownloadForegroundServiceManager.updateDownloadStatus(context,
                 DownloadForegroundServiceManager.DownloadStatus.FAIL, notificationId, notification);
 
         stopTrackingInProgressDownload(id);
     }
 
     private Bitmap getLargeNotificationIcon(Bitmap bitmap) {
-        Resources resources = mContext.getResources();
+        Resources resources = ContextUtils.getApplicationContext().getResources();
         int height = (int) resources.getDimension(android.R.dimen.notification_large_icon_height);
         int width = (int) resources.getDimension(android.R.dimen.notification_large_icon_width);
         final OvalShape circle = new OvalShape();
@@ -448,10 +465,11 @@ public class DownloadNotificationService {
      * already in progress, do nothing.
      */
     void resumeAllPendingDownloads() {
+        Context context = ContextUtils.getApplicationContext();
         List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();
         for (int i = 0; i < entries.size(); ++i) {
             DownloadSharedPreferenceEntry entry = entries.get(i);
-            if (!canResumeDownload(mContext, entry)) continue;
+            if (!canResumeDownload(context, entry)) continue;
             if (mDownloadsInProgress.contains(entry.id)) continue;
 
             Intent intent = new Intent();
@@ -465,7 +483,8 @@ public class DownloadNotificationService {
 
     @VisibleForTesting
     void resumeDownload(Intent intent) {
-        DownloadBroadcastManager.startDownloadBroadcastManager(mContext, intent);
+        DownloadBroadcastManager.startDownloadBroadcastManager(
+                ContextUtils.getApplicationContext(), intent);
     }
 
     /**
