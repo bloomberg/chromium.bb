@@ -376,8 +376,8 @@ void BrowserProcessImpl::StartTearDown() {
     webrtc_log_uploader_->StartShutdown();
 #endif
 
-  if (local_state())
-    local_state()->CommitPendingWrite();
+  if (local_state_)
+    local_state_->CommitPendingWrite();
 }
 
 void BrowserProcessImpl::PostDestroyThreads() {
@@ -473,7 +473,8 @@ bool RundownTaskCounter::TimedWaitUntil(const base::TimeTicks& end_time) {
 }  // namespace
 
 void BrowserProcessImpl::FlushLocalStateAndReply(base::OnceClosure reply) {
-  local_state()->CommitPendingWrite();
+  if (local_state_)
+    local_state_->CommitPendingWrite();
   local_state_task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(&base::DoNothing), std::move(reply));
 }
@@ -494,13 +495,13 @@ void BrowserProcessImpl::EndSession() {
 
   // Tell the metrics service it was cleanly shutdown.
   metrics::MetricsService* metrics = g_browser_process->metrics_service();
-  if (metrics && local_state()) {
+  if (metrics && local_state_) {
     metrics->RecordStartOfSessionEnd();
 #if !defined(OS_CHROMEOS)
     // MetricsService lazily writes to prefs, force it to write now.
     // On ChromeOS, chrome gets killed when hangs, so no need to
     // commit metrics::prefs::kStabilitySessionEndCompleted change immediately.
-    local_state()->CommitPendingWrite();
+    local_state_->CommitPendingWrite();
 
     rundown_counter->Post(local_state_task_runner_.get());
 #endif
