@@ -1,7 +1,7 @@
 Test css.getBackgroundColors method
 
 Running test: testNoText
-No text: should be null
+No text (and not a positioned element): should be null
 {}
 
 Running test: testNoBgColor
@@ -10,6 +10,10 @@ No background color: should be white
 
 Running test: testOpaqueBgColor
 Opaque background color: should be red
+{"backgroundColors":["rgb(255, 0, 0)"],"computedFontSize":"16px","computedFontWeight":"400","computedBodyFontSize":"16px"}
+
+Running test: testNoDirectText
+No direct text: should be red
 {"backgroundColors":["rgb(255, 0, 0)"],"computedFontSize":"16px","computedFontWeight":"400","computedBodyFontSize":"16px"}
 
 Running test: testLayeredOpaqueBgColors
