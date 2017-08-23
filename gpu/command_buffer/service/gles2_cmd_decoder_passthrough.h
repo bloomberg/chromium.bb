@@ -187,6 +187,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   bool GetServiceTextureId(uint32_t client_texture_id,
                            uint32_t* service_texture_id) override;
+  TextureBase* GetTextureBase(uint32_t client_id) override;
 
   // Provides detail about a lost context if one occurred.
   // Clears a level sub area of a texture
@@ -246,6 +247,11 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   const ContextState* GetContextState() override;
   scoped_refptr<ShaderTranslatorInterface> GetTranslator(GLenum type) override;
+
+  void BindImage(uint32_t client_texture_id,
+                 uint32_t texture_target,
+                 gl::GLImage* image,
+                 bool can_bind_to_sampler) override;
 
  private:
   const char* GetCommandName(unsigned int command_id) const;
@@ -307,7 +313,9 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   error::Error ProcessQueries(bool did_finish);
   void RemovePendingQuery(GLuint service_id);
 
-  void UpdateTextureBinding(GLenum target, GLuint client_id, GLuint service_id);
+  void UpdateTextureBinding(GLenum target,
+                            GLuint client_id,
+                            TexturePassthrough* texture);
 
   error::Error BindTexImage2DCHROMIUMImpl(GLenum target,
                                           GLenum internalformat,
@@ -371,7 +379,19 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   // State tracking of currently bound 2D textures (client IDs)
   size_t active_texture_unit_;
-  std::unordered_map<GLenum, std::vector<GLuint>> bound_textures_;
+
+  struct BoundTexture {
+    BoundTexture();
+    ~BoundTexture();
+    BoundTexture(const BoundTexture&);
+    BoundTexture(BoundTexture&&);
+    BoundTexture& operator=(const BoundTexture&);
+    BoundTexture& operator=(BoundTexture&&);
+
+    GLuint client_id = 0;
+    scoped_refptr<TexturePassthrough> texture;
+  };
+  std::unordered_map<GLenum, std::vector<BoundTexture>> bound_textures_;
 
   // State tracking of currently bound buffers
   std::unordered_map<GLenum, GLuint> bound_buffers_;

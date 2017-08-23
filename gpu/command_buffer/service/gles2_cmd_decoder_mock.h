@@ -144,6 +144,11 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_CONST_METHOD0(WasContextLost, bool());
   MOCK_CONST_METHOD0(WasContextLostByRobustnessExtension, bool());
   MOCK_METHOD1(MarkContextLost, void(gpu::error::ContextLostReason reason));
+  MOCK_METHOD4(BindImage,
+               void(uint32_t client_texture_id,
+                    uint32_t texture_target,
+                    gl::GLImage* image,
+                    bool can_bind_to_sampler));
 
  private:
   base::WeakPtrFactory<MockGLES2Decoder> weak_ptr_factory_;

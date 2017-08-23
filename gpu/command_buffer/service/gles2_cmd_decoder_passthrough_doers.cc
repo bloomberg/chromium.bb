@@ -392,20 +392,26 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   // Track the currently bound textures
   DCHECK(bound_textures_.find(target) != bound_textures_.end());
   DCHECK(bound_textures_[target].size() > active_texture_unit_);
-  bound_textures_[target][active_texture_unit_] = texture;
+  scoped_refptr<TexturePassthrough> texture_passthrough = nullptr;
 
   if (service_id != 0) {
     // Create a new texture object to track this texture
     auto texture_object_iter = resources_->texture_object_map.find(texture);
     if (texture_object_iter == resources_->texture_object_map.end()) {
+      texture_passthrough = new TexturePassthrough(service_id, target);
       resources_->texture_object_map.insert(
-          std::make_pair(texture, new TexturePassthrough(service_id, target)));
+          std::make_pair(texture, texture_passthrough));
     } else {
+      texture_passthrough = texture_object_iter->second.get();
       // Shouldn't be possible to get here if this texture has a different
       // target than the one it was just bound to
       DCHECK(texture_object_iter->second->target() == target);
     }
   }
+
+  bound_textures_[target][active_texture_unit_].client_id = texture;
+  bound_textures_[target][active_texture_unit_].texture =
+      std::move(texture_passthrough);
 
   return error::kNoError;
 }
@@ -792,8 +798,10 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteTextures(
       non_mailbox_client_ids.push_back(client_id);
     } else {
       // Deleted when unreferenced
+      scoped_refptr<TexturePassthrough> texture = texture_object_iter->second;
       resources_->texture_id_map.RemoveClientID(client_id);
       resources_->texture_object_map.erase(client_id);
+      UpdateTextureBinding(texture->target(), client_id, nullptr);
     }
   }
   return DeleteHelper(
@@ -3539,17 +3547,16 @@ error::Error GLES2DecoderPassthroughImpl::DoProduceTextureCHROMIUM(
     return error::kNoError;
   }
 
-  GLuint texture_client_id = bound_textures_iter->second[active_texture_unit_];
-  auto texture_object_iter =
-      resources_->texture_object_map.find(texture_client_id);
-  if (texture_object_iter == resources_->texture_object_map.end()) {
+  const BoundTexture& bound_texture =
+      bound_textures_iter->second[active_texture_unit_];
+  if (bound_texture.texture == nullptr) {
     InsertError(GL_INVALID_OPERATION, "Unknown texture for target.");
     return error::kNoError;
   }
 
   const Mailbox& mb = Mailbox::FromVolatile(
       *reinterpret_cast<const volatile Mailbox*>(mailbox));
-  mailbox_manager_->ProduceTexture(mb, texture_object_iter->second.get());
+  mailbox_manager_->ProduceTexture(mb, bound_texture.texture.get());
   return error::kNoError;
 }
 
@@ -3585,8 +3592,9 @@ error::Error GLES2DecoderPassthroughImpl::DoConsumeTextureCHROMIUM(
     return error::kNoError;
   }
 
-  GLuint client_id = bound_textures_iter->second[active_texture_unit_];
-  if (client_id == 0) {
+  const BoundTexture& current_texture =
+      bound_textures_iter->second[active_texture_unit_];
+  if (current_texture.client_id == 0) {
     InsertError(GL_INVALID_OPERATION, "Unknown texture for target.");
     return error::kNoError;
   }
@@ -3606,13 +3614,15 @@ error::Error GLES2DecoderPassthroughImpl::DoConsumeTextureCHROMIUM(
   }
 
   // Update id mappings
-  resources_->texture_id_map.RemoveClientID(client_id);
-  resources_->texture_id_map.SetIDMapping(client_id, texture->service_id());
-  resources_->texture_object_map.erase(client_id);
-  resources_->texture_object_map.insert(std::make_pair(client_id, texture));
+  resources_->texture_id_map.RemoveClientID(current_texture.client_id);
+  resources_->texture_id_map.SetIDMapping(current_texture.client_id,
+                                          texture->service_id());
+  resources_->texture_object_map.erase(current_texture.client_id);
+  resources_->texture_object_map.insert(
+      std::make_pair(current_texture.client_id, texture));
 
   // Bind the service id that now represents this texture
-  UpdateTextureBinding(target, client_id, texture->service_id());
+  UpdateTextureBinding(target, current_texture.client_id, texture.get());
 
   return error::kNoError;
 }
@@ -3649,7 +3659,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCreateAndConsumeTextureINTERNAL(
       std::make_pair(texture_client_id, texture));
 
   // Bind the service id that now represents this texture
-  UpdateTextureBinding(target, texture_client_id, texture->service_id());
+  UpdateTextureBinding(target, texture_client_id, texture.get());
 
   return error::kNoError;
 }
@@ -3685,9 +3695,9 @@ error::Error GLES2DecoderPassthroughImpl::DoReleaseTexImage2DCHROMIUM(
     return error::kNoError;
   }
 
-  GLuint current_client_texture =
+  const BoundTexture& bound_texture =
       bound_textures_[GL_TEXTURE_2D][active_texture_unit_];
-  if (current_client_texture == 0) {
+  if (bound_texture.texture == nullptr) {
     InsertError(GL_INVALID_OPERATION, "No texture bound");
     return error::kNoError;
   }
@@ -3698,13 +3708,10 @@ error::Error GLES2DecoderPassthroughImpl::DoReleaseTexImage2DCHROMIUM(
     return error::kNoError;
   }
 
-  scoped_refptr<TexturePassthrough> passthrough_texture =
-      resources_->texture_object_map[current_client_texture];
-  DCHECK(passthrough_texture != nullptr);
   // Only release the image if it is currently bound
-  if (passthrough_texture->GetLevelImage(target, 0) != image) {
+  if (bound_texture.texture->GetLevelImage(target, 0) != image) {
     image->ReleaseTexImage(target);
-    passthrough_texture->SetLevelImage(target, 0, nullptr);
+    bound_texture.texture->SetLevelImage(target, 0, nullptr);
   }
 
   return error::kNoError;

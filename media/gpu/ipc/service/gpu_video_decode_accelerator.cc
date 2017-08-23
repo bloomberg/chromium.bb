@@ -71,16 +71,8 @@ static bool BindImage(const base::WeakPtr<gpu::GpuCommandBufferStub>& stub,
   }
 
   gpu::gles2::GLES2Decoder* command_decoder = stub->decoder();
-  gpu::gles2::TextureManager* texture_manager =
-      command_decoder->GetContextGroup()->texture_manager();
-  gpu::gles2::TextureRef* ref = texture_manager->GetTexture(client_texture_id);
-  if (ref) {
-    texture_manager->SetLevelImage(ref, texture_target, 0, image.get(),
-                                   can_bind_to_sampler
-                                       ? gpu::gles2::Texture::BOUND
-                                       : gpu::gles2::Texture::UNBOUND);
-  }
-
+  command_decoder->BindImage(client_texture_id, texture_target, image.get(),
+                             can_bind_to_sampler);
   return true;
 }
 #endif
@@ -434,10 +426,17 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
       return;
     }
     for (size_t j = 0; j < textures_per_buffer_; j++) {
-      GLuint service_id = 0;
-      if (!command_decoder->GetServiceTextureId(buffer_texture_ids[j],
-                                                &service_id)) {
+      gpu::gles2::TextureBase* texture_base =
+          command_decoder->GetTextureBase(buffer_texture_ids[j]);
+      if (!texture_base) {
         DLOG(ERROR) << "Failed to find texture id " << buffer_texture_ids[j];
+        NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
+        return;
+      }
+
+      if (texture_base->target() != texture_target_) {
+        DLOG(ERROR) << "Texture target mismatch for texture id "
+                    << buffer_texture_ids[j];
         NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
         return;
       }
@@ -446,12 +445,6 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
           texture_manager->GetTexture(buffer_texture_ids[j]);
       if (texture_ref) {
         gpu::gles2::Texture* info = texture_ref->texture();
-        if (info->target() != texture_target_) {
-          DLOG(ERROR) << "Texture target mismatch for texture id "
-                      << buffer_texture_ids[j];
-          NotifyError(VideoDecodeAccelerator::INVALID_ARGUMENT);
-          return;
-        }
         if (texture_target_ == GL_TEXTURE_EXTERNAL_OES ||
             texture_target_ == GL_TEXTURE_RECTANGLE_ARB) {
           // These textures have their dimensions defined by the underlying
@@ -485,7 +478,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
         }
         current_textures.push_back(texture_ref);
       }
-      service_ids.push_back(service_id);
+      service_ids.push_back(texture_base->service_id());
     }
     textures.push_back(current_textures);
     buffers.push_back(PictureBuffer(buffer_ids[i], texture_dimensions_,
