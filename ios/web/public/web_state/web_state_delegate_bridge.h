@@ -34,9 +34,10 @@
          openURLWithParams:(const web::WebState::OpenURLParams&)params;
 
 // Called when the user triggers the context menu with the given
-// |ContextMenuParams|. If this method is not implemented, no context menu will
-// be displayed.
-- (void)webState:(web::WebState*)webState
+// |ContextMenuParams|. Returns YES if the context menu operation was
+// handled by the delegate. If this method is not implemented, the system
+// context menu will be displayed.
+- (BOOL)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params;
 
 // Requests the repost form confirmation dialog. Clients must call |handler|
@@ -77,7 +78,7 @@ class WebStateDelegateBridge : public web::WebStateDelegate {
   void CloseWebState(WebState* source) override;
   WebState* OpenURLFromWebState(WebState*,
                                 const WebState::OpenURLParams&) override;
-  void HandleContextMenu(WebState* source,
+  bool HandleContextMenu(WebState* source,
                          const ContextMenuParams& params) override;
   void ShowRepostFormWarningDialog(
       WebState* source,

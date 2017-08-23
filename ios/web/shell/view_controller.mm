@@ -261,11 +261,11 @@ using web::NavigationManager;
 // -----------------------------------------------------------------------
 // WebStateDelegate implementation.
 
-- (void)webState:(web::WebState*)webState
+- (BOOL)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
   GURL link = params.link_url;
   if (!link.is_valid()) {
-    return;
+    return NO;
   }
 
   UIAlertController* alert = [UIAlertController
@@ -293,6 +293,8 @@ using web::NavigationManager;
                                           handler:nil]];
 
   [self presentViewController:alert animated:YES completion:nil];
+
+  return YES;
 }
 
 @end

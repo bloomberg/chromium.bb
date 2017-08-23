@@ -271,12 +271,12 @@ static NSString* gUserAgentProduct = nil;
   }
 }
 
-- (void)webState:(web::WebState*)webState
+- (BOOL)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
   SEL selector = @selector(webView:runContextMenuWithTitle:forHTMLElement:inView
                                   :userGestureLocation:);
   if (![_UIDelegate respondsToSelector:selector]) {
-    return;
+    return NO;
   }
   NSURL* hyperlink = net::NSURLWithGURL(params.link_url);
   NSURL* mediaSource = net::NSURLWithGURL(params.src_url);
@@ -289,6 +289,7 @@ static NSString* gUserAgentProduct = nil;
                forHTMLElement:HTMLElement
                        inView:params.view
           userGestureLocation:params.location];
+  return YES;
 }
 
 - (web::WebState*)webState:(web::WebState*)webState

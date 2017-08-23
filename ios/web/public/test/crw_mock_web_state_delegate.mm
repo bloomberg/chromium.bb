@@ -47,10 +47,11 @@
   return webState;
 }
 
-- (void)webState:(web::WebState*)webState
+- (BOOL)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
   _webState = webState;
   _contextMenuParams.reset(new web::ContextMenuParams(params));
+  return YES;
 }
 
 - (void)webState:(web::WebState*)webState
