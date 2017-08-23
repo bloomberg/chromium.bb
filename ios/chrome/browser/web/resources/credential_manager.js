@@ -23,6 +23,10 @@
 // https://w3c-test.org/credential-management/idl.https.html
 // pass.
 
+// TODO(crbug.com/435046) Declare Credential, PasswordCredential,
+// FederatedCredential and CredentialsContainer as classes once iOS9 is no
+// longer supported.
+
 // Namespace for credential management. __gCrWeb must have already
 // been defined.
 __gCrWeb.credentialManager = {
@@ -105,6 +109,8 @@ function Credential() {
   /** @type {string} */
   this.type;
 }
+Object.defineProperty(Credential.prototype, Symbol.toStringTag,
+    { value: 'Credential' });
 
 /**
  * PasswordCredential interace, for more information see
@@ -135,6 +141,8 @@ Object.defineProperty(PasswordCredential, 'prototype', { writable: false });
 PasswordCredential.prototype.constructor = PasswordCredential;
 Object.defineProperty(
     PasswordCredential.prototype, 'constructor', { enumerable: false });
+Object.defineProperty(PasswordCredential.prototype, Symbol.toStringTag,
+    { value: 'PasswordCredential' });
 
 /**
  * FederatedCredential interface, for more information see
@@ -191,6 +199,8 @@ Object.defineProperties(
     }
   }
 );
+Object.defineProperty(FederatedCredential.prototype, Symbol.toStringTag,
+    { value: 'FederatedCredential' });
 
 /**
  * CredentialData dictionary
@@ -266,6 +276,8 @@ Object.defineProperty(CredentialsContainer, 'prototype', { writable: false });
 CredentialsContainer.prototype.constructor = CredentialsContainer;
 Object.defineProperty(
     CredentialsContainer.prototype, 'constructor', { enumerable: false });
+Object.defineProperty(CredentialsContainer.prototype, Symbol.toStringTag,
+    { value: 'CredentialsContainer' });
 
 /**
  * Performs the Request A Credential action described at
