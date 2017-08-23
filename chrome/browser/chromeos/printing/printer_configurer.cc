@@ -14,6 +14,7 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/md5.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
@@ -43,6 +44,15 @@ namespace chromeos {
 
 namespace {
 
+// Get the URI that we want for talking to cups.
+std::string URIForCups(const Printer& printer) {
+  if (!printer.effective_uri().empty()) {
+    return printer.effective_uri();
+  } else {
+    return printer.uri();
+  }
+}
+
 // Configures printers by downloading PPDs then adding them to CUPS through
 // debugd.  This class must be used on the UI thread.
 class PrinterConfigurerImpl : public PrinterConfigurer {
@@ -70,9 +80,8 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     }
 
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
-
     client->CupsAddAutoConfiguredPrinter(
-        printer.id(), printer.uri(),
+        printer.id(), URIForCups(printer),
         base::Bind(&PrinterConfigurerImpl::OnAddedPrinter,
                    weak_factory_.GetWeakPtr(), printer, callback),
         base::Bind(&PrinterConfigurerImpl::OnDbusError,
@@ -127,7 +136,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     auto* client = DBusThreadManager::Get()->GetDebugDaemonClient();
 
     client->CupsAddManuallyConfiguredPrinter(
-        printer.id(), printer.uri(), ppd_contents,
+        printer.id(), URIForCups(printer), ppd_contents,
         base::Bind(&PrinterConfigurerImpl::OnAddedPrinter,
                    weak_factory_.GetWeakPtr(), printer, cb),
         base::Bind(&PrinterConfigurerImpl::OnDbusError,
@@ -213,6 +222,21 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
 };
 
 }  // namespace
+
+// static
+std::string PrinterConfigurer::SetupFingerprint(const Printer& printer) {
+  base::MD5Context ctx;
+  base::MD5Init(&ctx);
+  base::MD5Update(&ctx, printer.id());
+  base::MD5Update(&ctx, URIForCups(printer));
+  base::MD5Update(&ctx, printer.ppd_reference().user_supplied_ppd_url);
+  base::MD5Update(&ctx, printer.ppd_reference().effective_make_and_model);
+  char autoconf = printer.ppd_reference().autoconf ? 1 : 0;
+  base::MD5Update(&ctx, std::string(&autoconf, sizeof(autoconf)));
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &ctx);
+  return std::string(reinterpret_cast<char*>(&digest.a[0]), sizeof(digest.a));
+}
 
 // static
 std::unique_ptr<PrinterConfigurer> PrinterConfigurer::Create(Profile* profile) {

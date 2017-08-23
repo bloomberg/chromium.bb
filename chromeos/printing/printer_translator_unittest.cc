@@ -25,15 +25,12 @@ const char kMake[] = "Chrome";
 const char kModel[] = "Inktastic Laser Magic";
 const char kMakeAndModel[] = "Chrome Inktastic Laser Magic";
 
-const base::Time kTimestamp = base::Time::FromInternalValue(445566);
-
 // PpdReference test data
 const char kEffectiveMakeAndModel[] = "PrintBlaster LazerInker 2000";
 
 TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterMissingId) {
   base::DictionaryValue value;
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(value, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(value);
 
   EXPECT_FALSE(printer);
 }
@@ -45,8 +42,7 @@ TEST(PrinterTranslatorTest, MissingDisplayNameFails) {
   preference.SetString("uri", kUri);
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(preference, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_FALSE(printer);
 }
 
@@ -57,8 +53,7 @@ TEST(PrinterTranslatorTest, MissingUriFails) {
   // uri omitted
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(preference, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_FALSE(printer);
 }
 
@@ -69,8 +64,7 @@ TEST(PrinterTranslatorTest, MissingPpdResourceFails) {
   preference.SetString("uri", kUri);
   // ppd resource omitted
 
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(preference, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_FALSE(printer);
 }
 
@@ -81,8 +75,7 @@ TEST(PrinterTranslatorTest, MissingEffectiveMakeModelFails) {
   preference.SetString("uri", kUri);
   preference.SetString("ppd_resource.foobarwrongfield", "gibberish");
 
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(preference, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_FALSE(printer);
 }
 
@@ -93,8 +86,7 @@ TEST(PrinterTranslatorTest, RecommendedPrinterMinimalSetup) {
   preference.SetString("uri", kUri);
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(preference, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_TRUE(printer);
 }
 
@@ -110,8 +102,7 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinter) {
 
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(preference, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_TRUE(printer);
 
   EXPECT_EQ(kHash, printer->id());
@@ -122,7 +113,6 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinter) {
   EXPECT_EQ(kMakeAndModel, printer->make_and_model());
   EXPECT_EQ(kUri, printer->uri());
   EXPECT_EQ(kUUID, printer->uuid());
-  EXPECT_EQ(kTimestamp, printer->last_updated());
 
   EXPECT_EQ(kEffectiveMakeAndModel,
             printer->ppd_reference().effective_make_and_model);
@@ -136,8 +126,7 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterBlankManufacturer) {
   preference.SetString("uri", kUri);
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(preference, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_TRUE(printer);
 
   EXPECT_EQ(kModel, printer->model());
@@ -152,8 +141,7 @@ TEST(PrinterTranslatorTest, RecommendedPrinterToPrinterBlankModel) {
   preference.SetString("uri", kUri);
   preference.SetString("ppd_resource.effective_model", kEffectiveMakeAndModel);
 
-  std::unique_ptr<Printer> printer =
-      RecommendedPrinterToPrinter(preference, kTimestamp);
+  std::unique_ptr<Printer> printer = RecommendedPrinterToPrinter(preference);
   EXPECT_TRUE(printer);
 
   EXPECT_EQ(kMake, printer->manufacturer());

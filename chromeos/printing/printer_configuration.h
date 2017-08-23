@@ -68,8 +68,8 @@ class CHROMEOS_EXPORT Printer {
   // Constructs a printer object that is completely empty.
   Printer();
 
-  // Constructs a printer object with an |id| and a |last_updated| timestamp.
-  explicit Printer(const std::string& id, const base::Time& last_updated = {});
+  // Constructs a printer object with the given |id|.
+  explicit Printer(const std::string& id);
 
   // Copy constructor and assignment.
   Printer(const Printer& printer);
@@ -110,6 +110,11 @@ class CHROMEOS_EXPORT Printer {
   const std::string& uri() const { return uri_; }
   void set_uri(const std::string& uri) { uri_ = uri; }
 
+  const std::string& effective_uri() const { return effective_uri_; }
+  void set_effective_uri(const std::string& effective_uri) {
+    effective_uri_ = effective_uri;
+  }
+
   const PpdReference& ppd_reference() const { return ppd_reference_; }
   PpdReference* mutable_ppd_reference() { return &ppd_reference_; }
 
@@ -126,10 +131,6 @@ class CHROMEOS_EXPORT Printer {
 
   Source source() const { return source_; }
   void set_source(const Source source) { source_ = source; }
-
-  // Returns the timestamp for the most recent update.  Returns 0 if the
-  // printer was not created with a valid timestamp.
-  base::Time last_updated() const { return last_updated_; }
 
  private:
   // Globally unique identifier. Empty indicates a new printer.
@@ -160,6 +161,13 @@ class CHROMEOS_EXPORT Printer {
   // Contains protocol, hostname, port, and queue.
   std::string uri_;
 
+  // When non-empty, the uri to use with cups instead of uri_.  This field
+  // is ephemeral, and not saved to sync service.  This allows us to do
+  // on the fly rewrites of uris to work around limitations in the OS such
+  // as CUPS not being able to directly resolve mDNS addresses, see crbug/626377
+  // for details.
+  std::string effective_uri_;
+
   // How to find the associated postscript printer description.
   PpdReference ppd_reference_;
 
@@ -168,9 +176,6 @@ class CHROMEOS_EXPORT Printer {
 
   // The datastore which holds this printer.
   Source source_;
-
-  // Timestamp of most recent change.
-  base::Time last_updated_;
 };
 
 }  // namespace chromeos

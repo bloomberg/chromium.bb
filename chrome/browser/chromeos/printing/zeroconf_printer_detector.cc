@@ -121,11 +121,12 @@ std::string ZeroconfPrinterId(const ServiceDescription& service,
 bool ConvertToPrinter(const ServiceDescription& service_description,
                       const ParsedMetadata& metadata,
                       PrinterDetector::DetectedPrinter* detected_printer) {
-  // We can at least try to set up a printer if all we have is a service name
-  // and a protocol, but if we don't have a service name, just fail.  Also fail
+  // If we don't have the minimum information needed to attempt a setup, fail.
+  // Also fail
   // on a port of 0, as this is used to indicate that the service doesn't
   // *actually* exist, the device just wants to guard the name.
   if (service_description.service_name.empty() ||
+      service_description.ip_address.empty() ||
       (service_description.address.port() == 0)) {
     return false;
   }
@@ -136,23 +137,31 @@ bool ConvertToPrinter(const ServiceDescription& service_description,
   printer.set_display_name(service_description.service_name);
   printer.set_description(metadata.note);
   printer.set_make_and_model(metadata.product);
+  const char* uri_protocol;
   if (service_description.service_type() ==
       base::StringPiece(kIppServiceName)) {
-    printer.set_uri(base::StringPrintf(
-        "ipp://%s/%s", service_description.address.ToString().c_str(),
-        metadata.rp.c_str()));
+    uri_protocol = "ipp";
   } else if (service_description.service_type() ==
              base::StringPiece(kIppsServiceName)) {
-    printer.set_uri(base::StringPrintf(
-        "ipps://%s/%s", service_description.address.ToString().c_str(),
-        metadata.rp.c_str()));
+    uri_protocol = "ipps";
   } else {
     // Since we only register for these services, we should never get back
     // a service other than the ones above.
-    LOG(ERROR) << "Zeroconf printer with unknown service type"
-               << service_description.service_type();
+    NOTREACHED() << "Zeroconf printer with unknown service type"
+                 << service_description.service_type();
     return false;
   }
+  printer.set_uri(base::StringPrintf(
+      "%s://%s/%s", uri_protocol,
+      service_description.address.ToString().c_str(), metadata.rp.c_str()));
+
+  // Use an effective URI with a pre-resolved ip address and port, since CUPS
+  // can't resolve these addresses in ChromeOS (crbug/626377).
+  printer.set_effective_uri(base::StringPrintf(
+      "%s://%s:%d/%s", uri_protocol,
+      service_description.ip_address.ToString().c_str(),
+      service_description.address.port(), metadata.rp.c_str()));
+
   // gather ppd identification candidates.
   if (!metadata.ty.empty()) {
     detected_printer->ppd_search_data.make_and_model.push_back(metadata.ty);
