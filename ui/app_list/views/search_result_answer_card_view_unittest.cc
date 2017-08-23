@@ -136,12 +136,6 @@ TEST_F(SearchResultAnswerCardViewTest, ButtonBackground) {
 
   ClearSelectedIndex();
   EXPECT_EQ(nullptr, button->background());
-
-  GetResults()->GetItemAt(0)->SetIsMouseInView(true);
-  EXPECT_EQ(kHighlightedColor, button->background()->get_color());
-
-  GetResults()->GetItemAt(0)->SetIsMouseInView(false);
-  EXPECT_EQ(nullptr, button->background());
 }
 
 TEST_F(SearchResultAnswerCardViewTest, KeyboardEvents) {

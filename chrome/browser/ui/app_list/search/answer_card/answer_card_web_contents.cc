@@ -34,9 +34,8 @@ constexpr char kSearchAnswerTitle[] = "SearchAnswer-Title";
 
 class SearchAnswerWebView : public views::WebView {
  public:
-  SearchAnswerWebView(AnswerCardWebContents* content,
-                      content::BrowserContext* browser_context)
-      : WebView(browser_context), content_(content) {
+  explicit SearchAnswerWebView(content::BrowserContext* browser_context)
+      : WebView(browser_context) {
     holder()->set_can_process_events_within_subtree(false);
   }
 
@@ -63,26 +62,11 @@ class SearchAnswerWebView : public views::WebView {
     }
   }
 
-  void OnMouseEntered(const ui::MouseEvent& event) override {
-    content_->SetIsMouseInView(true);
-  }
-
-  void OnMouseMoved(const ui::MouseEvent& event) override {
-    content_->SetIsMouseInView(true);
-  }
-
-  void OnMouseExited(const ui::MouseEvent& event) override {
-    content_->SetIsMouseInView(false);
-  }
-
   const char* GetClassName() const override { return "SearchAnswerWebView"; }
 
  private:
   // Time when the answer became visible to the user.
   base::TimeTicks shown_time_;
-
-  // Content to dispatch events.
-  AnswerCardWebContents* const content_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
 };
@@ -123,12 +107,12 @@ void ParseResponseHeaders(const net::HttpResponseHeaders* headers,
 }  // namespace
 
 AnswerCardWebContents::AnswerCardWebContents(Profile* profile)
-    : web_contents_(
+    : web_view_(base::MakeUnique<SearchAnswerWebView>(profile)),
+      web_contents_(
           content::WebContents::Create(content::WebContents::CreateParams(
               profile,
               content::SiteInstance::Create(profile)))),
       profile_(profile) {
-  web_view_ = base::MakeUnique<SearchAnswerWebView>(this, profile);
   content::RendererPreferences* renderer_prefs =
       web_contents_->GetMutableRendererPrefs();
   renderer_prefs->can_accept_load_drops = false;

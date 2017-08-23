@@ -55,7 +55,7 @@ class AnswerCardWebContents : public AnswerCardContents,
   void DetachFromHost();
 
   // Web view for the web contents managed by this class.
-  std::unique_ptr<views::WebView> web_view_;
+  const std::unique_ptr<views::WebView> web_view_;
 
   // Web contents managed by this class.
   const std::unique_ptr<content::WebContents> web_contents_;

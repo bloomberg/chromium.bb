@@ -85,8 +85,6 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     return "SearchAnswerContainerView";
   }
 
-  void StateChanged(ButtonState old_state) override { UpdateBackgroundColor(); }
-
   bool OnKeyPressed(const ui::KeyEvent& event) override {
     if (event.key_code() == ui::VKEY_SPACE) {
       // Shouldn't eat Space; we want Space to go to the search box.
@@ -104,17 +102,12 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   }
 
   // SearchResultObserver overrides:
-  void OnViewHoverStateChanged() override { UpdateBackgroundColor(); }
-
   void OnResultDestroying() override { search_result_ = nullptr; }
 
  private:
   void UpdateBackgroundColor() {
     if (selected_) {
       SetBackground(views::CreateSolidBackground(kSelectedColor));
-    } else if (state() == STATE_HOVERED || state() == STATE_PRESSED ||
-               (search_result_ && search_result_->is_mouse_in_view())) {
-      SetBackground(views::CreateSolidBackground(kHighlightedColor));
     } else {
       SetBackground(nullptr);
     }

@@ -23,22 +23,10 @@ void AnswerCardContents::SetDelegate(Delegate* delegate) {
 
 void AnswerCardContents::RegisterResult(AnswerCardResult* result) {
   results_.AddObserver(result);
-  if (mouse_is_in_view_ != result->is_mouse_in_view())
-    result->SetIsMouseInView(mouse_is_in_view_);
 }
 
 void AnswerCardContents::UnregisterResult(AnswerCardResult* result) {
   results_.RemoveObserver(result);
-}
-
-void AnswerCardContents::SetIsMouseInView(bool mouse_is_inside) {
-  if (mouse_is_inside == mouse_is_in_view_)
-    return;
-
-  mouse_is_in_view_ = mouse_is_inside;
-
-  for (auto& result : results_)
-    result.SetIsMouseInView(mouse_is_inside);
 }
 
 }  // namespace app_list
