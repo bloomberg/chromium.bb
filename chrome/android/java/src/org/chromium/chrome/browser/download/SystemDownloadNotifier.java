@@ -23,7 +23,7 @@ public class SystemDownloadNotifier implements DownloadNotifier {
      */
     public SystemDownloadNotifier(Context context) {
         mApplicationContext = context.getApplicationContext();
-        mDownloadNotificationService = new DownloadNotificationService();
+        mDownloadNotificationService = DownloadNotificationService.getInstance();
     }
 
     @Override

@@ -39,7 +39,7 @@ public class DownloadResumptionScheduler {
 
     protected DownloadResumptionScheduler(Context context) {
         mContext = context;
-        mDownloadNotificationService = new DownloadNotificationService();
+        mDownloadNotificationService = DownloadNotificationService.getInstance();
     }
 
     /**
