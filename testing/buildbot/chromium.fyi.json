@@ -10663,6 +10663,15 @@
         "test": "base_unittests"
       },
       {
+        "args": [
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "content_unittests"
+      },
+      {
         "swarming": {
           "can_use_on_swarming_builders": false
         },
@@ -10764,6 +10773,7 @@
   "Fuchsia (dbg)": {
     "additional_compile_targets": [
       "gl_unittests",
+      "content_unittests",
       "media_unittests",
       "net_unittests"
     ],
