@@ -40,26 +40,28 @@ class SearchAnswerWebView : public views::WebView {
   }
 
   // views::WebView overrides:
-  void VisibilityChanged(View* starting_from, bool is_visible) override {
-    WebView::VisibilityChanged(starting_from, is_visible);
+  void AddedToWidget() override {
+    WebView::AddedToWidget();
 
-    if (GetWidget() && GetWidget()->IsVisible() && IsDrawn()) {
-      // Find the root element that attached to the app list view.
-      aura::Window* const app_list_window =
-          web_contents()->GetTopLevelNativeWindow();
-      aura::Window* window = web_contents()->GetNativeView();
-      while (window->parent() != app_list_window)
-        window = window->parent();
-      AppListView::ExcludeWindowFromEventHandling(window);
-      if (shown_time_.is_null())
-        shown_time_ = base::TimeTicks::Now();
-    } else {
-      if (!shown_time_.is_null()) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("SearchAnswer.AnswerVisibleTime",
-                                   base::TimeTicks::Now() - shown_time_);
-        shown_time_ = base::TimeTicks();
-      }
+    // Find the root element that attached to the app list view.
+    aura::Window* const app_list_window =
+        web_contents()->GetTopLevelNativeWindow();
+    aura::Window* window = web_contents()->GetNativeView();
+    while (window->parent() != app_list_window)
+      window = window->parent();
+    AppListView::ExcludeWindowFromEventHandling(window);
+    if (shown_time_.is_null())
+      shown_time_ = base::TimeTicks::Now();
+  }
+
+  void RemovedFromWidget() override {
+    if (!shown_time_.is_null()) {
+      UMA_HISTOGRAM_MEDIUM_TIMES("SearchAnswer.AnswerVisibleTime",
+                                 base::TimeTicks::Now() - shown_time_);
+      shown_time_ = base::TimeTicks();
     }
+
+    WebView::RemovedFromWidget();
   }
 
   const char* GetClassName() const override { return "SearchAnswerWebView"; }
