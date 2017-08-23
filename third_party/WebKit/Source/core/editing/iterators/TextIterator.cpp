@@ -308,8 +308,8 @@ void TextIteratorAlgorithm<Strategy>::Advance() {
       // Enter author shadow roots, from youngest, if any and if necessary.
       if (iteration_progress_ < kHandledOpenShadowRoots) {
         if (EntersOpenShadowRoots() && node_->IsElementNode() &&
-            ToElement(node_)->openShadowRoot()) {
-          ShadowRoot* youngest_shadow_root = ToElement(node_)->openShadowRoot();
+            ToElement(node_)->OpenShadowRoot()) {
+          ShadowRoot* youngest_shadow_root = ToElement(node_)->OpenShadowRoot();
           DCHECK(youngest_shadow_root->GetType() == ShadowRootType::V0 ||
                  youngest_shadow_root->GetType() == ShadowRootType::kOpen);
           node_ = youngest_shadow_root;

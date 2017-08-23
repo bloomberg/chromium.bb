@@ -480,7 +480,7 @@ class CORE_EXPORT Element : public ContainerNode {
                            ExceptionState&);
   ShadowRoot* CreateShadowRootInternal(ShadowRootType, ExceptionState&);
 
-  ShadowRoot* openShadowRoot() const;
+  ShadowRoot* OpenShadowRoot() const;
   ShadowRoot* ClosedShadowRoot() const;
   ShadowRoot* AuthorShadowRoot() const;
   ShadowRoot* UserAgentShadowRoot() const;

@@ -166,7 +166,7 @@ void TouchActionTest::RunShadowDOMTest(std::string file) {
   ASSERT_GE(host_nodes->length(), 1u);
 
   for (unsigned index = 0; index < host_nodes->length(); index++) {
-    ShadowRoot* shadow_root = host_nodes->item(index)->openShadowRoot();
+    ShadowRoot* shadow_root = host_nodes->item(index)->OpenShadowRoot();
     RunTestOnTree(shadow_root, web_view, client);
   }
 

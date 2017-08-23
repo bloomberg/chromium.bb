@@ -61,7 +61,7 @@ DEFINE_TRACE(ChooserOnlyTemporalInputTypeView) {
 void ChooserOnlyTemporalInputTypeView::HandleDOMActivateEvent(Event*) {
   if (GetElement().IsDisabledOrReadOnly() || !GetElement().GetLayoutObject() ||
       !UserGestureIndicator::ProcessingUserGesture() ||
-      GetElement().openShadowRoot())
+      GetElement().OpenShadowRoot())
     return;
 
   if (date_time_chooser_)
