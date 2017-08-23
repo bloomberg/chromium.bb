@@ -63,6 +63,7 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -363,7 +364,6 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_content_browser_client_plugins_part.h"
 #include "chrome/browser/plugins/flash_download_interception.h"
-#include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -3222,14 +3222,12 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
     throttles.push_back(std::move(background_tab_navigation_throttle));
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
   if (base::FeatureList::IsEnabled(features::kClickToOpenPDFPlaceholder)) {
     std::unique_ptr<content::NavigationThrottle> pdf_iframe_throttle =
         PDFIFrameNavigationThrottle::MaybeCreateThrottleFor(handle);
     if (pdf_iframe_throttle)
       throttles.push_back(std::move(pdf_iframe_throttle));
   }
-#endif
 
   return throttles;
 }
