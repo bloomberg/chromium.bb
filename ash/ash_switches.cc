@@ -10,20 +10,6 @@
 namespace ash {
 namespace switches {
 
-// Enables an animated transition from the boot splash screen (Chrome logo on a
-// white background) to the login screen.  Implies
-// |kAshCopyHostBackgroundAtBoot| and doesn't make much sense if used in
-// conjunction with |kDisableBootAnimation| (since the transition begins at the
-// same time as the white/grayscale login screen animation).
-const char kAshAnimateFromBootSplashScreen[] =
-    "ash-animate-from-boot-splash-screen";
-
-// Copies the host window's content to the system background layer at startup.
-// Can make boot slightly slower, but also hides an even-longer awkward period
-// where we display a white background if the login wallpaper takes a long time
-// to load.
-const char kAshCopyHostBackgroundAtBoot[] = "ash-copy-host-background-at-boot";
-
 // Enable keyboard shortcuts useful for debugging.
 const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 

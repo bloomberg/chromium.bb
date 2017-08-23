@@ -629,8 +629,6 @@ component("ash") {
     "wm/always_on_top_controller.h",
     "wm/ash_focus_rules.cc",
     "wm/ash_focus_rules.h",
-    "wm/boot_splash_screen_chromeos.cc",
-    "wm/boot_splash_screen_chromeos.h",
     "wm/container_finder.cc",
     "wm/container_finder.h",
     "wm/cursor_manager_chromeos.cc",
