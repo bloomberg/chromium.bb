@@ -283,11 +283,6 @@ bool InProcessCommandBuffer::Initialize(
 
 bool InProcessCommandBuffer::InitializeOnGpuThread(
     const InitializeOnGpuThreadParams& params) {
-#if defined(OS_FUCHSIA)
-  // TODO(crbug.com/707031): Implement this.
-  NOTIMPLEMENTED();
-  return false;
-#else
   CheckSequencedThread();
   gpu_thread_weak_ptr_ = gpu_thread_weak_ptr_factory_.GetWeakPtr();
 
@@ -416,7 +411,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   image_factory_ = params.image_factory;
 
   return true;
-#endif  // defined(OS_FUCHSIA)
 }
 
 void InProcessCommandBuffer::Destroy() {
