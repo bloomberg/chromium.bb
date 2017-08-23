@@ -10,14 +10,14 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "chrome/browser/history/browsing_history_service_handler.h"
+#include "chrome/browser/history/profile_based_browsing_history_driver.h"
 
 using base::android::JavaParamRef;
 
 // The bridge for fetching browsing history information for the Android
-// history UI. This queries the BrowsingHistoryService and listens
+// history UI. This queries the history::BrowsingHistoryService and listens
 // for callbacks.
-class BrowsingHistoryBridge : public BrowsingHistoryServiceHandler {
+class BrowsingHistoryBridge : public ProfileBasedBrowsingHistoryDriver {
  public:
   explicit BrowsingHistoryBridge(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
@@ -43,25 +43,30 @@ class BrowsingHistoryBridge : public BrowsingHistoryServiceHandler {
   void RemoveItems(JNIEnv* env,
                    const JavaParamRef<jobject>& obj);
 
-  // BrowsingHistoryServiceHandler implementation
+  // BrowsingHistoryDriver implementation.
   void OnQueryComplete(
-      std::vector<BrowsingHistoryService::HistoryEntry>* results,
-      BrowsingHistoryService::QueryResultsInfo* query_results_info) override;
+      const std::vector<history::BrowsingHistoryService::HistoryEntry>& results,
+      const history::BrowsingHistoryService::QueryResultsInfo&
+          query_results_info) override;
   void OnRemoveVisitsComplete() override;
   void OnRemoveVisitsFailed() override;
   void HistoryDeleted() override;
   void HasOtherFormsOfBrowsingHistory(
       bool has_other_forms, bool has_synced_results) override;
 
+  // ProfileBasedBrowsingHistoryDriver implementation.
+  Profile* GetProfile() override;
+
  private:
   ~BrowsingHistoryBridge() override;
 
-  std::unique_ptr<BrowsingHistoryService> browsing_history_service_;
+  std::unique_ptr<history::BrowsingHistoryService> browsing_history_service_;
   base::android::ScopedJavaGlobalRef<jobject> j_history_service_obj_;
   base::android::ScopedJavaGlobalRef<jobject> j_query_result_obj_;
 
-  std::vector<std::unique_ptr<BrowsingHistoryService::HistoryEntry>>
-      items_to_remove_;
+  std::vector<history::BrowsingHistoryService::HistoryEntry> items_to_remove_;
+
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingHistoryBridge);
 };
