@@ -72,9 +72,20 @@ void SadTabTabHelper::WasHidden() {
 }
 
 void SadTabTabHelper::RenderProcessGone() {
-  if (is_visible_ && IsApplicationStateActive()) {
-    PresentSadTab(web_state()->GetLastCommittedURL());
+  if (!is_visible_) {
+    requires_reload_on_becoming_visible_ = true;
+    return;
   }
+
+  if (!IsApplicationStateActive()) {
+    requires_reload_on_becoming_active_ = true;
+    return;
+  }
+
+  // Only show Sad Tab if renderer has crashed in a tab currently visible to the
+  // user and only if application is active. Otherwise simpy reloading the page
+  // is a better user experience.
+  PresentSadTab(web_state()->GetLastCommittedURL());
 }
 
 void SadTabTabHelper::DidFinishNavigation(
