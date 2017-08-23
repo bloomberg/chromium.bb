@@ -122,11 +122,11 @@ void BattOrConnectionImpl::Close() {
 void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
                                      const void* buffer,
                                      size_t bytes_to_send) {
-  const char* bytes = reinterpret_cast<const char*>(buffer);
+  const uint8_t* bytes = reinterpret_cast<const uint8_t*>(buffer);
 
   // Reserve a send buffer with enough extra bytes for the start, type, end, and
   // escape bytes.
-  vector<char> data;
+  vector<uint8_t> data;
   data.reserve(2 * bytes_to_send + 3);
 
   data.push_back(BATTOR_CONTROL_BYTE_START);
@@ -143,7 +143,7 @@ void BattOrConnectionImpl::SendBytes(BattOrMessageType type,
 
   data.push_back(BATTOR_CONTROL_BYTE_END);
 
-  LogSerial(StringPrintf("Bytes sent: %s.", CharVectorToString(data).c_str()));
+  LogSerial(StringPrintf("Bytes sent: %s.", ByteVectorToString(data).c_str()));
 
   pending_write_length_ = data.size();
   io_handler_->Write(base::MakeUnique<device::SendBuffer>(

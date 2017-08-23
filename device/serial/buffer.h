@@ -20,7 +20,7 @@ namespace device {
 class ReadOnlyBuffer {
  public:
   virtual ~ReadOnlyBuffer();
-  virtual const char* GetData() = 0;
+  virtual const uint8_t* GetData() = 0;
   virtual uint32_t GetSize() = 0;
   virtual void Done(uint32_t bytes_read) = 0;
   virtual void DoneWithError(uint32_t bytes_read, int32_t error) = 0;
@@ -45,16 +45,16 @@ class SendBuffer : public device::ReadOnlyBuffer {
  public:
   using SendCompleteCallback =
       base::OnceCallback<void(int, device::mojom::SerialSendError)>;
-  SendBuffer(const std::vector<char>& data, SendCompleteCallback callback);
+  SendBuffer(const std::vector<uint8_t>& data, SendCompleteCallback callback);
   ~SendBuffer() override;
 
-  const char* GetData() override;
+  const uint8_t* GetData() override;
   uint32_t GetSize() override;
   void Done(uint32_t bytes_read) override;
   void DoneWithError(uint32_t bytes_read, int32_t error) override;
 
  private:
-  const std::vector<char> data_;
+  const std::vector<uint8_t> data_;
   SendCompleteCallback callback_;
 };
 

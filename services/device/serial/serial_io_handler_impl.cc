@@ -50,13 +50,12 @@ void SerialIoHandlerImpl::Read(uint32_t bytes, ReadCallback callback) {
 void SerialIoHandlerImpl::Write(const std::vector<uint8_t>& data,
                                 WriteCallback callback) {
   io_handler_->Write(base::MakeUnique<SendBuffer>(
-      std::vector<char>(data.data(), data.data() + data.size()),
-      base::BindOnce(
-          [](WriteCallback callback, int bytes_sent,
-             mojom::SerialSendError error) {
-            std::move(callback).Run(bytes_sent, error);
-          },
-          std::move(callback))));
+      data, base::BindOnce(
+                [](WriteCallback callback, int bytes_sent,
+                   mojom::SerialSendError error) {
+                  std::move(callback).Run(bytes_sent, error);
+                },
+                std::move(callback))));
 }
 
 void SerialIoHandlerImpl::CancelRead(mojom::SerialReceiveError reason) {

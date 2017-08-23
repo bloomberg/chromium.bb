@@ -60,7 +60,7 @@ class TestSerialIoHandler : public SerialIoHandler {
   bool dtr_;
   bool rts_;
   mutable int flushes_;
-  std::string buffer_;
+  std::vector<uint8_t> buffer_;
   base::OnceClosure send_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSerialIoHandler);
