@@ -4226,6 +4226,9 @@ Battery full
   <message name="IDS_ABOUT_PAGE_EOL_LEARN_MORE" desc="The message in the about page to provide more information of device end of life, containing the URLs.">
      Please consider upgrading. <ph name="BEGIN_LINK_EOL">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_EOL">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_EOL_NOTIFICATION_DISPLAY_SOURCE" desc="Notification header title shown to inform the user that this device is no longer supported.">
+    End of support
+  </message>
   <message name="IDS_EOL_NOTIFICATION_TITLE" desc="Notification title shown to inform the user that this device is no longer supported.">
     This device is no longer supported
   </message>
