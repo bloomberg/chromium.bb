@@ -1248,7 +1248,7 @@ TEST_P(HttpServerPropertiesManagerTest, UpdatePrefsWithCache) {
   // A copy of |pref_delegate_|'s server dict will be created, and the broken
   // alternative service's "broken_until" field is removed and verified
   // separately. The rest of the server dict copy is verified afterwards.
-  base::Value server_value_copy(pref_delegate_->GetServerProperties());
+  base::Value server_value_copy = pref_delegate_->GetServerProperties().Clone();
 
   // Extract and remove the "broken_until" string for "www.google.com:1234".
   base::DictionaryValue* server_dict;

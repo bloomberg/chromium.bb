@@ -32,7 +32,7 @@ void RenderFrameScriptInjector::Inject(base::string16 script,
   base::RepeatingCallback<void(const base::Value*)> proxy_callback =
       base::BindRepeating(
           [](ResultCallback user_callback, const base::Value* result) {
-            base::Value new_result = result ? *result : base::Value();
+            base::Value new_result = result ? result->Clone() : base::Value();
             if (user_callback)
               user_callback.Run(new_result);
           },

@@ -127,7 +127,7 @@ void PerformanceLogger::AddLogEntry(
   base::DictionaryValue log_message_dict;
   log_message_dict.SetString("webview", webview);
   log_message_dict.SetString("message.method", method);
-  log_message_dict.Set("message.params", base::MakeUnique<base::Value>(params));
+  log_message_dict.SetPath({"message", "params"}, params.Clone());
   std::string log_message_json;
   base::JSONWriter::Write(log_message_dict, &log_message_json);
 

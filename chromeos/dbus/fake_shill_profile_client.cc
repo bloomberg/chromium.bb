@@ -70,8 +70,8 @@ void FakeShillProfileClient::GetProperties(
     entry_paths->AppendString(it.key());
   }
 
-  auto properties =
-      base::MakeUnique<base::DictionaryValue>(profile->properties);
+  std::unique_ptr<base::DictionaryValue> properties =
+      profile->properties.CreateDeepCopy();
   properties->SetWithoutPathExpansion(shill::kEntriesProperty,
                                       std::move(entry_paths));
 
@@ -152,8 +152,7 @@ void FakeShillProfileClient::AddEntry(const std::string& profile_path,
   ProfileProperties* profile = GetProfile(dbus::ObjectPath(profile_path),
                                           ErrorCallback());
   DCHECK(profile);
-  profile->entries.SetWithoutPathExpansion(
-      entry_path, base::MakeUnique<base::Value>(properties));
+  profile->entries.SetKey(entry_path, properties.Clone());
   DBusThreadManager::Get()->GetShillManagerClient()->GetTestInterface()->
       AddManagerService(entry_path, true);
 }
@@ -215,8 +214,7 @@ bool FakeShillProfileClient::AddOrUpdateServiceImpl(
     return false;
   }
 
-  profile->entries.SetWithoutPathExpansion(
-      service_path, base::MakeUnique<base::Value>(*service_properties));
+  profile->entries.SetKey(service_path, service_properties->Clone());
   return true;
 }
 

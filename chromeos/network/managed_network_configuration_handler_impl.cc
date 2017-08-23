@@ -914,8 +914,7 @@ void ManagedNetworkConfigurationHandlerImpl::GetDevicePropertiesSuccess(
     const std::string& device_path,
     const base::DictionaryValue& device_properties) {
   // Create a "Device" dictionary in |network_properties|.
-  network_properties->SetWithoutPathExpansion(
-      shill::kDeviceProperty, base::MakeUnique<base::Value>(device_properties));
+  network_properties->SetKey(shill::kDeviceProperty, device_properties.Clone());
   send_callback.Run(service_path, std::move(network_properties));
 }
 

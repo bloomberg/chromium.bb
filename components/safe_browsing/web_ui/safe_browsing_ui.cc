@@ -151,13 +151,13 @@ void ParseFullHashCache(const FullHashCacheInfo::FullHashCache full_hash_cache,
             .GetString());
   }
 
-  full_hash_cache_list->GetList().push_back(full_hash_cache_parsed);
+  full_hash_cache_list->GetList().push_back(std::move(full_hash_cache_parsed));
 
   for (auto full_hash_info_it :
        full_hash_cache.cached_hash_prefix_info().full_hash_info()) {
     base::DictionaryValue full_hash_info_dict;
     ParseFullHashInfo(full_hash_info_it, &full_hash_info_dict);
-    full_hash_cache_list->GetList().push_back(full_hash_info_dict);
+    full_hash_cache_list->GetList().push_back(std::move(full_hash_info_dict));
   }
 }
 
@@ -167,14 +167,14 @@ void ParseFullHashCacheInfo(const FullHashCacheInfo full_hash_cache_info_proto,
     base::DictionaryValue number_of_hits;
     number_of_hits.SetInteger("Number of cache hits",
                               full_hash_cache_info_proto.number_of_hits());
-    full_hash_cache_info->GetList().push_back(number_of_hits);
+    full_hash_cache_info->GetList().push_back(std::move(number_of_hits));
   }
 
   // Record FullHashCache list.
   for (auto full_hash_cache_it : full_hash_cache_info_proto.full_hash_cache()) {
     base::ListValue full_hash_cache_list;
     ParseFullHashCache(full_hash_cache_it, &full_hash_cache_list);
-    full_hash_cache_info->GetList().push_back(full_hash_cache_list);
+    full_hash_cache_info->GetList().push_back(std::move(full_hash_cache_list));
   }
 }
 

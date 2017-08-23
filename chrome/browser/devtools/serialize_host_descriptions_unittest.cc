@@ -61,27 +61,31 @@ TEST(SerializeHostDescriptionTest, Empty) {
 
 // Test serializing a forest of stubs (no edges).
 TEST(SerializeHostDescriptionTest, Stubs) {
-  base::ListValue result = SerializeHostDescriptions(
-      {GetNodeWithLabel("1", 1), GetNodeWithLabel("2", 2),
-       GetNodeWithLabel("3", 3)},
-      "children");
-  EXPECT_THAT(result.base::Value::GetList(),
+  std::vector<HostDescriptionNode> nodes;
+  nodes.emplace_back(GetNodeWithLabel("1", 1));
+  nodes.emplace_back(GetNodeWithLabel("2", 2));
+  nodes.emplace_back(GetNodeWithLabel("3", 3));
+  base::ListValue result =
+      SerializeHostDescriptions(std::move(nodes), "children");
+  EXPECT_THAT(result.GetList(),
               UnorderedElementsAre(EmptyNode(1), EmptyNode(2), EmptyNode(3)));
 }
 
 // Test handling multiple nodes sharing the same name.
 TEST(SerializeHostDescriptionTest, SameNames) {
-  std::vector<HostDescriptionNode> nodes = {
-      GetNodeWithLabel("A", 1), GetNodeWithLabel("A", 2),
-      GetNodeWithLabel("A", 3), GetNodeWithLabel("B", 4),
-      GetNodeWithLabel("C", 5)};
+  std::vector<HostDescriptionNode> nodes;
+  nodes.emplace_back(GetNodeWithLabel("A", 1));
+  nodes.emplace_back(GetNodeWithLabel("A", 2));
+  nodes.emplace_back(GetNodeWithLabel("A", 3));
+  nodes.emplace_back(GetNodeWithLabel("B", 4));
+  nodes.emplace_back(GetNodeWithLabel("C", 5));
 
   base::ListValue result =
       SerializeHostDescriptions(std::move(nodes), "children");
 
   // Only the first node called "A", and both nodes "B" and "C" should be
   // returned.
-  EXPECT_THAT(result.base::Value::GetList(),
+  EXPECT_THAT(result.GetList(),
               UnorderedElementsAre(EmptyNode(1), EmptyNode(4), EmptyNode(5)));
 }
 

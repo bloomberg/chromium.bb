@@ -53,6 +53,17 @@ void DictionaryValueUpdate::Set(base::StringPiece path,
   value_->Set(path, std::move(in_value));
 }
 
+void DictionaryValueUpdate::SetPath(
+    std::initializer_list<base::StringPiece> path,
+    base::Value value) {
+  const base::Value* found = value_->FindPath(path);
+  if (found && *found == value)
+    return;
+
+  RecordSplitPath(path);
+  value_->SetPath(path, std::move(value));
+}
+
 void DictionaryValueUpdate::SetBoolean(base::StringPiece path, bool in_value) {
   Set(path, base::MakeUnique<base::Value>(in_value));
 }

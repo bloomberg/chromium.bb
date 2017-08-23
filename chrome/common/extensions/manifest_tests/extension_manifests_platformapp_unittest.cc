@@ -128,8 +128,8 @@ TEST_F(PlatformAppsManifestTest, CertainApisRequirePlatformApps) {
     permissions->AppendString("experimental");
     permissions->AppendString(api_name);
     manifest->Set("permissions", std::move(permissions));
-    manifests.push_back(base::MakeUnique<ManifestData>(
-        base::MakeUnique<base::DictionaryValue>(*manifest), ""));
+    manifests.push_back(
+        base::MakeUnique<ManifestData>(manifest->CreateDeepCopy(), ""));
   }
   // First try to load without any flags. This should warn for every API.
   for (const std::unique_ptr<ManifestData>& manifest : manifests) {

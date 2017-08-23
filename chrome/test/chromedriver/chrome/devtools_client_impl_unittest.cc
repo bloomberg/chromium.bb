@@ -72,7 +72,7 @@ class MockSyncWebSocket : public SyncWebSocket {
     response.SetInteger("id", id_);
     base::DictionaryValue result;
     result.SetInteger("param", 1);
-    response.Set("result", base::MakeUnique<base::Value>(result));
+    response.SetKey("result", result.Clone());
     base::JSONWriter::Write(response, message);
     --queued_messages_;
     return SyncWebSocket::kOk;
@@ -1148,7 +1148,7 @@ class MockSyncWebSocket7 : public SyncWebSocket {
       response.SetInteger("id", 2);
     base::DictionaryValue result;
     result.SetInteger("param", 1);
-    response.Set("result", base::MakeUnique<base::Value>(result));
+    response.SetKey("result", result.Clone());
     base::JSONWriter::Write(response, message);
     sent_responses_++;
     return SyncWebSocket::kOk;

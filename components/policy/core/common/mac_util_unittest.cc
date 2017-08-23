@@ -42,16 +42,16 @@ TEST(PolicyMacUtilTest, PropertyToValue) {
   root.Set("emptyl", base::MakeUnique<base::Value>(base::Value::Type::LIST));
   base::ListValue list;
   for (base::DictionaryValue::Iterator it(root); !it.IsAtEnd(); it.Advance())
-    list.Append(base::MakeUnique<base::Value>(it.value()));
+    list.Append(base::MakeUnique<base::Value>(it.value().Clone()));
   EXPECT_EQ(root.size(), list.GetSize());
-  list.Append(base::MakeUnique<base::Value>(root));
-  root.Set("list", base::MakeUnique<base::Value>(list));
+  list.Append(base::MakeUnique<base::Value>(root.Clone()));
+  root.SetKey("list", list.Clone());
 
   // base::Value::Type::DICTIONARY
   root.Set("emptyd",
            base::MakeUnique<base::Value>(base::Value::Type::DICTIONARY));
   // Very meta.
-  root.Set("dict", base::MakeUnique<base::Value>(root));
+  root.SetKey("dict", root.Clone());
 
   base::ScopedCFTypeRef<CFPropertyListRef> property(ValueToProperty(root));
   ASSERT_TRUE(property);

@@ -226,12 +226,12 @@ TEST(RegistryDictTest, ConvertToJSON) {
   std::unique_ptr<base::Value> actual(test_dict.ConvertToJSON(schema));
 
   base::DictionaryValue expected;
-  expected.Set("one", base::MakeUnique<base::Value>(int_value));
+  expected.SetKey("one", int_value.Clone());
   auto expected_subdict = base::MakeUnique<base::DictionaryValue>();
-  expected_subdict->Set("two", base::MakeUnique<base::Value>(string_value));
+  expected_subdict->SetKey("two", string_value.Clone());
   expected.Set("three", std::move(expected_subdict));
   auto expected_list = base::MakeUnique<base::ListValue>();
-  expected_list->Append(base::MakeUnique<base::Value>(string_value));
+  expected_list->Append(base::MakeUnique<base::Value>(string_value.Clone()));
   expected.Set("dict-to-list", std::move(expected_list));
   expected.SetBoolean("int-to-bool", true);
   expected.SetDouble("int-to-double", 42.0);

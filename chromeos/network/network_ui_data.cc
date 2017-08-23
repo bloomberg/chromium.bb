@@ -107,8 +107,7 @@ void NetworkUIData::FillDictionary(base::DictionaryValue* dict) const {
     dict->SetString(kKeyONCSource, source_string);
 
   if (user_settings_)
-    dict->SetWithoutPathExpansion(
-        kKeyUserSettings, base::MakeUnique<base::Value>(*user_settings_));
+    dict->SetKey(kKeyUserSettings, user_settings_->Clone());
 }
 
 // static

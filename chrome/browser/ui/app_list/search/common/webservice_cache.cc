@@ -134,7 +134,7 @@ std::unique_ptr<base::DictionaryValue> WebserviceCache::DictFromPayload(
   // The payload will still keep ownership of it's result dict, hence put a
   // a copy of the result dictionary here. This dictionary will be owned by
   // data_store_->cached_dict().
-  dict->Set(kKeyResult, base::MakeUnique<base::Value>(*payload.result));
+  dict->SetKey(kKeyResult, payload.result->Clone());
 
   return dict;
 }

@@ -731,7 +731,7 @@ std::unique_ptr<base::DictionaryValue> PolicyUIHandler::GetAllPolicyValues(
   }
   all_policies.Set("extensionPolicies", std::move(extension_values));
 #endif
-  return base::MakeUnique<base::DictionaryValue>(all_policies);
+  return base::MakeUnique<base::DictionaryValue>(std::move(all_policies));
 }
 
 void PolicyUIHandler::SendPolicyValues() const {

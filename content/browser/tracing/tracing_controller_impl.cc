@@ -793,7 +793,7 @@ void TracingControllerImpl::AddFilteredMetadata(
        it.Advance()) {
     if (filter.Run(it.key()))
       filtered_metadata->Set(it.key(),
-                             base::MakeUnique<base::Value>(it.value()));
+                             base::MakeUnique<base::Value>(it.value().Clone()));
     else
       filtered_metadata->SetString(it.key(), "__stripped__");
   }

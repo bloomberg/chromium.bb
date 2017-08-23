@@ -55,7 +55,7 @@ class FirstRunActor {
     StepPosition& SetLeft(int left);
 
     // Returns DictionaryValue containing set properties.
-    std::unique_ptr<base::DictionaryValue> AsValue() const;
+    base::DictionaryValue AsValue() const;
 
    private:
     int top_;

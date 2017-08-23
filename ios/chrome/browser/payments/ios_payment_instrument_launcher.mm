@@ -184,19 +184,16 @@ IOSPaymentInstrumentLauncher::SerializeMethodData(
   std::unique_ptr<base::DictionaryValue> method_data =
       base::MakeUnique<base::DictionaryValue>();
 
-  std::unique_ptr<base::ListValue> data_list;
-  std::unique_ptr<base::Value> data;
   for (auto const& map_it : stringified_method_data) {
-    data_list = base::MakeUnique<base::ListValue>();
+    base::ListValue data_list;
     for (auto const& data_it : map_it.second) {
-      data = base::JSONReader().ReadToValue(data_it);
       // We insert the stringified data, not the JSON object and only if the
       // corresponding JSON object is valid.
-      if (data)
-        data_list->GetList().emplace_back(data_it);
+      if (base::JSONReader().ReadToValue(data_it))
+        data_list.GetList().emplace_back(data_it);
     }
 
-    method_data->SetKey(map_it.first, *data_list);
+    method_data->SetKey(map_it.first, std::move(data_list));
   }
 
   return method_data;
@@ -226,15 +223,15 @@ IOSPaymentInstrumentLauncher::SerializeCertificateChain(
         std::vector<const char>(cert_bytes.begin(), cert_bytes.end()));
   }
 
-  std::unique_ptr<base::DictionaryValue> cert_chain_dict;
   std::unique_ptr<base::ListValue> byte_array;
   for (std::vector<const char> cert_string : cert_chain) {
-    byte_array = base::MakeUnique<base::ListValue>();
-    cert_chain_dict = base::MakeUnique<base::DictionaryValue>();
+    base::ListValue byte_array;
     for (const char byte : cert_string)
-      byte_array->GetList().emplace_back(byte);
-    cert_chain_dict->Set(kCertificate, std::move(byte_array));
-    cert_chain_list->GetList().push_back(*cert_chain_dict);
+      byte_array.GetList().emplace_back(byte);
+
+    base::DictionaryValue cert_chain_dict;
+    cert_chain_dict.SetKey(kCertificate, std::move(byte_array));
+    cert_chain_list->GetList().push_back(std::move(cert_chain_dict));
   }
 
   return cert_chain_list;
@@ -246,9 +243,9 @@ IOSPaymentInstrumentLauncher::SerializeModifiers(web::PaymentDetails details) {
       base::MakeUnique<base::ListValue>();
   size_t numModifiers = details.modifiers.size();
   for (size_t i = 0; i < numModifiers; ++i) {
-    const std::unique_ptr<base::DictionaryValue> modifier =
+    std::unique_ptr<base::DictionaryValue> modifier =
         details.modifiers[i].ToDictionaryValue();
-    modifiers->GetList().push_back(*modifier.get());
+    modifiers->GetList().push_back(std::move(*modifier));
   }
 
   return modifiers;

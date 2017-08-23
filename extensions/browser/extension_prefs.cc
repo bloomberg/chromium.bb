@@ -1353,7 +1353,8 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(
   for (base::DictionaryValue::Iterator it(
            *pending_install_dict->AsConstDictionary());
        !it.IsAtEnd(); it.Advance()) {
-    extension_dict->Set(it.key(), base::MakeUnique<base::Value>(it.value()));
+    extension_dict->Set(it.key(),
+                        base::MakeUnique<base::Value>(it.value().Clone()));
   }
   FinishExtensionInfoPrefs(extension_id, install_time, needs_sort_ordinal,
                            suggested_page_ordinal, extension_dict.get());
@@ -1843,8 +1844,8 @@ void ExtensionPrefs::PopulateExtensionInfoPrefs(
   // We store prefs about LOAD extensions, but don't cache their manifest
   // since it may change on disk.
   if (!Manifest::IsUnpackedLocation(extension->location())) {
-    extension_dict->Set(kPrefManifest, base::MakeUnique<base::Value>(
-                                           *extension->manifest()->value()));
+    extension_dict->SetKey(kPrefManifest,
+                           extension->manifest()->value()->Clone());
   }
 
   // Only writes kPrefDoNotSync when it is not the default.

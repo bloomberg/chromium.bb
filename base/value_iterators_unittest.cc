@@ -275,11 +275,12 @@ TEST(ValueIteratorsTest, DictIteratorProxy) {
   storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
   storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
 
+  using iterator = const_dict_iterator;
   using iterator_proxy = dict_iterator_proxy;
   iterator_proxy proxy(&storage);
 
   auto equal_to = [](const DictStorage::value_type& lhs,
-                     const iterator_proxy::value_type& rhs) {
+                     const iterator::reference& rhs) {
     return std::tie(lhs.first, *lhs.second) == std::tie(rhs.first, rhs.second);
   };
 
@@ -307,11 +308,12 @@ TEST(ValueIteratorsTest, ConstDictIteratorProxy) {
   storage.emplace("dict", std::make_unique<Value>(Value::Type::DICTIONARY));
   storage.emplace("list", std::make_unique<Value>(Value::Type::LIST));
 
+  using iterator = const_dict_iterator;
   using iterator_proxy = const_dict_iterator_proxy;
   iterator_proxy proxy(&storage);
 
   auto equal_to = [](const DictStorage::value_type& lhs,
-                     const iterator_proxy::value_type& rhs) {
+                     const iterator::reference& rhs) {
     return std::tie(lhs.first, *lhs.second) == std::tie(rhs.first, rhs.second);
   };
 

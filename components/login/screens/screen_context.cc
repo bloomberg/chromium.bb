@@ -179,7 +179,7 @@ bool ScreenContext::Set(const KeyType& key, base::Value* value) {
   if (in_storage && new_value->Equals(current_value))
     return false;
 
-  changes_.Set(key, base::MakeUnique<base::Value>(*new_value));
+  changes_.Set(key, base::MakeUnique<base::Value>(new_value->Clone()));
   storage_.Set(key, std::move(new_value));
   return true;
 }

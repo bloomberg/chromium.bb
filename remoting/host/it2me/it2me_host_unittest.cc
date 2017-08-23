@@ -278,8 +278,7 @@ void It2MeHostTest::StartHost() {
   fake_bot_signal_strategy_->ConnectTo(fake_signal_strategy.get());
 
   it2me_host_ = new It2MeHost();
-  it2me_host_->Connect(host_context_->Copy(),
-                       base::MakeUnique<base::DictionaryValue>(*policies_),
+  it2me_host_->Connect(host_context_->Copy(), policies_->CreateDeepCopy(),
                        std::move(dialog_factory), weak_factory_.GetWeakPtr(),
                        std::move(fake_signal_strategy), kTestUserName,
                        "fake_bot_jid", ice_config);

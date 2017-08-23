@@ -53,6 +53,11 @@ class DictionaryValueUpdate {
   // to the path in that location. |in_value| must be non-null.
   void Set(base::StringPiece path, std::unique_ptr<base::Value> in_value);
 
+  // This is similar to |Set|, but lets callers explicitly specify the path
+  // components and thus allows nested keys with periods in them.
+  void SetPath(std::initializer_list<base::StringPiece> path,
+               base::Value value);
+
   // Convenience forms of Set().  These methods will replace any existing
   // value at that path, even if it has a different type.
   void SetBoolean(base::StringPiece path, bool in_value);

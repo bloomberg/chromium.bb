@@ -95,7 +95,7 @@ void DictionaryHashStoreContents::SetSplitMac(const std::string& path,
 void DictionaryHashStoreContents::ImportEntry(const std::string& path,
                                               const base::Value* in_value) {
   base::DictionaryValue* macs_dict = GetMutableContents(true);
-  macs_dict->Set(path, base::MakeUnique<base::Value>(*in_value));
+  macs_dict->Set(path, base::MakeUnique<base::Value>(in_value->Clone()));
 }
 
 bool DictionaryHashStoreContents::RemoveEntry(const std::string& path) {
