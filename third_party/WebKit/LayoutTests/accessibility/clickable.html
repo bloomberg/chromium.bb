@@ -8,15 +8,20 @@
   <button id="button">Button</button>
   <button id="labeled-button" aria-label="Label">Button</button>
   <button id="button-with-title" title="Title">Button</button>
+  <div id="switch" role="switch">Switch</div>
+  <details><summary id="disclosure-triangle">Summary</summary>Details</details>
   <input id="text" type="text" value="Value">
+  <input id="search-box" role="searchbox" type="text" value="Value">
   <input id="checkbox" type="checkbox" checked>
   <input id="number" type="number" value="23">
   <input id="radio" type="radio" checked>
   <input id="slider" type="range" min="" max="0" value="5">
   <input id="submit" type="submit">
-  <select id="combobox"><option><option selected>2</select>
-  <select multiple id="listbox"><option><option selected>2</select>
+  <input id="combobox" role="combobox" type="text" value="Value">
+  <select id="listbox-single"><option><option selected>2</select>
+  <select multiple id="listbox-multiple"><option><option selected>2</select>
   <textarea id="textarea">Textarea</textarea>
+  <div id="content-editable" contenteditable="true">Content editable</div>
   <div id="focusable" tabindex="0">Focusable</div>
   <h5 id="heading" tabindex="0">Heading</h5>
   <div id="aria-button" tabindex="0" role="button">ARIA button</div>
@@ -59,15 +64,20 @@ if (window.testRunner && window.accessibilityController) {
     shouldBe("isAXElementClickable('button')", "true");
     shouldBe("isAXElementClickable('labeled-button')", "true");
     shouldBe("isAXElementClickable('button-with-title')", "true");
+    shouldBe("isAXElementClickable('switch')", "true");
+    shouldBe("isAXElementClickable('disclosure-triangle')", "true");
     shouldBe("isAXElementClickable('text')", "true");
+    shouldBe("isAXElementClickable('search-box')", "true");
     shouldBe("isAXElementClickable('checkbox')", "true");
     shouldBe("isAXElementClickable('number')", "true");
     shouldBe("isAXElementClickable('radio')", "true");
     shouldBe("isAXElementClickable('slider')", "false");
     shouldBe("isAXElementClickable('submit')", "true");
     shouldBe("isAXElementClickable('combobox')", "true");
-    shouldBe("isAXElementClickable('listbox')", "false");  // The items are clickable, not the listbox.
+    shouldBe("isAXElementClickable('listbox-single')", "true");
+    shouldBe("isAXElementClickable('listbox-multiple')", "true");
     shouldBe("isAXElementClickable('textarea')", "true");
+    shouldBe("isAXElementClickable('content-editable')", "true");
     shouldBe("isAXElementClickable('focusable')", "false");
     shouldBe("isAXElementClickable('heading')", "false");
     shouldBe("isAXElementClickable('aria-button')", "true");

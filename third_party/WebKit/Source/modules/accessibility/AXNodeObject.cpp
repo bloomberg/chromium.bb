@@ -881,9 +881,10 @@ bool AXNodeObject::HasContentEditableAttributeSet() const {
          EqualIgnoringASCIICase(content_editable_value, "true");
 }
 
-// TODO(aleventhal) Find a more appropriate name or consider returning false
+// TODO(dmazzoni) Find a more appropriate name or consider returning false
 // for everything but a searchbox or textfield, as a combobox and spinbox
 // can contain a field but should not be considered edit controls themselves.
+// Combo box text fields should return true though.
 bool AXNodeObject::IsTextControl() const {
   if (HasContentEditableAttributeSet())
     return true;
@@ -892,6 +893,7 @@ bool AXNodeObject::IsTextControl() const {
     case kTextFieldRole:
     case kComboBoxRole:
     case kSearchBoxRole:
+    // TODO(dmazzoni): kSpinButtonRole might need to be removed.
     case kSpinButtonRole:
       return true;
     default:
@@ -974,13 +976,13 @@ Element* AXNodeObject::MenuItemElementForMenu() const {
 Element* AXNodeObject::MouseButtonListener() const {
   Node* node = this->GetNode();
   if (!node)
-    return 0;
+    return nullptr;
 
   if (!node->IsElementNode())
     node = node->parentElement();
 
   if (!node)
-    return 0;
+    return nullptr;
 
   for (Element* element = ToElement(node); element;
        element = element->parentElement()) {
@@ -2467,39 +2469,10 @@ bool AXNodeObject::CanHaveChildren() const {
 Element* AXNodeObject::ActionElement() const {
   Node* node = this->GetNode();
   if (!node)
-    return 0;
+    return nullptr;
 
-  if (isHTMLInputElement(*node)) {
-    HTMLInputElement& input = toHTMLInputElement(*node);
-    if (!input.IsDisabledFormControl() &&
-        (IsCheckboxOrRadio() || input.IsTextButton() ||
-         input.type() == InputTypeNames::file))
-      return &input;
-  } else if (isHTMLButtonElement(*node)) {
+  if (node->IsElementNode() && IsClickable())
     return ToElement(node);
-  }
-
-  if (AXObject::IsARIAInput(AriaRoleAttribute()))
-    return ToElement(node);
-
-  if (IsImageButton())
-    return ToElement(node);
-
-  if (isHTMLSelectElement(*node))
-    return ToElement(node);
-
-  switch (RoleValue()) {
-    case kButtonRole:
-    case kPopUpButtonRole:
-    case kToggleButtonRole:
-    case kTabRole:
-    case kMenuItemRole:
-    case kMenuItemCheckBoxRole:
-    case kMenuItemRadioRole:
-      return ToElement(node);
-    default:
-      break;
-  }
 
   Element* anchor = AnchorElement();
   Element* click_element = MouseButtonListener();

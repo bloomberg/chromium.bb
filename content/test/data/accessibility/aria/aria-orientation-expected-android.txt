@@ -1,10 +1,10 @@
 android.webkit.WebView focusable focused scrollable
-++android.widget.Spinner role_description='combo box'
-++android.widget.Spinner role_description='combo box'
-++android.widget.Spinner role_description='combo box'
-++android.widget.ListView role_description='list box' collection
-++android.widget.ListView role_description='list box' collection
-++android.widget.ListView role_description='list box' collection
+++android.widget.Spinner role_description='combo box' clickable
+++android.widget.Spinner role_description='combo box' clickable
+++android.widget.Spinner role_description='combo box' clickable
+++android.widget.ListView role_description='list box' clickable collection
+++android.widget.ListView role_description='list box' clickable collection
+++android.widget.ListView role_description='list box' clickable collection
 ++android.view.View role_description='menu'
 ++android.view.View role_description='menu'
 ++android.view.View role_description='menu'

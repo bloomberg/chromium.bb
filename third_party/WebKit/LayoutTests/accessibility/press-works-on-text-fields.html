@@ -33,7 +33,7 @@ async_test(function(t) {
 <script>
 async_test(function(t) {
   var contenteditable = document.getElementById("contenteditable");
-  contenteditable.addEventListener("focus", function() {
+  contenteditable.addEventListener("click", function() {
     t.done();
   });
   var axContenteditable = accessibilityController.accessibleElementById(
