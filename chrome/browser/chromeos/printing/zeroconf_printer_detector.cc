@@ -102,7 +102,7 @@ std::string ZeroconfPrinterId(const ServiceDescription& service,
                               const ParsedMetadata& metadata) {
   base::MD5Context ctx;
   base::MD5Init(&ctx);
-  base::MD5Update(&ctx, service.service_name);
+  base::MD5Update(&ctx, service.instance_name());
   base::MD5Update(&ctx, metadata.product);
   base::MD5Update(&ctx, metadata.UUID);
   base::MD5Update(&ctx, metadata.usb_MFG);
@@ -244,10 +244,10 @@ class ZeroconfPrinterDetectorImpl
     }
     base::AutoLock auto_lock(printers_lock_);
 
-    auto existing = printers_.find(service_description.service_name);
+    auto existing = printers_.find(service_description.instance_name());
     if (existing == printers_.end() ||
         ShouldReplaceRecord(existing->second, printer)) {
-      printers_[service_description.service_name] = printer;
+      printers_[service_description.instance_name()] = printer;
       observer_list_->Notify(FROM_HERE,
                              &PrinterDetector::Observer::OnPrintersFound,
                              GetPrintersLocked());
@@ -255,8 +255,11 @@ class ZeroconfPrinterDetectorImpl
   }
 
   void OnDeviceRemoved(const std::string& service_name) override {
+    // Leverage ServiceDescription parsing to pull out the instance name.
+    ServiceDescription service_description;
+    service_description.service_name = service_name;
     base::AutoLock auto_lock(printers_lock_);
-    auto it = printers_.find(service_name);
+    auto it = printers_.find(service_description.instance_name());
     if (it != printers_.end()) {
       printers_.erase(it);
       observer_list_->Notify(FROM_HERE,
