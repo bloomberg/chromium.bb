@@ -88,7 +88,8 @@ bool PinStorage::IsPinAuthenticationAvailable() const {
   const bool exceeded_unlock_attempts =
       unlock_attempt_count() >= kMaximumUnlockAttempts;
 
-  return IsPinEnabled(pref_service_) && IsPinSet() && !exceeded_unlock_attempts;
+  return IsPinEnabled(pref_service_) && !IsPinDisabledByPolicy(pref_service_) &&
+         IsPinSet() && !exceeded_unlock_attempts;
 }
 
 bool PinStorage::TryAuthenticatePin(const std::string& pin) {
