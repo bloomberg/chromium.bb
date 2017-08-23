@@ -129,7 +129,7 @@ TEST_F(FlatTreeTraversalTest, childAt) {
   Element* m01 = m0->QuerySelector("#m01");
 
   Element* shadow_host = m0;
-  ShadowRoot* shadow_root = shadow_host->openShadowRoot();
+  ShadowRoot* shadow_root = shadow_host->OpenShadowRoot();
   Element* s00 = shadow_root->QuerySelector("#s00");
   Element* s02 = shadow_root->QuerySelector("#s02");
   Element* s03 = shadow_root->QuerySelector("#s03");
@@ -214,7 +214,7 @@ TEST_F(FlatTreeTraversalTest, commonAncestor) {
   Element* m20 = body->QuerySelector("#m20");
   Element* m21 = body->QuerySelector("#m21");
 
-  ShadowRoot* shadow_root = m1->openShadowRoot();
+  ShadowRoot* shadow_root = m1->OpenShadowRoot();
   Element* s10 = shadow_root->QuerySelector("#s10");
   Element* s11 = shadow_root->QuerySelector("#s11");
   Element* s12 = shadow_root->QuerySelector("#s12");
@@ -279,7 +279,7 @@ TEST_F(FlatTreeTraversalTest, nextSkippingChildren) {
   Element* m10 = body->QuerySelector("#m10");
   Element* m11 = body->QuerySelector("#m11");
 
-  ShadowRoot* shadow_root = m1->openShadowRoot();
+  ShadowRoot* shadow_root = m1->OpenShadowRoot();
   Element* s11 = shadow_root->QuerySelector("#s11");
   Element* s12 = shadow_root->QuerySelector("#s12");
   Element* s120 = shadow_root->QuerySelector("#s120");
@@ -335,7 +335,7 @@ TEST_F(FlatTreeTraversalTest, lastWithin) {
 
   Element* m10 = body->QuerySelector("#m10");
 
-  ShadowRoot* shadow_root = m1->openShadowRoot();
+  ShadowRoot* shadow_root = m1->OpenShadowRoot();
   Element* s11 = shadow_root->QuerySelector("#s11");
   Element* s12 = shadow_root->QuerySelector("#s12");
 
@@ -380,7 +380,7 @@ TEST_F(FlatTreeTraversalTest, previousPostOrder) {
   Element* m10 = body->QuerySelector("#m10");
   Element* m11 = body->QuerySelector("#m11");
 
-  ShadowRoot* shadow_root = m1->openShadowRoot();
+  ShadowRoot* shadow_root = m1->OpenShadowRoot();
   Element* s11 = shadow_root->QuerySelector("#s11");
   Element* s12 = shadow_root->QuerySelector("#s12");
   Element* s120 = shadow_root->QuerySelector("#s120");
@@ -448,12 +448,12 @@ TEST_F(FlatTreeTraversalTest, redistribution) {
   Element* m1 = body->QuerySelector("#m1");
   Element* m10 = body->QuerySelector("#m10");
 
-  ShadowRoot* shadow_root1 = m1->openShadowRoot();
+  ShadowRoot* shadow_root1 = m1->OpenShadowRoot();
   Element* s1 = shadow_root1->QuerySelector("#s1");
 
   AttachV0ShadowRoot(*s1, shadow_html2);
 
-  ShadowRoot* shadow_root2 = s1->openShadowRoot();
+  ShadowRoot* shadow_root2 = s1->OpenShadowRoot();
   Element* s21 = shadow_root2->QuerySelector("#s21");
 
   EXPECT_EQ(s21, FlatTreeTraversal::NextSibling(*m10));
@@ -486,7 +486,7 @@ TEST_F(FlatTreeTraversalTest, v1Simple) {
   Element* child2 = body->QuerySelector("#child2");
 
   AttachOpenShadowRoot(*host, shadow_html);
-  ShadowRoot* shadow_root = host->openShadowRoot();
+  ShadowRoot* shadow_root = host->OpenShadowRoot();
   Element* slot1 = shadow_root->QuerySelector("[name=slot1]");
   Element* slot2 = shadow_root->QuerySelector("[name=slot2]");
   Element* shadow_child1 = shadow_root->QuerySelector("#shadow-child1");
@@ -535,7 +535,7 @@ TEST_F(FlatTreeTraversalTest, v1Redistribution) {
   Element* d6 = body->QuerySelector("#d6");
 
   AttachOpenShadowRoot(*d1, shadow_html1);
-  ShadowRoot* shadow_root1 = d1->openShadowRoot();
+  ShadowRoot* shadow_root1 = d1->OpenShadowRoot();
   Element* d11 = shadow_root1->QuerySelector("#d1-1");
   Element* d12 = shadow_root1->QuerySelector("#d1-2");
   Element* d13 = shadow_root1->QuerySelector("#d1-3");
@@ -545,7 +545,7 @@ TEST_F(FlatTreeTraversalTest, v1Redistribution) {
   Element* d1s2 = shadow_root1->QuerySelector("[name=d1-s2]");
 
   AttachOpenShadowRoot(*d11, shadow_html2);
-  ShadowRoot* shadow_root2 = d11->openShadowRoot();
+  ShadowRoot* shadow_root2 = d11->OpenShadowRoot();
   Element* d111 = shadow_root2->QuerySelector("#d1-1-1");
   Element* d112 = shadow_root2->QuerySelector("#d1-1-2");
   Element* d11s1 = shadow_root2->QuerySelector("[name=d1-1-s1]");
@@ -614,7 +614,7 @@ TEST_F(FlatTreeTraversalTest, v1FallbackContent) {
   Element* d1 = body->QuerySelector("#d1");
 
   AttachOpenShadowRoot(*d1, shadow_html);
-  ShadowRoot* shadow_root = d1->openShadowRoot();
+  ShadowRoot* shadow_root = d1->OpenShadowRoot();
   Element* before = shadow_root->QuerySelector("#before");
   Element* after = shadow_root->QuerySelector("#after");
   Element* fallback_content = shadow_root->QuerySelector("p");
@@ -646,7 +646,7 @@ TEST_F(FlatTreeTraversalTest, v1FallbackContentSkippedInTraversal) {
   Element* span = body->QuerySelector("span");
 
   AttachOpenShadowRoot(*d1, shadow_html);
-  ShadowRoot* shadow_root = d1->openShadowRoot();
+  ShadowRoot* shadow_root = d1->OpenShadowRoot();
   Element* before = shadow_root->QuerySelector("#before");
   Element* after = shadow_root->QuerySelector("#after");
   Element* fallback_content = shadow_root->QuerySelector("p");
@@ -681,7 +681,7 @@ TEST_F(FlatTreeTraversalTest, v1AllFallbackContent) {
   Element* d1 = body->QuerySelector("#d1");
 
   AttachOpenShadowRoot(*d1, shadow_html);
-  ShadowRoot* shadow_root = d1->openShadowRoot();
+  ShadowRoot* shadow_root = d1->OpenShadowRoot();
   Element* fallback_x = shadow_root->QuerySelector("#x");
   Element* fallback_y = shadow_root->QuerySelector("#y");
   Element* fallback_z = shadow_root->QuerySelector("#z");
