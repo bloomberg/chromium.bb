@@ -30,9 +30,8 @@
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/lifetime/keep_alive_registry.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
-#include "chrome/browser/notifications/message_center_display_service.h"
-#include "chrome/browser/notifications/notification_test_util.h"
-#include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
@@ -137,8 +136,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     ASSERT_TRUE(https_server_->Start());
 
-    notification_manager_.reset(new StubNotificationUIManager);
-
     SiteEngagementScore::SetParamValuesForTesting();
     InProcessBrowserTest::SetUp();
   }
@@ -156,14 +153,18 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     gcm_driver_ = static_cast<instance_id::FakeGCMDriverForInstanceID*>(
         gcm_service_->driver());
 
+    notification_tester_ = base::MakeUnique<NotificationDisplayServiceTester>(
+        GetBrowser()->profile());
+
     push_service_ =
         PushMessagingServiceFactory::GetForProfile(GetBrowser()->profile());
-    display_service_.reset(new MessageCenterDisplayService(
-        GetBrowser()->profile(), notification_manager_.get()));
-    notification_service()->SetNotificationDisplayServiceForTesting(
-        display_service_.get());
 
     LoadTestPage();
+  }
+
+  void TearDownOnMainThread() override {
+    notification_tester_.reset();
+    InProcessBrowserTest::TearDownOnMainThread();
   }
 
   // Calls should be wrapped in the ASSERT_NO_FATAL_FAILURE() macro.
@@ -190,12 +191,6 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 #else
     return true;
 #endif
-  }
-
-  // InProcessBrowserTest:
-  void TearDown() override {
-    notification_service()->SetNotificationDisplayServiceForTesting(nullptr);
-    InProcessBrowserTest::TearDown();
   }
 
   void LoadTestPage(const std::string& path) {
@@ -269,24 +264,29 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 
   net::EmbeddedTestServer* https_server() const { return https_server_.get(); }
 
+  // Returns a vector of the currently displayed Notification objects.
+  std::vector<Notification> GetDisplayedNotifications() {
+    return notification_tester_->GetDisplayedNotificationsForType(
+        NotificationCommon::PERSISTENT);
+  }
+
+  // Returns the number of notifications that are currently being shown.
+  size_t GetNotificationCount() { return GetDisplayedNotifications().size(); }
+
+  // Removes all shown notifications.
+  void RemoveAllNotifications() {
+    notification_tester_->RemoveAllNotifications(NotificationCommon::PERSISTENT,
+                                                 true /* by_user */);
+  }
+
   // To be called when delivery of a push message has finished. The |run_loop|
   // will be told to quit after |messages_required| messages were received.
   void OnDeliveryFinished(std::vector<size_t>* number_of_notifications_shown,
                           const base::Closure& done_closure) {
     DCHECK(number_of_notifications_shown);
-
-    number_of_notifications_shown->push_back(
-        notification_manager_->GetNotificationCount());
+    number_of_notifications_shown->push_back(GetNotificationCount());
 
     done_closure.Run();
-  }
-
-  StubNotificationUIManager* notification_manager() const {
-    return notification_manager_.get();
-  }
-
-  PlatformNotificationServiceImpl* notification_service() const {
-    return PlatformNotificationServiceImpl::GetInstance();
   }
 
   PushMessagingServiceImpl* push_service() const { return push_service_; }
@@ -315,12 +315,11 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
   instance_id::FakeGCMDriverForInstanceID* gcm_driver_;
   base::HistogramTester histogram_tester_;
 
+  std::unique_ptr<NotificationDisplayServiceTester> notification_tester_;
+
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   PushMessagingServiceImpl* push_service_;
-
-  std::unique_ptr<StubNotificationUIManager> notification_manager_;
-  std::unique_ptr<MessageCenterDisplayService> display_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingBrowserTest);
 };
@@ -1313,8 +1312,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
 
-  notification_manager()->CancelAll();
-  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+  RemoveAllNotifications();
+  ASSERT_EQ(0u, GetNotificationCount());
 
   // We'll need to specify the web_contents in which to eval script, since we're
   // going to run script in a background tab.
@@ -1336,7 +1335,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
     SendMessageAndWaitUntilHandled(app_identifier, message);
     ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result));
     EXPECT_EQ("testdata", script_result);
-    EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
+    EXPECT_EQ(0u, GetNotificationCount());
   }
 
   // Open a blank foreground tab so site is no longer visible.
@@ -1351,10 +1350,9 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   SendMessageAndWaitUntilHandled(app_identifier, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("shownotification", script_result);
-  EXPECT_EQ(1u, notification_manager()->GetNotificationCount());
-  EXPECT_EQ("push_test_tag",
-            notification_manager()->GetNotificationAt(0).tag());
-  notification_manager()->CancelAll();
+  EXPECT_EQ(1u, GetNotificationCount());
+  EXPECT_EQ("push_test_tag", GetDisplayedNotifications()[0].tag());
+  RemoveAllNotifications();
 
   // If the Service Worker push event handler does not show a notification, we
   // should show a forced one, but only once the origin is out of budget.
@@ -1364,7 +1362,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
     SendMessageAndWaitUntilHandled(app_identifier, message);
     ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
     EXPECT_EQ("testdata", script_result);
-    EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
+    EXPECT_EQ(0u, GetNotificationCount());
   }
 
   // Third missed notification should trigger a default notification, since the
@@ -1374,13 +1372,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
 
-  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
   {
-    const Notification& forced_notification =
-        notification_manager()->GetNotificationAt(0);
+    std::vector<Notification> notifications = GetDisplayedNotifications();
+    ASSERT_EQ(notifications.size(), 1u);
 
-    EXPECT_EQ(kPushMessagingForcedNotificationTag, forced_notification.tag());
-    EXPECT_TRUE(forced_notification.silent());
+    EXPECT_EQ(kPushMessagingForcedNotificationTag, notifications[0].tag());
+    EXPECT_TRUE(notifications[0].silent());
   }
 
   // The notification will be automatically dismissed when the developer shows
@@ -1390,12 +1387,11 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("shownotification", script_result);
 
-  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
   {
-    const Notification& first_notification =
-        notification_manager()->GetNotificationAt(0);
+    std::vector<Notification> notifications = GetDisplayedNotifications();
+    ASSERT_EQ(notifications.size(), 1u);
 
-    EXPECT_NE(kPushMessagingForcedNotificationTag, first_notification.tag());
+    EXPECT_NE(kPushMessagingForcedNotificationTag, notifications[0].tag());
   }
 }
 
@@ -1418,8 +1414,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("isControlled()", &script_result));
   ASSERT_EQ("true - is controlled", script_result);
 
-  notification_manager()->CancelAll();
-  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+  RemoveAllNotifications();
+  ASSERT_EQ(0u, GetNotificationCount());
 
   // We'll need to specify the web_contents in which to eval script, since we're
   // going to run script in a background tab.
@@ -1442,7 +1438,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   SendMessageAndWaitUntilHandled(app_identifier, message);
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
-  EXPECT_EQ(0u, notification_manager()->GetNotificationCount());
+  EXPECT_EQ(0u, GetNotificationCount());
 
   // If the Service Worker push event handler does not show a notification, we
   // should show a forced one providing there is no foreground tab and the
@@ -1453,16 +1449,15 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // Because the --allow-silent-push command line flag has not been passed,
   // this should have shown a default notification.
-  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
   {
-    const Notification& forced_notification =
-        notification_manager()->GetNotificationAt(0);
+    std::vector<Notification> notifications = GetDisplayedNotifications();
+    ASSERT_EQ(notifications.size(), 1u);
 
-    EXPECT_EQ(kPushMessagingForcedNotificationTag, forced_notification.tag());
-    EXPECT_TRUE(forced_notification.silent());
+    EXPECT_EQ(kPushMessagingForcedNotificationTag, notifications[0].tag());
+    EXPECT_TRUE(notifications[0].silent());
   }
 
-  notification_manager()->CancelAll();
+  RemoveAllNotifications();
 
   // Send the message again, but this time with the -allow-silent-push command
   // line flag set. The default notification should *not* be shown.
@@ -1473,7 +1468,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_TRUE(RunScript("resultQueue.pop()", &script_result, web_contents));
   EXPECT_EQ("testdata", script_result);
 
-  ASSERT_EQ(0u, notification_manager()->GetNotificationCount());
+  ASSERT_EQ(0u, GetNotificationCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
@@ -1546,7 +1541,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   base::Closure quit_barrier =
       base::BarrierClosure(2 /* num_closures */, run_loop.QuitClosure());
   push_service()->SetMessageCallbackForTesting(quit_barrier);
-  notification_manager()->SetNotificationAddedCallback(quit_barrier);
+  notification_tester_->SetNotificationAddedClosure(quit_barrier);
 
   gcm::IncomingMessage message;
   message.sender_id = GetTestApplicationServerKey();
@@ -1561,9 +1556,8 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   run_loop.Run();
 
   EXPECT_TRUE(IsRegisteredKeepAliveEqualTo(false));
-  ASSERT_EQ(1u, notification_manager()->GetNotificationCount());
-  EXPECT_EQ("push_test_tag",
-            notification_manager()->GetNotificationAt(0).tag());
+  ASSERT_EQ(1u, GetNotificationCount());
+  EXPECT_EQ("push_test_tag", GetDisplayedNotifications()[0].tag());
 
   // Verify that the renderer process hasn't crashed.
   ASSERT_TRUE(RunScript("permissionState()", &script_result));

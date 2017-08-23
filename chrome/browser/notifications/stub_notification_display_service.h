@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
@@ -28,6 +29,9 @@ class StubNotificationDisplayService : public NotificationDisplayService {
 
   explicit StubNotificationDisplayService(Profile* profile);
   ~StubNotificationDisplayService() override;
+
+  // Sets |closure| to be invoked when any notification has been added.
+  void SetNotificationAddedClosure(base::RepeatingClosure closure);
 
   // Returns a vector of the displayed Notification objects.
   std::vector<Notification> GetDisplayedNotificationsForType(
@@ -59,6 +63,7 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   // Data to store for a notification that's being shown through this service.
   using NotificationData = std::pair<NotificationCommon::Type, Notification>;
 
+  base::RepeatingClosure notification_added_closure_;
   std::vector<NotificationData> notifications_;
   Profile* profile_;
 

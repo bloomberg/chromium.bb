@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_common.h"
 
@@ -23,6 +24,9 @@ class NotificationDisplayServiceTester {
  public:
   explicit NotificationDisplayServiceTester(Profile* profile);
   ~NotificationDisplayServiceTester();
+
+  // Sets |closure| to be invoked when any notification has been added.
+  void SetNotificationAddedClosure(base::RepeatingClosure closure);
 
   // Synchronously gets a vector of the displayed Notifications for the |type|.
   std::vector<Notification> GetDisplayedNotificationsForType(
