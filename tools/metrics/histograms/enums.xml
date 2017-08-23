@@ -22810,6 +22810,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Device suspended"/>
   <int value="4" label="App window closed"/>
   <int value="5" label="Lock screen note taking disabled"/>
+  <int value="6" label="Unlock button pressed"/>
 </enum>
 
 <enum name="LockScreenNoteTakingUnlockUIAction">
