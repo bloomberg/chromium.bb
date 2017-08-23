@@ -248,9 +248,6 @@ class CORE_EXPORT HTMLInputElement
 
   String DefaultToolTip() const override;
 
-  CaptureFacingMode capture() const;
-  void setCapture(const AtomicString& value);
-
   unsigned height() const;
   unsigned width() const;
   void setHeight(unsigned);

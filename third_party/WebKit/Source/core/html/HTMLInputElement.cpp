@@ -1714,19 +1714,6 @@ bool HTMLInputElement::ShouldAppearIndeterminate() const {
   return input_type_->ShouldAppearIndeterminate();
 }
 
-CaptureFacingMode HTMLInputElement::capture() const {
-  const String capture = FastGetAttribute(captureAttr).LowerASCII();
-  if (capture == "user")
-    return CaptureFacingModeUser;
-
-  // |capture| is equivalent to 'environment' if unspecified.
-  return CaptureFacingModeEnvironment;
-}
-
-void HTMLInputElement::setCapture(const AtomicString& value) {
-  setAttribute(captureAttr, value);
-}
-
 bool HTMLInputElement::IsInRequiredRadioButtonGroup() {
   // TODO(tkent): Remove type check.
   DCHECK_EQ(type(), InputTypeNames::radio);
