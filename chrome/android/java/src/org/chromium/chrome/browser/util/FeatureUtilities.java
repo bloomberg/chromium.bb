@@ -325,6 +325,14 @@ public class FeatureUtilities {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
     }
 
+    /**
+     * @return Whether or not showing the Doodle in the Chrome Home NTP is enabled.
+     */
+    public static boolean isChromeHomeDoodleEnabled() {
+        return isChromeHomeEnabled()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_DOODLE);
+    }
+
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
 }
