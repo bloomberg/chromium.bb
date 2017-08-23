@@ -472,8 +472,10 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
     DispatchDidFailAccessControlCheck(
         ResourceError::CancelledDueToAccessCheckError(
             request.Url(), ResourceRequestBlockedReason::kOther,
-            "Cross origin requests are only supported for protocol schemes: " +
-                SchemeRegistry::ListOfCORSEnabledURLSchemes() + "."));
+            String::Format(
+                "Cross origin requests are only supported for "
+                "protocol schemes: %s.",
+                WebCORS::ListOfCORSEnabledURLSchemes().Ascii().c_str())));
     return;
   }
 
@@ -519,8 +521,8 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
     // the user's input). For example, referrer. We need to accept them. For
     // security, we must reject forbidden headers/methods at the point we
     // accept user's input. Not here.
-    if (FetchUtils::IsCORSSafelistedMethod(request.HttpMethod()) &&
-        FetchUtils::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+    if (WebCORS::IsCORSSafelistedMethod(request.HttpMethod()) &&
+        WebCORS::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
             request.HttpHeaderFields())) {
       PrepareCrossOriginRequest(cross_origin_request);
       LoadRequest(cross_origin_request, cross_origin_options);
