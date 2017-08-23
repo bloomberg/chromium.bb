@@ -13,9 +13,9 @@ namespace operations {
 
 Unmount::Unmount(extensions::EventRouter* event_router,
                  const ProvidedFileSystemInfo& file_system_info,
-                 const storage::AsyncFileUtil::StatusCallback& callback)
-    : Operation(event_router, file_system_info), callback_(callback) {
-}
+                 storage::AsyncFileUtil::StatusCallback callback)
+    : Operation(event_router, file_system_info),
+      callback_(std::move(callback)) {}
 
 Unmount::~Unmount() {
 }
@@ -37,13 +37,15 @@ bool Unmount::Execute(int request_id) {
 void Unmount::OnSuccess(int /* request_id */,
                         std::unique_ptr<RequestValue> /* result */,
                         bool /* has_more */) {
-  callback_.Run(base::File::FILE_OK);
+  DCHECK(callback_);
+  std::move(callback_).Run(base::File::FILE_OK);
 }
 
 void Unmount::OnError(int /* request_id */,
                       std::unique_ptr<RequestValue> /* result */,
                       base::File::Error error) {
-  callback_.Run(error);
+  DCHECK(callback_);
+  std::move(callback_).Run(error);
 }
 
 }  // namespace operations

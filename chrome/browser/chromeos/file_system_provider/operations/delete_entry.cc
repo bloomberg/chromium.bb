@@ -17,12 +17,11 @@ DeleteEntry::DeleteEntry(extensions::EventRouter* event_router,
                          const ProvidedFileSystemInfo& file_system_info,
                          const base::FilePath& entry_path,
                          bool recursive,
-                         const storage::AsyncFileUtil::StatusCallback& callback)
+                         storage::AsyncFileUtil::StatusCallback callback)
     : Operation(event_router, file_system_info),
       entry_path_(entry_path),
       recursive_(recursive),
-      callback_(callback) {
-}
+      callback_(std::move(callback)) {}
 
 DeleteEntry::~DeleteEntry() {
 }
@@ -50,13 +49,15 @@ bool DeleteEntry::Execute(int request_id) {
 void DeleteEntry::OnSuccess(int /* request_id */,
                             std::unique_ptr<RequestValue> /* result */,
                             bool has_more) {
-  callback_.Run(base::File::FILE_OK);
+  DCHECK(callback_);
+  std::move(callback_).Run(base::File::FILE_OK);
 }
 
 void DeleteEntry::OnError(int /* request_id */,
                           std::unique_ptr<RequestValue> /* result */,
                           base::File::Error error) {
-  callback_.Run(error);
+  DCHECK(callback_);
+  std::move(callback_).Run(error);
 }
 
 }  // namespace operations

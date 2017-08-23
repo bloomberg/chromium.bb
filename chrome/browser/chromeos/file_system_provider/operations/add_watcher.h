@@ -36,7 +36,7 @@ class AddWatcher : public Operation {
              const ProvidedFileSystemInfo& file_system_info,
              const base::FilePath& entry_path,
              bool recursive,
-             const storage::AsyncFileUtil::StatusCallback& callback);
+             storage::AsyncFileUtil::StatusCallback callback);
   ~AddWatcher() override;
 
   // Operation overrides.
@@ -51,7 +51,7 @@ class AddWatcher : public Operation {
  private:
   const base::FilePath entry_path_;
   const bool recursive_;
-  const storage::AsyncFileUtil::StatusCallback callback_;
+  storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AddWatcher);
 };

@@ -35,7 +35,7 @@ class GetActions : public Operation {
   GetActions(extensions::EventRouter* event_router,
              const ProvidedFileSystemInfo& file_system_info,
              const std::vector<base::FilePath>& entry_paths,
-             const ProvidedFileSystemInterface::GetActionsCallback& callback);
+             ProvidedFileSystemInterface::GetActionsCallback callback);
   ~GetActions() override;
 
   // Operation overrides.
@@ -49,7 +49,7 @@ class GetActions : public Operation {
 
  private:
   const std::vector<base::FilePath> entry_paths_;
-  const ProvidedFileSystemInterface::GetActionsCallback callback_;
+  ProvidedFileSystemInterface::GetActionsCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetActions);
 };
