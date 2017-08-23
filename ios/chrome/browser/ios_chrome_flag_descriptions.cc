@@ -64,4 +64,21 @@ const char kInProductHelpDemoModeDescription[] =
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
 
+const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
+    "Hide the path, query, and ref of omnibox suggestions";
+const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
+    "Elides the path, query, and ref of suggested URLs in the omnibox "
+    "dropdown.";
+
+const char kOmniboxUIHideSuggestionUrlSchemeName[] =
+    "Hide scheme in omnibox suggestions";
+const char kOmniboxUIHideSuggestionUrlSchemeDescription[] =
+    "Elides the schemes of suggested URLs in the omnibox dropdown.";
+
+const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[] =
+    "Hide trivial subdomains in omnibox suggestions";
+const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[] =
+    "Elides trivially informative subdomains (www, m) from suggested URLs in "
+    "the omnibox dropdown.";
+
 }  // namespace flag_descriptions

@@ -57,6 +57,21 @@ extern const char kCaptivePortalDescription[];
 extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
 
+// Title and description for the flag to enable elision of the URL path, query,
+// and ref in omnibox URL suggestions.
+extern const char kOmniboxUIElideSuggestionUrlAfterHostName[];
+extern const char kOmniboxUIElideSuggestionUrlAfterHostDescription[];
+
+// Title and description for the flag to enable hiding the URL scheme in
+// omnibox URL suggestions.
+extern const char kOmniboxUIHideSuggestionUrlSchemeName[];
+extern const char kOmniboxUIHideSuggestionUrlSchemeDescription[];
+
+// Title and description for the flag to enable hiding trivial subdomains
+// (www, m) in omnibox URL suggestions.
+extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[];
+extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[];
+
 }  // namespace flag_descriptions
 
 #endif  // IOS_CHROME_BROWSER_IOS_CHROME_FLAG_DESCRIPTIONS_H_

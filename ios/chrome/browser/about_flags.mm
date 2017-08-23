@@ -28,6 +28,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/ntp_tiles/switches.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/payments/core/features.h"
 #include "components/search_provider_logos/features.h"
 #include "components/security_state/core/switches.h"
@@ -155,7 +156,23 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(
          search_provider_logos::features::kUseDdljsonApi,
          kUseDdljsonApiVariations,
-         "NTPUseDdljsonApi")}};
+         "NTPUseDdljsonApi")},
+    {"omnibox-ui-elide-suggestion-url-after-host",
+     flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostName,
+     flag_descriptions::kOmniboxUIElideSuggestionUrlAfterHostDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentElideSuggestionUrlAfterHost)},
+    {"omnibox-ui-hide-suggestion-url-scheme",
+     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeName,
+     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentHideSuggestionUrlScheme)},
+    {"omnibox-ui-hide-suggestion-url-trivial-subdomains",
+     flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsName,
+     flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)}};
 
 // Add all switches from experimental flags to |command_line|.
 void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
