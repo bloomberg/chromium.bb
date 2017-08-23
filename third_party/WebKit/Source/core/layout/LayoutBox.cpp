@@ -1530,26 +1530,27 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     return true;
   }
 
-  // TODO(pdr): We should also check for css clip in the !isSelfPaintingLayer
-  //            case, similar to overflow clip below.
   bool skip_children = false;
-  if (ShouldClipOverflow() && !HasSelfPaintingLayer()) {
-    if (!location_in_container.Intersects(OverflowClipRect(
+  if (ShouldClipOverflow()) {
+    // PaintLayer::HitTestContentsForFragments checked the fragments'
+    // foreground rect for intersection if a layer is self painting,
+    // so only do the overflow clip check here for non-self-painting layers.
+    if (!HasSelfPaintingLayer() &&
+        !location_in_container.Intersects(OverflowClipRect(
             adjusted_location, kIgnorePlatformOverlayScrollbarSize))) {
       skip_children = true;
-    } else if (Style()->HasBorderRadius()) {
+    }
+    if (!skip_children && Style()->HasBorderRadius()) {
       LayoutRect bounds_rect(adjusted_location, Size());
       skip_children = !location_in_container.Intersects(
           Style()->GetRoundedInnerBorderFor(bounds_rect));
     }
   }
 
-  // TODO(pdr): We should also include checks for hit testing border radius at
-  //            the layer level (see: crbug.com/568904).
-
-  if (!skip_children &&
-      HitTestChildren(result, location_in_container, adjusted_location, action))
+  if (!skip_children && HitTestChildren(result, location_in_container,
+                                        adjusted_location, action)) {
     return true;
+  }
 
   if (Style()->HasBorderRadius() &&
       HitTestClippedOutByBorder(location_in_container, adjusted_location))
