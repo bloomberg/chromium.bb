@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/audio_player.h"
+#include "remoting/client/audio/audio_player.h"
 
 #include <algorithm>
 #include <string>
@@ -16,6 +16,7 @@ const int kMaxQueueLatencyMs = 150;
 
 namespace remoting {
 
+// TODO(nicholss): Update legacy audio player to use new audio buffer code.
 AudioPlayer::AudioPlayer()
     : sampling_rate_(AudioPacket::SAMPLING_RATE_INVALID),
       start_failed_(false),
@@ -62,9 +63,9 @@ void AudioPlayer::ProcessAudioPacket(std::unique_ptr<AudioPacket> packet,
   queued_bytes_ += packet->data(0).size();
   queued_packets_.push_back(std::move(packet));
 
-  int max_buffer_size_ =
-      kMaxQueueLatencyMs * sampling_rate_ * kSampleSizeBytes * kChannels /
-      base::Time::kMillisecondsPerSecond;
+  int max_buffer_size_ = kMaxQueueLatencyMs * sampling_rate_ *
+                         kSampleSizeBytes * kChannels /
+                         base::Time::kMillisecondsPerSecond;
   while (queued_bytes_ > max_buffer_size_) {
     queued_bytes_ -= queued_packets_.front()->data(0).size() - bytes_consumed_;
     DCHECK_GE(queued_bytes_, 0);
@@ -91,8 +92,8 @@ void AudioPlayer::ResetQueue() {
 void AudioPlayer::FillWithSamples(void* samples, uint32_t buffer_size) {
   base::AutoLock auto_lock(lock_);
 
-  const size_t bytes_needed = kChannels * kSampleSizeBytes *
-      GetSamplesPerFrame();
+  const size_t bytes_needed =
+      kChannels * kSampleSizeBytes * GetSamplesPerFrame();
 
   // Make sure we don't overrun the buffer.
   CHECK_EQ(buffer_size, bytes_needed);
@@ -115,9 +116,8 @@ void AudioPlayer::FillWithSamples(void* samples, uint32_t buffer_size) {
     }
 
     const std::string& packet_data = queued_packets_.front()->data(0);
-    size_t bytes_to_copy = std::min(
-        packet_data.size() - bytes_consumed_,
-        bytes_needed - bytes_extracted);
+    size_t bytes_to_copy = std::min(packet_data.size() - bytes_consumed_,
+                                    bytes_needed - bytes_extracted);
     memcpy(next_sample, packet_data.data() + bytes_consumed_, bytes_to_copy);
 
     next_sample += bytes_to_copy;

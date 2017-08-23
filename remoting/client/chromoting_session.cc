@@ -17,7 +17,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
 #include "remoting/base/chromoting_event.h"
-#include "remoting/client/audio_player.h"
+#include "remoting/client/audio/audio_player.h"
 #include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/client_telemetry_logger.h"
 #include "remoting/client/input/native_device_keymap.h"

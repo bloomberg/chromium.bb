@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/audio_player_android.h"
+#include "remoting/client/audio/audio_player_android.h"
 
 #include "base/logging.h"
+#include "build/build_config.h"
 
 namespace remoting {
 
@@ -14,6 +15,8 @@ const int kNumOfBuffers = 1;
 static_assert(AudioPlayer::kChannels == 2,
               "AudioPlayer must be feeding 2 channels data.");
 const int kChannelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
+
+// TODO(nicholss): Update legacy audio player to use new audio buffer code.
 
 AudioPlayerAndroid::AudioPlayerAndroid() : weak_factory_(this) {
   if (slCreateEngine(&engine_object_, 0, nullptr, 0, nullptr, nullptr) !=
