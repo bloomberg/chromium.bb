@@ -176,7 +176,7 @@ class SerialIoHandler : public base::RefCountedThreadSafe<SerialIoHandler> {
 
   bool read_canceled() const { return read_canceled_; }
 
-  const char* pending_write_buffer() const {
+  const uint8_t* pending_write_buffer() const {
     return pending_write_buffer_ ? pending_write_buffer_->GetData() : NULL;
   }
 

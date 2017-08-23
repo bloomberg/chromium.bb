@@ -88,13 +88,12 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
   void Write(const std::vector<uint8_t>& data,
              WriteCallback callback) override {
     test_io_handler_->Write(base::MakeUnique<device::SendBuffer>(
-        std::vector<char>(data.data(), data.data() + data.size()),
-        base::BindOnce(
-            [](WriteCallback callback, int bytes_sent,
-               device::mojom::SerialSendError error) {
-              std::move(callback).Run(bytes_sent, error);
-            },
-            std::move(callback))));
+        data, base::BindOnce(
+                  [](WriteCallback callback, int bytes_sent,
+                     device::mojom::SerialSendError error) {
+                    std::move(callback).Run(bytes_sent, error);
+                  },
+                  std::move(callback))));
   }
   void CancelRead(device::mojom::SerialReceiveError reason) override {
     test_io_handler_->CancelRead(reason);
