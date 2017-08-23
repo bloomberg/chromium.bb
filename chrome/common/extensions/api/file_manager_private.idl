@@ -839,6 +839,11 @@ interface Functions {
   // |volumeId| ID of the volume to be formatted.
   static void formatVolume(DOMString volumeId);
 
+  // Renames a mounted volume.
+  // |volumeId| ID of the volume to be renamed.
+  // |newName| New name of the target volume.
+  static void renameVolume(DOMString volumeId, DOMString newName);
+
   // Retrieves file manager preferences.
   // |callback|
   static void getPreferences(GetPreferencesCallback callback);

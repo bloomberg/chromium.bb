@@ -101,6 +101,9 @@ VolumeInfo.prototype.watchable;
 /**  @type {VolumeManagerCommon.Source} */
 VolumeInfo.prototype.source;
 
+/**  @type {VolumeManagerCommon.FileSystemType} */
+VolumeInfo.prototype.diskFileSystemType;
+
 /**
  * Starts resolving the display root and obtains it.  It may take long time for
  * Drive. Once resolved, it is cached.

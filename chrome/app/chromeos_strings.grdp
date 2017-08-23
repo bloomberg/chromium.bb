@@ -226,6 +226,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_ERROR_INVALID_CHARACTER" desc="Error message displayed when the user enters an invalid character in a file or directory name.">
     Invalid character: $1
   </message>
+  <message name="IDS_FILE_BROWSER_ERROR_EXTERNAL_DRIVE_INVALID_CHARACTER" desc="Error message displayed when the user enters an invalid character in an external drive's name.">
+    Invalid character: $1
+  </message>
   <message name="IDS_FILE_BROWSER_ERROR_RESERVED_NAME" desc="Error message displayed when the user enters a file name which is reserved.">
     This name may not be used as a file of folder name
   </message>
@@ -237,6 +240,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_FILE_BROWSER_ERROR_LONG_NAME" desc="Error message displayed when user trys to enter too long name for a file or a folder.">
     This name is too long
+  </message>
+  <message name="IDS_FILE_BROWSER_ERROR_EXTERNAL_DRIVE_LONG_NAME" desc="Error message displayed when user trys to enter too long name for an external drive.">
+    This name is too long and exceeds $1 character length limit.
   </message>
   <message name="IDS_FILE_BROWSER_EMPTY_FOLDER" desc="Label shown in an empty folder.">
     Nothing to see here...

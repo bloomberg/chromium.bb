@@ -20,6 +20,34 @@ var AllowedPaths = {
 };
 
 /**
+ * Type of a file system.
+ * @enum {string}
+ * @const
+ */
+VolumeManagerCommon.FileSystemType = {
+  UNKNOWN: '',
+  VFAT: 'vfat',
+  EXFAT: 'exfat',
+  NTFS: 'ntfs',
+  HFSPLUS: 'hfsplus',
+  EXT2: 'ext2',
+  EXT3: 'ext3',
+  EXT4: 'ext4',
+  ISO9660: 'iso9660',
+  UDF: 'udf',
+};
+
+/**
+ * Volume name length limits by file system type
+ * @enum {number}
+ * @const
+ */
+VolumeManagerCommon.FileSystemTypeVolumeNameLengthLimit = {
+  VFAT: 11,
+  EXFAT: 15,
+};
+
+/**
  * Type of a root directory.
  * @enum {string}
  * @const

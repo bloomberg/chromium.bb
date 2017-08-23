@@ -363,7 +363,30 @@ var CommandHandler = function(fileManager, selectionHandler) {
   selectionHandler.addEventListener(
       FileSelectionHandler.EventType.CHANGE_THROTTLED,
       this.updateAvailability.bind(this));
+
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-external-drive-rename', function(enabled) {
+        CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_ = enabled;
+      }.bind(this));
 };
+
+/**
+ * Supported disk file system types for renaming.
+ * @type {boolean}
+ * @private
+ */
+CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_ = false;
+
+/**
+ * Supported disk file system types for renaming.
+ * @type {!Array<!VolumeManagerCommon.FileSystemType>}
+ * @const
+ * @private
+ */
+CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_ = [
+  VolumeManagerCommon.FileSystemType.EXFAT,
+  VolumeManagerCommon.FileSystemType.VFAT
+];
 
 /**
  * Updates the availability of all commands.
@@ -581,7 +604,8 @@ CommandHandler.COMMANDS_['new-folder'] = (function() {
               directoryTree.updateAndSelectNewDirectory(
                   targetDirectory, newDirectory);
               fileManager.directoryTreeNamingController.attachAndStart(
-                  assert(fileManager.ui.directoryTree.selectedItem));
+                  assert(fileManager.ui.directoryTree.selectedItem), false,
+                  null);
             } else {
               directoryModel.updateAndSelectNewDirectory(
                   newDirectory).then(function() {
@@ -924,14 +948,31 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    if (event.target instanceof DirectoryTree) {
-      var directoryTree = event.target;
-      assert(fileManager.directoryTreeNamingController)
-          .attachAndStart(assert(directoryTree.selectedItem));
-    } else if (event.target instanceof DirectoryItem) {
-      var directoryItem = event.target;
-      assert(fileManager.directoryTreeNamingController)
-          .attachAndStart(directoryItem);
+    if (event.target instanceof DirectoryTree ||
+        event.target instanceof DirectoryItem) {
+      var isRemovableRoot = false;
+      var entry = CommandUtil.getCommandEntry(event.target);
+      if (entry) {
+        var volumeInfo = fileManager.volumeManager.getVolumeInfo(entry);
+        // Checks whether the target is actually external drive or just a folder
+        // inside the drive.
+        if (volumeInfo &&
+            CommandUtil.isRootEntry(fileManager.volumeManager, entry)) {
+          isRemovableRoot = true;
+        }
+      }
+
+      if (event.target instanceof DirectoryTree) {
+        var directoryTree = event.target;
+        assert(fileManager.directoryTreeNamingController)
+            .attachAndStart(
+                assert(directoryTree.selectedItem), isRemovableRoot,
+                volumeInfo);
+      } else if (event.target instanceof DirectoryItem) {
+        var directoryItem = event.target;
+        assert(fileManager.directoryTreeNamingController)
+            .attachAndStart(directoryItem, isRemovableRoot, volumeInfo);
+      }
     } else {
       fileManager.namingController.initiateRename();
     }
@@ -941,6 +982,29 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   canExecute: function(event, fileManager) {
+    // TODO(klemenko): Remove flag below when 274041 gets implemented.
+    if (CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_) {
+      // Check if it is removable drive
+      var root = CommandUtil.getCommandEntry(event.target);
+      // |root| is null for unrecognized volumes. Do not enable rename command
+      // for such volumes because they need to be formatted prior to rename.
+      if (root != null) {
+        var location = root && fileManager.volumeManager.getLocationInfo(root);
+        var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
+        var writable = location && !location.isReadOnly;
+        var removable = writable &&
+            location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
+        var canExecute = removable && writable && volumeInfo &&
+            CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_.indexOf(
+                volumeInfo.diskFileSystemType) > -1;
+        event.canExecute = canExecute;
+        event.command.setHidden(!removable);
+        if (removable)
+          return;
+      }
+    }
+
+    // Check if it is file or folder
     var renameTarget = CommandUtil.isFromSelectionMenu(event) ?
         fileManager.ui.listContainer.currentList :
         event.target;
