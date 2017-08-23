@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -17,6 +18,7 @@
 #include "base/time/time.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
+#include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -125,6 +127,9 @@ class PageHandler : public DevToolsDomainHandler,
 
   Response BringToFront() override;
 
+  Response SetDownloadBehavior(const std::string& behavior,
+                               Maybe<std::string> download_path) override;
+
  private:
   enum EncodingFormat { PNG, JPEG };
 
@@ -172,6 +177,7 @@ class PageHandler : public DevToolsDomainHandler,
   std::unique_ptr<Page::Frontend> frontend_;
   NotificationRegistrar registrar_;
   JavaScriptDialogCallback pending_dialog_;
+  scoped_refptr<DevToolsDownloadManagerDelegate> download_manager_delegate_;
   base::WeakPtrFactory<PageHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PageHandler);
