@@ -117,23 +117,25 @@ bool HttpStreamFactoryImpl::JobController::for_websockets() {
   return factory_->for_websockets_;
 }
 
-void HttpStreamFactoryImpl::JobController::Start(
+std::unique_ptr<HttpStreamFactoryImpl::Request>
+HttpStreamFactoryImpl::JobController::Start(
     HttpStreamRequest::Delegate* delegate,
     WebSocketHandshakeStreamBase::CreateHelper*
         websocket_handshake_stream_create_helper,
     const NetLogWithSource& source_net_log,
     HttpStreamRequest::StreamType stream_type,
-    RequestPriority priority,
-    HttpStreamFactoryImpl::Request* request) {
+    RequestPriority priority) {
   DCHECK(factory_);
   DCHECK(!request_);
 
   stream_type_ = stream_type;
   priority_ = priority;
 
-  // Keep a raw pointer of Request.
-  // TODO(xunjieli): This is likely unnecessary. Clean it up. crbug.com/475060.
-  request_ = request;
+  auto request = base::MakeUnique<Request>(
+      request_info_.url, this, delegate,
+      websocket_handshake_stream_create_helper, source_net_log, stream_type);
+  // Keep a raw pointer but release ownership of Request instance.
+  request_ = request.get();
 
   // Associates |net_log_| with |source_net_log|.
   source_net_log.AddEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_BOUND,
@@ -142,6 +144,7 @@ void HttpStreamFactoryImpl::JobController::Start(
                     source_net_log.source().ToEventParametersCallback());
 
   RunLoop(OK);
+  return request;
 }
 
 void HttpStreamFactoryImpl::JobController::Preconnect(int num_streams) {
@@ -174,6 +177,14 @@ void HttpStreamFactoryImpl::JobController::OnRequestComplete() {
   DCHECK(request_);
 
   RemoveRequestFromSpdySessionRequestMap();
+  CancelJobs();
+  request_ = nullptr;
+  if (bound_job_) {
+    alternative_job_.reset();
+    main_job_.reset();
+    bound_job_ = nullptr;
+  }
+  MaybeNotifyFactoryOfCompletion();
 }
 
 int HttpStreamFactoryImpl::JobController::RestartTunnelWithProxyAuth() {
@@ -514,18 +525,13 @@ void HttpStreamFactoryImpl::JobController::OnNewSpdySessionReady(
 
 void HttpStreamFactoryImpl::JobController::OnPreconnectsComplete(Job* job) {
   DCHECK_EQ(main_job_.get(), job);
-  DCHECK(is_preconnect_);
-
   main_job_.reset();
-  // TODO(xunjieli): Simplify this. crbug.com/475060.
   factory_->OnPreconnectsCompleteInternal();
-  factory_->OnPreconnectsComplete(this);
+  MaybeNotifyFactoryOfCompletion();
 }
 
 void HttpStreamFactoryImpl::JobController::OnOrphanedJobComplete(
     const Job* job) {
-  // TODO(xunjieli): This is now dead code. Clean it up. crbug.com/475060.
-  CHECK(false);
   if (job->job_type() == MAIN) {
     DCHECK_EQ(main_job_.get(), job);
     main_job_.reset();
@@ -533,6 +539,8 @@ void HttpStreamFactoryImpl::JobController::OnOrphanedJobComplete(
     DCHECK_EQ(alternative_job_.get(), job);
     alternative_job_.reset();
   }
+
+  MaybeNotifyFactoryOfCompletion();
 }
 
 void HttpStreamFactoryImpl::JobController::AddConnectionAttemptsToRequest(
@@ -1018,6 +1026,13 @@ void HttpStreamFactoryImpl::JobController::ReportBrokenAlternativeService() {
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_ALT);
   session_->http_server_properties()->MarkAlternativeServiceBroken(
       alternative_service_info_.alternative_service());
+}
+
+void HttpStreamFactoryImpl::JobController::MaybeNotifyFactoryOfCompletion() {
+  if (!request_ && !main_job_ && !alternative_job_) {
+    DCHECK(!bound_job_);
+    factory_->OnJobControllerComplete(this);
+  }
 }
 
 void HttpStreamFactoryImpl::JobController::NotifyRequestFailed(int rv) {

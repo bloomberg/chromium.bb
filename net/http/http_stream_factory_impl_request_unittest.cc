@@ -48,11 +48,12 @@ TEST_F(HttpStreamFactoryImplRequestTest, SetPriority) {
       /* enable_alternative_services = */ true, SSLConfig(), SSLConfig());
   HttpStreamFactoryImpl::JobController* job_controller_raw_ptr =
       job_controller.get();
-  auto request = base::MakeUnique<HttpStreamFactoryImpl::Request>(
-      request_info.url, &request_delegate, nullptr, NetLogWithSource(),
-      std::move(job_controller), HttpStreamRequest::HTTP_STREAM,
-      DEFAULT_PRIORITY);
-  request->Start();
+  factory->job_controller_set_.insert(std::move(job_controller));
+
+  std::unique_ptr<HttpStreamFactoryImpl::Request> request(
+      job_controller_raw_ptr->Start(
+          &request_delegate, nullptr, NetLogWithSource(),
+          HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY));
   EXPECT_TRUE(job_controller_raw_ptr->main_job());
   EXPECT_EQ(DEFAULT_PRIORITY, job_controller_raw_ptr->main_job()->priority());
 
