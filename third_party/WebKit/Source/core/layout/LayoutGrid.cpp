@@ -2410,4 +2410,9 @@ size_t LayoutGrid::NumTracks(GridTrackSizingDirection direction,
                    StyleRef(), grid.AutoRepeatTracks(kForColumns));
 }
 
+LayoutUnit LayoutGrid::GridItemOffset(
+    GridTrackSizingDirection direction) const {
+  return direction == kForRows ? offset_between_rows_ : offset_between_columns_;
+}
+
 }  // namespace blink
