@@ -24,7 +24,6 @@ DIR_SOURCE_ROOT = os.path.abspath(
 sys.path.append(os.path.join(DIR_SOURCE_ROOT, 'build', 'util', 'lib', 'common'))
 import chrome_test_server_spawner
 
-TEST_SERVER_SPAWNER_PORT = 5000
 
 def IsLocalPortAvailable(port):
   s = socket.socket()
@@ -155,7 +154,7 @@ def main():
   # Start test server spawner for tests that need it.
   if args.enable_test_server:
     spawning_server = chrome_test_server_spawner.SpawningServer(
-          TEST_SERVER_SPAWNER_PORT, PortForwarderNoop())
+        0, PortForwarderNoop())
     spawning_server.Start()
 
     # Generate test server config.
@@ -164,7 +163,7 @@ def main():
       'name': 'testserver',
       'address': HOST_IP_ADDRESS,
       'spawner_url_base': 'http://%s:%d' %
-          (HOST_IP_ADDRESS, TEST_SERVER_SPAWNER_PORT)
+          (HOST_IP_ADDRESS, spawning_server.server_port)
     }))
     config_file.flush()
     runtime_deps.append(('net-test-server-config', config_file.name))
