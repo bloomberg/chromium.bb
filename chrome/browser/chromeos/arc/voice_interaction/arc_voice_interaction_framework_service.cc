@@ -182,8 +182,9 @@ class ArcVoiceInteractionFrameworkServiceFactory
   }
 };
 
-void SetVoiceInteractionPrefs(mojom::VoiceInteractionStatusPtr status) {
-  PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
+void SetVoiceInteractionPrefs(content::BrowserContext* context,
+                              mojom::VoiceInteractionStatusPtr status) {
+  PrefService* prefs = Profile::FromBrowserContext(context)->GetPrefs();
   prefs->SetBoolean(prefs::kVoiceInteractionPrefSynced, status->configured);
   prefs->SetBoolean(prefs::kVoiceInteractionEnabled,
                     status->configured && status->voice_interaction_enabled);
@@ -294,6 +295,16 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionRunning(
 void ArcVoiceInteractionFrameworkService::SetVoiceInteractionState(
     ash::VoiceInteractionState state) {
   DCHECK_NE(state_, state);
+  // Assume voice interaction state changing from NOT_READY to a state other
+  // than ready indicates container boot complete and it's safe to synchronize
+  // voice interaction flags. VoiceInteractionEnabled is locked at true in
+  // Android side so we don't need to synchronize it here.
+  if (state_ == ash::VoiceInteractionState::NOT_READY) {
+    PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
+    SetVoiceInteractionContextEnabled(
+        prefs->GetBoolean(prefs::kArcVoiceInteractionValuePropAccepted) &&
+        prefs->GetBoolean(prefs::kVoiceInteractionContextEnabled));
+  }
   state_ = state;
   ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(state);
 }
@@ -345,7 +356,7 @@ void ArcVoiceInteractionFrameworkService::OnArcPlayStoreEnabledChanged(
   status->configured = false;
   status->voice_interaction_enabled = false;
   status->context_enabled = false;
-  SetVoiceInteractionPrefs(std::move(status));
+  SetVoiceInteractionPrefs(context_, std::move(status));
 }
 
 void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
@@ -358,7 +369,7 @@ void ArcVoiceInteractionFrameworkService::OnSessionStateChanged() {
 
   // TODO(crbug.com/757012): Avoid using ash::Shell here so that it can work in
   // mash.
-  bool enabled = ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+  bool enabled = Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
       prefs::kVoiceInteractionEnabled);
   ash::Shell::Get()->NotifyVoiceInteractionEnabled(enabled);
 
@@ -402,18 +413,20 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionEnabled(
 
   ash::Shell::Get()->NotifyVoiceInteractionEnabled(enable);
 
-  mojom::VoiceInteractionFrameworkInstance* framework_instance =
-      ARC_GET_INSTANCE_FOR_METHOD(
-          arc_bridge_service_->voice_interaction_framework(),
-          SetVoiceInteractionEnabled);
-  if (!framework_instance)
-    return;
-  framework_instance->SetVoiceInteractionEnabled(enable);
+  PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
+
+  // We assume voice interaction is always enabled on in ARC, but we guard
+  // all possible entry points on CrOS side with this flag. In this case,
+  // we only need to set CrOS side flag.
+  prefs->SetBoolean(prefs::kVoiceInteractionEnabled, enable);
 }
 
 void ArcVoiceInteractionFrameworkService::SetVoiceInteractionContextEnabled(
     bool enable) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  PrefService* prefs = Profile::FromBrowserContext(context_)->GetPrefs();
+  prefs->SetBoolean(prefs::kVoiceInteractionContextEnabled, enable);
 
   mojom::VoiceInteractionFrameworkInstance* framework_instance =
       ARC_GET_INSTANCE_FOR_METHOD(
@@ -425,7 +438,7 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionContextEnabled(
 }
 
 void ArcVoiceInteractionFrameworkService::UpdateVoiceInteractionPrefs() {
-  if (ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+  if (Profile::FromBrowserContext(context_)->GetPrefs()->GetBoolean(
           prefs::kVoiceInteractionPrefSynced)) {
     return;
   }
@@ -436,7 +449,7 @@ void ArcVoiceInteractionFrameworkService::UpdateVoiceInteractionPrefs() {
   if (!framework_instance)
     return;
   framework_instance->GetVoiceInteractionSettings(
-      base::Bind(&SetVoiceInteractionPrefs));
+      base::Bind(&SetVoiceInteractionPrefs, context_));
 }
 
 void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
