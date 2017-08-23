@@ -286,8 +286,6 @@ component("platform") {
     "DragImage.h",
     "EventDispatchForbiddenScope.cpp",
     "EventDispatchForbiddenScope.h",
-    "FileChooser.cpp",
-    "FileChooser.h",
     "FileMetadata.cpp",
     "FileMetadata.h",
     "FileSystemType.h",

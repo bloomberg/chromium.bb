@@ -25,7 +25,7 @@
 #include "core/html/HTMLFormControlElementWithState.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "platform/FileChooser.h"
+#include "core/html/forms/FileChooser.h"
 #include "platform/wtf/Deque.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
 #include "platform/wtf/PtrUtil.h"

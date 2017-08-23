@@ -31,7 +31,6 @@
 #define FileChooser_h
 
 #include "platform/FileMetadata.h"
-#include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
@@ -74,10 +73,10 @@ struct FileChooserSettings {
   CaptureFacingMode capture;
 
   // Returns a combined vector of acceptMIMETypes and acceptFileExtensions.
-  Vector<String> PLATFORM_EXPORT AcceptTypes() const;
+  Vector<String> AcceptTypes() const;
 };
 
-class PLATFORM_EXPORT FileChooserClient : public GarbageCollectedMixin {
+class FileChooserClient : public GarbageCollectedMixin {
  public:
   virtual void FilesChosen(const Vector<FileChooserFileInfo>&) = 0;
   virtual ~FileChooserClient();
@@ -89,7 +88,7 @@ class PLATFORM_EXPORT FileChooserClient : public GarbageCollectedMixin {
   RefPtr<FileChooser> chooser_;
 };
 
-class PLATFORM_EXPORT FileChooser : public RefCounted<FileChooser> {
+class FileChooser : public RefCounted<FileChooser> {
  public:
   static PassRefPtr<FileChooser> Create(FileChooserClient*,
                                         const FileChooserSettings&);

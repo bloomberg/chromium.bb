@@ -26,12 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/FileChooser.h"
+#include "core/html/forms/FileChooser.h"
 
 namespace blink {
 
-FileChooserClient::~FileChooserClient() {
-}
+FileChooserClient::~FileChooserClient() {}
 
 FileChooser* FileChooserClient::NewFileChooser(
     const FileChooserSettings& settings) {
