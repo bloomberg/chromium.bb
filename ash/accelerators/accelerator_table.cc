@@ -128,7 +128,7 @@ const AcceleratorData kAcceleratorData[] = {
      SHOW_KEYBOARD_OVERLAY},
     {true, ui::VKEY_F14, ui::EF_NONE, SHOW_KEYBOARD_OVERLAY},
     {true, ui::VKEY_N, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
-     SHOW_MESSAGE_CENTER_BUBBLE},
+     TOGGLE_MESSAGE_CENTER_BUBBLE},
     {true, ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN, SHOW_STYLUS_TOOLS},
     {true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
      TOGGLE_SYSTEM_TRAY_BUBBLE},

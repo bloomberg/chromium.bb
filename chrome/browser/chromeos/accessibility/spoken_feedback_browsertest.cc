@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest,
                        DISABLED_NavigateNotificationCenter) {
   EnableChromeVox();
 
-  EXPECT_TRUE(PerformAcceleratorAction(ash::SHOW_MESSAGE_CENTER_BUBBLE));
+  EXPECT_TRUE(PerformAcceleratorAction(ash::TOGGLE_MESSAGE_CENTER_BUBBLE));
 
   // Tab to request the initial focus.
   SendKeyPress(ui::VKEY_TAB);
