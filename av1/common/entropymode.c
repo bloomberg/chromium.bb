@@ -1369,7 +1369,7 @@ static const aom_prob default_comp_ref_p[REF_CONTEXTS][FWD_REFS - 1] = {
 
 static const aom_prob default_comp_bwdref_p[REF_CONTEXTS][BWD_REFS - 1] = {
 #if CONFIG_ALTREF2
-  // TODO(zoeliu): ALTREF2 to work with EXT_COMP_REFS and NEW_MULTISYMBOL.
+  // TODO(zoeliu): ALTREF2 to work with NEW_MULTISYMBOL.
   { 50, 50 },
   { 130, 130 },
   { 210, 210 },
@@ -1460,7 +1460,7 @@ static const aom_cdf_prob
 static const aom_prob default_single_ref_p[REF_CONTEXTS][SINGLE_REFS - 1] = {
 #if CONFIG_EXT_REFS
 #if CONFIG_ALTREF2
-  // TODO(zoeliu): ALTREF2 to work with EXT_COMP_REFS and NEW_MULTISYMBOL.
+  // TODO(zoeliu): ALTREF2 to work with NEW_MULTISYMBOL.
   { 33, 50, 16, 16, 16, 50 },
   { 77, 130, 74, 74, 74, 130 },
   { 142, 210, 142, 142, 142, 210 },
@@ -1543,7 +1543,7 @@ static const aom_cdf_prob
         { AOM_ICDF(246 * 128), AOM_ICDF(32768), 0 },
         { AOM_ICDF(200 * 128), AOM_ICDF(32768), 0 } }
 #endif  // !CONFIG_EXT_COMP_REFS
-#else   // CONFIG_EXT_REFS
+#else   // !CONFIG_EXT_REFS
       { { AOM_ICDF(31 * 128), AOM_ICDF(32768), 0 },
         { AOM_ICDF(25 * 128), AOM_ICDF(32768), 0 } },
       { { AOM_ICDF(72 * 128), AOM_ICDF(32768), 0 },
