@@ -123,6 +123,40 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
         self.setUIState(ui_state);
       });
       $('error-navigation').addEventListener('close', this.cancel.bind(this));
+      $('error-message-back-button')
+          .addEventListener('tap', this.cancel.bind(this));
+
+      $('error-message-md-reboot-button').addEventListener('tap', function(e) {
+        self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_REBOOT);
+        e.stopPropagation();
+      });
+      $('error-message-md-diagnose-button')
+          .addEventListener('tap', function(e) {
+            self.send(login.Screen.CALLBACK_USER_ACTED, USER_ACTION_DIAGNOSE);
+            e.stopPropagation();
+          });
+      $('error-message-md-configure-certs-button')
+          .addEventListener('tap', function(e) {
+            self.send(
+                login.Screen.CALLBACK_USER_ACTED, USER_ACTION_CONFIGURE_CERTS);
+            e.stopPropagation();
+          });
+      $('error-message-md-continue-button')
+          .addEventListener('tap', function(e) {
+            chrome.send('continueAppLaunch');
+            e.stopPropagation();
+          });
+      $('error-message-md-ok-button').addEventListener('tap', function(e) {
+        chrome.send('cancelOnReset');
+        e.stopPropagation();
+      });
+      $('error-message-md-powerwash-button')
+          .addEventListener('tap', function(e) {
+            self.send(
+                login.Screen.CALLBACK_USER_ACTED,
+                USER_ACTION_LOCAL_STATE_POWERWASH);
+            e.stopPropagation();
+          });
     },
 
     /**
@@ -214,6 +248,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       $('connecting-indicator').innerHTML =
           loadTimeData.getStringF('connectingIndicatorText', ellipsis);
 
+      this.updateMdMode_();
       this.onContentChange_();
     },
 
@@ -361,8 +396,19 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      * @private
      */
     onContentChange_: function() {
-      if (Oobe.getInstance().currentScreen === this)
+      if (Oobe.getInstance().currentScreen === this) {
         Oobe.getInstance().updateScreenSize(this);
+        if (window.getComputedStyle($('offline-networks-list-dropdown-label2'))
+                .display == 'none') {
+          $('offline-networks-list-dropdown')
+              .setAttribute(
+                  'aria-labelledby', 'offline-networks-list-dropdown-label1');
+        } else {
+          $('offline-networks-list-dropdown')
+              .setAttribute(
+                  'aria-labelledby', 'offline-networks-list-dropdown-label2');
+        }
+      }
     },
 
     /**
@@ -429,6 +475,20 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     cancel: function() {
       if (this.cancelable)
         Oobe.showUserPods();
-    }
+    },
+
+    /**
+     * Switches UI to MD mode.
+     */
+    updateMdMode_: function() {
+      if (loadTimeData.getString('errorScreenMDMode') === 'on') {
+        $('error-message-md-header').appendChild($('error-header-id'));
+        $('error-message-md-footer')
+            .insertBefore(
+                $('error-body-id'), $('error-message-md-footer-spacer'));
+        $('error-message-classic').hidden = true;
+        $('error-message-md').hidden = false;
+      }
+    },
   };
 });
