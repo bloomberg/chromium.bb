@@ -4,6 +4,7 @@
 
 module viz.mojom;
 
+import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -31,6 +32,9 @@ const uint32 kHitTestTouch = 0x20;
 struct HitTestRegion {
   // Flags to indicate the type of HitTestRegion.
   uint32 flags;
+
+  // FrameSinkId is required when flags = kHitTestMine.
+  cc.mojom.FrameSinkId frame_sink_id;
 
   // SurfaceId is required when flags = kHitTestChildSurface.
   cc.mojom.SurfaceId surface_id;

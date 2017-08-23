@@ -146,6 +146,8 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
         WindowPortMus::Get(expected_order_1[i])->frame_sink_id(),
         WindowMus::Get(expected_order_1[i])->GetLocalSurfaceId());
     EXPECT_EQ(region->surface_id, surface_id);
+    EXPECT_EQ(region->frame_sink_id,
+              WindowPortMus::Get(expected_order_1[i])->frame_sink_id());
     EXPECT_EQ(region->rect.ToString(),
               expected_order_1[i]->bounds().ToString());
     i++;
@@ -165,6 +167,8 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
         WindowPortMus::Get(expected_order_2[i])->frame_sink_id(),
         WindowMus::Get(expected_order_2[i])->GetLocalSurfaceId());
     EXPECT_EQ(region->surface_id, surface_id);
+    EXPECT_EQ(region->frame_sink_id,
+              WindowPortMus::Get(expected_order_2[i])->frame_sink_id());
     EXPECT_EQ(region->rect.ToString(),
               expected_order_2[i]->bounds().ToString());
     i++;
@@ -197,6 +201,8 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
         WindowPortMus::Get(expected_windows[i])->frame_sink_id(),
         WindowMus::Get(expected_windows[i])->GetLocalSurfaceId());
     EXPECT_EQ(region->surface_id, surface_id);
+    EXPECT_EQ(region->frame_sink_id,
+              WindowPortMus::Get(expected_windows[i])->frame_sink_id());
     EXPECT_EQ(region->flags, expected_flags[i]);
     gfx::Rect expected_bounds = expected_windows[i]->bounds();
     expected_bounds.Inset(gfx::Insets(expected_insets[i]));
@@ -237,6 +243,8 @@ TEST_F(HitTestDataProviderAuraTest, HoleTargeter) {
         WindowPortMus::Get(expected_windows[i])->frame_sink_id(),
         WindowMus::Get(expected_windows[i])->GetLocalSurfaceId());
     EXPECT_EQ(region->surface_id, surface_id);
+    EXPECT_EQ(region->frame_sink_id,
+              WindowPortMus::Get(expected_windows[i])->frame_sink_id());
     EXPECT_EQ(region->flags, expected_flags);
     EXPECT_EQ(region->rect.ToString(), expected_bounds[i].ToString());
     i++;
