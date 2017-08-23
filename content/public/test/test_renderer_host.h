@@ -80,10 +80,6 @@ class RenderFrameHostTester {
   // Gives tests access to RenderFrameHostImpl::OnDetach. Destroys |this|.
   virtual void Detach() = 0;
 
-  // Simulates a navigation to |url| committing in the RenderFrameHost.
-  // DEPRECATED: use NavigationSimulator instead.
-  virtual void SimulateNavigationCommit(const GURL& url) = 0;
-
   // Simulates a navigation stopping in the RenderFrameHost.
   virtual void SimulateNavigationStop() = 0;
 

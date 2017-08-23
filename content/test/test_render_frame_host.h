@@ -57,7 +57,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   void InitializeRenderFrameIfNeeded() override;
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
   void Detach() override;
-  void SimulateNavigationCommit(const GURL& url) override;
   void SimulateNavigationStop() override;
   void SendNavigate(int nav_entry_id,
                     bool did_create_new_entry,
@@ -112,6 +111,10 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   // RenderFrameHost.
   // DEPRECATED: use NavigationSimulator instead.
   void SimulateRedirect(const GURL& new_url);
+
+  // Simulates a navigation to |url| committing in the RenderFrameHost.
+  // DEPRECATED: use NavigationSimulator instead.
+  void SimulateNavigationCommit(const GURL& url);
 
   // PlzNavigate: this method simulates receiving a BeginNavigation IPC.
   void SendRendererInitiatedNavigationRequest(const GURL& url,
