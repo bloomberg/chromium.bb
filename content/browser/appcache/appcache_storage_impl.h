@@ -111,7 +111,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   void GetPendingForeignMarkingsForCache(int64_t cache_id,
                                          std::vector<GURL>* urls);
 
-  void ScheduleSimpleTask(const base::Closure& task);
+  void ScheduleSimpleTask(base::OnceClosure task);
   void RunOnePendingSimpleTask();
 
   void DelayedStartDeletingUnusedResponses();
@@ -191,7 +191,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
 
   // Used to short-circuit certain operations without having to schedule
   // any tasks on the background database thread.
-  std::deque<base::Closure> pending_simple_tasks_;
+  std::deque<base::OnceClosure> pending_simple_tasks_;
   base::WeakPtrFactory<AppCacheStorageImpl> weak_factory_;
 
   friend class content::AppCacheStorageImplTest;
