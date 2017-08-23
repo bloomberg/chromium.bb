@@ -12,19 +12,11 @@
 #include "components/sessions/core/session_id.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace content {
 class WebContents;
 }
 
 namespace predictors {
-
-namespace internal {
-
-bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask);
-
-}  // namespace internal
 
 extern const char kSpeculativeResourcePrefetchingFeatureName[];
 extern const char kModeParamName[];

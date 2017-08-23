@@ -22,6 +22,10 @@ namespace chrome_browser_net {
 class Predictor;
 }
 
+namespace predictors {
+class PreconnectManager;
+}
+
 namespace content_settings {
 class CookieSettings;
 }
@@ -115,6 +119,9 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   // The Predictor for the associated Profile. It is stored so that it can be
   // used on the IO thread.
   chrome_browser_net::Predictor* predictor_;
+  // The PreconnectManager for the associated Profile. It is stored so that it
+  // can be used on the IO thread.
+  predictors::PreconnectManager* preconnect_manager_;
 
   // Used to look up permissions at database creation time.
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;

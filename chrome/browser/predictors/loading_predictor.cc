@@ -95,6 +95,19 @@ ResourcePrefetchPredictor* LoadingPredictor::resource_prefetch_predictor() {
   return resource_prefetch_predictor_.get();
 }
 
+PreconnectManager* LoadingPredictor::preconnect_manager() {
+  if (shutdown_)
+    return nullptr;
+
+  if (!preconnect_manager_ &&
+      config_.IsPreconnectEnabledForSomeOrigin(profile_)) {
+    preconnect_manager_ = base::MakeUnique<PreconnectManager>(
+        GetWeakPtr(), profile_->GetRequestContext());
+  }
+
+  return preconnect_manager_.get();
+}
+
 void LoadingPredictor::Shutdown() {
   DCHECK(!shutdown_);
   resource_prefetch_predictor_->Shutdown();
@@ -282,19 +295,16 @@ void LoadingPredictor::MaybeAddPreconnect(
     const std::vector<GURL>& preconnect_origins,
     const std::vector<GURL>& preresolve_hosts,
     HintOrigin origin) {
-  if (!preconnect_manager_) {
-    preconnect_manager_ = base::MakeUnique<PreconnectManager>(
-        GetWeakPtr(), profile_->GetRequestContext());
-  }
-
+  DCHECK(!shutdown_);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&PreconnectManager::Start,
-                     base::Unretained(preconnect_manager_.get()), url,
+                     base::Unretained(preconnect_manager()), url,
                      preconnect_origins, preresolve_hosts));
 }
 
 void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
+  DCHECK(!shutdown_);
   if (!preconnect_manager_)
     return;
 

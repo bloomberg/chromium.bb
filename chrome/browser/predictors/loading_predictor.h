@@ -62,6 +62,7 @@ class LoadingPredictor : public KeyedService,
   // Don't use, internal only.
   ResourcePrefetchPredictor* resource_prefetch_predictor();
   LoadingDataCollector* loading_data_collector();
+  PreconnectManager* preconnect_manager();
 
   // KeyedService:
   void Shutdown() override;

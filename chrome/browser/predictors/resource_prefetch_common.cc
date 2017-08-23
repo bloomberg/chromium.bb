@@ -31,24 +31,6 @@ const base::Feature kSpeculativeResourcePrefetchingFeature{
     kSpeculativeResourcePrefetchingFeatureName,
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-namespace internal {
-
-bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if ((mode & mask) == 0)
-    return false;
-
-  if (!profile || !profile->GetPrefs() ||
-      chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs()) !=
-          chrome_browser_net::NetworkPredictionStatus::ENABLED) {
-    return false;
-  }
-
-  return true;
-}
-
-}  // namespace internal
-
 bool MaybeEnableResourcePrefetching(LoadingPredictorConfig* config) {
   if (!base::FeatureList::IsEnabled(kSpeculativeResourcePrefetchingFeature))
     return false;

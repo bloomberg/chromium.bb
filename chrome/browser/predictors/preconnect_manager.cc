@@ -13,7 +13,7 @@
 
 namespace predictors {
 
-const int kAllowCredentialsOnPreconnectByDefault = true;
+const bool kAllowCredentialsOnPreconnectByDefault = true;
 
 PreresolveInfo::PreresolveInfo(const GURL& in_url, size_t count)
     : url(in_url),
@@ -26,8 +26,12 @@ PreresolveInfo::~PreresolveInfo() = default;
 
 PreresolveJob::PreresolveJob(const GURL& in_url,
                              bool in_need_preconnect,
+                             bool in_allow_credentials,
                              PreresolveInfo* in_info)
-    : url(in_url), need_preconnect(in_need_preconnect), info(in_info) {}
+    : url(in_url),
+      need_preconnect(in_need_preconnect),
+      allow_credentials(in_allow_credentials),
+      info(in_info) {}
 
 PreresolveJob::PreresolveJob(const PreresolveJob& other) = default;
 PreresolveJob::~PreresolveJob() = default;
@@ -59,11 +63,41 @@ void PreconnectManager::Start(const GURL& url,
                url, preconnect_origins.size() + preresolve_hosts.size()));
   PreresolveInfo* info = iterator_and_whether_inserted.first->second.get();
 
-  for (const GURL& origin : preconnect_origins)
-    queued_jobs_.emplace_back(origin, true, info);
+  for (const GURL& origin : preconnect_origins) {
+    queued_jobs_.emplace_back(origin, true /* need_preconnect */,
+                              kAllowCredentialsOnPreconnectByDefault, info);
+  }
 
-  for (const GURL& host : preresolve_hosts)
-    queued_jobs_.emplace_back(host, false, info);
+  for (const GURL& host : preresolve_hosts) {
+    queued_jobs_.emplace_back(host, false /* need_preconnect */,
+                              kAllowCredentialsOnPreconnectByDefault, info);
+  }
+
+  TryToLaunchPreresolveJobs();
+}
+
+// It is called from an IPC message originating in the renderer. Thus these
+// requests have a higher priority than requests originated in the predictor.
+void PreconnectManager::StartPreresolveHosts(
+    const std::vector<std::string> hostnames) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  // Push jobs in front of the queue due to higher priority.
+  for (auto it = hostnames.rbegin(); it != hostnames.rend(); ++it) {
+    queued_jobs_.emplace_front(GURL("http://" + *it),
+                               false /* need_preconnect */,
+                               kAllowCredentialsOnPreconnectByDefault, nullptr);
+  }
+
+  TryToLaunchPreresolveJobs();
+}
+
+// It is called from an IPC message originating in the renderer. Thus these
+// requests have a higher priority than requests originated in the predictor.
+void PreconnectManager::StartPreconnectUrl(const GURL& url,
+                                           bool allow_credentials) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  queued_jobs_.emplace_front(url, true /* need_preconnect */, allow_credentials,
+                             nullptr);
 
   TryToLaunchPreresolveJobs();
 }
@@ -79,9 +113,10 @@ void PreconnectManager::Stop(const GURL& url) {
 }
 
 void PreconnectManager::PreconnectUrl(const GURL& url,
-                                      const GURL& site_for_cookies) const {
+                                      const GURL& site_for_cookies,
+                                      bool allow_credentials) const {
   content::PreconnectUrl(context_getter_.get(), url, site_for_cookies, 1,
-                         kAllowCredentialsOnPreconnectByDefault,
+                         allow_credentials,
                          net::HttpRequestInfo::PRECONNECT_MOTIVATED);
 }
 
@@ -99,13 +134,14 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
     auto& job = queued_jobs_.front();
     PreresolveInfo* info = job.info;
 
-    if (!info->was_canceled) {
+    if (!info || !info->was_canceled) {
       int status = PreresolveUrl(
           job.url, base::Bind(&PreconnectManager::OnPreresolveFinished,
                               weak_factory_.GetWeakPtr(), job));
       if (status == net::ERR_IO_PENDING) {
         // Will complete asynchronously.
-        ++info->inflight_count;
+        if (info)
+          ++info->inflight_count;
         ++inflight_preresolves_count_;
       } else {
         // Completed synchronously (was already cached by HostResolver), or else
@@ -116,8 +152,9 @@ void PreconnectManager::TryToLaunchPreresolveJobs() {
     }
 
     queued_jobs_.pop_front();
-    --info->queued_count;
-    if (info->is_done())
+    if (info)
+      --info->queued_count;
+    if (info && info->is_done())
       AllPreresolvesForUrlFinished(info);
   }
 }
@@ -126,21 +163,25 @@ void PreconnectManager::OnPreresolveFinished(const PreresolveJob& job,
                                              int result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   FinishPreresolve(job, result == net::OK);
+  PreresolveInfo* info = job.info;
   --inflight_preresolves_count_;
-  --job.info->inflight_count;
-  if (job.info->is_done())
-    AllPreresolvesForUrlFinished(job.info);
+  if (info)
+    --info->inflight_count;
+  if (info && job.info->is_done())
+    AllPreresolvesForUrlFinished(info);
   TryToLaunchPreresolveJobs();
 }
 
 void PreconnectManager::FinishPreresolve(const PreresolveJob& job, bool found) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (found && job.need_preconnect && !job.info->was_canceled) {
-    PreconnectUrl(job.url, job.info->url);
+  if (found && job.need_preconnect && (!job.info || !job.info->was_canceled)) {
+    PreconnectUrl(job.url, job.info ? job.info->url : GURL(),
+                  job.allow_credentials);
   }
 }
 
 void PreconnectManager::AllPreresolvesForUrlFinished(PreresolveInfo* info) {
+  DCHECK(info);
   DCHECK(info->is_done());
   auto it = preresolve_info_.find(info->url);
   DCHECK(it != preresolve_info_.end());
