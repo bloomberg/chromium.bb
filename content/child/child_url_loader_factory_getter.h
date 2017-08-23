@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 
@@ -15,7 +16,7 @@ namespace content {
 // ChildProcess version's URLLoaderFactoryGetter, i.e. a getter that holds
 // on to URLLoaderFactory's for a given loading context (e.g. a frame)
 // and allows code to access them.
-class ChildURLLoaderFactoryGetter
+class CONTENT_EXPORT ChildURLLoaderFactoryGetter
     : public base::RefCounted<ChildURLLoaderFactoryGetter> {
  public:
   using PossiblyAssociatedURLLoaderFactory =
@@ -23,6 +24,7 @@ class ChildURLLoaderFactoryGetter
   using URLLoaderFactoryGetterCallback =
       base::OnceCallback<mojom::URLLoaderFactoryPtr()>;
 
+  ChildURLLoaderFactoryGetter();
   ChildURLLoaderFactoryGetter(
       PossiblyAssociatedURLLoaderFactory network_loader_factory,
       URLLoaderFactoryGetterCallback blob_loader_factory_getter);
@@ -37,7 +39,8 @@ class ChildURLLoaderFactoryGetter
   PossiblyAssociatedURLLoaderFactory network_loader_factory_;
 
   // Either factory_getter or factory is non-null (to support
-  // lazy instantiation).
+  // lazy instantiation), or both could be null (if the default
+  // ctor is used).
   URLLoaderFactoryGetterCallback blob_loader_factory_getter_;
   PossiblyAssociatedURLLoaderFactory blob_loader_factory_;
 };

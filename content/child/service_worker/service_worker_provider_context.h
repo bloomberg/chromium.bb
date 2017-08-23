@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "content/child/child_url_loader_factory_getter.h"
 #include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
@@ -24,6 +25,10 @@ class SingleThreadTaskRunner;
 }
 
 namespace content {
+
+namespace mojom {
+class URLLoaderFactory;
+}
 
 class ServiceWorkerHandleReference;
 class ServiceWorkerRegistrationHandleReference;
@@ -58,12 +63,20 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // the content::ServiceWorkerProviderHost that notifies of changes to the
   // registration's and workers' status. |request| is bound with |binding_|.
   // The new instance is registered to |dispatcher|, which is not owned.
+  //
+  // For S13nServiceWorker:
+  // |default_loader_factory_getter| contains a set of default loader
+  // factories for the associated loading context, and is used when we
+  // create a subresource loader for controllees. This is non-null only
+  // if the provider is created for controllees, and if the loading context,
+  // e.g. a frame, provides the default URLLoaderFactoryGetter.
   ServiceWorkerProviderContext(
       int provider_id,
       ServiceWorkerProviderType provider_type,
       mojom::ServiceWorkerProviderAssociatedRequest request,
       mojom::ServiceWorkerProviderHostAssociatedPtrInfo host_ptr_info,
-      ServiceWorkerDispatcher* dispatcher);
+      ServiceWorkerDispatcher* dispatcher,
+      scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
 
   int provider_id() const { return provider_id_; }
 
@@ -91,9 +104,10 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       mojom::ServiceWorkerEventDispatcherPtrInfo event_dispatcher_ptr_info);
   ServiceWorkerHandleReference* controller();
 
-  // For service worker clients. Gets the ServiceWorkerEventDispatcher
-  // for dispatching events to the controller ServiceWorker.
-  mojom::ServiceWorkerEventDispatcher* event_dispatcher();
+  // S13nServiceWorker:
+  // For service worker clients. Returns URLLoaderFactory for loading
+  // subresources with the controller ServiceWorker.
+  mojom::URLLoaderFactory* subresource_loader_factory();
 
   // For service worker clients. Keeps track of feature usage for UseCounter.
   void CountFeature(uint32_t feature);

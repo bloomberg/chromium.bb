@@ -1408,6 +1408,7 @@ test("content_unittests") {
     "../child/resource_dispatcher_unittest.cc",
     "../child/service_worker/service_worker_dispatcher_unittest.cc",
     "../child/service_worker/service_worker_provider_context_unittest.cc",
+    "../child/service_worker/service_worker_subresource_loader_unittest.cc",
     "../child/shared_memory_data_consumer_handle_unittest.cc",
     "../child/shared_memory_received_data_factory_unittest.cc",
     "../child/site_isolation_stats_gatherer_unittest.cc",
