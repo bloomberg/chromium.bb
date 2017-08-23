@@ -105,6 +105,7 @@
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_observer.h"
+#import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -228,12 +229,6 @@ class TabHistoryContext : public history::Context {
 
   // YES if this Tab was initiated from a voice search.
   BOOL _isVoiceSearchResultsTab;
-
-  // YES if the Tab needs to be reloaded after the app becomes active.
-  BOOL _requireReloadAfterBecomingActive;
-
-  // YES if the Tab needs to be reloaded after displaying.
-  BOOL _requireReloadOnDisplay;
 
   // Last visited timestamp.
   double _lastVisitedTimestamp;
@@ -1227,16 +1222,17 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)applicationDidBecomeActive {
-  if (!_requireReloadAfterBecomingActive)
+  auto* sadTabTabHelper = SadTabTabHelper::FromWebState(self.webState);
+  if (!sadTabTabHelper->requires_reload_on_becoming_active())
     return;
   if (_visible) {
     PagePlaceholderTabHelper::FromWebState(self.webState)
         ->AddPlaceholderForNextNavigation();
     self.webState->GetNavigationManager()->LoadIfNecessary();
   } else {
-    _requireReloadOnDisplay = YES;
+    sadTabTabHelper->set_requires_reload_on_becoming_visible(true);
   }
-  _requireReloadAfterBecomingActive = NO;
+  sadTabTabHelper->set_requires_reload_on_becoming_active(false);
 }
 
 #pragma mark -
@@ -1722,15 +1718,17 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       [_parentTabModel tabUsageRecorder]->RendererTerminated(self, _visible);
   }
 
+  auto* sadTabTabHelper = SadTabTabHelper::FromWebState(self.webState);
   if (_visible) {
     if (!applicationIsNotActive)
       [_fullScreenController disableFullScreen];
   } else {
-    _requireReloadOnDisplay = YES;
+    sadTabTabHelper->set_requires_reload_on_becoming_visible(true);
   }
   // Returning to the app (after the renderer crashed in the background) and
   // having the page reload is much less confusing for the user.
-  _requireReloadAfterBecomingActive = _visible && applicationIsNotActive;
+  sadTabTabHelper->set_requires_reload_on_becoming_active(
+      _visible && applicationIsNotActive);
   [self.dialogDelegate cancelDialogForTab:self];
 }
 
@@ -1818,11 +1816,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     self.webState->WasShown();
   [_inputAccessoryViewController wasShown];
 
-  if (_requireReloadOnDisplay) {
+  auto* sadTabTabHelper = SadTabTabHelper::FromWebState(self.webState);
+  if (sadTabTabHelper->requires_reload_on_becoming_visible()) {
     PagePlaceholderTabHelper::FromWebState(self.webState)
         ->AddPlaceholderForNextNavigation();
     self.webState->GetNavigationManager()->LoadIfNecessary();
-    _requireReloadOnDisplay = NO;
+    sadTabTabHelper->set_requires_reload_on_becoming_visible(false);
   }
 }
 
