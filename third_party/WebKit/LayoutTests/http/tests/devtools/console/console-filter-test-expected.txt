@@ -181,6 +181,53 @@ Running: checkTextFilter
   log-source.js:3 19outerGroup
   >console-filter-test.js:31 innerGroup
 
+Running: checkMultiTextFilter
+console-filter-test.js:14 2topGroup
+log-source.js:3 3topGroup
+>console-filter-test.js:24 outerGroup
+  >console-filter-test.js:31 innerGroup
+
+Running: checkTextUrlFilter
+log-source.js:3 1topGroup
+log-source.js:3 3topGroup
+log-source.js:3 5topGroup
+log-source.js:3 7topGroup
+log-source.js:3 9topGroup
+>console-filter-test.js:24 outerGroup
+  log-source.js:3 11outerGroup
+  log-source.js:3 13outerGroup
+  log-source.js:3 15outerGroup
+  log-source.js:3 17outerGroup
+  log-source.js:3 19outerGroup
+  >console-filter-test.js:31 innerGroup
+    log-source.js:3 21innerGroup
+    log-source.js:3 23innerGroup
+    log-source.js:3 25innerGroup
+    log-source.js:3 27innerGroup
+    log-source.js:3 29innerGroup
+
+Running: checkNegativeTextUrlFilter
+console-filter-test.js:14 0topGroup
+console-filter-test.js:14 2topGroup
+console-filter-test.js:14 4topGroup
+console-filter-test.js:14 6topGroup
+console-filter-test.js:14 8topGroup
+>console-filter-test.js:24 outerGroup
+  console-filter-test.js:14 10outerGroup
+  console-filter-test.js:14 12outerGroup
+  console-filter-test.js:14 14outerGroup
+  console-filter-test.js:14 16outerGroup
+  console-filter-test.js:14 18outerGroup
+  >console-filter-test.js:31 innerGroup
+    console-filter-test.js:14 20innerGroup
+    console-filter-test.js:14 22innerGroup
+    console-filter-test.js:14 24innerGroup
+    console-filter-test.js:14 26innerGroup
+    console-filter-test.js:14 28innerGroup
+console-filter-test.js:43 Hello 1
+console-filter-test.js:44 Hello 2
+console-filter-test.js:46 end
+
 Running: checkResetFilter
 console-filter-test.js:14 0topGroup
 log-source.js:3 1topGroup
