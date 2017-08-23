@@ -853,6 +853,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Accel_Show_Message_Center_Bubble">
+  <obsolete>
+    Deprecated 08/2017. Replaced by Accel_Toggle_Message_Center_Bubble.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -945,6 +948,14 @@ should be able to be added at any place in this file.
 <action name="Accel_Toggle_Maximized">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Accel_Toggle_Message_Center_Bubble">
+  <owner>weidongg@chromium.org</owner>
+  <description>
+    Metric recorded when the user toggles the message center bubble with the
+    keyboard accelerator.
+  </description>
 </action>
 
 <action name="Accel_Toggle_Minimized">
