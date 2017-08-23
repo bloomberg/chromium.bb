@@ -44,6 +44,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
+    # Timing out on multiple platforms right now.
+    self.Skip('conformance/glsl/bugs/sampler-array-struct-function-arg.html',
+        bug=757097)
+
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
     self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
@@ -74,8 +78,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=1966) # angle bug ID
 
     # Windows only.
+    self.Fail('conformance2/buffers/uniform-buffers.html',
+        ['win'], bug=757098)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['win'], bug=2103) # angle bug ID
+    self.Fail('conformance2/glsl3/array-initialize-with-same-name-array.html',
+        ['win'], bug=757098)
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win', 'd3d11'], bug=644740)
     self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
