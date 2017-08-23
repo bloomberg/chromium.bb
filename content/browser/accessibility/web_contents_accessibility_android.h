@@ -184,6 +184,30 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
               jint id,
               int direction);
 
+  // Returns true if the given subtree has inline text box data, or if there
+  // aren't any to load.
+  jboolean AreInlineTextBoxesLoaded(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint id);
+
+  // Request loading inline text boxes for a given node.
+  void LoadInlineTextBoxes(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           jint id);
+
+  // Get the bounds of each character for a given static text node,
+  // starting from index |start| with length |len|. The resulting array
+  // of ints is 4 times the length |len|, with the bounds being returned
+  // as (left, top, right, bottom) in that order corresponding to a
+  // android.graphics.RectF.
+  base::android::ScopedJavaLocalRef<jintArray> GetCharacterBoundingBoxes(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint id,
+      jint start,
+      jint len);
+
   void UpdateFrameInfo();
 
   void set_root_manager(BrowserAccessibilityManagerAndroid* manager) {

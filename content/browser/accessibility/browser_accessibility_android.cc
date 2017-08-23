@@ -347,6 +347,23 @@ const BrowserAccessibilityAndroid*
   return sole_interesting_node;
 }
 
+bool BrowserAccessibilityAndroid::AreInlineTextBoxesLoaded() const {
+  if (GetRole() == ui::AX_ROLE_STATIC_TEXT)
+    return InternalChildCount() > 0;
+
+  // Return false if any descendant needs to load inline text boxes.
+  for (uint32_t i = 0; i < InternalChildCount(); ++i) {
+    BrowserAccessibilityAndroid* child =
+        static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+    if (!child->AreInlineTextBoxesLoaded())
+      return false;
+  }
+
+  // Otherwise return true - either they're all loaded, or there aren't
+  // any descendants that need to load inline text boxes.
+  return true;
+}
+
 bool BrowserAccessibilityAndroid::CanOpenPopup() const {
   return HasState(ui::AX_STATE_HASPOPUP);
 }

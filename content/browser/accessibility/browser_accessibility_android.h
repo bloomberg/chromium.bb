@@ -64,6 +64,10 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   // if more than one is interesting, returns nullptr.
   const BrowserAccessibilityAndroid* GetSoleInterestingNodeFromSubtree() const;
 
+  // Returns true if the given subtree has inline text box data, or if there
+  // aren't any to load.
+  bool AreInlineTextBoxesLoaded() const;
+
   bool CanOpenPopup() const;
 
   bool HasFocusableNonOptionChild() const;

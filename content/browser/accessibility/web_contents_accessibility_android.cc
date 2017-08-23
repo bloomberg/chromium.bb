@@ -5,6 +5,7 @@
 #include "content/browser/accessibility/web_contents_accessibility_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
@@ -290,6 +291,13 @@ void DeleteAutofillPopupProxy() {
     g_autofill_popup_proxy_node = nullptr;
   }
 }
+
+// The most common use of the EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY
+// API is to retrieve character bounds for one word at a time. There
+// should never need to be a reason to return more than this many
+// character bounding boxes at once. Set the limit much higher than needed
+// but small enough to prevent wasting memory and cpu if abused.
+const int kMaxCharacterBoundingBoxLen = 1024;
 
 }  // anonymous namespace
 
@@ -698,6 +706,12 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       env, obj, info, node->CanOpenPopup(), node->IsContentInvalid(),
       node->IsDismissable(), node->IsMultiLine(), node->AndroidInputType(),
       node->AndroidLiveRegionType());
+
+  bool has_character_locations = node->GetRole() == ui::AX_ROLE_STATIC_TEXT ||
+                                 node->IsInterestingOnAndroid();
+  Java_WebContentsAccessibility_setAccessibilityNodeInfoOAttributes(
+      env, obj, info, has_character_locations);
+
   if (node->IsCollection()) {
     Java_WebContentsAccessibility_setAccessibilityNodeInfoCollectionInfo(
         env, obj, info, node->RowCount(), node->ColumnCount(),
@@ -1092,6 +1106,59 @@ bool WebContentsAccessibilityAndroid::Scroll(JNIEnv* env,
     return false;
 
   return node->Scroll(direction);
+}
+
+jboolean WebContentsAccessibilityAndroid::AreInlineTextBoxesLoaded(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint unique_id) {
+  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+  if (!node)
+    return false;
+
+  return node->AreInlineTextBoxesLoaded();
+}
+
+void WebContentsAccessibilityAndroid::LoadInlineTextBoxes(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint unique_id) {
+  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+  if (node)
+    node->manager()->LoadInlineTextBoxes(*node);
+}
+
+base::android::ScopedJavaLocalRef<jintArray>
+WebContentsAccessibilityAndroid::GetCharacterBoundingBoxes(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint unique_id,
+    jint start,
+    jint len) {
+  BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
+  if (!node)
+    return nullptr;
+
+  if (len <= 0 || len > kMaxCharacterBoundingBoxLen) {
+    LOG(ERROR) << "Trying to request EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY "
+               << "with a length of " << len << ". Valid values are between 1 "
+               << "and " << kMaxCharacterBoundingBoxLen;
+    return nullptr;
+  }
+
+  gfx::Rect object_bounds = node->GetPageBoundsRect();
+  int coords[4 * len];
+  for (int i = 0; i < len; i++) {
+    gfx::Rect char_bounds = node->GetPageBoundsForRange(start + i, 1);
+    if (char_bounds.IsEmpty())
+      char_bounds = object_bounds;
+    coords[4 * i + 0] = char_bounds.x();
+    coords[4 * i + 1] = char_bounds.y();
+    coords[4 * i + 2] = char_bounds.right();
+    coords[4 * i + 3] = char_bounds.bottom();
+  }
+  return base::android::ToJavaIntArray(env, coords,
+                                       static_cast<size_t>(4 * len));
 }
 
 BrowserAccessibilityAndroid* WebContentsAccessibilityAndroid::GetAXFromUniqueID(
