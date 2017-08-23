@@ -37,6 +37,4 @@ if (!array_key_exists('dontclearcookies', $_GET)) {
   foreach ($_COOKIE as $name => $value)
       setcookie($name, "deleted", time() - 60, "/");
 }
-header('Access-Control-Allow-Origin: http://127.0.0.1:8000');
-header('Access-Control-Allow-Credentials: true');
 ?>
