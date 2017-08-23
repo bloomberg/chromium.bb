@@ -327,11 +327,9 @@ void WebContentsAccessibilityAndroid::Connector::UpdateRenderProcessConnection(
 WebContentsAccessibilityAndroid::WebContentsAccessibilityAndroid(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    WebContents* web_contents,
-    bool should_focus_on_page_load)
+    WebContents* web_contents)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
-      should_focus_on_page_load_(should_focus_on_page_load),
       frame_info_initialized_(false),
       root_manager_(nullptr),
       connector_(new Connector(web_contents, this)) {
@@ -412,8 +410,6 @@ bool WebContentsAccessibilityAndroid::ShouldExposePasswordText() {
 }
 
 void WebContentsAccessibilityAndroid::HandlePageLoaded(int32_t unique_id) {
-  if (!should_focus_on_page_load_)
-    return;
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
@@ -1187,13 +1183,12 @@ void WebContentsAccessibilityAndroid::CollectStats() {
 
 jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& obj,
-           const JavaParamRef<jobject>& jweb_contents,
-           jboolean should_focus_on_page_load) {
+           const JavaParamRef<jobject>& jweb_contents) {
   WebContents* web_contents = WebContents::FromJavaWebContents(jweb_contents);
   DCHECK(web_contents);
 
-  return reinterpret_cast<intptr_t>(new WebContentsAccessibilityAndroid(
-      env, obj, web_contents, should_focus_on_page_load));
+  return reinterpret_cast<intptr_t>(
+      new WebContentsAccessibilityAndroid(env, obj, web_contents));
 }
 
 }  // namespace content

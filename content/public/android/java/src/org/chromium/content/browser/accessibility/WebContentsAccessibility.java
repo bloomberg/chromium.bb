@@ -80,6 +80,7 @@ public class WebContentsAccessibility {
     protected int mAccessibilityFocusId;
     private Runnable mSendWindowContentChangedRunnable;
     private View mAutofillPopupView;
+    private boolean mShouldFocusOnPageLoad;
 
     /**
      * Create a WebContentsAccessibility object.
@@ -111,6 +112,7 @@ public class WebContentsAccessibility {
         mRenderCoordinates = renderCoordinates;
         mAccessibilityManager =
                 (AccessibilityManager) context.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        mShouldFocusOnPageLoad = shouldFocusOnPageLoad;
 
         final WebContentsAccessibility delegate = this;
         mAccessibilityNodeProvider = new AccessibilityNodeProvider() {
@@ -130,7 +132,7 @@ public class WebContentsAccessibility {
                 return delegate.performAction(virtualViewId, action, arguments);
             }
         };
-        mNativeObj = nativeInit(webContents, shouldFocusOnPageLoad);
+        mNativeObj = nativeInit(webContents);
     }
 
     @CalledByNative
@@ -417,6 +419,7 @@ public class WebContentsAccessibility {
 
         // (Re-) focus focused element, since we weren't able to create an
         // AccessibilityNodeInfo for this element before.
+        if (!mShouldFocusOnPageLoad) return;
         if (mAccessibilityFocusId != View.NO_ID) {
             moveAccessibilityFocusToIdAndRefocusIfNeeded(mAccessibilityFocusId);
         }
@@ -695,12 +698,19 @@ public class WebContentsAccessibility {
 
     @CalledByNative
     private void handlePageLoaded(int id) {
+        if (!mShouldFocusOnPageLoad) return;
         if (mUserHasTouchExplored) return;
         moveAccessibilityFocusToIdAndRefocusIfNeeded(id);
     }
 
     @CalledByNative
     private void handleFocusChanged(int id) {
+        // If |mShouldFocusOnPageLoad| is false, that means this is a WebView and
+        // we should avoid moving accessibility focus when the page loads, but more
+        // generally we should avoid moving accessibility focus whenever it's not
+        // already within this WebView.
+        if (!mShouldFocusOnPageLoad && mAccessibilityFocusId == View.NO_ID) return;
+
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_FOCUSED);
         moveAccessibilityFocusToId(id);
     }
@@ -1216,7 +1226,7 @@ public class WebContentsAccessibility {
         return 0;
     }
 
-    private native long nativeInit(WebContents webContents, boolean shouldFocusOnPageLoad);
+    private native long nativeInit(WebContents webContents);
     private native void nativeOnAutofillPopupDisplayed(long nativeWebContentsAccessibilityAndroid);
     private native void nativeOnAutofillPopupDismissed(long nativeWebContentsAccessibilityAndroid);
     private native int nativeGetIdForElementAfterElementHostingAutofillPopup(

@@ -35,8 +35,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   WebContentsAccessibilityAndroid(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      WebContents* web_contents,
-      bool should_focus_on_page_load);
+      WebContents* web_contents);
   ~WebContentsAccessibilityAndroid() override;
 
   // --------------------------------------------------------------------------
@@ -191,10 +190,6 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
     root_manager_ = manager;
   }
 
-  void set_should_focus_on_page_load(bool focus) {
-    should_focus_on_page_load_ = focus;
-  }
-
   // --------------------------------------------------------------------------
   // Methods called from the BrowserAccessibilityManager
   // --------------------------------------------------------------------------
@@ -228,8 +223,6 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   JavaObjectWeakGlobalRef java_ref_;
 
   WebContentsImpl* const web_contents_;
-
-  bool should_focus_on_page_load_;
 
   bool frame_info_initialized_;
 
