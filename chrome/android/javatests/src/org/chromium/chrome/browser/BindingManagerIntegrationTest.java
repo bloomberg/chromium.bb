@@ -22,7 +22,6 @@ import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.tab.Tab;
@@ -32,7 +31,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessLauncherHelper;
@@ -417,11 +415,9 @@ public class BindingManagerIntegrationTest {
         mBindingManager.assertIsReleaseAllModerateBindingsCalled();
     }
 
-    // Test crashes on tablets. See crbug.com/594407
     @Test
     @LargeTest
     @Feature({"ProcessManagement"})
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testRestoreSharedRenderer() throws Exception {
         mActivityTestRule.loadUrl(mTestServer.getURL(SHARED_RENDERER_PAGE_PATH));
 
