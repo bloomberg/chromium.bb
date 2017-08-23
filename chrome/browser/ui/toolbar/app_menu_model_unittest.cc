@@ -19,7 +19,6 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/menu_model_test.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chrome/test/base/testing_io_thread_state.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,19 +69,16 @@ class AppMenuModelTest : public BrowserWithTestWindowTest,
     chrome::RegisterLocalState(prefs_->registry());
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(prefs_.get());
-    testing_io_thread_state_.reset(new chrome::TestingIOThreadState());
     BrowserWithTestWindowTest::SetUp();
   }
 
   void TearDown() override {
     BrowserWithTestWindowTest::TearDown();
-    testing_io_thread_state_.reset();
     TestingBrowserProcess::GetGlobal()->SetLocalState(NULL);
   }
 
  private:
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
-  std::unique_ptr<chrome::TestingIOThreadState> testing_io_thread_state_;
 };
 
 // Copies parts of MenuModelTest::Delegate and combines them with the
