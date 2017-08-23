@@ -1109,11 +1109,6 @@ bool NavigationHandleImpl::MaybeTransferAndProceedInternal() {
     return false;
   }
 
-  // Subframes shouldn't swap processes unless out-of-process iframes are
-  // possible.
-  if (!IsInMainFrame() && !SiteIsolationPolicy::AreCrossProcessFramesPossible())
-    return true;
-
   // If this is a download, do not do a cross-site check. The renderer will
   // see it is a download and abort the request.
   //
@@ -1140,8 +1135,7 @@ bool NavigationHandleImpl::MaybeTransferAndProceedInternal() {
   // above) that a process transfer is needed. Process transfers are skipped for
   // WebUI processes for now, since e.g. chrome://settings has multiple
   // "cross-site" chrome:// frames, and that doesn't yet work cross-process.
-  if (SiteIsolationPolicy::AreCrossProcessFramesPossible() &&
-      !ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
+  if (!ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           render_frame_host_->GetProcess()->GetID())) {
     should_transfer |= manager->IsRendererTransferNeededForNavigation(
         render_frame_host_, url_);

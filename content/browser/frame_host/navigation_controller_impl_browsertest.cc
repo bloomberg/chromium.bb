@@ -4309,9 +4309,6 @@ class NavigationControllerOopifBrowserTest
 // create out-of-process iframes unless the current SiteIsolationPolicy says to.
 IN_PROC_BROWSER_TEST_F(NavigationControllerOopifBrowserTest,
                        RestoreWithoutExtraOopifs) {
-  // This test requires OOPIFs to be possible.
-  EXPECT_TRUE(SiteIsolationPolicy::AreCrossProcessFramesPossible());
-
   // 1. Start on a page with a data URL iframe.
   GURL main_url_a(embedded_test_server()->GetURL(
       "a.com", "/navigation_controller/page_with_data_iframe.html"));

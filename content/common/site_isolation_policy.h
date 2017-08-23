@@ -20,20 +20,6 @@ namespace content {
 // These methods can be called from any thread.
 class CONTENT_EXPORT SiteIsolationPolicy {
  public:
-  // Returns true if the current process model might allow the use of cross-
-  // process iframes. This should typically used to avoid executing codepaths
-  // that only matter for cross-process iframes, to protect the default
-  // behavior.
-  //
-  // Note: Since cross-process frames will soon be possible by default, usage
-  // should be limited to temporary stop-gaps.
-  //
-  // Instead of calling this method, prefer to examine object state to see
-  // whether a particular frame happens to have a cross-process relationship
-  // with another, or to consult DoesSiteRequireDedicatedProcess() to see if a
-  // particular site merits protection.
-  static bool AreCrossProcessFramesPossible();
-
   // Returns true if every site should be placed in a dedicated process.
   static bool UseDedicatedProcessesForAllSites();
 

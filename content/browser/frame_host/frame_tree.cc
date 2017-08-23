@@ -289,7 +289,6 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
   // below.
   for (auto* instance : frame_tree_site_instances) {
     if (instance != source && instance != current_instance) {
-      DCHECK(SiteIsolationPolicy::AreCrossProcessFramesPossible());
       RenderFrameProxyHost* proxy =
           node->render_manager()->GetRenderFrameProxyHost(instance);
       proxy->SetFocusedFrame();

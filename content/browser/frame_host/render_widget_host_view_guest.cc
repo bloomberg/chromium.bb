@@ -357,14 +357,9 @@ void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
   // and so we will always hit this code path.
   if (!guest_)
     return;
-  if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
-    RenderWidgetHostViewBase* rwhvb = GetOwnerRenderWidgetHostView();
-    if (rwhvb)
-      rwhvb->UpdateCursor(cursor);
-  } else {
-    guest_->SendMessageToEmbedder(base::MakeUnique<BrowserPluginMsg_SetCursor>(
-        guest_->browser_plugin_instance_id(), cursor));
-  }
+  RenderWidgetHostViewBase* rwhvb = GetOwnerRenderWidgetHostView();
+  if (rwhvb)
+    rwhvb->UpdateCursor(cursor);
 }
 
 void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {

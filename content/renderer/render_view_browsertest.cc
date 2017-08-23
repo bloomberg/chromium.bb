@@ -914,10 +914,6 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
 // changes after a cross-process navigation has commited.
 // See https://crbug.com/571603.
 TEST_F(RenderViewImplTest, SetZoomLevelAfterCrossProcessNavigation) {
-  // This test should only run with out-of-process iframes enabled.
-  if (!SiteIsolationPolicy::AreCrossProcessFramesPossible())
-    return;
-
   // The bug reproduces if zoom is used for devices scale factor.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableUseZoomForDSF);

@@ -194,7 +194,6 @@ size_t RegisterChromeCrashKeys() {
     {"newframe_widget_id", kSmallSize},
     {"newframe_widget_hidden", kSmallSize},
     {"newframe_replicated_origin", kSmallSize},
-    {"newframe_oopifs_possible", kSmallSize},
 
     // Temporary for https://crbug.com/612711.
     {"aci_wrong_sp_extension_id", kSmallSize},
