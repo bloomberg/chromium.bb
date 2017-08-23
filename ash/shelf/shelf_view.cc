@@ -801,8 +801,8 @@ void ShelfView::CalculateIdealBounds(gfx::Rect* overflow_bounds) const {
     // If this is the app list button and we are in tablet mode, make space for
     // the back button (which is part of the app list button).
     if (i == 0 && is_tablet_mode) {
-      width = shelf_->PrimaryAxisValue(2 * w + kShelfButtonSpacing, w);
-      height = shelf_->PrimaryAxisValue(h, 2 * h + kShelfButtonSpacing);
+      width = shelf_->PrimaryAxisValue(2 * w, w);
+      height = shelf_->PrimaryAxisValue(h, 2 * h);
     }
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, width, height));
