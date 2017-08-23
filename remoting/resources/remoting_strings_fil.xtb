@@ -79,6 +79,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="2676780859508944670">Isinasagawa…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Karaniwang awtomatikong isinasagawa ang mga pag-update sa software, ngunit maaaring mabigo sa ilang hindi pangkaraniwang sitwasyon. Hindi dapat tumagal nang mahigit sa ilang minuto ang pag-update sa software at magagawa ito habang nakakonekta sa iyong computer nang malayuan.</translation>
+<translation id="2758123043070977469">Nagkaisyu sa pag-authenticate, mag-log in muli.</translation>
 <translation id="2803375539583399270">Ilagay ang PIN</translation>
 <translation id="2841013758207633010">Oras</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -194,6 +195,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="5708869785009007625">Kasalukuyang nakabahagi ang iyong desktop kay <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Petsa ng pagpapares</translation>
 <translation id="579702532610384533">Muling kumonekta</translation>
+<translation id="5810269635982033450">Gumagana ang screen tulad ng trackpad</translation>
 <translation id="5841343754884244200">Mga opsyon sa display</translation>
 <translation id="5843054235973879827">Bakit ito ligtas?</translation>
 <translation id="5859141382851488196">Bagong window…</translation>
@@ -245,6 +247,7 @@ Para sa higit pang impormasyon tungkol sa privacy, pakitingnan ang Patakaran sa 
 <translation id="7019153418965365059">Hindi alam na error sa host: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Malayuang Tulong</translation>
 <translation id="7038683108611689168">Tumulong sa amin na pahusayin ang Chromoting sa pamamagitan ng pagbibigay-daan sa amin na mangolekta ng mga statistics sa paggamit at mga ulat ng pag-crash.</translation>
+<translation id="7067321367069083429">Gumagana ang screen tulad ng touch screen</translation>
 <translation id="7144878232160441200">Subukang muli</translation>
 <translation id="7149517134817561223">Application na magbibigay ng mga command sa host ng remote na desktop ng Chrome.</translation>
 <translation id="7215059001581613786">Mangyaring maglagay ng PIN na binubuo ng anim o higit pang mga digit.</translation>

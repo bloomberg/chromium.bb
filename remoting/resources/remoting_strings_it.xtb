@@ -79,6 +79,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="2676780859508944670">Operazione in corso...</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">In genere gli aggiornamenti software vengono eseguiti automaticamente, ma in rari casi potrebbero non riuscire. L'aggiornamento del software non dovrebbe richiedere più di alcuni minuti e può essere eseguito collegandosi al computer da remoto.</translation>
+<translation id="2758123043070977469">Si è verificato un problema di autenticazione. Accedi nuovamente.</translation>
 <translation id="2803375539583399270">Inserisci PIN</translation>
 <translation id="2841013758207633010">Ora</translation>
 <translation id="2851754573186462851">Chromium App Stream</translation>
@@ -194,6 +195,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="5708869785009007625">Il tuo desktop è attualmente condiviso con <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Data accoppiamento</translation>
 <translation id="579702532610384533">Riconnetti</translation>
+<translation id="5810269635982033450">Lo schermo funge da trackpad</translation>
 <translation id="5841343754884244200">Opzioni di visualizzazione</translation>
 <translation id="5843054235973879827">Perché questa operazione è sicura?</translation>
 <translation id="5859141382851488196">Nuova finestra…</translation>
@@ -245,6 +247,7 @@ Per informazioni sulla privacy, leggi le Norme sulla privacy di Google (http://g
 <translation id="7019153418965365059">Errore host non riconosciuto: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Assistenza remota</translation>
 <translation id="7038683108611689168">Aiutaci a migliorare Chromoting consentendo l'acquisizione di dati per statistiche di utilizzo e rapporti sugli arresti anomali.</translation>
+<translation id="7067321367069083429">Lo schermo funge da touch screen</translation>
 <translation id="7144878232160441200">Riprova</translation>
 <translation id="7149517134817561223">Applicazione per fornire comandi all'host Chrome Remote Desktop.</translation>
 <translation id="7215059001581613786">Inserisci un PIN formato da almeno sei cifre.</translation>

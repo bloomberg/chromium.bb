@@ -79,6 +79,7 @@
 <translation id="2676780859508944670">运行中…</translation>
 <translation id="2699970397166997657">Chrome 远程访问</translation>
 <translation id="2747641796667576127">系统通常会自动执行软件更新，但在极少数情况下，更新可能会失败。更新软件应该只需要几分钟，而且可在远程连接到计算机时执行。</translation>
+<translation id="2758123043070977469">验证您的身份时出问题了，请重新登录。</translation>
 <translation id="2803375539583399270">输入 PIN 码</translation>
 <translation id="2841013758207633010">时间</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -194,6 +195,7 @@
 <translation id="5708869785009007625">您目前正与 <ph name="USER" /> 共享您的桌面。</translation>
 <translation id="5773590752998175013">配对日期</translation>
 <translation id="579702532610384533">重新连接</translation>
+<translation id="5810269635982033450">屏幕充当触控板</translation>
 <translation id="5841343754884244200">显示选项</translation>
 <translation id="5843054235973879827">此操作为什么是安全的？</translation>
 <translation id="5859141382851488196">打开新的窗口…</translation>
@@ -245,6 +247,7 @@
 <translation id="7019153418965365059">无法识别的主机错误：<ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">远程协助</translation>
 <translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程访问。</translation>
+<translation id="7067321367069083429">屏幕充当触摸屏</translation>
 <translation id="7144878232160441200">重试</translation>
 <translation id="7149517134817561223">向 Chrome 远程桌面主机发出命令的应用。</translation>
 <translation id="7215059001581613786">请输入至少包含 6 位数的 PIN。</translation>

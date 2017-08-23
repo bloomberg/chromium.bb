@@ -79,6 +79,7 @@
 <translation id="2676780859508944670">運作中…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">系統通常會自動執行軟體更新，但在極少數情況下，更新可能會失敗。更新軟體的時間應該僅需數分鐘，而且可透過從遠端連線至電腦的方式完成。</translation>
+<translation id="2758123043070977469">進行驗證時發生問題，請重新登入。</translation>
 <translation id="2803375539583399270">輸入 PIN</translation>
 <translation id="2841013758207633010">時間</translation>
 <translation id="2851754573186462851">Chromium 應用程式串流</translation>
@@ -194,6 +195,7 @@
 <translation id="5708869785009007625">你目前正與 <ph name="USER" /> 共用電腦。</translation>
 <translation id="5773590752998175013">配對日期</translation>
 <translation id="579702532610384533">重新連線</translation>
+<translation id="5810269635982033450">把螢幕當作觸控板使用</translation>
 <translation id="5841343754884244200">顯示選項</translation>
 <translation id="5843054235973879827">為什麼這項操作是安全的？</translation>
 <translation id="5859141382851488196">新增視窗…</translation>
@@ -245,6 +247,7 @@
 <translation id="7019153418965365059">不明主機錯誤：<ph name="HOST_OFFLINE_REASON" />。</translation>
 <translation id="701976023053394610">遠端協助</translation>
 <translation id="7038683108611689168">允許我們收集使用統計資料和當機報告，協助我們改善 Chromoting。</translation>
+<translation id="7067321367069083429">把螢幕當作觸控螢幕使用</translation>
 <translation id="7144878232160441200">重試</translation>
 <translation id="7149517134817561223">要對 Chrome 遠端桌面主機發出指令的應用程式。</translation>
 <translation id="7215059001581613786">請輸入一個至少 6 位數的 PIN。</translation>

@@ -79,6 +79,7 @@
 <translation id="2676780859508944670">কাজ করছে...</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">সফ্টওয়্যার আপডেটগুলি সাধারণত স্বয়ংক্রিয়ভাবে হয়ে থাকে, কিন্তু কিছু বিরল ক্ষেত্রে ব্যর্থ হতে পারে৷ সফ্টওয়্যারটি আপডেট হতে কয়েক মিনিটের বেশি লাগার কথা নয় এবং আপনার কম্পিউটারের সাথে দূরবর্তী সংযোগে থাকাকালীনও করা যেতে পারে৷</translation>
+<translation id="2758123043070977469">প্রমাণীকরণে সমস্যা হয়েছে, অনুগ্রহ করে আবার লগ-ইন করুন।</translation>
 <translation id="2803375539583399270">পিন নম্বর দিন</translation>
 <translation id="2841013758207633010">সময়</translation>
 <translation id="2851754573186462851">Chromium অ্যাপ্লিকেশান স্ট্রীমিং</translation>
@@ -194,6 +195,7 @@
 <translation id="5708869785009007625">আপনার ডেস্কটপটি বর্তমানে <ph name="USER" /> এর সাথে শেয়ার করা হয়েছে৷</translation>
 <translation id="5773590752998175013">যুক্ত করার তারিখ</translation>
 <translation id="579702532610384533">পুনরায সংযোগ করুন</translation>
+<translation id="5810269635982033450">স্ক্রিন একটি ট্র্যাকপ্যাডের মত কাজ করে</translation>
 <translation id="5841343754884244200">দেখার বিকল্প</translation>
 <translation id="5843054235973879827">এটি কেন নিরাপদ?</translation>
 <translation id="5859141382851488196">নতুন উইন্ডো...</translation>
@@ -245,6 +247,7 @@
 <translation id="7019153418965365059">অস্বীকৃত হোস্ট ত্রুটি: <ph name="HOST_OFFLINE_REASON" />।</translation>
 <translation id="701976023053394610">রিমোট সহায়তা</translation>
 <translation id="7038683108611689168">আমাদের ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি সংগ্রহের অনুমতি দিয়ে, Chromoting এর উন্নতিতে আমাদের সাহায্য করুন৷</translation>
+<translation id="7067321367069083429">স্ক্রিন একটি টাচ স্ক্রিনের মত কাজ করে</translation>
 <translation id="7144878232160441200">আবার চেষ্টা করুন</translation>
 <translation id="7149517134817561223">Chrome দূরবর্তী ডেস্কটপ হোস্টের জন্য কম্যান্ড ইস্যু করে যে অ্যাপ্লিকেশান।</translation>
 <translation id="7215059001581613786">দয়া করে ছয়টি অথবা তার বেশি সংখ্যার একটি পিন লিখুন৷</translation>

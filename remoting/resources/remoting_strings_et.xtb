@@ -79,6 +79,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="2676780859508944670">Töötab …</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Tarkvaravärskendused toimuvad tavaliselt automaatselt, kuid mõnel üksikul juhul võivad need ebaõnnestuda. Tarkvara värskendamine ei tohiks võtta üle paari minuti ja saate seda teha, kui olete oma arvutiga ühendatud kaugühenduse abil.</translation>
+<translation id="2758123043070977469">Autentimisel ilmnes probleem. Logige uuesti sisse.</translation>
 <translation id="2803375539583399270">Sisestage PIN-kood</translation>
 <translation id="2841013758207633010">Aeg</translation>
 <translation id="2851754573186462851">Chromiumi rakenduste voogesitus</translation>
@@ -194,6 +195,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="5708869785009007625">Teie töölauda jagatakse praegu kasutajaga <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Sidumise kuupäev</translation>
 <translation id="579702532610384533">Ühenda uuesti</translation>
+<translation id="5810269635982033450">Ekraan toimib puuteplaadina</translation>
 <translation id="5841343754884244200">Kuvavalikud</translation>
 <translation id="5843054235973879827">Miks on see ohutu?</translation>
 <translation id="5859141382851488196">Uus aken ...</translation>
@@ -245,6 +247,7 @@ Lisateavet privaatsuse kohta vaadake Google'i privaatsuseeskirjadest (http://goo
 <translation id="7019153418965365059">Tundmatu hostiviga: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Kaugabi</translation>
 <translation id="7038683108611689168">Aidake meil rakendust Chromoting täiustada, lubades kasutusstatistika ja krahhiaruannete kogumise.</translation>
+<translation id="7067321367069083429">Ekraan toimib puuteekraanina</translation>
 <translation id="7144878232160441200">Proovi uuesti</translation>
 <translation id="7149517134817561223">Rakendus, millega saate Chrome Remote Desktopi hostile käske saata.</translation>
 <translation id="7215059001581613786">Sisestage vähemalt kuuest numbrist koosnev PIN-kood.</translation>

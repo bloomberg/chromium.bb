@@ -218,6 +218,7 @@
 <translation id="2704951214193499422">En aquest moment Chromium no ha pogut confirmar la teva targeta. Torna-ho a provar més tard.</translation>
 <translation id="2705137772291741111">La còpia desada (a la memòria cau) d'aquest lloc no s'ha pogut llegir.</translation>
 <translation id="2709516037105925701">Emplenament autom.</translation>
+<translation id="2710942282213947212">L'ordinador conté programari que impedeix que Chromium es connecti de manera segura al web</translation>
 <translation id="2712173769900027643">Demana permís</translation>
 <translation id="2713444072780614174">Blanc</translation>
 <translation id="2720342946869265578">A prop</translation>
@@ -550,7 +551,7 @@
     <ph name="LIST_ITEM" />A <ph name="BEGIN_BOLD" />Tipus d'inici<ph name="END_BOLD" />, selecciona <ph name="BEGIN_BOLD" />Desactivat<ph name="END_BOLD" />
     <ph name="LIST_ITEM" />A <ph name="BEGIN_BOLD" />Estat del servei<ph name="END_BOLD" />, fes clic a <ph name="BEGIN_BOLD" />Atura<ph name="END_BOLD" />
     <ph name="LIST_ITEM" />Fes clic a <ph name="BEGIN_BOLD" />Aplica<ph name="END_BOLD" /> i, a continuació, a <ph name="BEGIN_BOLD" />D'acord<ph name="END_BOLD" />
-    <ph name="LIST_ITEM" />Visita el <ph name="BEGIN_LEARN_MORE_LINK" />Centre d'ajuda de Chrome<ph name="END_LEARN_MORE_LINK" /> per obtenir informació sobre com suprimir de manera permanent el programari de l'ordinador.
+    <ph name="LIST_ITEM" />Visita el <ph name="BEGIN_LEARN_MORE_LINK" />Centre d'ajuda de Chrome<ph name="END_LEARN_MORE_LINK" /> per obtenir informació sobre com suprimir permanentment el programari de l'ordinador.
     <ph name="END_LIST" /></translation>
 <translation id="5297526204711817721">La teva connexió amb aquest lloc no és privada. Per sortir del mode RV en qualsevol moment, treu-te el visor i prem Enrere.</translation>
 <translation id="5299298092464848405">S'ha produït un error en analitzar la política</translation>

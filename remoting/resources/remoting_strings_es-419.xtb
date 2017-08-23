@@ -79,6 +79,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="2676780859508944670">Operación en curso…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Las actualizaciones de software, por lo general, se realizan de forma automática, pero puede haber errores en casos excepcionales. La actualización del software no debe tardar más de unos minutos y se puede hacer mientras estás conectado a tu computadora de forma remota.</translation>
+<translation id="2758123043070977469">Hubo un problema de autenticación. Vuelve a acceder.</translation>
 <translation id="2803375539583399270">Ingresar PIN</translation>
 <translation id="2841013758207633010">Hora</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -194,6 +195,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="5708869785009007625">En este momento, estás compartiendo tu escritorio con <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Fecha de sincronización</translation>
 <translation id="579702532610384533">Volver a conectar</translation>
+<translation id="5810269635982033450">La pantalla funciona como panel táctil</translation>
 <translation id="5841343754884244200">Opciones de la pantalla</translation>
 <translation id="5843054235973879827">¿Por qué esta operación es segura?</translation>
 <translation id="5859141382851488196">Nueva ventana…</translation>
@@ -245,6 +247,7 @@ Para obtener más información sobre la privacidad, consulta la política de pri
 <translation id="7019153418965365059">Error de host no reconocido: <ph name="HOST_OFFLINE_REASON" /></translation>
 <translation id="701976023053394610">Asistencia remota</translation>
 <translation id="7038683108611689168">Ayúdanos a mejorar la aplicación Chromoting permitiéndonos recopilar estadísticas de uso e informes sobre fallos.</translation>
+<translation id="7067321367069083429">La pantalla cuenta con función táctil</translation>
 <translation id="7144878232160441200">Volver a intentarlo</translation>
 <translation id="7149517134817561223">Aplicación para enviar comandos al host del escritorio remoto de Chrome</translation>
 <translation id="7215059001581613786">Ingresa un PIN de al menos seis dígitos.</translation>

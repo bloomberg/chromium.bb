@@ -79,6 +79,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="2676780859508944670">Bezig…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Software-updates worden gewoonlijk automatisch uitgevoerd, maar kunnen in zeldzame gevallen mislukken. Het bijwerken van de software duurt slechts een paar minuten en kan worden gedaan terwijl je extern bent verbonden met je computer.</translation>
+<translation id="2758123043070977469">Er is een fout opgetreden tijdens het verifiëren. Log opnieuw in.</translation>
 <translation id="2803375539583399270">Pincode opgeven</translation>
 <translation id="2841013758207633010">Tijd</translation>
 <translation id="2851754573186462851">Streaming via Chromium-app</translation>
@@ -194,6 +195,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="5708869785009007625">Je bureaublad wordt momenteel gedeeld met <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Koppelingsdatum</translation>
 <translation id="579702532610384533">Opnieuw verbinding maken</translation>
+<translation id="5810269635982033450">Scherm werkt als een trackpad</translation>
 <translation id="5841343754884244200">Weergaveopties</translation>
 <translation id="5843054235973879827">Waarom is dit veilig?</translation>
 <translation id="5859141382851488196">Nieuw venster…</translation>
@@ -245,6 +247,7 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="7019153418965365059">Onbekende hostfout: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Externe ondersteuning</translation>
 <translation id="7038683108611689168">Help ons Chromoting te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
+<translation id="7067321367069083429">Scherm werkt als een touchscreen</translation>
 <translation id="7144878232160441200">Opnieuw proberen</translation>
 <translation id="7149517134817561223">App die opdrachten geeft aan de Chrome Remote Desktop-host.</translation>
 <translation id="7215059001581613786">Geef een pincode van zes of meer cijfers op.</translation>

@@ -79,6 +79,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="2676780859508944670">Đang xử lý...</translation>
 <translation id="2699970397166997657">Kết nối từ xa trên Chrome</translation>
 <translation id="2747641796667576127">Cập nhật phần mềm thường tự động diễn ra nhưng trong một số trường hợp hiếm gặp, quá trình này có thể không thành công. Quá trình cập nhật phần mềm sẽ chỉ mất tối đa một vài phút và có thể được thực hiện trong khi kết nối từ xa tới máy tính của bạn.</translation>
+<translation id="2758123043070977469">Đã xảy ra lỗi khi xác thực, vui lòng đăng nhập lại.</translation>
 <translation id="2803375539583399270">Nhập mã PIN</translation>
 <translation id="2841013758207633010">Thời gian</translation>
 <translation id="2851754573186462851">Phát trực tuyến ứng dụng Chromium</translation>
@@ -194,6 +195,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="5708869785009007625">Máy tính của bạn hiện đang được chia sẻ với <ph name="USER" />.</translation>
 <translation id="5773590752998175013">Ngày ghép nối</translation>
 <translation id="579702532610384533">Kết nối lại</translation>
+<translation id="5810269635982033450">Màn hình đóng vai trò như bàn di chuột</translation>
 <translation id="5841343754884244200">Tùy chọn hiển thị</translation>
 <translation id="5843054235973879827">Tại sao thao tác này lại an toàn?</translation>
 <translation id="5859141382851488196">Cửa sổ mới...</translation>
@@ -245,6 +247,7 @@ Các máy tính từ xa có bàn phím không phải tiếng Anh-Mỹ có thể 
 <translation id="7019153418965365059">Lỗi máy chủ không xác định: <ph name="HOST_OFFLINE_REASON" />.</translation>
 <translation id="701976023053394610">Hỗ trợ từ xa</translation>
 <translation id="7038683108611689168">Giúp chúng tôi cải thiện Kết nối từ xa trên Chrome bằng cách cho phép chúng tôi thu thập số liệu thống kê sử dụng và báo cáo sự cố.</translation>
+<translation id="7067321367069083429">Màn hình đóng vai trò như màn hình cảm ứng</translation>
 <translation id="7144878232160441200">Thử lại</translation>
 <translation id="7149517134817561223">Ứng dụng sẽ phát lệnh đến máy chủ Chrome Remote Desktop.</translation>
 <translation id="7215059001581613786">Vui lòng nhập mã PIN có từ sáu chữ số trở lên.</translation>

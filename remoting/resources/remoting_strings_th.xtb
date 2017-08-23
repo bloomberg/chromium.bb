@@ -79,6 +79,7 @@
 <translation id="2676780859508944670">กำลังทำงาน…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">โดยปกติการอัปเดตซอฟต์แวร์จะทำงานโดยอัตโนมัติ แต่อาจล้มเหลวในบางกรณีซึ่งพบไม่บ่อย การอัปเดตซอฟต์แวร์จะใช้เวลาไม่เกินสองสามนาที และสามารถดำเนินการขณะเชื่อมต่อคอมพิวเตอร์จากระยะไกล</translation>
+<translation id="2758123043070977469">มีปัญหาในการตรวจสอบสิทธิ์ โปรดเข้าสู่ระบบอีกครั้ง</translation>
 <translation id="2803375539583399270">ป้อน PIN</translation>
 <translation id="2841013758207633010">เวลา</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -194,6 +195,7 @@
 <translation id="5708869785009007625">ขณะนี้มีการแชร์เดสก์ท็อปของคุณกับ <ph name="USER" /></translation>
 <translation id="5773590752998175013">วันที่จับคู่</translation>
 <translation id="579702532610384533">เชื่อมต่อใหม่</translation>
+<translation id="5810269635982033450">หน้าจอทำหน้าที่เหมือนแทร็กแพด</translation>
 <translation id="5841343754884244200">ตัวเลือกการแสดงผล</translation>
 <translation id="5843054235973879827">เหตุใดการดำเนินการนี้จึงปลอดภัย</translation>
 <translation id="5859141382851488196">หน้าต่างใหม่…</translation>
@@ -245,6 +247,7 @@
 <translation id="7019153418965365059">ข้อผิดพลาดของโฮสต์ที่ไม่รู้จัก: <ph name="HOST_OFFLINE_REASON" /></translation>
 <translation id="701976023053394610">ความช่วยเหลือจากระยะไกล</translation>
 <translation id="7038683108611689168">ช่วยเราปรับปรุง Chromoting ให้ดีขึ้นด้วยการอนุญาตให้เรารวบรวมสถิติการใช้งานและรายงานข้อขัดข้อง</translation>
+<translation id="7067321367069083429">หน้าจอทำหน้าที่เหมือนหน้าจอสัมผัส</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
 <translation id="7149517134817561223">แอปพลิเคชันที่จะออกคำสั่งให้โฮสต์ของ Chrome Remote Desktop</translation>
 <translation id="7215059001581613786">โปรดป้อน PIN ที่ประกอบด้วยตัวเลขอย่างน้อยหกหลัก</translation>
