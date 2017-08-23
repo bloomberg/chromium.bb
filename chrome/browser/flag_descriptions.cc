@@ -722,6 +722,11 @@ const char kManualPasswordGenerationDescription[] =
     "Show a 'Generate Password' option on the context menu for all password "
     "fields.";
 
+const char kManualPasswordSavingName[] = "Manual password saving.";
+const char kManualPasswordSavingDescription[] =
+    "Show the password manager icon when typing into a password filed. "
+    "Clicking it allows to save the password without submitting the form.";
+
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 const char kMarkHttpAsDangerous[] = "Always mark HTTP as actively dangerous";

@@ -1814,11 +1814,15 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
 
   DCHECK(password_form && (!form.IsNull() || !input.IsNull()));
   provisionally_saved_form_.Set(std::move(password_form), form, input);
-  if (has_password) {
-    GetPasswordManagerDriver()->ShowManualFallbackForSaving(
-        provisionally_saved_form_.password_form());
-  } else {
-    GetPasswordManagerDriver()->HideManualFallbackForSaving();
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnableManualSaving)) {
+    if (has_password) {
+      GetPasswordManagerDriver()->ShowManualFallbackForSaving(
+          provisionally_saved_form_.password_form());
+    } else {
+      GetPasswordManagerDriver()->HideManualFallbackForSaving();
+    }
   }
 }
 

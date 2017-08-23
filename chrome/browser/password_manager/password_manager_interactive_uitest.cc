@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -41,6 +42,25 @@ void SimulateUserTypingInField(content::RenderViewHost* render_view_host,
 }  // namespace
 
 namespace password_manager {
+
+// This is a test fixture, just to enable the kEnableManualSaving feature. The
+// fixture should be replaced by PasswordManagerBrowserTestBase once the
+// kEnableManualSaving feature is deleted.
+class PasswordManagerBrowserTestForManualSaving
+    : public PasswordManagerBrowserTestBase {
+ public:
+  PasswordManagerBrowserTestForManualSaving() = default;
+  ~PasswordManagerBrowserTestForManualSaving() override = default;
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        password_manager::features::kEnableManualSaving);
+    PasswordManagerBrowserTestBase::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
   // At first let us save a credential to the password store.
@@ -102,7 +122,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, UsernameChanged) {
             (stored_passwords.begin()->second)[1].username_value);
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
                        ManualFallbackForSaving) {
   NavigateToFile("/password/password_form.html");
 
@@ -130,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   CheckThatCredentialsStored(base::string16(), base::ASCIIToUTF16("ORARY"));
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestForManualSaving,
                        ManualFallbackForSaving_HideAfterTimeout) {
   NavigateToFile("/password/password_form.html");
   ManagePasswordsUIController::set_save_fallback_timeout_in_seconds(0);
