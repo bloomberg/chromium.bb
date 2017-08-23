@@ -8,7 +8,7 @@
       "paintInvalidations": [
         {
           "object": "LayoutText #text",
-          "rect": [270, 113, 502, 409],
+          "rect": [288, 123, 484, 399],
           "reason": "geometry"
         }
       ]
