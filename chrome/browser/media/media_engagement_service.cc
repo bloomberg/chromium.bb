@@ -155,7 +155,7 @@ void MediaEngagementService::OnURLsDeleted(
     // Remove the number of visits consistent with the number
     // of URLs from the same origin we are removing.
     MediaEngagementScore score = CreateEngagementScore(kv.first);
-    double original_score = score.GetTotalScore();
+    double original_score = score.actual_score();
     score.SetVisits(score.visits() - kv.second);
 
     // If this results in zero visits then clear the score.
@@ -179,7 +179,11 @@ void MediaEngagementService::Clear(const GURL& url) {
 }
 
 double MediaEngagementService::GetEngagementScore(const GURL& url) const {
-  return CreateEngagementScore(url).GetTotalScore();
+  return CreateEngagementScore(url).actual_score();
+}
+
+bool MediaEngagementService::HasHighEngagement(const GURL& url) const {
+  return CreateEngagementScore(url).high_score();
 }
 
 std::map<GURL, double> MediaEngagementService::GetScoreMapForTesting() const {

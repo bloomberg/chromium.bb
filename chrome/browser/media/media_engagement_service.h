@@ -51,6 +51,9 @@ class MediaEngagementService : public KeyedService,
   // Returns the engagement score of |url|.
   double GetEngagementScore(const GURL& url) const;
 
+  // Returns true if |url| has an engagement score considered high.
+  bool HasHighEngagement(const GURL& url) const;
+
   // Returns a map of all stored origins and their engagement levels.
   std::map<GURL, double> GetScoreMapForTesting() const;
 
