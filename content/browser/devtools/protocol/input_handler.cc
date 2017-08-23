@@ -19,6 +19,7 @@
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input/synthetic_tap_gesture_params.h"
+#include "content/public/common/content_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
@@ -247,8 +248,7 @@ InputHandler::InputHandler()
       input_queued_(false),
       page_scale_factor_(1.0),
       last_id_(0),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 InputHandler::~InputHandler() {
 }
@@ -453,7 +453,11 @@ void InputHandler::DispatchMouseEvent(
     }
     wheel_event->delta_x = static_cast<float>(-delta_x.fromJust());
     wheel_event->delta_y = static_cast<float>(-delta_y.fromJust());
-    wheel_event->dispatch_type = blink::WebInputEvent::kBlocking;
+    if (base::FeatureList::IsEnabled(
+            features::kTouchpadAndWheelScrollLatching)) {
+      wheel_event->phase = blink::WebMouseWheelEvent::kPhaseBegan;
+      wheel_event->dispatch_type = blink::WebInputEvent::kBlocking;
+    }
   } else {
     mouse_event.reset(new blink::WebMouseEvent(type, modifiers, timestamp));
   }
@@ -481,6 +485,14 @@ void InputHandler::DispatchMouseEvent(
   if (!input_queued_) {
     pending_mouse_callbacks_.back()->sendSuccess();
     pending_mouse_callbacks_.pop_back();
+  } else if (wheel_event && base::FeatureList::IsEnabled(
+                                features::kTouchpadAndWheelScrollLatching)) {
+    // Send a synthetic wheel event with phaseEnded to finish scrolling.
+    wheel_event->delta_x = 0;
+    wheel_event->delta_y = 0;
+    wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
+    wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+    host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
   }
 }
 
