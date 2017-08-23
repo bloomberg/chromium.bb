@@ -5,6 +5,7 @@
 #ifndef CHROME_INSTALLER_ZUCCHINI_IMAGE_UTILS_H_
 #define CHROME_INSTALLER_ZUCCHINI_IMAGE_UTILS_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/numerics/safe_conversions.h"

@@ -13,6 +13,7 @@ namespace zucchini {
 
 // Virtual Address relative to some base address (RVA).
 using rva_t = uint32_t;
+constexpr rva_t kRVABound = static_cast<rva_t>(-1);
 
 // The following interfaces are used to convert between RVAs and offsets.
 // Caveat: "Offsets" sounds like a value that is confined by image size, but
