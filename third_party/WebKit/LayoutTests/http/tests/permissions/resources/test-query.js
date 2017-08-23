@@ -27,6 +27,7 @@ async_test(function(test) {
 async_test(function(test) {
     navigator.permissions.query({name:'ambient-light-sensor'}).then(function(result) {
         assert_true(result instanceof PermissionStatus);
+        assert_equals(result.state, 'granted');
         test.done();
     }).catch(function() {
         assert_unreached('querying ambient-light-sensor permission should not fail.')
@@ -36,6 +37,7 @@ async_test(function(test) {
 async_test(function(test) {
     navigator.permissions.query({name:'accelerometer'}).then(function(result) {
         assert_true(result instanceof PermissionStatus);
+        assert_equals(result.state, 'granted');
         test.done();
     }).catch(function() {
         assert_unreached('querying accelerometer permission should not fail.')
@@ -45,6 +47,7 @@ async_test(function(test) {
 async_test(function(test) {
     navigator.permissions.query({name:'gyroscope'}).then(function(result) {
         assert_true(result instanceof PermissionStatus);
+        assert_equals(result.state, 'granted');
         test.done();
     }).catch(function() {
         assert_unreached('querying gyroscope permission should not fail.')
@@ -54,6 +57,7 @@ async_test(function(test) {
 async_test(function(test) {
     navigator.permissions.query({name:'magnetometer'}).then(function(result) {
         assert_true(result instanceof PermissionStatus);
+        assert_equals(result.state, 'granted');
         test.done();
     }).catch(function() {
         assert_unreached('querying magnetometer permission should not fail.')
