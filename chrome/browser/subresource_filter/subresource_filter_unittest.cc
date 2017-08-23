@@ -214,6 +214,8 @@ TEST_F(SubresourceFilterTest, ToggleForceActivation) {
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   EXPECT_FALSE(GetClient()->did_show_ui_for_navigation());
   EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
+  histogram_tester.ExpectBucketCount(
+      actions_histogram, kActionForcedActivationNoUIResourceBlocked, 1);
 
   // Simulate closing devtools.
   GetClient()->ToggleForceActivationInCurrentWebContents(false);

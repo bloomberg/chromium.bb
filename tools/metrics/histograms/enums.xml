@@ -36339,9 +36339,11 @@ from previous Chrome versions.
   <int value="7" label="Content setting: blocked (global)"/>
   <int value="8" label="Content setting: allowed (global)"/>
   <int value="9" label="Content setting: wildcard update (Deprecated)"/>
-  <int value="10" label="UI Suppressed (Smart Logic)"/>
+  <int value="10" label="UI suppressed (Smart Logic)"/>
   <int value="11" label="Content setting: allowed while UI suppressed"/>
   <int value="12" label="Forced filtering toggled on via devtools"/>
+  <int value="13"
+      label="UI suppressed and resources blocked (Forced Activation)"/>
 </enum>
 
 <enum name="SubresourceFilterActivationDecision">
