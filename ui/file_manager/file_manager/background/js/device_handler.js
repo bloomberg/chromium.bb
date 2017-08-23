@@ -199,6 +199,30 @@ DeviceHandler.Notification.FORMAT_FAIL = new DeviceHandler.Notification(
     'FORMATTING_FINISHED_FAILURE_MESSAGE');
 
 /**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
+DeviceHandler.Notification.RENAME_START = new DeviceHandler.Notification(
+    'renameStart', 'RENAMING_OF_DEVICE_PENDING_TITLE',
+    'RENAMING_OF_DEVICE_PENDING_MESSAGE');
+
+/**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
+DeviceHandler.Notification.RENAME_SUCCESS = new DeviceHandler.Notification(
+    'renameSuccess', 'RENAMING_OF_DEVICE_FINISHED_TITLE',
+    'RENAMING_OF_DEVICE_FINISHED_SUCCESS_MESSAGE');
+
+/**
+ * @type {DeviceHandler.Notification}
+ * @const
+ */
+DeviceHandler.Notification.RENAME_FAIL = new DeviceHandler.Notification(
+    'renameFail', 'RENAMING_OF_DEVICE_FAILED_TITLE',
+    'RENAMING_OF_DEVICE_FINISHED_FAILURE_MESSAGE');
+
+/**
  * Shows the notification for the device path.
  * @param {string} devicePath Device path.
  * @param {string=} opt_message Message overrides the default message.
@@ -306,6 +330,17 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
     case 'format_fail':
       DeviceHandler.Notification.FORMAT_START.hide(event.devicePath);
       DeviceHandler.Notification.FORMAT_FAIL.show(event.devicePath);
+      break;
+    case 'rename_start':
+      DeviceHandler.Notification.RENAME_START.show(event.devicePath);
+      break;
+    case 'rename_success':
+      DeviceHandler.Notification.RENAME_START.hide(event.devicePath);
+      DeviceHandler.Notification.RENAME_SUCCESS.show(event.devicePath);
+      break;
+    case 'rename_fail':
+      DeviceHandler.Notification.RENAME_START.hide(event.devicePath);
+      DeviceHandler.Notification.RENAME_FAIL.show(event.devicePath);
       break;
     default:
       console.error('Unknown event type: ' + event.type);
