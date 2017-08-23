@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -110,8 +111,11 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
   // Do not show the UI if we're forcing activation due to a devtools toggle.
   // This complicates the meaning of our persistent storage (e.g. our metadata
   // that assumes showing UI implies site is blacklisted).
-  if (activated_via_devtools_)
+  if (activated_via_devtools_) {
+    if (visibility)
+      LogAction(kActionForcedActivationNoUIResourceBlocked);
     return;
+  }
 
   if (did_show_ui_for_navigation_ && visibility)
     return;
@@ -120,29 +124,11 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
   // |visibility| is false when a new navigation starts.
   if (visibility) {
     const GURL& top_level_url = web_contents_->GetLastCommittedURL();
-    if (!settings_manager_->ShouldShowUIForSite(top_level_url)) {
+    if (settings_manager_->ShouldShowUIForSite(top_level_url)) {
+      ShowUI(top_level_url);
+    } else {
       LogAction(kActionUISuppressed);
-      return;
     }
-#if defined(OS_ANDROID)
-    InfoBarService* infobar_service =
-        InfoBarService::FromWebContents(web_contents_);
-    AdsBlockedInfobarDelegate::Create(infobar_service);
-#endif
-    TabSpecificContentSettings* content_settings =
-        TabSpecificContentSettings::FromWebContents(web_contents_);
-    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_ADS);
-
-    LogAction(kActionUIShown);
-
-    if (rappor::RapporService* rappor_service =
-            g_browser_process->rappor_service()) {
-      rappor_service->RecordSampleString(
-          "SubresourceFilter.UIShown", rappor::UMA_RAPPOR_TYPE,
-          rappor::GetDomainAndRegistrySampleFromGURL(top_level_url));
-    }
-    did_show_ui_for_navigation_ = true;
-    settings_manager_->OnDidShowUI(top_level_url);
   } else {
     LogAction(kActionNavigationStarted);
   }
@@ -204,4 +190,27 @@ ChromeSubresourceFilterClient::GetRulesetDealer() {
   subresource_filter::ContentRulesetService* ruleset_service =
       g_browser_process->subresource_filter_ruleset_service();
   return ruleset_service ? ruleset_service->ruleset_dealer() : nullptr;
+}
+
+void ChromeSubresourceFilterClient::ShowUI(const GURL& url) {
+  DCHECK(!activated_via_devtools_);
+#if defined(OS_ANDROID)
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  AdsBlockedInfobarDelegate::Create(infobar_service);
+#endif
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents_);
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_ADS);
+
+  LogAction(kActionUIShown);
+
+  if (rappor::RapporService* rappor_service =
+          g_browser_process->rappor_service()) {
+    rappor_service->RecordSampleString(
+        "SubresourceFilter.UIShown", rappor::UMA_RAPPOR_TYPE,
+        rappor::GetDomainAndRegistrySampleFromGURL(url));
+  }
+  did_show_ui_for_navigation_ = true;
+  settings_manager_->OnDidShowUI(url);
 }
