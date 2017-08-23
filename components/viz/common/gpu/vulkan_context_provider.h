@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_VULKAN_CONTEXT_PROVIDER_H_
-#define CC_OUTPUT_VULKAN_CONTEXT_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_COMMON_GPU_VULKAN_CONTEXT_PROVIDER_H_
+#define COMPONENTS_VIZ_COMMON_GPU_VULKAN_CONTEXT_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
-#include "cc/cc_export.h"
+#include "components/viz/common/viz_common_export.h"
 
 namespace gpu {
 class VulkanDeviceQueue;
 }
 
-namespace cc {
+namespace viz {
 
 // The VulkanContextProvider groups sharing of vulkan objects synchronously.
-class CC_EXPORT VulkanContextProvider
+class VIZ_COMMON_EXPORT VulkanContextProvider
     : public base::RefCountedThreadSafe<VulkanContextProvider> {
  public:
   virtual gpu::VulkanDeviceQueue* GetDeviceQueue() = 0;
@@ -25,6 +25,6 @@ class CC_EXPORT VulkanContextProvider
   virtual ~VulkanContextProvider() {}
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_VULKAN_CONTEXT_PROVIDER_H_
+#endif  // COMPONENTS_VIZ_COMMON_GPU_VULKAN_CONTEXT_PROVIDER_H_

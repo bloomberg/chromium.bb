@@ -29,7 +29,7 @@ LayerTreeFrameSink::LayerTreeFrameSink(
       shared_bitmap_manager_(shared_bitmap_manager) {}
 
 LayerTreeFrameSink::LayerTreeFrameSink(
-    scoped_refptr<VulkanContextProvider> vulkan_context_provider)
+    scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider)
     : vulkan_context_provider_(vulkan_context_provider),
       gpu_memory_buffer_manager_(nullptr),
       shared_bitmap_manager_(nullptr) {}

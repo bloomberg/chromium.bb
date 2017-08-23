@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_OUTPUT_VULKAN_IN_PROCESS_CONTEXT_PROVIDER_H_
-#define CC_OUTPUT_VULKAN_IN_PROCESS_CONTEXT_PROVIDER_H_
+#ifndef COMPONENTS_VIZ_COMMON_GPU_VULKAN_IN_PROCESS_CONTEXT_PROVIDER_H_
+#define COMPONENTS_VIZ_COMMON_GPU_VULKAN_IN_PROCESS_CONTEXT_PROVIDER_H_
 
 #include <memory>
 
-#include "cc/cc_export.h"
-#include "cc/output/vulkan_context_provider.h"
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "components/viz/common/viz_common_export.h"
 #include "gpu/vulkan/features.h"
 
 namespace gpu {
 class VulkanDeviceQueue;
 }
 
-namespace cc {
+namespace viz {
 
-class CC_EXPORT VulkanInProcessContextProvider : public VulkanContextProvider {
+class VIZ_COMMON_EXPORT VulkanInProcessContextProvider
+    : public VulkanContextProvider {
  public:
   static scoped_refptr<VulkanInProcessContextProvider> Create();
 
@@ -39,6 +40,6 @@ class CC_EXPORT VulkanInProcessContextProvider : public VulkanContextProvider {
   DISALLOW_COPY_AND_ASSIGN(VulkanInProcessContextProvider);
 };
 
-}  // namespace cc
+}  // namespace viz
 
-#endif  // CC_OUTPUT_VULKAN_IN_PROCESS_CONTEXT_PROVIDER_H_
+#endif  // COMPONENTS_VIZ_COMMON_GPU_VULKAN_IN_PROCESS_CONTEXT_PROVIDER_H_

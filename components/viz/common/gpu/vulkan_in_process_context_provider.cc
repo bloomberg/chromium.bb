@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/output/vulkan_in_process_context_provider.h"
+#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/vulkan/features.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -10,7 +10,7 @@
 #include "gpu/vulkan/vulkan_implementation.h"
 #endif  // BUILDFLAG(ENABLE_VULKAN)
 
-namespace cc {
+namespace viz {
 
 scoped_refptr<VulkanInProcessContextProvider>
 VulkanInProcessContextProvider::Create() {
@@ -70,4 +70,4 @@ VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {
   Destroy();
 }
 
-}  // namespace cc
+}  // namespace viz
