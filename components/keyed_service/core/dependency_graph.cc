@@ -10,6 +10,7 @@
 #include <deque>
 #include <iterator>
 
+#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 
 namespace {
@@ -46,8 +47,7 @@ void DependencyGraph::AddNode(DependencyNode* node) {
 }
 
 void DependencyGraph::RemoveNode(DependencyNode* node) {
-  all_nodes_.erase(std::remove(all_nodes_.begin(), all_nodes_.end(), node),
-                   all_nodes_.end());
+  base::Erase(all_nodes_, node);
 
   // Remove all dependency edges that contain this node.
   EdgeMap::iterator it = edges_.begin();
@@ -91,14 +91,11 @@ bool DependencyGraph::GetDestructionOrder(std::vector<DependencyNode*>* order) {
 
 bool DependencyGraph::BuildConstructionOrder() {
   // Step 1: Build a set of nodes with no incoming edges.
-  std::deque<DependencyNode*> queue;
-  std::copy(all_nodes_.begin(), all_nodes_.end(), std::back_inserter(queue));
-
-  std::deque<DependencyNode*>::iterator queue_end = queue.end();
-  for (EdgeMap::const_iterator it = edges_.begin(); it != edges_.end(); ++it) {
-    queue_end = std::remove(queue.begin(), queue_end, it->second);
-  }
-  queue.erase(queue_end, queue.end());
+  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
+  // erase().
+  std::deque<DependencyNode*> queue(all_nodes_.begin(), all_nodes_.end());
+  for (const auto& pair : edges_)
+    base::Erase(queue, pair.second);
 
   // Step 2: Do the Kahn topological sort.
   std::vector<DependencyNode*> output;
@@ -147,32 +144,29 @@ std::string DependencyGraph::DumpAsGraphviz(
   std::string escaped_toplevel_name = Escape(toplevel_name);
 
   // Make a copy of all nodes.
-  std::deque<DependencyNode*> nodes;
-  std::copy(all_nodes_.begin(), all_nodes_.end(), std::back_inserter(nodes));
+  // TODO(http://crbug.com/757231) use a base::circular_deque when it supports
+  // erase().
+  std::deque<DependencyNode*> nodes(all_nodes_.begin(), all_nodes_.end());
 
   // State all dependencies and remove |second| so we don't generate an
   // implicit dependency on the top level node.
-  std::deque<DependencyNode*>::iterator nodes_end(nodes.end());
   result.append("  /* Dependencies */\n");
-  for (EdgeMap::const_iterator it = edges_.begin(); it != edges_.end(); ++it) {
+  for (const auto& pair : edges_) {
     result.append("  ");
-    result.append(Escape(node_name_callback.Run(it->second)));
+    result.append(Escape(node_name_callback.Run(pair.second)));
     result.append(" -> ");
-    result.append(Escape(node_name_callback.Run(it->first)));
+    result.append(Escape(node_name_callback.Run(pair.first)));
     result.append(";\n");
 
-    nodes_end = std::remove(nodes.begin(), nodes_end, it->second);
+    base::Erase(nodes, pair.second);
   }
-  nodes.erase(nodes_end, nodes.end());
 
   // Every node that doesn't depend on anything else will implicitly depend on
   // the top level node.
   result.append("\n  /* Toplevel attachments */\n");
-  for (std::deque<DependencyNode*>::const_iterator it = nodes.begin();
-       it != nodes.end();
-       ++it) {
+  for (DependencyNode* node : nodes) {
     result.append("  ");
-    result.append(Escape(node_name_callback.Run(*it)));
+    result.append(Escape(node_name_callback.Run(node)));
     result.append(" -> ");
     result.append(escaped_toplevel_name);
     result.append(";\n");

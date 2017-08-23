@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <vector>
 
+#include "base/containers/circular_deque.h"
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/synchronization/condition_variable.h"
@@ -146,7 +146,7 @@ class PnaclTranslateThread {
   base::ConditionVariable buffer_cond_;
   // Data buffers from FileDownloader are enqueued here to pass from the
   // main thread to the SRPC thread. Protected by cond_mu_
-  std::deque<std::string> data_buffers_;
+  base::circular_deque<std::string> data_buffers_;
   // Whether all data has been downloaded and copied to translation thread.
   // Associated with buffer_cond_
   bool done_;

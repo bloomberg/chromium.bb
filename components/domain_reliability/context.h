@@ -119,6 +119,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   DomainReliabilityDispatcher* dispatcher_;
   DomainReliabilityUploader* uploader_;
 
+  // We use erase() so this can't be a base::circular_deque.
   std::deque<std::unique_ptr<DomainReliabilityBeacon>> beacons_;
   size_t uploading_beacons_size_;
   base::TimeTicks upload_time_;
