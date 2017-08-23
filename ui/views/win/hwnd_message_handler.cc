@@ -242,12 +242,12 @@ ui::EventType GetTouchEventType(POINTER_FLAGS pointer_flags) {
 
 const int kTouchDownContextResetTimeout = 500;
 
-// Windows does not flag synthesized mouse messages from touch in all cases.
-// This causes us grief as we don't want to process touch and mouse messages
-// concurrently. Hack as per msdn is to check if the time difference between
-// the touch message and the mouse move is within 500 ms and at the same
-// location as the cursor.
-const int kSynthesizedMouseTouchMessagesTimeDifference = 500;
+// Windows does not flag synthesized mouse messages from touch or pen in all
+// cases. This causes us grief as we don't want to process touch and mouse
+// messages concurrently. Hack as per msdn is to check if the time difference
+// between the touch/pen message and the mouse move is within 500 ms and at the
+// same location as the cursor.
+const int kSynthesizedMouseMessagesTimeDifference = 500;
 
 }  // namespace
 
@@ -337,7 +337,7 @@ base::LazyInstance<HWNDMessageHandler::FullscreenWindowMonitorMap>::
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, public:
 
-long HWNDMessageHandler::last_touch_message_time_ = 0;
+long HWNDMessageHandler::last_touch_or_pen_message_time_ = 0;
 
 HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
     : msg_handled_(FALSE),
@@ -2316,7 +2316,7 @@ LRESULT HWNDMessageHandler::OnTouchEvent(UINT message,
 
       ScreenToClient(hwnd(), &point);
 
-      last_touch_message_time_ = ::GetMessageTime();
+      last_touch_or_pen_message_time_ = ::GetMessageTime();
 
       gfx::Point touch_point(point.x, point.y);
       unsigned int touch_id = id_generator_.GetGeneratedID(input[i].dwID);
@@ -2787,6 +2787,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
     } else {
       NOTREACHED();
     }
+    last_touch_or_pen_message_time_ = ::GetMessageTime();
   }
 
   // Always mark as handled as we don't want to generate WM_MOUSE compatiblity
@@ -2804,9 +2805,10 @@ bool HWNDMessageHandler::IsSynthesizedMouseMessage(unsigned int message,
   // Ignore mouse messages which occur at the same location as the current
   // cursor position and within a time difference of 500 ms from the last
   // touch message.
-  if (last_touch_message_time_ && message_time >= last_touch_message_time_ &&
-      ((message_time - last_touch_message_time_) <=
-          kSynthesizedMouseTouchMessagesTimeDifference)) {
+  if (last_touch_or_pen_message_time_ &&
+      message_time >= last_touch_or_pen_message_time_ &&
+      ((message_time - last_touch_or_pen_message_time_) <=
+       kSynthesizedMouseMessagesTimeDifference)) {
     POINT mouse_location = CR_POINT_INITIALIZER_FROM_LPARAM(l_param);
     ::ClientToScreen(hwnd(), &mouse_location);
     POINT cursor_pos = {0};
