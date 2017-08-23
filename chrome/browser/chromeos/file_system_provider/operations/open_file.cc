@@ -13,17 +13,15 @@ namespace chromeos {
 namespace file_system_provider {
 namespace operations {
 
-OpenFile::OpenFile(
-    extensions::EventRouter* event_router,
-    const ProvidedFileSystemInfo& file_system_info,
-    const base::FilePath& file_path,
-    OpenFileMode mode,
-    const ProvidedFileSystemInterface::OpenFileCallback& callback)
+OpenFile::OpenFile(extensions::EventRouter* event_router,
+                   const ProvidedFileSystemInfo& file_system_info,
+                   const base::FilePath& file_path,
+                   OpenFileMode mode,
+                   ProvidedFileSystemInterface::OpenFileCallback callback)
     : Operation(event_router, file_system_info),
       file_path_(file_path),
       mode_(mode),
-      callback_(callback) {
-}
+      callback_(std::move(callback)) {}
 
 OpenFile::~OpenFile() {
 }
@@ -62,13 +60,15 @@ void OpenFile::OnSuccess(int request_id,
                          std::unique_ptr<RequestValue> result,
                          bool has_more) {
   // File handle is the same as request id of the OpenFile operation.
-  callback_.Run(request_id, base::File::FILE_OK);
+  DCHECK(callback_);
+  std::move(callback_).Run(request_id, base::File::FILE_OK);
 }
 
 void OpenFile::OnError(int /* request_id */,
                        std::unique_ptr<RequestValue> /* result */,
                        base::File::Error error) {
-  callback_.Run(0 /* file_handle */, error);
+  DCHECK(callback_);
+  std::move(callback_).Run(0 /* file_handle */, error);
 }
 
 }  // namespace operations

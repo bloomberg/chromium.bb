@@ -35,7 +35,7 @@ class CreateDirectory : public Operation {
                   const ProvidedFileSystemInfo& file_system_info,
                   const base::FilePath& directory_path,
                   bool recursive,
-                  const storage::AsyncFileUtil::StatusCallback& callback);
+                  storage::AsyncFileUtil::StatusCallback callback);
   ~CreateDirectory() override;
 
   // Operation overrides.
@@ -50,7 +50,7 @@ class CreateDirectory : public Operation {
  private:
   base::FilePath directory_path_;
   bool recursive_;
-  const storage::AsyncFileUtil::StatusCallback callback_;
+  storage::AsyncFileUtil::StatusCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateDirectory);
 };

@@ -17,12 +17,11 @@ MoveEntry::MoveEntry(extensions::EventRouter* event_router,
                      const ProvidedFileSystemInfo& file_system_info,
                      const base::FilePath& source_path,
                      const base::FilePath& target_path,
-                     const storage::AsyncFileUtil::StatusCallback& callback)
+                     storage::AsyncFileUtil::StatusCallback callback)
     : Operation(event_router, file_system_info),
       source_path_(source_path),
       target_path_(target_path),
-      callback_(callback) {
-}
+      callback_(std::move(callback)) {}
 
 MoveEntry::~MoveEntry() {
 }
@@ -50,13 +49,15 @@ bool MoveEntry::Execute(int request_id) {
 void MoveEntry::OnSuccess(int /* request_id */,
                           std::unique_ptr<RequestValue> /* result */,
                           bool has_more) {
-  callback_.Run(base::File::FILE_OK);
+  DCHECK(callback_);
+  std::move(callback_).Run(base::File::FILE_OK);
 }
 
 void MoveEntry::OnError(int /* request_id */,
                         std::unique_ptr<RequestValue> /* result */,
                         base::File::Error error) {
-  callback_.Run(error);
+  DCHECK(callback_);
+  std::move(callback_).Run(error);
 }
 
 }  // namespace operations
