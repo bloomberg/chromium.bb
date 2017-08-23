@@ -29,7 +29,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace test {
@@ -87,6 +89,12 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
 
   void TearDownOnMainThread() override {
     mock_permission_prompt_factory_.reset();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Enable fake devices so we can test getUserMedia() on devices without
+    // physical media devices.
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
   }
 
   PermissionRequestManager* GetPermissionRequestManager() {
@@ -388,6 +396,95 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, InPageNavigation) {
 
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->TotalRequestCount());
+}
+
+// Prompts are only shown for active tabs and (on Desktop) hidden on tab
+// switching
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest, MultipleTabs) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), embedded_test_server()->GetURL("/empty.html"), 1);
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL("/empty.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // SetUp() only creates a mock prompt factory for the first tab.
+  MockPermissionPromptFactory* bubble_factory_0 = bubble_factory();
+  std::unique_ptr<MockPermissionPromptFactory> bubble_factory_1(
+      base::MakeUnique<MockPermissionPromptFactory>(
+          GetPermissionRequestManager()));
+
+  TabStripModel* tab_strip_model = browser()->tab_strip_model();
+  ASSERT_EQ(2, tab_strip_model->count());
+  ASSERT_EQ(1, tab_strip_model->active_index());
+
+  // Request geolocation in foreground tab, prompt should be shown.
+  ExecuteScriptAndGetValue(
+      tab_strip_model->GetWebContentsAt(1)->GetMainFrame(),
+      "navigator.geolocation.getCurrentPosition(function(){});");
+  EXPECT_EQ(1, bubble_factory_1->show_count());
+  EXPECT_FALSE(bubble_factory_0->is_visible());
+  EXPECT_TRUE(bubble_factory_1->is_visible());
+
+  tab_strip_model->ActivateTabAt(0, false);
+  EXPECT_FALSE(bubble_factory_0->is_visible());
+  EXPECT_FALSE(bubble_factory_1->is_visible());
+
+  tab_strip_model->ActivateTabAt(1, false);
+  EXPECT_EQ(2, bubble_factory_1->show_count());
+  EXPECT_FALSE(bubble_factory_0->is_visible());
+  EXPECT_TRUE(bubble_factory_1->is_visible());
+
+  // Request notification in background tab. No prompt is shown until the tab
+  // itself is activated.
+  ExecuteScriptAndGetValue(tab_strip_model->GetWebContentsAt(0)->GetMainFrame(),
+                           "Notification.requestPermission()");
+  EXPECT_FALSE(bubble_factory_0->is_visible());
+  EXPECT_EQ(2, bubble_factory_1->show_count());
+
+  tab_strip_model->ActivateTabAt(0, false);
+  EXPECT_TRUE(bubble_factory_0->is_visible());
+  EXPECT_EQ(1, bubble_factory()->show_count());
+  EXPECT_EQ(2, bubble_factory_1->show_count());
+}
+
+IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
+                       BackgroundTabNavigation) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(), embedded_test_server()->GetURL("/empty.html"), 1);
+
+  // Request camera, prompt should be shown.
+  ExecuteScriptAndGetValue(
+      browser()->tab_strip_model()->GetWebContentsAt(0)->GetMainFrame(),
+      "navigator.getUserMedia({video: true}, ()=>{}, ()=>{})");
+  bubble_factory()->WaitForPermissionBubble();
+  EXPECT_TRUE(bubble_factory()->is_visible());
+  EXPECT_EQ(1, bubble_factory()->show_count());
+
+  // SetUp() only creates a mock prompt factory for the first tab but this test
+  // doesn't request any permissions in the second tab so it doesn't need one.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL("/empty.html"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Navigate background tab, prompt should be removed.
+  ExecuteScriptAndGetValue(
+      browser()->tab_strip_model()->GetWebContentsAt(0)->GetMainFrame(),
+      "window.location = 'simple.html'");
+  content::TestNavigationObserver observer(
+      browser()->tab_strip_model()->GetWebContentsAt(0));
+  observer.Wait();
+  EXPECT_FALSE(bubble_factory()->is_visible());
+
+  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  EXPECT_FALSE(bubble_factory()->is_visible());
+  EXPECT_EQ(1, bubble_factory()->show_count());
 }
 
 // Bubble requests should not be shown when the killswitch is on.

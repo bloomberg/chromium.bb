@@ -443,7 +443,7 @@ void PermissionRequestManager::CleanUpRequests() {
   }
   queued_requests_.clear();
 
-  if (view_)
+  if (!requests_.empty())
     FinalizeBubble(PermissionAction::IGNORED);
 }
 
