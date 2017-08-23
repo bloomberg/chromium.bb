@@ -5,24 +5,21 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("square", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('square', step1);
 
-    function step1()
-    {
-        TestRunner.addResult("Rules before toggling:");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        ElementsTestRunner.waitForStyleApplied(step2);
-        ElementsTestRunner.toggleMatchedStyleProperty("background-color", false);
-    }
+  function step1() {
+    TestRunner.addResult('Rules before toggling:');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    ElementsTestRunner.waitForStyleApplied(step2);
+    ElementsTestRunner.toggleMatchedStyleProperty('background-color', false);
+  }
 
-    function step2()
-    {
-        TestRunner.addResult("Rules after toggling:");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        TestRunner.completeTest();
-    }
+  function step2() {
+    TestRunner.addResult('Rules after toggling:');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

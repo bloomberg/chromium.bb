@@ -14,26 +14,23 @@ function clickPseudo()
     eventSender.mouseUp(0);
 }
 
-function test()
-{
-    TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(inspectModeEnabled);
+function test() {
+  TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(inspectModeEnabled);
 
-    function inspectModeEnabled()
-    {
-        UI.context.addFlavorChangeListener(SDK.DOMNode, selectedNodeChanged);
-        TestRunner.evaluateInPage("clickPseudo()");
-    }
+  function inspectModeEnabled() {
+    UI.context.addFlavorChangeListener(SDK.DOMNode, selectedNodeChanged);
+    TestRunner.evaluateInPage('clickPseudo()');
+  }
 
-    function selectedNodeChanged()
-    {
-        var selectedNode = ElementsTestRunner.firstElementsTreeOutline().selectedDOMNode();
-        if (!selectedNode)
-            TestRunner.addResult("<no selected node>");
-        else
-            TestRunner.addResult("Selected node pseudo type: " + selectedNode.pseudoType());
-        UI.context.removeFlavorChangeListener(SDK.DOMNode, selectedNodeChanged);
-        TestRunner.completeTest();
-    }
+  function selectedNodeChanged() {
+    var selectedNode = ElementsTestRunner.firstElementsTreeOutline().selectedDOMNode();
+    if (!selectedNode)
+      TestRunner.addResult('<no selected node>');
+    else
+      TestRunner.addResult('Selected node pseudo type: ' + selectedNode.pseudoType());
+    UI.context.removeFlavorChangeListener(SDK.DOMNode, selectedNodeChanged);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

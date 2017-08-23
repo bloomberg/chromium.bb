@@ -9,40 +9,35 @@
 </style>
 <script>
 
-function test()
-{
-    var treeElement;
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", editProperty);
+function test() {
+  var treeElement;
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', editProperty);
 
-    function editProperty()
-    {
-        treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem("color");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        treeElement.startEditing();
-        treeElement.nameElement.textContent = "color";
-        treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        treeElement.valueElement.textContent = "red";
-        ElementsTestRunner.waitForStyleApplied(commitInvalidProperty);
-        treeElement.kickFreeFlowStyleEditForTest();
-    }
+  function editProperty() {
+    treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    treeElement.startEditing();
+    treeElement.nameElement.textContent = 'color';
+    treeElement.nameElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    treeElement.valueElement.textContent = 'red';
+    ElementsTestRunner.waitForStyleApplied(commitInvalidProperty);
+    treeElement.kickFreeFlowStyleEditForTest();
+  }
 
-    function commitInvalidProperty()
-    {
-        treeElement.valueElement.textContent = "red/*";
-        treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
-        ElementsTestRunner.waitForStyleApplied(invalidCommitted);
-    }
+  function commitInvalidProperty() {
+    treeElement.valueElement.textContent = 'red/*';
+    treeElement.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+    ElementsTestRunner.waitForStyleApplied(invalidCommitted);
+  }
 
-    function invalidCommitted()
-    {
-        ElementsTestRunner.waitForStyleApplied(dumpAndExit);
-    }
+  function invalidCommitted() {
+    ElementsTestRunner.waitForStyleApplied(dumpAndExit);
+  }
 
-    function dumpAndExit()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        TestRunner.completeTest();
-    }
+  function dumpAndExit() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

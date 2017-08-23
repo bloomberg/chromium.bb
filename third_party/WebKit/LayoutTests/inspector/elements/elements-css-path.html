@@ -10,57 +10,50 @@ function matchingElements(selector)
     return document.querySelectorAll(selector).length;
 }
 
-function test()
-{
-    var nodeQueue = [];
-    ElementsTestRunner.expandElementsTree(enqueueNodes);
+function test() {
+  var nodeQueue = [];
+  ElementsTestRunner.expandElementsTree(enqueueNodes);
 
-    function enqueueNodes()
-    {
-        enqueueNode("", getDocumentElement());
-        dumpNodeData();
+  function enqueueNodes() {
+    enqueueNode('', getDocumentElement());
+    dumpNodeData();
+  }
+
+  function dumpNodeData() {
+    var entry = nodeQueue.shift();
+    if (!entry) {
+      TestRunner.completeTest();
+      return;
+    }
+    var cssPath = Components.DOMPresentationUtils.cssPath(entry.node, true);
+    var result = entry.prefix + cssPath;
+    TestRunner.addResult(result.replace(/\n/g, '\\n'));
+    var escapedPath = cssPath.replace(/\\/g, '\\\\');
+    TestRunner.evaluateInPage('matchingElements(\'' + escapedPath + '\')', callback);
+
+    function callback(result) {
+      TestRunner.assertEquals(1, result.value);
+      dumpNodeData();
+    }
+  }
+
+  function getDocumentElement() {
+    var map = TestRunner.domModel._idToDOMNode;
+    for (var id in map) {
+      if (map[id].nodeName() === '#document')
+        return map[id];
     }
 
-    function dumpNodeData()
-    {
-        var entry = nodeQueue.shift();
-        if (!entry) {
-            TestRunner.completeTest();
-            return;
-        }
-        var cssPath = Components.DOMPresentationUtils.cssPath(entry.node, true);
-        var result = entry.prefix + cssPath;
-        TestRunner.addResult(result.replace(/\n/g, "\\n"));
-        var escapedPath = cssPath.replace(/\\/g, "\\\\");
-        TestRunner.evaluateInPage("matchingElements('" + escapedPath  + "')", callback);
+    return null;
+  }
 
-        function callback(result)
-        {
-            TestRunner.assertEquals(1, result.value);
-            dumpNodeData();
-        }
-    }
-
-    function getDocumentElement()
-    {
-        var map = TestRunner.domModel._idToDOMNode;
-        for (var id in map) {
-            if (map[id].nodeName() === "#document")
-                return map[id];
-        }
-
-        return null;
-    }
-
-    function enqueueNode(prefix, node)
-    {
-        if (node.nodeType() === Node.ELEMENT_NODE)
-            nodeQueue.push({prefix: prefix, node: node});
-        var children = node.children();
-        for (var i = 0; children && i < children.length; ++i)
-            enqueueNode(prefix + "  ", children[i]);
-    }
-
+  function enqueueNode(prefix, node) {
+    if (node.nodeType() === Node.ELEMENT_NODE)
+      nodeQueue.push({prefix: prefix, node: node});
+    var children = node.children();
+    for (var i = 0; children && i < children.length; ++i)
+      enqueueNode(prefix + '  ', children[i]);
+  }
 }
 </script>
 </head>

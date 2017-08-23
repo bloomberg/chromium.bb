@@ -13,36 +13,32 @@ function appendChild()
     container.appendChild(child);
 }
 
-function test()
-{
-    var containerNode;
+function test() {
+  var containerNode;
 
-    TestRunner.runTestSuite([
-        function testDumpInitial(next)
-        {
-            function callback(node)
-            {
-                containerNode = node;
-                TestRunner.addResult("========= Original ========");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-            ElementsTestRunner.selectNodeWithId("container", callback);
-        },
+  TestRunner.runTestSuite([
+    function testDumpInitial(next) {
+      function callback(node) {
+        containerNode = node;
+        TestRunner.addResult('========= Original ========');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+      ElementsTestRunner.selectNodeWithId('container', callback);
+    },
 
-        function testAppend(next) {
-            function callback()
-            {
-                ElementsTestRunner.firstElementsTreeOutline().runPendingUpdates();
-                TestRunner.deprecatedRunAfterPendingDispatches(function() {
-                    TestRunner.addResult("======== Appended =========");
-                    ElementsTestRunner.dumpElementsTree(containerNode);
-                    next();
-                })
-            }
-            TestRunner.evaluateInPage("appendChild()", callback);
-        }
-    ]);
+    function testAppend(next) {
+      function callback() {
+        ElementsTestRunner.firstElementsTreeOutline().runPendingUpdates();
+        TestRunner.deprecatedRunAfterPendingDispatches(function() {
+          TestRunner.addResult('======== Appended =========');
+          ElementsTestRunner.dumpElementsTree(containerNode);
+          next();
+        });
+      }
+      TestRunner.evaluateInPage('appendChild()', callback);
+    }
+  ]);
 }
 
 </script>

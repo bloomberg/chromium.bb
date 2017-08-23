@@ -15,47 +15,41 @@ function insertNode()
     dataElement.insertBefore(aElement, document.getElementById("id1"));
 }
 
-function test()
-{
-    var dataTreeElement;
-    ElementsTestRunner.nodeWithId("data", step1);
+function test() {
+  var dataTreeElement;
+  ElementsTestRunner.nodeWithId('data', step1);
 
-    function step1(node)
-    {
-        dataTreeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(node);
-        dataTreeElement._expandedChildrenLimit = 5;
-        dataTreeElement.reveal();
-        dataTreeElement.expand();
-        TestRunner.deprecatedRunAfterPendingDispatches(step2);
-    }
+  function step1(node) {
+    dataTreeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(node);
+    dataTreeElement._expandedChildrenLimit = 5;
+    dataTreeElement.reveal();
+    dataTreeElement.expand();
+    TestRunner.deprecatedRunAfterPendingDispatches(step2);
+  }
 
-    function step2()
-    {
-        TestRunner.addResult("=========== Loaded 5 children ===========");
-        dumpElementsTree();
-        TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateModifiedNodes", step3);
-        TestRunner.evaluateInPage("insertNode()");
-    }
+  function step2() {
+    TestRunner.addResult('=========== Loaded 5 children ===========');
+    dumpElementsTree();
+    TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, '_updateModifiedNodes', step3);
+    TestRunner.evaluateInPage('insertNode()');
+  }
 
-    function step3()
-    {
-        TestRunner.addResult("=========== Modified children ===========");
-        dumpElementsTree();
-        dataTreeElement.expandAllButtonElement.button.click();
-        TestRunner.deprecatedRunAfterPendingDispatches(step4);
-    }
+  function step3() {
+    TestRunner.addResult('=========== Modified children ===========');
+    dumpElementsTree();
+    dataTreeElement.expandAllButtonElement.button.click();
+    TestRunner.deprecatedRunAfterPendingDispatches(step4);
+  }
 
-    function step4()
-    {
-        TestRunner.addResult("=========== Loaded all children ===========");
-        dumpElementsTree();
-        TestRunner.completeTest();
-    }
+  function step4() {
+    TestRunner.addResult('=========== Loaded all children ===========');
+    dumpElementsTree();
+    TestRunner.completeTest();
+  }
 
-    function dumpElementsTree()
-    {
-        ElementsTestRunner.dumpElementsTree(null, 0);
-    }
+  function dumpElementsTree() {
+    ElementsTestRunner.dumpElementsTree(null, 0);
+  }
 }
 </script>
 </head>

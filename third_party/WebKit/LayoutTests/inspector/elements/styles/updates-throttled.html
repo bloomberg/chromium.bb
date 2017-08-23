@@ -4,35 +4,31 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    var UPDATE_COUNT = 5;
-    var rebuildCount = 0;
+function test() {
+  var UPDATE_COUNT = 5;
+  var rebuildCount = 0;
 
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", selectCallback);
-    function selectCallback()
-    {
-        TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, "_innerRebuildUpdate", sniffRebuild, true);
-        var stylesPane = UI.panels.elements._stylesWidget;
-        for (var i = 0; i < UPDATE_COUNT; ++i)
-            UI.context.setFlavor(SDK.DOMNode, stylesPane.node());
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', selectCallback);
+  function selectCallback() {
+    TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, '_innerRebuildUpdate', sniffRebuild, true);
+    var stylesPane = UI.panels.elements._stylesWidget;
+    for (var i = 0; i < UPDATE_COUNT; ++i)
+      UI.context.setFlavor(SDK.DOMNode, stylesPane.node());
 
-        TestRunner.deprecatedRunAfterPendingDispatches(completeCallback);
-    }
+    TestRunner.deprecatedRunAfterPendingDispatches(completeCallback);
+  }
 
-    function completeCallback()
-    {
-        if (rebuildCount >= UPDATE_COUNT)
-            TestRunner.addResult("ERROR: got " + rebuildCount + " rebuilds for " + UPDATE_COUNT + " consecutive updates");
-        else
-            TestRunner.addResult("OK: rebuilds throttled");
-        TestRunner.completeTest();
-    }
+  function completeCallback() {
+    if (rebuildCount >= UPDATE_COUNT)
+      TestRunner.addResult('ERROR: got ' + rebuildCount + ' rebuilds for ' + UPDATE_COUNT + ' consecutive updates');
+    else
+      TestRunner.addResult('OK: rebuilds throttled');
+    TestRunner.completeTest();
+  }
 
-    function sniffRebuild()
-    {
-        ++rebuildCount;
-    }
+  function sniffRebuild() {
+    ++rebuildCount;
+  }
 }
 
 </script>

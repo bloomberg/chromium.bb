@@ -42,14 +42,12 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    ElementsTestRunner.dumpInspectorHighlightJSON("inspectedElement1", testNode2);
+function test() {
+  ElementsTestRunner.dumpInspectorHighlightJSON('inspectedElement1', testNode2);
 
-    function testNode2()
-    {
-        ElementsTestRunner.dumpInspectorHighlightJSON("inspectedElement2", TestRunner.completeTest.bind(InspectorTest));
-    }
+  function testNode2() {
+    ElementsTestRunner.dumpInspectorHighlightJSON('inspectedElement2', TestRunner.completeTest.bind(InspectorTest));
+  }
 }
 
 </script>

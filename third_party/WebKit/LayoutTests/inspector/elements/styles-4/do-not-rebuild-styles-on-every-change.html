@@ -13,40 +13,35 @@ function modify(id)
     document.getElementById(id).setAttribute("fake", "modified");
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function setupTest(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("foo", didSelectElement);
+function test() {
+  TestRunner.runTestSuite([
+    function setupTest(next) {
+      ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('foo', didSelectElement);
 
-            function didSelectElement()
-            {
-                TestRunner.addSniffer(Elements.StylesSidebarPane.prototype, "update", TestRunner.addResult.bind(InspectorTest, "Requested StyleSidebarPane update"), true);
-                next();
-            }
-        },
+      function didSelectElement() {
+        TestRunner.addSniffer(
+            Elements.StylesSidebarPane.prototype, 'update',
+            TestRunner.addResult.bind(InspectorTest, 'Requested StyleSidebarPane update'), true);
+        next();
+      }
+    },
 
-        function testModifySibling(next)
-        {
-            TestRunner.evaluateInPage("modify(\"sibling\")", next);
-        },
+    function testModifySibling(next) {
+      TestRunner.evaluateInPage('modify("sibling")', next);
+    },
 
-        function testModifySiblingChild(next)
-        {
-            TestRunner.evaluateInPage("modify(\"child-of-sibling\")", next);
-        },
+    function testModifySiblingChild(next) {
+      TestRunner.evaluateInPage('modify("child-of-sibling")', next);
+    },
 
-        function testModifyParent(next)
-        {
-            TestRunner.evaluateInPage("modify(\"parent\")", next);
-        },
+    function testModifyParent(next) {
+      TestRunner.evaluateInPage('modify("parent")', next);
+    },
 
-        function testModifyChild(next)
-        {
-            TestRunner.evaluateInPage("modify(\"child\")", next);
-        }
-    ]);
+    function testModifyChild(next) {
+      TestRunner.evaluateInPage('modify("child")', next);
+    }
+  ]);
 };
 
 </script>

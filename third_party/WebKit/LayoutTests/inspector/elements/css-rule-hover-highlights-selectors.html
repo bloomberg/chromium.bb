@@ -26,94 +26,78 @@ function buildShadowDOM()
     runTest();
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function setupProxyOverlay(next)
-        {
-            TestRunner.evaluateFunctionInOverlay(drawHighlightProxy, next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function setupProxyOverlay(next) {
+      TestRunner.evaluateFunctionInOverlay(drawHighlightProxy, next);
+    },
 
-        function testRegularNodeSelection(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", onSelected);
+    function testRegularNodeSelection(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', onSelected);
 
-            function onSelected()
-            {
-                resetHighlightCount(onHighlightCountReset);
-            }
+      function onSelected() {
+        resetHighlightCount(onHighlightCountReset);
+      }
 
-            function onHighlightCountReset()
-            {
-                var section = ElementsTestRunner.firstMatchedStyleSection();
-                section._highlight();
-                TestRunner.callFunctionInPageAsync("requestAnimationFramePromise").then(onHighlighted)
-            }
+      function onHighlightCountReset() {
+        var section = ElementsTestRunner.firstMatchedStyleSection();
+        section._highlight();
+        TestRunner.callFunctionInPageAsync('requestAnimationFramePromise').then(onHighlighted);
+      }
 
-            function onHighlighted()
-            {
-                dumpHighlightCount(next);
-            }
-        },
+      function onHighlighted() {
+        dumpHighlightCount(next);
+      }
+    },
 
-        function testShadowDOMNodeSelection(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("inspected-shadow", onSelected);
+    function testShadowDOMNodeSelection(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected-shadow', onSelected);
 
-            function onSelected()
-            {
-                resetHighlightCount(onHighlightCountReset);
-            }
+      function onSelected() {
+        resetHighlightCount(onHighlightCountReset);
+      }
 
-            function onHighlightCountReset()
-            {
-                var section = ElementsTestRunner.firstMatchedStyleSection();
-                section._highlight();
-                TestRunner.callFunctionInPageAsync("requestAnimationFramePromise").then(onHighlighted)
-            }
+      function onHighlightCountReset() {
+        var section = ElementsTestRunner.firstMatchedStyleSection();
+        section._highlight();
+        TestRunner.callFunctionInPageAsync('requestAnimationFramePromise').then(onHighlighted);
+      }
 
-            function onHighlighted()
-            {
-                dumpHighlightCount(next);
-            }
-        },
-    ]);
+      function onHighlighted() {
+        dumpHighlightCount(next);
+      }
+    },
+  ]);
 
-    function drawHighlightProxy()
-    {
-        window._highlightsForTest = [];
-        var oldDrawHighlight = drawHighlight;
-        drawHighlight = proxy;
+  function drawHighlightProxy() {
+    window._highlightsForTest = [];
+    var oldDrawHighlight = drawHighlight;
+    drawHighlight = proxy;
 
-        function proxy(highlight, context)
-        {
-            window._highlightsForTest.push(highlight);
-            oldDrawHighlight(highlight, context);
-        }
+    function proxy(highlight, context) {
+      window._highlightsForTest.push(highlight);
+      oldDrawHighlight(highlight, context);
     }
+  }
 
-    function reportHighlights()
-    {
-        var result = window._highlightsForTest.length;
-        window._highlightsForTest = [];
-        return result + "";
+  function reportHighlights() {
+    var result = window._highlightsForTest.length;
+    window._highlightsForTest = [];
+    return result + '';
+  }
+
+  function dumpHighlightCount(next) {
+    TestRunner.evaluateFunctionInOverlay(reportHighlights, onResults);
+
+    function onResults(count) {
+      TestRunner.addResult('Highlights drawn: ' + count);
+      next();
     }
+  }
 
-    function dumpHighlightCount(next)
-    {
-        TestRunner.evaluateFunctionInOverlay(reportHighlights, onResults);
-
-        function onResults(count)
-        {
-            TestRunner.addResult("Highlights drawn: " + count);
-            next();
-        }
-    }
-
-    function resetHighlightCount(next)
-    {
-        TestRunner.evaluateFunctionInOverlay(reportHighlights, next);
-    }
+  function resetHighlightCount(next) {
+    TestRunner.evaluateFunctionInOverlay(reportHighlights, next);
+  }
 }
 
 </script>

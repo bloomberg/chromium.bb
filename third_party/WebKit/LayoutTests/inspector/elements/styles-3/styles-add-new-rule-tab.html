@@ -8,76 +8,67 @@ var initialize_AdditionalPreload = function() {
     InspectorTest.preloadModule("source_frame");
 }
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
-    TestRunner.addSniffer(Workspace.UISourceCode.prototype, "addRevision", onRevisionAdded);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
+  TestRunner.addSniffer(Workspace.UISourceCode.prototype, 'addRevision', onRevisionAdded);
 
-    var treeElement;
-    var hasResourceChanged;
+  var treeElement;
+  var hasResourceChanged;
 
-    var testFinished = false;
-    var revisionAdded = false;
-    var displayName = "";
+  var testFinished = false;
+  var revisionAdded = false;
+  var displayName = '';
 
-    function step1()
-    {
-        // Click "Add new rule".
-        ElementsTestRunner.addNewRule("foo, div#inspected, bar", step2);
+  function step1() {
+    // Click "Add new rule".
+    ElementsTestRunner.addNewRule('foo, div#inspected, bar', step2);
+  }
+
+  function step2() {
+    var section = ElementsTestRunner.firstMatchedStyleSection();
+    var newProperty = section.addNewBlankProperty();
+    newProperty.startEditing();
+    textInputController.insertText('color');
+    newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent('Tab'));
+    textInputController.insertText('maroon');
+    newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent('Tab'));
+    ElementsTestRunner.selectNodeAndWaitForStyles('other', step3);
+  }
+
+  function step3() {
+    // Click "Add new rule".
+    ElementsTestRunner.addNewRule(null, onRuleAdded);
+
+    function onRuleAdded() {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step4);
     }
+  }
 
-    function step2()
-    {
-        var section = ElementsTestRunner.firstMatchedStyleSection();
-        var newProperty = section.addNewBlankProperty();
-        newProperty.startEditing();
-        textInputController.insertText("color");
-        newProperty.nameElement.dispatchEvent(TestRunner.createKeyEvent("Tab"));
-        textInputController.insertText("maroon");
-        newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent("Tab"));
-        ElementsTestRunner.selectNodeAndWaitForStyles("other", step3);
-    }
+  function step4() {
+    TestRunner.addResult('After adding new rule (inspected):');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true, true);
+    ElementsTestRunner.selectNodeAndWaitForStyles('other', step5);
+  }
 
-    function step3()
-    {
-        // Click "Add new rule".
-        ElementsTestRunner.addNewRule(null, onRuleAdded);
+  function step5() {
+    TestRunner.addResult('After adding new rule (other):');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    testFinished = true;
+    maybeCompleteTest();
+  }
 
-        function onRuleAdded()
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step4);
-        }
-    }
+  function maybeCompleteTest() {
+    if (!testFinished || !revisionAdded)
+      return;
+    TestRunner.addResult('Revision added: ' + displayName);
+    TestRunner.completeTest();
+  }
 
-    function step4()
-    {
-        TestRunner.addResult("After adding new rule (inspected):");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true, true);
-        ElementsTestRunner.selectNodeAndWaitForStyles("other", step5);
-    }
-
-    function step5()
-    {
-        TestRunner.addResult("After adding new rule (other):");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        testFinished = true;
-        maybeCompleteTest();
-    }
-
-    function maybeCompleteTest()
-    {
-        if (!testFinished || !revisionAdded)
-            return;
-        TestRunner.addResult("Revision added: " + displayName);
-        TestRunner.completeTest();
-    }
-
-    function onRevisionAdded(revision)
-    {
-        displayName = this.displayName();
-        revisionAdded = true;
-        maybeCompleteTest();
-    }
+  function onRevisionAdded(revision) {
+    displayName = this.displayName();
+    revisionAdded = true;
+    maybeCompleteTest();
+  }
 }
 
 </script>

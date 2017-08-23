@@ -5,76 +5,69 @@
 <script src="edit-dom-test.js"></script>
 <script>
 
-function test()
-{
-    // Save time on style updates.
-    Elements.StylesSidebarPane.prototype.update = function() {};
-    Elements.MetricsSidebarPane.prototype.update = function() {};
+function test() {
+  // Save time on style updates.
+  Elements.StylesSidebarPane.prototype.update = function() {};
+  Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    TestRunner.runTestSuite([
-        function testSetUp(next)
-        {
-            ElementsTestRunner.expandElementsTree(next);
-        },
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      ElementsTestRunner.expandElementsTree(next);
+    },
 
-        function testEditInvisibleCharsAsHTML(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testEditInvisibleCharsAsHTML", "node-with-invisible-chars", testBody, next);
+    function testEditInvisibleCharsAsHTML(next) {
+      ElementsTestRunner.domActionTestForNodeId(
+          'testEditInvisibleCharsAsHTML', 'node-with-invisible-chars', testBody, next);
 
-            function testBody(node, done)
-            {
-                var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
-                var treeElement = treeOutline.findTreeElement(node);
-                treeOutline.toggleEditAsHTML(node);
-                TestRunner.deprecatedRunAfterPendingDispatches(step2);
+      function testBody(node, done) {
+        var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+        var treeElement = treeOutline.findTreeElement(node);
+        treeOutline.toggleEditAsHTML(node);
+        TestRunner.deprecatedRunAfterPendingDispatches(step2);
 
-                function step2()
-                {
-                    var editor = treeElement._editing.editor;
-                    TestRunner.addResult(editor.text());
-                    editor.setText(editor.text().replace(/&/g, '#'));
-                    var event = TestRunner.createKeyEvent("Enter");
-                    event.isMetaOrCtrlForTest = true;
-                    editor.widget().element.dispatchEvent(event);
-                    TestRunner.deprecatedRunAfterPendingDispatches(ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
-                }
-            }
-        },
-
-        function testEditScript(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testEditScript", "node-to-edit-script", testBody, next);
-
-            function testBody(node, done)
-            {
-                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-text-node", "var i = 0;\n    var j = 0;\n", done);
-            }
-        },
-
-        function testEditSVGAttribute(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testEditSVG", "node-to-edit-svg-attribute", testBody, next);
-
-            function testBody(node, done)
-            {
-                var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
-                var treeElement = treeOutline.findTreeElement(node);
-                treeOutline.toggleEditAsHTML(node);
-                TestRunner.deprecatedRunAfterPendingDispatches(step2);
-
-                function step2()
-                {
-                    var value = treeElement._editing.editor._codeMirror.getValue();
-                    TestRunner.addResult(value);
-                    treeElement._editing.editor.setText(value.replace("100", "110"));
-                    var event = TestRunner.createKeyEvent("Enter");
-                    event.isMetaOrCtrlForTest = true;
-                    treeElement._editing.editor.widget().element.dispatchEvent(event);
-                    TestRunner.deprecatedRunAfterPendingDispatches(ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
-                }
-            }
+        function step2() {
+          var editor = treeElement._editing.editor;
+          TestRunner.addResult(editor.text());
+          editor.setText(editor.text().replace(/&/g, '#'));
+          var event = TestRunner.createKeyEvent('Enter');
+          event.isMetaOrCtrlForTest = true;
+          editor.widget().element.dispatchEvent(event);
+          TestRunner.deprecatedRunAfterPendingDispatches(
+              ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
         }
-    ]);
+      }
+    },
+
+    function testEditScript(next) {
+      ElementsTestRunner.domActionTestForNodeId('testEditScript', 'node-to-edit-script', testBody, next);
+
+      function testBody(node, done) {
+        ElementsTestRunner.editNodePartAndRun(node, 'webkit-html-text-node', 'var i = 0;\n    var j = 0;\n', done);
+      }
+    },
+
+    function testEditSVGAttribute(next) {
+      ElementsTestRunner.domActionTestForNodeId('testEditSVG', 'node-to-edit-svg-attribute', testBody, next);
+
+      function testBody(node, done) {
+        var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+        var treeElement = treeOutline.findTreeElement(node);
+        treeOutline.toggleEditAsHTML(node);
+        TestRunner.deprecatedRunAfterPendingDispatches(step2);
+
+        function step2() {
+          var value = treeElement._editing.editor._codeMirror.getValue();
+          TestRunner.addResult(value);
+          treeElement._editing.editor.setText(value.replace('100', '110'));
+          var event = TestRunner.createKeyEvent('Enter');
+          event.isMetaOrCtrlForTest = true;
+          treeElement._editing.editor.widget().element.dispatchEvent(event);
+          TestRunner.deprecatedRunAfterPendingDispatches(
+              ElementsTestRunner.expandElementsTree.bind(InspectorTest, done));
+        }
+      }
+    }
+  ]);
 }
 
 </script>

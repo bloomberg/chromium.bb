@@ -52,128 +52,111 @@ function removeNode()
     document.getElementById("inspected").remove();
 }
 
-function test()
-{
-    var containerNode;
-    var inspectedNode;
+function test() {
+  var containerNode;
+  var inspectedNode;
 
-    TestRunner.runTestSuite([
-        function dumpOriginalTree(next)
-        {
-            ElementsTestRunner.expandElementsTree(callback);
-            function callback()
-            {
-                containerNode = ElementsTestRunner.expandedNodeWithId("container");
-                inspectedNode = ElementsTestRunner.expandedNodeWithId("inspected");
-                TestRunner.addResult("Original elements tree:");
-                ElementsTestRunner.dumpElementsTree(containerNode);
-                next();
-            }
-        },
+  TestRunner.runTestSuite([
+    function dumpOriginalTree(next) {
+      ElementsTestRunner.expandElementsTree(callback);
+      function callback() {
+        containerNode = ElementsTestRunner.expandedNodeWithId('container');
+        inspectedNode = ElementsTestRunner.expandedNodeWithId('inspected');
+        TestRunner.addResult('Original elements tree:');
+        ElementsTestRunner.dumpElementsTree(containerNode);
+        next();
+      }
+    },
 
-        function dumpNormalNodeStyles(next)
-        {
-            selectNodeAndDumpStyles("inspected", "", next);
-        },
+    function dumpNormalNodeStyles(next) {
+      selectNodeAndDumpStyles('inspected', '', next);
+    },
 
-        function dumpBeforeStyles(next)
-        {
-            selectNodeAndDumpStyles("inspected", "before", next);
-        },
+    function dumpBeforeStyles(next) {
+      selectNodeAndDumpStyles('inspected', 'before', next);
+    },
 
-        function dumpAfterStyles(next)
-        {
-            selectNodeAndDumpStyles("inspected", "after", next);
-        },
+    function dumpAfterStyles(next) {
+      selectNodeAndDumpStyles('inspected', 'after', next);
+    },
 
-        function removeAfter(next)
-        {
-            executeAndDumpTree("removeLastRule()", SDK.DOMModel.Events.NodeRemoved, next);
-        },
+    function removeAfter(next) {
+      executeAndDumpTree('removeLastRule()', SDK.DOMModel.Events.NodeRemoved, next);
+    },
 
-        function removeBefore(next)
-        {
-            executeAndDumpTree("removeLastRule()", SDK.DOMModel.Events.NodeRemoved, next);
-        },
+    function removeBefore(next) {
+      executeAndDumpTree('removeLastRule()', SDK.DOMModel.Events.NodeRemoved, next);
+    },
 
-        function addAfter(next)
-        {
-            executeAndDumpTree("addAfterRule()", SDK.DOMModel.Events.NodeInserted, expandAndDumpTree.bind(this, next));
-        },
+    function addAfter(next) {
+      executeAndDumpTree('addAfterRule()', SDK.DOMModel.Events.NodeInserted, expandAndDumpTree.bind(this, next));
+    },
 
-        function addBefore(next)
-        {
-            executeAndDumpTree("addBeforeRule()", SDK.DOMModel.Events.NodeInserted, next);
-        },
+    function addBefore(next) {
+      executeAndDumpTree('addBeforeRule()', SDK.DOMModel.Events.NodeInserted, next);
+    },
 
-        function modifyTextContent(next)
-        {
-            executeAndDumpTree("modifyTextContent()", SDK.DOMModel.Events.NodeInserted, next);
-        },
+    function modifyTextContent(next) {
+      executeAndDumpTree('modifyTextContent()', SDK.DOMModel.Events.NodeInserted, next);
+    },
 
-        function clearTextContent(next)
-        {
-            executeAndDumpTree("clearTextContent()", SDK.DOMModel.Events.NodeRemoved, next);
-        },
+    function clearTextContent(next) {
+      executeAndDumpTree('clearTextContent()', SDK.DOMModel.Events.NodeRemoved, next);
+    },
 
-        function removeNodeAndCheckPseudoElementsUnbound(next)
-        {
-            var inspectedBefore = inspectedNode.beforePseudoElement();
-            var inspectedAfter = inspectedNode.afterPseudoElement();
+    function removeNodeAndCheckPseudoElementsUnbound(next) {
+      var inspectedBefore = inspectedNode.beforePseudoElement();
+      var inspectedAfter = inspectedNode.afterPseudoElement();
 
-            executeAndDumpTree("removeNode()", SDK.DOMModel.Events.NodeRemoved, callback);
-            function callback()
-            {
-                TestRunner.addResult("inspected:before DOMNode in DOMAgent: " + !!(TestRunner.domModel.nodeForId(inspectedBefore.id)));
-                TestRunner.addResult("inspected:after DOMNode in DOMAgent: " + !!(TestRunner.domModel.nodeForId(inspectedAfter.id)));
-                next();
-            }
-        }
-    ]);
+      executeAndDumpTree('removeNode()', SDK.DOMModel.Events.NodeRemoved, callback);
+      function callback() {
+        TestRunner.addResult(
+            'inspected:before DOMNode in DOMAgent: ' + !!(TestRunner.domModel.nodeForId(inspectedBefore.id)));
+        TestRunner.addResult(
+            'inspected:after DOMNode in DOMAgent: ' + !!(TestRunner.domModel.nodeForId(inspectedAfter.id)));
+        next();
+      }
+    }
+  ]);
 
-    function executeAndDumpTree(pageFunction, eventName, next)
-    {
-        TestRunner.domModel.addEventListener(eventName, domCallback, this);
-        TestRunner.evaluateInPage(pageFunction);
+  function executeAndDumpTree(pageFunction, eventName, next) {
+    TestRunner.domModel.addEventListener(eventName, domCallback, this);
+    TestRunner.evaluateInPage(pageFunction);
 
-        function domCallback()
-        {
-            TestRunner.domModel.removeEventListener(eventName, domCallback, this);
-            ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
-        }
-
-        function treeCallback()
-        {
-            ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
-            ElementsTestRunner.dumpElementsTree(containerNode);
-            next();
-        }
+    function domCallback() {
+      TestRunner.domModel.removeEventListener(eventName, domCallback, this);
+      ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+          Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
     }
 
-    function expandAndDumpTree(next)
-    {
-          TestRunner.addResult("== Expanding: ==");
-          ElementsTestRunner.expandElementsTree(callback);
-          function callback()
-          {
-              ElementsTestRunner.dumpElementsTree(containerNode);
-              next();
-          }
+    function treeCallback() {
+      ElementsTestRunner.firstElementsTreeOutline().removeEventListener(
+          Elements.ElementsTreeOutline.Events.ElementsTreeUpdated, treeCallback, this);
+      ElementsTestRunner.dumpElementsTree(containerNode);
+      next();
     }
+  }
 
-    function selectNodeAndDumpStyles(id, pseudoTypeName, callback)
-    {
-        if (pseudoTypeName)
-            ElementsTestRunner.selectPseudoElementAndWaitForStyles("inspected", pseudoTypeName, stylesCallback);
-        else
-            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", stylesCallback);
-
-        function stylesCallback()
-        {
-            ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
-            callback();
-        }
+  function expandAndDumpTree(next) {
+    TestRunner.addResult('== Expanding: ==');
+    ElementsTestRunner.expandElementsTree(callback);
+    function callback() {
+      ElementsTestRunner.dumpElementsTree(containerNode);
+      next();
     }
+  }
+
+  function selectNodeAndDumpStyles(id, pseudoTypeName, callback) {
+    if (pseudoTypeName)
+      ElementsTestRunner.selectPseudoElementAndWaitForStyles('inspected', pseudoTypeName, stylesCallback);
+    else
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', stylesCallback);
+
+    function stylesCallback() {
+      ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
+      callback();
+    }
+  }
 }
 
 </script>

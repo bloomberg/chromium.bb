@@ -10,23 +10,20 @@ function removeDoctype()
     document.removeChild(document.firstChild);
 }
 
-function test()
-{
-    ElementsTestRunner.expandElementsTree(step1);
+function test() {
+  ElementsTestRunner.expandElementsTree(step1);
 
-    function step1()
-    {
-        TestRunner.addResult("Before remove doctype");
-        ElementsTestRunner.dumpElementsTree(null, 1);
-        TestRunner.evaluateInPage("removeDoctype()", step2);
-    }
+  function step1() {
+    TestRunner.addResult('Before remove doctype');
+    ElementsTestRunner.dumpElementsTree(null, 1);
+    TestRunner.evaluateInPage('removeDoctype()', step2);
+  }
 
-    function step2()
-    {
-        TestRunner.addResult("After remove doctype");
-        ElementsTestRunner.dumpElementsTree(null, 1);
-        TestRunner.completeTest();
-    }
+  function step2() {
+    TestRunner.addResult('After remove doctype');
+    ElementsTestRunner.dumpElementsTree(null, 1);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -9,21 +9,20 @@ function whitespaceChild()
     return document.getElementById("test").firstChild;
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("whitespaceChild()", childCallback);
+function test() {
+  TestRunner.evaluateInPage('whitespaceChild()', childCallback);
 
-    function childCallback(childObject)
-    {
-        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
-        Common.Revealer.reveal(childObject);
-    }
+  function childCallback(childObject) {
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged);
+    Common.Revealer.reveal(childObject);
+  }
 
-    function selectedNodeChanged(event) {
-        var node = event.data.node;
-        TestRunner.addResult("SelectedNodeChanged: " + node.localName());
-        TestRunner.completeTest();
-    }
+  function selectedNodeChanged(event) {
+    var node = event.data.node;
+    TestRunner.addResult('SelectedNodeChanged: ' + node.localName());
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

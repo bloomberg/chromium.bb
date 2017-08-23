@@ -16,16 +16,14 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("main", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('main', step1);
 
-    function step1()
-    {
-        TestRunner.addResult("Main style:");
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        TestRunner.completeTest();
-    }
+  function step1() {
+    TestRunner.addResult('Main style:');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

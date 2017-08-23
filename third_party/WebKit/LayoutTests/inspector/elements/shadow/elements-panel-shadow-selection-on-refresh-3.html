@@ -5,45 +5,37 @@
 <script src="./elements-panel-shadow-selection-on-refresh.js"></script>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function setup(next)
-        {
-            Common.settingForTest("showUAShadowDOM").set(true);
-            ElementsTestRunner.expandElementsTree(next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function setup(next) {
+      Common.settingForTest('showUAShadowDOM').set(true);
+      ElementsTestRunner.expandElementsTree(next);
+    },
 
-        function testClosedShadowRootChild(next)
-        {
-            ElementsTestRunner.findNode(isClosedShadowRootChild, ElementsTestRunner.selectReloadAndDump.bind(null, next));
-        },
+    function testClosedShadowRootChild(next) {
+      ElementsTestRunner.findNode(isClosedShadowRootChild, ElementsTestRunner.selectReloadAndDump.bind(null, next));
+    },
 
-        function testUserAgentShadowRootChild(next)
-        {
-            ElementsTestRunner.findNode(isUserAgentShadowRootChild, ElementsTestRunner.selectReloadAndDump.bind(null, next));
-        },
-    ]);
+    function testUserAgentShadowRootChild(next) {
+      ElementsTestRunner.findNode(isUserAgentShadowRootChild, ElementsTestRunner.selectReloadAndDump.bind(null, next));
+    },
+  ]);
 
-    function isClosedShadowRoot(node)
-    {
-        return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
-    }
+  function isClosedShadowRoot(node) {
+    return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Closed;
+  }
 
-    function isUserAgentShadowRoot(node)
-    {
-        return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent;
-    }
+  function isUserAgentShadowRoot(node) {
+    return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent;
+  }
 
-    function isClosedShadowRootChild(node)
-    {
-        return isClosedShadowRoot(node.parentNode);
-    }
+  function isClosedShadowRootChild(node) {
+    return isClosedShadowRoot(node.parentNode);
+  }
 
-    function isUserAgentShadowRootChild(node)
-    {
-        return isUserAgentShadowRoot(node.parentNode);
-    }
+  function isUserAgentShadowRootChild(node) {
+    return isUserAgentShadowRoot(node.parentNode);
+  }
 }
 
 </script>

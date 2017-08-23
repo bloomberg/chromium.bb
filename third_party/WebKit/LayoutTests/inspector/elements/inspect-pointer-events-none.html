@@ -38,57 +38,53 @@ function clickInner(withShift)
     }
 }
 
-function test()
-{
-    function selectedNodeId()
-    {
-        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
-        if (!selectedElement)
-            return "<no selected node>";
-        return selectedElement.node().getAttribute("id");
-    }
+function test() {
+  function selectedNodeId() {
+    var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
+    if (!selectedElement)
+      return '<no selected node>';
+    return selectedElement.node().getAttribute('id');
+  }
 
-    function expectSelectedNode(expectedId)
-    {
-        var id = selectedNodeId();
-        if (id === expectedId)
-            TestRunner.addResult("PASS: selected node with id '" + id + "'");
-        else
-            TestRunner.addResult("FAIL: unexpected selection " + id);
-    }
+  function expectSelectedNode(expectedId) {
+    var id = selectedNodeId();
+    if (id === expectedId)
+      TestRunner.addResult('PASS: selected node with id \'' + id + '\'');
+    else
+      TestRunner.addResult('FAIL: unexpected selection ' + id);
+  }
 
-    function step1()
-    {
-        TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
-    }
+  function step1() {
+    TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
-        TestRunner.evaluateInPage("clickInner(true)");
-    }
+  function step2() {
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+    TestRunner.evaluateInPage('clickInner(true)');
+  }
 
-    function step3()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
-        expectSelectedNode("inner");
-        TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step4);
-    }
+  function step3() {
+    ElementsTestRunner.firstElementsTreeOutline().removeEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+    expectSelectedNode('inner');
+    TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step4);
+  }
 
-    function step4()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
-        TestRunner.evaluateInPage("clickInner(false)");
-    }
+  function step4() {
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
+    TestRunner.evaluateInPage('clickInner(false)');
+  }
 
-    function step5()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
-        expectSelectedNode("outer");
-        TestRunner.completeTest();
-    }
+  function step5() {
+    ElementsTestRunner.firstElementsTreeOutline().removeEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
+    expectSelectedNode('outer');
+    TestRunner.completeTest();
+  }
 
-    step1();
+  step1();
 }
 
 </script>

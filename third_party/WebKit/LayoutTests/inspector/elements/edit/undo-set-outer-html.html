@@ -12,39 +12,32 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testSetUp(next)
-        {
-            ElementsTestRunner.setUpTestSuite(next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      ElementsTestRunner.setUpTestSuite(next);
+    },
 
-        function testChangeCharacterData(next)
-        {
-            ElementsTestRunner.patchOuterHTMLUseUndo("Getting involved", "Getting not involved", next);
-        },
+    function testChangeCharacterData(next) {
+      ElementsTestRunner.patchOuterHTMLUseUndo('Getting involved', 'Getting not involved', next);
+    },
 
-        function testChangeAttributes(next)
-        {
-            ElementsTestRunner.patchOuterHTMLUseUndo("<a href", "<a foo=\"bar\" href", next);
-        },
+    function testChangeAttributes(next) {
+      ElementsTestRunner.patchOuterHTMLUseUndo('<a href', '<a foo="bar" href', next);
+    },
 
-        function testRemoveLastChild(next)
-        {
-            ElementsTestRunner.patchOuterHTMLUseUndo("Getting involved", "", next);
-        },
+    function testRemoveLastChild(next) {
+      ElementsTestRunner.patchOuterHTMLUseUndo('Getting involved', '', next);
+    },
 
-        function testSplitNode(next)
-        {
-            ElementsTestRunner.patchOuterHTMLUseUndo("Getting involved", "Getting</h2><h2>involved", next);
-        },
+    function testSplitNode(next) {
+      ElementsTestRunner.patchOuterHTMLUseUndo('Getting involved', 'Getting</h2><h2>involved', next);
+    },
 
-        function testChangeNodeName(next)
-        {
-            ElementsTestRunner.patchOuterHTMLUseUndo("<h2>Getting involved</h2>", "<h3>Getting involved</h3>", next);
-        }
-    ]);
+    function testChangeNodeName(next) {
+      ElementsTestRunner.patchOuterHTMLUseUndo('<h2>Getting involved</h2>', '<h3>Getting involved</h3>', next);
+    }
+  ]);
 }
 </script>
 </head>

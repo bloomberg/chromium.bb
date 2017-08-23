@@ -14,35 +14,30 @@
 
 </style>
 <script>
-function test()
-{
-    TestRunner.runTestSuite([
-        function selectInitialNode(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function selectInitialNode(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
+    },
 
-        function testSimpleFiltering(next)
-        {
-            ElementsTestRunner.filterMatchedStyles("padding");
-            ElementsTestRunner.dumpRenderedMatchedStyles();
-            next();
-        },
+    function testSimpleFiltering(next) {
+      ElementsTestRunner.filterMatchedStyles('padding');
+      ElementsTestRunner.dumpRenderedMatchedStyles();
+      next();
+    },
 
-        function testLonghandsAreAutoExpanded(next)
-        {
-            ElementsTestRunner.filterMatchedStyles("-top");
-            ElementsTestRunner.dumpRenderedMatchedStyles();
-            next();
-        },
+    function testLonghandsAreAutoExpanded(next) {
+      ElementsTestRunner.filterMatchedStyles('-top');
+      ElementsTestRunner.dumpRenderedMatchedStyles();
+      next();
+    },
 
-        function testAutoExpandedLonghandsAreCollapsed(next)
-        {
-            ElementsTestRunner.filterMatchedStyles(null);
-            ElementsTestRunner.dumpRenderedMatchedStyles();
-            next();
-        }
-    ]);
+    function testAutoExpandedLonghandsAreCollapsed(next) {
+      ElementsTestRunner.filterMatchedStyles(null);
+      ElementsTestRunner.dumpRenderedMatchedStyles();
+      next();
+    }
+  ]);
 }
 </script>
 </head>

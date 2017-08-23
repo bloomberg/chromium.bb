@@ -4,18 +4,16 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.expandElementsTree(onElementsTreeExpanded);
+function test() {
+  ElementsTestRunner.expandElementsTree(onElementsTreeExpanded);
 
-    function onElementsTreeExpanded()
-    {
-        var container = ElementsTestRunner.expandedNodeWithId("container");
-        var children = container.children();
-        for (var i = 0; i < children.length; ++i)
-            TestRunner.addResult(Components.DOMPresentationUtils.simpleSelector(children[i]));
-        TestRunner.completeTest();
-    }
+  function onElementsTreeExpanded() {
+    var container = ElementsTestRunner.expandedNodeWithId('container');
+    var children = container.children();
+    for (var i = 0; i < children.length; ++i)
+      TestRunner.addResult(Components.DOMPresentationUtils.simpleSelector(children[i]));
+    TestRunner.completeTest();
+  }
 }
 
 </script>

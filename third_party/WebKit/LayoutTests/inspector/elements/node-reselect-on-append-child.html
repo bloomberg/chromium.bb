@@ -12,27 +12,24 @@ function appendNewNode()
     element.parentElement.appendChild(second);
 }
 
-function test()
-{
-    ElementsTestRunner.selectNodeWithId("first", onNodeSelected);
+function test() {
+  ElementsTestRunner.selectNodeWithId('first', onNodeSelected);
 
-    function onNodeSelected()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, onSelectionChangedEvent);
-        TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, "_updateChildren", onNodeAppended);
-        TestRunner.evaluateInPage("appendNewNode()");
-    }
+  function onNodeSelected() {
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, onSelectionChangedEvent);
+    TestRunner.addSniffer(Elements.ElementsTreeOutline.prototype, '_updateChildren', onNodeAppended);
+    TestRunner.evaluateInPage('appendNewNode()');
+  }
 
-    function onSelectionChangedEvent()
-    {
-        TestRunner.addResult("ERROR: erroneous selection changed event received.");
-        TestRunner.completeTest();
-    }
+  function onSelectionChangedEvent() {
+    TestRunner.addResult('ERROR: erroneous selection changed event received.');
+    TestRunner.completeTest();
+  }
 
-    function onNodeAppended()
-    {
-        TestRunner.completeTest();
-    }
+  function onNodeAppended() {
+    TestRunner.completeTest();
+  }
 }
 
 </script>

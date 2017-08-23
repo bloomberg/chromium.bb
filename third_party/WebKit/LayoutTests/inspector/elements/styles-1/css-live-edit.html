@@ -8,31 +8,24 @@
 <div id=foo></div>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testLiveEdit(next)
-        {
-            SourcesTestRunner.showScriptSource("css-live-edit.css", didShowResource);
+function test() {
+  TestRunner.runTestSuite([function testLiveEdit(next) {
+    SourcesTestRunner.showScriptSource('css-live-edit.css', didShowResource);
 
-            function didShowResource(sourceFrame)
-            {
-                TestRunner.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", didEditResource);
-                SourcesTestRunner.replaceInSource(sourceFrame, "font-size: 12px;", "font-size: 20px;");
-            }
+    function didShowResource(sourceFrame) {
+      TestRunner.addSniffer(SDK.CSSModel.prototype, '_fireStyleSheetChanged', didEditResource);
+      SourcesTestRunner.replaceInSource(sourceFrame, 'font-size: 12px;', 'font-size: 20px;');
+    }
 
-            function didEditResource()
-            {
-                ElementsTestRunner.selectNodeAndWaitForStylesWithComputed("foo", didSelectElement);
-            }
+    function didEditResource() {
+      ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('foo', didSelectElement);
+    }
 
-            function didSelectElement()
-            {
-                ElementsTestRunner.dumpSelectedElementStyles(false, true);
-                next();
-            }
-        }
-    ]);
+    function didSelectElement() {
+      ElementsTestRunner.dumpSelectedElementStyles(false, true);
+      next();
+    }
+  }]);
 };
 
 </script>

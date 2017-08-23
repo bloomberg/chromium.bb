@@ -70,7 +70,7 @@ Inspect Me
 
 ======== load ========
 == Raw
-[expanded] WindowRemoveevent-listener-sidebar.html:76
+[expanded] WindowRemoveevent-listener-sidebar.html:71
     useCapture: false
     passive: false
     once: false

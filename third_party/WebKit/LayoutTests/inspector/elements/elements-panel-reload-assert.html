@@ -5,19 +5,16 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.expandElementsTree(step1);
+function test() {
+  ElementsTestRunner.expandElementsTree(step1);
 
-    function step1()
-    {
-        TestRunner.reloadPage(step2);
-    }
+  function step1() {
+    TestRunner.reloadPage(step2);
+  }
 
-    function step2()
-    {
-        TestRunner.completeTest();
-    }
+  function step2() {
+    TestRunner.completeTest();
+  }
 }
 
 </script>

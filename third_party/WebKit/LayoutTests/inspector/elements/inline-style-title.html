@@ -12,37 +12,34 @@ function updateStyleText()
     document.querySelector("#inline-style").textContent = "span { border: 1px solid black }";
 }
 
-function test()
-{
-    // Save time on style updates.
-    Elements.StylesSidebarPane.prototype.update = function() {};
-    Elements.MetricsSidebarPane.prototype.update = function() {};
+function test() {
+  // Save time on style updates.
+  Elements.StylesSidebarPane.prototype.update = function() {};
+  Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    ElementsTestRunner.nodeWithId("inline-style", onInlineStyleQueried);
+  ElementsTestRunner.nodeWithId('inline-style', onInlineStyleQueried);
 
-    var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
-    var treeElement;
+  var treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+  var treeElement;
 
-    function onInlineStyleQueried(node)
-    {
-        if (!node) {
-            TestRunner.addResult("Didn't find node with given ID");
-            TestRunner.completeTest();
-            return;
-        }
-        treeElement = treeOutline.findTreeElement(node);
-        TestRunner.addResult("=== initial inline style text ===");
-        TestRunner.addResult(treeElement.title.textContent);
-        TestRunner.evaluateInPage("updateStyleText()", onStyleUpdated);
+  function onInlineStyleQueried(node) {
+    if (!node) {
+      TestRunner.addResult('Didn\'t find node with given ID');
+      TestRunner.completeTest();
+      return;
     }
+    treeElement = treeOutline.findTreeElement(node);
+    TestRunner.addResult('=== initial inline style text ===');
+    TestRunner.addResult(treeElement.title.textContent);
+    TestRunner.evaluateInPage('updateStyleText()', onStyleUpdated);
+  }
 
-    function onStyleUpdated()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().runPendingUpdates();
-        TestRunner.addResult("=== inline style text after change ===");
-        TestRunner.addResult(treeElement.title.textContent);
-        TestRunner.completeTest();
-    }
+  function onStyleUpdated() {
+    ElementsTestRunner.firstElementsTreeOutline().runPendingUpdates();
+    TestRunner.addResult('=== inline style text after change ===');
+    TestRunner.addResult(treeElement.title.textContent);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

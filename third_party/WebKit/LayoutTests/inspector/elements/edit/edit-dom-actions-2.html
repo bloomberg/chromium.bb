@@ -5,58 +5,50 @@
 <script src="edit-dom-test.js"></script>
 <script>
 
-function test()
-{
-    // Save time on style updates.
-    Elements.StylesSidebarPane.prototype.update = function() {};
-    Elements.MetricsSidebarPane.prototype.update = function() {};
+function test() {
+  // Save time on style updates.
+  Elements.StylesSidebarPane.prototype.update = function() {};
+  Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    TestRunner.runTestSuite([
-        function testSetUp(next)
-        {
-            ElementsTestRunner.expandElementsTree(next);
-        },
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      ElementsTestRunner.expandElementsTree(next);
+    },
 
-        function testSetAttribute(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testSetAttribute", "node-to-set-attribute", testBody, next);
+    function testSetAttribute(next) {
+      ElementsTestRunner.domActionTestForNodeId('testSetAttribute', 'node-to-set-attribute', testBody, next);
 
-            function testBody(node, done)
-            {
-                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-attribute", "bar=\"edited attribute\"", done, true);
-            }
-        },
+      function testBody(node, done) {
+        ElementsTestRunner.editNodePartAndRun(node, 'webkit-html-attribute', 'bar="edited attribute"', done, true);
+      }
+    },
 
-        function testSetScriptableAttribute(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testSetScriptableAttribute", "node-to-set-scriptable-attribute", testBody, next);
-         
-            function testBody(node, done)
-            {
-                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-attribute", "onclick=\"alert(2)\"", done, true);
-            }
-        },
+    function testSetScriptableAttribute(next) {
+      ElementsTestRunner.domActionTestForNodeId(
+          'testSetScriptableAttribute', 'node-to-set-scriptable-attribute', testBody, next);
 
-        function testRemoveAttribute(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testRemoveAttribute", "node-to-remove-attribute", testBody, next);
+      function testBody(node, done) {
+        ElementsTestRunner.editNodePartAndRun(node, 'webkit-html-attribute', 'onclick="alert(2)"', done, true);
+      }
+    },
 
-            function testBody(node, done)
-            {
-                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-attribute", "", done, true);
-            }
-        },
+    function testRemoveAttribute(next) {
+      ElementsTestRunner.domActionTestForNodeId('testRemoveAttribute', 'node-to-remove-attribute', testBody, next);
 
-        function testAddAttribute(next)
-        {
-            ElementsTestRunner.doAddAttribute("testAddAttribute", "node-to-add-attribute", "newattr=\"new-value\"", next);
-        },
+      function testBody(node, done) {
+        ElementsTestRunner.editNodePartAndRun(node, 'webkit-html-attribute', '', done, true);
+      }
+    },
 
-        function testAddAttributeUnquotedValue(next)
-        {
-            ElementsTestRunner.doAddAttribute("testAddAttributeUnquotedValue", "node-to-add-attribute-unquoted-value", "newattr=unquotedValue", next);
-        },
-    ]);
+    function testAddAttribute(next) {
+      ElementsTestRunner.doAddAttribute('testAddAttribute', 'node-to-add-attribute', 'newattr="new-value"', next);
+    },
+
+    function testAddAttributeUnquotedValue(next) {
+      ElementsTestRunner.doAddAttribute(
+          'testAddAttributeUnquotedValue', 'node-to-add-attribute-unquoted-value', 'newattr=unquotedValue', next);
+    },
+  ]);
 }
 
 </script>

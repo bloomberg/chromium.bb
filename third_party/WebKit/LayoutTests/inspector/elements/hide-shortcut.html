@@ -16,142 +16,120 @@ function pseudoIframeVisibility()
     return getComputedStyle(parentNode).visibility;
 }
 
-function test()
-{
-    var treeOutline;
-    var parentNode;
-    var childNode;
-    var frameNode;
+function test() {
+  var treeOutline;
+  var parentNode;
+  var childNode;
+  var frameNode;
 
-    TestRunner.runTestSuite([
-        function testSetUp(next)
-        {
-            treeOutline = ElementsTestRunner.firstElementsTreeOutline();
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      treeOutline = ElementsTestRunner.firstElementsTreeOutline();
 
-            ElementsTestRunner.nodeWithId("parent-node", callback);
+      ElementsTestRunner.nodeWithId('parent-node', callback);
 
-            function callback(node)
-            {
-                parentNode = node
-                ElementsTestRunner.nodeWithId("child-node", callback2);
-            }
+      function callback(node) {
+        parentNode = node;
+        ElementsTestRunner.nodeWithId('child-node', callback2);
+      }
 
-            function callback2(node)
-            {
-                childNode = node;
-                ElementsTestRunner.nodeWithId("frame-node", callback3);
-            }
+      function callback2(node) {
+        childNode = node;
+        ElementsTestRunner.nodeWithId('frame-node', callback3);
+      }
 
-            function callback3(node)
-            {
-                frameNode = node;
-                next();
-            }
-        },
+      function callback3(node) {
+        frameNode = node;
+        next();
+      }
+    },
 
-        function testToggleHideShortcutOn(next)
-        {
-            treeOutline.toggleHideElement(parentNode).then(callback);
+    function testToggleHideShortcutOn(next) {
+      treeOutline.toggleHideElement(parentNode).then(callback);
 
-            function callback()
-            {
-                TestRunner.addResult("=== Added hide shortcut ===");
-                TestRunner.cssModel.computedStylePromise(parentNode.id).then(callback2);
-            }
+      function callback() {
+        TestRunner.addResult('=== Added hide shortcut ===');
+        TestRunner.cssModel.computedStylePromise(parentNode.id).then(callback2);
+      }
 
-            function callback2(style)
-            {
-                TestRunner.addResult("=== Parent node is hidden ===");
-                TestRunner.addResult(getPropertyText(style, "visibility"));
-                TestRunner.cssModel.computedStylePromise(childNode.id).then(callback3);
-            }
+      function callback2(style) {
+        TestRunner.addResult('=== Parent node is hidden ===');
+        TestRunner.addResult(getPropertyText(style, 'visibility'));
+        TestRunner.cssModel.computedStylePromise(childNode.id).then(callback3);
+      }
 
-            function callback3(style)
-            {
-                TestRunner.addResult("=== Child node is hidden ===");
-                TestRunner.addResult(getPropertyText(style, "visibility"));
-                next();
-            }
-        },
+      function callback3(style) {
+        TestRunner.addResult('=== Child node is hidden ===');
+        TestRunner.addResult(getPropertyText(style, 'visibility'));
+        next();
+      }
+    },
 
-        function testToggleHideShortcutOff(next)
-        {
-            treeOutline.toggleHideElement(parentNode).then(callback);
+    function testToggleHideShortcutOff(next) {
+      treeOutline.toggleHideElement(parentNode).then(callback);
 
-            function callback()
-            {
-                TestRunner.addResult("=== Removed hide shortcut ===");
-                TestRunner.cssModel.computedStylePromise(parentNode.id).then(callback2);
-            }
+      function callback() {
+        TestRunner.addResult('=== Removed hide shortcut ===');
+        TestRunner.cssModel.computedStylePromise(parentNode.id).then(callback2);
+      }
 
-            function callback2(style)
-            {
-                TestRunner.addResult("=== Parent node is visible ===");
-                TestRunner.addResult(getPropertyText(style, "visibility"));
-                TestRunner.cssModel.computedStylePromise(childNode.id).then(callback3);
-            }
+      function callback2(style) {
+        TestRunner.addResult('=== Parent node is visible ===');
+        TestRunner.addResult(getPropertyText(style, 'visibility'));
+        TestRunner.cssModel.computedStylePromise(childNode.id).then(callback3);
+      }
 
-            function callback3(style)
-            {
-                TestRunner.addResult("=== Child node is visible ===");
-                TestRunner.addResult(getPropertyText(style, "visibility"));
-                next();
-            }
-        },
+      function callback3(style) {
+        TestRunner.addResult('=== Child node is visible ===');
+        TestRunner.addResult(getPropertyText(style, 'visibility'));
+        next();
+      }
+    },
 
-        function testToggleHideBeforePseudoShortcutOn(next)
-        {
-            testPseudoToggle(parentNode.beforePseudoElement(), next);
-        },
+    function testToggleHideBeforePseudoShortcutOn(next) {
+      testPseudoToggle(parentNode.beforePseudoElement(), next);
+    },
 
-        function testToggleHideAfterPseudoShortcutOn(next)
-        {
-            testPseudoToggle(parentNode.afterPseudoElement(), next);
-        },
+    function testToggleHideAfterPseudoShortcutOn(next) {
+      testPseudoToggle(parentNode.afterPseudoElement(), next);
+    },
 
-        function testToggleHideBeforePseudoShortcutOff(next)
-        {
-            testPseudoToggle(parentNode.beforePseudoElement(), next);
-        },
+    function testToggleHideBeforePseudoShortcutOff(next) {
+      testPseudoToggle(parentNode.beforePseudoElement(), next);
+    },
 
-        function testToggleHideAfterPseudoShortcutOff(next)
-        {
-            testPseudoToggle(parentNode.afterPseudoElement(), next);
-        },
+    function testToggleHideAfterPseudoShortcutOff(next) {
+      testPseudoToggle(parentNode.afterPseudoElement(), next);
+    },
 
-        function testToggleHideShortcutOnInFrame(next)
-        {
-            treeOutline.toggleHideElement(frameNode).then(callback);
+    function testToggleHideShortcutOnInFrame(next) {
+      treeOutline.toggleHideElement(frameNode).then(callback);
 
-            function callback()
-            {
-                TestRunner.evaluateInPagePromise("pseudoIframeVisibility()").then(function(result) {
-                    TestRunner.addResult("=== Added hide shortcut in frame ===");
-                    TestRunner.addResult("=== Frame node is hidden ===");
-                    TestRunner.addResult("visibility: " + result.value + ";");
-                    next();
-                });
-            }
-        }
-    ]);
-
-    function getPropertyText(computedStyle, propertyName)
-    {
-        return String.sprintf("%s: %s;", propertyName, computedStyle.get(propertyName));
+      function callback() {
+        TestRunner.evaluateInPagePromise('pseudoIframeVisibility()').then(function(result) {
+          TestRunner.addResult('=== Added hide shortcut in frame ===');
+          TestRunner.addResult('=== Frame node is hidden ===');
+          TestRunner.addResult('visibility: ' + result.value + ';');
+          next();
+        });
+      }
     }
+  ]);
 
-    function testPseudoToggle(pseudoNode, next)
-    {
-        treeOutline.toggleHideElement(pseudoNode).then(callback);
-        function callback()
-        {
-            var pseudoNodeTypeArg = pseudoNode.pseudoType() ? ("\"" + pseudoNode.pseudoType() + "\"") : "undefined";
-            TestRunner.evaluateInPagePromise("pseudoVisibility(" + pseudoNodeTypeArg + ")").then(function(result) {
-                TestRunner.addResult("::" + pseudoNode.pseudoType() + " node visibility: '" + result.value + "'");
-                next();
-            });
-        }
+  function getPropertyText(computedStyle, propertyName) {
+    return String.sprintf('%s: %s;', propertyName, computedStyle.get(propertyName));
+  }
+
+  function testPseudoToggle(pseudoNode, next) {
+    treeOutline.toggleHideElement(pseudoNode).then(callback);
+    function callback() {
+      var pseudoNodeTypeArg = pseudoNode.pseudoType() ? ('"' + pseudoNode.pseudoType() + '"') : 'undefined';
+      TestRunner.evaluateInPagePromise('pseudoVisibility(' + pseudoNodeTypeArg + ')').then(function(result) {
+        TestRunner.addResult('::' + pseudoNode.pseudoType() + ' node visibility: \'' + result.value + '\'');
+        next();
+      });
     }
+  }
 }
 </script>
 <style>

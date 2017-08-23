@@ -5,60 +5,50 @@
 <script src="edit-dom-test.js"></script>
 <script>
 
-function test()
-{
-    // Save time on style updates.
-    Elements.StylesSidebarPane.prototype.update = function() {};
-    Elements.MetricsSidebarPane.prototype.update = function() {};
+function test() {
+  // Save time on style updates.
+  Elements.StylesSidebarPane.prototype.update = function() {};
+  Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    TestRunner.runTestSuite([
-        function testSetUp(next)
-        {
-            ElementsTestRunner.expandElementsTree(next);
-        },
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      ElementsTestRunner.expandElementsTree(next);
+    },
 
-        function testRemove(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testRemove", "node-to-remove", testBody, next);
+    function testRemove(next) {
+      ElementsTestRunner.domActionTestForNodeId('testRemove', 'node-to-remove', testBody, next);
 
-            function testBody(node, done)
-            {
-                var treeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(node);
-                treeElement.remove();
-                TestRunner.deprecatedRunAfterPendingDispatches(done);
-            }
-        },
+      function testBody(node, done) {
+        var treeElement = ElementsTestRunner.firstElementsTreeOutline().findTreeElement(node);
+        treeElement.remove();
+        TestRunner.deprecatedRunAfterPendingDispatches(done);
+      }
+    },
 
-        function testSetNodeName(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testSetNodeName", "node-to-set-name", testBody, next);
+    function testSetNodeName(next) {
+      ElementsTestRunner.domActionTestForNodeId('testSetNodeName', 'node-to-set-name', testBody, next);
 
-            function testBody(node, done)
-            {
-                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-tag-name", "span", done);
-            }
-        },
+      function testBody(node, done) {
+        ElementsTestRunner.editNodePartAndRun(node, 'webkit-html-tag-name', 'span', done);
+      }
+    },
 
-        function testSetNodeNameInput(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testSetNodeNameInput", "node-to-set-name-input", testBody, next);
+    function testSetNodeNameInput(next) {
+      ElementsTestRunner.domActionTestForNodeId('testSetNodeNameInput', 'node-to-set-name-input', testBody, next);
 
-            function testBody(node, done)
-            {
-                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-tag-name", "input", done);
-            }
-        },
+      function testBody(node, done) {
+        ElementsTestRunner.editNodePartAndRun(node, 'webkit-html-tag-name', 'input', done);
+      }
+    },
 
-        function testSetNodeValue(next)
-        {
-            ElementsTestRunner.domActionTestForNodeId("testSetNodeValue", "node-to-set-value", testBody, next);
+    function testSetNodeValue(next) {
+      ElementsTestRunner.domActionTestForNodeId('testSetNodeValue', 'node-to-set-value', testBody, next);
 
-            function testBody(node, done)
-            {
-                ElementsTestRunner.editNodePartAndRun(node, "webkit-html-text-node", "  \n  Edited Text  \n  ", done);
-            }
-        },
-    ]);
+      function testBody(node, done) {
+        ElementsTestRunner.editNodePartAndRun(node, 'webkit-html-text-node', '  \n  Edited Text  \n  ', done);
+      }
+    },
+  ]);
 }
 
 </script>

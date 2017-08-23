@@ -8,20 +8,20 @@
   }
 
   function test() {
-    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, sheetAdded);
-    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, sheetRemoved);
-    TestRunner.evaluateInPage("addShadow()");
+  TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, sheetAdded);
+  TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, sheetRemoved);
+  TestRunner.evaluateInPage('addShadow()');
 
-    function sheetAdded(event) {
-      TestRunner.addResult("Sheet added: "+event.data.sourceURL);
-      TestRunner.evaluateInPage("host.remove()");
-    }
-
-    function sheetRemoved(event) {
-      TestRunner.addResult("Sheet removed: "+event.data.sourceURL);
-      TestRunner.completeTest();
-    }
+  function sheetAdded(event) {
+    TestRunner.addResult('Sheet added: ' + event.data.sourceURL);
+    TestRunner.evaluateInPage('host.remove()');
   }
+
+  function sheetRemoved(event) {
+    TestRunner.addResult('Sheet removed: ' + event.data.sourceURL);
+    TestRunner.completeTest();
+  }
+}
 </script>
 <body onload="runTest()">
 <div id="host"></div>

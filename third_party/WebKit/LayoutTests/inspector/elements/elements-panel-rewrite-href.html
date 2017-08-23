@@ -7,45 +7,43 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.expandElementsTree(step1);
+function test() {
+  ElementsTestRunner.expandElementsTree(step1);
 
-    function step1()
-    {
-        var innerMapping = TestRunner.domModel._idToDOMNode;
+  function step1() {
+    var innerMapping = TestRunner.domModel._idToDOMNode;
 
-        var outputLines = [];
-        for (var nodeId in innerMapping) {
-            var node = innerMapping[nodeId];
-            if (node.nodeName() === "LINK" || node.nodeName() === "SCRIPT") {
-                var segments = [];
-                var href = node.resolveURL(node.getAttribute("src") || node.getAttribute("href"));
-                if (!href) {
-                    segments.push("<empty>");
-                    continue;
-                }
-                if (href.startsWith("http:")) {
-                    outputLines.push(href);
-                    continue;
-                }
-                var parsedURL = href.asParsedURL();
-                if (!parsedURL) {
-                    testController.notifyDone("FAIL: no URL match for <" + href + ">");
-                    continue;
-                }
-                var split = parsedURL.path.split("/");
-                for (var i = split.length - 1, j = 0; j < 3 && i >= 0; --i, ++j)
-                    segments.push(split[i]);
-                outputLines.push(segments.reverse());
-            }
-            if (node.nodeName() === "A")
-                outputLines.push(node.resolveURL(node.getAttribute("href")));
+    var outputLines = [];
+    for (var nodeId in innerMapping) {
+      var node = innerMapping[nodeId];
+      if (node.nodeName() === 'LINK' || node.nodeName() === 'SCRIPT') {
+        var segments = [];
+        var href = node.resolveURL(node.getAttribute('src') || node.getAttribute('href'));
+        if (!href) {
+          segments.push('<empty>');
+          continue;
         }
-        outputLines.sort();
-        TestRunner.addResult(outputLines.join("\n"));
-        TestRunner.completeTest();
+        if (href.startsWith('http:')) {
+          outputLines.push(href);
+          continue;
+        }
+        var parsedURL = href.asParsedURL();
+        if (!parsedURL) {
+          testController.notifyDone('FAIL: no URL match for <' + href + '>');
+          continue;
+        }
+        var split = parsedURL.path.split('/');
+        for (var i = split.length - 1, j = 0; j < 3 && i >= 0; --i, ++j)
+          segments.push(split[i]);
+        outputLines.push(segments.reverse());
+      }
+      if (node.nodeName() === 'A')
+        outputLines.push(node.resolveURL(node.getAttribute('href')));
     }
+    outputLines.sort();
+    TestRunner.addResult(outputLines.join('\n'));
+    TestRunner.completeTest();
+  }
 }
 
 </script>

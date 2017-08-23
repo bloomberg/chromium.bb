@@ -35,32 +35,27 @@ function setupEventListeners()
     document.body.removeEventListener("wheel", f, {"passive": true, "capture": true});
 }
 
-function test()
-{
-    Common.settingForTest("showEventListenersForAncestors").set(true);
-    ElementsTestRunner.selectNodeWithId("node", step1);
+function test() {
+  Common.settingForTest('showEventListenersForAncestors').set(true);
+  ElementsTestRunner.selectNodeWithId('node', step1);
 
-    function step1()
-    {
-        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step2);
-    }
+  function step1() {
+    ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step2);
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.selectNodeWithId("node-without-listeners", step3);
-    }
+  function step2() {
+    ElementsTestRunner.selectNodeWithId('node-without-listeners', step3);
+  }
 
-    function step3()
-    {
-        Common.settingForTest("showEventListenersForAncestors").set(false);
-        TestRunner.addResult("Listeners for selected node only(should be no listeners):");
-        ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step4);
-    }
+  function step3() {
+    Common.settingForTest('showEventListenersForAncestors').set(false);
+    TestRunner.addResult('Listeners for selected node only(should be no listeners):');
+    ElementsTestRunner.expandAndDumpSelectedElementEventListeners(step4);
+  }
 
-    function step4()
-    {
-        TestRunner.completeTest();
-    }
+  function step4() {
+    TestRunner.completeTest();
+  }
 }
 
 function onloadHandler()

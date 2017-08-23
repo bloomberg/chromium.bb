@@ -2,19 +2,16 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script>
-function test()
-{
-    TestRunner.runTestSuite([
-        function testSetUp(next)
-        {
-            TestRunner.domModel.requestDocument(next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      TestRunner.domModel.requestDocument(next);
+    },
 
-        function testNoCrash(next)
-        {
-            TestRunner.domModel.performSearch("FooBar", false).then(next);
-        }
-    ]);
+    function testNoCrash(next) {
+      TestRunner.domModel.performSearch('FooBar', false).then(next);
+    }
+  ]);
 }
 </script>
 </head>

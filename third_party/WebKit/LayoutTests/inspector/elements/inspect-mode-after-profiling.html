@@ -14,25 +14,24 @@ function click()
     eventSender.mouseUp();
 }
 
-function test()
-{
-    TestRunner.cpuProfilerModel.startRecording();
-    TestRunner.cpuProfilerModel.stopRecording();
-    TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(clickAtInspected);
+function test() {
+  TestRunner.cpuProfilerModel.startRecording();
+  TestRunner.cpuProfilerModel.stopRecording();
+  TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(clickAtInspected);
 
-    function clickAtInspected()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
-        TestRunner.evaluateInPage("click()");
-    }
+  function clickAtInspected() {
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
+    TestRunner.evaluateInPage('click()');
+  }
 
-    function dumpAndFinish()
-    {
-        ElementsTestRunner.firstElementsTreeOutline().removeEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
-        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
-        TestRunner.addResult("Node selected: " + selectedElement.node().getAttribute("id"));
-        TestRunner.completeTest();
-    }
+  function dumpAndFinish() {
+    ElementsTestRunner.firstElementsTreeOutline().removeEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, dumpAndFinish);
+    var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
+    TestRunner.addResult('Node selected: ' + selectedElement.node().getAttribute('id'));
+    TestRunner.completeTest();
+  }
 }
 
 </script>

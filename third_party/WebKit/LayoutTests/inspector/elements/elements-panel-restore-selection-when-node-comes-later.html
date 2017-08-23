@@ -5,95 +5,82 @@
 <script src="./shadow/elements-panel-shadow-selection-on-refresh.js"></script>
 <script>
 
-function test()
-{
-    var node;
+function test() {
+  var node;
 
-    TestRunner.runTestSuite([
-        function selectNode(next)
-        {
-            ElementsTestRunner.nodeWithId("inspected", onNodeFound);
+  TestRunner.runTestSuite([
+    function selectNode(next) {
+      ElementsTestRunner.nodeWithId('inspected', onNodeFound);
 
-            function onNodeFound(n)
-            {
-                node = n;
-                ElementsTestRunner.selectNode(node).then(onNodeSelected);
-            }
+      function onNodeFound(n) {
+        node = n;
+        ElementsTestRunner.selectNode(node).then(onNodeSelected);
+      }
 
-            function onNodeSelected()
-            {
-                dumpSelectedNode();
-                next();
-            }
-        },
+      function onNodeSelected() {
+        dumpSelectedNode();
+        next();
+      }
+    },
 
-        function firstReloadWithoutNodeInDOM(next)
-        {
-            TestRunner.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
-            // Do a reload and pretend page's DOM doesn't have a node to restore.
-            overridePushNodeForPath(node.path());
-            TestRunner.reloadPage(function() { });
+    function firstReloadWithoutNodeInDOM(next) {
+      TestRunner.addSniffer(Elements.ElementsPanel.prototype, '_lastSelectedNodeSelectedForTest', onNodeRestored);
+      // Do a reload and pretend page's DOM doesn't have a node to restore.
+      overridePushNodeForPath(node.path());
+      TestRunner.reloadPage(function() {});
 
-            function onNodeRestored()
-            {
-                dumpSelectedNode();
-                next();
-            }
-        },
+      function onNodeRestored() {
+        dumpSelectedNode();
+        next();
+      }
+    },
 
-        function secondReloadWithNodeInDOM(next)
-        {
-            var pageReloaded = false;
-            var nodeRestored = false;
-            TestRunner.addSniffer(Elements.ElementsPanel.prototype, "_lastSelectedNodeSelectedForTest", onNodeRestored);
-            TestRunner.reloadPage(onPageReloaded);
+    function secondReloadWithNodeInDOM(next) {
+      var pageReloaded = false;
+      var nodeRestored = false;
+      TestRunner.addSniffer(Elements.ElementsPanel.prototype, '_lastSelectedNodeSelectedForTest', onNodeRestored);
+      TestRunner.reloadPage(onPageReloaded);
 
-            function onPageReloaded()
-            {
-                pageReloaded = true;
-                maybeNext();
-            }
+      function onPageReloaded() {
+        pageReloaded = true;
+        maybeNext();
+      }
 
-            function onNodeRestored()
-            {
-                nodeRestored = true;
-                maybeNext();
-            }
+      function onNodeRestored() {
+        nodeRestored = true;
+        maybeNext();
+      }
 
-            function maybeNext()
-            {
-                if (!nodeRestored || !pageReloaded)
-                    return;
-                dumpSelectedNode();
-                next();
-            }
-        },
+      function maybeNext() {
+        if (!nodeRestored || !pageReloaded)
+          return;
+        dumpSelectedNode();
+        next();
+      }
+    },
 
-    ]);
+  ]);
 
-    function dumpSelectedNode()
-    {
-        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
-        var nodeName = selectedElement ? selectedElement.node().nodeNameInCorrectCase() : "null";
-        TestRunner.addResult("Selected node: '" + nodeName + "'");
-    }
+  function dumpSelectedNode() {
+    var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
+    var nodeName = selectedElement ? selectedElement.node().nodeNameInCorrectCase() : 'null';
+    TestRunner.addResult('Selected node: \'' + nodeName + '\'');
+  }
 
-    /**
+  /**
      * @param {string} pathToIgnore
      */
-    function overridePushNodeForPath(pathToIgnore)
-    {
-        var original = TestRunner.override(SDK.DOMModel.prototype, "pushNodeByPathToFrontend", override);
+  function overridePushNodeForPath(pathToIgnore) {
+    var original = TestRunner.override(SDK.DOMModel.prototype, 'pushNodeByPathToFrontend', override);
 
-        function override(nodePath, callback)
-        {
-            if (nodePath === pathToIgnore) {
-                setTimeout(callback.bind(null), 0);
-                return;
-            }
-            original(nodePath, callback);
-        }
+    function override(nodePath, callback) {
+      if (nodePath === pathToIgnore) {
+        setTimeout(callback.bind(null), 0);
+        return;
+      }
+      original(nodePath, callback);
     }
+  }
 }
 
 </script>

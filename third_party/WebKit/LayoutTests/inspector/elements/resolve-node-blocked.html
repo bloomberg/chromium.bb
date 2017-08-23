@@ -4,16 +4,14 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline'">
 <script>
-function test()
-{
-    TestRunner.evaluateInPage("document", didReceiveDocumentObject);
-    async function didReceiveDocumentObject(remoteObject)
-    {
-        TestRunner.addResult("didReceiveDocumentObject");
-        var nodeId = await TestRunner.DOMAgent.requestNode(remoteObject.objectId);
-        TestRunner.addResult("didRequestNode error = " + (nodeId ? "null" : "error"));
-        TestRunner.completeTest();
-    }
+function test() {
+  TestRunner.evaluateInPage('document', didReceiveDocumentObject);
+  async function didReceiveDocumentObject(remoteObject) {
+    TestRunner.addResult('didReceiveDocumentObject');
+    var nodeId = await TestRunner.DOMAgent.requestNode(remoteObject.objectId);
+    TestRunner.addResult('didRequestNode error = ' + (nodeId ? 'null' : 'error'));
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

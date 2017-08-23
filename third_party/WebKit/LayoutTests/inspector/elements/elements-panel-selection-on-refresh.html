@@ -4,28 +4,24 @@
 <script src="../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeWithId("test-topic", step1);
+function test() {
+  ElementsTestRunner.selectNodeWithId('test-topic', step1);
 
-    function step1()
-    {
-        TestRunner.reloadPage(step2);
-    }
- 
-    function step2()
-    {
-        TestRunner.deprecatedRunAfterPendingDispatches(step3);
-    }
+  function step1() {
+    TestRunner.reloadPage(step2);
+  }
 
-    function step3()
-    {
-        // We should have "test-topic" element selected after refresh.
-        var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
-        var nodeName = selectedElement ? selectedElement.node().nodeName() : "null";
-        TestRunner.addResult("Selected element should be 'P', was: '" + nodeName + "'");
-        TestRunner.completeTest();
-    }
+  function step2() {
+    TestRunner.deprecatedRunAfterPendingDispatches(step3);
+  }
+
+  function step3() {
+    // We should have "test-topic" element selected after refresh.
+    var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
+    var nodeName = selectedElement ? selectedElement.node().nodeName() : 'null';
+    TestRunner.addResult('Selected element should be \'P\', was: \'' + nodeName + '\'');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

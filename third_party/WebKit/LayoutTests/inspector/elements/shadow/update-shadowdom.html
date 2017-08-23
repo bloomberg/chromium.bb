@@ -8,17 +8,16 @@ function updateShadowDOM()
     shadowRoot.removeChild(shadowRoot.firstChild);
 }
 
-function test()
-{
-    ElementsTestRunner.expandElementsTree(function() {
-        TestRunner.evaluateInPage("updateShadowDOM()", function() {
-            ElementsTestRunner.expandElementsTree(function() {
-                var containerElem = ElementsTestRunner.expandedNodeWithId('container');
-                ElementsTestRunner.dumpElementsTree(containerElem);
-                TestRunner.completeTest();
-            });
-        });
+function test() {
+  ElementsTestRunner.expandElementsTree(function() {
+    TestRunner.evaluateInPage('updateShadowDOM()', function() {
+      ElementsTestRunner.expandElementsTree(function() {
+        var containerElem = ElementsTestRunner.expandedNodeWithId('container');
+        ElementsTestRunner.dumpElementsTree(containerElem);
+        TestRunner.completeTest();
+      });
     });
+  });
 }
 </script>
 </head>

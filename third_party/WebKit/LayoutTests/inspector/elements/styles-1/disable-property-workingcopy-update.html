@@ -6,74 +6,65 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    var cssSourceFrame;
-    Bindings.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 10;
+function test() {
+  var cssSourceFrame;
+  Bindings.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 10;
 
-    TestRunner.runTestSuite([
-        function selectContainer(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("inspected", next);
-        },
+  TestRunner.runTestSuite([
+    function selectContainer(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
+    },
 
-        function showEditor(next)
-        {
-            var headers = TestRunner.cssModel.styleSheetHeaders();
-            for (var i = 0; i < headers.length; ++i) {
-                if (headers[i].sourceURL.endsWith(".css")) {
-                    var cssLocation = new SDK.CSSLocation(headers[i], 0);
-                    SourcesTestRunner.showUISourceCode(Bindings.cssWorkspaceBinding.rawLocationToUILocation(cssLocation).uiSourceCode, callback);
-                    break;
-                }
-            }
-
-            function callback(sourceFrame)
-            {
-                cssSourceFrame = sourceFrame;
-                SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
-                next();
-            }
-        },
-
-        function togglePropertyOff(next)
-        {
-            toggleProperty(false, next);
-        },
-
-        function dumpDisabledText(next)
-        {
-            SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
-            ElementsTestRunner.dumpSelectedElementStyles(true);
-            next();
-        },
-
-        function togglePropertyOn(next)
-        {
-            toggleProperty(true, next);
-        },
-
-        function dumpEnabledText(next)
-        {
-            SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
-            ElementsTestRunner.dumpSelectedElementStyles(true);
-            next();
+    function showEditor(next) {
+      var headers = TestRunner.cssModel.styleSheetHeaders();
+      for (var i = 0; i < headers.length; ++i) {
+        if (headers[i].sourceURL.endsWith('.css')) {
+          var cssLocation = new SDK.CSSLocation(headers[i], 0);
+          SourcesTestRunner.showUISourceCode(
+              Bindings.cssWorkspaceBinding.rawLocationToUILocation(cssLocation).uiSourceCode, callback);
+          break;
         }
-    ]);
+      }
 
-    function toggleProperty(value, next)
-    {
-        TestRunner.addSniffer(Workspace.UISourceCode.prototype, "addRevision", callback);
-        ElementsTestRunner.waitForStyles("inspected", callback);
-        ElementsTestRunner.toggleMatchedStyleProperty("font-weight", value);
+      function callback(sourceFrame) {
+        cssSourceFrame = sourceFrame;
+        SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
+        next();
+      }
+    },
 
-        var barrierCounter = 2;
-        function callback()
-        {
-            if (!--barrierCounter)
-                next();
-        }
+    function togglePropertyOff(next) {
+      toggleProperty(false, next);
+    },
+
+    function dumpDisabledText(next) {
+      SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
+      ElementsTestRunner.dumpSelectedElementStyles(true);
+      next();
+    },
+
+    function togglePropertyOn(next) {
+      toggleProperty(true, next);
+    },
+
+    function dumpEnabledText(next) {
+      SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
+      ElementsTestRunner.dumpSelectedElementStyles(true);
+      next();
     }
+  ]);
+
+  function toggleProperty(value, next) {
+    TestRunner.addSniffer(Workspace.UISourceCode.prototype, 'addRevision', callback);
+    ElementsTestRunner.waitForStyles('inspected', callback);
+    ElementsTestRunner.toggleMatchedStyleProperty('font-weight', value);
+
+    var barrierCounter = 2;
+    function callback() {
+      if (!--barrierCounter)
+        next();
+    }
+  }
 }
 </script>
 </head>

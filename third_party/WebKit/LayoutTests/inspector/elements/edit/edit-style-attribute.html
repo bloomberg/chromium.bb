@@ -14,43 +14,37 @@ function testSetSameValue()
     document.getElementById("node-set-same-value").style.setProperty("color", "red");
 }
 
-function test()
-{
-    // Save time on style updates.
-    Elements.StylesSidebarPane.prototype.update = function() {};
-    Elements.MetricsSidebarPane.prototype.update = function() {};
+function test() {
+  // Save time on style updates.
+  Elements.StylesSidebarPane.prototype.update = function() {};
+  Elements.MetricsSidebarPane.prototype.update = function() {};
 
-    TestRunner.runTestSuite([
-        function testSetUp(next)
-        {
-            ElementsTestRunner.expandElementsTree(next);
-        },
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      ElementsTestRunner.expandElementsTree(next);
+    },
 
-        function testSetNewValue(next)
-        {
-            TestRunner.evaluateInPage("testSetNewValue()");
+    function testSetNewValue(next) {
+      TestRunner.evaluateInPage('testSetNewValue()');
 
-            TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
-            function listener(event)
-            {
-                TestRunner.addResult("SDK.DOMModel.Events.AttrModified should be issued");
-                TestRunner.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
-                next();
-            }
-        },
+      TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
+      function listener(event) {
+        TestRunner.addResult('SDK.DOMModel.Events.AttrModified should be issued');
+        TestRunner.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
+        next();
+      }
+    },
 
-        function testSetSameValue(next)
-        {
-            TestRunner.evaluateInPage("testSetSameValue()", next);
+    function testSetSameValue(next) {
+      TestRunner.evaluateInPage('testSetSameValue()', next);
 
-            TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
-            function listener(event)
-            {
-                TestRunner.addResult("SDK.DOMModel.Events.AttrModified should not be issued");
-                TestRunner.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
-            }
-        }
-    ]);
+      TestRunner.domModel.addEventListener(SDK.DOMModel.Events.AttrModified, listener);
+      function listener(event) {
+        TestRunner.addResult('SDK.DOMModel.Events.AttrModified should not be issued');
+        TestRunner.domModel.removeEventListener(SDK.DOMModel.Events.AttrModified, listener);
+      }
+    }
+  ]);
 }
 
 </script>

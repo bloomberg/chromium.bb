@@ -11,24 +11,20 @@ function createShadowRoot()
     root.appendChild(template.content.cloneNode(true));
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testInit(next)
-        {
-            TestRunner.evaluateInPage("createShadowRoot()", callback);
-            function callback()
-            {
-              ElementsTestRunner.selectNodeAndWaitForStyles("inner", next);
-            }
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function testInit(next) {
+      TestRunner.evaluateInPage('createShadowRoot()', callback);
+      function callback() {
+        ElementsTestRunner.selectNodeAndWaitForStyles('inner', next);
+      }
+    },
 
-        function testDumpStyles(next)
-        {
-            ElementsTestRunner.dumpSelectedElementStyles(true);
-            next();
-        }
-    ]);
+    function testDumpStyles(next) {
+      ElementsTestRunner.dumpSelectedElementStyles(true);
+      next();
+    }
+  ]);
 }
 </script>
 </head>

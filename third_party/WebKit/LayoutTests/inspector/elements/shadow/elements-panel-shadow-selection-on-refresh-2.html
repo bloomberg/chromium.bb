@@ -5,40 +5,33 @@
 <script src="./elements-panel-shadow-selection-on-refresh.js"></script>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function setup(next)
-        {
-            Common.settingForTest("showUAShadowDOM").set(true);
-            ElementsTestRunner.expandElementsTree(next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function setup(next) {
+      Common.settingForTest('showUAShadowDOM').set(true);
+      ElementsTestRunner.expandElementsTree(next);
+    },
 
-        function testUserAgentShadowRoot(next)
-        {
-            ElementsTestRunner.findNode(isUserAgentShadowRoot, ElementsTestRunner.selectReloadAndDump.bind(null, next));
-        },
+    function testUserAgentShadowRoot(next) {
+      ElementsTestRunner.findNode(isUserAgentShadowRoot, ElementsTestRunner.selectReloadAndDump.bind(null, next));
+    },
 
-        function testOpenShadowRootChild(next)
-        {
-            ElementsTestRunner.findNode(isOpenShadowRootChild, ElementsTestRunner.selectReloadAndDump.bind(null, next));
-        },
-    ]);
+    function testOpenShadowRootChild(next) {
+      ElementsTestRunner.findNode(isOpenShadowRootChild, ElementsTestRunner.selectReloadAndDump.bind(null, next));
+    },
+  ]);
 
-    function isOpenShadowRoot(node)
-    {
-        return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Open;
-    }
+  function isOpenShadowRoot(node) {
+    return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.Open;
+  }
 
-    function isUserAgentShadowRoot(node)
-    {
-        return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent;
-    }
+  function isUserAgentShadowRoot(node) {
+    return node && node.shadowRootType() === SDK.DOMNode.ShadowRootTypes.UserAgent;
+  }
 
-    function isOpenShadowRootChild(node)
-    {
-        return isOpenShadowRoot(node.parentNode);
-    }
+  function isOpenShadowRootChild(node) {
+    return isOpenShadowRoot(node.parentNode);
+  }
 }
 
 </script>

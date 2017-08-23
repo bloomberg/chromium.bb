@@ -36,7 +36,7 @@ Inspect Me
 
 ======== load ========
 == Raw
-[expanded] WindowRemoveevent-listener-sidebar-jquery2.html:52
+[expanded] WindowRemoveevent-listener-sidebar-jquery2.html:49
     useCapture: false
     passive: false
     once: false

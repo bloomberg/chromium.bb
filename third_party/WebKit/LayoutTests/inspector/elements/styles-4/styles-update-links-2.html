@@ -19,31 +19,27 @@
 </style>
 <script>
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function selectInitialNode(next)
-        {
-            ElementsTestRunner.selectNodeAndWaitForStyles("container", next);
-        },
+function test() {
+  TestRunner.runTestSuite([
+    function selectInitialNode(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('container', next);
+    },
 
-        function testEditSelector(next)
-        {
-            var section = UI.panels.elements._stylesWidget._sectionBlocks[0].sections[3];
-            section.startEditingSelector();
-            section._selectorElement.textContent = ".should-change, .INSERTED-OTHER-SELECTOR";
-            ElementsTestRunner.waitForSelectorCommitted(onSelectorEdited);
-            section._selectorElement.dispatchEvent(TestRunner.createKeyEvent("Enter"));
+    function testEditSelector(next) {
+      var section = UI.panels.elements._stylesWidget._sectionBlocks[0].sections[3];
+      section.startEditingSelector();
+      section._selectorElement.textContent = '.should-change, .INSERTED-OTHER-SELECTOR';
+      ElementsTestRunner.waitForSelectorCommitted(onSelectorEdited);
+      section._selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
 
-            function onSelectorEdited()
-            {
-                TestRunner.addResult("\n\n#### AFTER SELECTOR EDIT ####\n\n");
-                ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-                var rules = ElementsTestRunner.getMatchedRules();
-                ElementsTestRunner.validateRuleRanges("container", rules, next);
-            }
-        }
-    ]);
+      function onSelectorEdited() {
+        TestRunner.addResult('\n\n#### AFTER SELECTOR EDIT ####\n\n');
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        var rules = ElementsTestRunner.getMatchedRules();
+        ElementsTestRunner.validateRuleRanges('container', rules, next);
+      }
+    }
+  ]);
 }
 </script>
 <link rel="stylesheet" href="../styles/resources/styles-update-links-2.css"></link>

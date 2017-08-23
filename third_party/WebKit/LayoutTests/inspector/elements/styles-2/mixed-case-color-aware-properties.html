@@ -4,14 +4,13 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script>
 
-function test()
-{
-    var colorAwareProperties = ["bAckground-ColoR", "COloR", "Border-coLoR", "border-right-color", "BOX-SHADOW"];
-    for (var i = 0; i < colorAwareProperties.length; ++i) {
-        var isColorAware = SDK.cssMetadata().isColorAwareProperty(colorAwareProperties[i]);
-        TestRunner.addResult(colorAwareProperties[i] + (isColorAware ? " is" : " is NOT") + " color aware");
-    }
-    TestRunner.completeTest();
+function test() {
+  var colorAwareProperties = ['bAckground-ColoR', 'COloR', 'Border-coLoR', 'border-right-color', 'BOX-SHADOW'];
+  for (var i = 0; i < colorAwareProperties.length; ++i) {
+    var isColorAware = SDK.cssMetadata().isColorAwareProperty(colorAwareProperties[i]);
+    TestRunner.addResult(colorAwareProperties[i] + (isColorAware ? ' is' : ' is NOT') + ' color aware');
+  }
+  TestRunner.completeTest();
 }
 </script>
 </head>

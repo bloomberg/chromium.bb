@@ -15,35 +15,30 @@ function deleteClass()
     document.getElementsByClassName("anotherClass")[0].className = "";
 }
 
-function test()
-{
-    ElementsTestRunner.expandElementsTree(step0);
+function test() {
+  ElementsTestRunner.expandElementsTree(step0);
 
-    function step0()
-    {
-        TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step1);
-        ElementsTestRunner.selectNodeWithId("target");
-    }
+  function step0() {
+    TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, 'update', step1);
+    ElementsTestRunner.selectNodeWithId('target');
+  }
 
-    function step1()
-    {
-        ElementsTestRunner.dumpBreadcrumb("Original breadcrumb");
-        TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step2);
-        TestRunner.evaluateInPage("changeClass()");
-    }
+  function step1() {
+    ElementsTestRunner.dumpBreadcrumb('Original breadcrumb');
+    TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, 'update', step2);
+    TestRunner.evaluateInPage('changeClass()');
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.dumpBreadcrumb("After class change");
-        TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, "update", step3);
-        TestRunner.evaluateInPage("deleteClass()");
-    }
+  function step2() {
+    ElementsTestRunner.dumpBreadcrumb('After class change');
+    TestRunner.addSniffer(Elements.ElementsBreadcrumbs.prototype, 'update', step3);
+    TestRunner.evaluateInPage('deleteClass()');
+  }
 
-    function step3()
-    {
-        ElementsTestRunner.dumpBreadcrumb("After class removal");
-        TestRunner.completeTest();
-    }
+  function step3() {
+    ElementsTestRunner.dumpBreadcrumb('After class removal');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

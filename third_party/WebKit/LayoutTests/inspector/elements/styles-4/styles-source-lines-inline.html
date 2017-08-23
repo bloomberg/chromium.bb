@@ -11,15 +11,13 @@
 
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("foo", step2);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('foo', step2);
 
-    function step2()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
-        TestRunner.completeTest();
-    }
+  function step2() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>
