@@ -5919,6 +5919,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Gamma properties of image color space.</summary>
 </histogram>
 
+<histogram base="true" name="Blink.Compositing.LayerPromotionCount">
+  <owner>paint-dev@chromium.org</owner>
+  <summary>
+    Number of composited layers based on various reasons. Recorded when a page
+    finishes its layer updates.
+  </summary>
+</histogram>
+
 <histogram name="Blink.Compositing.UpdateTime" units="microseconds">
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -91908,6 +91916,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </suffix>
   <suffix name="WEBP"/>
   <affected-histogram name="Blink.Canvas.ToDataURL"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="BlinkCompositingLayerCount" separator=".">
+  <suffix name="Overlap"/>
+  <suffix name="ActiveAnimation"/>
+  <suffix name="AssumedOverlap"/>
+  <suffix name="IndirectComposited"/>
+  <suffix name="TotalComposited"/>
+  <affected-histogram name="Blink.Compositing.LayerPromotionCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="BlinkGCReason" separator="_">

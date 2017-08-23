@@ -186,6 +186,16 @@ struct CompositingReasonStringMap {
   const char* description;
 };
 
+// crbug.com/754786: Track number of layer promotions due to various reasons.
+// Aggregate the reasons over all frames.
+struct CompositingReasonsStats {
+  size_t overlap_layers = 0;
+  size_t active_animation_layers = 0;
+  size_t assumed_overlap_layers = 0;
+  size_t indirect_composited_layers = 0;
+  size_t total_composited_layers = 0;
+};
+
 PLATFORM_EXPORT extern const CompositingReasonStringMap
     kCompositingReasonStringMap[];
 PLATFORM_EXPORT extern const size_t kNumberOfCompositingReasons;
