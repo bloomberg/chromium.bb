@@ -3430,6 +3430,7 @@ void WebContentsImpl::LoadStateChanged(
 
 void WebContentsImpl::DidGetResourceResponseStart(
   const ResourceRequestDetails& details) {
+  SetNotWaitingForResponse();
   controller_.ssl_manager()->DidStartResourceResponse(
       details.url, details.has_certificate, details.ssl_cert_status);
 
