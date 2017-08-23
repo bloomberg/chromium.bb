@@ -33146,6 +33146,9 @@ from previous Chrome versions.
   <int value="4" label="Social Engineering Ads URL"/>
   <int value="5" label="Social Engineering Landing URL"/>
   <int value="6" label="Phishing URL"/>
+  <int value="7" label="Better Ads Standard violating URL"/>
+  <int value="8" label="Abusive Ads violating URL"/>
+  <int value="9" label="Both BAS/Abusive violating URL"/>
 </enum>
 
 <enum name="SB2SideEffectFreeWhitelistStatus">
