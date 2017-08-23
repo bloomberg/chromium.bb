@@ -186,6 +186,8 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     #    \- ArchiveManifest
     #    \- ArchiveStrippedPackages
     #    \- ArchiveImageScripts
+    #    \- BuildAndArchiveDeltaSysroot
+    #    \- ArchiveEbuildLogs
 
     def ArchiveManifest():
       """Create manifest.xml snapshot of the built code."""
@@ -366,7 +368,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     def BuildAndArchiveArtifacts():
       # Run archiving steps in parallel.
       steps = [ArchiveReleaseArtifacts, ArchiveManifest,
-               self.ArchiveStrippedPackages]
+               self.ArchiveStrippedPackages, ArchiveEbuildLogs]
       if config['images']:
         steps.append(ArchiveImageScripts)
       if config['create_delta_sysroot']:
@@ -374,7 +376,6 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
 
       with self.ArtifactUploader(self._upload_queue, archive=False):
         parallel.RunParallelSteps(steps)
-      steps.append(ArchiveEbuildLogs)
 
     if not self._run.config.afdo_generate_min:
       BuildAndArchiveArtifacts()
