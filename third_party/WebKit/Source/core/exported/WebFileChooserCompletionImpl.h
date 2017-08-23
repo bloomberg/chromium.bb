@@ -32,7 +32,7 @@
 #define WebFileChooserCompletionImpl_h
 
 #include "core/CoreExport.h"
-#include "platform/FileChooser.h"
+#include "core/html/forms/FileChooser.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"

@@ -396,6 +396,8 @@ blink_core_sources("html") {
     "forms/ExternalDateTimeChooser.h",
     "forms/ExternalPopupMenu.cpp",
     "forms/ExternalPopupMenu.h",
+    "forms/FileChooser.cpp",
+    "forms/FileChooser.h",
     "forms/FileInputType.cpp",
     "forms/FileInputType.h",
     "forms/FormController.cpp",
