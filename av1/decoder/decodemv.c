@@ -1343,9 +1343,9 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
 #endif
 
 #if CONFIG_EXT_COMP_REFS
-static REFERENCE_MODE read_comp_reference_type(AV1_COMMON *cm,
-                                               const MACROBLOCKD *xd,
-                                               aom_reader *r) {
+static COMP_REFERENCE_TYPE read_comp_reference_type(AV1_COMMON *cm,
+                                                    const MACROBLOCKD *xd,
+                                                    aom_reader *r) {
   const int ctx = av1_get_comp_reference_type_context(xd);
 #if USE_UNI_COMP_REFS
   COMP_REFERENCE_TYPE comp_ref_type;
