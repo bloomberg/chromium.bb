@@ -9,6 +9,7 @@ import("//testing/test.gni")
 static_library("zucchini_lib") {
   sources = [
     "address_translator.h",
+    "algorithm.h",
     "binary_data_histogram.cc",
     "binary_data_histogram.h",
     "buffer_sink.cc",
@@ -22,6 +23,8 @@ static_library("zucchini_lib") {
     "disassembler.h",
     "disassembler_no_op.cc",
     "disassembler_no_op.h",
+    "disassembler_win32.cc",
+    "disassembler_win32.h",
     "element_detection.cc",
     "element_detection.h",
     "encoded_view.cc",
@@ -52,6 +55,8 @@ static_library("zucchini_lib") {
     "zucchini_apply.h",
     "zucchini_gen.cc",
     "zucchini_gen.h",
+    "zucchini_tools.cc",
+    "zucchini_tools.h",
   ]
 
   deps = [
@@ -99,6 +104,7 @@ fuzzer_test("zucchini_patch_fuzzer") {
 
 test("zucchini_unittests") {
   sources = [
+    "algorithm_unittest.cc",
     "binary_data_histogram_unittest.cc",
     "buffer_sink_unittest.cc",
     "buffer_source_unittest.cc",

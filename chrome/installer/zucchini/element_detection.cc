@@ -9,20 +9,43 @@
 #include "base/logging.h"
 #include "chrome/installer/zucchini/disassembler.h"
 #include "chrome/installer/zucchini/disassembler_no_op.h"
+#include "chrome/installer/zucchini/disassembler_win32.h"
 
 namespace zucchini {
+
+namespace {
+
+// Impose a minimal program size to eliminate pathological cases.
+constexpr size_t kMinProgramSize = 16;
+
+}  // namespace
 
 /******** Utility Functions ********/
 
 std::unique_ptr<Disassembler> MakeDisassemblerWithoutFallback(
     ConstBufferView image) {
-  // TODO(etiennep): Add disassembler implementations.
+  if (DisassemblerWin32X86::QuickDetect(image)) {
+    auto disasm = DisassemblerWin32X86::Make(image);
+    if (disasm && disasm->size() >= kMinProgramSize)
+      return disasm;
+  }
+
+  if (DisassemblerWin32X64::QuickDetect(image)) {
+    auto disasm = DisassemblerWin32X64::Make(image);
+    if (disasm && disasm->size() >= kMinProgramSize)
+      return disasm;
+  }
+
   return nullptr;
 }
 
 std::unique_ptr<Disassembler> MakeDisassemblerOfType(ConstBufferView image,
                                                      ExecutableType exe_type) {
   switch (exe_type) {
+    case kExeTypeWin32X86:
+      return DisassemblerWin32X86::Make(image);
+    case kExeTypeWin32X64:
+      return DisassemblerWin32X64::Make(image);
     case kExeTypeNoOp:
       return DisassemblerNoOp::Make(image);
     default:

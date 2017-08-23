@@ -36,10 +36,10 @@ struct Command {
   ~Command() = default;
 
   // Unique name of command. |-name| is used to select from command-line.
-  const char* name;
+  const char* const name;
 
   // Usage help text of command.
-  const char* usage;
+  const char* const usage;
 
   // Number of arguments (assumed to be filenames) used by the command.
   const int num_args;
@@ -53,6 +53,7 @@ struct Command {
 constexpr Command kCommands[] = {
     {"gen", "-gen <old_file> <new_file> <patch_file> [-raw]", 3, &MainGen},
     {"apply", "-apply <old_file> <patch_file> <new_file>", 3, &MainApply},
+    {"read", "-read <exe> [-dump]", 1, &MainRead},
     {"crc32", "-crc32 <file>", 1, &MainCrc32},
 };
 
