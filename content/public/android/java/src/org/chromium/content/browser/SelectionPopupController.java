@@ -507,13 +507,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mActionMenuDescriptor = createActionMenuDescriptor();
         mActionMenuDescriptor.apply(menu);
 
-        // TODO(ctzsm): Remove runtime title set after O SDK rolls.
-        MenuItem item = menu.findItem(R.id.select_action_menu_paste_as_plain_text);
-        if (item != null) {
-            item.setTitle(mContext.getResources().getIdentifier(
-                    "paste_as_plain_text", "string", "android"));
-        }
-
         if (!hasSelection() || isSelectionPassword()) return;
 
         initializeTextProcessingMenu(menu);
