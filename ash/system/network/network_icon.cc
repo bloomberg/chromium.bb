@@ -874,25 +874,18 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
   }
 }
 
-int GetMobileUninitializedMsg() {
+int GetCellularUninitializedMsg() {
   static base::Time s_uninitialized_state_time;
   static int s_uninitialized_msg(0);
 
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
-  // Never show messages if the list of Mobile networks is non-empty.
-  NetworkStateHandler::NetworkStateList mobile_networks;
-  handler->GetVisibleNetworkListByType(chromeos::NetworkTypePattern::Mobile(),
-                                       &mobile_networks);
-  if (!mobile_networks.empty())
+  // Never show messages if the list of Cellular networks is non-empty.
+  NetworkStateHandler::NetworkStateList cellular_networks;
+  handler->GetVisibleNetworkListByType(chromeos::NetworkTypePattern::Cellular(),
+                                       &cellular_networks);
+  if (!cellular_networks.empty())
     return 0;
-
-  if (handler->GetTechnologyState(NetworkTypePattern::Tether()) ==
-      NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
-    s_uninitialized_msg = IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH;
-    s_uninitialized_state_time = base::Time::Now();
-    return s_uninitialized_msg;
-  }
 
   if (handler->GetTechnologyState(NetworkTypePattern::Cellular()) ==
       NetworkStateHandler::TECHNOLOGY_UNINITIALIZED) {
@@ -908,7 +901,7 @@ int GetMobileUninitializedMsg() {
   }
 
   // There can be a delay between leaving the Initializing state and when
-  // a Mobile device shows up, so keep showing the initializing
+  // a Cellular device shows up, so keep showing the initializing
   // animation for a bit to avoid flashing the disconnect icon.
   const int kInitializingDelaySeconds = 1;
   base::TimeDelta dtime = base::Time::Now() - s_uninitialized_state_time;
@@ -966,9 +959,8 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
   if (!network) {
     // If no connecting network, check for mobile initializing. Do not display
     // the message about enabling Bluetooth for Tether.
-    int uninitialized_msg = GetMobileUninitializedMsg();
-    if (uninitialized_msg != 0 &&
-        uninitialized_msg != IDS_ASH_STATUS_TRAY_ENABLE_BLUETOOTH) {
+    int uninitialized_msg = GetCellularUninitializedMsg();
+    if (uninitialized_msg != 0) {
       *image = GetConnectingImage(icon_type, shill::kTypeCellular);
       if (label)
         *label = l10n_util::GetStringUTF16(uninitialized_msg);

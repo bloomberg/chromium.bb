@@ -97,9 +97,9 @@ ASH_EXPORT base::string16 GetLabelForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);
 
-// Updates and returns the appropriate message id if the mobile network
+// Updates and returns the appropriate message id if the cellular network
 // is uninitialized.
-ASH_EXPORT int GetMobileUninitializedMsg();
+ASH_EXPORT int GetCellularUninitializedMsg();
 
 // Gets the correct icon and label for |icon_type|. Also sets |animating|
 // based on whether or not the icon is animating (i.e. connecting).
