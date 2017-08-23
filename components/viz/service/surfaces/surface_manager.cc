@@ -275,10 +275,20 @@ SurfaceManager::SurfaceIdSet SurfaceManager::GetLiveSurfacesForReferences() {
   std::queue<SurfaceId> surface_queue;
   surface_queue.push(root_surface_id_);
 
-  // All temporary references are also reachable.
+  // All surfaces not marked for destruction are reachable.
+  for (auto& map_entry : surface_map_) {
+    if (!IsMarkedForDestruction(map_entry.first)) {
+      reachable_surfaces.insert(map_entry.first);
+      surface_queue.push(map_entry.first);
+    }
+  }
+
+  // All surfaces with temporary references are also reachable.
   for (auto& map_entry : temporary_references_) {
-    reachable_surfaces.insert(map_entry.first);
-    surface_queue.push(map_entry.first);
+    const SurfaceId& surface_id = map_entry.first;
+    if (reachable_surfaces.insert(surface_id).second) {
+      surface_queue.push(surface_id);
+    }
   }
 
   while (!surface_queue.empty()) {
