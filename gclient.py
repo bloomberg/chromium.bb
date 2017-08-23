@@ -1768,6 +1768,10 @@ class Flattener(object):
 
     deps_files = set()
     def add_deps_file(dep):
+      # Only include DEPS files referenced by recursedeps.
+      if not (dep.parent is None or
+              (dep.name in (dep.parent.recursedeps or {}))):
+        return
       deps_path = os.path.join(self._client.root_dir, dep.name, dep.deps_file)
       if not os.path.exists(deps_path):
         return
