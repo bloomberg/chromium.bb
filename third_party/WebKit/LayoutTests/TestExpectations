@@ -3587,6 +3587,10 @@ crbug.com/757955 [ Win7 Debug ] animations/interpolation/svg-d-interpolation.htm
 crbug.com/757955 [ Win7 Debug ] inspector/sources/debugger-pause/pause-on-elements-panel.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] virtual/threaded/animations/composited-animations-rotate-zero-degrees.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] external/wpt/encoding/legacy-mb-japanese/shift_jis/sjis-encode-form-errors-han.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] inspector/tracing/frame-model-instrumentation.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
 
 # Tests flakely timing out on WebKit Linux Trusty dbg builder
 crbug.com/758109 [ Linux Debug ] fast/workers/worker-multi-startup.html [ Pass Timeout ]
