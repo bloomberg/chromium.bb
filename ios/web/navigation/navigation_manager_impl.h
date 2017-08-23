@@ -164,9 +164,10 @@ class NavigationManagerImpl : public NavigationManager {
       const NavigationItem* inherit_from,
       NavigationItem* pending_item);
 
-  // Creates a NavigationItem using the given properties. If |url_rewriters| is
-  // not nullptr, apply them before applying the permanent URL rewriters from
-  // BrowserState.
+  // Creates a NavigationItem using the given properties, where |previous_url|
+  // is the URL of the navigation just prior to the current one. If
+  // |url_rewriters| is not nullptr, apply them before applying the permanent
+  // URL rewriters from BrowserState.
   // TODO(crbug.com/738020): Make this private when WKBasedNavigationManagerImpl
   // is merged into this class.
   std::unique_ptr<NavigationItemImpl> CreateNavigationItemWithRewriters(
@@ -174,6 +175,7 @@ class NavigationManagerImpl : public NavigationManager {
       const Referrer& referrer,
       ui::PageTransition transition,
       NavigationInitiationType initiation_type,
+      const GURL& previous_url,
       const std::vector<BrowserURLRewriter::URLRewriter>* url_rewriters) const;
 
   // Identical to GetItemAtIndex() but returns the underlying NavigationItemImpl

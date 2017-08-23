@@ -121,8 +121,11 @@ std::unique_ptr<NavigationItemImpl> NavigationManagerImpl::CreateNavigationItem(
     const Referrer& referrer,
     ui::PageTransition transition,
     NavigationInitiationType initiation_type) {
+  NavigationItem* last_committed_item = GetLastCommittedItem();
   auto item = CreateNavigationItemWithRewriters(
-      url, referrer, transition, initiation_type, &transient_url_rewriters_);
+      url, referrer, transition, initiation_type,
+      last_committed_item ? last_committed_item->GetURL() : GURL::EmptyGURL(),
+      &transient_url_rewriters_);
   RemoveTransientURLRewriters();
   return item;
 }
@@ -283,6 +286,7 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
     const Referrer& referrer,
     ui::PageTransition transition,
     NavigationInitiationType initiation_type,
+    const GURL& previous_url,
     const std::vector<BrowserURLRewriter::URLRewriter>* additional_rewriters)
     const {
   GURL loaded_url(url);
@@ -299,18 +303,13 @@ NavigationManagerImpl::CreateNavigationItemWithRewriters(
   }
 
   if (initiation_type == web::NavigationInitiationType::RENDERER_INITIATED &&
-      loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url)) {
-    const NavigationItem* last_committed_item = GetLastCommittedItem();
-    bool last_committed_url_is_app_specific =
-        last_committed_item &&
-        web::GetWebClient()->IsAppSpecificURL(last_committed_item->GetURL());
-    if (!last_committed_url_is_app_specific) {
-      // The URL should not be changed to app-specific URL if the load was
-      // renderer-initiated requested by non app-specific URL. Pages with
-      // app-specific urls have elevated previledges and should not be allowed
-      // to open app-specific URLs.
-      loaded_url = url;
-    }
+      loaded_url != url && web::GetWebClient()->IsAppSpecificURL(loaded_url) &&
+      !web::GetWebClient()->IsAppSpecificURL(previous_url)) {
+    // The URL should not be changed to app-specific URL if the load was
+    // renderer-initiated requested by non app-specific URL. Pages with
+    // app-specific urls have elevated previledges and should not be allowed
+    // to open app-specific URLs.
+    loaded_url = url;
   }
 
   auto item = base::MakeUnique<NavigationItemImpl>();
