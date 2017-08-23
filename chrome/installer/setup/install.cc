@@ -452,7 +452,8 @@ void RegisterChromeOnMachine(const installer::InstallerState& installer_state,
   const base::FilePath chrome_exe(
       installer_state.target_path().Append(installer::kChromeExe));
   VLOG(1) << "Registering Chrome as browser: " << chrome_exe.value();
-  if (make_chrome_default && ShellUtil::CanMakeChromeDefaultUnattended()) {
+  if (make_chrome_default && install_static::SupportsSetAsDefaultBrowser() &&
+      ShellUtil::CanMakeChromeDefaultUnattended()) {
     int level = ShellUtil::CURRENT_USER;
     if (installer_state.system_install())
       level = level | ShellUtil::SYSTEM_LEVEL;

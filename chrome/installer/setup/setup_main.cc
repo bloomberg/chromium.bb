@@ -45,6 +45,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/archive_patch_helper.h"
 #include "chrome/installer/setup/install.h"
 #include "chrome/installer/setup/install_worker.h"
@@ -1396,21 +1397,26 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     return installer::OS_ERROR;
   }
 
-  const install_static::InstallDetails& install_details =
-      install_static::InstallDetails::Get();
   // Make sure system_level is supported if requested. For historical reasons,
   // system-level installs have never been supported for Chrome canary (SxS).
   // This is a brand-specific policy for this particular mode. In general,
   // system-level installation of secondary install modes is fully supported.
-  if (system_install && !install_details.supports_system_level())
+  if (!install_static::InstallDetails::Get().supports_system_level() &&
+      (system_install ||
+       cmd_line.HasSwitch(installer::switches::kSelfDestruct) ||
+       cmd_line.HasSwitch(installer::switches::kRemoveChromeRegistration))) {
     return installer::SXS_OPTION_NOT_SUPPORTED;
-  // Some command line options don't work with secondary installs.
-  if (!install_details.is_primary_mode() &&
-      (cmd_line.HasSwitch(installer::switches::kSelfDestruct) ||
-       cmd_line.HasSwitch(installer::switches::kMakeChromeDefault) ||
-       cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser) ||
-       cmd_line.HasSwitch(installer::switches::kRemoveChromeRegistration) ||
-       cmd_line.HasSwitch(installer::switches::kInactiveUserToast) ||
+  }
+  // Some switches only apply for modes that can be made the user's default
+  // browser.
+  if (!install_static::SupportsSetAsDefaultBrowser() &&
+      (cmd_line.HasSwitch(installer::switches::kMakeChromeDefault) ||
+       cmd_line.HasSwitch(installer::switches::kRegisterChromeBrowser))) {
+    return installer::SXS_OPTION_NOT_SUPPORTED;
+  }
+  // Some switches only apply for modes that support retention experiments.
+  if (!install_static::SupportsRetentionExperiments() &&
+      (cmd_line.HasSwitch(installer::switches::kInactiveUserToast) ||
        cmd_line.HasSwitch(installer::switches::kSystemLevelToast))) {
     return installer::SXS_OPTION_NOT_SUPPORTED;
   }
