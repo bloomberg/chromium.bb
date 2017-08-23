@@ -86,6 +86,10 @@ class ArcVoiceInteractionFrameworkService
   // VoiceInteractionFrameworkInstance::StartVoiceInteraction() is called.
   void StartSessionFromUserInteraction(const gfx::Rect& region);
 
+  // Similar to StartSessionFromUserInteraction but stops voice interaction
+  // seesion if it is already running.
+  void ToggleSessionFromUserInteraction();
+
   // Turn on / off voice interaction in ARC.
   // TODO(muyuanli): We should also check on Chrome side once CrOS side settings
   // are ready (tracked separately at crbug.com/727873).

@@ -59,6 +59,14 @@ void AppListPresenterService::StartVoiceInteractionSession() {
     service->StartSessionFromUserInteraction(gfx::Rect());
 }
 
+void AppListPresenterService::ToggleVoiceInteractionSession() {
+  auto* service =
+      arc::ArcVoiceInteractionFrameworkService::GetForBrowserContext(
+          ChromeLauncherController::instance()->profile());
+  if (service)
+    service->ToggleSessionFromUserInteraction();
+}
+
 void AppListPresenterService::UpdateYPositionAndOpacity(
     int y_position_in_screen,
     float background_opacity,

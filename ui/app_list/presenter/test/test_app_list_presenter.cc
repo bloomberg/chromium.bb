@@ -34,6 +34,10 @@ void TestAppListPresenter::StartVoiceInteractionSession() {
   voice_session_count_++;
 }
 
+void TestAppListPresenter::ToggleVoiceInteractionSession() {
+  voice_session_count_++;
+}
+
 void TestAppListPresenter::UpdateYPositionAndOpacity(int y_position_in_screen,
                                                      float background_opacity,
                                                      bool is_end_gesture) {

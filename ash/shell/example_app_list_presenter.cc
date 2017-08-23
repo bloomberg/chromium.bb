@@ -68,6 +68,8 @@ void ExampleAppListPresenter::ToggleAppList(int64_t display_id) {
 
 void ExampleAppListPresenter::StartVoiceInteractionSession() {}
 
+void ExampleAppListPresenter::ToggleVoiceInteractionSession() {}
+
 void ExampleAppListPresenter::UpdateYPositionAndOpacity(
     int new_y_position,
     float background_opacity,

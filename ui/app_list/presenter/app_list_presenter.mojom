@@ -37,6 +37,9 @@ interface AppListPresenter {
   // Starts a voice interaction session.
   StartVoiceInteractionSession();
 
+  // Starts or stops a voice interaction session based on the current state.
+  ToggleVoiceInteractionSession();
+
   // Updates y position and opacity of app list. |is_end_gesture| means it is
   // the end of the gesture dragging of app list from shelf and should restore
   // the opacity of the app list.
