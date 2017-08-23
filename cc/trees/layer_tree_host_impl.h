@@ -273,7 +273,6 @@ class CC_EXPORT LayerTreeHostImpl
   void SetTreeLayerScrollOffsetMutated(ElementId element_id,
                                        LayerTreeImpl* tree,
                                        const gfx::ScrollOffset& scroll_offset);
-  bool AnimationsPreserveAxisAlignment(const LayerImpl* layer) const;
   void SetNeedUpdateGpuRasterizationStatus();
 
   // MutatorHostClient implementation.

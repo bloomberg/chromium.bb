@@ -4307,11 +4307,6 @@ void LayerTreeHostImpl::SetTreeLayerScrollOffsetMutated(
   mutator_host_->TickScrollAnimations(CurrentBeginFrameArgs().frame_time);
 }
 
-bool LayerTreeHostImpl::AnimationsPreserveAxisAlignment(
-    const LayerImpl* layer) const {
-  return mutator_host_->AnimationsPreserveAxisAlignment(layer->element_id());
-}
-
 void LayerTreeHostImpl::SetNeedUpdateGpuRasterizationStatus() {
   need_update_gpu_rasterization_status_ = true;
 }
