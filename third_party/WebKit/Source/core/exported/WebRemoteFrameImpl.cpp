@@ -134,15 +134,6 @@ void WebRemoteFrameImpl::StopLoading() {
   // in all subframes, both remote and local.
 }
 
-void WebRemoteFrameImpl::EnableViewSourceMode(bool enable) {
-  NOTREACHED();
-}
-
-bool WebRemoteFrameImpl::IsViewSourceModeEnabled() const {
-  NOTREACHED();
-  return false;
-}
-
 WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     const WebString& name,
