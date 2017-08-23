@@ -94,9 +94,6 @@ class RenderFrameHostTester {
   // - did_create_new_entry should be true if simulating a navigation that
   //   created a new navigation entry; false for history navigations, reloads,
   //   and other navigations that don't affect the history list.
-  virtual void SendNavigate(int nav_entry_id,
-                            bool did_create_new_entry,
-                            const GURL& url) = 0;
   virtual void SendFailedNavigate(int nav_entry_id,
                                   bool did_create_new_entry,
                                   const GURL& url) = 0;

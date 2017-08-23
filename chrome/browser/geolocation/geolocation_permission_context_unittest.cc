@@ -46,6 +46,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
@@ -208,11 +209,7 @@ void GeolocationPermissionContextTests::CheckPermissionMessageSentInternal(
 
 void GeolocationPermissionContextTests::AddNewTab(const GURL& url) {
   content::WebContents* new_tab = CreateTestWebContents();
-  new_tab->GetController().LoadURL(
-      url, content::Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
-  content::NavigationEntry* entry = new_tab->GetController().GetPendingEntry();
-  content::RenderFrameHostTester::For(new_tab->GetMainFrame())
-      ->SendNavigate(entry->GetUniqueID(), true, url);
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(new_tab, url);
 
   // Set up required helpers, and make this be as "tabby" as the code requires.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
