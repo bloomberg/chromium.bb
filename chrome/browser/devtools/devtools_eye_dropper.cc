@@ -15,6 +15,7 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -127,8 +128,32 @@ bool DevToolsEyeDropper::HandleMouseEvent(const blink::WebMouseEvent& event) {
     }
 
     SkColor sk_color = frame_.getColor(last_cursor_x_, last_cursor_y_);
-    callback_.Run(SkColorGetR(sk_color), SkColorGetG(sk_color),
-                  SkColorGetB(sk_color), SkColorGetA(sk_color));
+    uint8_t rgba_color[4] = {
+        SkColorGetR(sk_color), SkColorGetG(sk_color), SkColorGetB(sk_color),
+        SkColorGetA(sk_color),
+    };
+
+    // The picked colors are expected to be sRGB. Create a color transform from
+    // |frame_|'s color space to sRGB.
+    // TODO(ccameron): We don't actually know |frame_|'s color space, so just
+    // use |host_|'s current display's color space. This will almost always be
+    // the right color space, but is sloppy.
+    // http://crbug.com/758057
+    content::ScreenInfo screen_info;
+    host_->GetScreenInfo(&screen_info);
+    gfx::ColorSpace frame_color_space = screen_info.color_space;
+    std::unique_ptr<SkColorSpaceXform> frame_color_space_to_srgb_xform =
+        SkColorSpaceXform::New(frame_color_space.ToSkColorSpace().get(),
+                               SkColorSpace::MakeSRGB().get());
+    if (frame_color_space_to_srgb_xform) {
+      bool xform_apply_result = frame_color_space_to_srgb_xform->apply(
+          SkColorSpaceXform::kRGBA_8888_ColorFormat, rgba_color,
+          SkColorSpaceXform::kRGBA_8888_ColorFormat, rgba_color, 1,
+          kUnpremul_SkAlphaType);
+      DCHECK(xform_apply_result);
+    }
+
+    callback_.Run(rgba_color[0], rgba_color[1], rgba_color[2], rgba_color[3]);
   }
   UpdateCursor();
   return true;
