@@ -687,9 +687,11 @@ ThreadActivityTracker::ThreadActivityTracker(void* base, size_t size)
     : header_(static_cast<Header*>(base)),
       stack_(reinterpret_cast<Activity*>(reinterpret_cast<char*>(base) +
                                          sizeof(Header))),
+#if DCHECK_IS_ON()
+      thread_id_(PlatformThreadRef()),
+#endif
       stack_slots_(
           static_cast<uint32_t>((size - sizeof(Header)) / sizeof(Activity))) {
-  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Verify the parameters but fail gracefully if they're not valid so that
   // production code based on external inputs will not crash.  IsValid() will
@@ -767,8 +769,7 @@ ThreadActivityTracker::ActivityId ThreadActivityTracker::PushActivity(
     const ActivityData& data) {
   // A thread-checker creates a lock to check the thread-id which means
   // re-entry into this code if lock acquisitions are being tracked.
-  DCHECK(type == Activity::ACT_LOCK_ACQUIRE ||
-         thread_checker_.CalledOnValidThread());
+  DCHECK(type == Activity::ACT_LOCK_ACQUIRE || CalledOnValidThread());
 
   // Get the current depth of the stack. No access to other memory guarded
   // by this variable is done here so a "relaxed" load is acceptable.
@@ -801,7 +802,7 @@ ThreadActivityTracker::ActivityId ThreadActivityTracker::PushActivity(
 void ThreadActivityTracker::ChangeActivity(ActivityId id,
                                            Activity::Type type,
                                            const ActivityData& data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   DCHECK(type != Activity::ACT_NULL || &data != &kNullActivityData);
   DCHECK_LT(id, header_->current_depth.load(std::memory_order_acquire));
 
@@ -836,7 +837,7 @@ void ThreadActivityTracker::PopActivity(ActivityId id) {
   // A thread-checker creates a lock to check the thread-id which means
   // re-entry into this code if lock acquisitions are being tracked.
   DCHECK(stack_[depth].activity_type == Activity::ACT_LOCK_ACQUIRE ||
-         thread_checker_.CalledOnValidThread());
+         CalledOnValidThread());
 
   // The stack has shrunk meaning that some other thread trying to copy the
   // contents for reporting purposes could get bad data. That thread would
@@ -885,7 +886,7 @@ void ThreadActivityTracker::RecordExceptionActivity(const void* program_counter,
                                                     const ActivityData& data) {
   // A thread-checker creates a lock to check the thread-id which means
   // re-entry into this code if lock acquisitions are being tracked.
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
 
   // Fill the reusable exception activity.
   Activity::FillFrom(&header_->last_exception, program_counter, origin, type,
@@ -1040,6 +1041,14 @@ bool ThreadActivityTracker::GetOwningProcessId(const void* memory,
 // static
 size_t ThreadActivityTracker::SizeForStackDepth(int stack_depth) {
   return static_cast<size_t>(stack_depth) * sizeof(Activity) + sizeof(Header);
+}
+
+bool ThreadActivityTracker::CalledOnValidThread() {
+#if DCHECK_IS_ON()
+  return thread_id_ == PlatformThreadRef();
+#else
+  return true;
+#endif
 }
 
 std::unique_ptr<ActivityUserData>
