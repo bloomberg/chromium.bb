@@ -3588,5 +3588,8 @@ crbug.com/757955 [ Win7 Debug ] inspector/sources/debugger-pause/pause-on-elemen
 crbug.com/757955 [ Win7 Debug ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] virtual/threaded/animations/composited-animations-rotate-zero-degrees.html [ Pass Timeout ]
 
+# Tests flakely timing out on WebKit Linux Trusty dbg builder
+crbug.com/758109 [ Linux Debug ] fast/workers/worker-multi-startup.html [ Pass Timeout ]
+
 # This test has a fixed number of time which can depend on performance.
 crbug.com/v8/6448 [ Debug ] external/wpt/hr-time/window-worker-time-origin.html [ Pass Failure ]
