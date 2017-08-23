@@ -19,7 +19,11 @@ using ::testing::Pointwise;
 
 namespace base {
 
-// TODO(dcheng): Add tests for initializer list, containers, etc.
+TEST(SpanTest, ConstructFromNullptr) {
+  span<int> span(nullptr);
+  EXPECT_EQ(nullptr, span.data());
+  EXPECT_EQ(0u, span.size());
+}
 
 TEST(SpanTest, ConstructFromDataAndSize) {
   std::vector<int> vector = {1, 1, 2, 3, 5, 8};
@@ -122,9 +126,109 @@ TEST(SpanTest, ConvertBetweenEquivalentTypes) {
   EXPECT_EQ(int32_t_span, converted_span);
 }
 
+TEST(SpanTest, First) {
+  int array[] = {1, 2, 3};
+  span<int> span(array);
+
+  {
+    auto subspan = span.first(0);
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+  }
+
+  {
+    auto subspan = span.first(1);
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    EXPECT_EQ(1, subspan[0]);
+  }
+
+  {
+    auto subspan = span.first(2);
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(2u, subspan.size());
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+  }
+
+  {
+    auto subspan = span.first(3);
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(3u, subspan.size());
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+    EXPECT_EQ(3, subspan[2]);
+  }
+}
+
+TEST(SpanTest, Last) {
+  int array[] = {1, 2, 3};
+  span<int> span(array);
+
+  {
+    auto subspan = span.last(0);
+    EXPECT_EQ(span.data() + 3, subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+  }
+
+  {
+    auto subspan = span.last(1);
+    EXPECT_EQ(span.data() + 2, subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    EXPECT_EQ(3, subspan[0]);
+  }
+
+  {
+    auto subspan = span.last(2);
+    EXPECT_EQ(span.data() + 1, subspan.data());
+    EXPECT_EQ(2u, subspan.size());
+    EXPECT_EQ(2, subspan[0]);
+    EXPECT_EQ(3, subspan[1]);
+  }
+
+  {
+    auto subspan = span.last(3);
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(3u, subspan.size());
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+    EXPECT_EQ(3, subspan[2]);
+  }
+}
+
 TEST(SpanTest, Subspan) {
   int array[] = {1, 2, 3};
   span<int> span(array);
+
+  {
+    auto subspan = span.subspan(0);
+    EXPECT_EQ(span.data(), subspan.data());
+    EXPECT_EQ(3u, subspan.size());
+    EXPECT_EQ(1, subspan[0]);
+    EXPECT_EQ(2, subspan[1]);
+    EXPECT_EQ(3, subspan[2]);
+  }
+
+  {
+    auto subspan = span.subspan(1);
+    EXPECT_EQ(span.data() + 1, subspan.data());
+    EXPECT_EQ(2u, subspan.size());
+    EXPECT_EQ(2, subspan[0]);
+    EXPECT_EQ(3, subspan[1]);
+  }
+
+  {
+    auto subspan = span.subspan(2);
+    EXPECT_EQ(span.data() + 2, subspan.data());
+    EXPECT_EQ(1u, subspan.size());
+    EXPECT_EQ(3, subspan[0]);
+  }
+
+  {
+    auto subspan = span.subspan(3);
+    EXPECT_EQ(span.data() + 3, subspan.data());
+    EXPECT_EQ(0u, subspan.size());
+  }
 
   {
     auto subspan = span.subspan(0, 0);
@@ -191,6 +295,45 @@ TEST(SpanTest, Subspan) {
   }
 }
 
+TEST(SpanTest, Length) {
+  {
+    span<int> span;
+    EXPECT_EQ(0u, span.length());
+  }
+
+  {
+    int array[] = {1, 2, 3};
+    span<int> span(array);
+    EXPECT_EQ(3u, span.length());
+  }
+}
+
+TEST(SpanTest, Size) {
+  {
+    span<int> span;
+    EXPECT_EQ(0u, span.size());
+  }
+
+  {
+    int array[] = {1, 2, 3};
+    span<int> span(array);
+    EXPECT_EQ(3u, span.size());
+  }
+}
+
+TEST(SpanTest, Empty) {
+  {
+    span<int> span;
+    EXPECT_TRUE(span.empty());
+  }
+
+  {
+    int array[] = {1, 2, 3};
+    span<int> span(array);
+    EXPECT_FALSE(span.empty());
+  }
+}
+
 TEST(SpanTest, Iterator) {
   static constexpr int kArray[] = {1, 6, 1, 8, 0};
   constexpr span<const int> span(kArray);
@@ -199,6 +342,16 @@ TEST(SpanTest, Iterator) {
   for (int i : span)
     results.emplace_back(i);
   EXPECT_THAT(results, ElementsAre(1, 6, 1, 8, 0));
+}
+
+TEST(SpanTest, ReverseIterator) {
+  static constexpr int kArray[] = {1, 6, 1, 8, 0};
+  constexpr span<const int> span(kArray);
+
+  EXPECT_TRUE(std::equal(std::rbegin(kArray), std::rend(kArray), span.rbegin(),
+                         span.rend()));
+  EXPECT_TRUE(std::equal(std::crbegin(kArray), std::crend(kArray),
+                         span.crbegin(), span.crend()));
 }
 
 TEST(SpanTest, Equality) {
@@ -227,6 +380,64 @@ TEST(SpanTest, Inequality) {
   constexpr span<const int> span3(kArray3);
 
   EXPECT_FALSE(span1 != span3);
+}
+
+TEST(SpanTest, LessThan) {
+  static constexpr int kArray1[] = {2, 3, 5, 7, 11};
+  static constexpr int kArray2[] = {2, 3, 5, 7, 11, 13};
+  constexpr span<const int> span1(kArray1);
+  constexpr span<const int> span2(kArray2);
+
+  EXPECT_LT(span1, span2);
+
+  static constexpr int kArray3[] = {2, 3, 5, 7, 11};
+  constexpr span<const int> span3(kArray3);
+
+  EXPECT_FALSE(span1 < span3);
+}
+
+TEST(SpanTest, LessEqual) {
+  static constexpr int kArray1[] = {2, 3, 5, 7, 11};
+  static constexpr int kArray2[] = {2, 3, 5, 7, 11, 13};
+  constexpr span<const int> span1(kArray1);
+  constexpr span<const int> span2(kArray2);
+
+  EXPECT_LE(span1, span1);
+  EXPECT_LE(span1, span2);
+
+  static constexpr int kArray3[] = {2, 3, 5, 7, 10};
+  constexpr span<const int> span3(kArray3);
+
+  EXPECT_FALSE(span1 <= span3);
+}
+
+TEST(SpanTest, GreaterThan) {
+  static constexpr int kArray1[] = {2, 3, 5, 7, 11, 13};
+  static constexpr int kArray2[] = {2, 3, 5, 7, 11};
+  constexpr span<const int> span1(kArray1);
+  constexpr span<const int> span2(kArray2);
+
+  EXPECT_GT(span1, span2);
+
+  static constexpr int kArray3[] = {2, 3, 5, 7, 11, 13};
+  constexpr span<const int> span3(kArray3);
+
+  EXPECT_FALSE(span1 > span3);
+}
+
+TEST(SpanTest, GreaterEqual) {
+  static constexpr int kArray1[] = {2, 3, 5, 7, 11, 13};
+  static constexpr int kArray2[] = {2, 3, 5, 7, 11};
+  constexpr span<const int> span1(kArray1);
+  constexpr span<const int> span2(kArray2);
+
+  EXPECT_GE(span1, span1);
+  EXPECT_GE(span1, span2);
+
+  static constexpr int kArray3[] = {2, 3, 5, 7, 12};
+  constexpr span<const int> span3(kArray3);
+
+  EXPECT_FALSE(span1 >= span3);
 }
 
 TEST(SpanTest, MakeSpanFromDataAndSize) {
