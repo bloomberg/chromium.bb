@@ -1038,6 +1038,76 @@ MenuItem.prototype.activate = function() {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+// RecentItem
+
+/**
+ * @param {!NavigationModelRecentItem} modelItem
+ * @param {!DirectoryTree} tree Current tree, which contains this item.
+ * @extends {cr.ui.TreeItem}
+ * @constructor
+ */
+function RecentItem(modelItem, tree) {
+  var item = new cr.ui.TreeItem();
+  item.__proto__ = RecentItem.prototype;
+
+  item.parentTree_ = tree;
+  item.modelItem_ = modelItem;
+  item.dirEntry_ = modelItem.entry;
+  item.innerHTML = TREE_ITEM_INNER_HTML;
+  item.label = modelItem.label;
+
+  var icon = queryRequiredElement('.icon', item);
+  icon.classList.add('item-icon');
+  icon.setAttribute('root-type-icon', 'recent');
+
+  return item;
+}
+
+RecentItem.prototype = {
+  __proto__: cr.ui.TreeItem.prototype,
+  get entry() {
+    return this.dirEntry_;
+  },
+  get modelItem() {
+    return this.modelItem_;
+  },
+  get labelElement() {
+    return this.firstElementChild.querySelector('.label');
+  }
+};
+
+/**
+ * @param {!DirectoryEntry|!FakeEntry} entry
+ * @return {boolean} True if the parent item is found.
+ */
+RecentItem.prototype.searchAndSelectByEntry = function(entry) {
+  return false;
+};
+
+/**
+ * @override
+ */
+RecentItem.prototype.handleClick = function(e) {
+  this.activate();
+};
+
+/**
+ * @param {!DirectoryEntry} entry
+ */
+RecentItem.prototype.selectByEntry = function(entry) {
+  if (util.isSameEntry(entry, this.entry))
+    this.selected = true;
+};
+
+/**
+ * Executes the command.
+ */
+RecentItem.prototype.activate = function() {
+  this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
 // DirectoryTree
 
 /**
@@ -1221,6 +1291,9 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
           break;
         case NavigationModelItemType.MENU:
           this.addAt(new MenuItem(modelItem, this), itemIndex);
+          break;
+        case NavigationModelItemType.RECENT:
+          this.addAt(new RecentItem(modelItem, this), itemIndex);
           break;
       }
     }

@@ -303,7 +303,8 @@ VolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
       this.volumeManager_ && this.volumeManager_.getLocationInfo(entry);
   if (!locationInfo)
     return null;
-  if (!this.filterDisallowedVolume_(locationInfo.volumeInfo))
+  if (locationInfo.volumeInfo &&
+      !this.filterDisallowedVolume_(locationInfo.volumeInfo))
     return null;
   return locationInfo;
 };

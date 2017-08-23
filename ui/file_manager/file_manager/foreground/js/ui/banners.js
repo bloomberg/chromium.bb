@@ -500,6 +500,8 @@ Banners.prototype.onDirectoryChanged_ = function(event) {
   var rootVolume = this.volumeManager_.getVolumeInfo(event.newDirEntry);
   var previousRootVolume = event.previousDirEntry ?
       this.volumeManager_.getVolumeInfo(event.previousDirEntry) : null;
+  if (!rootVolume)
+    return;
 
   // Show (or hide) the low space warning.
   this.maybeShowLowSpaceWarning_(rootVolume);

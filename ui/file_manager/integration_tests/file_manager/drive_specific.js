@@ -87,40 +87,6 @@ function getStepsForSearchResultsAutoComplete() {
 }
 
 /**
- * Tests opening the "Recent" on the sidebar navigation by clicking the icon,
- * and verifies the directory contents. We test if there are only files, since
- * directories are not allowed in "Recent". This test is only available for
- * Drive.
- */
-testcase.openSidebarRecent = function() {
-  var appId;
-  StepsRunner.run([
-    function() {
-      setupAndWaitUntilReady(null, RootPath.DRIVE, this.next);
-    },
-    // Click the icon of the Recent volume.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-        'selectVolume', appId, ['drive_recent'], this.next);
-    },
-    // Wait until the file list is updated.
-    function(result) {
-      chrome.test.assertFalse(!result);
-      remoteCall.waitForFileListChange(appId, BASIC_DRIVE_ENTRY_SET.length).
-          then(this.next);
-    },
-    // Verify the file list.
-    function(actualFilesAfter) {
-      chrome.test.assertEq(
-          TestEntryInfo.getExpectedRows(RECENT_ENTRY_SET).sort(),
-          actualFilesAfter);
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
-};
-
-/**
  * Tests opening the "Offline" on the sidebar navigation by clicking the icon,
  * and checks contenets of the file list. Only the entries "available offline"
  * should be shown. "Available offline" entires are hosted documents and the

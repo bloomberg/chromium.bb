@@ -39,10 +39,11 @@ var ENTRY_SET = [
  */
 var DIRECTORY = {
   Drive: {
-    contents: [ENTRIES.directoryA.getExpectedRow(),
-               ENTRIES.directoryD.getExpectedRow()],
+    contents: [
+      ENTRIES.directoryA.getExpectedRow(), ENTRIES.directoryD.getExpectedRow()
+    ],
     name: 'Drive',
-    navItem: '#tree-item-autogen-id-3',
+    navItem: '#tree-item-autogen-id-4',
     treeItem: TREEITEM_DRIVE
   },
   A: {
@@ -294,19 +295,20 @@ testcase.traverseFolderShortcuts = function() {
           windowId, DIRECTORY.Drive, DIRECTORY.Drive).then(this.next);
     },
 
-    // Press Ctrl+4 to select 4th shortcut.
+    // Press Ctrl+5 to select 5th shortcut.
     // Current directory should be D.
     // Shortcut to C should be selected.
     function() {
-      remoteCall.callRemoteTestUtil('fakeKeyDown', windowId,
-          ['#file-list', '4', 'U+0034', true, false, false], this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeKeyDown', windowId,
+          ['#file-list', '5', 'U+0034', true, false, false], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
       expectSelection(windowId, DIRECTORY.D, DIRECTORY.D).then(this.next);
     },
 
-    // Press UP to select 3rd shortcut.
+    // Press UP to select 4th shortcut.
     // Current directory should remain D.
     // Shortcut to C should be selected.
     function() {

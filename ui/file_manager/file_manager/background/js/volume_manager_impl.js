@@ -291,8 +291,6 @@ VolumeManagerImpl.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
 /** @override */
 VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
   var volumeInfo = this.volumeInfoList.findByEntry(entry);
-  if (!volumeInfo)
-    return null;
 
   if (util.isFakeEntry(entry)) {
     return new EntryLocationImpl(
@@ -300,6 +298,9 @@ VolumeManagerImpl.prototype.getLocationInfo = function(entry) {
         true /* the entry points a root directory. */,
         true /* fake entries are read only. */);
   }
+
+  if (!volumeInfo)
+    return null;
 
   var rootType;
   var isReadOnly;

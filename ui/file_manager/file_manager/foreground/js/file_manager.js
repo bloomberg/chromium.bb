@@ -851,20 +851,7 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.initVolumeManager_ = function() {
-    var allowedPaths = this.launchParams_.allowedPaths;
-    // The native implementation of the Files app creates snapshot files for
-    // non-native files. But it does not work for folders (e.g., dialog for
-    // loading unpacked extensions).
-    if (allowedPaths === AllowedPaths.NATIVE_PATH &&
-        !DialogType.isFolderDialog(this.launchParams_.type)) {
-      if (this.launchParams_.type == DialogType.SELECT_SAVEAS_FILE) {
-        // Only drive can create snapshot files for saving.
-        allowedPaths = AllowedPaths.NATIVE_OR_DRIVE_PATH;
-      } else {
-        allowedPaths = AllowedPaths.ANY_PATH;
-      }
-    }
-
+    var allowedPaths = this.getAllowedPaths_();
     var writableOnly =
         this.launchParams_.type === DialogType.SELECT_SAVEAS_FILE;
 
@@ -1164,14 +1151,23 @@ FileManager.prototype = /** @struct */ {
                            assert(this.fileOperationManager_),
                            fakeEntriesVisible);
     directoryTree.dataModel = new NavigationListModel(
-        assert(this.volumeManager_),
-        assert(this.folderShortcutsModel_),
+        assert(this.volumeManager_), assert(this.folderShortcutsModel_),
         addNewServicesVisible ?
             new NavigationModelMenuItem(
-                str('ADD_NEW_SERVICES_BUTTON_LABEL'),
-                '#add-new-services-menu',
-                'add-new-services') : null);
-
+                str('ADD_NEW_SERVICES_BUTTON_LABEL'), '#add-new-services-menu',
+                'add-new-services') :
+            null,
+        fakeEntriesVisible &&
+                !DialogType.isFolderDialog(this.launchParams_.type) ?
+            new NavigationModelRecentItem(str('RECENT_ROOT_LABEL'), {
+              isDirectory: true,
+              rootType: VolumeManagerCommon.RootType.RECENT,
+              toURL: function() {
+                return 'fake-entry://recent';
+              },
+              sourceRestriction: this.getSourceRestriction_()
+            }) :
+            null);
     this.ui_.initDirectoryTree(directoryTree);
   };
 
@@ -1452,6 +1448,44 @@ FileManager.prototype = /** @struct */ {
       this.fileBrowserBackground_.progressCenter.removePanel(
           this.ui_.progressCenterPanel);
     }
+  };
+
+  /**
+   * Returns allowed path for the dialog by considering:
+   * 1) The launch parameter which specifies generic category of valid files
+   * paths.
+   * 2) Files app's unique capabilities and restrictions.
+   * @returns {AllowedPaths}
+   */
+  FileManager.prototype.getAllowedPaths_ = function() {
+    var allowedPaths = this.launchParams_.allowedPaths;
+    // The native implementation of the Files app creates snapshot files for
+    // non-native files. But it does not work for folders (e.g., dialog for
+    // loading unpacked extensions).
+    if (allowedPaths === AllowedPaths.NATIVE_PATH &&
+        !DialogType.isFolderDialog(this.launchParams_.type)) {
+      if (this.launchParams_.type == DialogType.SELECT_SAVEAS_FILE) {
+        // Only drive can create snapshot files for saving.
+        allowedPaths = AllowedPaths.NATIVE_OR_DRIVE_PATH;
+      } else {
+        allowedPaths = AllowedPaths.ANY_PATH;
+      }
+    }
+    return allowedPaths;
+  };
+
+  /**
+   * Returns SourceRestriction which is used to communicate restrictions about
+   * sources to chrome.fileManagerPrivate.getRecentFiles API.
+   * @returns {chrome.fileManagerPrivate.SourceRestriction}
+   */
+  FileManager.prototype.getSourceRestriction_ = function() {
+    var allowedPaths = this.getAllowedPaths_();
+    if (allowedPaths == AllowedPaths.NATIVE_PATH)
+      return chrome.fileManagerPrivate.SourceRestriction.NATIVE_SOURCE;
+    if (allowedPaths == AllowedPaths.NATIVE_OR_DRIVE_PATH)
+      return chrome.fileManagerPrivate.SourceRestriction.NATIVE_OR_DRIVE_SOURCE;
+    return chrome.fileManagerPrivate.SourceRestriction.ANY_SOURCE;
   };
 
   /**
