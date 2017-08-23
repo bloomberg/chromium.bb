@@ -383,13 +383,8 @@ bool StateController::HandleTakeFocus(content::WebContents* web_contents,
 }
 
 void StateController::MoveToBackground() {
-  if (GetLockScreenNoteState() == TrayActionState::kLaunching) {
-    note_app_window_metrics_->Reset();
-    UpdateLockScreenNoteState(TrayActionState::kAvailable);
-  } else if (GetLockScreenNoteState() == TrayActionState::kActive) {
-    note_app_window_metrics_->MovedToBackground();
-    UpdateLockScreenNoteState(TrayActionState::kBackground);
-  }
+  ResetNoteTakingWindowAndMoveToNextState(
+      true /*close_window*/, NoteTakingExitReason::kUnlockButtonPressed);
 }
 
 void StateController::MoveToForeground() {

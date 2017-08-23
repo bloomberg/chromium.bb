@@ -91,6 +91,7 @@ class StateController : public ash::mojom::TrayActionClient,
     kSuspend = 3,
     kAppWindowClosed = 4,
     kAppLockScreenSupportDisabled = 5,
+    kUnlockButtonPressed = 6,
     kCount
   };
 
