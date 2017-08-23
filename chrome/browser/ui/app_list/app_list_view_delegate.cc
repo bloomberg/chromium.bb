@@ -10,6 +10,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/command_line.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/profiler/scoped_tracker.h"
 #include "build/build_config.h"
@@ -46,6 +47,7 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/launcher_page_info.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate_observer.h"
 #include "ui/app_list/search_box_model.h"
@@ -58,6 +60,34 @@
 namespace {
 
 const int kAutoLaunchDefaultTimeoutMilliSec = 50;
+
+// The UMA histogram that logs which state search results are opened from.
+const char kAppListSearchResultOpenSourceHistogram[] =
+    "Apps.AppListSearchResultOpenedSource";
+
+// The different sources from which a search result is displayed. These values
+// are written to logs.  New enum values can be added, but existing enums must
+// never be renumbered or deleted and reused.
+enum ApplistSearchResultOpenedSource {
+  kHalfClamshell = 0,
+  kFullscreenClamshell = 1,
+  kFullscreenTablet = 2,
+  kMaxApplistSearchResultOpenedSource = 3,
+};
+
+void RecordHistogram(bool is_tablet_mode,
+                     app_list::AppListView::AppListState state) {
+  ApplistSearchResultOpenedSource source;
+
+  if (is_tablet_mode) {
+    source = kFullscreenTablet;
+  } else {
+    source = state == app_list::AppListView::HALF ? kHalfClamshell
+                                                  : kFullscreenClamshell;
+  }
+  UMA_HISTOGRAM_ENUMERATION(kAppListSearchResultOpenSourceHistogram, source,
+                            kMaxApplistSearchResultOpenedSource);
+}
 
 // Gets a list of URLs of the custom launcher pages to show in the launcher.
 // Returns a URL for each installed launcher page. If --custom-launcher-page is
@@ -93,8 +123,7 @@ void GetCustomLauncherPageUrls(content::BrowserContext* browser_context,
   const extensions::ExtensionSet& enabled_extensions =
       extension_registry->enabled_extensions();
   for (extensions::ExtensionSet::const_iterator it = enabled_extensions.begin();
-       it != enabled_extensions.end();
-       ++it) {
+       it != enabled_extensions.end(); ++it) {
     const extensions::Extension* extension = it->get();
     extensions::LauncherPageInfo* info =
         extensions::LauncherPageHandler::GetInfo(extension);
@@ -130,8 +159,7 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller)
   speech_ui_->set_logo(*image);
 #endif
 
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_APP_TERMINATING,
+  registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
 
   content::ServiceManagerConnection::GetForProcess()
@@ -231,9 +259,7 @@ void AppListViewDelegate::SetUpSearchUI() {
                                         false);
 
   search_resource_manager_.reset(new app_list::SearchResourceManager(
-      profile_,
-      model_->search_box(),
-      speech_ui_.get()));
+      profile_, model_->search_box(), speech_ui_.get()));
 
   search_controller_ = CreateSearchController(profile_, model_, controller_);
 }
@@ -255,9 +281,9 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
 
   std::string first_launcher_page_app_id = custom_launcher_page_urls[0].host();
   const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)
-          ->GetExtensionById(first_launcher_page_app_id,
-                             extensions::ExtensionRegistry::EVERYTHING);
+      extensions::ExtensionRegistry::Get(profile_)->GetExtensionById(
+          first_launcher_page_app_id,
+          extensions::ExtensionRegistry::EVERYTHING);
   model_->set_custom_launcher_page_name(extension->name());
   // Only the first custom launcher page gets events dispatched to it.
   launcher_page_event_dispatcher_.reset(
@@ -309,12 +335,14 @@ void AppListViewDelegate::StartSearch() {
   }
 }
 
-void AppListViewDelegate::OpenSearchResult(
-    app_list::SearchResult* result,
-    bool auto_launch,
-    int event_flags) {
+void AppListViewDelegate::OpenSearchResult(app_list::SearchResult* result,
+                                           bool auto_launch,
+                                           int event_flags) {
   if (auto_launch)
     base::RecordAction(base::UserMetricsAction("AppList_AutoLaunched"));
+
+  RecordHistogram(model_->tablet_mode(), model_->state_fullscreen());
+
   search_controller_->OpenResult(result, event_flags);
 }
 
@@ -351,7 +379,7 @@ void AppListViewDelegate::ViewInitialized() {
   }
 }
 
-void AppListViewDelegate::Dismiss()  {
+void AppListViewDelegate::Dismiss() {
   controller_->DismissView();
 }
 
@@ -436,8 +464,8 @@ void AppListViewDelegate::OnSpeechResult(const base::string16& result,
                                          bool is_final) {
   speech_ui_->SetSpeechResult(result, is_final);
   if (is_final) {
-    auto_launch_timeout_ = base::TimeDelta::FromMilliseconds(
-        kAutoLaunchDefaultTimeoutMilliSec);
+    auto_launch_timeout_ =
+        base::TimeDelta::FromMilliseconds(kAutoLaunchDefaultTimeoutMilliSec);
     model_->search_box()->Update(result, true);
   }
 }
@@ -455,9 +483,8 @@ void AppListViewDelegate::OnSpeechRecognitionStateChanged(
   // With the new hotword extension, we need to re-request hotwording after
   // speech recognition has stopped. Do not request hotwording after the app
   // list has already closed.
-  if (new_state == app_list::SPEECH_RECOGNITION_READY &&
-      service && service->HotwordEnabled() &&
-      controller_->GetAppListWindow()) {
+  if (new_state == app_list::SPEECH_RECOGNITION_READY && service &&
+      service->HotwordEnabled() && controller_->GetAppListWindow()) {
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile_);
     if (hotword_service) {
@@ -480,8 +507,8 @@ views::View* AppListViewDelegate::CreateStartPageWebView(
     return NULL;
 
   DCHECK_EQ(profile_, web_contents->GetBrowserContext());
-  views::WebView* web_view = new views::WebView(
-      web_contents->GetBrowserContext());
+  views::WebView* web_view =
+      new views::WebView(web_contents->GetBrowserContext());
   web_view->SetPreferredSize(size);
   web_view->SetResizeBackgroundColor(SK_ColorTRANSPARENT);
   web_view->SetWebContents(web_contents);

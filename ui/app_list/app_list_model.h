@@ -17,6 +17,7 @@
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/app_list/app_list_item_list_observer.h"
 #include "ui/app_list/search_result.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/base/models/list_model.h"
 
 namespace app_list {
@@ -64,7 +65,17 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   void SetStatus(Status status);
 
   void SetState(State state);
-  State state() { return state_; }
+  State state() const { return state_; }
+
+  // The current state of the AppListView. Controlled by AppListView.
+  void SetStateFullscreen(AppListView::AppListState state);
+  AppListView::AppListState state_fullscreen() const {
+    return state_fullscreen_;
+  }
+
+  // Whether tablet mode is active. Controlled by AppListView.
+  void SetTabletMode(bool started);
+  bool tablet_mode() const { return is_tablet_mode_; }
 
   // Finds the item matching |id|.
   AppListItem* FindItem(const std::string& id);
@@ -82,14 +93,15 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   AppListItem* AddItemToFolder(std::unique_ptr<AppListItem> item,
                                const std::string& folder_id);
 
-  // Merges two items. If the target item is a folder, the source item is added
-  // to the end of the target folder. Otherwise a new folder is created in the
-  // same position as the target item with the target item as the first item in
-  // the new folder and the source item as the second item. Returns the id of
-  // the target folder, or an empty string if the merge failed. The source item
-  // may already be in a folder. See also the comment for RemoveItemFromFolder.
-  // NOTE: This should only be called by the View code (not the sync code); it
-  // enforces folder restrictions (e.g. the target can not be an OEM folder).
+  // Merges two items. If the target item is a folder, the source item is
+  // added to the end of the target folder. Otherwise a new folder is created
+  // in the same position as the target item with the target item as the first
+  // item in the new folder and the source item as the second item. Returns
+  // the id of the target folder, or an empty string if the merge failed. The
+  // source item may already be in a folder. See also the comment for
+  // RemoveItemFromFolder. NOTE: This should only be called by the View code
+  // (not the sync code); it enforces folder restrictions (e.g. the target can
+  // not be an OEM folder).
   const std::string MergeItems(const std::string& target_item_id,
                                const std::string& source_item_id);
 
@@ -101,17 +113,18 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
   // Move |item| to the folder matching |folder_id| or to the top level if
   // |folder_id| is empty. The item will be inserted before |position| or at
   // the end of the list if |position| is invalid. Note: |position| is copied
-  // in case it refers to the containing folder which may get deleted. See also
-  // the comment for RemoveItemFromFolder. Returns true if the item was moved.
-  // NOTE: This should only be called by the View code (not the sync code); it
-  // enforces folder restrictions (e.g. the source folder can not be type OEM).
+  // in case it refers to the containing folder which may get deleted. See
+  // also the comment for RemoveItemFromFolder. Returns true if the item was
+  // moved. NOTE: This should only be called by the View code (not the sync
+  // code); it enforces folder restrictions (e.g. the source folder can not be
+  // type OEM).
   bool MoveItemToFolderAt(AppListItem* item,
                           const std::string& folder_id,
                           syncer::StringOrdinal position);
 
-  // Sets the position of |item| either in |top_level_item_list_| or the folder
-  // specified by |item|->folder_id(). If |new_position| is invalid, move the
-  // item to the end of the list.
+  // Sets the position of |item| either in |top_level_item_list_| or the
+  // folder specified by |item|->folder_id(). If |new_position| is invalid,
+  // move the item to the end of the list.
   void SetItemPosition(AppListItem* item,
                        const syncer::StringOrdinal& new_position);
 
@@ -153,11 +166,12 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
     return custom_launcher_page_name_;
   }
 
-  // Pushes a custom launcher page's subpage into the state stack in the model.
+  // Pushes a custom launcher page's subpage into the state stack in the
+  // model.
   void PushCustomLauncherPageSubpage();
 
-  // If the state stack is not empty, pops a subpage from the stack and returns
-  // true. Returns false if the stack was empty.
+  // If the state stack is not empty, pops a subpage from the stack and
+  // returns true. Returns false if the stack was empty.
   bool PopCustomLauncherPageSubpage();
 
   // Clears the custom launcher page's subpage state stack from the model.
@@ -207,8 +221,8 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
       AppListFolderItem* folder,
       std::unique_ptr<AppListItem> item_ptr);
 
-  // Removes |item| from |top_level_item_list_| or calls RemoveItemFromFolder if
-  // |item|->folder_id is set.
+  // Removes |item| from |top_level_item_list_| or calls RemoveItemFromFolder
+  // if |item|->folder_id is set.
   std::unique_ptr<AppListItem> RemoveItem(AppListItem* item);
 
   // Removes |item| from |folder|. If |folder| becomes empty, deletes |folder|
@@ -224,11 +238,15 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
 
   Status status_;
   State state_;
+  // The AppListView state. Controlled by the AppListView.
+  AppListView::AppListState state_fullscreen_;
   base::ObserverList<AppListModelObserver, true> observers_;
   bool folders_enabled_;
   bool custom_launcher_page_enabled_;
   std::string custom_launcher_page_name_;
   bool search_engine_is_google_;
+  // Whether tablet mode is active. Controlled by the AppListView.
+  bool is_tablet_mode_;
 
   // The current number of subpages the custom launcher page has pushed.
   int custom_launcher_page_subpage_depth_;

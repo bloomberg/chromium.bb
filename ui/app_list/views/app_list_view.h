@@ -296,6 +296,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   void SetBackgroundShieldColor();
 
   AppListViewDelegate* delegate_;  // Weak. Owned by AppListService.
+  AppListModel* const model_;      // Not Owned.
 
   AppListMainView* app_list_main_view_ = nullptr;
   SpeechView* speech_view_ = nullptr;
