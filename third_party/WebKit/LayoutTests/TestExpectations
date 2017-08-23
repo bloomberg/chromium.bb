@@ -2942,7 +2942,7 @@ crbug.com/736177 [ Mac10.12 ] fast/text/unicode-fallback-font.html [ Failure Pas
 crbug.com/736177 [ Mac10.12 ] html/details_summary/details-marker-style.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] http/tests/misc/acid2-pixel.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] media/video-zoom-controls.html [ Failure Pass ]
-crbug.com/736177 [ Mac10.12 ] paint/spellmarkers/document-markers-zoom-150.html [ Failure Pass ]
+crbug.com/736177 [ Mac10.12 ] paint/markers/document-markers-zoom-150.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] scrollbars/custom-scrollbar-with-incomplete-style.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] svg/W3C-SVG-1.1/script-handle-02-b.svg [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 ] svg/W3C-SVG-1.1/script-handle-03-b.svg [ Failure Pass ]
