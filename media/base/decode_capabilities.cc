@@ -14,8 +14,8 @@
 // backwards compatibility for legacy applications using the library.
 #define VPX_CODEC_DISABLE_COMPAT 1
 extern "C" {
-#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
-#include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"
+#include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"      // nogncheck
+#include "third_party/libvpx/source/libvpx/vpx/vpx_codec.h"  // nogncheck
 }
 #endif
 

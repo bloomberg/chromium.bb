@@ -330,7 +330,6 @@ test("media_unittests") {
     "//media/audio:unit_tests",
     "//media/base:unit_tests",
     "//media/cdm:unit_tests",
-    "//media/ffmpeg:unit_tests",
     "//media/gpu:unit_tests",
     "//media/mojo:unit_tests",
     "//media/renderers:unit_tests",
@@ -338,6 +337,10 @@ test("media_unittests") {
     "//media/test:run_all_unittests",
     "//media/video:unit_tests",
   ]
+
+  if (media_use_ffmpeg) {
+    deps += [ "//media/ffmpeg:unit_tests" ]
+  }
 
   if (is_android) {
     deps += [

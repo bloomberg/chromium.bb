@@ -17,7 +17,7 @@
 #endif
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
-#include "third_party/ffmpeg/ffmpeg_features.h"
+#include "third_party/ffmpeg/ffmpeg_features.h"  // nogncheck
 extern "C" {
 #include <libavutil/cpu.h>
 #include <libavutil/log.h>
