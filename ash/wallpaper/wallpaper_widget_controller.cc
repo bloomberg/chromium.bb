@@ -20,11 +20,9 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
                                        public views::WidgetObserver {
  public:
   ShowWallpaperAnimationObserver(RootWindowController* root_window_controller,
-                                 views::Widget* wallpaper_widget,
-                                 bool is_initial_animation)
+                                 views::Widget* wallpaper_widget)
       : root_window_controller_(root_window_controller),
-        wallpaper_widget_(wallpaper_widget),
-        is_initial_animation_(is_initial_animation) {
+        wallpaper_widget_(wallpaper_widget) {
     DCHECK(wallpaper_widget_);
     wallpaper_widget_->AddObserver(this);
   }
@@ -37,11 +35,6 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 
  private:
   // Overridden from ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsScheduled() override {
-    if (is_initial_animation_)
-      root_window_controller_->OnInitialWallpaperAnimationStarted();
-  }
-
   void OnImplicitAnimationsCompleted() override {
     root_window_controller_->OnWallpaperAnimationFinished(wallpaper_widget_);
     delete this;
@@ -52,9 +45,6 @@ class ShowWallpaperAnimationObserver : public ui::ImplicitAnimationObserver,
 
   RootWindowController* root_window_controller_;
   views::Widget* wallpaper_widget_;
-
-  // Is this object observing the initial brightness/grayscale animation?
-  const bool is_initial_animation_;
 
   DISALLOW_COPY_AND_ASSIGN(ShowWallpaperAnimationObserver);
 };
@@ -127,9 +117,9 @@ void WallpaperWidgetController::StartAnimating(
   if (widget_) {
     ui::ScopedLayerAnimationSettings settings(
         widget_->GetLayer()->GetAnimator());
-    settings.AddObserver(new ShowWallpaperAnimationObserver(
-        root_window_controller, widget_,
-        Shell::Get()->wallpaper_delegate()->ShouldShowInitialAnimation()));
+    // ShowWallpaperAnimationObserver deletes itself when animation is done.
+    settings.AddObserver(
+        new ShowWallpaperAnimationObserver(root_window_controller, widget_));
     // When |widget_| shows, AnimateShowWindowCommon() is called to do the
     // animation. Sets transition duration to 0 to avoid animating to the
     // show animation's initial values.

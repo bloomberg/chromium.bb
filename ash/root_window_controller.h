@@ -50,7 +50,6 @@ class AlwaysOnTopController;
 class AnimatingWallpaperWidgetController;
 class AshTouchExplorationManager;
 class AshWindowTreeHost;
-class BootSplashScreen;
 enum class LoginStatus;
 class PanelLayoutManager;
 class Shelf;
@@ -202,11 +201,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   void SetAnimatingWallpaperWidgetController(
       AnimatingWallpaperWidgetController* controller);
 
-  // Called when the brightness/grayscale animation from white to the login
-  // wallpaper image has started.  Starts |boot_splash_screen_|'s hiding
-  // animation (if the screen is non-NULL).
-  void OnInitialWallpaperAnimationStarted();
-
   // Called when the wallpaper animation is finished. Updates
   // |system_wallpaper_| to be black and drops |boot_splash_screen_| and moves
   // the wallpaper controller into the root window controller. |widget| holds
@@ -331,7 +325,6 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   std::unique_ptr<SystemWallpaperController> system_wallpaper_;
 
-  std::unique_ptr<BootSplashScreen> boot_splash_screen_;
   // Responsible for initializing TouchExplorationController when spoken
   // feedback is on.
   std::unique_ptr<AshTouchExplorationManager> touch_exploration_manager_;
