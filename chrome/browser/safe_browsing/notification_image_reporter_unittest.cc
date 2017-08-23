@@ -18,12 +18,16 @@
 #include "components/safe_browsing_db/test_database_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
+
+using testing::_;
+using testing::Return;
 
 namespace safe_browsing {
 
@@ -66,12 +70,13 @@ class TestingNotificationImageReporter : public NotificationImageReporter {
   double reporting_chance_ = 1.0;
 };
 
-class FakeSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
+class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
-  bool MatchCsdWhitelistUrl(const GURL& url) override { return false; }
+  MOCK_METHOD2(CheckCsdWhitelistUrl,
+               AsyncMatch(const GURL&, SafeBrowsingDatabaseManager::Client*));
 
- private:
-  ~FakeSafeBrowsingDatabaseManager() override {}
+ protected:
+  ~MockSafeBrowsingDatabaseManager() override {}
 };
 
 SkBitmap CreateBitmap(int width, int height) {
@@ -111,6 +116,8 @@ class NotificationImageReporterTest : public ::testing::Test {
   GURL origin_;     // Written on UI, read on IO.
   SkBitmap image_;  // Written on UI, read on IO.
 
+  scoped_refptr<MockSafeBrowsingDatabaseManager> mock_database_manager_;
+
  private:
   void SetUpOnIO();
 
@@ -129,8 +136,11 @@ void NotificationImageReporterTest::SetUp() {
 
   // Initialize SafeBrowsingService with FakeSafeBrowsingDatabaseManager.
   TestSafeBrowsingServiceFactory sb_service_factory;
-  sb_service_factory.SetTestDatabaseManager(
-      new FakeSafeBrowsingDatabaseManager());
+
+  mock_database_manager_ = new MockSafeBrowsingDatabaseManager();
+  ON_CALL(*mock_database_manager_.get(), CheckCsdWhitelistUrl(_, _))
+      .WillByDefault(Return(AsyncMatch::NO_MATCH));
+  sb_service_factory.SetTestDatabaseManager(mock_database_manager_.get());
   SafeBrowsingService::RegisterFactory(&sb_service_factory);
   safe_browsing_service_ = sb_service_factory.CreateSafeBrowsingService();
   SafeBrowsingService::RegisterFactory(nullptr);
@@ -263,6 +273,18 @@ TEST_F(NotificationImageReporterTest, NoReportWithoutScout) {
 TEST_F(NotificationImageReporterTest, NoReportWithoutReportingEnabled) {
   SetExtendedReportingLevel(SBER_LEVEL_SCOUT);
   notification_image_reporter_->SetReportingChance(0.0);
+
+  ReportNotificationImage();
+  notification_image_reporter_->WaitForReportSkipped();
+
+  EXPECT_EQ(0, mock_report_sender_->GetAndResetNumberOfReportsSent());
+}
+
+TEST_F(NotificationImageReporterTest, NoReportOnWhitelistedUrl) {
+  SetExtendedReportingLevel(SBER_LEVEL_SCOUT);
+
+  EXPECT_CALL(*mock_database_manager_.get(), CheckCsdWhitelistUrl(origin_, _))
+      .WillOnce(Return(AsyncMatch::MATCH));
 
   ReportNotificationImage();
   notification_image_reporter_->WaitForReportSkipped();

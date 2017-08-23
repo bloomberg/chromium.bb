@@ -91,6 +91,12 @@ class NotificationImageReporter {
                       const gfx::Size& dimensions,
                       const gfx::Size& original_dimensions);
 
+  // Called when the asynchronous CSD whitelist check completes.
+  void OnWhitelistCheckDoneOnIO(Profile* profile,
+                                const GURL& origin,
+                                const SkBitmap& image,
+                                bool match_whitelist);
+
   std::unique_ptr<net::ReportSender> report_sender_;
 
   // Timestamps of when we sent notification images. Used to limit the number
