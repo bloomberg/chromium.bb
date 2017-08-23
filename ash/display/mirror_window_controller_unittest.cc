@@ -230,7 +230,7 @@ TEST_F(MirrorWindowControllerTest, MirrorCursorMoveOnEnter) {
   EXPECT_EQ("18,7", test_api.GetCursorHotPoint().ToString());
   // New coordinates are not (200,200) because (200,200) is not the center of
   // the display.
-  EXPECT_EQ("199,200",
+  EXPECT_EQ("200,200",
             test_api.GetCursorHotPointLocationInRootWindow().ToString());
 }
 

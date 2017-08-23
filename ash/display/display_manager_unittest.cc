@@ -2073,13 +2073,13 @@ TEST_F(DisplayManagerTest, UpdateMouseCursorAfterRotateZoom) {
   generator1.MoveMouseToInHost(150, 50);
   EXPECT_EQ("150,50", env->last_mouse_location().ToString());
   UpdateDisplay("300x200/r,200x150");
-  EXPECT_EQ("50,149", env->last_mouse_location().ToString());
+  EXPECT_EQ("50,150", env->last_mouse_location().ToString());
 
   // Test on 2nd display.
   generator2.MoveMouseToInHost(50, 100);
   EXPECT_EQ("250,100", env->last_mouse_location().ToString());
   UpdateDisplay("300x200/r,200x150/l");
-  EXPECT_EQ("249,50", env->last_mouse_location().ToString());
+  EXPECT_EQ("250,50", env->last_mouse_location().ToString());
 
   // The native location is now outside, so move to the center
   // of closest display.

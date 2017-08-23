@@ -335,17 +335,17 @@ TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
   ui::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(300, 200);
   magnifier->SetEnabled(true);
-  EXPECT_EQ("150,224", event_handler.GetLocationAndReset());
+  EXPECT_EQ("150,225", event_handler.GetLocationAndReset());
   EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
 
   generator.MoveMouseToInHost(300, 200);
   EXPECT_EQ("150,224", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(200, 300);
-  EXPECT_EQ("187,261", event_handler.GetLocationAndReset());
+  EXPECT_EQ("187,262", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(100, 400);
   EXPECT_EQ("237,299", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("137,348", event_handler.GetLocationAndReset());
+  EXPECT_EQ("137,349", event_handler.GetLocationAndReset());
 
   magnifier->SetEnabled(false);
   EXPECT_FLOAT_EQ(1.0f, magnifier->GetScale());
@@ -360,17 +360,17 @@ TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
 
   generator.MoveMouseToInHost(300, 200);
   magnifier->SetEnabled(true);
-  EXPECT_EQ("224,149", event_handler.GetLocationAndReset());
+  EXPECT_EQ("225,150", event_handler.GetLocationAndReset());
   EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
 
   generator.MoveMouseToInHost(300, 200);
-  EXPECT_EQ("224,148", event_handler.GetLocationAndReset());
+  EXPECT_EQ("224,150", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(200, 300);
-  EXPECT_EQ("261,111", event_handler.GetLocationAndReset());
+  EXPECT_EQ("262,112", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(100, 400);
-  EXPECT_EQ("299,60", event_handler.GetLocationAndReset());
+  EXPECT_EQ("299,62", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("348,159", event_handler.GetLocationAndReset());
+  EXPECT_EQ("349,162", event_handler.GetLocationAndReset());
 
   magnifier->SetEnabled(false);
   EXPECT_FLOAT_EQ(1.0f, magnifier->GetScale());
@@ -385,17 +385,17 @@ TEST_F(RootWindowTransformersTest, ConvertHostToRootCoords) {
 
   generator.MoveMouseToInHost(300, 200);
   magnifier->SetEnabled(true);
-  EXPECT_EQ("149,225", event_handler.GetLocationAndReset());
+  EXPECT_EQ("150,225", event_handler.GetLocationAndReset());
   EXPECT_FLOAT_EQ(2.0f, magnifier->GetScale());
 
   generator.MoveMouseToInHost(300, 200);
-  EXPECT_EQ("148,224", event_handler.GetLocationAndReset());
+  EXPECT_EQ("150,224", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(200, 300);
-  EXPECT_EQ("111,187", event_handler.GetLocationAndReset());
+  EXPECT_EQ("112,187", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(100, 400);
-  EXPECT_EQ("60,149", event_handler.GetLocationAndReset());
+  EXPECT_EQ("61,149", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("159,99", event_handler.GetLocationAndReset());
+  EXPECT_EQ("161,99", event_handler.GetLocationAndReset());
 
   magnifier->SetEnabled(false);
   EXPECT_FLOAT_EQ(1.0f, magnifier->GetScale());

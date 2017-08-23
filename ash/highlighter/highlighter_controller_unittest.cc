@@ -270,21 +270,21 @@ TEST_F(HighlighterControllerTest, HighlighterGesturesRotated) {
   controller_test_api_->ResetSelection();
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->handle_selection_called());
-  EXPECT_EQ("100,899 300x400", controller_test_api_->selection().ToString());
+  EXPECT_EQ("100,900 300x400", controller_test_api_->selection().ToString());
 
   // Rotate to 180 degrees
   UpdateDisplay("1500x1000/u");
   controller_test_api_->ResetSelection();
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->handle_selection_called());
-  EXPECT_EQ("899,599 400x300", controller_test_api_->selection().ToString());
+  EXPECT_EQ("900,600 400x300", controller_test_api_->selection().ToString());
 
   // Rotate to 270 degrees
   UpdateDisplay("1500x1000/l");
   controller_test_api_->ResetSelection();
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->handle_selection_called());
-  EXPECT_EQ("599,200 300x400", controller_test_api_->selection().ToString());
+  EXPECT_EQ("600,200 300x400", controller_test_api_->selection().ToString());
 }
 
 }  // namespace ash

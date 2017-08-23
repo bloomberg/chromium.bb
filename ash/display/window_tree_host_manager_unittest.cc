@@ -1238,7 +1238,7 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
   EXPECT_EQ("200,0 150x200",
             display_manager()->GetSecondaryDisplay().bounds().ToString());
   generator1.MoveMouseToInHost(50, 40);
-  EXPECT_EQ("40,69", event_handler.GetLocationAndReset());
+  EXPECT_EQ("40,70", event_handler.GetLocationAndReset());
   EXPECT_EQ(display::Display::ROTATE_90,
             GetActiveDisplayRotation(display1.id()));
   EXPECT_EQ(display::Display::ROTATE_0, GetActiveDisplayRotation(display2_id));
@@ -1265,7 +1265,7 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
 
   ui::test::EventGenerator generator2(root_windows[1]);
   generator2.MoveMouseToInHost(50, 40);
-  EXPECT_EQ("179,25", event_handler.GetLocationAndReset());
+  EXPECT_EQ("180,25", event_handler.GetLocationAndReset());
   display_manager()->SetDisplayRotation(
       display1.id(), display::Display::ROTATE_180,
       display::Display::ROTATION_SOURCE_ACTIVE);
@@ -1282,7 +1282,7 @@ TEST_F(WindowTreeHostManagerTest, Rotate) {
   EXPECT_EQ(1, observer.GetRotationChangedCountAndReset());
 
   generator1.MoveMouseToInHost(50, 40);
-  EXPECT_EQ("69,159", event_handler.GetLocationAndReset());
+  EXPECT_EQ("70,160", event_handler.GetLocationAndReset());
 
   Shell::Get()->RemovePreTargetHandler(&event_handler);
 }
@@ -1365,13 +1365,13 @@ TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
 
   ui::test::EventGenerator generator(root_windows[0]);
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("0,449", event_handler.GetLocationAndReset());
+  EXPECT_EQ("0,450", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 0);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("299,0", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 399);
-  EXPECT_EQ("299,449", event_handler.GetLocationAndReset());
+  EXPECT_EQ("299,450", event_handler.GetLocationAndReset());
 
   UpdateDisplay("600x400*2/u@1.5");
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1381,13 +1381,13 @@ TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("449,299", event_handler.GetLocationAndReset());
+  EXPECT_EQ("450,300", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 0);
-  EXPECT_EQ("0,299", event_handler.GetLocationAndReset());
+  EXPECT_EQ("0,300", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 399);
-  EXPECT_EQ("449,0", event_handler.GetLocationAndReset());
+  EXPECT_EQ("450,0", event_handler.GetLocationAndReset());
 
   UpdateDisplay("600x400*2/l@1.5");
   display1 = display::Screen::GetScreen()->GetPrimaryDisplay();
@@ -1397,9 +1397,9 @@ TEST_F(WindowTreeHostManagerTest, ConvertHostToRootCoords) {
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));
 
   generator.MoveMouseToInHost(0, 0);
-  EXPECT_EQ("299,0", event_handler.GetLocationAndReset());
+  EXPECT_EQ("300,0", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 0);
-  EXPECT_EQ("299,449", event_handler.GetLocationAndReset());
+  EXPECT_EQ("300,449", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(599, 399);
   EXPECT_EQ("0,449", event_handler.GetLocationAndReset());
   generator.MoveMouseToInHost(0, 399);

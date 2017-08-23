@@ -28,23 +28,19 @@ gfx::Transform CreateRotationTransform(display::Display::Rotation old_rotation,
                                        const display::Display& display) {
   const int rotation_angle = 90 * (((new_rotation - old_rotation) + 4) % 4);
   gfx::Transform rotate;
-  // The origin is (0, 0), so the translate width/height must be reduced by
-  // 1 pixel.
-  float one_pixel = 1.0f / display.device_scale_factor();
   switch (rotation_angle) {
     case 0:
       break;
     case 90:
-      rotate.Translate(display.bounds().height() - one_pixel, 0);
+      rotate.Translate(display.bounds().height(), 0);
       rotate.Rotate(90);
       break;
     case 180:
-      rotate.Translate(display.bounds().width() - one_pixel,
-                       display.bounds().height() - one_pixel);
+      rotate.Translate(display.bounds().width(), display.bounds().height());
       rotate.Rotate(180);
       break;
     case 270:
-      rotate.Translate(0, display.bounds().width() - one_pixel);
+      rotate.Translate(0, display.bounds().width());
       rotate.Rotate(270);
       break;
   }
