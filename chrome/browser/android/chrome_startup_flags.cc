@@ -36,10 +36,6 @@ void SetCommandLineSwitchASCII(const std::string& switch_string,
 }  // namespace
 
 void SetChromeSpecificCommandLineFlags() {
-  // Enable prerender for the omnibox.
-  SetCommandLineSwitchASCII(switches::kPrerenderFromOmnibox,
-                            switches::kPrerenderFromOmniboxSwitchValueEnabled);
-
   // Disable syncing favicons on low end devices.
   if (base::SysInfo::IsLowEndDevice())
     SetCommandLineSwitchASCII(switches::kDisableSyncTypes, "Favicon Images");

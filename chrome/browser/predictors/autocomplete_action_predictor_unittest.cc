@@ -93,10 +93,6 @@ class AutocompleteActionPredictorTest : public testing::Test {
  public:
   AutocompleteActionPredictorTest()
       : profile_(base::MakeUnique<TestingProfile>()), predictor_(nullptr) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kPrerenderFromOmnibox,
-        switches::kPrerenderFromOmniboxSwitchValueEnabled);
-
     CHECK(profile_->CreateHistoryService(true, false));
     predictor_ = base::MakeUnique<AutocompleteActionPredictor>(profile_.get());
     predictor_->CreateLocalCachesFromDatabase();
