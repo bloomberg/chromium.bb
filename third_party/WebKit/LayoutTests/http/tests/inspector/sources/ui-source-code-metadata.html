@@ -26,60 +26,51 @@ function addStyleSheetAndRunTest()
     link.onload = () => runTest();
 }
 
-function test()
-{
-    TestRunner.runTestSuite([
-        function testCachedResource(next)
-        {
-            SourcesTestRunner.waitForScriptSource("style.css", onStyleSheet)
+function test() {
+  TestRunner.runTestSuite([
+    function testCachedResource(next) {
+      SourcesTestRunner.waitForScriptSource('style.css', onStyleSheet);
 
-            function onStyleSheet(uiSourceCode)
-            {
-                dumpMetadata(uiSourceCode, next);
-            }
-        },
+      function onStyleSheet(uiSourceCode) {
+        dumpMetadata(uiSourceCode, next);
+      }
+    },
 
-        function testDynamicResource(next)
-        {
-            TestRunner.evaluateInPageAsync("addScript()");
-            SourcesTestRunner.waitForScriptSource("script.js", onScript);
+    function testDynamicResource(next) {
+      TestRunner.evaluateInPageAsync('addScript()');
+      SourcesTestRunner.waitForScriptSource('script.js', onScript);
 
-            function onScript(uiSourceCode)
-            {
-                dumpMetadata(uiSourceCode, next);
-            }
-        },
+      function onScript(uiSourceCode) {
+        dumpMetadata(uiSourceCode, next);
+      }
+    },
 
-        function testInlinedSourceMapSource(next)
-        {
-            SourcesTestRunner.waitForScriptSource("style.scss", onSourceMapSource);
+    function testInlinedSourceMapSource(next) {
+      SourcesTestRunner.waitForScriptSource('style.scss', onSourceMapSource);
 
-            function onSourceMapSource(uiSourceCode)
-            {
-                dumpMetadata(uiSourceCode, next);
-            }
-        },
-    ]);
+      function onSourceMapSource(uiSourceCode) {
+        dumpMetadata(uiSourceCode, next);
+      }
+    },
+  ]);
 
-    function dumpMetadata(uiSourceCode, next)
-    {
-        uiSourceCode.requestMetadata().then(onMetadata);
+  function dumpMetadata(uiSourceCode, next) {
+    uiSourceCode.requestMetadata().then(onMetadata);
 
-        function onMetadata(metadata)
-        {
-            TestRunner.addResult("Metadata for UISourceCode: " + uiSourceCode.url());
-            if (!metadata) {
-                TestRunner.addResult("    Metadata is EMPTY");
-                next();
-                return;
-            }
-            var contentSize = metadata.contentSize;
-            var time = metadata.modificationTime ? "<Date>" : "null";
-            TestRunner.addResult("    content size: " + contentSize);
-            TestRunner.addResult("    modification time: " + time);
-            next();
-        }
+    function onMetadata(metadata) {
+      TestRunner.addResult('Metadata for UISourceCode: ' + uiSourceCode.url());
+      if (!metadata) {
+        TestRunner.addResult('    Metadata is EMPTY');
+        next();
+        return;
+      }
+      var contentSize = metadata.contentSize;
+      var time = metadata.modificationTime ? '<Date>' : 'null';
+      TestRunner.addResult('    content size: ' + contentSize);
+      TestRunner.addResult('    modification time: ' + time);
+      next();
     }
+  }
 }
 
 </script>

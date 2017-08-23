@@ -4,29 +4,28 @@
 
 <script>
 
-async function test()
-{
-    TestRunner.markStep('initialWorkspace');
-    var snapshot = BindingsTestRunner.dumpWorkspace();
+async function test() {
+  TestRunner.markStep('initialWorkspace');
+  var snapshot = BindingsTestRunner.dumpWorkspace();
 
-    TestRunner.markStep('createIframesAndWaitForSourceMaps');
-    await Promise.all([
-        BindingsTestRunner.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
-        BindingsTestRunner.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map')
-    ]);
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('createIframesAndWaitForSourceMaps');
+  await Promise.all([
+    BindingsTestRunner.attachFrame('frame1', './resources/sourcemap-frame.html', '_test_create-iframe1.js'),
+    BindingsTestRunner.attachFrame('frame2', './resources/sourcemap-frame.html', '_test_create-iframe2.js'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map')
+  ]);
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('detachFrame1');
-    await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('detachFrame1');
+  await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('detachFrame2');
-    await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('detachFrame2');
+  await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

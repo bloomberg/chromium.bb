@@ -19,23 +19,21 @@ function accessFrame()
     frames[0].postMessage("fail", "http://127.0.0.1:8000");
 }
 
-function test()
-{
-    var finishAttemptsLeft = 2;
-    ConsoleTestRunner.addConsoleSniffer(maybeFinish, true);
-    Common.settingForTest('monitoringXHREnabled').set(true);
-    TestRunner.evaluateInPage("accessFrame()", maybeFinish);
+function test() {
+  var finishAttemptsLeft = 2;
+  ConsoleTestRunner.addConsoleSniffer(maybeFinish, true);
+  Common.settingForTest('monitoringXHREnabled').set(true);
+  TestRunner.evaluateInPage('accessFrame()', maybeFinish);
 
-    function maybeFinish()
-    {
-        --finishAttemptsLeft;
-        if (finishAttemptsLeft)
-            return;
+  function maybeFinish() {
+    --finishAttemptsLeft;
+    if (finishAttemptsLeft)
+      return;
 
-        Common.settingForTest('monitoringXHREnabled').set(false);
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+    Common.settingForTest('monitoringXHREnabled').set(false);
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

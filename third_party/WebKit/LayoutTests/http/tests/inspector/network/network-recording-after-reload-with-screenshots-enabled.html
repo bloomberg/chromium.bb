@@ -4,22 +4,19 @@
 <script src="../network-test.js"></script>
 <script>
 
-function test()
-{
-    UI.panels.network._networkRecordFilmStripSetting.set(true);
-    
-    Network.NetworkPanel._displayScreenshotDelay = 0;
+function test() {
+  UI.panels.network._networkRecordFilmStripSetting.set(true);
 
-    TestRunner.resourceTreeModel.reloadPage();
-    TestRunner.runWhenPageLoads(() => setTimeout(checkRecording, 50));
+  Network.NetworkPanel._displayScreenshotDelay = 0;
 
-    function checkRecording() 
-    {
-        TestRunner.addResult(UI.panels.network._networkLogView._recording ? "Still recording" : "Not recording");
+  TestRunner.resourceTreeModel.reloadPage();
+  TestRunner.runWhenPageLoads(() => setTimeout(checkRecording, 50));
 
-        TestRunner.completeTest();
-    }
+  function checkRecording() {
+    TestRunner.addResult(UI.panels.network._networkLogView._recording ? 'Still recording' : 'Not recording');
 
+    TestRunner.completeTest();
+  }
 }
 
 </script>

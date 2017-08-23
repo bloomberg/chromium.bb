@@ -9,48 +9,39 @@ function onload()
     runTest();
 }
 
-function test()
-{
-    TestRunner.addSniffer(SDK.RuntimeModel.prototype, "_inspectRequested", sniffInspect, true);
+function test() {
+  TestRunner.addSniffer(SDK.RuntimeModel.prototype, '_inspectRequested', sniffInspect, true);
 
-    function sniffInspect(objectId, hints)
-    {
-        TestRunner.addResult("WebInspector.inspect called with: " + objectId.description);
-        TestRunner.addResult("WebInspector.inspect's hints are: " + JSON.stringify(Object.keys(hints)));
+  function sniffInspect(objectId, hints) {
+    TestRunner.addResult('WebInspector.inspect called with: ' + objectId.description);
+    TestRunner.addResult('WebInspector.inspect\'s hints are: ' + JSON.stringify(Object.keys(hints)));
+  }
+
+  function evalAndDump(expression, next) {
+    TestRunner.addResult('\n');
+    ConsoleTestRunner.evaluateInConsole(expression, dumpCallback);
+    function dumpCallback(text) {
+      TestRunner.addResult(expression + ' = ' + text);
+      if (next)
+        next();
+    }
+  }
+
+  TestRunner.runTestSuite([function testRevealElement(next) {
+    TestRunner.addSniffer(Common.Revealer, 'revealPromise', step2, true);
+    evalAndDump('inspect($(\'#p1\'))');
+
+    function step2(node, revealPromise) {
+      if (!(node instanceof SDK.RemoteObject))
+        return;
+      revealPromise.then(step3);
     }
 
-    function evalAndDump(expression, next)
-    {
-        TestRunner.addResult("\n");
-        ConsoleTestRunner.evaluateInConsole(expression, dumpCallback);
-        function dumpCallback(text)
-        {
-            TestRunner.addResult(expression + " = " + text);
-            if (next)
-                next();
-        }
+    function step3() {
+      TestRunner.addResult('Selected node id: \'' + UI.panels.elements.selectedDOMNode().getAttribute('id') + '\'.');
+      next();
     }
-
-    TestRunner.runTestSuite([
-        function testRevealElement(next)
-        {
-            TestRunner.addSniffer(Common.Revealer, "revealPromise", step2, true);
-            evalAndDump("inspect($('#p1'))");
-
-            function step2(node, revealPromise)
-            {
-                if (!(node instanceof SDK.RemoteObject))
-                    return;
-                revealPromise.then(step3);
-            }
-
-            function step3()
-            {
-                TestRunner.addResult("Selected node id: '" + UI.panels.elements.selectedDOMNode().getAttribute("id") + "'.");
-                next();
-            }
-        }
-    ]);
+  }]);
 }
 
 </script>

@@ -8,16 +8,14 @@ function importWorklet()
     animationWorklet.import('console-worklet-script.js');
 }
 
-function test()
-{
-    ConsoleTestRunner.waitForConsoleMessages(4, finish);
-    TestRunner.evaluateInPage("importWorklet();");
+function test() {
+  ConsoleTestRunner.waitForConsoleMessages(4, finish);
+  TestRunner.evaluateInPage('importWorklet();');
 
-    function finish()
-    {
-        ConsoleTestRunner.dumpConsoleMessages();
-        TestRunner.completeTest();
-    }
+  function finish() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

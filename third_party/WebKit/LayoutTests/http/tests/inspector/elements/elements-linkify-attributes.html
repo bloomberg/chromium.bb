@@ -3,37 +3,34 @@
 <script src="../inspector-test.js"></script>
 <script src="../elements-test.js"></script>
 <script>
-function test()
-{
-    var i = 0;
-    var last = 14;
+function test() {
+  var i = 0;
+  var last = 14;
 
-    function check()
-    {
-        i++;
-        if (i > last)
-            return TestRunner.completeTest();
+  function check() {
+    i++;
+    if (i > last)
+      return TestRunner.completeTest();
 
-        ElementsTestRunner.selectNodeWithId("linkify-" + i, function()
-        {
-            var treeElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
+    ElementsTestRunner.selectNodeWithId('linkify-' + i, function() {
+      var treeElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
 
-            TestRunner.addResult("\nRendered text: " + treeElement.title.textContent);
+      TestRunner.addResult('\nRendered text: ' + treeElement.title.textContent);
 
-            // Print the embedded links.
-            var links = treeElement.title.querySelectorAll(".devtools-link");
-            links.forEach(link => {
-                var offset = 0;
-                var node = treeElement.title;
-                while ((node = node.traverseNextTextNode(treeElement.title)) && !node.isSelfOrDescendant(link))
-                    offset += node.textContent.length;
-                TestRunner.addResult("Link at offset: " + offset + ": " + link.textContent);
-            });
+      // Print the embedded links.
+      var links = treeElement.title.querySelectorAll('.devtools-link');
+      links.forEach(link => {
+        var offset = 0;
+        var node = treeElement.title;
+        while ((node = node.traverseNextTextNode(treeElement.title)) && !node.isSelfOrDescendant(link))
+          offset += node.textContent.length;
+        TestRunner.addResult('Link at offset: ' + offset + ': ' + link.textContent);
+      });
 
-            check();
-        });
-    }
-    check();
+      check();
+    });
+  }
+  check();
 }
 
 </script>

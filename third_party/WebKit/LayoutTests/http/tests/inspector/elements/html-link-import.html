@@ -5,19 +5,16 @@
 <script src="../elements-test.js"></script>
 <script>
 
-function test()
-{
-    // Warm up highlighter module.
-    runtime.loadModulePromise("source_frame").then(function() {
-        ElementsTestRunner.expandElementsTree(callback);
-    });
+function test() {
+  // Warm up highlighter module.
+  runtime.loadModulePromise('source_frame').then(function() {
+    ElementsTestRunner.expandElementsTree(callback);
+  });
 
-    function callback()
-    {
-        ElementsTestRunner.dumpElementsTree();
-        TestRunner.completeTest();
-    }
-
+  function callback() {
+    ElementsTestRunner.dumpElementsTree();
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

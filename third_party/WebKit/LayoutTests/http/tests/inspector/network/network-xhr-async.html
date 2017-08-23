@@ -3,26 +3,23 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    NetworkTestRunner.makeSimpleXHR("GET", "resources/resource.php", true, step2);
+function test() {
+  NetworkTestRunner.recordNetwork();
+  NetworkTestRunner.makeSimpleXHR('GET', 'resources/resource.php', true, step2);
 
-    function step2()
-    {
-        var request1 = NetworkTestRunner.networkRequests().pop();
-        TestRunner.addResult(request1.url());
-        TestRunner.addResult("resource.type: " + request1.resourceType());
-        TestRunner.assertTrue(!request1.failed, "Resource loading failed.");
-        request1.requestContent().then(step3);
-    }
+  function step2() {
+    var request1 = NetworkTestRunner.networkRequests().pop();
+    TestRunner.addResult(request1.url());
+    TestRunner.addResult('resource.type: ' + request1.resourceType());
+    TestRunner.assertTrue(!request1.failed, 'Resource loading failed.');
+    request1.requestContent().then(step3);
+  }
 
-    function step3(content)
-    {
-        TestRunner.addResult("resource.content after requesting content: " + content);
+  function step3(content) {
+    TestRunner.addResult('resource.content after requesting content: ' + content);
 
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

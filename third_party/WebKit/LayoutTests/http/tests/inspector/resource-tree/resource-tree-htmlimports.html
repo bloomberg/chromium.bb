@@ -9,15 +9,13 @@
 <script src="resource-tree-test.js"></script>
 <script>
 
-function test()
-{
-    ApplicationTestRunner.runAfterResourcesAreFinished(["resource-tree-test.js"], step1);
+function test() {
+  ApplicationTestRunner.runAfterResourcesAreFinished(['resource-tree-test.js'], step1);
 
-    function step1()
-    {
-        ApplicationTestRunner.dumpResourceTreeEverything();
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ApplicationTestRunner.dumpResourceTreeEverything();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

@@ -10,7 +10,7 @@ Dumping listeners
 
 ======== load ========
 == Raw
-[expanded] WindowRemoveevent-listeners-framework-with-service-worker.html:59
+[expanded] WindowRemoveevent-listeners-framework-with-service-worker.html:53
     useCapture: false
     passive: false
     once: false

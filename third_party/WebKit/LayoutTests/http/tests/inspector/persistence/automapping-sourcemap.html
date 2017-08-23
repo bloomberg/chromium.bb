@@ -8,52 +8,37 @@
 <link href="./resources/s.css" rel="stylesheet">
 <script>
 
-function test()
-{
-    BindingsTestRunner.initializeTestMapping();
-    BindingsTestRunner.overrideNetworkModificationTime({
-        "http://127.0.0.1:8000/inspector/persistence/resources/s.css": null
+function test() {
+  BindingsTestRunner.initializeTestMapping();
+  BindingsTestRunner.overrideNetworkModificationTime(
+      {'http://127.0.0.1:8000/inspector/persistence/resources/s.css': null});
+
+  Promise.all([getResourceContent('s.css'), getResourceContent('s.scss')]).then(onResourceContents);
+
+  function onResourceContents(contents) {
+    var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+    BindingsTestRunner.addFiles(fs, {
+      'dist/s.css': {content: contents[0], time: new Date('December 1, 1989')},
+      'src/s.scss': {content: contents[1], time: new Date('December 1, 1989')}
     });
+    fs.reportCreated(onFileSystemCreated);
+  }
 
-    Promise.all([
-        getResourceContent("s.css"),
-        getResourceContent("s.scss")
-    ]).then(onResourceContents);
+  function onFileSystemCreated() {
+    var automappingTest = new BindingsTestRunner.AutomappingTest(Workspace.workspace);
+    automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
+  }
 
-    function onResourceContents(contents)
-    {
-        var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
-        BindingsTestRunner.addFiles(fs, {
-            "dist/s.css": {
-                content: contents[0],
-                time: new Date("December 1, 1989")
-            },
-            "src/s.scss": {
-                content: contents[1],
-                time: new Date("December 1, 1989")
-            }
-        });
-        fs.reportCreated(onFileSystemCreated);
+  function getResourceContent(name) {
+    var fulfill;
+    var promise = new Promise(x => fulfill = x);
+    SourcesTestRunner.waitForScriptSource(name, onSource);
+    return promise;
+
+    function onSource(uiSourceCode) {
+      uiSourceCode.requestContent().then(content => fulfill(content));
     }
-
-    function onFileSystemCreated()
-    {
-        var automappingTest = new BindingsTestRunner.AutomappingTest(Workspace.workspace);
-        automappingTest.waitUntilMappingIsStabilized().then(TestRunner.completeTest.bind(InspectorTest));
-    }
-
-    function getResourceContent(name)
-    {
-        var fulfill;
-        var promise = new Promise(x => fulfill = x);
-        SourcesTestRunner.waitForScriptSource(name, onSource);
-        return promise;
-
-        function onSource(uiSourceCode)
-        {
-            uiSourceCode.requestContent().then(content => fulfill(content));
-        }
-    }
+  }
 }
 </script>
 </head>

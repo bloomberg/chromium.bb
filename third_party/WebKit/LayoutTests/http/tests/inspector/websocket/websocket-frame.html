@@ -15,33 +15,32 @@ function sendMessages() {
 }
 
 function test() {
-    var frames = [];
-    function onRequest(event)
-    {
-        var request = event.data;
-        var done = false;
-        if (request.resourceType().name() !== "websocket")
-            return;
-        var previous_frames = frames;
-        frames = [];
-        var websocketFrames = request.frames();
-        for (var i = 0; i < websocketFrames.length; i++) {
-            var frame = websocketFrames[i];
-            frames[i] = String.sprintf("%d-%s: %s", (i + 1), frame.type, frame.text);
-            if (frame.type !== SDK.NetworkRequest.WebSocketFrameType.Send && frame.text === "exit")
-                done = true;
-        }
-        if (JSON.stringify(frames) === JSON.stringify(previous_frames)) {
-            // There is no update.
-            return;
-        }
-        for (var i = 0; i < frames.length; ++i)
-            TestRunner.addResult(frames[i]);
-        if (done)
-            TestRunner.completeTest();
+  var frames = [];
+  function onRequest(event) {
+    var request = event.data;
+    var done = false;
+    if (request.resourceType().name() !== 'websocket')
+      return;
+    var previous_frames = frames;
+    frames = [];
+    var websocketFrames = request.frames();
+    for (var i = 0; i < websocketFrames.length; i++) {
+      var frame = websocketFrames[i];
+      frames[i] = String.sprintf('%d-%s: %s', (i + 1), frame.type, frame.text);
+      if (frame.type !== SDK.NetworkRequest.WebSocketFrameType.Send && frame.text === 'exit')
+        done = true;
     }
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
-    TestRunner.evaluateInPage("sendMessages()");
+    if (JSON.stringify(frames) === JSON.stringify(previous_frames)) {
+      // There is no update.
+      return;
+    }
+    for (var i = 0; i < frames.length; ++i)
+      TestRunner.addResult(frames[i]);
+    if (done)
+      TestRunner.completeTest();
+  }
+  TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
+  TestRunner.evaluateInPage('sendMessages()');
 }
 </script>
 </head>

@@ -12,22 +12,19 @@ function addStylesheet()
     document.head.appendChild(linkElement);
 }
 
-function test()
-{
-    Common.settingForTest("cssSourceMapsEnabled").set(true);
-    TestRunner.addSniffer(Bindings.CSSWorkspaceBinding.prototype, "updateLocations", step1);
-    TestRunner.evaluateInPage("addStylesheet()");
+function test() {
+  Common.settingForTest('cssSourceMapsEnabled').set(true);
+  TestRunner.addSniffer(Bindings.CSSWorkspaceBinding.prototype, 'updateLocations', step1);
+  TestRunner.evaluateInPage('addStylesheet()');
 
-    function step1()
-    {
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step2);
-    }
+  function step1() {
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step2);
+  }
 
-    function step2()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        TestRunner.completeTest();
-    }
+  function step2() {
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

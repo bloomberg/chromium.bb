@@ -14,22 +14,20 @@ function createIframe()
     document.body.appendChild(iframe);
 }
 
-function test()
-{
-    TestRunner.addResult("Before addition");
-    TestRunner.addResult("====================================");
-    ApplicationTestRunner.dumpResourceTreeEverything();
-    ConsoleTestRunner.addConsoleSniffer(step2);
-    TestRunner.evaluateInPage("createIframe()");
+function test() {
+  TestRunner.addResult('Before addition');
+  TestRunner.addResult('====================================');
+  ApplicationTestRunner.dumpResourceTreeEverything();
+  ConsoleTestRunner.addConsoleSniffer(step2);
+  TestRunner.evaluateInPage('createIframe()');
 
-    function step2()
-    {
-        TestRunner.addResult("");
-        TestRunner.addResult("After addition");
-        TestRunner.addResult("====================================");
-        ApplicationTestRunner.dumpResourceTreeEverything();
-        TestRunner.completeTest();
-    }
+  function step2() {
+    TestRunner.addResult('');
+    TestRunner.addResult('After addition');
+    TestRunner.addResult('====================================');
+    ApplicationTestRunner.dumpResourceTreeEverything();
+    TestRunner.completeTest();
+  }
 }
 
 </script>

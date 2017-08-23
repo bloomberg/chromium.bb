@@ -6,25 +6,25 @@
 <script>
 
 async function test() {
-    TestRunner.addResult('Console messages:')
-    ConsoleTestRunner.dumpConsoleMessages();
-    TestRunner.addResult('');
+  TestRunner.addResult('Console messages:');
+  ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.addResult('');
 
-    TestRunner.addResult('Enabling data saver');
-    TestRunner.evaluateInPagePromise('window.internals.settings.setDataSaverEnabled(true)');
-    TestRunner.addResult('Reloading Page');
-    await TestRunner.reloadPagePromise();
+  TestRunner.addResult('Enabling data saver');
+  TestRunner.evaluateInPagePromise('window.internals.settings.setDataSaverEnabled(true)');
+  TestRunner.addResult('Reloading Page');
+  await TestRunner.reloadPagePromise();
 
-    TestRunner.addResult('Console messages:')
-    ConsoleTestRunner.dumpConsoleMessages();
-    TestRunner.addResult('');
+  TestRunner.addResult('Console messages:');
+  ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.addResult('');
 
-    TestRunner.addResult('Reloading Page');
-    await TestRunner.reloadPagePromise();
-    TestRunner.addResult('Console messages:')
-    ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.addResult('Reloading Page');
+  await TestRunner.reloadPagePromise();
+  TestRunner.addResult('Console messages:');
+  ConsoleTestRunner.dumpConsoleMessages();
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 </script>
 </head>

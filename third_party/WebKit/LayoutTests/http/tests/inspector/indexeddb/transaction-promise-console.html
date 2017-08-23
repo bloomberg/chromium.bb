@@ -3,34 +3,33 @@
 <script src="../inspector-test.js"></script>
 <script src="../console-test.js"></script>
 <script>
-function test()
-{
-    testRunner.waitUntilDone();
-    testRunner.showWebInspector();
+function test() {
+  testRunner.waitUntilDone();
+  testRunner.showWebInspector();
 
-    var dbname = location.href;
-    indexedDB.deleteDatabase(dbname).onsuccess = function() {
+  var dbname = location.href;
+  indexedDB.deleteDatabase(dbname).onsuccess = function() {
 
-        var openRequest = indexedDB.open(dbname);
-        openRequest.onupgradeneeded = function() {
-            openRequest.result.createObjectStore('store');
-        };
-        openRequest.onsuccess = function(event) {
-            var db = event.target.result;
-            Promise.resolve().then(function() {
-                tx = db.transaction('store');
-                ConsoleTestRunner.evaluateInConsole("1 + 2");
-                try {
-                    tx.objectStore('store').get(0);
-                    TestRunner.addResult("PASS: Transaction is still active");
-                } catch (ex) {
-                    TestRunner.addResult("FAIL: " + ex.message);
-                } finally {
-                    TestRunner.completeTest();
-                }
-            });
-        };
+    var openRequest = indexedDB.open(dbname);
+    openRequest.onupgradeneeded = function() {
+      openRequest.result.createObjectStore('store');
     };
+    openRequest.onsuccess = function(event) {
+      var db = event.target.result;
+      Promise.resolve().then(function() {
+        tx = db.transaction('store');
+        ConsoleTestRunner.evaluateInConsole('1 + 2');
+        try {
+          tx.objectStore('store').get(0);
+          TestRunner.addResult('PASS: Transaction is still active');
+        } catch (ex) {
+          TestRunner.addResult('FAIL: ' + ex.message);
+        } finally {
+          TestRunner.completeTest();
+        }
+      });
+    };
+  };
 }
 
 </script>

@@ -5,21 +5,18 @@
 <script src="../../elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("test_div", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('test_div', step1);
 
-    function step1()
-    {
-        var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem("background-color");
-        treeItem.property.setDisabled(true).then(step2);
-    }
+  function step1() {
+    var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('background-color');
+    treeItem.property.setDisabled(true).then(step2);
+  }
 
-    function step2(newStyle)
-    {
-        TestRunner.assertTrue(!!newStyle, "Could not disable style in redirected css.");
-        TestRunner.completeTest();
-    }
+  function step2(newStyle) {
+    TestRunner.assertTrue(!!newStyle, 'Could not disable style in redirected css.');
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

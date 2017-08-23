@@ -6,49 +6,47 @@
 <script src="../indexeddb/indexeddb-test.js"></script>
 <script>
 
-async function test()
-{
+async function test() {
+  function createIndexedDB(callback) {
+    var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
+    var model = TestRunner.mainTarget.model(Resources.IndexedDBModel);
+    ApplicationTestRunner.createDatabase(mainFrameId, 'Database1', () => {
+      var event = model.addEventListener(Resources.IndexedDBModel.Events.DatabaseAdded, () => {
+        Common.EventTarget.removeEventListeners([event]);
+        callback();
+      });
+      model.refreshDatabaseNames();
+    });
+  }
 
-    function createIndexedDB(callback) {
-        var mainFrameId = TestRunner.resourceTreeModel.mainFrame.id;
-        var model = TestRunner.mainTarget.model(Resources.IndexedDBModel);
-        ApplicationTestRunner.createDatabase(mainFrameId, 'Database1', () => {
-            var event = model.addEventListener(Resources.IndexedDBModel.Events.DatabaseAdded, () => {
-                Common.EventTarget.removeEventListeners([event]);
-                callback();
-            });
-            model.refreshDatabaseNames();
-        });
+  function dump(node, prefix) {
+    for (var child of node.children()) {
+      TestRunner.addResult(prefix + child.listItemElement.textContent);
+      dump(child, prefix + '  ');
     }
+  }
 
-    function dump(node, prefix)
-    {
-        for (var child of node.children()) {
-            TestRunner.addResult(prefix + child.listItemElement.textContent);
-            dump(child, prefix + '  ');
-        }
-    }
+  function dumpCurrentState(label) {
+    var view = UI.panels.resources;
+    TestRunner.addResult(label);
+    dump(view._sidebar._sidebarTree.rootElement(), '');
+    TestRunner.addResult('Visible view is a query view: ' + (view.visibleView instanceof Resources.DatabaseQueryView));
+  }
 
-    function dumpCurrentState(label) {
-        var view = UI.panels.resources;
-        TestRunner.addResult(label);
-        dump(view._sidebar._sidebarTree.rootElement(), '');
-        TestRunner.addResult('Visible view is a query view: ' + (view.visibleView instanceof Resources.DatabaseQueryView));
-    }
+  function fireFrameNavigated() {
+    var rtm = TestRunner.resourceTreeModel;
+    rtm.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, rtm.mainFrame);
+  }
 
-    function fireFrameNavigated() {
-        var rtm = TestRunner.resourceTreeModel;
-        rtm.dispatchEventToListeners(SDK.ResourceTreeModel.Events.FrameNavigated, rtm.mainFrame);
-    }
-
-    await new Promise(createIndexedDB);
-    await ApplicationTestRunner.createWebSQLDatabase('database-for-test');
-    UI.viewManager.showView('resources');
-    UI.panels.resources._sidebar.databasesListTreeElement.firstChild().select(false, true);
-    dumpCurrentState('Initial state:');
-    await TestRunner.navigatePromise('http://127.0.0.1:8000/inspector/application-panel/resources-panel-on-navigation.html');
-    dumpCurrentState('After navigation:');
-    TestRunner.completeTest();
+  await new Promise(createIndexedDB);
+  await ApplicationTestRunner.createWebSQLDatabase('database-for-test');
+  UI.viewManager.showView('resources');
+  UI.panels.resources._sidebar.databasesListTreeElement.firstChild().select(false, true);
+  dumpCurrentState('Initial state:');
+  await TestRunner.navigatePromise(
+      'http://127.0.0.1:8000/inspector/application-panel/resources-panel-on-navigation.html');
+  dumpCurrentState('After navigation:');
+  TestRunner.completeTest();
 }
 </script>
 </head>

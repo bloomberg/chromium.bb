@@ -15,35 +15,34 @@ function resourceLoaded()
     console.log("Done.");
 }
 
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    ConsoleTestRunner.addConsoleSniffer(step2);
-    TestRunner.evaluateInPage("loadData()");
+function test() {
+  NetworkTestRunner.recordNetwork();
+  ConsoleTestRunner.addConsoleSniffer(step2);
+  TestRunner.evaluateInPage('loadData()');
 
-    function step2()
-    {
-        var request1 = NetworkTestRunner.networkRequests().pop();
-        TestRunner.addResult(request1.url());
-        TestRunner.addResult("resource.type: " + request1.resourceType());
-        TestRunner.assertTrue(!request1.failed, "Resource loading failed.");
-        request1.requestContent().then(step3);
+  function step2() {
+    var request1 = NetworkTestRunner.networkRequests().pop();
+    TestRunner.addResult(request1.url());
+    TestRunner.addResult('resource.type: ' + request1.resourceType());
+    TestRunner.assertTrue(!request1.failed, 'Resource loading failed.');
+    request1.requestContent().then(step3);
+  }
+
+  async function step3() {
+    var requests = NetworkTestRunner.networkRequests();
+    requests.sort(function(a, b) {
+      return a.url().localeCompare(b.url());
+    });
+    TestRunner.addResult('resources count = ' + requests.length);
+    for (i = 0; i < requests.length; i++) {
+      TestRunner.addResult(requests[i].url());
+      var content = await requests[i].requestContent();
+      TestRunner.addResult('resource.content after requesting content: ' + content);
     }
 
-    async function step3()
-    {
-        var requests = NetworkTestRunner.networkRequests();
-        requests.sort(function(a, b) {return a.url().localeCompare(b.url());});
-        TestRunner.addResult("resources count = " + requests.length);
-        for (i = 0; i < requests.length; i++) {
-            TestRunner.addResult(requests[i].url());
-            var content = await requests[i].requestContent();
-            TestRunner.addResult("resource.content after requesting content: " + content);
-        }
 
-
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

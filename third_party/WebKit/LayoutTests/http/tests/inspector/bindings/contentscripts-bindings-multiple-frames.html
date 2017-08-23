@@ -3,28 +3,27 @@
 <script src="./bindings-test.js"></script>
 
 <script>
-async function test()
-{
-    TestRunner.markStep('initialWorkspace');
-    var snapshot = BindingsTestRunner.dumpWorkspace();
+async function test() {
+  TestRunner.markStep('initialWorkspace');
+  var snapshot = BindingsTestRunner.dumpWorkspace();
 
-    TestRunner.markStep('attachFrame1');
-    await BindingsTestRunner.attachFrame('frame1', './resources/contentscript-frame.html', '_test_attachFrame1.js');
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('attachFrame1');
+  await BindingsTestRunner.attachFrame('frame1', './resources/contentscript-frame.html', '_test_attachFrame1.js');
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('attachFrame2');
-    await BindingsTestRunner.attachFrame('frame2', './resources/contentscript-frame.html', '_test_attachFrame2.js');
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('attachFrame2');
+  await BindingsTestRunner.attachFrame('frame2', './resources/contentscript-frame.html', '_test_attachFrame2.js');
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('detachFrame1');
-    await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('detachFrame1');
+  await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('detachFrame2');
-    await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('detachFrame2');
+  await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

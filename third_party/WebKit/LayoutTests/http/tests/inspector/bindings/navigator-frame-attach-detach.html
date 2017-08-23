@@ -5,23 +5,22 @@
 
 <script>
 
-async function test()
-{
-    var sourcesNavigator = new Sources.SourcesNavigatorView();
-    sourcesNavigator.show(UI.inspectorView.element);
+async function test() {
+  var sourcesNavigator = new Sources.SourcesNavigatorView();
+  sourcesNavigator.show(UI.inspectorView.element);
 
-    TestRunner.markStep('dumpInitialNavigator');
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('dumpInitialNavigator');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('attachFrame');
-    await BindingsTestRunner.attachFrame('frame', './resources/magic-frame.html');
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('attachFrame');
+  await BindingsTestRunner.attachFrame('frame', './resources/magic-frame.html');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('detachFrame');
-    await BindingsTestRunner.detachFrame('frame');
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('detachFrame');
+  await BindingsTestRunner.detachFrame('frame');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

@@ -12,41 +12,37 @@ function loadStylesheet()
     document.head.appendChild(styleElement);
 }
 
-function test()
-{
-    TestRunner.addSniffer(SDK.ResourceTreeFrame.prototype, "_addRequest", requestAdded, true);
-    TestRunner.addSniffer(TestRunner.PageAgent, "getResourceContent", pageAgentGetResourceContentCalled, true);
-    TestRunner.evaluateInPage("loadStylesheet()");
-    var contentWasRequested = false;
-    var resource;
+function test() {
+  TestRunner.addSniffer(SDK.ResourceTreeFrame.prototype, '_addRequest', requestAdded, true);
+  TestRunner.addSniffer(TestRunner.PageAgent, 'getResourceContent', pageAgentGetResourceContentCalled, true);
+  TestRunner.evaluateInPage('loadStylesheet()');
+  var contentWasRequested = false;
+  var resource;
 
-    function requestAdded(request)
-    {
-        if (request.url().indexOf("styles-initial") === -1)
-            return;
-        resource = ApplicationTestRunner.resourceMatchingURL("styles-initial");
-        if (!resource || !resource.request || contentWasRequested) {
-            TestRunner.addResult("Cannot find resource");
-            TestRunner.completeTest();
-        }
-        resource.requestContent().then(contentLoaded);
-        contentWasRequested = true;
+  function requestAdded(request) {
+    if (request.url().indexOf('styles-initial') === -1)
+      return;
+    resource = ApplicationTestRunner.resourceMatchingURL('styles-initial');
+    if (!resource || !resource.request || contentWasRequested) {
+      TestRunner.addResult('Cannot find resource');
+      TestRunner.completeTest();
     }
+    resource.requestContent().then(contentLoaded);
+    contentWasRequested = true;
+  }
 
-    function pageAgentGetResourceContentCalled()
-    {
-        if (!resource.request.finished) {
-            TestRunner.addResult("Request must be finished before calling getResourceContent");
-            TestRunner.completeTest();
-        }
+  function pageAgentGetResourceContentCalled() {
+    if (!resource.request.finished) {
+      TestRunner.addResult('Request must be finished before calling getResourceContent');
+      TestRunner.completeTest();
     }
+  }
 
-    function contentLoaded(content)
-    {
-        TestRunner.addResult("Resource url: " + resource.url);
-        TestRunner.addResult("Resource content: " + content);
-        TestRunner.completeTest();
-    }
+  function contentLoaded(content) {
+    TestRunner.addResult('Resource url: ' + resource.url);
+    TestRunner.addResult('Resource content: ' + content);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

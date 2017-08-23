@@ -13,29 +13,25 @@ function testFunction()
     module.remove();
 }
 
-function test()
-{
-    SourcesTestRunner.startDebuggerTest(step1, true);
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1, true);
 
-    function step1()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", true);
-        SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
-    }
+  function step1() {
+    SourcesTestRunner.setEventListenerBreakpoint('instrumentation:scriptFirstStatement', true);
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
+  }
 
-    function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData)
-    {
-        var eventName = (auxData && auxData.eventName || "").replace(/^instrumentation:/, "");
-        TestRunner.addResult("\nPaused on " + eventName);
-        SourcesTestRunner.captureStackTrace(callFrames);
-        SourcesTestRunner.resumeExecution(step2);
-    }
+  function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+    var eventName = (auxData && auxData.eventName || '').replace(/^instrumentation:/, '');
+    TestRunner.addResult('\nPaused on ' + eventName);
+    SourcesTestRunner.captureStackTrace(callFrames);
+    SourcesTestRunner.resumeExecution(step2);
+  }
 
-    function step2()
-    {
-        SourcesTestRunner.setEventListenerBreakpoint("instrumentation:scriptFirstStatement", false);
-        SourcesTestRunner.completeDebuggerTest();
-    }
+  function step2() {
+    SourcesTestRunner.setEventListenerBreakpoint('instrumentation:scriptFirstStatement', false);
+    SourcesTestRunner.completeDebuggerTest();
+  }
 }
 </script>
 </head>

@@ -48,31 +48,26 @@ function makeRequests()
     }
 }
 
-function test()
-{
-    step1();
+function test() {
+  step1();
 
-    function step1()
-    {
-        Common.settingForTest('monitoringXHREnabled').set(true);
-        TestRunner.callFunctionInPageAsync("makeRequests").then(step2);
-    }
+  function step1() {
+    Common.settingForTest('monitoringXHREnabled').set(true);
+    TestRunner.callFunctionInPageAsync('makeRequests').then(step2);
+  }
 
-    function step2()
-    {
-        Common.settingForTest('monitoringXHREnabled').set(false);
-        TestRunner.callFunctionInPageAsync("makeRequests").then(step3);
-    }
+  function step2() {
+    Common.settingForTest('monitoringXHREnabled').set(false);
+    TestRunner.callFunctionInPageAsync('makeRequests').then(step3);
+  }
 
-    function step3()
-    {
-        function finish()
-        {
-            ConsoleTestRunner.dumpConsoleMessages();
-            TestRunner.completeTest();
-        }
-        TestRunner.deprecatedRunAfterPendingDispatches(finish);
+  function step3() {
+    function finish() {
+      ConsoleTestRunner.dumpConsoleMessages();
+      TestRunner.completeTest();
     }
+    TestRunner.deprecatedRunAfterPendingDispatches(finish);
+  }
 }
 //# sourceURL=console-fetch-logging.html
 </script>

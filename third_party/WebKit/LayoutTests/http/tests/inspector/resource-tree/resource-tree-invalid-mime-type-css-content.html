@@ -4,32 +4,29 @@
 <script src="../resources-test.js"></script>
 <link rel="stylesheet" href="resources/stylesheet-text-plain.php" type="text/css">
 <script>
-function test()
-{
-    var cssResource;
+function test() {
+  var cssResource;
 
-    ApplicationTestRunner.runAfterResourcesAreFinished(["stylesheet-text-plain.php"], step1);
+  ApplicationTestRunner.runAfterResourcesAreFinished(['stylesheet-text-plain.php'], step1);
 
-    function step1()
-    {
-        TestRunner.resourceTreeModel.forAllResources(findCSSResource);
-        function findCSSResource(resource)
-        {
-            if (resource.url.indexOf("stylesheet-text-plain.php") !== -1)
-                cssResource = resource;
-        }
-        TestRunner.addResult(cssResource.url);
-        TestRunner.assertEquals(cssResource.resourceType(), Common.resourceTypes.Stylesheet, "Resource type should be Stylesheet.");
-        TestRunner.assertTrue(!cssResource.failed, "Resource loading failed.");
-        cssResource.requestContent().then(step2);
+  function step1() {
+    TestRunner.resourceTreeModel.forAllResources(findCSSResource);
+    function findCSSResource(resource) {
+      if (resource.url.indexOf('stylesheet-text-plain.php') !== -1)
+        cssResource = resource;
     }
+    TestRunner.addResult(cssResource.url);
+    TestRunner.assertEquals(
+        cssResource.resourceType(), Common.resourceTypes.Stylesheet, 'Resource type should be Stylesheet.');
+    TestRunner.assertTrue(!cssResource.failed, 'Resource loading failed.');
+    cssResource.requestContent().then(step2);
+  }
 
-    function step2()
-    {
-        var content = cssResource.contentEncoded ? window.atob(cssResource.content) : cssResource.content;
-        TestRunner.addResult("Resource.content: " + content);
-        TestRunner.completeTest();
-    }
+  function step2() {
+    var content = cssResource.contentEncoded ? window.atob(cssResource.content) : cssResource.content;
+    TestRunner.addResult('Resource.content: ' + content);
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

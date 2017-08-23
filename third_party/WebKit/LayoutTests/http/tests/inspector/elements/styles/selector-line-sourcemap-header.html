@@ -6,20 +6,17 @@
 <script src="../../debugger-test.js"></script>
 <script>
 
-function test()
-{
-    SourcesTestRunner.waitForScriptSource("selector-line-sourcemap-header.scss", onSourceMap);
+function test() {
+  SourcesTestRunner.waitForScriptSource('selector-line-sourcemap-header.scss', onSourceMap);
 
-    function onSourceMap()
-    {
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
-    }
+  function onSourceMap() {
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
+  }
 
-    function step1()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

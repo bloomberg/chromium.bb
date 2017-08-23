@@ -11,21 +11,19 @@ function loadIframe()
     iframe.src = "resources/resource-tree-non-unique-url-iframe.html";
 }
 
-function test()
-{
-    TestRunner.addSniffer(Resources.FrameTreeElement.prototype, "appendResource", onResource, true);
+function test() {
+  TestRunner.addSniffer(Resources.FrameTreeElement.prototype, 'appendResource', onResource, true);
 
-    var cssRequestsCount = 0;
-    function onResource(resource)
-    {
-        if (resource.url.match(/\.css$/) && ++cssRequestsCount === 2) {
-            TestRunner.addResult("Resources Tree:");
-            ApplicationTestRunner.dumpResourcesTree();
-            TestRunner.completeTest();
-        }
+  var cssRequestsCount = 0;
+  function onResource(resource) {
+    if (resource.url.match(/\.css$/) && ++cssRequestsCount === 2) {
+      TestRunner.addResult('Resources Tree:');
+      ApplicationTestRunner.dumpResourcesTree();
+      TestRunner.completeTest();
     }
+  }
 
-    TestRunner.evaluateInPage("loadIframe();");
+  TestRunner.evaluateInPage('loadIframe();');
 }
 </script>
 </head>

@@ -10,36 +10,32 @@ function loadIframe()
     iframe.src = "resources/xml-with-stylesheet.xml";
 }
 
-function test()
-{
-    var expectedResourceCount = 2;
-    var foundResources = 0;
-    var resultsOutput = [];
-    NetworkTestRunner.recordNetwork();
-    TestRunner.evaluateInPage("loadIframe()");
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "loadingFinished", loadingFinished, true);
+function test() {
+  var expectedResourceCount = 2;
+  var foundResources = 0;
+  var resultsOutput = [];
+  NetworkTestRunner.recordNetwork();
+  TestRunner.evaluateInPage('loadIframe()');
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'loadingFinished', loadingFinished, true);
 
-    function loadingFinished(requestId)
-    {
-        var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
-        request.requestContent().then(contentReceived.bind(this, request));
-    }
-    function contentReceived(request, content)
-    {
-        var output = [];
-        output.push(request.url());
-        output.push("resource.type: " + request.resourceType());
-        output.push("resource.content: " + content);
+  function loadingFinished(requestId) {
+    var request = TestRunner.networkLog.requestByManagerAndId(TestRunner.networkManager, requestId);
+    request.requestContent().then(contentReceived.bind(this, request));
+  }
+  function contentReceived(request, content) {
+    var output = [];
+    output.push(request.url());
+    output.push('resource.type: ' + request.resourceType());
+    output.push('resource.content: ' + content);
 
-        resultsOutput.push(output.join("\n"));
-        if (++foundResources >= expectedResourceCount)
-            finish();
-    }
-    function finish()
-    {
-        TestRunner.addResult(resultsOutput.sort().join("\n"));
-        TestRunner.completeTest();
-    }
+    resultsOutput.push(output.join('\n'));
+    if (++foundResources >= expectedResourceCount)
+      finish();
+  }
+  function finish() {
+    TestRunner.addResult(resultsOutput.sort().join('\n'));
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

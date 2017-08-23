@@ -3,19 +3,17 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-var test = function()
-{
-    TestRunner.reloadPage(step1);
+var test = function() {
+  TestRunner.reloadPage(step1);
 
-    function step1()
-    {
-        var requests = NetworkTestRunner.networkRequests();
-        for (var i = 0; i < requests.length; ++i)
-            TestRunner.assertTrue(requests[i].responseHeaderValue("Set-Cookie") === undefined);
-        TestRunner.addResult("Success, no Set-Cookie headers found.");
-        TestRunner.completeTest();
-    }
-}
+  function step1() {
+    var requests = NetworkTestRunner.networkRequests();
+    for (var i = 0; i < requests.length; ++i)
+      TestRunner.assertTrue(requests[i].responseHeaderValue('Set-Cookie') === undefined);
+    TestRunner.addResult('Success, no Set-Cookie headers found.');
+    TestRunner.completeTest();
+  }
+};
 </script>
 </head>
 <body onload="runTest()">

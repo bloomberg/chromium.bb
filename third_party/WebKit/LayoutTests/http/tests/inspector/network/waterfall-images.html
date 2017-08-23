@@ -32,8 +32,7 @@ function done() {
   }
 }
 
-function test()
-{
+function test() {
   const fontWidth = 5;
   const fontHeight = 11;
   var requestIds = 0;
@@ -41,18 +40,18 @@ function test()
   var dataGrid = UI.panels.network._networkLogView._dataGrid;
   var waterfall = UI.panels.network._networkLogView._columns._waterfallColumn;
   var splitWidget = UI.panels.network._networkLogView._columns._splitWidget;
-  dataGrid.scrollContainer.style.flex = "none";
-  dataGrid.scrollContainer.style.height = "300px";
-  waterfall.contentElement.style.flex = "none";
-  waterfall.contentElement.style.height = "300px";
+  dataGrid.scrollContainer.style.flex = 'none';
+  dataGrid.scrollContainer.style.height = '300px';
+  waterfall.contentElement.style.flex = 'none';
+  waterfall.contentElement.style.height = '300px';
   splitWidget.setSidebarSize(400);
   dataGrid.onResize();
   waterfall.onResize();
-  dataGrid._update(); // Clears animation frame.
-  TestRunner.addSniffer(waterfall, "_didDrawForTest", onWaterfallDraw, true);
-  TestRunner.override(CanvasRenderingContext2D.prototype, "measureText", measureText, true);
-  TestRunner.override(CanvasRenderingContext2D.prototype, "fillText", fillText, true);
-  
+  dataGrid._update();  // Clears animation frame.
+  TestRunner.addSniffer(waterfall, '_didDrawForTest', onWaterfallDraw, true);
+  TestRunner.override(CanvasRenderingContext2D.prototype, 'measureText', measureText, true);
+  TestRunner.override(CanvasRenderingContext2D.prototype, 'fillText', fillText, true);
+
   NetworkTestRunner.recordNetwork();
   var types = Common.resourceTypes;
   var requests = [
@@ -218,9 +217,7 @@ function test()
    * @this {CanvasRenderingContext2D}
    */
   function measureText(text) {
-    return {
-      width: text.length * fontWidth
-    };
+    return {width: text.length * fontWidth};
   }
 
   /**
@@ -231,7 +228,7 @@ function test()
       return;
     TestRunner.addResult(text);
     this.save();
-    this.fillStyle = "#F90";
+    this.fillStyle = '#F90';
     this.fillRect(textPosition, paddingTop, text.length * fontWidth, fontHeight);
     this.restore();
   }
@@ -284,7 +281,7 @@ function test()
     var promise = TestRunner.evaluateInPagePromise(`receiveImage('${imageData}')`);
     if (done) {
       promise.then(
-          TestRunner.evaluateInPage.bind(InspectorTest, "done()", TestRunner.completeTest.bind(InspectorTest)));
+          TestRunner.evaluateInPage.bind(InspectorTest, 'done()', TestRunner.completeTest.bind(InspectorTest)));
     }
   }
 }

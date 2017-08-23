@@ -4,41 +4,38 @@
 <script src="../resources-test.js"></script>
 <script src="search-test.js"></script>
 <script>
-function test()
-{
-    ApplicationTestRunner.runAfterResourcesAreFinished(["search.js"], step2);
-    var resource;
-    var staticContentProvider;
+function test() {
+  ApplicationTestRunner.runAfterResourcesAreFinished(['search.js'], step2);
+  var resource;
+  var staticContentProvider;
 
-    function step2()
-    {
-        resource = Bindings.resourceForURL("http://127.0.0.1:8000/inspector/search/resources/search.js");
-        resource.requestContent().then(step3);
-    }
+  function step2() {
+    resource = Bindings.resourceForURL('http://127.0.0.1:8000/inspector/search/resources/search.js');
+    resource.requestContent().then(step3);
+  }
 
-    async function step3()
-    {
-        staticContentProvider = Common.StaticContentProvider.fromString("", Common.resourceTypes.Script, resource.content);
-        TestRunner.addResult(resource.url);
+  async function step3() {
+    staticContentProvider = Common.StaticContentProvider.fromString('', Common.resourceTypes.Script, resource.content);
+    TestRunner.addResult(resource.url);
 
-        var text = "searchTestUniqueString";
-        var searchMatches = await staticContentProvider.searchInContent(text, true, false);
-        SourcesTestRunner.dumpSearchMatches(searchMatches);
+    var text = 'searchTestUniqueString';
+    var searchMatches = await staticContentProvider.searchInContent(text, true, false);
+    SourcesTestRunner.dumpSearchMatches(searchMatches);
 
-        var text = "searchTestUniqueString";
-        searchMatches = await staticContentProvider.searchInContent(text, true, false);
-        SourcesTestRunner.dumpSearchMatches(searchMatches);
+    var text = 'searchTestUniqueString';
+    searchMatches = await staticContentProvider.searchInContent(text, true, false);
+    SourcesTestRunner.dumpSearchMatches(searchMatches);
 
-        var text = "[a-z]earchTestUniqueString";
-        searchMatches = await staticContentProvider.searchInContent(text, false, true);
-        SourcesTestRunner.dumpSearchMatches(searchMatches);
+    var text = '[a-z]earchTestUniqueString';
+    searchMatches = await staticContentProvider.searchInContent(text, false, true);
+    SourcesTestRunner.dumpSearchMatches(searchMatches);
 
-        var text = "[a-z]earchTestUniqueString";
-        searchMatches = await staticContentProvider.searchInContent(text, true, true);
-        SourcesTestRunner.dumpSearchMatches(searchMatches);
+    var text = '[a-z]earchTestUniqueString';
+    searchMatches = await staticContentProvider.searchInContent(text, true, true);
+    SourcesTestRunner.dumpSearchMatches(searchMatches);
 
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

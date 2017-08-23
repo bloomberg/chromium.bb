@@ -7,30 +7,26 @@
 <script src="./resources/foo.js"></script>
 <script>
 
-function test()
-{
-    BindingsTestRunner.forceUseDefaultMapping();
-    var fs = new BindingsTestRunner.TestFileSystem("file:///var/www");
-    var fsEntry = BindingsTestRunner.addFooJSFile(fs);
-    fs.addFileMapping("http://127.0.0.1:8000", "/");
-    fs.reportCreated(function () { });
-    BindingsTestRunner.waitForBinding("foo.js").then(onBindingCreated);
-    Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
+function test() {
+  BindingsTestRunner.forceUseDefaultMapping();
+  var fs = new BindingsTestRunner.TestFileSystem('file:///var/www');
+  var fsEntry = BindingsTestRunner.addFooJSFile(fs);
+  fs.addFileMapping('http://127.0.0.1:8000', '/');
+  fs.reportCreated(function() {});
+  BindingsTestRunner.waitForBinding('foo.js').then(onBindingCreated);
+  Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
 
-    function onBindingCreated(binding)
-    {
-        TestRunner.addResult("Binding created: " + binding);
-        TestRunner.addResult("Renaming foo.js -> bar.js");
-        binding.fileSystem.rename("bar.js", function() { });
-    }
+  function onBindingCreated(binding) {
+    TestRunner.addResult('Binding created: ' + binding);
+    TestRunner.addResult('Renaming foo.js -> bar.js');
+    binding.fileSystem.rename('bar.js', function() {});
+  }
 
-    function onBindingRemoved(event)
-    {
-        var binding = event.data;
-        TestRunner.addResult("Binding successfully removed: " + binding);
-        TestRunner.completeTest();
-    }
-
+  function onBindingRemoved(event) {
+    var binding = event.data;
+    TestRunner.addResult('Binding successfully removed: ' + binding);
+    TestRunner.completeTest();
+  }
 };
 </script>
 </head>

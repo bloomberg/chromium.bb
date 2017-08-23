@@ -9,18 +9,16 @@ function submit()
     document.getElementById("submit").click();
 }
 
-function test()
-{
-    TestRunner.evaluateInPage("submit()");
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
+function test() {
+  TestRunner.evaluateInPage('submit()');
+  TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
 
-    function onRequestFinished(event)
-    {
-        var request = event.data;
-        TestRunner.addResult(request.url());
-        TestRunner.addObject(new NetworkLog.HAREntry(request).build(), NetworkTestRunner.HARPropertyFormatters);
-        TestRunner.completeTest();
-    }
+  function onRequestFinished(event) {
+    var request = event.data;
+    TestRunner.addResult(request.url());
+    TestRunner.addObject(new NetworkLog.HAREntry(request).build(), NetworkTestRunner.HARPropertyFormatters);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

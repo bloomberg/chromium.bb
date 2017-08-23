@@ -3,17 +3,19 @@
 <script src="../inspector-test.js"></script>
 <script src="../security-test.js"></script>
 <script>
-function test()
-{
-    var request1 = new SDK.NetworkRequest(0, "https://foo.test/foo.jpg", "https://foo.test", 0, 0, null);
-    SecurityTestRunner.dispatchRequestFinished(request1);
+function test() {
+  var request1 = new SDK.NetworkRequest(0, 'https://foo.test/foo.jpg', 'https://foo.test', 0, 0, null);
+  SecurityTestRunner.dispatchRequestFinished(request1);
 
-    var request2 = new SDK.NetworkRequest(0, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAKCAYAAABmBXS+AAAAPElEQVR42mNgQAMZGRn/GfABkIIdO3b8x6kQpgAEsCpEVgADKAqxKcBQCCLwARRFIBodYygiyiSCighhAO4e2jskhrm3AAAAAElFTkSuQmCC", "https://foo.test", 0, 0, null);
-    SecurityTestRunner.dispatchRequestFinished(request2);
+  var request2 = new SDK.NetworkRequest(
+      0,
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAKCAYAAABmBXS+AAAAPElEQVR42mNgQAMZGRn/GfABkIIdO3b8x6kQpgAEsCpEVgADKAqxKcBQCCLwARRFIBodYygiyiSCighhAO4e2jskhrm3AAAAAElFTkSuQmCC',
+      'https://foo.test', 0, 0, null);
+  SecurityTestRunner.dispatchRequestFinished(request2);
 
-    SecurityTestRunner.dumpSecurityPanelSidebarOrigins();
+  SecurityTestRunner.dumpSecurityPanelSidebarOrigins();
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 </script>
 </head>

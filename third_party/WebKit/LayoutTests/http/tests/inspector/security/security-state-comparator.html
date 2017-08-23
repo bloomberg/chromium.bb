@@ -3,38 +3,42 @@
 <script src="../inspector-test.js"></script>
 <!-- Since we are testing a static function, we can save work by not (pre)loading the Security panel. -->
 <script>
-function test()
-{
-    var ordering = [
-        Protocol.Security.SecurityState.Info,
-        Protocol.Security.SecurityState.Insecure,
-        Protocol.Security.SecurityState.Neutral,
-        Protocol.Security.SecurityState.Warning,
-        Protocol.Security.SecurityState.Secure,
-        Protocol.Security.SecurityState.Unknown
-    ];
+function test() {
+  var ordering = [
+    Protocol.Security.SecurityState.Info, Protocol.Security.SecurityState.Insecure,
+    Protocol.Security.SecurityState.Neutral, Protocol.Security.SecurityState.Warning,
+    Protocol.Security.SecurityState.Secure, Protocol.Security.SecurityState.Unknown
+  ];
 
-    TestRunner.assertEquals(ordering.length, Object.keys(Protocol.Security.SecurityState).length);
+  TestRunner.assertEquals(ordering.length, Object.keys(Protocol.Security.SecurityState).length);
 
-    for (var i = 0; i < ordering.length; i++) {
-        TestRunner.assertEquals(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[i]), 0, "Security state comparison failed when checking that \"" + ordering[i] + "\" == \"" + ordering[i] + "\"");
+  for (var i = 0; i < ordering.length; i++) {
+    TestRunner.assertEquals(
+        Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[i]), 0,
+        'Security state comparison failed when checking that "' + ordering[i] + '" == "' + ordering[i] + '"');
+  }
+
+  for (var i = 0; i < ordering.length; i++) {
+    var j;
+
+    for (j = 0; j < i; j++) {
+      TestRunner.addResult(
+          'Sign of SecurityStateComparator("' + ordering[i] + '","' + ordering[j] + '"): ' +
+          Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + ' (expected: 1)');
     }
 
-    for (var i = 0; i < ordering.length; i++) {
-        var j;
+    TestRunner.addResult(
+        'Sign of SecurityStateComparator("' + ordering[i] + '","' + ordering[j] + '"): ' +
+        Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + ' (expected: 0)');
 
-        for (j = 0; j < i; j++) {
-            TestRunner.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: 1)");
-        }
-
-        TestRunner.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: 0)");
-
-        for (j = i + 1; j < ordering.length; j++) {
-            TestRunner.addResult("Sign of SecurityStateComparator(\"" + ordering[i] + "\",\"" + ordering[j] + "\"): " + Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + " (expected: -1)");
-        }
+    for (j = i + 1; j < ordering.length; j++) {
+      TestRunner.addResult(
+          'Sign of SecurityStateComparator("' + ordering[i] + '","' + ordering[j] + '"): ' +
+          Math.sign(Security.SecurityModel.SecurityStateComparator(ordering[i], ordering[j])) + ' (expected: -1)');
     }
+  }
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 </script>
 </head>

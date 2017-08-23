@@ -12,20 +12,17 @@
 <script src="../../debugger-test.js"></script>
 <script>
 
-function test()
-{
-    SourcesTestRunner.waitForScriptSource("selector-line.scss", onSourceMapLoaded);
+function test() {
+  SourcesTestRunner.waitForScriptSource('selector-line.scss', onSourceMapLoaded);
 
-    function onSourceMapLoaded()
-    {
-        ElementsTestRunner.selectNodeAndWaitForStyles("inspected", step1);
-    }
+  function onSourceMapLoaded() {
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
+  }
 
-    function step1()
-    {
-        ElementsTestRunner.dumpSelectedElementStyles(true);
-        TestRunner.completeTest();
-    }
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

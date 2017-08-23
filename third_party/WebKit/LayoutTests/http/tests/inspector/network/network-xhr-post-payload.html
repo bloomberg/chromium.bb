@@ -3,21 +3,19 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
-{
-    var payload = "\u201AFoo\u201B";
+function test() {
+  var payload = '\u201AFoo\u201B';
 
-    NetworkTestRunner.recordNetwork();
-    NetworkTestRunner.makeSimpleXHRWithPayload("POST", "resources/resource.php?foo", true, payload, step2);
+  NetworkTestRunner.recordNetwork();
+  NetworkTestRunner.makeSimpleXHRWithPayload('POST', 'resources/resource.php?foo', true, payload, step2);
 
-    function step2()
-    {
-        var request = NetworkTestRunner.networkRequests().pop();
-        TestRunner.addResult(request.url());
-        TestRunner.assertEquals("foo", request.queryString(), "Unexpected resource query.");
-        TestRunner.assertEquals(payload, request.requestFormData, "Payload corrupted.");
-        TestRunner.completeTest();
-    }
+  function step2() {
+    var request = NetworkTestRunner.networkRequests().pop();
+    TestRunner.addResult(request.url());
+    TestRunner.assertEquals('foo', request.queryString(), 'Unexpected resource query.');
+    TestRunner.assertEquals(payload, request.requestFormData, 'Payload corrupted.');
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

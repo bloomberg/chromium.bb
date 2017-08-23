@@ -33,16 +33,14 @@ C.prototype.__proto__ = B.prototype;
 
 var objectC = new C();
 
-function test()
-{
-    ObjectUI.JavaScriptAutocomplete.completionsForExpression("objectC.", "e").then(checkCompletions.bind(this));
-    function checkCompletions(completions)
-    {
-        TestRunner.addResult("Completions:")
-        for (var completion of completions)
-            TestRunner.addObject(completion);
-        TestRunner.completeTest();
-    }
+function test() {
+  ObjectUI.JavaScriptAutocomplete.completionsForExpression('objectC.', 'e').then(checkCompletions.bind(this));
+  function checkCompletions(completions) {
+    TestRunner.addResult('Completions:');
+    for (var completion of completions)
+      TestRunner.addObject(completion);
+    TestRunner.completeTest();
+  }
 }
 
 </script>

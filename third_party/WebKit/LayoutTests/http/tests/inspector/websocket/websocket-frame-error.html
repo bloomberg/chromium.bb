@@ -13,22 +13,21 @@ function sendMessages() {
 }
 
 function test() {
-    function onRequest(event)
-    {
-        var request = event.data;
-        if (request.resourceType().name() === "websocket") {
-            var websocketFrames = request.frames();
-            for (var i = 0; i < websocketFrames.length; i++) {
-                var frame = websocketFrames[i];
-                var result = String.sprintf("%d-%s: %s", (i + 1), frame.type, frame.text);
-                TestRunner.addResult(result);
-                if (frame.type == SDK.NetworkRequest.WebSocketFrameType.Error)
-                    TestRunner.completeTest();
-            }
-        }
+  function onRequest(event) {
+    var request = event.data;
+    if (request.resourceType().name() === 'websocket') {
+      var websocketFrames = request.frames();
+      for (var i = 0; i < websocketFrames.length; i++) {
+        var frame = websocketFrames[i];
+        var result = String.sprintf('%d-%s: %s', (i + 1), frame.type, frame.text);
+        TestRunner.addResult(result);
+        if (frame.type == SDK.NetworkRequest.WebSocketFrameType.Error)
+          TestRunner.completeTest();
+      }
     }
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
-    TestRunner.evaluateInPage("sendMessages()");
+  }
+  TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestUpdated, onRequest);
+  TestRunner.evaluateInPage('sendMessages()');
 }
 </script>
 </head>

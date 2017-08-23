@@ -10,45 +10,39 @@ function attachIframe()
     document.body.appendChild(frame);
 }
 
-function test()
-{
-    var finished = false;
-    TestRunner.NetworkAgent.setCacheDisabled(true).then(step1);
+function test() {
+  var finished = false;
+  TestRunner.NetworkAgent.setCacheDisabled(true).then(step1);
 
-    function findResource(url, status, cached)
-    {
-        return NetworkTestRunner.networkRequests().find(request => url.test(request.url()) && (status === request.statusCode) && (cached === request.cached()));
-    }
+  function findResource(url, status, cached) {
+    return NetworkTestRunner.networkRequests().find(
+        request => url.test(request.url()) && (status === request.statusCode) && (cached === request.cached()));
+  }
 
-    function step1()
-    {
-        TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
-        TestRunner.reloadPage(step2);
-    }
+  function step1() {
+    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest);
+    TestRunner.reloadPage(step2);
+  }
 
-    function step2()
-    {
-        TestRunner.evaluateInPage("attachIframe()");
-    }
+  function step2() {
+    TestRunner.evaluateInPage('attachIframe()');
+  }
 
-    function onRequest()
-    {
-        if (!finished && findResource(/abe\.png/, 200, false) && findResource(/abe\.png/, 200, true)) {
-            finished = true;
-            TestRunner.addResult("Memory-cached resource found.");
-            step3();
-        }
+  function onRequest() {
+    if (!finished && findResource(/abe\.png/, 200, false) && findResource(/abe\.png/, 200, true)) {
+      finished = true;
+      TestRunner.addResult('Memory-cached resource found.');
+      step3();
     }
+  }
 
-    function step3()
-    {
-        TestRunner.NetworkAgent.setCacheDisabled(false).then(step4);
-    }
+  function step3() {
+    TestRunner.NetworkAgent.setCacheDisabled(false).then(step4);
+  }
 
-    function step4()
-    {
-        TestRunner.completeTest();
-    }
+  function step4() {
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

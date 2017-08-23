@@ -4,27 +4,26 @@
 
 <script>
 
-async function test()
-{
-    TestRunner.markStep('initialWorkspace');
-    var snapshot = BindingsTestRunner.dumpWorkspace();
+async function test() {
+  TestRunner.markStep('initialWorkspace');
+  var snapshot = BindingsTestRunner.dumpWorkspace();
 
-    TestRunner.markStep('createIframes');
-    await Promise.all([
-        BindingsTestRunner.attachFrame('frame1', './resources/magic-frame.html', '_test_create-iframe1.js'),
-        BindingsTestRunner.attachFrame('frame2', './resources/magic-frame.html', '_test_create-iframe2.js'),
-    ]);
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('createIframes');
+  await Promise.all([
+    BindingsTestRunner.attachFrame('frame1', './resources/magic-frame.html', '_test_create-iframe1.js'),
+    BindingsTestRunner.attachFrame('frame2', './resources/magic-frame.html', '_test_create-iframe2.js'),
+  ]);
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('detachFrame1');
-    await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('detachFrame1');
+  await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.markStep('detachFrame2');
-    await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
-    snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
+  TestRunner.markStep('detachFrame2');
+  await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
+  snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

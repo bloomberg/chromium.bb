@@ -5,20 +5,19 @@
 <script src="elements-test.js"></script>
 <script>
 
-function test()
-{
-    ElementsTestRunner.firstElementsTreeOutline().addEventListener(Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
-    function selectedNodeChanged(event)
-    {
-        var node = event.data.node;
-        if (!node)
-            return;
-        if (node.getAttribute("id") == "div") {
-            TestRunner.addResult(Components.DOMPresentationUtils.fullQualifiedSelector(node));
-            TestRunner.completeTest();
-        }
+function test() {
+  ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+      Elements.ElementsTreeOutline.Events.SelectedNodeChanged, selectedNodeChanged, this);
+  function selectedNodeChanged(event) {
+    var node = event.data.node;
+    if (!node)
+      return;
+    if (node.getAttribute('id') == 'div') {
+      TestRunner.addResult(Components.DOMPresentationUtils.fullQualifiedSelector(node));
+      TestRunner.completeTest();
     }
-    ConsoleTestRunner.evaluateInConsole("inspect(iframeDivElement)");
+  }
+  ConsoleTestRunner.evaluateInConsole('inspect(iframeDivElement)');
 }
 
 </script>

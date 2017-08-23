@@ -9,19 +9,20 @@ function createIFrame() {
 }
 
 function test() {
-    function onRequest(eventType, event)
-    {
-        var request = event.data;
-        if (request.name() === 'done') {
-            TestRunner.completeTest();
-            return;
-        }
-        TestRunner.addResult(eventType + ": " + request.name());
+  function onRequest(eventType, event) {
+    var request = event.data;
+    if (request.name() === 'done') {
+      TestRunner.completeTest();
+      return;
     }
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestStarted, onRequest.bind(null, "RequestStarted"));
-    TestRunner.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequest.bind(null, "RequestFinished"));
+    TestRunner.addResult(eventType + ': ' + request.name());
+  }
+  TestRunner.networkManager.addEventListener(
+      SDK.NetworkManager.Events.RequestStarted, onRequest.bind(null, 'RequestStarted'));
+  TestRunner.networkManager.addEventListener(
+      SDK.NetworkManager.Events.RequestFinished, onRequest.bind(null, 'RequestFinished'));
 
-    TestRunner.evaluateInPage("createIFrame()");
+  TestRunner.evaluateInPage('createIFrame()');
 }
 </script>
 </head>

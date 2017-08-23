@@ -13,30 +13,29 @@ function loadIframe()
     document.body.appendChild(frame);
 }
 
-function test()
-{
-    UI.inspectorView.showPanel("sources")
-        .then(function(){
-            Common.settings.settingForTest("bypassServiceWorker").set(true);
-            var callback;
-            var promise = new Promise((fulfill) => callback = fulfill);
-            ConsoleTestRunner.addConsoleSniffer(message => {
-                if (message.messageText == "getRegistration finished") {
-                  callback();
-                }
-              }, true);
-            TestRunner.evaluateInPage("loadIframe()");
-            return promise;
-        })
-        .then(function() {
-            TestRunner.addResult("Success");
-            TestRunner.completeTest();
-        })
-        .catch(function(exception) {
-            TestRunner.addResult("Error");
-            TestRunner.addResult(exception);
-            TestRunner.completeTest();
-        });
+function test() {
+  UI.inspectorView.showPanel('sources')
+      .then(function() {
+        Common.settings.settingForTest('bypassServiceWorker').set(true);
+        var callback;
+        var promise = new Promise((fulfill) => callback = fulfill);
+        ConsoleTestRunner.addConsoleSniffer(message => {
+          if (message.messageText == 'getRegistration finished') {
+            callback();
+          }
+        }, true);
+        TestRunner.evaluateInPage('loadIframe()');
+        return promise;
+      })
+      .then(function() {
+        TestRunner.addResult('Success');
+        TestRunner.completeTest();
+      })
+      .catch(function(exception) {
+        TestRunner.addResult('Error');
+        TestRunner.addResult(exception);
+        TestRunner.completeTest();
+      });
 }
 
 </script>

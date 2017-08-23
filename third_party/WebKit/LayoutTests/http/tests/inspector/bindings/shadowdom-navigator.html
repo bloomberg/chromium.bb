@@ -5,45 +5,44 @@
 
 <script>
 
-async function test()
-{
-    var sourcesNavigator = new Sources.SourcesNavigatorView();
-    sourcesNavigator.show(UI.inspectorView.element);
+async function test() {
+  var sourcesNavigator = new Sources.SourcesNavigatorView();
+  sourcesNavigator.show(UI.inspectorView.element);
 
-    TestRunner.markStep('dumpInitialNavigator');
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('dumpInitialNavigator');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('attachShadow1');
-    await Promise.all([
-        BindingsTestRunner.attachShadowDOM('shadow1', '#template'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
-    ]);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('attachShadow1');
+  await Promise.all([
+    BindingsTestRunner.attachShadowDOM('shadow1', '#template'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
+  ]);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('attachShadow2');
-    await Promise.all([
-        BindingsTestRunner.attachShadowDOM('shadow2', '#template'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
-    ]);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('attachShadow2');
+  await Promise.all([
+    BindingsTestRunner.attachShadowDOM('shadow2', '#template'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
+  ]);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('detachShadow1');
-    await Promise.all([
-        BindingsTestRunner.detachShadowDOM('shadow1'),
-        BindingsTestRunner.waitForStyleSheetRemoved('sourcemap-style.css'),
-    ]);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('detachShadow1');
+  await Promise.all([
+    BindingsTestRunner.detachShadowDOM('shadow1'),
+    BindingsTestRunner.waitForStyleSheetRemoved('sourcemap-style.css'),
+  ]);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('detachShadow2');
-    await Promise.all([
-        BindingsTestRunner.detachShadowDOM('shadow2'),
-        BindingsTestRunner.waitForStyleSheetRemoved('sourcemap-style.css'),
-    ]);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('detachShadow2');
+  await Promise.all([
+    BindingsTestRunner.detachShadowDOM('shadow2'),
+    BindingsTestRunner.waitForStyleSheetRemoved('sourcemap-style.css'),
+  ]);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 
 </script>

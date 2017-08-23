@@ -7,29 +7,27 @@
 <script src="../network-test.js"></script>
 <script>
 
-function test()
-{
-    let scope = "http://127.0.0.1:8000/inspector/service-workers/resources/network-fetch-worker-blocked-scope";
+function test() {
+  let scope = 'http://127.0.0.1:8000/inspector/service-workers/resources/network-fetch-worker-blocked-scope';
 
-    NetworkTestRunner.recordNetwork();
-    SDK.multitargetNetworkManager.setBlockingEnabled(true);
-    SDK.multitargetNetworkManager.setBlockedPatterns([{url: 'resources/resource.php', enabled: true}]);
+  NetworkTestRunner.recordNetwork();
+  SDK.multitargetNetworkManager.setBlockingEnabled(true);
+  SDK.multitargetNetworkManager.setBlockedPatterns([{url: 'resources/resource.php', enabled: true}]);
 
-    ApplicationTestRunner.makeFetchInServiceWorker(scope, '../../network/resources/resource.php', {}, fetchCallback);
+  ApplicationTestRunner.makeFetchInServiceWorker(scope, '../../network/resources/resource.php', {}, fetchCallback);
 
-    function fetchCallback(result)
-    {
-        TestRunner.addResult('Fetch in worker result: ' + result.value);
+  function fetchCallback(result) {
+    TestRunner.addResult('Fetch in worker result: ' + result.value);
 
-        var requests = NetworkTestRunner.networkRequests();
-        requests.forEach((request) => {
-          TestRunner.addResult(request.url());
-          TestRunner.addResult("resource.type: " + request.resourceType());
-          TestRunner.addResult("request.failed: " + !!request.failed);
-        });
+    var requests = NetworkTestRunner.networkRequests();
+    requests.forEach((request) => {
+      TestRunner.addResult(request.url());
+      TestRunner.addResult('resource.type: ' + request.resourceType());
+      TestRunner.addResult('request.failed: ' + !!request.failed);
+    });
 
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 
 </script>

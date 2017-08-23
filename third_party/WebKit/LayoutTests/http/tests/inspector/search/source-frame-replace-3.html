@@ -6,22 +6,19 @@
 <script src="./search-test.js"></script>
 <script src="resources/search.js"></script>
 <script>
-function test()
-{
+function test() {
+  UI.viewManager.showView('sources');
+  SourcesTestRunner.showScriptSource('search.js', didShowScriptSource);
 
-    UI.viewManager.showView("sources");
-    SourcesTestRunner.showScriptSource("search.js", didShowScriptSource);
+  function didShowScriptSource(sourceFrame) {
+    var searchConfig = new UI.SearchableView.SearchConfig('(REPLACE)ME[38]', true, true);
+    SourcesTestRunner.replaceAndDumpChange(sourceFrame, searchConfig, '$1D', false);
 
-    function didShowScriptSource(sourceFrame)
-    {
-        var searchConfig = new UI.SearchableView.SearchConfig("(REPLACE)ME[38]", true, true);
-        SourcesTestRunner.replaceAndDumpChange(sourceFrame, searchConfig, "$1D", false);
+    var searchConfig = new UI.SearchableView.SearchConfig('(REPLACE)ME[45]', true, true);
+    SourcesTestRunner.replaceAndDumpChange(sourceFrame, searchConfig, '$1D', true);
 
-        var searchConfig = new UI.SearchableView.SearchConfig("(REPLACE)ME[45]", true, true);
-        SourcesTestRunner.replaceAndDumpChange(sourceFrame, searchConfig, "$1D", true);
-
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 };
 </script>
 </head>

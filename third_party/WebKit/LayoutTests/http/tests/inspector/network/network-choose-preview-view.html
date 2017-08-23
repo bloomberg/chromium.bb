@@ -3,65 +3,61 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-async function test()
-{
-    function createNetworkRequest(mimeType, content, statusCode)
-    {
-        TestRunner.addResult("Creating a NetworkRequest with mimeType: " + mimeType);
-        var request = new SDK.NetworkRequest(0, 'http://localhost');
-        TestRunner.addResult("Content: " + content.replace(/\0/g, "**NULL**"));
-        request.mimeType = mimeType;
-        request._contentData = Promise.resolve({error: null, content: content, encoded: false});
-        if (statusCode !== undefined)
-            request.statusCode = statusCode;
-        return request;
-    }
+async function test() {
+  function createNetworkRequest(mimeType, content, statusCode) {
+    TestRunner.addResult('Creating a NetworkRequest with mimeType: ' + mimeType);
+    var request = new SDK.NetworkRequest(0, 'http://localhost');
+    TestRunner.addResult('Content: ' + content.replace(/\0/g, '**NULL**'));
+    request.mimeType = mimeType;
+    request._contentData = Promise.resolve({error: null, content: content, encoded: false});
+    if (statusCode !== undefined)
+      request.statusCode = statusCode;
+    return request;
+  }
 
-    function getViewName(previewer)
-    {
-        if (!previewer)
-            return "** NONE **";
-        if (previewer instanceof UI.SearchableView)
-            return "SearchableView > " + getViewName(previewer._searchProvider);
-        return previewer.contentElement.className;
-    }
+  function getViewName(previewer) {
+    if (!previewer)
+      return '** NONE **';
+    if (previewer instanceof UI.SearchableView)
+      return 'SearchableView > ' + getViewName(previewer._searchProvider);
+    return previewer.contentElement.className;
+  }
 
-    async function testPreviewer(contentType, content, statusCode)
-    {
-        var request = createNetworkRequest(contentType, content, statusCode);
-        var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
-        previewView.wasShown();
-        TestRunner.addResult("Its previewer type: " + getViewName(await previewView._contentViewPromise));
-    }
+  async function testPreviewer(contentType, content, statusCode) {
+    var request = createNetworkRequest(contentType, content, statusCode);
+    var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
+    previewView.wasShown();
+    TestRunner.addResult('Its previewer type: ' + getViewName(await previewView._contentViewPromise));
+  }
 
-    TestRunner.addResult("Simple JSON");
-    await testPreviewer("application/json", "[533,3223]", 200);
+  TestRunner.addResult('Simple JSON');
+  await testPreviewer('application/json', '[533,3223]', 200);
 
-    TestRunner.addResult("MIME JSON");
-    await testPreviewer("application/vnd.document+json", "{foo0foo: 123}", 200);
+  TestRunner.addResult('MIME JSON');
+  await testPreviewer('application/vnd.document+json', '{foo0foo: 123}', 200);
 
-    TestRunner.addResult("Simple XML");
-    await testPreviewer("text/xml", "<bar><foo/></bar>", 200);
+  TestRunner.addResult('Simple XML');
+  await testPreviewer('text/xml', '<bar><foo/></bar>', 200);
 
-    TestRunner.addResult("XML MIME But JSON");
-    await testPreviewer("text/xml", "{foo0: 'barr', 'barr': 'fooo'}", 200);
+  TestRunner.addResult('XML MIME But JSON');
+  await testPreviewer('text/xml', '{foo0: \'barr\', \'barr\': \'fooo\'}', 200);
 
-    TestRunner.addResult("XML With Unknown MIME");
-    await testPreviewer("text/foobar", "<bar><foo/></bar>", 200);
+  TestRunner.addResult('XML With Unknown MIME');
+  await testPreviewer('text/foobar', '<bar><foo/></bar>', 200);
 
-    TestRunner.addResult("XML With Error 500");
-    await testPreviewer("text/xml", "<bar><foo/></bar>", 500);
+  TestRunner.addResult('XML With Error 500');
+  await testPreviewer('text/xml', '<bar><foo/></bar>', 500);
 
-    TestRunner.addResult("Unknown MIME Text With Error 500");
-    await testPreviewer("text/foobar", "Foo Bar", 500);
+  TestRunner.addResult('Unknown MIME Text With Error 500');
+  await testPreviewer('text/foobar', 'Foo Bar', 500);
 
-    TestRunner.addResult("Binary Image File");
-    await testPreviewer("image/png", "Bin\0ary\1 File\0\0", 200);
+  TestRunner.addResult('Binary Image File');
+  await testPreviewer('image/png', 'Bin\0ary\1 File\0\0', 200);
 
-    TestRunner.addResult("Binary Blank Image File");
-    await testPreviewer("image/png", "", 200);
+  TestRunner.addResult('Binary Blank Image File');
+  await testPreviewer('image/png', '', 200);
 
-    TestRunner.completeTest();
+  TestRunner.completeTest();
 }
 </script>
 </head>

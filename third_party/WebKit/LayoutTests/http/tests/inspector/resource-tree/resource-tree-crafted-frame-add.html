@@ -14,15 +14,14 @@ function createCraftedIframe()
     fabricatedFrame.contentDocument.write("<div>bar</div>");
 }
 
-function test()
-{
-    ApplicationTestRunner.runAfterResourcesAreFinished(["inspector-test.js", "resources-test.js", "resource-tree-test.js"], step1);
+function test() {
+  ApplicationTestRunner.runAfterResourcesAreFinished(
+      ['inspector-test.js', 'resources-test.js', 'resource-tree-test.js'], step1);
 
-    function step1()
-    {
-        TestRunner.addSniffer(TestRunner.resourceTreeModel, "_frameAttached", TestRunner.completeTest);
-        TestRunner.evaluateInPage("createCraftedIframe()");
-    }
+  function step1() {
+    TestRunner.addSniffer(TestRunner.resourceTreeModel, '_frameAttached', TestRunner.completeTest);
+    TestRunner.evaluateInPage('createCraftedIframe()');
+  }
 }
 
 </script>

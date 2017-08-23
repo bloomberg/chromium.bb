@@ -14,16 +14,14 @@ function onIFrameLoad()
     runTest();
 }
 
-function test()
-{
-    ElementsTestRunner.selectNodeAndWaitForStyles("iframe-body", step1);
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('iframe-body', step1);
 
-    function step1()
-    {
-        var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem("background");
-        ElementsTestRunner.dumpStyleTreeItem(treeItem, "");
-        TestRunner.completeTest();
-    }
+  function step1() {
+    var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem('background');
+    ElementsTestRunner.dumpStyleTreeItem(treeItem, '');
+    TestRunner.completeTest();
+  }
 }
 
 </script>

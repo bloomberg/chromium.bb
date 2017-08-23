@@ -3,54 +3,46 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
-{
-    NetworkTestRunner.recordNetwork();
+function test() {
+  NetworkTestRunner.recordNetwork();
 
-    var totalResourceCount = 3;
-    NetworkTestRunner.makeFetch("resources/style.css", {}, ensureAllResources);
-    NetworkTestRunner.makeFetch("resources/abe.png", {}, ensureAllResources);
-    NetworkTestRunner.makeFetch("resources/abe.png", {}, ensureAllResources);
-    NetworkTestRunner.makeFetch("resources/cyrillic.html", {}, ensureAllResources);
-    var filterArray = [
-        {
-            filterType: Network.NetworkLogView.FilterType.Domain,
-            filterValue: "127.0.0.1"
-        } ,{
-            filterType: Network.NetworkLogView.FilterType.Scheme,
-            filterValue: "http"
-        }
-    ];
+  var totalResourceCount = 3;
+  NetworkTestRunner.makeFetch('resources/style.css', {}, ensureAllResources);
+  NetworkTestRunner.makeFetch('resources/abe.png', {}, ensureAllResources);
+  NetworkTestRunner.makeFetch('resources/abe.png', {}, ensureAllResources);
+  NetworkTestRunner.makeFetch('resources/cyrillic.html', {}, ensureAllResources);
+  var filterArray = [
+    {filterType: Network.NetworkLogView.FilterType.Domain, filterValue: '127.0.0.1'},
+    {filterType: Network.NetworkLogView.FilterType.Scheme, filterValue: 'http'}
+  ];
 
-    var resourceCount = 0;
-    function ensureAllResources()
-    {
-        if (++resourceCount >= totalResourceCount)
-            checkFilters();
+  var resourceCount = 0;
+  function ensureAllResources() {
+    if (++resourceCount >= totalResourceCount)
+      checkFilters();
+  }
+
+  function checkFilters() {
+    for (var filter of filterArray) {
+      TestRunner.addResult('');
+      TestRunner.addResult('filterType: ' + filter.filterType);
+      TestRunner.addResult('filterValue: ' + filter.filterValue);
+    }
+    TestRunner.addResult('');
+
+    Network.NetworkPanel.revealAndFilter(filterArray);
+
+    var nodes = UI.panels.network._networkLogView.flatNodesList();
+    var foundNodesCount = 0;
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i][Network.NetworkLogView._isFilteredOutSymbol])
+        foundNodesCount++;
     }
 
-    function checkFilters()
-    {
-        for (var filter of filterArray) {
-            TestRunner.addResult("");
-            TestRunner.addResult("filterType: " + filter.filterType);
-            TestRunner.addResult("filterValue: " + filter.filterValue);
-        }
-        TestRunner.addResult("");
-
-        Network.NetworkPanel.revealAndFilter(filterArray);
-
-        var nodes = UI.panels.network._networkLogView.flatNodesList();
-        var foundNodesCount = 0;
-        for (var i = 0; i < nodes.length; i++) {
-            if (!nodes[i][Network.NetworkLogView._isFilteredOutSymbol])
-                foundNodesCount++;
-        }
-
-        TestRunner.addResult("Found results: " + foundNodesCount);
-        TestRunner.addResult("");
-        TestRunner.completeTest();
-    }
+    TestRunner.addResult('Found results: ' + foundNodesCount);
+    TestRunner.addResult('');
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

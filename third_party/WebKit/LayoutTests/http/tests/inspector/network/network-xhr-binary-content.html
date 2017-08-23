@@ -4,28 +4,26 @@
 <script src="../network-test.js"></script>
 <script>
 
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    NetworkTestRunner.makeSimpleXHR("GET", "resources/binary.data", true, step2);
+function test() {
+  NetworkTestRunner.recordNetwork();
+  NetworkTestRunner.makeSimpleXHR('GET', 'resources/binary.data', true, step2);
 
-    async function step2()
-    {
-        var request = NetworkTestRunner.networkRequests().pop();
-        TestRunner.addResult("request.type: " + request.resourceType());
-        TestRunner.addResult("request.mimeType: " + request.mimeType);
+  async function step2() {
+    var request = NetworkTestRunner.networkRequests().pop();
+    TestRunner.addResult('request.type: ' + request.resourceType());
+    TestRunner.addResult('request.mimeType: ' + request.mimeType);
 
-        var contentData = await request.contentData();
+    var contentData = await request.contentData();
 
-        TestRunner.addResult("request.contentEncoded: " + contentData.encoded);
-        TestRunner.addResult("request.content: " + contentData.content);
-        var raw = window.atob(contentData.content);
-        var bytes = [];
-        for (var i = 0; i < raw.length; ++i)
-            bytes.push(raw.charCodeAt(i));
-        TestRunner.addResult("request.content decoded: " + bytes.join(", "));
-        TestRunner.completeTest();
-    }
+    TestRunner.addResult('request.contentEncoded: ' + contentData.encoded);
+    TestRunner.addResult('request.content: ' + contentData.content);
+    var raw = window.atob(contentData.content);
+    var bytes = [];
+    for (var i = 0; i < raw.length; ++i)
+      bytes.push(raw.charCodeAt(i));
+    TestRunner.addResult('request.content decoded: ' + bytes.join(', '));
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

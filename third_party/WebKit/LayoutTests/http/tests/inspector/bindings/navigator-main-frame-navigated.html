@@ -5,31 +5,30 @@
 
 <script>
 
-async function test()
-{
-    var sourcesNavigator = new Sources.SourcesNavigatorView();
-    sourcesNavigator.show(UI.inspectorView.element);
+async function test() {
+  var sourcesNavigator = new Sources.SourcesNavigatorView();
+  sourcesNavigator.show(UI.inspectorView.element);
 
-    TestRunner.markStep('dumpInitialNavigator');
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('dumpInitialNavigator');
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('attachFrame');
-    await Promise.all([
-        BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
-        BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
-    ]);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('attachFrame');
+  await Promise.all([
+    BindingsTestRunner.attachFrame('frame', './resources/sourcemap-frame.html'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-script.js.map'),
+    BindingsTestRunner.waitForSourceMap('sourcemap-style.css.map'),
+  ]);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('navigateMainFrame');
-    var url = "http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html";
-    await TestRunner.navigatePromise(url);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
+  TestRunner.markStep('navigateMainFrame');
+  var url = 'http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html';
+  await TestRunner.navigatePromise(url);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
-    TestRunner.markStep('navigateBack');
-    var originalUrl = "http://127.0.0.1:8000/inspector/bindings/navigator-main-frame-navigated.html";
-    await TestRunner.navigatePromise(originalUrl);
-    TestRunner.completeTest();
+  TestRunner.markStep('navigateBack');
+  var originalUrl = 'http://127.0.0.1:8000/inspector/bindings/navigator-main-frame-navigated.html';
+  await TestRunner.navigatePromise(originalUrl);
+  TestRunner.completeTest();
 }
 
 </script>

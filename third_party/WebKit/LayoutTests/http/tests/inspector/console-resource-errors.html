@@ -25,24 +25,21 @@ function loadIframe()
     document.body.appendChild(iframe);
 }
 
-function test()
-{
-    ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
+function test() {
+  ConsoleTestRunner.addConsoleViewSniffer(addMessage, true);
 
-    function addMessage(uiMessage)
-    {
-        // There will be only one such message.
-        if (uiMessage.element().deepTextContent().indexOf("non-existent-iframe") !== -1)
-            ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
-    }
+  function addMessage(uiMessage) {
+    // There will be only one such message.
+    if (uiMessage.element().deepTextContent().indexOf('non-existent-iframe') !== -1)
+      ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
+  }
 
-    function onExpandedMessages()
-    {
-        ConsoleTestRunner.dumpConsoleMessagesWithClasses(true);
-        TestRunner.completeTest();
-    }
+  function onExpandedMessages() {
+    ConsoleTestRunner.dumpConsoleMessagesWithClasses(true);
+    TestRunner.completeTest();
+  }
 
-    TestRunner.evaluateInPage("performActions()");
+  TestRunner.evaluateInPage('performActions()');
 }
 
 </script>

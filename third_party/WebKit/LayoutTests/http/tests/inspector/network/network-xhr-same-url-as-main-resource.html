@@ -11,23 +11,20 @@ function loadIframe()
     console.log("iframe loaded");
 }
 
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    ConsoleTestRunner.addConsoleSniffer(step2);
-    TestRunner.evaluateInPage("loadIframe()");
+function test() {
+  NetworkTestRunner.recordNetwork();
+  ConsoleTestRunner.addConsoleSniffer(step2);
+  TestRunner.evaluateInPage('loadIframe()');
 
-    function step2()
-    {
-        NetworkTestRunner.makeSimpleXHR("GET", "resources/resource.php", true, step3);
-    }
+  function step2() {
+    NetworkTestRunner.makeSimpleXHR('GET', 'resources/resource.php', true, step3);
+  }
 
-    function step3()
-    {
-        var request1 = NetworkTestRunner.networkRequests().pop();
-        TestRunner.addResult(request1.resourceType().name());
-        TestRunner.completeTest();
-    }
+  function step3() {
+    var request1 = NetworkTestRunner.networkRequests().pop();
+    TestRunner.addResult(request1.resourceType().name());
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

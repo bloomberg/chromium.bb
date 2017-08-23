@@ -18,22 +18,20 @@ function navigateLink()
     link.dispatchEvent(evt);
 }
 
-function test()
-{
-    TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, "requestWillBeSent", step2);
-    TestRunner.evaluateInPage("navigateLink()");
+function test() {
+  TestRunner.addSniffer(SDK.NetworkDispatcher.prototype, 'requestWillBeSent', step2);
+  TestRunner.evaluateInPage('navigateLink()');
 
-    function step2()
-    {
-        // inspector-test.js appears in network panel occasionally in Safari on
-        // Mac, so checking last request.
-        var request = NetworkTestRunner.networkRequests().pop();
+  function step2() {
+    // inspector-test.js appears in network panel occasionally in Safari on
+    // Mac, so checking last request.
+    var request = NetworkTestRunner.networkRequests().pop();
 
-        TestRunner.addResult(request.url());
-        TestRunner.addResult("resource.requestContentType: " + request.requestContentType());
+    TestRunner.addResult(request.url());
+    TestRunner.addResult('resource.requestContentType: ' + request.requestContentType());
 
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

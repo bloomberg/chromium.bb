@@ -36,29 +36,27 @@ function iframeLoadedChangeSrc()
     console.log("Done.");
 }
 
-function test()
-{
-    NetworkTestRunner.recordNetwork();
-    ConsoleTestRunner.addConsoleSniffer(step2);
-    TestRunner.evaluateInPage("loadIframe()");
+function test() {
+  NetworkTestRunner.recordNetwork();
+  ConsoleTestRunner.addConsoleSniffer(step2);
+  TestRunner.evaluateInPage('loadIframe()');
 
-    async function step2()
-    {
-        var requests = NetworkTestRunner.networkRequests();
-        var request1 = requests[requests.length - 2];
-        TestRunner.addResult(request1.url());
-        TestRunner.addResult("resource.type: " + request1.resourceType());
-        var content = await request1.requestContent();
-        TestRunner.addResult("resource.content after requesting content: " + content);
+  async function step2() {
+    var requests = NetworkTestRunner.networkRequests();
+    var request1 = requests[requests.length - 2];
+    TestRunner.addResult(request1.url());
+    TestRunner.addResult('resource.type: ' + request1.resourceType());
+    var content = await request1.requestContent();
+    TestRunner.addResult('resource.content after requesting content: ' + content);
 
-        var request2 = requests[requests.length - 1];
-        TestRunner.addResult(request2.url());
-        TestRunner.addResult("resource.type: " + request2.resourceType());
-        var content = await request2.requestContent();
-        TestRunner.addResult("resource.content after requesting content: " + content);
+    var request2 = requests[requests.length - 1];
+    TestRunner.addResult(request2.url());
+    TestRunner.addResult('resource.type: ' + request2.resourceType());
+    var content = await request2.requestContent();
+    TestRunner.addResult('resource.content after requesting content: ' + content);
 
-        TestRunner.completeTest();
-    }
+    TestRunner.completeTest();
+  }
 }
 </script>
 </head>

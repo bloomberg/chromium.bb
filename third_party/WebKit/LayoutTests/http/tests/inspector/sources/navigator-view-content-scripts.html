@@ -3,23 +3,23 @@
 <script src="../inspector-test.js"></script>
 
 <script>
-async function test()
-{
-    var rootURL = "http://localhost:8080/LayoutTests/inspector/debugger/";
-    var sourcesNavigatorView = new Sources.SourcesNavigatorView();
-    sourcesNavigatorView.show(UI.inspectorView.element);
+async function test() {
+  var rootURL = 'http://localhost:8080/LayoutTests/inspector/debugger/';
+  var sourcesNavigatorView = new Sources.SourcesNavigatorView();
+  sourcesNavigatorView.show(UI.inspectorView.element);
 
-    TestRunner.addResult("\n\n================================================");
-    TestRunner.addResult("Adding urls");
-    await SourcesTestRunner.addScriptUISourceCode(rootURL + "foo/bar/script.js", '', false);
-    var contentUISourceCode = await SourcesTestRunner.addScriptUISourceCode(rootURL + "foo/bar/contentScript2.js?a=1", '', true, 42);
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigatorView);
+  TestRunner.addResult('\n\n================================================');
+  TestRunner.addResult('Adding urls');
+  await SourcesTestRunner.addScriptUISourceCode(rootURL + 'foo/bar/script.js', '', false);
+  var contentUISourceCode =
+      await SourcesTestRunner.addScriptUISourceCode(rootURL + 'foo/bar/contentScript2.js?a=1', '', true, 42);
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigatorView);
 
-    TestRunner.addResult("\n\n================================================");
-    TestRunner.addResult("Removing contentScripts project");
-    contentUISourceCode.project().removeProject();
-    SourcesTestRunner.dumpNavigatorView(sourcesNavigatorView);
-    TestRunner.completeTest();
+  TestRunner.addResult('\n\n================================================');
+  TestRunner.addResult('Removing contentScripts project');
+  contentUISourceCode.project().removeProject();
+  SourcesTestRunner.dumpNavigatorView(sourcesNavigatorView);
+  TestRunner.completeTest();
 }
 </script>
 
