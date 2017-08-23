@@ -210,6 +210,8 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
     return;
 
   if (vr::VrTabHelper::IsInVr(web_contents_)) {
+    vr::VrTabHelper::UISuppressed(vr::UiSuppressedElement::kDownloadPermission);
+
     // Permission request UI cannot currently be rendered binocularly in VR
     // mode, so we suppress the UI and return cancelled to inform the caller
     // that the request will not progress. crbug.com/736568
