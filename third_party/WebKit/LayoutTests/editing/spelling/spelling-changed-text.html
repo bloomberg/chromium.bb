@@ -1,42 +1,45 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-<script src="resources/util.js"></script>
-</head>
-<body>
-<div id="container">
-  <div id="destination" contentEditable></div>
-</div>
-
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
+<script src="spellcheck_test.js"></script>
 <script>
+spellcheck_test(
+    '<div contenteditable>|</div>',
+    'insertText Spell wellcome. Is it broken?',
+    '<div contenteditable>Spell #wellcome#. Is it broken?</div>',
+    {
+      title: 'Setup a content editable div with spelling marker',
+      callback: sample => spellcheck_test(
+          sample,
+          document => {
+            assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
 
-description("Spellcheck should not crash after the text has changed and results are served from cache."
-    + " To test manually, launch Chromium compiled with Address Sanitizer, enable 'Ask Google for Suggestions', type 'Spell wellcome. Is it broken?', delete the words 'Is it broken?', and context-click on the word 'wellcome'."
-    + " The test succeeds when the browser does not crash and shows suggestions in the context menu.");
+            const destination = document.querySelector('div');
+            const textNode = destination.firstChild;
 
-initSpellTest("destination", "Spell wellcome. Is it broken?", function(textNode) {
-    // Select the text "Is it broken?".
-    var deleteRange = document.createRange();
-    deleteRange.setStart(textNode, 15);
-    deleteRange.setEnd(textNode, 29);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(deleteRange);
-    shouldBeEqualToString("window.getSelection().toString()", " Is it broken?");
-    // Del key to delete the text "Is it broken?".
-    eventSender.keyDown("Delete", null);
+            // Select the text "Is it broken?".
+            const deleteRange = document.createRange();
+            deleteRange.setStart(textNode, 15);
+            deleteRange.setEnd(textNode, 29);
+            document.getSelection().removeAllRanges();
+            document.getSelection().addRange(deleteRange);
 
-    // Context click to show the context menu.
-    var x = destination.offsetParent.offsetLeft + destination.offsetLeft + 50;
-    var y = destination.offsetParent.offsetTop + destination.offsetTop + destination.offsetHeight / 2;
-    eventSender.mouseMoveTo(x, y);
-    contextMenuElements = eventSender.contextClick();
-    // Esc key to hide the context menu.
-    eventSender.keyDown("Escape", null);
+            // Del key to delete the text "Is it broken?".
+            eventSender.keyDown("Delete", null);
 
-    document.getElementById("destination").innerHTML = "";
-});
+            // Context click to show the context menu.
+            var x = destination.offsetParent.offsetLeft + destination.offsetLeft + 50;
+            var y = destination.offsetParent.offsetTop + destination.offsetTop + destination.offsetHeight / 2;
+            eventSender.mouseMoveTo(x, y);
+            contextMenuElements = eventSender.contextClick();
 
+            // Esc key to hide the context menu.
+            eventSender.keyDown("Escape", null);
+          },
+          '<div contenteditable>Spell #wellcome#.</div>',
+          'Spellcheck should not crash after the text has changed.')
+    });
 </script>
 </body>
 </html>
