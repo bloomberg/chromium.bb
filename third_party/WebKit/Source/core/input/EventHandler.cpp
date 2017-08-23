@@ -1826,8 +1826,8 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
 
     int x = right_aligned ? first_rect.MaxX() : first_rect.X();
     // In a multiline edit, firstRect.maxY() would end up on the next line, so
-    // -1.
-    int y = first_rect.MaxY() ? first_rect.MaxY() - 1 : 0;
+    // take the midpoint.
+    int y = (first_rect.MaxY() + first_rect.Y()) / 2;
     location_in_root_frame = view->ContentsToRootFrame(IntPoint(x, y));
   } else if (focused_element) {
     IntRect clipped_rect = focused_element->BoundsInViewport();
