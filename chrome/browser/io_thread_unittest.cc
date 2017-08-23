@@ -16,6 +16,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "build/build_config.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/mock_policy_service.h"
@@ -138,11 +139,11 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
     // BrowserThreadDelegate for the io thread.
     io_thread_.reset(new IOThread(&pref_service_, &policy_service_, nullptr,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-                                  event_router_forwarder_.get()
+                                  event_router_forwarder_.get(),
 #else
-                                  nullptr
+                                  nullptr,
 #endif
-                                      ));
+                                  &system_network_context_manager_));
     // Now that IOThread object is registered starting the threads will
     // call the IOThread::Init(). This sets up the environment needed for
     // these tests.
@@ -178,6 +179,7 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
 #endif
   policy::PolicyMap policy_map_;
   policy::MockPolicyService policy_service_;
+  SystemNetworkContextManager system_network_context_manager_;
   // The ordering of the declarations of |io_thread_object_| and
   // |thread_bundle_| matters. An IOThread cannot be deleted until all of
   // the globals have been reset to their initial state via CleanUp. As

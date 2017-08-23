@@ -70,6 +70,7 @@ class TestingBrowserProcess : public BrowserProcess {
   rappor::RapporServiceImpl* rappor_service() override;
   ukm::UkmRecorder* ukm_recorder() override;
   IOThread* io_thread() override;
+  SystemNetworkContextManager* system_network_context_manager() override;
   WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
   PrefService* local_state() override;

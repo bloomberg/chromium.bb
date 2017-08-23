@@ -295,7 +295,8 @@ IOThread::IOThread(
     PrefService* local_state,
     policy::PolicyService* policy_service,
     net_log::ChromeNetLog* net_log,
-    extensions::EventRouterForwarder* extension_event_router_forwarder)
+    extensions::EventRouterForwarder* extension_event_router_forwarder,
+    SystemNetworkContextManager* system_network_context_manager)
     : net_log_(net_log),
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       extension_event_router_forwarder_(extension_event_router_forwarder),
@@ -381,9 +382,9 @@ IOThread::IOThread(
 
   BrowserThread::SetIOThreadDelegate(this);
 
-  SystemNetworkContextManager::SetUp(&network_context_request_,
-                                     &network_context_params_,
-                                     &is_quic_allowed_on_init_);
+  system_network_context_manager->SetUp(&network_context_request_,
+                                        &network_context_params_,
+                                        &is_quic_allowed_on_init_);
 }
 
 IOThread::~IOThread() {
