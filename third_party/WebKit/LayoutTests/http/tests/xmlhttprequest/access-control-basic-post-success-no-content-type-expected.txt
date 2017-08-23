@@ -1,5 +1,0 @@
-Test that POST requests with text content and no content-type set explicitly
-doesn't generate a preflight request. Should print PASS.
-
-PASS
-
