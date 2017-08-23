@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker.mojom.h"
@@ -24,8 +25,13 @@ class WebServiceWorkerNetworkProvider;
 
 namespace content {
 
+namespace mojom {
+class URLLoaderFactory;
+}
+
 struct RequestNavigationParams;
 class ServiceWorkerProviderContext;
+class ChildURLLoaderFactoryGetter;
 
 // A unique provider_id is generated for each instance.
 // Instantiated prior to the main resource load being started and remains
@@ -41,14 +47,25 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
  public:
   // Creates a ServiceWorkerNetworkProvider for navigation and wraps it
   // with WebServiceWorkerNetworkProvider to be owned by Blink.
+  //
+  // For S13nServiceWorker:
+  // |default_loader_factory_getter| contains a set of default loader
+  // factories for the associated loading context, and is used when we
+  // create a subresource loader for controllees. This is non-null only
+  // if the provider is created for controllees, and if the loading context,
+  // e.g. a frame, provides the loading factory getter for default loaders.
   static std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
-  CreateForNavigation(int route_id,
-                      const RequestNavigationParams& request_params,
-                      blink::WebLocalFrame* frame,
-                      bool content_initiated);
+  CreateForNavigation(
+      int route_id,
+      const RequestNavigationParams& request_params,
+      blink::WebLocalFrame* frame,
+      bool content_initiated,
+      scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
 
   // Creates a ServiceWorkerNetworkProvider for a shared worker (as a
   // non-document service worker client).
+  // TODO(kinuko): This should also take ChildURLLoaderFactoryGetter associated
+  // with the SharedWorker.
   static std::unique_ptr<ServiceWorkerNetworkProvider> CreateForSharedWorker(
       int route_id);
 
@@ -82,10 +99,19 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // |type| must be either one of SERVICE_WORKER_PROVIDER_FOR_{WINDOW,
   // SHARED_WORKER,WORKER} (while currently we don't have code for WORKER).
   // |is_parent_frame_secure| is only relevant when the |type| is WINDOW.
-  ServiceWorkerNetworkProvider(int route_id,
-                               ServiceWorkerProviderType type,
-                               int provider_id,
-                               bool is_parent_frame_secure);
+  //
+  // For S13nServiceWorker:
+  // |default_loader_factory_getter| contains a set of default loader
+  // factories for the associated loading context, and is used when we
+  // create a subresource loader for controllees. This is non-null only
+  // if the provider is created for controllees, and if the loading context,
+  // e.g. a frame, provides the loading factory getter for default loaders.
+  ServiceWorkerNetworkProvider(
+      int route_id,
+      ServiceWorkerProviderType type,
+      int provider_id,
+      bool is_parent_frame_secure,
+      scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter);
 
   // This is for controllers, used in CreateForController.
   explicit ServiceWorkerNetworkProvider(

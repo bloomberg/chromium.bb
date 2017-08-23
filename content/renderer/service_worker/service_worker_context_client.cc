@@ -60,6 +60,7 @@
 #include "storage/common/blob_storage/blob_handle.h"
 #include "storage/public/interfaces/blobs.mojom.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
+#include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
@@ -1034,6 +1035,16 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
           blink::WebBlobRegistry::GetBlobPtrFromUUID(
               blink::WebString::FromASCII(response.blob_uuid)),
           storage::mojom::Blob::Version_));
+    }
+    if (ServiceWorkerUtils::IsServicificationEnabled()) {
+      // Blob's lifetime is guaranteed via mojom::BlobPtr, but
+      // we need to retain a reference in the BlobDispatcherHost
+      // to register a public URL in the controllee side as it
+      // still goes through the legacy IPC path.
+      // TODO(kinuko): Remove this code before this hits production
+      // code, there's a risk to leak a blob. (crbug.com/756743)
+      blink::Platform::Current()->GetBlobRegistry()->AddBlobDataRef(
+          blink::WebString::FromASCII(response.blob_uuid));
     }
     response_callback->OnResponseBlob(
         response, std::move(blob_ptr),

@@ -287,7 +287,7 @@ ServiceWorkerMetrics::EventType FetchTypeToWaitUntilEventType(
 
 }  // namespace
 
-// ResponseCallback is owned by a callback which is passed to
+// ResponseCallback is owned by the callback that is passed to
 // ServiceWorkerVersion::StartRequest*(), and held in pending_requests_
 // until FinishRequest() is called.
 class ServiceWorkerFetchDispatcher::ResponseCallback

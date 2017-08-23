@@ -114,6 +114,9 @@ class WebServiceWorkerNetworkProviderImpl
     return kInvalidServiceWorkerVersionId;
   }
 
+  // TODO(kinuko): Implement CreateURLLoader with provider_->context()->
+  // subresource_loader if Servicification is enabled.
+
  private:
   std::unique_ptr<ServiceWorkerNetworkProvider> provider_;
   const bool is_secure_context_;

@@ -6,6 +6,8 @@
 
 namespace content {
 
+ChildURLLoaderFactoryGetter::ChildURLLoaderFactoryGetter() = default;
+
 ChildURLLoaderFactoryGetter::ChildURLLoaderFactoryGetter(
     PossiblyAssociatedURLLoaderFactory network_loader_factory,
     URLLoaderFactoryGetterCallback blob_loader_factory_getter)
