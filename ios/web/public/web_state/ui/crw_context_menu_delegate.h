@@ -11,17 +11,13 @@
 
 // Implement this protocol to listen to the custom context menu trigger from
 // WKWebView.
-@protocol CRWContextMenuDelegate
-// Called when the custom Context menu recognizer triggers on |webView|.
-// - triggered on a long press gesture, slightly shorter than the default
-//   context menu recognizer.
-// - if result is YES, the system context many will be suppressed.
-//   YES must be returned from the same runloop.
-// - if result is NO, the system context many will be displayed.
-// - Client can return YES without showing any UI to cancel the system context
-//   menu.
+@protocol CRWContextMenuDelegate<NSObject>
+@optional
+// Called when the custom Context menu recognizer triggers on |webView| by a
+// long press gesture. The system context menu will be suppressed if this method
+// is implemented.
 // TODO(crbug.com/228179): This class only triggers context menu on mainFrame.
-- (BOOL)webView:(WKWebView*)webView
+- (void)webView:(WKWebView*)webView
     handleContextMenu:(const web::ContextMenuParams&)params;
 @end
 
