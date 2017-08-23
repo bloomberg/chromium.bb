@@ -693,7 +693,6 @@ code_generator("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitColumnBreakBefore.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitColumnBreakInside.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMarginCollapse.h",
-    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMask.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskBoxImage.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskPosition.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMaskRepeat.h",
