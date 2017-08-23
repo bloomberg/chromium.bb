@@ -726,6 +726,17 @@ TEST_F(TetherServiceTest, TestBluetoothNotification) {
   EXPECT_FALSE(
       fake_notification_presenter_->is_enable_bluetooth_notification_shown());
 
+  // Now, start connecting to the default Ethernet network. The notification
+  // still should not be shown.
+  SetServiceProperty(
+      network_state_handler()
+          ->GetNetworkStateFromGuid(
+              chromeos::FakeShillManagerClient::kFakeEthernetNetworkGuid)
+          ->path(),
+      shill::kStateProperty, base::Value(shill::kStateConfiguration));
+  EXPECT_FALSE(
+      fake_notification_presenter_->is_enable_bluetooth_notification_shown());
+
   // Now, connect to the default Ethernet network. The notification still should
   // not be shown.
   SetServiceProperty(
