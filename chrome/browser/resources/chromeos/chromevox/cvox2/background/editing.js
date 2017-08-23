@@ -530,7 +530,7 @@ AutomationRichEditableText.prototype = {
   /** @private */
   brailleCurrentRichLine_: function() {
     var cur = this.line_;
-    var value = new Spannable(cur.value_);
+    var value = new MultiSpannable(cur.value_);
     if (!this.node_.constructor)
       return;
     value.getSpansInstanceOf(this.node_.constructor).forEach(function(span) {
