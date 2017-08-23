@@ -21,6 +21,7 @@
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -957,6 +958,12 @@ TEST_F(PasswordAutofillManagerTest,
 // "Use password for" in the popup when the feature which controls its
 // appearance is enabled.
 TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
+  const char kShownContextHistogram[] =
+      "PasswordManager.ShowAllSavedPasswordsShownContext";
+  const char kAcceptedContextHistogram[] =
+      "PasswordManager.ShowAllSavedPasswordsAcceptedContext";
+  base::HistogramTester histograms;
+
   auto client = base::MakeUnique<TestPasswordManagerClient>();
   auto autofill_client = base::MakeUnique<MockAutofillClient>();
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
@@ -995,6 +1002,11 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
 
+  // Expect a sample only in the shown histogram.
+  histograms.ExpectUniqueSample(
+      kShownContextHistogram,
+      metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
+
   // Clicking at the "Show all passwords row" should trigger a call to open the
   // Password Manager settings page and hide the popup.
   EXPECT_CALL(
@@ -1003,9 +1015,23 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
       base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);
+
+  // Expect a sample in both the shown and accepted histogram.
+  histograms.ExpectUniqueSample(
+      kShownContextHistogram,
+      metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
+  histograms.ExpectUniqueSample(
+      kAcceptedContextHistogram,
+      metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD, 1);
 }
 
 TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
+  const char kShownContextHistogram[] =
+      "PasswordManager.ShowAllSavedPasswordsShownContext";
+  const char kAcceptedContextHistogram[] =
+      "PasswordManager.ShowAllSavedPasswordsAcceptedContext";
+  base::HistogramTester histograms;
+
   auto client = base::MakeUnique<TestPasswordManagerClient>();
   auto autofill_client = base::MakeUnique<MockAutofillClient>();
   InitializePasswordAutofillManager(client.get(), autofill_client.get());
@@ -1029,6 +1055,12 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
                                 SuggestionVectorValuesAre(elements), _));
   password_autofill_manager_->OnShowManualFallbackSuggestion(
       base::i18n::RIGHT_TO_LEFT, element_bounds);
+
+  // Expect a sample only in the shown histogram.
+  histograms.ExpectUniqueSample(
+      kShownContextHistogram,
+      metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK, 1);
+
   // Clicking at the "Show all passwords row" should trigger a call to open the
   // Password Manager settings page and hide the popup.
   EXPECT_CALL(
@@ -1037,6 +1069,14 @@ TEST_F(PasswordAutofillManagerTest, ShowStandaloneShowAllPasswords) {
   EXPECT_CALL(*autofill_client, HideAutofillPopup());
   password_autofill_manager_->DidAcceptSuggestion(
       base::string16(), autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 0);
+
+  // Expect a sample in both the shown and accepted histogram.
+  histograms.ExpectUniqueSample(
+      kShownContextHistogram,
+      metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK, 1);
+  histograms.ExpectUniqueSample(
+      kAcceptedContextHistogram,
+      metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK, 1);
 }
 
 // Tests that the "Show all passwords" fallback doesn't shows up in non-password

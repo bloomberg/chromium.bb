@@ -27,7 +27,6 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
-#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -273,6 +272,11 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
         std::string(), std::string(),
         autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
     suggestions.push_back(all_saved_passwords);
+
+    show_all_saved_passwords_shown_context_ =
+        metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD;
+    metrics_util::LogContextOfShowAllSavedPasswordsShown(
+        show_all_saved_passwords_shown_context_);
   }
 
   autofill_client_->ShowAutofillPopup(bounds,
@@ -318,6 +322,12 @@ void PasswordAutofillManager::OnShowManualFallbackSuggestion(
       std::string(), std::string(),
       autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
   suggestions.push_back(all_saved_passwords);
+
+  show_all_saved_passwords_shown_context_ =
+      metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK;
+  metrics_util::LogContextOfShowAllSavedPasswordsShown(
+      show_all_saved_passwords_shown_context_);
+
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       weak_ptr_factory_.GetWeakPtr());
 }
@@ -366,6 +376,15 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
         FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
     DCHECK(success);
   }
+
+  if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
+    DCHECK_NE(show_all_saved_passwords_shown_context_,
+              metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_NONE);
+
+    metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
+        show_all_saved_passwords_shown_context_);
+  }
+
   autofill_client_->HideAutofillPopup();
 }
 

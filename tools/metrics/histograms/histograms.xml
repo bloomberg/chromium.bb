@@ -54615,6 +54615,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.ShowAllSavedPasswordsAcceptedContext"
+    enum="ShowAllSavedPasswordsContext">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Recorded when the &quot;Show all saved passwords&quot; fallback is accepted.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.ShowAllSavedPasswordsShownContext"
+    enum="ShowAllSavedPasswordsContext">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Recorded when the &quot;Show all saved passwords&quot; fallback is shown.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.ShowedFormNotSecureWarningOnCurrentNavigation"
     enum="BooleanShown">
   <owner>estark@chromium.org</owner>

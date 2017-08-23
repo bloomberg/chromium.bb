@@ -34570,6 +34570,12 @@ from previous Chrome versions.
   <int value="19" label="SCHEME_FILESYSTEM"/>
 </enum>
 
+<enum name="ShowAllSavedPasswordsContext">
+  <int value="0" label="No Context"/>
+  <int value="1" label="Password Suggestions"/>
+  <int value="2" label="Manual Fallback"/>
+</enum>
+
 <enum name="ShutdownReason">
   <summary>
     The reason that the Chrome OS power manager shut down or rebooted the
