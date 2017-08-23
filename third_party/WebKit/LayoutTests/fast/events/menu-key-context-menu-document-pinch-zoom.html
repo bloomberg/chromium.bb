@@ -58,10 +58,10 @@ function handleContextMenuEditable(e) {
     var rangeRect = window.getSelection().getRangeAt(0).getBoundingClientRect();
     expectedX = rangeRect.left;
 
-    // EventHandler::sendContextKeyForMenuEvent subtracts 1 from the y value so
-    // that the context menu doesn't end up in the next line on multiline
+    // EventHandler::ShowNonLocatedContextMenu takes the midpoint of the y values
+    // so that the context menu doesn't end up in the next line on multiline
     // selections.
-    expectedY = rangeRect.bottom - 1;
+    expectedY = Math.floor((rangeRect.bottom + rangeRect.top) / 2);
 
     expectedScreenX = (expectedX - visualViewportContentX) * scale;
     expectedScreenY = (expectedY - visualViewportContentY) * scale;
