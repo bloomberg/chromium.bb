@@ -268,6 +268,37 @@ TEST_F(SurfaceReferencesTest, GarbageCollectionWorksRecusively) {
   EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id3));
 }
 
+// Verify that surfaces marked as live are not garbage collected and amy
+// dependencies are also not garbage collected.
+TEST_F(SurfaceReferencesTest, LiveSurfaceStillReachable) {
+  SurfaceId id1 = CreateSurface(kFrameSink1, 1);
+  SurfaceId id2 = CreateSurface(kFrameSink2, 1);
+  SurfaceId id3 = CreateSurface(kFrameSink3, 1);
+
+  AddSurfaceReference(GetSurfaceManager().GetRootSurfaceId(), id1);
+  AddSurfaceReference(id1, id2);
+  AddSurfaceReference(id2, id3);
+  ASSERT_THAT(GetAllTempReferences(), IsEmpty());
+
+  // Marking |id3| for destruction shouldn't cause it be garbage collected
+  // because |id2| is still reachable from the root.
+  DestroySurface(id3);
+  EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id3));
+
+  // Removing the surface reference to |id2| makes it not reachable from the
+  // root, however it's not marked as destroyed and is still live. Make sure we
+  // also don't delete any dependencies, such as |id3|, as well.
+  RemoveSurfaceReference(id1, id2);
+  EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id3));
+  EXPECT_NE(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
+
+  // |id2| is unreachable and destroyed. Garbage collection should delete both
+  // |id2| and |id3| now.
+  DestroySurface(id2);
+  EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id3));
+  EXPECT_EQ(nullptr, GetSurfaceManager().GetSurfaceForId(id2));
+}
+
 TEST_F(SurfaceReferencesTest, TryAddReferenceSameReferenceTwice) {
   SurfaceId id1 = CreateSurface(kFrameSink1, 1);
   SurfaceId id2 = CreateSurface(kFrameSink2, 1);
