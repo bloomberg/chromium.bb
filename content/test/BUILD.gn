@@ -295,6 +295,7 @@ static_library("test_support") {
     "//storage/common",
     "//testing/gmock",
     "//testing/gtest",
+    "//tools/v8_context_snapshot:v8_context_snapshot",
     "//ui/accessibility:ax_gen",
     "//ui/base",
     "//ui/base:test_support",
