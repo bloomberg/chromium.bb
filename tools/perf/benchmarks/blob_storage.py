@@ -50,4 +50,20 @@ class BlobStorage(perf_benchmark.PerfBenchmark):
       def SetExpectations(self):
         self.DisableStory('blob-mass-create-80MBx5', [story.expectations.ALL],
                           'crbug.com/510815')
+        self.DisableStory('blob-create-read-10MBx30',
+                          [story.expectations.ANDROID_ONE], 'crbug.com/739214')
+        self.DisableStory('blob-create-read-80MBx5',
+                          [story.expectations.ANDROID_ONE,
+                           story.expectations.ANDROID_NEXUS5X_WEBVIEW,
+                           story.expectations.ANDROID_NEXUS6_WEBVIEW],
+                          'crbug.com/739214')
+        self.DisableStory('blob-mass-create-10MBx30',
+                          [story.expectations.ANDROID_ONE,
+                           story.expectations.ANDROID_NEXUS5X_WEBVIEW,
+                           story.expectations.ANDROID_NEXUS6_WEBVIEW],
+                          'crbug.com/739214')
+        self.DisableStory('blob-mass-create-1MBx200',
+                          [story.expectations.ANDROID_ONE], 'crbug.com/739214')
+        self.DisableStory('blob-mass-create-150KBx200',
+                          [story.expectations.ANDROID_ONE], 'crbug.com/739214')
     return StoryExpectations()
