@@ -104,7 +104,7 @@ js_compile_bundle("chrome_bundle") {
   ]
 }
 
-js_compile_checked("payment_request") {
+js_compile_unchecked("payment_request") {
   sources = [
     "resources/payment_request.js",
   ]
