@@ -3510,10 +3510,8 @@
   "Fuchsia Compile": {
     "additional_compile_targets": [
       "base_unittests",
-      "content_unittests",
       "crypto_unittests",
       "gl_unittests",
-      "headless_shell",
       "ipc_tests",
       "media_unittests",
       "mojo_common_unittests",
