@@ -2624,11 +2624,13 @@ void AXNodeObject::ChildrenChanged() {
   if (!GetNode() && !GetLayoutObject())
     return;
 
-  // If this is not part of the accessibility tree then invalidate this object's
-  // children but skip sending a notification and skip walking up the ancestors.
-  // This occurs when the ancestor is a leaf node.
-  // Uses |cached_is_descendant_of_leaf_node_| to avoid expense of updating
-  // cached attribs for each change via |UpdateCachedAttributeValuesIfNeeded()|.
+  // If this node's children are not part of the accessibility tree then
+  // invalidate the children but skip notification and walking up the ancestors.
+  // Cases where this happens:
+  // - an ancestor has only presentational children, or
+  // - this or an ancestor is a leaf node
+  // Uses |cached_is_descendant_of_leaf_node_| to avoid updating cached
+  // attributes for eachc change via | UpdateCachedAttributeValuesIfNeeded()|.
   if (!CanHaveChildren() || cached_is_descendant_of_leaf_node_) {
     SetNeedsToUpdateChildren();
     return;
