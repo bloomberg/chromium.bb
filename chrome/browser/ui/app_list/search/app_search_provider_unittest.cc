@@ -16,25 +16,38 @@
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/app_list/app_list_test_util.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/browser/ui/app_list/extension_app_model_builder.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/arc/test/fake_app_instance.h"
 #include "components/sync/model/string_ordinal.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/uninstall_reason.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_result.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_item.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_test.h"
-#include "components/arc/test/fake_app_instance.h"
 
 namespace app_list {
 namespace test {
+
+namespace {
+
+constexpr char kGmailQeuery[] = "Gmail";
+constexpr char kGmailArcName[] = "Gmail ARC";
+constexpr char kGmailExtensionName[] = "Gmail Ext";
+constexpr char kGmailArcPackage[] = "com.google.android.gm";
+constexpr char kGmailArcActivity[] =
+    "com.google.android.gm.ConversationListActivityGmail";
+
+}  // namespace
 
 const base::Time kTestCurrentTime = base::Time::FromInternalValue(100000);
 
@@ -84,25 +97,69 @@ class AppSearchProviderTest : public AppListTestBase {
     return result_str;
   }
 
+  std::string AddArcApp(const std::string& name,
+                        const std::string& package,
+                        const std::string& activity) {
+    arc::mojom::AppInfo app_info;
+    app_info.name = name;
+    app_info.package_name = package;
+    app_info.activity = activity;
+    app_info.sticky = false;
+    app_info.notifications_enabled = false;
+    app_info.orientation_lock = arc::mojom::OrientationLock::NONE;
+    arc_test_.app_instance()->SendAppAdded(app_info);
+    return ArcAppListPrefs::GetAppId(package, activity);
+  }
+
+  void AddExtension(const std::string& id, const std::string& name) {
+    scoped_refptr<extensions::Extension> extension =
+        extensions::ExtensionBuilder()
+            .SetManifest(
+                extensions::DictionaryBuilder()
+                    .Set("name", name)
+                    .Set("version", "0.1")
+                    .Set("app",
+                         extensions::DictionaryBuilder()
+                             .Set("urls",
+                                  extensions::ListBuilder()
+                                      .Append("http://localhost/extensions/"
+                                              "hosted_app/main.html")
+                                      .Build())
+                             .Build())
+                    .Set("launch",
+                         extensions::DictionaryBuilder()
+                             .Set("urls",
+                                  extensions::ListBuilder()
+                                      .Append("http://localhost/extensions/"
+                                              "hosted_app/main.html")
+                                      .Build())
+                             .Build())
+                    .Build())
+            .SetID(id)
+            .Build();
+    service()->AddExtension(extension.get());
+  }
+
   AppListModel* model() { return model_.get(); }
   const SearchProvider::Results& results() { return app_search_->results(); }
+  ArcAppTest& arc_test() { return arc_test_; }
 
  private:
   std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<AppSearchProvider> app_search_;
   std::unique_ptr<ExtensionAppModelBuilder> builder_;
   std::unique_ptr<::test::TestAppListControllerDelegate> controller_;
+  ArcAppTest arc_test_;
 
   DISALLOW_COPY_AND_ASSIGN(AppSearchProviderTest);
 };
 
 TEST_F(AppSearchProviderTest, Basic) {
-  ArcAppTest arc_test;
-  arc_test.SetUp(profile());
-  arc_test.app_instance()->RefreshAppList();
-  std::vector<arc::mojom::AppInfo> arc_apps(arc_test.fake_apps().begin(),
-                                            arc_test.fake_apps().begin() + 2);
-  arc_test.app_instance()->SendRefreshAppList(arc_apps);
+  arc_test().SetUp(profile());
+  arc_test().app_instance()->RefreshAppList();
+  std::vector<arc::mojom::AppInfo> arc_apps(arc_test().fake_apps().begin(),
+                                            arc_test().fake_apps().begin() + 2);
+  arc_test().app_instance()->SendRefreshAppList(arc_apps);
 
   CreateSearch();
 
@@ -167,20 +224,19 @@ TEST_F(AppSearchProviderTest, UninstallExtension) {
 }
 
 TEST_F(AppSearchProviderTest, InstallUninstallArc) {
-  ArcAppTest arc_test;
-  arc_test.SetUp(profile());
+  arc_test().SetUp(profile());
   std::vector<arc::mojom::AppInfo> arc_apps;
-  arc_test.app_instance()->RefreshAppList();
-  arc_test.app_instance()->SendRefreshAppList(arc_apps);
+  arc_test().app_instance()->RefreshAppList();
+  arc_test().app_instance()->SendRefreshAppList(arc_apps);
 
   CreateSearch();
 
   EXPECT_TRUE(results().empty());
   EXPECT_EQ("", RunQuery("fapp0"));
 
-  arc_apps.push_back(arc_test.fake_apps()[0]);
-  arc_test.app_instance()->RefreshAppList();
-  arc_test.app_instance()->SendRefreshAppList(arc_apps);
+  arc_apps.push_back(arc_test().fake_apps()[0]);
+  arc_test().app_instance()->RefreshAppList();
+  arc_test().app_instance()->SendRefreshAppList(arc_apps);
 
   // Allow async AppSearchProvider::UpdateResults to run.
   base::RunLoop().RunUntilIdle();
@@ -189,8 +245,8 @@ TEST_F(AppSearchProviderTest, InstallUninstallArc) {
   EXPECT_FALSE(results().empty());
 
   arc_apps.clear();
-  arc_test.app_instance()->RefreshAppList();
-  arc_test.app_instance()->SendRefreshAppList(arc_apps);
+  arc_test().app_instance()->RefreshAppList();
+  arc_test().app_instance()->SendRefreshAppList(arc_apps);
 
   // Allow async AppSearchProvider::UpdateResults to run.
   base::RunLoop().RunUntilIdle();
@@ -257,6 +313,40 @@ TEST_F(AppSearchProviderTest, FetchUnlaunchedRecommendations) {
       model()->FindItem(kFolderId),
       model()->FindItem(kPackagedApp2Id)->position().CreateBefore());
   EXPECT_EQ("Hosted App,Packaged App 1,Packaged App 2", RunQuery(""));
+}
+
+TEST_F(AppSearchProviderTest, FilterDuplicate) {
+  arc_test().SetUp(profile());
+
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(profile_.get());
+  ASSERT_TRUE(extension_prefs);
+
+  AddExtension(extension_misc::kGmailAppId, kGmailExtensionName);
+  const std::string arc_gmail_app_id =
+      AddArcApp(kGmailArcName, kGmailArcPackage, kGmailArcActivity);
+  arc_test().arc_app_list_prefs()->SetLastLaunchTime(arc_gmail_app_id);
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> arc_gmail_app_info =
+      arc_test().arc_app_list_prefs()->GetApp(arc_gmail_app_id);
+  ASSERT_TRUE(arc_gmail_app_info);
+
+  EXPECT_FALSE(arc_gmail_app_info->last_launch_time.is_null());
+  EXPECT_FALSE(arc_gmail_app_info->install_time.is_null());
+
+  extension_prefs->SetLastLaunchTime(
+      extension_misc::kGmailAppId,
+      arc_gmail_app_info->last_launch_time - base::TimeDelta::FromSeconds(1));
+
+  CreateSearch();
+  EXPECT_EQ(kGmailArcName, RunQuery(kGmailQeuery));
+
+  extension_prefs->SetLastLaunchTime(
+      extension_misc::kGmailAppId,
+      arc_gmail_app_info->last_launch_time + base::TimeDelta::FromSeconds(1));
+
+  CreateSearch();
+  EXPECT_EQ(kGmailExtensionName, RunQuery(kGmailQeuery));
 }
 
 }  // namespace test
