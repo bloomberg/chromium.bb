@@ -33,7 +33,9 @@ class TestableBattOrConnection : public BattOrConnectionImpl {
     return device::TestSerialIoHandler::Create();
   }
 
-  scoped_refptr<device::SerialIoHandler> GetIoHandler() { return io_handler_; }
+  device::TestSerialIoHandler* GetIoHandler() {
+    return reinterpret_cast<device::TestSerialIoHandler*>(io_handler_.get());
+  }
 };
 
 // BattOrConnectionImplTest provides a BattOrConnection and captures the
@@ -91,6 +93,12 @@ class BattOrConnectionImplTest : public testing::Test,
     BattOrControlMessage msg{type, param1, param2};
     connection_->SendBytes(BATTOR_MESSAGE_TYPE_CONTROL,
                            reinterpret_cast<char*>(&msg), sizeof(msg));
+    task_runner_->RunUntilIdle();
+  }
+
+  void ForceReadTimeout() {
+    connection_->GetIoHandler()->ForceReceiveError(
+        device::mojom::SerialReceiveError::TIMEOUT);
     task_runner_->RunUntilIdle();
   }
 
@@ -215,7 +223,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageInvalidType) {
   ASSERT_FALSE(GetReadSuccess());
 }
 
-TEST_F(BattOrConnectionImplTest, ReadMessageEndsMidMessageByte) {
+TEST_F(BattOrConnectionImplTest, ReadMessageEndsMidMessage) {
   OpenConnection();
   ASSERT_TRUE(GetOpenSuccess());
 
@@ -229,9 +237,14 @@ TEST_F(BattOrConnectionImplTest, ReadMessageEndsMidMessageByte) {
   SendBytesRaw(data, 5);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
-  // The first read should recognize that a second read is necessary, but the
-  // second read will hang because no bytes ever come in.
+  // The first read should recognize that a second read is necessary.
   ASSERT_FALSE(IsReadComplete());
+
+  ForceReadTimeout();
+
+  // The second read should fail due to the time out.
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_FALSE(GetReadSuccess());
 }
 
 TEST_F(BattOrConnectionImplTest, ReadMessageMissingEndByte) {
@@ -251,9 +264,14 @@ TEST_F(BattOrConnectionImplTest, ReadMessageMissingEndByte) {
   SendBytesRaw(data, 6);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
-  // The first read should recognize that a second read is necessary, but the
-  // second read will hang because no bytes ever come in.
+  // The first read should recognize that a second read is necessary.
   ASSERT_FALSE(IsReadComplete());
+
+  ForceReadTimeout();
+
+  // The second read should fail due to the time out.
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_FALSE(GetReadSuccess());
 }
 
 TEST_F(BattOrConnectionImplTest, ReadMessageWithEscapeCharacters) {
