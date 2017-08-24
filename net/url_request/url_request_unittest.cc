@@ -1845,7 +1845,7 @@ TEST_F(URLRequestInterceptorTest, Intercept) {
   base::SupportsUserData::Data* user_data0 = new base::SupportsUserData::Data();
   base::SupportsUserData::Data* user_data1 = new base::SupportsUserData::Data();
   base::SupportsUserData::Data* user_data2 = new base::SupportsUserData::Data();
-  req->SetUserData(nullptr, base::WrapUnique(user_data0));
+  req->SetUserData(&user_data0, base::WrapUnique(user_data0));
   req->SetUserData(&user_data1, base::WrapUnique(user_data1));
   req->SetUserData(&user_data2, base::WrapUnique(user_data2));
   req->set_method("GET");
@@ -1853,7 +1853,7 @@ TEST_F(URLRequestInterceptorTest, Intercept) {
   base::RunLoop().Run();
 
   // Make sure we can retrieve our specific user data.
-  EXPECT_EQ(user_data0, req->GetUserData(nullptr));
+  EXPECT_EQ(user_data0, req->GetUserData(&user_data0));
   EXPECT_EQ(user_data1, req->GetUserData(&user_data1));
   EXPECT_EQ(user_data2, req->GetUserData(&user_data2));
 
