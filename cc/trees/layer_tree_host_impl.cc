@@ -3702,6 +3702,11 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
       old_animation_controller->DidMouseLeave();
 
     scroll_element_id_mouse_currently_over_ = scroll_element_id;
+
+    // Experiment: Enables will flash scorllbar when user move mouse enter a
+    // scrollable area.
+    if (settings_.scrollbar_flash_when_mouse_enter && new_animation_controller)
+      new_animation_controller->DidScrollUpdate();
   }
 
   if (!new_animation_controller)
