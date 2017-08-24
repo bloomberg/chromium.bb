@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #elif defined(OS_LINUX)
 #include "ui/base/dragdrop/os_exchange_data_provider_aura.h"
@@ -41,7 +41,7 @@ OSExchangeDataProviderFactory::CreateProvider() {
   if (factory_)
     return factory_->BuildProvider();
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   return base::MakeUnique<OSExchangeDataProviderAuraX11>();
 #elif defined(OS_LINUX)
   return base::MakeUnique<OSExchangeDataProviderAura>();

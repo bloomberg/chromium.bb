@@ -104,7 +104,7 @@ class ViewAndroid;
 #endif
 class SkBitmap;
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 extern "C" {
 struct _AtkObject;
 typedef struct _AtkObject AtkObject;
@@ -148,7 +148,7 @@ typedef NSFont* NativeFont;
 typedef id NativeViewAccessible;
 #else  // Android, Linux, Chrome OS, etc.
 // Linux doesn't have a native font type.
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 typedef AtkObject* NativeViewAccessible;
 #else
 typedef void* NativeViewAccessible;

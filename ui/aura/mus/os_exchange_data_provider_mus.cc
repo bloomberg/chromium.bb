@@ -251,7 +251,7 @@ bool OSExchangeDataProviderMus::HasCustomFormat(
 
 // These methods were added in an ad-hoc way to different operating
 // systems. We need to support them until they get cleaned up.
-#if (!defined(OS_CHROMEOS) && defined(USE_X11)) || defined(OS_WIN)
+#if defined(USE_X11) || defined(OS_WIN)
 void OSExchangeDataProviderMus::SetFileContents(
     const base::FilePath& filename,
     const std::string& file_contents) {}

@@ -113,7 +113,7 @@ class UI_BASE_EXPORT OSExchangeData {
     virtual bool HasFile() const = 0;
     virtual bool HasCustomFormat(const Clipboard::FormatType& format) const = 0;
 
-#if (!defined(OS_CHROMEOS) && defined(USE_X11)) || defined(OS_WIN)
+#if defined(USE_X11) || defined(OS_WIN)
     virtual void SetFileContents(const base::FilePath& filename,
                                  const std::string& file_contents) = 0;
 #endif

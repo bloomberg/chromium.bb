@@ -68,7 +68,7 @@ class AURA_EXPORT OSExchangeDataProviderMus
 // per operating system. Now we have to have at least two providers per OS,
 // leading to the following warts, which will remain until we clean all the
 // callsites up.
-#if (!defined(OS_CHROMEOS) && defined(USE_X11)) || defined(OS_WIN)
+#if defined(USE_X11) || defined(OS_WIN)
   void SetFileContents(const base::FilePath& filename,
                        const std::string& file_contents) override;
 #endif

@@ -34,7 +34,7 @@
 #include "ui/gl/scoped_make_current.h"
 #include "ui/gl/sync_control_vsync_provider.h"
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 extern "C" {
 #include <X11/Xlib.h>
 #define Status int
@@ -204,7 +204,7 @@ EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
     display_attribs.push_back(EGL_TRUE);
   }
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   // ANGLE_NULL doesn't use the visual, and may run without X11 where we can't
   // get it anyway.
   if (platform_type != EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE) {
@@ -314,7 +314,7 @@ EGLConfig ChooseConfig(GLSurfaceFormat format, bool surfaceless) {
   EGLint stencil_size = format.GetStencilBits();
   EGLint samples = format.GetSamples();
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   // If we're using ANGLE_NULL, we may not have a display, in which case we
   // can't use XVisualManager.
   if (g_native_display) {

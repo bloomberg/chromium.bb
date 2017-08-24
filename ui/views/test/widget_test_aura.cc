@@ -19,7 +19,7 @@
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #endif
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 #endif
 
@@ -73,7 +73,7 @@ BOOL CALLBACK FindAllWindowsCallback(HWND hwnd, LPARAM param) {
 
 std::vector<aura::Window*> GetAllTopLevelWindows() {
   std::vector<aura::Window*> roots;
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   roots = DesktopWindowTreeHostX11::GetAllOpenWindows();
 #endif
 #if defined(OS_WIN)

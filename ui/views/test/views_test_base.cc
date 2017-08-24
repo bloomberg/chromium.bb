@@ -13,7 +13,7 @@
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/views/test/platform_test_helper.h"
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 #include "ui/base/x/x11_util_internal.h"
 #endif
 
@@ -22,7 +22,7 @@ namespace views {
 namespace {
 
 bool InitializeVisuals() {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   bool has_compositing_manager = false;
   int depth = 0;
   bool using_argb_visual;
