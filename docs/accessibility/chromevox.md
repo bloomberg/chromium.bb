@@ -73,7 +73,7 @@ with this command-line flag:
 
 Now open http://localhost:9222 in a separate instance of the browser, and debug the ChromeVox extension background page from there.
 
-Another option is to use emacs jade (available through -mx
+Another option is to use emacs indium (available through M-x
 package-list-packages).
 
 It also talks to localhost:9222 but integrates more tightly into emacs instead.
