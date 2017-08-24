@@ -1794,7 +1794,7 @@ void AppsGridView::OnFolderItemRemoved() {
 void AppsGridView::UpdateOpacity() {
   int app_list_y_position_in_screen =
       contents_view_->app_list_view()->app_list_y_position_in_screen();
-  int work_area_bottom = contents_view_->app_list_view()->work_area_bottom();
+  int work_area_bottom = contents_view_->app_list_view()->GetWorkAreaBottom();
   bool is_in_drag = contents_view_->app_list_view()->is_in_drag();
 
   // The opacity of suggested apps is a function of the fractional displacement

@@ -180,6 +180,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Sets |is_in_drag_| and updates the visibility of app list items.
   void SetIsInDrag(bool is_in_drag);
 
+  // Gets current work area bottom.
+  int GetWorkAreaBottom();
+
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
   }
@@ -204,8 +207,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   int app_list_y_position_in_screen() const {
     return app_list_y_position_in_screen_;
   }
-
-  int work_area_bottom() const { return work_area_bottom_; }
 
   void set_app_list_animation_duration_ms_for_testing(
       int app_list_animation_duration_ms) {
@@ -321,9 +322,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   // Y position of the app list in screen space coordinate during dragging.
   int app_list_y_position_in_screen_ = 0;
-
-  // Bottom of work area.
-  int work_area_bottom_ = 0;
 
   // The opacity of app list background during dragging.
   float background_opacity_ = 0.f;

@@ -672,7 +672,7 @@ void SearchBoxView::UpdateOpacity() {
   int app_list_y_position_in_screen =
       contents_view->app_list_view()->app_list_y_position_in_screen();
   float fraction =
-      std::max<float>(0, contents_view->app_list_view()->work_area_bottom() -
+      std::max<float>(0, contents_view->app_list_view()->GetWorkAreaBottom() -
                              app_list_y_position_in_screen) /
       (kPeekingAppListHeight - kShelfSize);
 

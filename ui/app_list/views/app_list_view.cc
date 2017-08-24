@@ -539,7 +539,6 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
 
   overlay_view_ = new AppListOverlayView(0 /* no corners */);
 
-  work_area_bottom_ = fullscreen_widget_->GetWorkAreaBoundsInScreen().bottom();
   widget_observer_ = std::unique_ptr<FullscreenWidgetObserver>(
       new FullscreenWidgetObserver(this));
 }
@@ -1261,6 +1260,10 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
       ->UpdateControlVisibility(app_list_state_, is_in_drag_);
 }
 
+int AppListView::GetWorkAreaBottom() {
+  return fullscreen_widget_->GetWorkAreaBoundsInScreen().bottom();
+}
+
 void AppListView::OnSpeechRecognitionStateChanged(
     SpeechRecognitionState new_state) {
   if (!speech_view_)
@@ -1359,7 +1362,7 @@ void AppListView::DraggingLayout() {
 
 float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   float top_of_applist = fullscreen_widget_->GetWindowBoundsInScreen().y();
-  float dragging_height = std::max((work_area_bottom_ - top_of_applist), 0.f);
+  float dragging_height = std::max((GetWorkAreaBottom() - top_of_applist), 0.f);
   float coefficient =
       std::min(dragging_height / (kNumOfShelfSize * kShelfSize), 1.0f);
   float shield_opacity =
