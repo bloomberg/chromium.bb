@@ -67,10 +67,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   void SetFocusCycler(FocusCycler* focus_cycler);
   FocusCycler* GetFocusCycler();
 
-  // Called by the activation delegate, before the shelf is activated
-  // when no other windows are visible.
-  void WillActivateAsFallback() { activating_as_fallback_ = true; }
-
   // Clean up prior to deletion.
   void Shutdown();
 
@@ -116,7 +112,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // View containing the shelf items. Owned by the views hierarchy.
   ShelfView* const shelf_view_;
   ShelfBackgroundAnimator background_animator_;
-  bool activating_as_fallback_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfWidget);
 };
