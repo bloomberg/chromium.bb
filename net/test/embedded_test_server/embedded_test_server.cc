@@ -282,10 +282,6 @@ std::string EmbeddedTestServer::GetCertificateName() const {
       return "localhost_cert.pem";
     case CERT_EXPIRED:
       return "expired_cert.pem";
-    case CERT_CHAIN_WRONG_ROOT:
-      return "redundant-server-chain.pem";
-    case CERT_BAD_VALIDITY:
-      return "bad_validity.pem";
   }
 
   return "ok_cert.pem";
