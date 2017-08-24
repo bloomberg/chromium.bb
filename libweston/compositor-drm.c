@@ -1869,6 +1869,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	struct weston_view *ev, *next;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
+	bool picked_scanout = false;
 
 	/*
 	 * Find a surface for each sprite in the output using some heuristics:
@@ -1915,14 +1916,23 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 					  &ev->transform.boundingbox);
 
 		next_plane = NULL;
-		if (pixman_region32_not_empty(&surface_overlap))
+		if (pixman_region32_not_empty(&surface_overlap) || picked_scanout)
 			next_plane = primary;
 		if (next_plane == NULL)
 			next_plane = drm_output_prepare_cursor_view(output, ev);
-		if (next_plane == NULL)
+
+		/* If a higher-stacked view already got assigned to scanout, it's incorrect to
+		 * assign a subsequent (lower-stacked) view to scanout.
+		 */
+		if (next_plane == NULL) {
 			next_plane = drm_output_prepare_scanout_view(output, ev);
+			if (next_plane)
+				picked_scanout = true;
+		}
+
 		if (next_plane == NULL)
 			next_plane = drm_output_prepare_overlay_view(output, ev);
+
 		if (next_plane == NULL)
 			next_plane = primary;
 
