@@ -24,6 +24,7 @@ typedef NGLogicalRect NGLayoutOpportunity;
 class CORE_EXPORT NGExclusionSpace {
  public:
   NGExclusionSpace();
+  ~NGExclusionSpace(){};
 
   void Add(const NGExclusion& exclusion);
 

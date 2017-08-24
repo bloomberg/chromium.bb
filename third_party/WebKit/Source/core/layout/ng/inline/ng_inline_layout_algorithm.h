@@ -38,7 +38,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   // Create a line.
   // @return false if the line does not fit in the constraint space in block
   //         direction.
-  bool CreateLine(NGLineInfo*, RefPtr<NGInlineBreakToken> = nullptr);
+  bool CreateLine(NGLineInfo*,
+                  NGExclusionSpace*,
+                  RefPtr<NGInlineBreakToken> = nullptr);
 
   RefPtr<NGLayoutResult> Layout() override;
 
@@ -47,7 +49,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   void BidiReorder(NGInlineItemResults*);
 
-  bool PlaceItems(NGLineInfo*, RefPtr<NGInlineBreakToken>);
+  bool PlaceItems(NGLineInfo*,
+                  const NGExclusionSpace&,
+                  RefPtr<NGInlineBreakToken>);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       NGInlineItemResult*,
                                       const NGLineInfo&,
@@ -59,7 +63,9 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                       LayoutUnit inline_size,
                       LayoutUnit available_width);
 
-  LayoutUnit ComputeContentSize(const NGLineInfo&, LayoutUnit line_bottom);
+  LayoutUnit ComputeContentSize(const NGLineInfo&,
+                                const NGExclusionSpace&,
+                                LayoutUnit line_bottom);
 
   void PropagateBaselinesFromChildren();
   bool AddBaseline(const NGBaselineRequest&,
@@ -76,6 +82,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   unsigned is_horizontal_writing_mode_ : 1;
 
+  std::unique_ptr<NGExclusionSpace> exclusion_space_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
 };
 

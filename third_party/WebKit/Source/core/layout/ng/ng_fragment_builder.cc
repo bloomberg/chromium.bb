@@ -7,6 +7,7 @@
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
+#include "core/layout/ng/ng_exclusion_space.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
 
@@ -29,6 +30,8 @@ NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
       node_(nullptr),
       layout_object_(layout_object),
       did_break_(false) {}
+
+NGFragmentBuilder::~NGFragmentBuilder() {}
 
 NGFragmentBuilder& NGFragmentBuilder::SetSize(const NGLogicalSize& size) {
   size_ = size;
@@ -157,6 +160,12 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
   return *this;
 }
 
+NGFragmentBuilder& NGFragmentBuilder::SetExclusionSpace(
+    std::unique_ptr<const NGExclusionSpace> exclusion_space) {
+  exclusion_space_ = std::move(exclusion_space);
+  return *this;
+}
+
 void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
                                     LayoutUnit offset) {
 #if DCHECK_IS_ON()
@@ -199,14 +208,15 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
 
   return AdoptRef(new NGLayoutResult(
       std::move(fragment), oof_positioned_descendants_, unpositioned_floats_,
-      bfc_offset_, end_margin_strut_, NGLayoutResult::kSuccess));
+      std::move(exclusion_space_), bfc_offset_, end_margin_strut_,
+      NGLayoutResult::kSuccess));
 }
 
 RefPtr<NGLayoutResult> NGFragmentBuilder::Abort(
     NGLayoutResult::NGLayoutResultStatus status) {
   return AdoptRef(new NGLayoutResult(
       nullptr, Vector<NGOutOfFlowPositionedDescendant>(), unpositioned_floats_,
-      bfc_offset_, end_margin_strut_, status));
+      nullptr, bfc_offset_, end_margin_strut_, status));
 }
 
 }  // namespace blink
