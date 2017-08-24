@@ -28,6 +28,10 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 
+namespace tracked_objects {
+class Location;
+}
+
 namespace base {
 
 class BucketRanges;
@@ -137,7 +141,8 @@ class BASE_EXPORT StatisticsRecorder {
                             HistogramSnapshotManager* snapshot_manager);
 
   // TODO(asvitkine): Remove this after crbug/736675.
-  static void ValidateAllHistograms();
+  static void ValidateAllHistograms(
+      tracked_objects::Location* location = nullptr);
 
   // GetSnapshot copies some of the pointers to registered histograms into the
   // caller supplied vector (Histograms). Only histograms which have |query| as
