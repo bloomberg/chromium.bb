@@ -21,5 +21,5 @@ interface Memlog {
   // |output_file|. |metadata| is a dictionary that should be added to the trace
   // under the "metadata" key.
   DumpProcess(mojo.common.mojom.ProcessId pid, handle output_file,
-              mojo.common.mojom.DictionaryValue metadata);
+              mojo.common.mojom.DictionaryValue metadata) => (bool result);
 };
