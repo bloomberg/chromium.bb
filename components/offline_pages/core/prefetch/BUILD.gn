@@ -13,6 +13,8 @@ static_library("prefetch") {
     "add_unique_urls_task.h",
     "download_archives_task.cc",
     "download_archives_task.h",
+    "download_cleanup_task.cc",
+    "download_cleanup_task.h",
     "download_completed_task.cc",
     "download_completed_task.h",
     "generate_page_bundle_reconcile_task.cc",
@@ -156,6 +158,7 @@ source_set("unit_tests") {
   sources = [
     "add_unique_urls_task_unittest.cc",
     "download_archives_task_unittest.cc",
+    "download_cleanup_task_unittest.cc",
     "download_completed_task_unittest.cc",
     "generate_page_bundle_reconcile_task_unittest.cc",
     "generate_page_bundle_request_unittest.cc",
