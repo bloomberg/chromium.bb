@@ -39,6 +39,10 @@ class GPU_EXPORT TransferBufferManager
   void DestroyTransferBuffer(int32_t id);
   scoped_refptr<Buffer> GetTransferBuffer(int32_t id);
 
+  size_t shared_memory_bytes_allocated() const {
+    return shared_memory_bytes_allocated_;
+  }
+
  private:
   typedef base::flat_map<int32_t, scoped_refptr<Buffer>> BufferMap;
   BufferMap registered_buffers_;
