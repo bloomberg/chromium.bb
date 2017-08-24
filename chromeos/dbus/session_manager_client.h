@@ -323,6 +323,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
                                 const cryptohome::Identification& cryptohome_id,
                                 bool skip_boot_completed_broadcast,
                                 bool scan_vendor_priv_app,
+                                bool native_bridge_experiment,
                                 const StartArcInstanceCallback& callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes
