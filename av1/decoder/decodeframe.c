@@ -4757,7 +4757,7 @@ static void read_global_motion_params(WarpedMotionParams *params,
     if (aom_read_bit(r, ACCT_STR))
       type = ROTZOOM;
     else
-      aom_read_bit(r, ACCT_STR) ? TRANSLATION : AFFINE;
+      type = aom_read_bit(r, ACCT_STR) ? TRANSLATION : AFFINE;
 #endif  // GLOBAL_TRANS_TYPES > 4
   }
 
