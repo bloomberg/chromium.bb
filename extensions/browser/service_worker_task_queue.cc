@@ -25,7 +25,7 @@ void FinishTask(const LazyContextTaskQueue::PendingTask& task,
                 const ExtensionId& extension_id,
                 int process_id,
                 int thread_id) {
-  auto params = base::MakeUnique<LazyContextTaskQueue::ContextInfo>(
+  auto params = std::make_unique<LazyContextTaskQueue::ContextInfo>(
       extension_id, content::RenderProcessHost::FromID(process_id), thread_id,
       GURL());
   task.Run(std::move(params));

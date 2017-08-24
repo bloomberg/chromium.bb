@@ -32,7 +32,7 @@ ExceptionHandlerPerContextData* GetContextData(v8::Local<v8::Context> context,
       per_context_data->GetUserData(kExtensionExceptionHandlerPerContextKey));
 
   if (!data && should_create) {
-    auto api_data = base::MakeUnique<ExceptionHandlerPerContextData>();
+    auto api_data = std::make_unique<ExceptionHandlerPerContextData>();
     data = api_data.get();
     per_context_data->SetUserData(kExtensionExceptionHandlerPerContextKey,
                                   std::move(api_data));

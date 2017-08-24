@@ -38,7 +38,7 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
     manifest.SetString("app.launch.web_url", launch_url);
 
   if (!extent.empty()) {
-    auto urls = base::MakeUnique<base::ListValue>();
+    auto urls = std::make_unique<base::ListValue>();
     urls->AppendString(extent);
     manifest.Set("app.urls", std::move(urls));
   }

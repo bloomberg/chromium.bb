@@ -142,7 +142,7 @@ OverscanTracker::OverscanWebObserver* OverscanTracker::GetObserver(
     return iter->second.get();
   if (!create)
     return nullptr;
-  auto owned_observer = base::MakeUnique<OverscanWebObserver>(web_contents);
+  auto owned_observer = std::make_unique<OverscanWebObserver>(web_contents);
   auto* observer_ptr = owned_observer.get();
   observers_[web_contents] = std::move(owned_observer);
   return observer_ptr;
@@ -303,7 +303,7 @@ SystemDisplayShowNativeTouchCalibrationFunction::Run() {
 void SystemDisplayShowNativeTouchCalibrationFunction::OnCalibrationComplete(
     bool success) {
   if (success)
-    Respond(OneArgument(base::MakeUnique<base::Value>(true)));
+    Respond(OneArgument(std::make_unique<base::Value>(true)));
   else
     Respond(Error(kTouchCalibrationError));
 }

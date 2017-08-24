@@ -160,10 +160,10 @@ void WorkerThreadDispatcher::AddWorkerData(
     if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
       // The Unretained below is safe since the IPC message sender outlives the
       // bindings system.
-      bindings_system = base::MakeUnique<NativeExtensionBindingsSystem>(
+      bindings_system = std::make_unique<NativeExtensionBindingsSystem>(
           std::move(ipc_message_sender));
     } else {
-      bindings_system = base::MakeUnique<JsExtensionBindingsSystem>(
+      bindings_system = std::make_unique<JsExtensionBindingsSystem>(
           source_map, std::move(ipc_message_sender));
     }
     ServiceWorkerData* new_data = new ServiceWorkerData(

@@ -337,7 +337,7 @@ AppCurrentWindowInternalSetShapeFunction::Run() {
   // |rects| should be an empty list.
   std::unique_ptr<AppWindow::ShapeRects> shape_rects;
   if (shape.rects) {
-    shape_rects = base::MakeUnique<AppWindow::ShapeRects>();
+    shape_rects = std::make_unique<AppWindow::ShapeRects>();
     shape_rects->reserve(shape.rects->size());
     for (const RegionRect& input_rect : *shape.rects) {
       shape_rects->emplace_back(input_rect.left, input_rect.top,

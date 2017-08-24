@@ -51,7 +51,7 @@ ExtensionsAPIClient::CreateExtensionOptionsGuestDelegate(
 std::unique_ptr<guest_view::GuestViewManagerDelegate>
 ExtensionsAPIClient::CreateGuestViewManagerDelegate(
     content::BrowserContext* context) const {
-  return base::MakeUnique<ExtensionsGuestViewManagerDelegate>(context);
+  return std::make_unique<ExtensionsGuestViewManagerDelegate>(context);
 }
 
 std::unique_ptr<MimeHandlerViewGuestDelegate>

@@ -51,7 +51,7 @@ bool OfflineEnabledHandler::Parse(Extension* extension, base::string16* error) {
         PermissionsParser::HasAPIPermission(extension, APIPermission::kWebView);
     extension->SetManifestData(
         keys::kOfflineEnabled,
-        base::MakeUnique<OfflineEnabledInfo>(!has_webview_permission));
+        std::make_unique<OfflineEnabledInfo>(!has_webview_permission));
     return true;
   }
 
@@ -65,7 +65,7 @@ bool OfflineEnabledHandler::Parse(Extension* extension, base::string16* error) {
 
   extension->SetManifestData(
       keys::kOfflineEnabled,
-      base::MakeUnique<OfflineEnabledInfo>(offline_enabled));
+      std::make_unique<OfflineEnabledInfo>(offline_enabled));
   return true;
 }
 

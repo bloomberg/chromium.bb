@@ -105,7 +105,7 @@ class URLRequestCounter {
   void AddInterceptor() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        url_, base::MakeUnique<SimpleRequestInterceptor>(base::Bind(
+        url_, std::make_unique<SimpleRequestInterceptor>(base::Bind(
                   &URLRequestCounter::RequestFired, base::Unretained(this))));
   }
 

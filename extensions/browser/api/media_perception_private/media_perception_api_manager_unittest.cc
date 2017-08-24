@@ -123,15 +123,15 @@ class MediaPerceptionAPIManagerTest : public testing::Test {
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     auto media_analytics_client =
-        base::MakeUnique<chromeos::FakeMediaAnalyticsClient>();
+        std::make_unique<chromeos::FakeMediaAnalyticsClient>();
     media_analytics_client_ = media_analytics_client.get();
     dbus_setter->SetMediaAnalyticsClient(std::move(media_analytics_client));
 
-    auto upstart_client = base::MakeUnique<chromeos::TestUpstartClient>();
+    auto upstart_client = std::make_unique<chromeos::TestUpstartClient>();
     upstart_client_ = upstart_client.get();
     dbus_setter->SetUpstartClient(std::move(upstart_client));
 
-    manager_ = base::MakeUnique<MediaPerceptionAPIManager>(&browser_context_);
+    manager_ = std::make_unique<MediaPerceptionAPIManager>(&browser_context_);
   }
 
   void TearDown() override {

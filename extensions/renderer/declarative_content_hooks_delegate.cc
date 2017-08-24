@@ -177,7 +177,7 @@ void DeclarativeContentHooksDelegate::InitializeTemplate(
     // base::Unretained and the callback itself are safe. Similarly, the same
     // bindings system owns all these objects, so the spec and type refs should
     // also be safe.
-    callbacks_.push_back(base::MakeUnique<HandlerCallback>(
+    callbacks_.push_back(std::make_unique<HandlerCallback>(
         base::Bind(&DeclarativeContentHooksDelegate::HandleCall,
                    base::Unretained(this), spec, &type_refs, type.full_name)));
     object_template->Set(

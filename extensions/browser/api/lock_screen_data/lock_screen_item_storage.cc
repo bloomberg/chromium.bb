@@ -53,7 +53,7 @@ std::unique_ptr<DataItem> CreateDataItem(const std::string& item_id,
   return g_test_item_factory_callback
              ? g_test_item_factory_callback->Run(item_id, extension_id,
                                                  crypto_key)
-             : base::MakeUnique<DataItem>(item_id, extension_id, context,
+             : std::make_unique<DataItem>(item_id, extension_id, context,
                                           value_store_cache, task_runner,
                                           crypto_key);
 }
@@ -113,9 +113,9 @@ LockScreenItemStorage::LockScreenItemStorage(content::BrowserContext* context,
       crypto_key_(crypto_key),
       local_state_(local_state),
       storage_root_(storage_root.Append(user_id_)),
-      tick_clock_(base::MakeUnique<base::DefaultTickClock>()),
+      tick_clock_(std::make_unique<base::DefaultTickClock>()),
       extension_registry_observer_(this),
-      value_store_cache_(base::MakeUnique<LocalValueStoreCache>(
+      value_store_cache_(std::make_unique<LocalValueStoreCache>(
           new ValueStoreFactoryImpl(storage_root))),
       weak_ptr_factory_(this) {
   CHECK(!user_id_.empty());
@@ -170,7 +170,7 @@ void LockScreenItemStorage::SetSessionLocked(bool session_locked) {
     api::lock_screen_data::DataItemsAvailableEvent event_args;
     event_args.was_locked = was_locked;
 
-    std::unique_ptr<Event> event = base::MakeUnique<Event>(
+    std::unique_ptr<Event> event = std::make_unique<Event>(
         events::LOCK_SCREEN_DATA_ON_DATA_ITEMS_AVAILABLE,
         api::lock_screen_data::OnDataItemsAvailable::kEventName,
         api::lock_screen_data::OnDataItemsAvailable::Create(event_args));

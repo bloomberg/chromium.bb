@@ -247,7 +247,7 @@ ExtensionFunction::ResponseAction FileSystemGetDisplayPathFunction::Run() {
 
   file_path = path_util::PrettifyPath(file_path);
   return RespondNow(
-      OneArgument(base::MakeUnique<base::Value>(file_path.value())));
+      OneArgument(std::make_unique<base::Value>(file_path.value())));
 }
 
 FileSystemEntryFunction::FileSystemEntryFunction()
@@ -284,7 +284,7 @@ void FileSystemEntryFunction::RegisterFileSystemsAndSendResponse(
 
 std::unique_ptr<base::DictionaryValue> FileSystemEntryFunction::CreateResult() {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->Set("entries", base::MakeUnique<base::ListValue>());
+  result->Set("entries", std::make_unique<base::ListValue>());
   result->SetBoolean("multiple", multiple_);
   return result;
 }
@@ -377,7 +377,7 @@ ExtensionFunction::ResponseAction FileSystemIsWritableEntryFunction::Run() {
   int renderer_id = render_frame_host()->GetProcess()->GetID();
   bool is_writable = policy->CanReadWriteFileSystem(renderer_id, filesystem_id);
 
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(is_writable)));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(is_writable)));
 }
 
 void FileSystemChooseEntryFunction::ShowPicker(
@@ -870,7 +870,7 @@ ExtensionFunction::ResponseAction FileSystemIsRestorableFunction::Run() {
       delegate->GetSavedFilesService(browser_context());
   DCHECK(saved_files_service);
 
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       saved_files_service->IsRegistered(extension_->id(), entry_id))));
 }
 

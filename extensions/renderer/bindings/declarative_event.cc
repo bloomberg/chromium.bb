@@ -25,11 +25,11 @@ namespace {
 // Builds an ArgumentSpec that accepts the given |choices| as references.
 std::unique_ptr<ArgumentSpec> BuildChoicesSpec(
     const std::vector<std::string>& choices_list) {
-  auto item_type = base::MakeUnique<ArgumentSpec>(ArgumentType::CHOICES);
+  auto item_type = std::make_unique<ArgumentSpec>(ArgumentType::CHOICES);
   std::vector<std::unique_ptr<ArgumentSpec>> choices;
   choices.reserve(choices_list.size());
   for (const std::string& value : choices_list) {
-    auto choice = base::MakeUnique<ArgumentSpec>(ArgumentType::REF);
+    auto choice = std::make_unique<ArgumentSpec>(ArgumentType::REF);
     choice->set_ref(value);
     choices.push_back(std::move(choice));
   }
@@ -50,32 +50,32 @@ std::unique_ptr<ArgumentSpec> BuildChoicesSpec(
 std::unique_ptr<ArgumentSpec> BuildRulesSpec(
     const std::vector<std::string>& actions_list,
     const std::vector<std::string>& conditions_list) {
-  auto rule_spec = base::MakeUnique<ArgumentSpec>(ArgumentType::OBJECT);
+  auto rule_spec = std::make_unique<ArgumentSpec>(ArgumentType::OBJECT);
   ArgumentSpec::PropertiesMap properties;
   {
-    auto id_spec = base::MakeUnique<ArgumentSpec>(ArgumentType::STRING);
+    auto id_spec = std::make_unique<ArgumentSpec>(ArgumentType::STRING);
     id_spec->set_optional(true);
     properties["id"] = std::move(id_spec);
   }
   {
-    auto tags_spec = base::MakeUnique<ArgumentSpec>(ArgumentType::LIST);
+    auto tags_spec = std::make_unique<ArgumentSpec>(ArgumentType::LIST);
     tags_spec->set_list_element_type(
-        base::MakeUnique<ArgumentSpec>(ArgumentType::STRING));
+        std::make_unique<ArgumentSpec>(ArgumentType::STRING));
     tags_spec->set_optional(true);
     properties["tags"] = std::move(tags_spec);
   }
   {
-    auto actions_spec = base::MakeUnique<ArgumentSpec>(ArgumentType::LIST);
+    auto actions_spec = std::make_unique<ArgumentSpec>(ArgumentType::LIST);
     actions_spec->set_list_element_type(BuildChoicesSpec(actions_list));
     properties["actions"] = std::move(actions_spec);
   }
   {
-    auto conditions_spec = base::MakeUnique<ArgumentSpec>(ArgumentType::LIST);
+    auto conditions_spec = std::make_unique<ArgumentSpec>(ArgumentType::LIST);
     conditions_spec->set_list_element_type(BuildChoicesSpec(conditions_list));
     properties["conditions"] = std::move(conditions_spec);
   }
   {
-    auto priority_spec = base::MakeUnique<ArgumentSpec>(ArgumentType::INTEGER);
+    auto priority_spec = std::make_unique<ArgumentSpec>(ArgumentType::INTEGER);
     priority_spec->set_optional(true);
     properties["priority"] = std::move(priority_spec);
   }
@@ -87,22 +87,22 @@ std::unique_ptr<ArgumentSpec> BuildRulesSpec(
 std::unique_ptr<APISignature> BuildAddRulesSignature(
     const std::string& rule_name) {
   std::vector<std::unique_ptr<ArgumentSpec>> params;
-  params.push_back(base::MakeUnique<ArgumentSpec>(ArgumentType::STRING));
-  params.push_back(base::MakeUnique<ArgumentSpec>(ArgumentType::INTEGER));
+  params.push_back(std::make_unique<ArgumentSpec>(ArgumentType::STRING));
+  params.push_back(std::make_unique<ArgumentSpec>(ArgumentType::INTEGER));
   {
-    auto rules = base::MakeUnique<ArgumentSpec>(ArgumentType::LIST);
-    auto ref = base::MakeUnique<ArgumentSpec>(ArgumentType::REF);
+    auto rules = std::make_unique<ArgumentSpec>(ArgumentType::LIST);
+    auto ref = std::make_unique<ArgumentSpec>(ArgumentType::REF);
     ref->set_ref(rule_name);
     rules->set_list_element_type(std::move(ref));
     params.push_back(std::move(rules));
   }
   {
-    auto callback = base::MakeUnique<ArgumentSpec>(ArgumentType::FUNCTION);
+    auto callback = std::make_unique<ArgumentSpec>(ArgumentType::FUNCTION);
     callback->set_optional(true);
     params.push_back(std::move(callback));
   }
 
-  return base::MakeUnique<APISignature>(std::move(params));
+  return std::make_unique<APISignature>(std::move(params));
 }
 
 }  // namespace

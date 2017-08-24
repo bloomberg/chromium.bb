@@ -313,7 +313,7 @@ void SerialConnection::GetInfo(GetInfoCompleteCallback callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(io_handler_);
 
-  auto info = base::MakeUnique<api::serial::ConnectionInfo>();
+  auto info = std::make_unique<api::serial::ConnectionInfo>();
   info->paused = paused_;
   info->persistent = persistent_;
   info->name = name_;
@@ -359,7 +359,7 @@ void SerialConnection::GetControlSignals(
           return;
         }
         auto control_signals =
-            base::MakeUnique<api::serial::DeviceControlSignals>();
+            std::make_unique<api::serial::DeviceControlSignals>();
         control_signals->dcd = signals->dcd;
         control_signals->cts = signals->cts;
         control_signals->ri = signals->ri;

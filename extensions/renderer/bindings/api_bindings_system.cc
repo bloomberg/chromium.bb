@@ -75,10 +75,10 @@ std::unique_ptr<APIBinding> APIBindingsSystem::CreateNewAPIBinding(
     hooks = std::move(iter->second);
     binding_hooks_.erase(iter);
   } else {
-    hooks = base::MakeUnique<APIBindingHooks>(api_name, call_js_sync_);
+    hooks = std::make_unique<APIBindingHooks>(api_name, call_js_sync_);
   }
 
-  return base::MakeUnique<APIBinding>(
+  return std::make_unique<APIBinding>(
       api_name, function_definitions, type_definitions, event_definitions,
       property_definitions,
       base::Bind(&APIBindingsSystem::CreateCustomType, base::Unretained(this)),
@@ -124,7 +124,7 @@ APIBindingHooks* APIBindingsSystem::GetHooksForAPI(
       << "Hook registration must happen before creating any binding instances.";
   std::unique_ptr<APIBindingHooks>& hooks = binding_hooks_[api_name];
   if (!hooks)
-    hooks = base::MakeUnique<APIBindingHooks>(api_name, call_js_sync_);
+    hooks = std::make_unique<APIBindingHooks>(api_name, call_js_sync_);
   return hooks.get();
 }
 

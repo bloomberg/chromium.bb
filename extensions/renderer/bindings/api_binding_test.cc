@@ -33,14 +33,14 @@ void APIBindingTest::SetUp() {
                                  gin::ArrayBufferAllocator::SharedInstance());
 
   isolate_holder_ =
-      base::MakeUnique<gin::IsolateHolder>(base::ThreadTaskRunnerHandle::Get());
+      std::make_unique<gin::IsolateHolder>(base::ThreadTaskRunnerHandle::Get());
   isolate()->Enter();
 
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context =
       v8::Context::New(isolate(), GetV8ExtensionConfiguration());
   context->Enter();
-  main_context_holder_ = base::MakeUnique<gin::ContextHolder>(isolate());
+  main_context_holder_ = std::make_unique<gin::ContextHolder>(isolate());
   main_context_holder_->SetContext(context);
 }
 
@@ -93,7 +93,7 @@ void APIBindingTest::DisposeAllContexts() {
 }
 
 v8::Local<v8::Context> APIBindingTest::AddContext() {
-  auto holder = base::MakeUnique<gin::ContextHolder>(isolate());
+  auto holder = std::make_unique<gin::ContextHolder>(isolate());
   v8::Local<v8::Context> context =
       v8::Context::New(isolate(), GetV8ExtensionConfiguration());
   holder->SetContext(context);

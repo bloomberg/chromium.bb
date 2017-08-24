@@ -250,14 +250,14 @@ ShellContentBrowserClient::CreateThrottlesForNavigation(
     content::NavigationHandle* navigation_handle) {
   std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
   throttles.push_back(
-      base::MakeUnique<ExtensionNavigationThrottle>(navigation_handle));
+      std::make_unique<ExtensionNavigationThrottle>(navigation_handle));
   return throttles;
 }
 
 std::unique_ptr<content::NavigationUIData>
 ShellContentBrowserClient::GetNavigationUIData(
     content::NavigationHandle* navigation_handle) {
-  return base::MakeUnique<ShellNavigationUIData>(navigation_handle);
+  return std::make_unique<ShellNavigationUIData>(navigation_handle);
 }
 
 ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(

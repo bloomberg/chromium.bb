@@ -59,7 +59,7 @@ int APIRequestHandler::StartRequest(v8::Local<v8::Context> context,
                                     v8::Local<v8::Function> callback,
                                     v8::Local<v8::Function> custom_callback,
                                     binding::RequestThread thread) {
-  auto request = base::MakeUnique<Request>();
+  auto request = std::make_unique<Request>();
 
   // The request id is primarily used in the renderer to associate an API
   // request with the associated callback, but it's also used in the browser as

@@ -253,12 +253,12 @@ aura::Window::Windows ShellDesktopControllerAura::GetAllRootWindows() {
 }
 
 void ShellDesktopControllerAura::InitWindowManager() {
-  root_window_event_filter_ = base::MakeUnique<wm::CompoundEventFilter>();
+  root_window_event_filter_ = std::make_unique<wm::CompoundEventFilter>();
 
   // Screen may be initialized in tests.
   if (!display::Screen::GetScreen()) {
 #if defined(OS_CHROMEOS)
-    screen_ = base::MakeUnique<ShellScreen>(this, GetStartingWindowSize());
+    screen_ = std::make_unique<ShellScreen>(this, GetStartingWindowSize());
 #else
     // TODO(crbug.com/756680): Refactor DesktopScreen out of views.
     screen_.reset(views::CreateDesktopScreen());
@@ -267,17 +267,17 @@ void ShellDesktopControllerAura::InitWindowManager() {
   }
 
   focus_controller_ =
-      base::MakeUnique<wm::FocusController>(new AppsFocusRules());
-  cursor_manager_ = base::MakeUnique<wm::CursorManager>(
-      base::MakeUnique<ShellNativeCursorManager>(this));
+      std::make_unique<wm::FocusController>(new AppsFocusRules());
+  cursor_manager_ = std::make_unique<wm::CursorManager>(
+      std::make_unique<ShellNativeCursorManager>(this));
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
   cursor_manager_->SetCursor(ui::CursorType::kPointer);
 
 #if defined(OS_CHROMEOS)
-  user_activity_detector_ = base::MakeUnique<ui::UserActivityDetector>();
+  user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
   user_activity_notifier_ =
-      base::MakeUnique<ui::UserActivityPowerManagerNotifier>(
+      std::make_unique<ui::UserActivityPowerManagerNotifier>(
           user_activity_detector_.get());
 #endif
 }
@@ -308,7 +308,7 @@ ShellDesktopControllerAura::CreateRootWindowControllerForDisplay(
                                             display.device_scale_factor()),
                    display.GetSizeInPixel());
   std::unique_ptr<RootWindowController> root_window_controller =
-      base::MakeUnique<RootWindowController>(this, bounds, browser_context_);
+      std::make_unique<RootWindowController>(this, bounds, browser_context_);
 
   // Initialize the root window with our clients.
   aura::Window* root_window = root_window_controller->host()->window();

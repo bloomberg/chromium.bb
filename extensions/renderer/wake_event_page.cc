@@ -163,7 +163,7 @@ void WakeEventPage::MakeRequest(const std::string& extension_id,
   int request_id = sequence_number.GetNext();
   {
     base::AutoLock lock(requests_lock_);
-    requests_[request_id] = base::MakeUnique<RequestData>(
+    requests_[request_id] = std::make_unique<RequestData>(
         content::WorkerThread::GetCurrentId(), on_response);
   }
   message_filter_->Send(

@@ -32,7 +32,7 @@ class TestKeepAlive : public KeepAlive {
   static void Create(const base::Closure& on_creation,
                      const base::Closure& on_destruction,
                      KeepAliveRequest keep_alive) {
-    mojo::MakeStrongBinding(base::MakeUnique<TestKeepAlive>(on_destruction),
+    mojo::MakeStrongBinding(std::make_unique<TestKeepAlive>(on_destruction),
                             std::move(keep_alive));
     on_creation.Run();
   }

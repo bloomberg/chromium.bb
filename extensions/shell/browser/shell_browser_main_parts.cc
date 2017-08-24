@@ -219,7 +219,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
 #if !defined(DISABLE_NACL)
   nacl::NaClBrowser::SetDelegate(
-      base::MakeUnique<ShellNaClBrowserDelegate>(browser_context_.get()));
+      std::make_unique<ShellNaClBrowserDelegate>(browser_context_.get()));
   // Track the task so it can be canceled if app_shell shuts down very quickly,
   // such as in browser tests.
   task_tracker_.PostTask(

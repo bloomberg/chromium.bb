@@ -369,7 +369,7 @@ ExtensionPort* MessagingBindings::GetPortWithId(const PortId& id) {
 
 ExtensionPort* MessagingBindings::CreateNewPortWithId(const PortId& id) {
   int js_id = GetNextJsId();
-  auto port = base::MakeUnique<ExtensionPort>(context(), id, js_id);
+  auto port = std::make_unique<ExtensionPort>(context(), id, js_id);
   return ports_.insert(std::make_pair(js_id, std::move(port)))
       .first->second.get();
 }
@@ -388,7 +388,7 @@ void MessagingBindings::PostMessage(
   int js_port_id = args[0].As<v8::Int32>()->Value();
   auto iter = ports_.find(js_port_id);
   if (iter != ports_.end()) {
-    iter->second->PostExtensionMessage(base::MakeUnique<Message>(
+    iter->second->PostExtensionMessage(std::make_unique<Message>(
         *v8::String::Utf8Value(args[1]),
         blink::WebUserGestureIndicator::IsProcessingUserGesture()));
   }
@@ -443,7 +443,7 @@ void MessagingBindings::OpenChannelToExtension(
 
   int js_id = GetNextJsId();
   PortId port_id(context_id_, js_id, true);
-  ports_[js_id] = base::MakeUnique<ExtensionPort>(context(), port_id, js_id);
+  ports_[js_id] = std::make_unique<ExtensionPort>(context(), port_id, js_id);
 
   ExtensionMsg_ExternalConnectionInfo info;
   // For messaging APIs, hosted apps should be considered a web page so hide
@@ -487,7 +487,7 @@ void MessagingBindings::OpenChannelToNativeApp(
 
   int js_id = GetNextJsId();
   PortId port_id(context_id_, js_id, true);
-  ports_[js_id] = base::MakeUnique<ExtensionPort>(context(), port_id, js_id);
+  ports_[js_id] = std::make_unique<ExtensionPort>(context(), port_id, js_id);
 
   {
     SCOPED_UMA_HISTOGRAM_TIMER(
@@ -520,7 +520,7 @@ void MessagingBindings::OpenChannelToTab(
 
   int js_id = GetNextJsId();
   PortId port_id(context_id_, js_id, true);
-  ports_[js_id] = base::MakeUnique<ExtensionPort>(context(), port_id, js_id);
+  ports_[js_id] = std::make_unique<ExtensionPort>(context(), port_id, js_id);
 
   ExtensionMsg_TabTargetConnectionInfo info;
   info.tab_id = args[0]->Int32Value();

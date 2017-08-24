@@ -44,7 +44,7 @@ MetricsPrivateGetIsCrashReportingEnabledFunction::Run() {
   MetricsPrivateDelegate* delegate =
       ExtensionsAPIClient::Get()->GetMetricsPrivateDelegate();
 
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       delegate && delegate->IsCrashReportingEnabled())));
 }
 
@@ -53,7 +53,7 @@ ExtensionFunction::ResponseAction MetricsPrivateGetFieldTrialFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
   return RespondNow(OneArgument(
-      base::MakeUnique<base::Value>(base::FieldTrialList::FindFullName(name))));
+      std::make_unique<base::Value>(base::FieldTrialList::FindFullName(name))));
 }
 
 ExtensionFunction::ResponseAction

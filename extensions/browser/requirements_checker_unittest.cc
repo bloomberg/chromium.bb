@@ -58,8 +58,8 @@ const char kFeatureCSS3d[] = "css3d";
 class RequirementsCheckerTest : public ExtensionsTest {
  public:
   RequirementsCheckerTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {
-    manifest_dict_ = base::MakeUnique<base::DictionaryValue>();
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {
+    manifest_dict_ = std::make_unique<base::DictionaryValue>();
   }
 
   ~RequirementsCheckerTest() override {}
@@ -77,7 +77,7 @@ class RequirementsCheckerTest : public ExtensionsTest {
 
  protected:
   void StartChecker() {
-    checker_ = base::MakeUnique<RequirementsChecker>(extension_);
+    checker_ = std::make_unique<RequirementsChecker>(extension_);
     // TODO(michaelpg): This should normally not have to be async. Use Run()
     // instead of RunUntilComplete() after crbug.com/708354 is addressed.
     runner_.RunUntilComplete(checker_.get());
@@ -93,7 +93,7 @@ class RequirementsCheckerTest : public ExtensionsTest {
 
   void RequireFeature(const char feature[]) {
     if (!manifest_dict_->HasKey(kFeaturesKey))
-      manifest_dict_->Set(kFeaturesKey, base::MakeUnique<base::ListValue>());
+      manifest_dict_->Set(kFeaturesKey, std::make_unique<base::ListValue>());
     base::ListValue* features_list = nullptr;
     ASSERT_TRUE(manifest_dict_->GetList(kFeaturesKey, &features_list));
     features_list->AppendString(feature);

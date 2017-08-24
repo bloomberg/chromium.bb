@@ -26,9 +26,9 @@ namespace flat_rule = url_pattern_index::flat;
 namespace dnr_api = extensions::api::declarative_net_request;
 
 std::unique_ptr<dnr_api::Rule> CreateGenericParsedRule() {
-  auto rule = base::MakeUnique<dnr_api::Rule>();
+  auto rule = std::make_unique<dnr_api::Rule>();
   rule->id = kMinValidID;
-  rule->condition.url_filter = base::MakeUnique<std::string>("filter");
+  rule->condition.url_filter = std::make_unique<std::string>("filter");
   rule->action.type = dnr_api::RULE_ACTION_TYPE_BLACKLIST;
   return rule;
 }
@@ -74,11 +74,11 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
     // Only valid if |expected_result| is SUCCESS.
     const uint32_t expected_priority;
   } cases[] = {
-      {base::MakeUnique<int>(kMinValidPriority - 1),
+      {std::make_unique<int>(kMinValidPriority - 1),
        ParseResult::ERROR_INVALID_REDIRECT_RULE_PRIORITY, kDefaultPriority},
-      {base::MakeUnique<int>(kMinValidPriority), ParseResult::SUCCESS,
+      {std::make_unique<int>(kMinValidPriority), ParseResult::SUCCESS,
        kMinValidPriority},
-      {base::MakeUnique<int>(kMinValidPriority + 1), ParseResult::SUCCESS,
+      {std::make_unique<int>(kMinValidPriority + 1), ParseResult::SUCCESS,
        kMinValidPriority + 1},
       {nullptr, ParseResult::ERROR_EMPTY_REDIRECT_RULE_PRIORITY,
        kDefaultPriority},
@@ -90,7 +90,7 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
     rule->priority = std::move(cases[i].priority);
     rule->action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
     rule->action.redirect_url =
-        base::MakeUnique<std::string>("http://google.com");
+        std::make_unique<std::string>("http://google.com");
 
     IndexedRule indexed_rule;
     ParseResult result =
@@ -104,7 +104,7 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
   // Ensure priority is ignored for non-redirect rules.
   {
     std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
-    rule->priority = base::MakeUnique<int>(5);
+    rule->priority = std::make_unique<int>(5);
     IndexedRule indexed_rule;
     ParseResult result =
         IndexedRule::CreateIndexedRule(std::move(rule), &indexed_rule);
@@ -124,7 +124,7 @@ TEST_F(IndexedRuleTest, OptionsParsing) {
        flat_rule::OptionFlag_APPLIES_TO_THIRD_PARTY |
            flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY},
       {dnr_api::DOMAIN_TYPE_FIRSTPARTY, dnr_api::RULE_ACTION_TYPE_WHITELIST,
-       base::MakeUnique<bool>(true),
+       std::make_unique<bool>(true),
        flat_rule::OptionFlag_IS_WHITELIST |
            flat_rule::OptionFlag_APPLIES_TO_FIRST_PARTY |
            flat_rule::OptionFlag_IS_MATCH_CASE},
@@ -159,22 +159,22 @@ TEST_F(IndexedRuleTest, ResourceTypesParsing) {
   } cases[] = {
       {nullptr, nullptr, ParseResult::SUCCESS, flat_rule::ElementType_ANY},
       {nullptr,
-       base::MakeUnique<ResourceTypeVec>(
+       std::make_unique<ResourceTypeVec>(
            ResourceTypeVec({dnr_api::RESOURCE_TYPE_SCRIPT})),
        ParseResult::SUCCESS,
        flat_rule::ElementType_ANY & ~flat_rule::ElementType_SCRIPT},
-      {base::MakeUnique<ResourceTypeVec>(ResourceTypeVec(
+      {std::make_unique<ResourceTypeVec>(ResourceTypeVec(
            {dnr_api::RESOURCE_TYPE_SCRIPT, dnr_api::RESOURCE_TYPE_IMAGE})),
        nullptr, ParseResult::SUCCESS,
        flat_rule::ElementType_SCRIPT | flat_rule::ElementType_IMAGE},
-      {base::MakeUnique<ResourceTypeVec>(ResourceTypeVec(
+      {std::make_unique<ResourceTypeVec>(ResourceTypeVec(
            {dnr_api::RESOURCE_TYPE_SCRIPT, dnr_api::RESOURCE_TYPE_IMAGE})),
-       base::MakeUnique<ResourceTypeVec>(
+       std::make_unique<ResourceTypeVec>(
            ResourceTypeVec({dnr_api::RESOURCE_TYPE_SCRIPT})),
        ParseResult::ERROR_RESOURCE_TYPE_DUPLICATED,
        flat_rule::ElementType_NONE},
       {nullptr,
-       base::MakeUnique<ResourceTypeVec>(ResourceTypeVec(
+       std::make_unique<ResourceTypeVec>(ResourceTypeVec(
            {dnr_api::RESOURCE_TYPE_SUB_FRAME, dnr_api::RESOURCE_TYPE_STYLESHEET,
             dnr_api::RESOURCE_TYPE_SCRIPT, dnr_api::RESOURCE_TYPE_IMAGE,
             dnr_api::RESOURCE_TYPE_FONT, dnr_api::RESOURCE_TYPE_OBJECT,
@@ -183,13 +183,13 @@ TEST_F(IndexedRuleTest, ResourceTypesParsing) {
             dnr_api::RESOURCE_TYPE_OTHER})),
        ParseResult::ERROR_NO_APPLICABLE_RESOURCE_TYPES,
        flat_rule::ElementType_NONE},
-      {base::MakeUnique<ResourceTypeVec>(ResourceTypeVec()),
-       base::MakeUnique<ResourceTypeVec>(ResourceTypeVec()),
+      {std::make_unique<ResourceTypeVec>(ResourceTypeVec()),
+       std::make_unique<ResourceTypeVec>(ResourceTypeVec()),
        ParseResult::ERROR_EMPTY_RESOURCE_TYPES_LIST,
        flat_rule::ElementType_NONE},
-      {base::MakeUnique<ResourceTypeVec>(
+      {std::make_unique<ResourceTypeVec>(
            ResourceTypeVec({dnr_api::RESOURCE_TYPE_SCRIPT})),
-       base::MakeUnique<ResourceTypeVec>(ResourceTypeVec()),
+       std::make_unique<ResourceTypeVec>(ResourceTypeVec()),
        ParseResult::SUCCESS, flat_rule::ElementType_SCRIPT},
   };
 
@@ -224,37 +224,37 @@ TEST_F(IndexedRuleTest, UrlFilterParsing) {
   } cases[] = {
       {nullptr, flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_NONE,
        flat_rule::AnchorType_NONE, "", ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>(""), flat_rule::UrlPatternType_SUBSTRING,
+      {std::make_unique<std::string>(""), flat_rule::UrlPatternType_SUBSTRING,
        flat_rule::AnchorType_NONE, flat_rule::AnchorType_NONE, "",
        ParseResult::ERROR_EMPTY_URL_FILTER},
-      {base::MakeUnique<std::string>("|"), flat_rule::UrlPatternType_SUBSTRING,
+      {std::make_unique<std::string>("|"), flat_rule::UrlPatternType_SUBSTRING,
        flat_rule::AnchorType_BOUNDARY, flat_rule::AnchorType_NONE, "",
        ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("||"), flat_rule::UrlPatternType_SUBSTRING,
+      {std::make_unique<std::string>("||"), flat_rule::UrlPatternType_SUBSTRING,
        flat_rule::AnchorType_SUBDOMAIN, flat_rule::AnchorType_NONE, "",
        ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("|||"),
+      {std::make_unique<std::string>("|||"),
        flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_SUBDOMAIN,
        flat_rule::AnchorType_BOUNDARY, "", ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("|*|||"),
+      {std::make_unique<std::string>("|*|||"),
        flat_rule::UrlPatternType_WILDCARDED, flat_rule::AnchorType_BOUNDARY,
        flat_rule::AnchorType_BOUNDARY, "*||", ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("|xyz|"),
+      {std::make_unique<std::string>("|xyz|"),
        flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_BOUNDARY,
        flat_rule::AnchorType_BOUNDARY, "xyz", ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("||x^yz"),
+      {std::make_unique<std::string>("||x^yz"),
        flat_rule::UrlPatternType_WILDCARDED, flat_rule::AnchorType_SUBDOMAIN,
        flat_rule::AnchorType_NONE, "x^yz", ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("||xyz|"),
+      {std::make_unique<std::string>("||xyz|"),
        flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_SUBDOMAIN,
        flat_rule::AnchorType_BOUNDARY, "xyz", ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("x*y|z"),
+      {std::make_unique<std::string>("x*y|z"),
        flat_rule::UrlPatternType_WILDCARDED, flat_rule::AnchorType_NONE,
        flat_rule::AnchorType_NONE, "x*y|z", ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("**^"),
+      {std::make_unique<std::string>("**^"),
        flat_rule::UrlPatternType_WILDCARDED, flat_rule::AnchorType_NONE,
        flat_rule::AnchorType_NONE, "**^", ParseResult::SUCCESS},
-      {base::MakeUnique<std::string>("||google.com"),
+      {std::make_unique<std::string>("||google.com"),
        flat_rule::UrlPatternType_SUBSTRING, flat_rule::AnchorType_SUBDOMAIN,
        flat_rule::AnchorType_NONE, "google.com", ParseResult::SUCCESS},
   };
@@ -290,18 +290,18 @@ TEST_F(IndexedRuleTest, DomainsParsing) {
     const DomainVec expected_excluded_domains;
   } cases[] = {
       {nullptr, nullptr, ParseResult::SUCCESS, {}, {}},
-      {base::MakeUnique<DomainVec>(DomainVec()),
+      {std::make_unique<DomainVec>(DomainVec()),
        nullptr,
        ParseResult::ERROR_EMPTY_DOMAINS_LIST,
        {},
        {}},
       {nullptr,
-       base::MakeUnique<DomainVec>(DomainVec()),
+       std::make_unique<DomainVec>(DomainVec()),
        ParseResult::SUCCESS,
        {},
        {}},
-      {base::MakeUnique<DomainVec>(DomainVec({"a.com", "b.com", "a.com"})),
-       base::MakeUnique<DomainVec>(
+      {std::make_unique<DomainVec>(DomainVec({"a.com", "b.com", "a.com"})),
+       std::make_unique<DomainVec>(
            DomainVec({"g.com", "XY.COM", "zzz.com", "a.com", "google.com"})),
        ParseResult::SUCCESS,
        {"a.com", "a.com", "b.com"},
@@ -332,12 +332,12 @@ TEST_F(IndexedRuleTest, RedirectUrlParsing) {
     const ParseResult expected_result;
     // Only valid if |expected_result| is SUCCESS.
     const std::string expected_redirect_url;
-  } cases[] = {{base::MakeUnique<std::string>(""),
+  } cases[] = {{std::make_unique<std::string>(""),
                 ParseResult::ERROR_EMPTY_REDIRECT_URL, ""},
                {nullptr, ParseResult::ERROR_EMPTY_REDIRECT_URL, ""},
-               {base::MakeUnique<std::string>("http://google.com"),
+               {std::make_unique<std::string>("http://google.com"),
                 ParseResult::SUCCESS, "http://google.com"},
-               {base::MakeUnique<std::string>("abc"),
+               {std::make_unique<std::string>("abc"),
                 ParseResult::ERROR_INVALID_REDIRECT_URL, ""}};
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -345,7 +345,7 @@ TEST_F(IndexedRuleTest, RedirectUrlParsing) {
     std::unique_ptr<dnr_api::Rule> rule = CreateGenericParsedRule();
     rule->action.redirect_url = std::move(cases[i].redirect_url);
     rule->action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
-    rule->priority = base::MakeUnique<int>(kMinValidPriority);
+    rule->priority = std::make_unique<int>(kMinValidPriority);
 
     IndexedRule indexed_rule;
     ParseResult result =

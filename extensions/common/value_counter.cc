@@ -34,7 +34,7 @@ bool ValueCounter::Add(const base::Value& value) {
       return false;
     }
   }
-  entries_.push_back(base::MakeUnique<Entry>(value.CreateDeepCopy()));
+  entries_.push_back(std::make_unique<Entry>(value.CreateDeepCopy()));
   return true;
 }
 

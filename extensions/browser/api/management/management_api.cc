@@ -448,7 +448,7 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
     if (prefs->GetDisableReasons(extension_id_) &
         disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT) {
       // Recheck the requirements.
-      requirements_checker_ = base::MakeUnique<RequirementsChecker>(extension);
+      requirements_checker_ = std::make_unique<RequirementsChecker>(extension);
       requirements_checker_->Start(
           base::Bind(&ManagementSetEnabledFunction::OnRequirementsChecked,
                      this));  // This bind creates a reference.
@@ -469,7 +469,7 @@ void ManagementSetEnabledFunction::OnInstallPromptDone(bool did_accept) {
         ->Get(browser_context())
         ->GetDelegate()
         ->EnableExtension(browser_context(), extension_id_);
-    Respond(OneArgument(base::MakeUnique<base::Value>(true)));
+    Respond(OneArgument(std::make_unique<base::Value>(true)));
   } else {
     Respond(Error(keys::kUserDidNotReEnableError));
   }

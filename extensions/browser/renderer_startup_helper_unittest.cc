@@ -28,13 +28,13 @@ class RendererStartupHelperTest : public ExtensionsTest {
 
   void SetUp() override {
     ExtensionsTest::SetUp();
-    helper_ = base::MakeUnique<RendererStartupHelper>(browser_context());
+    helper_ = std::make_unique<RendererStartupHelper>(browser_context());
     registry_ =
         ExtensionRegistryFactory::GetForBrowserContext(browser_context());
     render_process_host_ =
-        base::MakeUnique<content::MockRenderProcessHost>(browser_context());
+        std::make_unique<content::MockRenderProcessHost>(browser_context());
     incognito_render_process_host_ =
-        base::MakeUnique<content::MockRenderProcessHost>(incognito_context());
+        std::make_unique<content::MockRenderProcessHost>(incognito_context());
     extension_ = CreateExtension("ext_1");
   }
 

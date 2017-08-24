@@ -211,7 +211,7 @@ void StorageArea::HandleFunctionCall(const std::string& method_name,
     return;
   }
 
-  converted_arguments->Insert(0u, base::MakeUnique<base::Value>(name_));
+  converted_arguments->Insert(0u, std::make_unique<base::Value>(name_));
   request_handler_->StartRequest(
       context, full_method_name, std::move(converted_arguments), callback,
       v8::Local<v8::Function>(), binding::RequestThread::UI);

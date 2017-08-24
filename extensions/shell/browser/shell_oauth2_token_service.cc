@@ -22,7 +22,7 @@ ShellOAuth2TokenService::ShellOAuth2TokenService(
     std::string account_id,
     std::string refresh_token)
     : OAuth2TokenService(
-          base::MakeUnique<ShellOAuth2TokenServiceDelegate>(browser_context,
+          std::make_unique<ShellOAuth2TokenServiceDelegate>(browser_context,
                                                             account_id,
                                                             refresh_token)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

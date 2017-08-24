@@ -100,7 +100,7 @@ class RestartAfterDelayApiTest : public ApiUnitTest {
   void SetUp() override {
     // Use our ExtensionsBrowserClient that returns our RuntimeAPIDelegate.
     std::unique_ptr<DelayedRestartExtensionsBrowserClient> test_browser_client =
-        base::MakeUnique<DelayedRestartExtensionsBrowserClient>(
+        std::make_unique<DelayedRestartExtensionsBrowserClient>(
             browser_context());
 
     // ExtensionsTest takes ownership of the ExtensionsBrowserClient.

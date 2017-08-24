@@ -13,8 +13,8 @@ ShellNavigationUIData::ShellNavigationUIData() {}
 
 ShellNavigationUIData::ShellNavigationUIData(
     content::NavigationHandle* navigation_handle) {
-  extension_data_ = base::MakeUnique<ExtensionNavigationUIData>(
-      navigation_handle, -1, -1);
+  extension_data_ =
+      std::make_unique<ExtensionNavigationUIData>(navigation_handle, -1, -1);
 }
 
 ShellNavigationUIData::~ShellNavigationUIData() {}
@@ -22,7 +22,7 @@ ShellNavigationUIData::~ShellNavigationUIData() {}
 std::unique_ptr<content::NavigationUIData> ShellNavigationUIData::Clone()
     const {
   std::unique_ptr<ShellNavigationUIData> copy =
-      base::MakeUnique<ShellNavigationUIData>();
+      std::make_unique<ShellNavigationUIData>();
 
   if (extension_data_)
     copy->SetExtensionNavigationUIData(extension_data_->DeepCopy());

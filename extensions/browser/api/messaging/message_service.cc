@@ -362,7 +362,7 @@ void MessageService::OpenChannelToNativeApp(
     return;
   }
 
-  std::unique_ptr<MessageChannel> channel = base::MakeUnique<MessageChannel>();
+  std::unique_ptr<MessageChannel> channel = std::make_unique<MessageChannel>();
   channel->opener.reset(
       new ExtensionMessagePort(weak_factory_.GetWeakPtr(), source_port_id,
                                extension->id(), source, false));
@@ -496,7 +496,7 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   }
 
   std::unique_ptr<MessageChannel> channel_ptr =
-      base::MakeUnique<MessageChannel>();
+      std::make_unique<MessageChannel>();
   MessageChannel* channel = channel_ptr.get();
   channel->opener = std::move(opener);
   channel->receiver = std::move(params->receiver);

@@ -28,7 +28,7 @@ using system_logs::SystemLogsSource;
 
 std::unique_ptr<KeyedService> ApiResourceManagerTestFactory(
     content::BrowserContext* context) {
-  return base::MakeUnique<ApiResourceManager<LogSourceResource>>(context);
+  return std::make_unique<ApiResourceManager<LogSourceResource>>(context);
 }
 
 // A dummy SystemLogsSource that does not require real system logs to be
@@ -80,7 +80,7 @@ class TestFeedbackPrivateDelegate : public ShellFeedbackPrivateDelegate {
 
   std::unique_ptr<system_logs::SystemLogsSource> CreateSingleLogSource(
       api::feedback_private::LogSource source_type) const override {
-    return base::MakeUnique<TestSingleLogSource>(source_type);
+    return std::make_unique<TestSingleLogSource>(source_type);
   }
 
  private:
@@ -96,7 +96,7 @@ class TestExtensionsAPIClient : public ShellExtensionsAPIClient {
   FeedbackPrivateDelegate* GetFeedbackPrivateDelegate() override {
     if (!feedback_private_delegate_) {
       feedback_private_delegate_ =
-          base::MakeUnique<TestFeedbackPrivateDelegate>();
+          std::make_unique<TestFeedbackPrivateDelegate>();
     }
     return feedback_private_delegate_.get();
   }
@@ -113,7 +113,7 @@ FeedbackPrivateApiUnittestBase::FeedbackPrivateApiUnittestBase() = default;
 FeedbackPrivateApiUnittestBase::~FeedbackPrivateApiUnittestBase() = default;
 
 void FeedbackPrivateApiUnittestBase::SetUp() {
-  extensions_api_client_ = base::MakeUnique<TestExtensionsAPIClient>();
+  extensions_api_client_ = std::make_unique<TestExtensionsAPIClient>();
 
   ApiUnitTest::SetUp();
 

@@ -42,7 +42,7 @@ class Mapper : public QuotaLimitHeuristic::BucketMapper {
       int id;
       ASSERT_TRUE(args->GetInteger(i, &id));
       if (buckets_.find(id) == buckets_.end())
-        buckets_[id] = base::MakeUnique<Bucket>();
+        buckets_[id] = std::make_unique<Bucket>();
       buckets->push_back(buckets_[id].get());
     }
   }
@@ -76,7 +76,7 @@ class TimedLimitMockFunction : public MockFunction {
   void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const override {
     heuristics->push_back(
-        base::MakeUnique<TimedLimit>(k2PerMinute, new Mapper(), kGenericName));
+        std::make_unique<TimedLimit>(k2PerMinute, new Mapper(), kGenericName));
   }
 
  private:
@@ -88,7 +88,7 @@ class FrozenMockFunction : public MockFunction {
   explicit FrozenMockFunction(const char* name) : MockFunction(name) {}
   void GetQuotaLimitHeuristics(
       QuotaLimitHeuristics* heuristics) const override {
-    heuristics->push_back(base::MakeUnique<TimedLimit>(
+    heuristics->push_back(std::make_unique<TimedLimit>(
         kFrozenConfig, new Mapper(), kGenericName));
   }
 

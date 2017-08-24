@@ -50,7 +50,7 @@ const size_t g_invalid_size_t = std::numeric_limits<size_t>::max();
 class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
  public:
   LoadMonitoringExtensionHostQueueTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()),
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()),
         finished_(false),
         // Arbitrary choice of an invalid size_t.
         num_queued_(g_invalid_size_t),
@@ -71,7 +71,7 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
   // Creates a new DeferredStartRenderHost. Ownership is held by this class,
   // not passed to caller.
   StubDeferredStartRenderHost* CreateHost() {
-    stubs_.push_back(base::MakeUnique<StubDeferredStartRenderHost>());
+    stubs_.push_back(std::make_unique<StubDeferredStartRenderHost>());
     return stubs_.back().get();
   }
 

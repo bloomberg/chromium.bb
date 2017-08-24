@@ -129,7 +129,7 @@ void WebRequestEventDetails::SetAuthInfo(
     dict_.SetString(keys::kSchemeKey, auth_info.scheme);
   if (!auth_info.realm.empty())
     dict_.SetString(keys::kRealmKey, auth_info.realm);
-  auto challenger = base::MakeUnique<base::DictionaryValue>();
+  auto challenger = std::make_unique<base::DictionaryValue>();
   challenger->SetString(keys::kHostKey, auth_info.challenger.host());
   challenger->SetInteger(keys::kPortKey, auth_info.challenger.port());
   dict_.Set(keys::kChallengerKey, std::move(challenger));

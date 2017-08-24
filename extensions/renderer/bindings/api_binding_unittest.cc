@@ -100,7 +100,7 @@ class APIBindingUnittest : public APIBindingTest {
       : type_refs_(APITypeReferenceMap::InitializeTypeCallback()) {}
   void SetUp() override {
     APIBindingTest::SetUp();
-    request_handler_ = base::MakeUnique<APIRequestHandler>(
+    request_handler_ = std::make_unique<APIRequestHandler>(
         base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         APILastError(APILastError::GetParent(), binding::AddConsoleError()),
@@ -167,7 +167,7 @@ class APIBindingUnittest : public APIBindingTest {
 
   void InitializeBinding() {
     if (!binding_hooks_) {
-      binding_hooks_ = base::MakeUnique<APIBindingHooks>(
+      binding_hooks_ = std::make_unique<APIBindingHooks>(
           kBindingName, binding::RunJSFunctionSync());
     }
     if (binding_hooks_delegate_)
@@ -176,13 +176,13 @@ class APIBindingUnittest : public APIBindingTest {
       on_silent_request_ = base::Bind(&DoNothingWithSilentRequest);
     if (!availability_callback_)
       availability_callback_ = base::Bind(&AllowAllFeatures);
-    event_handler_ = base::MakeUnique<APIEventHandler>(
+    event_handler_ = std::make_unique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         base::Bind(&RunFunctionOnGlobalAndReturnHandle),
         base::Bind(&OnEventListenersChanged), nullptr);
     access_checker_ =
-        base::MakeUnique<BindingAccessChecker>(availability_callback_);
-    binding_ = base::MakeUnique<APIBinding>(
+        std::make_unique<BindingAccessChecker>(availability_callback_);
+    binding_ = std::make_unique<APIBinding>(
         kBindingName, binding_functions_.get(), binding_types_.get(),
         binding_events_.get(), binding_properties_.get(), create_custom_type_,
         on_silent_request_, std::move(binding_hooks_), &type_refs_,
@@ -750,7 +750,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   SetFunctions(kFunctions);
 
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
+  auto hooks = std::make_unique<APIBindingHooksTestDelegate>();
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
                  v8::Local<v8::Context> context,
@@ -791,7 +791,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
 
 TEST_F(APIBindingUnittest, TestJSCustomHook) {
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
+  auto hooks = std::make_unique<APIBindingHooks>(
       kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
@@ -846,7 +846,7 @@ TEST_F(APIBindingUnittest, TestJSCustomHook) {
 // Tests the updateArgumentsPreValidate hook.
 TEST_F(APIBindingUnittest, TestUpdateArgumentsPreValidate) {
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
+  auto hooks = std::make_unique<APIBindingHooks>(
       kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
@@ -907,7 +907,7 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
   };
 
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
+  auto hooks = std::make_unique<APIBindingHooks>(
       kBindingName, base::Bind(run_js_and_allow_error));
 
   v8::HandleScope handle_scope(isolate());
@@ -948,7 +948,7 @@ TEST_F(APIBindingUnittest, TestThrowInUpdateArgumentsPreValidate) {
 // Tests that custom JS hooks can return results synchronously.
 TEST_F(APIBindingUnittest, TestReturningResultFromCustomJSHook) {
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
+  auto hooks = std::make_unique<APIBindingHooks>(
       kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
@@ -1008,7 +1008,7 @@ TEST_F(APIBindingUnittest, TestThrowingFromCustomJSHook) {
     return result;
   };
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
+  auto hooks = std::make_unique<APIBindingHooks>(
       kBindingName, base::Bind(run_js_and_expect_error));
 
   v8::HandleScope handle_scope(isolate());
@@ -1050,7 +1050,7 @@ TEST_F(APIBindingUnittest,
   v8::Local<v8::Context> context = MainContext();
 
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
+  auto hooks = std::make_unique<APIBindingHooksTestDelegate>();
   bool did_call = false;
   auto hook = [](bool* did_call, const APISignature* signature,
                  v8::Local<v8::Context> context,
@@ -1111,7 +1111,7 @@ TEST_F(APIBindingUnittest,
 // Tests the updateArgumentsPostValidate hook.
 TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
+  auto hooks = std::make_unique<APIBindingHooks>(
       kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
@@ -1163,7 +1163,7 @@ TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidate) {
 // See comment in api_binding.cc.
 TEST_F(APIBindingUnittest, TestUpdateArgumentsPostValidateViolatingSchema) {
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>(
+  auto hooks = std::make_unique<APIBindingHooks>(
       kBindingName, base::Bind(&RunFunctionOnGlobalAndReturnHandle));
 
   v8::HandleScope handle_scope(isolate());
@@ -1289,7 +1289,7 @@ TEST_F(APIBindingUnittest, HooksTemplateInitializer) {
   SetFunctions(kFunctions);
 
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
+  auto hooks = std::make_unique<APIBindingHooksTestDelegate>();
   auto hook = [](v8::Isolate* isolate,
                  v8::Local<v8::ObjectTemplate> object_template,
                  const APITypeReferenceMap& type_refs) {
@@ -1356,7 +1356,7 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
     return RequestResult(code);
   };
 
-  auto hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
+  auto hooks = std::make_unique<APIBindingHooksTestDelegate>();
   hooks->AddHandler(
       "test.modifyArgs",
       base::Bind(basic_handler, RequestResult::ARGUMENTS_UPDATED));
@@ -1392,7 +1392,7 @@ TEST_F(APIBindingUnittest, TestSendingRequestsAndSilentRequestsWithHooks) {
          const APITypeReferenceMap& map) {
         handler->StartRequest(
             context, "test.handleAndSendRequest",
-            base::MakeUnique<base::ListValue>(), v8::Local<v8::Function>(),
+            std::make_unique<base::ListValue>(), v8::Local<v8::Function>(),
             v8::Local<v8::Function>(), binding::RequestThread::UI);
         return RequestResult(RequestResult::HANDLED);
       };

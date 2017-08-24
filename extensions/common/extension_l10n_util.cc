@@ -93,7 +93,7 @@ bool LocalizeManifestListValue(const std::string& key,
     std::string result;
     if (list->GetString(i, &result)) {
       if (messages.ReplaceMessages(&result, error))
-        list->Set(i, base::MakeUnique<base::Value>(result));
+        list->Set(i, std::make_unique<base::Value>(result));
       else
         ret = false;
     }

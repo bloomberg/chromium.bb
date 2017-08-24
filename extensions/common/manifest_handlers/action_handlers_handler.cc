@@ -50,7 +50,7 @@ bool ActionHandlersHandler::Parse(Extension* extension, base::string16* error) {
     return false;
   }
 
-  auto info = base::MakeUnique<ActionHandlersInfo>();
+  auto info = std::make_unique<ActionHandlersInfo>();
   for (const base::Value& wrapped_value : *entries) {
     std::string value;
     bool enabled_on_lock_screen = false;

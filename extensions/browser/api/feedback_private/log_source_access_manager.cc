@@ -154,7 +154,7 @@ int LogSourceAccessManager::CreateResource(const SourceAndExtension& key) {
     return 0;
 
   std::unique_ptr<LogSourceResource> new_resource =
-      base::MakeUnique<LogSourceResource>(
+      std::make_unique<LogSourceResource>(
           key.extension_id,
           ExtensionsAPIClient::Get()
               ->GetFeedbackPrivateDelegate()

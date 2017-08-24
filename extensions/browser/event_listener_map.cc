@@ -142,7 +142,7 @@ bool EventListenerMap::AddListener(std::unique_ptr<EventListener> listener) {
 
 std::unique_ptr<EventMatcher> EventListenerMap::ParseEventMatcher(
     DictionaryValue* filter_dict) {
-  return base::MakeUnique<EventMatcher>(filter_dict->CreateDeepCopy(),
+  return std::make_unique<EventMatcher>(filter_dict->CreateDeepCopy(),
                                         MSG_ROUTING_NONE);
 }
 

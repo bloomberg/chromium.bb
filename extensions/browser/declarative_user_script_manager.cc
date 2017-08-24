@@ -46,7 +46,7 @@ DeclarativeUserScriptManager::CreateDeclarativeUserScriptMaster(
   // Inserts a new DeclarativeUserScriptManager and returns a ptr to it.
   return declarative_user_script_masters_
       .insert(
-          std::make_pair(host_id, base::MakeUnique<DeclarativeUserScriptMaster>(
+          std::make_pair(host_id, std::make_unique<DeclarativeUserScriptMaster>(
                                       browser_context_, host_id)))
       .first->second.get();
 }

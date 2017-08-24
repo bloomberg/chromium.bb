@@ -22,14 +22,14 @@ using SpecVector = std::vector<std::unique_ptr<ArgumentSpec>>;
 std::unique_ptr<APISignature> OneString() {
   SpecVector specs;
   specs.push_back(ArgumentSpecBuilder(ArgumentType::STRING, "string").Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> StringAndInt() {
   SpecVector specs;
   specs.push_back(ArgumentSpecBuilder(ArgumentType::STRING, "string").Build());
   specs.push_back(ArgumentSpecBuilder(ArgumentType::INTEGER, "int").Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> StringOptionalIntAndBool() {
@@ -38,7 +38,7 @@ std::unique_ptr<APISignature> StringOptionalIntAndBool() {
   specs.push_back(
       ArgumentSpecBuilder(ArgumentType::INTEGER, "int").MakeOptional().Build());
   specs.push_back(ArgumentSpecBuilder(ArgumentType::BOOLEAN, "bool").Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> OneObject() {
@@ -51,11 +51,11 @@ std::unique_ptr<APISignature> OneObject() {
               "prop2",
               ArgumentSpecBuilder(ArgumentType::STRING).MakeOptional().Build())
           .Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> NoArgs() {
-  return base::MakeUnique<APISignature>(SpecVector());
+  return std::make_unique<APISignature>(SpecVector());
 }
 
 std::unique_ptr<APISignature> IntAndCallback() {
@@ -63,7 +63,7 @@ std::unique_ptr<APISignature> IntAndCallback() {
   specs.push_back(ArgumentSpecBuilder(ArgumentType::INTEGER, "int").Build());
   specs.push_back(
       ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback").Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> IntAndOptionalCallback() {
@@ -72,7 +72,7 @@ std::unique_ptr<APISignature> IntAndOptionalCallback() {
   specs.push_back(ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback")
                       .MakeOptional()
                       .Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> OptionalIntAndCallback() {
@@ -81,7 +81,7 @@ std::unique_ptr<APISignature> OptionalIntAndCallback() {
       ArgumentSpecBuilder(ArgumentType::INTEGER, "int").MakeOptional().Build());
   specs.push_back(
       ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback").Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> OptionalCallback() {
@@ -89,7 +89,7 @@ std::unique_ptr<APISignature> OptionalCallback() {
   specs.push_back(ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback")
                       .MakeOptional()
                       .Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> IntAnyOptionalObjectOptionalCallback() {
@@ -106,21 +106,21 @@ std::unique_ptr<APISignature> IntAnyOptionalObjectOptionalCallback() {
   specs.push_back(ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback")
                       .MakeOptional()
                       .Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> RefObj() {
   SpecVector specs;
   specs.push_back(
       ArgumentSpecBuilder(ArgumentType::REF, "obj").SetRef("refObj").Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> RefEnum() {
   SpecVector specs;
   specs.push_back(
       ArgumentSpecBuilder(ArgumentType::REF, "enum").SetRef("refEnum").Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 std::unique_ptr<APISignature> OptionalObjectAndCallback() {
@@ -135,7 +135,7 @@ std::unique_ptr<APISignature> OptionalObjectAndCallback() {
   specs.push_back(ArgumentSpecBuilder(ArgumentType::FUNCTION, "callback")
                       .MakeOptional()
                       .Build());
-  return base::MakeUnique<APISignature>(std::move(specs));
+  return std::make_unique<APISignature>(std::move(specs));
 }
 
 }  // namespace

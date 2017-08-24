@@ -17,15 +17,15 @@
 namespace extensions {
 
 ShellTestBaseAura::ShellTestBaseAura()
-    : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
+    : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
 
 ShellTestBaseAura::~ShellTestBaseAura() {}
 
 void ShellTestBaseAura::SetUp() {
-  helper_ = base::MakeUnique<ShellTestHelperAura>();
+  helper_ = std::make_unique<ShellTestHelperAura>();
   helper_->SetUp();
   std::unique_ptr<TestExtensionsBrowserClient> extensions_browser_client =
-      base::MakeUnique<ShellTestExtensionsBrowserClient>();
+      std::make_unique<ShellTestExtensionsBrowserClient>();
   SetExtensionsBrowserClient(std::move(extensions_browser_client));
   ExtensionsTest::SetUp();
 }
@@ -43,7 +43,7 @@ void ShellTestBaseAura::InitAppWindow(AppWindow* app_window,
       content::WebContents::Create(
           content::WebContents::CreateParams(browser_context())));
   std::unique_ptr<TestAppWindowContents> app_window_contents =
-      base::MakeUnique<TestAppWindowContents>(std::move(web_contents));
+      std::make_unique<TestAppWindowContents>(std::move(web_contents));
 
   // Initialize the web contents and AppWindow.
   app_window->app_delegate()->InitWebContents(

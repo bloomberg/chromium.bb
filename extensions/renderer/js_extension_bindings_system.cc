@@ -141,7 +141,7 @@ JsExtensionBindingsSystem::JsExtensionBindingsSystem(
     : source_map_(source_map),
       ipc_message_sender_(std::move(ipc_message_sender)),
       request_sender_(
-          base::MakeUnique<RequestSender>(ipc_message_sender_.get())) {}
+          std::make_unique<RequestSender>(ipc_message_sender_.get())) {}
 
 JsExtensionBindingsSystem::~JsExtensionBindingsSystem() {}
 

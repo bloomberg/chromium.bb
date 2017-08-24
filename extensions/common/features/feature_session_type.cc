@@ -32,7 +32,7 @@ void SetCurrentFeatureSessionType(FeatureSessionType session_type) {
 std::unique_ptr<base::AutoReset<FeatureSessionType>>
 ScopedCurrentFeatureSessionType(FeatureSessionType type) {
   CHECK_EQ(g_current_session_type, kDefaultSessionType);
-  return base::MakeUnique<base::AutoReset<FeatureSessionType>>(
+  return std::make_unique<base::AutoReset<FeatureSessionType>>(
       &g_current_session_type, type);
 }
 

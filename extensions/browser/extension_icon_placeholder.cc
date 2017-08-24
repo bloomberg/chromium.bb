@@ -83,7 +83,7 @@ gfx::Image ExtensionIconPlaceholder::CreateImage(
     extension_misc::ExtensionIcons size,
     const std::string& name) {
   return gfx::Image(
-      gfx::ImageSkia(base::MakeUnique<ExtensionIconPlaceholder>(size, name),
+      gfx::ImageSkia(std::make_unique<ExtensionIconPlaceholder>(size, name),
                      gfx::Size(size, size)));
 }
 

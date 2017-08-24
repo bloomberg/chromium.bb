@@ -136,7 +136,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
       isolate, TestV8ExtensionConfiguration::GetConfiguration()));
 
   {
-    auto context = base::MakeUnique<ScriptContext>(
+    auto context = std::make_unique<ScriptContext>(
         context_holder_->context(),
         nullptr,  // WebFrame
         extension_.get(), Feature::BLESSED_EXTENSION_CONTEXT, extension_.get(),
@@ -149,7 +149,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
   assert_natives_ = new AssertNatives(context_);
 
   if (FeatureSwitch::native_crx_bindings()->IsEnabled())
-    bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(nullptr);
+    bindings_system_ = std::make_unique<NativeExtensionBindingsSystem>(nullptr);
 
   {
     std::unique_ptr<ModuleSystem> module_system(
@@ -167,7 +167,7 @@ ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(
       std::unique_ptr<NativeHandler>(new UtilsNativeHandler(context_)));
   module_system->RegisterNativeHandler(
       "apiGetter",
-      base::MakeUnique<GetAPINatives>(context_, bindings_system_.get()));
+      std::make_unique<GetAPINatives>(context_, bindings_system_.get()));
   module_system->SetExceptionHandlerForTest(
       std::unique_ptr<ModuleSystem::ExceptionHandler>(new FailsOnException));
 
@@ -284,7 +284,7 @@ scoped_refptr<const Extension> ModuleSystemTest::CreateExtension() {
 
 std::unique_ptr<ModuleSystemTestEnvironment>
 ModuleSystemTest::CreateEnvironment() {
-  return base::MakeUnique<ModuleSystemTestEnvironment>(isolate_, &context_set_,
+  return std::make_unique<ModuleSystemTestEnvironment>(isolate_, &context_set_,
                                                        extension_);
 }
 

@@ -40,7 +40,7 @@ std::unique_ptr<UsbPrinterManifestData> UsbPrinterManifestData::FromValue(
     return nullptr;
   }
 
-  auto result = base::MakeUnique<UsbPrinterManifestData>();
+  auto result = std::make_unique<UsbPrinterManifestData>();
   for (const auto& input : usb_printers->filters) {
     if (input.product_id && input.interface_class) {
       *error = base::ASCIIToUTF16(

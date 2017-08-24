@@ -36,7 +36,7 @@ namespace extensions {
 class ImageLoaderTest : public ExtensionsTest {
  public:
   ImageLoaderTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()),
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()),
         image_loaded_count_(0),
         quit_in_image_loaded_(false) {}
 

@@ -233,7 +233,7 @@ std::unique_ptr<base::ListValue> URLPatternSet::ToValue() const {
   std::unique_ptr<base::ListValue> value(new base::ListValue);
   for (URLPatternSet::const_iterator i = patterns_.begin();
        i != patterns_.end(); ++i)
-    value->AppendIfNotPresent(base::MakeUnique<base::Value>(i->GetAsString()));
+    value->AppendIfNotPresent(std::make_unique<base::Value>(i->GetAsString()));
   return value;
 }
 

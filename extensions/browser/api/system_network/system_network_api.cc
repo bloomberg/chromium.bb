@@ -10,7 +10,7 @@ namespace {
 const char kNetworkListError[] = "Network lookup failed or unsupported";
 
 std::unique_ptr<net::NetworkInterfaceList> GetListOnBlockingTaskRunner() {
-  auto interface_list = base::MakeUnique<net::NetworkInterfaceList>();
+  auto interface_list = std::make_unique<net::NetworkInterfaceList>();
   if (net::GetNetworkList(interface_list.get(),
                           net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES)) {
     return interface_list;

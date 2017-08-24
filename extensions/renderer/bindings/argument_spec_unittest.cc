@@ -425,9 +425,9 @@ TEST_F(ArgumentSpecUnitTest, TypeRefsTest) {
   const char kEnumType[] =
       "{'id': 'refEnum', 'type': 'string', 'enum': ['alpha', 'beta']}";
   AddTypeRef("refObj",
-             base::MakeUnique<ArgumentSpec>(*ValueFromString(kObjectType)));
+             std::make_unique<ArgumentSpec>(*ValueFromString(kObjectType)));
   AddTypeRef("refEnum",
-             base::MakeUnique<ArgumentSpec>(*ValueFromString(kEnumType)));
+             std::make_unique<ArgumentSpec>(*ValueFromString(kEnumType)));
   std::set<std::string> valid_enums = {"alpha", "beta"};
 
   {
@@ -813,8 +813,8 @@ TEST_F(ArgumentSpecUnitTest, GetTypeName) {
 
   {
     std::vector<std::unique_ptr<ArgumentSpec>> choices;
-    choices.push_back(base::MakeUnique<ArgumentSpec>(ArgumentType::INTEGER));
-    choices.push_back(base::MakeUnique<ArgumentSpec>(ArgumentType::STRING));
+    choices.push_back(std::make_unique<ArgumentSpec>(ArgumentType::INTEGER));
+    choices.push_back(std::make_unique<ArgumentSpec>(ArgumentType::STRING));
     ArgumentSpec choices_spec(ArgumentType::CHOICES);
     choices_spec.set_choices(std::move(choices));
     EXPECT_EQ("[integer|string]", choices_spec.GetTypeName());

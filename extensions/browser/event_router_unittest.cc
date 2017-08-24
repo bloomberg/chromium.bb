@@ -97,7 +97,7 @@ std::unique_ptr<EventListener> CreateEventListenerForURL(
 scoped_refptr<Extension> CreateExtension(bool component, bool persistent) {
   ExtensionBuilder builder;
   std::unique_ptr<base::DictionaryValue> manifest =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   manifest->SetString("name", "foo");
   manifest->SetString("version", "1.0.0");
   manifest->SetInteger("manifest_version", 2);
@@ -112,13 +112,13 @@ scoped_refptr<Extension> CreateExtension(bool component, bool persistent) {
 
 std::unique_ptr<DictionaryValue> CreateHostSuffixFilter(
     const std::string& suffix) {
-  auto filter_dict = base::MakeUnique<DictionaryValue>();
-  filter_dict->Set("hostSuffix", base::MakeUnique<Value>(suffix));
+  auto filter_dict = std::make_unique<DictionaryValue>();
+  filter_dict->Set("hostSuffix", std::make_unique<Value>(suffix));
 
-  auto filter_list = base::MakeUnique<ListValue>();
+  auto filter_list = std::make_unique<ListValue>();
   filter_list->Append(std::move(filter_dict));
 
-  auto filter = base::MakeUnique<DictionaryValue>();
+  auto filter = std::make_unique<DictionaryValue>();
   filter->Set("url", std::move(filter_list));
   return filter;
 }
@@ -128,7 +128,7 @@ std::unique_ptr<DictionaryValue> CreateHostSuffixFilter(
 class EventRouterTest : public ExtensionsTest {
  public:
   EventRouterTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
 
  protected:
   // Tests adding and removing observers from EventRouter.
@@ -187,7 +187,7 @@ class EventRouterFilterTest : public ExtensionsTest {
   void SetUp() override {
     ExtensionsTest::SetUp();
     render_process_host_ =
-        base::MakeUnique<content::MockRenderProcessHost>(browser_context());
+        std::make_unique<content::MockRenderProcessHost>(browser_context());
     ASSERT_TRUE(event_router());  // constructs EventRouter
   }
 
@@ -259,7 +259,7 @@ void EventRouterTest::RunEventRouterObserverTest(
     const EventListenerConstructor& constructor) {
   EventRouter router(nullptr, nullptr);
   std::unique_ptr<EventListener> listener = constructor.Run(
-      "event_name", nullptr, base::MakeUnique<base::DictionaryValue>());
+      "event_name", nullptr, std::make_unique<base::DictionaryValue>());
 
   // Add/remove works without any observers.
   router.OnListenerAdded(listener.get());
@@ -295,7 +295,7 @@ void EventRouterTest::RunEventRouterObserverTest(
   // proper details.
   matching_observer.Reset();
   std::unique_ptr<EventListener> sub_event_listener = constructor.Run(
-      "event_name/1", nullptr, base::MakeUnique<base::DictionaryValue>());
+      "event_name/1", nullptr, std::make_unique<base::DictionaryValue>());
   router.OnListenerAdded(sub_event_listener.get());
   EXPECT_EQ(1, matching_observer.listener_added_count());
   EXPECT_EQ(0, matching_observer.listener_removed_count());

@@ -72,7 +72,7 @@ NetworkingConfigServiceFactory::~NetworkingConfigServiceFactory() {
 KeyedService* NetworkingConfigServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new NetworkingConfigService(
-      context, base::MakeUnique<DefaultEventDelegate>(context),
+      context, std::make_unique<DefaultEventDelegate>(context),
       ExtensionRegistry::Get(context));
 }
 

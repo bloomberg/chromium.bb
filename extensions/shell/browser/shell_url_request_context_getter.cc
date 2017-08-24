@@ -37,7 +37,7 @@ ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
 
 std::unique_ptr<net::NetworkDelegate>
 ShellURLRequestContextGetter::CreateNetworkDelegate() {
-  return base::MakeUnique<ShellNetworkDelegate>(browser_context_,
+  return std::make_unique<ShellNetworkDelegate>(browser_context_,
                                                 extension_info_map_);
 }
 

@@ -63,7 +63,7 @@ ExtensionThrottleManager::MaybeCreateThrottle(const net::URLRequest* request) {
   if (request->site_for_cookies().scheme() != extensions::kExtensionScheme) {
     return nullptr;
   }
-  return base::MakeUnique<extensions::ExtensionRequestLimitingThrottle>(request,
+  return std::make_unique<extensions::ExtensionRequestLimitingThrottle>(request,
                                                                         this);
 }
 

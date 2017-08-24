@@ -58,7 +58,7 @@ class TestProcessManager : public ProcessManager {
 
 std::unique_ptr<KeyedService> CreateTestProcessManager(
     BrowserContext* context) {
-  return base::MakeUnique<TestProcessManager>(context);
+  return std::make_unique<TestProcessManager>(context);
 }
 
 }  // namespace

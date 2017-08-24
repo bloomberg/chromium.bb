@@ -180,7 +180,7 @@ bool AlarmsClearFunction::RunAsync() {
 }
 
 void AlarmsClearFunction::Callback(const std::string& name, bool success) {
-  SetResult(base::MakeUnique<base::Value>(success));
+  SetResult(std::make_unique<base::Value>(success));
   SendResponse(true);
 }
 
@@ -192,7 +192,7 @@ bool AlarmsClearAllFunction::RunAsync() {
 }
 
 void AlarmsClearAllFunction::Callback() {
-  SetResult(base::MakeUnique<base::Value>(true));
+  SetResult(std::make_unique<base::Value>(true));
   SendResponse(true);
 }
 

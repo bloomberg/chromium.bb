@@ -13,12 +13,12 @@ namespace media_perception_private {
 namespace {
 
 std::unique_ptr<Point> PointProtoToIdl(const mri::Point& point) {
-  std::unique_ptr<Point> point_result = base::MakeUnique<Point>();
+  std::unique_ptr<Point> point_result = std::make_unique<Point>();
   if (point.has_x())
-    point_result->x = base::MakeUnique<double>(point.x());
+    point_result->x = std::make_unique<double>(point.x());
 
   if (point.has_y())
-    point_result->y = base::MakeUnique<double>(point.y());
+    point_result->y = std::make_unique<double>(point.y());
 
   return point_result;
 }
@@ -26,10 +26,10 @@ std::unique_ptr<Point> PointProtoToIdl(const mri::Point& point) {
 std::unique_ptr<BoundingBox> BoundingBoxProtoToIdl(
     const mri::BoundingBox& bounding_box) {
   std::unique_ptr<BoundingBox> bounding_box_result =
-      base::MakeUnique<BoundingBox>();
+      std::make_unique<BoundingBox>();
   if (bounding_box.has_normalized()) {
     bounding_box_result->normalized =
-        base::MakeUnique<bool>(bounding_box.normalized());
+        std::make_unique<bool>(bounding_box.normalized());
   }
 
   if (bounding_box.has_top_left())
@@ -59,11 +59,11 @@ DistanceUnits DistanceUnitsProtoToIdl(const mri::Distance& distance) {
 }
 
 std::unique_ptr<Distance> DistanceProtoToIdl(const mri::Distance& distance) {
-  std::unique_ptr<Distance> distance_result = base::MakeUnique<Distance>();
+  std::unique_ptr<Distance> distance_result = std::make_unique<Distance>();
   distance_result->units = DistanceUnitsProtoToIdl(distance);
 
   if (distance.has_magnitude())
-    distance_result->magnitude = base::MakeUnique<double>(distance.magnitude());
+    distance_result->magnitude = std::make_unique<double>(distance.magnitude());
 
   return distance_result;
 }
@@ -88,11 +88,11 @@ EntityType EntityTypeProtoToIdl(const mri::Entity& entity) {
 Entity EntityProtoToIdl(const mri::Entity& entity) {
   Entity entity_result;
   if (entity.has_id())
-    entity_result.id = base::MakeUnique<int>(entity.id());
+    entity_result.id = std::make_unique<int>(entity.id());
 
   entity_result.type = EntityTypeProtoToIdl(entity);
   if (entity.has_confidence())
-    entity_result.confidence = base::MakeUnique<double>(entity.confidence());
+    entity_result.confidence = std::make_unique<double>(entity.confidence());
 
   if (entity.has_bounding_box())
     entity_result.bounding_box = BoundingBoxProtoToIdl(entity.bounding_box());
@@ -108,22 +108,22 @@ FramePerception FramePerceptionProtoToIdl(
   FramePerception frame_perception_result;
   if (frame_perception.has_frame_id()) {
     frame_perception_result.frame_id =
-        base::MakeUnique<int>(frame_perception.frame_id());
+        std::make_unique<int>(frame_perception.frame_id());
   }
   if (frame_perception.has_frame_width_in_px()) {
     frame_perception_result.frame_width_in_px =
-        base::MakeUnique<int>(frame_perception.frame_width_in_px());
+        std::make_unique<int>(frame_perception.frame_width_in_px());
   }
   if (frame_perception.has_frame_height_in_px()) {
     frame_perception_result.frame_height_in_px =
-        base::MakeUnique<int>(frame_perception.frame_height_in_px());
+        std::make_unique<int>(frame_perception.frame_height_in_px());
   }
   if (frame_perception.has_timestamp()) {
     frame_perception_result.timestamp =
-        base::MakeUnique<double>(frame_perception.timestamp());
+        std::make_unique<double>(frame_perception.timestamp());
   }
   if (frame_perception.entity_size() > 0) {
-    frame_perception_result.entities = base::MakeUnique<std::vector<Entity>>();
+    frame_perception_result.entities = std::make_unique<std::vector<Entity>>();
     for (const auto& entity : frame_perception.entity())
       frame_perception_result.entities->emplace_back(EntityProtoToIdl(entity));
   }
@@ -150,18 +150,18 @@ ImageFormat ImageFormatProtoToIdl(const mri::ImageFrame& image_frame) {
 ImageFrame ImageFrameProtoToIdl(const mri::ImageFrame& image_frame) {
   ImageFrame image_frame_result;
   if (image_frame.has_width())
-    image_frame_result.width = base::MakeUnique<int>(image_frame.width());
+    image_frame_result.width = std::make_unique<int>(image_frame.width());
 
   if (image_frame.has_height())
-    image_frame_result.height = base::MakeUnique<int>(image_frame.height());
+    image_frame_result.height = std::make_unique<int>(image_frame.height());
 
   if (image_frame.has_data_length()) {
     image_frame_result.data_length =
-        base::MakeUnique<int>(image_frame.data_length());
+        std::make_unique<int>(image_frame.data_length());
   }
 
   if (image_frame.has_pixel_data()) {
-    image_frame_result.frame = base::MakeUnique<std::vector<char>>(
+    image_frame_result.frame = std::make_unique<std::vector<char>>(
         image_frame.pixel_data().begin(), image_frame.pixel_data().end());
   }
 
@@ -174,11 +174,11 @@ PerceptionSample PerceptionSampleProtoToIdl(
   PerceptionSample perception_sample_result;
   if (perception_sample.has_frame_perception()) {
     perception_sample_result.frame_perception =
-        base::MakeUnique<FramePerception>(
+        std::make_unique<FramePerception>(
             FramePerceptionProtoToIdl(perception_sample.frame_perception()));
   }
   if (perception_sample.has_image_frame()) {
-    perception_sample_result.image_frame = base::MakeUnique<ImageFrame>(
+    perception_sample_result.image_frame = std::make_unique<ImageFrame>(
         ImageFrameProtoToIdl(perception_sample.image_frame()));
   }
   return perception_sample_result;
@@ -231,7 +231,7 @@ State StateProtoToIdl(const mri::State& state) {
   }
   if (state.has_device_context()) {
     state_result.device_context =
-        base::MakeUnique<std::string>(state.device_context());
+        std::make_unique<std::string>(state.device_context());
   }
   return state_result;
 }
@@ -250,12 +250,12 @@ MediaPerception MediaPerceptionProtoToIdl(
   MediaPerception media_perception_result;
   if (media_perception.has_timestamp()) {
     media_perception_result.timestamp =
-        base::MakeUnique<double>(media_perception.timestamp());
+        std::make_unique<double>(media_perception.timestamp());
   }
 
   if (media_perception.frame_perception_size() > 0) {
     media_perception_result.frame_perceptions =
-        base::MakeUnique<std::vector<FramePerception>>();
+        std::make_unique<std::vector<FramePerception>>();
     for (const auto& frame_perception : media_perception.frame_perception()) {
       media_perception_result.frame_perceptions->emplace_back(
           FramePerceptionProtoToIdl(frame_perception));
@@ -268,7 +268,7 @@ Diagnostics DiagnosticsProtoToIdl(const mri::Diagnostics& diagnostics) {
   Diagnostics diagnostics_result;
   if (diagnostics.perception_sample_size() > 0) {
     diagnostics_result.perception_samples =
-        base::MakeUnique<std::vector<PerceptionSample>>();
+        std::make_unique<std::vector<PerceptionSample>>();
     for (const auto& perception_sample : diagnostics.perception_sample()) {
       diagnostics_result.perception_samples->emplace_back(
           PerceptionSampleProtoToIdl(perception_sample));

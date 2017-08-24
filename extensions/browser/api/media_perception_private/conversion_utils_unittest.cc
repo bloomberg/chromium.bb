@@ -216,7 +216,7 @@ TEST(MediaPerceptionConversionUtilsTest, StateIdlToProto) {
   EXPECT_FALSE(state_proto.has_device_context());
 
   state.status = media_perception::STATUS_SUSPENDED;
-  state.device_context = base::MakeUnique<std::string>(kTestDeviceContext);
+  state.device_context = std::make_unique<std::string>(kTestDeviceContext);
   state_proto = StateIdlToProto(state);
   EXPECT_EQ(state_proto.status(), mri::State::SUSPENDED);
   EXPECT_EQ(state_proto.device_context(), kTestDeviceContext);

@@ -73,7 +73,7 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
   void Read(uint32_t bytes, ReadCallback callback) override {
     auto buffer =
         base::MakeRefCounted<net::IOBuffer>(static_cast<size_t>(bytes));
-    test_io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
+    test_io_handler_->Read(std::make_unique<device::ReceiveBuffer>(
         buffer, bytes,
         base::BindOnce(
             [](ReadCallback callback, scoped_refptr<net::IOBuffer> buffer,
@@ -87,7 +87,7 @@ class FakeSerialIoHandler : public device::mojom::SerialIoHandler {
   }
   void Write(const std::vector<uint8_t>& data,
              WriteCallback callback) override {
-    test_io_handler_->Write(base::MakeUnique<device::SendBuffer>(
+    test_io_handler_->Write(std::make_unique<device::SendBuffer>(
         data, base::BindOnce(
                   [](WriteCallback callback, int bytes_sent,
                      device::mojom::SerialSendError error) {
@@ -136,7 +136,7 @@ void BindSerialDeviceEnumerator(
     mojo::ScopedMessagePipeHandle handle,
     const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<FakeSerialDeviceEnumerator>(),
+      std::make_unique<FakeSerialDeviceEnumerator>(),
       device::mojom::SerialDeviceEnumeratorRequest(std::move(handle)));
 }
 
@@ -144,7 +144,7 @@ void BindSerialIoHandler(const std::string& interface_name,
                          mojo::ScopedMessagePipeHandle handle,
                          const service_manager::BindSourceInfo& source_info) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<FakeSerialIoHandler>(),
+      std::make_unique<FakeSerialIoHandler>(),
       device::mojom::SerialIoHandlerRequest(std::move(handle)));
 }
 

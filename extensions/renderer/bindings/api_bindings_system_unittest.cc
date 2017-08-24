@@ -117,7 +117,7 @@ void APIBindingsSystemTest::SetUp() {
 
   binding::AddConsoleError add_console_error(base::Bind(
       &APIBindingsSystemTest::AddConsoleError, base::Unretained(this)));
-  bindings_system_ = base::MakeUnique<APIBindingsSystem>(
+  bindings_system_ = std::make_unique<APIBindingsSystem>(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
       base::Bind(&RunFunctionOnGlobalAndReturnHandle),
       base::Bind(&APIBindingsSystemTest::GetAPISchema, base::Unretained(this)),
@@ -340,7 +340,7 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
     return result;
   };
 
-  auto test_hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
+  auto test_hooks = std::make_unique<APIBindingHooksTestDelegate>();
   test_hooks->AddHandler("alpha.functionWithCallback",
                          base::Bind(hook, &did_call));
   APIBindingHooks* binding_hooks =
@@ -456,7 +456,7 @@ TEST_F(APIBindingsSystemTest, TestCustomEvent) {
     return ret.As<v8::Value>();
   };
 
-  auto test_hooks = base::MakeUnique<APIBindingHooksTestDelegate>();
+  auto test_hooks = std::make_unique<APIBindingHooksTestDelegate>();
   test_hooks->SetCustomEvent(base::Bind(create_custom_event));
   APIBindingHooks* binding_hooks =
       bindings_system()->GetHooksForAPI(kAlphaAPIName);

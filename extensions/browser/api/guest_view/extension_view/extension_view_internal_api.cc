@@ -64,7 +64,7 @@ bool ExtensionViewInternalLoadSrcFunction::RunAsyncSafe(
     has_load_succeeded = guest->NavigateGuest(src, true /* force_navigation */);
 
   // Return whether load is successful.
-  SetResult(base::MakeUnique<base::Value>(has_load_succeeded));
+  SetResult(std::make_unique<base::Value>(has_load_succeeded));
   SendResponse(true);
   return true;
 }

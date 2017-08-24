@@ -276,7 +276,7 @@ void PermissionsParser::Finalize(Extension* extension) {
                         initial_required_permissions_->scriptable_hosts));
   extension->SetManifestData(
       keys::kPermissions,
-      base::MakeUnique<ManifestPermissions>(std::move(required_permissions)));
+      std::make_unique<ManifestPermissions>(std::move(required_permissions)));
 
   std::unique_ptr<const PermissionSet> optional_permissions(new PermissionSet(
       initial_optional_permissions_->api_permissions,
@@ -284,7 +284,7 @@ void PermissionsParser::Finalize(Extension* extension) {
       initial_optional_permissions_->host_permissions, URLPatternSet()));
   extension->SetManifestData(
       keys::kOptionalPermissions,
-      base::MakeUnique<ManifestPermissions>(std::move(optional_permissions)));
+      std::make_unique<ManifestPermissions>(std::move(optional_permissions)));
 }
 
 // static

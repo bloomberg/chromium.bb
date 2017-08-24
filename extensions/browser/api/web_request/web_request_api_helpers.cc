@@ -224,10 +224,10 @@ net::NetLogParametersCallback CreateNetLogExtensionIdCallback(
 std::unique_ptr<base::Value> NetLogModificationCallback(
     const EventResponseDelta* delta,
     net::NetLogCaptureMode capture_mode) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("extension_id", delta->extension_id);
 
-  auto modified_headers = base::MakeUnique<base::ListValue>();
+  auto modified_headers = std::make_unique<base::ListValue>();
   net::HttpRequestHeaders::Iterator modification(
       delta->modified_request_headers);
   while (modification.GetNext()) {
@@ -236,7 +236,7 @@ std::unique_ptr<base::Value> NetLogModificationCallback(
   }
   dict->Set("modified_headers", std::move(modified_headers));
 
-  auto deleted_headers = base::MakeUnique<base::ListValue>();
+  auto deleted_headers = std::make_unique<base::ListValue>();
   for (std::vector<std::string>::const_iterator key =
            delta->deleted_request_headers.begin();
        key != delta->deleted_request_headers.end();
@@ -254,7 +254,7 @@ bool InDecreasingExtensionInstallationTimeOrder(
 }
 
 std::unique_ptr<base::ListValue> StringToCharList(const std::string& s) {
-  auto result = base::MakeUnique<base::ListValue>();
+  auto result = std::make_unique<base::ListValue>();
   for (size_t i = 0, n = s.size(); i < n; ++i) {
     result->AppendInteger(*reinterpret_cast<const unsigned char*>(&s[i]));
   }
@@ -1211,7 +1211,7 @@ void ClearCacheOnNavigation() {
 std::unique_ptr<base::DictionaryValue> CreateHeaderDictionary(
     const std::string& name,
     const std::string& value) {
-  auto header = base::MakeUnique<base::DictionaryValue>();
+  auto header = std::make_unique<base::DictionaryValue>();
   header->SetString(keys::kHeaderNameKey, name);
   if (base::IsStringUTF8(value)) {
     header->SetString(keys::kHeaderValueKey, value);
