@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_time_utils.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store_utils.h"
@@ -120,13 +121,18 @@ AddUniqueUrlsTask::Result AddUrlsAndCleanupZombiesSync(
 }
 
 AddUniqueUrlsTask::AddUniqueUrlsTask(
+    PrefetchDispatcher* prefetch_dispatcher,
     PrefetchStore* prefetch_store,
     const std::string& name_space,
     const std::vector<PrefetchURL>& prefetch_urls)
-    : prefetch_store_(prefetch_store),
+    : prefetch_dispatcher_(prefetch_dispatcher),
+      prefetch_store_(prefetch_store),
       name_space_(name_space),
       prefetch_urls_(prefetch_urls),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(prefetch_dispatcher_);
+  DCHECK(prefetch_store_);
+}
 
 AddUniqueUrlsTask::~AddUniqueUrlsTask() {}
 
@@ -138,11 +144,8 @@ void AddUniqueUrlsTask::Run() {
 }
 
 void AddUniqueUrlsTask::OnUrlsAdded(Result result) {
-  if (result == Result::URLS_ADDED) {
-    // TODO(carlosk): schedule NWake here if at least one new entry was added to
-    // the store.
-    NOTIMPLEMENTED();
-  }
+  if (result == Result::URLS_ADDED)
+    prefetch_dispatcher_->EnsureTaskScheduled();
   TaskComplete();
 }
 

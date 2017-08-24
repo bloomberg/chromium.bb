@@ -13,6 +13,7 @@
 #include "components/offline_pages/core/task.h"
 
 namespace offline_pages {
+class PrefetchDispatcher;
 class PrefetchStore;
 
 // Event Handler Task that responds to GCM messages and marks the corresponding
@@ -32,8 +33,10 @@ class MarkOperationDoneTask : public Task {
   // affected by a successful SQL command.
   using TaskResult = std::pair<StoreResult, int64_t>;
 
-  // TODO(dewittj): Notify the dispatcher if more actions might be possible.
-  MarkOperationDoneTask(PrefetchStore* prefetch_store,
+  // TODO(dewittj): Schedule action tasks via "SchedulePipelineProcessing" if we
+  // are in a background task.
+  MarkOperationDoneTask(PrefetchDispatcher* prefetch_dispatcher,
+                        PrefetchStore* prefetch_store,
                         const std::string& operation_name);
   ~MarkOperationDoneTask() override;
 
@@ -50,6 +53,7 @@ class MarkOperationDoneTask : public Task {
   void MarkOperationDone(int updated_entry_count);
   void Done(TaskResult result);
 
+  PrefetchDispatcher* prefetch_dispatcher_;
   PrefetchStore* prefetch_store_;
   std::string operation_name_;
   TaskResult result_ = std::make_pair(StoreResult::UNFINISHED, -1);

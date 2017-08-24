@@ -67,6 +67,14 @@ class PrefetchDispatcher {
   // pipeline again.
   virtual void SchedulePipelineProcessing() = 0;
 
+  // Called by Event Handler tasks to ensure that we will wake up in the
+  // background to process data produced by the event handler.  For example, if
+  // new URLs are added to the system, this is called to process them later in
+  // the background.  If we are in a background task, requests rescheduling at
+  // the end of the task.  Otherwise, updates the task in the OS scheduler.
+  // Does not update any existing task, so will not affect backoff.
+  virtual void EnsureTaskScheduled() = 0;
+
   // Called when a client has candidate URLs for the system to prefetch, along
   // with the client's unique namespace. URLs that are currently in the system
   // for this client are acceptable but ignored.

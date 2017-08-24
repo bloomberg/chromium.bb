@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_network_request_factory.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
 #include "sql/connection.h"
@@ -57,9 +58,12 @@ MarkOperationDoneTask::TaskResult MarkOperationCompletedOnServerSync(
 
 }  // namespace
 
-MarkOperationDoneTask::MarkOperationDoneTask(PrefetchStore* prefetch_store,
-                                             const std::string& operation_name)
-    : prefetch_store_(prefetch_store),
+MarkOperationDoneTask::MarkOperationDoneTask(
+    PrefetchDispatcher* prefetch_dispatcher,
+    PrefetchStore* prefetch_store,
+    const std::string& operation_name)
+    : prefetch_dispatcher_(prefetch_dispatcher),
+      prefetch_store_(prefetch_store),
       operation_name_(operation_name),
       weak_factory_(this) {}
 
@@ -73,8 +77,12 @@ void MarkOperationDoneTask::Run() {
 
 void MarkOperationDoneTask::Done(TaskResult result) {
   result_ = result;
-  // TODO(dewittj): Tell dispatcher about work to do if rows changed were
-  // greater than 0.
+
+  // We need to make sure we can process any work that was created by this event
+  // so we will ensure the task is scheudled.
+  if (change_count() > 0)
+    prefetch_dispatcher_->EnsureTaskScheduled();
+
   TaskComplete();
 }
 

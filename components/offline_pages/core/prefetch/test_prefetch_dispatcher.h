@@ -30,6 +30,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   void StopBackgroundTask() override;
   void SetService(PrefetchService* service) override;
   void SchedulePipelineProcessing() override;
+  void EnsureTaskScheduled() override;
   void GCMOperationCompletedMessageReceived(
       const std::string& operation_name) override;
   void CleanupDownloads(
@@ -51,6 +52,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   int processing_schedule_count = 0;
   int remove_all_suggestions_count = 0;
   int remove_by_client_id_count = 0;
+  int task_schedule_count = 0;
 };
 
 }  // namespace offline_pages
