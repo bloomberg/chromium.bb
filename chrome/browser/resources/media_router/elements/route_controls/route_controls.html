@@ -55,6 +55,7 @@
           </span>
           <span id="volume-holder">
             <paper-slider
+                aria-valuetext$="[[getVolumeSliderValueText_(displayedVolume_)]]"
                 id="route-volume-slider"
                 hidden="[[!routeStatus.canSetVolume]]"
                 disabled="[[!routeStatus.canSetVolume]]"
