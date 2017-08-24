@@ -5524,6 +5524,7 @@ weston_output_enable(struct weston_output *output)
 {
 	struct weston_compositor *c = output->compositor;
 	struct weston_output *iterator;
+	struct weston_head *head;
 	int x = 0, y = 0;
 
 	if (output->enabled) {
@@ -5536,6 +5537,11 @@ weston_output_enable(struct weston_output *output)
 		weston_log("Error: cannot enable output '%s' without heads.\n",
 			   output->name);
 		return -1;
+	}
+
+	wl_list_for_each(head, &output->head_list, output_link) {
+		assert(head->make);
+		assert(head->model);
 	}
 
 	iterator = container_of(c->output_list.prev,
