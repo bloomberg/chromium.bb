@@ -47,15 +47,16 @@ struct AnnotationID {
   AnnotationInstance* instance;
 };
 
+const base::FilePath kSafeListPath(
+    FILE_PATH_LITERAL("tools/traffic_annotation/auditor/safe_list.txt"));
 }  // namespace
-
 
 TrafficAnnotationAuditor::TrafficAnnotationAuditor(
     const base::FilePath& source_path,
     const base::FilePath& build_path)
-    : source_path_(source_path), build_path_(build_path) {
-  LoadWhiteList();
-};
+    : source_path_(source_path),
+      build_path_(build_path),
+      safe_list_loaded_(false){};
 
 TrafficAnnotationAuditor::~TrafficAnnotationAuditor(){};
 
@@ -69,6 +70,8 @@ int TrafficAnnotationAuditor::ComputeHashValue(const std::string& unique_id) {
 bool TrafficAnnotationAuditor::RunClangTool(
     const std::vector<std::string>& path_filters,
     const bool full_run) {
+  if (!safe_list_loaded_ && !LoadSafeList())
+    return false;
   base::FilePath options_filepath;
   if (!base::CreateTemporaryFile(&options_filepath)) {
     LOG(ERROR) << "Could not create temporary options file.";
@@ -83,9 +86,9 @@ bool TrafficAnnotationAuditor::RunClangTool(
           "--generate-compdb --tool=traffic_annotation_extractor -p=%s ",
           build_path_.MaybeAsASCII().c_str());
 
-  // |ignore_list_[ALL]| is not passed when |full_run| is happening as there is
+  // |safe_list_[ALL]| is not passed when |full_run| is happening as there is
   // no way to pass it to run_tools.py except enumerating all alternatives.
-  // The paths in |ignore_list_[ALL]| are removed later from the results.
+  // The paths in |safe_list_[ALL]| are removed later from the results.
   if (full_run) {
     for (const std::string& file_path : path_filters)
       fprintf(options_file, "%s ", file_path.c_str());
@@ -95,15 +98,15 @@ bool TrafficAnnotationAuditor::RunClangTool(
 
     if (path_filters.size()) {
       for (const auto& path_filter : path_filters) {
-        filter.GetRelevantFiles(source_path_,
-                                ignore_list_[static_cast<int>(
-                                    AuditorException::ExceptionType::ALL)],
-                                path_filter, &file_paths);
+        filter.GetRelevantFiles(
+            source_path_,
+            safe_list_[static_cast<int>(AuditorException::ExceptionType::ALL)],
+            path_filter, &file_paths);
       }
     } else {
       filter.GetRelevantFiles(
           source_path_,
-          ignore_list_[static_cast<int>(AuditorException::ExceptionType::ALL)],
+          safe_list_[static_cast<int>(AuditorException::ExceptionType::ALL)],
           "", &file_paths);
     }
 
@@ -136,25 +139,29 @@ bool TrafficAnnotationAuditor::RunClangTool(
   return result;
 }
 
-bool TrafficAnnotationAuditor::IsWhitelisted(
+bool TrafficAnnotationAuditor::IsSafeListed(
     const std::string& file_path,
-    AuditorException::ExceptionType whitelist_type) {
-  const std::vector<std::string>& whitelist =
-      ignore_list_[static_cast<int>(whitelist_type)];
+    AuditorException::ExceptionType exception_type) {
+  if (!safe_list_loaded_ && !LoadSafeList())
+    return false;
+  const std::vector<std::string>& safe_list =
+      safe_list_[static_cast<int>(exception_type)];
 
-  for (const std::string& ignore_path : whitelist) {
+  for (const std::string& ignore_path : safe_list) {
     if (!strncmp(file_path.c_str(), ignore_path.c_str(), ignore_path.length()))
       return true;
   }
 
   // If the given filepath did not match the rules with the specified type,
   // check it with rules of type 'ALL' as well.
-  if (whitelist_type != AuditorException::ExceptionType::ALL)
-    return IsWhitelisted(file_path, AuditorException::ExceptionType::ALL);
+  if (exception_type != AuditorException::ExceptionType::ALL)
+    return IsSafeListed(file_path, AuditorException::ExceptionType::ALL);
   return false;
 }
 
 bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
+  if (!safe_list_loaded_ && !LoadSafeList())
+    return false;
   // Remove possible carriage return characters before splitting lines.
   base::RemoveChars(clang_tool_raw_output_, "\r", &clang_tool_raw_output_);
   std::vector<std::string> lines =
@@ -212,11 +219,11 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
                  ? new_annotation.Deserialize(lines, current, end_line)
                  : new_call.Deserialize(lines, current, end_line);
 
-    if (!IsWhitelisted(result.file_path(),
-                       AuditorException::ExceptionType::ALL) &&
+    if (!IsSafeListed(result.file_path(),
+                      AuditorException::ExceptionType::ALL) &&
         (result.type() != AuditorResult::Type::ERROR_MISSING ||
-         !IsWhitelisted(result.file_path(),
-                        AuditorException::ExceptionType::MISSING))) {
+         !IsSafeListed(result.file_path(),
+                       AuditorException::ExceptionType::MISSING))) {
       switch (result.type()) {
         case AuditorResult::Type::RESULT_OK: {
           if (annotation_block)
@@ -243,42 +250,39 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
   return true;
 }
 
-bool TrafficAnnotationAuditor::LoadWhiteList() {
-  base::FilePath white_list_file = base::MakeAbsoluteFilePath(
-      source_path_.Append(FILE_PATH_LITERAL("tools"))
-          .Append(FILE_PATH_LITERAL("traffic_annotation"))
-          .Append(FILE_PATH_LITERAL("auditor"))
-          .Append(FILE_PATH_LITERAL("white_list.txt")));
+bool TrafficAnnotationAuditor::LoadSafeList() {
+  base::FilePath safe_list_file =
+      base::MakeAbsoluteFilePath(source_path_.Append(kSafeListPath));
   std::string file_content;
-  if (base::ReadFileToString(white_list_file, &file_content)) {
+  if (base::ReadFileToString(safe_list_file, &file_content)) {
     base::RemoveChars(file_content, "\r", &file_content);
     std::vector<std::string> lines = base::SplitString(
         file_content, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
     for (const std::string& line : lines) {
-      // Ignore comments.
-      if (line.length() && line[0] == '#')
+      // Ignore comments and empty lines.
+      if (!line.length() || line[0] == '#')
         continue;
       size_t comma = line.find(',');
       if (comma == std::string::npos) {
-        LOG(ERROR) << "Unexpected syntax in white_list.txt, line: " << line;
+        LOG(ERROR) << "Unexpected syntax in safe_list.txt, line: " << line;
         return false;
       }
 
       AuditorException::ExceptionType exception_type;
       if (AuditorException::TypeFromString(line.substr(0, comma),
                                            &exception_type)) {
-        ignore_list_[static_cast<int>(exception_type)].push_back(
+        safe_list_[static_cast<int>(exception_type)].push_back(
             line.substr(comma + 1, line.length() - comma - 1));
       } else {
-        LOG(ERROR) << "Unexpected type in white_list.txt line: " << line;
+        LOG(ERROR) << "Unexpected type in safe_list.txt line: " << line;
         return false;
       }
     }
+    safe_list_loaded_ = true;
     return true;
   }
 
-  LOG(ERROR)
-      << "Could not read tools/traffic_annotation/auditor/white_list.txt";
+  LOG(ERROR) << "Could not read " << kSafeListPath.MaybeAsASCII();
   return false;
 }
 
@@ -446,8 +450,7 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
     return true;
   }
 
-  // Is in whitelist?
-  if (IsWhitelisted(call.file_path, AuditorException::ExceptionType::MISSING))
+  if (IsSafeListed(call.file_path, AuditorException::ExceptionType::MISSING))
     return true;
 
   // Unittests should be all annotated. Although this can be detected using gn,

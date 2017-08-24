@@ -12,6 +12,9 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "third_party/protobuf/src/google/protobuf/text_format.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_auditor.h"
+#include "tools/traffic_annotation/auditor/traffic_annotation_exporter.h"
+
+namespace {
 
 const char* HELP_TEXT = R"(
 Traffic Annotation Auditor
@@ -38,8 +41,6 @@ Options:
                       repository without text filtering files. Using this flag
                       may increase processing time x40.
   --summary-file      Optional path to the output file with all annotations.
-  --ids-file          Optional path to the output file with the list of unique
-                      ids and their hash codes.
   --annotations-file  Optional path to a TSV output file with all annotations.
   path_filters        Optional paths to filter what files the tool is run on.
 
@@ -47,9 +48,14 @@ Example:
   traffic_annotation_auditor --build-dir=out/Debug summary-file=report.txt
 )";
 
+const base::FilePath kAnnotationsXmlPath(
+    FILE_PATH_LITERAL("tools/traffic_annotation/summary/annotations.xml"));
+
+}  // namespace
+
 // Writes a summary of annotations, calls, and errors.
 bool WriteSummaryFile(const base::FilePath& filepath,
-                      const std::vector<AnnotationInstance>& annoations,
+                      const std::vector<AnnotationInstance>& annotations,
                       const std::vector<CallInstance>& calls,
                       const std::vector<AuditorResult>& errors) {
   std::string report;
@@ -64,7 +70,7 @@ bool WriteSummaryFile(const base::FilePath& filepath,
 
   report += "\n[Annotations]\n";
   items.clear();
-  for (const auto& instance : annoations) {
+  for (const auto& instance : annotations) {
     std::string serialized;
     google::protobuf::TextFormat::PrintToString(instance.proto, &serialized);
     items.push_back(serialized +
@@ -85,31 +91,6 @@ bool WriteSummaryFile(const base::FilePath& filepath,
   std::sort(items.begin(), items.end());
   for (const std::string& item : items)
     report += item;
-
-  return base::WriteFile(filepath, report.c_str(), report.length()) != -1;
-}
-
-// Writes a file including unqiue id hash codes and unique ids of all
-// annotations.
-bool WriteIDsFile(const base::FilePath& filepath,
-                  const std::vector<AnnotationInstance>& annoations,
-                  const std::map<int, std::string>& reserved_ids) {
-  std::string report;
-  std::vector<std::pair<int, std::string>> items;
-
-  for (auto& instance : annoations) {
-    items.push_back(make_pair(
-        TrafficAnnotationAuditor::ComputeHashValue(instance.proto.unique_id()),
-        instance.proto.unique_id()));
-  }
-
-  for (const auto& item : reserved_ids)
-    items.push_back(item);
-
-  std::sort(items.begin(), items.end());
-  for (const auto& item : items)
-    report += base::StringPrintf("<int value=\"%i\" label=\"%s\" />\n",
-                                 item.first, item.second.c_str());
 
   return base::WriteFile(filepath, report.c_str(), report.length()) != -1;
 }
@@ -162,14 +143,14 @@ std::string PolicyToText(std::string debug_string) {
 
 // Writes a TSV file of all annotations and their content.
 bool WriteAnnotationsFile(const base::FilePath& filepath,
-                          const std::vector<AnnotationInstance>& annoations) {
+                          const std::vector<AnnotationInstance>& annotations) {
   std::vector<std::string> lines;
   std::string title =
       "Unique ID\tReview by pconunsel\tEmpty Policy Justification\t"
       "Sender\tDescription\tTrigger\tData\tDestination\tCookies Allowed\t"
       "Cookies Store\tSetting\tChrome Policy\tComments\tSource File\tHash Code";
 
-  for (auto& instance : annoations) {
+  for (auto& instance : annotations) {
     // Unique ID
     std::string line = instance.proto.unique_id();
 
@@ -282,7 +263,6 @@ int main(int argc, char* argv[]) {
       command_line.GetSwitchValuePath("extractor-input");
   bool full_run = command_line.HasSwitch("full-run");
   base::FilePath summary_file = command_line.GetSwitchValuePath("summary-file");
-  base::FilePath ids_file = command_line.GetSwitchValuePath("ids-file");
   base::FilePath annotations_file =
       command_line.GetSwitchValuePath("annotations-file");
   std::vector<std::string> path_filters;
@@ -351,11 +331,12 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  // Write ids file.
-  if (!ids_file.empty() &&
-      !WriteIDsFile(ids_file, auditor.extracted_annotations(),
-                    TrafficAnnotationAuditor::GetReservedUniqueIDs())) {
-    LOG(ERROR) << "Could not write ids file.";
+  // Update annotations list.
+  if (!TrafficAnnotationExporter().UpdateAnnotationsXML(
+          source_path.Append(kAnnotationsXmlPath),
+          auditor.extracted_annotations(),
+          TrafficAnnotationAuditor::GetReservedUniqueIDs())) {
+    LOG(ERROR) << "Could not update annotations XML.";
     return 1;
   }
 
