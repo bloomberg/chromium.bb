@@ -184,6 +184,7 @@ base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
 
 #endif  // defined(COUNT_RESIDENT_BYTES_SUPPORTED)
 
+ProcessMemoryDump::ProcessMemoryDump() {}
 ProcessMemoryDump::ProcessMemoryDump(
     scoped_refptr<HeapProfilerSerializationState>
         heap_profiler_serialization_state,
