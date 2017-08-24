@@ -1,10 +1,6 @@
-# Don't rename anything, it makes stack traces unintelligible. We only allow the
-# obfuscation pass to run so that we can discard attributes like local variable
-# tables. However, we don't want to lose out on optimizations, so although they
-# can occasionally make the stack trace a bit stranger with inlining, it won't
-# make a big difference for the users seeing the stacktraces. We can always use
-# build/android/stacktrace/java_deobfuscate.py to fix the stacktrace up for us.
--keepnames,allowoptimization class *** { *; }
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 -keepclassmembers class org.chromium.android_webview.AwPdfExporter {
     android.view.ViewGroup mContainerView;
