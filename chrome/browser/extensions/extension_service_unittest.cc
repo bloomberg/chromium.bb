@@ -282,6 +282,44 @@ std::unique_ptr<ExternalInstallInfoFile> CreateExternalExtension(
 
 }  // namespace
 
+namespace extensions {
+
+// A simplified version of ExternalPrefLoader that loads the dictionary
+// from json data specified in a string.
+class ExternalTestingLoader : public ExternalLoader {
+ public:
+  ExternalTestingLoader(const std::string& json_data,
+                        const base::FilePath& fake_base_path)
+      : fake_base_path_(fake_base_path) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    JSONStringValueDeserializer deserializer(json_data);
+    base::FilePath fake_json_path = fake_base_path.AppendASCII("fake.json");
+    testing_prefs_ = ExternalPrefLoader::ExtractExtensionPrefs(&deserializer,
+                                                               fake_json_path);
+  }
+
+  // ExternalLoader:
+  const base::FilePath GetBaseCrxFilePath() override { return fake_base_path_; }
+
+  void StartLoading() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    prefs_.reset(testing_prefs_->DeepCopy());
+    LoadFinished();
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<ExternalLoader>;
+
+  ~ExternalTestingLoader() override {}
+
+  base::FilePath fake_base_path_;
+  std::unique_ptr<base::DictionaryValue> testing_prefs_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExternalTestingLoader);
+};
+
+}  // namespace extensions
+
 class MockProviderVisitor
     : public extensions::ExternalProviderInterface::VisitorInterface {
  public:
