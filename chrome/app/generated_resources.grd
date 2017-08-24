@@ -3758,6 +3758,9 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_EXTENSION_PROMPT_WARNING_START_PAGE_SETTING_OVERRIDE" desc="Permission string for start page override.">
           Change your start page to: <ph name="START_PAGE">$1<ex>start.page.com/start.html</ex></ph>
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_SYSTEM_STORAGE" desc="The permission string for access to connected system storage devices.">
+          Identify and eject storage devices
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_TOPSITES" desc="Permission string for access to the list of most frequently visited websites.">
           Read a list of your most frequently visited websites
         </message>
