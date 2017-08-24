@@ -389,6 +389,18 @@
     "label": "//components/cronet/android:cronet_package",
     "type": "additional_compile_target",
   },
+  "cronet_sample_test_apk": {
+    "label": "//components/cronet/android:cronet_sample_test_apk",
+    "type": "console_test_launcher",
+  },
+  "cronet_smoketests_missing_native_library_instrumentation_apk": {
+    "label": "//components/cronet/android:cronet_smoketests_missing_native_library_instrumentation_apk",
+    "type": "console_test_launcher",
+  },
+  "cronet_smoketests_platform_only_instrumentation_apk": {
+    "label": "//components/cronet/android:cronet_smoketests_platform_only_instrumentation_apk",
+    "type": "console_test_launcher",
+  },
   "cronet_test": {
     "label": "//components/cronet/ios/test:cronet_test",
     "type": "raw",
@@ -396,6 +408,10 @@
   "cronet_test_instrumentation_apk": {
     "label": "//components/cronet/android:cronet_test_instrumentation_apk",
     "type": "additional_compile_target",
+  },
+  "cronet_unittests": {
+    "label": "//components/cronet/android:cronet_unittests",
+    "type": "console_test_launcher",
   },
   "crypto_unittests": {
     "label": "//crypto:crypto_unittests",
