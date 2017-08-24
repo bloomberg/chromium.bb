@@ -385,6 +385,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
 
+    # Win 10 / Intel / Passthrough command decoder
+    self.Fail('conformance/extensions/oes-texture-float-with-video.html',
+        ['win10', 'intel', 'passthrough', 'd3d11'], bug=750813)
+    self.Fail('conformance/extensions/oes-texture-half-float-with-video.html',
+        ['win10', 'intel', 'passthrough', 'd3d11'], bug=750813)
+    self.Fail('conformance/textures/image_bitmap_from_video/*',
+        ['win10', 'intel', 'passthrough', 'd3d11'], bug=750813)
+    self.Fail('conformance/textures/video/*',
+        ['win10', 'intel', 'passthrough', 'd3d11'], bug=750813)
+
     # Mac failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['mac', 'no_passthrough'], bug=599272)
