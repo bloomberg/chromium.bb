@@ -64,6 +64,20 @@ static_library("zucchini_lib") {
   ]
 }
 
+static_library("zucchini_io") {
+  sources = [
+    "mapped_file.cc",
+    "mapped_file.h",
+    "zucchini_integration.cc",
+    "zucchini_integration.h",
+  ]
+
+  deps = [
+    ":zucchini_lib",
+    "//base",
+  ]
+}
+
 executable("zucchini") {
   sources = [
     "main_utils.cc",
@@ -74,6 +88,7 @@ executable("zucchini") {
   ]
 
   deps = [
+    ":zucchini_io",
     ":zucchini_lib",
     "//base",
     "//build/config:exe_and_shlib_deps",
@@ -117,6 +132,7 @@ test("zucchini_unittests") {
     "image_utils_unittest.cc",
     "io_utils_unittest.cc",
     "label_manager_unittest.cc",
+    "mapped_file_unittest.cc",
     "patch_read_write_unittest.cc",
     "patch_utils_unittest.cc",
     "rel32_finder_unittest.cc",
@@ -130,6 +146,7 @@ test("zucchini_unittests") {
   ]
 
   deps = [
+    ":zucchini_io",
     ":zucchini_lib",
     "//base",
     "//base/test:run_all_unittests",

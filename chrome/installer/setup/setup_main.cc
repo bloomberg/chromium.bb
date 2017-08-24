@@ -317,7 +317,7 @@ bool UncompressAndPatchChromeArchive(
   // up to an hour.
   start_time = base::TimeTicks::Now();
   installer_state.SetStage(installer::PATCHING);
-  if (!archive_helper->EnsemblePatch()) {
+  if (!archive_helper->CourgetteEnsemblePatch()) {
     if (!archive_helper->BinaryPatch()) {
       *install_status = installer::APPLY_DIFF_PATCH_FAILED;
       installer_state.WriteInstallerResult(
