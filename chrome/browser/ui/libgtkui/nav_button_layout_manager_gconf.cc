@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/gconf_listener.h"
+#include "chrome/browser/ui/libgtkui/nav_button_layout_manager_gconf.h"
 
 #include <gtk/gtk.h>
 
@@ -12,9 +12,8 @@
 #include "base/callback.h"
 #include "base/environment.h"
 #include "base/nix/xdg_util.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_tokenizer.h"
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
+#include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/window/frame_buttons.h"
 
@@ -42,7 +41,7 @@ namespace libgtkui {
 
 // Public interface:
 
-GConfListener::GConfListener(GtkUi* delegate)
+NavButtonLayoutManagerGconf::NavButtonLayoutManagerGconf(GtkUi* delegate)
     : delegate_(delegate), client_(nullptr) {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   base::nix::DesktopEnvironment de =
@@ -62,27 +61,28 @@ GConfListener::GConfListener(GtkUi* delegate)
         return;
 
       // Get the initial value of the keys we're interested in.
-      GetAndRegister(kButtonLayoutKey,
-                     base::Bind(&GConfListener::ParseAndStoreButtonValue,
-                                base::Unretained(this)));
-      GetAndRegister(kMiddleClickActionKey,
-                     base::Bind(&GConfListener::ParseAndStoreMiddleClickValue,
-                                base::Unretained(this)));
+      GetAndRegister(
+          kButtonLayoutKey,
+          base::Bind(&NavButtonLayoutManagerGconf::ParseAndStoreButtonValue,
+                     base::Unretained(this)));
+      GetAndRegister(
+          kMiddleClickActionKey,
+          base::Bind(
+              &NavButtonLayoutManagerGconf::ParseAndStoreMiddleClickValue,
+              base::Unretained(this)));
     }
   }
 }
 
-GConfListener::~GConfListener() {
-}
+NavButtonLayoutManagerGconf::~NavButtonLayoutManagerGconf() {}
 
 // Private:
 
-void GConfListener::GetAndRegister(
+void NavButtonLayoutManagerGconf::GetAndRegister(
     const char* key_to_subscribe,
     const base::Callback<void(GConfValue*)>& initial_setter) {
   GError* error = nullptr;
-  GConfValue* gconf_value = gconf_client_get(client_, key_to_subscribe,
-                                             &error);
+  GConfValue* gconf_value = gconf_client_get(client_, key_to_subscribe, &error);
   if (HandleGError(error, key_to_subscribe))
     return;
   initial_setter.Run(gconf_value);
@@ -99,9 +99,9 @@ void GConfListener::GetAndRegister(
     return;
 }
 
-void GConfListener::OnChangeNotification(GConfClient* client,
-                                         guint cnxn_id,
-                                         GConfEntry* entry) {
+void NavButtonLayoutManagerGconf::OnChangeNotification(GConfClient* client,
+                                                       guint cnxn_id,
+                                                       GConfEntry* entry) {
   if (strcmp(gconf_entry_get_key(entry), kButtonLayoutKey) == 0) {
     GConfValue* gconf_value = gconf_entry_get_value(entry);
     ParseAndStoreButtonValue(gconf_value);
@@ -111,7 +111,7 @@ void GConfListener::OnChangeNotification(GConfClient* client,
   }
 }
 
-bool GConfListener::HandleGError(GError* error, const char* key) {
+bool NavButtonLayoutManagerGconf::HandleGError(GError* error, const char* key) {
   if (error != nullptr) {
     LOG(ERROR) << "Error with gconf key '" << key << "': " << error->message;
     g_error_free(error);
@@ -122,7 +122,8 @@ bool GConfListener::HandleGError(GError* error, const char* key) {
   return false;
 }
 
-void GConfListener::ParseAndStoreButtonValue(GConfValue* gconf_value) {
+void NavButtonLayoutManagerGconf::ParseAndStoreButtonValue(
+    GConfValue* gconf_value) {
   std::string button_string;
   if (gconf_value) {
     const char* value = gconf_value_get_string(gconf_value);
@@ -131,35 +132,14 @@ void GConfListener::ParseAndStoreButtonValue(GConfValue* gconf_value) {
     button_string = kDefaultButtonString;
   }
 
-  // Parse the button_layout string.
   std::vector<views::FrameButton> leading_buttons;
   std::vector<views::FrameButton> trailing_buttons;
-  bool left_side = true;
-  base::StringTokenizer tokenizer(button_string, ":,");
-  tokenizer.set_options(base::StringTokenizer::RETURN_DELIMS);
-  while (tokenizer.GetNext()) {
-    if (tokenizer.token_is_delim()) {
-      if (*tokenizer.token_begin() == ':')
-        left_side = false;
-    } else {
-      base::StringPiece token = tokenizer.token_piece();
-      if (token == "minimize") {
-        (left_side ? leading_buttons : trailing_buttons).push_back(
-            views::FRAME_BUTTON_MINIMIZE);
-      } else if (token == "maximize") {
-        (left_side ? leading_buttons : trailing_buttons).push_back(
-            views::FRAME_BUTTON_MAXIMIZE);
-      } else if (token == "close") {
-        (left_side ? leading_buttons : trailing_buttons).push_back(
-            views::FRAME_BUTTON_CLOSE);
-      }
-    }
-  }
-
+  ParseButtonLayout(button_string, &leading_buttons, &trailing_buttons);
   delegate_->SetWindowButtonOrdering(leading_buttons, trailing_buttons);
 }
 
-void GConfListener::ParseAndStoreMiddleClickValue(GConfValue* gconf_value) {
+void NavButtonLayoutManagerGconf::ParseAndStoreMiddleClickValue(
+    GConfValue* gconf_value) {
   GtkUi::NonClientMiddleClickAction action =
       views::LinuxUI::MIDDLE_CLICK_ACTION_LOWER;
   if (gconf_value) {

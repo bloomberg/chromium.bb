@@ -198,6 +198,34 @@ void ClearAuraTransientParent(GtkWidget* dialog) {
   g_object_set_data(G_OBJECT(dialog), kAuraTransientParent, nullptr);
 }
 
+void ParseButtonLayout(const std::string& button_string,
+                       std::vector<views::FrameButton>* leading_buttons,
+                       std::vector<views::FrameButton>* trailing_buttons) {
+  leading_buttons->clear();
+  trailing_buttons->clear();
+  bool left_side = true;
+  base::StringTokenizer tokenizer(button_string, ":,");
+  tokenizer.set_options(base::StringTokenizer::RETURN_DELIMS);
+  while (tokenizer.GetNext()) {
+    if (tokenizer.token_is_delim()) {
+      if (*tokenizer.token_begin() == ':')
+        left_side = false;
+    } else {
+      base::StringPiece token = tokenizer.token_piece();
+      if (token == "minimize") {
+        (left_side ? leading_buttons : trailing_buttons)
+            ->push_back(views::FRAME_BUTTON_MINIMIZE);
+      } else if (token == "maximize") {
+        (left_side ? leading_buttons : trailing_buttons)
+            ->push_back(views::FRAME_BUTTON_MAXIMIZE);
+      } else if (token == "close") {
+        (left_side ? leading_buttons : trailing_buttons)
+            ->push_back(views::FRAME_BUTTON_CLOSE);
+      }
+    }
+  }
+}
+
 #if GTK_MAJOR_VERSION > 2
 void* GetGdkSharedLibrary() {
   std::string lib_name =

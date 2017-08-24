@@ -24,8 +24,8 @@ typedef struct _GtkWidget GtkWidget;
 
 namespace libgtkui {
 class Gtk2KeyBindingsHandler;
-class GConfListener;
 class DeviceScaleFactorObserver;
+class NavButtonLayoutManager;
 
 // Interface to GTK2 desktop features.
 //
@@ -37,7 +37,7 @@ class GtkUi : public views::LinuxUI {
   typedef base::Callback<ui::NativeTheme*(aura::Window* window)>
       NativeThemeGetter;
 
-  // Setters used by GConfListener:
+  // Setters used by NavButtonLayoutManager:
   void SetWindowButtonOrdering(
       const std::vector<views::FrameButton>& leading_buttons,
       const std::vector<views::FrameButton>& trailing_buttons);
@@ -171,11 +171,7 @@ class GtkUi : public views::LinuxUI {
   gfx::Font::Weight default_font_weight_ = gfx::Font::Weight::NORMAL;
   gfx::FontRenderParams default_font_render_params_;
 
-#if defined(USE_GCONF)
-  // Currently, the only source of window button configuration. This will
-  // change if we ever have to support XFCE's configuration system or KDE's.
-  std::unique_ptr<GConfListener> gconf_listener_;
-#endif  // defined(USE_GCONF)
+  std::unique_ptr<NavButtonLayoutManager> nav_button_layout_manager_;
 
   // If either of these vectors are non-empty, they represent the current
   // window button configuration.
