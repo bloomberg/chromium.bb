@@ -15109,11 +15109,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Doodle.ConfigDownloadOutcome"
     enum="DoodleConfigDownloadOutcome">
+  <obsolete>
+    Removed from code 2017-08.
+  </obsolete>
   <owner>treib@chromium.org</owner>
   <summary>Outcome of downloading the Doodle config.</summary>
 </histogram>
 
 <histogram name="Doodle.ConfigDownloadTime" units="ms">
+  <obsolete>
+    Removed from code 2017-08.
+  </obsolete>
   <owner>treib@chromium.org</owner>
   <summary>
     The time it took to download the Doodle config. Recorded only if the

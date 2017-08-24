@@ -1566,7 +1566,6 @@ split_static_library("browser") {
     "//components/device_event_log",
     "//components/dom_distiller/content/browser",
     "//components/domain_reliability",
-    "//components/doodle",
     "//components/download/content/factory",
     "//components/download/public",
     "//components/error_page/common",
