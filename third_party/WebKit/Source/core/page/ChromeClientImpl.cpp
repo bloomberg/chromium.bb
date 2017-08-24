@@ -587,15 +587,7 @@ void ChromeClientImpl::OpenFileChooser(LocalFrame* frame,
   if (!client)
     return;
 
-  WebFileChooserParams params;
-  params.multi_select = file_chooser->GetSettings().allows_multiple_files;
-  params.directory = file_chooser->GetSettings().allows_directory_upload;
-  params.accept_types = file_chooser->GetSettings().AcceptTypes();
-  params.selected_files = file_chooser->GetSettings().selected_files;
-  params.use_media_capture = file_chooser->GetSettings().use_media_capture;
-  params.need_local_path = file_chooser->GetSettings().allows_directory_upload;
-  params.requestor = frame->GetDocument()->Url();
-
+  const WebFileChooserParams& params = file_chooser->Params();
   WebFileChooserCompletionImpl* chooser_completion =
       new WebFileChooserCompletionImpl(std::move(file_chooser));
   if (client->RunFileChooser(params, chooser_completion))
@@ -613,11 +605,11 @@ void ChromeClientImpl::EnumerateChosenDirectory(FileChooser* file_chooser) {
       new WebFileChooserCompletionImpl(file_chooser);
 
   DCHECK(file_chooser);
-  DCHECK(file_chooser->GetSettings().selected_files.size());
+  DCHECK(file_chooser->Params().selected_files.size());
 
   // If the enumeration can't happen, call the callback with an empty list.
   if (!client->EnumerateChosenDirectory(
-          file_chooser->GetSettings().selected_files[0], chooser_completion))
+          file_chooser->Params().selected_files[0], chooser_completion))
     chooser_completion->DidChooseFile(WebVector<WebString>());
 }
 
