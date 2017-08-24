@@ -64,6 +64,9 @@ id<GREYMatcher> PageSecurityInfoButton();
 // omnibox contents.
 id<GREYMatcher> OmniboxText(std::string text);
 
+// Returns matcher for |text| being a substring of the text in the omnibox.
+id<GREYMatcher> OmniboxContainingText(std::string text);
+
 // Matcher for Tools menu button.
 id<GREYMatcher> ToolsMenuButton();
 

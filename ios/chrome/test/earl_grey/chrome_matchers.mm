@@ -10,6 +10,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
@@ -141,6 +142,20 @@ id<GREYMatcher> PageSecurityInfoButton() {
 id<GREYMatcher> OmniboxText(std::string text) {
   return grey_allOf(Omnibox(),
                     hasProperty(@"text", base::SysUTF8ToNSString(text)), nil);
+}
+
+id<GREYMatcher> OmniboxContainingText(std::string text) {
+  GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
+      matcherWithMatchesBlock:^BOOL(UITextField* element) {
+        return [element.text containsString:base::SysUTF8ToNSString(text)];
+      }
+      descriptionBlock:^void(id<GREYDescription> description) {
+        [description
+            appendText:[NSString
+                           stringWithFormat:@"Omnibox contains text \"%@\"",
+                                            base::SysUTF8ToNSString(text)]];
+      }];
+  return matcher;
 }
 
 id<GREYMatcher> ToolsMenuButton() {
