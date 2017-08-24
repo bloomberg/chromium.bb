@@ -71,12 +71,11 @@ struct FileSystemInfo;
 // and calls |callback| when the attempt is complete. If the auto mounter
 // does not recognize the URL, it returns false and does not call |callback|.
 // Called on the IO thread.
-typedef base::Callback<bool(
+using URLRequestAutoMountHandler = base::RepeatingCallback<bool(
     const net::URLRequest* url_request,
     const FileSystemURL& filesystem_url,
     const std::string& storage_domain,
-    const base::Callback<void(base::File::Error result)>& callback)>
-        URLRequestAutoMountHandler;
+    base::OnceCallback<void(base::File::Error result)> callback)>;
 
 // This class keeps and provides a file system context for FileSystem API.
 // An instance of this class is created and owned by profile.
@@ -184,9 +183,10 @@ class STORAGE_EXPORT FileSystemContext
   ExternalFileSystemBackend* external_backend() const;
 
   // Used for OpenFileSystem.
-  typedef base::OnceCallback<
-      void(const GURL& root, const std::string& name, base::File::Error result)>
-      OpenFileSystemCallback;
+  using OpenFileSystemCallback =
+      base::OnceCallback<void(const GURL& root,
+                              const std::string& name,
+                              base::File::Error result)>;
 
   // Used for ResolveURL.
   enum ResolvedEntryType {
@@ -194,13 +194,14 @@ class STORAGE_EXPORT FileSystemContext
     RESOLVED_ENTRY_DIRECTORY,
     RESOLVED_ENTRY_NOT_FOUND,
   };
-  typedef base::Callback<void(base::File::Error result,
+  using ResolveURLCallback =
+      base::OnceCallback<void(base::File::Error result,
                               const FileSystemInfo& info,
                               const base::FilePath& file_path,
-                              ResolvedEntryType type)> ResolveURLCallback;
+                              ResolvedEntryType type)>;
 
   // Used for DeleteFileSystem and OpenPluginPrivateFileSystem.
-  typedef base::Callback<void(base::File::Error result)> StatusCallback;
+  using StatusCallback = base::OnceCallback<void(base::File::Error result)>;
 
   // Opens the filesystem for the given |origin_url| and |type|, and dispatches
   // |callback| on completion.
@@ -218,23 +219,20 @@ class STORAGE_EXPORT FileSystemContext
   // absent; in that case RESOLVED_ENTRY_NOT_FOUND type is returned to the
   // callback for indicating the absence. Can be called from any thread with
   // a message loop. |callback| is invoked on the caller thread.
-  void ResolveURL(
-      const FileSystemURL& url,
-      const ResolveURLCallback& callback);
+  void ResolveURL(const FileSystemURL& url, ResolveURLCallback callback);
 
   // Attempts to mount the filesystem needed to satisfy |url_request| made
   // from |storage_domain|. If an appropriate file system is not found,
   // callback will return an error.
   void AttemptAutoMountForURLRequest(const net::URLRequest* url_request,
                                      const std::string& storage_domain,
-                                     const StatusCallback& callback);
+                                     StatusCallback callback);
 
   // Deletes the filesystem for the given |origin_url| and |type|. This should
   // be called on the IO thread.
-  void DeleteFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      const StatusCallback& callback);
+  void DeleteFileSystem(const GURL& origin_url,
+                        FileSystemType type,
+                        StatusCallback callback);
 
   // Creates new FileStreamReader instance to read a file pointed by the given
   // filesystem URL |url| starting from |offset|. |expected_modification_time|
@@ -295,13 +293,12 @@ class STORAGE_EXPORT FileSystemContext
 
   // This must be used to open 'plugin private' filesystem.
   // See "plugin_private_file_system_backend.h" for more details.
-  void OpenPluginPrivateFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      const std::string& filesystem_id,
-      const std::string& plugin_id,
-      OpenFileSystemMode mode,
-      const StatusCallback& callback);
+  void OpenPluginPrivateFileSystem(const GURL& origin_url,
+                                   FileSystemType type,
+                                   const std::string& filesystem_id,
+                                   const std::string& plugin_id,
+                                   OpenFileSystemMode mode,
+                                   StatusCallback callback);
 
  private:
   typedef std::map<FileSystemType, FileSystemBackend*>
@@ -349,12 +346,11 @@ class STORAGE_EXPORT FileSystemContext
   // the constructor.
   void RegisterBackend(FileSystemBackend* backend);
 
-  void DidOpenFileSystemForResolveURL(
-      const FileSystemURL& url,
-      const ResolveURLCallback& callback,
-      const GURL& filesystem_root,
-      const std::string& filesystem_name,
-      base::File::Error error);
+  void DidOpenFileSystemForResolveURL(const FileSystemURL& url,
+                                      ResolveURLCallback callback,
+                                      const GURL& filesystem_root,
+                                      const std::string& filesystem_name,
+                                      base::File::Error error);
 
   // Returns a FileSystemBackend, used only by test code.
   SandboxFileSystemBackend* sandbox_backend() const {

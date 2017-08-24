@@ -321,14 +321,16 @@ class ExtensionGalleriesHost
   // then calls |callback| with the result.
   void RegisterMediaFileSystem(
       const MediaGalleryPrefInfo& gallery,
-      const base::Callback<void(base::File::Error result)>& callback) {
+      base::OnceCallback<void(base::File::Error result)> callback) {
     // Extract all the device ids so we can make sure they are attached.
     MediaStorageUtil::DeviceIdSet* device_ids =
         new MediaStorageUtil::DeviceIdSet;
     device_ids->insert(gallery.device_id);
-    MediaStorageUtil::FilterAttachedDevices(device_ids, base::Bind(
-        &ExtensionGalleriesHost::RegisterAttachedMediaFileSystem, this,
-        base::Owned(device_ids), gallery, callback));
+    MediaStorageUtil::FilterAttachedDevices(
+        device_ids,
+        base::Bind(&ExtensionGalleriesHost::RegisterAttachedMediaFileSystem,
+                   this, base::Owned(device_ids), gallery,
+                   base::Passed(&callback)));
   }
 
   // Revoke the file system for |id| if this extension has created one for |id|.
@@ -430,7 +432,7 @@ class ExtensionGalleriesHost
   void RegisterAttachedMediaFileSystem(
       const MediaStorageUtil::DeviceIdSet* attached_device,
       const MediaGalleryPrefInfo& gallery,
-      const base::Callback<void(base::File::Error result)>& callback) {
+      base::OnceCallback<void(base::File::Error result)> callback) {
     base::File::Error result = base::File::FILE_ERROR_NOT_FOUND;
 
     // If rph_refs is empty then we're actually in the middle of shutdown, and
@@ -464,7 +466,7 @@ class ExtensionGalleriesHost
       CleanUp();
     }
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(callback, result));
+                            base::BindOnce(std::move(callback), result));
   }
 
   std::string GetTransientIdForRemovableDeviceId(const std::string& device_id) {
@@ -545,7 +547,7 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
     content::WebContents* contents,
     const extensions::Extension* extension,
     MediaGalleryPrefId pref_id,
-    const base::Callback<void(base::File::Error result)>& callback) {
+    base::OnceCallback<void(base::File::Error result)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_NE(kInvalidMediaGalleryPrefId, pref_id);
 
@@ -560,7 +562,7 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
       !base::ContainsKey(permitted_galleries, pref_id)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(callback, base::File::FILE_ERROR_NOT_FOUND));
+        base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -571,7 +573,7 @@ void MediaFileSystemRegistry::RegisterMediaFileSystemForExtension(
   // contents of the context is referenced before the filesystems are retrieved.
   extension_host->ReferenceFromWebContents(contents);
 
-  extension_host->RegisterMediaFileSystem(gallery->second, callback);
+  extension_host->RegisterMediaFileSystem(gallery->second, std::move(callback));
 }
 
 MediaGalleriesPreferences* MediaFileSystemRegistry::GetPreferences(

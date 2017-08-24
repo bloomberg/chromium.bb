@@ -135,8 +135,8 @@ void DidOpenFileSystem(
     base::WeakPtr<SandboxFileSystemBackendDelegate> delegate,
     base::OnceCallback<void(base::File::Error error)> callback,
     base::File::Error* error) {
-  if (delegate.get())
-    delegate.get()->CollectOpenFileSystemMetrics(*error);
+  if (delegate)
+    delegate->CollectOpenFileSystemMetrics(*error);
   std::move(callback).Run(*error);
 }
 

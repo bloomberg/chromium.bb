@@ -70,25 +70,25 @@ void OnPreferencesInit(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const extensions::Extension* extension,
     MediaGalleryPrefId pref_id,
-    const base::Callback<void(base::File::Error result)>& callback) {
+    base::OnceCallback<void(base::File::Error result)> callback) {
   content::WebContents* contents = web_contents_getter.Run();
   if (!contents) {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+        base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
     return;
   }
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
   registry->RegisterMediaFileSystemForExtension(contents, extension, pref_id,
-                                                callback);
+                                                std::move(callback));
 }
 
 void AttemptAutoMountOnUIThread(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const std::string& storage_domain,
     const std::string& mount_point,
-    const base::Callback<void(base::File::Error result)>& callback) {
+    base::OnceCallback<void(base::File::Error result)> callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::WebContents* web_contents = web_contents_getter.Run();
   if (web_contents) {
@@ -115,16 +115,16 @@ void AttemptAutoMountOnUIThread(
               profile);
       // Pass the WebContentsGetter to the closure to prevent a use-after-free
       // in the case that the web_contents is destroyed before the closure runs.
-      preferences->EnsureInitialized(
-          base::Bind(&OnPreferencesInit, web_contents_getter,
-                     base::RetainedRef(extension), pref_id, callback));
+      preferences->EnsureInitialized(base::Bind(
+          &OnPreferencesInit, web_contents_getter, base::RetainedRef(extension),
+          pref_id, base::Passed(&callback)));
       return;
     }
   }
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(callback, base::File::FILE_ERROR_NOT_FOUND));
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
 }
 
 }  // namespace
@@ -196,7 +196,7 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
     const net::URLRequest* url_request,
     const storage::FileSystemURL& filesystem_url,
     const std::string& storage_domain,
-    const base::Callback<void(base::File::Error result)>& callback) {
+    base::OnceCallback<void(base::File::Error result)> callback) {
   if (storage_domain.empty() ||
       filesystem_url.type() != storage::kFileSystemTypeExternal ||
       storage_domain != filesystem_url.origin().host()) {
@@ -224,7 +224,7 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
       content::BrowserThread::UI, FROM_HERE,
       base::BindOnce(&AttemptAutoMountOnUIThread,
                      request_info->GetWebContentsGetterForRequest(),
-                     storage_domain, mount_point, callback));
+                     storage_domain, mount_point, std::move(callback)));
   return true;
 }
 

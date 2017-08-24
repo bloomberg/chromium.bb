@@ -51,10 +51,10 @@ const int64_t kMaximumLength = INT64_MAX;
 class STORAGE_EXPORT FileSystemBackend {
  public:
   // Callback for InitializeFileSystem.
-  typedef base::OnceCallback<void(const GURL& root_url,
-                                  const std::string& name,
-                                  base::File::Error error)>
-      OpenFileSystemCallback;
+  using OpenFileSystemCallback =
+      base::OnceCallback<void(const GURL& root_url,
+                              const std::string& name,
+                              base::File::Error error)>;
   virtual ~FileSystemBackend() {}
 
   // Returns true if this filesystem backend can handle |type|.
