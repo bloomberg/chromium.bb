@@ -10,6 +10,7 @@
 #include "core/testing/sim/SimDisplayItemList.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
+#include "public/web/WebFindOptions.h"
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -364,6 +365,26 @@ TEST_F(SmoothScrollTest, SmoothScrollAnchor) {
   Compositor().BeginFrame(1);
   ASSERT_EQ(container->scrollTop(),
             content->OffsetTop() - container->OffsetTop());
+}
+
+TEST_F(SmoothScrollTest, FindDoesNotScrollOverflowHidden) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<div id='container' style='height: 400px; overflow: hidden;'>"
+      "  <div id='space' style='height: 500px'></div>"
+      "  <div style='height: 500px'>hello</div>"
+      "</div>");
+  Element* container = GetDocument().getElementById("container");
+  Compositor().BeginFrame();
+  ASSERT_EQ(container->scrollTop(), 0);
+  const int kFindIdentifier = 12345;
+  WebFindOptions options;
+  MainFrame().Find(kFindIdentifier, WebString::FromUTF8("hello"), options,
+                   false);
+  ASSERT_EQ(container->scrollTop(), 0);
 }
 
 }  // namespace

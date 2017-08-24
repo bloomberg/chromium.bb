@@ -638,7 +638,7 @@ bool LayoutObject::ScrollRectToVisible(const LayoutRect& rect,
   GetDocument().GetPage()->GetSmoothScrollSequencer()->AbortAnimations();
   enclosing_box->ScrollRectToVisibleRecursive(
       rect, align_x, align_y, scroll_type, make_visible_in_visual_viewport,
-      scroll_behavior, true);
+      scroll_behavior, scroll_type == kProgrammaticScroll);
   GetDocument().GetPage()->GetSmoothScrollSequencer()->RunQueuedAnimations();
 
   return true;
