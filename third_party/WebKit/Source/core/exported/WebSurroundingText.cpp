@@ -52,13 +52,14 @@ void WebSurroundingText::InitializeFromCurrentSelection(WebLocalFrame* frame,
   // needs to be audited.  See http://crbug.com/590369 for more details.
   web_frame->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
-  if (Range* range = CreateRange(web_frame->Selection()
-                                     .ComputeVisibleSelectionInDOMTree()
-                                     .ToNormalizedEphemeralRange())) {
-    // TODO(xiaochengh): The followinng SurroundingText can hold a null Range,
-    // in which case we should prevent it from being stored in |m_private|.
-    private_.reset(new SurroundingText(*range, max_length));
-  }
+  const EphemeralRange range = web_frame->Selection()
+                                   .ComputeVisibleSelectionInDOMTree()
+                                   .ToNormalizedEphemeralRange();
+  if (range.IsNull())
+    return;
+  // TODO(xiaochengh): The followinng SurroundingText can hold a null Range,
+  // in which case we should prevent it from being stored in |m_private|.
+  private_.reset(new SurroundingText(range, max_length));
 }
 
 WebString WebSurroundingText::TextContent() const {
