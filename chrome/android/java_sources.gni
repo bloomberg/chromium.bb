@@ -1057,6 +1057,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/suggestions/TileRenderer.java",
   "java/src/org/chromium/chrome/browser/suggestions/TileView.java",
   "java/src/org/chromium/chrome/browser/suggestions/NavigationRecorder.java",
+  "java/src/org/chromium/chrome/browser/suggestions/SiteExplorePageIndicatorView.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsDependencyFactory.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsNavigationDelegate.java",
   "java/src/org/chromium/chrome/browser/suggestions/SuggestionsNavigationDelegateImpl.java",

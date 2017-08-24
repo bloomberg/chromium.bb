@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.Context;
+import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.util.AttributeSet;
 import android.view.View;
@@ -20,22 +21,26 @@ public class SiteExploreViewPager extends ViewPager {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        View tabLayout = getChildAt(0);
-        tabLayout.measure(
-                widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-        int tabLayoutHeight = tabLayout.getMeasuredHeight();
-
+        int tabLayoutHeight = 0;
+        int tabIndicatorHeight = 0;
         int maxChildHeight = 0;
-        for (int i = 1; i < getChildCount(); i++) {
+        for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
+
             child.measure(
                     widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-            int childHeight = child.getMeasuredHeight();
-            if (childHeight > maxChildHeight) maxChildHeight = childHeight;
+            if (child instanceof TabLayout) {
+                tabLayoutHeight = child.getMeasuredHeight();
+            } else if (child instanceof SiteExplorePageIndicatorView) {
+                tabIndicatorHeight = child.getMeasuredHeight();
+            } else {
+                int tileGridHeight = child.getMeasuredHeight();
+                if (tileGridHeight > maxChildHeight) maxChildHeight = tileGridHeight;
+            }
         }
 
-        heightMeasureSpec =
-                MeasureSpec.makeMeasureSpec(maxChildHeight + tabLayoutHeight, MeasureSpec.EXACTLY);
+        heightMeasureSpec = MeasureSpec.makeMeasureSpec(
+                maxChildHeight + tabLayoutHeight + tabIndicatorHeight, MeasureSpec.EXACTLY);
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
