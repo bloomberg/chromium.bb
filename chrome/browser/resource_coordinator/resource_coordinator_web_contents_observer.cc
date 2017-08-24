@@ -9,7 +9,9 @@
 #include "base/atomic_sequence_num.h"
 #include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/resource_coordinator/tab_manager_grc_tab_signal_observer.h"
 #include "components/ukm/ukm_interface.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -54,6 +56,16 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
   if (base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
     EnsureUkmRecorderInterface();
   }
+
+#if !defined(OS_ANDROID)
+  if (auto* grc_tab_signal_observer = resource_coordinator::TabManager::
+          GRCTabSignalObserver::GetInstance()) {
+    // Gets CoordinationUnitID for this WebContents and adds it to
+    // GRCTabSignalObserver.
+    grc_tab_signal_observer->AssociateCoordinationUnitIDWithWebContents(
+        tab_resource_coordinator_->id(), web_contents);
+  }
+#endif
 }
 
 // TODO(matthalp) integrate into ResourceCoordinatorService once the UKM mojo
@@ -113,6 +125,18 @@ void ResourceCoordinatorWebContentsObserver::WasShown() {
 void ResourceCoordinatorWebContentsObserver::WasHidden() {
   tab_resource_coordinator_->SetProperty(
       resource_coordinator::mojom::PropertyType::kVisible, false);
+}
+
+void ResourceCoordinatorWebContentsObserver::WebContentsDestroyed() {
+#if !defined(OS_ANDROID)
+  if (auto* grc_tab_signal_observer = resource_coordinator::TabManager::
+          GRCTabSignalObserver::GetInstance()) {
+    // Gets CoordinationUnitID for this WebContents and removes it from
+    // GRCTabSignalObserver.
+    grc_tab_signal_observer->RemoveCoordinationUnitID(
+        tab_resource_coordinator_->id());
+  }
+#endif
 }
 
 void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(

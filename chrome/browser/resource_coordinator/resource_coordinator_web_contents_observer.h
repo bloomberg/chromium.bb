@@ -35,6 +35,7 @@ class ResourceCoordinatorWebContentsObserver
   // WebContentsObserver implementation.
   void WasShown() override;
   void WasHidden() override;
+  void WebContentsDestroyed() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry, bool explicit_set) override;
