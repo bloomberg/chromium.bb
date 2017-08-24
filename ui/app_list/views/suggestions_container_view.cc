@@ -125,6 +125,12 @@ int SuggestionsContainerView::GetYSize() {
   return 0;
 }
 
+views::View* SuggestionsContainerView::GetSelectedView() const {
+  return IsValidSelectionIndex(selected_index())
+             ? search_result_tile_views_[selected_index()]
+             : nullptr;
+}
+
 void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   DCHECK(search_result_tile_views_.empty());
   views::GridLayout* tiles_layout_manager = new views::GridLayout(this);

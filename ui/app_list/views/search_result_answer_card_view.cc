@@ -192,4 +192,10 @@ void SearchResultAnswerCardView::GetAccessibleNodeData(
   search_answer_container_view_->GetAccessibleNodeData(node_data);
 }
 
+views::View* SearchResultAnswerCardView::GetSelectedView() const {
+  return search_answer_container_view_->selected()
+             ? search_answer_container_view_
+             : nullptr;
+}
+
 }  // namespace app_list

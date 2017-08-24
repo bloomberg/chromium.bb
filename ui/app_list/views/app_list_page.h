@@ -55,6 +55,9 @@ class APP_LIST_EXPORT AppListPage : public views::View {
     contents_view_ = contents_view;
   }
 
+  // Returns selected view in this page.
+  virtual views::View* GetSelectedView() const;
+
  protected:
   AppListPage();
   ~AppListPage() override;

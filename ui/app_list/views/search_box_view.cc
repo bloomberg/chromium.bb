@@ -37,6 +37,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -166,13 +167,42 @@ class SearchBoxImageButton : public views::ImageButton {
   DISALLOW_COPY_AND_ASSIGN(SearchBoxImageButton);
 };
 
+// To show context menu of selected view instead of that of focused view which
+// is always this view when the user uses keyboard shortcut to open context
+// menu.
+class SearchBoxTextfield : public views::Textfield {
+ public:
+  explicit SearchBoxTextfield(SearchBoxView* search_box_view)
+      : search_box_view_(search_box_view) {}
+  ~SearchBoxTextfield() override = default;
+
+  // Overridden from views::View:
+  void ShowContextMenu(const gfx::Point& p,
+                       ui::MenuSourceType source_type) override {
+    views::View* selected_view =
+        search_box_view_->GetSelectedViewInContentsView();
+    if (source_type != ui::MENU_SOURCE_KEYBOARD || !selected_view) {
+      views::Textfield::ShowContextMenu(p, source_type);
+      return;
+    }
+    selected_view->ShowContextMenu(
+        selected_view->GetKeyboardContextMenuLocation(),
+        ui::MENU_SOURCE_KEYBOARD);
+  }
+
+ private:
+  SearchBoxView* const search_box_view_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxTextfield);
+};
+
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                              AppListViewDelegate* view_delegate,
                              AppListView* app_list_view)
     : delegate_(delegate),
       view_delegate_(view_delegate),
       content_container_(new views::View),
-      search_box_(new views::Textfield),
+      search_box_(new SearchBoxTextfield(this)),
       app_list_view_(app_list_view),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       focused_view_(is_fullscreen_app_list_enabled_ ? FOCUS_NONE
@@ -693,6 +723,12 @@ bool SearchBoxView::IsArrowKey(const ui::KeyEvent& event) {
   return event.key_code() == ui::VKEY_UP || event.key_code() == ui::VKEY_DOWN ||
          event.key_code() == ui::VKEY_LEFT ||
          event.key_code() == ui::VKEY_RIGHT;
+}
+
+views::View* SearchBoxView::GetSelectedViewInContentsView() const {
+  if (!contents_view_)
+    return nullptr;
+  return static_cast<ContentsView*>(contents_view_)->GetSelectedView();
 }
 
 void SearchBoxView::UpdateModel() {

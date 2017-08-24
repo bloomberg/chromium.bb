@@ -128,7 +128,7 @@ void SearchResultListView::CancelAutoLaunchTimeout() {
   view_delegate_->AutoLaunchCanceled();
 }
 
-SearchResultView* SearchResultListView::GetResultViewAt(int index) {
+SearchResultView* SearchResultListView::GetResultViewAt(int index) const {
   DCHECK(index >= 0 && index < results_container_->child_count());
   return static_cast<SearchResultView*>(results_container_->child_at(index));
 }
@@ -157,6 +157,12 @@ void SearchResultListView::NotifyFirstResultYIndex(int y_index) {
 
 int SearchResultListView::GetYSize() {
   return num_results();
+}
+
+views::View* SearchResultListView::GetSelectedView() const {
+  return IsValidSelectionIndex(selected_index())
+             ? GetResultViewAt(selected_index())
+             : nullptr;
 }
 
 int SearchResultListView::DoUpdate() {

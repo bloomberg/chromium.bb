@@ -250,6 +250,12 @@ gfx::Rect AppsContainerView::GetPageBoundsDuringDragging(
   return onscreen_bounds;
 }
 
+views::View* AppsContainerView::GetSelectedView() const {
+  return IsInFolderView()
+             ? app_list_folder_view_->items_grid_view()->GetSelectedView()
+             : apps_grid_view_->GetSelectedView();
+}
+
 void AppsContainerView::OnTopIconAnimationsComplete() {
   --top_icon_animation_pending_count_;
 
