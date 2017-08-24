@@ -42,9 +42,6 @@ extern NSString* const kToolsMenuTableViewId;
 // Informs tools popup menu whether "Share..." command should be enabled.
 - (void)setCanShowShareMenu:(BOOL)enabled;
 
-// Informs tools popup menu whether the switch to reader mode is possible.
-- (void)setCanUseReaderMode:(BOOL)enabled;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLS_MENU_TOOLS_POPUP_CONTROLLER_H_

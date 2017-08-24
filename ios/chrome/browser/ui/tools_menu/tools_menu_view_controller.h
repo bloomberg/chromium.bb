@@ -29,7 +29,6 @@ extern NSString* const kToolsMenuReportAnIssueId;
 extern NSString* const kToolsMenuShareId;
 extern NSString* const kToolsMenuDataSavingsId;
 extern NSString* const kToolsMenuFindInPageId;
-extern NSString* const kToolsMenuReaderMode;
 extern NSString* const kToolsMenuRequestDesktopId;
 extern NSString* const kToolsMenuSettingsId;
 extern NSString* const kToolsMenuHelpId;
@@ -90,9 +89,6 @@ extern NSString* const kToolsMenuRequestMobileId;
 
 // Informs tools popup menu whether "Share..." command should be enabled.
 - (void)setCanShowShareMenu:(BOOL)enabled;
-
-// Informs tools popup menu whether the switch to reader mode is possible.
-- (void)setCanUseReaderMode:(BOOL)enabled;
 
 - (void)animateContentIn;
 

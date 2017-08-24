@@ -94,8 +94,6 @@
 #import "ios/chrome/browser/ui/open_in_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/prerender_delegate.h"
-#import "ios/chrome/browser/ui/reader_mode/reader_mode_checker.h"
-#import "ios/chrome/browser/ui/reader_mode/reader_mode_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
@@ -206,8 +204,7 @@ class TabHistoryContext : public history::Context {
 
 @interface Tab ()<CRWWebStateObserver,
                   CRWWebControllerObserver,
-                  FindInPageControllerDelegate,
-                  ReaderModeControllerDelegate> {
+                  FindInPageControllerDelegate> {
   __weak TabModel* _parentTabModel;
   ios::ChromeBrowserState* _browserState;
 
@@ -283,10 +280,6 @@ class TabHistoryContext : public history::Context {
   // View displayed upon PagePlaceholderTabHelperDelegate request.
   UIImageView* _pagePlaceholder;
 }
-
-// Returns the tab's reader mode controller. May contain nil if the feature is
-// disabled.
-@property(nonatomic, readonly) ReaderModeController* readerModeController;
 
 // Handles caching and retrieving of snapshots.
 @property(nonatomic, strong) SnapshotManager* snapshotManager;
@@ -431,7 +424,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 @synthesize isVoiceSearchResultsTab = _isVoiceSearchResultsTab;
 @synthesize passwordController = passwordController_;
 @synthesize overscrollActionsController = _overscrollActionsController;
-@synthesize readerModeController = readerModeController_;
 @synthesize overscrollActionsControllerDelegate =
     overscrollActionsControllerDelegate_;
 @synthesize passKitDialogProvider = passKitDialogProvider_;
@@ -482,14 +474,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     _autoReloadBridge = [[AutoReloadBridge alloc] initWithTab:self];
 
   [self setShouldObserveFaviconChanges:YES];
-
-  // Create the ReaderModeController immediately so it can register for
-  // WebState changes.
-  if (experimental_flags::IsReaderModeEnabled()) {
-    readerModeController_ =
-        [[ReaderModeController alloc] initWithWebState:self.webState
-                                              delegate:self];
-  }
 }
 
 // Attach any tab helpers which are dependent on the dispatcher having been
@@ -955,8 +939,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     [self.webController removeObserver:_overscrollActionsController];
   [_overscrollActionsController invalidate];
   _overscrollActionsController = nil;
-  [readerModeController_ detachFromWebState];
-  readerModeController_ = nil;
 
   if (!GetApplicationContext()->IsShuttingDown()) {
     // Invalidate any snapshot stored for this session.
@@ -1205,35 +1187,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (void)updateFullscreenWithToolbarVisible:(BOOL)visible {
   [_fullScreenController moveHeaderToRestingPosition:visible];
-}
-
-#pragma mark -
-#pragma mark Reader mode
-
-- (UIView*)superviewForReaderModePanel {
-  return self.view;
-}
-
-- (BOOL)canSwitchToReaderMode {
-  // Only if the page is loaded and the page passes suitability checks.
-  ReaderModeController* controller = self.readerModeController;
-  return controller && controller.checker->CanSwitchToReaderMode();
-}
-
-- (void)switchToReaderMode {
-  DCHECK(self.view);
-  [self.readerModeController switchToReaderMode];
-}
-
-- (void)loadReaderModeHTML:(NSString*)html forURL:(const GURL&)url {
-  // Before changing the HTML on the current page, this checks that the URL has
-  // not changed since reader mode was requested. This could happen for example
-  // if the page does a late redirect itself or if the user tapped on a link and
-  // triggered reader mode before the page load is detected by webState.
-  if (url == self.lastCommittedURL)
-    [self.webController loadHTMLForCurrentURL:html];
-
-  [self.readerModeController exitReaderMode];
 }
 
 #pragma mark -

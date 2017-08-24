@@ -174,11 +174,6 @@ class WebStateImpl;
 // application specific URL. |HTML| must not be empty.
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL;
 
-// Loads HTML in the page and presents it as if it was originating from the
-// URL itself. Should be used only in specific cases, where the injected html
-// is guaranteed to be some derived representation of the original content.
-- (void)loadHTMLForCurrentURL:(NSString*)HTML;
-
 // Stops loading the page.
 - (void)stopLoading;
 

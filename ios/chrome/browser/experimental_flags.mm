@@ -152,11 +152,6 @@ bool IsPhysicalWebEnabled() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
-bool IsReaderModeEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableReaderModeToolbarIcon);
-}
-
 bool IsSafariVCSignInEnabled() {
   return ![[NSUserDefaults standardUserDefaults]
       boolForKey:kSafariVCSignInDisabled];

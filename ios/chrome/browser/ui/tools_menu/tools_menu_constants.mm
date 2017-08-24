@@ -19,7 +19,6 @@ NSString* const kToolsMenuOtherDevicesId = @"kToolsMenuOtherDevicesId";
 NSString* const kToolsMenuHistoryId = @"kToolsMenuHistoryId";
 NSString* const kToolsMenuReportAnIssueId = @"kToolsMenuReportAnIssueId";
 NSString* const kToolsMenuFindInPageId = @"kToolsMenuFindInPageId";
-NSString* const kToolsMenuReaderMode = @"kToolsMenuReaderMode";
 NSString* const kToolsMenuRequestDesktopId = @"kToolsMenuRequestDesktopId";
 NSString* const kToolsMenuSettingsId = @"kToolsMenuSettingsId";
 NSString* const kToolsMenuHelpId = @"kToolsMenuHelpId";
