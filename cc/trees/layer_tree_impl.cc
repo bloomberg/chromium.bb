@@ -539,6 +539,10 @@ LayerImpl* LayerTreeImpl::LayerByElementId(ElementId element_id) const {
                                              : LayerById(iter->second);
 }
 
+ElementListType LayerTreeImpl::GetElementTypeForAnimation() const {
+  return IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING;
+}
+
 void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
   ElementId element_id = layer->element_id();
   if (!element_id)
@@ -558,9 +562,8 @@ void LayerTreeImpl::AddToElementMap(LayerImpl* layer) {
 
   element_layers_map_[element_id] = layer->id();
 
-  host_impl_->mutator_host()->RegisterElement(
-      element_id,
-      IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
+  host_impl_->mutator_host()->RegisterElement(element_id,
+                                              GetElementTypeForAnimation());
 }
 
 void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
@@ -572,9 +575,8 @@ void LayerTreeImpl::RemoveFromElementMap(LayerImpl* layer) {
                layer->element_id().AsValue().release(), "layer_id",
                layer->id());
 
-  host_impl_->mutator_host()->UnregisterElement(
-      layer->element_id(),
-      IsActiveTree() ? ElementListType::ACTIVE : ElementListType::PENDING);
+  host_impl_->mutator_host()->UnregisterElement(layer->element_id(),
+                                                GetElementTypeForAnimation());
 
   element_layers_map_.erase(layer->element_id());
 }
@@ -705,9 +707,31 @@ void LayerTreeImpl::UpdatePropertyTreeAnimationFromMainThread() {
     ++element_id_to_transform;
   }
 
-  LayerTreeHostCommon::CallFunctionForEveryLayer(this, [](LayerImpl* layer) {
-    layer->UpdatePropertyTreeForAnimationIfNeeded();
-  });
+  for (auto transform_it : property_trees()->element_id_to_transform_node_index)
+    UpdateTransformAnimation(transform_it.first, transform_it.second);
+}
+
+void LayerTreeImpl::UpdateTransformAnimation(ElementId element_id,
+                                             int transform_node_index) {
+  // This includes all animations, even those that are finished but
+  // haven't yet been deleted.
+  if (mutator_host()->HasAnyAnimationTargetingProperty(
+          element_id, TargetProperty::TRANSFORM)) {
+    TransformTree& transform_tree = property_trees()->transform_tree;
+    if (TransformNode* node = transform_tree.Node(transform_node_index)) {
+      ElementListType list_type = GetElementTypeForAnimation();
+      bool has_potential_animation =
+          mutator_host()->HasPotentiallyRunningTransformAnimation(element_id,
+                                                                  list_type);
+      if (node->has_potential_animation != has_potential_animation) {
+        node->has_potential_animation = has_potential_animation;
+        node->has_only_translation_animations =
+            mutator_host()->HasOnlyTranslationTransforms(element_id, list_type);
+        transform_tree.set_needs_update(true);
+        set_needs_update_draw_properties();
+      }
+    }
+  }
 }
 
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {

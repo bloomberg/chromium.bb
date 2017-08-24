@@ -196,25 +196,11 @@ void ElementAnimations::NotifyAnimationAborted(const AnimationEvent& event) {
   UpdateClientAnimationState();
 }
 
-bool ElementAnimations::HasFilterAnimationThatInflatesBounds() const {
-  for (auto& player : players_list_) {
-    if (player.HasFilterAnimationThatInflatesBounds())
-      return true;
-  }
-  return false;
-}
-
 bool ElementAnimations::HasTransformAnimationThatInflatesBounds() const {
   for (auto& player : players_list_) {
     if (player.HasTransformAnimationThatInflatesBounds())
       return true;
   }
-  return false;
-}
-
-bool ElementAnimations::FilterAnimationBoundsForBox(const gfx::BoxF& box,
-                                                    gfx::BoxF* bounds) const {
-  // TODO(avallee): Implement.
   return false;
 }
 

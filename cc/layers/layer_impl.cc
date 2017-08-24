@@ -489,23 +489,6 @@ bool LayerImpl::has_copy_requests_in_target_subtree() {
   return GetEffectTree().Node(effect_tree_index())->subtree_has_copy_request;
 }
 
-void LayerImpl::UpdatePropertyTreeForAnimationIfNeeded() {
-  if (HasAnyAnimationTargetingProperty(TargetProperty::TRANSFORM)) {
-    if (TransformNode* node =
-            GetTransformTree().FindNodeFromElementId(element_id())) {
-      bool has_potential_animation = HasPotentiallyRunningTransformAnimation();
-      if (node->has_potential_animation != has_potential_animation) {
-        node->has_potential_animation = has_potential_animation;
-        node->has_only_translation_animations =
-            GetMutatorHost()->HasOnlyTranslationTransforms(
-                element_id(), GetElementTypeForAnimation());
-        GetTransformTree().set_needs_update(true);
-        layer_tree_impl()->set_needs_update_draw_properties();
-      }
-    }
-  }
-}
-
 gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
   return CurrentScrollOffset();
 }
@@ -637,11 +620,6 @@ SkColor LayerImpl::SafeOpaqueBackgroundColor() const {
   return color;
 }
 
-bool LayerImpl::HasPotentiallyRunningFilterAnimation() const {
-  return GetMutatorHost()->HasPotentiallyRunningFilterAnimation(
-      element_id(), GetElementTypeForAnimation());
-}
-
 void LayerImpl::SetMasksToBounds(bool masks_to_bounds) {
   masks_to_bounds_ = masks_to_bounds;
 }
@@ -690,37 +668,6 @@ void LayerImpl::SetMutableProperties(uint32_t properties) {
 
 void LayerImpl::SetPosition(const gfx::PointF& position) {
   position_ = position;
-}
-
-bool LayerImpl::HasPotentiallyRunningTransformAnimation() const {
-  return GetMutatorHost()->HasPotentiallyRunningTransformAnimation(
-      element_id(), GetElementTypeForAnimation());
-}
-
-bool LayerImpl::HasAnyAnimationTargetingProperty(
-    TargetProperty::Type property) const {
-  return GetMutatorHost()->HasAnyAnimationTargetingProperty(element_id(),
-                                                            property);
-}
-
-bool LayerImpl::HasFilterAnimationThatInflatesBounds() const {
-  return GetMutatorHost()->HasFilterAnimationThatInflatesBounds(element_id());
-}
-
-bool LayerImpl::HasAnimationThatInflatesBounds() const {
-  return GetMutatorHost()->HasAnimationThatInflatesBounds(element_id());
-}
-
-bool LayerImpl::FilterAnimationBoundsForBox(const gfx::BoxF& box,
-                                            gfx::BoxF* bounds) const {
-  return GetMutatorHost()->FilterAnimationBoundsForBox(element_id(), box,
-                                                       bounds);
-}
-
-bool LayerImpl::TransformAnimationBoundsForBox(const gfx::BoxF& box,
-                                               gfx::BoxF* bounds) const {
-  return GetMutatorHost()->TransformAnimationBoundsForBox(element_id(), box,
-                                                          bounds);
 }
 
 void LayerImpl::SetUpdateRect(const gfx::Rect& update_rect) {
@@ -833,8 +780,6 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetBoolean("can_use_lcd_text", CanUseLCDText());
   state->SetBoolean("contents_opaque", contents_opaque());
-
-  state->SetBoolean("has_animation_bounds", HasAnimationThatInflatesBounds());
 
   state->SetBoolean("has_will_change_transform_hint",
                     has_will_change_transform_hint());
