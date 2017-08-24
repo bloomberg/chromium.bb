@@ -5,11 +5,13 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.content_public.browser.WebContents;
@@ -316,6 +318,7 @@ public class OfflinePageBridge {
 
     /**
      * Saves the web page loaded into web contents offline.
+     * Retrieves the origin of the page from the WebContents.
      *
      * @param webContents Contents of the page to save.
      * @param ClientId of the bookmark related to the offline page.
@@ -325,11 +328,35 @@ public class OfflinePageBridge {
      */
     public void savePage(final WebContents webContents, final ClientId clientId,
             final SavePageCallback callback) {
+        ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
+        OfflinePageOrigin origin;
+        if (activity != null && activity.getActivityTab() != null) {
+            origin = new OfflinePageOrigin(
+                    ContextUtils.getApplicationContext(), activity.getActivityTab());
+        } else {
+            origin = new OfflinePageOrigin();
+        }
+        savePage(webContents, clientId, origin, callback);
+    }
+
+    /**
+     * Saves the web page loaded into web contents offline.
+     *
+     * @param webContents Contents of the page to save.
+     * @param ClientId of the bookmark related to the offline page.
+     * @param origin the app that initiated the download.
+     * @param callback Interface that contains a callback. This may be called synchronously, e.g.
+     * if the web contents is already destroyed.
+     * @see SavePageCallback
+     */
+    public void savePage(final WebContents webContents, final ClientId clientId,
+            final OfflinePageOrigin origin, final SavePageCallback callback) {
         assert mIsNativeOfflinePageModelLoaded;
         assert webContents != null;
+        assert origin != null;
 
         nativeSavePage(mNativeOfflinePageBridge, callback, webContents, clientId.getNamespace(),
-                clientId.getId());
+                clientId.getId(), origin.encodeAsJsonString());
     }
 
     /**
@@ -347,7 +374,8 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Save the given URL as an offline page when the network becomes available.
+     * Save the given URL as an offline page when the network becomes available. Origin is
+     * assumed to be Chrome.
      *
      * @param url The given URL to save for later.
      * @param clientId The client ID for the offline page to be saved later.
@@ -355,13 +383,28 @@ public class OfflinePageBridge {
      *     requested it.
      */
     public void savePageLater(final String url, final ClientId clientId, boolean userRequested) {
+        savePageLater(url, clientId, userRequested, new OfflinePageOrigin());
+    }
+
+    /**
+     * Save the given URL as an offline page when the network becomes available with the given
+     * origin.
+     *
+     * @param url The given URL to save for later
+     * @param clientId The clientId for the offline page to be saved later.
+     * @param userRequested Whether this request should be prioritized because the user explicitly
+     *                      requested it.
+     * @param origin The app that initiated the request.
+     */
+    public void savePageLater(final String url, final ClientId clientId, boolean userRequested,
+            OfflinePageOrigin origin) {
         nativeSavePageLater(mNativeOfflinePageBridge, url, clientId.getNamespace(),
-                clientId.getId(), userRequested);
+                clientId.getId(), origin.encodeAsJsonString(), userRequested);
     }
 
     /**
      * Save the given URL as an offline page when the network becomes available with a randomly
-     * generated clientId in the given namespace.
+     * generated clientId in the given namespace. Origin is defaulted to Chrome.
      *
      * @param url The given URL to save for later.
      * @param namespace The namespace for the offline page to be saved later.
@@ -369,8 +412,23 @@ public class OfflinePageBridge {
      *                      requested it.
      */
     public void savePageLater(final String url, final String namespace, boolean userRequested) {
+        savePageLater(url, namespace, userRequested, new OfflinePageOrigin());
+    }
+
+    /**
+     * Save the given URL as an offline page when the network becomes available with a randomly
+     * generated clientId in the given namespace and the given origin.
+     *
+     * @param url The given URL to save for later
+     * @param namespace The namespace for the offline page to be saved later.
+     * @param userRequested Whether this request should be prioritized because the user explicitly
+     *                      requested it.
+     * @param origin The app that initiated the request.
+     */
+    public void savePageLater(final String url, final String namespace, boolean userRequested,
+            OfflinePageOrigin origin) {
         ClientId clientId = ClientId.createGuidClientIdForNamespace(namespace);
-        savePageLater(url, clientId, true /* userRequested */);
+        savePageLater(url, clientId, userRequested, origin);
     }
 
     /**
@@ -673,9 +731,9 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, String onlineUrl, int tabId,
             Callback<OfflinePageItem> callback);
     private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
-            WebContents webContents, String clientNamespace, String clientId);
+            WebContents webContents, String clientNamespace, String clientId, String origin);
     private native void nativeSavePageLater(long nativeOfflinePageBridge, String url,
-            String clientNamespace, String clientId, boolean userRequested);
+            String clientNamespace, String clientId, String origin, boolean userRequested);
     private native String nativeGetOfflinePageHeaderForReload(
             long nativeOfflinePageBridge, WebContents webContents);
     private native boolean nativeIsShowingOfflinePreview(
