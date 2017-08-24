@@ -7,29 +7,27 @@
 
 #include <memory>
 
-#include "components/keyed_service/core/keyed_service.h"
-#include "components/search_provider_logos/logo_tracker.h"
+#include "components/search_provider_logos/logo_common.h"
+#include "components/search_provider_logos/logo_service.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 // Provides the logo if a BrowserState's default search provider is Google.
+// In addition to the GetLogo() method provided by the base implementation,
+// includes extra methods {Get,Set}CachedLogo() as an extra, nearer cache.
 //
 // Example usage:
 //   GoogleLogoService* logo_service =
 //       GoogleLogoServiceFactory::GetForBrowserState(browser_state);
 //   logo_service->GetLogo(...);
 //
-class GoogleLogoService : public KeyedService {
+class GoogleLogoService : public search_provider_logos::LogoService {
  public:
-  explicit GoogleLogoService(ios::ChromeBrowserState* browser_state);
+  explicit GoogleLogoService(
+      TemplateURLService* template_url_service,
+      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~GoogleLogoService() override;
 
-  // Gets the logo for the default search provider and notifies |observer|
-  // with the results.
-  void GetLogo(search_provider_logos::LogoObserver* observer);
+  using LogoService::GetLogo;
 
   // |LogoTracker| does everything on callbacks, and iOS needs to load the logo
   // immediately on page load. This caches the SkBitmap so we can immediately
@@ -40,8 +38,6 @@ class GoogleLogoService : public KeyedService {
   search_provider_logos::Logo GetCachedLogo();
 
  private:
-  ios::ChromeBrowserState* browser_state_;
-  std::unique_ptr<search_provider_logos::LogoTracker> logo_tracker_;
   SkBitmap cached_image_;
   search_provider_logos::LogoMetadata cached_metadata_;
   const search_provider_logos::LogoMetadata empty_metadata;
