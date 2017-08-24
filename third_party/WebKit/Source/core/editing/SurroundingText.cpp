@@ -98,6 +98,13 @@ void SurroundingText::Initialize(const Position& start_position,
   if (!backwards_iterator.AtEnd())
     backwards_iterator.Advance(half_max_length);
 
+  // Upon some conditions backwards iterator yields invalid EndPosition() which
+  // causes a crash in TextIterator::RangeLength().
+  // TODO(editing-dev): Fix BackwardsCharacterIterator, http://crbug.com/758438.
+  if (backwards_iterator.EndPosition() > start_position ||
+      end_position > forward_iterator.StartPosition())
+    return;
+
   const TextIteratorBehavior behavior =
       TextIteratorBehavior::NoTrailingSpaceRangeLengthBehavior();
   start_offset_in_content_ = TextIterator::RangeLength(

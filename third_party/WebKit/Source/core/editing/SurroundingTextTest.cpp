@@ -306,4 +306,27 @@ TEST_F(SurroundingTextTest, TextAreaSelection) {
   EXPECT_EQ(7u, surrounding_text.EndOffsetInContent());
 }
 
+TEST_F(SurroundingTextTest, EmptyInputElementWithChild) {
+  SetHTML(String("<input type=\"text\" id=\"input_name\"/>"));
+
+  TextControlElement* input_element =
+      (TextControlElement*)GetDocument().getElementById("input_name");
+  input_element->SetInnerEditorValue("John Smith");
+  GetDocument().UpdateStyleAndLayout();
+
+  // BODY
+  //   INPUT
+  //     #shadow-root
+  // *      DIV id="inner-editor" (editable)
+  //          #text "John Smith"
+
+  const Element* inner_editor = input_element->InnerEditorElement();
+  const Position start = Position(inner_editor, 0);
+  const Position end = Position(inner_editor, 0);
+
+  // Surrounding text should not crash. See http://crbug.com/758438.
+  SurroundingText surrounding_text(*CreateRange(EphemeralRange(start, end)), 8);
+  EXPECT_TRUE(surrounding_text.Content().IsEmpty());
+}
+
 }  // namespace blink
