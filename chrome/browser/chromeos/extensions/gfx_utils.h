@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_GFX_UTILS_H_
 
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace content {
@@ -19,10 +20,17 @@ class ImageSkia;
 namespace extensions {
 namespace util {
 
-// Returns true if the equivalent PlayStore app, which is corresponding to the
+// Returns true if the equivalent Play Store app, which is corresponding to the
 // Chrome extension (identified by |extension_id|), has been installed.
 bool HasEquivalentInstalledArcApp(content::BrowserContext* context,
                                   const std::string& extension_id);
+
+// Returns true if the equivalent Play Store app, which is corresponding to the
+// Chrome extension (identified by |extension_id|), has been installed.
+// |arc_apps| receives ids of Play Store apps.
+bool GetEquivalentInstalledArcApps(content::BrowserContext* context,
+                                   const std::string& extension_id,
+                                   std::unordered_set<std::string>* arc_apps);
 
 // Returns the equivalent Chrome extensions that have been installed to the
 // Playstore app (identified by |arc_package_name|). Returns an empty vector if

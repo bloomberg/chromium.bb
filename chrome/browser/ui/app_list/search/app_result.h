@@ -28,20 +28,16 @@ class AppResult : public SearchResult,
   void UpdateFromLastLaunchedOrInstalledTime(const base::Time& current_time,
                                              const base::Time& old_time);
 
+  // Marked const in order to be able to use in derived class in const methods.
+  Profile* profile() const { return profile_; }
+
+  const std::string& app_id() const { return app_id_; }
+
  protected:
   AppResult(Profile* profile,
             const std::string& app_id,
             AppListControllerDelegate* controller,
             bool is_recommendation);
-
-  // Marked const in order to be able to use in derived class in const methods.
-  Profile* profile() const {
-    return profile_;
-  }
-
-  const std::string& app_id() const {
-    return app_id_;
-  }
 
   // Marked const in order to be able to use in derived class in const methods.
   AppListControllerDelegate* controller() const {

@@ -17,10 +17,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/extensions/gfx_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/search/arc_app_result.h"
 #include "chrome/browser/ui/app_list/search/extension_app_result.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -31,10 +36,6 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search/tokenized_string.h"
 #include "ui/app_list/search/tokenized_string_match.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/app_list/search/arc_app_result.h"
 
 using extensions::ExtensionRegistry;
 
@@ -46,7 +47,39 @@ constexpr double kUnlaunchedAppRelevanceStepSize = 0.0001;
 // The minimum capacity we reserve in the Apps container which will be filled
 // with extensions and ARC apps, to avoid successive reallocation.
 constexpr size_t kMinimumReservedAppsContainerCapacity = 60U;
+
+// Adds |app_result| to |results| only in case no duplicate apps were already
+// added. Duplicate means the same app but for different domain, Chrome and
+// Android.
+void MaybeAddResult(app_list::SearchProvider::Results* results,
+                    std::unique_ptr<app_list::AppResult> app_result,
+                    std::set<std::string>* seen_or_filtered_apps) {
+  if (seen_or_filtered_apps->count(app_result->app_id()))
+    return;
+
+  seen_or_filtered_apps->insert(app_result->app_id());
+
+  std::unordered_set<std::string> duplicate_app_ids;
+  if (!extensions::util::GetEquivalentInstalledArcApps(
+          app_result->profile(), app_result->app_id(), &duplicate_app_ids)) {
+    results->emplace_back(std::move(app_result));
+    return;
+  }
+
+  for (const auto& duplicate_app_id : duplicate_app_ids) {
+    if (seen_or_filtered_apps->count(duplicate_app_id))
+      return;
+  }
+
+  results->emplace_back(std::move(app_result));
+
+  // Add duplicate ids in order to filter them if they appear down the
+  // list.
+  seen_or_filtered_apps->insert(duplicate_app_ids.begin(),
+                                duplicate_app_ids.end());
 }
+
+}  // namespace
 
 namespace app_list {
 
@@ -62,7 +95,14 @@ class AppSearchProvider::App {
         name_(base::UTF8ToUTF16(name)),
         last_launch_time_(last_launch_time),
         install_time_(install_time) {}
-  ~App() {}
+  ~App() = default;
+
+  struct CompareByLastActivityTime {
+    bool operator()(const std::unique_ptr<App>& app1,
+                    const std::unique_ptr<App>& app2) {
+      return app1->GetLastActivityTime() > app2->GetLastActivityTime();
+    }
+  };
 
   TokenizedString* GetTokenizedIndexedName() {
     // Tokenizing a string is expensive. Don't pay the price for it at
@@ -71,6 +111,10 @@ class AppSearchProvider::App {
     if (!tokenized_indexed_name_)
       tokenized_indexed_name_ = base::MakeUnique<TokenizedString>(name_);
     return tokenized_indexed_name_.get();
+  }
+
+  const base::Time& GetLastActivityTime() const {
+    return last_launch_time_.is_null() ? install_time_ : last_launch_time_;
   }
 
   AppSearchProvider::DataSource* data_source() { return data_source_; }
@@ -296,9 +340,14 @@ void AppSearchProvider::RefreshApps() {
 void AppSearchProvider::UpdateResults() {
   const bool show_recommendations = query_.empty();
 
+  // Presort app based on last active time in order to be able to remove
+  // duplicates from results.
+  std::sort(apps_.begin(), apps_.end(), App::CompareByLastActivityTime());
+
   // No need to clear the current results as we will swap them with
   // |new_results| at the end.
   SearchProvider::Results new_results;
+  std::set<std::string> seen_or_filtered_apps;
   const size_t apps_size = apps_.size();
   new_results.reserve(apps_size);
   if (show_recommendations) {
@@ -315,9 +364,7 @@ void AppSearchProvider::UpdateResults() {
       // Use the app list order to tiebreak apps that have never been launched.
       // The apps that have been installed or launched recently should be
       // more relevant than other apps.
-      const base::Time time = app->last_launch_time().is_null()
-                                  ? app->install_time()
-                                  : app->last_launch_time();
+      const base::Time time = app->GetLastActivityTime();
       if (time.is_null()) {
         const auto& it = id_to_app_list_index.find(app->id());
         // If it's in a folder, it won't be in |id_to_app_list_index|. Rank
@@ -331,7 +378,7 @@ void AppSearchProvider::UpdateResults() {
       } else {
         result->UpdateFromLastLaunchedOrInstalledTime(clock_->Now(), time);
       }
-      new_results.emplace_back(std::move(result));
+      MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
     }
   } else {
     const TokenizedString query_terms(query_);
@@ -344,7 +391,7 @@ void AppSearchProvider::UpdateResults() {
         continue;
 
       result->UpdateFromMatch(*indexed_name, match);
-      new_results.emplace_back(std::move(result));
+      MaybeAddResult(&new_results, std::move(result), &seen_or_filtered_apps);
     }
   }
 
