@@ -34681,6 +34681,21 @@ from previous Chrome versions.
   <int value="2" label="New Profile"/>
 </enum>
 
+<enum name="SigninDiceResponseHeader">
+  <int value="0" label="Signin"/>
+  <int value="1" label="SignoutPrimary">
+    Signout including the primary account.
+  </int>
+  <int value="2" label="SignoutSecondary">Signout only secondary accounts.</int>
+</enum>
+
+<enum name="SigninDiceTokenFetchResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Abort"/>
+  <int value="2" label="Failure">Failed with Gaia error.</int>
+  <int value="3" label="Timeout"/>
+</enum>
+
 <enum name="SigninFlowConfirmations">
   <int value="0" label="Shown"/>
   <int value="1" label="OK"/>
