@@ -40,7 +40,6 @@ function sendCommand(cmd) {
   // TODO(bauerb): domAutomationController is not defined when this page is
   // shown in chrome://interstitials. Use a MessageHandler or something to
   // support interactions.
-  window.domAutomationController.setAutomationId(1);
   window.domAutomationController.send(cmd);
 }
 
