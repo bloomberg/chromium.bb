@@ -39,12 +39,13 @@ Polymer({
      */
     isFlipped_: {
       type: Boolean,
-      value: false,
+      value: true,
     },
   },
 
   /** @override */
   attached: function() {
+    this.$.userImageStreamCrop.classList.toggle('flip-x', this.isFlipped_);
     this.$.cameraVideo.addEventListener('canplay', function() {
       this.cameraOnline_ = true;
     }.bind(this));
