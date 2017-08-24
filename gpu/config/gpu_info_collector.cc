@@ -27,7 +27,7 @@
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 #include "ui/gl/gl_visual_picker_glx.h"
 #endif
 
@@ -178,7 +178,7 @@ CollectInfoResult CollectGraphicsInfoGL(GPUInfo* gpu_info) {
         reinterpret_cast<GLint*>(&gpu_info->gl_reset_notification_strategy));
   }
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   if (gl::GetGLImplementation() == gl::kGLImplementationDesktopGL) {
     gl::GLVisualPickerGLX* visual_picker = gl::GLVisualPickerGLX::GetInstance();
     gpu_info->system_visual = visual_picker->system_visual().visualid;
@@ -242,7 +242,7 @@ void MergeGPUInfoGL(GPUInfo* basic_gpu_info,
   basic_gpu_info->jpeg_decode_accelerator_supported =
       context_gpu_info.jpeg_decode_accelerator_supported;
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   basic_gpu_info->system_visual = context_gpu_info.system_visual;
   basic_gpu_info->rgba_visual = context_gpu_info.rgba_visual;
 #endif

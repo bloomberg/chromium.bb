@@ -168,7 +168,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   const std::vector<gpu::VideoEncodeAcceleratorSupportedProfile>
       video_encode_accelerator_supported_profiles;
   const bool jpeg_decode_accelerator_supported = true;
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   const VisualID system_visual = 0x1234;
   const VisualID rgba_visual = 0x5678;
 #endif
@@ -213,7 +213,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
   input.video_encode_accelerator_supported_profiles =
       video_encode_accelerator_supported_profiles;
   input.jpeg_decode_accelerator_supported = jpeg_decode_accelerator_supported;
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   input.system_visual = system_visual;
   input.rgba_visual = rgba_visual;
 #endif
@@ -288,7 +288,7 @@ TEST_F(StructTraitsTest, GpuInfo) {
       video_decode_accelerator_capabilities.supported_profiles.size());
   EXPECT_EQ(output.video_encode_accelerator_supported_profiles.size(),
             video_encode_accelerator_supported_profiles.size());
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   EXPECT_EQ(system_visual, output.system_visual);
   EXPECT_EQ(rgba_visual, output.rgba_visual);
 #endif
