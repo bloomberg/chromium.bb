@@ -29,10 +29,8 @@ RingBuffer::RingBuffer(unsigned int alignment,
       base_(static_cast<int8_t*>(base) - base_offset) {}
 
 RingBuffer::~RingBuffer() {
-  // Free blocks pending tokens.
-  while (!blocks_.empty()) {
-    FreeOldestBlock();
-  }
+  for (const auto& block : blocks_)
+    DCHECK(block.state != IN_USE);
 }
 
 void RingBuffer::FreeOldestBlock() {

@@ -141,6 +141,7 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(base::UnguessableToken(),
             transfer_buffer_->shared_memory_handle().GetGUID());
+
   // See that it gets reallocated.
   EXPECT_TRUE(transfer_buffer_->GetResultBuffer() != NULL);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
@@ -156,6 +157,7 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(base::UnguessableToken(),
             transfer_buffer_->shared_memory_handle().GetGUID());
+
   // See that it gets reallocated.
   unsigned int size = 0;
   void* data = transfer_buffer_->AllocUpTo(1, &size);
@@ -163,9 +165,12 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_NE(base::UnguessableToken(),
             transfer_buffer_->shared_memory_handle().GetGUID());
-  transfer_buffer_->FreePendingToken(data, 1);
+  int32_t token = helper_->InsertToken();
+  int32_t put_offset = helper_->GetPutOffsetForTest();
+  transfer_buffer_->FreePendingToken(data, token);
 
-  // Free buffer.
+  // Free buffer. Should cause a Flush.
+  EXPECT_CALL(*command_buffer(), Flush(_)).Times(AtMost(1));
   EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
       .Times(1)
       .RetiresOnSaturation();
@@ -174,6 +179,11 @@ TEST_F(TransferBufferTest, Free) {
   EXPECT_FALSE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(base::UnguessableToken(),
             transfer_buffer_->shared_memory_handle().GetGUID());
+  // Free should have flushed.
+  EXPECT_EQ(put_offset, command_buffer_->GetServicePutOffset());
+  // However it shouldn't have caused a finish.
+  EXPECT_LT(command_buffer_->GetState().get_offset, put_offset);
+
   // See that it gets reallocated.
   transfer_buffer_->GetResultOffset();
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
