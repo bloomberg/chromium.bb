@@ -39,8 +39,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/template_url_service.h"
-#include "components/sessions/core/session_types.h"
-#include "components/sessions/ios/ios_serialized_navigation_builder.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #import "components/signin/ios/browser/account_consistency_service.h"
@@ -318,10 +316,6 @@ class TabHistoryContext : public history::Context {
 
 // Handles exportable files if possible.
 - (void)handleExportableFile:(net::HttpResponseHeaders*)headers;
-
-// Called after the session history is replaced, useful for updating members
-// with new sessionID.
-- (void)didReplaceSessionHistory;
 
 // Called when the UIApplication's state becomes active.
 - (void)applicationDidBecomeActive;
@@ -689,43 +683,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return self.webState ? &(_webStateImpl->GetNavigationManagerImpl()) : nullptr;
 }
 
-// Swap out the existing session history with a new list of navigations. Forces
-// the tab to reload to update the UI accordingly. This is ok because none of
-// the session history is stored in the tab; it's always fetched through the
-// navigation manager.
-- (void)replaceHistoryWithNavigations:
-            (const std::vector<sessions::SerializedNavigationEntry>&)navigations
-                         currentIndex:(NSInteger)currentIndex {
-  std::vector<std::unique_ptr<web::NavigationItem>> items =
-      sessions::IOSSerializedNavigationBuilder::ToNavigationItems(navigations);
-  [self navigationManagerImpl]->ReplaceSessionHistory(std::move(items),
-                                                      currentIndex);
-  [self didReplaceSessionHistory];
-
-  [self.webController loadCurrentURL];
-}
-
-- (void)didReplaceSessionHistory {
-  // Replace _fullScreenController with a new sessionID  when the navigation
-  // manager changes.
-  // TODO(crbug.com/661666): Consider just updating sessionID and not replacing
-  // |_fullScreenController|.
-  if (_fullScreenController) {
-    [_fullScreenController invalidate];
-    [self.webController removeObserver:_fullScreenController];
-    _fullScreenController = [[FullScreenController alloc]
-         initWithDelegate:fullScreenControllerDelegate_
-        navigationManager:self.navigationManager
-                sessionID:self.tabId];
-    [self.webController addObserver:_fullScreenController];
-    // If the content of the page was loaded without knowledge of the
-    // toolbar position it will be misplaced under the toolbar instead of
-    // right below. This happens e.g. in the case of preloading. This is to make
-    // sure the content is moved to the right place.
-    [_fullScreenController moveContentBelowHeader];
-  }
-}
-
 - (void)setIsLinkLoadingPrerenderTab:(BOOL)isLinkLoadingPrerenderTab {
   isLinkLoadingPrerenderTab_ = isLinkLoadingPrerenderTab;
   [self setIsPrerenderTab:isLinkLoadingPrerenderTab];
@@ -960,12 +917,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [[OmniboxGeolocationController sharedInstance]
       addLocationToNavigationItem:navigationItem
                      browserState:_browserState];
-}
-
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-  DCHECK(sessionTab);
-  [self replaceHistoryWithNavigations:sessionTab->navigations
-                         currentIndex:sessionTab->current_navigation_index];
 }
 
 // Halt the tab, which amounts to halting its webController.

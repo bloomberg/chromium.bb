@@ -48,6 +48,7 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/toolbar/toolbar_model_impl.h"
@@ -81,6 +82,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#include "ios/chrome/browser/sessions/session_util.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
@@ -3980,7 +3982,12 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (void)loadSessionTab:(const sessions::SessionTab*)sessionTab {
-  [[_model currentTab] loadSessionTab:sessionTab];
+  WebStateList* webStateList = [_model webStateList];
+  webStateList->ReplaceWebStateAt(
+      webStateList->active_index(),
+      session_util::CreateWebStateWithNavigationEntries(
+          [_model browserState], sessionTab->current_navigation_index,
+          sessionTab->navigations));
 }
 
 - (void)openJavascript:(NSString*)javascript {

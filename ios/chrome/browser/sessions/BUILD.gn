@@ -49,6 +49,8 @@ source_set("serialisation") {
   ]
   deps = [
     "//base",
+    "//components/sessions",
+    "//ios/chrome/browser/browser_state",
     "//ios/web",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

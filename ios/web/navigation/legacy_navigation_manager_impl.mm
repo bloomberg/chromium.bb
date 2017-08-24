@@ -49,15 +49,6 @@ void LegacyNavigationManagerImpl::InitializeSession() {
       [[CRWSessionController alloc] initWithBrowserState:browser_state_]);
 }
 
-void LegacyNavigationManagerImpl::ReplaceSessionHistory(
-    std::vector<std::unique_ptr<web::NavigationItem>> items,
-    int lastCommittedItemIndex) {
-  SetSessionController([[CRWSessionController alloc]
-        initWithBrowserState:browser_state_
-             navigationItems:std::move(items)
-      lastCommittedItemIndex:lastCommittedItemIndex]);
-}
-
 void LegacyNavigationManagerImpl::OnNavigationItemsPruned(
     size_t pruned_item_count) {
   delegate_->OnNavigationItemsPruned(pruned_item_count);
@@ -219,6 +210,18 @@ NavigationItemList LegacyNavigationManagerImpl::GetBackwardItems() const {
 
 NavigationItemList LegacyNavigationManagerImpl::GetForwardItems() const {
   return [session_controller_ forwardItems];
+}
+
+void LegacyNavigationManagerImpl::Restore(
+    int last_committed_item_index,
+    std::vector<std::unique_ptr<NavigationItem>> items) {
+  DCHECK(GetItemCount() == 0 && !GetPendingItem());
+  DCHECK_GE(last_committed_item_index, 0);
+  DCHECK_LT(static_cast<size_t>(last_committed_item_index), items.size());
+  SetSessionController([[CRWSessionController alloc]
+        initWithBrowserState:browser_state_
+             navigationItems:std::move(items)
+      lastCommittedItemIndex:last_committed_item_index]);
 }
 
 void LegacyNavigationManagerImpl::CopyStateFromAndPrune(
