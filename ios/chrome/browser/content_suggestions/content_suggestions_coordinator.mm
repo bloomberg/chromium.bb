@@ -451,8 +451,31 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 - (CGFloat)alphaForBottomShadow {
   UICollectionView* collection = self.suggestionsViewController.collectionView;
 
+  NSInteger numberOfSection =
+      [collection.dataSource numberOfSectionsInCollectionView:collection];
+
+  NSInteger lastNonEmptySection = 0;
+  NSInteger lastItemIndex = 0;
+  for (NSInteger i = 0; i < numberOfSection; i++) {
+    NSInteger itemsInSection = [collection.dataSource collectionView:collection
+                                              numberOfItemsInSection:i];
+    if (itemsInSection > 0) {
+      // Some sections might be empty. Only consider the last non-empty one.
+      lastNonEmptySection = i;
+      lastItemIndex = itemsInSection - 1;
+    }
+  }
+  if (lastNonEmptySection == 0)
+    return 0;
+
+  NSIndexPath* lastCellIndexPath =
+      [NSIndexPath indexPathForItem:lastItemIndex
+                          inSection:lastNonEmptySection];
+  UICollectionViewLayoutAttributes* attributes =
+      [collection layoutAttributesForItemAtIndexPath:lastCellIndexPath];
+  CGRect lastCellFrame = attributes.frame;
   CGFloat pixelsBelowFrame =
-      collection.contentSize.height - CGRectGetMaxY(collection.bounds);
+      CGRectGetMaxY(lastCellFrame) - CGRectGetMaxY(collection.bounds);
   CGFloat alpha = pixelsBelowFrame / kNewTabPageDistanceToFadeShadow;
   return MIN(MAX(alpha, 0), 1);
 }
