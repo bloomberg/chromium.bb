@@ -74,8 +74,9 @@ class BluetoothLowEnergyCharacteristicsFinder
   BluetoothLowEnergyCharacteristicsFinder();
 
  private:
-  // Handles the discovery of a new characteristic.
-  void HandleCharacteristicUpdate(
+  // Handles the discovery of a new characteristic. Returns whether all
+  // characteristics were found.
+  bool HandleCharacteristicUpdate(
       device::BluetoothRemoteGattCharacteristic* characteristic);
 
   // Scans the remote chracteristics of the service with |uuid| in |device|
@@ -88,10 +89,6 @@ class BluetoothLowEnergyCharacteristicsFinder
   // when |characteristic| was found.
   void UpdateCharacteristicsStatus(
       device::BluetoothRemoteGattCharacteristic* characteristic);
-
-  // Resets |success_callback_| and |success_callback_|. This should be called
-  // whenever a callback is called to avoid multiple callbacks calls.
-  void ResetCallbacks();
 
   // The Bluetooth adapter where the connection was established.
   scoped_refptr<device::BluetoothAdapter> adapter_;

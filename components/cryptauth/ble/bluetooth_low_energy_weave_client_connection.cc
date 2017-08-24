@@ -405,6 +405,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFound(
   remote_service_ = service;
   tx_characteristic_ = tx_characteristic;
   rx_characteristic_ = rx_characteristic;
+  characteristic_finder_.reset();
 
   SetSubStatus(SubStatus::CHARACTERISTICS_FOUND);
   StartNotifySession();
@@ -423,6 +424,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFinderError(
                           ? ", " + rx_characteristic.uuid.canonical_value()
                           : "")
                   << " not found.";
+  characteristic_finder_.reset();
 
   DestroyConnection();
 }
