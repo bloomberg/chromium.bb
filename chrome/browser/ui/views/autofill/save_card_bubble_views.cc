@@ -217,7 +217,7 @@ base::string16 SaveCardBubbleViews::GetWindowTitle() const {
 
 gfx::ImageSkia SaveCardBubbleViews::GetWindowIcon() {
   if (IsAutofillUpstreamShowGoogleLogoExperimentEnabled())
-    return gfx::CreateVectorIcon(kGoogleGLogoIcon, 20, gfx::kPlaceholderColor);
+    return gfx::CreateVectorIcon(kGoogleGLogoIcon, 16, gfx::kPlaceholderColor);
   return gfx::ImageSkia();
 }
 
