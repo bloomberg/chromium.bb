@@ -52,6 +52,8 @@ source_set("auditor_sources") {
     "instance.h",
     "traffic_annotation_auditor.cc",
     "traffic_annotation_auditor.h",
+    "traffic_annotation_exporter.cc",
+    "traffic_annotation_exporter.h",
     "traffic_annotation_file_filter.cc",
     "traffic_annotation_file_filter.h",
   ]
@@ -60,6 +62,7 @@ source_set("auditor_sources") {
     ":traffic_annotation",
     "//base",
     "//net:traffic_annotation",
+    "//third_party/libxml",
     "//third_party/protobuf:protobuf_full",
   ]
 }
