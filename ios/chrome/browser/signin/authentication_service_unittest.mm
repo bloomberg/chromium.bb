@@ -563,9 +563,6 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
 // Tests that MDM errors are correctly cleared on foregrounding, sending
 // refresh token available notifications.
 TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    return;
-  }
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
   EXPECT_EQ(2, refresh_token_available_count_);
@@ -594,10 +591,6 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnForeground) {
 // Tests that MDM errors are correctly cleared when signing out, without sending
 // refresh token available notifications.
 TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnSignout) {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    return;
-  }
-
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
 
@@ -615,9 +608,6 @@ TEST_F(AuthenticationServiceTest, MDMErrorsClearedOnSignout) {
 // Tests that potential MDM notifications are correctly handled and dispatched
 // to MDM service when necessary.
 TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    return;
-  }
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(
@@ -655,9 +645,6 @@ TEST_F(AuthenticationServiceTest, HandleMDMNotification) {
 // Tests that MDM blocked notifications are correctly signing out the user if
 // the primary account is blocked.
 TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    return;
-  }
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(
@@ -693,10 +680,6 @@ TEST_F(AuthenticationServiceTest, HandleMDMBlockedNotification) {
 
 // Tests that MDM dialog isn't shown when there is no cached MDM error.
 TEST_F(AuthenticationServiceTest, ShowMDMErrorDialogNoCachedError) {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    return;
-  }
-
   EXPECT_CALL(*identity_service_, HandleMDMNotification(identity_, _, _))
       .Times(0);
 
@@ -707,10 +690,6 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialogNoCachedError) {
 // Tests that MDM dialog isn't shown when there is a cached MDM error but no
 // corresponding error for the account.
 TEST_F(AuthenticationServiceTest, ShowMDMErrorDialogInvalidCachedError) {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    return;
-  }
-
   NSDictionary* user_info = [NSDictionary dictionary];
   SetCachedMDMInfo(identity_, user_info);
 
@@ -725,9 +704,6 @@ TEST_F(AuthenticationServiceTest, ShowMDMErrorDialogInvalidCachedError) {
 // Tests that MDM dialog is shown when there is a cached error and a
 // corresponding error for the account.
 TEST_F(AuthenticationServiceTest, ShowMDMErrorDialog) {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    return;
-  }
   SetExpectationsForSignIn();
   authentication_service_->SignIn(identity_, std::string());
   GoogleServiceAuthError error(

@@ -103,12 +103,6 @@ bool IsLRUSnapshotCacheEnabled() {
   return NO;
 }
 
-bool IsMDMIntegrationEnabled() {
-  // TODO(crbug.com/752073): Remove this function and its associated code,
-  // or convert it into a base::Feature.
-  return YES;
-}
-
 bool IsMemoryDebuggingEnabled() {
 // Always return true for Chromium builds, but check the user default for
 // official builds because memory debugging should never be enabled on stable.
