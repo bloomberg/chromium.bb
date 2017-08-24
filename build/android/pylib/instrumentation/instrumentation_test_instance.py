@@ -101,7 +101,8 @@ def ParseAmInstrumentRawOutput(raw_output):
 
 
 def GenerateTestResults(
-    result_code, result_bundle, statuses, start_ms, duration_ms):
+    result_code, result_bundle, statuses, start_ms, duration_ms, device_abi,
+    symbolizer):
   """Generate test results from |statuses|.
 
   Args:
@@ -114,6 +115,8 @@ def GenerateTestResults(
       |_ParseAmInstrumentRawOutput|.
     start_ms: The start time of the test in milliseconds.
     duration_ms: The duration of the test in milliseconds.
+    device_abi: The device_abi, which is needed for symbolization.
+    symbolizer: The symbolizer used to symbolize stack.
 
   Returns:
     A list containing an instance of InstrumentationTestResult for each test
@@ -153,8 +156,13 @@ def GenerateTestResults(
           logging.error('Unrecognized status code %d. Handling as an error.',
                         status_code)
         current_result.SetType(base_test_result.ResultType.FAIL)
-        if 'stack' in bundle:
-          current_result.SetLog(bundle['stack'])
+    if 'stack' in bundle:
+      if symbolizer and device_abi:
+        current_result.SetLog(
+            '\n'.join(symbolizer.ExtractAndResolveNativeStackTraces(
+                bundle['stack'], device_abi)))
+      else:
+        current_result.SetLog(bundle['stack'])
 
   if current_result:
     if current_result.GetType() == base_test_result.ResultType.UNKNOWN:
@@ -897,9 +905,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
 
   @staticmethod
   def GenerateTestResults(
-      result_code, result_bundle, statuses, start_ms, duration_ms):
+      result_code, result_bundle, statuses, start_ms, duration_ms,
+      device_abi, symbolizer):
     return GenerateTestResults(result_code, result_bundle, statuses,
-                               start_ms, duration_ms)
+                               start_ms, duration_ms, device_abi, symbolizer)
 
   #override
   def TearDown(self):
