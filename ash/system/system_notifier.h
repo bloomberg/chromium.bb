@@ -5,9 +5,11 @@
 #ifndef ASH_SYSTEM_SYSTEM_NOTIFIER_H_
 #define ASH_SYSTEM_SYSTEM_NOTIFIER_H_
 
+#include <memory>
 #include <string>
 
 #include "ash/ash_export.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
 
 namespace ash {
@@ -53,6 +55,28 @@ ASH_EXPORT bool ShouldAlwaysShowPopups(
 // Returns true if |notifier_id| is the system notifier from Ash.
 ASH_EXPORT bool IsAshSystemNotifier(
     const message_center::NotifierId& notifier_id);
+
+// Utility function to call Notification::CreateSystemNotification when
+// MessageCenter::IsNewStyleNotificationEnabled() is true, and otherwise call
+// Notification constructor directly.
+// When IsNewStyleNotificationEnabled() is true, |icon| will be ignored.
+// When IsNewStyleNotificationEnabled() is false, |small_image| and |color_type|
+// will be ignored.
+// TODO(tetsui): Remove this function when new style notification becomes
+// default.
+std::unique_ptr<message_center::Notification> CreateSystemNotification(
+    message_center::NotificationType type,
+    const std::string& id,
+    const base::string16& title,
+    const base::string16& message,
+    const gfx::Image& icon,
+    const base::string16& display_source,
+    const GURL& origin_url,
+    const message_center::NotifierId& notifier_id,
+    const message_center::RichNotificationData& optional_fields,
+    scoped_refptr<message_center::NotificationDelegate> delegate,
+    const gfx::VectorIcon& small_image,
+    message_center::SystemNotificationWarningLevel color_type);
 
 }  // namespace system_notifier
 }  // namespace ash

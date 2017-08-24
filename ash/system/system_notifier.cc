@@ -5,6 +5,8 @@
 #include "ash/system/system_notifier.h"
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
+#include "ui/message_center/message_center.h"
 
 namespace ash {
 namespace system_notifier {
@@ -89,6 +91,29 @@ bool ShouldAlwaysShowPopups(const message_center::NotifierId& notifier_id) {
 bool IsAshSystemNotifier(const message_center::NotifierId& notifier_id) {
   return ShouldAlwaysShowPopups(notifier_id) ||
          MatchSystemNotifierId(notifier_id, kAshSystemNotifiers);
+}
+
+std::unique_ptr<message_center::Notification> CreateSystemNotification(
+    message_center::NotificationType type,
+    const std::string& id,
+    const base::string16& title,
+    const base::string16& message,
+    const gfx::Image& icon,
+    const base::string16& display_source,
+    const GURL& origin_url,
+    const message_center::NotifierId& notifier_id,
+    const message_center::RichNotificationData& optional_fields,
+    scoped_refptr<message_center::NotificationDelegate> delegate,
+    const gfx::VectorIcon& small_image,
+    message_center::SystemNotificationWarningLevel color_type) {
+  if (message_center::MessageCenter::IsNewStyleNotificationEnabled()) {
+    return message_center::Notification::CreateSystemNotification(
+        type, id, title, message, gfx::Image(), display_source, origin_url,
+        notifier_id, optional_fields, delegate, small_image, color_type);
+  }
+  return base::MakeUnique<message_center::Notification>(
+      type, id, title, message, icon, display_source, origin_url, notifier_id,
+      optional_fields, delegate);
 }
 
 }  // namespace system_notifier
