@@ -53,6 +53,9 @@ suite('SiteDetails', function() {
         popups: {
           setting: settings.ContentSetting.BLOCK,
         },
+        sound: {
+          setting: settings.ContentSetting.ALLOW,
+        },
         unsandboxed_plugins: {
           setting: settings.ContentSetting.ASK,
         },
@@ -144,6 +147,14 @@ suite('SiteDetails', function() {
             origin: 'https://foo.com:443',
             setting: settings.ContentSetting.BLOCK,
             source: settings.SiteSettingSource.DEFAULT,
+          },
+        ],
+        sound: [
+          {
+            embeddingOrigin: 'https://foo.com:443',
+            origin: 'https://foo.com:443',
+            setting: settings.ContentSetting.ALLOW,
+            source: 'default',
           },
         ],
         unsandboxed_plugins: [

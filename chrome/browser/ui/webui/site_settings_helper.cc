@@ -53,6 +53,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {CONTENT_SETTINGS_TYPE_COOKIES, "cookies"},
     {CONTENT_SETTINGS_TYPE_IMAGES, "images"},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, "javascript"},
+    {CONTENT_SETTINGS_TYPE_SOUND, "sound"},
     {CONTENT_SETTINGS_TYPE_PLUGINS, "plugins"},
     {CONTENT_SETTINGS_TYPE_POPUPS, "popups"},
     {CONTENT_SETTINGS_TYPE_GEOLOCATION, "location"},

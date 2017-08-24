@@ -114,6 +114,7 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_POPUPS,
     CONTENT_SETTINGS_TYPE_ADS,
     CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+    CONTENT_SETTINGS_TYPE_SOUND,
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
@@ -142,6 +143,9 @@ bool ShouldShowPermission(ContentSettingsType type,
                site_url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(),
                nullptr) != nullptr;
   }
+
+  if (type == CONTENT_SETTINGS_TYPE_SOUND)
+    return base::FeatureList::IsEnabled(features::kSoundContentSetting);
 
   return true;
 }

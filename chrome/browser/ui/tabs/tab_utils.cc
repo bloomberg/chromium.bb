@@ -10,13 +10,16 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -413,6 +416,47 @@ bool AreAllTabsMuted(const TabStripModel& tab_strip,
   for (std::vector<int>::const_iterator i = indices.begin(); i != indices.end();
        ++i) {
     if (!tab_strip.GetWebContentsAt(*i)->IsAudioMuted())
+      return false;
+  }
+  return true;
+}
+
+void SetSitesMuted(const TabStripModel& tab_strip,
+                   const std::vector<int>& indices,
+                   const bool mute) {
+  for (int tab_index : indices) {
+    content::WebContents* web_contents = tab_strip.GetWebContentsAt(tab_index);
+    GURL url = web_contents->GetLastCommittedURL();
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    HostContentSettingsMap* settings =
+        HostContentSettingsMapFactory::GetForProfile(profile);
+    ContentSetting setting =
+        mute ? CONTENT_SETTING_BLOCK : CONTENT_SETTING_ALLOW;
+    if (setting == settings->GetDefaultContentSetting(
+                       CONTENT_SETTINGS_TYPE_SOUND, nullptr)) {
+      setting = CONTENT_SETTING_DEFAULT;
+    }
+    settings->SetContentSettingDefaultScope(
+        url, url, CONTENT_SETTINGS_TYPE_SOUND, std::string(), setting);
+  }
+}
+
+bool IsSiteMuted(const TabStripModel& tab_strip, const int index) {
+  content::WebContents* web_contents = tab_strip.GetWebContentsAt(index);
+  GURL url = web_contents->GetLastCommittedURL();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HostContentSettingsMap* settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  return settings->GetContentSetting(url, url, CONTENT_SETTINGS_TYPE_SOUND,
+                                     std::string()) == CONTENT_SETTING_BLOCK;
+}
+
+bool AreAllSitesMuted(const TabStripModel& tab_strip,
+                      const std::vector<int>& indices) {
+  for (int tab_index : indices) {
+    if (!IsSiteMuted(tab_strip, tab_index))
       return false;
   }
   return true;

@@ -6916,6 +6916,18 @@ I don't think this site should be blocked!
         <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS" desc="The label of the tab context menu item for unmuting more than one tab.">
           Unmute tabs
         </message>
+        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="The label of the tab context menu item for muting a single site.">
+          Mute site
+        </message>
+        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITES" desc="The label of the tab context menu item for muting more than one site.">
+          Mute sites
+        </message>
+        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="The label of the tab context menu item for unmuting a single site.">
+          Unmute site
+        </message>
+        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITES" desc="The label of the tab context menu item for unmuting more than one site.">
+          Unmute sites
+        </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark all tabs...
         </message>
@@ -6965,6 +6977,18 @@ I don't think this site should be blocked!
         </message>
         <message name="IDS_TAB_CXMENU_AUDIO_UNMUTE_TABS" desc="In Title Case: The label of the tab context menu item for unmuting more than one tab.">
           Unmute Tabs
+        </message>
+        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITE" desc="In Title Case: The label of the tab context menu item for muting a single site.">
+          Mute Site
+        </message>
+        <message name="IDS_TAB_CXMENU_SOUND_MUTE_SITES" desc="In Title Case: The label of the tab context menu item for muting more than one site.">
+          Mute Sites
+        </message>
+        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITE" desc="In Title Case: The label of the tab context menu item for unmuting a single site.">
+          Unmute Site
+        </message>
+        <message name="IDS_TAB_CXMENU_SOUND_UNMUTE_SITES" desc="In Title Case: The label of the tab context menu item for unmuting more than one site.">
+          Unmute Sites
         </message>
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
           Bookmark All Tabs...
