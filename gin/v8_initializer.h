@@ -54,23 +54,7 @@ class GIN_EXPORT V8Initializer {
   // so that it will not return if natives cannot be loaded.
   static void LoadV8Natives();
 
-  // Opens (unless already cached) and returns the V8 natives file.
-  // Use with LoadV8NativesFromFD().
-  // Asserts if the file does not exist.
-  static base::PlatformFile GetOpenNativesFileForChildProcesses(
-      base::MemoryMappedFile::Region* region_out);
-
-  // Opens (unless already cached) and returns the V8 snapshot file.
-  // Use with LoadV8SnapshotFromFD().
-  // Will return -1 if the file does not exist.
-  static base::PlatformFile GetOpenSnapshotFileForChildProcesses(
-      base::MemoryMappedFile::Region* region_out);
-
 #if defined(OS_ANDROID)
-  static base::PlatformFile GetOpenSnapshotFileForChildProcesses(
-      base::MemoryMappedFile::Region* region_out,
-      bool abi_32_bit);
-
   static base::FilePath GetNativesFilePath();
   static base::FilePath GetSnapshotFilePath(bool abi_32_bit);
 #endif

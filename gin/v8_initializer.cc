@@ -54,15 +54,6 @@ using OpenedFileMap =
 base::LazyInstance<OpenedFileMap>::Leaky g_opened_files =
     LAZY_INSTANCE_INITIALIZER;
 
-OpenedFileMap::mapped_type& GetOpenedFile(const char* file) {
-  OpenedFileMap& opened_files(g_opened_files.Get());
-  if (opened_files.find(file) == opened_files.end()) {
-    opened_files[file] = std::make_pair(base::kInvalidPlatformFile,
-                                        base::MemoryMappedFile::Region());
-  }
-  return opened_files[file];
-}
-
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 
 const char kNativesFileName[] = "natives_blob.bin";
@@ -184,12 +175,19 @@ base::PlatformFile OpenV8File(const char* file_name,
   return file.TakePlatformFile();
 }
 
-const OpenedFileMap::mapped_type OpenFileIfNecessary(const char* file_name) {
-  OpenedFileMap::mapped_type& opened = GetOpenedFile(file_name);
-  if (opened.first == base::kInvalidPlatformFile) {
-    opened.first = OpenV8File(file_name, &opened.second);
+OpenedFileMap::mapped_type& GetOpenedFile(const char* filename) {
+  OpenedFileMap& opened_files(g_opened_files.Get());
+  // If we have a cache, return it.
+  const auto& itr = opened_files.find(filename);
+  if (itr != opened_files.end()) {
+    return itr->second;
   }
-  return opened;
+
+  // Otherwise, try to open it and cache the result.
+  base::MemoryMappedFile::Region region;
+  base::PlatformFile platform_file = OpenV8File(filename, &region);
+  opened_files[filename] = std::make_pair(platform_file, region);
+  return opened_files[filename];
 }
 
 bool GenerateEntropy(unsigned char* buffer, size_t amount) {
@@ -214,6 +212,18 @@ LoadV8FileResult MapOpenedFile(const OpenedFileMap::mapped_type& file_region,
   return V8_LOAD_SUCCESS;
 }
 
+void GetMappedFileData(base::MemoryMappedFile* mapped_file,
+                       const char** data_out,
+                       int* size_out) {
+  if (mapped_file) {
+    *data_out = reinterpret_cast<const char*>(mapped_file->data());
+    *size_out = static_cast<int>(mapped_file->length());
+  } else {
+    *data_out = nullptr;
+    *size_out = 0;
+  }
+}
+
 }  // namespace
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
@@ -223,7 +233,6 @@ void V8Initializer::LoadV8Snapshot() {
   if (g_mapped_snapshot)
     return;
 
-  OpenFileIfNecessary(kSnapshotFileName);
   LoadV8FileResult result = MapOpenedFile(GetOpenedFile(kSnapshotFileName),
                                           &g_mapped_snapshot);
   // V8 can't start up without the source of the natives, but it can
@@ -236,7 +245,6 @@ void V8Initializer::LoadV8Natives() {
   if (g_mapped_natives)
     return;
 
-  OpenFileIfNecessary(kNativesFileName);
   LoadV8FileResult result = MapOpenedFile(GetOpenedFile(kNativesFileName),
                                           &g_mapped_natives);
   if (result != V8_LOAD_SUCCESS) {
@@ -296,36 +304,7 @@ void V8Initializer::LoadV8NativesFromFD(base::PlatformFile natives_pf,
       std::make_pair(natives_pf, natives_region);
 }
 
-// static
-base::PlatformFile V8Initializer::GetOpenNativesFileForChildProcesses(
-    base::MemoryMappedFile::Region* region_out) {
-  const OpenedFileMap::mapped_type& opened =
-      OpenFileIfNecessary(kNativesFileName);
-  *region_out = opened.second;
-  return opened.first;
-}
-
-// static
-base::PlatformFile V8Initializer::GetOpenSnapshotFileForChildProcesses(
-    base::MemoryMappedFile::Region* region_out) {
-  const OpenedFileMap::mapped_type& opened =
-      OpenFileIfNecessary(kSnapshotFileName);
-  *region_out = opened.second;
-  return opened.first;
-}
-
 #if defined(OS_ANDROID)
-// static
-base::PlatformFile V8Initializer::GetOpenSnapshotFileForChildProcesses(
-    base::MemoryMappedFile::Region* region_out,
-    bool abi_32_bit) {
-  const char* snapshot_file =
-      abi_32_bit ? kSnapshotFileName32 : kSnapshotFileName64;
-  const OpenedFileMap::mapped_type& opened = OpenFileIfNecessary(snapshot_file);
-  *region_out = opened.second;
-  return opened.first;
-}
-
 // static
 base::FilePath V8Initializer::GetNativesFilePath() {
   base::FilePath path;
@@ -385,21 +364,8 @@ void V8Initializer::GetV8ExternalSnapshotData(const char** natives_data_out,
                                               int* natives_size_out,
                                               const char** snapshot_data_out,
                                               int* snapshot_size_out) {
-  if (g_mapped_natives) {
-    *natives_data_out = reinterpret_cast<const char*>(g_mapped_natives->data());
-    *natives_size_out = static_cast<int>(g_mapped_natives->length());
-  } else {
-    *natives_data_out = NULL;
-    *natives_size_out = 0;
-  }
-  if (g_mapped_snapshot) {
-    *snapshot_data_out =
-        reinterpret_cast<const char*>(g_mapped_snapshot->data());
-    *snapshot_size_out = static_cast<int>(g_mapped_snapshot->length());
-  } else {
-    *snapshot_data_out = NULL;
-    *snapshot_size_out = 0;
-  }
+  GetMappedFileData(g_mapped_natives, natives_data_out, natives_size_out);
+  GetMappedFileData(g_mapped_snapshot, snapshot_data_out, snapshot_size_out);
 }
 
 // static
@@ -407,7 +373,6 @@ void V8Initializer::LoadV8ContextSnapshot() {
   if (g_mapped_v8_context_snapshot)
     return;
 
-  OpenFileIfNecessary(kV8ContextSnapshotFileName);
   MapOpenedFile(GetOpenedFile(kV8ContextSnapshotFileName),
                 &g_mapped_v8_context_snapshot);
 
@@ -436,17 +401,9 @@ void V8Initializer::LoadV8ContextSnapshotFromFD(base::PlatformFile snapshot_pf,
 }
 
 // static
-void V8Initializer::GetV8ContextSnapshotData(const char** snapshot_data_out,
-                                             int* snapshot_size_out) {
-  if (g_mapped_v8_context_snapshot) {
-    *snapshot_data_out =
-        reinterpret_cast<const char*>(g_mapped_v8_context_snapshot->data());
-    *snapshot_size_out =
-        static_cast<int>(g_mapped_v8_context_snapshot->length());
-  } else {
-    *snapshot_data_out = nullptr;
-    *snapshot_size_out = 0;
-  }
+void V8Initializer::GetV8ContextSnapshotData(const char** data_out,
+                                             int* size_out) {
+  GetMappedFileData(g_mapped_v8_context_snapshot, data_out, size_out);
 }
 
 }  // namespace gin
