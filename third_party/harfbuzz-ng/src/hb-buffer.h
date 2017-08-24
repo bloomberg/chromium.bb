@@ -63,7 +63,7 @@ HB_BEGIN_DECLS
  */
 typedef struct hb_glyph_info_t {
   hb_codepoint_t codepoint;
-  hb_mask_t      mask; /* Holds hb_glyph_flags_t after hb_shape() */
+  hb_mask_t      mask; /* Holds hb_glyph_flags_t after hb_shape(), plus other things. */
   uint32_t       cluster;
 
   /*< private >*/
@@ -76,6 +76,13 @@ typedef enum { /*< flags >*/
 
   HB_GLYPH_FLAG_DEFINED			= 0x00000001 /* OR of all defined flags */
 } hb_glyph_flags_t;
+
+HB_EXTERN hb_glyph_flags_t
+hb_glyph_info_get_glyph_flags (const hb_glyph_info_t *info);
+
+#define hb_glyph_info_get_glyph_flags(info) \
+	((hb_glyph_flags_t) ((unsigned int) (info)->mask & HB_GLYPH_FLAG_DEFINED))
+
 
 /**
  * hb_glyph_position_t:
@@ -491,7 +498,7 @@ typedef enum { /*< flags >*/
    * and report which aspect(s) of the glyph info/position are different. */
   HB_BUFFER_DIFF_FLAG_CODEPOINT_MISMATCH	= 0x0010,
   HB_BUFFER_DIFF_FLAG_CLUSTER_MISMATCH		= 0x0020,
-  HB_BUFFER_DIFF_FLAG_MASK_MISMATCH		= 0x0040,
+  HB_BUFFER_DIFF_FLAG_GLYPH_FLAGS_MISMATCH	= 0x0040,
   HB_BUFFER_DIFF_FLAG_POSITION_MISMATCH		= 0x0080
 
 } hb_buffer_diff_flags_t;
