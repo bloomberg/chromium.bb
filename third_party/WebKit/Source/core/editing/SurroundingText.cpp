@@ -41,7 +41,8 @@
 
 namespace blink {
 
-SurroundingText::SurroundingText(const Range& range, unsigned max_length)
+SurroundingText::SurroundingText(const EphemeralRange& range,
+                                 unsigned max_length)
     : start_offset_in_content_(0), end_offset_in_content_(0) {
   Initialize(range.StartPosition(), range.EndPosition(), max_length);
 }
