@@ -799,6 +799,9 @@ extern const char kTrySupportedChannelLayoutsDescription[];
 extern const char kUiPartialSwapName[];
 extern const char kUiPartialSwapDescription[];
 
+extern const char kUseDdljsonApiName[];
+extern const char kUseDdljsonApiDescription[];
+
 extern const char kUserConsentForExtensionScriptsName[];
 extern const char kUserConsentForExtensionScriptsDescription[];
 
@@ -1176,9 +1179,6 @@ extern const char kUpdateMenuItemDescription[];
 extern const char kUseAndroidMidiApiName[];
 extern const char kUseAndroidMidiApiDescription[];
 
-extern const char kUseDdljsonApiName[];
-extern const char kUseDdljsonApiDescription[];
-
 extern const char kThirdPartyDoodlesName[];
 extern const char kThirdPartyDoodlesDescription[];
 
@@ -1193,6 +1193,9 @@ extern const char kAccountConsistencyName[];
 extern const char kAccountConsistencyDescription[];
 extern const char kAccountConsistencyChoiceMirror[];
 extern const char kAccountConsistencyChoiceDice[];
+
+extern const char kDoodlesOnLocalNtpName[];
+extern const char kDoodlesOnLocalNtpDescription[];
 
 extern const char kEnableAudioFocusName[];
 extern const char kEnableAudioFocusDescription[];

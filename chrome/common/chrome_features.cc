@@ -176,6 +176,11 @@ const base::Feature kDisplayPersistenceToggleInPermissionPrompts{
     "DisplayPersistenceToggleInPermissionPrompts",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if !defined(OS_ANDROID)
+const base::Feature kDoodlesOnLocalNtp{"DoodlesOnLocalNtp",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",

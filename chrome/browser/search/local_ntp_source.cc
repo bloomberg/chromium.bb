@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/search_provider_logos/logo_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -37,10 +39,14 @@
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
+#include "components/search_provider_logos/logo_common.h"
+#include "components/search_provider_logos/logo_service.h"
+#include "components/search_provider_logos/logo_tracker.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
 #include "net/base/hash_value.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -58,6 +64,7 @@ const char kConfigDataFilename[] = "config.js";
 const char kThemeCSSFilename[] = "theme.css";
 const char kMainHtmlFilename[] = "local-ntp.html";
 const char kOneGoogleBarScriptFilename[] = "one-google.js";
+const char kDoodleScriptFilename[] = "doodle.js";
 
 const char kIntegrityFormat[] = "integrity=\"sha256-%s\"";
 
@@ -76,6 +83,7 @@ const struct Resource{
     {"images/close_3_mask.png", IDR_CLOSE_3_MASK, "image/png"},
     {"images/ntp_default_favicon.png", IDR_NTP_DEFAULT_FAVICON, "image/png"},
     {kOneGoogleBarScriptFilename, kLocalResource, "text/javascript"},
+    {kDoodleScriptFilename, kLocalResource, "text/javascript"},
 };
 
 // Strips any query parameters from the specified path.
@@ -205,6 +213,16 @@ std::unique_ptr<base::DictionaryValue> ConvertOGBDataToDict(
   return result;
 }
 
+std::unique_ptr<base::DictionaryValue> ConvertLogoMetadataToDict(
+    const search_provider_logos::LogoMetadata& meta) {
+  auto result = base::MakeUnique<base::DictionaryValue>();
+  result->SetString("onClickUrl", meta.on_click_url.spec());
+  result->SetString("altText", meta.alt_text);
+  result->SetString("mimeType", meta.mime_type);
+  result->SetString("animatedUrl", meta.animated_url.spec());
+  return result;
+}
+
 }  // namespace
 
 class LocalNtpSource::GoogleSearchProviderTracker
@@ -265,11 +283,114 @@ class LocalNtpSource::GoogleSearchProviderTracker
   GURL google_base_url_;
 };
 
+class LocalNtpSource::DesktopLogoObserver
+    : public search_provider_logos::LogoObserver {
+ public:
+  DesktopLogoObserver() = default;
+
+  // Get the cached logo.
+  void GetCachedLogo(search_provider_logos::LogoService* service,
+                     const content::URLDataSource::GotDataCallback& callback) {
+    cached_requests_.push_back(callback);
+    if (!observing_) {
+      StartGetLogo(service);
+    }
+  }
+
+  // Get the fresh logo corresponding to a previous request for a cached logo.
+  // If that previous request is still ongoing, then schedule the callback to be
+  // called when the fresh logo comes in. If it's not, then start a new request
+  // and schedule the cached logo to be handed back.
+  //
+  // Strictly speaking, it's not a "fresh" logo anymore, but it should be the
+  // same logo that would have been fresh relative to the corresponding cached
+  // request, or perhaps one newer.
+  void GetFreshLogo(search_provider_logos::LogoService* service,
+                    int requested_version,
+                    const content::URLDataSource::GotDataCallback& callback) {
+    if (observing_) {
+      if (requested_version == version_) {
+        fresh_requests_.push_back(callback);
+      } else {
+        DCHECK_LT(requested_version, version_);
+        cached_requests_.push_back(callback);
+      }
+    } else {
+      cached_requests_.push_back(callback);
+      StartGetLogo(service);
+    }
+  }
+
+  void OnLogoAvailable(const search_provider_logos::Logo* logo,
+                       bool from_cache) override {
+    DCHECK(observing_);
+
+    scoped_refptr<base::RefCountedString> response;
+    if (logo) {
+      std::string js;
+      auto ddl = base::MakeUnique<base::DictionaryValue>();
+      ddl->SetInteger("version", version_);
+      ddl->Set("data", ConvertLogoMetadataToDict(logo->metadata));
+      base::JSONWriter::Write(*ddl, &js);
+      js = "var ddl = " + js + ";";
+      response = base::RefCountedString::TakeString(&js);
+    } else {
+      response = EmptyResponse();
+    }
+
+    std::vector<content::URLDataSource::GotDataCallback> requests;
+    if (from_cache) {
+      cached_requests_.swap(requests);
+    } else {
+      fresh_requests_.swap(requests);
+    }
+    for (const auto& request : requests) {
+      request.Run(response);
+    }
+  }
+
+  void OnObserverRemoved() override {
+    DCHECK(observing_);
+
+    auto response = EmptyResponse();
+    for (auto* requests : {&cached_requests_, &fresh_requests_}) {
+      for (const auto& request : *requests) {
+        request.Run(response);
+      }
+      requests->clear();
+    }
+    observing_ = false;
+  }
+
+ private:
+  void StartGetLogo(search_provider_logos::LogoService* service) {
+    DCHECK(!observing_);
+
+    service->GetLogo(this);
+    observing_ = true;
+    ++version_;
+  }
+
+  static scoped_refptr<base::RefCountedString> EmptyResponse() {
+    std::string s("{}");
+    return base::RefCountedString::TakeString(&s);
+  }
+
+  bool observing_ = false;
+  int version_ = 0;
+
+  std::vector<content::URLDataSource::GotDataCallback> cached_requests_;
+  std::vector<content::URLDataSource::GotDataCallback> fresh_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(DesktopLogoObserver);
+};
+
 LocalNtpSource::LocalNtpSource(Profile* profile)
     : profile_(profile),
       one_google_bar_service_(
           OneGoogleBarServiceFactory::GetForProfile(profile_)),
       one_google_bar_service_observer_(this),
+      logo_service_(nullptr),
       default_search_provider_is_google_(false),
       default_search_provider_is_google_io_thread_(false),
       weak_ptr_factory_(this) {
@@ -279,6 +400,11 @@ LocalNtpSource::LocalNtpSource(Profile* profile)
   // disabled.
   if (one_google_bar_service_)
     one_google_bar_service_observer_.Add(one_google_bar_service_);
+
+  if (base::FeatureList::IsEnabled(features::kDoodlesOnLocalNtp)) {
+    logo_service_ = LogoServiceFactory::GetForProfile(profile_);
+    logo_observer_ = base::MakeUnique<DesktopLogoObserver>();
+  }
 
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile_);
@@ -331,6 +457,24 @@ void LocalNtpSource::StartDataRequest(
     // cached data. crbug.com/742937
     one_google_bar_service_->Refresh();
 
+    return;
+  }
+
+  if (stripped_path == kDoodleScriptFilename) {
+    if (!logo_service_) {
+      callback.Run(nullptr);
+      return;
+    }
+
+    std::string version_string;
+    int version = 0;
+    GURL url = GURL(chrome::kChromeSearchLocalNtpUrl).Resolve(path);
+    if (net::GetValueForKeyInQuery(url, "v", &version_string) &&
+        base::StringToInt(version_string, &version)) {
+      logo_observer_->GetFreshLogo(logo_service_, version, callback);
+    } else {
+      logo_observer_->GetCachedLogo(logo_service_, callback);
+    }
     return;
   }
 
