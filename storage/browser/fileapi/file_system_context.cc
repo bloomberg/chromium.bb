@@ -51,37 +51,36 @@ QuotaClient* CreateQuotaClient(
   return new FileSystemQuotaClient(context, is_incognito);
 }
 
-
-void DidGetMetadataForResolveURL(
-    const base::FilePath& path,
-    const FileSystemContext::ResolveURLCallback& callback,
-    const FileSystemInfo& info,
-    base::File::Error error,
-    const base::File::Info& file_info) {
+void DidGetMetadataForResolveURL(const base::FilePath& path,
+                                 FileSystemContext::ResolveURLCallback callback,
+                                 const FileSystemInfo& info,
+                                 base::File::Error error,
+                                 const base::File::Info& file_info) {
   if (error != base::File::FILE_OK) {
     if (error == base::File::FILE_ERROR_NOT_FOUND) {
-      callback.Run(base::File::FILE_OK, info, path,
-                   FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
+      std::move(callback).Run(base::File::FILE_OK, info, path,
+                              FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
     } else {
-      callback.Run(error, FileSystemInfo(), base::FilePath(),
-                   FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
+      std::move(callback).Run(error, FileSystemInfo(), base::FilePath(),
+                              FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
     }
     return;
   }
-  callback.Run(error, info, path, file_info.is_directory ?
-      FileSystemContext::RESOLVED_ENTRY_DIRECTORY :
-      FileSystemContext::RESOLVED_ENTRY_FILE);
+  std::move(callback).Run(error, info, path,
+                          file_info.is_directory
+                              ? FileSystemContext::RESOLVED_ENTRY_DIRECTORY
+                              : FileSystemContext::RESOLVED_ENTRY_FILE);
 }
 
 void RelayResolveURLCallback(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const FileSystemContext::ResolveURLCallback& callback,
+    FileSystemContext::ResolveURLCallback callback,
     base::File::Error result,
     const FileSystemInfo& info,
     const base::FilePath& file_path,
     FileSystemContext::ResolvedEntryType type) {
-  task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, result, info, file_path, type));
+  task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), result,
+                                                  info, file_path, type));
 }
 
 }  // namespace
@@ -359,81 +358,77 @@ void FileSystemContext::OpenFileSystem(const GURL& origin_url,
       std::move(callback));
 }
 
-void FileSystemContext::ResolveURL(
-    const FileSystemURL& url,
-    const ResolveURLCallback& callback) {
+void FileSystemContext::ResolveURL(const FileSystemURL& url,
+                                   ResolveURLCallback callback) {
   DCHECK(!callback.is_null());
 
   // If not on IO thread, forward before passing the task to the backend.
   if (!io_task_runner_->RunsTasksInCurrentSequence()) {
-    ResolveURLCallback relay_callback =
-        base::Bind(&RelayResolveURLCallback,
-                   base::ThreadTaskRunnerHandle::Get(), callback);
+    ResolveURLCallback relay_callback = base::BindOnce(
+        &RelayResolveURLCallback, base::ThreadTaskRunnerHandle::Get(),
+        std::move(callback));
     io_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&FileSystemContext::ResolveURL, this, url, relay_callback));
+        FROM_HERE, base::BindOnce(&FileSystemContext::ResolveURL, this, url,
+                                  std::move(relay_callback)));
     return;
   }
 
   FileSystemBackend* backend = GetFileSystemBackend(url.type());
   if (!backend) {
-    callback.Run(base::File::FILE_ERROR_SECURITY,
-                 FileSystemInfo(), base::FilePath(),
-                 FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_SECURITY, FileSystemInfo(),
+                            base::FilePath(),
+                            FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
     return;
   }
 
   backend->ResolveURL(
-      url,
-      OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&FileSystemContext::DidOpenFileSystemForResolveURL,
-                 this,
-                 url,
-                 callback));
+      url, OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+      base::BindOnce(&FileSystemContext::DidOpenFileSystemForResolveURL, this,
+                     url, std::move(callback)));
 }
 
 void FileSystemContext::AttemptAutoMountForURLRequest(
     const net::URLRequest* url_request,
     const std::string& storage_domain,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   FileSystemURL filesystem_url(url_request->url());
+  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
   if (filesystem_url.type() == kFileSystemTypeExternal) {
     for (size_t i = 0; i < auto_mount_handlers_.size(); i++) {
       if (auto_mount_handlers_[i].Run(url_request, filesystem_url,
-                                      storage_domain, callback)) {
+                                      storage_domain, copyable_callback)) {
         return;
       }
     }
   }
-  callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+  copyable_callback.Run(base::File::FILE_ERROR_NOT_FOUND);
 }
 
-void FileSystemContext::DeleteFileSystem(
-    const GURL& origin_url,
-    FileSystemType type,
-    const StatusCallback& callback) {
+void FileSystemContext::DeleteFileSystem(const GURL& origin_url,
+                                         FileSystemType type,
+                                         StatusCallback callback) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(origin_url == origin_url.GetOrigin());
   DCHECK(!callback.is_null());
 
   FileSystemBackend* backend = GetFileSystemBackend(type);
   if (!backend) {
-    callback.Run(base::File::FILE_ERROR_SECURITY);
+    std::move(callback).Run(base::File::FILE_ERROR_SECURITY);
     return;
   }
   if (!backend->GetQuotaUtil()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
   base::PostTaskAndReplyWithResult(
       default_file_task_runner(), FROM_HERE,
       // It is safe to pass Unretained(quota_util) since context owns it.
-      base::Bind(&FileSystemQuotaUtil::DeleteOriginDataOnFileTaskRunner,
-                 base::Unretained(backend->GetQuotaUtil()),
-                 base::RetainedRef(this),
-                 base::Unretained(quota_manager_proxy()), origin_url, type),
-      callback);
+      base::BindOnce(&FileSystemQuotaUtil::DeleteOriginDataOnFileTaskRunner,
+                     base::Unretained(backend->GetQuotaUtil()),
+                     base::RetainedRef(this),
+                     base::Unretained(quota_manager_proxy()), origin_url, type),
+      std::move(callback));
 }
 
 std::unique_ptr<storage::FileStreamReader>
@@ -503,10 +498,10 @@ void FileSystemContext::OpenPluginPrivateFileSystem(
     const std::string& filesystem_id,
     const std::string& plugin_id,
     OpenFileSystemMode mode,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK(plugin_private_backend_);
   plugin_private_backend_->OpenPrivateFileSystem(
-      origin_url, type, filesystem_id, plugin_id, mode, callback);
+      origin_url, type, filesystem_id, plugin_id, mode, std::move(callback));
 }
 
 FileSystemContext::~FileSystemContext() {
@@ -600,15 +595,15 @@ void FileSystemContext::RegisterBackend(FileSystemBackend* backend) {
 
 void FileSystemContext::DidOpenFileSystemForResolveURL(
     const FileSystemURL& url,
-    const FileSystemContext::ResolveURLCallback& callback,
+    FileSystemContext::ResolveURLCallback callback,
     const GURL& filesystem_root,
     const std::string& filesystem_name,
     base::File::Error error) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (error != base::File::FILE_OK) {
-    callback.Run(error, FileSystemInfo(), base::FilePath(),
-                 FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
+    std::move(callback).Run(error, FileSystemInfo(), base::FilePath(),
+                            FileSystemContext::RESOLVED_ENTRY_NOT_FOUND);
     return;
   }
 
@@ -629,10 +624,12 @@ void FileSystemContext::DidOpenFileSystemForResolveURL(
 
   // TODO(mtomasz): Not all fields should be required for ResolveURL.
   operation_runner()->GetMetadata(
-      url, FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
-               FileSystemOperation::GET_METADATA_FIELD_SIZE |
-               FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
-      base::Bind(&DidGetMetadataForResolveURL, path, callback, info));
+      url,
+      FileSystemOperation::GET_METADATA_FIELD_IS_DIRECTORY |
+          FileSystemOperation::GET_METADATA_FIELD_SIZE |
+          FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED,
+      base::Bind(&DidGetMetadataForResolveURL, path, base::Passed(&callback),
+                 info));
 }
 
 }  // namespace storage

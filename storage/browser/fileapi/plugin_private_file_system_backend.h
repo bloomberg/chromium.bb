@@ -41,7 +41,7 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
       public FileSystemQuotaUtil {
  public:
   class FileSystemIDToPluginMap;
-  typedef base::Callback<void(base::File::Error result)> StatusCallback;
+  using StatusCallback = base::OnceCallback<void(base::File::Error result)>;
 
   PluginPrivateFileSystemBackend(
       base::SequencedTaskRunner* file_task_runner,
@@ -56,13 +56,12 @@ class STORAGE_EXPORT PluginPrivateFileSystemBackend
   // isolation, e.g. name, MIME type etc.
   // NOTE: |plugin_id| must be sanitized ASCII string that doesn't
   // include *any* dangerous character like '/'.
-  void OpenPrivateFileSystem(
-      const GURL& origin_url,
-      FileSystemType type,
-      const std::string& filesystem_id,
-      const std::string& plugin_id,
-      OpenFileSystemMode mode,
-      const StatusCallback& callback);
+  void OpenPrivateFileSystem(const GURL& origin_url,
+                             FileSystemType type,
+                             const std::string& filesystem_id,
+                             const std::string& plugin_id,
+                             OpenFileSystemMode mode,
+                             StatusCallback callback);
 
   // FileSystemBackend overrides.
   bool CanHandleType(FileSystemType type) const override;
