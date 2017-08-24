@@ -529,6 +529,7 @@ post_process_cmdline() {
       soft_enable parallel_deblocking
       soft_enable simple_bwd_adapt
       soft_enable loopfilter_level
+      soft_enable cfl
       soft_enable deblock_13tap
     fi
 
