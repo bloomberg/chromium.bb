@@ -81,7 +81,7 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
   # disabling it for one failing or flaky benchmark would disable a much
   # wider swath of coverage  than is usally intended. Instead, if a test is
   # failing, disable it by putting it into the _DISABLED_TESTS list above.
-  @benchmark_module.Disabled('chromeos')  # crbug.com/351114
+  @decorators.Disabled('chromeos')  # crbug.com/351114
   def RunTest(self):
 
     class SinglePageBenchmark(benchmark_class):  # pylint: disable=no-init
