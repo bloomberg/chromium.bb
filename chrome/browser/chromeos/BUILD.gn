@@ -1874,6 +1874,7 @@ source_set("unit_tests") {
     "printing/combining_printer_detector_unittest.cc",
     "printing/cups_printers_manager_unittest.cc",
     "printing/printer_event_tracker_unittest.cc",
+    "printing/printers_sync_bridge_unittest.cc",
     "printing/specifics_translation_unittest.cc",
     "printing/synced_printers_manager_unittest.cc",
     "profiles/profile_list_chromeos_unittest.cc",
