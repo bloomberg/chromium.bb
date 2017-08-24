@@ -13,8 +13,8 @@
         android:id="@+id/bottom_sheet_content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="@dimen/bottom_nav_height"
         android:background="@color/modern_light_grey"
+        android:layout_marginTop="@dimen/toolbar_shadow_height"
         android:visibility="invisible" />
 
     <org.chromium.chrome.browser.toolbar.ToolbarControlContainer
