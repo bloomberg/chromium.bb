@@ -3434,6 +3434,11 @@ crbug.com/686118 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 
 crbug.com/757868 [ Linux ] virtual/threaded/animations/animations-parsing.html [ Pass Failure ]
 
+# For Skia roll
+crbug.com/630695 css3/blending/background-blend-mode-crossfade-image-gradient.html [ NeedsManualRebaseline ]
+crbug.com/630695 images/cross-fade-background-size.html [ NeedsManualRebaseline ]
+crbug.com/630695 virtual/exotic-color-space/images/cross-fade-background-size.html [ NeedsManualRebaseline ]
+
 # Tests currently failing on Windows when run on Swarming
 crbug.com/757165 [ Win ] compositing/culling/filter-occlusion-blur.html [ Skip ]
 crbug.com/757165 [ Win ] css3/blending/mix-blend-mode-with-filters.html [ Skip ]
