@@ -21,6 +21,27 @@
 #include "chrome/test/chromedriver/session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+TEST(SessionCommandsTest, ExecuteGetTimeouts) {
+  Session session("id");
+  base::DictionaryValue params;
+  std::unique_ptr<base::Value> value;
+
+  Status status = ExecuteGetTimeouts(&session, params, &value);
+  ASSERT_EQ(kOk, status.code());
+  base::DictionaryValue* response;
+  ASSERT_TRUE(value->GetAsDictionary(&response));
+
+  int script;
+  ASSERT_TRUE(response->GetInteger("script", &script));
+  ASSERT_EQ(script, 30000);
+  int page_load;
+  ASSERT_TRUE(response->GetInteger("pageLoad", &page_load));
+  ASSERT_EQ(page_load, 300000);
+  int implicit;
+  ASSERT_TRUE(response->GetInteger("implicit", &implicit));
+  ASSERT_EQ(implicit, 0);
+}
+
 TEST(SessionCommandsTest, MergeCapabilities) {
   base::DictionaryValue primary;
   primary.SetString("strawberry", "velociraptor");

@@ -43,6 +43,7 @@ struct FrameInfo {
 
 struct Session {
   static const base::TimeDelta kDefaultPageLoadTimeout;
+  static const base::TimeDelta kDefaultScriptTimeout;
 
   explicit Session(const std::string& id);
   Session(const std::string& id, std::unique_ptr<Chrome> chrome);

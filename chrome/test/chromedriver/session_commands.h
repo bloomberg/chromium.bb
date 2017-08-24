@@ -90,6 +90,11 @@ Status ExecuteSetTimeout(Session* session,
                          const base::DictionaryValue& params,
                          std::unique_ptr<base::Value>* value);
 
+// Get the implicit, script and page load timeouts in milliseconds.
+Status ExecuteGetTimeouts(Session* session,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value);
+
 // Set the timeout for asynchronous scripts.
 Status ExecuteSetScriptTimeout(Session* session,
                                const base::DictionaryValue& params,
