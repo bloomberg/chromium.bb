@@ -565,24 +565,6 @@ void GpuCommandBufferStub::Destroy() {
   command_buffer_.reset();
 }
 
-// static
-void GpuCommandBufferStub::SetContextGpuFeatureInfo(
-    gl::GLContext* context,
-    const GpuFeatureInfo& gpu_feature_info) {
-  DCHECK(context);
-  gl::GLWorkarounds gl_workarounds;
-  GpuDriverBugWorkarounds workarounds(
-      gpu_feature_info.enabled_gpu_driver_bug_workarounds);
-  if (workarounds.clear_to_zero_or_one_broken) {
-    gl_workarounds.clear_to_zero_or_one_broken = true;
-  }
-  if (workarounds.reset_teximage2d_base_level) {
-    gl_workarounds.reset_teximage2d_base_level = true;
-  }
-  context->SetGLWorkarounds(gl_workarounds);
-  context->SetDisabledGLExtensions(gpu_feature_info.disabled_extensions);
-}
-
 bool GpuCommandBufferStub::Initialize(
     GpuCommandBufferStub* share_command_buffer_stub,
     const GPUCreateCommandBufferConfig& init_params,
@@ -776,7 +758,7 @@ bool GpuCommandBufferStub::Initialize(
 
       // This needs to be called against the real shared context, not the
       // virtual context created below.
-      SetContextGpuFeatureInfo(context.get(), manager->gpu_feature_info());
+      manager->gpu_feature_info().ApplyToGLContext(context.get());
     }
     // This should be either:
     // (1) a non-virtual GL context, or
@@ -806,7 +788,7 @@ bool GpuCommandBufferStub::Initialize(
       return false;
     }
 
-    SetContextGpuFeatureInfo(context.get(), manager->gpu_feature_info());
+    manager->gpu_feature_info().ApplyToGLContext(context.get());
   }
 
   if (!context->MakeCurrent(surface_.get())) {

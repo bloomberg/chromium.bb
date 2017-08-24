@@ -7,7 +7,6 @@
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
 
-#include "base/command_line.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
@@ -23,10 +22,9 @@ namespace gpu {
 class OpenGLES3FunctionTest : public testing::Test {
  protected:
   void SetUp() override {
-    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
     GLManager::Options options;
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
-    gl_.InitializeWithCommandLine(options, command_line);
+    gl_.Initialize(options);
   }
   void TearDown() override { gl_.Destroy(); }
   bool IsApplicable() const { return gl_.IsInitialized(); }

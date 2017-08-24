@@ -13,6 +13,8 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/tests/gl_manager.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -29,9 +31,12 @@ int RunHelper(base::TestSuite* testSuite) {
   base::FeatureList::InitializeInstance(std::string(), std::string());
   gpu::GPUInfo gpu_info;
   gpu::CollectBasicGraphicsInfo(&gpu_info);
-  gpu::ApplyGpuDriverBugWorkarounds(gpu_info,
-                                    base::CommandLine::ForCurrentProcess());
-  gl::init::InitializeGLOneOff();
+  gpu::GLManager::g_gpu_feature_info =
+      gpu::GetGpuFeatureInfo(gpu_info, *base::CommandLine::ForCurrentProcess());
+  gl::init::InitializeGLNoExtensionsOneOff();
+  gl::init::SetDisabledExtensionsPlatform(
+      gpu::GLManager::g_gpu_feature_info.disabled_extensions);
+  gl::init::InitializeExtensionSettingsOneOffPlatform();
   ::gles2::Initialize();
   return testSuite->Run();
 }

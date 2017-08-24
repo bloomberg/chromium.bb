@@ -8,13 +8,11 @@
 
 #include <memory>
 
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/config/gpu_driver_bug_workaround_type.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_fence.h"
@@ -112,33 +110,18 @@ class FeatureInfoTest
     info_->Initialize(GetContextType(), disallowed_features);
   }
 
-  void SetupInitExpectationsWithGLVersionAndCommandLine(
-      const char* extensions,
-      const char* renderer,
-      const char* version,
-      const base::CommandLine& command_line) {
-    GpuServiceTest::SetUpWithGLVersion(version, extensions);
-    TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
-        gl_.get(), extensions, renderer, version, GetContextType());
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
-    info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
-    info_->Initialize(GetContextType(), DisallowedFeatures());
-  }
-
-  void SetupWithCommandLine(const base::CommandLine& command_line) {
+  void SetupWithWorkarounds(const gpu::GpuDriverBugWorkarounds& workarounds) {
     GpuServiceTest::SetUp();
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
-    info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
+    info_ = new FeatureInfo(workarounds);
   }
 
-  void SetupInitExpectationsWithCommandLine(
+  void SetupInitExpectationsWithWorkarounds(
       const char* extensions,
-      const base::CommandLine& command_line) {
+      const gpu::GpuDriverBugWorkarounds& workarounds) {
     GpuServiceTest::SetUpWithGLVersion("2.0", extensions);
     TestHelper::SetupFeatureInfoInitExpectationsWithGLVersion(
         gl_.get(), extensions, "", "", GetContextType());
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
-    info_ = new FeatureInfo(command_line, gpu_driver_bug_workaround);
+    info_ = new FeatureInfo(workarounds);
     info_->Initialize(GetContextType(), DisallowedFeatures());
   }
 
@@ -1388,12 +1371,10 @@ TEST_P(FeatureInfoTest, InitializeOES_element_index_uint) {
 }
 
 TEST_P(FeatureInfoTest, InitializeVAOsWithClientSideArrays) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitchASCII(
-      switches::kGpuDriverBugWorkarounds,
-      base::IntToString(gpu::USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS));
-  SetupInitExpectationsWithCommandLine("GL_OES_vertex_array_object",
-                                       command_line);
+  gpu::GpuDriverBugWorkarounds workarounds;
+  workarounds.use_client_side_arrays_for_stream_buffers = true;
+  SetupInitExpectationsWithWorkarounds("GL_OES_vertex_array_object",
+                                       workarounds);
   EXPECT_TRUE(info_->workarounds().use_client_side_arrays_for_stream_buffers);
   EXPECT_FALSE(info_->feature_flags().native_vertex_array_object);
 }
@@ -1494,23 +1475,19 @@ TEST_P(FeatureInfoTest, InitializeWithoutSamplers) {
 }
 
 TEST_P(FeatureInfoTest, ParseDriverBugWorkaroundsSingle) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitchASCII(
-      switches::kGpuDriverBugWorkarounds,
-      base::IntToString(gpu::EXIT_ON_CONTEXT_LOST));
+  gpu::GpuDriverBugWorkarounds workarounds;
+  workarounds.exit_on_context_lost = true;
   // Workarounds should get parsed without the need for a context.
-  SetupWithCommandLine(command_line);
+  SetupWithWorkarounds(workarounds);
   EXPECT_TRUE(info_->workarounds().exit_on_context_lost);
 }
 
 TEST_P(FeatureInfoTest, ParseDriverBugWorkaroundsMultiple) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitchASCII(
-      switches::kGpuDriverBugWorkarounds,
-      base::IntToString(gpu::EXIT_ON_CONTEXT_LOST) + "," +
-      base::IntToString(gpu::MAX_TEXTURE_SIZE_LIMIT_4096));
+  gpu::GpuDriverBugWorkarounds workarounds;
+  workarounds.exit_on_context_lost = true;
+  workarounds.max_texture_size = 4096;
   // Workarounds should get parsed without the need for a context.
-  SetupWithCommandLine(command_line);
+  SetupWithWorkarounds(workarounds);
   EXPECT_TRUE(info_->workarounds().exit_on_context_lost);
   EXPECT_EQ(4096, info_->workarounds().max_texture_size);
 }
@@ -1543,59 +1520,51 @@ TEST_P(FeatureInfoTest, InitializeWithPreferredEXTDrawBuffers) {
 }
 
 TEST_P(FeatureInfoTest, BlendEquationAdvancedDisabled) {
-  base::CommandLine command_line(0, NULL);
-  command_line.AppendSwitchASCII(
-      switches::kGpuDriverBugWorkarounds,
-      base::IntToString(gpu::DISABLE_BLEND_EQUATION_ADVANCED));
-  SetupInitExpectationsWithCommandLine(
+  gpu::GpuDriverBugWorkarounds workarounds;
+  workarounds.disable_blend_equation_advanced = true;
+  SetupInitExpectationsWithWorkarounds(
       "GL_KHR_blend_equation_advanced_coherent GL_KHR_blend_equation_advanced",
-      command_line);
+      workarounds);
   EXPECT_FALSE(info_->feature_flags().blend_equation_advanced);
   EXPECT_FALSE(info_->feature_flags().blend_equation_advanced_coherent);
 }
 
 TEST_P(FeatureInfoTest, InitializeCHROMIUM_path_rendering) {
-  base::CommandLine command_line(0, NULL);
-  SetupInitExpectationsWithGLVersionAndCommandLine(
+  SetupInitExpectationsWithGLVersion(
       "GL_ARB_compatibility GL_NV_path_rendering GL_EXT_direct_state_access "
       "GL_NV_framebuffer_mixed_samples",
-      "", "4.3", command_line);
+      "", "4.3");
   EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_path_rendering"));
 }
 
 TEST_P(FeatureInfoTest, InitializeCHROMIUM_path_rendering2) {
-  base::CommandLine command_line(0, NULL);
-  SetupInitExpectationsWithGLVersionAndCommandLine(
+  SetupInitExpectationsWithGLVersion(
       "GL_NV_path_rendering GL_NV_framebuffer_mixed_samples", "",
-      "OpenGL ES 3.1", command_line);
+      "OpenGL ES 3.1");
   EXPECT_TRUE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(), HasSubstr("GL_CHROMIUM_path_rendering"));
 }
 
 TEST_P(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering) {
-  base::CommandLine command_line(0, NULL);
-  SetupInitExpectationsWithGLVersionAndCommandLine("GL_ARB_compatibility", "",
-                                                   "4.3", command_line);
+  SetupInitExpectationsWithGLVersion("GL_ARB_compatibility", "", "4.3");
   EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_CHROMIUM_path_rendering")));
 }
 
 TEST_P(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering2) {
-  base::CommandLine command_line(0, NULL);
-  SetupInitExpectationsWithGLVersionAndCommandLine(
-      "GL_ARB_compatibility GL_NV_path_rendering", "", "4.3", command_line);
+  SetupInitExpectationsWithGLVersion(
+      "GL_ARB_compatibility GL_NV_path_rendering", "", "4.3");
   EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_CHROMIUM_path_rendering")));
 }
 
 TEST_P(FeatureInfoTest, InitializeNoCHROMIUM_path_rendering3) {
-  base::CommandLine command_line(0, NULL);
   // Missing framebuffer mixed samples.
-  SetupInitExpectationsWithGLVersionAndCommandLine(
-      "GL_NV_path_rendering", "", "OpenGL ES 3.1", command_line);
+  SetupInitExpectationsWithGLVersion("GL_NV_path_rendering", "",
+                                     "OpenGL ES 3.1");
   EXPECT_FALSE(info_->feature_flags().chromium_path_rendering);
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_CHROMIUM_path_rendering")));

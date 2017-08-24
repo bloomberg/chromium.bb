@@ -185,12 +185,13 @@ GLES2DecoderTestBase::InitState::InitState()
 GLES2DecoderTestBase::InitState::InitState(const InitState& other) = default;
 
 void GLES2DecoderTestBase::InitDecoder(const InitState& init) {
-  InitDecoderWithCommandLine(init, NULL);
+  gpu::GpuDriverBugWorkarounds workarounds;
+  InitDecoderWithWorkarounds(init, workarounds);
 }
 
-void GLES2DecoderTestBase::InitDecoderWithCommandLine(
+void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
     const InitState& init,
-    const base::CommandLine* command_line) {
+    const gpu::GpuDriverBugWorkarounds& workarounds) {
   InitState normalized_init = init;
   NormalizeInitState(&normalized_init);
   // For easier substring/extension matching
@@ -204,11 +205,7 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
 
   SetupMockGLBehaviors();
 
-  scoped_refptr<FeatureInfo> feature_info = new FeatureInfo;
-  if (command_line) {
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(command_line);
-    feature_info = new FeatureInfo(*command_line, gpu_driver_bug_workaround);
-  }
+  scoped_refptr<FeatureInfo> feature_info = new FeatureInfo(workarounds);
 
   group_ = scoped_refptr<ContextGroup>(new ContextGroup(
       gpu_preferences_, &mailbox_manager_, memory_tracker_,

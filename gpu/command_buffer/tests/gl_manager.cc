@@ -202,6 +202,8 @@ int GLManager::use_count_;
 scoped_refptr<gl::GLShareGroup>* GLManager::base_share_group_;
 scoped_refptr<gl::GLSurface>* GLManager::base_surface_;
 scoped_refptr<gl::GLContext>* GLManager::base_context_;
+// static
+GpuFeatureInfo GLManager::g_gpu_feature_info;
 
 GLManager::Options::Options() = default;
 
@@ -243,13 +245,28 @@ std::unique_ptr<gfx::GpuMemoryBuffer> GLManager::CreateGpuMemoryBuffer(
 }
 
 void GLManager::Initialize(const GLManager::Options& options) {
-  InitializeWithCommandLine(options, *base::CommandLine::ForCurrentProcess());
+  GpuDriverBugWorkarounds platform_workarounds(
+      g_gpu_feature_info.enabled_gpu_driver_bug_workarounds);
+  InitializeWithWorkaroundsImpl(options, platform_workarounds);
 }
 
-void GLManager::InitializeWithCommandLine(
+void GLManager::InitializeWithWorkarounds(
     const GLManager::Options& options,
-    const base::CommandLine& command_line) {
+    const GpuDriverBugWorkarounds& workarounds) {
+  GpuDriverBugWorkarounds combined_workarounds(
+      g_gpu_feature_info.enabled_gpu_driver_bug_workarounds);
+  combined_workarounds.Append(workarounds);
+  InitializeWithWorkaroundsImpl(options, combined_workarounds);
+}
+
+void GLManager::InitializeWithWorkaroundsImpl(
+    const GLManager::Options& options,
+    const GpuDriverBugWorkarounds& workarounds) {
   const SharedMemoryLimits limits;
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  DCHECK(!command_line.HasSwitch(switches::kGpuDriverBugWorkarounds));
+  DCHECK(!command_line.HasSwitch(switches::kDisableGLExtensions));
   InitializeGpuPreferencesForTestingFromCommandLine(command_line,
                                                     &gpu_preferences_);
 
@@ -304,9 +321,8 @@ void GLManager::InitializeWithCommandLine(
       base::MakeUnique<gles2::ShaderTranslatorCache>(gpu_preferences_);
 
   if (!context_group) {
-    GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
     scoped_refptr<gles2::FeatureInfo> feature_info =
-        new gles2::FeatureInfo(command_line, gpu_driver_bug_workaround);
+        new gles2::FeatureInfo(workarounds);
     context_group = new gles2::ContextGroup(
         gpu_preferences_, mailbox_manager_, nullptr /* memory_tracker */,
         translator_cache_.get(), &completeness_cache_, feature_info,
@@ -347,6 +363,7 @@ void GLManager::InitializeWithCommandLine(
       context_ = gl::init::CreateGLContext(
           share_group_.get(), surface_.get(),
           GenerateGLContextAttribs(attribs, context_group->gpu_preferences()));
+      g_gpu_feature_info.ApplyToGLContext(context_.get());
     }
   }
   ASSERT_TRUE(context_.get() != NULL) << "could not create GL context";
@@ -396,6 +413,7 @@ void GLManager::SetupBaseContext() {
     base_context_ = new scoped_refptr<gl::GLContext>(gl::init::CreateGLContext(
         base_share_group_->get(), base_surface_->get(),
         gl::GLContextAttribs()));
+    g_gpu_feature_info.ApplyToGLContext(base_context_->get());
     #endif
   }
   ++use_count_;

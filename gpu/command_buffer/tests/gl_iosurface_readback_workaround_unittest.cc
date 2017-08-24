@@ -10,12 +10,9 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
-#include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -29,8 +26,7 @@ class GLIOSurfaceReadbackWorkaroundTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    base::CommandLine command_line(0, NULL);
-    gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
+    gl_.Initialize(GLManager::Options());
     gl_.set_use_iosurface_memory_buffers(true);
   }
 

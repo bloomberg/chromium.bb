@@ -24,12 +24,17 @@ namespace gpu {
 class GPU_EXPORT GpuDriverBugWorkarounds {
  public:
   GpuDriverBugWorkarounds();
-  explicit GpuDriverBugWorkarounds(const std::vector<int>&);
+  explicit GpuDriverBugWorkarounds(const std::vector<int32_t>&);
   explicit GpuDriverBugWorkarounds(const base::CommandLine* command_line);
 
   GpuDriverBugWorkarounds(const GpuDriverBugWorkarounds& other);
 
   ~GpuDriverBugWorkarounds();
+
+  // For boolean members, || is applied.
+  // For int members, the min() is applied if both are non-zero; if one is
+  // zero, then the other is applied.
+  void Append(const GpuDriverBugWorkarounds& extra);
 
 #define GPU_OP(type, name) bool name = false;
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
