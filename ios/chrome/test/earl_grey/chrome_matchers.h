@@ -107,18 +107,12 @@ id<GREYMatcher> ToolsMenuView();
 // Returns matcher for the OK button.
 id<GREYMatcher> OKButton();
 
-// Returns matcher for the signin button in the settings menu.
-id<GREYMatcher> SignInMenuButton();
-
-// Returns SignInMenuButton() as long as the sign-in promo is not enabled for
-// UI tests. When the sign-in promo will be enabled, it will returns matcher for
-// the secondary button in the sign-in promo view. This is "Sign in into Chrome"
-// button for a cold state, or "Continue as John Doe" for a warm state.
+// Returns matcher for the primary button in the sign-in promo view. This is
+// "Sign in into Chrome" button for a cold state, or "Continue as John Doe" for
+// a warm state.
 id<GREYMatcher> PrimarySignInButton();
 
-// Returns SignInMenuButton() as long as the sign-in promo is not enabled for
-// UI tests. When the sign-in promo will be enabled, it will returns matcher for
-// the secondary button in the sign-in promo view. This is
+// Returns matcher for the secondary button in the sign-in promo view. This is
 // "Not johndoe@example.com" button.
 id<GREYMatcher> SecondarySignInButton();
 

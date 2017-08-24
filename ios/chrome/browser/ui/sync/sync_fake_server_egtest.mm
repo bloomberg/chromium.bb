@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
@@ -60,7 +61,8 @@ ChromeIdentity* GetFakeIdentity1() {
 // UI and must be called from the NTP.
 void SignInIdentity(NSString* userEmail) {
   [ChromeEarlGreyUI openSettingsMenu];
-  [ChromeEarlGreyUI tapSettingsMenuButton:chrome_test_util::SignInMenuButton()];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SecondarySignInButton()];
   [ChromeEarlGreyUI signInToIdentityByEmail:userEmail];
   [ChromeEarlGreyUI confirmSigninConfirmationDialog];
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
