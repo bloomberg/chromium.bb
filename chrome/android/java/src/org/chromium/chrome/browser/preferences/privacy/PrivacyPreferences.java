@@ -14,6 +14,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchFieldTrial;
@@ -104,7 +105,7 @@ public class PrivacyPreferences extends PreferenceFragment
         safeBrowsingPref.setOnPreferenceChangeListener(this);
         safeBrowsingPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
 
-        if (!PhysicalWeb.featureIsEnabled()) {
+        if (!PhysicalWeb.featureIsEnabled() || SysUtils.isLowEndDevice()) {
             preferenceScreen.removePreference(findPreference(PREF_PHYSICAL_WEB));
         }
 
