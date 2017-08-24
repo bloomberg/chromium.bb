@@ -5,10 +5,13 @@
 #include "base/synchronization/waitable_event.h"
 
 #include <mach/mach.h>
+#include <sys/event.h>
 
 #include "base/debug/activity_tracker.h"
+#include "base/files/scoped_file.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 
@@ -161,46 +164,93 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
   ThreadRestrictions::AssertWaitAllowed();
   DCHECK(count) << "Cannot wait on no events";
 
-  kern_return_t kr;
+  // Record an event (the first) that this thread is blocking upon.
+  debug::ScopedEventWaitActivity event_activity(raw_waitables[0]);
 
-  mac::ScopedMachPortSet port_set;
-  {
-    mach_port_t name;
-    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_PORT_SET, &name);
-    MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_allocate";
-    port_set.reset(name);
-  }
-
-  for (size_t i = 0; i < count; ++i) {
-    kr = mach_port_insert_member(mach_task_self(),
-                                 raw_waitables[i]->receive_right_->Name(),
-                                 port_set.get());
-    MACH_CHECK(kr == KERN_SUCCESS, kr) << "index " << i;
-  }
-
-  mach_msg_empty_rcv_t msg{};
-  // Wait on the port set. Only specify space enough for the header, to
-  // identify which port in the set is signaled. Otherwise, receiving from the
-  // port set may dequeue a message for a manual-reset event object, which
-  // would cause it to be reset.
-  kr = mach_msg(&msg.header,
-                MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_LARGE_IDENTITY, 0,
-                sizeof(msg.header), port_set.get(), 0, MACH_PORT_NULL);
-  MACH_CHECK(kr == MACH_RCV_TOO_LARGE, kr) << "mach_msg";
-
-  for (size_t i = 0; i < count; ++i) {
-    WaitableEvent* event = raw_waitables[i];
-    if (msg.header.msgh_local_port == event->receive_right_->Name()) {
-      if (event->policy_ == ResetPolicy::AUTOMATIC) {
-        // The message needs to be dequeued to reset the event.
-        PeekPort(msg.header.msgh_local_port, true);
-      }
-      return i;
+  // On macOS 10.11+, using Mach port sets may cause system instability, per
+  // https://crbug.com/756102. On macOS 10.12+, a kqueue can be used
+  // instead to work around that. But on macOS 10.9-10.11, kqueue only works
+  // for port sets. On those platforms, port sets are just used directly. This
+  // does leave 10.11 susceptible to instability, though.
+  // TODO(rsesek): See if a libdispatch solution works on 10.11.
+#if defined(OS_IOS)
+  const bool use_kqueue = false;
+#else
+  const bool use_kqueue = mac::IsAtLeastOS10_12();
+#endif
+  if (use_kqueue) {
+    std::vector<kevent64_s> events(count);
+    for (size_t i = 0; i < count; ++i) {
+      EV_SET64(&events[i], raw_waitables[i]->receive_right_->Name(),
+               EVFILT_MACHPORT, EV_ADD, 0, 0, i, 0, 0);
     }
-  }
 
-  NOTREACHED();
-  return 0;
+    std::vector<kevent64_s> out_events(count);
+
+    ScopedFD wait_many(kqueue());
+    PCHECK(wait_many.is_valid()) << "kqueue";
+
+    int rv = HANDLE_EINTR(kevent64(wait_many.get(), events.data(), count,
+                                   out_events.data(), count, 0, nullptr));
+    PCHECK(rv > 0) << "kevent64";
+
+    size_t triggered = -1;
+    for (size_t i = 0; i < static_cast<size_t>(rv); ++i) {
+      // WaitMany should return the lowest index in |raw_waitables| that was
+      // triggered.
+      size_t index = static_cast<size_t>(out_events[i].udata);
+      triggered = std::min(triggered, index);
+    }
+
+    if (raw_waitables[triggered]->policy_ == ResetPolicy::AUTOMATIC) {
+      // The message needs to be dequeued to reset the event.
+      PeekPort(raw_waitables[triggered]->receive_right_->Name(), true);
+    }
+
+    return triggered;
+  } else {
+    kern_return_t kr;
+
+    mac::ScopedMachPortSet port_set;
+    {
+      mach_port_t name;
+      kr =
+          mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_PORT_SET, &name);
+      MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_allocate";
+      port_set.reset(name);
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+      kr = mach_port_insert_member(mach_task_self(),
+                                   raw_waitables[i]->receive_right_->Name(),
+                                   port_set.get());
+      MACH_CHECK(kr == KERN_SUCCESS, kr) << "index " << i;
+    }
+
+    mach_msg_empty_rcv_t msg{};
+    // Wait on the port set. Only specify space enough for the header, to
+    // identify which port in the set is signaled. Otherwise, receiving from the
+    // port set may dequeue a message for a manual-reset event object, which
+    // would cause it to be reset.
+    kr = mach_msg(&msg.header,
+                  MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_LARGE_IDENTITY, 0,
+                  sizeof(msg.header), port_set.get(), 0, MACH_PORT_NULL);
+    MACH_CHECK(kr == MACH_RCV_TOO_LARGE, kr) << "mach_msg";
+
+    for (size_t i = 0; i < count; ++i) {
+      WaitableEvent* event = raw_waitables[i];
+      if (msg.header.msgh_local_port == event->receive_right_->Name()) {
+        if (event->policy_ == ResetPolicy::AUTOMATIC) {
+          // The message needs to be dequeued to reset the event.
+          PeekPort(msg.header.msgh_local_port, true);
+        }
+        return i;
+      }
+    }
+
+    NOTREACHED();
+    return 0;
+  }
 }
 
 // static
