@@ -194,9 +194,13 @@ gfx::Vector2d AppListPresenterDelegate::GetVisibilityAnimationOffset(
 base::TimeDelta AppListPresenterDelegate::GetVisibilityAnimationDuration(
     aura::Window* root_window,
     bool is_visible) {
-  if (is_fullscreen_app_list_enabled_)
+  if (is_fullscreen_app_list_enabled_) {
+    // If the view is below the shelf, just hide immediately.
+    if (view_->GetBoundsInScreen().y() >
+        Shelf::ForWindow(root_window)->GetIdealBounds().y())
+      return base::TimeDelta::FromMilliseconds(0);
     return animation_duration_fullscreen(IsSideShelf(root_window));
-
+  }
   return is_visible ? base::TimeDelta::FromMilliseconds(0)
                     : animation_duration();
 }
