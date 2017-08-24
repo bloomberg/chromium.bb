@@ -165,7 +165,9 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
   }
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-               "data", InspectorPaintImageEvent::Data(layout_image_));
+               "data",
+               InspectorPaintImageEvent::Data(layout_image_, src_rect,
+                                              FloatRect(dest_rect)));
 
   InterpolationQuality previous_interpolation_quality =
       context.ImageInterpolationQuality();

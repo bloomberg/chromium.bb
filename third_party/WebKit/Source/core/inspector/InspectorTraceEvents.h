@@ -348,9 +348,14 @@ std::unique_ptr<TracedValue> Data(LayoutObject*,
 }
 
 namespace InspectorPaintImageEvent {
-std::unique_ptr<TracedValue> Data(const LayoutImage&);
+std::unique_ptr<TracedValue> Data(const LayoutImage&,
+                                  const FloatRect& src_rect,
+                                  const FloatRect& dest_rect);
 std::unique_ptr<TracedValue> Data(const LayoutObject&, const StyleImage&);
-std::unique_ptr<TracedValue> Data(Node*, const StyleImage&);
+std::unique_ptr<TracedValue> Data(Node*,
+                                  const StyleImage&,
+                                  const FloatRect& src_rect,
+                                  const FloatRect& dest_rect);
 std::unique_ptr<TracedValue> Data(const LayoutObject*,
                                   const ImageResourceContent&);
 }
