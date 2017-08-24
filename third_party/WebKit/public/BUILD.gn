@@ -814,6 +814,12 @@ mojom("mojo_bindings") {
     "//url/mojo:url_mojom_origin",
   ]
 
+  # //storage/public/interfaces is configured to be exported
+  # as STORAGE_COMMON, so override the dependencies to make it
+  # depend via //storage/common.
+  overridden_deps = [ "//storage/public/interfaces" ]
+  component_deps = [ "//storage/common" ]
+
   component_output_prefix = "blink_mojo_bindings"
 
   # The chromium variant must be linked with content and use the same export
