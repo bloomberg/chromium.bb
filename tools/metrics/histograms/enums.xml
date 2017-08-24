@@ -22942,6 +22942,8 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="UploadCrashReportsUsingJobScheduler:disabled"/>
   <int value="-1912999136" label="enable-automatic-password-saving:enabled"/>
   <int value="-1911153473" label="enable-easy-signin"/>
+  <int value="-1909356390"
+      label="OverlayScrollbarFlashAfterAnyScrollUpdate:enabled"/>
   <int value="-1907342706" label="ReadItLaterInMenu:disabled"/>
   <int value="-1892555086" label="disable-compositor-animation-timelines"/>
   <int value="-1892000374" label="SeccompSandboxAndroid:enabled"/>
@@ -23689,6 +23691,8 @@ from previous Chrome versions.
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
   <int value="474743272" label="material-design-ink-drop"/>
+  <int value="475858648"
+      label="OverlayScrollbarFlashAfterAnyScrollUpdate:disabled"/>
   <int value="477967119" label="enable-unified-media-pipeline"/>
   <int value="479906041" label="RunAllFlashInAllowMode:disabled"/>
   <int value="480544447" label="NonValidatingReloadOnRefreshContentV2:enabled"/>

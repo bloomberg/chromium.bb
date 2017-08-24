@@ -13,12 +13,15 @@
 namespace features {
 
 NATIVE_THEME_EXPORT extern const base::Feature kOverlayScrollbar;
+NATIVE_THEME_EXPORT extern const base::Feature
+    kOverlayScrollbarFlashAfterAnyScrollUpdate;
 
 }  // namespace features
 
 namespace ui {
 
 NATIVE_THEME_EXPORT bool IsOverlayScrollbarEnabled();
+NATIVE_THEME_EXPORT bool OverlayScrollbarFlashAfterAnyScrollUpdate();
 
 }  // namespace ui
 

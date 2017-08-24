@@ -55,6 +55,7 @@ class CC_EXPORT LayerTreeSettings {
   base::TimeDelta scrollbar_fade_delay;
   base::TimeDelta scrollbar_fade_duration;
   base::TimeDelta scrollbar_thinning_duration;
+  bool scrollbar_flash_after_any_scroll_update = false;
   SkColor solid_color_scrollbar_color = SK_ColorWHITE;
   bool timeout_and_draw_when_animation_checkerboards = true;
   bool layer_transforms_should_scale_layer_contents = false;
