@@ -5,6 +5,7 @@
 #include "chromeos/dbus/dbus_clients_browser.h"
 
 #include "base/logging.h"
+#include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/auth_policy_client.h"
@@ -13,6 +14,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/easy_unlock_client.h"
+#include "chromeos/dbus/fake_arc_midis_client.h"
 #include "chromeos/dbus/fake_arc_obb_mounter_client.h"
 #include "chromeos/dbus/fake_arc_oemcrypto_client.h"
 #include "chromeos/dbus/fake_auth_policy_client.h"
@@ -32,6 +34,11 @@
 namespace chromeos {
 
 DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
+  if (use_real_clients)
+    arc_midis_client_ = ArcMidisClient::Create();
+  else
+    arc_midis_client_.reset(new FakeArcMidisClient);
+
   if (use_real_clients)
     arc_obb_mounter_client_.reset(ArcObbMounterClient::Create());
   else
@@ -92,6 +99,7 @@ DBusClientsBrowser::~DBusClientsBrowser() {}
 void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   DCHECK(DBusThreadManager::IsInitialized());
 
+  arc_midis_client_->Init(system_bus);
   arc_obb_mounter_client_->Init(system_bus);
   arc_oemcrypto_client_->Init(system_bus);
   auth_policy_client_->Init(system_bus);
