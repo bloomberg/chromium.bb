@@ -20,7 +20,7 @@ DomRepeatEvent.prototype.model;
 Polymer({
   is: 'site-data',
 
-  behaviors: [CookieTreeBehavior, I18nBehavior],
+  behaviors: [CookieTreeBehavior, I18nBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /**
@@ -62,9 +62,17 @@ Polymer({
     }
   },
 
-  /** @override */
-  ready: function() {
-    this.loadCookies();
+  /**
+   * Reload cookies when the cookie page is visited.
+   *
+   * settings.RouteObserverBehavior
+   * @param {!settings.Route} currentRoute
+   * @protected
+   */
+  currentRouteChanged: function(currentRoute) {
+    if (currentRoute == settings.routes.SITE_SETTINGS_COOKIES) {
+      this.loadCookies();
+    }
   },
 
   /**
