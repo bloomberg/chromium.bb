@@ -249,6 +249,8 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
     while (!ppd_reference_resolution_queue_.empty()) {
       const PrinterSearchData& next =
           ppd_reference_resolution_queue_.front().first;
+      // Have we successfully resolved next yet?
+      bool resolved_next = false;
       if (!next.make_and_model.empty()) {
         if (cached_ppd_index_.get() == nullptr) {
           // Need to load the index before we can work on this resolution.
@@ -267,23 +269,27 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
                 base::Bind(ppd_reference_resolution_queue_.front().second,
                            PpdProvider::SUCCESS, ret));
             ppd_reference_resolution_queue_.pop_front();
+            resolved_next = true;
+            break;
           }
         }
       }
-      // If we get to this point, either we don't have any make and model
-      // guesses for the front entry, or they all missed.  Try USB ids
-      // instead.  This entry will be completed when the usb fetch
-      // returns.
-      if (next.usb_vendor_id && next.usb_product_id) {
-        StartFetch(GetUsbURL(next.usb_vendor_id), FT_USB_DEVICES);
-        return true;
+      if (!resolved_next) {
+        // If we get to this point, either we don't have any make and model
+        // guesses for the front entry, or they all missed.  Try USB ids
+        // instead.  This entry will be completed when the usb fetch
+        // returns.
+        if (next.usb_vendor_id && next.usb_product_id) {
+          StartFetch(GetUsbURL(next.usb_vendor_id), FT_USB_DEVICES);
+          return true;
+        }
+        // We don't have anything else left to try.  NOT_FOUND it is.
+        base::SequencedTaskRunnerHandle::Get()->PostTask(
+            FROM_HERE,
+            base::Bind(ppd_reference_resolution_queue_.front().second,
+                       PpdProvider::NOT_FOUND, Printer::PpdReference()));
+        ppd_reference_resolution_queue_.pop_front();
       }
-      // We don't have anything else left to try.  NOT_FOUND it is.
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(ppd_reference_resolution_queue_.front().second,
-                     PpdProvider::NOT_FOUND, Printer::PpdReference()));
-      ppd_reference_resolution_queue_.pop_front();
     }
     // Didn't start any fetches.
     return false;
