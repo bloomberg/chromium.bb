@@ -47,6 +47,9 @@ class BASE_EXPORT SchedulerWorkerPool {
   // Registers the worker pool in TLS.
   void BindToCurrentThread();
 
+  // Resets the worker pool in TLS.
+  void UnbindFromCurrentThread();
+
   // Prevents new tasks from being scheduled and waits for currently scheduled
   // tasks to complete their execution. It is guaranteed that no thread will
   // do work on behalf of this SchedulerWorkerPool after this returns.

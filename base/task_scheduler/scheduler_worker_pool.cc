@@ -161,6 +161,11 @@ void SchedulerWorkerPool::BindToCurrentThread() {
   tls_current_worker_pool.Get().Set(this);
 }
 
+void SchedulerWorkerPool::UnbindFromCurrentThread() {
+  DCHECK(GetCurrentWorkerPool());
+  tls_current_worker_pool.Get().Set(nullptr);
+}
+
 void SchedulerWorkerPool::PostTaskWithSequenceNow(
     std::unique_ptr<Task> task,
     scoped_refptr<Sequence> sequence) {
