@@ -699,14 +699,8 @@ class ServiceManager::ServiceImpl : public Service {
     // access to this interface is brokered by a policy specific to each caller,
     // managed by the caller's instance. Here we look to see who's calling,
     // and forward to the caller's instance to continue.
-    Instance* instance = nullptr;
-    for (const auto& entry : service_manager_->identity_to_instance_) {
-      if (entry.first == source_info.identity) {
-        instance = entry.second;
-        break;
-      }
-    }
-
+    Instance* instance =
+        service_manager_->GetExistingInstance(source_info.identity);
     DCHECK(instance);
     instance->OnBindInterface(source_info, interface_name,
                               std::move(interface_pipe));
