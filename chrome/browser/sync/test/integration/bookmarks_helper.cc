@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
@@ -313,7 +312,7 @@ void WaitForHistoryToProcessPendingTasks() {
     base::CancelableTaskTracker task_tracker;
     // Post a task that signals |done|. Since tasks run in posting order, all
     // previously posted tasks have run when |done| is signaled.
-    history_service->ScheduleDBTask(base::MakeUnique<SignalEventTask>(&done),
+    history_service->ScheduleDBTask(std::make_unique<SignalEventTask>(&done),
                                     &task_tracker);
     done.Wait();
   }

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/sync_sessions/sync_sessions_client.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
@@ -142,7 +141,7 @@ SyncedSession* SyncedSessionTracker::GetSession(
     return synced_session_map_[session_tag].get();
 
   std::unique_ptr<SyncedSession> synced_session =
-      base::MakeUnique<SyncedSession>();
+      std::make_unique<SyncedSession>();
   DVLOG(1) << "Creating new session with tag " << session_tag << " at "
            << synced_session.get();
   synced_session->session_tag = session_tag;
@@ -239,7 +238,7 @@ void SyncedSessionTracker::PutWindowInSession(const std::string& session_tag,
                                                             : session_tag);
   } else {
     // Create the window.
-    window = base::MakeUnique<SyncedSessionWindow>();
+    window = std::make_unique<SyncedSessionWindow>();
     window->wrapped_window.window_id.set_id(window_id);
     synced_window_map_[session_tag][window_id] = window.get();
     DVLOG(1) << "Putting new window " << window_id << " at " << window.get()
@@ -336,7 +335,7 @@ sessions::SessionTab* SyncedSessionTracker::GetTab(
     }
   } else {
     std::unique_ptr<sessions::SessionTab> tab =
-        base::MakeUnique<sessions::SessionTab>();
+        std::make_unique<sessions::SessionTab>();
     tab_ptr = tab.get();
     tab->tab_id.set_id(tab_id);
     synced_tab_map_[session_tag][tab_id] = tab_ptr;

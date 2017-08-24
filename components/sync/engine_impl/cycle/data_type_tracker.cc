@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "components/sync/engine_impl/cycle/nudge_tracker.h"
 
 namespace syncer {
@@ -256,13 +255,13 @@ void DataTypeTracker::ThrottleType(base::TimeDelta duration,
                                    base::TimeTicks now) {
   unblock_time_ = std::max(unblock_time_, now + duration);
   wait_interval_ =
-      base::MakeUnique<WaitInterval>(WaitInterval::THROTTLED, duration);
+      std::make_unique<WaitInterval>(WaitInterval::THROTTLED, duration);
 }
 
 void DataTypeTracker::BackOffType(base::TimeDelta duration,
                                   base::TimeTicks now) {
   unblock_time_ = std::max(unblock_time_, now + duration);
-  wait_interval_ = base::MakeUnique<WaitInterval>(
+  wait_interval_ = std::make_unique<WaitInterval>(
       WaitInterval::EXPONENTIAL_BACKOFF, duration);
 }
 

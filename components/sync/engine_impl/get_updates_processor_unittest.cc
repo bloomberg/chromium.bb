@@ -11,7 +11,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine_impl/cycle/debug_info_getter.h"
@@ -80,7 +79,7 @@ class GetUpdatesProcessorTest : public ::testing::Test {
     enabled_types_.Put(type);
 
     std::unique_ptr<MockUpdateHandler> handler =
-        base::MakeUnique<MockUpdateHandler>(type);
+        std::make_unique<MockUpdateHandler>(type);
     MockUpdateHandler* handler_ptr = handler.get();
 
     update_handler_map_.insert(std::make_pair(type, handler_ptr));

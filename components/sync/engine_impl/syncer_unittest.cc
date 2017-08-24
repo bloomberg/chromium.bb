@@ -19,7 +19,6 @@
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -240,7 +239,7 @@ class SyncerTest : public testing::Test,
   void OnMigrationRequested(ModelTypeSet types) override {}
 
   void ResetCycle() {
-    cycle_ = base::MakeUnique<SyncCycle>(context_.get(), this);
+    cycle_ = std::make_unique<SyncCycle>(context_.get(), this);
   }
 
   bool SyncShareNudge() {
@@ -265,15 +264,15 @@ class SyncerTest : public testing::Test,
 
   void SetUp() override {
     test_user_share_.SetUp();
-    mock_server_ = base::MakeUnique<MockConnectionManager>(
+    mock_server_ = std::make_unique<MockConnectionManager>(
         directory(), &cancelation_signal_);
-    debug_info_getter_ = base::MakeUnique<MockDebugInfoGetter>();
+    debug_info_getter_ = std::make_unique<MockDebugInfoGetter>();
     workers_.push_back(
         scoped_refptr<ModelSafeWorker>(new FakeModelWorker(GROUP_PASSIVE)));
     std::vector<SyncEngineEventListener*> listeners;
     listeners.push_back(this);
 
-    model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
+    model_type_registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         UssMigrator(), &cancelation_signal_);
     model_type_registry_->RegisterDirectoryTypeDebugInfoObserver(
@@ -284,14 +283,14 @@ class SyncerTest : public testing::Test,
     EnableDatatype(NIGORI);
     EnableDatatype(PREFERENCES);
 
-    context_ = base::MakeUnique<SyncCycleContext>(
+    context_ = std::make_unique<SyncCycleContext>(
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
         true,   // enable keystore encryption
         false,  // force enable pre-commit GU avoidance experiment
         "fake_invalidator_client_id");
     syncer_ = new Syncer(&cancelation_signal_);
-    scheduler_ = base::MakeUnique<SyncSchedulerImpl>(
+    scheduler_ = std::make_unique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(),
         context_.get(),
         // scheduler_ owned syncer_ now and will manage the memory of syncer_
@@ -4142,7 +4141,7 @@ TEST_F(SyncerTest, DirectoryCommitTest) {
 TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
   using sync_pb::ClientCommand;
 
-  auto command = base::MakeUnique<ClientCommand>();
+  auto command = std::make_unique<ClientCommand>();
   command->set_set_sync_poll_interval(8);
   command->set_set_sync_long_poll_interval(800);
   command->set_sessions_commit_delay_seconds(3141);
@@ -4163,7 +4162,7 @@ TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
   EXPECT_EQ(TimeDelta::FromMilliseconds(950), last_bookmarks_commit_delay_);
   EXPECT_EQ(11, last_client_invalidation_hint_buffer_size_);
 
-  command = base::MakeUnique<ClientCommand>();
+  command = std::make_unique<ClientCommand>();
   command->set_set_sync_poll_interval(180);
   command->set_set_sync_long_poll_interval(190);
   command->set_sessions_commit_delay_seconds(2718);
@@ -4187,7 +4186,7 @@ TEST_F(SyncerTest, TestClientCommandDuringUpdate) {
 TEST_F(SyncerTest, TestClientCommandDuringCommit) {
   using sync_pb::ClientCommand;
 
-  auto command = base::MakeUnique<ClientCommand>();
+  auto command = std::make_unique<ClientCommand>();
   command->set_set_sync_poll_interval(8);
   command->set_set_sync_long_poll_interval(800);
   command->set_sessions_commit_delay_seconds(3141);
@@ -4207,7 +4206,7 @@ TEST_F(SyncerTest, TestClientCommandDuringCommit) {
   EXPECT_EQ(TimeDelta::FromMilliseconds(950), last_bookmarks_commit_delay_);
   EXPECT_EQ(11, last_client_invalidation_hint_buffer_size_);
 
-  command = base::MakeUnique<ClientCommand>();
+  command = std::make_unique<ClientCommand>();
   command->set_set_sync_poll_interval(180);
   command->set_set_sync_long_poll_interval(190);
   command->set_sessions_commit_delay_seconds(2718);

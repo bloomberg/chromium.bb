@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -153,7 +152,7 @@ AppsMatchChecker::AppsMatchChecker() : profiles_(test()->GetAllProfiles()) {
   for (Profile* profile : profiles_) {
     // Begin mocking the installation of synced extensions from the web store.
     synced_extension_installers_.push_back(
-        base::MakeUnique<SyncedExtensionInstaller>(profile));
+        std::make_unique<SyncedExtensionInstaller>(profile));
 
     // Register as an observer of ExtensionsRegistry to receive notifications of
     // big events, like installs and uninstalls.

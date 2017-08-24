@@ -110,7 +110,7 @@ std::unique_ptr<Commit> Commit::Init(ModelTypeSet requested_types,
   }
 
   // If we made it this far, then we've successfully prepared a commit message.
-  return base::MakeUnique<Commit>(std::move(contributions), message,
+  return std::make_unique<Commit>(std::move(contributions), message,
                                   extensions_activity_buffer);
 }
 

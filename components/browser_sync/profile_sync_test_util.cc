@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -213,7 +212,7 @@ void ProfileSyncServiceBundle::SyncClientBuilder::SetBookmarkModelCallback(
 
 std::unique_ptr<syncer::FakeSyncClient>
 ProfileSyncServiceBundle::SyncClientBuilder::Build() {
-  return base::MakeUnique<BundleSyncClient>(
+  return std::make_unique<BundleSyncClient>(
       bundle_->component_factory(), bundle_->pref_service(),
       bundle_->sync_sessions_client(), personal_data_manager_,
       get_syncable_service_callback_, get_sync_service_callback_,
@@ -253,7 +252,7 @@ ProfileSyncService::InitParams ProfileSyncServiceBundle::CreateBasicInitParams(
   init_params.start_behavior = start_behavior;
   init_params.sync_client = std::move(sync_client);
   init_params.signin_wrapper =
-      base::MakeUnique<SigninManagerWrapper>(signin_manager());
+      std::make_unique<SigninManagerWrapper>(signin_manager());
   init_params.oauth2_token_service = auth_service();
   init_params.network_time_update_callback =
       base::Bind(&EmptyNetworkTimeUpdate);

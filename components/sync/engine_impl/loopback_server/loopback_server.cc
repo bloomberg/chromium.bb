@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -279,7 +278,7 @@ bool LoopbackServer::HandleGetUpdatesRequest(
   // at once.
   response->set_changes_remaining(0);
 
-  auto sieve = base::MakeUnique<UpdateSieve>(get_updates);
+  auto sieve = std::make_unique<UpdateSieve>(get_updates);
 
   // This folder is called "Synced Bookmarks" by sync and is renamed
   // "Mobile Bookmarks" by the mobile client UIs.
@@ -498,7 +497,7 @@ LoopbackServer::GetEntitiesAsDictionaryValue() {
   ModelTypeSet all_types = ModelTypeSet::All();
   for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
     dictionary->Set(ModelTypeToString(it.Get()),
-                    base::MakeUnique<base::ListValue>());
+                    std::make_unique<base::ListValue>());
   }
 
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();

@@ -13,7 +13,6 @@
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/cryptographer.h"
@@ -47,7 +46,7 @@ class ApplyControlDataUpdatesTest : public ::testing::Test {
 
   void SetUp() override {
     dir_maker_.SetUp();
-    entry_factory_ = base::MakeUnique<TestEntryFactory>(directory());
+    entry_factory_ = std::make_unique<TestEntryFactory>(directory());
   }
 
   void TearDown() override { dir_maker_.TearDown(); }

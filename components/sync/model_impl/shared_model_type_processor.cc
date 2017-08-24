@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -111,10 +110,10 @@ void SharedModelTypeProcessor::ConnectIfReady() {
   if (model_error_) {
     error_handler_.Run(model_error_.value());
   } else {
-    auto activation_context = base::MakeUnique<ActivationContext>();
+    auto activation_context = std::make_unique<ActivationContext>();
     activation_context->model_type_state = model_type_state_;
     activation_context->type_processor =
-        base::MakeUnique<ModelTypeProcessorProxy>(
+        std::make_unique<ModelTypeProcessorProxy>(
             weak_ptr_factory_.GetWeakPtr(),
             base::ThreadTaskRunnerHandle::Get());
     start_callback_.Run(std::move(activation_context));

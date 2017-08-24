@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/engine/attachments/attachment_util.h"
@@ -28,7 +27,7 @@ void FakeAttachmentDownloader::DownloadAttachment(
   // This is happy fake downloader, it always successfully downloads empty
   // attachment.
   scoped_refptr<base::RefCountedMemory> data(new base::RefCountedBytes());
-  std::unique_ptr<Attachment> attachment = base::MakeUnique<Attachment>(
+  std::unique_ptr<Attachment> attachment = std::make_unique<Attachment>(
       Attachment::CreateFromParts(attachment_id, data));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,

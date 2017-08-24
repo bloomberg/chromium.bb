@@ -9,7 +9,6 @@
 #include <cstdlib>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -78,8 +77,8 @@ DirOpenResult SyncableDirectoryTest::ReopenDirectory() {
   // Use a TestDirectoryBackingStore and sql::Connection so we can have test
   // data persist across Directory object lifetimes while getting the
   // performance benefits of not writing to disk.
-  dir_ = base::MakeUnique<Directory>(
-      base::MakeUnique<TestDirectoryBackingStore>(kDirectoryName, &connection_),
+  dir_ = std::make_unique<Directory>(
+      std::make_unique<TestDirectoryBackingStore>(kDirectoryName, &connection_),
       MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr, nullptr);
 
   DirOpenResult open_result =
@@ -1696,7 +1695,7 @@ TEST_F(SyncableDirectoryTest, StressTransactions) {
 
   for (int i = 0; i < kThreadCount; ++i) {
     thread_delegates[i] =
-        base::MakeUnique<StressTransactionsDelegate>(dir().get(), i);
+        std::make_unique<StressTransactionsDelegate>(dir().get(), i);
     ASSERT_TRUE(base::PlatformThread::Create(0, thread_delegates[i].get(),
                                              &threads[i]));
   }
@@ -2010,7 +2009,7 @@ TEST_F(SyncableDirectoryTest, MutableEntry_ImplicitParentId_Siblings) {
 TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
   Directory::SaveChangesSnapshot snapshot;
   EXPECT_FALSE(snapshot.HasUnsavedMetahandleChanges());
-  snapshot.dirty_metas.insert(base::MakeUnique<EntryKernel>());
+  snapshot.dirty_metas.insert(std::make_unique<EntryKernel>());
   EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
   snapshot.dirty_metas.clear();
 
@@ -2020,7 +2019,7 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
   snapshot.metahandles_to_purge.clear();
 
   EXPECT_FALSE(snapshot.HasUnsavedMetahandleChanges());
-  snapshot.delete_journals.insert(base::MakeUnique<EntryKernel>());
+  snapshot.delete_journals.insert(std::make_unique<EntryKernel>());
   EXPECT_TRUE(snapshot.HasUnsavedMetahandleChanges());
   snapshot.delete_journals.clear();
 
@@ -2035,7 +2034,7 @@ TEST_F(SyncableDirectoryTest, SaveChangesSnapshot_HasUnsavedMetahandleChanges) {
 TEST_F(SyncableDirectoryTest, CatastrophicError) {
   MockUnrecoverableErrorHandler unrecoverable_error_handler;
   Directory dir(
-      base::MakeUnique<InMemoryDirectoryBackingStore>("catastrophic_error"),
+      std::make_unique<InMemoryDirectoryBackingStore>("catastrophic_error"),
       MakeWeakHandle(unrecoverable_error_handler.GetWeakPtr()), base::Closure(),
       nullptr, nullptr);
   ASSERT_EQ(OPENED, dir.Open(kDirectoryName, directory_change_delegate(),

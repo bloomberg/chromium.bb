@@ -13,7 +13,6 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -308,7 +307,7 @@ std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
   if (commit_entities.size() == 0)
     return std::unique_ptr<CommitContribution>();
 
-  return base::MakeUnique<NonBlockingTypeCommitContribution>(
+  return std::make_unique<NonBlockingTypeCommitContribution>(
       model_type_state_.type_context(), commit_entities, this,
       debug_info_emitter_, CommitOnlyTypes().Has(GetModelType()));
 }
@@ -516,7 +515,7 @@ WorkerEntityTracker* ModelTypeWorker::CreateEntityTracker(
     const EntityData& data) {
   DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
   std::unique_ptr<WorkerEntityTracker> entity =
-      base::MakeUnique<WorkerEntityTracker>(data.client_tag_hash);
+      std::make_unique<WorkerEntityTracker>(data.client_tag_hash);
   WorkerEntityTracker* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
   return entity_ptr;

@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "components/sync/base/attachment_id_proto.h"
 #include "components/sync/engine_impl/cycle/directory_type_debug_info_emitter.h"
@@ -534,18 +533,18 @@ class DirectoryUpdateHandlerApplyUpdateTest : public ::testing::Test {
 
   void SetUp() override {
     dir_maker_.SetUp();
-    entry_factory_ = base::MakeUnique<TestEntryFactory>(directory());
+    entry_factory_ = std::make_unique<TestEntryFactory>(directory());
 
     update_handler_map_.insert(std::make_pair(
         BOOKMARKS,
-        base::MakeUnique<DirectoryUpdateHandler>(
+        std::make_unique<DirectoryUpdateHandler>(
             directory(), BOOKMARKS, ui_worker_, &bookmarks_emitter_)));
     update_handler_map_.insert(std::make_pair(
         PASSWORDS,
-        base::MakeUnique<DirectoryUpdateHandler>(
+        std::make_unique<DirectoryUpdateHandler>(
             directory(), PASSWORDS, password_worker_, &passwords_emitter_)));
     update_handler_map_.insert(std::make_pair(
-        ARTICLES, base::MakeUnique<DirectoryUpdateHandler>(
+        ARTICLES, std::make_unique<DirectoryUpdateHandler>(
                       directory(), ARTICLES, ui_worker_, &articles_emitter_)));
   }
 

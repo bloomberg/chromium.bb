@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -71,11 +70,11 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   void SetUp() override {
     model_associator_ = new ModelAssociatorMock();
     change_processor_ = new ChangeProcessorMock();
-    history_service_ = base::MakeUnique<HistoryMock>();
+    history_service_ = std::make_unique<HistoryMock>();
     profile_sync_factory_ =
-        base::MakeUnique<syncer::SyncApiComponentFactoryMock>(
+        std::make_unique<syncer::SyncApiComponentFactoryMock>(
             model_associator_, change_processor_);
-    bookmark_dtc_ = base::MakeUnique<BookmarkDataTypeController>(
+    bookmark_dtc_ = std::make_unique<BookmarkDataTypeController>(
         base::Bind(&base::DoNothing), this);
   }
 
@@ -86,8 +85,8 @@ class SyncBookmarkDataTypeControllerTest : public testing::Test,
   };
 
   void CreateBookmarkModel(BookmarkLoadPolicy bookmark_load_policy) {
-    bookmark_model_ = base::MakeUnique<BookmarkModel>(
-        base::MakeUnique<bookmarks::TestBookmarkClient>());
+    bookmark_model_ = std::make_unique<BookmarkModel>(
+        std::make_unique<bookmarks::TestBookmarkClient>());
     if (bookmark_load_policy == LOAD_MODEL) {
       TestingPrefServiceSimple prefs;
       bookmark_model_->Load(&prefs, base::FilePath(),

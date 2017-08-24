@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -564,7 +563,7 @@ void SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding() {
 void SyncBackendHostCore::StartSavingChanges() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!save_changes_timer_.get());
-  save_changes_timer_ = base::MakeUnique<base::RepeatingTimer>();
+  save_changes_timer_ = std::make_unique<base::RepeatingTimer>();
   save_changes_timer_->Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kSaveChangesIntervalSeconds),
       this, &SyncBackendHostCore::SaveChanges);

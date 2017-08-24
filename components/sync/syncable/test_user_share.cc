@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/directory_backing_store.h"
 #include "components/sync/syncable/mutable_entry.h"
@@ -28,7 +27,7 @@ TestUserShare::~TestUserShare() {
 }
 
 void TestUserShare::SetUp() {
-  user_share_ = base::MakeUnique<UserShare>();
+  user_share_ = std::make_unique<UserShare>();
   dir_maker_->SetUp();
 
   // The pointer is owned by dir_maker_, we should not be storing it in a
@@ -53,7 +52,7 @@ bool TestUserShare::Reload() {
 
   // Ensure the unique_ptr doesn't delete the memory we don't own.
   ignore_result(user_share_->directory.release());
-  user_share_ = base::MakeUnique<UserShare>();
+  user_share_ = std::make_unique<UserShare>();
   dir_maker_->SetUpWith(std::move(saved_store));
   user_share_->directory.reset(dir_maker_->directory());
   return true;

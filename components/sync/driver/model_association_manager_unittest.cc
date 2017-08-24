@@ -4,8 +4,9 @@
 
 #include "components/sync/driver/model_association_manager.h"
 
+#include <memory>
+
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/driver/fake_data_type_controller.h"
@@ -60,8 +61,8 @@ class SyncModelAssociationManagerTest : public testing::Test {
 // Start a type and make sure ModelAssociationManager callst the |Start|
 // method and calls the callback when it is done.
 TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
-  controllers_[APPS] = base::MakeUnique<FakeDataTypeController>(APPS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types(BOOKMARKS, APPS);
   DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
@@ -96,7 +97,7 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
 
 // Start a type and call stop before it finishes associating.
 TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
 
   ModelTypeSet types;
@@ -121,7 +122,7 @@ TEST_F(SyncModelAssociationManagerTest, StopModelBeforeFinish) {
 
 // Start a type, let it finish and then call stop.
 TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
@@ -145,7 +146,7 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterFinish) {
 
 // Make a type fail model association and verify correctness.
 TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
@@ -168,7 +169,7 @@ TEST_F(SyncModelAssociationManagerTest, TypeFailModelAssociation) {
 
 // Ensure configuring stops when a type returns a unrecoverable error.
 TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
@@ -190,8 +191,8 @@ TEST_F(SyncModelAssociationManagerTest, TypeReturnUnrecoverableError) {
 }
 
 TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
-  controllers_[APPS] = base::MakeUnique<FakeDataTypeController>(APPS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
   GetController(controllers_, BOOKMARKS)->SetDelayModelLoad();
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
@@ -218,8 +219,8 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
 }
 
 TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
-  controllers_[APPS] = base::MakeUnique<FakeDataTypeController>(APPS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
@@ -262,7 +263,7 @@ TEST_F(SyncModelAssociationManagerTest, StartMultipleTimes) {
 // Test that model that failed to load between initialization and association
 // is reported and stopped properly.
 TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
   GetController(controllers_, BOOKMARKS)
       ->SetModelLoadError(
           SyncError(FROM_HERE, SyncError::DATATYPE_ERROR, "", BOOKMARKS));
@@ -285,7 +286,7 @@ TEST_F(SyncModelAssociationManagerTest, ModelLoadFailBeforeAssociationStart) {
 
 // Test that a runtime error is handled by stopping the type.
 TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
@@ -313,8 +314,8 @@ TEST_F(SyncModelAssociationManagerTest, StopAfterConfiguration) {
 }
 
 TEST_F(SyncModelAssociationManagerTest, AbortDuringAssociation) {
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
-  controllers_[APPS] = base::MakeUnique<FakeDataTypeController>(APPS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types;
   types.Put(BOOKMARKS);
@@ -349,8 +350,8 @@ TEST_F(SyncModelAssociationManagerTest, AbortDuringAssociation) {
 // require LoadModels before configuration are loaded.
 TEST_F(SyncModelAssociationManagerTest, OnAllDataTypesReadyForConfigure) {
   // Create two controllers with delayed model load.
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
-  controllers_[APPS] = base::MakeUnique<FakeDataTypeController>(APPS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
   GetController(controllers_, BOOKMARKS)->SetDelayModelLoad();
   GetController(controllers_, APPS)->SetDelayModelLoad();
 
@@ -398,7 +399,7 @@ TEST_F(SyncModelAssociationManagerTest, OnAllDataTypesReadyForConfigure) {
 // LoadModels fails for one of datatypes.
 TEST_F(SyncModelAssociationManagerTest,
        OnAllDataTypesReadyForConfigure_FailedLoadModels) {
-  controllers_[APPS] = base::MakeUnique<FakeDataTypeController>(APPS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
   GetController(controllers_, APPS)->SetDelayModelLoad();
 
   // APPS controller requires LoadModels complete before configure.
@@ -436,8 +437,8 @@ TEST_F(SyncModelAssociationManagerTest,
        OnAllDataTypesReadyForConfigure_TypeFailedAfterLoadModels) {
   // Create two controllers with delayed model load. Both should block
   // configuration.
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
-  controllers_[APPS] = base::MakeUnique<FakeDataTypeController>(APPS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
   GetController(controllers_, BOOKMARKS)->SetDelayModelLoad();
   GetController(controllers_, APPS)->SetDelayModelLoad();
 
@@ -490,8 +491,8 @@ TEST_F(SyncModelAssociationManagerTest,
 // OnSingleDataTypeWillStart is called for all enabled types.
 TEST_F(SyncModelAssociationManagerTest, TypeRegistrationCallSequence) {
   // Create two controllers and allow them to complete LoadModels synchronously.
-  controllers_[BOOKMARKS] = base::MakeUnique<FakeDataTypeController>(BOOKMARKS);
-  controllers_[APPS] = base::MakeUnique<FakeDataTypeController>(APPS);
+  controllers_[BOOKMARKS] = std::make_unique<FakeDataTypeController>(BOOKMARKS);
+  controllers_[APPS] = std::make_unique<FakeDataTypeController>(APPS);
 
   ModelAssociationManager model_association_manager(&controllers_, &delegate_);
   ModelTypeSet types(BOOKMARKS, APPS);

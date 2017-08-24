@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/driver/sync_service.h"

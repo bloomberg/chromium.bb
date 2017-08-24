@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
@@ -99,7 +98,7 @@ class MockSyncApiComponentFactory : public SyncApiComponentFactory {
       const std::string& store_birthday,
       ModelType model_type,
       AttachmentService::Delegate* delegate) override {
-    auto attachment_service = base::MakeUnique<MockAttachmentService>();
+    auto attachment_service = std::make_unique<MockAttachmentService>();
     // GenericChangeProcessor takes ownership of the AttachmentService, but we
     // need to have a pointer to it so we can see that it was used properly.
     // Take a pointer and trust that GenericChangeProcessor does not prematurely
@@ -147,11 +146,11 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   // model type |type|.
   void InitializeForType(ModelType type) {
     TearDown();
-    test_user_share_ = base::MakeUnique<TestUserShare>();
+    test_user_share_ = std::make_unique<TestUserShare>();
     test_user_share_->SetUp();
-    sync_merge_result_ = base::MakeUnique<SyncMergeResult>(type);
+    sync_merge_result_ = std::make_unique<SyncMergeResult>(type);
     merge_result_ptr_factory_ =
-        base::MakeUnique<base::WeakPtrFactory<SyncMergeResult>>(
+        std::make_unique<base::WeakPtrFactory<SyncMergeResult>>(
             sync_merge_result_.get());
 
     ModelTypeSet types = ProtocolTypes();
@@ -165,8 +164,8 @@ class SyncGenericChangeProcessorTest : public testing::Test {
   void ConstructGenericChangeProcessor(ModelType type) {
     std::unique_ptr<AttachmentStore> attachment_store =
         AttachmentStore::CreateInMemoryStore();
-    change_processor_ = base::MakeUnique<GenericChangeProcessor>(
-        type, base::MakeUnique<DataTypeErrorHandlerMock>(),
+    change_processor_ = std::make_unique<GenericChangeProcessor>(
+        type, std::make_unique<DataTypeErrorHandlerMock>(),
         syncable_service_ptr_factory_.GetWeakPtr(),
         merge_result_ptr_factory_->GetWeakPtr(), test_user_share_->user_share(),
         &sync_client_, attachment_store->CreateAttachmentStoreForSync());

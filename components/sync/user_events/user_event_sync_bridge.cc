@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/sync/model/entity_change.h"
@@ -50,7 +49,7 @@ int64_t GetEventTimeFromStorageKey(const std::string& storage_key) {
 
 std::unique_ptr<EntityData> MoveToEntityData(
     std::unique_ptr<UserEventSpecifics> specifics) {
-  auto entity_data = base::MakeUnique<EntityData>();
+  auto entity_data = std::make_unique<EntityData>();
   entity_data->non_unique_name =
       base::Int64ToString(specifics->event_time_usec());
   entity_data->specifics.set_allocated_user_event(specifics.release());
@@ -59,7 +58,7 @@ std::unique_ptr<EntityData> MoveToEntityData(
 
 std::unique_ptr<EntityData> CopyToEntityData(
     const UserEventSpecifics specifics) {
-  auto entity_data = base::MakeUnique<EntityData>();
+  auto entity_data = std::make_unique<EntityData>();
   entity_data->non_unique_name =
       base::Int64ToString(specifics.event_time_usec());
   *entity_data->specifics.mutable_user_event() = specifics;
@@ -239,7 +238,7 @@ void UserEventSyncBridge::OnReadAllData(
     return;
   }
 
-  auto batch = base::MakeUnique<MutableDataBatch>();
+  auto batch = std::make_unique<MutableDataBatch>();
   UserEventSpecifics specifics;
   for (const Record& r : *data_records) {
     if (specifics.ParseFromString(r.value)) {
@@ -284,7 +283,7 @@ void UserEventSyncBridge::HandleGlobalIdChange(int64_t old_global_id,
   auto range = in_flight_nav_linked_events_.equal_range(old_global_id);
   for (auto iter = range.first; iter != range.second;) {
     DCHECK_EQ(old_global_id, iter->second.navigation_id());
-    affected.emplace_back(base::MakeUnique<UserEventSpecifics>(iter->second));
+    affected.emplace_back(std::make_unique<UserEventSpecifics>(iter->second));
     iter = in_flight_nav_linked_events_.erase(iter);
   }
 

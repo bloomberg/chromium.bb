@@ -441,7 +441,7 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
   // will be deleted before starting up the BookmarkModel.
   std::unique_ptr<BookmarkModel> CreateBookmarkModel(bool delete_bookmarks) {
     const base::FilePath& data_path = data_dir_.GetPath();
-    auto model = base::MakeUnique<BookmarkModel>(
+    auto model = std::make_unique<BookmarkModel>(
         base::WrapUnique(new bookmarks::TestBookmarkClient()));
     managed_bookmark_service_->BookmarkModelCreated(model.get());
     int64_t next_id = 0;
@@ -547,9 +547,9 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
     DCHECK(!model_associator_);
 
     // Set up model associator.
-    model_associator_ = base::MakeUnique<BookmarkModelAssociator>(
+    model_associator_ = std::make_unique<BookmarkModelAssociator>(
         model_.get(), sync_client_.get(), test_user_share_.user_share(),
-        base::MakeUnique<syncer::DataTypeErrorHandlerMock>(),
+        std::make_unique<syncer::DataTypeErrorHandlerMock>(),
         kExpectMobileBookmarks);
 
     local_merge_result_ = syncer::SyncMergeResult(syncer::BOOKMARKS);
@@ -793,9 +793,9 @@ class ProfileSyncServiceBookmarkTest : public testing::Test {
 
   void ResetChangeProcessor() {
     std::unique_ptr<syncer::DataTypeErrorHandlerMock> error_handler =
-        base::MakeUnique<syncer::DataTypeErrorHandlerMock>();
+        std::make_unique<syncer::DataTypeErrorHandlerMock>();
     mock_error_handler_ = error_handler.get();
-    change_processor_ = base::MakeUnique<BookmarkChangeProcessor>(
+    change_processor_ = std::make_unique<BookmarkChangeProcessor>(
         sync_client_.get(), model_associator_.get(), std::move(error_handler));
   }
 

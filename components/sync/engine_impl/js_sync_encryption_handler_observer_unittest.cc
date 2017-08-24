@@ -4,10 +4,10 @@
 
 #include "components/sync/engine_impl/js_sync_encryption_handler_observer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
@@ -107,7 +107,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnBootstrapTokenUpdated) {
 }
 
 TEST_F(JsSyncEncryptionHandlerObserverTest, OnEncryptedTypesChanged) {
-  auto encrypted_type_values = base::MakeUnique<base::ListValue>();
+  auto encrypted_type_values = std::make_unique<base::ListValue>();
   ModelTypeSet encrypted_types;
 
   for (int i = FIRST_REAL_MODEL_TYPE; i < MODEL_TYPE_COUNT; ++i) {

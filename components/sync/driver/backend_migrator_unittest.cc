@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/tracked_objects.h"
@@ -40,7 +39,7 @@ class SyncBackendMigratorTest : public testing::Test {
     preferred_types_.Put(PREFERENCES);
     preferred_types_.Put(AUTOFILL);
 
-    migrator_ = base::MakeUnique<BackendMigrator>(
+    migrator_ = std::make_unique<BackendMigrator>(
         "Profile0", test_user_share_.user_share(), service(), manager(),
         base::Closure());
     SetUnsyncedTypes(ModelTypeSet());

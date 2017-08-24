@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/engine_impl/syncer_proto_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
@@ -599,7 +598,7 @@ void MockConnectionManager::ProcessCommit(
   map<string, string> changed_ids;
   const CommitMessage& commit_message = csm->commit();
   CommitResponse* commit_response = response_buffer->mutable_commit();
-  commit_messages_.push_back(base::MakeUnique<CommitMessage>());
+  commit_messages_.push_back(std::make_unique<CommitMessage>());
   commit_messages_.back()->CopyFrom(commit_message);
   map<string, sync_pb::CommitResponse_EntryResponse*> response_map;
   for (int i = 0; i < commit_message.entries_size(); i++) {
@@ -651,7 +650,7 @@ void MockConnectionManager::ProcessCommit(
     }
   }
   commit_responses_.push_back(
-      base::MakeUnique<CommitResponse>(*commit_response));
+      std::make_unique<CommitResponse>(*commit_response));
 
   if (commit_client_command_) {
     response_buffer->mutable_client_command()->CopyFrom(

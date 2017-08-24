@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/driver/fake_sync_service.h"
@@ -73,7 +72,7 @@ UserEventSpecifics CreateSpecifics(int64_t event_time_usec,
 std::unique_ptr<UserEventSpecifics> SpecificsUniquePtr(int64_t event_time_usec,
                                                        int64_t navigation_id,
                                                        uint64_t session_id) {
-  return base::MakeUnique<UserEventSpecifics>(
+  return std::make_unique<UserEventSpecifics>(
       CreateSpecifics(event_time_usec, navigation_id, session_id));
 }
 
@@ -101,7 +100,7 @@ class TestGlobalIdMapper : public GlobalIdMapper {
 class UserEventSyncBridgeTest : public testing::Test {
  protected:
   UserEventSyncBridgeTest() {
-    bridge_ = base::MakeUnique<UserEventSyncBridge>(
+    bridge_ = std::make_unique<UserEventSyncBridge>(
         ModelTypeStoreTestUtil::FactoryForInMemoryStoreForTest(),
         RecordingModelTypeChangeProcessor::FactoryForBridgeTest(&processor_),
         &test_global_id_mapper_);
@@ -131,7 +130,7 @@ TEST_F(UserEventSyncBridgeTest, MetadataIsInitialized) {
 
 TEST_F(UserEventSyncBridgeTest, SingleRecord) {
   const UserEventSpecifics specifics(CreateSpecifics(1u, 2u, 3u));
-  bridge()->RecordUserEvent(base::MakeUnique<UserEventSpecifics>(specifics));
+  bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
   EXPECT_EQ(1u, processor().put_multimap().size());
 
   const std::string storage_key = processor().put_multimap().begin()->first;
@@ -181,7 +180,7 @@ TEST_F(UserEventSyncBridgeTest, HandleGlobalIdChange) {
   // This id update should be applied to the event as it is initially recorded.
   mapper()->ChangeId(first_id, second_id);
   bridge()->RecordUserEvent(
-      base::MakeUnique<UserEventSpecifics>(CreateSpecifics(1u, first_id, 2u)));
+      std::make_unique<UserEventSpecifics>(CreateSpecifics(1u, first_id, 2u)));
   const std::string storage_key = processor().put_multimap().begin()->first;
   EXPECT_EQ(1u, processor().put_multimap().size());
   bridge()->GetAllData(
@@ -218,9 +217,9 @@ TEST_F(UserEventSyncBridgeTest, MulipleEventsChanging) {
   const std::string key2 = GetStorageKey(specifics2);
   const std::string key3 = GetStorageKey(specifics3);
 
-  bridge()->RecordUserEvent(base::MakeUnique<UserEventSpecifics>(specifics1));
-  bridge()->RecordUserEvent(base::MakeUnique<UserEventSpecifics>(specifics2));
-  bridge()->RecordUserEvent(base::MakeUnique<UserEventSpecifics>(specifics3));
+  bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics1));
+  bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics2));
+  bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics3));
   bridge()->GetAllData(VerifyCallback(
       {{key1, specifics1}, {key2, specifics2}, {key3, specifics3}}));
 

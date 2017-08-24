@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "chrome/test/base/testing_profile.h"

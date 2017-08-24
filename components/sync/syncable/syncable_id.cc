@@ -5,7 +5,6 @@
 #include "components/sync/syncable/syncable_id.h"
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 
 using std::ostream;
@@ -20,7 +19,7 @@ ostream& operator<<(ostream& out, const Id& id) {
 }
 
 std::unique_ptr<base::Value> Id::ToValue() const {
-  return base::MakeUnique<base::Value>(s_);
+  return std::make_unique<base::Value>(s_);
 }
 
 string Id::GetServerId() const {

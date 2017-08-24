@@ -4,7 +4,9 @@
 
 #include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+#include <set>
+
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router_factory.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/bind_to_task_runner.h"
 #include "components/sync/base/data_type_histogram.h"
@@ -260,7 +259,7 @@ void AsyncDirectoryTypeController::StopSyncableService() {
 std::unique_ptr<DataTypeErrorHandler>
 AsyncDirectoryTypeController::CreateErrorHandler() {
   DCHECK(CalledOnValidThread());
-  return base::MakeUnique<DataTypeErrorHandlerImpl>(
+  return std::make_unique<DataTypeErrorHandlerImpl>(
       base::ThreadTaskRunnerHandle::Get(), dump_stack_,
       base::Bind(&AsyncDirectoryTypeController::DisableImpl,
                  base::AsWeakPtr(this)));

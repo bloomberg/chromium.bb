@@ -9,7 +9,6 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -48,7 +47,7 @@ LoopbackServerEntity::CreateEntityFromProto(
     case sync_pb::LoopbackServerEntity_Type_TOMBSTONE:
       return PersistentTombstoneEntity::CreateFromEntity(entity.entity());
     case sync_pb::LoopbackServerEntity_Type_PERMANENT:
-      return base::MakeUnique<PersistentPermanentEntity>(
+      return std::make_unique<PersistentPermanentEntity>(
           entity.entity().id_string(), entity.entity().version(),
           syncer::GetModelType(entity.entity()), entity.entity().name(),
           entity.entity().parent_id_string(),

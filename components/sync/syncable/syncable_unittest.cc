@@ -348,8 +348,8 @@ TEST_F(OnDiskSyncableDirectoryTest,
   }
 
   dir()->SaveChanges();
-  dir() = base::MakeUnique<Directory>(
-      base::MakeUnique<OnDiskDirectoryBackingStore>(kDirectoryName, file_path_),
+  dir() = std::make_unique<Directory>(
+      std::make_unique<OnDiskDirectoryBackingStore>(kDirectoryName, file_path_),
       MakeWeakHandle(unrecoverable_error_handler()->GetWeakPtr()),
       base::Closure(), nullptr, nullptr);
 
@@ -561,7 +561,7 @@ TEST_F(SyncableDirectoryManagement, TestFileRelease) {
 
   {
     Directory dir(
-        base::MakeUnique<OnDiskDirectoryBackingStore>("ScopeTest", path),
+        std::make_unique<OnDiskDirectoryBackingStore>("ScopeTest", path),
         MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(), nullptr,
         nullptr);
     DirOpenResult result =

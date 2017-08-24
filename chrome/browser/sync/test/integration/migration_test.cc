@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/migration_waiter.h"
@@ -85,7 +84,7 @@ class MigrationTest : public SyncTest  {
 
     for (int i = 0; i < num_clients(); ++i) {
       migration_watchers_.push_back(
-          base::MakeUnique<MigrationWatcher>(GetClient(i)));
+          std::make_unique<MigrationWatcher>(GetClient(i)));
     }
     return true;
   }

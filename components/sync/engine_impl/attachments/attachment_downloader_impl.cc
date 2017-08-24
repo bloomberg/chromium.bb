@@ -9,7 +9,6 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
@@ -273,7 +272,7 @@ void AttachmentDownloaderImpl::ReportResult(
        iter != download_state.user_callbacks.end(); ++iter) {
     std::unique_ptr<Attachment> attachment;
     if (result == DOWNLOAD_SUCCESS) {
-      attachment = base::MakeUnique<Attachment>(Attachment::CreateFromParts(
+      attachment = std::make_unique<Attachment>(Attachment::CreateFromParts(
           download_state.attachment_id, attachment_data));
     }
 

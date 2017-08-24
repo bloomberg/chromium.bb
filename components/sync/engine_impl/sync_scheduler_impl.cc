@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -265,7 +264,7 @@ void SyncSchedulerImpl::ScheduleConfiguration(
 
   // Only reconfigure if we have types to download.
   if (!params.types_to_download.Empty()) {
-    pending_configure_params_ = base::MakeUnique<ConfigurationParams>(params);
+    pending_configure_params_ = std::make_unique<ConfigurationParams>(params);
     TrySyncCycleJob();
   } else {
     SDVLOG(2) << "No change in routing info, calling ready task directly.";
@@ -280,7 +279,7 @@ void SyncSchedulerImpl::ScheduleClearServerData(const ClearParams& params) {
   DCHECK(!params.report_success_task.is_null());
   CHECK(started_) << "Scheduler must be running to clear.";
 
-  pending_clear_params_ = base::MakeUnique<ClearParams>(params);
+  pending_clear_params_ = std::make_unique<ClearParams>(params);
   TrySyncCycleJob();
 }
 
@@ -530,7 +529,7 @@ void SyncSchedulerImpl::HandleFailure(
             ? wait_interval_->length
             : delay_provider_->GetInitialDelay(model_neutral_state);
     TimeDelta next_delay = delay_provider_->GetDelay(previous_delay);
-    wait_interval_ = base::MakeUnique<WaitInterval>(
+    wait_interval_ = std::make_unique<WaitInterval>(
         WaitInterval::EXPONENTIAL_BACKOFF, next_delay);
     SDVLOG(2) << "Sync cycle failed.  Will back off for "
               << wait_interval_->length.InMilliseconds() << "ms.";
@@ -830,7 +829,7 @@ bool SyncSchedulerImpl::IsGlobalBackoff() const {
 
 void SyncSchedulerImpl::OnThrottled(const TimeDelta& throttle_duration) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  wait_interval_ = base::MakeUnique<WaitInterval>(WaitInterval::THROTTLED,
+  wait_interval_ = std::make_unique<WaitInterval>(WaitInterval::THROTTLED,
                                                   throttle_duration);
   for (auto& observer : *cycle_context_->listeners()) {
     observer.OnThrottledTypesChanged(ModelTypeSet::All());

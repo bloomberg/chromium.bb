@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -117,18 +116,18 @@ class SessionDataTypeControllerTest : public testing::Test,
     prefs_.registry()->RegisterBooleanPref(kSavingBrowserHistoryDisabled,
                                            false);
 
-    synced_window_delegate_ = base::MakeUnique<MockSyncedWindowDelegate>();
-    synced_window_getter_ = base::MakeUnique<MockSyncedWindowDelegatesGetter>();
-    sync_sessions_client_ = base::MakeUnique<TestSyncSessionsClient>();
+    synced_window_delegate_ = std::make_unique<MockSyncedWindowDelegate>();
+    synced_window_getter_ = std::make_unique<MockSyncedWindowDelegatesGetter>();
+    sync_sessions_client_ = std::make_unique<TestSyncSessionsClient>();
     synced_window_getter_->Add(synced_window_delegate_.get());
     sync_sessions_client_->SetSyncedWindowDelegatesGetter(
         synced_window_getter_.get());
 
-    local_device_ = base::MakeUnique<LocalDeviceInfoProviderMock>(
+    local_device_ = std::make_unique<LocalDeviceInfoProviderMock>(
         "cache_guid", "Wayne Gretzky's Hacking Box", "Chromium 10k",
         "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id");
 
-    controller_ = base::MakeUnique<SessionDataTypeController>(
+    controller_ = std::make_unique<SessionDataTypeController>(
         base::Bind(&base::DoNothing), this, local_device_.get(),
         kSavingBrowserHistoryDisabled);
 

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
@@ -136,19 +135,19 @@ IOSChromeProfileSyncServiceFactory::BuildServiceInstanceFor(
   ios::AboutSigninInternalsFactory::GetForBrowserState(browser_state);
 
   ProfileSyncService::InitParams init_params;
-  init_params.signin_wrapper = base::MakeUnique<SigninManagerWrapper>(signin);
+  init_params.signin_wrapper = std::make_unique<SigninManagerWrapper>(signin);
   init_params.oauth2_token_service =
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state);
   init_params.start_behavior = ProfileSyncService::MANUAL_START;
   init_params.sync_client =
-      base::MakeUnique<IOSChromeSyncClient>(browser_state);
+      std::make_unique<IOSChromeSyncClient>(browser_state);
   init_params.network_time_update_callback = base::Bind(&UpdateNetworkTime);
   init_params.base_directory = browser_state->GetStatePath();
   init_params.url_request_context = browser_state->GetRequestContext();
   init_params.debug_identifier = browser_state->GetDebugName();
   init_params.channel = ::GetChannel();
 
-  auto pss = base::MakeUnique<ProfileSyncService>(std::move(init_params));
+  auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
 
   // Will also initialize the sync client.
   pss->Initialize();

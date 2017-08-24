@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/sync/base/time.h"
 #include "components/sync/device_info/device_info_util.h"
@@ -49,7 +48,7 @@ Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
 // Converts DeviceInfoSpecifics into a freshly allocated DeviceInfo.
 std::unique_ptr<DeviceInfo> SpecificsToModel(
     const DeviceInfoSpecifics& specifics) {
-  return base::MakeUnique<DeviceInfo>(
+  return std::make_unique<DeviceInfo>(
       specifics.cache_guid(), specifics.client_name(),
       specifics.chrome_version(), specifics.sync_user_agent(),
       specifics.device_type(), specifics.signin_scoped_device_id());
@@ -58,7 +57,7 @@ std::unique_ptr<DeviceInfo> SpecificsToModel(
 // Allocate a EntityData and copies |specifics| into it.
 std::unique_ptr<EntityData> CopyToEntityData(
     const DeviceInfoSpecifics& specifics) {
-  auto entity_data = base::MakeUnique<EntityData>();
+  auto entity_data = std::make_unique<EntityData>();
   *entity_data->specifics.mutable_device_info() = specifics;
   entity_data->non_unique_name = specifics.client_name();
   return entity_data;
@@ -70,7 +69,7 @@ std::unique_ptr<EntityData> CopyToEntityData(
 std::unique_ptr<DeviceInfoSpecifics> ModelToSpecifics(
     const DeviceInfo& info,
     int64_t last_updated_timestamp) {
-  auto specifics = base::MakeUnique<DeviceInfoSpecifics>();
+  auto specifics = std::make_unique<DeviceInfoSpecifics>();
   specifics->set_cache_guid(info.guid());
   specifics->set_client_name(info.client_name());
   specifics->set_chrome_version(info.chrome_version());
@@ -151,7 +150,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
       // Remote data wins conflicts.
       local_guids_to_put.erase(specifics.cache_guid());
       has_changes = true;
-      StoreSpecifics(base::MakeUnique<DeviceInfoSpecifics>(specifics),
+      StoreSpecifics(std::make_unique<DeviceInfoSpecifics>(specifics),
                      batch.get());
     }
   }
@@ -194,7 +193,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
       const DeviceInfoSpecifics& specifics =
           change.data().specifics.device_info();
       DCHECK(guid == specifics.cache_guid());
-      StoreSpecifics(base::MakeUnique<DeviceInfoSpecifics>(specifics),
+      StoreSpecifics(std::make_unique<DeviceInfoSpecifics>(specifics),
                      batch.get());
       has_changes = true;
     }
@@ -207,7 +206,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
 
 void DeviceInfoSyncBridge::GetData(StorageKeyList storage_keys,
                                    DataCallback callback) {
-  auto batch = base::MakeUnique<MutableDataBatch>();
+  auto batch = std::make_unique<MutableDataBatch>();
   for (const auto& key : storage_keys) {
     const auto& iter = all_data_.find(key);
     if (iter != all_data_.end()) {
@@ -219,7 +218,7 @@ void DeviceInfoSyncBridge::GetData(StorageKeyList storage_keys,
 }
 
 void DeviceInfoSyncBridge::GetAllData(DataCallback callback) {
-  auto batch = base::MakeUnique<MutableDataBatch>();
+  auto batch = std::make_unique<MutableDataBatch>();
   for (const auto& kv : all_data_) {
     batch->Put(kv.first, CopyToEntityData(*kv.second));
   }
@@ -357,7 +356,7 @@ void DeviceInfoSyncBridge::OnReadAllData(
 
   for (const Record& r : *record_list.get()) {
     std::unique_ptr<DeviceInfoSpecifics> specifics =
-        base::MakeUnique<DeviceInfoSpecifics>();
+        std::make_unique<DeviceInfoSpecifics>();
     if (specifics->ParseFromString(r.value)) {
       all_data_[specifics->cache_guid()] = std::move(specifics);
     } else {

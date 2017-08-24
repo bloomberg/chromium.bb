@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -94,7 +93,7 @@ bool MigrateDirectoryDataWithBatchSize(ModelType type,
 
     const size_t batch_limit = std::min(i + batch_size, child_ids.size());
     for (; i < batch_limit; i++) {
-      auto entity = base::MakeUnique<sync_pb::SyncEntity>();
+      auto entity = std::make_unique<sync_pb::SyncEntity>();
       if (!ExtractSyncEntity(&trans, child_ids[i], entity.get())) {
         LOG(ERROR) << "Failed to fetch child node for "
                    << ModelTypeToString(type);

@@ -16,7 +16,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
@@ -337,7 +336,7 @@ class WebDataServiceFake : public AutofillWebDataService {
       const base::Callback<void(syncer::ModelType)>& on_sync_started) {
     ASSERT_TRUE(db_task_runner_->RunsTasksInCurrentSequence());
     // These services are deleted in DestroySyncableService().
-    backend_ = base::MakeUnique<MockAutofillBackend>(
+    backend_ = std::make_unique<MockAutofillBackend>(
         GetDatabase(), on_changed_callback, on_sync_started,
         ui_task_runner_.get());
     AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
@@ -415,8 +414,8 @@ class ProfileSyncServiceAutofillTest
     profile_sync_service_bundle()->set_db_thread(
         data_type_thread()->task_runner());
 
-    web_database_ = base::MakeUnique<WebDatabaseFake>(&autofill_table_);
-    web_data_wrapper_ = base::MakeUnique<MockWebDataServiceWrapper>(
+    web_database_ = std::make_unique<WebDatabaseFake>(&autofill_table_);
+    web_data_wrapper_ = std::make_unique<MockWebDataServiceWrapper>(
         new WebDataServiceFake(base::ThreadTaskRunnerHandle::Get(),
                                data_type_thread()->task_runner()),
         new TokenWebDataServiceFake(base::ThreadTaskRunnerHandle::Get(),
@@ -425,7 +424,7 @@ class ProfileSyncServiceAutofillTest
         web_data_wrapper_->GetAutofillWebData().get());
     web_data_service_->SetDatabase(web_database_.get());
 
-    personal_data_manager_ = base::MakeUnique<MockPersonalDataManager>();
+    personal_data_manager_ = std::make_unique<MockPersonalDataManager>();
 
     EXPECT_CALL(personal_data_manager(), LoadProfiles());
     EXPECT_CALL(personal_data_manager(), LoadCreditCards());
@@ -621,11 +620,11 @@ class ProfileSyncServiceAutofillTest
       syncer::ModelType type) {
     DCHECK(type == AUTOFILL || type == AUTOFILL_PROFILE);
     if (type == AUTOFILL) {
-      return base::MakeUnique<AutofillDataTypeController>(
+      return std::make_unique<AutofillDataTypeController>(
           data_type_thread()->task_runner(), base::Bind(&base::DoNothing),
           sync_client_, web_data_service_);
     } else {
-      return base::MakeUnique<AutofillProfileDataTypeController>(
+      return std::make_unique<AutofillProfileDataTypeController>(
           data_type_thread()->task_runner(), base::Bind(&base::DoNothing),
           sync_client_, web_data_service_);
     }
@@ -865,7 +864,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasProfileEmptySync) {
   std::vector<std::unique_ptr<AutofillProfile>> profiles;
   std::vector<AutofillProfile> expected_profiles;
   std::unique_ptr<AutofillProfile> profile0 =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   autofill::test::SetProfileInfoWithGuid(
       profile0.get(), "54B3F9AA-335E-4F71-A27D-719C41564230", "Billing",
       "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.",
@@ -1028,7 +1027,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSyncMergeProfile) {
       "unit 5", "Hollywood", "CA", "91601", "US", "12345678910");
 
   std::unique_ptr<AutofillProfile> native_profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   autofill::test::SetProfileInfoWithGuid(
       native_profile.get(), "23355099-1170-4B71-8ED4-144470CC9EBE", "Billing",
       "Alicia", "Saenz", "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
@@ -1076,7 +1075,7 @@ TEST_F(
   sync_profile.set_use_date(base::Time::FromTimeT(4321));
 
   std::unique_ptr<AutofillProfile> native_profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   autofill::test::SetProfileInfoWithGuid(
       native_profile.get(), "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing",
       "Mitchell", "Morrison", "johnwayne@me.xyz", "", "123 Zoo St.", "unit 5",
@@ -1140,7 +1139,7 @@ TEST_F(ProfileSyncServiceAutofillTest,
   sync_profile.set_use_date(base::Time::FromTimeT(1234));
 
   std::unique_ptr<AutofillProfile> native_profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   autofill::test::SetProfileInfoWithGuid(
       native_profile.get(), "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing",
       "Mitchell", "Morrison", "johnwayne@me.xyz", "", "123 Zoo St.", "unit 5",
@@ -1207,7 +1206,7 @@ TEST_F(ProfileSyncServiceAutofillTest,
   sync_profile.set_use_date(base::Time::FromTimeT(4321));
 
   std::unique_ptr<AutofillProfile> native_profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   autofill::test::SetProfileInfoWithGuid(
       native_profile.get(), "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing",
       "Mitchell", "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.",
@@ -1269,7 +1268,7 @@ TEST_F(ProfileSyncServiceAutofillTest, HasNativeHasSync_DifferentPrimaryInfo) {
   sync_profile.set_use_date(base::Time::FromTimeT(4321));
 
   std::unique_ptr<AutofillProfile> native_profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   autofill::test::SetProfileInfoWithGuid(
       native_profile.get(), "23355099-1170-4B71-8ED4-144470CC9EBF", "Billing",
       "John", "Smith", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
@@ -1316,7 +1315,7 @@ TEST_F(ProfileSyncServiceAutofillTest, MergeProfileWithDifferentGuid) {
 
   std::string native_guid = "EDC609ED-7EEE-4F27-B00C-423242A9C44B";
   std::unique_ptr<AutofillProfile> native_profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   autofill::test::SetProfileInfoWithGuid(
       native_profile.get(), native_guid.c_str(), "Billing", "Mitchell",
       "Morrison", "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5",
@@ -1474,7 +1473,7 @@ TEST_F(ProfileSyncServiceAutofillTest, ProcessUserChangeRemoveProfile) {
       "Alicia", "Saenz", "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",
       "Orlando", "FL", "32801", "US", "19482937549");
   std::unique_ptr<AutofillProfile> native_profile =
-      base::MakeUnique<AutofillProfile>();
+      std::make_unique<AutofillProfile>();
   autofill::test::SetProfileInfoWithGuid(
       native_profile.get(), "3BA5FA1B-1EC4-4BB3-9B57-EC92BE3C1A09", "Josephine",
       "Alicia", "Saenz", "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5",

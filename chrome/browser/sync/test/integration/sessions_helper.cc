@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/test_timeouts.h"
@@ -232,12 +231,12 @@ bool GetLocalWindows(int index, ScopedWindowMap* local_windows) {
        w != local_session->windows.end(); ++w) {
     const sessions::SessionWindow& window = w->second->wrapped_window;
     std::unique_ptr<sync_sessions::SyncedSessionWindow> new_window =
-        base::MakeUnique<sync_sessions::SyncedSessionWindow>();
+        std::make_unique<sync_sessions::SyncedSessionWindow>();
     new_window->wrapped_window.window_id.set_id(window.window_id.id());
     for (size_t t = 0; t < window.tabs.size(); ++t) {
       const sessions::SessionTab& tab = *window.tabs.at(t);
       std::unique_ptr<sessions::SessionTab> new_tab =
-          base::MakeUnique<sessions::SessionTab>();
+          std::make_unique<sessions::SessionTab>();
       new_tab->navigations.resize(tab.navigations.size());
       std::copy(tab.navigations.begin(), tab.navigations.end(),
                 new_tab->navigations.begin());

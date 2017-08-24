@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +24,7 @@ TEST_F(JsEventDetailsTest, EmptyList) {
 TEST_F(JsEventDetailsTest, FromDictionary) {
   base::DictionaryValue dict;
   dict.SetString("foo", "bar");
-  dict.Set("baz", base::MakeUnique<base::ListValue>());
+  dict.Set("baz", std::make_unique<base::ListValue>());
 
   auto dict_copy = dict.Clone();
 

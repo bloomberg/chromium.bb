@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppListSyncTest, RemoveDefault) {
   // Flag Default app in Profile 1.
   extensions::ExtensionPrefs::Get(GetProfile(1))
       ->UpdateExtensionPref(default_app_id, "was_installed_by_default",
-                            base::MakeUnique<base::Value>(true));
+                            std::make_unique<base::Value>(true));
 
   // Remove the default app in Profile 0 and verifier, ensure it was removed
   // in Profile 1.

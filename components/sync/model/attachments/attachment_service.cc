@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/sync/engine/attachments/fake_attachment_downloader.h"
 #include "components/sync/engine/attachments/fake_attachment_uploader.h"
 #include "components/sync/model/attachments/attachment_store.h"
@@ -22,7 +21,7 @@ std::unique_ptr<AttachmentService> AttachmentService::Create(
     Delegate* delegate,
     const base::TimeDelta& initial_backoff_delay,
     const base::TimeDelta& max_backoff_delay) {
-  return base::MakeUnique<AttachmentServiceImpl>(
+  return std::make_unique<AttachmentServiceImpl>(
       std::move(attachment_store), std::move(attachment_uploader),
       std::move(attachment_downloader), delegate, initial_backoff_delay,
       max_backoff_delay);
@@ -32,10 +31,10 @@ std::unique_ptr<AttachmentService> AttachmentService::Create(
 std::unique_ptr<AttachmentService> AttachmentService::CreateForTest() {
   std::unique_ptr<AttachmentStore> attachment_store =
       AttachmentStore::CreateInMemoryStore();
-  return base::MakeUnique<AttachmentServiceImpl>(
+  return std::make_unique<AttachmentServiceImpl>(
       attachment_store->CreateAttachmentStoreForSync(),
-      base::MakeUnique<FakeAttachmentUploader>(),
-      base::MakeUnique<FakeAttachmentDownloader>(), nullptr, base::TimeDelta(),
+      std::make_unique<FakeAttachmentUploader>(),
+      std::make_unique<FakeAttachmentDownloader>(), nullptr, base::TimeDelta(),
       base::TimeDelta());
 }
 

@@ -5,11 +5,12 @@
 #include "components/sync/engine_impl/js_mutation_event_observer.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/sync/js/js_event_details.h"
@@ -58,14 +59,14 @@ void JsMutationEventObserver::OnChangesApplied(
   std::unique_ptr<base::Value> changes_value;
   const size_t changes_size = changes.Get().size();
   if (changes_size <= kChangeLimit) {
-    auto changes_list = base::MakeUnique<base::ListValue>();
+    auto changes_list = std::make_unique<base::ListValue>();
     for (ChangeRecordList::const_iterator it = changes.Get().begin();
          it != changes.Get().end(); ++it) {
       changes_list->Append(it->ToValue());
     }
     changes_value = std::move(changes_list);
   } else {
-    changes_value = base::MakeUnique<base::Value>(
+    changes_value = std::make_unique<base::Value>(
         base::SizeTToString(changes_size) + " changes");
   }
   details.Set("changes", std::move(changes_value));

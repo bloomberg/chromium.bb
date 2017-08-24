@@ -4,9 +4,9 @@
 
 #include "components/sync/engine_impl/js_mutation_event_observer.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/values.h"
@@ -72,7 +72,7 @@ TEST_F(JsMutationEventObserverTest, OnChangesApplied) {
     base::DictionaryValue expected_details;
     expected_details.SetString("modelType", model_type_str);
     expected_details.SetString("writeTransactionId", "0");
-    auto expected_changes = base::MakeUnique<base::ListValue>();
+    auto expected_changes = std::make_unique<base::ListValue>();
     for (int j = i; j < MODEL_TYPE_COUNT; ++j) {
       expected_changes->Append(changes[j].ToValue());
     }

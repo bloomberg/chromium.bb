@@ -5,7 +5,6 @@
 #include "components/sync/device_info/local_device_info_provider_impl.h"
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "components/sync/base/get_session_name.h"
@@ -98,7 +97,7 @@ void LocalDeviceInfoProviderImpl::InitializeContinuation(
     return;
   }
 
-  local_device_info_ = base::MakeUnique<DeviceInfo>(
+  local_device_info_ = std::make_unique<DeviceInfo>(
       guid, session_name, version_, GetSyncUserAgent(),
       GetLocalDeviceType(is_tablet_), signin_scoped_device_id);
 

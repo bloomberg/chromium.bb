@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/sync/base/unique_position.h"
@@ -86,7 +85,7 @@ namespace {
 //
 //    std::unique_ptr<base::Value> ToValue(
 //        const sync_pb::GreenProto& proto) const {
-//      return base::MakeUnique<base::Value>(proto.content());
+//      return std::make_unique<base::Value>(proto.content());
 //    }
 //
 class ToValueVisitor {
@@ -222,13 +221,13 @@ class ToValueVisitor {
   std::unique_ptr<base::Value> ToValue(
       const sync_pb::UniquePosition& proto) const {
     UniquePosition pos = UniquePosition::FromProto(proto);
-    return base::MakeUnique<base::Value>(pos.ToDebugString());
+    return std::make_unique<base::Value>(pos.ToDebugString());
   }
 
  private:
   template <class P>
   std::unique_ptr<base::DictionaryValue> ToValueImpl(const P& proto) const {
-    auto value = base::MakeUnique<base::DictionaryValue>();
+    auto value = std::make_unique<base::DictionaryValue>();
     ToValueVisitor visitor(include_specifics_, value.get());
     VisitProtoFields(visitor, proto);
     return value;
@@ -237,39 +236,39 @@ class ToValueVisitor {
   static std::unique_ptr<base::Value> BytesToValue(const std::string& bytes) {
     std::string bytes_base64;
     base::Base64Encode(bytes, &bytes_base64);
-    return base::MakeUnique<base::Value>(bytes_base64);
+    return std::make_unique<base::Value>(bytes_base64);
   }
 
   template <class E>
   static std::unique_ptr<base::Value> EnumToValue(E value) {
-    return base::MakeUnique<base::Value>(ProtoEnumToString(value));
+    return std::make_unique<base::Value>(ProtoEnumToString(value));
   }
 
   std::unique_ptr<base::Value> ToValue(const std::string& value) const {
-    return base::MakeUnique<base::Value>(value);
+    return std::make_unique<base::Value>(value);
   }
 
   std::unique_ptr<base::Value> ToValue(int64_t value) const {
-    return base::MakeUnique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::Int64ToString(value));
   }
   std::unique_ptr<base::Value> ToValue(uint64_t value) const {
-    return base::MakeUnique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::Int64ToString(value));
   }
   std::unique_ptr<base::Value> ToValue(uint32_t value) const {
-    return base::MakeUnique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::Int64ToString(value));
   }
   std::unique_ptr<base::Value> ToValue(int32_t value) const {
-    return base::MakeUnique<base::Value>(base::Int64ToString(value));
+    return std::make_unique<base::Value>(base::Int64ToString(value));
   }
 
   std::unique_ptr<base::Value> ToValue(bool value) const {
-    return base::MakeUnique<base::Value>(value);
+    return std::make_unique<base::Value>(value);
   }
   std::unique_ptr<base::Value> ToValue(float value) const {
-    return base::MakeUnique<base::Value>(value);
+    return std::make_unique<base::Value>(value);
   }
   std::unique_ptr<base::Value> ToValue(double value) const {
-    return base::MakeUnique<base::Value>(value);
+    return std::make_unique<base::Value>(value);
   }
 
   // Needs to be here to see all ToValue() overloads above.

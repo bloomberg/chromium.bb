@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/json/string_escape.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cryptographer.h"
@@ -123,11 +122,11 @@ void SetEncryptableProtoValues(const EntryKernel& kernel,
 // Helper functions for SetFieldValues().
 
 std::unique_ptr<base::Value> Int64ToValue(int64_t i) {
-  return base::MakeUnique<base::Value>(base::Int64ToString(i));
+  return std::make_unique<base::Value>(base::Int64ToString(i));
 }
 
 std::unique_ptr<base::Value> TimeToValue(const base::Time& t) {
-  return base::MakeUnique<base::Value>(GetTimeDebugString(t));
+  return std::make_unique<base::Value>(GetTimeDebugString(t));
 }
 
 std::unique_ptr<base::Value> IdToValue(const Id& id) {
@@ -135,20 +134,20 @@ std::unique_ptr<base::Value> IdToValue(const Id& id) {
 }
 
 std::unique_ptr<base::Value> BooleanToValue(bool bool_val) {
-  return base::MakeUnique<base::Value>(bool_val);
+  return std::make_unique<base::Value>(bool_val);
 }
 
 std::unique_ptr<base::Value> StringToValue(const std::string& str) {
-  return base::MakeUnique<base::Value>(str);
+  return std::make_unique<base::Value>(str);
 }
 
 std::unique_ptr<base::Value> UniquePositionToValue(const UniquePosition& pos) {
-  return base::MakeUnique<base::Value>(pos.ToDebugString());
+  return std::make_unique<base::Value>(pos.ToDebugString());
 }
 
 std::unique_ptr<base::Value> AttachmentMetadataToValue(
     const sync_pb::AttachmentMetadata& a) {
-  return base::MakeUnique<base::Value>(a.SerializeAsString());
+  return std::make_unique<base::Value>(a.SerializeAsString());
 }
 
 // Estimates memory usage of ProtoValuePtr<T> arrays where consecutive
@@ -170,7 +169,7 @@ size_t EstimateSharedMemoryUsage(ProtoValuePtr<T> const (&ptrs)[N]) {
 
 std::unique_ptr<base::DictionaryValue> EntryKernel::ToValue(
     Cryptographer* cryptographer) const {
-  auto kernel_info = base::MakeUnique<base::DictionaryValue>();
+  auto kernel_info = std::make_unique<base::DictionaryValue>();
   kernel_info->SetBoolean("isDirty", is_dirty());
   ModelType dataType = GetServerModelType();
   if (!IsRealDataType(dataType))
@@ -253,7 +252,7 @@ std::unique_ptr<base::ListValue> EntryKernelMutationMapToValue(
 
 std::unique_ptr<base::DictionaryValue> EntryKernelMutationToValue(
     const EntryKernelMutation& mutation) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->Set("original", mutation.original.ToValue(nullptr));
   dict->Set("mutated", mutation.mutated.ToValue(nullptr));
   return dict;

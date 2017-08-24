@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -88,10 +87,10 @@ class AttachmentServiceProxyTest : public testing::Test {
   void SetUp() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     stub_thread_ =
-        base::MakeUnique<base::Thread>("attachment service stub thread");
+        std::make_unique<base::Thread>("attachment service stub thread");
     stub_thread_->Start();
-    stub_ = base::MakeUnique<StubAttachmentService>();
-    proxy_ = base::MakeUnique<AttachmentServiceProxy>(
+    stub_ = std::make_unique<StubAttachmentService>();
+    proxy_ = std::make_unique<AttachmentServiceProxy>(
         stub_thread_->task_runner(), stub_->AsWeakPtr());
 
     callback_get_or_download_ =
