@@ -155,8 +155,9 @@ bool Credentials::GetRESIds(uid_t* resuid, gid_t* resgid) {
 bool Credentials::SetGidAndUidMaps(gid_t gid, uid_t uid) {
   const char kGidMapFile[] = "/proc/self/gid_map";
   const char kUidMapFile[] = "/proc/self/uid_map";
-  if (NamespaceUtils::KernelSupportsDenySetgroups()) {
-    PCHECK(NamespaceUtils::DenySetgroups());
+  if (NamespaceUtils::KernelSupportsDenySetgroups() &&
+      !NamespaceUtils::DenySetgroups()) {
+    return false;
   }
   DCHECK(GetRESIds(NULL, NULL));
   if (!NamespaceUtils::WriteToIdMapFile(kGidMapFile, gid) ||
