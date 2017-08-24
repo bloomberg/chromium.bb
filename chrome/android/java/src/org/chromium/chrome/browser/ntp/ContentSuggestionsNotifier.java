@@ -19,7 +19,6 @@ import android.provider.Browser;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -49,8 +48,7 @@ import java.util.Set;
  *
  * Exposes helper functions to native C++ code.
  */
-@JNINamespace("ntp_snippets")
-public class ContentSuggestionsNotificationHelper {
+public class ContentSuggestionsNotifier {
     private static final String NOTIFICATION_TAG = "ContentSuggestionsNotification";
     private static final String NOTIFICATION_ID_EXTRA = "notification_id";
     private static final String NOTIFICATION_CATEGORY_EXTRA = "category";
@@ -80,7 +78,7 @@ public class ContentSuggestionsNotificationHelper {
     private static final String PREF_ACTIVE_NOTIFICATIONS =
             "ntp.content_suggestions.notification.active";
 
-    private ContentSuggestionsNotificationHelper() {} // Prevent instantiation
+    private ContentSuggestionsNotifier() {} // Prevent instantiation
 
     /**
      * Records the reason why Content Suggestions notifications have been opted out.

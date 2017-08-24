@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/ntp/content_suggestions_notification_helper.h"
+#include "chrome/browser/android/ntp/android_content_suggestions_notifier.h"
 
+#include <jni.h>
 #include <limits>
 
 #include "base/android/jni_android.h"
@@ -16,17 +17,16 @@
 #include "components/ntp_snippets/features.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
-#include "jni/ContentSuggestionsNotificationHelper_jni.h"
+#include "jni/ContentSuggestionsNotifier_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
 using base::android::JavaParamRef;
+using ntp_snippets::ContentSuggestion;
 using ntp_snippets::kNotificationsFeature;
 using ntp_snippets::kNotificationsIgnoredLimitParam;
 using ntp_snippets::kNotificationsIgnoredDefaultLimit;
-
-namespace ntp_snippets {
 
 namespace {
 
@@ -63,7 +63,10 @@ bool IsEnabledForProfile(Profile* profile) {
 
 }  // namespace
 
-bool ContentSuggestionsNotificationHelper::SendNotification(
+AndroidContentSuggestionsNotifier::AndroidContentSuggestionsNotifier() =
+    default;
+
+bool AndroidContentSuggestionsNotifier::SendNotification(
     const ContentSuggestion::ID& id,
     const GURL& url,
     const base::string16& title,
@@ -81,7 +84,7 @@ bool ContentSuggestionsNotificationHelper::SendNotification(
     timeout_at_millis = std::numeric_limits<jlong>::max();
   }
 
-  if (Java_ContentSuggestionsNotificationHelper_showNotification(
+  if (Java_ContentSuggestionsNotifier_showNotification(
           env, id.category().id(),
           base::android::ConvertUTF8ToJavaString(env, id.id_within_category()),
           base::android::ConvertUTF8ToJavaString(env, url.spec()),
@@ -96,40 +99,39 @@ bool ContentSuggestionsNotificationHelper::SendNotification(
   }
 }
 
-void ContentSuggestionsNotificationHelper::HideNotification(
+void AndroidContentSuggestionsNotifier::HideNotification(
     const ContentSuggestion::ID& id,
     ContentSuggestionsNotificationAction why) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotificationHelper_hideNotification(
+  Java_ContentSuggestionsNotifier_hideNotification(
       env, id.category().id(),
       base::android::ConvertUTF8ToJavaString(env, id.id_within_category()),
       static_cast<int>(why));
 }
 
-void ContentSuggestionsNotificationHelper::HideAllNotifications(
+void AndroidContentSuggestionsNotifier::HideAllNotifications(
     ContentSuggestionsNotificationAction why) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotificationHelper_hideAllNotifications(env, why);
+  Java_ContentSuggestionsNotifier_hideAllNotifications(env, why);
 }
 
-void ContentSuggestionsNotificationHelper::FlushCachedMetrics() {
+void AndroidContentSuggestionsNotifier::FlushCachedMetrics() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotificationHelper_flushCachedMetrics(env);
+  Java_ContentSuggestionsNotifier_flushCachedMetrics(env);
 }
 
-bool ContentSuggestionsNotificationHelper::IsEnabledForProfile(
-    Profile* profile) {
-  return ntp_snippets::IsEnabledForProfile(profile);
+bool AndroidContentSuggestionsNotifier::IsEnabledForProfile(Profile* profile) {
+  return ::IsEnabledForProfile(profile);
 }
 
-void ContentSuggestionsNotificationHelper::RegisterChannel() {
+void AndroidContentSuggestionsNotifier::RegisterChannel() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotificationHelper_registerChannel(env);
+  Java_ContentSuggestionsNotifier_registerChannel(env);
 }
 
-void ContentSuggestionsNotificationHelper::UnregisterChannel() {
+void AndroidContentSuggestionsNotifier::UnregisterChannel() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_ContentSuggestionsNotificationHelper_unregisterChannel(env);
+  Java_ContentSuggestionsNotifier_unregisterChannel(env);
 }
 
 static void RecordNotificationOptOut(JNIEnv* env,
@@ -208,5 +210,3 @@ static void ReceiveFlushedMetrics(JNIEnv* env,
     RecordContentSuggestionsNotificationOptOut(CONTENT_SUGGESTIONS_IMPLICIT);
   }
 }
-
-}  // namespace ntp_snippets
