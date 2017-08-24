@@ -70,7 +70,7 @@ class RenderTextTestApi {
 
   // Callers should ensure that the associated RenderText object is a
   // RenderTextHarfBuzz instance.
-  internal::TextRunList* GetHarfBuzzRunList() {
+  const internal::TextRunList* GetHarfBuzzRunList() const {
     RenderTextHarfBuzz* render_text =
         static_cast<RenderTextHarfBuzz*>(render_text_);
     return render_text->GetRunList();
@@ -458,14 +458,43 @@ class RenderTextTest : public testing::Test,
 
   void DrawVisualText() { test_api_->DrawVisualText(renderer()); }
 
-  internal::TextRunList* GetHarfBuzzRunList() {
+  const internal::TextRunList* GetHarfBuzzRunList() const {
     DCHECK_EQ(RENDER_TEXT_HARFBUZZ, GetParam());
     return test_api_->GetHarfBuzzRunList();
   }
 
+  // Converts the current run list into a human-readable string. Can be used in
+  // test assertions for a readable expectation and failure message.
+  //
+  // The string shows the runs in visual order. Each run is enclosed in square
+  // brackets, and shows the begin and end inclusive logical character position,
+  // with an arrow indicating the direction of the run. Single-character runs
+  // just show the character position.
+  //
+  // For example, the the logical bidirectional string "abc+\x05d0\x05d1\x05d2"
+  // (visual string: "abc+אבג") yields "[0->2][3][6<-4]".
+  std::string GetRunListStructureString() const {
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    std::string result;
+    for (size_t i = 0; i < run_list->size(); ++i) {
+      size_t logical_index = run_list->visual_to_logical(i);
+      const internal::TextRunHarfBuzz& run = *run_list->runs()[logical_index];
+      if (run.range.length() == 1) {
+        result.append(base::StringPrintf("[%d]", run.range.start()));
+      } else if (run.is_rtl) {
+        result.append(base::StringPrintf("[%d<-%d]", run.range.end() - 1,
+                                         run.range.start()));
+      } else {
+        result.append(base::StringPrintf("[%d->%d]", run.range.start(),
+                                         run.range.end() - 1));
+      }
+    }
+    return result;
+  }
+
   // Returns a vector of text fragments corresponding to the current list of
   // text runs.
-  std::vector<base::string16> GetRuns() {
+  std::vector<base::string16> GetRunListStrings() const {
     std::vector<base::string16> runs_as_text;
     const std::vector<RenderText::FontSpan> spans =
         render_text_->GetFontSpansForTesting();
@@ -476,11 +505,11 @@ class RenderTextTest : public testing::Test,
     return runs_as_text;
   }
 
-  // Sets the text to |text|, then returns GetRuns().
+  // Sets the text to |text|, then returns GetRunListStrings().
   std::vector<base::string16> RunsFor(const base::string16& text) {
     render_text_->SetText(text);
     test_api()->EnsureLayout();
-    return GetRuns();
+    return GetRunListStrings();
   }
 
   void ResetRenderTextInstance() {
@@ -3475,14 +3504,12 @@ TEST_P(RenderTextHarfBuzzTest, NewlineWithoutMultilineFlag) {
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_HorizontalPositions) {
   const struct {
     const wchar_t* const text;
-    const Range first_run_char_range;
-    const Range second_run_char_range;
-    bool is_rtl;
+    const char* expected_runs;
   } kTestStrings[] = {
-    { L"abc\x3042\x3044\x3046\x3048\x304A", Range(0, 3), Range(3, 8), false },
-    { L"\x062A\x0641\x0627\x062D"
-      L"\x05EA\x05E4\x05D5\x05D6\x05D9\x05DA\x05DB\x05DD",
-      Range(0, 4), Range(4, 12), true },
+      {L"abc\x3042\x3044\x3046\x3048\x304A", "[0->2][3->7]"},
+      {L"\x062A\x0641\x0627\x062D"
+       L"\x05EA\x05E4\x05D5\x05D6\x05D9\x05DA\x05DB\x05DD",
+       "[11<-4][3<-0]"},
   };
 
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
@@ -3492,26 +3519,16 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_HorizontalPositions) {
     render_text->SetText(WideToUTF16(kTestStrings[i].text));
 
     test_api()->EnsureLayout();
-    const internal::TextRunList* run_list = GetHarfBuzzRunList();
-    ASSERT_EQ(2U, run_list->runs().size());
-    EXPECT_EQ(kTestStrings[i].first_run_char_range, run_list->runs()[0]->range);
-    EXPECT_EQ(kTestStrings[i].second_run_char_range,
-              run_list->runs()[1]->range);
-    // If it's RTL, the visual order is reversed.
-    if (kTestStrings[i].is_rtl) {
-      EXPECT_EQ(1U, run_list->logical_to_visual(0));
-      EXPECT_EQ(0U, run_list->logical_to_visual(1));
-    } else {
-      EXPECT_EQ(0U, run_list->logical_to_visual(0));
-      EXPECT_EQ(1U, run_list->logical_to_visual(1));
-    }
+    EXPECT_EQ(kTestStrings[i].expected_runs, GetRunListStructureString());
 
     DrawVisualText();
 
     std::vector<TestSkiaTextRenderer::TextLog> text_log;
     renderer()->GetTextLogAndReset(&text_log);
 
-    EXPECT_EQ(2U, text_log.size());
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
+    ASSERT_EQ(2U, run_list->size());
+    ASSERT_EQ(2U, text_log.size());
 
     // Verifies the DrawText happens in the visual order and left-to-right.
     // If the text is RTL, the logically first run should be drawn at last.
@@ -3612,7 +3629,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_SubglyphGraphemeCases) {
     base::string16 text = WideToUTF16(cases[i]);
     render_text->SetText(text);
     test_api()->EnsureLayout();
-    internal::TextRunList* run_list = GetHarfBuzzRunList();
+    const internal::TextRunList* run_list = GetHarfBuzzRunList();
     ASSERT_EQ(1U, run_list->size());
     internal::TextRunHarfBuzz* run = run_list->runs()[0].get();
 
@@ -3689,33 +3706,11 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_RunDirection) {
   // Get the run list for both display directions.
   render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_LTR);
   test_api()->EnsureLayout();
-  internal::TextRunList* run_list = GetHarfBuzzRunList();
-  ASSERT_EQ(4U, run_list->size());
-  EXPECT_TRUE(run_list->runs()[0]->is_rtl);
-  EXPECT_FALSE(run_list->runs()[1]->is_rtl);
-  EXPECT_TRUE(run_list->runs()[2]->is_rtl);
-  EXPECT_FALSE(run_list->runs()[3]->is_rtl);
-
-  // The Latin letters should appear to the right of the other runs.
-  EXPECT_EQ(2U, run_list->logical_to_visual(0));
-  EXPECT_EQ(1U, run_list->logical_to_visual(1));
-  EXPECT_EQ(0U, run_list->logical_to_visual(2));
-  EXPECT_EQ(3U, run_list->logical_to_visual(3));
+  EXPECT_EQ("[7<-6][2->5][1<-0][8->10]", GetRunListStructureString());
 
   render_text->SetDirectionalityMode(DIRECTIONALITY_FORCE_RTL);
   test_api()->EnsureLayout();
-  run_list = GetHarfBuzzRunList();
-  ASSERT_EQ(4U, run_list->size());
-  EXPECT_TRUE(run_list->runs()[0]->is_rtl);
-  EXPECT_FALSE(run_list->runs()[1]->is_rtl);
-  EXPECT_TRUE(run_list->runs()[2]->is_rtl);
-  EXPECT_FALSE(run_list->runs()[3]->is_rtl);
-
-  // The Latin letters should appear to the left of the other runs.
-  EXPECT_EQ(3U, run_list->logical_to_visual(0));
-  EXPECT_EQ(2U, run_list->logical_to_visual(1));
-  EXPECT_EQ(1U, run_list->logical_to_visual(2));
-  EXPECT_EQ(0U, run_list->logical_to_visual(3));
+  EXPECT_EQ("[8->10][7<-6][2->5][1<-0]", GetRunListStructureString());
 }
 
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
@@ -3724,23 +3719,13 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
   // The '\x25B6' "play character" should break runs. http://crbug.com/278913
   render_text->SetText(WideToUTF16(L"x\x25B6y"));
   test_api()->EnsureLayout();
-  internal::TextRunList* run_list = GetHarfBuzzRunList();
-  EXPECT_EQ(ToString16Vec({"x", "▶", "y"}), GetRuns());
-  ASSERT_EQ(3U, run_list->size());
-  EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
-  EXPECT_EQ(Range(1, 2), run_list->runs()[1]->range);
-  EXPECT_EQ(Range(2, 3), run_list->runs()[2]->range);
+  EXPECT_EQ(ToString16Vec({"x", "▶", "y"}), GetRunListStrings());
+  EXPECT_EQ("[0][1][2]", GetRunListStructureString());
 
   render_text->SetText(WideToUTF16(L"x \x25B6 y"));
   test_api()->EnsureLayout();
-  run_list = GetHarfBuzzRunList();
-  EXPECT_EQ(ToString16Vec({"x", " ", "▶", " ", "y"}), GetRuns());
-  ASSERT_EQ(5U, run_list->size());
-  EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
-  EXPECT_EQ(Range(1, 2), run_list->runs()[1]->range);
-  EXPECT_EQ(Range(2, 3), run_list->runs()[2]->range);
-  EXPECT_EQ(Range(3, 4), run_list->runs()[3]->range);
-  EXPECT_EQ(Range(4, 5), run_list->runs()[4]->range);
+  EXPECT_EQ(ToString16Vec({"x", " ", "▶", " ", "y"}), GetRunListStrings());
+  EXPECT_EQ("[0][1][2][3][4]", GetRunListStructureString());
 }
 
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmoji) {
@@ -3751,13 +3736,9 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmoji) {
   // separated. See crbug.com/448909
   render_text->SetText(UTF8ToUTF16("x\xF0\x9F\x98\x81y\xE2\x9C\xA8"));
   test_api()->EnsureLayout();
-  internal::TextRunList* run_list = GetHarfBuzzRunList();
-  ASSERT_EQ(4U, run_list->size());
-  EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
-  // The length is 2 since U+1F601 is represented as a surrogate pair in UTF16.
-  EXPECT_EQ(Range(1, 3), run_list->runs()[1]->range);
-  EXPECT_EQ(Range(3, 4), run_list->runs()[2]->range);
-  EXPECT_EQ(Range(4, 5), run_list->runs()[3]->range);
+  EXPECT_EQ(ToString16Vec({"x", "😁", "y", "✨"}), GetRunListStrings());
+  // U+1F601 is represented as a surrogate pair in UTF-16.
+  EXPECT_EQ("[0][1->2][3][4]", GetRunListStructureString());
 }
 
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByAscii) {
@@ -3767,11 +3748,9 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByAscii) {
   // run from the ASCII period character.
   render_text->SetText(UTF8ToUTF16("\xF0\x9F\x90\xB1."));
   test_api()->EnsureLayout();
-  internal::TextRunList* run_list = GetHarfBuzzRunList();
-  ASSERT_EQ(2U, run_list->size());
-  // U+1F431 is represented as a surrogate pair in UTF16.
-  EXPECT_EQ(Range(0, 2), run_list->runs()[0]->range);
-  EXPECT_EQ(Range(2, 3), run_list->runs()[1]->range);
+  EXPECT_EQ(ToString16Vec({"🐱", "."}), GetRunListStrings());
+  // U+1F431 is represented as a surrogate pair in UTF-16.
+  EXPECT_EQ("[0->1][2]", GetRunListStructureString());
 }
 
 TEST_P(RenderTextHarfBuzzTest, GlyphBounds) {
@@ -3794,7 +3773,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_NonExistentFont) {
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
   render_text->SetText(ASCIIToUTF16("test"));
   test_api()->EnsureLayout();
-  internal::TextRunList* run_list = GetHarfBuzzRunList();
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
   internal::TextRunHarfBuzz* run = run_list->runs()[0].get();
   ShapeRunWithFont(render_text->text(), Font("TheFontThatDoesntExist", 13),
@@ -3890,7 +3869,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_UniscribeFallback) {
   // Korean character "han".
   render_text->SetText(WideToUTF16(L"\xd55c"));
   test_api()->EnsureLayout();
-  internal::TextRunList* run_list = GetHarfBuzzRunList();
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
   EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
 }
@@ -3909,7 +3888,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_UnicodeFallback) {
   // Korean character "han".
   render_text->SetText(WideToUTF16(L"\xd55c"));
   test_api()->EnsureLayout();
-  internal::TextRunList* run_list = GetHarfBuzzRunList();
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->size());
   EXPECT_EQ(0U, run_list->runs()[0]->CountMissingGlyphs());
 }
