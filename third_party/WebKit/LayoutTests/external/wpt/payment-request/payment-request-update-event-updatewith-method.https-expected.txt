@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-FAIL Let target be the request which is dispatching the event. Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
-PASS Calling .updateWith() with an undispatched untrusted event throws "InvalidStateError" 
-FAIL Calling .updateWith() with a dispatched, untrusted event, throws "InvalidStateError" Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
-Harness: the test ran to completion.
-

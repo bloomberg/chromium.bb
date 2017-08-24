@@ -1,33 +1,33 @@
 This is a testharness.js-based test.
 FAIL Check and canonicalize valid details.total.amount assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize invalid details.total.amount and rethrow any exceptions. assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize valid details.displayItems amount assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize invalid details.displayItems amount and rethrow RangeError. assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize valid details.shippingOptions amount. assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize invalid details.shippingOptions amount and rethrow RangeError. assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize valid modifiers[n].total amount. assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize invalid modifiers[n].total amount and rethrow RangeError. assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize valid modifiers[n].additionaDisplayItem amount. assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 FAIL Check and canonicalize invalid modifiers[n].additionaDisplayItem amount and rethrow RangeError. assert_throws: Expected smoke test to throw. function "function smokeTest() {
   new PaymentRequest(defaultMethods, invalidTotal);
-}" threw object "TypeError: Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence." ("TypeError") expected object "RangeError" ("RangeError")
+}" threw object "TypeError: Failed to construct 'PaymentRequest': '¡INVALID!' is not a valid ISO 4217 currency code, should be 3 upper case letters [A-Z]" ("TypeError") expected object "RangeError" ("RangeError")
 Harness: the test ran to completion.
 

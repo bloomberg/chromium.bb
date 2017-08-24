@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS PaymentRequestUpdateEvent can be constructed in secure-context 
-PASS PaymentRequestUpdateEvent can be constructed with an EventInitDict, even if not trusted 
-FAIL PaymentRequestUpdateEvent can be dispatched, even if not trusted Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
-Harness: the test ran to completion.
-
