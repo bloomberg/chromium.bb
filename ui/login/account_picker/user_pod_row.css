@@ -163,7 +163,7 @@ html[dir=rtl] .main-pane {
 }
 
 .name-container,
-.pod.focused:not(.multiprofiles-policy-applied):not(.public-account) .auth-container {
+.pod.focused:not(.multiprofiles-policy-applied) .auth-container {
   background-color: white;
   display: flex;
   position: absolute;
