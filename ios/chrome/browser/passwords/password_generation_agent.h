@@ -42,8 +42,7 @@ class PasswordManagerDriver;
      initWithWebState:(web::WebState*)webState
       passwordManager:(password_manager::PasswordManager*)passwordManager
 passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
-  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
-           dispatcher:(id<ApplicationCommands>)dispatcher;
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -59,6 +58,9 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
 // Provides an input accessory view from this PasswordGenerationAgent.
 @property(nonatomic, readonly)
     id<FormInputAccessoryViewProvider> accessoryViewProvider;
+
+// The dispatcher used for the PasswordGenerationAgent.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 
@@ -88,8 +90,7 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
 passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
     JSPasswordManager:(JsPasswordManager*)javaScriptPasswordManager
   JSSuggestionManager:(JsSuggestionManager*)suggestionManager
-  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
-           dispatcher:(id<ApplicationCommands>)dispatcher;
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate;
 
 // Clears all per-page state.
 - (void)clearState;

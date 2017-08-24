@@ -182,15 +182,13 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
         [OCMockObject niceMockForClass:[JsPasswordManager class]];
     mock_ui_delegate_ = [[MockPasswordsUiDelegate alloc] init];
     test_web_state_ = base::MakeUnique<web::TestWebState>();
-    dispatcher_ = OCMProtocolMock(@protocol(ApplicationCommands));
     agent_ = [[PasswordGenerationAgent alloc]
              initWithWebState:test_web_state_.get()
               passwordManager:nullptr
         passwordManagerDriver:nullptr
             JSPasswordManager:mock_js_password_manager_
           JSSuggestionManager:mock_js_suggestion_manager_
-          passwordsUiDelegate:mock_ui_delegate_
-                   dispatcher:dispatcher_];
+          passwordsUiDelegate:mock_ui_delegate_];
     @autoreleasepool {
       accessory_view_controller_ = [[FormInputAccessoryViewController alloc]
           initWithWebState:test_web_state_.get()
@@ -255,9 +253,6 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
     return accessory_view_controller_;
   }
 
-  // Returns the current dispatcher for the generation agent.
-  id dispatcher() { return dispatcher_; }
-
  private:
   // Test WebState.
   std::unique_ptr<web::TestWebState> test_web_state_;
@@ -276,9 +271,6 @@ class PasswordGenerationAgentTest : public web::WebTestWithWebState {
 
   // The current generation agent.
   PasswordGenerationAgent* agent_;
-
-  // Dispatcher for the generation agent.
-  id dispatcher_;
 };
 
 // Tests that local heuristics skip forms with GAIA realm.
@@ -467,6 +459,8 @@ TEST_F(PasswordGenerationAgentTest,
 // "show saved passwords".
 TEST_F(PasswordGenerationAgentTest,
        ShouldShowPasswordsAndDismissAlertWhenUserTapsShow) {
+  id dispatcher = OCMProtocolMock(@protocol(ApplicationCommands));
+  agent().dispatcher = dispatcher;
   LoadAccountCreationForm();
   // Focus the password field to start generation.
   SimulateFormActivity(kAccountCreationFormName, kAccountCreationFieldName,
@@ -476,7 +470,7 @@ TEST_F(PasswordGenerationAgentTest,
 
   [agent() showSavedPasswords:nil];
   EXPECT_EQ(NO, mock_ui_delegate().UIShown);
-  [[dispatcher() verify] showSavePasswordsSettings];
+  [[dispatcher verify] showSavePasswordsSettings];
 }
 
 }  // namespace

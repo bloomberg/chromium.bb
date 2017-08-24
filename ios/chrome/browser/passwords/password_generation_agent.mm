@@ -61,9 +61,6 @@ bool IsTextField(const autofill::FormFieldData& field) {
                                       PasswordGenerationOfferDelegate,
                                       PasswordGenerationPromptDelegate>
 
-// Dispatcher for sending commands.
-@property(nonatomic, weak, readonly) id<ApplicationCommands> dispatcher;
-
 // Clears all per-page state.
 - (void)clearState;
 
@@ -110,8 +107,7 @@ bool IsTextField(const autofill::FormFieldData& field) {
 passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
     JSPasswordManager:(JsPasswordManager*)JSPasswordManager
   JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
-  passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
-           dispatcher:(id<ApplicationCommands>)dispatcher
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 @end
@@ -167,8 +163,7 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
      initWithWebState:(web::WebState*)webState
       passwordManager:(password_manager::PasswordManager*)passwordManager
 passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
-  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
-           dispatcher:(id<ApplicationCommands>)dispatcher {
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate {
   JsPasswordManager* javaScriptPasswordManager =
       base::mac::ObjCCast<JsPasswordManager>([webState->GetJSInjectionReceiver()
           instanceOfClass:[JsPasswordManager class]]);
@@ -181,8 +176,7 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
           passwordManagerDriver:driver
               JSPasswordManager:javaScriptPasswordManager
             JSSuggestionManager:suggestionManager
-            passwordsUiDelegate:delegate
-                     dispatcher:dispatcher];
+            passwordsUiDelegate:delegate];
 }
 
 - (instancetype)
@@ -191,8 +185,7 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
 passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
     JSPasswordManager:(JsPasswordManager*)javaScriptPasswordManager
   JSSuggestionManager:(JsSuggestionManager*)suggestionManager
-  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
-           dispatcher:(id<ApplicationCommands>)dispatcher {
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate {
   DCHECK([NSThread isMainThread]);
   DCHECK(webState);
   DCHECK_EQ([self class], [PasswordGenerationAgent class]);
@@ -205,7 +198,6 @@ passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
     _passwords_ui_delegate = delegate;
-    _dispatcher = dispatcher;
   }
   return self;
 }
