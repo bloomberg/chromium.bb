@@ -152,6 +152,8 @@ class GLManager : private GpuControl {
   void AddLatencyInfo(
       const std::vector<ui::LatencyInfo>& latency_info) override;
 
+  size_t GetSharedMemoryBytesAllocated() const;
+
  private:
   void SetupBaseContext();
 

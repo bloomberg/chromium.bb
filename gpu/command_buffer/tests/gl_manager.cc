@@ -33,6 +33,7 @@
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
+#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -376,6 +377,12 @@ void GLManager::InitializeWithCommandLine(
       << "Could not init GLES2Implementation";
 
   MakeCurrent();
+}
+
+size_t GLManager::GetSharedMemoryBytesAllocated() const {
+  return decoder_->GetContextGroup()
+      ->transfer_buffer_manager()
+      ->shared_memory_bytes_allocated();
 }
 
 void GLManager::SetupBaseContext() {
