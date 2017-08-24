@@ -5,6 +5,7 @@
 #ifndef CC_PAINT_PAINT_IMAGE_H_
 #define CC_PAINT_PAINT_IMAGE_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/skia_paint_image_generator.h"
@@ -42,6 +43,10 @@ class CC_PAINT_EXPORT PaintImage {
   PaintImage& operator=(const PaintImage& other);
   PaintImage& operator=(PaintImage&& other);
 
+  // Makes a new PaintImage representing a subset of the original image. The
+  // subset must be non-empty and lie within the image bounds.
+  PaintImage MakeSubset(const gfx::Rect& subset) const;
+
   bool operator==(const PaintImage& other) const;
 
   Id stable_id() const { return id_; }
@@ -60,6 +65,7 @@ class CC_PAINT_EXPORT PaintImage {
 
  private:
   friend class PaintImageBuilder;
+  FRIEND_TEST_ALL_PREFIXES(PaintImageTest, Subsetting);
 
   sk_sp<SkImage> sk_image_;
   sk_sp<PaintRecord> paint_record_;
@@ -69,6 +75,10 @@ class CC_PAINT_EXPORT PaintImage {
   Id id_ = 0;
   AnimationType animation_type_ = AnimationType::STATIC;
   CompletionState completion_state_ = CompletionState::DONE;
+
+  // If non-empty, holds the subset of this image relative to the original image
+  // at the origin.
+  gfx::Rect subset_rect_;
 
   // The number of frames known to exist in this image (eg number of GIF frames
   // loaded). 0 indicates either unknown or only a single frame, both of which
