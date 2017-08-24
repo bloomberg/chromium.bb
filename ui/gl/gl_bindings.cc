@@ -47,6 +47,27 @@ std::string DriverEGL::GetPlatformExtensions() {
   return str ? std::string(str) : "";
 }
 
+void DriverEGL::UpdateConditionalExtensionBindings() {
+  // For the moment, only two extensions can be conditionally disabled
+  // through GPU driver bug workarounds mechanism:
+  //   EGL_KHR_fence_sync
+  //   EGL_KHR_wait_sync
+
+  // In theory it's OK to allow disabling other EGL extensions, as far as they
+  // are not the ones used in GLSurfaceEGL::InitializeOneOff().
+
+  std::string extensions(GetPlatformExtensions());
+  extensions += " ";
+
+  ext.b_EGL_KHR_fence_sync =
+      extensions.find("EGL_KHR_fence_sync ") != std::string::npos;
+  ext.b_EGL_KHR_wait_sync =
+      extensions.find("EGL_KHR_wait_sync ") != std::string::npos;
+  if (!ext.b_EGL_KHR_wait_sync) {
+    fn.eglWaitSyncKHRFn = nullptr;
+  }
+}
+
 // static
 std::string DriverEGL::GetClientExtensions() {
   const char* str = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);

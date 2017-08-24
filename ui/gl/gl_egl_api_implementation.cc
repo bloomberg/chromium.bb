@@ -77,9 +77,17 @@ void RealEGLApi::SetDisabledExtensions(const std::string& disabled_extensions) {
   disabled_exts_.clear();
   filtered_exts_.clear();
   if (!disabled_extensions.empty()) {
-    disabled_exts_ = base::SplitString(
-        disabled_extensions, ", ;",
-        base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    std::vector<std::string> candidates =
+        base::SplitString(disabled_extensions, ", ;", base::KEEP_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
+    for (const auto& ext : candidates) {
+      if (!base::StartsWith(ext, "EGL_", base::CompareCase::SENSITIVE))
+        continue;
+      // For the moment, only the following two extensions can be disabled.
+      // See DriverEGL::UpdateConditionalExtensionBindings().
+      DCHECK(ext == "EGL_KHR_fence_sync" || ext == "EGL_KHR_wait_sync");
+      disabled_exts_.push_back(ext);
+    }
   }
 }
 
