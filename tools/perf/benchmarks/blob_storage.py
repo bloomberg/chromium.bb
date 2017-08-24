@@ -53,14 +53,10 @@ class BlobStorage(perf_benchmark.PerfBenchmark):
         self.DisableStory('blob-create-read-10MBx30',
                           [story.expectations.ANDROID_ONE], 'crbug.com/739214')
         self.DisableStory('blob-create-read-80MBx5',
-                          [story.expectations.ANDROID_ONE,
-                           story.expectations.ANDROID_NEXUS5X_WEBVIEW,
-                           story.expectations.ANDROID_NEXUS6_WEBVIEW],
-                          'crbug.com/739214')
+                          [story.expectations.ALL_ANDROID], 'crbug.com/739214')
         self.DisableStory('blob-mass-create-10MBx30',
                           [story.expectations.ANDROID_ONE,
-                           story.expectations.ANDROID_NEXUS5X_WEBVIEW,
-                           story.expectations.ANDROID_NEXUS6_WEBVIEW],
+                           story.expectations.ANDROID_WEBVIEW],
                           'crbug.com/739214')
         self.DisableStory('blob-mass-create-1MBx200',
                           [story.expectations.ANDROID_ONE], 'crbug.com/739214')
