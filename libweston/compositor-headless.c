@@ -48,6 +48,10 @@ struct headless_backend {
 	bool use_pixman;
 };
 
+struct headless_head {
+	struct weston_head base;
+};
+
 struct headless_output {
 	struct weston_output base;
 
@@ -56,6 +60,12 @@ struct headless_output {
 	uint32_t *image_buf;
 	pixman_image_t *image;
 };
+
+static inline struct headless_head *
+to_headless_head(struct weston_head *base)
+{
+	return container_of(base, struct headless_head, base);
+}
 
 static inline struct headless_output *
 to_headless_output(struct weston_output *base)
@@ -185,7 +195,7 @@ headless_output_set_size(struct weston_output *base,
 			 int width, int height)
 {
 	struct headless_output *output = to_headless_output(base);
-	struct weston_head *head = &output->base.head;
+	struct weston_head *head;
 	int output_width, output_height;
 
 	/* We can only be called once. */
@@ -193,6 +203,14 @@ headless_output_set_size(struct weston_output *base,
 
 	/* Make sure we have scale set. */
 	assert(output->base.scale);
+
+	wl_list_for_each(head, &output->base.head_list, output_link) {
+		weston_head_set_monitor_strings(head, "weston", "headless",
+						NULL);
+
+		/* XXX: Calculate proper size. */
+		weston_head_set_physical_size(head, width, height);
+	}
 
 	output_width = width * output->base.scale;
 	output_height = height * output->base.scale;
@@ -206,11 +224,6 @@ headless_output_set_size(struct weston_output *base,
 
 	output->base.current_mode = &output->mode;
 
-	weston_head_set_monitor_strings(head, "weston", "headless", NULL);
-
-	/* XXX: Calculate proper size. */
-	weston_head_set_physical_size(head, width, height);
-
 	output->base.start_repaint_loop = headless_output_start_repaint_loop;
 	output->base.repaint = headless_output_repaint;
 	output->base.assign_planes = NULL;
@@ -221,9 +234,8 @@ headless_output_set_size(struct weston_output *base,
 	return 0;
 }
 
-static int
-headless_output_create(struct weston_compositor *compositor,
-		       const char *name)
+static struct weston_output *
+headless_output_create(struct weston_compositor *compositor, const char *name)
 {
 	struct headless_output *output;
 
@@ -231,33 +243,71 @@ headless_output_create(struct weston_compositor *compositor,
 	assert(name);
 
 	output = zalloc(sizeof *output);
-	if (output == NULL)
-		return -1;
+	if (!output)
+		return NULL;
 
 	weston_output_init(&output->base, compositor, name);
 
 	output->base.destroy = headless_output_destroy;
 	output->base.disable = headless_output_disable;
 	output->base.enable = headless_output_enable;
+	output->base.attach_head = NULL;
 
 	weston_compositor_add_pending_output(&output->base, compositor);
 
+	return &output->base;
+}
+
+static int
+headless_head_create(struct weston_compositor *compositor,
+		     const char *name)
+{
+	struct headless_head *head;
+
+	/* name can't be NULL. */
+	assert(name);
+
+	head = zalloc(sizeof *head);
+	if (head == NULL)
+		return -1;
+
+	weston_head_init(&head->base, name);
+	weston_head_set_connection_status(&head->base, true);
+
+	/* Ideally all attributes of the head would be set here, so that the
+	 * user has all the information when deciding to create outputs.
+	 * We do not have those until set_size() time through.
+	 */
+
+	weston_compositor_add_head(compositor, &head->base);
+
 	return 0;
+}
+
+static void
+headless_head_destroy(struct headless_head *head)
+{
+	weston_head_release(&head->base);
+	free(head);
 }
 
 static void
 headless_destroy(struct weston_compositor *ec)
 {
 	struct headless_backend *b = to_headless_backend(ec);
+	struct weston_head *base, *next;
 
 	weston_compositor_shutdown(ec);
+
+	wl_list_for_each_safe(base, next, &ec->head_list, compositor_link)
+		headless_head_destroy(to_headless_head(base));
 
 	free(b);
 }
 
 static const struct weston_windowed_output_api api = {
 	headless_output_set_size,
-	headless_output_create,
+	headless_head_create,
 };
 
 static struct headless_backend *
@@ -278,6 +328,7 @@ headless_backend_create(struct weston_compositor *compositor,
 		goto err_free;
 
 	b->base.destroy = headless_destroy;
+	b->base.create_output = headless_output_create;
 
 	b->use_pixman = config->use_pixman;
 	if (b->use_pixman) {
