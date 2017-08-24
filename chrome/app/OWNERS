@@ -1,3 +1,5 @@
+# COMPONENT: Internals>PlatformIntegration
+#
 # For .grd and .grdp changes, TBR an OWNER below. If you are not
 # a google employee then you also need to file a bug in which the
 # proposed strings have been approved.
@@ -31,4 +33,5 @@ per-file *.plist=file://chrome/browser/ui/cocoa/OWNERS
 per-file chrome_exe_main_mac.cc=kerrnel@chromium.org
 per-file chrome_exe_main_mac.cc=mark@chromium.org
 
-# COMPONENT: Internals>PlatformIntegration
+per-file chrome_manifest.json=set noparent
+per-file chrome_manifest.json=file://ipc/SECURITY_OWNERS

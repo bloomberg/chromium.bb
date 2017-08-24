@@ -26,8 +26,26 @@ per-file chrome_content_browser_client_browsertest.cc=*
 per-file chrome_content_browser_client_unittest.cc=*
 
 # Mojo manifests
-per-file *manifest_overlay.json=set noparent
-per-file *manifest_overlay.json=file://ipc/SECURITY_OWNERS
+per-file chrome_content_browser_manifest_overlay.json=set noparent
+per-file chrome_content_browser_manifest_overlay.json=file://ipc/SECURITY_OWNERS
+
+per-file chrome_content_gpu_manifest_overlay.json=set noparent
+per-file chrome_content_gpu_manifest_overlay.json=file://ipc/SECURITY_OWNERS
+
+per-file chrome_content_packaged_services_manifest_overlay.json=set noparent
+per-file chrome_content_packaged_services_manifest_overlay.json=file://ipc/SECURITY_OWNERS
+
+per-file chrome_content_plugin_manifest_overlay.json=set noparent
+per-file chrome_content_plugin_manifest_overlay.json=file://ipc/SECURITY_OWNERS
+
+per-file chrome_content_renderer_manifest_overlay.json=set noparent
+per-file chrome_content_renderer_manifest_overlay.json=file://ipc/SECURITY_OWNERS
+
+per-file chrome_content_utility_manifest_overlay.json=set noparent
+per-file chrome_content_utility_manifest_overlay.json=file://ipc/SECURITY_OWNERS
+
+per-file chrome_test_browser_overlay.json=set noparent
+per-file chrome_test_browser_overlay.json=file://ipc/SECURITY_OWNERS
 
 per-file chrome_browser_field_trials*=file://components/variations/OWNERS
 
