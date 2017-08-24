@@ -756,6 +756,16 @@ class CryptohomeClientImpl : public CryptohomeClient {
     CallBoolMethod(&method_call, callback);
   }
 
+  // CryptohomeClient override.
+  void TpmGetVersion(const StringDBusMethodCallback& callback) override {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeTpmGetVersion);
+    proxy_->CallMethod(&method_call, kTpmDBusTimeoutMs,
+                       base::Bind(&CryptohomeClientImpl::OnStringMethod,
+                                  weak_ptr_factory_.GetWeakPtr(),
+                                  callback));
+  }
+
   void GetKeyDataEx(const cryptohome::Identification& id,
                     const cryptohome::AuthorizationRequest& auth,
                     const cryptohome::GetKeyDataRequest& request,
