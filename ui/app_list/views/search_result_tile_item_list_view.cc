@@ -114,6 +114,11 @@ int SearchResultTileItemListView::GetYSize() {
   return num_results() ? 1 : 0;
 }
 
+views::View* SearchResultTileItemListView::GetSelectedView() const {
+  return IsValidSelectionIndex(selected_index()) ? tile_views_[selected_index()]
+                                                 : nullptr;
+}
+
 int SearchResultTileItemListView::DoUpdate() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(

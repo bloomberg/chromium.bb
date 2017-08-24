@@ -24,8 +24,8 @@ class APP_LIST_EXPORT SearchResultPageView
   SearchResultPageView();
   ~SearchResultPageView() override;
 
-  int selected_index() { return selected_index_; }
-  bool HasSelection() { return selected_index_ > -1; }
+  int selected_index() const { return selected_index_; }
+  bool HasSelection() const { return selected_index_ > -1; }
   void SetSelection(bool select);  // Set or unset result selection.
 
   void AddSearchResultContainerView(
@@ -49,6 +49,7 @@ class APP_LIST_EXPORT SearchResultPageView
   int GetSearchBoxZHeight() const override;
   void OnHidden() override;
   gfx::Rect GetSearchBoxBounds() const override;
+  views::View* GetSelectedView() const override;
 
   void ClearSelectedIndex();
 

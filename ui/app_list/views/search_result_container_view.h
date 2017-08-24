@@ -84,6 +84,9 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   virtual void OnContainerSelected(bool from_bottom,
                                    bool directional_movement) = 0;
 
+  // Returns selected view in this container view.
+  virtual views::View* GetSelectedView() const = 0;
+
  private:
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
   // pending call.

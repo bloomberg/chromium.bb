@@ -97,6 +97,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void ClearAnySelectedView();
   bool IsSelectedView(const AppListItemView* view) const;
   bool has_selected_view() const { return selected_view_ != nullptr; }
+  views::View* GetSelectedView() const;
 
   void InitiateDrag(AppListItemView* view,
                     Pointer pointer,

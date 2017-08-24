@@ -431,4 +431,12 @@ gfx::Rect SearchResultPageView::GetSearchBoxBounds() const {
   return rect;
 }
 
+views::View* SearchResultPageView::GetSelectedView() const {
+  if (!HasSelection())
+    return nullptr;
+  SearchResultContainerView* container =
+      result_container_views_[selected_index_];
+  return container->GetSelectedView();
+}
+
 }  // namespace app_list

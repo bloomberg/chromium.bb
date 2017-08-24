@@ -476,6 +476,16 @@ bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
   return selected_view_ == view;
 }
 
+views::View* AppsGridView::GetSelectedView() const {
+  if (selected_view_)
+    return selected_view_;
+  if (expand_arrow_view_ && expand_arrow_view_->selected())
+    return expand_arrow_view_;
+  if (suggestions_container_)
+    return suggestions_container_->GetSelectedView();
+  return nullptr;
+}
+
 void AppsGridView::InitiateDrag(AppListItemView* view,
                                 Pointer pointer,
                                 const gfx::Point& location,

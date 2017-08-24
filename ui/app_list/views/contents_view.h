@@ -146,6 +146,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Starts the fade out animation when the app list is closed.
   void FadeOutOnClose(base::TimeDelta animation_duration);
 
+  // Returns selected view in active page.
+  views::View* GetSelectedView() const;
+
  private:
   // Sets the active launcher page, accounting for whether the change is for
   // search results.

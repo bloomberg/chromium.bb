@@ -575,4 +575,8 @@ void ContentsView::FadeOutOnClose(base::TimeDelta animation_duration) {
   DoCloseAnimation(animation_duration, GetSearchBoxView()->layer());
 }
 
+views::View* ContentsView::GetSelectedView() const {
+  return app_list_pages_[GetActivePageIndex()]->GetSelectedView();
+}
+
 }  // namespace app_list
