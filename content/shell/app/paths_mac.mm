@@ -4,6 +4,7 @@
 
 #include "content/shell/app/paths_mac.h"
 
+#include "base/base_paths.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/path_service.h"
@@ -52,6 +53,17 @@ void OverrideChildProcessPath() {
                                             .Append("Content Shell Helper");
 
   PathService::Override(content::CHILD_PROCESS_EXE, helper_path);
+}
+
+void OverrideSourceRootPath() {
+  // The base implementation to get base::DIR_SOURCE_ROOT assumes the current
+  // process path is the top level app path, not a nested one.
+  //
+  // Going up 5 levels is needed, since frameworks path looks something like
+  // src/out/foo/Content Shell.app/Contents/Framework/
+  PathService::Override(
+      base::DIR_SOURCE_ROOT,
+      GetFrameworksPath().DirName().DirName().DirName().DirName().DirName());
 }
 
 base::FilePath GetResourcesPakFilePath() {

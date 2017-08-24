@@ -10,6 +10,7 @@
 #include "content/public/test/test_host_resolver.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 
@@ -52,6 +53,10 @@ void NetworkServiceTestHelper::RegisterNetworkBinders(
   registry->AddInterface(
       base::Bind(&NetworkServiceTestHelper::BindNetworkServiceTestRequest,
                  base::Unretained(this)));
+
+  // Register the EmbeddedTestServer's certs, so that any SSL connections to it
+  // succeed.
+  net::EmbeddedTestServer::RegisterTestCerts();
 }
 
 void NetworkServiceTestHelper::BindNetworkServiceTestRequest(

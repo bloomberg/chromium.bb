@@ -55,11 +55,7 @@ EmbeddedTestServer::EmbeddedTestServer(Type type)
 
   if (!is_using_ssl_)
     return;
-  base::ThreadRestrictions::ScopedAllowIO allow_io_for_importing_test_cert;
-  TestRootCerts* root_certs = TestRootCerts::GetInstance();
-  bool added_root_certs = root_certs->AddFromFile(GetRootCertPemPath());
-  DCHECK(added_root_certs)
-      << "Failed to install root cert from EmbeddedTestServer";
+  RegisterTestCerts();
 }
 
 EmbeddedTestServer::~EmbeddedTestServer() {
@@ -75,6 +71,14 @@ EmbeddedTestServer::~EmbeddedTestServer() {
 
     io_thread_.reset();
   }
+}
+
+void EmbeddedTestServer::RegisterTestCerts() {
+  base::ThreadRestrictions::ScopedAllowIO allow_io_for_importing_test_cert;
+  TestRootCerts* root_certs = TestRootCerts::GetInstance();
+  bool added_root_certs = root_certs->AddFromFile(GetRootCertPemPath());
+  DCHECK(added_root_certs)
+      << "Failed to install root cert from EmbeddedTestServer";
 }
 
 void EmbeddedTestServer::SetConnectionListener(

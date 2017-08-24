@@ -123,9 +123,21 @@ class EmbeddedTestServer {
 
   // Creates a http test server. Start() must be called to start the server.
   // |type| indicates the protocol type of the server (HTTP/HTTPS).
+  //
+  //  When a TYPE_HTTPS server is created, EmbeddedTestServer will call
+  // EmbeddedTestServer::RegisterTestCerts(), so that when the default
+  // CertVerifiers are run in-process, they will recognize the test server's
+  // certs. However, if the test server is running in a different process from
+  // the CertVerifiers, EmbeddedTestServer::RegisterTestCerts() must be called
+  // in any process where CertVerifiers are expected to accept the
+  // EmbeddedTestServer's certs.
   EmbeddedTestServer();
   explicit EmbeddedTestServer(Type type);
   ~EmbeddedTestServer();
+
+  // Registers the EmbeddedTestServer's certs for the current process. See
+  // constructor documentation for more information.
+  static void RegisterTestCerts();
 
   // Sets a connection listener, that would be notified when various connection
   // events happen. May only be called before the server is started. Caller

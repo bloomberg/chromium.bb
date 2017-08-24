@@ -15,6 +15,9 @@ void OverrideFrameworkBundlePath();
 // Sets up the CHILD_PROCESS_EXE path to properly point to the helper app.
 void OverrideChildProcessPath();
 
+// Sets up base::DIR_SOURCE_ROOT to properly point to the source directory.
+void OverrideSourceRootPath();
+
 // Gets the path to the content shell's pak file.
 base::FilePath GetResourcesPakFilePath();
 
