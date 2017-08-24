@@ -135,7 +135,8 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.5'
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12'
         },
       ],
       'build_config': 'Release',
@@ -146,7 +147,8 @@ WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.5'
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12'
         },
       ],
       'build_config': 'Debug',
@@ -158,6 +160,7 @@ WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -170,6 +173,7 @@ WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -389,7 +393,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.5'
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12'
         },
       ],
       'build_config': 'Release',
@@ -400,7 +405,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.5'
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12'
         },
       ],
       'build_config': 'Debug',
@@ -438,6 +444,7 @@ FYI_WATERFALL = {
         {
           'gpu': '10de:0fe9',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -450,6 +457,7 @@ FYI_WATERFALL = {
         {
           'gpu': '10de:0fe9',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -462,6 +470,7 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -474,6 +483,7 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -524,11 +534,13 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.5'
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12'
         },
         {
           'gpu': '1002:6821',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -745,7 +757,8 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.5'
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12'
         },
       ],
       'build_config': 'Release',
@@ -758,6 +771,7 @@ FYI_WATERFALL = {
         {
           'gpu': '10de:0fe9',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -771,6 +785,7 @@ FYI_WATERFALL = {
         {
           'gpu': '1002:6821',
           'hidpi': '1',
+          # TODO(crbug.com/754777): change to 10.12.6.
           'os': 'Mac'
         },
       ],
@@ -893,7 +908,8 @@ V8_FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0a2e',
-          'os': 'Mac-10.12.5'
+          # TODO(crbug.com/754777): change to 10.12.6.
+          'os': 'Mac-10.12'
         },
       ],
       'build_config': 'Release',
