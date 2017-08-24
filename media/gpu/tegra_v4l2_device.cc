@@ -213,6 +213,13 @@ EGLImageKHR TegraV4L2Device::CreateEGLImage(
   }
   return egl_image;
 }
+scoped_refptr<gl::GLImage> TegraV4L2Device::CreateGLImage(
+    const gfx::Size& size,
+    uint32_t fourcc,
+    const std::vector<base::ScopedFD>& dmabuf_fds) {
+  NOTREACHED();
+  return nullptr;
+}
 
 EGLBoolean TegraV4L2Device::DestroyEGLImage(EGLDisplay egl_display,
                                             EGLImageKHR egl_image) {

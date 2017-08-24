@@ -23,6 +23,7 @@
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_image.h"
 
 // TODO(posciak): remove this once V4L2 headers are updated.
 #define V4L2_PIX_FMT_MT21 v4l2_fourcc('M', 'T', '2', '1')
@@ -120,6 +121,16 @@ class MEDIA_GPU_EXPORT V4L2Device
       const gfx::Size& size,
       unsigned int buffer_index,
       uint32_t v4l2_pixfmt,
+      const std::vector<base::ScopedFD>& dmabuf_fds) = 0;
+
+  // Create a GLImage from provided |dmabuf_fds|.
+  // The caller may choose to close the file descriptors after this method
+  // returns, and may expect the buffers to remain valid for the lifetime of
+  // the created GLImage.
+  // Return the newly created GLImage.
+  virtual scoped_refptr<gl::GLImage> CreateGLImage(
+      const gfx::Size& size,
+      uint32_t fourcc,
       const std::vector<base::ScopedFD>& dmabuf_fds) = 0;
 
   // Destroys the EGLImageKHR.
