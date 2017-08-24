@@ -53,6 +53,7 @@ public class DownloadBroadcastManager extends Service {
             DownloadSharedPreferenceHelper.getInstance();
 
     private final Context mApplicationContext;
+    private final DownloadNotificationService mDownloadNotificationService;
     private final Handler mHandler = new Handler();
     private final Runnable mStopSelfRunnable = new Runnable() {
         @Override
@@ -63,6 +64,7 @@ public class DownloadBroadcastManager extends Service {
 
     public DownloadBroadcastManager() {
         mApplicationContext = ContextUtils.getApplicationContext();
+        mDownloadNotificationService = DownloadNotificationService.getInstance();
     }
 
     // The service is only explicitly started in the resume case.
@@ -92,12 +94,48 @@ public class DownloadBroadcastManager extends Service {
         // Remove delayed stop of service until after native library is loaded.
         mHandler.removeCallbacks(mStopSelfRunnable);
 
-        // TODO(jming): When DownloadNotificationService is no longer a service, invoke it to
-        // propagate immediate notification changes (ie. when pause is clicked, have progress bar be
-        // paused even before there is an update in native). http://crbug.com/755588.
+        // Update notification appearance immediately in case it takes a while for native to load.
+        updateNotification(intent);
 
         // Handle the intent and propagate it through the native library.
         loadNativeAndPropagateInteraction(intent);
+    }
+
+    /**
+     * Immediately update notification appearance without changing stored notification state.
+     * @param intent with information about the notification.
+     */
+    void updateNotification(Intent intent) {
+        String action = intent.getAction();
+        if (!immediateNotificationUpdateNeeded(action)) return;
+
+        final DownloadSharedPreferenceEntry entry = getDownloadEntryFromIntent(intent);
+
+        switch (action) {
+            case ACTION_DOWNLOAD_PAUSE:
+                mDownloadNotificationService.notifyDownloadPaused(entry.id, entry.fileName, true,
+                        false, entry.isOffTheRecord, entry.isTransient, null, true);
+                break;
+
+            case ACTION_DOWNLOAD_CANCEL:
+                mDownloadNotificationService.notifyDownloadCanceled(entry.id, true);
+                break;
+
+            case ACTION_DOWNLOAD_RESUME:
+                mDownloadNotificationService.notifyDownloadPending(entry.id, entry.fileName,
+                        entry.isOffTheRecord, entry.canDownloadWhileMetered, entry.isTransient,
+                        null, true);
+                break;
+
+            default:
+                // No-op.
+                break;
+        }
+    }
+
+    boolean immediateNotificationUpdateNeeded(String action) {
+        return ACTION_DOWNLOAD_PAUSE.equals(action) || ACTION_DOWNLOAD_CANCEL.equals(action)
+                || ACTION_DOWNLOAD_RESUME.equals(action);
     }
 
     /**

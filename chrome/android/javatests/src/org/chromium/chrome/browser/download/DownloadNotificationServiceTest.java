@@ -84,8 +84,8 @@ public class DownloadNotificationServiceTest {
         assertTrue(mDownloadNotificationService.mDownloadsInProgress.contains(ID1));
 
         // Download is paused.
-        mDownloadNotificationService.notifyDownloadPaused(
-                ID1, "test", true /* isResumable*/, false /* isAutoResumable */, true, false, null);
+        mDownloadNotificationService.notifyDownloadPaused(ID1, "test", true /* isResumable*/,
+                false /* isAutoResumable */, true, false, null, false);
 
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertFalse(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
@@ -129,15 +129,15 @@ public class DownloadNotificationServiceTest {
         assertTrue(mDownloadNotificationService.mDownloadsInProgress.contains(ID1));
 
         // Download is interrupted and now is pending.
-        mDownloadNotificationService.notifyDownloadPaused(
-                ID1, "test", true /* isResumable */, true /* isAutoResumable */, true, false, null);
+        mDownloadNotificationService.notifyDownloadPaused(ID1, "test", true /* isResumable */,
+                true /* isAutoResumable */, true, false, null, false);
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertTrue(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
                 notificationId1));
         assertFalse(mDownloadNotificationService.mDownloadsInProgress.contains(ID1));
 
         // Download is cancelled.
-        mDownloadNotificationService.notifyDownloadCanceled(ID1);
+        mDownloadNotificationService.notifyDownloadCanceled(ID1, false);
 
         assertEquals(0, mDownloadNotificationService.getNotificationIds().size());
         assertFalse(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
@@ -162,8 +162,8 @@ public class DownloadNotificationServiceTest {
         assertTrue(mDownloadNotificationService.mDownloadsInProgress.contains(ID1));
 
         // Download is interrupted but because it is not resumable, fails.
-        mDownloadNotificationService.notifyDownloadPaused(
-                ID1, "test", false /* isResumable*/, true /* isAutoResumable */, true, false, null);
+        mDownloadNotificationService.notifyDownloadPaused(ID1, "test", false /* isResumable*/,
+                true /* isAutoResumable */, true, false, null, false);
         assertEquals(1, mDownloadNotificationService.getNotificationIds().size());
         assertFalse(mDownloadForegroundServiceManager.mDownloadUpdateQueue.containsKey(
                 notificationId1));
@@ -192,7 +192,7 @@ public class DownloadNotificationServiceTest {
 
         // Resume pending downloads when network is not metered.
         // TODO(jming): Right now, assuming all downloads are resumed because of the way downloads
-        // in progress are tracked internally. Change when this is updated. http://crbug.com/755588.
+        // in progress are tracked internally.
         mDownloadNotificationService.mResumedDownloads.clear();
         DownloadManagerService.setIsNetworkMeteredForTest(false);
         mDownloadNotificationService.resumeAllPendingDownloads();
