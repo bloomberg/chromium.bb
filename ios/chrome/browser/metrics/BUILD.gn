@@ -95,7 +95,8 @@ source_set("metrics_internal") {
     "size_class_recorder.h",
     "size_class_recorder.mm",
     "size_class_recorder_private.h",
-    "tab_usage_recorder_delegate.h",
+    "tab_usage_recorder.h",
+    "tab_usage_recorder.mm",
   ]
   deps = [
     ":metrics",
@@ -103,54 +104,15 @@ source_set("metrics_internal") {
     "//components/google/core/browser",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/web_state_list",
     "//ios/web",
     "//ui/base",
     "//url",
   ]
-  public_deps = [
-    ":metrics_internal_arc",
-    ":metrics_internal_noarc",
-  ]
-  allow_circular_includes_from = [
-    ":metrics_internal_arc",
-    ":metrics_internal_noarc",
-  ]
   libs = [ "UIKit.framework" ]
-}
-
-source_set("metrics_internal_noarc") {
-  # TODO(crbug.com/731724) This target shouldn't be compiled with ARC until
-  # after it's converted to use WebStates instead of Tabs.
-  cflags_objc = [ "-fno-objc-arc" ]
-
-  sources = [
-    "tab_usage_recorder.h",
-    "tab_usage_recorder.mm",
-  ]
-
-  deps = [
-    ":metrics",
-    "//base",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/tabs",
-    "//ios/web",
-  ]
-}
-
-source_set("metrics_internal_arc") {
-  sources = [
-    "tab_usage_recorder_web_state_list_observer.h",
-    "tab_usage_recorder_web_state_list_observer.mm",
-  ]
-  deps = [
-    ":metrics_internal_noarc",
-    "//base",
-    "//ios/chrome/browser/tabs",
-    "//ios/chrome/browser/web_state_list",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests_internal") {
@@ -166,14 +128,14 @@ source_set("unit_tests_internal") {
     ":metrics_internal",
     "//base",
     "//base/test:test_support",
-    "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/web_state_list",
+    "//ios/chrome/browser/web_state_list:test_support",
     "//ios/testing:ocmock_support",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",
     "//testing/gtest",
-    "//third_party/ocmock",
   ]
 }
 

@@ -98,6 +98,7 @@ source_set("tabs_internal") {
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/passwords:passwords_internal",
+    "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/sessions",
