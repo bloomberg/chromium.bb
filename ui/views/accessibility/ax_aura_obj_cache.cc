@@ -43,7 +43,8 @@ AXAuraObjWrapper* AXAuraObjCache::GetOrCreate(aura::Window* window) {
     // and track as root windows are added and removed.
     // http://crbug.com/713278
     aura::Window* root_window = window->GetRootWindow();
-    if (root_window) {
+    if (root_window && root_window != root_window_) {
+      root_window_ = root_window;
       focus_client_ = aura::client::GetFocusClient(root_window);
       root_window->AddObserver(this);
       if (focus_client_)
@@ -142,7 +143,8 @@ AXAuraObjCache::AXAuraObjCache()
     : current_id_(1),
       focus_client_(nullptr),
       is_destroying_(false),
-      delegate_(nullptr) {}
+      delegate_(nullptr),
+      root_window_(nullptr) {}
 
 AXAuraObjCache::~AXAuraObjCache() {
   is_destroying_ = true;
@@ -193,6 +195,8 @@ void AXAuraObjCache::OnWindowFocused(aura::Window* gained_focus,
 
 void AXAuraObjCache::OnWindowDestroying(aura::Window* window) {
   focus_client_ = nullptr;
+  root_window_ = nullptr;
+  window->RemoveObserver(this);
 }
 
 void AXAuraObjCache::OnWindowHierarchyChanged(
