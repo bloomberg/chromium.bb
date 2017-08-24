@@ -394,7 +394,11 @@ WindowPortMus::ChangeSource WindowPortMus::OnTransientChildRemoved(
              : ChangeSource::LOCAL;
 }
 
-const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() const {
+void WindowPortMus::AllocateLocalSurfaceId() {
+  local_surface_id_ = local_surface_id_allocator_.GenerateId();
+}
+
+const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
   return local_surface_id_;
 }
 
@@ -453,6 +457,14 @@ void WindowPortMus::OnPreInit(Window* window) {
 }
 
 void WindowPortMus::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  if (last_device_scale_factor_ != device_scale_factor &&
+      local_surface_id_.is_valid()) {
+    last_device_scale_factor_ = device_scale_factor;
+    local_surface_id_ = local_surface_id_allocator_.GenerateId();
+    if (local_layer_tree_frame_sink_)
+      local_layer_tree_frame_sink_->SetLocalSurfaceId(local_surface_id_);
+  }
+
   if (window_->delegate())
     window_->delegate()->OnDeviceScaleFactorChanged(device_scale_factor);
 }
@@ -548,12 +560,12 @@ WindowPortMus::CreateLayerTreeFrameSink() {
       nullptr,
       aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager());
   local_layer_tree_frame_sink_ = frame_sink->GetWeakPtr();
+  local_surface_id_ = local_surface_id_allocator_.GenerateId();
   return std::move(frame_sink);
 }
 
 viz::SurfaceId WindowPortMus::GetSurfaceId() const {
-  // This is only used by WindowPortLocal in unit tests.
-  return viz::SurfaceId();
+  return viz::SurfaceId(frame_sink_id_, local_surface_id_);
 }
 
 void WindowPortMus::OnWindowAddedToRootWindow() {}

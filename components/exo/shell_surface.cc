@@ -752,10 +752,8 @@ void ShellSurface::OnSurfaceCommit() {
   // bounds have changed, shadow API requires that we synchronize the shadow
   // bounds change with the next frame, so we have to submit the next frame to a
   // new surface, and let the host_window() use the new surface.
-  if (pending_shadow_underlay_in_surface_ && shadow_content_bounds_changed_) {
-    layer_tree_frame_sink_holder()->frame_sink()->SetLocalSurfaceId(
-        viz::LocalSurfaceId());
-  }
+  if (pending_shadow_underlay_in_surface_ && shadow_content_bounds_changed_)
+    host_window()->AllocateLocalSurfaceId();
 
   SurfaceTreeHost::OnSurfaceCommit();
 
