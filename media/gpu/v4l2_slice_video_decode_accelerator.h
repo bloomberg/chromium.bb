@@ -27,6 +27,7 @@
 #include "media/gpu/vp8_decoder.h"
 #include "media/gpu/vp9_decoder.h"
 #include "media/video/video_decode_accelerator.h"
+#include "ui/gl/gl_image.h"
 
 namespace media {
 
@@ -42,7 +43,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   V4L2SliceVideoDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
       EGLDisplay egl_display,
-      const GetGLContextCallback& get_gl_context_cb,
+      const BindGLImageCallback& bind_image_cb,
       const MakeGLContextCurrentCallback& make_context_current_cb);
   ~V4L2SliceVideoDecodeAccelerator() override;
 
@@ -82,11 +83,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // Record for output buffers.
   struct OutputRecord {
     OutputRecord();
+    OutputRecord(OutputRecord&&) = default;
     bool at_device;
     bool at_client;
     int32_t picture_id;
+    GLuint client_texture_id;
     GLuint texture_id;
-    EGLImageKHR egl_image;
+    scoped_refptr<gl::GLImage> gl_image;
     EGLSyncKHR egl_sync;
     std::vector<base::ScopedFD> dmabuf_fds;
     bool cleared;
@@ -248,29 +251,29 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
       // if this method is used as a callback.
       std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds);
 
-  // Create an EGLImage for the buffer associated with V4L2 |buffer_index| and
+  // Create a GLImage for the buffer associated with V4L2 |buffer_index| and
   // for |picture_buffer_id|, backed by dmabuf file descriptors in
   // |passed_dmabuf_fds|, taking ownership of them.
-  // The buffer should be bound to |texture_id| and is of |size| and format
-  // described by |fourcc|.
-  void CreateEGLImageFor(
+  // The GLImage will be associated |client_texture_id| in gles2 decoder.
+  void CreateGLImageFor(
       size_t buffer_index,
       int32_t picture_buffer_id,
       // TODO(posciak): (crbug.com/561749) we should normally be able to pass
       // the vector by itself via std::move, but it's not possible to do this
       // if this method is used as a callback.
       std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds,
+      GLuint client_texture_id,
       GLuint texture_id,
       const gfx::Size& size,
       uint32_t fourcc);
 
-  // Take the EGLImage |egl_image|, created for |picture_buffer_id|, and use it
+  // Take the GLImage |gl_image|, created for |picture_buffer_id|, and use it
   // for OutputRecord at |buffer_index|. The buffer is backed by
   // |passed_dmabuf_fds|, and the OutputRecord takes ownership of them.
-  void AssignEGLImage(
+  void AssignGLImage(
       size_t buffer_index,
       int32_t picture_buffer_id,
-      EGLImageKHR egl_image,
+      scoped_refptr<gl::GLImage> gl_image,
       // TODO(posciak): (crbug.com/561749) we should normally be able to pass
       // the vector by itself via std::move, but it's not possible to do this
       // if this method is used as a callback.
@@ -465,8 +468,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   // EGL state
   EGLDisplay egl_display_;
 
-  // Callback to get current GLContext.
-  GetGLContextCallback get_gl_context_cb_;
+  // Callback to bind a GLImage.
+  BindGLImageCallback bind_image_cb_;
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
 
