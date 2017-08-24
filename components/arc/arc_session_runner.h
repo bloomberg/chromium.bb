@@ -71,6 +71,9 @@ class ArcSessionRunner : public ArcSession::Observer,
   bool IsRunning() const;
   bool IsStopped() const;
 
+  // Returns whether LoginScreen instance is starting.
+  bool IsLoginScreenInstanceStarting() const;
+
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
 
