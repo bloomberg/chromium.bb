@@ -101,7 +101,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::GPUInfo)
   IPC_STRUCT_TRAITS_MEMBER(video_decode_accelerator_capabilities)
   IPC_STRUCT_TRAITS_MEMBER(video_encode_accelerator_supported_profiles)
   IPC_STRUCT_TRAITS_MEMBER(jpeg_decode_accelerator_supported)
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   IPC_STRUCT_TRAITS_MEMBER(system_visual)
   IPC_STRUCT_TRAITS_MEMBER(rgba_visual)
 #endif

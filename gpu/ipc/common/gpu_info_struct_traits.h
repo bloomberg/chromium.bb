@@ -293,14 +293,14 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
   }
 
   static uint64_t system_visual(const gpu::GPUInfo& input) {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
     return input.system_visual;
 #endif
     return 0;
   }
 
   static uint64_t rgba_visual(const gpu::GPUInfo& input) {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
     return input.rgba_visual;
 #endif
     return 0;

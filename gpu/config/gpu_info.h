@@ -20,7 +20,7 @@
 #include "gpu/gpu_export.h"
 #include "ui/gfx/geometry/size.h"
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 typedef unsigned long VisualID;
 #endif
 
@@ -247,7 +247,7 @@ struct GPU_EXPORT GPUInfo {
       video_encode_accelerator_supported_profiles;
   bool jpeg_decode_accelerator_supported;
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   VisualID system_visual;
   VisualID rgba_visual;
 #endif
