@@ -13,7 +13,7 @@
  * Dimensions for camera capture.
  * @const
  */
-var CAPTURE_SIZE = {height: 384, width: 384};
+var CAPTURE_SIZE = {height: 576, width: 576};
 
 Polymer({
   is: 'cr-camera',
