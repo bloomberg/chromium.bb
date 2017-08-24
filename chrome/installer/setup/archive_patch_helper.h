@@ -56,9 +56,13 @@ class ArchivePatchHelper {
   // file extracted from the archive.
   bool Uncompress(base::FilePath* last_uncompressed_file);
 
-  // Attempts to use courgette to apply last_uncompressed_file() to
+  // Attempts to use Courgette to apply last_uncompressed_file() to
   // patch_source() to generate target(). Returns false if patching fails.
-  bool EnsemblePatch();
+  bool CourgetteEnsemblePatch();
+
+  // Attempts to use Zucchini to apply last_uncompressed_file() to
+  // patch_source() to generate target(). Returns false if patching fails.
+  bool ZucchiniEnsemblePatch();
 
   // Attempts to use bspatch to apply last_uncompressed_file() to patch_source()
   // to generate target(). Returns false if patching fails.

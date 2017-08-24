@@ -54,7 +54,8 @@ TEST_F(ArchivePatchHelperTest, Patching) {
       test_dir_.GetPath(), base::FilePath(), src, dest,
       installer::UnPackConsumer::SETUP_EXE_PATCH);
   archive_helper.set_last_uncompressed_file(patch);
-  EXPECT_TRUE(archive_helper.EnsemblePatch() || archive_helper.BinaryPatch());
+  EXPECT_TRUE(archive_helper.CourgetteEnsemblePatch() ||
+              archive_helper.BinaryPatch());
   base::FilePath base = data_dir_.AppendASCII("archive2.7z");
   EXPECT_TRUE(base::ContentsEqual(dest, base));
 }

@@ -75,6 +75,7 @@ if (is_win) {
       "//chrome/common:version_header",
       "//chrome/install_static:install_static_util",
       "//chrome/installer/util:with_rc_strings",
+      "//chrome/installer/zucchini:zucchini_io",
       "//chrome_elf:constants",
       "//components/base32",
       "//components/crash/content/app:app",

@@ -19,60 +19,12 @@
 #include "chrome/installer/zucchini/buffer_view.h"
 #include "chrome/installer/zucchini/crc32.h"
 #include "chrome/installer/zucchini/io_utils.h"
-#include "chrome/installer/zucchini/patch_reader.h"
+#include "chrome/installer/zucchini/mapped_file.h"
 #include "chrome/installer/zucchini/patch_writer.h"
+#include "chrome/installer/zucchini/zucchini_integration.h"
 #include "chrome/installer/zucchini/zucchini_tools.h"
 
 namespace {
-
-/******** MappedFileReader ********/
-
-// A file reader wrapper.
-class MappedFileReader {
- public:
-  explicit MappedFileReader(const base::FilePath& file_name) {
-    is_ok_ = buffer_.Initialize(file_name);
-    if (!is_ok_)  // This is also triggered if |file_name| is an empty file.
-      LOG(ERROR) << "Can't read file: " << file_name.value();
-  }
-  bool is_ok() const { return is_ok_; }
-  const uint8_t* data() const { return buffer_.data(); }
-  size_t length() const { return buffer_.length(); }
-  zucchini::ConstBufferView region() const { return {data(), length()}; }
-
- private:
-  bool is_ok_;
-  base::MemoryMappedFile buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(MappedFileReader);
-};
-
-/******** MappedFileWriter ********/
-
-// A file writer wrapper.
-class MappedFileWriter {
- public:
-  MappedFileWriter(const base::FilePath& file_name, size_t length) {
-    using base::File;
-    is_ok_ = buffer_.Initialize(
-        File(file_name,
-             File::FLAG_CREATE_ALWAYS | File::FLAG_READ | File::FLAG_WRITE),
-        {0, static_cast<int64_t>(length)},
-        base::MemoryMappedFile::READ_WRITE_EXTEND);
-    if (!is_ok_)
-      LOG(ERROR) << "Can't create file: " << file_name.value();
-  }
-  bool is_ok() const { return is_ok_; }
-  uint8_t* data() { return buffer_.data(); }
-  size_t length() const { return buffer_.length(); }
-  zucchini::MutableBufferView region() { return {data(), length()}; }
-
- private:
-  bool is_ok_;
-  base::MemoryMappedFile buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(MappedFileWriter);
-};
 
 /******** Command-line Switches ********/
 
@@ -83,11 +35,13 @@ constexpr char kSwitchRaw[] = "raw";
 
 zucchini::status::Code MainGen(MainParams params) {
   CHECK_EQ(3U, params.file_paths.size());
-  MappedFileReader old_image(params.file_paths[0]);
-  if (!old_image.is_ok())
+
+  // TODO(huangs): Move implementation to zucchini_integration.cc.
+  zucchini::MappedFileReader old_image(params.file_paths[0]);
+  if (!old_image.IsValid())
     return zucchini::status::kStatusFileReadError;
-  MappedFileReader new_image(params.file_paths[1]);
-  if (!new_image.is_ok())
+  zucchini::MappedFileReader new_image(params.file_paths[1]);
+  if (!new_image.IsValid())
     return zucchini::status::kStatusFileReadError;
 
   zucchini::EnsemblePatchWriter patch_writer(old_image.region(),
@@ -96,54 +50,39 @@ zucchini::status::Code MainGen(MainParams params) {
   auto generate = params.command_line.HasSwitch(kSwitchRaw)
                       ? zucchini::GenerateRaw
                       : zucchini::GenerateEnsemble;
-  zucchini::status::Code status =
+  zucchini::status::Code result =
       generate(old_image.region(), new_image.region(), &patch_writer);
-  if (status != zucchini::status::kStatusSuccess) {
+  if (result != zucchini::status::kStatusSuccess) {
     params.out << "Fatal error encountered when generating patch." << std::endl;
-    return status;
+    return result;
   }
 
-  MappedFileWriter patch(params.file_paths[2], patch_writer.SerializedSize());
-  if (!patch.is_ok())
+  // By default, delete patch on destruction, to avoid having lingering files in
+  // case of a failure. On Windows deletion can be done by the OS.
+  zucchini::MappedFileWriter patch(params.file_paths[2],
+                                   patch_writer.SerializedSize());
+  if (!patch.IsValid())
     return zucchini::status::kStatusFileWriteError;
 
   if (!patch_writer.SerializeInto(patch.region()))
     return zucchini::status::kStatusPatchWriteError;
 
+  // Successfully created patch. Explicitly request file to be kept.
+  if (!patch.Keep())
+    return zucchini::status::kStatusFileWriteError;
   return zucchini::status::kStatusSuccess;
 }
 
 zucchini::status::Code MainApply(MainParams params) {
   CHECK_EQ(3U, params.file_paths.size());
-  MappedFileReader old_image(params.file_paths[0]);
-  if (!old_image.is_ok())
-    return zucchini::status::kStatusFileReadError;
-  MappedFileReader patch(params.file_paths[1]);
-  if (!patch.is_ok())
-    return zucchini::status::kStatusFileReadError;
-
-  auto patch_reader = zucchini::EnsemblePatchReader::Create(patch.region());
-  if (!patch_reader.has_value()) {
-    params.err << "Error reading patch header." << std::endl;
-    return zucchini::status::kStatusPatchReadError;
-  }
-  zucchini::PatchHeader header = patch_reader->header();
-
-  MappedFileWriter new_image(params.file_paths[2], header.new_size);
-  if (!new_image.is_ok())
-    return zucchini::status::kStatusFileWriteError;
-
-  zucchini::status::Code status =
-      zucchini::Apply(old_image.region(), *patch_reader, new_image.region());
-  if (status != zucchini::status::kStatusSuccess)
-    params.err << "Fatal error encountered while applying patch." << std::endl;
-  return status;
+  return zucchini::Apply(params.file_paths[0], params.file_paths[1],
+                         params.file_paths[2]);
 }
 
 zucchini::status::Code MainRead(MainParams params) {
   CHECK_EQ(1U, params.file_paths.size());
-  MappedFileReader input(params.file_paths[0]);
-  if (!input.is_ok())
+  zucchini::MappedFileReader input(params.file_paths[0]);
+  if (!input.IsValid())
     return zucchini::status::kStatusFileReadError;
 
   bool do_dump = params.command_line.HasSwitch(kSwitchDump);
@@ -156,8 +95,8 @@ zucchini::status::Code MainRead(MainParams params) {
 
 zucchini::status::Code MainCrc32(MainParams params) {
   CHECK_EQ(1U, params.file_paths.size());
-  MappedFileReader image(params.file_paths[0]);
-  if (!image.is_ok())
+  zucchini::MappedFileReader image(params.file_paths[0]);
+  if (!image.IsValid())
     return zucchini::status::kStatusFileReadError;
 
   uint32_t crc =
