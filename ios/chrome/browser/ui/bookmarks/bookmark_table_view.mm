@@ -4,20 +4,41 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_table_view.h"
 
+#include "base/mac/bind_objc_block.h"
+#include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/favicon/core/fallback_url_util.h"
+#include "components/favicon/core/large_icon_service.h"
+#include "components/favicon_base/fallback_icon_style.h"
+#include "components/favicon_base/favicon_types.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
+#include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_collection_view_background.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
+#import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "skia/ext/skia_utils_ios.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// Minimal acceptable favicon size, in points.
+CGFloat minFaviconSizePt = 16;
+
+// Cell height, in points.
+CGFloat cellHeightPt = 56.0;
+}
+
 using bookmarks::BookmarkNode;
+
+// Used to store a pair of NSIntegers when storing a NSIndexPath in C++
+// collections.
+using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 @interface BookmarkTableView ()<UITableViewDataSource,
                                 UITableViewDelegate,
@@ -27,6 +48,12 @@ using bookmarks::BookmarkNode;
   const BookmarkNode* _currentRootNode;
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _modelBridge;
+  // Map of favicon load tasks for each index path. Used to keep track of
+  // pending favicon load operations so that they can be cancelled upon cell
+  // reuse. Keys are (section, item) pairs of cell index paths.
+  std::map<IntegerPair, base::CancelableTaskTracker::TaskId> _faviconLoadTasks;
+  // Task tracker used for async favicon loads.
+  base::CancelableTaskTracker _faviconTaskTracker;
 }
 
 // The UITableView to show bookmarks.
@@ -99,6 +126,12 @@ using bookmarks::BookmarkNode;
   return self;
 }
 
+- (void)dealloc {
+  _tableView.dataSource = nil;
+  _tableView.delegate = nil;
+  _faviconTaskTracker.TryCancelAll();
+}
+
 #pragma mark - UITableViewDataSource
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
@@ -117,22 +150,14 @@ using bookmarks::BookmarkNode;
   const BookmarkNode* node = [self nodeAtIndexPath:indexPath];
   static NSString* bookmarkCellIdentifier = @"bookmarkCellIdentifier";
 
-  // TODO(crbug.com/695749) Use custom cells.
-  UITableViewCell* cell =
+  BookmarkTableCell* cell =
       [tableView dequeueReusableCellWithIdentifier:bookmarkCellIdentifier];
 
   if (cell == nil) {
-    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault
-                                  reuseIdentifier:bookmarkCellIdentifier];
+    cell = [[BookmarkTableCell alloc] initWithNode:node
+                                   reuseIdentifier:bookmarkCellIdentifier];
   }
-
-  cell.textLabel.text = bookmark_utils_ios::TitleForBookmarkNode(node);
-  cell.textLabel.accessibilityIdentifier = cell.textLabel.text;
-  if (node->is_folder()) {
-    [cell setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-  } else {
-    [cell setAccessoryType:UITableViewCellAccessoryNone];
-  }
+  [self loadFaviconAtIndexPath:indexPath];
   return cell;
 }
 
@@ -171,6 +196,11 @@ using bookmarks::BookmarkNode;
   }
   // Deselect row.
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForRowAtIndexPath:(NSIndexPath*)indexPath {
+  return cellHeightPt;
 }
 
 #pragma mark - BookmarkModelBridgeObserver Callbacks
@@ -227,11 +257,31 @@ using bookmarks::BookmarkNode;
   // TODO(crbug.com/695749) Check if this case is applicable in the new UI.
 }
 
+- (void)bookmarkNodeFaviconChanged:
+    (const bookmarks::BookmarkNode*)bookmarkNode {
+  // Only urls have favicons.
+  DCHECK(bookmarkNode->is_url());
+
+  // Update image of corresponding cell.
+  NSIndexPath* indexPath = [self indexPathForNode:bookmarkNode];
+
+  if (!indexPath)
+    return;
+
+  // Check that this cell is visible.
+  NSArray* visiblePaths = [self.tableView indexPathsForVisibleRows];
+  if (![visiblePaths containsObject:indexPath])
+    return;
+
+  [self loadFaviconAtIndexPath:indexPath];
+}
+
 #pragma mark - Private
 
 - (void)refreshContents {
   [self computeBookmarkTableViewData];
   [self updateEmptyBackground];
+  [self cancelAllFaviconLoads];
   [self.tableView reloadData];
 }
 
@@ -261,6 +311,105 @@ using bookmarks::BookmarkNode;
 - (void)updateEmptyBackground {
   self.emptyTableBackgroundView.alpha =
       _currentRootNode != NULL && _currentRootNode->child_count() > 0 ? 0 : 1;
+}
+
+- (NSIndexPath*)indexPathForNode:(const bookmarks::BookmarkNode*)bookmarkNode {
+  NSIndexPath* indexPath = nil;
+  std::vector<const BookmarkNode*>::iterator it =
+      std::find(_bookmarkItems.begin(), _bookmarkItems.end(), bookmarkNode);
+  if (it != _bookmarkItems.end()) {
+    ptrdiff_t index = std::distance(_bookmarkItems.begin(), it);
+    indexPath = [NSIndexPath indexPathForRow:index inSection:1];
+  }
+  return indexPath;
+}
+
+- (void)updateCellAtIndexPath:(NSIndexPath*)indexPath
+                    withImage:(UIImage*)image
+              backgroundColor:(UIColor*)backgroundColor
+                    textColor:(UIColor*)textColor
+                 fallbackText:(NSString*)text {
+  BookmarkTableCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+  if (!cell)
+    return;
+
+  if (image) {
+    [cell setImage:image];
+  } else {
+    [cell setPlaceholderText:text
+                   textColor:textColor
+             backgroundColor:backgroundColor];
+  }
+}
+
+// Cancels all async loads of favicons. Subclasses should call this method when
+// the bookmark model is going through significant changes, then manually call
+// loadFaviconAtIndexPath: for everything that needs to be loaded; or
+// just reload relevant cells.
+- (void)cancelAllFaviconLoads {
+  _faviconTaskTracker.TryCancelAll();
+}
+
+- (void)cancelLoadingFaviconAtIndexPath:(NSIndexPath*)indexPath {
+  _faviconTaskTracker.TryCancel(
+      _faviconLoadTasks[IntegerPair(indexPath.section, indexPath.item)]);
+}
+
+// Asynchronously loads favicon for given index path. The loads are cancelled
+// upon cell reuse automatically.
+- (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath {
+  const bookmarks::BookmarkNode* node = [self nodeAtIndexPath:indexPath];
+  if (node->is_folder()) {
+    return;
+  }
+
+  // Cancel previous load attempts.
+  [self cancelLoadingFaviconAtIndexPath:indexPath];
+
+  // Start loading a favicon.
+  __weak BookmarkTableView* weakSelf = self;
+  GURL blockURL(node->url());
+  void (^faviconBlock)(const favicon_base::LargeIconResult&) =
+      ^(const favicon_base::LargeIconResult& result) {
+        BookmarkTableView* strongSelf = weakSelf;
+        if (!strongSelf)
+          return;
+        UIImage* favIcon = nil;
+        UIColor* backgroundColor = nil;
+        UIColor* textColor = nil;
+        NSString* fallbackText = nil;
+        if (result.bitmap.is_valid()) {
+          scoped_refptr<base::RefCountedMemory> data =
+              result.bitmap.bitmap_data;
+          favIcon = [UIImage imageWithData:[NSData dataWithBytes:data->front()
+                                                          length:data->size()]];
+        } else if (result.fallback_icon_style) {
+          backgroundColor = skia::UIColorFromSkColor(
+              result.fallback_icon_style->background_color);
+          textColor =
+              skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
+
+          fallbackText =
+              base::SysUTF16ToNSString(favicon::GetFallbackIconText(blockURL));
+        }
+
+        [strongSelf updateCellAtIndexPath:indexPath
+                                withImage:favIcon
+                          backgroundColor:backgroundColor
+                                textColor:textColor
+                             fallbackText:fallbackText];
+      };
+
+  CGFloat scale = [UIScreen mainScreen].scale;
+  CGFloat preferredSize = scale * [BookmarkTableCell preferredImageSize];
+  CGFloat minSize = scale * minFaviconSizePt;
+
+  base::CancelableTaskTracker::TaskId taskId =
+      IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState)
+          ->GetLargeIconOrFallbackStyle(node->url(), minSize, preferredSize,
+                                        base::BindBlockArc(faviconBlock),
+                                        &_faviconTaskTracker);
+  _faviconLoadTasks[IntegerPair(indexPath.section, indexPath.item)] = taskId;
 }
 
 @end
