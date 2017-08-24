@@ -240,6 +240,48 @@ TEST_P(CompositedLayerMappingTest, RotatedInterestRectNear90Degrees) {
                  RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
 }
 
+TEST_P(CompositedLayerMappingTest, LargeScaleInterestRect) {
+  // It's rotated 90 degrees about the X axis, which means its visual content
+  // rect is empty, and so the interest rect is the default (0, 0, 4000, 4000)
+  // intersected with the layer bounds.
+  SetBodyInnerHTML(
+      "<style>"
+      "  .container {"
+      "    height: 1080px;"
+      "    width: 1920px;"
+      "    transform: scale(0.0859375);"
+      "    transform-origin: 0 0 0;"
+      "    background:blue;"
+      "  }"
+      "  .wrapper {"
+      "      height: 92px;"
+      "      width: 165px;"
+      "      overflow: hidden;"
+      "  }"
+      "  .posabs {"
+      "      position: absolute;"
+      "      width: 300px;"
+      "      height: 300px;"
+      "      top: 5000px;"
+      "  }"
+      "</style>"
+      "<div class='wrapper'>"
+      "  <div id='target' class='container'>"
+      "    <div class='posabs'></div>"
+      "    <div id='target' style='will-change: transform' "
+      "class='posabs'></div>"
+      "  </div>"
+      "</div>");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  Element* element = GetDocument().getElementById("target");
+  PaintLayer* paint_layer =
+      ToLayoutBoxModelObject(element->GetLayoutObject())->Layer();
+  ASSERT_TRUE(!!paint_layer->GraphicsLayerBacking());
+  EXPECT_RECT_EQ(IntRect(0, 0, 1920, 5300),
+                 RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));
+}
+
 TEST_P(CompositedLayerMappingTest, 3D90DegRotatedTallInterestRect) {
   // It's rotated 90 degrees about the X axis, which means its visual content
   // rect is empty, and so the interest rect is the default (0, 0, 4000, 4000)
