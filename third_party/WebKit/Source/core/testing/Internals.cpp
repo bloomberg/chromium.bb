@@ -465,11 +465,6 @@ String Internals::getResourceHeader(const String& url,
   return resource->GetResourceRequest().HttpHeaderField(header.Utf8().data());
 }
 
-bool Internals::isSharingStyle(Element* element1, Element* element2) const {
-  DCHECK(element1 && element2);
-  return element1->GetComputedStyle() == element2->GetComputedStyle();
-}
-
 bool Internals::isValidContentSelect(Element* insertion_point,
                                      ExceptionState& exception_state) {
   DCHECK(insertion_point);
