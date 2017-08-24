@@ -9,6 +9,19 @@
 #import "ui/events/test/cocoa_test_event_utils.h"
 #import "ui/gfx/test/ui_cocoa_test_helper.h"
 
+@interface TestHoverButton : HoverButton
+@property(readwrite, nonatomic) NSRect hitbox;
+@end
+
+@implementation TestHoverButton
+@synthesize hitbox = hitbox_;
+
+- (void)setHitbox:(NSRect)hitbox {
+  hitbox_ = hitbox;
+  [self updateTrackingAreas];
+}
+@end
+
 @interface HoverButtonTestTarget : NSObject
 @property(nonatomic, copy) void (^actionHandler)(id);
 @end
@@ -32,9 +45,12 @@ class HoverButtonTest : public ui::CocoaTest {
  public:
   HoverButtonTest() {
     NSRect frame = NSMakeRect(0, 0, 20, 20);
-    base::scoped_nsobject<HoverButton> button(
-        [[HoverButton alloc] initWithFrame:frame]);
+    base::scoped_nsobject<TestHoverButton> button(
+        [[TestHoverButton alloc] initWithFrame:frame]);
     button_ = button;
+    target_.reset([[HoverButtonTestTarget alloc] init]);
+    button_.target = target_;
+    button_.action = @selector(action:);
     [[test_window() contentView] addSubview:button_];
   }
 
@@ -47,7 +63,19 @@ class HoverButtonTest : public ui::CocoaTest {
     EXPECT_EQ(kHoverStateNone, button_.hoverState);
   }
 
-  HoverButton* button_;  // Weak, owned by test_window().
+  bool HandleMouseDown(NSEvent* mouseDownEvent) {
+    __block bool action_sent = false;
+    target_.get().actionHandler = ^(id sender) {
+      action_sent = true;
+      EXPECT_EQ(kHoverStateMouseDown, button_.hoverState);
+    };
+    [NSApp sendEvent:mouseDownEvent];
+    target_.get().actionHandler = nil;
+    return action_sent;
+  }
+
+  TestHoverButton* button_;  // Weak, owned by test_window().
+  base::scoped_nsobject<HoverButtonTestTarget> target_;
 };
 
 TEST_VIEW(HoverButtonTest, button_)
@@ -74,27 +102,50 @@ TEST_F(HoverButtonTest, Hover) {
 
 TEST_F(HoverButtonTest, Click) {
   EXPECT_EQ(kHoverStateNone, button_.hoverState);
-  base::scoped_nsobject<HoverButtonTestTarget> target(
-      [[HoverButtonTestTarget alloc] init]);
-  __block bool action_sent = false;
-  target.get().actionHandler = ^(id sender) {
-    action_sent = true;
-    EXPECT_EQ(kHoverStateMouseDown, button_.hoverState);
-  };
-  button_.target = target;
-  button_.action = @selector(action:);
   const auto click = cocoa_test_event_utils::MouseClickInView(button_, 1);
 
   [NSApp postEvent:click.second atStart:YES];
-  [button_ mouseDown:click.first];
-  EXPECT_TRUE(action_sent);
-  action_sent = false;
+  EXPECT_TRUE(HandleMouseDown(click.first));
 
   button_.enabled = NO;
-  [button_ mouseDown:click.first];
-  EXPECT_FALSE(action_sent);
+  EXPECT_FALSE(HandleMouseDown(click.first));
 
   EXPECT_EQ(kHoverStateNone, button_.hoverState);
 }
 
+TEST_F(HoverButtonTest, CustomHitbox) {
+  NSRect hitbox = button_.frame;
+  hitbox.size.width += 10;
+
+  NSPoint inside_hit_point =
+      NSMakePoint(NSMaxX(button_.frame) + 5, NSMidY(button_.frame));
+  NSPoint outside_hit_point =
+      NSMakePoint(inside_hit_point.x + 10, inside_hit_point.y);
+
+  {
+    NSRect trackingRect = button_.trackingAreas[0].rect;
+    EXPECT_FALSE(NSPointInRect(inside_hit_point, trackingRect));
+    EXPECT_FALSE(NSPointInRect(outside_hit_point, trackingRect));
+    EXPECT_NE(button_, [button_ hitTest:inside_hit_point]);
+    EXPECT_EQ(nil, [button_ hitTest:outside_hit_point]);
+  }
+
+  button_.hitbox = hitbox;
+  {
+    NSRect trackingRect = button_.trackingAreas[0].rect;
+    EXPECT_TRUE(NSPointInRect(inside_hit_point, trackingRect));
+    EXPECT_FALSE(NSPointInRect(outside_hit_point, trackingRect));
+    EXPECT_EQ(button_, [button_ hitTest:inside_hit_point]);
+    EXPECT_EQ(nil, [button_ hitTest:outside_hit_point]);
+  }
+
+  button_.hitbox = NSZeroRect;
+  {
+    NSRect trackingRect = button_.trackingAreas[0].rect;
+    EXPECT_FALSE(NSPointInRect(inside_hit_point, trackingRect));
+    EXPECT_FALSE(NSPointInRect(outside_hit_point, trackingRect));
+    EXPECT_NE(button_, [button_ hitTest:inside_hit_point]);
+    EXPECT_EQ(nil, [button_ hitTest:outside_hit_point]);
+  }
+}
 }  // namespace
