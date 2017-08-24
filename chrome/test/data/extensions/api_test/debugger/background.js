@@ -60,7 +60,7 @@ chrome.test.runTests([
   function attachAgain() {
     chrome.debugger.attach(debuggee, protocolVersion,
         fail("Another debugger is already attached to the tab with id: " +
-                 tabId + "."));
+            tabId + "."));
   },
 
   function sendCommand() {

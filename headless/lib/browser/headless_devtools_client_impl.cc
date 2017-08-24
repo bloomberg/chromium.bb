@@ -75,11 +75,11 @@ HeadlessDevToolsClientImpl::~HeadlessDevToolsClientImpl() {}
 bool HeadlessDevToolsClientImpl::AttachToHost(
     content::DevToolsAgentHost* agent_host) {
   DCHECK(!agent_host_);
-  if (agent_host->AttachClient(this)) {
-    agent_host_ = agent_host;
-    return true;
-  }
-  return false;
+  if (agent_host->IsAttached())
+    return false;
+  agent_host->AttachClient(this);
+  agent_host_ = agent_host;
+  return true;
 }
 
 void HeadlessDevToolsClientImpl::ForceAttachToHost(

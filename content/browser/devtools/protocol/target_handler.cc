@@ -35,7 +35,7 @@ class TargetHandler::Session : public DevToolsAgentHostClient {
                                         ++handler->last_session_id_);
     Session* session = new Session(handler, agent_host, id);
     handler->attached_sessions_[id].reset(session);
-    static_cast<DevToolsAgentHostImpl*>(agent_host)->AttachMultiClient(session);
+    agent_host->AttachClient(session);
     handler->frontend_->AttachedToTarget(id, CreateInfo(agent_host),
                                          waiting_for_debugger);
     return id;

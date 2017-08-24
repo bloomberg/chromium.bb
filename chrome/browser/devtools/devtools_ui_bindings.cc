@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/base64.h"
-#include "base/command_line.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -664,14 +663,9 @@ void DevToolsUIBindings::SendMessageAck(int request_id,
 
 void DevToolsUIBindings::InnerAttach() {
   DCHECK(agent_host_.get());
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDevToolsExperiments)) {
-    agent_host_->AttachMultiClient(this);
-  } else {
-    // DevToolsUIBindings terminates existing debugging connections and starts
-    // debugging.
-    agent_host_->ForceAttachClient(this);
-  }
+  // Note: we could use ForceAttachClient here to disconnect other clients
+  // if any problems arise.
+  agent_host_->AttachClient(this);
 }
 
 // DevToolsEmbedderMessageDispatcher::Delegate implementation -----------------

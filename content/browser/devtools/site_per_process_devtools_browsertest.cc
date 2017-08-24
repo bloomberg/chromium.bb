@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDownloadDevToolsBrowserTest,
   scoped_refptr<DevToolsAgentHost> agent =
       DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
   TestClient client;
-  ASSERT_TRUE(agent->AttachClient(&client));
+  agent->AttachClient(&client);
   char message[] = "{\"id\": 0, \"method\": \"incorrect.method\"}";
   // Check that client is responsive.
   agent->DispatchProtocolMessage(&client, message);
