@@ -79,6 +79,7 @@ class BASE_EXPORT ProcessMemoryDump {
       const SharedMemory& shared_memory);
 #endif
 
+  ProcessMemoryDump();
   ProcessMemoryDump(scoped_refptr<HeapProfilerSerializationState>
                         heap_profiler_serialization_state,
                     const MemoryDumpArgs& dump_args);
@@ -238,7 +239,7 @@ class BASE_EXPORT ProcessMemoryDump {
   AllocatorDumpEdgesMap allocator_dumps_edges_;
 
   // Level of detail of the current dump.
-  const MemoryDumpArgs dump_args_;
+  MemoryDumpArgs dump_args_;
 
   // This allocator dump is returned when an invalid dump is created in
   // background mode. The attributes of the dump are ignored and not added to
