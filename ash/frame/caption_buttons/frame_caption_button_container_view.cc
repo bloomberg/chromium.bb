@@ -9,10 +9,10 @@
 
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button.h"
-#include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_uma.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/metrics/user_metrics.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -319,35 +319,35 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
   // Abort any animations of the button icons.
   SetButtonsToNormal(ANIMATE_NO);
 
-  UserMetricsAction action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE;
+  using base::RecordAction;
+  using base::UserMetricsAction;
   if (sender == minimize_button_) {
     frame_->Minimize();
+    RecordAction(UserMetricsAction("MinButton_Clk"));
   } else if (sender == size_button_) {
     if (frame_->IsFullscreen()) {  // Can be clicked in immersive fullscreen.
       frame_->Restore();
-      action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN;
+      RecordAction(UserMetricsAction("MaxButton_Clk_ExitFS"));
     } else if (frame_->IsMaximized()) {
       frame_->Restore();
-      action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE;
+      RecordAction(UserMetricsAction("MaxButton_Clk_Restore"));
     } else {
       frame_->Maximize();
-      action = UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE;
+      RecordAction(UserMetricsAction("MaxButton_Clk_Maximize"));
     }
 
     if (event.IsGestureEvent())
       TouchUMA::GetInstance()->RecordGestureAction(GESTURE_FRAMEMAXIMIZE_TAP);
   } else if (sender == close_button_) {
     frame_->Close();
-    action = UMA_WINDOW_CLOSE_BUTTON_CLICK;
-    if (ash::Shell::Get()
+    if (Shell::Get()
             ->tablet_mode_controller()
             ->IsTabletModeWindowManagerEnabled()) {
-      action = UMA_TABLET_WINDOW_CLOSE_THROUGH_CAPTION_BUTTON;
+      RecordAction(UserMetricsAction("Tablet_WindowCloseFromCaptionButton"));
+    } else {
+      RecordAction(UserMetricsAction("CloseButton_Clk"));
     }
-  } else {
-    return;
   }
-  Shell::Get()->metrics()->RecordUserMetricsAction(action);
 }
 
 bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {
