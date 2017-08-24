@@ -164,6 +164,15 @@ BLINK_PLATFORM_EXPORT void ExtractCorsExposedHeaderNamesList(
 BLINK_PLATFORM_EXPORT bool IsOnAccessControlResponseHeaderWhitelist(
     const WebString&);
 
+BLINK_PLATFORM_EXPORT bool IsCORSEnabledRequestMode(
+    WebURLRequest::FetchRequestMode);
+
+// Checks whether request mode 'no-cors' is allowed for a certain context and
+// service-worker mode.
+BLINK_PLATFORM_EXPORT bool IsNoCORSAllowedContext(
+    WebURLRequest::RequestContext,
+    WebURLRequest::ServiceWorkerMode);
+
 // TODO(hintzed): The following three methods delegate to SchemeRegistry and
 // FetchUtils respectively to expose them for outofblink-CORS in CORSURLLoader.
 // This is a temporary solution with the mid-term goal being to move e.g.
