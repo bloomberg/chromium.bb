@@ -52,6 +52,9 @@ class InstantController : public InstantTab::Delegate {
   }
 
  private:
+  friend class InstantExtendedManualTest;
+  friend class InstantTestBase;
+
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,
                            SearchDoesntReuseInstantTabWithoutSupport);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest,

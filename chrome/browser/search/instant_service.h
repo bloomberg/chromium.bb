@@ -98,8 +98,11 @@ class InstantService : public KeyedService,
  private:
   friend class InstantExtendedTest;
   friend class InstantServiceTest;
+  friend class InstantTestBase;
   friend class InstantUnitTestBase;
 
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
+                           MANUAL_SearchesFromFakebox);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, ProcessIsolation);
   FRIEND_TEST_ALL_PREFIXES(InstantServiceEnabledTest,
                            SendsSearchURLsToRenderer);
