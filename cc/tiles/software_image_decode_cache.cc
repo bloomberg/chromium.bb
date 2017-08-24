@@ -476,7 +476,6 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "SoftwareImageDecodeCache::GetDecodedImageForDrawInternal",
                "key", key.ToString());
-
   base::AutoLock lock(lock_);
   auto decoded_images_it = decoded_images_.Get(key);
   // If we found the image and it's locked, then return it. If it's not locked,
@@ -852,12 +851,11 @@ size_t SoftwareImageDecodeCache::GetMaximumMemoryLimitBytes() const {
   return locked_images_budget_.total_limit_bytes();
 }
 
-void SoftwareImageDecodeCache::NotifyImageUnused(
-    const PaintImage::FrameKey& frame_key) {
+void SoftwareImageDecodeCache::NotifyImageUnused(uint32_t skimage_id) {
   base::AutoLock lock(lock_);
 
-  auto it = frame_key_to_image_keys_.find(frame_key);
-  if (it == frame_key_to_image_keys_.end())
+  auto it = decoded_images_unique_ids_.find(skimage_id);
+  if (it == decoded_images_unique_ids_.end())
     return;
 
   for (auto key = it->second.begin(); key != it->second.end(); ++key) {
@@ -869,7 +867,7 @@ void SoftwareImageDecodeCache::NotifyImageUnused(
     if (image_it != decoded_images_.end() && !image_it->second->is_locked())
       decoded_images_.Erase(image_it);
   }
-  frame_key_to_image_keys_.erase(it);
+  decoded_images_unique_ids_.erase(it);
 }
 
 void SoftwareImageDecodeCache::RemovePendingTask(const ImageKey& key,
@@ -913,11 +911,10 @@ void SoftwareImageDecodeCache::DumpImageMemoryForCache(
   lock_.AssertAcquired();
 
   for (const auto& image_pair : cache) {
-    int image_id = static_cast<int>(image_pair.first.frame_key().hash());
     std::string dump_name = base::StringPrintf(
         "cc/image_memory/cache_0x%" PRIXPTR "/%s/image_%" PRIu64 "_id_%d",
         reinterpret_cast<uintptr_t>(this), cache_name,
-        image_pair.second->tracing_id(), image_id);
+        image_pair.second->tracing_id(), image_pair.first.image_id());
     // CreateMemoryAllocatorDump will automatically add tracking values for the
     // total size. We also add a "locked_size" below.
     MemoryAllocatorDump* dump =
@@ -934,8 +931,6 @@ void SoftwareImageDecodeCache::DumpImageMemoryForCache(
 // SoftwareImageDecodeCacheKey
 ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
                                                        SkColorType color_type) {
-  const PaintImage::FrameKey frame_key = image.frame_key();
-
   const SkSize& scale = image.scale();
   // If the src_rect falls outside of the image, we need to clip it since
   // otherwise we might end up with uninitialized memory in the decode process.
@@ -953,10 +948,10 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
   // If the target size is empty, then we'll be skipping the decode anyway, so
   // the filter quality doesn't matter. Early out instead.
   if (target_size.IsEmpty()) {
-    return ImageDecodeCacheKey(frame_key, src_rect, target_size,
-                               image.target_color_space(), kLow_SkFilterQuality,
-                               true /* can_use_original_decode */,
-                               false /* should_use_subrect */);
+    return ImageDecodeCacheKey(
+        image.paint_image().unique_id(), src_rect, target_size,
+        image.target_color_space(), kLow_SkFilterQuality,
+        true /* can_use_original_decode */, false /* should_use_subrect */);
   }
 
   // Start with the given filter quality.
@@ -1021,20 +1016,20 @@ ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image,
     }
   }
 
-  return ImageDecodeCacheKey(frame_key, src_rect, target_size,
-                             image.target_color_space(), quality,
+  return ImageDecodeCacheKey(image.paint_image().unique_id(), src_rect,
+                             target_size, image.target_color_space(), quality,
                              can_use_original_size_decode, should_use_subrect);
 }
 
 ImageDecodeCacheKey::ImageDecodeCacheKey(
-    PaintImage::FrameKey frame_key,
+    uint32_t image_id,
     const gfx::Rect& src_rect,
     const gfx::Size& target_size,
     const gfx::ColorSpace& target_color_space,
     SkFilterQuality filter_quality,
     bool can_use_original_size_decode,
     bool should_use_subrect)
-    : frame_key_(frame_key),
+    : image_id_(image_id),
       src_rect_(src_rect),
       target_size_(target_size),
       target_color_space_(target_color_space),
@@ -1042,7 +1037,7 @@ ImageDecodeCacheKey::ImageDecodeCacheKey(
       can_use_original_size_decode_(can_use_original_size_decode),
       should_use_subrect_(should_use_subrect) {
   if (can_use_original_size_decode_) {
-    hash_ = frame_key_.hash();
+    hash_ = std::hash<uint32_t>()(image_id_);
   } else {
     // TODO(vmpstr): This is a mess. Maybe it's faster to just search the vector
     // always (forwards or backwards to account for LRU).
@@ -1055,7 +1050,7 @@ ImageDecodeCacheKey::ImageDecodeCacheKey(
         base::HashInts(target_size_.width(), target_size_.height());
 
     hash_ = base::HashInts(base::HashInts(src_rect_hash, target_size_hash),
-                           base::HashInts(frame_key_.hash(), filter_quality_));
+                           base::HashInts(image_id_, filter_quality_));
   }
   // Include the target color space in the hash regardless of scaling.
   hash_ = base::HashInts(hash_, target_color_space.GetHash());
@@ -1066,9 +1061,9 @@ ImageDecodeCacheKey::ImageDecodeCacheKey(const ImageDecodeCacheKey& other) =
 
 std::string ImageDecodeCacheKey::ToString() const {
   std::ostringstream str;
-  str << "frame_key[" << frame_key_.ToString() << "] src_rect[" << src_rect_.x()
-      << "," << src_rect_.y() << " " << src_rect_.width() << "x"
-      << src_rect_.height() << "] target_size[" << target_size_.width() << "x"
+  str << "id[" << image_id_ << "] src_rect[" << src_rect_.x() << ","
+      << src_rect_.y() << " " << src_rect_.width() << "x" << src_rect_.height()
+      << "] target_size[" << target_size_.width() << "x"
       << target_size_.height() << "] target_color_space"
       << target_color_space_.ToString() << " filter_quality[" << filter_quality_
       << "] can_use_original_size_decode [" << can_use_original_size_decode_
@@ -1215,16 +1210,16 @@ void SoftwareImageDecodeCache::CleanupDecodedImagesCache(
     const ImageKey& key,
     ImageMRUCache::iterator it) {
   lock_.AssertAcquired();
-  auto vector_it = frame_key_to_image_keys_.find(key.frame_key());
+  auto vector_it = decoded_images_unique_ids_.find(key.image_id());
 
   // TODO(sohanjg): Check if we can DCHECK here.
-  if (vector_it != frame_key_to_image_keys_.end()) {
+  if (vector_it != decoded_images_unique_ids_.end()) {
     auto iter =
         std::find(vector_it->second.begin(), vector_it->second.end(), key);
     DCHECK(iter != vector_it->second.end());
     vector_it->second.erase(iter);
     if (vector_it->second.empty())
-      frame_key_to_image_keys_.erase(vector_it);
+      decoded_images_unique_ids_.erase(vector_it);
   }
 
   decoded_images_.Erase(it);
@@ -1234,7 +1229,7 @@ void SoftwareImageDecodeCache::CacheDecodedImages(
     const ImageKey& key,
     std::unique_ptr<DecodedImage> decoded_image) {
   lock_.AssertAcquired();
-  frame_key_to_image_keys_[key.frame_key()].push_back(key);
+  decoded_images_unique_ids_[key.image_id()].push_back(key);
   decoded_images_.Put(key, std::move(decoded_image));
 }
 

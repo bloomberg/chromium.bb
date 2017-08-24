@@ -30,7 +30,6 @@ class TestImageGenerator : public StubPaintImageGenerator {
   bool GetPixels(const SkImageInfo& info,
                  void* pixels,
                  size_t rowBytes,
-                 size_t frame_index,
                  uint32_t lazy_pixel_ref) override {
     return image_pixmap_.readPixels(info, pixels, rowBytes, 0, 0);
   }

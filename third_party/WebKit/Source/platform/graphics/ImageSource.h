@@ -66,7 +66,9 @@ class PLATFORM_EXPORT ImageSource final {
   // Implementations may elect to preserve more frames than the one requested
   // here if doing so is likely to save CPU time in the future, but will pay
   // an increased memory cost to do so.
-  void ClearCacheExceptFrame(size_t);
+  //
+  // Returns the number of bytes of frame data actually cleared.
+  size_t ClearCacheExceptFrame(size_t);
 
   PassRefPtr<SharedBuffer> Data();
   // Returns false when the decoder layer rejects the data.
@@ -86,8 +88,8 @@ class PLATFORM_EXPORT ImageSource final {
 
   size_t FrameCount() const;
 
-  // Attempts to create a generator for lazy-decoding of this image.
-  sk_sp<PaintImageGenerator> CreateGenerator(size_t index);
+  // Attempts to create the requested frame.
+  sk_sp<PaintImageGenerator> CreateGeneratorAtIndex(size_t);
 
   float FrameDurationAtIndex(size_t) const;
   bool FrameHasAlphaAtIndex(
@@ -95,6 +97,10 @@ class PLATFORM_EXPORT ImageSource final {
   bool FrameIsReceivedAtIndex(
       size_t) const;  // Whether or not the frame is fully received.
   ImageOrientation OrientationAtIndex(size_t) const;  // EXIF image orientation
+
+  // Returns the number of bytes in the decoded frame. May return 0 if the
+  // frame has not yet begun to decode.
+  size_t FrameBytesAtIndex(size_t) const;
 
  private:
   std::unique_ptr<DeferredImageDecoder> decoder_;

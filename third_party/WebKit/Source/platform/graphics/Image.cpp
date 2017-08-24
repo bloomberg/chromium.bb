@@ -354,6 +354,7 @@ void Image::InitPaintImageBuilder(PaintImageBuilder& builder) {
   builder.set_id(stable_image_id_)
       .set_animation_type(animation_type)
       .set_completion_state(completion_state)
+      .set_frame_count(FrameCount())
       .set_is_multipart(is_multipart_);
 }
 

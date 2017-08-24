@@ -20,7 +20,6 @@ class CC_PAINT_EXPORT SkiaPaintImageGenerator final : public SkImageGenerator {
   enum { kNeedNewImageUniqueID = SkImageGenerator::kNeedNewImageUniqueID };
 
   SkiaPaintImageGenerator(sk_sp<PaintImageGenerator> paint_image_generator,
-                          size_t frame_index,
                           uint32_t unique_id = kNeedNewImageUniqueID);
   ~SkiaPaintImageGenerator() override;
 
@@ -36,7 +35,6 @@ class CC_PAINT_EXPORT SkiaPaintImageGenerator final : public SkImageGenerator {
 
  private:
   sk_sp<PaintImageGenerator> paint_image_generator_;
-  const size_t frame_index_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaPaintImageGenerator);
 };

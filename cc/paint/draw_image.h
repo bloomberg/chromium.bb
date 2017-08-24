@@ -49,9 +49,6 @@ class CC_PAINT_EXPORT DrawImage {
     DCHECK(target_color_space_.has_value());
     return *target_color_space_;
   }
-  PaintImage::FrameKey frame_key() const {
-    return paint_image_.GetKeyForFrame(paint_image_.frame_index());
-  }
 
  private:
   PaintImage paint_image_;
