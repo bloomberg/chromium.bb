@@ -18,7 +18,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/themes/theme_service_win.h"
-#elif defined(USE_AURA) && defined(USE_X11) && !defined(OS_CHROMEOS)
+#elif defined(USE_X11)
 #include "chrome/browser/themes/theme_service_aurax11.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #endif
@@ -59,7 +59,7 @@ KeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
   ThemeService* provider = NULL;
 #if defined(OS_WIN)
   provider = new ThemeServiceWin;
-#elif defined(USE_AURA) && defined(USE_X11) && !defined(OS_CHROMEOS)
+#elif defined(USE_X11)
   provider = new ThemeServiceAuraX11;
 #else
   provider = new ThemeService;
@@ -71,14 +71,12 @@ KeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
 
 void ThemeServiceFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   bool default_uses_system_theme = false;
 
-#if defined(USE_AURA) && defined(USE_X11) && !defined(OS_CHROMEOS)
   const views::LinuxUI* linux_ui = views::LinuxUI::instance();
   if (linux_ui)
     default_uses_system_theme = linux_ui->GetDefaultUsesSystemTheme();
-#endif
 
   registry->RegisterBooleanPref(prefs::kUsesSystemTheme,
                                 default_uses_system_theme);

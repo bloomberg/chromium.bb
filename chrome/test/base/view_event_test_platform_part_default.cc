@@ -24,7 +24,7 @@ class ViewEventTestPlatformPartDefault : public ViewEventTestPlatformPart {
       ui::ContextFactoryPrivate* context_factory_private) {
 #if defined(USE_AURA)
     DCHECK(!display::Screen::GetScreen());
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
     display::Screen::SetScreenInstance(
         views::test::TestDesktopScreenX11::GetInstance());
 #else

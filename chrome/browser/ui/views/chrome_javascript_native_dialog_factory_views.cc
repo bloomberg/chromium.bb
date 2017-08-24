@@ -13,7 +13,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
 #include "chrome/browser/ui/views/javascript_app_modal_dialog_views_x11.h"
 #else
 #include "chrome/browser/ui/blocked_content/popunder_preventer.h"
@@ -27,7 +27,7 @@
 
 namespace {
 
-#if !defined(USE_X11) || defined(OS_CHROMEOS)
+#if !defined(USE_X11)
 class ChromeJavaScriptAppModalDialogViews
     : public app_modal::JavaScriptAppModalDialogViews {
  public:
@@ -54,7 +54,7 @@ class ChromeJavaScriptNativeDialogViewsFactory
   app_modal::NativeAppModalDialog* CreateNativeJavaScriptDialog(
       app_modal::JavaScriptAppModalDialog* dialog) override {
     app_modal::JavaScriptAppModalDialogViews* d = nullptr;
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
     d = new JavaScriptAppModalDialogViewsX11(dialog);
 #else
     d = new ChromeJavaScriptAppModalDialogViews(dialog);
