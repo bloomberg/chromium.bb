@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
@@ -116,6 +117,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarControlContainer;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetMetrics;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
@@ -765,9 +767,10 @@ public class ChromeTabbedActivity
 
             final Tracker tracker =
                     TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-            tracker.addOnInitializedCallback(
-                    (Callback<Boolean>) result -> showFeatureEngagementTextBubbleForDownloadHome(
-                            tracker));
+            tracker.addOnInitializedCallback((Callback<Boolean>) success
+                    -> maybeShowDownloadHomeTextBubble(tracker,
+                            FeatureConstants.DOWNLOAD_HOME_FEATURE, R.string.iph_download_home_text,
+                            R.string.iph_download_home_accessibility_text));
 
             mScreenshotMonitor = ScreenshotMonitor.create(ChromeTabbedActivity.this);
 
@@ -777,23 +780,65 @@ public class ChromeTabbedActivity
         }
     }
 
-    private void showFeatureEngagementTextBubbleForDownloadHome(final Tracker tracker) {
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_HOME_FEATURE)) return;
+    private void maybeShowDownloadHomeTextBubble(final Tracker tracker, String featureName,
+            @StringRes int stringId, @StringRes int accessibilityStringId) {
+        // Don't show the IPH, if bottom sheet is already open.
+        if (FeatureUtilities.isChromeHomeEnabled()
+                && getBottomSheet().getSheetState() != BottomSheet.SHEET_STATE_PEEK) {
+            return;
+        }
+
+        if (!tracker.shouldTriggerHelpUI(featureName)) return;
 
         ViewAnchoredTextBubble textBubble = new ViewAnchoredTextBubble(this,
-                getToolbarManager().getMenuButton(), R.string.iph_download_home_text,
-                R.string.iph_download_home_accessibility_text);
+                getToolbarAnchorViewForDownloadHomeTextBubble(), stringId, accessibilityStringId);
         textBubble.setDismissOnTouchInteraction(true);
-        textBubble.addOnDismissListener(() -> mHandler.post(() -> {
-            tracker.dismissed(FeatureConstants.DOWNLOAD_HOME_FEATURE);
-            getAppMenuHandler().setMenuHighlight(null);
-        }));
-        getAppMenuHandler().setMenuHighlight(R.id.downloads_menu_id);
+        textBubble.addOnDismissListener(() -> mHandler.postDelayed(() -> {
+            tracker.dismissed(featureName);
+            turnOffHighlightForDownloadHomeTextBubble();
+        }, ViewHighlighter.IPH_MIN_DELAY_BETWEEN_TWO_HIGHLIGHTS));
+
+        turnOnHighlightForDownloadHomeTextBubble();
+
+        boolean isChromeHomeExpandButtonEnabled = FeatureUtilities.isChromeHomeEnabled()
+                && FeatureUtilities.isChromeHomeExpandButtonEnabled();
         int yInsetPx =
                 getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
-        textBubble.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
+        textBubble.setInsetPx(0, isChromeHomeExpandButtonEnabled ? yInsetPx : 0, 0,
                 FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
         textBubble.show();
+    }
+
+    private View getToolbarAnchorViewForDownloadHomeTextBubble() {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            return FeatureUtilities.isChromeHomeExpandButtonEnabled()
+                    ? mControlContainer.findViewById(R.id.expand_sheet_button)
+                    : mControlContainer.findViewById(R.id.toolbar_handle);
+        } else {
+            return getToolbarManager().getMenuButton();
+        }
+    }
+
+    private void turnOnHighlightForDownloadHomeTextBubble() {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            getBottomSheetContentController().setHighlightItemId(R.id.action_downloads);
+            if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+                ViewHighlighter.turnOnHighlight(findViewById(R.id.expand_sheet_button), true);
+            }
+        } else {
+            getAppMenuHandler().setMenuHighlight(R.id.downloads_menu_id);
+        }
+    }
+
+    private void turnOffHighlightForDownloadHomeTextBubble() {
+        if (FeatureUtilities.isChromeHomeEnabled()) {
+            getBottomSheetContentController().setHighlightItemId(null);
+            if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+                ViewHighlighter.turnOffHighlight(findViewById(R.id.expand_sheet_button));
+            }
+        } else {
+            getAppMenuHandler().setMenuHighlight(null);
+        }
     }
 
     private boolean isMainIntentFromLauncher(Intent intent) {
@@ -2122,32 +2167,17 @@ public class ChromeTabbedActivity
 
     @Override
     public void onScreenshotTaken() {
-        // Second part of the check to determine whether to trigger help UI
-        if (isInOverviewMode() || !DownloadUtils.isAllowedToDownloadPage(getActivityTab())) return;
-
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         tracker.notifyEvent(EventConstants.SCREENSHOT_TAKEN_CHROME_IN_FOREGROUND);
-        maybeShowFeatureEngagementTextBubbleForDownloadPageScreenshot(tracker);
-    }
 
-    private void maybeShowFeatureEngagementTextBubbleForDownloadPageScreenshot(
-            final Tracker tracker) {
-        if (!tracker.shouldTriggerHelpUI(FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE)) return;
-
-        ViewAnchoredTextBubble textBubble =
-                new ViewAnchoredTextBubble(this, getToolbarManager().getMenuButton(),
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                maybeShowDownloadHomeTextBubble(tracker,
+                        FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE,
                         R.string.iph_download_page_for_offline_usage_text,
                         R.string.iph_download_page_for_offline_usage_accessibility_text);
-        textBubble.setDismissOnTouchInteraction(true);
-        textBubble.addOnDismissListener(() -> ThreadUtils.postOnUiThread(() -> {
-            tracker.dismissed(FeatureConstants.DOWNLOAD_PAGE_SCREENSHOT_FEATURE);
-            getAppMenuHandler().setMenuHighlight(null);
-        }));
-        getAppMenuHandler().setMenuHighlight(R.id.offline_page_id);
-        int yInsetPx =
-                getResources().getDimensionPixelOffset(R.dimen.text_bubble_menu_anchor_y_inset);
-        textBubble.setInsetPx(0, FeatureUtilities.isChromeHomeEnabled() ? yInsetPx : 0, 0,
-                FeatureUtilities.isChromeHomeEnabled() ? 0 : yInsetPx);
-        textBubble.show();
+            }
+        });
     }
 }
