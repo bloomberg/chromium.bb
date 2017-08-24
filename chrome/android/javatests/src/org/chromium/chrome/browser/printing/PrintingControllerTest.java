@@ -12,7 +12,6 @@ import android.print.PageRange;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintDocumentInfo;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 
@@ -26,7 +25,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.TestFileUtil;
@@ -37,8 +35,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.TabTitleObserver;
-import org.chromium.content.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintDocumentAdapterWrapper.LayoutResultCallbackWrapper;
 import org.chromium.printing.PrintDocumentAdapterWrapper.WriteResultCallbackWrapper;
@@ -47,8 +43,6 @@ import org.chromium.printing.PrintingControllerImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.concurrent.Callable;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -178,36 +172,9 @@ public class PrintingControllerTest {
 
     /**
      * Test for http://crbug.com/528909
-     *
-     * @SmallTest
-     * @Feature({"Printing"})
-     */
-    @Test
-    @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
-    @DisabledTest(message = "crbug.com/532652")
-    public void testPrintClosedWindow() throws Throwable {
-        if (!ApiCompatibilityUtils.isPrintingSupported()) return;
-
-        String html = "<html><head><title>printwindowclose</title></head><body><script>"
-                + "function printClosedWindow() {"
-                + "  w = window.open(); w.close();"
-                + "  setTimeout(()=>{w.print(); document.title='completed'}, 0);"
-                + "}</script></body></html>";
-
-        mActivityTestRule.startMainActivityWithURL("data:text/html;charset=utf-8," + html);
-
-        Tab mTab = mActivityTestRule.getActivity().getActivityTab();
-        Assert.assertEquals(
-                "title does not match initial title", "printwindowclose", mTab.getTitle());
-
-        TabTitleObserver mOnTitleUpdatedHelper = new TabTitleObserver(mTab, "completed");
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("printClosedWindow();");
-        mOnTitleUpdatedHelper.waitForTitleUpdate(5);
-        Assert.assertEquals("JS did not finish running", "completed", mTab.getTitle());
-    }
-
-    /**
-     * Test for http://crbug.com/528909
+     * Simulating while a printing job is triggered and about to call Android framework to show UI,
+     * the corresponding tab is closed, this behaviour is mostly from JavaScript code. Make sure we
+     * don't crash and won't call into framework.
      */
     @Test
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -233,6 +200,9 @@ public class PrintingControllerTest {
 
     /**
      * Test for http://crbug.com/528909
+     * Simulating while a printing job is triggered and printing UI is showing, the corresponding
+     * tab is closed, this behaviour is mostly from JavaScript code. Make sure we don't crash and
+     * let framework notify user that we can't perform printing job.
      */
     @Test
     @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -296,24 +266,10 @@ public class PrintingControllerTest {
     }
 
     private PrintingControllerImpl createControllerOnUiThread() {
-        try {
-            final FutureTask<PrintingControllerImpl> task =
-                    new FutureTask<PrintingControllerImpl>(new Callable<PrintingControllerImpl>() {
-                        @Override
-                        public PrintingControllerImpl call() throws Exception {
-                            return (PrintingControllerImpl) PrintingControllerImpl.create(
-                                    new PrintDocumentAdapterWrapper(),
-                                    PRINT_JOB_NAME);
-                        }
-                    });
-
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(task);
-            PrintingControllerImpl result = task.get(TEST_TIMEOUT, TimeUnit.MILLISECONDS);
-            return result;
-        } catch (Throwable e) {
-            Assert.fail("Error on creating PrintingControllerImpl on the UI thread: " + e);
-        }
-        return null;
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return (PrintingControllerImpl) PrintingControllerImpl.create(
+                    new PrintDocumentAdapterWrapper(), PRINT_JOB_NAME);
+        });
     }
 
     private PrintAttributes createDummyPrintAttributes() {
@@ -335,63 +291,26 @@ public class PrintingControllerTest {
     }
 
     private void startControllerOnUiThread(final PrintingControllerImpl controller, final Tab tab) {
-        try {
-            // non-op PrintManagerDelegate.
-            final PrintManagerDelegate mockPrintManagerDelegate = mockPrintManagerDelegate(null);
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-                @Override
-                public void run() {
-                    controller.startPrint(new TabPrinter(tab), mockPrintManagerDelegate);
-                }
-            });
-        } catch (Throwable e) {
-            Assert.fail("Error on calling startPrint of PrintingControllerImpl " + e);
-        }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            controller.startPrint(new TabPrinter(tab),
+                    /* non-op PrintManagerDelegate */ mockPrintManagerDelegate(null));
+        });
     }
 
     private void callStartOnUiThread(final PrintingControllerImpl controller) {
-        try {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-                @Override
-                public void run() {
-                    controller.onStart();
-                }
-            });
-        } catch (Throwable e) {
-            Assert.fail("Error on calling onStart of PrintingControllerImpl " + e);
-        }
+        ThreadUtils.runOnUiThreadBlocking(() -> controller.onStart());
     }
 
     private void callLayoutOnUiThread(final PrintingControllerImpl controller,
             final PrintAttributes oldAttributes, final PrintAttributes newAttributes,
             final LayoutResultCallbackWrapper layoutResultCallback) {
-        try {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-                @Override
-                public void run() {
-                    controller.onLayout(
-                            oldAttributes,
-                            newAttributes,
-                            new CancellationSignal(),
-                            layoutResultCallback,
-                            null);
-                }
-            });
-        } catch (Throwable e) {
-            Assert.fail("Error on calling onLayout of PrintingControllerImpl " + e);
-        }
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            controller.onLayout(oldAttributes, newAttributes, new CancellationSignal(),
+                    layoutResultCallback, null);
+        });
     }
 
     private void callFinishOnUiThread(final PrintingControllerImpl controller) {
-        try {
-            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-                @Override
-                public void run() {
-                    controller.onFinish();
-                }
-            });
-        } catch (Throwable e) {
-            Assert.fail("Error on calling onFinish of PrintingControllerImpl " + e);
-        }
+        ThreadUtils.runOnUiThreadBlocking(() -> controller.onFinish());
     }
 }
