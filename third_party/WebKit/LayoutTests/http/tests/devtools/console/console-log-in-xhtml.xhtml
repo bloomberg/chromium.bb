@@ -1,0 +1,23 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/console-test.js"></script>
+<script>console.log(239);</script>
+<script>
+function test()
+{
+    ConsoleTestRunner.dumpConsoleMessages(undefined, undefined, simpleFormatter);
+    TestRunner.completeTest();
+    function simpleFormatter(element, message)
+    {
+        return message.messageText + ":" + message.line + ":" + message.column;
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that console message from inline script in xhtml document contains correct script position information.
+</p>
+</body>
+</html>

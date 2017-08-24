@@ -1,0 +1,24 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/console-test.js"></script>
+<script>
+
+function test() {
+  ConsoleTestRunner.evaluateInConsole('console.memory === console.memory', step1);
+
+  function step1() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that console.memory returns fresh instance/samples.
+</p>
+
+</body>
+</html>

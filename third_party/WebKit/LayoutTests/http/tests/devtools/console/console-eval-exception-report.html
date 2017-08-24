@@ -1,0 +1,45 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/console-test.js"></script>
+<script>
+function test() {
+  ConsoleTestRunner.evaluateInConsole('\
+        function foo()\n\
+        {\n\
+            throw {a:239};\n\
+        }\n\
+        function boo()\n\
+        {\n\
+            foo();\n\
+        }\n\
+        boo();', afterEvaluate);
+
+  function afterEvaluate() {
+    ConsoleTestRunner.dumpConsoleMessages();
+
+    var viewMessages = Console.ConsoleView.instance()._visibleViewMessages;
+    var uiMessage = viewMessages[viewMessages.length - 1];
+    var message = uiMessage.consoleMessage();
+    var stackTrace = message.stackTrace;
+
+    if (stackTrace.callFrames.length < 3) {
+      TestRunner.addResult('FAILED: Stack size too small');
+    } else {
+      for (var i = 0; i < 3; ++i) {
+        var frame = stackTrace.callFrames[i];
+        TestRunner.addResult('call frame:' + frame.functionName + ' at ' + frame.url + ':' + frame.lineNumber);
+      }
+    }
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that evaluating an expression with an exception in the console provide correct exception information.
+</p>
+</body>
+</html>

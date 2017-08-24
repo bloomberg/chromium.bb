@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/console-test.js"></script>
+<script src="../resources/editor-test.js"></script>
+<script>
+window.foobar = "foobar";
+window.foobaz = "foobaz";
+
+function test() {
+  ConsoleTestRunner.waitUntilConsoleEditorLoaded().then(onConsoleEditorLoaded);
+
+  var consoleEditor;
+  function onConsoleEditorLoaded(editor) {
+    consoleEditor = editor;
+    TestRunner.runTestSuite(testSuite);
+  }
+
+  var testSuite = [
+    function testSummonSuggestBox(next) {
+      TestRunner.addSniffer(
+          TextEditor.TextEditorAutocompleteController.prototype, '_onSuggestionsShownForTest', onSuggestionsShown);
+      SourcesTestRunner.typeIn(consoleEditor, 'f');
+
+      function onSuggestionsShown() {
+        TestRunner.addResult('Suggestions shown.');
+        next();
+      }
+    },
+
+    function testTypeText(next) {
+      TestRunner.addSniffer(
+          TextEditor.TextEditorAutocompleteController.prototype, '_onSuggestionsHiddenForTest', onSuggestionsHidden);
+      TestRunner.addSniffer(
+          TextEditor.TextEditorAutocompleteController.prototype, '_onCursorActivityHandledForTest',
+          onCursorActivityHandled);
+      SourcesTestRunner.typeIn(consoleEditor, 'o');
+
+      function onSuggestionsHidden() {
+        TestRunner.addResult('FAIL: suggestbox is hidden during typing.');
+        TestRunner.completeTest();
+      }
+
+      function onCursorActivityHandled() {
+        TestRunner.addResult('SUCCESS: suggestbox is not hidden during typing.');
+        next();
+      }
+    }
+  ];
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that console does not hide autocomplete during typing.</p>
+</body>
+</html>
