@@ -832,7 +832,7 @@ images/script-counter-imageDimensionChanged-crash.html
 images/size-failure.html
 images/style-access-during-imageChanged-crash.html
 images/text-content-crash.html
-inspector/console/only-one-deprecation-warning.html
+http/tests/devtools/console/only-one-deprecation-warning.html
 media/track/opera/interfaces/TextTrackList/onremovetrack.html
 media/track/track-css-cue-pseudo-class.html
 media/video-error-does-not-exist.html

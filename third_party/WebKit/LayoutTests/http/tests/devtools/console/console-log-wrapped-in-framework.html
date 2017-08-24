@@ -1,0 +1,33 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/console-test.js"></script>
+<script src="resources/framework.js"></script>
+<script>
+
+function runLogs()
+{
+    console.log("direct console.log()");
+    Framework.log("framework log");
+}
+
+function test() {
+  var frameworkRegexString = '/framework\\.js$';
+  Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
+
+  TestRunner.evaluateInPage('runLogs()');
+  TestRunner.deprecatedRunAfterPendingDispatches(callback);
+  function callback() {
+    ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests console.log() anchor location when the skip-stack-frames feature is enabled.
+</p>
+</body>
+</html>
