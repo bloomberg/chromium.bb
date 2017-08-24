@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
+#include "base/sequence_checker.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager.h"
@@ -113,12 +114,14 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // Public API function.
   std::vector<Printer> GetPrinters(PrinterClass printer_class) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     return printers_.at(printer_class);
   }
 
   // Public API function.
   void RemoveUnavailablePrinters(
       std::vector<Printer>* printers) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     FilterOutPrinters(printers, [this](const Printer& printer) {
       return !PrinterAvailable(printer);
     });
@@ -126,6 +129,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // Public API function.
   void UpdateConfiguredPrinter(const Printer& printer) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     // If this is an 'add' instead of just an update, record the event.
     MaybeRecordInstallation(printer);
     synced_printers_manager_->UpdateConfiguredPrinter(printer);
@@ -135,6 +139,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // Public API function.
   void RemoveConfiguredPrinter(const std::string& printer_id) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     auto existing = synced_printers_manager_->GetPrinter(printer_id);
     if (existing != nullptr) {
       event_tracker_->RecordPrinterRemoved(*existing);
@@ -146,21 +151,25 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // Public API function.
   void AddObserver(CupsPrintersManager::Observer* observer) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     observer_list_.AddObserver(observer);
   }
 
   // Public API function.
   void RemoveObserver(CupsPrintersManager::Observer* observer) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     observer_list_.RemoveObserver(observer);
   }
 
   // Public API function.
   void PrinterInstalled(const Printer& printer) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     synced_printers_manager_->PrinterInstalled(printer);
   }
 
   // Public API function.
   bool IsPrinterInstalled(const Printer& printer) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     return synced_printers_manager_->IsConfigurationCurrent(printer);
   }
 
@@ -169,6 +178,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // gets so large that a linear search is prohibative, we'll have to rethink
   // more than just this function.
   std::unique_ptr<Printer> GetPrinter(const std::string& id) const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     for (const auto& printer_list : printers_) {
       for (const auto& printer : printer_list) {
         if (printer.id() == id) {
@@ -182,6 +192,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // SyncedPrintersManager::Observer implementation
   void OnConfiguredPrintersChanged(
       const std::vector<Printer>& printers) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     printers_[kConfigured] = printers;
     RebuildConfiguredPrintersIndex();
     UpdateConfiguredPrinterURIs();
@@ -194,6 +205,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // SyncedPrintersManager::Observer implementation
   void OnEnterprisePrintersChanged(
       const std::vector<Printer>& printers) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     printers_[kEnterprise] = printers;
     for (auto& observer : observer_list_) {
       observer.OnPrintersChanged(kEnterprise, printers_[kEnterprise]);
@@ -205,6 +217,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   void OnPrintersFound(
       int detector_id,
       const std::vector<PrinterDetector::DetectedPrinter>& printers) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     switch (detector_id) {
       case kUsbDetector:
         usb_detections_ = printers;
@@ -219,6 +232,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
  private:
   // Rebuild the index from printer id to index for configured printers.
   void RebuildConfiguredPrintersIndex() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     configured_printers_index_.clear();
     for (size_t i = 0; i < printers_[kConfigured].size(); ++i) {
       configured_printers_index_[printers_[kConfigured][i].id()] = i;
@@ -228,6 +242,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Cross reference the Configured printers with the raw detected printer
   // lists.
   void UpdateConfiguredPrinterURIs() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     bool updated = false;
     for (const auto* printer_list : {&usb_detections_, &zeroconf_detections_}) {
       for (const auto& detected : *printer_list) {
@@ -256,6 +271,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Return a pointer to the printer on found, null if no entry is found.
   const PrinterDetector::DetectedPrinter* FindDetectedPrinter(
       const std::string& id) const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     for (const auto* printer_list : {&usb_detections_, &zeroconf_detections_}) {
       for (const auto& detected : *printer_list) {
         if (detected.printer.id() == id) {
@@ -267,6 +283,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
   void MaybeRecordInstallation(const Printer& printer) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (synced_printers_manager_->GetPrinter(printer.id()) != nullptr) {
       // It's just an update, not a new installation, so don't record an event.
       return;
@@ -327,6 +344,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   void AddDetectedList(
       const std::vector<PrinterDetector::DetectedPrinter>& detected_list) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     for (const PrinterDetector::DetectedPrinter& detected : detected_list) {
       if (base::ContainsKey(configured_printers_index_,
                             detected.printer.id())) {
@@ -367,6 +385,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   }
 
   void RecordSetupAbandoned(const Printer& printer) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     if (IsUsbPrinter(printer)) {
       const auto* detected = FindDetectedPrinter(printer.id());
       if (detected == nullptr) {
@@ -382,6 +401,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
 
   // Rebuild the Automatic and Discovered printers lists.
   void RebuildDetectedLists() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     printers_[kAutomatic].clear();
     printers_[kDiscovered].clear();
     AddDetectedList(usb_detections_);
@@ -397,6 +417,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   void ResolvePpdReferenceDone(const std::string& printer_id,
                                PpdProvider::CallbackResultCode code,
                                const Printer::PpdReference& ref) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
     inflight_ppd_reference_resolutions_.erase(printer_id);
     // Create the entry.
     std::unique_ptr<Printer::PpdReference>& value =
@@ -409,6 +430,8 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
     RebuildDetectedLists();
     UpdateConfiguredPrinterURIs();
   }
+
+  SEQUENCE_CHECKER(sequence_);
 
   // Source lists for detected printers.
   std::vector<PrinterDetector::DetectedPrinter> usb_detections_;

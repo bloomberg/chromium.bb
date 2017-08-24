@@ -21,6 +21,8 @@ class PrinterDetector;
 class PrinterEventTracker;
 class SyncedPrintersManager;
 
+// Top level manager of available CUPS printers in ChromeOS.  All functions
+// in this class must be called from a sequenced context.
 class CupsPrintersManager {
  public:
   // Classes of printers tracked.  See doc/cups_printers_management.md for
