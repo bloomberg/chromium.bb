@@ -443,10 +443,6 @@
       name: "FontCacheScaling",
       status: "test",
     },
-    // See crbug.com/585250.
-    {
-      name: "ForceDisable2dCanvasCopyOnWrite",
-    },
     {
       name: "ForceDisplayList2dCanvas",
     },

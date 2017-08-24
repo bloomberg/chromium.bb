@@ -116,10 +116,6 @@ void WebRuntimeFeatures::ForceDisplayList2dCanvas(bool enable) {
   RuntimeEnabledFeatures::SetForceDisplayList2dCanvasEnabled(enable);
 }
 
-void WebRuntimeFeatures::ForceDisable2dCanvasCopyOnWrite(bool enable) {
-  RuntimeEnabledFeatures::SetForceDisable2dCanvasCopyOnWriteEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableDisplayList2dCanvas(bool enable) {
   RuntimeEnabledFeatures::SetDisplayList2dCanvasEnabled(enable);
 }
