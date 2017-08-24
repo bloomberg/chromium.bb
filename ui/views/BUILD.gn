@@ -463,7 +463,7 @@ component("views") {
     "//ui/views/resources",
   ]
 
-  if (use_x11 && !is_chromeos) {
+  if (use_x11) {
     deps += [ "//ui/display/util" ]
   }
   if (is_linux && !is_chromeos) {
@@ -825,7 +825,7 @@ static_library("test_support_internal") {
       "//ui/wm",
       "//ui/wm/public",
     ]
-    if (use_x11 && !is_chromeos) {
+    if (use_x11) {
       sources += [
         "test/desktop_screen_x11_test_api.cc",
         "test/desktop_screen_x11_test_api.h",

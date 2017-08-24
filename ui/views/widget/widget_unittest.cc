@@ -1058,7 +1058,7 @@ TEST_F(WidgetTest, GetWindowPlacement) {
 #endif
 
   WidgetAutoclosePtr widget;
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
+#if defined(USE_X11)
   // On desktop-Linux cheat and use non-desktop widgets. On X11, minimize is
   // asynchronous. Also (harder) showing a window doesn't activate it without
   // user interaction (or extra steps only done for interactive ui tests).
