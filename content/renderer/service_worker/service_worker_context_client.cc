@@ -43,6 +43,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/renderer/devtools/devtools_agent.h"
@@ -57,6 +58,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "storage/public/interfaces/blobs.mojom.h"
 #include "third_party/WebKit/public/platform/InterfaceProvider.h"
@@ -299,6 +302,11 @@ template <typename Key, typename Callback>
 void AbortPendingEventCallbacks(std::map<Key, Callback>& callbacks) {
   for (auto& item : callbacks)
     std::move(item.second).Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
+}
+
+void GetBlobRegistry(storage::mojom::BlobRegistryRequest request) {
+  ChildThreadImpl::current()->GetConnector()->BindInterface(
+      mojom::kBrowserServiceName, std::move(request));
 }
 
 }  // namespace
@@ -815,6 +823,8 @@ void ServiceWorkerContextClient::WillDestroyWorkerContext(
   // (while we're still on the worker thread).
   proxy_ = NULL;
 
+  blob_registry_.reset();
+
   // Aborts all the pending events callbacks.
   AbortPendingEventCallbacks(context_->install_event_callbacks,
                              false /* has_fetch_handler */);
@@ -1031,10 +1041,15 @@ void ServiceWorkerContextClient::RespondToFetchEvent(
       blob_ptr = response.blob->TakeBlobPtr();
       response.blob = nullptr;
     } else {
-      blob_ptr.Bind(storage::mojom::BlobPtrInfo(
-          blink::WebBlobRegistry::GetBlobPtrFromUUID(
-              blink::WebString::FromASCII(response.blob_uuid)),
-          storage::mojom::Blob::Version_));
+      if (!blob_registry_) {
+        // TODO(kinuko): We should use per-frame / per-worker InterfaceProvider
+        // instead (crbug.com/734210).
+        main_thread_task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(&GetBlobRegistry, MakeRequest(&blob_registry_)));
+      }
+      blob_registry_->GetBlobFromUUID(MakeRequest(&blob_ptr),
+                                      response.blob_uuid);
     }
     if (ServiceWorkerUtils::IsServicificationEnabled()) {
       // Blob's lifetime is guaranteed via mojom::BlobPtr, but

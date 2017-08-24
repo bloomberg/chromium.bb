@@ -578,7 +578,6 @@ component("platform") {
     "exported/WebAudioBus.cpp",
     "exported/WebAudioDevice.cpp",
     "exported/WebBlobData.cpp",
-    "exported/WebBlobRegistry.cpp",
     "exported/WebCORS.cpp",
     "exported/WebCORSPreflightResultCache.cpp",
     "exported/WebCache.cpp",

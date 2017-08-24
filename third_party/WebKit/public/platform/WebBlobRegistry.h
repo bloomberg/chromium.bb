@@ -96,13 +96,6 @@ class WebBlobRegistry {
   virtual void RemoveBlobDataRef(const WebString& uuid) {}
   virtual void RegisterPublicBlobURL(const WebURL&, const WebString& uuid) {}
   virtual void RevokePublicBlobURL(const WebURL&) {}
-
-  // This is a transient method for easier transition of legacy code that
-  // still relies on Blob UUID. Using this for new code should be discouraged
-  // unless there is a clear reason (e.g. a temporary work-around only during
-  // the code transition period).
-  BLINK_PLATFORM_EXPORT static mojo::ScopedMessagePipeHandle GetBlobPtrFromUUID(
-      const WebString& uuid);
 };
 
 }  // namespace blink
