@@ -36,13 +36,13 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   DCHECK(current_properties_.property_tree_state.Effect());
 #endif
 
-  bool is_foreign_layer = DisplayItem::IsForeignLayerType(item.GetType());
-  if (is_foreign_layer) {
+  bool item_forces_new_chunk = item.IsForeignLayer() || item.IsScrollHitTest();
+  if (item_forces_new_chunk) {
     force_new_chunk_ = true;
     // Clear current_chunk_id_ so that we will use the current display item's id
-    // as the chunk id, and any display items after the foreign layer without a
+    // as the chunk id, and any display items after the forcing item without a
     // new chunk id will be treated as having no id to avoid the chunk from
-    // using the same id as the chunk before the foreign layer chunk.
+    // using the same id as the chunk before the forced chunk.
     current_chunk_id_ = WTF::nullopt;
   }
 
@@ -66,9 +66,9 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
                        current_properties_, cacheable);
   chunks_.push_back(new_chunk);
 
-  // For foreign layer display item, we still need to force new chunk for the
-  // next display item. Otherwise reset force_new_chunk_ to false.
-  if (!is_foreign_layer)
+  // When forcing a new chunk, we still need to force new chunk for the next
+  // display item. Otherwise reset force_new_chunk_ to false.
+  if (!item_forces_new_chunk)
     force_new_chunk_ = false;
 
   return true;

@@ -12,10 +12,14 @@ namespace blink {
 
 ScrollHitTestDisplayItem::ScrollHitTestDisplayItem(
     const DisplayItemClient& client,
-    Type type)
-    : DisplayItem(client, type, sizeof(*this)) {
+    Type type,
+    PassRefPtr<const TransformPaintPropertyNode> scroll_offset_node)
+    : DisplayItem(client, type, sizeof(*this)),
+      scroll_offset_node_(std::move(scroll_offset_node)) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(IsScrollHitTestType(type));
+  // The scroll offset transform node should have an associated scroll node.
+  DCHECK(scroll_offset_node_->ScrollNode());
 }
 
 ScrollHitTestDisplayItem::~ScrollHitTestDisplayItem() {}
@@ -31,7 +35,9 @@ void ScrollHitTestDisplayItem::AppendToWebDisplayItemList(
 }
 
 bool ScrollHitTestDisplayItem::Equals(const DisplayItem& other) const {
-  return DisplayItem::Equals(other);
+  return DisplayItem::Equals(other) &&
+         &scroll_node() ==
+             &static_cast<const ScrollHitTestDisplayItem&>(other).scroll_node();
 }
 
 #ifndef NDEBUG
@@ -41,19 +47,23 @@ void ScrollHitTestDisplayItem::DumpPropertiesAsDebugString(
 }
 #endif  // NDEBUG
 
-void ScrollHitTestDisplayItem::Record(GraphicsContext& context,
-                                      const DisplayItemClient& client,
-                                      DisplayItem::Type type) {
+void ScrollHitTestDisplayItem::Record(
+    GraphicsContext& context,
+    const DisplayItemClient& client,
+    DisplayItem::Type type,
+    PassRefPtr<const TransformPaintPropertyNode> scroll_offset_node) {
   PaintController& paint_controller = context.GetPaintController();
+
+  // The scroll hit test should be in the non-scrolled transform space and
+  // therefore should not be scrolled by the associated scroll offset.
+  DCHECK(paint_controller.CurrentPaintChunkProperties()
+             .property_tree_state.Transform() != scroll_offset_node);
+
   if (paint_controller.DisplayItemConstructionIsDisabled())
     return;
 
-  // Should be contained in a scroll translation node.
-  DCHECK(paint_controller.CurrentPaintChunkProperties()
-             .property_tree_state.Transform()
-             ->ScrollNode());
-
-  paint_controller.CreateAndAppend<ScrollHitTestDisplayItem>(client, type);
+  paint_controller.CreateAndAppend<ScrollHitTestDisplayItem>(
+      client, type, std::move(scroll_offset_node));
 }
 
 }  // namespace blink

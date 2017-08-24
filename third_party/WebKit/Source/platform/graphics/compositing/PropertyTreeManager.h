@@ -19,6 +19,7 @@ class Layer;
 class PropertyTrees;
 class ScrollTree;
 class TransformTree;
+struct TransformNode;
 }
 
 namespace blink {
@@ -88,11 +89,15 @@ class PropertyTreeManager {
   // if none yet exists, and return the compositor node's 'node id', a.k.a.,
   // 'node index'.
 
+  // Returns the compositor transform node id. If a compositor transform node
+  // does not exist, it is created. Any transforms that are for scroll offset
+  // translation will ensure the associated scroll node exists.
   int EnsureCompositorTransformNode(const TransformPaintPropertyNode*);
   int EnsureCompositorClipNode(const ClipPaintPropertyNode*);
-  // Update the layer->scroll and scroll->layer mapping. The latter is temporary
-  // until |owning_layer_id| is removed from the scroll node.
-  void UpdateLayerScrollMapping(cc::Layer*, const TransformPaintPropertyNode*);
+  // Ensure the compositor scroll node using the associated scroll offset
+  // translation.
+  int EnsureCompositorScrollNode(
+      const TransformPaintPropertyNode* scroll_offset_translation);
 
   // This function is expected to be invoked right before emitting each layer.
   // It keeps track of the nesting of clip and effects, output a composited
@@ -127,10 +132,11 @@ class PropertyTreeManager {
   cc::EffectTree& GetEffectTree();
   cc::ScrollTree& GetScrollTree();
 
-  int EnsureCompositorScrollNode(const ScrollPaintPropertyNode*);
-
-  // Scroll translation has special treatment in the transform and scroll trees.
-  void UpdateScrollAndScrollTranslationNodes(const TransformPaintPropertyNode*);
+  // Should only be called from EnsureCompositorTransformNode as part of
+  // creating the associated scroll offset transform node.
+  void CreateCompositorScrollNode(
+      const ScrollPaintPropertyNode*,
+      const cc::TransformNode& scroll_offset_translation);
 
   PropertyTreeManagerClient& client_;
 

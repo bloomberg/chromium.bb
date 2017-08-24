@@ -328,6 +328,44 @@ TEST_F(PaintChunkerTest, ForceNewChunk) {
                   PaintChunk(4, 6, id2, DefaultPaintChunkProperties())));
 }
 
+class TestScrollHitTestRequiringSeparateChunk : public TestDisplayItem {
+ public:
+  TestScrollHitTestRequiringSeparateChunk(const DisplayItemClient& client)
+      : TestDisplayItem(client, DisplayItem::kScrollHitTest) {}
+};
+
+// Ensure that items following a forced chunk begin using the next display
+// item's id.
+TEST_F(PaintChunkerTest, ChunksFollowingForcedChunk) {
+  PaintChunker chunker;
+  TestDisplayItemClient client;
+  TestDisplayItem before_forced1(client, DisplayItemType(9));
+  TestDisplayItem before_forced2(client, DisplayItemType(10));
+  TestScrollHitTestRequiringSeparateChunk forced(client);
+  TestDisplayItem after_forced1(client, DisplayItemType(11));
+  TestDisplayItem after_forced2(client, DisplayItemType(12));
+
+  PaintChunk::Id id0(client, DisplayItemType(8));
+  chunker.UpdateCurrentPaintChunkProperties(&id0,
+                                            DefaultPaintChunkProperties());
+  // Both before_forced items should be in a chunk together.
+  chunker.IncrementDisplayItemIndex(before_forced1);
+  chunker.IncrementDisplayItemIndex(before_forced2);
+  // The forced scroll hit test item should be in its own chunk.
+  chunker.IncrementDisplayItemIndex(forced);
+  // Both after_forced items should be in a chunk together.
+  chunker.IncrementDisplayItemIndex(after_forced1);
+  chunker.IncrementDisplayItemIndex(after_forced2);
+
+  Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
+  EXPECT_THAT(chunks,
+              ElementsAre(PaintChunk(0, 2, id0, DefaultPaintChunkProperties()),
+                          PaintChunk(2, 3, forced.GetId(),
+                                     DefaultPaintChunkProperties()),
+                          PaintChunk(3, 5, after_forced1.GetId(),
+                                     DefaultPaintChunkProperties())));
+}
+
 TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   PaintChunker chunker;
 

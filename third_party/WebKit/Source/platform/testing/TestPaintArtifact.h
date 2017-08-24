@@ -10,7 +10,7 @@
 #include "platform/graphics/Color.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintArtifact.h"
-#include "platform/graphics/paint/ScrollPaintPropertyNode.h"
+#include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/Vector.h"
@@ -55,6 +55,8 @@ class TestPaintArtifact {
   TestPaintArtifact& ForeignLayer(const FloatPoint&,
                                   const IntSize&,
                                   scoped_refptr<cc::Layer>);
+  TestPaintArtifact& ScrollHitTest(
+      PassRefPtr<const TransformPaintPropertyNode> scroll_offset);
 
   // Can't add more things once this is called.
   const PaintArtifact& Build();
