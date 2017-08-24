@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/android/system/watcher_impl.h"
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -97,10 +95,6 @@ static void Delete(JNIEnv* env,
                    const JavaParamRef<jobject>& jcaller,
                    jlong watcher_ptr) {
   delete reinterpret_cast<WatcherImpl*>(watcher_ptr);
-}
-
-bool RegisterWatcherImpl(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/android/system/base_run_loop.h"
-
 #include <jni.h>
 
 #include "base/android/jni_android.h"
@@ -68,10 +66,6 @@ static void DeleteMessageLoop(JNIEnv* env,
   base::MessageLoop* message_loop =
       reinterpret_cast<base::MessageLoop*>(runLoopID);
   delete message_loop;
-}
-
-bool RegisterBaseRunLoop(JNIEnv* env) {
-  return RegisterNativesImpl(env);
 }
 
 }  // namespace android

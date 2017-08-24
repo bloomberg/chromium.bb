@@ -38,13 +38,8 @@ generate_jni("system_java_jni_headers") {
 source_set("libsystem_java") {
   sources = [
     "system/base_run_loop.cc",
-    "system/base_run_loop.h",
     "system/core_impl.cc",
-    "system/core_impl.h",
-    "system/mojo_jni_registrar.cc",
-    "system/mojo_jni_registrar.h",
     "system/watcher_impl.cc",
-    "system/watcher_impl.h",
   ]
 
   deps = [
@@ -109,8 +104,8 @@ android_library("mojo_javatests") {
     "//mojo/public/interfaces/bindings/tests:test_mojom_import_java",
     "//mojo/public/java:bindings_java",
     "//mojo/public/java:system_java",
-    "//third_party/junit",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
   ]
 
   data = [
@@ -124,9 +119,7 @@ shared_library("mojo_java_unittests") {
   sources = [
     "javatests/init_library.cc",
     "javatests/mojo_test_rule.cc",
-    "javatests/mojo_test_rule.h",
     "javatests/validation_test_util.cc",
-    "javatests/validation_test_util.h",
   ]
 
   deps = [
