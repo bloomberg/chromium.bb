@@ -12,6 +12,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/payments/payment_request_error_view_controller.h"
@@ -201,16 +202,12 @@ id<GREYMatcher> OKButton() {
   return ButtonWithAccessibilityLabelId(IDS_OK);
 }
 
-id<GREYMatcher> SignInMenuButton() {
-  return grey_accessibilityID(kSettingsSignInCellId);
-}
-
 id<GREYMatcher> PrimarySignInButton() {
-  return SignInMenuButton();
+  return grey_accessibilityID(kSigninPromoPrimaryButtonId);
 }
 
 id<GREYMatcher> SecondarySignInButton() {
-  return SignInMenuButton();
+  return grey_accessibilityID(kSigninPromoSecondaryButtonId);
 }
 
 id<GREYMatcher> SettingsAccountButton() {
