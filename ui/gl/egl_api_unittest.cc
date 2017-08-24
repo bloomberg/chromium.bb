@@ -25,6 +25,8 @@ class EGLApiTest : public testing::Test {
     g_driver_egl.fn.eglGetDisplayFn = &FakeGetDisplay;
     g_driver_egl.fn.eglGetErrorFn = &FakeGetError;
     g_driver_egl.fn.eglGetProcAddressFn = &FakeGetProcAddress;
+
+    SetGLImplementation(kGLImplementationEGLGLES2);
   }
 
   void TearDown() override {
@@ -119,14 +121,15 @@ TEST_F(EGLApiTest, DisabledExtensionBitTest) {
 }
 
 TEST_F(EGLApiTest, DisabledExtensionStringTest) {
-  static const char* kFakeExtensions = "EGL_EXT_1 EGL_EXT_2"
-                                       " EGL_EXT_3 EGL_EXT_4";
+  static const char* kFakeExtensions =
+      "EGL_EXT_1 EGL_KHR_fence_sync EGL_EXT_3 EGL_KHR_wait_sync";
   static const char* kFakeClientExtensions =
       "EGL_CLIENT_EXT_1 EGL_CLIENT_EXT_2";
   static const char* kFakeDisabledExtensions =
-      "EGL_EXT_1,EGL_EXT_2,EGL_FAKE,EGL_CLIENT_EXT_1";
-  static const char* kFilteredExtensions = "EGL_EXT_3 EGL_EXT_4";
-  static const char* kFilteredClientExtensions = "EGL_CLIENT_EXT_2";
+      "EGL_KHR_fence_sync,EGL_KHR_wait_sync";
+  static const char* kFilteredExtensions = "EGL_EXT_1 EGL_EXT_3";
+  static const char* kFilteredClientExtensions =
+      "EGL_CLIENT_EXT_1 EGL_CLIENT_EXT_2";
 
   SetFakeExtensionString(kFakeExtensions, kFakeClientExtensions);
   InitializeAPI(nullptr);

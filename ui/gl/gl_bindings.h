@@ -469,6 +469,7 @@ struct GL_EXPORT DriverEGL {
   void InitializeClientExtensionBindings();
   void InitializeExtensionBindings();
   void ClearBindings();
+  void UpdateConditionalExtensionBindings();
 
   ProcsEGL fn;
   ExtensionsEGL ext;
