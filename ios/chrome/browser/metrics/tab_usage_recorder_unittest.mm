@@ -17,7 +17,6 @@
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/ocmock_extensions.h"
@@ -50,6 +49,9 @@
 }
 - (void)setVisibleURL:(const GURL&)visibleURL {
   _visibleURL = visibleURL;
+}
+- (void)setIsEvicted:(BOOL)evicted {
+  _webState.SetIsEvicted(evicted);
 }
 - (web::WebState*)webState {
   if (!_webState.GetNavigationManager()) {
@@ -122,14 +124,10 @@ class TabUsageRecorderTest : public PlatformTest {
   id MockTab(bool inMemory) {
     id tab_mock = [[TURTestTabMock alloc]
         initWithRepresentedObject:[OCMockObject mockForClass:[Tab class]]];
-    id web_controller_mock =
-        [OCMockObject mockForClass:[CRWWebController class]];
-    [[[tab_mock stub] andReturn:web_controller_mock] webController];
     [[[tab_mock stub] andReturnBool:false] isPrerenderTab];
     [tab_mock setLastCommittedURL:webUrl_];
     [tab_mock setVisibleURL:webUrl_];
-    [[[web_controller_mock stub] andReturnBool:inMemory] isViewAlive];
-    [[web_controller_mock stub] removeObserver:OCMOCK_ANY];
+    [tab_mock setIsEvicted:!inMemory];
     return tab_mock;
   }
 

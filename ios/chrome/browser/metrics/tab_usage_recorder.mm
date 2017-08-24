@@ -11,7 +11,6 @@
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
-#import "ios/web/web_state/ui/crw_web_controller.h"
 
 // The histogram recording the state of the tab the user switches to.
 const char kSelectedTabHistogramName[] =
@@ -171,7 +170,7 @@ void TabUsageRecorder::RecordPrimaryTabModelChange(BOOL primary_tab_model,
 void TabUsageRecorder::RecordPageLoadStart(Tab* tab) {
   if (!ShouldIgnoreTab(tab)) {
     page_loads_++;
-    if (![[tab webController] isViewAlive]) {
+    if (tab.webState->IsEvicted()) {
       // On the iPad, there is no notification that a tab is being re-selected
       // after changing modes.  This catches the case where the pre-incognito
       // selected tab is selected again when leaving incognito mode.
@@ -310,7 +309,7 @@ bool TabUsageRecorder::TabAlreadyEvicted(Tab* tab) {
 
 TabUsageRecorder::TabStateWhenSelected TabUsageRecorder::ExtractTabState(
     Tab* tab) {
-  if ([[tab webController] isViewAlive])
+  if (!tab.webState->IsEvicted())
     return IN_MEMORY;
 
   base::WeakNSObject<Tab> weak_tab(tab);

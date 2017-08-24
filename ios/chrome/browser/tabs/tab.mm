@@ -665,10 +665,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (UIView*)view {
+  if (!self.webState)
+    return nil;
+
   // Record reload of previously-evicted tab.
-  if (![self.webController isViewAlive] && [_parentTabModel tabUsageRecorder])
+  if (self.webState->IsEvicted() && [_parentTabModel tabUsageRecorder])
     [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self);
-  return self.webState ? self.webState->GetView() : nil;
+  return self.webState->GetView();
 }
 
 - (UIView*)viewForPrinting {
