@@ -11,6 +11,8 @@ import datetime
 import os
 import sys
 
+from infra_libs import ts_mon
+
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import goma_util
@@ -1030,6 +1032,15 @@ class ReportStage(generic_stages.BuilderStage,
       if self._run.options.sanity_check_build:
         metrics.Counter(constants.MON_BUILD_SANITY_COMP_COUNT).increment(
             fields=mon_fields)
+        metrics.Gauge(
+            constants.MON_BUILD_SANITY_ID,
+            description=("The ID of the latest sanity build. Used for "
+                         "recovering the link to the latest failing build in "
+                         "the alert when a sanity build fails."),
+            field_spec=[ts_mon.StringField('status'),
+                        ts_mon.StringField('build_config'),
+                        ts_mon.BooleanField('important')]
+        ).set(build_id, fields=mon_fields)
 
       if config_lib.IsMasterCQ(self._run.config):
         self_destructed = self._run.attrs.metadata.GetValueWithDefault(
