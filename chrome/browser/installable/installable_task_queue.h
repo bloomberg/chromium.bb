@@ -9,6 +9,7 @@
 #include "chrome/browser/installable/installable_params.h"
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 
 using InstallableTask = std::pair<InstallableParams, InstallableCallback>;
 
@@ -19,16 +20,16 @@ class InstallableTaskQueue {
   ~InstallableTaskQueue();
 
   // Adds task to the end of the active list of tasks to be processed.
-  void Insert(InstallableTask task);
+  void Add(InstallableTask task);
 
   // Moves the current task from the main to the paused list.
   void PauseCurrent();
 
-  // Reports whether there are any tasks in the paused list.
-  bool HasPaused() const;
-
   // Moves all paused tasks to the main list.
   void UnpauseAll();
+
+  // Reports whether there are any tasks in the main list.
+  bool HasCurrent() const;
 
   // Returns the currently active task.
   InstallableTask& Current();
@@ -39,9 +40,6 @@ class InstallableTaskQueue {
   // Clears all tasks from the main and paused list.
   void Reset();
 
-  // Reports whether the main list is empty.
-  bool IsEmpty() const;
-
  private:
   // The list of <params, callback> pairs that have come from a call to
   // InstallableManager::GetData.
@@ -49,6 +47,13 @@ class InstallableTaskQueue {
 
   // Tasks which are waiting indefinitely for a service worker to be detected.
   std::vector<InstallableTask> paused_tasks_;
+
+  friend class InstallableManagerBrowserTest;
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
+                           CheckLazyServiceWorkerPassesWhenWaiting);
+
+  FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
+                           CheckLazyServiceWorkerNoFetchHandlerFails);
 };
 
 #endif  // CHROME_BROWSER_INSTALLABLE_INSTALLABLE_TASK_QUEUE_H_

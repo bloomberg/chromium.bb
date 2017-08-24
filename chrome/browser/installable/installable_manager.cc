@@ -139,8 +139,8 @@ void InstallableManager::GetData(const InstallableParams& params,
 
   // Return immediately if we're already working on a task. The new task will be
   // looked at once the current task is finished.
-  bool was_active = !task_queue_.IsEmpty();
-  task_queue_.Insert({params, callback});
+  bool was_active = task_queue_.HasCurrent();
+  task_queue_.Add({params, callback});
   if (was_active)
     return;
 
@@ -384,7 +384,7 @@ void InstallableManager::WorkOnTask() {
 
     task_queue_.Next();
 
-    if (!task_queue_.IsEmpty())
+    if (task_queue_.HasCurrent())
       WorkOnTask();
 
     return;
@@ -514,7 +514,7 @@ void InstallableManager::OnDidCheckHasServiceWorker(
         params.wait_for_worker = false;
         OnWaitingForServiceWorker();
         task_queue_.PauseCurrent();
-        if (!task_queue_.IsEmpty())
+        if (task_queue_.HasCurrent())
           WorkOnTask();
 
         return;
@@ -576,22 +576,26 @@ void InstallableManager::OnIconFetched(
 }
 
 void InstallableManager::OnRegistrationStored(const GURL& pattern) {
-  // If we don't have any paused tasks, that means:
-  //   a) we've already failed the check, or
-  //   b) we haven't yet called CheckHasServiceWorker.
-  // Otherwise if the scope doesn't match we keep waiting.
-  if (!task_queue_.HasPaused() || !content::ServiceWorkerContext::ScopeMatches(
-                                      pattern, manifest().start_url)) {
+  // If the scope doesn't match we keep waiting.
+  if (!content::ServiceWorkerContext::ScopeMatches(pattern,
+                                                   manifest().start_url)) {
     return;
   }
 
-  bool was_active = !task_queue_.IsEmpty();
-  task_queue_.UnpauseAll();
+  bool was_active = task_queue_.HasCurrent();
 
-  // Start the pipeline again if it was not running. This will call
-  // CheckHasServiceWorker to check if the SW has a fetch handler. Otherwise,
-  // adding the tasks to the end of the active queue is sufficient.
-  if (!was_active)
+  // The existence of paused tasks implies that we are waiting for a service
+  // worker. We move any paused tasks back into the main queue so that the
+  // pipeline will call CheckHasServiceWorker again, in order to find out if
+  // the SW has a fetch handler.
+  // NOTE: If there are no paused tasks, that means:
+  //   a) we've already failed the check, or
+  //   b) we haven't yet called CheckHasServiceWorker.
+  task_queue_.UnpauseAll();
+  if (was_active)
+    return;  // If the pipeline was already running, we don't restart it.
+
+  if (task_queue_.HasCurrent())
     WorkOnTask();
 }
 

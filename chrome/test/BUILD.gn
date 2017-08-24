@@ -3156,6 +3156,7 @@ test("unit_tests") {
     "../browser/install_verification/win/module_verification_test.cc",
     "../browser/install_verification/win/module_verification_test.h",
     "../browser/installable/installable_manager_unittest.cc",
+    "../browser/installable/installable_task_queue_unittest.cc",
     "../browser/internal_auth_unittest.cc",
     "../browser/io_thread_unittest.cc",
     "../browser/loader/chrome_navigation_data_unittest.cc",
