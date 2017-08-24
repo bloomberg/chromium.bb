@@ -15442,6 +15442,7 @@
             "scarlet-release",
             "sentry-release",
             "setzer-release",
+            "smaug-release",
             "snappy-release",
             "soraka-release",
             "squawks-release",
@@ -22888,6 +22889,7 @@
     },
     "smaug-release": {
         "_template": "release",
+        "active_waterfall": "chromeos",
         "boards": [
             "smaug"
         ],
