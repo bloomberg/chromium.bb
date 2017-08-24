@@ -162,6 +162,8 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget, Shelf* shelf)
       update_shelf_observer_(nullptr),
       chromevox_panel_height_(0),
       duration_override_in_ms_(0),
+      is_background_blur_enabled_(
+          app_list::features::IsBackgroundBlurEnabled()),
       shelf_background_type_(SHELF_BACKGROUND_OVERLAP),
       keyboard_observer_(this),
       scoped_session_observer_(this) {
@@ -1295,7 +1297,11 @@ float ShelfLayoutManager::GetAppListBackgroundOpacityOnShelfOpacity() {
       std::min(std::abs(gesture_drag_amount_) /
                    ((app_list::AppListView::kNumOfShelfSize + 1) * kShelfSize),
                1.0f);
-  return app_list::AppListView::kAppListOpacity * coefficient +
+  float app_list_view_opacity =
+      is_background_blur_enabled_
+          ? app_list::AppListView::kAppListOpacityWithBlur
+          : app_list::AppListView::kAppListOpacity;
+  return app_list_view_opacity * coefficient +
          (1 - coefficient) * shelf_opacity;
 }
 
