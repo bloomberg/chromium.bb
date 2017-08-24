@@ -21,27 +21,26 @@ class CORE_EXPORT CSSParserTokenRange {
   DISALLOW_NEW();
 
  public:
-  template <size_t inlineBuffer>
-  CSSParserTokenRange(const Vector<CSSParserToken, inlineBuffer>& vector)
-      : first_(vector.begin()), last_(vector.end()) {}
+  CSSParserTokenRange(const Vector<CSSParserToken>& buffer)
+      : buffer_(&buffer), first_(0), last_(buffer.size()) {}
 
   // This should be called on a range with tokens returned by that range.
   CSSParserTokenRange MakeSubRange(const CSSParserToken* first,
                                    const CSSParserToken* last) const;
 
   bool AtEnd() const { return first_ == last_; }
-  const CSSParserToken* end() const { return last_; }
+  const CSSParserToken* end() const { return buffer_->begin() + last_; }
 
   const CSSParserToken& Peek(unsigned offset = 0) const {
     if (first_ + offset >= last_)
       return g_static_eof_token;
-    return *(first_ + offset);
+    return (*buffer_)[first_ + offset];
   }
 
   const CSSParserToken& Consume() {
     if (first_ == last_)
       return g_static_eof_token;
-    return *first_++;
+    return (*buffer_)[first_++];
   }
 
   const CSSParserToken& ConsumeIncludingWhitespace() {
@@ -62,16 +61,24 @@ class CORE_EXPORT CSSParserTokenRange {
 
   String Serialize() const;
 
-  const CSSParserToken* begin() const { return first_; }
+  const CSSParserToken* begin() const { return buffer_->begin() + first_; }
 
   static void InitStaticEOFToken();
 
  private:
-  CSSParserTokenRange(const CSSParserToken* first, const CSSParserToken* last)
-      : first_(first), last_(last) {}
+  CSSParserTokenRange(const Vector<CSSParserToken>& buffer,
+                      size_t first,
+                      size_t last)
+      : buffer_(&buffer), first_(first), last_(last) {
+    DCHECK_LE(first_, buffer_->size());
+    DCHECK_LE(last_, buffer_->size());
+    DCHECK_LE(first_, last_);
+  }
 
-  const CSSParserToken* first_;
-  const CSSParserToken* last_;
+  // This is a non-null pointer to make this class copy-assignable
+  const Vector<CSSParserToken>* buffer_;
+  size_t first_;
+  size_t last_;
 };
 
 }  // namespace blink

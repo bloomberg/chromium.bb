@@ -180,6 +180,26 @@ TEST_P(CSSParserTokenStreamTest, ConsumeIncludingWhitespace) {
   EXPECT_TRUE(stream.AtEnd());
 }
 
+TEST_P(CSSParserTokenStreamTest, RangesDoNotGetInvalidatedWhenConsuming) {
+  String s = "1 ";
+  for (int i = 0; i < 100; i++)
+    s.append("A ");
+
+  CSSTokenizer tokenizer(s);
+  auto stream = GetStream(tokenizer, GetParam());
+
+  const auto start = stream.Position();
+  EXPECT_EQ(kNumberToken, stream.ConsumeIncludingWhitespace().GetType());
+  auto range = stream.MakeSubRange(start, stream.Position());
+
+  // Consume remaining tokens to cause buffer resize
+  while (!stream.AtEnd())
+    stream.ConsumeIncludingWhitespace();
+
+  EXPECT_EQ(kNumberToken, range.ConsumeIncludingWhitespace().GetType());
+  EXPECT_TRUE(range.AtEnd());
+}
+
 INSTANTIATE_TEST_CASE_P(ShouldTokenizeToEnd,
                         CSSParserTokenStreamTest,
                         ::testing::Bool());

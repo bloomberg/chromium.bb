@@ -107,7 +107,7 @@ class CORE_EXPORT CSSTokenizer {
   CSSTokenizerInputStream input_;
   Vector<CSSParserTokenType, 8> block_stack_;
 
-  Vector<CSSParserToken, 32> tokens_;
+  Vector<CSSParserToken> tokens_;
   // We only allocate strings when escapes are used.
   Vector<String> string_pool_;
 
