@@ -1573,6 +1573,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_COMPOSE_EMAIL_SETTING" desc="Title for the view and option to select a handler for mailto: URLs. [Length: 20em]">
         Compose Email
       </message>
+      <message name="IDS_IOS_CHOOSE_EMAIL_CLIENT_APP" desc="Title for action sheet to select an email client app when user taps on an URL that has a mailto: URL scheme. [Length: 50em]">
+        Create email with:
+      </message>
     </messages>
   </release>
 </grit>
