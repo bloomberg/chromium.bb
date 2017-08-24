@@ -10,7 +10,7 @@
 
 namespace device {
 
-// This class is guarantied to have a fixed size of 64 bits on every platform.
+// This class is guaranteed to have a fixed size of 64 bits on every platform.
 // It is introduce to simplify sensors shared buffer memory calculation.
 template <typename Data>
 class SensorReadingField {
@@ -87,24 +87,33 @@ struct SensorReadingQuat : public SensorReadingXYZ {
 //
 // ACCELEROMETER:
 // accel.x: acceleration minus Gx on the x-axis in SI meters per second
-// squared (m/s^2) units.
+// squared (m/s^2) units. It corresponds to Accelerometer.x in the W3C
+// Accelerometer Specification.
 // accel.y: acceleration minus Gy on the y-axis in SI meters per second
-// squared (m/s^2) units.
+// squared (m/s^2) units. It corresponds to Accelerometer.y in the W3C
+// Accelerometer Specification.
 // accel.z: acceleration minus Gz on the z-axis in SI meters per second
-// squared (m/s^2) units.
+// squared (m/s^2) units. It corresponds to Accelerometer.y in the W3C
+// Accelerometer Specification.
 //
 // LINEAR_ACCELERATION:
 // accel.x: acceleration on the x-axis in SI meters per second squared
-// (m/s^2) units.
+// (m/s^2) units. It corresponds to LinearAccelerationSensor.x in the W3C
+// Accelerometer Specification.
 // accel.y: acceleration on the y-axis in SI meters per second squared
-// (m/s^2) units.
+// (m/s^2) units. It corresponds to LinearAccelerationSensor.y in the W3C
+// Accelerometer Specification.
 // accel.z: acceleration on the z-axis in SI meters per second squared
-// (m/s^2) units.
+// (m/s^2) units. It corresponds to LinearAccelerationSensor.z in the W3C
+// Accelerometer Specification.
 //
 // GYROSCOPE:
-// gyro.x: angular speed around the x-axis in radians/second.
-// gyro.y: angular speed around the y-axis in radians/second.
-// gyro.z: angular speed around the z-axis in radians/second.
+// gyro.x: angular speed around the x-axis in radians/second. It corresponds to
+// Gyroscope.x in the W3C Gyroscope Specification.
+// gyro.y: angular speed around the y-axis in radians/second. It corresponds to
+// Gyroscope.y in the W3C Gyroscope Specification.
+// gyro.z: angular speed around the z-axis in radians/second. It corresponds to
+// Gyroscope.z in the W3C Gyroscope Specification.
 //
 // MAGNETOMETER:
 // magn.x: ambient magnetic field in the x-axis in micro-Tesla (uT).
