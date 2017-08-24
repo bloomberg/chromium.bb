@@ -1499,10 +1499,10 @@ interface Node {
 }
 ```
 
-The counters specified in the IDL file also need to be defined in Source/platform/bindings/RuntimeCallStats.h (under FOR_EACH_COUNTER) as follows:
+The counters specified in the IDL file also need to be defined in Source/platform/bindings/RuntimeCallStats.h (under CALLBACK_COUNTERS) as follows:
 
 ```cpp
-#define FOR_EACH_COUNTER(V)                          \
+#define CALLBACK_COUNTERS(V)                         \
 ...                                                  \
   BINDINGS_READ_ONLY_ATTRIBUTE(V, NodeOwnerDocument) \
   BINDINGS_ATTRIBUTE(V, NodeTextContent)             \

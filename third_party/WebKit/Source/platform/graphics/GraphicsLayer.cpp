@@ -1211,8 +1211,6 @@ sk_sp<PaintRecord> GraphicsLayer::CaptureRecord() {
 void GraphicsLayer::PaintContents(WebDisplayItemList* web_display_item_list,
                                   PaintingControlSetting painting_control) {
   TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
-  RUNTIME_CALL_TIMER_SCOPE(V8PerIsolateData::MainThreadIsolate(),
-                           RuntimeCallStats::CounterId::kPaintContents);
 
   PaintController& paint_controller = GetPaintController();
   paint_controller.SetDisplayItemConstructionIsDisabled(

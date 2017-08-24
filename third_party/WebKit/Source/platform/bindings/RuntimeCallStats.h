@@ -185,40 +185,60 @@ class PLATFORM_EXPORT RuntimeCallStats {
   V(counter##_Setter)
 
 // Counters
-#define FOR_EACH_COUNTER(V)                                             \
-  V(AssociateObjectWithWrapper)                                         \
-  V(CollectGarbage)                                                     \
-  V(CreateWrapper)                                                      \
-  V(DocumentFragmentParseHTML)                                          \
-  V(GcEpilogue)                                                         \
-  V(GcPrologue)                                                         \
-  V(GetEventListener)                                                   \
-  V(HasInstance)                                                        \
-  V(PaintContents)                                                      \
-  V(PerformIdleLazySweep)                                               \
-  V(ProcessStyleSheet)                                                  \
-  V(ToExecutionContext)                                                 \
-  V(ToV8DOMWindow)                                                      \
-  V(ToV8SequenceInternal)                                               \
-  V(UpdateLayerPositionsAfterLayout)                                    \
-  V(UpdateLayout)                                                       \
-  V(UpdateStyle)                                                        \
-  V(SetReturnValueFromStringSlow)                                       \
-  V(V8ExternalStringSlow)                                               \
+
+#define BINDINGS_COUNTERS(V)      \
+  V(AssociateObjectWithWrapper)   \
+  V(CreateWrapper)                \
+  V(GetEventListener)             \
+  V(HasInstance)                  \
+  V(ToExecutionContext)           \
+  V(ToV8DOMWindow)                \
+  V(ToV8SequenceInternal)         \
+  V(SetReturnValueFromStringSlow) \
+  V(V8ExternalStringSlow)
+
+#define GC_COUNTERS(V) \
+  V(CollectGarbage)    \
+  V(GcEpilogue)        \
+  V(GcPrologue)        \
+  V(PerformIdleLazySweep)
+
+#define PARSING_COUNTERS(V) V(DocumentFragmentParseHTML)
+
+#define STYLE_COUNTERS(V) \
+  V(ProcessStyleSheet)    \
+  V(UpdateStyle)
+
+#define LAYOUT_COUNTERS(V) \
+  V(UpdateLayout)          \
+  V(UpdateLayerPositionsAfterLayout)
+
+#define CALLBACK_COUNTERS(V)                       \
+  BINDINGS_METHOD(V, ElementGetBoundingClientRect) \
+  BINDINGS_METHOD(V, EventTargetDispatchEvent)     \
+  BINDINGS_METHOD(V, HTMLElementClick)             \
+  BINDINGS_METHOD(V, NodeAppendChild)              \
+  BINDINGS_METHOD(V, NodeRemoveChild)              \
+  BINDINGS_METHOD(V, WindowSetTimeout)             \
+  BINDINGS_ATTRIBUTE(V, DocumentCookie)            \
+  BINDINGS_ATTRIBUTE(V, ElementInnerHTML)
+
+#define EXTRA_COUNTERS(V)                                               \
   V(V8)                                                                 \
-  BINDINGS_METHOD(V, ElementGetBoundingClientRect)                      \
-  BINDINGS_METHOD(V, EventTargetDispatchEvent)                          \
-  BINDINGS_METHOD(V, HTMLElementClick)                                  \
-  BINDINGS_METHOD(V, NodeAppendChild)                                   \
-  BINDINGS_METHOD(V, NodeRemoveChild)                                   \
-  BINDINGS_METHOD(V, WindowSetTimeout)                                  \
-  BINDINGS_ATTRIBUTE(V, DocumentCookie)                                 \
-  BINDINGS_ATTRIBUTE(V, ElementInnerHTML)                               \
   V(TestCounter1)                                                       \
   V(TestCounter2)                                                       \
   BINDINGS_METHOD(V, BindingsMethodTestCounter)                         \
   BINDINGS_READ_ONLY_ATTRIBUTE(V, BindingsReadOnlyAttributeTestCounter) \
   BINDINGS_ATTRIBUTE(V, BindingsAttributeTestCounter)
+
+#define FOR_EACH_COUNTER(V) \
+  BINDINGS_COUNTERS(V)      \
+  GC_COUNTERS(V)            \
+  PARSING_COUNTERS(V)       \
+  STYLE_COUNTERS(V)         \
+  LAYOUT_COUNTERS(V)        \
+  CALLBACK_COUNTERS(V)      \
+  EXTRA_COUNTERS(V)
 
   enum class CounterId : uint16_t {
 #define ADD_ENUM_VALUE(counter) k##counter,

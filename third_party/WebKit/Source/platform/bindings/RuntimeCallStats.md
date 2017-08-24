@@ -6,7 +6,7 @@ RuntimeCallStats is a group of counters used to track execution times and call c
 
 ## Usage
 
-Counters can be added by adding a name under FOR_EACH_COUNTER in RuntimeCallStats.h and by using the RUNTIME_CALL_TIMER_SCOPE, RUNTIME_CALL_STATS_ENTER and RUNTIME_CALL_STATS_LEAVE macros. See documentation in [RuntimeCallStats.h](RuntimeCallStats.h) for more details.
+Counters can be added by adding a name under one of the categories listed under FOR_EACH_COUNTER in RuntimeCallStats.h and by using the RUNTIME_CALL_TIMER_SCOPE, RUNTIME_CALL_STATS_ENTER and RUNTIME_CALL_STATS_LEAVE macros. See documentation in [RuntimeCallStats.h](RuntimeCallStats.h) for more details.
 
 Counters can also be directly added to the bindings layer in method and attribute callbacks by using the `[RuntimeCallStatsCounter]` IDL extended attribute (see [IDLExtendedAttributes.md](../../bindings/IDLExtendedAttributes.md#RuntimeCallStatsCounter_m_a) for more details).
 
