@@ -30,22 +30,23 @@ class PasswordManagerDriver;
                                          PasswordManagerDriverDelegate>
 
 // An object that can provide suggestions from this PasswordController.
-@property(readonly) id<FormSuggestionProvider> suggestionProvider;
+@property(nonatomic, readonly) id<FormSuggestionProvider> suggestionProvider;
 
 // An object that can provide an input accessory view from this
 // PasswordController.
-@property(readonly) id<FormInputAccessoryViewProvider> accessoryViewProvider;
+@property(nonatomic, readonly) id<FormInputAccessoryViewProvider>
+    accessoryViewProvider;
 
 // The PasswordGenerationManager owned by this PasswordController.
-@property(readonly)
+@property(nonatomic, readonly)
     password_manager::PasswordGenerationManager* passwordGenerationManager;
 
 // The PasswordManagerClient owned by this PasswordController.
-@property(readonly)
+@property(nonatomic, readonly)
     password_manager::PasswordManagerClient* passwordManagerClient;
 
 // The PasswordManagerDriver owned by this PasswordController.
-@property(readonly)
+@property(nonatomic, readonly)
     password_manager::PasswordManagerDriver* passwordManagerDriver;
 
 // The dispatcher used for the PasswordController. This property can return nil
