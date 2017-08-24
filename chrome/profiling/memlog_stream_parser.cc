@@ -16,7 +16,11 @@ namespace profiling {
 
 namespace {
 
-using AddressVector = base::StackVector<Address, 128>;
+// Maximum number of items we'll parse from a stack before declaring the
+// message is corrupt.
+constexpr size_t kMaxStackCount = 128;
+
+using AddressVector = base::StackVector<Address, kMaxStackCount>;
 
 }  // namespace
 
@@ -35,26 +39,28 @@ void MemlogStreamParser::DisconnectReceivers() {
   receiver_ = nullptr;
 }
 
-void MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
+bool MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
   base::AutoLock l(lock_);
-  if (!receiver_)
-    return;  // When no receiver is connected, do nothing with incoming data.
+  if (!receiver_ || error_)
+    return false;
 
   blocks_.emplace_back(std::move(data), sz);
 
   if (!received_header_) {
-    received_header_ = true;
     ReadStatus status = ParseHeader();
-    if (status != READ_OK) {
-      LOG(ERROR) << "Memlog header read error.";
-      return;
+    if (status == READ_NO_DATA)
+      return true;  // Wait for more data.
+    if (status == READ_ERROR) {
+      SetErrorState();
+      return false;
     }
+    received_header_ = true;
   }
 
   while (true) {
     uint32_t msg_type;
     if (!PeekBytes(sizeof(msg_type), &msg_type))
-      return;
+      return true;  // Not enough data for a message type field.
 
     ReadStatus status;
     switch (msg_type) {
@@ -65,13 +71,18 @@ void MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
         status = ParseFree();
         break;
       default:
-        LOG(ERROR) << "Error reading memlog message stream" << msg_type;
-        return;
+        // Invalid message type.
+        status = READ_ERROR;
+        break;
     }
-    if (status != READ_OK) {
-      LOG_IF(ERROR, status == READ_ERROR) << "Memlog read error";
-      return;
+
+    if (status == READ_NO_DATA)
+      return true;  // Wait for more data.
+    if (status == READ_ERROR) {
+      SetErrorState();
+      return false;
     }
+    // Success, loop around for more data.
   }
 }
 
@@ -153,6 +164,8 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseAlloc() {
     return READ_NO_DATA;
 
   std::vector<Address> stack;
+  if (alloc_packet.stack_len > kMaxStackCount)
+    return READ_ERROR;  // Prevent overflow on corrupted or malicious data.
   stack.resize(alloc_packet.stack_len);
   size_t stack_byte_size = sizeof(Address) * alloc_packet.stack_len;
 
@@ -175,6 +188,11 @@ MemlogStreamParser::ReadStatus MemlogStreamParser::ParseFree() {
 
   receiver_->OnFree(free_packet);
   return READ_OK;
+}
+
+void MemlogStreamParser::SetErrorState() {
+  error_ = true;
+  receiver_->OnComplete();
 }
 
 }  // namespace profiling
