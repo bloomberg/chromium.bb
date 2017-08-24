@@ -312,6 +312,47 @@ TEST_F(PpdProviderTest, LocalizationAndFallbacks) {
   RunLocalizationTest("bogus", "en");
 }
 
+// Tests that mutiples requests for make-and-model resolution can be fulfilled
+// simultaneously.
+TEST_F(PpdProviderTest, RepeatedMakeModel) {
+  StartFakePpdServer();
+  auto provider = CreateProvider("en");
+
+  PpdProvider::PrinterSearchData unrecognized_printer;
+  unrecognized_printer.make_and_model = {"Printer Printer"};
+
+  PpdProvider::PrinterSearchData recognized_printer;
+  recognized_printer.make_and_model = {"printer_a_ref"};
+
+  PpdProvider::PrinterSearchData mixed;
+  mixed.make_and_model = {"printer_a_ref", "Printer Printer"};
+
+  // Resolve the same thing repeatedly.
+  provider->ResolvePpdReference(
+      unrecognized_printer,
+      base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
+                 base::Unretained(this)));
+  provider->ResolvePpdReference(
+      mixed, base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
+                        base::Unretained(this)));
+  provider->ResolvePpdReference(
+      recognized_printer,
+      base::Bind(&PpdProviderTest::CaptureResolvePpdReference,
+                 base::Unretained(this)));
+  scoped_task_environment_.RunUntilIdle();
+
+  ASSERT_EQ(static_cast<size_t>(3), captured_resolve_ppd_references_.size());
+  EXPECT_EQ(PpdProvider::NOT_FOUND, captured_resolve_ppd_references_[0].first);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[1].first);
+  EXPECT_EQ(
+      "printer_a_ref",
+      captured_resolve_ppd_references_[1].second.effective_make_and_model);
+  EXPECT_EQ(PpdProvider::SUCCESS, captured_resolve_ppd_references_[2].first);
+  EXPECT_EQ(
+      "printer_a_ref",
+      captured_resolve_ppd_references_[2].second.effective_make_and_model);
+}
+
 // Test successful and unsuccessful usb resolutions.
 TEST_F(PpdProviderTest, UsbResolution) {
   StartFakePpdServer();
