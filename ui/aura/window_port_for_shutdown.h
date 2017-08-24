@@ -7,6 +7,8 @@
 
 #include "ui/aura/window_port.h"
 
+#include "components/viz/common/surfaces/local_surface_id.h"
+
 namespace aura {
 
 // When WindowTreeClient is destroyed any existing windows get a
@@ -37,11 +39,14 @@ class WindowPortForShutdown : public WindowPort {
                          std::unique_ptr<ui::PropertyData> data) override;
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink() override;
   viz::SurfaceId GetSurfaceId() const override;
+  void AllocateLocalSurfaceId() override;
+  const viz::LocalSurfaceId& GetLocalSurfaceId() override;
   void OnWindowAddedToRootWindow() override;
   void OnWillRemoveWindowFromRootWindow() override;
   void OnEventTargetingPolicyChanged() override;
 
  private:
+  viz::LocalSurfaceId local_surface_id_;
   DISALLOW_COPY_AND_ASSIGN(WindowPortForShutdown);
 };
 

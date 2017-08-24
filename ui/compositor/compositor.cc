@@ -326,11 +326,13 @@ void Compositor::SetLatencyInfo(const ui::LatencyInfo& latency_info) {
   host_->QueueSwapPromise(std::move(swap_promise));
 }
 
-void Compositor::SetScaleAndSize(float scale, const gfx::Size& size_in_pixel) {
+void Compositor::SetScaleAndSize(float scale,
+                                 const gfx::Size& size_in_pixel,
+                                 const viz::LocalSurfaceId& local_surface_id) {
   DCHECK_GT(scale, 0);
   if (!size_in_pixel.IsEmpty()) {
     size_ = size_in_pixel;
-    host_->SetViewportSize(size_in_pixel);
+    host_->SetViewportSize(size_in_pixel, local_surface_id);
     root_web_layer_->SetBounds(size_in_pixel);
     // TODO(fsamuel): Get rid of ContextFactoryPrivate.
     if (context_factory_private_)

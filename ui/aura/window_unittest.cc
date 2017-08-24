@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "cc/output/layer_tree_frame_sink.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/capture_client.h"
@@ -2863,6 +2864,33 @@ TEST_P(WindowTest, WindowDestroyCompletesAnimations) {
   EXPECT_TRUE(observer.animation_completed());
   EXPECT_FALSE(observer.animation_aborted());
   animator->RemoveObserver(&observer);
+}
+
+TEST_P(WindowTest, LocalSurfaceIdChanges) {
+  Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  std::unique_ptr<cc::LayerTreeFrameSink> frame_sink(
+      window.CreateLayerTreeFrameSink());
+  viz::LocalSurfaceId local_surface_id1 = window.GetLocalSurfaceId();
+  EXPECT_NE(nullptr, frame_sink.get());
+  EXPECT_TRUE(local_surface_id1.is_valid());
+
+  window.SetBounds(gfx::Rect(300, 300));
+  viz::LocalSurfaceId local_surface_id2 = window.GetLocalSurfaceId();
+  EXPECT_TRUE(local_surface_id2.is_valid());
+  EXPECT_NE(local_surface_id1, local_surface_id2);
+
+  window.OnDeviceScaleFactorChanged(3.0f);
+  viz::LocalSurfaceId local_surface_id3 = window.GetLocalSurfaceId();
+  EXPECT_TRUE(local_surface_id3.is_valid());
+  EXPECT_NE(local_surface_id1, local_surface_id3);
+  EXPECT_NE(local_surface_id2, local_surface_id3);
+
+  window.AllocateLocalSurfaceId();
+  viz::LocalSurfaceId local_surface_id4 = window.GetLocalSurfaceId();
+  EXPECT_NE(local_surface_id1, local_surface_id4);
+  EXPECT_NE(local_surface_id2, local_surface_id4);
+  EXPECT_NE(local_surface_id3, local_surface_id4);
 }
 
 INSTANTIATE_TEST_CASE_P(/* no prefix */,

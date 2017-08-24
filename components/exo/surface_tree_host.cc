@@ -262,7 +262,7 @@ void SurfaceTreeHost::OnUpdateVSyncParameters(base::TimeTicks timebase,
 // ui::ContextFactoryObserver overrides:
 
 void SurfaceTreeHost::OnLostResources() {
-  if (!host_window_->GetSurfaceId().is_valid())
+  if (!host_window_->GetSurfaceId().is_valid() || !root_surface_)
     return;
   root_surface_->RecreateResources(layer_tree_frame_sink_holder_.get());
   SubmitCompositorFrame(Surface::FRAME_TYPE_RECREATED_RESOURCES);
