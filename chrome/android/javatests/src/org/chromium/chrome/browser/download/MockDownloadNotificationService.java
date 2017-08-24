@@ -79,11 +79,13 @@ public class MockDownloadNotificationService extends DownloadNotificationService
 
     @Override
     void notifyDownloadPaused(ContentId id, String fileName, boolean isResumable,
-            boolean isAutoResumable, boolean isOffTheRecord, boolean isTransient, Bitmap icon) {
+            boolean isAutoResumable, boolean isOffTheRecord, boolean isTransient, Bitmap icon,
+            boolean hasUserGesture) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> MockDownloadNotificationService.super.notifyDownloadPaused(id, fileName,
-                                isResumable, isAutoResumable, isOffTheRecord, isTransient, icon));
+                                isResumable, isAutoResumable, isOffTheRecord, isTransient, icon,
+                                hasUserGesture));
     }
 
     @Override
@@ -94,9 +96,11 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    public void notifyDownloadCanceled(final ContentId id) {
+    public void notifyDownloadCanceled(final ContentId id, boolean hasUserGesture) {
         ThreadUtils.runOnUiThreadBlocking(
-                () -> MockDownloadNotificationService.super.notifyDownloadCanceled(id));
+                ()
+                        -> MockDownloadNotificationService.super.notifyDownloadCanceled(
+                                id, hasUserGesture));
     }
 
     @Override
