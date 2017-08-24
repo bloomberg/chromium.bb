@@ -5,8 +5,6 @@
   * **Contact**: **speed@chromium.org**
   * **Escalation**:
     * benhenry@chromium.org (TPM)
-    * rschoen@chromium.org (PM)
-    * parisa@chromium.org (eng director)
   * **File a bug**: [template](https://bugs.chromium.org/p/chromium/issues/entry?template=Speed%20Bug)
   * **Regression postmortem**: [template](https://docs.google.com/document/d/1fvfhFNOoUL9rB0XAEe1MYefyM_9yriR1IPjdxdm7PaQ/edit?disco=AAAABKdHwCg)
 
