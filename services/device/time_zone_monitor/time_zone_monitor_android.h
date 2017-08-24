@@ -19,9 +19,6 @@ class TimeZoneMonitorAndroid : public TimeZoneMonitor {
   TimeZoneMonitorAndroid();
   ~TimeZoneMonitorAndroid() override;
 
-  // Must be called at startup.
-  static bool Register(JNIEnv* env);
-
   // Called by the Java implementation when the system time zone changes.
   void TimeZoneChangedFromJava(
       JNIEnv* env,

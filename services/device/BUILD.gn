@@ -42,10 +42,6 @@ source_set("lib") {
   ]
 
   if (is_android) {
-    sources += [
-      "//services/device/android/register_jni.cc",
-      "//services/device/android/register_jni.h",
-    ]
     deps += [ ":device_service_jni_headers" ]
   } else {
     deps += [

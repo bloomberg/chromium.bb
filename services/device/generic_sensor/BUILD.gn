@@ -75,11 +75,6 @@ source_set("generic_sensor") {
   ]
 
   if (is_android) {
-    sources += [
-      "android/sensors_jni_registrar.cc",
-      "android/sensors_jni_registrar.h",
-    ]
-
     deps += [ ":jni_headers" ]
   }
 
