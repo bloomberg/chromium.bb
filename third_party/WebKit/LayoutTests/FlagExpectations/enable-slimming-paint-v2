@@ -121,8 +121,6 @@ Bug(none) compositing/change-preferCompositingToLCDText-setting.html [ Failure ]
 Bug(none) compositing/clip-child-by-non-stacking-ancestor.html [ Failure ]
 Bug(none) compositing/color-matching/image-color-matching.html [ Failure ]
 Bug(none) compositing/columns/composited-in-paginated.html [ Failure ]
-Bug(none) compositing/composited-translated-child-with-border-radius-parent-clip.html [ Failure ]
-Bug(none) compositing/composited-scaled-child-with-border-radius-parent-clip.html [ Failure ]
 Bug(none) compositing/contents-opaque/background-clip.html [ Failure ]
 Bug(none) compositing/contents-opaque/background-color.html [ Failure ]
 Bug(none) compositing/contents-opaque/body-background-painted.html [ Failure ]
@@ -421,7 +419,6 @@ Bug(none) compositing/squashing/squash-transform.html [ Failure ]
 Bug(none) compositing/squashing/squashed-repaints.html [ Failure ]
 Bug(none) compositing/squashing/squashing-inside-perspective.html [ Failure ]
 Bug(none) compositing/squashing/squashing-sparsity-heuristic.html [ Failure ]
-Bug(none) compositing/squashing/vertical-writing-mode-squashed.html [ Failure ]
 Bug(none) compositing/tiled-layers-hidpi.html [ Failure ]
 Bug(none) compositing/update-paint-phases.html [ Failure ]
 Bug(none) compositing/video/video-poster.html [ Crash Failure ]
@@ -1631,7 +1628,6 @@ crbug.com/589279 fast/writing-mode/border-radius-clipping-vertical-lr.html [ Fai
 
 # Subpixel adjustments due to differences in compositing
 crbug.com/589265 animations/svg/animated-filter-svg-element.html [ Failure Crash ]
-crbug.com/589265 compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/589265 compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
 crbug.com/589265 fast/forms/number/number-appearance-spinbutton-layer.html [ Failure ]
 crbug.com/589265 fast/layers/add-layer-with-nested-stacking.html [ Failure ]
@@ -1757,7 +1753,6 @@ Bug(none) paint/filters/clip-under-filter.html [ Failure ]
 Bug(none) svg/text/text-selection-text-06-t.svg [ Failure ]
 Bug(none) svg/transforms/transformed-text-fill-pattern.html [ Failure ]
 
-Bug(none) compositing/overflow/ancestor-overflow-layer-of-sticky-child-of-compositing-container.html [ Failure ]
 Bug(none) fast/block/float/float-change-composited-scrolling.html [ Failure ]
 
 Bug(none) compositing/sibling-positioning.html [ Failure ]
@@ -1766,7 +1761,6 @@ Bug(none) fast/layers/opacity-stacking.html [ Failure ]
 
 # Failures due to an extra layer caused by a scroll hit test layer. Most of
 # these should pass once compositing reasons are correct in SPV2.
-crbug.com/738613 compositing/composite-scrollable-fixed-position-when-descendants-composite.html [ Failure ]
 crbug.com/738613 compositing/dont-composite-select-elements.html [ Failure ]
 crbug.com/738613 compositing/dont-composite-text-input-elements.html [ Failure ]
 crbug.com/738613 compositing/overflow/overflow-auto-with-touch-toggle.html [ Failure ]
