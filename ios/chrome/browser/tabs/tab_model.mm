@@ -23,7 +23,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder.h"
-#import "ios/chrome/browser/metrics/tab_usage_recorder_web_state_list_observer.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/sessions/session_ios.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
@@ -135,7 +135,7 @@ void CleanCertificatePolicyCache(
 
 @end
 
-@interface TabModel ()<TabUsageRecorderDelegate> {
+@interface TabModel () {
   // Delegate for the WebStateList.
   std::unique_ptr<WebStateListDelegate> _webStateListDelegate;
 
@@ -259,7 +259,9 @@ void CleanCertificatePolicyCache(
     // important to the backend code to always have a sync window delegate.
     if (!_browserState->IsOffTheRecord()) {
       // Set up the usage recorder before tabs are created.
-      _tabUsageRecorder = base::MakeUnique<TabUsageRecorder>(self);
+      _tabUsageRecorder = base::MakeUnique<TabUsageRecorder>(
+          _webStateList.get(),
+          PrerenderServiceFactory::GetForBrowserState(browserState));
     }
     _syncedWindowDelegate = base::MakeUnique<TabModelSyncedWindowDelegate>(
         _webStateList.get(), _sessionID);
@@ -289,11 +291,6 @@ void CleanCertificatePolicyCache(
           base::MakeUnique<SnapshotCacheWebStateListObserver>(snapshotCache));
     }
 
-    if (_tabUsageRecorder) {
-      _webStateListObservers.push_back(
-          base::MakeUnique<TabUsageRecorderWebStateListObserver>(
-              _tabUsageRecorder.get()));
-    }
     _webStateListObservers.push_back(base::MakeUnique<TabParentingObserver>());
 
     TabModelSelectedTabObserver* tabModelSelectedTabObserver =
@@ -526,8 +523,10 @@ void CleanCertificatePolicyCache(
 }
 
 - (void)setPrimary:(BOOL)primary {
-  if (_tabUsageRecorder)
-    _tabUsageRecorder->RecordPrimaryTabModelChange(primary, self.currentTab);
+  if (_tabUsageRecorder) {
+    _tabUsageRecorder->RecordPrimaryTabModelChange(primary,
+                                                   self.currentTab.webState);
+  }
 }
 
 - (NSSet*)currentlyReferencedExternalFiles {
@@ -596,6 +595,7 @@ void CleanCertificatePolicyCache(
   _retainedWebStateListObservers = nil;
 
   _clearPoliciesTaskTracker.TryCancelAll();
+  _tabUsageRecorder.reset();
 }
 
 - (void)navigationCommittedInTab:(Tab*)tab
@@ -633,17 +633,6 @@ void CleanCertificatePolicyCache(
                             count:count];
 }
 
-#pragma mark - TabUsageRecorderDelegate
-
-- (NSUInteger)liveTabsCount {
-  NSUInteger count = 0;
-  for (Tab* tab in self) {
-    if (!tab.webState->IsEvicted())
-      count++;
-  }
-  return count;
-}
-
 #pragma mark - Private methods
 
 - (SessionIOS*)sessionForSaving {
@@ -679,8 +668,9 @@ void CleanCertificatePolicyCache(
   scoped_refptr<web::CertificatePolicyCache> policyCache =
       web::BrowserState::GetCertificatePolicyCache(_browserState);
 
-  NSMutableArray<Tab*>* restoredTabs =
-      [[NSMutableArray alloc] initWithCapacity:window.sessions.count];
+  std::vector<web::WebState*> restoredWebStates;
+  if (_tabUsageRecorder)
+    restoredWebStates.reserve(window.sessions.count);
 
   for (int index = oldCount; index < _webStateList->count(); ++index) {
     web::WebState* webState = _webStateList->GetWebStateAt(index);
@@ -690,7 +680,9 @@ void CleanCertificatePolicyCache(
     // Restore the CertificatePolicyCache (note that webState is invalid after
     // passing it via move semantic to -initWithWebState:model:).
     UpdateCertificatePolicyCacheFromWebState(policyCache, webState);
-    [restoredTabs addObject:LegacyTabHelper::GetTabForWebState(webState)];
+
+    if (_tabUsageRecorder)
+      restoredWebStates.push_back(webState);
   }
 
   // If there was only one tab and it was the new tab page, clobber it.
@@ -705,8 +697,10 @@ void CleanCertificatePolicyCache(
       oldCount = 0;
     }
   }
-  if (_tabUsageRecorder)
-    _tabUsageRecorder->InitialRestoredTabs(self.currentTab, restoredTabs);
+  if (_tabUsageRecorder) {
+    _tabUsageRecorder->InitialRestoredTabs(self.currentTab.webState,
+                                           restoredWebStates);
+  }
   return closedNTPTab;
 }
 
