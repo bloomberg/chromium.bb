@@ -800,7 +800,7 @@
     },
     {
       name: "PaymentDetailsModifierData",
-      status: "experimental",
+      status: "stable",
     },
     // PaymentRequest is enabled by default on Android
     {
