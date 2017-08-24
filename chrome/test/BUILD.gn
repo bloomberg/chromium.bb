@@ -2533,6 +2533,7 @@ test("browser_tests") {
         "../browser/extensions/api/networking_private/networking_private_credentials_getter_browsertest.cc",
         "../browser/ui/views/accessibility/invert_bubble_view_browsertest.cc",
         "../browser/ui/views/settings_reset_prompt_dialog_browsertest.cc",
+        "../browser/ui/views/uninstall_view_browsertest.cc",
       ]
     }
     if (is_mac || is_win) {
