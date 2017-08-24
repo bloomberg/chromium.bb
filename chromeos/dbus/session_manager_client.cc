@@ -451,8 +451,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
 
     login_manager::StartArcInstanceRequest request;
-    // TODO(yusukes): Make this default-enabled and remove the code.
-    request.set_create_server_socket(true);
     request.set_native_bridge_experiment(native_bridge_experiment);
     switch (startup_mode) {
       case ArcStartupMode::FULL:
