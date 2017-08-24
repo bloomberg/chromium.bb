@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
+{{source_files_for_generated_file(template_file, input_files)}}
+// clang-format off
+
 #ifndef CSSPropertyAPI_h
 #define CSSPropertyAPI_h
 
@@ -19,7 +23,9 @@ class CSSPropertyAPI {
  public:
   static const CSSPropertyAPI& Get(CSSPropertyID);
 
+#if !defined(OS_WIN) || !defined(COMPILER_MSVC)
   constexpr CSSPropertyAPI() {}
+#endif
 
   virtual const CSSValue* ParseSingleValue(CSSPropertyID,
                                            CSSParserTokenRange&,
@@ -34,6 +40,10 @@ class CSSPropertyAPI {
 
   virtual bool IsInterpolable() const { return false; }
 };
+
+{% for api_class_data in api_classes_by_property_id %}
+const CSSPropertyAPI& Get{{api_class_data.property_id}}API();
+{% endfor %}
 
 }  // namespace blink
 

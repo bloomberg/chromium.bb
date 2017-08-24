@@ -26,9 +26,8 @@ bool CSSShorthandPropertyAPIOffset::ParseShorthand(
   // CSSPropertyAPIs, and the base CSSPropertyAPI::ParseSingleValue contains
   // no functionality.
   const CSSValue* offset_position =
-      CSSPropertyAPI::Get(CSSPropertyOffsetPosition)
-          .ParseSingleValue(CSSPropertyInvalid, range, context,
-                            CSSParserLocalContext());
+      GetCSSPropertyOffsetPositionAPI().ParseSingleValue(
+          CSSPropertyInvalid, range, context, CSSParserLocalContext());
   const CSSValue* offset_path =
       CSSPropertyOffsetPathUtils::ConsumeOffsetPath(range, context);
   const CSSValue* offset_distance = nullptr;
@@ -45,9 +44,8 @@ bool CSSShorthandPropertyAPIOffset::ParseShorthand(
   }
   const CSSValue* offset_anchor = nullptr;
   if (CSSPropertyParserHelpers::ConsumeSlashIncludingWhitespace(range)) {
-    offset_anchor = CSSPropertyAPI::Get(CSSPropertyOffsetAnchor)
-                        .ParseSingleValue(CSSPropertyInvalid, range, context,
-                                          CSSParserLocalContext());
+    offset_anchor = GetCSSPropertyOffsetAnchorAPI().ParseSingleValue(
+        CSSPropertyInvalid, range, context, CSSParserLocalContext());
     if (!offset_anchor)
       return false;
   }
