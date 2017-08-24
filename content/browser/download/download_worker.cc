@@ -30,14 +30,13 @@ class CompletedByteStreamReader : public ByteStreamReader {
   int status_;
 };
 
-std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
-CreateUrlDownloadHandler(std::unique_ptr<DownloadUrlParameters> params,
-                         base::WeakPtr<UrlDownloadHandler::Delegate> delegate) {
+std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>
+CreateUrlDownloader(std::unique_ptr<DownloadUrlParameters> params,
+                    base::WeakPtr<UrlDownloader::Delegate> delegate) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Build the URLRequest, BlobDataHandle is hold in original request for image
   // download.
-  // TODO(qinmin): Handle the case when network service is enabled.
   std::unique_ptr<net::URLRequest> url_request =
       DownloadRequestCore::CreateRequestOnIOThread(DownloadItem::kInvalidId,
                                                    params.get());
@@ -70,10 +69,10 @@ void DownloadWorker::SendRequest(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CreateUrlDownloadHandler, std::move(params),
-                     weak_factory_.GetWeakPtr()),
-      base::BindOnce(&DownloadWorker::AddUrlDownloadHandler,
-                     weak_factory_.GetWeakPtr()));
+      base::Bind(&CreateUrlDownloader, base::Passed(&params),
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&DownloadWorker::AddUrlDownloader,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void DownloadWorker::Pause() {
@@ -95,9 +94,9 @@ void DownloadWorker::Cancel(bool user_cancel) {
     request_handle_->CancelRequest(user_cancel);
 }
 
-void DownloadWorker::OnUrlDownloadStarted(
+void DownloadWorker::OnUrlDownloaderStarted(
     std::unique_ptr<DownloadCreateInfo> create_info,
-    std::unique_ptr<UrlDownloadHandler::InputStream> input_stream,
+    std::unique_ptr<ByteStreamReader> stream_reader,
     const DownloadUrlParameters::OnStartedCallback& callback) {
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());
@@ -114,8 +113,7 @@ void DownloadWorker::OnUrlDownloadStarted(
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE) {
     VLOG(kVerboseLevel) << "Parallel download sub-request failed. reason = "
                         << create_info->result;
-    input_stream->stream_reader_.reset(
-        new CompletedByteStreamReader(create_info->result));
+    stream_reader.reset(new CompletedByteStreamReader(create_info->result));
   }
 
   request_handle_ = std::move(create_info->request_handle);
@@ -126,19 +124,18 @@ void DownloadWorker::OnUrlDownloadStarted(
     Pause();
   }
 
-  delegate_->OnByteStreamReady(this, std::move(input_stream->stream_reader_));
+  delegate_->OnByteStreamReady(this, std::move(stream_reader));
 }
 
-void DownloadWorker::OnUrlDownloadStopped(UrlDownloadHandler* downloader) {
-  // Release the |url_download_handler_|, the object will be deleted on IO
-  // thread.
-  url_download_handler_.reset();
+void DownloadWorker::OnUrlDownloaderStopped(UrlDownloader* downloader) {
+  // Release the |url_downloader_|, the object will be deleted on IO thread.
+  url_downloader_.reset();
 }
 
-void DownloadWorker::AddUrlDownloadHandler(
-    std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
+void DownloadWorker::AddUrlDownloader(
+    std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>
         downloader) {
-  url_download_handler_ = std::move(downloader);
+  url_downloader_ = std::move(downloader);
 }
 
 }  // namespace content

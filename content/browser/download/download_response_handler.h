@@ -6,11 +6,10 @@
 #define CONTENT_BROWSER_DOWNLOAD_RESPONSE_HANDLER_
 
 #include "content/browser/download/download_create_info.h"
+#include "content/public/common/resource_request.h"
 #include "content/public/common/url_loader.mojom.h"
 
 namespace content {
-
-class DownloadUrlParameters;
 
 // This class is responsible for handling the server response for a download.
 // It passes the DataPipeConsumerHandle and completion status to the download
@@ -21,11 +20,11 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
   class Delegate {
    public:
     virtual void OnResponseStarted(
-        std::unique_ptr<DownloadCreateInfo> download_create_info,
+        const DownloadCreateInfo& download_create_info,
         mojo::ScopedDataPipeConsumerHandle body) = 0;
   };
 
-  DownloadResponseHandler(DownloadUrlParameters* params,
+  DownloadResponseHandler(ResourceRequest* resource_request,
                           Delegate* delegate,
                           bool is_parallel_request);
   ~DownloadResponseHandler() override;
@@ -49,6 +48,8 @@ class DownloadResponseHandler : public mojom::URLLoaderClient {
 
  private:
   Delegate* const delegate_;
+
+  DownloadCreateInfo download_create_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadResponseHandler);
 };

@@ -64,7 +64,7 @@ class UrlDownloader::RequestHandle : public DownloadRequestHandleInterface {
 
 // static
 std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
-    base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
+    base::WeakPtr<UrlDownloader::Delegate> delegate,
     std::unique_ptr<net::URLRequest> request,
     const Referrer& referrer,
     bool is_parallel_request) {
@@ -84,10 +84,9 @@ std::unique_ptr<UrlDownloader> UrlDownloader::BeginDownload(
   return downloader;
 }
 
-UrlDownloader::UrlDownloader(
-    std::unique_ptr<net::URLRequest> request,
-    base::WeakPtr<UrlDownloadHandler::Delegate> delegate,
-    bool is_parallel_request)
+UrlDownloader::UrlDownloader(std::unique_ptr<net::URLRequest> request,
+                             base::WeakPtr<Delegate> delegate,
+                             bool is_parallel_request)
     : request_(std::move(request)),
       delegate_(delegate),
       core_(request_.get(), this, is_parallel_request),
@@ -216,11 +215,9 @@ void UrlDownloader::OnStart(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStarted,
-                     delegate_, std::move(create_info),
-                     base::MakeUnique<UrlDownloadHandler::InputStream>(
-                         std::move(stream_reader)),
-                     callback));
+      base::BindOnce(&UrlDownloader::Delegate::OnUrlDownloaderStarted,
+                     delegate_, base::Passed(&create_info),
+                     base::Passed(&stream_reader), callback));
 }
 
 void UrlDownloader::OnReadyToRead() {
@@ -242,7 +239,7 @@ void UrlDownloader::CancelRequest() {
 void UrlDownloader::Destroy() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&UrlDownloadHandler::Delegate::OnUrlDownloadStopped,
+      base::BindOnce(&UrlDownloader::Delegate::OnUrlDownloaderStopped,
                      delegate_, this));
 }
 
