@@ -1,0 +1,2 @@
+per-file headless_browser_manifest_overlay_template.json=set noparent
+per-file headless_browser_manifest_overlay_template.json=file://ipc/SECURITY_OWNERS

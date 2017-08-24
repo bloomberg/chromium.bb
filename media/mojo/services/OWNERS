@@ -1,0 +1,14 @@
+per-file cdm_manifest.json=set noparent
+per-file cdm_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file media_manifest.json=set noparent
+per-file media_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file pipeline_test_manifest.json=set noparent
+per-file pipeline_test_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file test_manifest.json=set noparent
+per-file test_manifest.json=file://ipc/SECURITY_OWNERS
+
+per-file pipeline_apptest_manifest.json=set noparent
+per-file pipeline_apptest_manifest.json=file://ipc/SECURITY_OWNERS

@@ -1,3 +1,5 @@
+# COMPONENT: Internals>MUS
+
 ben@chromium.org
 erg@chromium.org
 sadrul@chromium.org
@@ -6,4 +8,5 @@ sky@chromium.org
 per-file *_type_converter*.*=set noparent
 per-file *_type_converter*.*=file://ipc/SECURITY_OWNERS
 
-# COMPONENT: Internals>MUS
+per-file manifest.json=set noparent
+per-file manifest.json=file://ipc/SECURITY_OWNERS
