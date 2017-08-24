@@ -364,7 +364,7 @@ int MPEGAudioStreamParserBase::FindNextValidStartCode(const uint8_t* data,
         return 0;
 
       if (sync_bytes > 0) {
-        DCHECK_LT(sync_bytes, sync_size);
+        DCHECK_LE(sync_bytes, sync_size);
 
         // Skip over this frame so we can check the next one.
         sync += frame_size;
