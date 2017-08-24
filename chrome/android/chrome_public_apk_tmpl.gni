@@ -71,10 +71,11 @@ template("chrome_public_apk_tmpl") {
         "//base/android/proguard/chromium_code.flags",
       ]
       if (enable_proguard_obfuscation) {
-        proguard_configs += [ "//chrome/android/java/proguard-obfuscate.flags" ]
+        proguard_configs +=
+            [ "//base/android/proguard/enable_obfuscation.flags" ]
       } else {
         proguard_configs +=
-            [ "//chrome/android/java/proguard-dont-obfuscate.flags" ]
+            [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
       }
     }
 
