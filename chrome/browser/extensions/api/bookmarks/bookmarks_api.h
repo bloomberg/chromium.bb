@@ -248,12 +248,6 @@ class BookmarksRemoveFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.remove", BOOKMARKS_REMOVE)
 
-  // Returns true on successful parse and sets invalid_id to true if conversion
-  // from id string to int64_t failed.
-  static bool ExtractIds(const base::ListValue* args,
-                         std::list<int64_t>* ids,
-                         bool* invalid_id);
-
  protected:
   ~BookmarksRemoveFunction() override {}
 
@@ -284,10 +278,6 @@ class BookmarksMoveFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.move", BOOKMARKS_MOVE)
 
-  static bool ExtractIds(const base::ListValue* args,
-                         std::list<int64_t>* ids,
-                         bool* invalid_id);
-
  protected:
   ~BookmarksMoveFunction() override {}
 
@@ -298,10 +288,6 @@ class BookmarksMoveFunction : public BookmarksFunction {
 class BookmarksUpdateFunction : public BookmarksFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bookmarks.update", BOOKMARKS_UPDATE)
-
-  static bool ExtractIds(const base::ListValue* args,
-                         std::list<int64_t>* ids,
-                         bool* invalid_id);
 
  protected:
   ~BookmarksUpdateFunction() override {}
