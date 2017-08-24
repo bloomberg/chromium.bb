@@ -7,9 +7,15 @@
 #include "build/build_config.h"
 #include "platform/LayoutLocale.h"
 #include "platform/fonts/FontGlobalContext.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::ElementsAreArray;
+
 #if defined(OS_ANDROID)
+#define USE_MINIKIN_HYPHENATION
+#endif
+#if defined(USE_MINIKIN_HYPHENATION)
 #include "base/files/file_path.h"
 #include "platform/text/hyphenation/HyphenationMinikin.h"
 #endif
@@ -35,9 +41,9 @@ TEST(HyphenationTest, Get) {
   FontGlobalContext::ClearForTesting();
 }
 
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
-TEST(HyphenationTest, LastHyphenLocation) {
-#if defined(OS_ANDROID)
+#if defined(USE_MINIKIN_HYPHENATION) || defined(OS_MACOSX)
+TEST(HyphenationTest, HyphenLocations) {
+#if defined(USE_MINIKIN_HYPHENATION)
   // Because the mojo service to open hyphenation dictionaries is not accessible
   // from the unit test, open the dictionary file directly for testing.
   base::FilePath path("/system/usr/hyphen-data/hyph-en-us.hyb");
@@ -55,7 +61,7 @@ TEST(HyphenationTest, LastHyphenLocation) {
 #endif
   ASSERT_TRUE(hyphenation) << "Cannot find the hyphenation engine";
 
-  // Get all hyphenation points by |hyphenLocations|.
+  // Get all hyphenation points by |HyphenLocations|.
   const String word("hyphenation");
   Vector<size_t, 8> locations = hyphenation->HyphenLocations(word);
   for (unsigned i = 1; i < locations.size(); i++) {
@@ -63,23 +69,26 @@ TEST(HyphenationTest, LastHyphenLocation) {
         << "hyphenLocations must return locations in the descending order";
   }
 
-  // Test |lastHyphenLocation| returns all hyphenation points.
-  locations.push_back(0);
-  size_t location_index = locations.size() - 1;
-  for (size_t before_index = 0; before_index < word.length(); before_index++) {
-    size_t location = hyphenation->LastHyphenLocation(word, before_index);
-
-    if (location)
-      EXPECT_LT(location, before_index);
-
-    if (location_index > 0 && location == locations[location_index - 1])
-      location_index--;
-    EXPECT_EQ(locations[location_index], location) << String::Format(
-        "lastHyphenLocation(%s, %zd)", word.Utf8().data(), before_index);
+  // Test |LastHyphenLocation| returns all hyphenation points.
+  Vector<size_t, 8> actual;
+  for (unsigned offset = word.length();;) {
+    offset = hyphenation->LastHyphenLocation(word, offset);
+    if (!offset)
+      break;
+    actual.push_back(offset);
   }
+  EXPECT_THAT(actual, ElementsAreArray(locations));
 
-  EXPECT_EQ(location_index, 0u)
-      << "Not all locations are found by lastHyphenLocation";
+  // Test |FirstHyphenLocation| returns all hyphenation points.
+  actual.clear();
+  for (unsigned offset = 0;;) {
+    offset = hyphenation->FirstHyphenLocation(word, offset);
+    if (!offset)
+      break;
+    actual.push_back(offset);
+  }
+  locations.Reverse();
+  EXPECT_THAT(actual, ElementsAreArray(locations));
 }
 #endif
 
