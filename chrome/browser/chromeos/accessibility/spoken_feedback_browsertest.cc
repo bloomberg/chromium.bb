@@ -465,7 +465,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ScreenBrightness) {
                                  "Brightness * percent"));
 }
 
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, VolumeSlider) {
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_VolumeSlider) {
   EnableChromeVox();
 
   // Volume slider does not fire valueChanged event on first key press because
