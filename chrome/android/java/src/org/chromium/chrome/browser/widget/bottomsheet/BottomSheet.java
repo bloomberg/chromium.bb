@@ -1009,7 +1009,7 @@ public class BottomSheet
         // Temporarily make the background of the toolbar holder a solid color so the transition
         // doesn't appear to show a hole in the toolbar.
         int colorId = content.isIncognitoThemedContent() ? R.color.incognito_primary_color
-                                                         : R.color.default_primary_color;
+                                                         : R.color.modern_light_grey;
         mToolbarHolder.setBackgroundColor(ApiCompatibilityUtils.getColor(getResources(), colorId));
         mBottomSheetContentContainer.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), colorId));

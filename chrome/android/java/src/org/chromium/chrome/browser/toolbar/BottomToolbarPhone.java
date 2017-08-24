@@ -683,7 +683,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
             DrawableCompat.setTint(mLocationBarBackground,
                     isIncognito() ? Color.WHITE
                                   : ApiCompatibilityUtils.getColor(
-                                            getResources(), R.color.default_primary_color));
+                                            getResources(), R.color.modern_light_grey));
         }
     }
 

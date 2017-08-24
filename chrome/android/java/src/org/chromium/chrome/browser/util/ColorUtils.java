@@ -77,9 +77,8 @@ public class ColorUtils {
             // background color.
             if (isNtp) return ApiCompatibilityUtils.getColor(res, R.color.ntp_bg);
 
-            return useModernDesign
-                    ? ApiCompatibilityUtils.getColor(res, R.color.default_primary_color)
-                    : Color.WHITE;
+            return useModernDesign ? ApiCompatibilityUtils.getColor(res, R.color.modern_light_grey)
+                                   : Color.WHITE;
         }
         return getColorWithOverlay(color, Color.WHITE, LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA);
     }

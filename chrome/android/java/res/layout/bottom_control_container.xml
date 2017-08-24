@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:paddingBottom="@dimen/bottom_nav_height"
-        android:background="@color/default_primary_color"
+        android:background="@color/modern_light_grey"
         android:visibility="invisible" />
 
     <org.chromium.chrome.browser.toolbar.ToolbarControlContainer
