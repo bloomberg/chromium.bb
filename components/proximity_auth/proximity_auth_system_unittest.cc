@@ -164,7 +164,10 @@ class ProximityAuthSystemTest : public testing::Test {
         std::move(clock), pref_manager_.get()));
   }
 
-  void LockScreen() { ScreenlockBridge::Get()->SetLockHandler(&lock_handler_); }
+  void LockScreen() {
+    ScreenlockBridge::Get()->SetFocusedUser(AccountId());
+    ScreenlockBridge::Get()->SetLockHandler(&lock_handler_);
+  }
 
   void FocusUser(const std::string& user_id) {
     ScreenlockBridge::Get()->SetFocusedUser(AccountId::FromUserEmail(user_id));
