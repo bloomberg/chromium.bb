@@ -52,9 +52,6 @@ const char kEnableIOSFeatures[] = "enable-features";
 const char kEnableIOSHandoffToOtherDevices[] =
     "enable-ios-handoff-to-other-devices";
 
-// Enables context-sensitive reader mode button in the toolbar.
-const char kEnableReaderModeToolbarIcon[] = "enable-reader-mode-toolbar-icon";
-
 // Enables the Spotlight actions.
 const char kEnableSpotlightActions[] = "enable-spotlight-actions";
 

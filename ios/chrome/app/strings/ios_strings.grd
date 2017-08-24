@@ -1510,9 +1510,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_TOOLS_MENU_NEW_TAB" desc="The iOS menu item for opening a new tab [Length: 15em] [iOS only]" meaning="Tools menu entry to create a new tab.">
         New Tab
       </message>
-      <message name="IDS_IOS_TOOLS_MENU_READER_MODE" desc="The iOS menu item for entering reader mode [Length: 15em] [iOS only]">
-        Reader mode
-      </message>
       <message name="IDS_IOS_TOOLS_MENU_READING_LIST" desc="The iOS menu item for opening the reading list [Length: 15em] [iOS only]">
         Reading List
       </message>

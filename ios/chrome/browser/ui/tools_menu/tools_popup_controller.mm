@@ -143,10 +143,6 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
   [_toolsMenuViewController setIsCurrentPageBookmarked:value];
 }
 
-- (void)setCanUseReaderMode:(BOOL)enabled {
-  [_toolsMenuViewController setCanUseReaderMode:enabled];
-}
-
 - (void)setCanShowFindBar:(BOOL)enabled {
   [_toolsMenuViewController setCanShowFindBar:enabled];
 }
@@ -202,9 +198,6 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
       break;
     case IDC_REQUEST_MOBILE_SITE:
       base::RecordAction(UserMetricsAction("MobileMenuRequestMobileSite"));
-      break;
-    case TOOLS_READER_MODE:
-      base::RecordAction(UserMetricsAction("MobileMenuRequestReaderMode"));
       break;
     case IDC_SHOW_BOOKMARK_MANAGER:
       base::RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));

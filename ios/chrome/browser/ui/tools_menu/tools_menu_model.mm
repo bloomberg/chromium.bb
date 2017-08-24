@@ -80,10 +80,6 @@ const MenuItemInfo itemInfoList[kToolsMenuNumberOfItems] = {
     kToolsMenuRequestMobileId,
     IDC_REQUEST_MOBILE_SITE, nullptr,     ToolbarTypeWebAll,
     0,                                    nil },
-  { IDS_IOS_TOOLS_MENU_READER_MODE,       kToolsMenuReaderMode,
-    TOOLS_READER_MODE,
-    @selector(switchToReaderMode),        ToolbarTypeWebAll,
-    0,                                    nil },
   { IDS_IOS_TOOLS_MENU_SETTINGS,          kToolsMenuSettingsId,
     TOOLS_SETTINGS_ITEM,
     @selector(showSettings),              ToolbarTypeAll,
@@ -109,8 +105,6 @@ bool ToolsMenuItemShouldBeVisible(const MenuItemInfo& item,
   switch (item.title_id) {
     case IDS_IOS_TOOLBAR_SHOW_TABS:
       return IsIPadIdiom();
-    case IDS_IOS_TOOLS_MENU_READER_MODE:
-      return experimental_flags::IsReaderModeEnabled();
     case IDS_IOS_OPTIONS_REPORT_AN_ISSUE:
       return ios::GetChromeBrowserProvider()
           ->GetUserFeedbackProvider()

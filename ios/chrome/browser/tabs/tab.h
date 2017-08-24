@@ -219,13 +219,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Updates the timestamp of the last time the tab is visited.
 - (void)updateLastVisitedTimestamp;
 
-// Whether the content of the current tab is compatible with reader mode.
-- (BOOL)canSwitchToReaderMode;
-
-// Asks the tab to enter into reader mode, presenting a streamlined view of the
-// current content.
-- (void)switchToReaderMode;
-
 // Loads the original url of the last non-redirect item (including non-history
 // items). Used by request desktop/mobile site so that the updated user agent is
 // used.

@@ -545,8 +545,6 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 @property(nonatomic, strong, readonly) DialogPresenter* dialogPresenter;
 // The object that manages keyboard commands on behalf of the BVC.
 @property(nonatomic, strong, readonly) KeyCommandsProvider* keyCommandsProvider;
-// Whether the current tab can enable the reader mode menu item.
-@property(nonatomic, assign, readonly) BOOL canUseReaderMode;
 // Whether the current tab can enable the request desktop menu item.
 @property(nonatomic, assign, readonly) BOOL canUseDesktopUserAgent;
 // Whether the sharing menu should be enabled.
@@ -1122,14 +1120,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (DialogPresenter*)dialogPresenter {
   return _dialogPresenter;
-}
-
-- (BOOL)canUseReaderMode {
-  Tab* tab = [_model currentTab];
-  if ([self isTabNativePage:tab])
-    return NO;
-
-  return [tab canSwitchToReaderMode];
 }
 
 - (BOOL)canUseDesktopUserAgent {
@@ -4204,7 +4194,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
     BOOL isBookmarked = _toolbarModelIOS->IsCurrentTabBookmarked();
     [toolsPopupController setIsCurrentPageBookmarked:isBookmarked];
     [toolsPopupController setCanShowFindBar:self.canShowFindBar];
-    [toolsPopupController setCanUseReaderMode:self.canUseReaderMode];
     [toolsPopupController setCanShowShareMenu:self.canShowShareMenu];
 
     if (!IsIPadIdiom())
@@ -4283,10 +4272,6 @@ bubblePresenterForFeature:(const base::Feature&)feature
                           loader:self];
 
   [_readingListCoordinator start];
-}
-
-- (void)switchToReaderMode {
-  [[_model currentTab] switchToReaderMode];
 }
 
 - (void)preloadVoiceSearch {

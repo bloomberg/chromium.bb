@@ -23,7 +23,6 @@ extern const char kEnableContextualSearch[];
 extern const char kEnableIOSFeatures[];
 extern const char kEnableIOSHandoffToOtherDevices[];
 extern const char kEnableNTPFavicons[];
-extern const char kEnableReaderModeToolbarIcon[];
 extern const char kEnableSpotlightActions[];
 extern const char kEnableIOSPhysicalWeb[];
 extern const char kEnableSuggestionsUI[];

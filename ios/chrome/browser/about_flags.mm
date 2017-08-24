@@ -201,28 +201,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
         "MAP * " + base::SysNSStringToUTF8(webPageReplayProxy));
   }
 
-  // Populate command line flags from ReaderModeEnabled.
-  if ([defaults boolForKey:@"ReaderModeEnabled"]) {
-    command_line->AppendSwitch(switches::kEnableReaderModeToolbarIcon);
-
-    // Populate command line from ReaderMode Heuristics detection.
-    NSString* readerModeDetectionHeuristics =
-        [defaults stringForKey:@"ReaderModeDetectionHeuristics"];
-    if (!readerModeDetectionHeuristics) {
-      command_line->AppendSwitchASCII(
-          switches::kReaderModeHeuristics,
-          switches::reader_mode_heuristics::kOGArticle);
-    } else if ([readerModeDetectionHeuristics isEqualToString:@"AdaBoost"]) {
-      command_line->AppendSwitchASCII(
-          switches::kReaderModeHeuristics,
-          switches::reader_mode_heuristics::kAdaBoost);
-    } else {
-      DCHECK([readerModeDetectionHeuristics isEqualToString:@"Off"]);
-      command_line->AppendSwitchASCII(switches::kReaderModeHeuristics,
-                                      switches::reader_mode_heuristics::kNone);
-    }
-  }
-
   // Set the UA flag if UseMobileSafariUA is enabled.
   if ([defaults boolForKey:@"UseMobileSafariUA"]) {
     // Safari uses "Vesion/", followed by the OS version excluding bugfix, where
