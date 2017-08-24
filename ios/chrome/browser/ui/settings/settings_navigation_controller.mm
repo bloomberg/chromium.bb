@@ -265,7 +265,6 @@ newAutofillController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
-  [controller navigationItem].rightBarButtonItem = [nc doneButton];
 
   // Make sure the close button is always present, as the Autofill screen
   // isn't just shown from Settings.
