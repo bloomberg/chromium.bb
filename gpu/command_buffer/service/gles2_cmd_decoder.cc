@@ -3888,6 +3888,10 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       !surface_->IsOffscreen()) {
     caps.disable_non_empty_post_sub_buffers = true;
   }
+  if (workarounds().broken_egl_image_ref_counting &&
+      group_->gpu_preferences().enable_threaded_texture_mailboxes) {
+    caps.disable_2d_canvas_copy_on_write = true;
+  }
 
   return caps;
 }

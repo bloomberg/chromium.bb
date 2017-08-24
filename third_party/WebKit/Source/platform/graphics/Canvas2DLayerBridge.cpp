@@ -31,6 +31,7 @@
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/capabilities.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/WebTaskRunner.h"
@@ -459,8 +460,11 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
 
   mailbox_info->image_ = std::move(image);
 
-  if (RuntimeEnabledFeatures::ForceDisable2dCanvasCopyOnWriteEnabled())
+  if (context_provider_wrapper_->ContextProvider()
+          ->GetCapabilities()
+          .disable_2d_canvas_copy_on_write) {
     surface_->notifyContentWillChange(SkSurface::kRetain_ContentChangeMode);
+  }
 
   // Need to flush skia's internal queue, because the texture is about to be
   // accessed directly.

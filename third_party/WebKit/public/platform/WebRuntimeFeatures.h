@@ -69,7 +69,6 @@ class WebRuntimeFeatures {
 
   BLINK_PLATFORM_EXPORT static void EnableDisplayList2dCanvas(bool);
   BLINK_PLATFORM_EXPORT static void ForceDisplayList2dCanvas(bool);
-  BLINK_PLATFORM_EXPORT static void ForceDisable2dCanvasCopyOnWrite(bool);
 
   BLINK_PLATFORM_EXPORT static void EnableOriginTrials(bool);
   BLINK_PLATFORM_EXPORT static bool IsOriginTrialsEnabled();
