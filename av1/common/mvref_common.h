@@ -381,6 +381,7 @@ static INLINE uint8_t av1_drl_ctx(const CANDIDATE_MV *ref_mv_stack,
 
 #if CONFIG_MFMV
 void av1_setup_frame_buf_refs(AV1_COMMON *cm);
+void av1_setup_motion_field(AV1_COMMON *cm);
 #endif
 
 typedef void (*find_mv_refs_sync)(void *const data, int mi_row);

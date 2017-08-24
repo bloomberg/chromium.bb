@@ -111,6 +111,14 @@ typedef enum {
   REFRESH_FRAME_CONTEXT_BACKWARD,
 } REFRESH_FRAME_CONTEXT_MODE;
 
+#if CONFIG_MFMV
+#define MFMV_STACK_SIZE INTER_REFS_PER_FRAME
+
+typedef struct {
+  int_mv mfmv[INTER_REFS_PER_FRAME][MFMV_STACK_SIZE];
+} TPL_MV_REF;
+#endif
+
 typedef struct {
   int_mv mv[2];
   int_mv pred_mv[2];
@@ -125,14 +133,13 @@ typedef struct {
   int lst_frame_offset;
   int alt_frame_offset;
   int gld_frame_offset;
-
 #if CONFIG_EXT_REFS
   int lst2_frame_offset;
   int lst3_frame_offset;
   int bwd_frame_offset;
 #endif
+  TPL_MV_REF *tpl_mvs;
 #endif
-
   MV_REF *mvs;
   int mi_rows;
   int mi_cols;
@@ -587,6 +594,14 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
     CHECK_MEM_ERROR(
         cm, buf->mvs,
         (MV_REF *)aom_calloc(cm->mi_rows * cm->mi_cols, sizeof(*buf->mvs)));
+
+#if CONFIG_MFMV
+    aom_free(buf->tpl_mvs);
+    CHECK_MEM_ERROR(
+        cm, buf->tpl_mvs,
+        (TPL_MV_REF *)aom_calloc((cm->mi_rows + MAX_MIB_SIZE) * cm->mi_stride,
+                                 sizeof(*buf->tpl_mvs)));
+#endif
   }
 }
 

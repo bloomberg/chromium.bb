@@ -5314,6 +5314,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cm->frame_offset = cm->current_video_frame;
   }
   av1_setup_frame_buf_refs(cm);
+  av1_setup_motion_field(cm);
 #endif
 
   {
