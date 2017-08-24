@@ -586,6 +586,10 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kGeolocation},
        {}},
 
+      {IDS_EXTENSION_PROMPT_WARNING_SYSTEM_STORAGE,
+       {APIPermission::kSystemStorage},
+       {}},
+
       {IDS_EXTENSION_PROMPT_WARNING_CONTENT_SETTINGS,
        {APIPermission::kContentSettings},
        {}},
