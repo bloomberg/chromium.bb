@@ -142,7 +142,7 @@ void DrmOverlayManager::GpuSentOverlayResult(
   TRACE_EVENT_ASYNC_END0(
       "hwoverlays", "DrmOverlayManager::SendOverlayValidationRequest response",
       this);
-  auto iter = cache_.Get(candidates);
+  auto iter = cache_.Peek(candidates);
   if (iter != cache_.end()) {
     iter->second.status = returns;
   }
