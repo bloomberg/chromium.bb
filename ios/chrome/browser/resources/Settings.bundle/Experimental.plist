@@ -158,16 +158,6 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Force reset Contextual Search</string>
-			<key>Key</key>
-			<string>ForceResetContextualSearch</string>
-			<key>DefaultValue</key>
-			<false/>
-		</dict>
-		<dict>
-			<key>Type</key>
-			<string>PSToggleSwitchSpecifier</string>
-			<key>Title</key>
 			<string>Alert on background upload</string>
 			<key>Key</key>
 			<string>EnableAlertsOnBackgroundUpload</string>

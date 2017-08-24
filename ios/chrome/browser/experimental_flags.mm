@@ -37,7 +37,6 @@ NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 NSString* const kEnableStartupCrash = @"EnableStartupCrash";
 NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
 NSString* const kFirstRunForceEnabled = @"FirstRunForceEnabled";
-NSString* const kForceResetContextualSearch = @"ForceResetContextualSearch";
 NSString* const kGaiaEnvironment = @"GAIAEnvironment";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kSafariVCSignInDisabled = @"SafariVCSignInDisabled";
