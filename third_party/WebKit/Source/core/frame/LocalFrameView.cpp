@@ -751,9 +751,11 @@ void LocalFrameView::AdjustViewSize() {
   const IntRect rect = layout_view_item.DocumentRect();
   const IntSize& size = rect.Size();
 
-  const IntPoint origin(-rect.X(), -rect.Y());
-  if (ScrollOrigin() != origin)
-    SetScrollOrigin(origin);
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
+    const IntPoint origin(-rect.X(), -rect.Y());
+    if (ScrollOrigin() != origin)
+      SetScrollOrigin(origin);
+  }
 
   SetContentsSize(size);
 }
