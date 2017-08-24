@@ -33,6 +33,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/Language.h"
+#include "platform/MemoryCoordinator.h"
 
 namespace blink {
 
@@ -48,6 +49,10 @@ String Navigator::vendor() const {
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=27786
   // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/QrgyulnqvmE
   return "Google Inc.";
+}
+
+float Navigator::deviceMemory() const {
+  return MemoryCoordinator::GetApproximatedDeviceMemory();
 }
 
 String Navigator::vendorSub() const {

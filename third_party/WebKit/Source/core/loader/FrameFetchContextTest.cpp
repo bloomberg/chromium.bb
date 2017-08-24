@@ -592,27 +592,6 @@ TEST_F(FrameFetchContextHintsTest, MonitorAllHints) {
   ExpectHeader("http://www.example.com/1.gif", "Viewport-Width", true, "500");
 }
 
-TEST_F(FrameFetchContextHintsTest, ClientHintsDeviceMemory) {
-  EXPECT_EQ(0.125, FrameFetchContext::ClientHintsDeviceMemory(128));  // 128MB
-  EXPECT_EQ(0.25, FrameFetchContext::ClientHintsDeviceMemory(256));   // 256MB
-  EXPECT_EQ(0.5, FrameFetchContext::ClientHintsDeviceMemory(510));    // <512MB
-  EXPECT_EQ(0.5, FrameFetchContext::ClientHintsDeviceMemory(512));    // 512MB
-  EXPECT_EQ(0.5, FrameFetchContext::ClientHintsDeviceMemory(640));  // 512+128MB
-  EXPECT_EQ(0.75,
-            FrameFetchContext::ClientHintsDeviceMemory(768));      // 512+256MB
-  EXPECT_EQ(1, FrameFetchContext::ClientHintsDeviceMemory(1000));  // <1GB
-  EXPECT_EQ(1, FrameFetchContext::ClientHintsDeviceMemory(1024));  // 1GB
-  EXPECT_EQ(1.5, FrameFetchContext::ClientHintsDeviceMemory(1536));  // 1.5GB
-  EXPECT_EQ(2, FrameFetchContext::ClientHintsDeviceMemory(2000));    // <2GB
-  EXPECT_EQ(2, FrameFetchContext::ClientHintsDeviceMemory(2048));    // 2GB
-  EXPECT_EQ(3, FrameFetchContext::ClientHintsDeviceMemory(3000));    // <3GB
-  EXPECT_EQ(4, FrameFetchContext::ClientHintsDeviceMemory(5120));    // 5GB
-  EXPECT_EQ(8, FrameFetchContext::ClientHintsDeviceMemory(8192));    // 8GB
-  EXPECT_EQ(16, FrameFetchContext::ClientHintsDeviceMemory(16384));  // 16GB
-  EXPECT_EQ(32, FrameFetchContext::ClientHintsDeviceMemory(32768));  // 32GB
-  EXPECT_EQ(64, FrameFetchContext::ClientHintsDeviceMemory(64385));  // <64GB
-}
-
 TEST_F(FrameFetchContextTest, MainResourceCachePolicy) {
   // Default case
   ResourceRequest request("http://www.example.com");

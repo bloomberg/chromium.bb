@@ -1,0 +1,4 @@
+Tests for navigator.deviceMemory:
+
+navigator.deviceMemory should be a positive value: true
+navigator.deviceMemory should have only the most 2 significant bits are set in MB: true
