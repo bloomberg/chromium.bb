@@ -216,8 +216,11 @@ public class WindowAndroid {
                 Context.ACCESSIBILITY_SERVICE);
         mDisplayAndroid = display;
         // Configuration.isDisplayServerWideColorGamut must be queried from the window's context.
+        // Because of crbug.com/756180, many devices report true for isScreenWideColorGamut in
+        // 8.0.0, even when they don't actually support wide color gamut.
         // TODO(boliu): Observe configuration changes to update the value of isScreenWideColorGamut.
-        if (BuildInfo.isAtLeastO() && activityFromContext(context) != null) {
+        if (BuildInfo.isAtLeastO() && !Build.VERSION.RELEASE.equals("8.0.0")
+                && activityFromContext(context) != null) {
             Configuration configuration = context.getResources().getConfiguration();
             boolean isScreenWideColorGamut = false;
             try {
