@@ -8,15 +8,11 @@
 #include <GLES3/gl3.h>
 #include <stdint.h>
 
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
 #include "gpu/config/gpu_test_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gl/gl_switches.h"
 
 #define SHADER(Src) #Src
 #define BFE_SHADER(Src) "#extension GL_EXT_blend_func_extended : require\n" #Src
@@ -254,8 +250,7 @@ class EXTBlendFuncExtendedES3DrawTest : public EXTBlendFuncExtendedDrawTest {
     options.size = gfx::Size(kWidth, kHeight);
     options.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
     options.force_shader_name_hashing = GetParam();
-    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
-    gl_.InitializeWithCommandLine(options, command_line);
+    gl_.Initialize(options);
   }
   bool IsApplicable() const {
     return gl_.IsInitialized() && EXTBlendFuncExtendedDrawTest::IsApplicable();

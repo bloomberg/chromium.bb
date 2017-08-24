@@ -13,11 +13,8 @@
 
 #include <vector>
 
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
-#include "gpu/config/gpu_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_context.h"
@@ -34,10 +31,9 @@ class GLClearFramebufferTest : public testing::TestWithParam<bool> {
   void SetUp() override {
     if (GetParam()) {
       // Force the glClear() workaround so we can test it here.
-      base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
-      command_line.AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                     base::IntToString(gpu::GL_CLEAR_BROKEN));
-      gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
+      GpuDriverBugWorkarounds workarounds;
+      workarounds.gl_clear_broken = true;
+      gl_.InitializeWithWorkarounds(GLManager::Options(), workarounds);
       DCHECK(gl_.workarounds().gl_clear_broken);
     } else {
       gl_.Initialize(GLManager::Options());

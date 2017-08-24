@@ -4,6 +4,8 @@
 
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 
+#include <algorithm>
+
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -11,7 +13,7 @@
 
 namespace {
 // Construct GpuDriverBugWorkarounds from a set of enabled workaround IDs.
-void IntSetToWorkarounds(const std::vector<int>& enabled_workarounds,
+void IntSetToWorkarounds(const std::vector<int32_t>& enabled_workarounds,
                          gpu::GpuDriverBugWorkarounds* workarounds) {
   DCHECK(workarounds);
   for (auto ID : enabled_workarounds) {
@@ -46,7 +48,7 @@ void IntSetToWorkarounds(const std::vector<int>& enabled_workarounds,
 // the corresponding Workaround flags.
 void StringToWorkarounds(const std::string& types,
                          gpu::GpuDriverBugWorkarounds* workarounds) {
-  std::vector<int> IDs;
+  std::vector<int32_t> IDs;
   for (const auto& piece : base::SplitStringPiece(
            types, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
     int number = 0;
@@ -55,6 +57,14 @@ void StringToWorkarounds(const std::string& types,
     IDs.push_back(number);
   }
   IntSetToWorkarounds(IDs, workarounds);
+}
+
+GLint LowerMax(GLint max0, GLint max1) {
+  if (max0 > 0 && max1 > 0)
+    return std::min(max0, max1);
+  if (max0 > 0)
+    return max0;
+  return max1;
 }
 
 }  // anonymous namespace
@@ -82,5 +92,21 @@ GpuDriverBugWorkarounds::GpuDriverBugWorkarounds(
     const GpuDriverBugWorkarounds& other) = default;
 
 GpuDriverBugWorkarounds::~GpuDriverBugWorkarounds() {}
+
+void GpuDriverBugWorkarounds::Append(const GpuDriverBugWorkarounds& extra) {
+#define GPU_OP(type, name) name |= extra.name;
+  GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
+#undef GPU_OP
+
+  max_texture_size = LowerMax(max_texture_size, extra.max_texture_size);
+  max_fragment_uniform_vectors = LowerMax(max_fragment_uniform_vectors,
+                                          extra.max_fragment_uniform_vectors);
+  max_varying_vectors =
+      LowerMax(max_varying_vectors, extra.max_varying_vectors);
+  max_vertex_uniform_vectors =
+      LowerMax(max_vertex_uniform_vectors, extra.max_vertex_uniform_vectors);
+  max_copy_texture_chromium_size = LowerMax(
+      max_copy_texture_chromium_size, extra.max_copy_texture_chromium_size);
+}
 
 }  // namespace gpu

@@ -7,11 +7,8 @@
 
 #include <memory>
 
-#include "base/command_line.h"
-#include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"
-#include "gpu/config/gpu_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gpu {
@@ -28,12 +25,11 @@ const GLenum kCubeMapTextureTargets[] = {
 class GLCubeMapTextureTest : public testing::TestWithParam<GLenum> {
  protected:
   void SetUp() override {
-    base::CommandLine command_line(*base::CommandLine::ForCurrentProcess());
     // ANGLE and NVidia fails ReadPixelsFromIncompleteCubeTexture without this
     // workaround.
-    command_line.AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                   base::IntToString(gpu::FORCE_CUBE_COMPLETE));
-    gl_.InitializeWithCommandLine(GLManager::Options(), command_line);
+    GpuDriverBugWorkarounds workarounds;
+    workarounds.force_cube_complete = true;
+    gl_.InitializeWithWorkarounds(GLManager::Options(), workarounds);
     DCHECK(gl_.workarounds().force_cube_complete);
     for (int i = 0; i < 256; i++) {
       pixels_[i * 4] = 255u;

@@ -236,13 +236,6 @@ FeatureInfo::FeatureInfo(
                            : nullptr);
 }
 
-FeatureInfo::FeatureInfo(
-    const base::CommandLine& command_line,
-    const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds)
-    : workarounds_(gpu_driver_bug_workarounds) {
-  InitializeBasicState(&command_line);
-}
-
 void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
   if (!command_line)
     return;

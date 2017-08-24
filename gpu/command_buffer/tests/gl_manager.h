@@ -18,12 +18,9 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/config/gpu_feature_info.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
-
-namespace base {
-class CommandLine;
-}
 
 namespace gl {
 
@@ -83,13 +80,18 @@ class GLManager : private GpuControl {
   GLManager();
   ~GLManager() override;
 
+  // GPU feature info computed for the platform.
+  // Each test needs to apply them, plus the specific settings a test wants
+  // to test.
+  static GpuFeatureInfo g_gpu_feature_info;
+
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,
       gfx::BufferFormat format);
 
   void Initialize(const Options& options);
-  void InitializeWithCommandLine(const Options& options,
-                                 const base::CommandLine& command_line);
+  void InitializeWithWorkarounds(const Options& options,
+                                 const GpuDriverBugWorkarounds& workarounds);
   void Destroy();
 
   bool IsInitialized() const { return gles2_implementation() != nullptr; }
@@ -156,6 +158,10 @@ class GLManager : private GpuControl {
 
  private:
   void SetupBaseContext();
+
+  void InitializeWithWorkaroundsImpl(
+      const Options& options,
+      const GpuDriverBugWorkarounds& workarounds);
 
   gpu::GpuPreferences gpu_preferences_;
 
