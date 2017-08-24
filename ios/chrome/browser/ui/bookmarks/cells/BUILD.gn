@@ -6,12 +6,15 @@ source_set("cells") {
   sources = [
     "bookmark_parent_folder_item.h",
     "bookmark_parent_folder_item.mm",
+    "bookmark_table_cell.h",
+    "bookmark_table_cell.mm",
     "bookmark_text_field_item.h",
     "bookmark_text_field_item.mm",
   ]
 
   deps = [
     "//base",
+    "//components/bookmarks/browser:browser",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view/cells",
