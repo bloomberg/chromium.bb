@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/allocator/allocator_shim.h"
+#include "base/allocator/features.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -285,6 +286,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
   DISALLOW_COPY_AND_ASSIGN(AppControllerProfileObserver);
 };
 
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
 // On macOS 10.12, the IME system attempts to allocate a 2^64 size buffer,
 // which would typically cause an OOM crash. To avoid this, the problematic
 // method is swizzled out and the make-OOM-fatal bit is disabled for the
@@ -309,6 +311,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 }
 
 @end
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
 
 @implementation AppController
 
@@ -784,6 +787,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   handoff_active_url_observer_bridge_.reset(
       new HandoffActiveURLObserverBridge(self));
 
+#if BUILDFLAG(USE_ALLOCATOR_SHIM)
   // Disable fatal OOM to hack around an OS bug https://crbug.com/654695.
   if (base::mac::IsOS10_12()) {
     g_swizzle_imk_input_session = new base::mac::ScopedObjCClassSwizzler(
@@ -791,6 +795,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
         [OOMDisabledIMKInputSession class],
         @selector(_coreAttributesFromRange:whichAttributes:completionHandler:));
   }
+#endif
 }
 
 // Helper function for populating and displaying the in progress downloads at
