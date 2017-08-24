@@ -331,9 +331,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     ServiceWorkerStatusCode last_failure;
   };
 
-  ProviderMap* GetProviderMapForProcess(int process_id) {
-    return providers_->Lookup(process_id);
-  }
+  ProviderMap* GetProviderMapForProcess(int process_id);
 
   void RegistrationComplete(const GURL& pattern,
                             const RegistrationCallback& callback,

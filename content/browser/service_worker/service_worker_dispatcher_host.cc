@@ -95,7 +95,7 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
   // Temporary CHECK for debugging https://crbug.com/736203.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (GetContext())
+  if (GetContext() && phase_ == Phase::kAddedToContext)
     GetContext()->RemoveDispatcherHost(render_process_id_);
 }
 
@@ -109,10 +109,16 @@ void ServiceWorkerDispatcherHost::Init(
     return;
   }
 
+  // Just speculating that maybe we were destructed before Init() was called on
+  // the IO thread in order to try to fix https://crbug.com/750267.
+  if (phase_ != Phase::kInitial)
+    return;
+
   context_wrapper_ = context_wrapper;
   if (!GetContext())
     return;
   GetContext()->AddDispatcherHost(render_process_id_, this);
+  phase_ = Phase::kAddedToContext;
 }
 
 void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Channel* channel) {
@@ -133,8 +139,9 @@ void ServiceWorkerDispatcherHost::OnFilterRemoved() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Don't wait until the destructor to teardown since a new dispatcher host
   // for this process might be created before then.
-  if (GetContext())
+  if (GetContext() && phase_ == Phase::kAddedToContext)
     GetContext()->RemoveDispatcherHost(render_process_id_);
+  phase_ = Phase::kRemovedFromContext;
   context_wrapper_ = nullptr;
   channel_ready_ = false;
 }
