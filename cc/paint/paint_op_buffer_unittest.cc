@@ -1619,14 +1619,6 @@ void PushAnnotateOps(PaintOpBuffer* buffer) {
   ValidateOps<AnnotateOp>(buffer);
 }
 
-void PushClipDeviceRectOps(PaintOpBuffer* buffer) {
-  for (size_t i = 1; i < test_irects.size(); i += 2) {
-    SkClipOp op = i % 3 ? SkClipOp::kDifference : SkClipOp::kIntersect;
-    buffer->push<ClipDeviceRectOp>(test_irects[i - 1], test_irects[0], op);
-  }
-  ValidateOps<ClipDeviceRectOp>(buffer);
-}
-
 void PushClipPathOps(PaintOpBuffer* buffer) {
   for (size_t i = 0; i < test_paths.size(); ++i) {
     SkClipOp op = i % 3 ? SkClipOp::kDifference : SkClipOp::kIntersect;
@@ -1853,15 +1845,6 @@ void CompareAnnotateOp(const AnnotateOp* original, const AnnotateOp* written) {
   }
 }
 
-void CompareClipDeviceRectOp(const ClipDeviceRectOp* original,
-                             const ClipDeviceRectOp* written) {
-  EXPECT_TRUE(original->IsValid());
-  EXPECT_TRUE(written->IsValid());
-  EXPECT_EQ(original->device_rect, written->device_rect);
-  EXPECT_EQ(original->subtract_rect, written->subtract_rect);
-  EXPECT_EQ(original->op, written->op);
-}
-
 void CompareClipPathOp(const ClipPathOp* original, const ClipPathOp* written) {
   EXPECT_TRUE(original->IsValid());
   EXPECT_TRUE(written->IsValid());
@@ -2086,9 +2069,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::Annotate:
         PushAnnotateOps(&buffer_);
         break;
-      case PaintOpType::ClipDeviceRect:
-        PushClipDeviceRectOps(&buffer_);
-        break;
       case PaintOpType::ClipPath:
         PushClipPathOps(&buffer_);
         break;
@@ -2177,10 +2157,6 @@ class PaintOpSerializationTest : public ::testing::TestWithParam<uint8_t> {
       case PaintOpType::Annotate:
         CompareAnnotateOp(static_cast<const AnnotateOp*>(original),
                           static_cast<const AnnotateOp*>(written));
-        break;
-      case PaintOpType::ClipDeviceRect:
-        CompareClipDeviceRectOp(static_cast<const ClipDeviceRectOp*>(original),
-                                static_cast<const ClipDeviceRectOp*>(written));
         break;
       case PaintOpType::ClipPath:
         CompareClipPathOp(static_cast<const ClipPathOp*>(original),

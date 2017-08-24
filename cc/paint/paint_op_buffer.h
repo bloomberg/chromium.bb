@@ -57,7 +57,6 @@ class CC_PAINT_EXPORT ThreadsafePath : public SkPath {
 
 enum class PaintOpType : uint8_t {
   Annotate,
-  ClipDeviceRect,
   ClipPath,
   ClipRect,
   ClipRRect,
@@ -246,24 +245,6 @@ class CC_PAINT_EXPORT AnnotateOp final : public PaintOp {
 
  private:
   AnnotateOp();
-};
-
-class CC_PAINT_EXPORT ClipDeviceRectOp final : public PaintOp {
- public:
-  static constexpr PaintOpType kType = PaintOpType::ClipDeviceRect;
-  ClipDeviceRectOp(const SkIRect& device_rect,
-                   const SkIRect& subtract_rect,
-                   SkClipOp op)
-      : device_rect(device_rect), subtract_rect(subtract_rect), op(op) {}
-  static void Raster(const ClipDeviceRectOp* op,
-                     SkCanvas* canvas,
-                     const PlaybackParams& params);
-  bool IsValid() const { return IsValidSkClipOp(op); }
-  HAS_SERIALIZATION_FUNCTIONS();
-
-  SkIRect device_rect;
-  SkIRect subtract_rect;
-  SkClipOp op;
 };
 
 class CC_PAINT_EXPORT ClipPathOp final : public PaintOp {
