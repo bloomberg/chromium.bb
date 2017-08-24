@@ -1033,6 +1033,47 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
+#if CONFIG_MFMV
+void av1_setup_frame_buf_refs(AV1_COMMON *cm) {
+  cm->cur_frame->cur_frame_offset = cm->frame_offset;
+  int alt_buf_idx = cm->frame_refs[ALTREF_FRAME - LAST_FRAME].idx;
+  int lst_buf_idx = cm->frame_refs[LAST_FRAME - LAST_FRAME].idx;
+  int gld_buf_idx = cm->frame_refs[GOLDEN_FRAME - LAST_FRAME].idx;
+
+#if CONFIG_EXT_REFS
+  int lst2_buf_idx = cm->frame_refs[LAST2_FRAME - LAST_FRAME].idx;
+  int lst3_buf_idx = cm->frame_refs[LAST3_FRAME - LAST_FRAME].idx;
+  int bwd_buf_idx = cm->frame_refs[BWDREF_FRAME - LAST_FRAME].idx;
+#endif
+
+  if (alt_buf_idx >= 0)
+    cm->cur_frame->alt_frame_offset =
+        cm->buffer_pool->frame_bufs[alt_buf_idx].cur_frame_offset;
+
+  if (lst_buf_idx >= 0)
+    cm->cur_frame->lst_frame_offset =
+        cm->buffer_pool->frame_bufs[lst_buf_idx].cur_frame_offset;
+
+  if (gld_buf_idx >= 0)
+    cm->cur_frame->gld_frame_offset =
+        cm->buffer_pool->frame_bufs[gld_buf_idx].cur_frame_offset;
+
+#if CONFIG_EXT_REFS
+  if (lst2_buf_idx >= 0)
+    cm->cur_frame->lst2_frame_offset =
+        cm->buffer_pool->frame_bufs[lst2_buf_idx].cur_frame_offset;
+
+  if (lst3_buf_idx >= 0)
+    cm->cur_frame->lst3_frame_offset =
+        cm->buffer_pool->frame_bufs[lst3_buf_idx].cur_frame_offset;
+
+  if (bwd_buf_idx >= 0)
+    cm->cur_frame->bwd_frame_offset =
+        cm->buffer_pool->frame_bufs[bwd_buf_idx].cur_frame_offset;
+#endif
+}
+#endif
+
 #if CONFIG_WARPED_MOTION
 #if WARPED_MOTION_SORT_SAMPLES
 static INLINE void record_samples(MB_MODE_INFO *mbmi, int *pts, int *pts_inref,

@@ -4443,6 +4443,21 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     }
   }
 
+#if CONFIG_MFMV
+  if (cm->show_frame == 0) {
+    int arf_offset = AOMMIN(
+        (MAX_GF_INTERVAL - 1),
+        cpi->twopass.gf_group.arf_src_offset[cpi->twopass.gf_group.index]);
+#if CONFIG_EXT_REFS
+    int brf_offset =
+        cpi->twopass.gf_group.brf_src_offset[cpi->twopass.gf_group.index];
+
+    arf_offset = AOMMIN((MAX_GF_INTERVAL - 1), arf_offset + brf_offset);
+#endif
+    aom_wb_write_literal(wb, arf_offset, 4);
+  }
+#endif
+
 #if CONFIG_REFERENCE_BUFFER
   cm->refresh_mask = cm->frame_type == KEY_FRAME ? 0xFF : get_refresh_mask(cpi);
 #endif

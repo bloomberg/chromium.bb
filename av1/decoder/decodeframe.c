@@ -44,6 +44,7 @@
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"
 #include "av1/common/idct.h"
+#include "av1/common/mvref_common.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"
@@ -4564,6 +4565,15 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       }
     }
   }
+
+#if CONFIG_MFMV
+  if (cm->show_frame == 0) {
+    cm->frame_offset = cm->current_video_frame + aom_rb_read_literal(rb, 4);
+  } else {
+    cm->frame_offset = cm->current_video_frame;
+  }
+#endif
+
 #if CONFIG_TEMPMV_SIGNALING
   cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
 #endif
@@ -5274,6 +5284,10 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
                            !cm->last_intra_only && cm->last_show_frame &&
                            (cm->last_frame_type != KEY_FRAME);
 #endif  // CONFIG_TEMPMV_SIGNALING
+
+#if CONFIG_MFMV
+  av1_setup_frame_buf_refs(cm);
+#endif
 
   av1_setup_block_planes(xd, cm->subsampling_x, cm->subsampling_y);
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
