@@ -393,6 +393,7 @@ class TabStripModel {
     CommandRestoreTab,
     CommandTogglePinned,
     CommandToggleTabAudioMuted,
+    CommandToggleSiteMuted,
     CommandBookmarkAllTabs,
     CommandSelectByDomain,
     CommandSelectByOpener,
@@ -419,6 +420,10 @@ class TabStripModel {
   // Returns true if 'CommandToggleTabAudioMuted' will mute. |index| is the
   // index supplied to |ExecuteContextMenuCommand|.
   bool WillContextMenuMute(int index);
+
+  // Returns true if 'CommandToggleSiteMuted' will mute. |index| is the
+  // index supplied to |ExecuteContextMenuCommand|.
+  bool WillContextMenuMuteSites(int index);
 
   // Returns true if 'CommandTogglePinned' will pin. |index| is the index
   // supplied to |ExecuteContextMenuCommand|.

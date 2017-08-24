@@ -1740,6 +1740,7 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsNotifications", IDS_SETTINGS_SITE_SETTINGS_NOTIFICATIONS},
     {"siteSettingsImages", IDS_SETTINGS_SITE_SETTINGS_IMAGES},
     {"siteSettingsJavascript", IDS_SETTINGS_SITE_SETTINGS_JAVASCRIPT},
+    {"siteSettingsSound", IDS_SETTINGS_SITE_SETTINGS_SOUND},
     {"siteSettingsFlash", IDS_SETTINGS_SITE_SETTINGS_FLASH},
     {"siteSettingsPdfDocuments", IDS_SETTINGS_SITE_SETTINGS_PDF_DOCUMENTS},
     {"siteSettingsPdfDownloadPdfs",
@@ -1908,6 +1909,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       "enableSafeBrowsingSubresourceFilter",
       base::FeatureList::IsEnabled(
           subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI));
+
+  html_source->AddBoolean(
+      "enableSoundContentSetting",
+      base::FeatureList::IsEnabled(features::kSoundContentSetting));
 
   if (PluginUtils::ShouldPreferHtmlOverPlugins(
           HostContentSettingsMapFactory::GetForProfile(profile))) {

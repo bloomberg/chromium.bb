@@ -26,6 +26,7 @@
            BECAUSE YOUR RESOURCES ARE FUNCTIONALLY RELATED OR FALL UNDER THE
            SAME CONDITIONALS. -->
       <structure type="chrome_scaled_image" name="IDR_ACCESSED_COOKIES" file="common/accessed_cookies.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_ADS" file="common/allowed_ads.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_BACKGROUND_SYNC" file="common/allowed_background_sync.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_CAMERA" file="common/allowed_camera.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_DOWNLOADS" file="common/allowed_downloads.png" />
@@ -39,7 +40,7 @@
         <structure type="chrome_scaled_image" name="IDR_ALLOWED_PLUGINS" file="common/allowed_plugins.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_POPUPS" file="common/allowed_popups.png" />
-      <structure type="chrome_scaled_image" name="IDR_ALLOWED_ADS" file="common/allowed_ads.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_SOUND" file="common/allowed_sound.png" />
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_USB" file="common/allowed_usb.png" />
       <if expr="enable_app_list and _google_chrome">
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_GOOGLE_LOGO_VOICE_SEARCH" file="google_chrome/google_logo_voice_search.png" />
@@ -74,6 +75,7 @@
         <structure type="chrome_scaled_image" name="IDR_BACK_H" file="common/browser_back_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_BACK_P" file="common/browser_back_pressed.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_ADS" file="common/blocked_ads.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_BACKGROUND_SYNC" file="common/blocked_background_sync.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_CAMERA" file="common/blocked_camera.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_COOKIES" file="common/blocked_cookies.png" />
@@ -89,7 +91,7 @@
         <structure type="chrome_scaled_image" name="IDR_BLOCKED_PLUGINS" file="common/blocked_plugins.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_POPUPS" file="common/blocked_popups.png" />
-      <structure type="chrome_scaled_image" name="IDR_BLOCKED_ADS" file="common/blocked_ads.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_SOUND" file="common/blocked_sound.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_USB" file="common/blocked_usb.png" />
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_BLUETOOTH_KEYBOARD" file="cros/bluetooth_pairing_keyboard.png" />

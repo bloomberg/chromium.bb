@@ -212,6 +212,9 @@
     <message name="IDS_PAGE_INFO_TYPE_MIDI_SYSEX" desc="The label used for MIDI system exclusive message permission controls in the Page Info popup.">
       MIDI devices full control
     </message>
+    <message name="IDS_PAGE_INFO_TYPE_SOUND" desc="The label used for the sound permission controls in the Page Info popup.">
+      Sound
+    </message>
     <!-- TODO(crbug.com/716303): A few permissions are missing here. -->
 
     <!-- Permission values -->

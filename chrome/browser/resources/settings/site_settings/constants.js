@@ -16,6 +16,7 @@ settings.ContentSettingsTypes = {
   COOKIES: 'cookies',
   IMAGES: 'images',
   JAVASCRIPT: 'javascript',
+  SOUND: 'sound',
   PLUGINS: 'plugins',  // AKA Flash.
   POPUPS: 'popups',
   GEOLOCATION: 'location',

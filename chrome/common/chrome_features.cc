@@ -388,6 +388,11 @@ const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
 const base::Feature kSiteDetails{"SiteDetails",
                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables the ability to use the sound content setting to mute a
+// website.
+const base::Feature kSoundContentSetting{"SoundContentSetting",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if !defined(OS_ANDROID)
 // Enables delaying the navigation of background tabs in order to improve
 // foreground tab's user experience.

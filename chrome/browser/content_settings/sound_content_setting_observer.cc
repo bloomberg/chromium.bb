@@ -4,10 +4,15 @@
 
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_handle.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/tabs/tab_utils.h"
+#endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SoundContentSettingObserver);
 
@@ -39,8 +44,29 @@ void SoundContentSettingObserver::OnContentSettingChanged(
 }
 
 void SoundContentSettingObserver::MuteOrUnmuteIfNecessary() {
-  web_contents()->SetAudioMuted(GetCurrentContentSetting() ==
-                                CONTENT_SETTING_BLOCK);
+  bool mute = GetCurrentContentSetting() == CONTENT_SETTING_BLOCK;
+
+// TabMutedReason does not exist on Android.
+#if defined(OS_ANDROID)
+  web_contents()->SetAudioMuted(mute);
+#else
+  // We don't want to overwrite TabMutedReason with no change.
+  if (mute == web_contents()->IsAudioMuted())
+    return;
+
+  TabMutedReason reason = chrome::GetTabAudioMutedReason(web_contents());
+
+  // Do not unmute if we're muted due to media capture.
+  if (!mute && reason == TabMutedReason::MEDIA_CAPTURE)
+    return;
+
+  // Do not override the decisions of an extension.
+  if (reason == TabMutedReason::EXTENSION)
+    return;
+
+  chrome::SetTabAudioMuted(web_contents(), mute,
+                           TabMutedReason::CONTENT_SETTING, std::string());
+#endif  // defined(OS_ANDROID)
 }
 
 ContentSetting SoundContentSettingObserver::GetCurrentContentSetting() {

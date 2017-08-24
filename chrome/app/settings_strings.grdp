@@ -2228,6 +2228,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_MIDI_DEVICES_BLOCK" desc="The block label for MIDI devices in site settings.">
     Do not allow any sites to use system exclusive messages to access MIDI devices
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SOUND" desc="Label for the sound site settings.">
+    Sound
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES" desc="Label for the USB devices in site settings.">
     USB devices
   </message>

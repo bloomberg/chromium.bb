@@ -18,7 +18,6 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -888,7 +887,8 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return delegate_->GetRestoreTabType() !=
           TabStripModelDelegate::RESTORE_NONE;
 
-    case CommandToggleTabAudioMuted: {
+    case CommandToggleTabAudioMuted:
+    case CommandToggleSiteMuted: {
       std::vector<int> indices = GetIndicesForCommand(context_index);
       for (size_t i = 0; i < indices.size(); ++i) {
         if (!chrome::CanToggleAudioMute(GetWebContentsAt(indices[i])))
@@ -1019,6 +1019,13 @@ void TabStripModel::ExecuteContextMenuCommand(
       break;
     }
 
+    case CommandToggleSiteMuted: {
+      const std::vector<int>& indices = GetIndicesForCommand(context_index);
+      const bool mute = WillContextMenuMuteSites(context_index);
+      chrome::SetSitesMuted(*this, indices, mute);
+      break;
+    }
+
     case CommandBookmarkAllTabs: {
       base::RecordAction(UserMetricsAction("TabContextMenu_BookmarkAllTabs"));
 
@@ -1070,6 +1077,10 @@ std::vector<int> TabStripModel::GetIndicesClosedByCommand(
 bool TabStripModel::WillContextMenuMute(int index) {
   std::vector<int> indices = GetIndicesForCommand(index);
   return !chrome::AreAllTabsMuted(*this, indices);
+}
+
+bool TabStripModel::WillContextMenuMuteSites(int index) {
+  return !chrome::AreAllSitesMuted(*this, GetIndicesForCommand(index));
 }
 
 bool TabStripModel::WillContextMenuPin(int index) {
