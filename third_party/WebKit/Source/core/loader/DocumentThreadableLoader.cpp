@@ -108,35 +108,6 @@ class EmptyDataHandle final : public WebDataConsumerHandle {
   const char* DebugName() const override { return "EmptyDataHandle"; }
 };
 
-// No-CORS requests are allowed for all these contexts, and plugin contexts with
-// private permission when we set ServiceWorkerMode to None in
-// PepperURLLoaderHost.
-bool IsNoCORSAllowedContext(
-    WebURLRequest::RequestContext context,
-    WebURLRequest::ServiceWorkerMode service_worker_mode) {
-  switch (context) {
-    case WebURLRequest::kRequestContextAudio:
-    case WebURLRequest::kRequestContextVideo:
-    case WebURLRequest::kRequestContextObject:
-    case WebURLRequest::kRequestContextFavicon:
-    case WebURLRequest::kRequestContextImage:
-    case WebURLRequest::kRequestContextScript:
-    case WebURLRequest::kRequestContextWorker:
-    case WebURLRequest::kRequestContextSharedWorker:
-    case WebURLRequest::kRequestContextFetch:
-      return true;
-    case WebURLRequest::kRequestContextPlugin:
-      return service_worker_mode == WebURLRequest::ServiceWorkerMode::kNone;
-    default:
-      return false;
-  }
-}
-
-bool IsCORSEnabledRequestMode(WebURLRequest::FetchRequestMode mode) {
-  return mode == WebURLRequest::kFetchRequestModeCORS ||
-         mode == WebURLRequest::kFetchRequestModeCORSWithForcedPreflight;
-}
-
 }  // namespace
 
 // Max number of CORS redirects handled in DocumentThreadableLoader. Same number
@@ -264,7 +235,8 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   // Setting an outgoing referer is only supported in the async code path.
   DCHECK(async_ || request.HttpReferrer().IsEmpty());
 
-  bool cors_enabled = IsCORSEnabledRequestMode(request.GetFetchRequestMode());
+  bool cors_enabled =
+      WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode());
 
   // kPreventPreflight can be used only when the CORS is enabled.
   DCHECK(options_.preflight_policy == kConsiderPreflight || cors_enabled);
@@ -279,8 +251,8 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
   redirect_mode_ = request.GetFetchRedirectMode();
 
   if (request.GetFetchRequestMode() == WebURLRequest::kFetchRequestModeNoCORS) {
-    SECURITY_CHECK(IsNoCORSAllowedContext(request_context_,
-                                          request.GetServiceWorkerMode()));
+    SECURITY_CHECK(WebCORS::IsNoCORSAllowedContext(
+        request_context_, request.GetServiceWorkerMode()));
   } else {
     cors_flag_ = !GetSecurityOrigin()->CanRequestNoSuborigin(request.Url());
   }
@@ -372,7 +344,7 @@ void DocumentThreadableLoader::StartBlinkCORS(const ResourceRequest& request) {
     return;
   }
 
-  if (IsCORSEnabledRequestMode(request.GetFetchRequestMode())) {
+  if (WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode())) {
     // Save the request to fallback_request_for_service_worker to use when the
     // local SW doesn't handle (call respondWith()) a CORS enabled request.
     fallback_request_for_service_worker_ = ResourceRequest(request);
@@ -404,7 +376,7 @@ void DocumentThreadableLoader::DispatchInitialRequestBlinkCORS(
     return;
   }
 
-  DCHECK(IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
+  DCHECK(WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
          request.IsExternalRequest());
 
   MakeCrossOriginAccessRequest(request);
@@ -457,7 +429,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
 
 void DocumentThreadableLoader::MakeCrossOriginAccessRequestBlinkCORS(
     const ResourceRequest& request) {
-  DCHECK(IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
+  DCHECK(WebCORS::IsCORSEnabledRequestMode(request.GetFetchRequestMode()) ||
          request.IsExternalRequest());
   DCHECK(client_);
   DCHECK(!GetResource());
@@ -1031,7 +1003,7 @@ void DocumentThreadableLoader::HandleResponseBlinkCORS(
              fallback_request_for_service_worker_.Url()));
   fallback_request_for_service_worker_ = ResourceRequest();
 
-  if (IsCORSEnabledRequestMode(request_mode) && cors_flag_) {
+  if (WebCORS::IsCORSEnabledRequestMode(request_mode) && cors_flag_) {
     WebCORS::AccessStatus cors_status = WebCORS::CheckAccess(
         response.Url(), response.HttpStatusCode(), response.HttpHeaderFields(),
         credentials_mode, WebSecurityOrigin(GetSecurityOrigin()));
