@@ -104,6 +104,9 @@ class MemoryInternalsDOMHandler : public content::WebUIMessageHandler,
   // Callback for the "dumpProcess" message.
   void HandleDumpProcess(const base::ListValue* args);
 
+  // Callback for the "reportProcess" message.
+  void HandleReportProcess(const base::ListValue* args);
+
  private:
   // Hops to the IO thread to enumerate child processes, and back to the UI
   // thread to fill in the renderer processes.
@@ -144,6 +147,10 @@ void MemoryInternalsDOMHandler::RegisterMessages() {
       "dumpProcess",
       base::BindRepeating(&MemoryInternalsDOMHandler::HandleDumpProcess,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "reportProcess",
+      base::BindRepeating(&MemoryInternalsDOMHandler::HandleReportProcess,
+                          base::Unretained(this)));
 }
 
 void MemoryInternalsDOMHandler::HandleRequestProcessList(
@@ -170,7 +177,7 @@ void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
 #if defined(OS_ANDROID)
   // On Android write to the user data dir.
   // TODO(bug 757115) Does it make sense to show the Android file picker here
-  // insead? Need to test what that looks like.
+  // instead? Need to test what that looks like.
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   base::FilePath output_path = user_data_dir.Append(default_file);
@@ -191,6 +198,18 @@ void MemoryInternalsDOMHandler::HandleDumpProcess(const base::ListValue* args) {
       web_ui_->GetWebContents()->GetTopLevelNativeWindow(),
       reinterpret_cast<void*>(pid));
 #endif
+}
+
+void MemoryInternalsDOMHandler::HandleReportProcess(
+    const base::ListValue* args) {
+  if (!args->is_list() || args->GetList().size() != 1)
+    return;
+  const base::Value& pid_value = args->GetList()[0];
+  if (!pid_value.is_int())
+    return;
+
+  int pid = pid_value.GetInt();
+  profiling::ProfilingProcessHost::GetInstance()->RequestProcessReport(pid);
 }
 
 void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(

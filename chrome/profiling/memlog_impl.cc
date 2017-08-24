@@ -32,12 +32,14 @@ void MemlogImpl::AddSender(base::ProcessId pid,
 
 void MemlogImpl::DumpProcess(base::ProcessId pid,
                              mojo::ScopedHandle output_file,
-                             std::unique_ptr<base::DictionaryValue> metadata) {
+                             std::unique_ptr<base::DictionaryValue> metadata,
+                             DumpProcessCallback callback) {
   base::PlatformFile platform_file;
   MojoResult result =
       UnwrapPlatformFile(std::move(output_file), &platform_file);
   if (result != MOJO_RESULT_OK) {
     LOG(ERROR) << "Failed to unwrap output file " << result;
+    std::move(callback).Run(false);
     return;
   }
   base::File file(platform_file);
@@ -48,17 +50,20 @@ void MemlogImpl::DumpProcess(base::ProcessId pid,
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->GetVmRegionsForHeapProfiler(base::Bind(
           &MemlogImpl::OnGetVmRegionsComplete, weak_factory_.GetWeakPtr(), pid,
-          base::Passed(std::move(metadata)), base::Passed(std::move(file))));
+          base::Passed(std::move(metadata)), base::Passed(std::move(file)),
+          base::Passed(std::move(callback))));
 }
 
 void MemlogImpl::OnGetVmRegionsComplete(
     base::ProcessId pid,
     std::unique_ptr<base::DictionaryValue> metadata,
     base::File file,
+    DumpProcessCallback callback,
     bool success,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   if (!success) {
     LOG(ERROR) << "Global dump failed";
+    std::move(callback).Run(false);
     return;
   }
 
@@ -74,13 +79,21 @@ void MemlogImpl::OnGetVmRegionsComplete(
   }
   if (!process_dump) {
     LOG(ERROR) << "Don't have a memory dump for PID " << pid;
+    std::move(callback).Run(false);
     return;
   }
 
-  connection_manager_->DumpProcess(
-      pid, std::move(metadata),
-      std::move(process_dump->os_dump->memory_maps_for_heap_profiler),
-      std::move(file));
+  if (!connection_manager_.get()->DumpProcess(
+          pid, std::move(metadata),
+          std::move(process_dump->os_dump->memory_maps_for_heap_profiler),
+          std::move(file))) {
+    LOG(ERROR) << "Can't dump process to file";
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // Signal that the process dump was successful.
+  std::move(callback).Run(true);
 }
 
 }  // namespace profiling

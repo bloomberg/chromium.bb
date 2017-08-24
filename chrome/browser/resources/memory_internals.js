@@ -12,6 +12,10 @@ function dumpProcess(pid) {
   chrome.send('dumpProcess', [pid]);
 }
 
+function reportProcess(pid) {
+  chrome.send('reportProcess', [pid]);
+}
+
 // celltype should either be "td" or "th". The contents of the |cols| will be
 // added as children of each table cell if they are non-null.
 function addListRow(table, celltype, cols) {
@@ -48,20 +52,26 @@ function returnProcessList(data) {
 
   // Heading.
   addListRow(table, 'th', [
-    null, document.createTextNode('Process ID'), document.createTextNode('Name')
+    null, null, document.createTextNode('Process ID'),
+    document.createTextNode('Name')
   ]);
 
   for (let proc of processes) {
     let procId = proc[0];
 
-    let button = document.createElement('button');
-    button.innerText = '\u21e9 Save dump';
-    button.onclick = () => dumpProcess(procId);
+    let save_button = document.createElement('button');
+    save_button.innerText = '\u21e9 Save dump';
+    save_button.onclick = () => dumpProcess(procId);
+
+    let report_button = document.createElement('button');
+    report_button.innerText = '\uD83D\uDC1E Report';
+    report_button.onclick = () => reportProcess(procId);
 
     let procIdText = document.createTextNode(procId.toString());
     let description = document.createTextNode(proc[1]);
 
-    addListRow(table, 'td', [button, procIdText, description]);
+    addListRow(
+        table, 'td', [save_button, report_button, procIdText, description]);
   }
 
   proclist.appendChild(table);

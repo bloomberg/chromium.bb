@@ -43,7 +43,8 @@ class MemlogConnectionManager {
   // Dumps the memory log for the given process into |output_file|.  This must
   // be provided the memory map for the given process since that is not tracked
   // as part of the normal allocation process.
-  void DumpProcess(
+  // Returns true if the dump is successfully produced, false otherwise.
+  bool DumpProcess(
       base::ProcessId pid,
       std::unique_ptr<base::DictionaryValue> metadata,
       const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
