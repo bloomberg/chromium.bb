@@ -61,8 +61,7 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
       NGConstraintSpace::CreateFromLayoutObject(*this, override_logical_width,
                                                 override_logical_height);
 
-  RefPtr<NGLayoutResult> result =
-      NGBlockNode(this).Layout(constraint_space.Get());
+  RefPtr<NGLayoutResult> result = NGBlockNode(this).Layout(*constraint_space);
 
   if (IsOutOfFlowPositioned()) {
     // In legacy layout, abspos differs from regular blocks in that abspos
@@ -145,29 +144,29 @@ LayoutUnit LayoutNGBlockFlow::InlineBlockBaseline(
 }
 
 RefPtr<NGLayoutResult> LayoutNGBlockFlow::CachedLayoutResult(
-    NGConstraintSpace* constraint_space,
+    const NGConstraintSpace& constraint_space,
     NGBreakToken* break_token) const {
   if (!cached_result_ || break_token || NeedsLayout())
     return nullptr;
-  if (*constraint_space != *cached_constraint_space_)
+  if (constraint_space != *cached_constraint_space_)
     return nullptr;
   return cached_result_->CloneWithoutOffset();
 }
 
 void LayoutNGBlockFlow::SetCachedLayoutResult(
-    NGConstraintSpace* constraint_space,
+    const NGConstraintSpace& constraint_space,
     NGBreakToken* break_token,
     RefPtr<NGLayoutResult> layout_result) {
   if (!RuntimeEnabledFeatures::LayoutNGFragmentCachingEnabled())
     return;
-  if (break_token || constraint_space->UnpositionedFloats().size() ||
+  if (break_token || constraint_space.UnpositionedFloats().size() ||
       layout_result->UnpositionedFloats().size() ||
       layout_result->Status() != NGLayoutResult::kSuccess) {
     // We can't cache these yet
     return;
   }
 
-  cached_constraint_space_ = constraint_space;
+  cached_constraint_space_ = &constraint_space;
   cached_result_ = layout_result;
 }
 

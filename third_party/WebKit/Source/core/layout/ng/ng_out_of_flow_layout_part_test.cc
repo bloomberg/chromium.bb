@@ -68,7 +68,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
   RefPtr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   NGBlockNode node(block_flow);
-  RefPtr<NGLayoutResult> result = node.Layout(space.Get());
+  RefPtr<NGLayoutResult> result = node.Layout(*space);
   EXPECT_EQ(result->OutOfFlowPositionedDescendants().size(), (size_t)2);
 
   // Test the final result.
@@ -110,7 +110,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode1) {
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
   RefPtr<const NGPhysicalFragment> fragment =
-      node.Layout(space.Get())->PhysicalFragment();
+      node.Layout(*space)->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(400)), fragment->Size());
 
   fragment = ToNGPhysicalBoxFragment(fragment.Get())->Children()[0];
@@ -149,7 +149,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, OrthogonalWritingMode2) {
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
 
   RefPtr<const NGPhysicalFragment> fragment =
-      node.Layout(space.Get())->PhysicalFragment();
+      node.Layout(*space)->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(400)), fragment->Size());
 
   fragment = ToNGPhysicalBoxFragment(fragment.Get())->Children()[0];

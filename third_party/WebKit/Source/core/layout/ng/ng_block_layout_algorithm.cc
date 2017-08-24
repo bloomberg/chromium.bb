@@ -127,10 +127,10 @@ void PositionPendingFloats(
 }
 
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
-                                               NGConstraintSpace* space,
+                                               const NGConstraintSpace& space,
                                                NGBlockBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, break_token),
-      exclusion_space_(new NGExclusionSpace(space->ExclusionSpace())) {}
+      exclusion_space_(new NGExclusionSpace(space.ExclusionSpace())) {}
 
 Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize() const {
   MinMaxSize sizes;
@@ -221,10 +221,10 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
   // If we have a list of unpositioned floats as input to this layout, we'll
   // need to abort once our BFC offset is resolved. Additionally the
   // FloatsBfcOffset() must not be present in this case.
-  unpositioned_floats_ = constraint_space_->UnpositionedFloats();
+  unpositioned_floats_ = ConstraintSpace().UnpositionedFloats();
   abort_when_bfc_resolved_ = !unpositioned_floats_.IsEmpty();
   if (abort_when_bfc_resolved_)
-    DCHECK(!constraint_space_->FloatsBfcOffset());
+    DCHECK(!ConstraintSpace().FloatsBfcOffset());
 
   // If we are resuming from a break token our start border and padding is
   // within a previous fragment.
@@ -432,12 +432,12 @@ void NGBlockLayoutAlgorithm::HandleFloat(
   NGBoxStrut margins = CalculateMargins(child);
 
   LayoutUnit origin_inline_offset =
-      constraint_space_->BfcOffset().inline_offset +
+      ConstraintSpace().BfcOffset().inline_offset +
       border_scrollbar_padding_.inline_start;
 
   RefPtr<NGUnpositionedFloat> unpositioned_float = NGUnpositionedFloat::Create(
       child_available_size_, child_percentage_size_, origin_inline_offset,
-      constraint_space_->BfcOffset().inline_offset, margins, child, token);
+      ConstraintSpace().BfcOffset().inline_offset, margins, child, token);
   unpositioned_floats_.push_back(std::move(unpositioned_float));
 
   // If there is a break token for a float we must be resuming layout, we must
@@ -523,7 +523,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   RefPtr<NGConstraintSpace> child_space =
       CreateConstraintSpaceForChild(child, child_data);
   RefPtr<NGLayoutResult> layout_result =
-      child.Layout(child_space.Get(), child_break_token);
+      child.Layout(*child_space, child_break_token);
 
   // If we don't know our BFC offset yet, we need to copy the list of
   // unpositioned floats from the child's layout result.
@@ -636,7 +636,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
       child_bfc_offset) {
     RefPtr<NGConstraintSpace> new_child_space =
         CreateConstraintSpaceForChild(child, child_data, child_bfc_offset);
-    layout_result = child.Layout(new_child_space.Get(), child_break_token);
+    layout_result = child.Layout(*new_child_space, child_break_token);
 
     DCHECK_EQ(layout_result->Status(), NGLayoutResult::kSuccess);
 
@@ -1009,7 +1009,7 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
       .SetTextDirection(child_style.Direction());
 
   LayoutUnit space_available;
-  if (constraint_space_->HasBlockFragmentation()) {
+  if (ConstraintSpace().HasBlockFragmentation()) {
     space_available = ConstraintSpace().FragmentainerSpaceAvailable();
     // If a block establishes a new formatting context we must know our
     // position in the formatting context, and are able to adjust the
@@ -1019,7 +1019,7 @@ RefPtr<NGConstraintSpace> NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     }
   }
   space_builder.SetFragmentainerSpaceAvailable(space_available)
-      .SetFragmentationType(constraint_space_->BlockFragmentationType());
+      .SetFragmentationType(ConstraintSpace().BlockFragmentationType());
 
   return space_builder.ToConstraintSpace(
       FromPlatformWritingMode(child_style.GetWritingMode()));

@@ -514,8 +514,9 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded() {
   data->first_line_items_ = std::move(first_line_items);
 }
 
-RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
-                                            NGBreakToken* break_token) {
+RefPtr<NGLayoutResult> NGInlineNode::Layout(
+    const NGConstraintSpace& constraint_space,
+    NGBreakToken* break_token) {
   // TODO(kojii): Invalidate PrepareLayout() more efficiently.
   InvalidatePrepareLayout();
   PrepareLayout();
@@ -527,7 +528,7 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
   if (result->Status() == NGLayoutResult::kSuccess &&
       result->UnpositionedFloats().IsEmpty() &&
       !RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
-    CopyFragmentDataToLayoutBox(*constraint_space, result.Get());
+    CopyFragmentDataToLayoutBox(constraint_space, result.Get());
   }
 
   return result;

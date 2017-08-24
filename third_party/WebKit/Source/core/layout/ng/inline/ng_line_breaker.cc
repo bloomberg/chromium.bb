@@ -470,7 +470,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleAtomicInline(
               constraint_space_.PercentageResolutionSize())
           .SetTextDirection(style.Direction())
           .ToConstraintSpace(FromPlatformWritingMode(style.GetWritingMode()));
-  item_result->layout_result = node.Layout(constraint_space.Get());
+  item_result->layout_result = node.Layout(*constraint_space);
 
   item_result->inline_size =
       NGBoxFragment(constraint_space_.WritingMode(),

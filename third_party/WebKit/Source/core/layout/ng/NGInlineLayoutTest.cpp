@@ -53,7 +53,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   NGBlockNode node(block_flow);
 
   RefPtr<NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, constraint_space.Get()).Layout();
+      NGBlockLayoutAlgorithm(node, *constraint_space).Layout();
   EXPECT_TRUE(result);
 
   String expected_text("Hello World!");
@@ -78,7 +78,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   NGBlockNode node(block_flow);
 
   RefPtr<NGLayoutResult> result =
-      NGBlockLayoutAlgorithm(node, constraint_space.Get()).Layout();
+      NGBlockLayoutAlgorithm(node, *constraint_space).Layout();
   EXPECT_TRUE(result);
 
   String expected_text("Hello ");

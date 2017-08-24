@@ -30,7 +30,7 @@ namespace {
 
 RefPtr<NGLayoutResult> LayoutWithAlgorithm(const ComputedStyle& style,
                                            NGBlockNode node,
-                                           NGConstraintSpace* space,
+                                           const NGConstraintSpace& space,
                                            NGBreakToken* break_token) {
   if (style.SpecifiesColumns())
     return NGColumnLayoutAlgorithm(node, space,
@@ -75,11 +75,12 @@ void UpdateLegacyMultiColumnFlowThread(LayoutBox* layout_box,
 
 NGBlockNode::NGBlockNode(LayoutBox* box) : NGLayoutInputNode(box, kBlock) {}
 
-RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
-                                           NGBreakToken* break_token) {
+RefPtr<NGLayoutResult> NGBlockNode::Layout(
+    const NGConstraintSpace& constraint_space,
+    NGBreakToken* break_token) {
   // Use the old layout code and synthesize a fragment.
   if (!CanUseNewLayout()) {
-    return RunOldLayout(*constraint_space);
+    return RunOldLayout(constraint_space);
   }
   RefPtr<NGLayoutResult> layout_result;
   if (box_->IsLayoutNGBlockFlow()) {
@@ -98,7 +99,7 @@ RefPtr<NGLayoutResult> NGBlockNode::Layout(NGConstraintSpace* constraint_space,
 
   if (layout_result->Status() == NGLayoutResult::kSuccess &&
       layout_result->UnpositionedFloats().IsEmpty())
-    CopyFragmentDataToLayoutBox(*constraint_space, layout_result.Get());
+    CopyFragmentDataToLayoutBox(constraint_space, layout_result.Get());
 
   return layout_result;
 }
@@ -129,13 +130,13 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize() {
           .ToConstraintSpace(FromPlatformWritingMode(Style().GetWritingMode()));
 
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
-  NGBlockLayoutAlgorithm minmax_algorithm(*this, constraint_space.Get());
+  NGBlockLayoutAlgorithm minmax_algorithm(*this, *constraint_space);
   Optional<MinMaxSize> maybe_sizes = minmax_algorithm.ComputeMinMaxSize();
   if (maybe_sizes.has_value())
     return *maybe_sizes;
 
   // Have to synthesize this value.
-  RefPtr<NGLayoutResult> layout_result = Layout(constraint_space.Get());
+  RefPtr<NGLayoutResult> layout_result = Layout(*constraint_space);
   NGPhysicalFragment* physical_fragment =
       layout_result->PhysicalFragment().Get();
   NGBoxFragment min_fragment(FromPlatformWritingMode(Style().GetWritingMode()),
@@ -152,7 +153,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize() {
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
           .ToConstraintSpace(FromPlatformWritingMode(Style().GetWritingMode()));
 
-  layout_result = Layout(constraint_space.Get());
+  layout_result = Layout(*constraint_space);
   physical_fragment = layout_result->PhysicalFragment().Get();
   NGBoxFragment max_fragment(FromPlatformWritingMode(Style().GetWritingMode()),
                              ToNGPhysicalBoxFragment(physical_fragment));

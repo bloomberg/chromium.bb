@@ -49,7 +49,7 @@ class CORE_EXPORT NGLayoutInputNode {
   bool CreatesNewFormattingContext() const;
 
   // Performs layout on this input node, will return the layout result.
-  RefPtr<NGLayoutResult> Layout(NGConstraintSpace*, NGBreakToken*);
+  RefPtr<NGLayoutResult> Layout(const NGConstraintSpace&, NGBreakToken*);
 
   MinMaxSize ComputeMinMaxSize();
 

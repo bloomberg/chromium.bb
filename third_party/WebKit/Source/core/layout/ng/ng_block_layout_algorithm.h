@@ -60,7 +60,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //              fragment within.
   // @param break_token The break token from which the layout should start.
   NGBlockLayoutAlgorithm(NGBlockNode node,
-                         NGConstraintSpace* space,
+                         const NGConstraintSpace& space,
                          NGBlockBreakToken* break_token = nullptr);
 
   Optional<MinMaxSize> ComputeMinMaxSize() const override;
