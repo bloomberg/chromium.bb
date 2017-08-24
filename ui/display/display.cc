@@ -111,6 +111,8 @@ gfx::ColorSpace Display::GetForcedColorProfile() {
     return gfx::ColorSpace::CreateSRGB();
   } else if (value == "scrgb-linear") {
     return gfx::ColorSpace::CreateSCRGBLinear();
+  } else if (value == "extended-srgb") {
+    return gfx::ColorSpace::CreateExtendedSRGB();
   } else if (value == "generic-rgb") {
     return gfx::ColorSpace(gfx::ColorSpace::PrimaryID::APPLE_GENERIC_RGB,
                            gfx::ColorSpace::TransferID::GAMMA18);
