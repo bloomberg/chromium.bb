@@ -49,21 +49,10 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
                                configurator,
                                event_creator),
       tick_clock_(nullptr),
-      network_quality_prohibitively_slow_set_(false),
-      network_quality_prohibitively_slow_(false),
-      lofi_accuracy_recording_intervals_set_(false),
       is_captive_portal_(false) {
 }
 
 TestDataReductionProxyConfig::~TestDataReductionProxyConfig() {
-}
-
-bool TestDataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
-    const net::NetworkQualityEstimator* network_quality_estimator) {
-  if (network_quality_prohibitively_slow_set_)
-    return network_quality_prohibitively_slow_;
-  return DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
-      network_quality_estimator);
 }
 
 void TestDataReductionProxyConfig::ResetParamFlagsForTest() {
@@ -80,25 +69,6 @@ DataReductionProxyConfigValues* TestDataReductionProxyConfig::config_values() {
 
 void TestDataReductionProxyConfig::ResetLoFiStatusForTest() {
   lofi_off_ = false;
-}
-
-void TestDataReductionProxyConfig::SetNetworkProhibitivelySlow(
-    bool network_quality_prohibitively_slow) {
-  network_quality_prohibitively_slow_set_ = true;
-  network_quality_prohibitively_slow_ = network_quality_prohibitively_slow;
-}
-
-void TestDataReductionProxyConfig::SetLofiAccuracyRecordingIntervals(
-    const std::vector<base::TimeDelta>& lofi_accuracy_recording_intervals) {
-  lofi_accuracy_recording_intervals_set_ = true;
-  lofi_accuracy_recording_intervals_ = lofi_accuracy_recording_intervals;
-}
-
-const std::vector<base::TimeDelta>&
-TestDataReductionProxyConfig::GetLofiAccuracyRecordingIntervals() const {
-  if (lofi_accuracy_recording_intervals_set_)
-    return lofi_accuracy_recording_intervals_;
-  return DataReductionProxyConfig::GetLofiAccuracyRecordingIntervals();
 }
 
 void TestDataReductionProxyConfig::SetTickClock(base::TickClock* tick_clock) {

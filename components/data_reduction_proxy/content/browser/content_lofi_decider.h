@@ -30,7 +30,6 @@ class ContentLoFiDecider : public LoFiDecider {
   bool IsUsingLoFi(const net::URLRequest& request) const override;
   void MaybeSetAcceptTransformHeader(
       const net::URLRequest& request,
-      bool are_previews_disabled,
       net::HttpRequestHeaders* headers) const override;
   bool IsSlowPagePreviewRequested(
       const net::HttpRequestHeaders& headers) const override;

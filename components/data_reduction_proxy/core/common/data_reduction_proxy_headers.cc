@@ -47,14 +47,9 @@ const char kCompressedVideoDirective[] = "compressed-video";
 const char kIdentityDirective[] = "identity";
 const char kChromeProxyPagePoliciesDirective[] = "page-policies";
 
-// The legacy Chrome-Proxy response header directive for LoFi images.
-const char kLegacyChromeProxyLoFiResponseDirective[] = "q=low";
-
 const char kChromeProxyExperimentForceLitePage[] = "force_lite_page";
 const char kChromeProxyExperimentForceEmptyImage[] =
     "force_page_policies_empty_image";
-
-const char kIfHeavyQualifier[] = "if-heavy";
 
 const char kChromeProxyActionBlockOnce[] = "block-once";
 const char kChromeProxyActionBlock[] = "block";
@@ -196,10 +191,6 @@ const char* chrome_proxy_experiment_force_empty_image() {
   return kChromeProxyExperimentForceEmptyImage;
 }
 
-const char* if_heavy_qualifier() {
-  return kIfHeavyQualifier;
-}
-
 TransformDirective ParseRequestTransform(
     const net::HttpRequestHeaders& headers) {
   std::string accept_transform_value;
@@ -222,11 +213,6 @@ TransformDirective ParseRequestTransform(
     return TRANSFORM_IDENTITY;
   }
 
-  // On faster networks, Chrome might add a directive followed by "if-heavy", so
-  // just return TRANSFORM_NONE in that case. DCHECK that Chrome hasn't added
-  // any other unrecognized request headers.
-  DCHECK(base::EndsWith(accept_transform_value, kIfHeavyQualifier,
-                        base::CompareCase::INSENSITIVE_ASCII));
   return TRANSFORM_NONE;
 }
 
@@ -259,9 +245,7 @@ TransformDirective ParseResponseTransform(
 }
 
 bool IsEmptyImagePreview(const net::HttpResponseHeaders& headers) {
-  return IsPreviewType(headers, kEmptyImageDirective) ||
-         headers.HasHeaderValue(kChromeProxyHeader,
-                                kLegacyChromeProxyLoFiResponseDirective);
+  return IsPreviewType(headers, kEmptyImageDirective);
 }
 
 bool IsEmptyImagePreview(const std::string& content_transform_value,
@@ -269,16 +253,6 @@ bool IsEmptyImagePreview(const std::string& content_transform_value,
   if (IsPreviewTypeInHeaderValue(content_transform_value, kEmptyImageDirective))
     return true;
 
-  // Look for "q=low" in the "Chrome-Proxy" response header.
-  net::HttpUtil::ValuesIterator values(chrome_proxy_value.begin(),
-                                       chrome_proxy_value.end(), ',');
-  while (values.GetNext()) {
-    base::StringPiece value(values.value_begin(), values.value_end());
-    if (base::LowerCaseEqualsASCII(value,
-                                   kLegacyChromeProxyLoFiResponseDirective)) {
-      return true;
-    }
-  }
   return false;
 }
 

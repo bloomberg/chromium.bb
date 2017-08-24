@@ -70,18 +70,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // Resets the Lo-Fi status to default state.
   void ResetLoFiStatusForTest();
 
-  // Allows tests to mark the network as prohibitively slow.
-  void SetNetworkProhibitivelySlow(bool network_quality_prohibitively_slow);
-
-  bool IsNetworkQualityProhibitivelySlow(
-      const net::NetworkQualityEstimator* network_quality_estimator) override;
-
-  void SetLofiAccuracyRecordingIntervals(
-      const std::vector<base::TimeDelta>& lofi_accuracy_recording_intervals);
-
-  const std::vector<base::TimeDelta>& GetLofiAccuracyRecordingIntervals()
-      const override;
-
   // Sets the |tick_clock_| to |tick_clock|. Ownership of |tick_clock| is not
   // passed to the callee.
   void SetTickClock(base::TickClock* tick_clock);
@@ -120,13 +108,6 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
 
   base::Optional<bool> was_data_reduction_proxy_used_;
   base::Optional<int> proxy_index_;
-
-  bool network_quality_prohibitively_slow_set_;
-  // True if the network quality is slow enough to turn Lo-Fi ON.
-  bool network_quality_prohibitively_slow_;
-
-  bool lofi_accuracy_recording_intervals_set_;
-  std::vector<base::TimeDelta> lofi_accuracy_recording_intervals_;
 
   // Set to true if the captive portal probe for the current network has been
   // blocked.
