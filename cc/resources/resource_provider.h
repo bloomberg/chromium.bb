@@ -343,24 +343,6 @@ class CC_EXPORT ResourceProvider
     DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSoftware);
   };
 
-  class CC_EXPORT ScopedReadLockSkImage {
-   public:
-    ScopedReadLockSkImage(ResourceProvider* resource_provider,
-                          viz::ResourceId resource_id);
-    ~ScopedReadLockSkImage();
-
-    const SkImage* sk_image() const { return sk_image_.get(); }
-
-    bool valid() const { return !!sk_image_; }
-
-   private:
-    ResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
-    sk_sp<SkImage> sk_image_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
-  };
-
   class CC_EXPORT ScopedWriteLockSoftware {
    public:
     ScopedWriteLockSoftware(ResourceProvider* resource_provider,
@@ -382,31 +364,6 @@ class CC_EXPORT ResourceProvider
     SkBitmap sk_bitmap_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
-  };
-
-  class CC_EXPORT ScopedWriteLockGpuMemoryBuffer {
-   public:
-    ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
-                                   viz::ResourceId resource_id);
-    ~ScopedWriteLockGpuMemoryBuffer();
-    gfx::GpuMemoryBuffer* GetGpuMemoryBuffer();
-    // Will return the invalid color space unless
-    // |enable_color_correct_rasterization| is true.
-    const gfx::ColorSpace& color_space_for_raster() const {
-      return color_space_;
-    }
-
-   private:
-    ResourceProvider* const resource_provider_;
-    const viz::ResourceId resource_id_;
-
-    gfx::Size size_;
-    viz::ResourceFormat format_;
-    gfx::BufferUsage usage_;
-    gfx::ColorSpace color_space_;
-    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
   };
 
   class CC_EXPORT Fence : public base::RefCounted<Fence> {
@@ -648,6 +605,18 @@ class CC_EXPORT ResourceProvider
   Resource* GetResource(viz::ResourceId id);
   const Resource* LockForRead(viz::ResourceId id);
   void UnlockForRead(viz::ResourceId id);
+  Resource* LockForWrite(viz::ResourceId id);
+  void UnlockForWrite(Resource* resource);
+
+  void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
+                                    const Resource* resource);
+
+  void CreateAndBindImage(Resource* resource);
+
+  // Will return the invalid color space unless
+  // |enable_color_correct_rasterization| is true.
+  gfx::ColorSpace GetResourceColorSpaceForRaster(
+      const Resource* resource) const;
 
   enum DeleteStyle {
     NORMAL,
@@ -722,15 +691,8 @@ class CC_EXPORT ResourceProvider
                                     const gfx::ColorSpace& color_space);
   viz::ResourceId CreateBitmapResource(const gfx::Size& size,
                                        const gfx::ColorSpace& color_space);
-  Resource* LockForWrite(viz::ResourceId id);
-  void UnlockForWrite(Resource* resource);
-
-  void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
-                                    const Resource* resource);
 
   void CreateTexture(Resource* resource);
-
-  void CreateAndBindImage(Resource* resource);
 
   // Binds the given GL resource to a texture target for sampling using the
   // specified filter for both minification and magnification. Returns the
@@ -741,13 +703,7 @@ class CC_EXPORT ResourceProvider
 
   bool IsGLContextLost() const;
 
-  // Will return the invalid color space unless
-  // |enable_color_correct_rasterization| is true.
-  gfx::ColorSpace GetResourceColorSpaceForRaster(
-      const Resource* resource) const;
-
   bool lost_context_provider_;
-  base::flat_map<viz::ResourceId, sk_sp<SkImage>> resource_sk_image_;
   scoped_refptr<Fence> current_read_lock_fence_;
   std::unique_ptr<TextureIdAllocator> texture_id_allocator_;
   viz::BufferToTextureTargetMap buffer_to_texture_target_map_;

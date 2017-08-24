@@ -646,7 +646,7 @@ TEST_P(ResourceProviderTest, TransferGLResources) {
       size, ResourceProvider::TEXTURE_HINT_IMMUTABLE, format,
       gfx::BufferUsage::GPU_READ_CPU_READ_WRITE, gfx::ColorSpace());
   {
-    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+    LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         child_resource_provider_.get(), id3);
     EXPECT_TRUE(lock.GetGpuMemoryBuffer());
   }
@@ -1021,7 +1021,7 @@ TEST_P(ResourceProviderTestNoSyncToken, TransferGLResources) {
   {
     // Ensure locking the memory buffer doesn't create an unnecessary sync
     // point.
-    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+    LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         child_resource_provider_.get(), id2);
     EXPECT_TRUE(lock.GetGpuMemoryBuffer());
   }
@@ -3276,8 +3276,8 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   const unsigned kTextureId = 123u;
   const unsigned kImageId = 234u;
 
-  std::unique_ptr<ResourceProvider> resource_provider(
-      base::MakeUnique<ResourceProvider>(
+  std::unique_ptr<LayerTreeResourceProvider> resource_provider(
+      base::MakeUnique<LayerTreeResourceProvider>(
           context_provider.get(), shared_bitmap_manager_.get(),
           gpu_memory_buffer_manager_.get(), nullptr,
           kDelegatedSyncPointsRequired, kEnableColorCorrectRendering,
@@ -3290,7 +3290,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   InSequence sequence;
 
   {
-    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+    LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         resource_provider.get(), id);
     EXPECT_TRUE(lock.GetGpuMemoryBuffer());
     // Create texture and image upon releasing the lock.
@@ -3313,7 +3313,7 @@ TEST_P(ResourceProviderTest, Image_GLTexture) {
   }
 
   {
-    ResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
+    LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer lock(
         resource_provider.get(), id);
     EXPECT_TRUE(lock.GetGpuMemoryBuffer());
     // Upload to GPU again since image is dirty after the write lock.

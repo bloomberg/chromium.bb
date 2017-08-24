@@ -39,6 +39,24 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
       const OverlayCandidateList::PromotionHintInfoMap& promotion_hints);
 #endif
 
+  class CC_EXPORT ScopedReadLockSkImage {
+   public:
+    ScopedReadLockSkImage(DisplayResourceProvider* resource_provider,
+                          viz::ResourceId resource_id);
+    ~ScopedReadLockSkImage();
+
+    const SkImage* sk_image() const { return sk_image_.get(); }
+
+    bool valid() const { return !!sk_image_; }
+
+   private:
+    DisplayResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
+    sk_sp<SkImage> sk_image_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedReadLockSkImage);
+  };
+
   // All resources that are returned to children while an instance of this
   // class exists will be stored and returned when the instance is destroyed.
   class CC_EXPORT ScopedBatchReturnResources {
@@ -90,6 +108,8 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
   friend class ScopedBatchReturnResources;
 
   void SetBatchReturnResources(bool aggregate);
+
+  base::flat_map<viz::ResourceId, sk_sp<SkImage>> resource_sk_image_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayResourceProvider);
 };

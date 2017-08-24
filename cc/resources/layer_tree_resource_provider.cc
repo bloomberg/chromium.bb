@@ -5,7 +5,9 @@
 #include "cc/resources/layer_tree_resource_provider.h"
 
 #include "build/build_config.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
 using gpu::gles2::GLES2Interface;
 
@@ -211,6 +213,52 @@ void LayerTreeResourceProvider::TransferResource(
     resource->mailbox_holder.texture_target = source->mailbox().target();
     resource->mailbox_holder.sync_token = source->mailbox().sync_token();
   }
+}
+
+LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer ::
+    ScopedWriteLockGpuMemoryBuffer(LayerTreeResourceProvider* resource_provider,
+                                   viz::ResourceId resource_id)
+    : resource_provider_(resource_provider), resource_id_(resource_id) {
+  Resource* resource = resource_provider->LockForWrite(resource_id);
+  DCHECK(IsGpuResourceType(resource->type));
+  size_ = resource->size;
+  format_ = resource->format;
+  usage_ = resource->usage;
+  color_space_ = resource_provider->GetResourceColorSpaceForRaster(resource);
+  gpu_memory_buffer_ = std::move(resource->gpu_memory_buffer);
+}
+
+LayerTreeResourceProvider::ScopedWriteLockGpuMemoryBuffer::
+    ~ScopedWriteLockGpuMemoryBuffer() {
+  Resource* resource = resource_provider_->GetResource(resource_id_);
+  // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
+  // http://crbug.com/554541
+  if (gpu_memory_buffer_) {
+    resource->gpu_memory_buffer = std::move(gpu_memory_buffer_);
+    resource->allocated = true;
+    resource->is_overlay_candidate = true;
+    resource->buffer_format = resource->gpu_memory_buffer->GetFormat();
+    // GpuMemoryBuffer provides direct access to the memory used by the GPU.
+    // Read lock fences are required to ensure that we're not trying to map a
+    // buffer that is currently in-use by the GPU.
+    resource->read_lock_fences_enabled = true;
+    resource_provider_->CreateAndBindImage(resource);
+  }
+  resource_provider_->UnlockForWrite(resource);
+}
+
+gfx::GpuMemoryBuffer* LayerTreeResourceProvider::
+    ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
+  if (!gpu_memory_buffer_) {
+    gpu_memory_buffer_ =
+        resource_provider_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
+            size_, BufferFormat(format_), usage_, gpu::kNullSurfaceHandle);
+    // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
+    // http://crbug.com/554541
+    if (gpu_memory_buffer_ && color_space_.IsValid())
+      gpu_memory_buffer_->SetColorSpaceForScanout(color_space_);
+  }
+  return gpu_memory_buffer_.get();
 }
 
 }  // namespace cc
