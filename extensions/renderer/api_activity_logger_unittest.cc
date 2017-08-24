@@ -52,7 +52,7 @@ TEST_F(ActivityLoggerTest, DontCrashOnUnconvertedValues) {
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   extension_ids.insert(extension->id());
   const Feature::Context kContextType = Feature::BLESSED_EXTENSION_CONTEXT;
-  script_context_set.AddForTesting(base::MakeUnique<ScriptContext>(
+  script_context_set.AddForTesting(std::make_unique<ScriptContext>(
       context, nullptr, extension.get(), kContextType, extension.get(),
       kContextType));
 

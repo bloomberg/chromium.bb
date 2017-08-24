@@ -26,7 +26,7 @@ namespace {
 
 std::unique_ptr<AudioDeviceIdCalculator> CreateIdCalculator(
     content::BrowserContext* context) {
-  return base::MakeUnique<AudioDeviceIdCalculator>(context);
+  return std::make_unique<AudioDeviceIdCalculator>(context);
 }
 
 // Checks if an extension is whitelisted to use deprecated version of audio API.

@@ -114,11 +114,11 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   }
 
   void SetUp() override {
-    render_thread_ = base::MakeUnique<content::MockRenderThread>();
-    script_context_set_ = base::MakeUnique<ScriptContextSet>(&extension_ids_);
-    auto ipc_message_sender = base::MakeUnique<TestIPCMessageSender>();
+    render_thread_ = std::make_unique<content::MockRenderThread>();
+    script_context_set_ = std::make_unique<ScriptContextSet>(&extension_ids_);
+    auto ipc_message_sender = std::make_unique<TestIPCMessageSender>();
     ipc_message_sender_ = ipc_message_sender.get();
-    bindings_system_ = base::MakeUnique<NativeExtensionBindingsSystem>(
+    bindings_system_ = std::make_unique<NativeExtensionBindingsSystem>(
         std::move(ipc_message_sender));
     APIBindingTest::SetUp();
   }
@@ -144,10 +144,10 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   ScriptContext* CreateScriptContext(v8::Local<v8::Context> v8_context,
                                      Extension* extension,
                                      Feature::Context context_type) {
-    auto script_context = base::MakeUnique<ScriptContext>(
+    auto script_context = std::make_unique<ScriptContext>(
         v8_context, nullptr, extension, context_type, extension, context_type);
     script_context->set_module_system(
-        base::MakeUnique<ModuleSystem>(script_context.get(), source_map()));
+        std::make_unique<ModuleSystem>(script_context.get(), source_map()));
     ScriptContext* raw_script_context = script_context.get();
     raw_script_contexts_.push_back(raw_script_context);
     script_context_set_->AddForTesting(std::move(script_context));
@@ -987,7 +987,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
 
   // Remove all permissions (`idle`).
   extension->permissions_data()->SetPermissions(
-      base::MakeUnique<PermissionSet>(), base::MakeUnique<PermissionSet>());
+      std::make_unique<PermissionSet>(), std::make_unique<PermissionSet>());
 
   bindings_system()->OnExtensionPermissionsUpdated(extension->id());
   bindings_system()->UpdateBindingsForContext(script_context);
@@ -1027,9 +1027,9 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestUpdatingPermissions) {
     apis.insert(APIPermission::kPower);
     apis.insert(APIPermission::kIdle);
     extension->permissions_data()->SetPermissions(
-        base::MakeUnique<PermissionSet>(apis, ManifestPermissionSet(),
+        std::make_unique<PermissionSet>(apis, ManifestPermissionSet(),
                                         URLPatternSet(), URLPatternSet()),
-        base::MakeUnique<PermissionSet>());
+        std::make_unique<PermissionSet>());
     bindings_system()->OnExtensionPermissionsUpdated(extension->id());
     bindings_system()->UpdateBindingsForContext(script_context);
   }

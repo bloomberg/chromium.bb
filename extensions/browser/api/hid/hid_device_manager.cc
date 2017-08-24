@@ -130,7 +130,7 @@ void HidDeviceManager::GetApiDevices(
         FROM_HERE, base::Bind(callback, base::Passed(&devices)));
   } else {
     pending_enumerations_.push_back(
-        base::MakeUnique<GetApiDevicesParams>(extension, filters, callback));
+        std::make_unique<GetApiDevicesParams>(extension, filters, callback));
   }
 }
 

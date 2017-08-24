@@ -28,7 +28,7 @@ namespace extensions {
 class ShellSystemLogsFetcherTest : public ExtensionsTest {
  public:
   ShellSystemLogsFetcherTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
   ~ShellSystemLogsFetcherTest() override = default;
 
   scoped_refptr<Extension> BuildExtension(const std::string& name,

@@ -380,7 +380,7 @@ void ScriptInjection::OnJsInjectionCompleted(
           content::V8ValueConverter::Create()->FromV8Value(results[0], context);
     }
     if (!execution_result_.get())
-      execution_result_ = base::MakeUnique<base::Value>();
+      execution_result_ = std::make_unique<base::Value>();
   }
   did_inject_js_ = true;
 

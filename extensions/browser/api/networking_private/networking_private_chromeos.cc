@@ -221,7 +221,7 @@ base::DictionaryValue* EnsureDictionaryValue(const std::string& key,
   base::DictionaryValue* dict;
   if (!container->GetDictionary(key, &dict)) {
     container->SetWithoutPathExpansion(
-        key, base::MakeUnique<base::DictionaryValue>());
+        key, std::make_unique<base::DictionaryValue>());
     container->GetDictionary(key, &dict);
   }
   return dict;
@@ -276,11 +276,11 @@ void SetManualProxy(base::DictionaryValue* manual,
       EnsureDictionaryValue(::onc::proxy::kHost, dict);
   SetProxyEffectiveValue(
       host_dict, state,
-      base::MakeUnique<base::Value>(proxy.server.host_port_pair().host()));
+      std::make_unique<base::Value>(proxy.server.host_port_pair().host()));
   uint16_t port = proxy.server.host_port_pair().port();
   base::DictionaryValue* port_dict =
       EnsureDictionaryValue(::onc::proxy::kPort, dict);
-  SetProxyEffectiveValue(port_dict, state, base::MakeUnique<base::Value>(port));
+  SetProxyEffectiveValue(port_dict, state, std::make_unique<base::Value>(port));
 }
 
 private_api::Certificate GetCertDictionary(
@@ -291,9 +291,9 @@ private_api::Certificate GetCertDictionary(
   api_cert.issued_to = cert.issued_to;
   api_cert.hardware_backed = cert.hardware_backed;
   if (!cert.pem.empty())
-    api_cert.pem = base::MakeUnique<std::string>(cert.pem);
+    api_cert.pem = std::make_unique<std::string>(cert.pem);
   if (!cert.pkcs11_id.empty())
-    api_cert.pkcs11_id = base::MakeUnique<std::string>(cert.pkcs11_id);
+    api_cert.pkcs11_id = std::make_unique<std::string>(cert.pkcs11_id);
   return api_cert;
 }
 
@@ -752,7 +752,7 @@ NetworkingPrivateChromeOS::GetDeviceStateList() {
 
 std::unique_ptr<base::DictionaryValue>
 NetworkingPrivateChromeOS::GetGlobalPolicy() {
-  auto result = base::MakeUnique<base::DictionaryValue>();
+  auto result = std::make_unique<base::DictionaryValue>();
   const base::DictionaryValue* global_network_config =
       GetManagedConfigurationHandler()->GetGlobalConfigFromPolicy(
           std::string() /* no username hash, device policy */);

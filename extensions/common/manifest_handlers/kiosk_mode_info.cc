@@ -150,7 +150,7 @@ bool KioskModeHandler::Parse(Extension* extension, base::string16* error) {
 
   extension->SetManifestData(
       keys::kKioskMode,
-      base::MakeUnique<KioskModeInfo>(
+      std::make_unique<KioskModeInfo>(
           kiosk_status, ids, required_platform_version, always_update));
 
   return true;

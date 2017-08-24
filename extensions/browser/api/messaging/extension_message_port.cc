@@ -167,7 +167,7 @@ void ExtensionMessagePort::RevalidatePort() {
   DCHECK_LE(frames_.size(), 1U);
 
   // If the port is unknown, the renderer will respond by closing the port.
-  SendToPort(base::MakeUnique<ExtensionMsg_ValidateMessagePort>(
+  SendToPort(std::make_unique<ExtensionMsg_ValidateMessagePort>(
       MSG_ROUTING_NONE, port_id_));
 }
 
@@ -214,19 +214,19 @@ void ExtensionMessagePort::DispatchOnConnect(
   info.guest_process_id = guest_process_id;
   info.guest_render_frame_routing_id = guest_render_frame_routing_id;
 
-  SendToPort(base::MakeUnique<ExtensionMsg_DispatchOnConnect>(
+  SendToPort(std::make_unique<ExtensionMsg_DispatchOnConnect>(
       MSG_ROUTING_NONE, port_id_, channel_name, source, info, tls_channel_id));
 }
 
 void ExtensionMessagePort::DispatchOnDisconnect(
     const std::string& error_message) {
-  SendToPort(base::MakeUnique<ExtensionMsg_DispatchOnDisconnect>(
+  SendToPort(std::make_unique<ExtensionMsg_DispatchOnDisconnect>(
       MSG_ROUTING_NONE, port_id_, error_message));
 }
 
 void ExtensionMessagePort::DispatchOnMessage(const Message& message) {
-  SendToPort(base::MakeUnique<ExtensionMsg_DeliverMessage>(
-      MSG_ROUTING_NONE, port_id_, message));
+  SendToPort(std::make_unique<ExtensionMsg_DeliverMessage>(MSG_ROUTING_NONE,
+                                                           port_id_, message));
 }
 
 void ExtensionMessagePort::IncrementLazyKeepaliveCount() {

@@ -41,7 +41,7 @@ void WebViewFindHelper::DispatchFindUpdateEvent(bool canceled,
   args->SetBoolean(webview::kFindCanceled, canceled);
   args->SetBoolean(webview::kFindFinalUpdate, final_update);
   DCHECK(webview_guest_);
-  webview_guest_->DispatchEventToView(base::MakeUnique<GuestViewEvent>(
+  webview_guest_->DispatchEventToView(std::make_unique<GuestViewEvent>(
       webview::kEventFindReply, std::move(args)));
 }
 
@@ -222,7 +222,7 @@ void WebViewFindHelper::FindResults::PrepareResults(
   rect.SetInteger(webview::kFindRectWidth, selection_rect_.width());
   rect.SetInteger(webview::kFindRectHeight, selection_rect_.height());
   results->Set(webview::kFindSelectionRect,
-               base::MakeUnique<base::Value>(std::move(rect)));
+               std::make_unique<base::Value>(std::move(rect)));
 }
 
 WebViewFindHelper::FindUpdateEvent::FindUpdateEvent(

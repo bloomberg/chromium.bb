@@ -361,7 +361,7 @@ void SandboxedUnpacker::StartUtilityProcessIfNeeded() {
   if (utility_process_mojo_client_)
     return;
 
-  utility_process_mojo_client_ = base::MakeUnique<
+  utility_process_mojo_client_ = std::make_unique<
       content::UtilityProcessMojoClient<mojom::ExtensionUnpacker>>(
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_EXTENSION_UNPACKER_NAME));
   utility_process_mojo_client_->set_error_callback(

@@ -19,7 +19,7 @@ namespace extensions {
 class KeepAliveTest : public ExtensionsTest {
  public:
   KeepAliveTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
   ~KeepAliveTest() override {}
 
   void SetUp() override {

@@ -50,7 +50,7 @@ class APIRequestHandlerTest : public APIBindingTest {
   }
 
   std::unique_ptr<APIRequestHandler> CreateRequestHandler() {
-    return base::MakeUnique<APIRequestHandler>(
+    return std::make_unique<APIRequestHandler>(
         base::Bind(&DoNothingWithRequest),
         base::Bind(&APIRequestHandlerTest::RunJS, base::Unretained(this)),
         APILastError(APILastError::GetParent(), binding::AddConsoleError()),
@@ -83,7 +83,7 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   ASSERT_FALSE(function.IsEmpty());
 
   int request_id = request_handler->StartRequest(
-      context, kMethod, base::MakeUnique<base::ListValue>(), function,
+      context, kMethod, std::make_unique<base::ListValue>(), function,
       v8::Local<v8::Function>(), binding::RequestThread::UI);
   EXPECT_THAT(request_handler->GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_id));
@@ -102,7 +102,7 @@ TEST_F(APIRequestHandlerTest, AddRequestAndCompleteRequestTest) {
   EXPECT_TRUE(request_handler->GetPendingRequestIdsForTesting().empty());
 
   request_id = request_handler->StartRequest(
-      context, kMethod, base::MakeUnique<base::ListValue>(),
+      context, kMethod, std::make_unique<base::ListValue>(),
       v8::Local<v8::Function>(), v8::Local<v8::Function>(),
       binding::RequestThread::UI);
   EXPECT_NE(-1, request_id);
@@ -121,7 +121,7 @@ TEST_F(APIRequestHandlerTest, InvalidRequestsTest) {
   ASSERT_FALSE(function.IsEmpty());
 
   int request_id = request_handler->StartRequest(
-      context, kMethod, base::MakeUnique<base::ListValue>(), function,
+      context, kMethod, std::make_unique<base::ListValue>(), function,
       v8::Local<v8::Function>(), binding::RequestThread::UI);
   EXPECT_THAT(request_handler->GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_id));
@@ -159,10 +159,10 @@ TEST_F(APIRequestHandlerTest, MultipleRequestsAndContexts) {
       context_b, "(function(res) { this.result = res + 'beta'; })");
 
   int request_a = request_handler->StartRequest(
-      context_a, kMethod, base::MakeUnique<base::ListValue>(), function_a,
+      context_a, kMethod, std::make_unique<base::ListValue>(), function_a,
       v8::Local<v8::Function>(), binding::RequestThread::UI);
   int request_b = request_handler->StartRequest(
-      context_b, kMethod, base::MakeUnique<base::ListValue>(), function_b,
+      context_b, kMethod, std::make_unique<base::ListValue>(), function_b,
       v8::Local<v8::Function>(), binding::RequestThread::UI);
 
   EXPECT_THAT(request_handler->GetPendingRequestIdsForTesting(),
@@ -207,7 +207,7 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArguments) {
   ASSERT_FALSE(custom_callback.IsEmpty());
 
   int request_id = request_handler->StartRequest(
-      context, "method", base::MakeUnique<base::ListValue>(), callback,
+      context, "method", std::make_unique<base::ListValue>(), callback,
       custom_callback, binding::RequestThread::UI);
   EXPECT_THAT(request_handler->GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_id));
@@ -250,7 +250,7 @@ TEST_F(APIRequestHandlerTest, CustomCallbackArgumentsWithEmptyCallback) {
 
   v8::Local<v8::Function> empty_callback;
   int request_id = request_handler->StartRequest(
-      context, "method", base::MakeUnique<base::ListValue>(), empty_callback,
+      context, "method", std::make_unique<base::ListValue>(), empty_callback,
       custom_callback, binding::RequestThread::UI);
   EXPECT_THAT(request_handler->GetPendingRequestIdsForTesting(),
               testing::UnorderedElementsAre(request_id));
@@ -297,7 +297,7 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
 
   // Try first without a user gesture.
   int request_id = request_handler->StartRequest(
-      context, kMethod, base::MakeUnique<base::ListValue>(), v8_callback,
+      context, kMethod, std::make_unique<base::ListValue>(), v8_callback,
       v8::Local<v8::Function>(), binding::RequestThread::UI);
   request_handler->CompleteRequest(request_id, *ListValueFromString("[]"),
                                    std::string());
@@ -313,7 +313,7 @@ TEST_F(APIRequestHandlerTest, UserGestureTest) {
     EXPECT_TRUE(
         blink::WebUserGestureIndicator::IsProcessingUserGestureThreadSafe());
     request_id = request_handler->StartRequest(
-        context, kMethod, base::MakeUnique<base::ListValue>(), v8_callback,
+        context, kMethod, std::make_unique<base::ListValue>(), v8_callback,
         v8::Local<v8::Function>(), binding::RequestThread::UI);
   }
   EXPECT_FALSE(
@@ -347,7 +347,7 @@ TEST_F(APIRequestHandlerTest, RequestThread) {
       nullptr);
 
   request_handler.StartRequest(
-      context, kMethod, base::MakeUnique<base::ListValue>(),
+      context, kMethod, std::make_unique<base::ListValue>(),
       v8::Local<v8::Function>(), v8::Local<v8::Function>(),
       binding::RequestThread::UI);
   ASSERT_TRUE(thread);
@@ -355,7 +355,7 @@ TEST_F(APIRequestHandlerTest, RequestThread) {
   thread.reset();
 
   request_handler.StartRequest(
-      context, kMethod, base::MakeUnique<base::ListValue>(),
+      context, kMethod, std::make_unique<base::ListValue>(),
       v8::Local<v8::Function>(), v8::Local<v8::Function>(),
       binding::RequestThread::IO);
   ASSERT_TRUE(thread);
@@ -400,7 +400,7 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
     v8::Local<v8::Function> callback =
         FunctionFromString(context, kReportExposedLastError);
     int request_id = request_handler.StartRequest(
-        context, kMethod, base::MakeUnique<base::ListValue>(), callback,
+        context, kMethod, std::make_unique<base::ListValue>(), callback,
         v8::Local<v8::Function>(), binding::RequestThread::UI);
     request_handler.CompleteRequest(request_id, base::ListValue(),
                                     std::string());
@@ -416,7 +416,7 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
     v8::Local<v8::Function> callback =
         FunctionFromString(context, kReportExposedLastError);
     int request_id = request_handler.StartRequest(
-        context, kMethod, base::MakeUnique<base::ListValue>(), callback,
+        context, kMethod, std::make_unique<base::ListValue>(), callback,
         v8::Local<v8::Function>(), binding::RequestThread::UI);
     request_handler.CompleteRequest(request_id, base::ListValue(),
                                     "some error");
@@ -431,7 +431,7 @@ TEST_F(APIRequestHandlerTest, SettingLastError) {
     v8::Local<v8::Function> callback =
         FunctionFromString(context, "(function() {})");
     int request_id = request_handler.StartRequest(
-        context, kMethod, base::MakeUnique<base::ListValue>(), callback,
+        context, kMethod, std::make_unique<base::ListValue>(), callback,
         v8::Local<v8::Function>(), binding::RequestThread::UI);
     request_handler.CompleteRequest(request_id, base::ListValue(),
                                     "some error");

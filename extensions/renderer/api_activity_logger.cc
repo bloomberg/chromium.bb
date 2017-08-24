@@ -49,7 +49,7 @@ void APIActivityLogger::LogAPICall(
 
   ScriptContext* script_context =
       ScriptContextSet::GetContextByV8Context(context);
-  auto value_args = base::MakeUnique<base::ListValue>();
+  auto value_args = std::make_unique<base::ListValue>();
   std::unique_ptr<content::V8ValueConverter> converter =
       content::V8ValueConverter::Create();
   ActivityLogConverterStrategy strategy;
@@ -62,7 +62,7 @@ void APIActivityLogger::LogAPICall(
     std::unique_ptr<base::Value> converted_arg =
         converter->FromV8Value(arg, context);
     value_args->Append(converted_arg ? std::move(converted_arg)
-                                     : base::MakeUnique<base::Value>());
+                                     : std::make_unique<base::Value>());
   }
 
   LogInternal(APICALL, script_context->GetExtensionID(), call_name,
@@ -97,7 +97,7 @@ void APIActivityLogger::LogForJS(
   }
 
   // Get the array of call arguments.
-  auto arguments = base::MakeUnique<base::ListValue>();
+  auto arguments = std::make_unique<base::ListValue>();
   v8::Local<v8::Array> arg_array = v8::Local<v8::Array>::Cast(args[2]);
   if (arg_array->Length() > 0) {
     arguments->Reserve(arg_array->Length());
@@ -110,7 +110,7 @@ void APIActivityLogger::LogForJS(
       std::unique_ptr<base::Value> converted_arg =
           converter->FromV8Value(arg_array->Get(i), context);
       arguments->Append(converted_arg ? std::move(converted_arg)
-                                      : base::MakeUnique<base::Value>());
+                                      : std::make_unique<base::Value>());
     }
   }
 

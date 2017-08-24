@@ -42,13 +42,13 @@ class MessageBundleTest : public testing::Test {
   void CreateContentTree(const std::string& name,
                          const std::string& content,
                          base::DictionaryValue* dict) {
-    auto content_tree = base::MakeUnique<base::DictionaryValue>();
+    auto content_tree = std::make_unique<base::DictionaryValue>();
     content_tree->SetString(MessageBundle::kContentKey, content);
     dict->Set(name, std::move(content_tree));
   }
 
   void CreatePlaceholdersTree(base::DictionaryValue* dict) {
-    auto placeholders_tree = base::MakeUnique<base::DictionaryValue>();
+    auto placeholders_tree = std::make_unique<base::DictionaryValue>();
     CreateContentTree("a", "A", placeholders_tree.get());
     CreateContentTree("b", "B", placeholders_tree.get());
     CreateContentTree("c", "C", placeholders_tree.get());
@@ -59,7 +59,7 @@ class MessageBundleTest : public testing::Test {
                          const std::string& message,
                          bool create_placeholder_subtree,
                          base::DictionaryValue* dict) {
-    auto message_tree = base::MakeUnique<base::DictionaryValue>();
+    auto message_tree = std::make_unique<base::DictionaryValue>();
     if (create_placeholder_subtree)
       CreatePlaceholdersTree(message_tree.get());
     message_tree->SetString(MessageBundle::kMessageKey, message);
@@ -67,7 +67,7 @@ class MessageBundleTest : public testing::Test {
   }
 
   std::unique_ptr<base::DictionaryValue> CreateGoodDictionary() {
-    auto dict = base::MakeUnique<base::DictionaryValue>();
+    auto dict = std::make_unique<base::DictionaryValue>();
     CreateMessageTree("n1", "message1 $a$ $b$", true, dict.get());
     CreateMessageTree("n2", "message2 $c$", true, dict.get());
     CreateMessageTree("n3", "message3", false, dict.get());
@@ -86,7 +86,7 @@ class MessageBundleTest : public testing::Test {
         dict->SetString("n4", "whatever");
         break;
       case EMPTY_NAME_TREE:
-        dict->Set("n4", base::MakeUnique<base::DictionaryValue>());
+        dict->Set("n4", std::make_unique<base::DictionaryValue>());
         break;
       case MISSING_MESSAGE:
         dict->Remove("n1.message", NULL);
@@ -95,7 +95,7 @@ class MessageBundleTest : public testing::Test {
         dict->SetString("n1.placeholders", "whatever");
         break;
       case EMPTY_PLACEHOLDER_TREE:
-        dict->Set("n1.placeholders", base::MakeUnique<base::DictionaryValue>());
+        dict->Set("n1.placeholders", std::make_unique<base::DictionaryValue>());
         break;
       case CONTENT_MISSING:
          dict->Remove("n1.placeholders.a.content", NULL);

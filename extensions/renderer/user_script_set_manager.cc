@@ -118,7 +118,7 @@ void UserScriptSetManager::OnUpdateUserScripts(
     if (programmatic_scripts_.find(host_id) == programmatic_scripts_.end()) {
       scripts = programmatic_scripts_
                     .insert(std::make_pair(host_id,
-                                           base::MakeUnique<UserScriptSet>()))
+                                           std::make_unique<UserScriptSet>()))
                     .first->second.get();
     } else {
       scripts = programmatic_scripts_[host_id].get();

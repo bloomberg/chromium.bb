@@ -119,7 +119,7 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
                                              NULL));
       extension->SetManifestData(
           keys::kContentSecurityPolicy,
-          base::MakeUnique<CSPInfo>(content_security_policy));
+          std::make_unique<CSPInfo>(content_security_policy));
     }
     return true;
   }
@@ -145,7 +145,7 @@ bool CSPHandler::Parse(Extension* extension, base::string16* error) {
 
   extension->SetManifestData(
       keys::kContentSecurityPolicy,
-      base::MakeUnique<CSPInfo>(content_security_policy));
+      std::make_unique<CSPInfo>(content_security_policy));
   return true;
 }
 

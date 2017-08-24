@@ -390,7 +390,7 @@ std::unique_ptr<base::DictionaryValue> GetDictionaryFromArray(
       switch (entry->GetType()) {
         case base::Value::Type::STRING: {
           // Replace the present string with a list.
-          auto list = base::MakeUnique<base::ListValue>();
+          auto list = std::make_unique<base::ListValue>();
           // Ignoring return value, we already verified the entry is there.
           dictionary->RemoveWithoutPathExpansion(*name, &entry_owned);
           list->Append(std::move(entry_owned));

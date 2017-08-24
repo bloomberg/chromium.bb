@@ -67,7 +67,7 @@ APIEventPerContextData* GetContextData(v8::Local<v8::Context> context,
 
   if (!data && should_create) {
     auto api_data =
-        base::MakeUnique<APIEventPerContextData>(context->GetIsolate());
+        std::make_unique<APIEventPerContextData>(context->GetIsolate());
     data = api_data.get();
     per_context_data->SetUserData(kExtensionAPIEventPerContextKey,
                                   std::move(api_data));
@@ -138,11 +138,11 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
                        : base::Bind(&DoNothingOnListenersChanged);
   std::unique_ptr<APIEventListeners> listeners;
   if (supports_filters) {
-    listeners = base::MakeUnique<FilteredEventListeners>(
+    listeners = std::make_unique<FilteredEventListeners>(
         updated, event_name, max_listeners, supports_lazy_listeners,
         &event_filter_);
   } else {
-    listeners = base::MakeUnique<UnfilteredEventListeners>(
+    listeners = std::make_unique<UnfilteredEventListeners>(
         updated, max_listeners, supports_lazy_listeners);
   }
 
@@ -167,7 +167,7 @@ v8::Local<v8::Object> APIEventHandler::CreateAnonymousEventInstance(
   APIEventPerContextData* data = GetContextData(context, true);
   bool supports_filters = false;
   std::unique_ptr<APIEventListeners> listeners =
-      base::MakeUnique<UnfilteredEventListeners>(
+      std::make_unique<UnfilteredEventListeners>(
           base::Bind(&DoNothingOnListenersChanged), binding::kNoListenerMax,
           false);
   gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(

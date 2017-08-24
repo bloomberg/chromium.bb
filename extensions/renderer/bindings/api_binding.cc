@@ -219,10 +219,10 @@ APIBinding::APIBinding(const std::string& api_name,
       bool for_io_thread = false;
       func_dict->GetBoolean("forIOThread", &for_io_thread);
 
-      auto signature = base::MakeUnique<APISignature>(*params);
+      auto signature = std::make_unique<APISignature>(*params);
       std::string full_name =
           base::StringPrintf("%s.%s", api_name_.c_str(), name.c_str());
-      methods_[name] = base::MakeUnique<MethodData>(
+      methods_[name] = std::make_unique<MethodData>(
           full_name, signature.get(),
           for_io_thread ? binding::RequestThread::IO
                         : binding::RequestThread::UI);
@@ -236,7 +236,7 @@ APIBinding::APIBinding(const std::string& api_name,
       CHECK(type.GetAsDictionary(&type_dict));
       std::string id;
       CHECK(type_dict->GetString("id", &id));
-      auto argument_spec = base::MakeUnique<ArgumentSpec>(*type_dict);
+      auto argument_spec = std::make_unique<ArgumentSpec>(*type_dict);
       const std::set<std::string>& enum_values = argument_spec->enum_values();
       if (!enum_values.empty()) {
         // Type names may be prefixed by the api name. If so, remove the prefix.
@@ -266,7 +266,7 @@ APIBinding::APIBinding(const std::string& api_name,
           CHECK(func_dict->GetList("parameters", &params));
           type_refs->AddTypeMethodSignature(
               base::StringPrintf("%s.%s", id.c_str(), function_name.c_str()),
-              base::MakeUnique<APISignature>(*params));
+              std::make_unique<APISignature>(*params));
         }
       }
     }
@@ -330,7 +330,7 @@ APIBinding::APIBinding(const std::string& api_name,
         }
       }
 
-      events_.push_back(base::MakeUnique<EventData>(
+      events_.push_back(std::make_unique<EventData>(
           std::move(name), std::move(full_name), supports_filters,
           supports_rules, supports_lazy_listeners, max_listeners,
           notify_on_change, std::move(rule_actions), std::move(rule_conditions),
@@ -465,7 +465,7 @@ void APIBinding::DecorateTemplateWithProperties(
     if (dict->GetString("$ref", &ref)) {
       const base::ListValue* property_values = nullptr;
       CHECK(dict->GetList("value", &property_values));
-      auto property_data = base::MakeUnique<CustomPropertyData>(
+      auto property_data = std::make_unique<CustomPropertyData>(
           ref, iter.key(), property_values, create_custom_type_);
       object_template->SetLazyDataProperty(
           v8_key, &APIBinding::GetCustomPropertyObject,

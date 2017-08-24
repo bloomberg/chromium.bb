@@ -157,7 +157,7 @@ TEST(FeatureProviderTest, GetChildren) {
 
   auto add_feature = [&provider](base::StringPiece name,
                                  bool no_parent = false) {
-    auto feature = base::MakeUnique<SimpleFeature>();
+    auto feature = std::make_unique<SimpleFeature>();
     feature->set_name(name);
     feature->set_noparent(no_parent);
     provider.AddFeature(name, std::move(feature));

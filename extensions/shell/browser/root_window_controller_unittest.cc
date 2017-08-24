@@ -38,7 +38,7 @@ class FakeDesktopDelegate : public RootWindowController::DesktopDelegate {
 
   RootWindowController* CreateRootWindowController() {
     root_window_controllers_.emplace_back(
-        base::MakeUnique<RootWindowController>(this, kScreenBounds,
+        std::make_unique<RootWindowController>(this, kScreenBounds,
                                                browser_context_));
     return root_window_controllers_.back().get();
   }
@@ -93,7 +93,7 @@ class RootWindowControllerTest : public ShellTestBaseAura {
     extension_ = ExtensionBuilder("Test").Build();
 
     desktop_delegate_ =
-        base::MakeUnique<FakeDesktopDelegate>(browser_context());
+        std::make_unique<FakeDesktopDelegate>(browser_context());
   }
 
   void TearDown() override {

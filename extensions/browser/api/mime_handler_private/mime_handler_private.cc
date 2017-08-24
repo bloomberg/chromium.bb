@@ -60,7 +60,7 @@ void MimeHandlerServiceImpl::Create(
     base::WeakPtr<StreamContainer> stream_container,
     mime_handler::MimeHandlerServiceRequest request) {
   mojo::MakeStrongBinding(
-      base::MakeUnique<MimeHandlerServiceImpl>(stream_container),
+      std::make_unique<MimeHandlerServiceImpl>(stream_container),
       std::move(request));
 }
 

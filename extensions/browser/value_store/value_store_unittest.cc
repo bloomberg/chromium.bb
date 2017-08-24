@@ -88,7 +88,7 @@ testing::AssertionResult ChangesEq(
 
   std::map<std::string, std::unique_ptr<ValueStoreChange>> expected_as_map;
   for (const ValueStoreChange& change : expected)
-    expected_as_map[change.key()] = base::MakeUnique<ValueStoreChange>(change);
+    expected_as_map[change.key()] = std::make_unique<ValueStoreChange>(change);
 
   std::set<std::string> keys_seen;
 

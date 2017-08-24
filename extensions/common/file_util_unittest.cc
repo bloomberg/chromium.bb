@@ -356,7 +356,7 @@ TEST_F(FileUtilTest, BackgroundScriptsMustExist) {
   value->SetInteger("manifest_version", 1);
 
   base::ListValue* scripts =
-      value->SetList("background.scripts", base::MakeUnique<base::ListValue>());
+      value->SetList("background.scripts", std::make_unique<base::ListValue>());
   scripts->AppendString("foo.js");
 
   std::string error;

@@ -205,12 +205,12 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   if (FeatureSwitch::native_crx_bindings()->IsEnabled()) {
     // This Unretained is safe because the IPCMessageSender is guaranteed to
     // outlive the bindings system.
-    auto system = base::MakeUnique<NativeExtensionBindingsSystem>(
+    auto system = std::make_unique<NativeExtensionBindingsSystem>(
         std::move(ipc_message_sender));
     delegate_->InitializeBindingsSystem(this, system->api_system());
     bindings_system_ = std::move(system);
   } else {
-    bindings_system_ = base::MakeUnique<JsExtensionBindingsSystem>(
+    bindings_system_ = std::make_unique<JsExtensionBindingsSystem>(
         &source_map_, std::move(ipc_message_sender));
   }
 
@@ -421,7 +421,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     // TODO(lazyboy): Make sure accessing |source_map_| in worker thread is
     // safe.
     context->set_module_system(
-        base::MakeUnique<ModuleSystem>(context, &source_map_));
+        std::make_unique<ModuleSystem>(context, &source_map_));
 
     ModuleSystem* module_system = context->module_system();
     // Enable natives in startup.
@@ -796,18 +796,18 @@ void Dispatcher::RegisterNativeHandlers(
       std::unique_ptr<NativeHandler>(new V8ContextNativeHandler(context)));
   module_system->RegisterNativeHandler(
       "event_natives",
-      base::MakeUnique<EventBindings>(
+      std::make_unique<EventBindings>(
           context,
           // Note: |bindings_system| can be null in unit tests.
           bindings_system ? bindings_system->GetIPCMessageSender() : nullptr));
   module_system->RegisterNativeHandler(
-      "messaging_natives", base::MakeUnique<MessagingBindings>(context));
+      "messaging_natives", std::make_unique<MessagingBindings>(context));
   module_system->RegisterNativeHandler(
       "apiDefinitions", std::unique_ptr<NativeHandler>(
                             new ApiDefinitionsNatives(dispatcher, context)));
   module_system->RegisterNativeHandler(
       "sendRequest",
-      base::MakeUnique<SendRequestNatives>(
+      std::make_unique<SendRequestNatives>(
           // Note: |bindings_system| can be null in unit tests.
           bindings_system ? bindings_system->GetRequestSender() : nullptr,
           context));
@@ -849,7 +849,7 @@ void Dispatcher::RegisterNativeHandlers(
       std::unique_ptr<NativeHandler>(new RuntimeCustomBindings(context)));
   module_system->RegisterNativeHandler(
       "display_source",
-      base::MakeUnique<DisplaySourceCustomBindings>(context, bindings_system));
+      std::make_unique<DisplaySourceCustomBindings>(context, bindings_system));
 }
 
 bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {

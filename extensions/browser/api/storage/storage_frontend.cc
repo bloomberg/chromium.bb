@@ -55,7 +55,7 @@ class DefaultObserver : public SettingsObserver {
     // safeguard fixes it, that means there's an underlying problem (why are we
     // passing invalid json here?).
     if (!changes)
-      changes = base::MakeUnique<base::DictionaryValue>();
+      changes = std::make_unique<base::DictionaryValue>();
     args->Append(std::move(changes));
     args->AppendString(settings_namespace::ToString(settings_namespace));
     std::unique_ptr<Event> event(new Event(events::STORAGE_ON_CHANGED,

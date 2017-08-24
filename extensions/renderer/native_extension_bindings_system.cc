@@ -407,9 +407,9 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
       "contentSettings.ContentSetting",
       base::Bind(&ContentSetting::Create, base::Bind(&CallJsFunction)));
   api_system_.GetHooksForAPI("webRequest")
-      ->SetDelegate(base::MakeUnique<WebRequestHooks>());
+      ->SetDelegate(std::make_unique<WebRequestHooks>());
   api_system_.GetHooksForAPI("declarativeContent")
-      ->SetDelegate(base::MakeUnique<DeclarativeContentHooksDelegate>());
+      ->SetDelegate(std::make_unique<DeclarativeContentHooksDelegate>());
 }
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}
@@ -422,7 +422,7 @@ void NativeExtensionBindingsSystem::DidCreateScriptContext(
   gin::PerContextData* per_context_data = gin::PerContextData::From(v8_context);
   DCHECK(per_context_data);
   DCHECK(!per_context_data->GetUserData(kBindingsSystemPerContextKey));
-  auto data = base::MakeUnique<BindingsSystemPerContextData>(
+  auto data = std::make_unique<BindingsSystemPerContextData>(
       weak_factory_.GetWeakPtr());
   per_context_data->SetUserData(kBindingsSystemPerContextKey, std::move(data));
 
@@ -752,7 +752,7 @@ void NativeExtensionBindingsSystem::SendRequest(
   else
     url = script_context->url();
 
-  auto params = base::MakeUnique<ExtensionHostMsg_Request_Params>();
+  auto params = std::make_unique<ExtensionHostMsg_Request_Params>();
   params->name = request->method_name;
   params->arguments.Swap(request->arguments.get());
   params->extension_id = script_context->GetExtensionID();

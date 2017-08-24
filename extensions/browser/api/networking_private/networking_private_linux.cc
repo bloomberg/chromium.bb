@@ -591,12 +591,12 @@ NetworkingPrivateLinux::GetDeviceStateList() {
 
 std::unique_ptr<base::DictionaryValue>
 NetworkingPrivateLinux::GetGlobalPolicy() {
-  return base::MakeUnique<base::DictionaryValue>();
+  return std::make_unique<base::DictionaryValue>();
 }
 
 std::unique_ptr<base::DictionaryValue>
 NetworkingPrivateLinux ::GetCertificateLists() {
-  return base::MakeUnique<base::DictionaryValue>();
+  return std::make_unique<base::DictionaryValue>();
 }
 
 bool NetworkingPrivateLinux::EnableNetworkType(const std::string& type) {

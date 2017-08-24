@@ -146,7 +146,7 @@ bool SerialConnectFunction::Prepare() {
 
 void SerialConnectFunction::AsyncWorkStart() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  connection_ = base::MakeUnique<SerialConnection>(
+  connection_ = std::make_unique<SerialConnection>(
       params_->path, extension_->id(), std::move(io_handler_info_));
   connection_->Open(*params_->options,
                     base::BindOnce(&SerialConnectFunction::OnConnected, this));

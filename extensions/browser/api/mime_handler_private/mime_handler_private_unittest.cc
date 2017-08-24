@@ -49,7 +49,7 @@ class MimeHandlerServiceImplTest : public testing::Test {
     stream_container_.reset(
         new StreamContainer(std::move(stream_info), 1, true, GURL(), ""));
     service_binding_ =
-        mojo::MakeStrongBinding(base::MakeUnique<MimeHandlerServiceImpl>(
+        mojo::MakeStrongBinding(std::make_unique<MimeHandlerServiceImpl>(
                                     stream_container_->GetWeakPtr()),
                                 mojo::MakeRequest(&service_ptr_));
   }

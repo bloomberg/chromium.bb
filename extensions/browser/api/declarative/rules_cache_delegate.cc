@@ -226,7 +226,7 @@ void RulesCacheDelegate::SetDeclarativeRulesStored(
   ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
   extension_prefs->UpdateExtensionPref(
       extension_id, rules_stored_key_,
-      base::MakeUnique<base::Value>(rules_stored));
+      std::make_unique<base::Value>(rules_stored));
 }
 
 }  // namespace extensions

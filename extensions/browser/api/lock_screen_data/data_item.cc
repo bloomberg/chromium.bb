@@ -139,7 +139,7 @@ void RegisterItem(OperationResult* result,
     return;
   }
   if (!read->settings().Remove(kStoreKeyRegisteredItems, &registered_items))
-    registered_items = base::MakeUnique<base::DictionaryValue>();
+    registered_items = std::make_unique<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> dict =
       base::DictionaryValue::From(std::move(registered_items));
@@ -153,7 +153,7 @@ void RegisterItem(OperationResult* result,
     return;
   }
 
-  dict->Set(item_id, base::MakeUnique<base::DictionaryValue>());
+  dict->Set(item_id, std::make_unique<base::DictionaryValue>());
 
   ValueStore::WriteResult write =
       store->Set(ValueStore::DEFAULTS, kStoreKeyRegisteredItems, *dict);
@@ -286,10 +286,10 @@ void DataItem::GetRegisteredValuesForExtension(
   }
 
   std::unique_ptr<OperationResult> result =
-      base::MakeUnique<OperationResult>(OperationResult::kFailed);
+      std::make_unique<OperationResult>(OperationResult::kFailed);
   OperationResult* result_ptr = result.get();
   std::unique_ptr<base::DictionaryValue> values =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   base::DictionaryValue* values_ptr = values.get();
 
   task_runner->PostTaskAndReply(
@@ -342,7 +342,7 @@ void DataItem::Register(const WriteCallback& callback) {
   }
 
   std::unique_ptr<OperationResult> result =
-      base::MakeUnique<OperationResult>(OperationResult::kFailed);
+      std::make_unique<OperationResult>(OperationResult::kFailed);
   OperationResult* result_ptr = result.get();
 
   task_runner_->PostTaskAndReply(
@@ -365,7 +365,7 @@ void DataItem::Write(const std::vector<char>& data,
   }
 
   std::unique_ptr<OperationResult> result =
-      base::MakeUnique<OperationResult>(OperationResult::kFailed);
+      std::make_unique<OperationResult>(OperationResult::kFailed);
   OperationResult* result_ptr = result.get();
 
   task_runner_->PostTaskAndReply(
@@ -388,11 +388,11 @@ void DataItem::Read(const ReadCallback& callback) {
   }
 
   std::unique_ptr<OperationResult> result =
-      base::MakeUnique<OperationResult>(OperationResult::kFailed);
+      std::make_unique<OperationResult>(OperationResult::kFailed);
   OperationResult* result_ptr = result.get();
 
   std::unique_ptr<std::vector<char>> data =
-      base::MakeUnique<std::vector<char>>();
+      std::make_unique<std::vector<char>>();
   std::vector<char>* data_ptr = data.get();
 
   task_runner_->PostTaskAndReply(
@@ -415,7 +415,7 @@ void DataItem::Delete(const WriteCallback& callback) {
     return;
   }
   std::unique_ptr<OperationResult> result =
-      base::MakeUnique<OperationResult>(OperationResult::kFailed);
+      std::make_unique<OperationResult>(OperationResult::kFailed);
   OperationResult* result_ptr = result.get();
 
   task_runner_->PostTaskAndReply(

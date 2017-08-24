@@ -13,7 +13,7 @@ ArgumentSpecBuilder::ArgumentSpecBuilder(ArgumentType type)
 
 ArgumentSpecBuilder::ArgumentSpecBuilder(ArgumentType type,
                                          base::StringPiece name)
-    : spec_(base::MakeUnique<ArgumentSpec>(type)) {
+    : spec_(std::make_unique<ArgumentSpec>(type)) {
   if (!name.empty())
     spec_->set_name(name);
 }

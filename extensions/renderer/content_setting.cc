@@ -70,27 +70,27 @@ ContentSetting::ContentSetting(const binding::RunJSFunction& run_js,
   // is the custom set() argument specified above by value_spec.
   ArgumentSpec::PropertiesMap properties;
   properties["primaryPattern"] =
-      base::MakeUnique<ArgumentSpec>(ArgumentType::STRING);
+      std::make_unique<ArgumentSpec>(ArgumentType::STRING);
   {
     auto secondary_pattern_spec =
-        base::MakeUnique<ArgumentSpec>(ArgumentType::STRING);
+        std::make_unique<ArgumentSpec>(ArgumentType::STRING);
     secondary_pattern_spec->set_optional(true);
     properties["secondaryPattern"] = std::move(secondary_pattern_spec);
   }
   {
     auto resource_identifier_spec =
-        base::MakeUnique<ArgumentSpec>(ArgumentType::REF);
+        std::make_unique<ArgumentSpec>(ArgumentType::REF);
     resource_identifier_spec->set_ref("contentSettings.ResourceIdentifier");
     resource_identifier_spec->set_optional(true);
     properties["resourceIdentifier"] = std::move(resource_identifier_spec);
   }
   {
-    auto scope_spec = base::MakeUnique<ArgumentSpec>(ArgumentType::REF);
+    auto scope_spec = std::make_unique<ArgumentSpec>(ArgumentType::REF);
     scope_spec->set_ref("contentSettings.Scope");
     scope_spec->set_optional(true);
     properties["scope"] = std::move(scope_spec);
   }
-  properties["setting"] = base::MakeUnique<ArgumentSpec>(set_value_spec);
+  properties["setting"] = std::make_unique<ArgumentSpec>(set_value_spec);
   argument_spec_.set_properties(std::move(properties));
 }
 
@@ -187,7 +187,7 @@ void ContentSetting::HandleFunction(const std::string& method_name,
     }
   }
 
-  converted_arguments->Insert(0u, base::MakeUnique<base::Value>(pref_name_));
+  converted_arguments->Insert(0u, std::make_unique<base::Value>(pref_name_));
   request_handler_->StartRequest(
       context, "contentSettings." + method_name, std::move(converted_arguments),
       callback, v8::Local<v8::Function>(), binding::RequestThread::UI);

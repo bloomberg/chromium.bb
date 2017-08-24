@@ -20,8 +20,8 @@ MockExternalProvider::~MockExternalProvider() {}
 void MockExternalProvider::UpdateOrAddExtension(const ExtensionId& id,
                                                 const std::string& version_str,
                                                 const base::FilePath& path) {
-  auto version = base::MakeUnique<base::Version>(version_str);
-  auto info = base::MakeUnique<ExternalInstallInfoFile>(
+  auto version = std::make_unique<base::Version>(version_str);
+  auto info = std::make_unique<ExternalInstallInfoFile>(
       id, std::move(version), path, location_, Extension::NO_FLAGS, false,
       false);
   extension_map_[id] = std::move(info);

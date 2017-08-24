@@ -50,7 +50,7 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
                                           ui::IdleState new_state) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(IdleManager::CreateIdleValue(new_state));
-  auto event = base::MakeUnique<Event>(events::IDLE_ON_STATE_CHANGED,
+  auto event = std::make_unique<Event>(events::IDLE_ON_STATE_CHANGED,
                                        idle::OnStateChanged::kEventName,
                                        std::move(args), context_);
   EventRouter::Get(context_)
@@ -192,7 +192,7 @@ std::unique_ptr<base::Value> IdleManager::CreateIdleValue(
     description = keys::kStateLocked;
   }
 
-  return base::MakeUnique<base::Value>(description);
+  return std::make_unique<base::Value>(description);
 }
 
 void IdleManager::SetEventDelegateForTest(

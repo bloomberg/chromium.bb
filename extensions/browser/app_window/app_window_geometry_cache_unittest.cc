@@ -42,7 +42,7 @@ scoped_refptr<Extension> CreateExtension(const std::string& id) {
 class AppWindowGeometryCacheTest : public ExtensionsTest {
  public:
   AppWindowGeometryCacheTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
 
   // testing::Test overrides:
   void SetUp() override;
@@ -89,9 +89,9 @@ void AppWindowGeometryCacheTest::AddGeometryAndLoadExtension(
     const gfx::Rect& screen_bounds,
     ui::WindowShowState state) {
   std::unique_ptr<base::DictionaryValue> dict =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::DictionaryValue> value =
-      base::MakeUnique<base::DictionaryValue>();
+      std::make_unique<base::DictionaryValue>();
   value->SetInteger("x", bounds.x());
   value->SetInteger("y", bounds.y());
   value->SetInteger("w", bounds.width());

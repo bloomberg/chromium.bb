@@ -106,7 +106,7 @@ void LazyEventDispatchUtil::StorePendingOnInstallInfoToPref(
   // |pending_on_install_info| currently only contains a version string. Instead
   // of making the pref hold a plain string, we store it as a dictionary value
   // so that we can add more stuff to it in the future if necessary.
-  auto pending_on_install_info = base::MakeUnique<base::DictionaryValue>();
+  auto pending_on_install_info = std::make_unique<base::DictionaryValue>();
   base::Version previous_version = ExtensionRegistry::Get(browser_context_)
                                        ->GetStoredVersion(extension->id());
   pending_on_install_info->SetString(kPrefPreviousVersion,

@@ -357,12 +357,12 @@ NetworkingPrivateServiceClient::GetDeviceStateList() {
 
 std::unique_ptr<base::DictionaryValue>
 NetworkingPrivateServiceClient::GetGlobalPolicy() {
-  return base::MakeUnique<base::DictionaryValue>();
+  return std::make_unique<base::DictionaryValue>();
 }
 
 std::unique_ptr<base::DictionaryValue>
 NetworkingPrivateServiceClient::GetCertificateLists() {
-  return base::MakeUnique<base::DictionaryValue>();
+  return std::make_unique<base::DictionaryValue>();
 }
 
 bool NetworkingPrivateServiceClient::EnableNetworkType(

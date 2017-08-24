@@ -46,7 +46,7 @@ bool AppIsolationHandler::Parse(Extension* extension, base::string16* error) {
   // Platform apps always get isolated storage.
   if (extension->is_platform_app()) {
     extension->SetManifestData(keys::kIsolation,
-                               base::MakeUnique<AppIsolationInfo>(true));
+                               std::make_unique<AppIsolationInfo>(true));
     return true;
   }
 
@@ -87,7 +87,7 @@ bool AppIsolationHandler::Parse(Extension* extension, base::string16* error) {
 
   if (has_isolated_storage)
     extension->SetManifestData(keys::kIsolation,
-                               base::MakeUnique<AppIsolationInfo>(true));
+                               std::make_unique<AppIsolationInfo>(true));
 
   return true;
 }

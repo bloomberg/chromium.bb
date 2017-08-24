@@ -70,7 +70,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
 
   SandboxedUnpackerTest(content::TestBrowserThreadBundle::Options options)
       : ExtensionsTest(
-            base::MakeUnique<content::TestBrowserThreadBundle>(options)) {}
+            std::make_unique<content::TestBrowserThreadBundle>(options)) {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();

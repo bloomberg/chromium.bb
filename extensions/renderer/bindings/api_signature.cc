@@ -139,7 +139,7 @@ class BaseValueArgumentParser : public ArgumentParser {
 
  private:
   void AddNull() override {
-    list_value_->Append(base::MakeUnique<base::Value>());
+    list_value_->Append(std::make_unique<base::Value>());
   }
   void AddNullCallback() override {
     // The base::Value conversion doesn't include the callback directly, so we
@@ -261,7 +261,7 @@ APISignature::APISignature(const base::ListValue& specification) {
   for (const auto& value : specification) {
     const base::DictionaryValue* param = nullptr;
     CHECK(value.GetAsDictionary(&param));
-    signature_.push_back(base::MakeUnique<ArgumentSpec>(*param));
+    signature_.push_back(std::make_unique<ArgumentSpec>(*param));
   }
 }
 
@@ -295,7 +295,7 @@ bool APISignature::ParseArgumentsToJSON(
     std::string* error) const {
   DCHECK(json_out);
   DCHECK(callback_out);
-  std::unique_ptr<base::ListValue> json = base::MakeUnique<base::ListValue>();
+  std::unique_ptr<base::ListValue> json = std::make_unique<base::ListValue>();
   BaseValueArgumentParser parser(
       context, signature_, arguments, type_refs, error, json.get());
   if (!parser.ParseArguments())
@@ -331,7 +331,7 @@ bool APISignature::ConvertArgumentsIgnoringSchema(
       callback = value.As<v8::Function>();
   }
 
-  auto json = base::MakeUnique<base::ListValue>();
+  auto json = std::make_unique<base::ListValue>();
   std::unique_ptr<content::V8ValueConverter> converter =
       content::V8ValueConverter::Create();
   converter->SetFunctionAllowed(true);

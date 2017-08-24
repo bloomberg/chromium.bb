@@ -58,7 +58,7 @@ struct ExtensionBuilder::ManifestData {
           action_key = manifest_keys::kBrowserAction;
           break;
       }
-      manifest.Set(action_key, base::MakeUnique<base::DictionaryValue>());
+      manifest.Set(action_key, std::make_unique<base::DictionaryValue>());
     }
 
     std::unique_ptr<base::DictionaryValue> result = manifest.Build();
@@ -74,7 +74,7 @@ ExtensionBuilder::ExtensionBuilder()
 
 ExtensionBuilder::ExtensionBuilder(const std::string& name, Type type)
     : ExtensionBuilder() {
-  manifest_data_ = base::MakeUnique<ManifestData>();
+  manifest_data_ = std::make_unique<ManifestData>();
   manifest_data_->name = name;
   manifest_data_->type = type;
 }
@@ -145,7 +145,7 @@ ExtensionBuilder& ExtensionBuilder::MergeManifest(
     std::unique_ptr<base::DictionaryValue> manifest) {
   if (manifest_data_) {
     if (!manifest_data_->extra)
-      manifest_data_->extra = base::MakeUnique<base::DictionaryValue>();
+      manifest_data_->extra = std::make_unique<base::DictionaryValue>();
     manifest_data_->extra->MergeDictionary(manifest.get());
   } else {
     manifest_value_->MergeDictionary(manifest.get());

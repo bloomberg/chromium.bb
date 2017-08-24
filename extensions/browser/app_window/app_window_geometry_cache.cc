@@ -113,7 +113,7 @@ void AppWindowGeometryCache::SyncToStorage() {
          it != eit;
          ++it) {
       std::unique_ptr<base::DictionaryValue> value =
-          base::MakeUnique<base::DictionaryValue>();
+          std::make_unique<base::DictionaryValue>();
       const gfx::Rect& bounds = it->second.bounds;
       const gfx::Rect& screen_bounds = it->second.screen_bounds;
       DCHECK(!bounds.IsEmpty());

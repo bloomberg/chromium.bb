@@ -137,7 +137,7 @@ ComputedHashes::Writer::~Writer() {
 void ComputedHashes::Writer::AddHashes(const base::FilePath& relative_path,
                                        int block_size,
                                        const std::vector<std::string>& hashes) {
-  auto block_hashes = base::MakeUnique<base::ListValue>();
+  auto block_hashes = std::make_unique<base::ListValue>();
   block_hashes->GetList().reserve(hashes.size());
   for (const auto& hash : hashes) {
     std::string encoded;
@@ -145,7 +145,7 @@ void ComputedHashes::Writer::AddHashes(const base::FilePath& relative_path,
     block_hashes->GetList().emplace_back(std::move(encoded));
   }
 
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetString(kPathKey,
                   relative_path.NormalizePathSeparatorsTo('/').AsUTF8Unsafe());
   dict->SetInteger(kBlockSizeKey, block_size);

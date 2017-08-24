@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
       device_ids_listeners;
   for (size_t i = 0; i < arraysize(kTestingData); ++i) {
     device_ids_listeners.push_back(
-        base::MakeUnique<ExtensionTestMessageListener>(
+        std::make_unique<ExtensionTestMessageListener>(
             StorageMonitor::GetInstance()->GetTransientIdForDeviceId(
                 kTestingData[i].device_id),
             false));

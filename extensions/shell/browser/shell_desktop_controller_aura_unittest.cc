@@ -61,7 +61,7 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
     ShellTestBaseAura::SetUp();
 
     // Set up a screen with 2 displays.
-    screen_ = base::MakeUnique<display::ScreenBase>();
+    screen_ = std::make_unique<display::ScreenBase>();
     display::Screen::SetScreenInstance(screen_.get());
     screen_->display_list().AddDisplay(
         display::Display(100, gfx::Rect(0, 0, 1920, 1080)),
@@ -71,7 +71,7 @@ class ShellDesktopControllerAuraTest : public ShellTestBaseAura {
         display::DisplayList::Type::NOT_PRIMARY);
 
     controller_ =
-        base::MakeUnique<ShellDesktopControllerAura>(browser_context());
+        std::make_unique<ShellDesktopControllerAura>(browser_context());
   }
 
   void TearDown() override {

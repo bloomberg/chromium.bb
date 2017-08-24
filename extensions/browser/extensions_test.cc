@@ -23,7 +23,7 @@ namespace {
 
 std::unique_ptr<content::TestBrowserContext> CreateTestIncognitoContext() {
   std::unique_ptr<content::TestBrowserContext> incognito_context =
-      base::MakeUnique<content::TestBrowserContext>();
+      std::make_unique<content::TestBrowserContext>();
   incognito_context->set_is_off_the_record(true);
   return incognito_context;
 }
@@ -34,13 +34,13 @@ namespace extensions {
 
 ExtensionsTest::ExtensionsTest()
     : rvh_test_enabler_(
-          base::MakeUnique<content::RenderViewHostTestEnabler>()) {}
+          std::make_unique<content::RenderViewHostTestEnabler>()) {}
 
 ExtensionsTest::ExtensionsTest(
     std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle)
     : thread_bundle_(std::move(thread_bundle)),
       rvh_test_enabler_(
-          base::MakeUnique<content::RenderViewHostTestEnabler>()) {}
+          std::make_unique<content::RenderViewHostTestEnabler>()) {}
 
 ExtensionsTest::~ExtensionsTest() {
   // Destroy the task runners before nulling the browser/utility clients, as
@@ -59,14 +59,14 @@ void ExtensionsTest::SetExtensionsBrowserClient(
 }
 
 void ExtensionsTest::SetUp() {
-  content_browser_client_ = base::MakeUnique<TestContentBrowserClient>();
-  content_utility_client_ = base::MakeUnique<TestContentUtilityClient>();
-  browser_context_ = base::MakeUnique<content::TestBrowserContext>();
+  content_browser_client_ = std::make_unique<TestContentBrowserClient>();
+  content_utility_client_ = std::make_unique<TestContentUtilityClient>();
+  browser_context_ = std::make_unique<content::TestBrowserContext>();
   incognito_context_ = CreateTestIncognitoContext();
 
   if (!extensions_browser_client_) {
     extensions_browser_client_ =
-        base::MakeUnique<TestExtensionsBrowserClient>();
+        std::make_unique<TestExtensionsBrowserClient>();
   }
   extensions_browser_client_->SetMainContext(browser_context_.get());
 

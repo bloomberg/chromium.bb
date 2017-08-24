@@ -37,7 +37,7 @@ void BasicLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
 
   std::unique_ptr<SystemLogsResponse> response =
-      base::MakeUnique<SystemLogsResponse>();
+      std::make_unique<SystemLogsResponse>();
 
   PopulateVersionStrings(response.get());
   PopulateExtensionInfoLogs(response.get());

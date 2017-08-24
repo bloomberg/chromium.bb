@@ -101,7 +101,7 @@ class IconImage::Source : public gfx::ImageSkiaSource {
 
 IconImage::Source::Source(IconImage* host, const gfx::Size& size_in_dip)
     : host_(host),
-      blank_image_(base::MakeUnique<BlankImageSource>(size_in_dip),
+      blank_image_(std::make_unique<BlankImageSource>(size_in_dip),
                    size_in_dip) {}
 
 IconImage::Source::~Source() {

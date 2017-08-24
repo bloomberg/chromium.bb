@@ -23,13 +23,13 @@ PreloadCheck::Error kDummyError3 = PreloadCheck::BLACKLISTED_UNKNOWN;
 class PreloadCheckGroupTest : public testing::Test {
  public:
   PreloadCheckGroupTest()
-      : check_group_(base::MakeUnique<PreloadCheckGroup>()) {}
+      : check_group_(std::make_unique<PreloadCheckGroup>()) {}
   ~PreloadCheckGroupTest() override {}
 
  protected:
   // Adds a check to |check_group_|, storing its unique_ptr in |checks_|.
   void AddCheck(PreloadCheck::Errors errors, bool is_async = false) {
-    auto check_stub = base::MakeUnique<PreloadCheckStub>(errors);
+    auto check_stub = std::make_unique<PreloadCheckStub>(errors);
     check_stub->set_is_async(is_async);
     check_group_->AddCheck(check_stub.get());
     checks_.push_back(std::move(check_stub));

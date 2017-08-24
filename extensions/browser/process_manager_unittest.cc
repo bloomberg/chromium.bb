@@ -63,7 +63,7 @@ class ProcessManagerTest : public ExtensionsTest {
   void SetUp() override {
     ExtensionsTest::SetUp();
     extension_registry_ =
-        base::MakeUnique<ExtensionRegistry>(browser_context());
+        std::make_unique<ExtensionRegistry>(browser_context());
     extensions_browser_client()->set_process_manager_delegate(
         &process_manager_delegate_);
   }

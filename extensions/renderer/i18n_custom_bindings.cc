@@ -128,7 +128,7 @@ void InitDetectedLanguages(
           CLD2::LanguageCode(static_cast<CLD2::Language>(languages[i]));
     }
     detected_languages->push_back(
-        base::MakeUnique<DetectedLanguage>(language_code, percents[i]));
+        std::make_unique<DetectedLanguage>(language_code, percents[i]));
   }
 }
 
@@ -170,7 +170,7 @@ void InitDetectedLanguages(
     *is_reliable = *is_reliable && lang_result.is_reliable;
     const int percent = static_cast<int>(100 * lang_result.proportion);
     detected_languages->push_back(
-        base::MakeUnique<DetectedLanguage>(language_code, percent));
+        std::make_unique<DetectedLanguage>(language_code, percent));
   }
 
   if (detected_languages->empty()) {

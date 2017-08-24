@@ -25,7 +25,7 @@ namespace extensions {
 class ShellNativeAppWindowAuraTest : public ExtensionsTest {
  public:
   ShellNativeAppWindowAuraTest()
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {
     AppWindowClient::Set(&app_window_client_);
   }
 
@@ -52,7 +52,7 @@ TEST_F(ShellNativeAppWindowAuraTest, Bounds) {
       content::WebContents::Create(
           content::WebContents::CreateParams(browser_context())));
   app_window->SetAppWindowContentsForTesting(
-      base::MakeUnique<TestAppWindowContents>(std::move(web_contents)));
+      std::make_unique<TestAppWindowContents>(std::move(web_contents)));
 
   AppWindow::BoundsSpecification window_spec;
   window_spec.bounds = gfx::Rect(100, 200, 300, 400);

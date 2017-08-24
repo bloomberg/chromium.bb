@@ -34,13 +34,13 @@ AppViewGuestDelegate* ShellExtensionsAPIClient::CreateAppViewGuestDelegate()
 
 std::unique_ptr<VirtualKeyboardDelegate>
 ShellExtensionsAPIClient::CreateVirtualKeyboardDelegate() const {
-  return base::MakeUnique<ShellVirtualKeyboardDelegate>();
+  return std::make_unique<ShellVirtualKeyboardDelegate>();
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 FileSystemDelegate* ShellExtensionsAPIClient::GetFileSystemDelegate() {
   if (!file_system_delegate_)
-    file_system_delegate_ = base::MakeUnique<ShellFileSystemDelegate>();
+    file_system_delegate_ = std::make_unique<ShellFileSystemDelegate>();
   return file_system_delegate_.get();
 }
 #endif
@@ -48,7 +48,7 @@ FileSystemDelegate* ShellExtensionsAPIClient::GetFileSystemDelegate() {
 MessagingDelegate* ShellExtensionsAPIClient::GetMessagingDelegate() {
   // The default implementation does nothing, which is fine.
   if (!messaging_delegate_)
-    messaging_delegate_ = base::MakeUnique<MessagingDelegate>();
+    messaging_delegate_ = std::make_unique<MessagingDelegate>();
   return messaging_delegate_.get();
 }
 
@@ -56,7 +56,7 @@ FeedbackPrivateDelegate*
 ShellExtensionsAPIClient::GetFeedbackPrivateDelegate() {
   if (!feedback_private_delegate_) {
     feedback_private_delegate_ =
-        base::MakeUnique<ShellFeedbackPrivateDelegate>();
+        std::make_unique<ShellFeedbackPrivateDelegate>();
   }
   return feedback_private_delegate_.get();
 }

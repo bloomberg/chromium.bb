@@ -486,7 +486,7 @@ void UsbTransferFunction::OnCompleted(UsbTransferStatus status,
         kDataKey, base::Value::CreateWithCopiedBuffer(data->data(), length));
   } else {
     transfer_info->Set(
-        kDataKey, base::MakeUnique<base::Value>(base::Value::Type::BINARY));
+        kDataKey, std::make_unique<base::Value>(base::Value::Type::BINARY));
   }
 
   if (status == UsbTransferStatus::COMPLETED) {
@@ -657,7 +657,7 @@ ExtensionFunction::ResponseAction UsbGetUserSelectedDevicesFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
   if (!user_gesture()) {
-    return RespondNow(OneArgument(base::MakeUnique<base::ListValue>()));
+    return RespondNow(OneArgument(std::make_unique<base::ListValue>()));
   }
 
   bool multiple = false;
@@ -751,7 +751,7 @@ ExtensionFunction::ResponseAction UsbRequestAccessFunction::Run() {
   std::unique_ptr<extensions::api::usb::RequestAccess::Params> parameters =
       RequestAccess::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(true)));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 UsbOpenDeviceFunction::UsbOpenDeviceFunction() {
@@ -1260,7 +1260,7 @@ void UsbIsochronousTransferFunction::OnCompleted(
       new base::DictionaryValue());
   transfer_info->SetInteger(kResultCodeKey, static_cast<int>(status));
   transfer_info->Set(kDataKey,
-                     base::MakeUnique<base::Value>(std::move(buffer)));
+                     std::make_unique<base::Value>(std::move(buffer)));
   if (status == UsbTransferStatus::COMPLETED) {
     Respond(OneArgument(std::move(transfer_info)));
   } else {
@@ -1296,7 +1296,7 @@ ExtensionFunction::ResponseAction UsbResetDeviceFunction::Run() {
 
 void UsbResetDeviceFunction::OnComplete(bool success) {
   if (success) {
-    Respond(OneArgument(base::MakeUnique<base::Value>(true)));
+    Respond(OneArgument(std::make_unique<base::Value>(true)));
   } else {
     scoped_refptr<UsbDeviceHandle> device_handle =
         GetDeviceHandle(parameters_->handle);

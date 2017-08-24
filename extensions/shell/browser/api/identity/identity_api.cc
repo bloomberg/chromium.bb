@@ -128,7 +128,7 @@ void IdentityGetAuthTokenFunction::OnGetTokenFailure(
 void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
     const std::string& access_token,
     int time_to_live) {
-  Respond(OneArgument(base::MakeUnique<base::Value>(access_token)));
+  Respond(OneArgument(std::make_unique<base::Value>(access_token)));
   Release();  // Balanced in Run().
 }
 

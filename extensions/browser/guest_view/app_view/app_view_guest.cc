@@ -189,7 +189,7 @@ void AppViewGuest::CreateWebContents(
 
   pending_response_map.Get().insert(std::make_pair(
       guest_instance_id(),
-      base::MakeUnique<ResponseInfo>(
+      std::make_unique<ResponseInfo>(
           guest_extension, weak_ptr_factory_.GetWeakPtr(), callback)));
 
   LazyBackgroundTaskQueue* queue =

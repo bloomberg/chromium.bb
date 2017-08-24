@@ -33,12 +33,12 @@ void PreloadCheckRunner::RunUntilComplete(PreloadCheck* check) {
 }
 
 void PreloadCheckRunner::WaitForComplete() {
-  run_loop_ = base::MakeUnique<base::RunLoop>();
+  run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->Run();
 }
 
 void PreloadCheckRunner::WaitForIdle() {
-  run_loop_ = base::MakeUnique<base::RunLoop>();
+  run_loop_ = std::make_unique<base::RunLoop>();
   run_loop_->RunUntilIdle();
 }
 

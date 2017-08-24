@@ -101,9 +101,9 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
   if (browser_context_ && EventRouter::Get(browser_context_)) {
     FeedbackInfo info;
     info.description = description_template;
-    info.category_tag = base::MakeUnique<std::string>(category_tag);
-    info.page_url = base::MakeUnique<std::string>(page_url.spec());
-    info.system_information = base::MakeUnique<SystemInformationList>();
+    info.category_tag = std::make_unique<std::string>(category_tag);
+    info.page_url = std::make_unique<std::string>(page_url.spec());
+    info.system_information = std::make_unique<SystemInformationList>();
 
     // Any extra diagnostics information should be added to the sys info.
     if (!extra_diagnostics.empty()) {
@@ -115,7 +115,7 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
 
     // The manager is only available if tracing is enabled.
     if (TracingManager* manager = TracingManager::Get()) {
-      info.trace_id = base::MakeUnique<int>(manager->RequestTrace());
+      info.trace_id = std::make_unique<int>(manager->RequestTrace());
     }
     info.flow = flow;
 #if defined(OS_MACOSX)
@@ -124,12 +124,12 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     const bool use_system_window_frame = false;
 #endif
     info.use_system_window_frame =
-        base::MakeUnique<bool>(use_system_window_frame);
+        std::make_unique<bool>(use_system_window_frame);
 
     std::unique_ptr<base::ListValue> args =
         feedback_private::OnFeedbackRequested::Create(info);
 
-    auto event = base::MakeUnique<Event>(
+    auto event = std::make_unique<Event>(
         events::FEEDBACK_PRIVATE_ON_FEEDBACK_REQUESTED,
         feedback_private::OnFeedbackRequested::kEventName, std::move(args),
         browser_context_);
@@ -164,7 +164,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateGetStringsFunction::Run() {
 ExtensionFunction::ResponseAction FeedbackPrivateGetUserEmailFunction::Run() {
   FeedbackPrivateDelegate* feedback_private_delegate =
       ExtensionsAPIClient::Get()->GetFeedbackPrivateDelegate();
-  return RespondNow(OneArgument(base::MakeUnique<base::Value>(
+  return RespondNow(OneArgument(std::make_unique<base::Value>(
       feedback_private_delegate->GetSignedInUserEmail(browser_context()))));
 }
 
@@ -270,7 +270,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
     feedback_data->set_screenshot_uuid(*feedback_info.screenshot_blob_uuid);
   }
 
-  auto sys_logs = base::MakeUnique<FeedbackData::SystemLogsMap>();
+  auto sys_logs = std::make_unique<FeedbackData::SystemLogsMap>();
   const SystemInformationList* sys_info =
       feedback_info.system_information.get();
   if (sys_info) {
@@ -286,7 +286,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
   DCHECK(service);
 
   if (feedback_info.send_histograms) {
-    auto histograms = base::MakeUnique<std::string>();
+    auto histograms = std::make_unique<std::string>();
     *histograms = base::StatisticsRecorder::ToJSON(std::string());
     if (!histograms->empty())
       feedback_data->SetAndCompressHistograms(std::move(histograms));
@@ -300,7 +300,7 @@ ExtensionFunction::ResponseAction FeedbackPrivateSendFeedbackFunction::Run() {
 }
 
 void FeedbackPrivateSendFeedbackFunction::OnCompleted(bool success) {
-  Respond(OneArgument(base::MakeUnique<base::Value>(
+  Respond(OneArgument(std::make_unique<base::Value>(
       feedback_private::ToString(success ? feedback_private::STATUS_SUCCESS
                                          : feedback_private::STATUS_DELAYED))));
   if (!success) {

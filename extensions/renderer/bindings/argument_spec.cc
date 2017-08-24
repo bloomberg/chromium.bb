@@ -100,7 +100,7 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
       type_ = ArgumentType::CHOICES;
       choices_.reserve(choices->GetSize());
       for (const auto& choice : *choices)
-        choices_.push_back(base::MakeUnique<ArgumentSpec>(choice));
+        choices_.push_back(std::make_unique<ArgumentSpec>(choice));
       return;
     }
   }
@@ -155,21 +155,21 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
     if (dict->GetDictionary("properties", &properties_value)) {
       for (base::DictionaryValue::Iterator iter(*properties_value);
            !iter.IsAtEnd(); iter.Advance()) {
-        properties_[iter.key()] = base::MakeUnique<ArgumentSpec>(iter.value());
+        properties_[iter.key()] = std::make_unique<ArgumentSpec>(iter.value());
       }
     }
     const base::DictionaryValue* additional_properties_value = nullptr;
     if (dict->GetDictionary("additionalProperties",
                             &additional_properties_value)) {
       additional_properties_ =
-          base::MakeUnique<ArgumentSpec>(*additional_properties_value);
+          std::make_unique<ArgumentSpec>(*additional_properties_value);
       // Additional properties are always optional.
       additional_properties_->optional_ = true;
     }
   } else if (type_ == ArgumentType::LIST) {
     const base::DictionaryValue* item_value = nullptr;
     CHECK(dict->GetDictionary("items", &item_value));
-    list_element_type_ = base::MakeUnique<ArgumentSpec>(*item_value);
+    list_element_type_ = std::make_unique<ArgumentSpec>(*item_value);
   } else if (type_ == ArgumentType::STRING) {
     // Technically, there's no reason enums couldn't be other objects (e.g.
     // numbers), but right now they seem to be exclusively strings. We could
@@ -305,7 +305,7 @@ bool ArgumentSpec::ParseArgument(v8::Local<v8::Context> context,
         // generated types have adapted to consider functions "objects" and
         // serialize them as dictionaries.
         // TODO(devlin): It'd be awfully nice to get rid of this eccentricity.
-        *out_value = base::MakeUnique<base::DictionaryValue>();
+        *out_value = std::make_unique<base::DictionaryValue>();
       }
       return true;
     case ArgumentType::REF: {
@@ -398,7 +398,7 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       if (!CheckFundamentalBounds(int_val, minimum_, maximum_, error))
         return false;
       if (out_value)
-        *out_value = base::MakeUnique<base::Value>(int_val);
+        *out_value = std::make_unique<base::Value>(int_val);
       return true;
     }
     case ArgumentType::DOUBLE: {
@@ -407,7 +407,7 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       if (!CheckFundamentalBounds(double_val, minimum_, maximum_, error))
         return false;
       if (out_value)
-        *out_value = base::MakeUnique<base::Value>(double_val);
+        *out_value = std::make_unique<base::Value>(double_val);
       return true;
     }
     case ArgumentType::STRING: {
@@ -441,7 +441,7 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       if (out_value) {
         // TODO(devlin): If base::Value ever takes a std::string&&, we
         // could use std::move to construct.
-        *out_value = base::MakeUnique<base::Value>(s);
+        *out_value = std::make_unique<base::Value>(s);
       }
       return true;
     }
@@ -449,7 +449,7 @@ bool ArgumentSpec::ParseArgumentToFundamental(
       DCHECK(value->IsBoolean());
       if (out_value) {
         *out_value =
-            base::MakeUnique<base::Value>(value.As<v8::Boolean>()->Value());
+            std::make_unique<base::Value>(value.As<v8::Boolean>()->Value());
       }
       return true;
     }
@@ -469,7 +469,7 @@ bool ArgumentSpec::ParseArgumentToObject(
   std::unique_ptr<base::DictionaryValue> result;
   // Only construct the result if we have an |out_value| to populate.
   if (out_value)
-    result = base::MakeUnique<base::DictionaryValue>();
+    result = std::make_unique<base::DictionaryValue>();
 
   v8::Local<v8::Array> own_property_names;
   if (!object->GetOwnPropertyNames(context).ToLocal(&own_property_names)) {
@@ -537,7 +537,7 @@ bool ArgumentSpec::ParseArgumentToObject(
       }
       if (preserve_null_ && prop_value->IsNull() && result) {
         result->SetWithoutPathExpansion(*utf8_key,
-                                        base::MakeUnique<base::Value>());
+                                        std::make_unique<base::Value>());
       }
       continue;
     }
@@ -622,7 +622,7 @@ bool ArgumentSpec::ParseArgumentToArray(v8::Local<v8::Context> context,
   std::unique_ptr<base::ListValue> result;
   // Only construct the result if we have an |out_value| to populate.
   if (out_value)
-    result = base::MakeUnique<base::ListValue>();
+    result = std::make_unique<base::ListValue>();
 
   std::string item_error;
   for (uint32_t i = 0; i < length; ++i) {

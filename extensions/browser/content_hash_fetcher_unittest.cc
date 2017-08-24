@@ -67,7 +67,7 @@ class ContentHashFetcherWaiter {
                 bool success,
                 bool force,
                 const std::set<base::FilePath>& mismatch_paths) {
-    result_ = base::MakeUnique<ContentHashFetcherResult>();
+    result_ = std::make_unique<ContentHashFetcherResult>();
     result_->extension_id = extension_id;
     result_->success = success;
     result_->force = force;
@@ -129,7 +129,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
   ContentHashFetcherTest()
       // We need a real IO thread to be able to intercept the network request
       // for the missing verified_contents.json file.
-      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>(
+      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>(
             content::TestBrowserThreadBundle::REAL_IO_THREAD)) {
     request_context_ = new net::TestURLRequestContextGetter(
         content::BrowserThread::GetTaskRunnerForThread(
@@ -169,7 +169,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
   // of the file at |response_path|.
   void RegisterInterception(const GURL& url,
                             const base::FilePath& response_path) {
-    interceptor_ = base::MakeUnique<net::TestURLRequestInterceptor>(
+    interceptor_ = std::make_unique<net::TestURLRequestInterceptor>(
         url.scheme(), url.host(),
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO),

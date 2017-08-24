@@ -36,7 +36,7 @@ void DispatchOnEmbedRequestedEventImpl(
     content::BrowserContext* context) {
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(std::move(app_embedding_request_data));
-  auto event = base::MakeUnique<Event>(
+  auto event = std::make_unique<Event>(
       events::APP_RUNTIME_ON_EMBED_REQUESTED,
       app_runtime::OnEmbedRequested::kEventName, std::move(args), context);
   EventRouter::Get(context)
@@ -65,7 +65,7 @@ void DispatchOnLaunchedEventImpl(
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   args->Append(std::move(launch_data));
-  auto event = base::MakeUnique<Event>(events::APP_RUNTIME_ON_LAUNCHED,
+  auto event = std::make_unique<Event>(events::APP_RUNTIME_ON_LAUNCHED,
                                        app_runtime::OnLaunched::kEventName,
                                        std::move(args), context);
   EventRouter::Get(context)
@@ -130,7 +130,7 @@ void AppRuntimeEventRouter::DispatchOnLaunchedEvent(
     extensions::AppLaunchSource source,
     std::unique_ptr<app_runtime::LaunchData> launch_data) {
   if (!launch_data)
-    launch_data = base::MakeUnique<app_runtime::LaunchData>();
+    launch_data = std::make_unique<app_runtime::LaunchData>();
   app_runtime::LaunchSource source_enum = GetLaunchSourceEnum(source);
   if (extensions::FeatureSwitch::trace_app_source()->IsEnabled()) {
     launch_data->source = source_enum;
@@ -145,7 +145,7 @@ void AppRuntimeEventRouter::DispatchOnRestartedEvent(
     BrowserContext* context,
     const Extension* extension) {
   std::unique_ptr<base::ListValue> arguments(new base::ListValue());
-  auto event = base::MakeUnique<Event>(events::APP_RUNTIME_ON_RESTARTED,
+  auto event = std::make_unique<Event>(events::APP_RUNTIME_ON_RESTARTED,
                                        app_runtime::OnRestarted::kEventName,
                                        std::move(arguments), context);
   EventRouter::Get(context)

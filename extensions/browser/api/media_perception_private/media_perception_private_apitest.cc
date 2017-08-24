@@ -35,7 +35,7 @@ class MediaPerceptionPrivateApiTest : public ShellApiTest {
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
     auto media_analytics_client =
-        base::MakeUnique<chromeos::FakeMediaAnalyticsClient>();
+        std::make_unique<chromeos::FakeMediaAnalyticsClient>();
     media_analytics_client_ = media_analytics_client.get();
     dbus_setter->SetMediaAnalyticsClient(std::move(media_analytics_client));
   }

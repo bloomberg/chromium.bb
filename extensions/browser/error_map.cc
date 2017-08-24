@@ -182,7 +182,7 @@ const ExtensionError* ErrorMap::AddError(
     std::unique_ptr<ExtensionError> error) {
   std::unique_ptr<ExtensionEntry>& entry = map_[error->extension_id()];
   if (!entry)
-    entry = base::MakeUnique<ExtensionEntry>();
+    entry = std::make_unique<ExtensionEntry>();
 
   return entry->AddError(std::move(error));
 }

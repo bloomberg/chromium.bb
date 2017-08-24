@@ -107,7 +107,7 @@ class ViscaWebcamTest : public testing::Test {
     mojo::MakeRequest(&io_handler_info);
     webcam_ = new ViscaWebcam;
     webcam_->OpenForTesting(
-        base::MakeUnique<TestSerialConnection>(std::move(io_handler_info)));
+        std::make_unique<TestSerialConnection>(std::move(io_handler_info)));
   }
   ~ViscaWebcamTest() override {}
 

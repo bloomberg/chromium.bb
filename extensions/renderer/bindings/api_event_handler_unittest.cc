@@ -44,7 +44,7 @@ class APIEventHandlerTest : public APIBindingTest {
 
   void SetUp() override {
     APIBindingTest::SetUp();
-    handler_ = base::MakeUnique<APIEventHandler>(
+    handler_ = std::make_unique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
         base::Bind(&RunFunctionOnGlobalAndReturnHandle),
         base::Bind(&DoNothingOnEventListenersChanged), nullptr);
@@ -551,7 +551,7 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
   ExceptionHandler exception_handler(
       base::Bind(log_error, &logged_errors),
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
-  SetHandler(base::MakeUnique<APIEventHandler>(
+  SetHandler(std::make_unique<APIEventHandler>(
       base::Bind(run_js_and_expect_error),
       base::Bind(&RunFunctionOnGlobalAndReturnHandle),
       base::Bind(&DoNothingOnEventListenersChanged), &exception_handler));
@@ -605,7 +605,7 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
 // Tests being notified as listeners are added or removed from events.
 TEST_F(APIEventHandlerTest, CallbackNotifications) {
   MockEventChangeHandler change_handler;
-  SetHandler(base::MakeUnique<APIEventHandler>(
+  SetHandler(std::make_unique<APIEventHandler>(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
       base::Bind(&RunFunctionOnGlobalAndReturnHandle), change_handler.Get(),
       nullptr));

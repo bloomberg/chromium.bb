@@ -735,7 +735,7 @@ void EventRouter::DispatchPendingEvent(
 void EventRouter::SetRegisteredEvents(const std::string& extension_id,
                                       const std::set<std::string>& events,
                                       RegisteredEventType type) {
-  auto events_value = base::MakeUnique<base::ListValue>();
+  auto events_value = std::make_unique<base::ListValue>();
   for (std::set<std::string>::const_iterator iter = events.begin();
        iter != events.end(); ++iter) {
     events_value->AppendString(*iter);
@@ -757,7 +757,7 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
   ListValue* filter_list = nullptr;
   if (!filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
     filtered_events->SetWithoutPathExpansion(
-        event_name, base::MakeUnique<base::ListValue>());
+        event_name, std::make_unique<base::ListValue>());
     filtered_events->GetListWithoutPathExpansion(event_name, &filter_list);
   }
 

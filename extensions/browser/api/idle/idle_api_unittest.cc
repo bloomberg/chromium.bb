@@ -116,7 +116,7 @@ ScopedListen::~ScopedListen() {
 
 std::unique_ptr<KeyedService> IdleManagerTestFactory(
     content::BrowserContext* context) {
-  return base::MakeUnique<IdleManager>(context);
+  return std::make_unique<IdleManager>(context);
 }
 
 }  // namespace
