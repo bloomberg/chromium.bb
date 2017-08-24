@@ -2269,9 +2269,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'kevin',
       'kip',
-      'lakitu',
-      'lakitu-gpu',
-      'lakitu-st',
       'leon',
       'link',
       'lumpy',
@@ -2331,6 +2328,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'lasilla-sky', # contact:jemele@
       'macchiato-ground', # contact:jemele@
       'octavius', # contact:dpjacques@
+      'lakitu',  # crbug.com/758247, b/64934461
+      'lakitu-gpu',  # crbug.com/758247, b/64934461
+      'lakitu-st',  # crbug.com/758247, b/64934461
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
       'wooten', # contact:icoolidge@
   ])
