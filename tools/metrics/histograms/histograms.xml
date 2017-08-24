@@ -7449,6 +7449,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Canvas.CreateImageBitmapSource"
+    enum="CanvasCreateImageBitmapSource">
+  <owner>junov@chromium.org</owner>
+  <owner>zakerinasab@chromium.org</owner>
+  <summary>
+    The source from which an ImageBitmap is created by a createImageBitmap call.
+  </summary>
+</histogram>
+
 <histogram name="Canvas.DisplayListFallbackReason"
     enum="CanvasDisplayListFallbackReason">
   <owner>junov@chromium.org</owner>

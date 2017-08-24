@@ -3919,6 +3919,17 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="10" label="GPUAccelerated2DCanvasSurfaceCreationFailed"/>
 </enum>
 
+<enum name="CanvasCreateImageBitmapSource">
+  <int value="0" label="CreateImageBitmapFromBlob"/>
+  <int value="1" label="CreateImageBitmapFromImageBitmap"/>
+  <int value="2" label="CreateImageBitmapFromImageData"/>
+  <int value="3" label="CreateImageBitmapFromHTMLCanvasElement"/>
+  <int value="4" label="CreateImageBitmapFromHTMLImageElement"/>
+  <int value="5" label="CreateImageBitmapFromHTMLVideoElement"/>
+  <int value="6" label="CreateImageBitmapFromOffscreenCanvas"/>
+  <int value="7" label="CreateImageBitmapFromSVGImageElement"/>
+</enum>
+
 <enum name="CanvasDisplayListFallbackReason">
   <int value="0" label="Unknown (Should not be seen in production)."/>
   <int value="1" label="Canvas not cleared between consecutive frames."/>
