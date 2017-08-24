@@ -11,7 +11,13 @@ Start Chrome as follows:
              --trace-startup-file=/tmp/trace.json \
              --trace-startup-duration=7
 
-On Android, enable startup tracing and start Chrome as follows:
+On Android, first ensure that Chrome can write output files to storage. Replace
+"org.chromium.chrome" with the Chrome package you are tracing:
+
+    $ adb shell pm grant org.chromium.chrome android.permission.READ_EXTERNAL_STORAGE
+    $ adb shell pm grant org.chromium.chrome android.permission.WRITE_EXTERNAL_STORAGE
+
+Then enable startup tracing and start Chrome as follows:
 
     $ build/android/adb_chrome_public_command_line \
           --trace-startup=-*,disabled-by-default-memory-infra \
@@ -63,8 +69,15 @@ On Android, the config file has to be pushed to a fixed file location:
     $ adb pull /sdcard/Download/trace.json  # After tracing.
 
 Make sure that the "result_file" location is writable by the Chrome process on
-Android (e.g. "/sdcard/Download/trace.json"). Note that startup tracing will be
-enabled upon every Chrome launch until you delete the config file:
+Android (e.g. "/sdcard/Download/trace.json"). To ensure Chrome has permissions
+to write to /sdcard, run the following, replacing "org.chromium.chrome" with
+the Chrome package you are tracing:
+
+    $ adb shell pm grant org.chromium.chrome android.permission.READ_EXTERNAL_STORAGE
+    $ adb shell pm grant org.chromium.chrome android.permission.WRITE_EXTERNAL_STORAGE
+
+Note that startup tracing will be enabled upon every Chrome launch until you
+delete the config file:
 
     $ adb shell rm /data/local/chrome-trace-config.json
 
