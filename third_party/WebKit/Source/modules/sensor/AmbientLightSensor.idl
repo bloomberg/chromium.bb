@@ -6,7 +6,7 @@
 // https://w3c.github.io/ambient-light/#ambient-light-sensor-interface
 
 [
-    RuntimeEnabled=Sensor,
+    RuntimeEnabled=SensorExtraClasses,
     Constructor(optional SensorOptions sensorOptions),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,

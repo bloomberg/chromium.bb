@@ -100,6 +100,16 @@ PermissionDescriptorPtr ParsePermission(ScriptState* script_state,
       exception_state.ThrowTypeError("GenericSensor flag is not enabled.");
       return nullptr;
     }
+
+    // Magnetometer and ALS require an extra flag.
+    if (name == "magnetometer" || name == "ambient-light-sensor") {
+      if (!RuntimeEnabledFeatures::SensorExtraClassesEnabled()) {
+        exception_state.ThrowTypeError(
+            "GenericSensorExtraClasses flag is not enabled.");
+        return nullptr;
+      }
+    }
+
     return CreatePermissionDescriptor(PermissionName::SENSORS);
   }
   if (name == "accessibility-events") {

@@ -348,8 +348,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kSkipCompositingSmallScrollers))
     WebRuntimeFeatures::EnableSkipCompositingSmallScrollers(true);
 
-  if (base::FeatureList::IsEnabled(features::kGenericSensor))
+  if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
     WebRuntimeFeatures::EnableGenericSensor(true);
+    if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses))
+      WebRuntimeFeatures::EnableGenericSensorExtraClasses(true);
+  }
 
   if (base::FeatureList::IsEnabled(features::kLoadingWithMojo) ||
       base::FeatureList::IsEnabled(features::kNetworkService))
