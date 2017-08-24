@@ -501,7 +501,7 @@ TEST_F(TrackRunIteratorTest, BasicOperationTest) {
   EXPECT_FALSE(iter_->is_encrypted());
   EXPECT_EQ(iter_->track_id(), 1u);
   EXPECT_EQ(iter_->sample_offset(), 100);
-  EXPECT_EQ(iter_->sample_size(), 1);
+  EXPECT_EQ(iter_->sample_size(), 1u);
   EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(0, kAudioScale));
   EXPECT_EQ(iter_->cts(), TimeDeltaFromRational(0, kAudioScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(1024, kAudioScale));
@@ -511,7 +511,7 @@ TEST_F(TrackRunIteratorTest, BasicOperationTest) {
   for (int i = 0; i < 9; i++) iter_->AdvanceSample();
   EXPECT_EQ(iter_->track_id(), 1u);
   EXPECT_EQ(iter_->sample_offset(), 100 + kSumAscending1);
-  EXPECT_EQ(iter_->sample_size(), 10);
+  EXPECT_EQ(iter_->sample_size(), 10u);
   EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(1024 * 9, kAudioScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(1024, kAudioScale));
   EXPECT_TRUE(iter_->is_keyframe());
@@ -526,7 +526,7 @@ TEST_F(TrackRunIteratorTest, BasicOperationTest) {
   for (int i = 0; i < 9; i++) iter_->AdvanceSample();
   EXPECT_EQ(iter_->track_id(), 2u);
   EXPECT_EQ(iter_->sample_offset(), 200 + kSumAscending1);
-  EXPECT_EQ(iter_->sample_size(), 10);
+  EXPECT_EQ(iter_->sample_size(), 10u);
   int64_t base_dts = kSumAscending1 + moof.tracks[1].decode_time.decode_time;
   EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(base_dts, kVideoScale));
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(10, kVideoScale));
@@ -557,7 +557,7 @@ TEST_F(TrackRunIteratorTest, TrackExtendsDefaultsTest) {
   ASSERT_TRUE(iter_->Init(moof));
   iter_->AdvanceSample();
   EXPECT_FALSE(iter_->is_keyframe());
-  EXPECT_EQ(iter_->sample_size(), 3);
+  EXPECT_EQ(iter_->sample_size(), 3u);
   EXPECT_EQ(iter_->sample_offset(), moof.tracks[0].runs[0].data_offset + 3);
   EXPECT_EQ(iter_->duration(), TimeDeltaFromRational(50, kAudioScale));
   EXPECT_EQ(iter_->dts(), DecodeTimestampFromRational(50, kAudioScale));

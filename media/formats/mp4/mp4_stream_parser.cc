@@ -642,9 +642,20 @@ bool MP4StreamParser::EnqueueSample(BufferQueueMap* buffers, bool* err) {
   }
 
   queue_.PeekAt(runs_->sample_offset() + moof_head_, &buf, &buf_size);
-  if (buf_size < runs_->sample_size()) return false;
 
-  if (runs_->sample_size() == 0) {
+  if (runs_->sample_size() >
+      static_cast<uint32_t>(std::numeric_limits<int>::max())) {
+    MEDIA_LOG(ERROR, media_log_) << "Sample size is too large";
+    *err = true;
+    return false;
+  }
+
+  int sample_size = base::checked_cast<int>(runs_->sample_size());
+
+  if (buf_size < sample_size)
+    return false;
+
+  if (sample_size == 0) {
     // Generally not expected, but spec allows it. Code below this block assumes
     // the current sample is not empty.
     LIMITED_MEDIA_LOG(DEBUG, media_log_, num_empty_samples_skipped_,
@@ -665,7 +676,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueueMap* buffers, bool* err) {
     subsamples = decrypt_config->subsamples();
   }
 
-  std::vector<uint8_t> frame_buf(buf, buf + runs_->sample_size());
+  std::vector<uint8_t> frame_buf(buf, buf + sample_size);
   if (video) {
     if (runs_->video_description().video_codec == kCodecH264 ||
         runs_->video_description().video_codec == kCodecHEVC ||
@@ -725,7 +736,7 @@ bool MP4StreamParser::EnqueueSample(BufferQueueMap* buffers, bool* err) {
            << ", dur=" << runs_->duration().InMilliseconds()
            << ", dts=" << runs_->dts().InMilliseconds()
            << ", cts=" << runs_->cts().InMilliseconds()
-           << ", size=" << runs_->sample_size();
+           << ", size=" << sample_size;
 
   (*buffers)[runs_->track_id()].push_back(stream_buf);
   runs_->AdvanceSample();

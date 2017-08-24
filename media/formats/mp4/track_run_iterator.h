@@ -80,7 +80,7 @@ class MEDIA_EXPORT TrackRunIterator {
 
   // Properties of the current sample. Only valid if IsSampleValid().
   int64_t sample_offset() const;
-  int sample_size() const;
+  uint32_t sample_size() const;
   DecodeTimestamp dts() const;
   base::TimeDelta cts() const;
   base::TimeDelta duration() const;
