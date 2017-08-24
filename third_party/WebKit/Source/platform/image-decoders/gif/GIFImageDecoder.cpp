@@ -276,7 +276,7 @@ void GIFImageDecoder::Decode(size_t index) {
       SkCodec::FrameInfo frame_info;
       bool frame_info_received = codec_->getFrameInfo(index, &frame_info);
       DCHECK(frame_info_received);
-      frame.SetHasAlpha(!SkAlphaTypeIsOpaque(frame_info.fAlphaType));
+      frame.SetHasAlpha(frame_info.fAlpha != SkEncodedInfo::kOpaque_Alpha);
       frame.SetPixelsChanged(true);
       frame.SetStatus(ImageFrame::kFrameComplete);
       PostDecodeProcessing(index);
