@@ -46,6 +46,31 @@ class CC_EXPORT LayerTreeResourceProvider : public ResourceProvider {
   void ReceiveReturnsFromParent(
       const std::vector<viz::ReturnedResource>& transferable_resources);
 
+  class CC_EXPORT ScopedWriteLockGpuMemoryBuffer {
+   public:
+    ScopedWriteLockGpuMemoryBuffer(LayerTreeResourceProvider* resource_provider,
+                                   viz::ResourceId resource_id);
+    ~ScopedWriteLockGpuMemoryBuffer();
+    gfx::GpuMemoryBuffer* GetGpuMemoryBuffer();
+    // Will return the invalid color space unless
+    // |enable_color_correct_rasterization| is true.
+    const gfx::ColorSpace& color_space_for_raster() const {
+      return color_space_;
+    }
+
+   private:
+    LayerTreeResourceProvider* const resource_provider_;
+    const viz::ResourceId resource_id_;
+
+    gfx::Size size_;
+    viz::ResourceFormat format_;
+    gfx::BufferUsage usage_;
+    gfx::ColorSpace color_space_;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
+
+    DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
+  };
+
  private:
   void TransferResource(Resource* source,
                         viz::ResourceId id,

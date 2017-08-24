@@ -1238,47 +1238,6 @@ ResourceProvider::ScopedReadLockSoftware::~ScopedReadLockSoftware() {
   resource_provider_->UnlockForRead(resource_id_);
 }
 
-ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
-    ResourceProvider* resource_provider,
-    viz::ResourceId resource_id)
-    : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const Resource* resource = resource_provider->LockForRead(resource_id);
-  if (resource_provider_->resource_sk_image_.find(resource_id) !=
-      resource_provider_->resource_sk_image_.end()) {
-    // Use cached sk_image.
-    sk_image_ =
-        resource_provider_->resource_sk_image_.find(resource_id)->second;
-  } else if (resource->gl_id) {
-    GrGLTextureInfo texture_info;
-    texture_info.fID = resource->gl_id;
-    texture_info.fTarget = resource->target;
-    GrBackendTexture backend_texture(
-        resource->size.width(), resource->size.height(),
-        ToGrPixelConfig(resource->format), texture_info);
-    sk_image_ = SkImage::MakeFromTexture(
-        resource_provider->compositor_context_provider_->GrContext(),
-        backend_texture, kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType,
-        nullptr);
-  } else if (resource->pixels) {
-    SkBitmap sk_bitmap;
-    resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
-    sk_bitmap.setImmutable();
-    sk_image_ = SkImage::MakeFromBitmap(sk_bitmap);
-  } else {
-    // During render process shutdown, ~RenderMessageFilter which calls
-    // ~HostSharedBitmapClient (which deletes shared bitmaps from child)
-    // can race with OnBeginFrameDeadline which draws a frame.
-    // In these cases, shared bitmaps (and this read lock) won't be valid.
-    // Renderers need to silently handle locks failing until this race
-    // is fixed.  DCHECK that this is the only case where there are no pixels.
-    DCHECK(!resource->shared_bitmap_id.IsZero());
-  }
-}
-
-ResourceProvider::ScopedReadLockSkImage::~ScopedReadLockSkImage() {
-  resource_provider_->UnlockForRead(resource_id_);
-}
-
 ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
     ResourceProvider* resource_provider,
     viz::ResourceId resource_id)
@@ -1294,53 +1253,6 @@ ResourceProvider::ScopedWriteLockSoftware::~ScopedWriteLockSoftware() {
   resource->SetSynchronized();
   resource_provider_->UnlockForWrite(resource);
 }
-
-ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
-    ScopedWriteLockGpuMemoryBuffer(ResourceProvider* resource_provider,
-                                   viz::ResourceId resource_id)
-    : resource_provider_(resource_provider), resource_id_(resource_id) {
-  Resource* resource = resource_provider->LockForWrite(resource_id);
-  DCHECK(IsGpuResourceType(resource->type));
-  size_ = resource->size;
-  format_ = resource->format;
-  usage_ = resource->usage;
-  color_space_ = resource_provider->GetResourceColorSpaceForRaster(resource);
-  gpu_memory_buffer_ = std::move(resource->gpu_memory_buffer);
-}
-
-ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
-    ~ScopedWriteLockGpuMemoryBuffer() {
-  Resource* resource = resource_provider_->GetResource(resource_id_);
-  // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
-  // http://crbug.com/554541
-  if (gpu_memory_buffer_) {
-    resource->gpu_memory_buffer = std::move(gpu_memory_buffer_);
-    resource->allocated = true;
-    resource->is_overlay_candidate = true;
-    resource->buffer_format = resource->gpu_memory_buffer->GetFormat();
-    // GpuMemoryBuffer provides direct access to the memory used by the GPU.
-    // Read lock fences are required to ensure that we're not trying to map a
-    // buffer that is currently in-use by the GPU.
-    resource->read_lock_fences_enabled = true;
-    resource_provider_->CreateAndBindImage(resource);
-  }
-  resource_provider_->UnlockForWrite(resource);
-}
-
-gfx::GpuMemoryBuffer*
-ResourceProvider::ScopedWriteLockGpuMemoryBuffer::GetGpuMemoryBuffer() {
-  if (!gpu_memory_buffer_) {
-    gpu_memory_buffer_ =
-        resource_provider_->gpu_memory_buffer_manager()->CreateGpuMemoryBuffer(
-            size_, BufferFormat(format_), usage_, gpu::kNullSurfaceHandle);
-    // Avoid crashing in release builds if GpuMemoryBuffer allocation fails.
-    // http://crbug.com/554541
-    if (gpu_memory_buffer_ && color_space_.IsValid())
-      gpu_memory_buffer_->SetColorSpaceForScanout(color_space_);
-  }
-  return gpu_memory_buffer_.get();
-}
-
 ResourceProvider::SynchronousFence::SynchronousFence(
     gpu::gles2::GLES2Interface* gl)
     : gl_(gl), has_synchronized_(true) {}

@@ -19,14 +19,14 @@ class ConvertableToTraceFormat;
 }
 
 namespace cc {
-class ResourceProvider;
+class LayerTreeResourceProvider;
 
 class CC_EXPORT ZeroCopyRasterBufferProvider : public RasterBufferProvider {
  public:
   ~ZeroCopyRasterBufferProvider() override;
 
   static std::unique_ptr<RasterBufferProvider> Create(
-      ResourceProvider* resource_provider,
+      LayerTreeResourceProvider* resource_provider,
       viz::ResourceFormat preferred_tile_format);
 
   // Overridden from RasterBufferProvider:
@@ -48,14 +48,14 @@ class CC_EXPORT ZeroCopyRasterBufferProvider : public RasterBufferProvider {
   void Shutdown() override;
 
  protected:
-  ZeroCopyRasterBufferProvider(ResourceProvider* resource_provider,
+  ZeroCopyRasterBufferProvider(LayerTreeResourceProvider* resource_provider,
                                viz::ResourceFormat preferred_tile_format);
 
  private:
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> StateAsValue()
       const;
 
-  ResourceProvider* resource_provider_;
+  LayerTreeResourceProvider* resource_provider_;
   viz::ResourceFormat preferred_tile_format_;
 
   DISALLOW_COPY_AND_ASSIGN(ZeroCopyRasterBufferProvider);

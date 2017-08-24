@@ -494,8 +494,8 @@ void SkiaRenderer::DrawTextureQuad(const cc::TextureDrawQuad* quad) {
   }
 
   // TODO(skaslev): Add support for non-premultiplied alpha.
-  cc::ResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
-                                                   quad->resource_id());
+  cc::DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
+                                                          quad->resource_id());
   const SkImage* image = lock.sk_image();
   if (!image)
     return;
@@ -536,8 +536,8 @@ void SkiaRenderer::DrawTileQuad(const cc::TileDrawQuad* quad) {
   // should never produce tile quads in the first place.
   DCHECK(resource_provider_);
   DCHECK(IsSoftwareResource(quad->resource_id()));
-  cc::ResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
-                                                   quad->resource_id());
+  cc::DisplayResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
+                                                          quad->resource_id());
   if (!lock.sk_image())
     return;
   gfx::RectF visible_tex_coord_rect = cc::MathUtil::ScaleRectProportional(
@@ -560,8 +560,8 @@ void SkiaRenderer::DrawRenderPassQuad(const cc::RenderPassDrawQuad* quad) {
   DCHECK(content_texture);
   DCHECK(content_texture->id());
   DCHECK(IsSoftwareResource(content_texture->id()));
-  cc::ResourceProvider::ScopedReadLockSkImage lock(resource_provider_,
-                                                   content_texture->id());
+  cc::DisplayResourceProvider::ScopedReadLockSkImage lock(
+      resource_provider_, content_texture->id());
   if (!lock.sk_image())
     return;
 
