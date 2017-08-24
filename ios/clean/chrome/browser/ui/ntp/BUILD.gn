@@ -25,6 +25,8 @@ source_set("ntp") {
     "//components/reading_list/core",
     "//components/strings",
     "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_suggestions",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/ntp_snippets",
