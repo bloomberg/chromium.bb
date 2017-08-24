@@ -93,8 +93,11 @@ TEST_F(PaletteToolManagerTest, MultipleToolsActivateDeactivate) {
   TestTool* action_2 =
       BuildTool(PaletteGroup::ACTION, PaletteToolId::CAPTURE_REGION);
   TestTool* mode_1 = BuildTool(PaletteGroup::MODE, PaletteToolId::MAGNIFY);
+
+  EXPECT_FALSE(palette_tool_manager_->HasTool(PaletteToolId::LASER_POINTER));
   TestTool* mode_2 =
       BuildTool(PaletteGroup::MODE, PaletteToolId::LASER_POINTER);
+  EXPECT_TRUE(palette_tool_manager_->HasTool(PaletteToolId::LASER_POINTER));
 
   // Enable mode 1.
   EXPECT_EQ(0, tool_changed_count_);

@@ -66,6 +66,9 @@ class ASH_EXPORT PaletteToolManager : public PaletteTool::Delegate {
   PaletteToolManager(Delegate* delegate);
   ~PaletteToolManager() override;
 
+  // Returns true if the given tool has been added to the tool manager.
+  bool HasTool(PaletteToolId tool_id);
+
   // Adds the given |tool| to the tool manager. The tool is assumed to be in a
   // deactivated state. This class takes ownership over |tool|.
   void AddTool(std::unique_ptr<PaletteTool> tool);
