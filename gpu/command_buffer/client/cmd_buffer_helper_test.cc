@@ -43,11 +43,7 @@ class CommandBufferDirectLocked : public CommandBufferDirect {
  public:
   explicit CommandBufferDirectLocked(
       TransferBufferManager* transfer_buffer_manager)
-      : CommandBufferDirect(transfer_buffer_manager),
-        flush_locked_(false),
-        last_flush_(-1),
-        previous_put_offset_(0),
-        flush_count_(0) {}
+      : CommandBufferDirect(transfer_buffer_manager) {}
   ~CommandBufferDirectLocked() override {}
 
   // Overridden from CommandBufferDirect
@@ -81,13 +77,28 @@ class CommandBufferDirectLocked : public CommandBufferDirect {
                                                         start, end);
   }
 
+  scoped_refptr<Buffer> CreateTransferBuffer(size_t size,
+                                             int32_t* id) override {
+    if (fail_create_transfer_buffer_) {
+      *id = -1;
+      return nullptr;
+    } else {
+      return CommandBufferDirect::CreateTransferBuffer(size, id);
+    }
+  }
+
   int GetServicePutOffset() { return previous_put_offset_; }
 
+  void set_fail_create_transfer_buffer(bool fail) {
+    fail_create_transfer_buffer_ = fail;
+  }
+
  private:
-  bool flush_locked_;
-  int last_flush_;
-  int previous_put_offset_;
-  int flush_count_;
+  bool fail_create_transfer_buffer_ = false;
+  bool flush_locked_ = false;
+  int last_flush_ = -1;
+  int previous_put_offset_ = 0;
+  int flush_count_ = 0;
   DISALLOW_COPY_AND_ASSIGN(CommandBufferDirectLocked);
 };
 
@@ -260,21 +271,16 @@ class CommandBufferHelperTest : public testing::Test {
   base::MessageLoop message_loop_;
 };
 
-// Checks immediate_entry_count_ changes based on 'usable' state.
-TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesNotUsable) {
-  // Auto flushing mode is tested separately.
-  helper_->SetAutomaticFlushes(false);
-  EXPECT_EQ(helper_->usable(), true);
-  EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 1);
-  helper_->ClearUsable();
-  EXPECT_EQ(ImmediateEntryCount(), 0);
-}
-
 // Checks immediate_entry_count_ changes based on RingBuffer state.
 TEST_F(CommandBufferHelperTest, TestCalcImmediateEntriesNoRingBuffer) {
   helper_->SetAutomaticFlushes(false);
   EXPECT_EQ(ImmediateEntryCount(), kTotalNumCommandEntries - 1);
   helper_->FreeRingBuffer();
+  EXPECT_TRUE(helper_->usable());
+  EXPECT_EQ(ImmediateEntryCount(), 0);
+  command_buffer_->set_fail_create_transfer_buffer(true);
+  helper_->WaitForAvailableEntries(1);
+  EXPECT_FALSE(helper_->usable());
   EXPECT_EQ(ImmediateEntryCount(), 0);
 }
 
@@ -647,6 +653,28 @@ TEST_F(CommandBufferHelperTest, FreeRingBuffer) {
 
   // Check that the commands did happen.
   Mock::VerifyAndClearExpectations(api_mock_.get());
+
+  // Test that FreeRingBuffer doesn't force a finish
+  AddCommandWithExpect(error::kNoError, kUnusedCommandId, 0, NULL);
+  EXPECT_TRUE(helper_->HaveRingBuffer());
+  int32_t old_get_offset = command_buffer_->GetLastState().get_offset;
+  EXPECT_NE(helper_->GetPutOffsetForTest(), old_get_offset);
+  int old_flush_count = command_buffer_->FlushCount();
+
+  helper_->FreeRingBuffer();
+  EXPECT_FALSE(helper_->HaveRingBuffer());
+  // FreeRingBuffer should have caused a flush.
+  EXPECT_EQ(command_buffer_->FlushCount(), old_flush_count + 1);
+  // However it shouldn't force a finish.
+  EXPECT_EQ(command_buffer_->GetLastState().get_offset, old_get_offset);
+
+  // Finish should not cause extra flushes, or recreate the ring buffer, but it
+  // should work.
+  helper_->Finish();
+  EXPECT_FALSE(helper_->HaveRingBuffer());
+  EXPECT_EQ(command_buffer_->FlushCount(), old_flush_count + 1);
+  EXPECT_EQ(command_buffer_->GetLastState().get_offset,
+            helper_->GetPutOffsetForTest());
 }
 
 TEST_F(CommandBufferHelperTest, Noop) {

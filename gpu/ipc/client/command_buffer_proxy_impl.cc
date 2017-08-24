@@ -253,6 +253,7 @@ void CommandBufferProxyImpl::Flush(int32_t put_offset) {
   TRACE_EVENT1("gpu", "CommandBufferProxyImpl::Flush", "put_offset",
                put_offset);
 
+  DCHECK(has_buffer_);
   bool put_offset_changed = last_put_offset_ != put_offset;
   last_put_offset_ = put_offset;
   last_barrier_put_offset_ = put_offset;
@@ -290,6 +291,7 @@ void CommandBufferProxyImpl::OrderingBarrier(int32_t put_offset) {
   TRACE_EVENT1("gpu", "CommandBufferProxyImpl::OrderingBarrier", "put_offset",
                put_offset);
 
+  DCHECK(has_buffer_);
   bool put_offset_changed = last_barrier_put_offset_ != put_offset;
   last_barrier_put_offset_ = put_offset;
 
@@ -413,6 +415,7 @@ void CommandBufferProxyImpl::SetGetBuffer(int32_t shm_id) {
   Send(new GpuCommandBufferMsg_SetGetBuffer(route_id_, shm_id));
   last_put_offset_ = -1;
   last_barrier_put_offset_ = -1;
+  has_buffer_ = (shm_id > 0);
 }
 
 scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
