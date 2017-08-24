@@ -148,7 +148,7 @@ message OmniboxEventProto {
   }
   optional PageClassification current_page_classification = 10;
 
-  optional OmniboxInputType.Type input_type = 8;
+  optional OmniboxInputType input_type = 8;
 
   // An enum used in multiple places below.
   enum ProviderType {

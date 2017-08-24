@@ -309,8 +309,9 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
           (AutocompleteMatch::IsSearchType(match.type)) &&
           !ui::PageTransitionCoreTypeIs(match.transition,
                                         ui::PAGE_TRANSITION_KEYWORD) &&
-          (input.canonicalized_url() != match.destination_url)) ?
-      input.canonicalized_url() : GURL();
+          (input.canonicalized_url() != match.destination_url))
+             ? input.canonicalized_url()
+             : GURL();
 }
 
 void AutocompleteResult::SortAndDedupMatches(

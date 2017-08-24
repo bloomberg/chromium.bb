@@ -10,14 +10,14 @@ option optimize_for = LITE_RUNTIME;
 option java_outer_classname = "OmniboxInputTypeProtos";
 option java_package = "org.chromium.components.metrics";
 
-package metrics.OmniboxInputType;
+package metrics;
 
 // What kind of input the user provided.
 // Note that the type below may be misleading.  For example, "http:/" alone
 // cannot be opened as a URL, so it is marked as a QUERY; yet the user
 // probably intends to type more and have it eventually become a URL, so we
 // need to make sure we still run it through inline autocomplete.
-enum Type {
+enum OmniboxInputType {
   // Empty input (should not reach here)
   INVALID = 0;
 

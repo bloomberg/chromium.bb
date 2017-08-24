@@ -72,8 +72,7 @@ AutocompleteInput::AutocompleteInput()
       prefer_keyword_(false),
       allow_exact_keyword_match_(true),
       want_asynchronous_matches_(true),
-      from_omnibox_focus_(false) {
-}
+      from_omnibox_focus_(false) {}
 
 AutocompleteInput::AutocompleteInput(
     const base::string16& text,
@@ -130,15 +129,18 @@ AutocompleteInput::~AutocompleteInput() {
 }
 
 // static
-std::string AutocompleteInput::TypeToString(
-    metrics::OmniboxInputType::Type type) {
+std::string AutocompleteInput::TypeToString(metrics::OmniboxInputType type) {
   switch (type) {
-    case metrics::OmniboxInputType::INVALID:      return "invalid";
-    case metrics::OmniboxInputType::UNKNOWN:      return "unknown";
+    case metrics::OmniboxInputType::INVALID:
+      return "invalid";
+    case metrics::OmniboxInputType::UNKNOWN:
+      return "unknown";
     case metrics::OmniboxInputType::DEPRECATED_REQUESTED_URL:
       return "deprecated-requested-url";
-    case metrics::OmniboxInputType::URL:          return "url";
-    case metrics::OmniboxInputType::QUERY:        return "query";
+    case metrics::OmniboxInputType::URL:
+      return "url";
+    case metrics::OmniboxInputType::QUERY:
+      return "query";
     case metrics::OmniboxInputType::DEPRECATED_FORCED_QUERY:
       return "deprecated-forced-query";
   }
@@ -146,7 +148,7 @@ std::string AutocompleteInput::TypeToString(
 }
 
 // static
-metrics::OmniboxInputType::Type AutocompleteInput::Parse(
+metrics::OmniboxInputType AutocompleteInput::Parse(
     const base::string16& text,
     const std::string& desired_tld,
     const AutocompleteSchemeClassifier& scheme_classifier,
@@ -196,7 +198,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
   if (parts->scheme.is_nonempty() &&
       !base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpScheme) &&
       !base::LowerCaseEqualsASCII(parsed_scheme_utf8, url::kHttpsScheme)) {
-    metrics::OmniboxInputType::Type type =
+    metrics::OmniboxInputType type =
         scheme_classifier.GetInputTypeForScheme(parsed_scheme_utf8);
     if (type != metrics::OmniboxInputType::INVALID)
       return type;
@@ -209,7 +211,7 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     url::Parsed http_parts;
     base::string16 http_scheme;
     GURL http_canonicalized_url;
-    metrics::OmniboxInputType::Type http_type =
+    metrics::OmniboxInputType http_type =
         Parse(http_scheme_prefix + text, desired_tld, scheme_classifier,
               &http_parts, &http_scheme, &http_canonicalized_url);
     DCHECK_EQ(std::string(url::kHttpScheme),
@@ -300,8 +302,10 @@ metrics::OmniboxInputType::Type AutocompleteInput::Parse(
     // These might be possible in intranets, but we're not going to support them
     // without concrete evidence that doing so is necessary.
     return (parts->scheme.is_nonempty() ||
-        (has_known_tld && (original_host.find(' ') == base::string16::npos))) ?
-        metrics::OmniboxInputType::UNKNOWN : metrics::OmniboxInputType::QUERY;
+            (has_known_tld &&
+             (original_host.find(' ') == base::string16::npos)))
+               ? metrics::OmniboxInputType::UNKNOWN
+               : metrics::OmniboxInputType::QUERY;
   }
 
   // For hostnames that look like IP addresses, distinguish between IPv6

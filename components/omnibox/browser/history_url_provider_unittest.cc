@@ -234,7 +234,7 @@ class HistoryURLProviderTest : public testing::Test,
                bool prevent_inline_autocomplete,
                const UrlAndLegalDefault* expected_urls,
                size_t num_results,
-               metrics::OmniboxInputType::Type* identified_input_type);
+               metrics::OmniboxInputType* identified_input_type);
 
   // A version of the above without the final |type| output parameter.
   void RunTest(const base::string16& text,
@@ -242,7 +242,7 @@ class HistoryURLProviderTest : public testing::Test,
                bool prevent_inline_autocomplete,
                const UrlAndLegalDefault* expected_urls,
                size_t num_results) {
-    metrics::OmniboxInputType::Type type;
+    metrics::OmniboxInputType type;
     return RunTest(text, desired_tld, prevent_inline_autocomplete,
                    expected_urls, num_results, &type);
   }
@@ -334,7 +334,7 @@ void HistoryURLProviderTest::RunTest(
     bool prevent_inline_autocomplete,
     const UrlAndLegalDefault* expected_urls,
     size_t num_results,
-    metrics::OmniboxInputType::Type* identified_input_type) {
+    metrics::OmniboxInputType* identified_input_type) {
   AutocompleteInput input(
       text, base::string16::npos, desired_tld, GURL(), base::string16(),
       metrics::OmniboxEventProto::INVALID_SPEC, prevent_inline_autocomplete,
