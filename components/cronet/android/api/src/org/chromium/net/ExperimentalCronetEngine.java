@@ -269,11 +269,14 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
     /**
      * Starts NetLog logging to a specified directory with a bounded size. The NetLog will contain
      * events emitted by all live CronetEngines. The NetLog is useful for debugging.
-     * The log can be viewed by stitching the files using net/tools/stitch_net_log_files.py and
-     * using a Chrome browser navigated to chrome://net-internals/#import
-     * @param dirPath the directory where the log files will be created. It must already exist.
-     *            NetLog files must not already exist in the directory. If actively logging,
-     *            this method is ignored.
+     * Once logging has stopped {@link #stopNetLog}, the data will be written
+     * to netlog.json in {@code dirPath}. If logging is interrupted, you can
+     * stitch the files found in .inprogress subdirectory manually using:
+     * https://chromium.googlesource.com/chromium/src/+/master/net/tools/stitch_net_log_files.py.
+     * The log can be viewed using a Chrome browser navigated to chrome://net-internals/#import.
+     * @param dirPath the directory where the netlog.json file will be created. dirPath must
+     *            already exist. NetLog files must not exist in the directory. If actively
+     *            logging, this method is ignored.
      * @param logAll {@code true} to include basic events, user cookies,
      *            credentials and all transferred bytes in the log. This option presents a
      *            privacy risk, since it exposes the user's credentials, and should only be
