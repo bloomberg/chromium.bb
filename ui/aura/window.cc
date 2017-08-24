@@ -1018,14 +1018,6 @@ viz::SurfaceId Window::GetSurfaceId() const {
   return port_->GetSurfaceId();
 }
 
-void Window::AllocateLocalSurfaceId() {
-  port_->AllocateLocalSurfaceId();
-}
-
-const viz::LocalSurfaceId& Window::GetLocalSurfaceId() const {
-  return port_->GetLocalSurfaceId();
-}
-
 void Window::OnPaintLayer(const ui::PaintContext& context) {
   Paint(context);
 }
