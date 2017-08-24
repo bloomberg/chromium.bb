@@ -156,7 +156,8 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
     const BrowsingHistoryService::HistoryEntry& entry,
     BookmarkModel* bookmark_model,
     SupervisedUserService* supervised_user_service,
-    const browser_sync::ProfileSyncService* sync_service) {
+    const browser_sync::ProfileSyncService* sync_service,
+    base::Clock* clock) {
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   SetHistoryEntryUrlAndTitle(entry, result.get());
 
@@ -202,7 +203,7 @@ std::unique_ptr<base::DictionaryValue> HistoryEntryToValue(
   if (entry.is_search_result) {
     snippet_string = entry.snippet;
   } else {
-    base::Time midnight = entry.clock->Now().LocalMidnight();
+    base::Time midnight = clock->Now().LocalMidnight();
     base::string16 date_str =
         ui::TimeFormat::RelativeDate(entry.time, &midnight);
     if (date_str.empty()) {
@@ -378,8 +379,9 @@ void BrowsingHistoryHandler::OnQueryComplete(
   // Convert the result vector into a ListValue.
   base::ListValue results_value;
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-    std::unique_ptr<base::Value> value(HistoryEntryToValue(
-        entry, bookmark_model, supervised_user_service, sync_service));
+    std::unique_ptr<base::Value> value(
+        HistoryEntryToValue(entry, bookmark_model, supervised_user_service,
+                            sync_service, clock_.get()));
     results_value.Append(std::move(value));
   }
 
