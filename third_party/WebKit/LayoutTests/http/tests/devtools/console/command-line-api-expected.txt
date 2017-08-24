@@ -37,3 +37,7 @@ String($('foo'))
 console.assert(keys(window).indexOf('__commandLineAPI') === -1)
 undefined
 
+queryObjects(Foo)
+undefined
+Array(1)
+
