@@ -7273,6 +7273,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BootTime.Total" units="ms">
+  <obsolete>
+    Replaced 08/2016 by BootTime.Total2 with larger range and more buckets.
+  </obsolete>
+  <owner>bccheng@chromium.org</owner>
+  <owner>semenzato@chromium.org</owner>
+  <summary>Time from power on to login panel ready (Chrome OS).</summary>
+</histogram>
+
+<histogram name="BootTime.Total2" units="ms">
+  <owner>bccheng@chromium.org</owner>
+  <owner>semenzato@chromium.org</owner>
+  <summary>Time from power on to login panel ready (Chrome OS).</summary>
+</histogram>
+
 <histogram name="BrotliFilter.CompressionPercent" units="%">
   <owner>eustas@chromium.org</owner>
   <summary>Compressed/Decompressed size ratio.</summary>
