@@ -36,6 +36,27 @@ MockMediaSource::MockMediaSource(const std::string& filename,
   CHECK_LE(initial_append_size_, file_data_->data_size());
 }
 
+MockMediaSource::MockMediaSource(const scoped_refptr<DecoderBuffer>& data,
+                                 const std::string& mimetype,
+                                 size_t initial_append_size)
+    : file_data_(data),
+      current_position_(0),
+      initial_append_size_(initial_append_size),
+      mimetype_(mimetype),
+      chunk_demuxer_(new ChunkDemuxer(
+          base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
+          base::Bind(&base::DoNothing),
+          base::Bind(&MockMediaSource::OnEncryptedMediaInitData,
+                     base::Unretained(this)),
+          &media_log_)),
+      owned_chunk_demuxer_(chunk_demuxer_) {
+  if (initial_append_size_ == kAppendWholeFile)
+    initial_append_size_ = file_data_->data_size();
+
+  CHECK_GT(initial_append_size_, 0u);
+  CHECK_LE(initial_append_size_, file_data_->data_size());
+}
+
 MockMediaSource::~MockMediaSource() {}
 
 std::unique_ptr<Demuxer> MockMediaSource::GetDemuxer() {

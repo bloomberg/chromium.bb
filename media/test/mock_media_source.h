@@ -25,6 +25,9 @@ class MockMediaSource {
   MockMediaSource(const std::string& filename,
                   const std::string& mimetype,
                   size_t initial_append_size);
+  MockMediaSource(const scoped_refptr<DecoderBuffer>& data,
+                  const std::string& mimetype,
+                  size_t initial_append_size);
   ~MockMediaSource();
 
   std::unique_ptr<Demuxer> GetDemuxer();
