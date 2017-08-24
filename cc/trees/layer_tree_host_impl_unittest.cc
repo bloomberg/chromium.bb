@@ -3359,6 +3359,132 @@ TEST_F(LayerTreeHostImplTestScrollbarOpacity, NoAnimator) {
   RunTest(LayerTreeSettings::NO_ANIMATOR);
 }
 
+class LayerTreeHostImplTestMultiScrollable : public LayerTreeHostImplTest {
+ public:
+  void SetUpLayers(LayerTreeSettings settings) {
+    is_aura_scrollbar_ =
+        settings.scrollbar_animator == LayerTreeSettings::AURA_OVERLAY;
+    gfx::Size viewport_size(300, 200);
+    gfx::Size content_size(1000, 1000);
+    gfx::Size child_layer_size(250, 150);
+    gfx::Size scrollbar_size_1(gfx::Size(15, viewport_size.height()));
+    gfx::Size scrollbar_size_2(gfx::Size(15, child_layer_size.height()));
+
+    const int scrollbar_1_id = 10;
+    const int scrollbar_2_id = 11;
+    const int child_scroll_id = 13;
+
+    CreateHostImpl(settings, CreateLayerTreeFrameSink());
+    host_impl_->active_tree()->SetDeviceScaleFactor(1);
+    host_impl_->SetViewportSize(viewport_size);
+    CreateScrollAndContentsLayers(host_impl_->active_tree(), content_size);
+    host_impl_->active_tree()->InnerViewportContainerLayer()->SetBounds(
+        viewport_size);
+    LayerImpl* root_scroll =
+        host_impl_->active_tree()->OuterViewportScrollLayer();
+
+    // scrollbar_1 on root scroll.
+    std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_1 =
+        SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(),
+                                             scrollbar_1_id, VERTICAL, 15, 0,
+                                             true, true);
+    scrollbar_1_ = scrollbar_1.get();
+    scrollbar_1->SetScrollElementId(root_scroll->element_id());
+    scrollbar_1->SetDrawsContent(true);
+    scrollbar_1->SetBounds(scrollbar_size_1);
+    TouchActionRegion touch_action_region;
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size_1));
+    scrollbar_1->SetTouchActionRegion(touch_action_region);
+    scrollbar_1->SetCurrentPos(0);
+    scrollbar_1->SetPosition(gfx::PointF(0, 0));
+    host_impl_->active_tree()
+        ->InnerViewportContainerLayer()
+        ->test_properties()
+        ->AddChild(std::move(scrollbar_1));
+
+    // scrollbar_2 on child.
+    std::unique_ptr<SolidColorScrollbarLayerImpl> scrollbar_2 =
+        SolidColorScrollbarLayerImpl::Create(host_impl_->active_tree(),
+                                             scrollbar_2_id, VERTICAL, 15, 0,
+                                             true, true);
+    scrollbar_2_ = scrollbar_2.get();
+    std::unique_ptr<LayerImpl> child =
+        LayerImpl::Create(host_impl_->active_tree(), child_scroll_id);
+    child->SetPosition(gfx::PointF(50, 50));
+    child->SetBounds(child_layer_size);
+    child->SetDrawsContent(true);
+    child->SetScrollable(gfx::Size(100, 100));
+    child->SetElementId(LayerIdToElementIdForTesting(child->id()));
+    ElementId child_element_id = child->element_id();
+
+    scrollbar_2->SetScrollElementId(child_element_id);
+    scrollbar_2->SetDrawsContent(true);
+    scrollbar_2->SetBounds(scrollbar_size_2);
+    scrollbar_2->SetCurrentPos(0);
+    scrollbar_2->SetPosition(gfx::PointF(0, 0));
+
+    child->test_properties()->AddChild(std::move(scrollbar_2));
+    root_scroll->test_properties()->AddChild(std::move(child));
+
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+    host_impl_->active_tree()->UpdateScrollbarGeometries();
+    host_impl_->active_tree()->DidBecomeActive();
+
+    ResetScrollbars();
+  }
+
+  void ResetScrollbars() {
+    scrollbar_1_->test_properties()->opacity = 0.f;
+    scrollbar_2_->test_properties()->opacity = 0.f;
+
+    host_impl_->active_tree()->BuildPropertyTreesForTesting();
+
+    if (is_aura_scrollbar_)
+      animation_task_ = base::Closure();
+  }
+
+  bool is_aura_scrollbar_;
+  SolidColorScrollbarLayerImpl* scrollbar_1_;
+  SolidColorScrollbarLayerImpl* scrollbar_2_;
+};
+
+TEST_F(LayerTreeHostImplTestMultiScrollable,
+       ScrollbarFlashAfterAnyScrollUpdate) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.scrollbar_fade_delay = base::TimeDelta::FromMilliseconds(500);
+  settings.scrollbar_fade_duration = base::TimeDelta::FromMilliseconds(300);
+  settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
+  settings.scrollbar_flash_after_any_scroll_update = true;
+
+  SetUpLayers(settings);
+
+  EXPECT_EQ(scrollbar_1_->Opacity(), 0.f);
+  EXPECT_EQ(scrollbar_2_->Opacity(), 0.f);
+
+  // Scroll on root should flash all scrollbars.
+  host_impl_->RootScrollBegin(BeginState(gfx::Point(10, 10)).get(),
+                              InputHandler::WHEEL);
+  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
+  host_impl_->ScrollEnd(EndState().get());
+
+  EXPECT_TRUE(scrollbar_1_->Opacity());
+  EXPECT_TRUE(scrollbar_2_->Opacity());
+
+  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+  ResetScrollbars();
+
+  // Scroll on child should flash all scrollbars.
+  host_impl_->ScrollBegin(BeginState(gfx::Point(51, 51)).get(),
+                          InputHandler::WHEEL);
+  host_impl_->ScrollAnimated(gfx::Point(51, 51), gfx::Vector2d(0, 100));
+  host_impl_->ScrollEnd(EndState().get());
+
+  EXPECT_TRUE(scrollbar_1_->Opacity());
+  EXPECT_TRUE(scrollbar_2_->Opacity());
+
+  EXPECT_FALSE(animation_task_.Equals(base::Closure()));
+}
+
 TEST_F(LayerTreeHostImplTest, ScrollbarVisibilityChangeCausesRedrawAndCommit) {
   LayerTreeSettings settings = DefaultSettings();
   settings.scrollbar_animator = LayerTreeSettings::AURA_OVERLAY;
