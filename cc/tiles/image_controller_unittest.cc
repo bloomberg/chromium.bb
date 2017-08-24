@@ -238,10 +238,7 @@ class BlockingTask : public TileTask {
 int kDefaultTimeoutSeconds = 10;
 
 DrawImage CreateDiscardableDrawImage(gfx::Size size) {
-  return DrawImage(PaintImageBuilder()
-                       .set_id(PaintImage::GetNextId())
-                       .set_image(CreateDiscardableImage(size))
-                       .TakePaintImage(),
+  return DrawImage(CreateDiscardablePaintImage(size),
                    SkIRect::MakeWH(size.width(), size.height()),
                    kNone_SkFilterQuality, SkMatrix::I(), gfx::ColorSpace());
 }

@@ -62,6 +62,7 @@ class CC_PAINT_EXPORT PaintImage {
   bool IsLazyGenerated() const { return GetSkImage()->isLazyGenerated(); }
   int width() const { return GetSkImage()->width(); }
   int height() const { return GetSkImage()->height(); }
+  SkColorSpace* color_space() const { return GetSkImage()->colorSpace(); }
 
  private:
   friend class PaintImageBuilder;

@@ -29,6 +29,7 @@
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_task_manager.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/stub_paint_image_generator.h"
 #include "cc/test/test_layer_tree_host_base.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/test/test_tile_priorities.h"
@@ -2306,15 +2307,13 @@ TEST_F(TileManagerReadyToDrawTest, ReadyToDrawRespectsRequirementChange) {
 
 class CheckerImagingTileManagerTest : public TestLayerTreeHostBase {
  public:
-  class MockImageGenerator : public SkImageGenerator {
+  class MockImageGenerator : public StubPaintImageGenerator {
    public:
     explicit MockImageGenerator(const gfx::Size& size)
-        : SkImageGenerator(
+        : StubPaintImageGenerator(
               SkImageInfo::MakeN32Premul(size.width(), size.height())) {}
 
-   protected:
-    MOCK_METHOD4(onGetPixels,
-                 bool(const SkImageInfo&, void*, size_t, const Options&));
+    MOCK_METHOD4(GetPixels, bool(const SkImageInfo&, void*, size_t, uint32_t));
   };
 
   void TearDown() override {
@@ -2372,9 +2371,12 @@ TEST_F(CheckerImagingTileManagerTest,
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_fill_with_nonsolid_color(true);
 
-  sk_sp<SkImage> image = SkImage::MakeFromGenerator(
-      base::MakeUnique<testing::StrictMock<MockImageGenerator>>(
-          gfx::Size(512, 512)));
+  auto generator =
+      sk_make_sp<testing::StrictMock<MockImageGenerator>>(gfx::Size(512, 512));
+  PaintImage image = PaintImageBuilder()
+                         .set_id(PaintImage::GetNextId())
+                         .set_paint_image_generator(generator)
+                         .TakePaintImage();
   recording_source->add_draw_image(image, gfx::Point(0, 0));
 
   recording_source->Rerecord();
@@ -2414,12 +2416,12 @@ TEST_F(CheckerImagingTileManagerTest, BuildsImageDecodeQueueAsExpected) {
   recording_source->set_fill_with_nonsolid_color(true);
 
   int dimension = 450;
-  sk_sp<SkImage> image1 =
-      CreateDiscardableImage(gfx::Size(dimension, dimension));
-  sk_sp<SkImage> image2 =
-      CreateDiscardableImage(gfx::Size(dimension, dimension));
-  sk_sp<SkImage> image3 =
-      CreateDiscardableImage(gfx::Size(dimension, dimension));
+  PaintImage image1 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image2 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image3 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
   recording_source->add_draw_image(image1, gfx::Point(0, 0));
   recording_source->add_draw_image(image2, gfx::Point(600, 0));
   recording_source->add_draw_image(image3, gfx::Point(0, 600));
@@ -2576,7 +2578,7 @@ TEST_F(CheckerImagingTileManagerTest,
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_fill_with_nonsolid_color(true);
-  sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(512, 512));
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(512, 512));
   recording_source->add_draw_image(image, gfx::Point(0, 0));
   recording_source->Rerecord();
   scoped_refptr<RasterSource> raster_source =
@@ -2615,7 +2617,7 @@ TEST_F(CheckerImagingTileManagerTest,
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
   recording_source->set_fill_with_nonsolid_color(true);
-  sk_sp<SkImage> image = CreateDiscardableImage(gfx::Size(512, 512));
+  PaintImage image = CreateDiscardablePaintImage(gfx::Size(512, 512));
   recording_source->add_draw_image(image, gfx::Point(0, 0));
   recording_source->Rerecord();
   scoped_refptr<RasterSource> raster_source =
@@ -2699,10 +2701,10 @@ TEST_F(CheckerImagingTileManagerMemoryTest, AddsAllNowTilesToImageDecodeQueue) {
   recording_source->set_fill_with_nonsolid_color(true);
 
   int dimension = 450;
-  sk_sp<SkImage> image1 =
-      CreateDiscardableImage(gfx::Size(dimension, dimension));
-  sk_sp<SkImage> image2 =
-      CreateDiscardableImage(gfx::Size(dimension, dimension));
+  PaintImage image1 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
+  PaintImage image2 =
+      CreateDiscardablePaintImage(gfx::Size(dimension, dimension));
   recording_source->add_draw_image(image1, gfx::Point(0, 515));
   recording_source->add_draw_image(image2, gfx::Point(515, 515));
 

@@ -35,19 +35,19 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(
           recorded_viewport.size());
-  sk_sp<SkImage> discardable_image[2][2];
+  PaintImage discardable_image[2][2];
   gfx::Transform identity_transform;
-  discardable_image[0][0] = CreateDiscardableImage(gfx::Size(32, 32));
+  discardable_image[0][0] = CreateDiscardablePaintImage(gfx::Size(32, 32));
   // Translate transform is equivalent to moving using point.
   gfx::Transform translate_transform;
   translate_transform.Translate(0, 130);
-  discardable_image[1][0] = CreateDiscardableImage(gfx::Size(32, 32));
+  discardable_image[1][0] = CreateDiscardablePaintImage(gfx::Size(32, 32));
   // This moves the bitmap to center of viewport and rotate, this would make
   // this bitmap in all four tile grids.
   gfx::Transform rotate_transform;
   rotate_transform.Translate(112, 112);
   rotate_transform.Rotate(45);
-  discardable_image[1][1] = CreateDiscardableImage(gfx::Size(32, 32));
+  discardable_image[1][1] = CreateDiscardablePaintImage(gfx::Size(32, 32));
 
   gfx::RectF rect(0, 0, 32, 32);
   gfx::RectF translate_rect = rect;
@@ -72,10 +72,8 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_EQ(2u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[0][0]);
-    EXPECT_TRUE(images[1]->paint_image().GetSkImage() ==
-                discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[1]->paint_image() == discardable_image[1][1]);
   }
 
   // Shifted tile sized iterators. These should find only one pixel ref.
@@ -84,8 +82,7 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 140, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[1][1]);
   }
 
   // The rotated bitmap would still be in the top right tile.
@@ -94,8 +91,7 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(130, 0, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[1][1]);
   }
 
   // Layer sized iterators. These should find all pixel refs.
@@ -105,12 +101,9 @@ TEST(RecordingSourceTest, DiscardableImagesWithTransform) {
                                               &images);
     EXPECT_EQ(3u, images.size());
     // Top left tile with bitmap[0][0] and bitmap[1][1].
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[0][0]);
-    EXPECT_TRUE(images[1]->paint_image().GetSkImage() ==
-                discardable_image[1][0]);
-    EXPECT_TRUE(images[2]->paint_image().GetSkImage() ==
-                discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[1]->paint_image() == discardable_image[1][0]);
+    EXPECT_TRUE(images[2]->paint_image() == discardable_image[1][1]);
   }
 
   // Verify different raster scales
@@ -218,10 +211,10 @@ TEST(RecordingSourceTest, DiscardableImages) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       CreateRecordingSource(recorded_viewport);
 
-  sk_sp<SkImage> discardable_image[2][2];
-  discardable_image[0][0] = CreateDiscardableImage(gfx::Size(32, 32));
-  discardable_image[1][0] = CreateDiscardableImage(gfx::Size(32, 32));
-  discardable_image[1][1] = CreateDiscardableImage(gfx::Size(32, 32));
+  PaintImage discardable_image[2][2];
+  discardable_image[0][0] = CreateDiscardablePaintImage(gfx::Size(32, 32));
+  discardable_image[1][0] = CreateDiscardablePaintImage(gfx::Size(32, 32));
+  discardable_image[1][1] = CreateDiscardablePaintImage(gfx::Size(32, 32));
 
   // Discardable images are found in the following cells:
   // |---|---|
@@ -244,8 +237,7 @@ TEST(RecordingSourceTest, DiscardableImages) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[0][0]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[0][0]);
   }
 
   // Shifted tile sized iterators. These should find only one image.
@@ -254,8 +246,7 @@ TEST(RecordingSourceTest, DiscardableImages) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(140, 140, 128, 128),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[1][1]);
   }
 
   // Ensure there's no discardable images in the empty cell
@@ -272,12 +263,9 @@ TEST(RecordingSourceTest, DiscardableImages) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[0][0]);
-    EXPECT_TRUE(images[1]->paint_image().GetSkImage() ==
-                discardable_image[1][0]);
-    EXPECT_TRUE(images[2]->paint_image().GetSkImage() ==
-                discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[1]->paint_image() == discardable_image[1][0]);
+    EXPECT_TRUE(images[2]->paint_image() == discardable_image[1][1]);
   }
 }
 
@@ -293,10 +281,10 @@ TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
   sk_sp<SkImage> non_discardable_image =
       SkImage::MakeFromBitmap(non_discardable_bitmap);
 
-  sk_sp<SkImage> discardable_image[2][2];
-  discardable_image[0][0] = CreateDiscardableImage(gfx::Size(128, 128));
-  discardable_image[0][1] = CreateDiscardableImage(gfx::Size(128, 128));
-  discardable_image[1][1] = CreateDiscardableImage(gfx::Size(128, 128));
+  PaintImage discardable_image[2][2];
+  discardable_image[0][0] = CreateDiscardablePaintImage(gfx::Size(128, 128));
+  discardable_image[0][1] = CreateDiscardablePaintImage(gfx::Size(128, 128));
+  discardable_image[1][1] = CreateDiscardablePaintImage(gfx::Size(128, 128));
 
   // One large non-discardable image covers the whole grid.
   // Discardable images are found in the following cells:
@@ -321,8 +309,7 @@ TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[0][0]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[0][0]);
   }
   // Shifted tile sized iterators. These should find only one image.
   {
@@ -330,8 +317,7 @@ TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256),
                                               &images);
     EXPECT_EQ(1u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[1][1]);
   }
   // Ensure there's no discardable images in the empty cell
   {
@@ -346,12 +332,9 @@ TEST(RecordingSourceTest, DiscardableImagesBaseNonDiscardable) {
     raster_source->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512),
                                               &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_TRUE(images[0]->paint_image().GetSkImage() ==
-                discardable_image[0][0]);
-    EXPECT_TRUE(images[1]->paint_image().GetSkImage() ==
-                discardable_image[0][1]);
-    EXPECT_TRUE(images[2]->paint_image().GetSkImage() ==
-                discardable_image[1][1]);
+    EXPECT_TRUE(images[0]->paint_image() == discardable_image[0][0]);
+    EXPECT_TRUE(images[1]->paint_image() == discardable_image[0][1]);
+    EXPECT_TRUE(images[2]->paint_image() == discardable_image[1][1]);
   }
 }
 

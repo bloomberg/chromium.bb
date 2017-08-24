@@ -28,8 +28,11 @@ bool AreDisplayListDrawingResultsSame(const gfx::Rect& layer_rect,
                                       const DisplayItemList* list_a,
                                       const DisplayItemList* list_b);
 
-sk_sp<SkImage> CreateDiscardableImage(const gfx::Size& size);
-PaintImage CreateDiscardablePaintImage(const gfx::Size& size);
+sk_sp<PaintImageGenerator> CreatePaintImageGenerator(const gfx::Size& size);
+
+PaintImage CreateDiscardablePaintImage(
+    const gfx::Size& size,
+    sk_sp<SkColorSpace> color_space = nullptr);
 
 }  // namespace cc
 
