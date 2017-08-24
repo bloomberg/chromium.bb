@@ -215,11 +215,6 @@ class DataReductionProxyConfig
   std::vector<DataReductionProxyServer> GetProxiesForHttp() const;
 
  protected:
-  // Virtualized for testing. Returns the list of intervals at which accuracy of
-  // network quality prediction should be recorded.
-  virtual const std::vector<base::TimeDelta>&
-  GetLofiAccuracyRecordingIntervals() const;
-
   virtual base::TimeTicks GetTicksNow() const;
 
   // Updates the Data Reduction Proxy configurator with the current config.
@@ -234,13 +229,6 @@ class DataReductionProxyConfig
                            AreProxiesBypassed);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            AreProxiesBypassedRetryDelay);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AutoLoFiParams);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, AutoLoFiMissingParams);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           AutoLoFiParamsSlowConnectionsFlag);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, LoFiAccuracy);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
-                           LoFiAccuracyNonZeroDelay);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, WarmupURL);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            ShouldAcceptServerLoFi);
@@ -261,10 +249,6 @@ class DataReductionProxyConfig
   // NetworkChangeNotifier::NetworkChangeObserver implementation:
   void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) override;
-
-  // Populates the parameters for the Lo-Fi field trial if the session is part
-  // of either Lo-Fi enabled or Lo-Fi control field trial group.
-  void PopulateAutoLoFiParams();
 
   // Requests the secure proxy check URL. Upon completion, returns the results
   // to the caller via the |fetcher_callback|. Virtualized for unit testing.
@@ -306,48 +290,6 @@ class DataReductionProxyConfig
   bool ShouldAcceptServerPreview(
       const net::URLRequest& request,
       const previews::PreviewsDecider& previews_decider) const;
-
-  // Returns true when Lo-Fi Previews should be activated. Determines if Lo-Fi
-  // Previews should be activated by checking the Lo-Fi flags and if the network
-  // quality is prohibitively slow. |network_quality_estimator| may be NULL.
-  // |previews_decider| is a non-null object that determines eligibility of the
-  // showing the preview based on past opt outs.
-  // Should NOT be used if the kDataReductionProxyDecidesTransform feature is
-  // enabled.
-  bool ShouldEnableLoFiInternal(
-      const net::URLRequest& request,
-      const previews::PreviewsDecider& previews_decider);
-
-  // Returns true when Lite Page Previews should be activated. Determines if
-  // Lite Page Previewsmode should be activated by checking the Lite Page
-  // Previews flags and if the network quality is prohibitively slow.
-  // |network_quality_estimator| may be NULL. |previews_decider| is a non-null
-  // object that determines eligibility of showing the preview based on past opt
-  // outs.
-  // Should NOT be used if the kDataReductionProxyDecidesTransform feature is
-  // enabled.
-  bool ShouldEnableLitePagesInternal(
-      const net::URLRequest& request,
-      const previews::PreviewsDecider& previews_decider);
-
-  // Returns true if the network quality is at least as poor as the one
-  // specified in the Auto Lo-Fi field trial parameters.
-  // |network_quality_estimator| may be NULL. Virtualized for unit testing.
-  virtual bool IsNetworkQualityProhibitivelySlow(
-      const net::NetworkQualityEstimator* network_quality_estimator);
-
-  // Records Lo-Fi accuracy metric. |measuring_duration| should belong to the
-  // vector returned by LofiAccuracyRecordingIntervals().
-  // RecordAutoLoFiAccuracyRate should be called |measuring_duration| after a
-  // main frame request is observed.
-  void RecordAutoLoFiAccuracyRate(
-      const net::NetworkQualityEstimator* network_quality_estimator,
-      const base::TimeDelta& measuring_duration) const;
-
-  // Returns true if |effective_connection_type| is at least as poor as
-  // |lofi_effective_connection_type_threshold_|.
-  bool IsEffectiveConnectionTypeSlowerThanThreshold(
-      net::EffectiveConnectionType effective_connection_type) const;
 
   // Checks if the current network has captive portal, and handles the result.
   // If the captive portal probe was blocked on the current network, disables
@@ -395,53 +337,12 @@ class DataReductionProxyConfig
   // Enforce usage on the IO thread.
   base::ThreadChecker thread_checker_;
 
-  // Thresholds from the field trial at which auto Lo-Fi is turned on.
-  // If the effective connection type is at least as slow as
-  // |lofi_effective_connection_type_threshold_|, Lo-Fi would be turned on.
-  net::EffectiveConnectionType lofi_effective_connection_type_threshold_;
-
-  // State of auto Lo-Fi is not changed more than once in any period of
-  // duration shorter than |auto_lofi_hysteresis_|.
-  base::TimeDelta auto_lofi_hysteresis_;
-
-  // Time when the network quality was last checked.
-  base::TimeTicks network_quality_last_checked_;
-
-  // True iff the network was determined to be prohibitively slow when the
-  // network quality was last updated. This happens on when the network quality
-  // was last checked, and not more than once in any window of duration shorter
-  // than |auto_lofi_hysteresis_|.
-  bool network_prohibitively_slow_;
-
   // The current connection type.
   net::NetworkChangeNotifier::ConnectionType connection_type_;
-
-  // True if the connection type changed since the last call to
-  // IsNetworkQualityProhibitivelySlow(). This call happens only on main frame
-  // requests.
-  bool connection_type_changed_;
 
   // If true, Lo-Fi is turned off for the rest of the session. This is set to
   // true if Lo-Fi is disabled via flags or if the user implicitly opts out.
   bool lofi_off_;
-
-  // Timestamp when the most recent query of the Network Quality Estimator
-  // happened.
-  base::TimeTicks last_query_;
-
-  // Holds the estimated network quality at the last query of the estimator.
-  // This should be used only for the purpose of recording Lo-Fi accuracy UMA.
-  NetworkQualityAtLastQuery network_quality_at_last_query_;
-
-  // True if the previous state of Lo-Fi was on, so that change in Lo-Fi status
-  // can be recorded properly. This is not recorded for the control group,
-  // because it is only used to report changes in request headers, and the
-  // request headers are never modified in the control group.
-  bool previous_state_lofi_on_;
-
-  // Intervals after the main frame request arrives at which accuracy of network
-  // quality prediction is recorded.
-  std::vector<base::TimeDelta> lofi_accuracy_recording_intervals_;
 
   // Set to true if the captive portal probe for the current network has been
   // blocked.

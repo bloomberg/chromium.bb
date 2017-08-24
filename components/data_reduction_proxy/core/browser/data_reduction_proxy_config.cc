@@ -92,136 +92,6 @@ void RecordNetworkChangeEvent(DataReductionProxyNetworkChangeEvent event) {
                             CHANGE_EVENT_COUNT);
 }
 
-// Returns a descriptive name corresponding to |connection_type|.
-const char* GetNameForConnectionType(
-    net::NetworkChangeNotifier::ConnectionType connection_type) {
-  switch (connection_type) {
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-      return "Unknown";
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-      return "Ethernet";
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      return "WiFi";
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-      return "2G";
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-      return "3G";
-    case net::NetworkChangeNotifier::CONNECTION_4G:
-      return "4G";
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-      return "None";
-    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      return "Bluetooth";
-  }
-  NOTREACHED();
-  return "";
-}
-
-// Returns an enumerated histogram that should be used to record the given
-// statistic. |max_limit| is the maximum value that can be stored in the
-// histogram. Number of buckets in the enumerated histogram are one more than
-// |max_limit|.
-base::HistogramBase* GetEnumeratedHistogram(
-    base::StringPiece prefix,
-    net::NetworkChangeNotifier::ConnectionType type,
-    int32_t max_limit) {
-  DCHECK_GT(max_limit, 0);
-
-  base::StringPiece name_for_connection_type(GetNameForConnectionType(type));
-  std::string histogram_name;
-  histogram_name.reserve(prefix.size() + name_for_connection_type.size());
-  histogram_name.append(prefix.data(), prefix.size());
-  histogram_name.append(name_for_connection_type.data(),
-                        name_for_connection_type.size());
-
-  return base::Histogram::FactoryGet(
-      histogram_name, 0, max_limit, max_limit + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-}
-
-// Following UMA is plotted to measure how frequently Lo-Fi state changes.
-// Too frequent changes are undesirable. |connection_type| is the current
-// connection type.
-void RecordAutoLoFiRequestHeaderStateChange(
-    net::NetworkChangeNotifier::ConnectionType connection_type,
-    bool previous_header_low,
-    bool current_header_low) {
-  // Auto Lo-Fi request header state changes.
-  // Possible Lo-Fi header directives are empty ("") and low ("q=low").
-  // This enum must remain synchronized with the enum of the same name in
-  // metrics/histograms/histograms.xml.
-  enum AutoLoFiRequestHeaderState {
-    AUTO_LOFI_REQUEST_HEADER_STATE_EMPTY_TO_EMPTY = 0,
-    AUTO_LOFI_REQUEST_HEADER_STATE_EMPTY_TO_LOW = 1,
-    AUTO_LOFI_REQUEST_HEADER_STATE_LOW_TO_EMPTY = 2,
-    AUTO_LOFI_REQUEST_HEADER_STATE_LOW_TO_LOW = 3,
-    AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY
-  };
-
-  AutoLoFiRequestHeaderState state;
-
-  if (!previous_header_low) {
-    if (current_header_low)
-      state = AUTO_LOFI_REQUEST_HEADER_STATE_EMPTY_TO_LOW;
-    else
-      state = AUTO_LOFI_REQUEST_HEADER_STATE_EMPTY_TO_EMPTY;
-  } else {
-    if (current_header_low) {
-      // Low to low in useful in checking how many consecutive page loads
-      // are done with Lo-Fi enabled.
-      state = AUTO_LOFI_REQUEST_HEADER_STATE_LOW_TO_LOW;
-    } else {
-      state = AUTO_LOFI_REQUEST_HEADER_STATE_LOW_TO_EMPTY;
-    }
-  }
-
-  switch (connection_type) {
-    case net::NetworkChangeNotifier::CONNECTION_UNKNOWN:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.AutoLoFiRequestHeaderState.Unknown", state,
-          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_ETHERNET:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.AutoLoFiRequestHeaderState.Ethernet", state,
-          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_WIFI:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.AutoLoFiRequestHeaderState.WiFi", state,
-          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_2G:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.AutoLoFiRequestHeaderState.2G", state,
-          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_3G:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.AutoLoFiRequestHeaderState.3G", state,
-          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_4G:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.AutoLoFiRequestHeaderState.4G", state,
-          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_NONE:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.AutoLoFiRequestHeaderState.None", state,
-          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
-      break;
-    case net::NetworkChangeNotifier::CONNECTION_BLUETOOTH:
-      UMA_HISTOGRAM_ENUMERATION(
-          "DataReductionProxy.AutoLoFiRequestHeaderState.Bluetooth", state,
-          AUTO_LOFI_REQUEST_HEADER_STATE_INDEX_BOUNDARY);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
-}
-
 //  Records UMA containing the result of requesting the secure proxy check.
 void RecordSecureProxyCheckFetchResult(
     data_reduction_proxy::SecureProxyCheckFetchResult result) {
@@ -409,15 +279,8 @@ DataReductionProxyConfig::DataReductionProxyConfig(
       net_log_(net_log),
       configurator_(configurator),
       event_creator_(event_creator),
-      lofi_effective_connection_type_threshold_(
-          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      auto_lofi_hysteresis_(base::TimeDelta::Max()),
-      network_prohibitively_slow_(false),
       connection_type_(net::NetworkChangeNotifier::GetConnectionType()),
-      connection_type_changed_(false),
       lofi_off_(false),
-      network_quality_at_last_query_(NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN),
-      previous_state_lofi_on_(false),
       is_captive_portal_(false),
       weak_factory_(this) {
   DCHECK(io_task_runner_);
@@ -446,20 +309,9 @@ void DataReductionProxyConfig::InitializeOnIOThread(
       new SecureProxyChecker(basic_url_request_context_getter));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(url_request_context_getter));
 
-  PopulateAutoLoFiParams();
   AddDefaultProxyBypassRules();
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
-
-  // Record accuracy at 3 different intervals. The values used here must remain
-  // in sync with the suffixes specified in
-  // tools/metrics/histograms/histograms.xml.
-  lofi_accuracy_recording_intervals_.push_back(
-      base::TimeDelta::FromSeconds(15));
-  lofi_accuracy_recording_intervals_.push_back(
-      base::TimeDelta::FromSeconds(30));
-  lofi_accuracy_recording_intervals_.push_back(
-      base::TimeDelta::FromSeconds(60));
 }
 
 void DataReductionProxyConfig::ReloadConfig() {
@@ -597,117 +449,6 @@ bool DataReductionProxyConfig::AreProxiesBypassed(
   return bypassed;
 }
 
-bool DataReductionProxyConfig::IsNetworkQualityProhibitivelySlow(
-    const net::NetworkQualityEstimator* network_quality_estimator) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(params::IsIncludedInLoFiEnabledFieldTrial() ||
-         params::IsIncludedInLoFiControlFieldTrial() ||
-         params::IsLoFiSlowConnectionsOnlyViaFlags());
-
-  if (!network_quality_estimator)
-    return false;
-
-  const net::EffectiveConnectionType effective_connection_type =
-      network_quality_estimator->GetEffectiveConnectionType();
-
-  const bool is_network_quality_available =
-      effective_connection_type != net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
-
-  // True only if the network is currently estimated to be slower than the
-  // defined thresholds.
-  const bool is_network_currently_slow =
-      is_network_quality_available &&
-      IsEffectiveConnectionTypeSlowerThanThreshold(effective_connection_type);
-
-  if (is_network_quality_available) {
-    network_quality_at_last_query_ =
-        is_network_currently_slow ? NETWORK_QUALITY_AT_LAST_QUERY_SLOW
-                                  : NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW;
-
-    if ((params::IsIncludedInLoFiEnabledFieldTrial() ||
-         params::IsIncludedInLoFiControlFieldTrial()) &&
-        !params::IsLoFiSlowConnectionsOnlyViaFlags()) {
-      // Post tasks to record accuracy of network quality prediction at
-      // different intervals.
-      for (const base::TimeDelta& measuring_delay :
-           GetLofiAccuracyRecordingIntervals()) {
-        io_task_runner_->PostDelayedTask(
-            FROM_HERE,
-            base::Bind(&DataReductionProxyConfig::RecordAutoLoFiAccuracyRate,
-                       weak_factory_.GetWeakPtr(), network_quality_estimator,
-                       measuring_delay),
-            measuring_delay);
-      }
-    }
-  }
-
-  // Return the cached entry if the last update was within the hysteresis
-  // duration and if the connection type has not changed.
-  if (!connection_type_changed_ && !network_quality_last_checked_.is_null() &&
-      GetTicksNow() - network_quality_last_checked_ <= auto_lofi_hysteresis_) {
-    return network_prohibitively_slow_;
-  }
-
-  network_quality_last_checked_ = GetTicksNow();
-  connection_type_changed_ = false;
-
-  if (!is_network_quality_available)
-    return false;
-
-  network_prohibitively_slow_ = is_network_currently_slow;
-  return network_prohibitively_slow_;
-}
-
-void DataReductionProxyConfig::PopulateAutoLoFiParams() {
-  std::string field_trial = params::GetLoFiFieldTrialName();
-
-    // Default parameters to use.
-  const net::EffectiveConnectionType
-      default_effective_connection_type_threshold =
-          net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
-  const base::TimeDelta default_hysterisis = base::TimeDelta::FromSeconds(60);
-
-  if (params::IsLoFiSlowConnectionsOnlyViaFlags()) {
-    // Use the default parameters.
-    lofi_effective_connection_type_threshold_ =
-        default_effective_connection_type_threshold;
-    auto_lofi_hysteresis_ = default_hysterisis;
-    field_trial = params::GetLoFiFlagFieldTrialName();
-  }
-
-  if (!params::IsIncludedInLoFiControlFieldTrial() &&
-      !params::IsIncludedInLoFiEnabledFieldTrial() &&
-      !params::IsLoFiSlowConnectionsOnlyViaFlags()) {
-    return;
-  }
-
-  std::string variation_value = variations::GetVariationParamValue(
-      field_trial, "effective_connection_type");
-  if (!variation_value.empty()) {
-    lofi_effective_connection_type_threshold_ =
-        net::GetEffectiveConnectionTypeForName(variation_value)
-            .value_or(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN);
-  } else {
-    // Use the default parameters.
-    lofi_effective_connection_type_threshold_ =
-        default_effective_connection_type_threshold;
-  }
-
-  uint32_t auto_lofi_hysteresis_period_seconds;
-  variation_value = variations::GetVariationParamValue(
-      field_trial, "hysteresis_period_seconds");
-  if (!variation_value.empty() &&
-      base::StringToUint(variation_value,
-                         &auto_lofi_hysteresis_period_seconds)) {
-    auto_lofi_hysteresis_ =
-        base::TimeDelta::FromSeconds(auto_lofi_hysteresis_period_seconds);
-  } else {
-    // Use the default parameters.
-    auto_lofi_hysteresis_ = default_hysterisis;
-  }
-  DCHECK_GE(auto_lofi_hysteresis_, base::TimeDelta());
-}
-
 bool DataReductionProxyConfig::IsProxyBypassed(
     const net::ProxyRetryInfoMap& retry_map,
     const net::ProxyServer& proxy_server,
@@ -839,7 +580,6 @@ void DataReductionProxyConfig::OnNetworkChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  connection_type_changed_ = (type != connection_type_);
   connection_type_ = type;
 
   if (connection_type_ == net::NetworkChangeNotifier::CONNECTION_NONE)
@@ -853,10 +593,6 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
 
   if (enabled_by_user_) {
     RecordNetworkChangeEvent(IP_CHANGED);
-
-    // Reset |network_quality_at_last_query_| to prevent recording of network
-    // quality prediction accuracy if there was a change in the IP address.
-    network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
 
     HandleCaptivePortal();
     // It is safe to use base::Unretained here, since it gets executed
@@ -923,91 +659,6 @@ void DataReductionProxyConfig::SetLoFiModeOff() {
   lofi_off_ = true;
 }
 
-void DataReductionProxyConfig::RecordAutoLoFiAccuracyRate(
-    const net::NetworkQualityEstimator* network_quality_estimator,
-    const base::TimeDelta& measuring_duration) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(network_quality_estimator);
-  DCHECK((params::IsIncludedInLoFiEnabledFieldTrial() ||
-          params::IsIncludedInLoFiControlFieldTrial()) &&
-         !params::IsLoFiSlowConnectionsOnlyViaFlags());
-  DCHECK_EQ(0, measuring_duration.InMilliseconds() % 1000);
-  DCHECK(base::ContainsValue(GetLofiAccuracyRecordingIntervals(),
-                             measuring_duration));
-
-  if (network_quality_at_last_query_ == NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN)
-    return;
-
-  const base::TimeTicks now = GetTicksNow();
-
-  // Return if the time since |last_query_| is less than |measuring_duration|.
-  // This may happen if another main frame request started during last
-  // |measuring_duration|.
-  if (now - last_query_ < measuring_duration)
-    return;
-
-  // Return if the time since |last_query_| is off by a factor of 2.
-  if (now - last_query_ > 2 * measuring_duration)
-    return;
-
-  const net::EffectiveConnectionType recent_effective_connection_type =
-      network_quality_estimator->GetRecentEffectiveConnectionType(last_query_);
-  if (recent_effective_connection_type ==
-      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
-    return;
-  }
-
-  // Values of Auto Lo-Fi accuracy.
-  // This enum must remain synchronized with the enum of the same name in
-  // metrics/histograms/histograms.xml.
-  enum AutoLoFiAccuracy {
-    AUTO_LOFI_ACCURACY_ESTIMATED_SLOW_ACTUAL_SLOW = 0,
-    AUTO_LOFI_ACCURACY_ESTIMATED_SLOW_ACTUAL_NOT_SLOW = 1,
-    AUTO_LOFI_ACCURACY_ESTIMATED_NOT_SLOW_ACTUAL_SLOW = 2,
-    AUTO_LOFI_ACCURACY_ESTIMATED_NOT_SLOW_ACTUAL_NOT_SLOW = 3,
-    AUTO_LOFI_ACCURACY_INDEX_BOUNDARY
-  };
-
-  const bool should_have_used_lofi =
-      IsEffectiveConnectionTypeSlowerThanThreshold(
-          recent_effective_connection_type);
-
-  AutoLoFiAccuracy accuracy = AUTO_LOFI_ACCURACY_INDEX_BOUNDARY;
-
-  if (should_have_used_lofi) {
-    if (network_quality_at_last_query_ == NETWORK_QUALITY_AT_LAST_QUERY_SLOW) {
-      accuracy = AUTO_LOFI_ACCURACY_ESTIMATED_SLOW_ACTUAL_SLOW;
-    } else if (network_quality_at_last_query_ ==
-               NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW) {
-      accuracy = AUTO_LOFI_ACCURACY_ESTIMATED_NOT_SLOW_ACTUAL_SLOW;
-    } else {
-      NOTREACHED();
-    }
-  } else {
-    if (network_quality_at_last_query_ == NETWORK_QUALITY_AT_LAST_QUERY_SLOW) {
-      accuracy = AUTO_LOFI_ACCURACY_ESTIMATED_SLOW_ACTUAL_NOT_SLOW;
-    } else if (network_quality_at_last_query_ ==
-               NETWORK_QUALITY_AT_LAST_QUERY_NOT_SLOW) {
-      accuracy = AUTO_LOFI_ACCURACY_ESTIMATED_NOT_SLOW_ACTUAL_NOT_SLOW;
-    } else {
-      NOTREACHED();
-    }
-  }
-
-  base::HistogramBase* accuracy_histogram = GetEnumeratedHistogram(
-      base::StringPrintf("DataReductionProxy.LoFi.Accuracy.%d.",
-                         static_cast<int>(measuring_duration.InSeconds())),
-      connection_type_, AUTO_LOFI_ACCURACY_INDEX_BOUNDARY - 1);
-
-  accuracy_histogram->Add(accuracy);
-}
-
-bool DataReductionProxyConfig::IsEffectiveConnectionTypeSlowerThanThreshold(
-    net::EffectiveConnectionType effective_connection_type) const {
-  return effective_connection_type >= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE &&
-         effective_connection_type <= lofi_effective_connection_type_threshold_;
-}
-
 bool DataReductionProxyConfig::ShouldEnableLoFi(
     const net::URLRequest& request,
     const previews::PreviewsDecider& previews_decider) {
@@ -1015,21 +666,7 @@ bool DataReductionProxyConfig::ShouldEnableLoFi(
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   DCHECK(!request.url().SchemeIsCryptographic());
 
-  if (base::FeatureList::IsEnabled(
-          features::kDataReductionProxyDecidesTransform)) {
-    return ShouldAcceptServerPreview(request, previews_decider);
-  }
-
-  bool enable_lofi = ShouldEnableLoFiInternal(request, previews_decider);
-
-  if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
-      params::IsIncludedInLoFiEnabledFieldTrial()) {
-    RecordAutoLoFiRequestHeaderStateChange(
-        connection_type_, previous_state_lofi_on_, enable_lofi);
-    previous_state_lofi_on_ = enable_lofi;
-  }
-
-  return enable_lofi;
+  return ShouldAcceptServerPreview(request, previews_decider);
 }
 
 bool DataReductionProxyConfig::ShouldEnableLitePages(
@@ -1039,12 +676,7 @@ bool DataReductionProxyConfig::ShouldEnableLitePages(
   DCHECK((request.load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) != 0);
   DCHECK(!request.url().SchemeIsCryptographic());
 
-  if (base::FeatureList::IsEnabled(
-          features::kDataReductionProxyDecidesTransform)) {
-    return ShouldAcceptServerPreview(request, previews_decider);
-  }
-
-  return ShouldEnableLitePagesInternal(request, previews_decider);
+  return ShouldAcceptServerPreview(request, previews_decider);
 }
 
 bool DataReductionProxyConfig::enabled_by_user_and_reachable() const {
@@ -1058,10 +690,9 @@ bool DataReductionProxyConfig::IsBlackListedOrDisabled(
     previews::PreviewsType previews_type) const {
   // Make sure request is not locally blacklisted.
   if (params::IsBlackListEnabledForServerPreviews()) {
-    // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the thresold as network
-    // speed is checked in IsNetworkQualityProhibitivelySlow().
-    // TODO(ryansturm): Use the correct ECT value (or add new method to
-    // just check blacklist). crbug.com/720102
+    // Pass in net::EFFECTIVE_CONNECTION_TYPE_4G as the threshold since we
+    // just want to check blacklisting here.
+    // TODO(crbug.com/720102): Consider new method to just check blacklist.
     return !previews_decider.ShouldAllowPreviewAtECT(
         request, previews_type, net::EFFECTIVE_CONNECTION_TYPE_4G,
         std::vector<std::string>());
@@ -1077,8 +708,11 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
     const net::URLRequest& request,
     const previews::PreviewsDecider& previews_decider) const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kDataReductionProxyDecidesTransform));
+
+  if (!base::FeatureList::IsEnabled(
+          features::kDataReductionProxyDecidesTransform)) {
+    return false;
+  }
 
   // For the transition to server-driven previews decisions, we will
   // use existing Lo-Fi flags for disabling and cellular-only mode.
@@ -1097,7 +731,9 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
     return true;
 
   if (IsBlackListedOrDisabled(request, previews_decider,
-                              previews::PreviewsType::LITE_PAGE)) {
+                              previews::PreviewsType::LITE_PAGE) ||
+      IsBlackListedOrDisabled(request, previews_decider,
+                              previews::PreviewsType::LOFI)) {
     UMA_HISTOGRAM_ENUMERATION(
         "DataReductionProxy.Protocol.NotAcceptingTransform",
         NOT_ACCEPTING_TRANSFORM_BLACKLISTED,
@@ -1115,93 +751,6 @@ bool DataReductionProxyConfig::ShouldAcceptServerPreview(
   }
 
   return true;
-}
-
-bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
-    const net::URLRequest& request,
-    const previews::PreviewsDecider& previews_decider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!base::FeatureList::IsEnabled(
-      features::kDataReductionProxyDecidesTransform));
-
-  last_query_ = GetTicksNow();
-  network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
-
-  // LitePages overrides Server Lo-Fi. No fallback to Lo-Fi supported
-  // on this code path (not using DataReductionProxyDecidesTransform feature).
-  // TODO(dougarnett): Delete this surrounding method and related code once the
-  // DataReductionProxyDecidesTransform feature is launched to stable [725645].
-  if (ShouldEnableLitePages(request, previews_decider)) {
-    return false;
-  }
-
-  // AlwaysOn skips blacklist or disabled checks.
-  if (params::IsLoFiAlwaysOnViaFlags())
-    return true;
-
-  if (IsBlackListedOrDisabled(request, previews_decider,
-                              previews::PreviewsType::LOFI)) {
-    return false;
-  }
-
-  if (params::IsLoFiCellularOnlyViaFlags()) {
-    return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
-  }
-
-  net::NetworkQualityEstimator* network_quality_estimator;
-  network_quality_estimator =
-      request.context() ? request.context()->network_quality_estimator()
-                        : nullptr;
-
-  if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
-      params::IsIncludedInLoFiEnabledFieldTrial() ||
-      params::IsIncludedInLoFiControlFieldTrial()) {
-    return IsNetworkQualityProhibitivelySlow(network_quality_estimator);
-  }
-
-  return false;
-}
-
-bool DataReductionProxyConfig::ShouldEnableLitePagesInternal(
-    const net::URLRequest& request,
-    const previews::PreviewsDecider& previews_decider) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!base::FeatureList::IsEnabled(
-      features::kDataReductionProxyDecidesTransform));
-
-  // AlwaysOn skips blacklist or disabled checks.
-  if (params::IsLoFiAlwaysOnViaFlags() && params::AreLitePagesEnabledViaFlags())
-    return true;
-
-  if (IsBlackListedOrDisabled(request, previews_decider,
-                              previews::PreviewsType::LITE_PAGE)) {
-    return false;
-  }
-
-  if (params::IsLoFiCellularOnlyViaFlags() &&
-      params::AreLitePagesEnabledViaFlags()) {
-    return net::NetworkChangeNotifier::IsConnectionCellular(
-        net::NetworkChangeNotifier::GetConnectionType());
-  }
-  net::NetworkQualityEstimator* network_quality_estimator;
-  network_quality_estimator =
-      request.context() ? request.context()->network_quality_estimator()
-                        : nullptr;
-
-  if ((params::IsLoFiSlowConnectionsOnlyViaFlags() &&
-       params::AreLitePagesEnabledViaFlags()) ||
-      params::IsIncludedInLitePageFieldTrial() ||
-      params::IsIncludedInLoFiControlFieldTrial()) {
-    return IsNetworkQualityProhibitivelySlow(network_quality_estimator);
-  }
-
-  return false;
-}
-
-const std::vector<base::TimeDelta>&
-DataReductionProxyConfig::GetLofiAccuracyRecordingIntervals() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return lofi_accuracy_recording_intervals_;
 }
 
 base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {

@@ -11271,6 +11271,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.AutoLoFiRequestHeaderState"
     enum="DataReductionProxyAutoLoFiRequestHeaderState">
+  <obsolete>
+    Deprecated as of 8/2017, per server-directed preview decision.
+  </obsolete>
   <owner>tbansal@chromium.org</owner>
   <summary>
     Counts the changes in the state of Lo-Fi request header (q=low) being added
@@ -11678,6 +11681,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DataReductionProxy.LoFi.Accuracy"
     enum="DataReductionProxyAutoLoFiAccuracy">
+  <obsolete>
+    Deprecated as of 8/2017, per server-directed preview decision.
+  </obsolete>
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>

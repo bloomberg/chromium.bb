@@ -165,36 +165,22 @@ class ContentLoFiDeciderTest : public testing::Test {
   }
 
   static void VerifyLoFiHeader(bool expected_lofi_used,
-                               bool expected_if_heavy,
                                const net::HttpRequestHeaders& headers) {
     if (expected_lofi_used)
       EXPECT_TRUE(headers.HasHeader(chrome_proxy_accept_transform_header()));
     std::string header_value;
     headers.GetHeader(chrome_proxy_accept_transform_header(), &header_value);
-    if (expected_if_heavy) {
-      std::string empty_image_if_heavy = base::StringPrintf(
-          "%s;%s", empty_image_directive(), if_heavy_qualifier());
-      EXPECT_EQ(expected_lofi_used, empty_image_if_heavy == header_value);
-    } else {
-      EXPECT_EQ(expected_lofi_used, header_value == empty_image_directive());
-    }
+    EXPECT_EQ(expected_lofi_used, header_value == empty_image_directive());
   }
 
   static void VerifyLitePageHeader(bool expected_lofi_preview_used,
-                                   bool expected_if_heavy,
                                    const net::HttpRequestHeaders& headers) {
     if (expected_lofi_preview_used)
       EXPECT_TRUE(headers.HasHeader(chrome_proxy_accept_transform_header()));
     std::string header_value;
     headers.GetHeader(chrome_proxy_accept_transform_header(), &header_value);
-    if (expected_if_heavy) {
-      std::string lite_page_if_heavy = base::StringPrintf(
-          "%s;%s", lite_page_directive(), if_heavy_qualifier());
-      EXPECT_EQ(expected_lofi_preview_used, lite_page_if_heavy == header_value);
-    } else {
-      EXPECT_EQ(expected_lofi_preview_used,
-                header_value == lite_page_directive());
-    }
+    EXPECT_EQ(expected_lofi_preview_used,
+              header_value == lite_page_directive());
   }
 
   static void VerifyAcceptTransformHeader(const net::URLRequest& request,
@@ -203,7 +189,7 @@ class ContentLoFiDeciderTest : public testing::Test {
     std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
         new data_reduction_proxy::ContentLoFiDecider());
     net::HttpRequestHeaders headers;
-    lofi_decider->MaybeSetAcceptTransformHeader(request, false, &headers);
+    lofi_decider->MaybeSetAcceptTransformHeader(request, &headers);
 
     std::string header_value;
     EXPECT_EQ(expected_accept_lite_page || expected_accept_empty_image,
@@ -235,103 +221,6 @@ class ContentLoFiDeciderTest : public testing::Test {
   std::unique_ptr<DataReductionProxyNetworkDelegate>
       data_reduction_proxy_network_delegate_;
 };
-
-TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
-  // Turn off proxy-decides-transform feature for these unit tests.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kDataReductionProxyDecidesTransform);
-
-  // Enable Lo-Fi.
-  const struct {
-    bool is_using_lofi;
-    bool is_using_lite_page;
-    bool is_main_frame;
-  } tests[] = {
-      {false, false, false}, {false, false, true}, {true, false, true},
-      {true, false, false},  {false, true, false}, {false, true, true},
-      {true, true, true},    {true, true, false},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
-    if (tests[i].is_using_lofi)
-      previews_state |= content::SERVER_LOFI_ON;
-    if (tests[i].is_using_lite_page)
-      previews_state |= content::SERVER_LITE_PAGE_ON;
-
-    std::unique_ptr<net::URLRequest> request =
-        CreateRequest(tests[i].is_main_frame, previews_state);
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    command_line->InitFromArgv(command_line->argv());
-    if (tests[i].is_using_lite_page) {
-      command_line->AppendSwitch(switches::kEnableDataReductionProxyLitePage);
-    }
-
-    // No flags or field trials. The Lo-Fi header should not be added.
-    net::HttpRequestHeaders headers;
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(false, false, headers);
-    VerifyLitePageHeader(false, false, headers);
-    // The Lo-Fi flag is "always-on", Lo-Fi is being used, and it's a main frame
-    // request. Lo-Fi or lite page header should be added.
-    command_line->AppendSwitchASCII(
-        switches::kDataReductionProxyLoFi,
-        switches::kDataReductionProxyLoFiValueAlwaysOn);
-    headers.Clear();
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(!tests[i].is_main_frame && !tests[i].is_using_lite_page,
-                     !tests[i].is_main_frame && !tests[i].is_using_lofi &&
-                         !tests[i].is_using_lite_page,
-                     headers);
-    VerifyLitePageHeader(tests[i].is_using_lite_page && tests[i].is_main_frame,
-                         false, headers);
-    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
-    // |lofi_requested| should be set to false when Lo-Fi is enabled using
-    // flags.
-    EXPECT_FALSE(data->lofi_requested());
-
-    // The Lo-Fi flag is "always-on" and Lo-Fi is being used. Lo-Fi header
-    // should be added.
-    AllocateRequestInfoForTesting(
-        request.get(), content::RESOURCE_TYPE_SUB_FRAME, previews_state);
-    headers.Clear();
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(!tests[i].is_using_lite_page, !tests[i].is_using_lofi,
-                     headers);
-    VerifyLitePageHeader(false, false, headers);
-
-    // The Lo-Fi flag is "cellular-only" and Lo-Fi is being used. Lo-Fi header
-    // should be added.
-    command_line->AppendSwitchASCII(
-        switches::kDataReductionProxyLoFi,
-        switches::kDataReductionProxyLoFiValueCellularOnly);
-    headers.Clear();
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(!tests[i].is_using_lite_page, !tests[i].is_using_lofi,
-                     headers);
-    VerifyLitePageHeader(false, false, headers);
-    data = DataReductionProxyData::GetData(*request);
-    // |lofi_requested| should be set to false when Lo-Fi is enabled using
-    // flags.
-    EXPECT_FALSE(data->lofi_requested());
-
-    // The Lo-Fi flag is "slow-connections-only" and Lo-Fi is being used. Lo-Fi
-    // header should be added.
-    command_line->AppendSwitchASCII(
-        switches::kDataReductionProxyLoFi,
-        switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
-    headers.Clear();
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(!tests[i].is_using_lite_page, !tests[i].is_using_lofi,
-                     headers);
-    VerifyLitePageHeader(false, false, headers);
-    data = DataReductionProxyData::GetData(*request);
-    // |lofi_requested| should be set to false when Lo-Fi is enabled using
-    // flags.
-    EXPECT_FALSE(data->lofi_requested());
-  }
-}
 
 TEST_F(ContentLoFiDeciderTest, MaybeSetAcceptTransformNoAcceptForPreviewsOff) {
   // Turn on proxy-decides-transform feature for these unit tests.
@@ -429,65 +318,41 @@ TEST_F(ContentLoFiDeciderTest, MaybeSetAcceptTransformHeaderAcceptEmptyImage) {
                               false /* empty-image */);
 }
 
-TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
-  // Turn off proxy-decides-transform feature for these unit tests.
+TEST_F(ContentLoFiDeciderTest, AcceptTransformPerResourceType) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
+  scoped_feature_list.InitAndEnableFeature(
       features::kDataReductionProxyDecidesTransform);
 
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled");
-
-  // Enable Lo-Fi.
   const struct {
-    bool is_using_lofi;
     content::ResourceType resource_type;
-  } tests[] = {{false, content::RESOURCE_TYPE_MAIN_FRAME},
-               {false, content::RESOURCE_TYPE_SUB_FRAME},
-               {false, content::RESOURCE_TYPE_STYLESHEET},
-               {false, content::RESOURCE_TYPE_SCRIPT},
-               {false, content::RESOURCE_TYPE_IMAGE},
-               {false, content::RESOURCE_TYPE_FONT_RESOURCE},
-               {false, content::RESOURCE_TYPE_SUB_RESOURCE},
-               {false, content::RESOURCE_TYPE_OBJECT},
-               {false, content::RESOURCE_TYPE_MEDIA},
-               {false, content::RESOURCE_TYPE_WORKER},
-               {false, content::RESOURCE_TYPE_SHARED_WORKER},
-               {false, content::RESOURCE_TYPE_PREFETCH},
-               {false, content::RESOURCE_TYPE_FAVICON},
-               {false, content::RESOURCE_TYPE_XHR},
-               {false, content::RESOURCE_TYPE_PING},
-               {false, content::RESOURCE_TYPE_SERVICE_WORKER},
-               {false, content::RESOURCE_TYPE_CSP_REPORT},
-               {false, content::RESOURCE_TYPE_PLUGIN_RESOURCE},
-
-               {true, content::RESOURCE_TYPE_MAIN_FRAME},
-               {true, content::RESOURCE_TYPE_SUB_FRAME},
-               {true, content::RESOURCE_TYPE_STYLESHEET},
-               {true, content::RESOURCE_TYPE_SCRIPT},
-               {true, content::RESOURCE_TYPE_IMAGE},
-               {true, content::RESOURCE_TYPE_FONT_RESOURCE},
-               {true, content::RESOURCE_TYPE_SUB_RESOURCE},
-               {true, content::RESOURCE_TYPE_OBJECT},
-               {true, content::RESOURCE_TYPE_MEDIA},
-               {true, content::RESOURCE_TYPE_WORKER},
-               {true, content::RESOURCE_TYPE_SHARED_WORKER},
-               {true, content::RESOURCE_TYPE_PREFETCH},
-               {true, content::RESOURCE_TYPE_FAVICON},
-               {true, content::RESOURCE_TYPE_XHR},
-               {true, content::RESOURCE_TYPE_PING},
-               {true, content::RESOURCE_TYPE_SERVICE_WORKER},
-               {true, content::RESOURCE_TYPE_CSP_REPORT},
-               {true, content::RESOURCE_TYPE_PLUGIN_RESOURCE}};
+  } tests[] = {{content::RESOURCE_TYPE_MAIN_FRAME},
+               {content::RESOURCE_TYPE_SUB_FRAME},
+               {content::RESOURCE_TYPE_STYLESHEET},
+               {content::RESOURCE_TYPE_SCRIPT},
+               {content::RESOURCE_TYPE_IMAGE},
+               {content::RESOURCE_TYPE_FONT_RESOURCE},
+               {content::RESOURCE_TYPE_SUB_RESOURCE},
+               {content::RESOURCE_TYPE_OBJECT},
+               {content::RESOURCE_TYPE_MEDIA},
+               {content::RESOURCE_TYPE_WORKER},
+               {content::RESOURCE_TYPE_SHARED_WORKER},
+               {content::RESOURCE_TYPE_PREFETCH},
+               {content::RESOURCE_TYPE_FAVICON},
+               {content::RESOURCE_TYPE_XHR},
+               {content::RESOURCE_TYPE_PING},
+               {content::RESOURCE_TYPE_SERVICE_WORKER},
+               {content::RESOURCE_TYPE_CSP_REPORT},
+               {content::RESOURCE_TYPE_PLUGIN_RESOURCE}};
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     std::unique_ptr<net::URLRequest> request = CreateRequestByType(
         tests[i].resource_type, false,
-        tests[i].is_using_lofi ? content::SERVER_LOFI_ON
-                               : content::PREVIEWS_UNSPECIFIED);
+        content::SERVER_LOFI_ON | content::SERVER_LITE_PAGE_ON);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendHeaders(&headers, request.get(), true);
+
+    bool is_main_frame =
+        tests[i].resource_type == content::RESOURCE_TYPE_MAIN_FRAME;
     bool is_lofi_resource_type =
         !(tests[i].resource_type == content::RESOURCE_TYPE_MAIN_FRAME ||
           tests[i].resource_type == content::RESOURCE_TYPE_STYLESHEET ||
@@ -496,232 +361,12 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
           tests[i].resource_type == content::RESOURCE_TYPE_MEDIA ||
           tests[i].resource_type == content::RESOURCE_TYPE_CSP_REPORT);
 
-    VerifyLoFiHeader(is_lofi_resource_type, !tests[i].is_using_lofi, headers);
-    VerifyLitePageHeader(false, false, headers);
-    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
-    EXPECT_EQ(tests[i].is_using_lofi, data->lofi_requested()) << i;
-  }
-}
-
-TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
-  // Turn off proxy-decides-transform feature for these unit tests.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kDataReductionProxyDecidesTransform);
-
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Control");
-  // Enable Lo-Fi.
-  const struct {
-    bool is_using_lofi;
-    bool is_main_frame;
-  } tests[] = {{false, false}, {false, true}, {true, false}, {true, true}};
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    std::unique_ptr<net::URLRequest> request =
-        CreateRequest(tests[i].is_main_frame,
-                      tests[i].is_using_lofi ? content::SERVER_LOFI_ON
-                                             : content::PREVIEWS_UNSPECIFIED);
-    net::HttpRequestHeaders headers;
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(false, false, headers);
-    VerifyLitePageHeader(false, false, headers);
-    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
-    EXPECT_EQ(tests[i].is_using_lofi, data->lofi_requested()) << i;
-  }
-}
-
-TEST_F(ContentLoFiDeciderTest, LitePageFieldTrial) {
-  // Turn off proxy-decides-transform feature for these unit tests.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kDataReductionProxyDecidesTransform);
-
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled_Preview");
-  // Enable Lo-Fi.
-  const struct {
-    bool is_using_lite_page;
-    bool is_main_frame;
-  } tests[] = {
-      {false, false}, {true, false}, {false, true}, {true, true},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    std::unique_ptr<net::URLRequest> request = CreateRequest(
-        tests[i].is_main_frame, tests[i].is_using_lite_page
-                                    ? content::SERVER_LITE_PAGE_ON
-                                    : content::PREVIEWS_UNSPECIFIED);
-    net::HttpRequestHeaders headers;
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(false, false, headers);
-    VerifyLitePageHeader(tests[i].is_main_frame, !tests[i].is_using_lite_page,
-                         headers);
-    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
-    EXPECT_EQ(tests[i].is_using_lite_page, data->lofi_requested()) << i;
-  }
-}
-
-TEST_F(ContentLoFiDeciderTest, LitePageFieldTrialFallbackDisabled) {
-  // Turn off proxy-decides-transform feature for these unit tests.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kDataReductionProxyDecidesTransform);
-
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled_Preview");
-  // Enable Lo-Fi.
-  const struct {
-    bool is_using_lofi;
-    bool is_using_lite_page;
-    bool is_main_frame;
-  } tests[] = {
-      {false, false, false}, {false, false, true}, {true, false, true},
-      {true, false, false},  {false, true, false}, {false, true, true},
-      {true, true, true},    {true, true, false},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    content::PreviewsState previews_state = content::PREVIEWS_UNSPECIFIED;
-    if (tests[i].is_using_lofi)
-      previews_state |= content::SERVER_LOFI_ON;
-    if (tests[i].is_using_lite_page)
-      previews_state |= content::SERVER_LITE_PAGE_ON;
-
-    std::unique_ptr<net::URLRequest> request =
-        CreateRequest(tests[i].is_main_frame, previews_state);
-    net::HttpRequestHeaders headers;
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-    VerifyLoFiHeader(false, false, headers);
-    VerifyLitePageHeader(tests[i].is_main_frame,
-                         tests[i].is_main_frame && !tests[i].is_using_lite_page,
-                         headers);
-    DataReductionProxyData* data = DataReductionProxyData::GetData(*request);
-    EXPECT_EQ(tests[i].is_using_lofi || tests[i].is_using_lite_page,
-              data->lofi_requested())
-        << i;
-  }
-}
-
-TEST_F(ContentLoFiDeciderTest, AutoLoFi) {
-  // Turn off proxy-decides-transform feature for these unit tests.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kDataReductionProxyDecidesTransform);
-
-  const struct {
-    bool auto_lofi_enabled_group;
-    bool auto_lofi_control_group;
-    bool network_prohibitively_slow;
-    bool is_main_frame;
-  } tests[] = {
-      {false, false, false, false},
-      {false, false, true, false},
-      {true, false, false, false},
-      {true, false, true, false},
-      {true, false, true, true},
-      {false, true, false, false},
-      {false, true, true, false},
-      // Repeat this test data to simulate user moving out of Lo-Fi control
-      // experiment.
-      {false, true, false, false},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    test_context_->config()->ResetLoFiStatusForTest();
-    const bool expect_lofi_header = tests[i].auto_lofi_enabled_group &&
-                                    !tests[i].is_main_frame;
-
-    base::FieldTrialList field_trial_list(nullptr);
-    if (tests[i].auto_lofi_enabled_group) {
-      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                             "Enabled");
-    }
-
-    if (tests[i].auto_lofi_control_group) {
-      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                             "Control");
-    }
-
-    test_context_->config()->SetNetworkProhibitivelySlow(
-        tests[i].network_prohibitively_slow);
-
-    std::unique_ptr<net::URLRequest> request = CreateRequest(
-        tests[i].is_main_frame, tests[i].network_prohibitively_slow);
-    net::HttpRequestHeaders headers;
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-
-    VerifyLoFiHeader(expect_lofi_header, !tests[i].network_prohibitively_slow,
-                     headers);
-  }
-}
-
-TEST_F(ContentLoFiDeciderTest, SlowConnectionsFlag) {
-  // Turn off proxy-decides-transform feature for these unit tests.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      features::kDataReductionProxyDecidesTransform);
-
-  const struct {
-    bool slow_connections_flag_enabled;
-    bool network_prohibitively_slow;
-    bool auto_lofi_enabled_group;
-    bool is_main_frame;
-  } tests[] = {
-      {false, false, false, false}, {false, true, false, false},
-      {true, false, false, false},  {true, true, false, false},
-      {true, true, false, true},    {false, false, true, false},
-      {false, false, true, true},   {false, true, true, false},
-      {true, false, true, false},   {true, true, true, false},
-  };
-
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    test_context_->config()->ResetLoFiStatusForTest();
-    // For the purpose of this test, Lo-Fi header is expected only if LoFi Slow
-    // Connection Flag is enabled or session is part of Lo-Fi enabled field
-    // trial. For both cases, an additional condition is that network must be
-    // prohibitively slow.
-    const bool expect_lofi_header = ((tests[i].slow_connections_flag_enabled &&
-                                      tests[i].network_prohibitively_slow) ||
-                                     (!tests[i].slow_connections_flag_enabled &&
-                                      tests[i].auto_lofi_enabled_group &&
-                                      tests[i].network_prohibitively_slow)) &&
-                                    !tests[i].is_main_frame;
-
-    std::string expected_header;
-
-    if (tests[i].slow_connections_flag_enabled) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kDataReductionProxyLoFi,
-          switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
-    }
-
-    base::FieldTrialList field_trial_list(nullptr);
-    if (tests[i].auto_lofi_enabled_group) {
-      base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                             "Enabled");
-    }
-
-    test_context_->config()->SetNetworkProhibitivelySlow(
-        tests[i].network_prohibitively_slow);
-
-    std::unique_ptr<net::URLRequest> request = CreateRequest(
-        tests[i].is_main_frame, tests[i].network_prohibitively_slow);
-    net::HttpRequestHeaders headers;
-    NotifyBeforeSendHeaders(&headers, request.get(), true);
-
-    VerifyLoFiHeader(expect_lofi_header, false, headers);
+    VerifyLitePageHeader(is_main_frame, headers);
+    VerifyLoFiHeader(is_lofi_resource_type, headers);
   }
 }
 
 TEST_F(ContentLoFiDeciderTest, ProxyIsNotDataReductionProxy) {
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled");
-  // Enable Lo-Fi.
   const struct {
     content::PreviewsState previews_state;
   } tests[] = {
@@ -740,11 +385,7 @@ TEST_F(ContentLoFiDeciderTest, ProxyIsNotDataReductionProxy) {
 }
 
 TEST_F(ContentLoFiDeciderTest, VideoDirectiveNotOverridden) {
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled");
   // Verify the directive gets added even when LoFi is triggered.
-  test_context_->config()->SetNetworkProhibitivelySlow(true);
   std::unique_ptr<net::URLRequest> request =
       CreateRequestByType(content::RESOURCE_TYPE_MEDIA, false, true);
   net::HttpRequestHeaders headers;
@@ -753,10 +394,6 @@ TEST_F(ContentLoFiDeciderTest, VideoDirectiveNotOverridden) {
 }
 
 TEST_F(ContentLoFiDeciderTest, VideoDirectiveNotAdded) {
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled");
-  test_context_->config()->SetNetworkProhibitivelySlow(true);
   std::unique_ptr<net::URLRequest> request =
       CreateRequestByType(content::RESOURCE_TYPE_MEDIA, false, true);
   net::HttpRequestHeaders headers;
@@ -766,11 +403,7 @@ TEST_F(ContentLoFiDeciderTest, VideoDirectiveNotAdded) {
 }
 
 TEST_F(ContentLoFiDeciderTest, VideoDirectiveDoesNotOverride) {
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled");
   // Verify the directive gets added even when LoFi is triggered.
-  test_context_->config()->SetNetworkProhibitivelySlow(true);
   std::unique_ptr<net::URLRequest> request =
       CreateRequestByType(content::RESOURCE_TYPE_MEDIA, false, true);
   net::HttpRequestHeaders headers;
@@ -828,10 +461,21 @@ TEST_F(ContentLoFiDeciderTest, RemoveAcceptTransformHeader) {
   EXPECT_FALSE(headers.HasHeader(chrome_proxy_accept_transform_header()));
 }
 
+TEST_F(ContentLoFiDeciderTest, ShouldRecordLoFiUMA) {
+  std::unique_ptr<data_reduction_proxy::ContentLoFiDecider> lofi_decider(
+      new data_reduction_proxy::ContentLoFiDecider());
+  std::unique_ptr<net::URLRequest> request1 = CreateRequestByType(
+      content::RESOURCE_TYPE_IMAGE, false, content::SERVER_LOFI_ON);
+  EXPECT_TRUE(lofi_decider->ShouldRecordLoFiUMA(*request1.get()));
+  std::unique_ptr<net::URLRequest> request2 = CreateRequestByType(
+      content::RESOURCE_TYPE_MAIN_FRAME, false, content::PREVIEWS_OFF);
+  EXPECT_FALSE(lofi_decider->ShouldRecordLoFiUMA(*request2.get()));
+  std::unique_ptr<net::URLRequest> request3 = CreateRequestByType(
+      content::RESOURCE_TYPE_MAIN_FRAME, false, content::SERVER_LITE_PAGE_ON);
+  EXPECT_TRUE(lofi_decider->ShouldRecordLoFiUMA(*request3.get()));
+}
+
 TEST_F(ContentLoFiDeciderTest, NoTransformDoesNotAddHeader) {
-  base::FieldTrialList field_trial_list(nullptr);
-  base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                         "Enabled");
   std::unique_ptr<net::URLRequest> request =
       CreateRequest(false, content::PREVIEWS_NO_TRANSFORM);
   net::HttpRequestHeaders headers;

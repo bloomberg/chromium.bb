@@ -25,17 +25,9 @@ class LoFiDecider {
   virtual bool IsUsingLoFi(const net::URLRequest& request) const = 0;
 
   // Adds a previews-specific directive to the Chrome-Proxy-Accept-Transform
-  // header if needed. If a slow page preview is triggered, adds "lite-page" or
-  // "empty-image", depending on whether the request is for the main frame
-  // and lite pages are enabled, or for a subresource and Lo-Fi mode is enabled,
-  // respectively. If a slow page preview is not triggered, "lite-page;if-heavy"
-  // and "empty-image;if-heavy" are added in the respective aforementioned cases
-  // to request that the server transform the page if it determines it to be
-  // heavy. Previews-related transformation headers are never added if
-  // |is_previews_disabled| is true.
+  // header if needed.
   virtual void MaybeSetAcceptTransformHeader(
       const net::URLRequest& request,
-      bool are_previews_disabled,
       net::HttpRequestHeaders* headers) const = 0;
 
   // Returns true if |headers| contains the Chrome-Proxy-Accept-Transform
