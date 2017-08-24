@@ -31,6 +31,7 @@ class MockClient : public Client {
   MOCK_METHOD2(OnDownloadFailed, void(const std::string&, FailureReason));
   MOCK_METHOD2(OnDownloadSucceeded,
                void(const std::string&, const CompletionInfo&));
+  MOCK_METHOD2(CanServiceRemoveDownloadedFile, bool(const std::string&, bool));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockClient);

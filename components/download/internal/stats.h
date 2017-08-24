@@ -172,7 +172,8 @@ void LogFileCleanupStatus(FileCleanupReason reason,
                           int external_cleanups);
 
 // Logs the file life time for successfully completed download.
-void LogFileLifeTime(const base::TimeDelta& file_life_time);
+void LogFileLifeTime(const base::TimeDelta& file_life_time,
+                     int num_cleanup_attempts);
 
 // Logs the total disk space utilized by download files.
 // This includes the total size of all the files in |file_dir|.

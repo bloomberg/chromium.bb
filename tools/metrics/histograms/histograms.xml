@@ -15889,6 +15889,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Download.Service.Files.Cleanup.Attempts" units="attempts">
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    The number of times download service tried to delete the download file
+    before successfully deleting it.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Download.Service.Files.CleanUp.External"
     units="files">
 <!-- Name completed by histogram_suffixes

@@ -128,26 +128,21 @@ TEST_F(FileMonitorTest, TestDeleteUnknownFiles) {
 
 TEST_F(FileMonitorTest, TestCleanupFilesForCompletedEntries) {
   Entry entry1 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
-  entry1.state = Entry::State::COMPLETE;
-  entry1.completion_time = base::Time::Now() - base::TimeDelta::FromHours(20);
   EXPECT_TRUE(
       base::CreateTemporaryFileInDir(download_dir_, &entry1.target_file_path));
 
   Entry entry2 = test::BuildEntry(DownloadClient::TEST, base::GenerateGUID());
-  entry2.state = Entry::State::ACTIVE;
   EXPECT_TRUE(
       base::CreateTemporaryFileInDir(download_dir_, &entry2.target_file_path));
 
   std::vector<Entry*> entries = {&entry1, &entry2};
-  std::vector<Entry*> entries_to_remove =
-      monitor_->CleanupFilesForCompletedEntries(
-          entries, base::Bind(&FileMonitorTest::CompletionCallback,
-                              base::Unretained(this)));
+  monitor_->CleanupFilesForCompletedEntries(
+      entries,
+      base::Bind(&FileMonitorTest::CompletionCallback, base::Unretained(this)));
   task_runner_->RunUntilIdle();
 
-  EXPECT_EQ(1u, entries_to_remove.size());
   EXPECT_FALSE(base::PathExists(entry1.target_file_path));
-  EXPECT_TRUE(base::PathExists(entry2.target_file_path));
+  EXPECT_FALSE(base::PathExists(entry2.target_file_path));
   EXPECT_TRUE(completion_callback_called_);
 }
 

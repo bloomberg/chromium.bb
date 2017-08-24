@@ -65,6 +65,12 @@ void OfflinePrefetchDownloadClient::OnDownloadSucceeded(
                                     completion_info.bytes_downloaded);
 }
 
+bool OfflinePrefetchDownloadClient::CanServiceRemoveDownloadedFile(
+    const std::string& guid,
+    bool force_delete) {
+  return true;
+}
+
 PrefetchDownloader* OfflinePrefetchDownloadClient::GetPrefetchDownloader()
     const {
   PrefetchService* prefetch_service =

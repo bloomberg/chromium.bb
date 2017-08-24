@@ -31,6 +31,8 @@ class EmptyClient : public Client {
   void OnDownloadFailed(const std::string& guid, FailureReason reason) override;
   void OnDownloadSucceeded(const std::string& guid,
                            const CompletionInfo& completion_info) override;
+  bool CanServiceRemoveDownloadedFile(const std::string& guid,
+                                      bool force_delete) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmptyClient);

@@ -58,4 +58,8 @@ message Entry {
 
   // Size of the download file in bytes.
   optional uint64 bytes_downloaded = 11;
+
+  // Uses internal time representation.
+  optional int64 last_cleanup_check_time = 12;
+  optional uint32 cleanup_attempt_count = 13;
 }

@@ -23,6 +23,7 @@
 #include "components/download/internal/model_impl.h"
 #include "components/download/internal/scheduler/scheduler.h"
 #include "components/download/internal/stats.h"
+#include "components/download/internal/test/empty_client.h"
 #include "components/download/internal/test/entry_utils.h"
 #include "components/download/internal/test/mock_client.h"
 #include "components/download/internal/test/test_device_status_listener.h"
@@ -93,8 +94,7 @@ class MockFileMonitor : public FileMonitor {
   MOCK_METHOD2(DeleteUnknownFiles,
                void(const Model::EntryList&, const std::vector<DriverEntry>&));
   MOCK_METHOD2(CleanupFilesForCompletedEntries,
-               std::vector<Entry*>(const Model::EntryList&,
-                                   const base::Closure&));
+               void(const Model::EntryList&, const base::Closure&));
   MOCK_METHOD2(DeleteFiles,
                void(const std::set<base::FilePath>&, stats::FileCleanupReason));
   void HardRecover(const FileMonitor::InitCallback&) override;
@@ -158,6 +158,8 @@ class DownloadServiceControllerImplTest : public testing::Test {
 
     auto clients = base::MakeUnique<DownloadClientMap>();
     clients->insert(std::make_pair(DownloadClient::TEST, std::move(client)));
+    clients->insert(std::make_pair(DownloadClient::TEST_2,
+                                   base::MakeUnique<test::EmptyClient>()));
     auto client_set = base::MakeUnique<ClientSet>(std::move(clients));
     auto model = base::MakeUnique<ModelImpl>(std::move(store));
     auto device_status_listener =
@@ -692,6 +694,7 @@ TEST_F(DownloadServiceControllerImplTest, Pause) {
   entry1.state = Entry::State::AVAILABLE;
   entry2.state = Entry::State::ACTIVE;
   entry3.state = Entry::State::COMPLETE;
+  entry3.completion_time = base::Time::Now();
   std::vector<Entry> entries = {entry1, entry2, entry3};
 
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
@@ -916,13 +919,24 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
 }
 
 TEST_F(DownloadServiceControllerImplTest, CleanupTaskScheduledAtEarliestTime) {
-  Entry entry1 = test::BuildBasicEntry();
-  entry1.state = Entry::State::ACTIVE;
-  entry1.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(1);
-  Entry entry2 = test::BuildBasicEntry();
-  entry2.state = Entry::State::COMPLETE;
-  entry2.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(2);
-  std::vector<Entry> entries = {entry1, entry2};
+  // File keep alive time is 10 minutes.
+  // entry1 should be ignored.
+  Entry entry1 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  entry1.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(7);
+  entry1.last_cleanup_check_time = entry1.completion_time;
+  Entry entry2 = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry2.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(1);
+  entry2.last_cleanup_check_time = entry2.completion_time;
+  Entry entry3 = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry3.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(2);
+  entry3.last_cleanup_check_time = entry3.completion_time;
+
+  // For entry4, keep_alive_until time should be considered instead.
+  Entry entry4 = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry4.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(5);
+  entry4.last_cleanup_check_time =
+      base::Time::Now() - base::TimeDelta::FromMinutes(1);
+  std::vector<Entry> entries = {entry1, entry2, entry3, entry4};
 
   InitializeController();
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
@@ -935,6 +949,8 @@ TEST_F(DownloadServiceControllerImplTest, CleanupTaskScheduledAtEarliestTime) {
   driver_entry.completion_time = base::Time::Now();
   driver_entry.current_file_path = base::FilePath::FromUTF8Unsafe("123");
 
+  // Since keep_alive_time is 10 minutes and oldest completion time was 2
+  // minutes ago, we should see the cleanup window start at 8 minutes.
   EXPECT_CALL(*task_scheduler_, ScheduleTask(DownloadTaskType::CLEANUP_TASK,
                                              false, false, 480, 780))
       .Times(1);
@@ -1092,18 +1108,23 @@ TEST_F(DownloadServiceControllerImplTest, StartupRecovery) {
   entries.push_back(test::BuildBasicEntry(Entry::State::PAUSED));
 
   entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  entries.back().completion_time = base::Time::Now();
   driver_entries.push_back(
       BuildDriverEntry(entries.back(), DriverEntry::State::IN_PROGRESS));
   entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  entries.back().completion_time = base::Time::Now();
   driver_entries.push_back(
       BuildDriverEntry(entries.back(), DriverEntry::State::COMPLETE));
   entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  entries.back().completion_time = base::Time::Now();
   driver_entries.push_back(
       BuildDriverEntry(entries.back(), DriverEntry::State::CANCELLED));
   entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  entries.back().completion_time = base::Time::Now();
   driver_entries.push_back(
       BuildDriverEntry(entries.back(), DriverEntry::State::INTERRUPTED));
   entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  entries.back().completion_time = base::Time::Now();
 
   // Set up the Controller.
   device_status_listener_->SetDeviceStatus(
@@ -1329,6 +1350,7 @@ TEST_F(DownloadServiceControllerImplTest, CancelTimeTest) {
   entry2.create_time = base::Time::Now() - base::TimeDelta::FromSeconds(10);
   entry2.scheduling_params.cancel_time =
       base::Time::Now() - base::TimeDelta::FromSeconds(2);
+  entry2.completion_time = base::Time::Now();
   std::vector<Entry> entries = {entry1, entry2};
 
   EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
@@ -1342,6 +1364,60 @@ TEST_F(DownloadServiceControllerImplTest, CancelTimeTest) {
   // At startup, timed out entries should be killed.
   std::vector<Entry*> updated_entries = model_->PeekEntries();
   EXPECT_EQ(1u, updated_entries.size());
+}
+
+TEST_F(DownloadServiceControllerImplTest, RemoveCleanupEligibleDownloads) {
+  config_->file_keep_alive_time = base::TimeDelta::FromMinutes(5);
+  config_->max_file_keep_alive_time = base::TimeDelta::FromMinutes(50);
+
+  Entry entry1 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  entry1.client = DownloadClient::TEST_2;
+
+  Entry entry2 = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry2.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(2);
+  entry2.last_cleanup_check_time = entry2.completion_time;
+  entry2.client = DownloadClient::TEST_2;
+
+  Entry entry3 = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry3.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(20);
+  entry3.last_cleanup_check_time = entry3.completion_time;
+  entry3.client = DownloadClient::TEST_2;
+
+  // last_cleanup_check_time was recent and enough time hasn't passed.
+  Entry entry4 = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry4.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(20);
+  entry4.last_cleanup_check_time =
+      base::Time::Now() - base::TimeDelta::FromMinutes(2);
+  entry4.client = DownloadClient::TEST_2;
+
+  // Client doesn't want to delete.
+  Entry entry5 = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry5.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(45);
+  entry5.last_cleanup_check_time =
+      base::Time::Now() - base::TimeDelta::FromMinutes(20);
+  entry5.client = DownloadClient::TEST;
+
+  // Client doesn't want to delete, but entry has gotten too many life times.
+  Entry entry6 = test::BuildBasicEntry(Entry::State::COMPLETE);
+  entry6.completion_time = base::Time::Now() - base::TimeDelta::FromMinutes(80);
+  entry6.last_cleanup_check_time =
+      base::Time::Now() - base::TimeDelta::FromMinutes(20);
+  entry6.client = DownloadClient::TEST;
+
+  std::vector<Entry> entries = {entry1, entry2, entry3, entry4, entry5, entry6};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(false, _)).Times(1);
+
+  InitializeController();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  file_monitor_->TriggerInit(true);
+  driver_->MakeReady();
+  task_runner_->RunUntilIdle();
+
+  std::vector<Entry*> expected = {&entry1, &entry2, &entry4, &entry5};
+  EXPECT_EQ(expected.size(), model_->PeekEntries().size());
+  EXPECT_TRUE(
+      test::CompareEntryListUsingGuidOnly(expected, model_->PeekEntries()));
 }
 
 // Ensures no more downloads are activated if the number of downloads exceeds
