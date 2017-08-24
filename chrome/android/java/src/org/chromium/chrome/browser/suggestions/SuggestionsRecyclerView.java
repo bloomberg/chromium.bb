@@ -213,9 +213,7 @@ public class SuggestionsRecyclerView extends RecyclerView {
         int numberViews = getChildCount();
         for (int i = 0; i < numberViews; ++i) {
             View view = getChildAt(i);
-            NewTabPageViewHolder viewHolder = (NewTabPageViewHolder) getChildViewHolder(view);
-            if (viewHolder == null) return;
-            viewHolder.updateLayoutParams();
+            ((NewTabPageViewHolder) getChildViewHolder(view)).updateLayoutParams();
         }
         super.onLayout(changed, l, t, r, b);
     }
