@@ -156,11 +156,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
 }
 
 - (web::NavigationItemImpl*)currentItem {
-  if (self.transientItem)
-    return self.transientItem;
-  if (self.pendingItem)
-    return self.pendingItem;
-  return self.lastCommittedItem;
+  return _navigationManager->GetCurrentItemImpl();
 }
 
 - (web::NavigationItemImpl*)visibleItem {
