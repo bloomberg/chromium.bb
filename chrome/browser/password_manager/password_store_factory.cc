@@ -62,7 +62,7 @@ using password_manager::PasswordStore;
 
 namespace {
 
-#if !defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(USE_X11)
 const LocalProfileId kInvalidLocalProfileId =
     static_cast<LocalProfileId>(0);
 #endif
@@ -119,7 +119,7 @@ PasswordStoreFactory::PasswordStoreFactory()
 
 PasswordStoreFactory::~PasswordStoreFactory() {}
 
-#if !defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(USE_X11)
 LocalProfileId PasswordStoreFactory::GetLocalProfileId(
     PrefService* prefs) const {
   LocalProfileId id =
@@ -277,7 +277,7 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 
 void PasswordStoreFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-#if !defined(OS_CHROMEOS) && defined(USE_X11)
+#if defined(USE_X11)
   // Notice that the preprocessor conditions above are exactly those that will
   // result in using PasswordStoreX in BuildServiceInstanceFor().
   registry->RegisterIntegerPref(password_manager::prefs::kLocalProfileId,

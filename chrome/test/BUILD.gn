@@ -660,7 +660,7 @@ if (!is_android) {
           }
         }
       }
-      if (is_chromeos || !use_x11) {
+      if (!use_x11) {
         sources -= [
           "//ui/views/widget/desktop_aura/desktop_window_tree_host_x11_interactive_uitest.cc",
           "//ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc",
