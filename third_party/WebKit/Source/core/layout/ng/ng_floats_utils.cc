@@ -175,8 +175,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // (probably) need to perform a full layout in order to correctly determine
   // its inline size. We are able to cache this result on the
   // unpositioned_float at this stage.
-  unpositioned_float->layout_result =
-      unpositioned_float->node.Layout(space.Get());
+  unpositioned_float->layout_result = unpositioned_float->node.Layout(*space);
 
   const NGPhysicalFragment* fragment =
       unpositioned_float->layout_result->PhysicalFragment().Get();
@@ -228,7 +227,7 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
     RefPtr<NGConstraintSpace> space = CreateConstraintSpaceForFloat(
         *unpositioned_float, parent_space, fragmentation_offset);
     layout_result = unpositioned_float->node.Layout(
-        space.Get(), unpositioned_float->token.Get());
+        *space, unpositioned_float->token.Get());
   }
 
   NGBoxFragment float_fragment(

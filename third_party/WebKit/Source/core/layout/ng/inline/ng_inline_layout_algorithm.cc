@@ -46,7 +46,7 @@ NGLogicalOffset GetOriginPointForFloats(
 
 NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     NGInlineNode inline_node,
-    NGConstraintSpace* space,
+    const NGConstraintSpace& space,
     NGInlineBreakToken* break_token)
     : NGLayoutAlgorithm(
           inline_node,
@@ -58,7 +58,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
           TextDirection::kLtr,
           break_token),
       is_horizontal_writing_mode_(
-          blink::IsHorizontalWritingMode(space->WritingMode())) {
+          blink::IsHorizontalWritingMode(space.WritingMode())) {
   unpositioned_floats_ = ConstraintSpace().UnpositionedFloats();
 
   if (!is_horizontal_writing_mode_)
@@ -456,9 +456,9 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // We can resolve our BFC offset if we aren't an empty inline.
   if (!Node().IsEmptyInline()) {
     DCHECK(!container_builder_.BfcOffset());
-    LayoutUnit bfc_block_offset = constraint_space_->BfcOffset().block_offset +
-                                  constraint_space_->MarginStrut().Sum();
-    MaybeUpdateFragmentBfcOffset(*constraint_space_, bfc_block_offset,
+    LayoutUnit bfc_block_offset = constraint_space_.BfcOffset().block_offset +
+                                  constraint_space_.MarginStrut().Sum();
+    MaybeUpdateFragmentBfcOffset(constraint_space_, bfc_block_offset,
                                  &container_builder_);
 
     // If we have unpositioned floats from a previous sibling, we need to abort
@@ -469,7 +469,7 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     }
   }
 
-  NGLineBreaker line_breaker(Node(), *constraint_space_, &container_builder_,
+  NGLineBreaker line_breaker(Node(), constraint_space_, &container_builder_,
                              &unpositioned_floats_, BreakToken());
 
   std::unique_ptr<NGExclusionSpace> exclusion_space(

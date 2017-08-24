@@ -27,7 +27,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
  public:
   explicit NGBlockNode(LayoutBox*);
 
-  RefPtr<NGLayoutResult> Layout(NGConstraintSpace* constraint_space,
+  RefPtr<NGLayoutResult> Layout(const NGConstraintSpace& constraint_space,
                                 NGBreakToken* break_token = nullptr);
   NGLayoutInputNode NextSibling() const;
 

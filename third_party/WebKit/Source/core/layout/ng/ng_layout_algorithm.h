@@ -24,21 +24,21 @@ class CORE_EXPORT NGLayoutAlgorithm {
  public:
   NGLayoutAlgorithm(NGInputNodeType node,
                     RefPtr<const ComputedStyle> style,
-                    NGConstraintSpace* space,
+                    const NGConstraintSpace& space,
                     TextDirection direction,
                     NGBreakTokenType* break_token)
       : node_(node),
         constraint_space_(space),
         break_token_(break_token),
-        container_builder_(node, style, space->WritingMode(), direction) {}
+        container_builder_(node, style, space.WritingMode(), direction) {}
 
   NGLayoutAlgorithm(NGInputNodeType node,
-                    NGConstraintSpace* space,
+                    const NGConstraintSpace& space,
                     NGBreakTokenType* break_token)
       : NGLayoutAlgorithm(node,
                           &node.Style(),
                           space,
-                          space->Direction(),
+                          space.Direction(),
                           break_token) {}
 
   virtual ~NGLayoutAlgorithm() {}
@@ -59,11 +59,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   }
 
  protected:
-  const NGConstraintSpace& ConstraintSpace() const {
-    DCHECK(constraint_space_);
-    return *constraint_space_;
-  }
-  NGConstraintSpace* MutableConstraintSpace() { return constraint_space_; }
+  const NGConstraintSpace& ConstraintSpace() const { return constraint_space_; }
 
   const ComputedStyle& Style() const { return node_.Style(); }
 
@@ -77,7 +73,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   NGBreakTokenType* BreakToken() const { return break_token_; }
 
   NGInputNodeType node_;
-  NGConstraintSpace* constraint_space_;
+  const NGConstraintSpace& constraint_space_;
 
   // The break token from which we are currently resuming layout.
   NGBreakTokenType* break_token_;

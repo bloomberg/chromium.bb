@@ -32,7 +32,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
     : public NGLayoutAlgorithm<NGInlineNode, NGInlineBreakToken> {
  public:
   NGInlineLayoutAlgorithm(NGInlineNode,
-                          NGConstraintSpace*,
+                          const NGConstraintSpace&,
                           NGInlineBreakToken* = nullptr);
 
   // Create a line.

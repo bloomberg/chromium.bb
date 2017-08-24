@@ -38,10 +38,10 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
   // otherwise unavailable.
-  RefPtr<NGLayoutResult> CachedLayoutResult(NGConstraintSpace*,
+  RefPtr<NGLayoutResult> CachedLayoutResult(const NGConstraintSpace&,
                                             NGBreakToken*) const;
 
-  void SetCachedLayoutResult(NGConstraintSpace*,
+  void SetCachedLayoutResult(const NGConstraintSpace&,
                              NGBreakToken*,
                              RefPtr<NGLayoutResult>);
 
@@ -57,7 +57,7 @@ class CORE_EXPORT LayoutNGBlockFlow final : public LayoutBlockFlow {
   std::unique_ptr<NGInlineNodeData> ng_inline_node_data_;
 
   RefPtr<NGLayoutResult> cached_result_;
-  RefPtr<NGConstraintSpace> cached_constraint_space_;
+  RefPtr<const NGConstraintSpace> cached_constraint_space_;
   RefPtr<const NGPhysicalBoxFragment> physical_root_fragment_;
 };
 
