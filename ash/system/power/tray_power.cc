@@ -9,6 +9,7 @@
 #include "ash/accessibility_delegate.h"
 #include "ash/ash_switches.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/power/battery_notification.h"
@@ -25,6 +26,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/image/image_skia_source.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
@@ -220,17 +222,23 @@ bool TrayPower::MaybeShowUsbChargerNotification() {
   // Check for a USB charger being connected.
   if (usb_charger_is_connected && !usb_charger_was_connected_ &&
       !usb_notification_dismissed_) {
-    std::unique_ptr<Notification> notification(new Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
-        rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
-        ui::SubstituteChromeOSDeviceType(
-            IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
-        rb.GetImageNamed(IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
-        base::string16(), GURL(),
-        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                   system_notifier::kNotifierPower),
-        message_center::RichNotificationData(),
-        new UsbNotificationDelegate(this)));
+    std::unique_ptr<Notification> notification =
+        system_notifier::CreateSystemNotification(
+            message_center::NOTIFICATION_TYPE_SIMPLE, kUsbNotificationId,
+            rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE),
+            ui::SubstituteChromeOSDeviceType(
+                IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_MESSAGE_SHORT),
+            rb.GetImageNamed(IDR_AURA_NOTIFICATION_LOW_POWER_CHARGER),
+            base::string16(), GURL(),
+            message_center::NotifierId(
+                message_center::NotifierId::SYSTEM_COMPONENT,
+                system_notifier::kNotifierPower),
+            message_center::RichNotificationData(),
+            new UsbNotificationDelegate(this), kNotificationLowPowerBatteryIcon,
+            message_center::SystemNotificationWarningLevel::WARNING);
+    // TODO(tetsui): Workaround of https://crbug.com/757724. Remove after the
+    // bug is fixed.
+    notification->set_vector_small_image(gfx::kNoneIcon);
     message_center_->AddNotification(std::move(notification));
     return true;
   } else if (!usb_charger_is_connected && usb_charger_was_connected_) {
