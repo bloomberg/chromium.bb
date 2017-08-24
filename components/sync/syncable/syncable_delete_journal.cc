@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/sync/base/model_type.h"
 
 namespace syncer {
@@ -45,7 +44,7 @@ void DeleteJournal::UpdateDeleteJournalForServerDelete(
   if (entry.ref(SERVER_IS_DEL)) {
     if (it == delete_journals_.end()) {
       // New delete.
-      auto entry_copy = base::MakeUnique<EntryKernel>(entry);
+      auto entry_copy = std::make_unique<EntryKernel>(entry);
       delete_journals_to_purge_.erase(entry_copy->ref(META_HANDLE));
       AddEntryToJournalIndex(&delete_journals_, std::move(entry_copy));
     }
@@ -123,7 +122,7 @@ void DeleteJournal::AddJournalBatch(BaseTransaction* trans,
   for (auto& entry : entries) {
     needle.put(ID, entry->ref(ID));
     if (delete_journals_.find(&needle) == delete_journals_.end()) {
-      auto entry_copy = base::MakeUnique<EntryKernel>(*entry);
+      auto entry_copy = std::make_unique<EntryKernel>(*entry);
       AddEntryToJournalIndex(&delete_journals_, std::move(entry_copy));
     }
     delete_journals_to_purge_.erase(entry->ref(META_HANDLE));

@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -188,7 +187,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
 
   if (!client_factory_) {
     init_params.sync_client =
-        base::MakeUnique<browser_sync::ChromeSyncClient>(profile);
+        std::make_unique<browser_sync::ChromeSyncClient>(profile);
   } else {
     init_params.sync_client = client_factory_->Run(profile);
   }
@@ -229,7 +228,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
     AboutSigninInternalsFactory::GetForProfile(profile);
 
     init_params.signin_wrapper =
-        base::MakeUnique<SupervisedUserSigninManagerWrapper>(profile, signin);
+        std::make_unique<SupervisedUserSigninManagerWrapper>(profile, signin);
     init_params.oauth2_token_service =
         ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
     init_params.gaia_cookie_manager_service =
@@ -246,7 +245,7 @@ KeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
                                      : ProfileSyncService::MANUAL_START;
   }
 
-  auto pss = base::MakeUnique<ProfileSyncService>(std::move(init_params));
+  auto pss = std::make_unique<ProfileSyncService>(std::move(init_params));
 
   // Will also initialize the sync client.
   pss->Initialize();

@@ -8,7 +8,6 @@
 
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
@@ -26,12 +25,12 @@ TestDirectorySetterUpper::~TestDirectorySetterUpper() {}
 
 void TestDirectorySetterUpper::SetUp() {
   test_transaction_observer_ =
-      base::MakeUnique<syncable::TestTransactionObserver>();
+      std::make_unique<syncable::TestTransactionObserver>();
   WeakHandle<syncable::TransactionObserver> transaction_observer =
       MakeWeakHandle(test_transaction_observer_->AsWeakPtr());
 
-  directory_ = base::MakeUnique<syncable::Directory>(
-      base::MakeUnique<syncable::InMemoryDirectoryBackingStore>(name_),
+  directory_ = std::make_unique<syncable::Directory>(
+      std::make_unique<syncable::InMemoryDirectoryBackingStore>(name_),
       MakeWeakHandle(handler_.GetWeakPtr()), base::Closure(),
       &encryption_handler_, encryption_handler_.cryptographer());
   ASSERT_EQ(syncable::OPENED,
@@ -42,11 +41,11 @@ void TestDirectorySetterUpper::SetUpWith(
     std::unique_ptr<syncable::DirectoryBackingStore> directory_store) {
   CHECK(directory_store);
   test_transaction_observer_ =
-      base::MakeUnique<syncable::TestTransactionObserver>();
+      std::make_unique<syncable::TestTransactionObserver>();
   WeakHandle<syncable::TransactionObserver> transaction_observer =
       MakeWeakHandle(test_transaction_observer_->AsWeakPtr());
 
-  directory_ = base::MakeUnique<syncable::Directory>(
+  directory_ = std::make_unique<syncable::Directory>(
       std::move(directory_store), MakeWeakHandle(handler_.GetWeakPtr()),
       base::Closure(), &encryption_handler_,
       encryption_handler_.cryptographer());

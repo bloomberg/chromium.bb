@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -211,7 +210,7 @@ void AttachmentDownloaderImplTest::SetUp() {
   url_request_context_getter_ =
       new net::TestURLRequestContextGetter(message_loop_.task_runner());
   url_fetcher_factory_.set_remove_fetcher_on_delete(true);
-  token_service_ = base::MakeUnique<MockOAuth2TokenService>();
+  token_service_ = std::make_unique<MockOAuth2TokenService>();
   token_service_->AddAccount(kAccountId);
   scoped_refptr<OAuth2TokenServiceRequest::TokenServiceProvider>
       token_service_provider(new TokenServiceProvider(token_service_.get()));

@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -62,7 +61,7 @@ class FakeLoginUI : public LoginUIService::LoginUI {
 
 std::unique_ptr<KeyedService> BuildMockLoginUIService(
     content::BrowserContext* profile) {
-  return base::MakeUnique<FakeLoginUIService>();
+  return std::make_unique<FakeLoginUIService>();
 }
 
 class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
@@ -75,13 +74,13 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
 
     BrowserWithTestWindowTest::SetUp();
 
-    profile_manager_ = base::MakeUnique<TestingProfileManager>(
+    profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
 
     profile_ = profile_manager_->CreateTestingProfile(kTestAccountId);
 
-    service_ = base::MakeUnique<browser_sync::ProfileSyncServiceMock>(
+    service_ = std::make_unique<browser_sync::ProfileSyncServiceMock>(
         CreateProfileSyncServiceParamsForTest(profile_));
 
     FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
@@ -90,9 +89,9 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
     login_ui_service->SetLoginUI(&login_ui_);
 
     error_controller_ =
-        base::MakeUnique<syncer::SyncErrorController>(service_.get());
+        std::make_unique<syncer::SyncErrorController>(service_.get());
     error_notifier_ =
-        base::MakeUnique<SyncErrorNotifier>(error_controller_.get(), profile_);
+        std::make_unique<SyncErrorNotifier>(error_controller_.get(), profile_);
 
     notification_ui_manager_ = g_browser_process->notification_ui_manager();
   }

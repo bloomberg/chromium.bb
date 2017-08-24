@@ -150,7 +150,7 @@ class MockAttachmentDownloader
     if (result == DOWNLOAD_SUCCESS) {
       scoped_refptr<base::RefCountedString> data = new base::RefCountedString();
       attachment =
-          base::MakeUnique<Attachment>(Attachment::CreateFromParts(id, data));
+          std::make_unique<Attachment>(Attachment::CreateFromParts(id, data));
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -201,8 +201,8 @@ class AttachmentServiceImplTest : public testing::Test,
 
   void SetUp() override {
     network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
-    InitializeAttachmentService(base::MakeUnique<MockAttachmentUploader>(),
-                                base::MakeUnique<MockAttachmentDownloader>(),
+    InitializeAttachmentService(std::make_unique<MockAttachmentUploader>(),
+                                std::make_unique<MockAttachmentDownloader>(),
                                 this);
   }
 
@@ -239,7 +239,7 @@ class AttachmentServiceImplTest : public testing::Test,
     if (downloader.get()) {
       attachment_downloader_ = downloader->AsWeakPtr();
     }
-    attachment_service_ = base::MakeUnique<AttachmentServiceImpl>(
+    attachment_service_ = std::make_unique<AttachmentServiceImpl>(
         attachment_store->CreateAttachmentStoreForSync(), std::move(uploader),
         std::move(downloader), delegate, base::TimeDelta::FromMinutes(1),
         base::TimeDelta::FromMinutes(8));
@@ -479,8 +479,8 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_Success) {
 }
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_Success_NoDelegate) {
-  InitializeAttachmentService(base::MakeUnique<MockAttachmentUploader>(),
-                              base::MakeUnique<MockAttachmentDownloader>(),
+  InitializeAttachmentService(std::make_unique<MockAttachmentUploader>(),
+                              std::make_unique<MockAttachmentDownloader>(),
                               nullptr);  // No delegate.
 
   AttachmentIdList attachment_ids;
@@ -550,7 +550,7 @@ TEST_F(AttachmentServiceImplTest, UploadAttachments_AllMissingFromStore) {
 
 TEST_F(AttachmentServiceImplTest, UploadAttachments_NoUploader) {
   InitializeAttachmentService(base::WrapUnique<MockAttachmentUploader>(nullptr),
-                              base::MakeUnique<MockAttachmentDownloader>(),
+                              std::make_unique<MockAttachmentDownloader>(),
                               this);
 
   AttachmentIdList attachment_ids;

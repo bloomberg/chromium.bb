@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
@@ -74,7 +73,7 @@ class SessionsPageRevisitObserverTest : public ::testing::Test {
     std::vector<const SyncedSession*> sessions;
     sessions.push_back(session);
     SessionsPageRevisitObserver observer(
-        base::MakeUnique<TestForeignSessionsProvider>(sessions, true));
+        std::make_unique<TestForeignSessionsProvider>(sessions, true));
     CheckAndExpect(&observer, url, current_match, offset_match);
   }
 };
@@ -82,44 +81,44 @@ class SessionsPageRevisitObserverTest : public ::testing::Test {
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoSessions) {
   std::vector<const SyncedSession*> sessions;
   SessionsPageRevisitObserver observer(
-      base::MakeUnique<TestForeignSessionsProvider>(sessions, true));
+      std::make_unique<TestForeignSessionsProvider>(sessions, true));
   CheckAndExpect(&observer, GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoWindows) {
-  auto session = base::MakeUnique<SyncedSession>();
+  auto session = std::make_unique<SyncedSession>();
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoTabs) {
-  auto session = base::MakeUnique<SyncedSession>();
-  session->windows[0] = base::MakeUnique<SyncedSessionWindow>();
+  auto session = std::make_unique<SyncedSession>();
+  session->windows[0] = std::make_unique<SyncedSessionWindow>();
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersNoEntries) {
-  auto window = base::MakeUnique<SyncedSessionWindow>();
-  window->wrapped_window.tabs.push_back(base::MakeUnique<SessionTab>());
-  auto session = base::MakeUnique<SyncedSession>();
+  auto window = std::make_unique<SyncedSessionWindow>();
+  window->wrapped_window.tabs.push_back(std::make_unique<SessionTab>());
+  auto session = std::make_unique<SyncedSession>();
   session->windows[0] = std::move(window);
   CheckAndExpect(session.get(), GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersSingle) {
-  auto tab = base::MakeUnique<SessionTab>();
+  auto tab = std::make_unique<SessionTab>();
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab->current_navigation_index = 0;
-  auto window = base::MakeUnique<SyncedSessionWindow>();
+  auto window = std::make_unique<SyncedSessionWindow>();
   window->wrapped_window.tabs.push_back(std::move(tab));
-  auto session = base::MakeUnique<SyncedSession>();
+  auto session = std::make_unique<SyncedSession>();
   session->windows[0] = std::move(window);
   CheckAndExpect(session.get(), GURL(kExampleUrl), true, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
-  auto tab = base::MakeUnique<SessionTab>();
+  auto tab = std::make_unique<SessionTab>();
   tab->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
@@ -127,9 +126,9 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab->current_navigation_index = 1;
-  auto window = base::MakeUnique<SyncedSessionWindow>();
+  auto window = std::make_unique<SyncedSessionWindow>();
   window->wrapped_window.tabs.push_back(std::move(tab));
-  auto session = base::MakeUnique<SyncedSession>();
+  auto session = std::make_unique<SyncedSession>();
   session->windows[0] = std::move(window);
 
   // The provider returns false when asked for foreign sessions, even though
@@ -137,30 +136,30 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersFalseProvider) {
   std::vector<const SyncedSession*> sessions;
   sessions.push_back(session.get());
   SessionsPageRevisitObserver observer(
-      base::MakeUnique<TestForeignSessionsProvider>(sessions, false));
+      std::make_unique<TestForeignSessionsProvider>(sessions, false));
   CheckAndExpect(&observer, GURL(kExampleUrl), false, false);
 }
 
 TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
-  auto tab1 = base::MakeUnique<SessionTab>();
+  auto tab1 = std::make_unique<SessionTab>();
   tab1->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
   tab1->current_navigation_index = 0;
 
-  auto tab2 = base::MakeUnique<SessionTab>();
+  auto tab2 = std::make_unique<SessionTab>();
   tab2->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kDifferentUrl, ""));
   tab2->current_navigation_index = 0;
 
-  auto tab3 = base::MakeUnique<SessionTab>();
+  auto tab3 = std::make_unique<SessionTab>();
   tab3->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kDifferentUrl, ""));
   tab3->current_navigation_index = 0;
 
-  auto tab4 = base::MakeUnique<SessionTab>();
+  auto tab4 = std::make_unique<SessionTab>();
   tab4->navigations.push_back(
       sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
           kExampleUrl, ""));
@@ -169,17 +168,17 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
           kDifferentUrl, ""));
   tab4->current_navigation_index = 1;
 
-  auto window1 = base::MakeUnique<SyncedSessionWindow>();
+  auto window1 = std::make_unique<SyncedSessionWindow>();
   window1->wrapped_window.tabs.push_back(std::move(tab1));
-  auto window2 = base::MakeUnique<SyncedSessionWindow>();
+  auto window2 = std::make_unique<SyncedSessionWindow>();
   window2->wrapped_window.tabs.push_back(std::move(tab2));
-  auto window3 = base::MakeUnique<SyncedSessionWindow>();
+  auto window3 = std::make_unique<SyncedSessionWindow>();
   window3->wrapped_window.tabs.push_back(std::move(tab3));
   window3->wrapped_window.tabs.push_back(std::move(tab4));
 
-  auto session1 = base::MakeUnique<SyncedSession>();
+  auto session1 = std::make_unique<SyncedSession>();
   session1->windows[1] = std::move(window1);
-  auto session2 = base::MakeUnique<SyncedSession>();
+  auto session2 = std::make_unique<SyncedSession>();
   session2->windows[2] = std::move(window2);
   session2->windows[3] = std::move(window3);
 
@@ -187,7 +186,7 @@ TEST_F(SessionsPageRevisitObserverTest, RunMatchersMany) {
   sessions.push_back(session1.get());
   sessions.push_back(session2.get());
   SessionsPageRevisitObserver observer(
-      base::MakeUnique<TestForeignSessionsProvider>(sessions, true));
+      std::make_unique<TestForeignSessionsProvider>(sessions, true));
 
   base::HistogramTester histogram_tester;
   CheckAndExpect(&observer, GURL(kExampleUrl), true, true);

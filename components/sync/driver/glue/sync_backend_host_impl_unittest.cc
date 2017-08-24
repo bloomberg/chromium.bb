@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
@@ -170,9 +169,9 @@ class SyncEngineTest : public testing::Test {
 
     SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
 
-    sync_prefs_ = base::MakeUnique<SyncPrefs>(&pref_service_);
+    sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
     sync_thread_.StartAndWaitForTesting();
-    backend_ = base::MakeUnique<SyncBackendHostImpl>(
+    backend_ = std::make_unique<SyncBackendHostImpl>(
         "dummyDebugName", &sync_client_, nullptr, sync_prefs_->AsWeakPtr(),
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
     credentials_.account_id = "user@example.com";
@@ -181,7 +180,7 @@ class SyncEngineTest : public testing::Test {
     credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
     fake_manager_factory_ =
-        base::MakeUnique<FakeSyncManagerFactory>(&fake_manager_);
+        std::make_unique<FakeSyncManagerFactory>(&fake_manager_);
 
     // These types are always implicitly enabled.
     enabled_types_.PutAll(ControlTypes());
@@ -194,7 +193,7 @@ class SyncEngineTest : public testing::Test {
     enabled_types_.Put(SEARCH_ENGINES);
     enabled_types_.Put(AUTOFILL);
 
-    network_resources_ = base::MakeUnique<HttpBridgeNetworkResources>();
+    network_resources_ = std::make_unique<HttpBridgeNetworkResources>();
   }
 
   void TearDown() override {
@@ -220,11 +219,11 @@ class SyncEngineTest : public testing::Test {
     SyncEngine::InitParams params;
     params.sync_task_runner = sync_thread_.task_runner();
     params.host = &host_;
-    params.registrar = base::MakeUnique<SyncBackendRegistrar>(
+    params.registrar = std::make_unique<SyncBackendRegistrar>(
         std::string(), base::Bind(&SyncClient::CreateModelWorkerForGroup,
                                   base::Unretained(&sync_client_)));
     params.encryption_observer_proxy =
-        base::MakeUnique<NullEncryptionObserver>();
+        std::make_unique<NullEncryptionObserver>();
     params.http_factory_getter = http_post_provider_factory_getter;
     params.credentials = credentials_;
     params.sync_manager_factory = std::move(fake_manager_factory_);

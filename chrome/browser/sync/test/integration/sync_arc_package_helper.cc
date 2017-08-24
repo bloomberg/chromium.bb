@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -125,7 +124,7 @@ void SyncArcPackageHelper::SetupArcService(Profile* profile) {
   run_loop.Run();
 
   instance_map_[profile] =
-      base::MakeUnique<FakeAppInstance>(arc_app_list_prefs);
+      std::make_unique<FakeAppInstance>(arc_app_list_prefs);
   DCHECK(instance_map_[profile].get());
   arc_app_list_prefs->app_instance_holder()->SetInstance(nullptr);
   arc_app_list_prefs->app_instance_holder()->SetInstance(

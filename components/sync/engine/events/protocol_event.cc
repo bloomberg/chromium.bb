@@ -4,7 +4,6 @@
 
 #include "components/sync/engine/events/protocol_event.h"
 
-#include "base/memory/ptr_util.h"
 
 namespace syncer {
 
@@ -15,7 +14,7 @@ ProtocolEvent::~ProtocolEvent() {}
 std::unique_ptr<base::DictionaryValue> ProtocolEvent::ToValue(
     const ProtocolEvent& event,
     bool include_specifics) {
-  auto dict = base::MakeUnique<base::DictionaryValue>();
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetDouble("time", event.GetTimestamp().ToJsTime());
   dict->SetString("type", event.GetType());
   dict->SetString("details", event.GetDetails());

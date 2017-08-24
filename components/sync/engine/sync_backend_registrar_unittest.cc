@@ -5,7 +5,6 @@
 #include "components/sync/engine/sync_backend_registrar.h"
 
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -38,7 +37,7 @@ class SyncBackendRegistrarTest : public testing::Test {
     file_thread_.StartAndWaitForTesting();
     sync_thread_.StartAndWaitForTesting();
     test_user_share_.SetUp();
-    registrar_ = base::MakeUnique<SyncBackendRegistrar>(
+    registrar_ = std::make_unique<SyncBackendRegistrar>(
         "test", base::Bind(&SyncBackendRegistrarTest::CreateModelWorkerForGroup,
                            base::Unretained(this)));
   }

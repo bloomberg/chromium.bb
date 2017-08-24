@@ -267,7 +267,7 @@ sync_ui_util::ActionType GetActionTypeforDistinctCase(int case_number) {
 TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
   std::set<base::string16> messages;
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
-    std::unique_ptr<Profile> profile = base::MakeUnique<TestingProfile>();
+    std::unique_ptr<Profile> profile = std::make_unique<TestingProfile>();
     ProfileSyncService::InitParams init_params =
         CreateProfileSyncServiceParamsForTest(profile.get());
     NiceMock<ProfileSyncServiceMock> service(&init_params);
@@ -308,7 +308,7 @@ TEST_F(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
 // honored.
 TEST_F(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
   for (int idx = 0; idx != NUMBER_OF_STATUS_CASES; idx++) {
-    std::unique_ptr<Profile> profile = base::MakeUnique<TestingProfile>();
+    std::unique_ptr<Profile> profile = std::make_unique<TestingProfile>();
     ProfileSyncService::InitParams init_params =
         CreateProfileSyncServiceParamsForTest(profile.get());
     NiceMock<ProfileSyncServiceMock> service(&init_params);

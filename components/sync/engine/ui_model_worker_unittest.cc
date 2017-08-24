@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
@@ -58,7 +57,7 @@ class SyncUIModelWorkerTest : public testing::Test {
 
  protected:
   std::unique_ptr<base::MessageLoop> ui_loop_ =
-      base::MakeUnique<base::MessageLoop>();
+      std::make_unique<base::MessageLoop>();
   base::Thread sync_thread_;
   scoped_refptr<UIModelWorker> worker_;
 };

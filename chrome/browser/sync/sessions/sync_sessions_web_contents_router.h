@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSIONS_WEB_CONTENTS_ROUTER_H_
 #define CHROME_BROWSER_SYNC_SESSIONS_SYNC_SESSIONS_WEB_CONTENTS_ROUTER_H_
 
+#include <memory>
+#include <set>
+
 #include "base/callback_list.h"
 
 // Android has no BrowserList or TabStripModel, so we exclude code that refers

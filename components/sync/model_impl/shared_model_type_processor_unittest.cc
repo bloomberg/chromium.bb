@@ -12,7 +12,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/run_loop.h"
@@ -61,7 +60,7 @@ std::unique_ptr<EntityData> GenerateEntityData(const std::string& key,
 
 std::unique_ptr<ModelTypeChangeProcessor>
 CreateProcessor(bool commit_only, ModelType type, ModelTypeSyncBridge* bridge) {
-  return base::MakeUnique<SharedModelTypeProcessor>(
+  return std::make_unique<SharedModelTypeProcessor>(
       type, bridge, base::RepeatingClosure(), commit_only);
 }
 
@@ -179,7 +178,7 @@ class TestModelTypeSyncBridge : public FakeModelTypeSyncBridge {
 class SharedModelTypeProcessorTest : public ::testing::Test {
  public:
   SharedModelTypeProcessorTest()
-      : bridge_(base::MakeUnique<TestModelTypeSyncBridge>(false)) {}
+      : bridge_(std::make_unique<TestModelTypeSyncBridge>(false)) {}
 
   ~SharedModelTypeProcessorTest() override { CheckPostConditions(); }
 
@@ -236,9 +235,9 @@ class SharedModelTypeProcessorTest : public ::testing::Test {
   }
 
   void ResetState(bool keep_db, bool commit_only = false) {
-    bridge_ = keep_db ? base::MakeUnique<TestModelTypeSyncBridge>(
+    bridge_ = keep_db ? std::make_unique<TestModelTypeSyncBridge>(
                             std::move(bridge_), commit_only)
-                      : base::MakeUnique<TestModelTypeSyncBridge>(commit_only);
+                      : std::make_unique<TestModelTypeSyncBridge>(commit_only);
     worker_ = nullptr;
     CheckPostConditions();
   }
@@ -767,7 +766,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
   InitializeToReadyState();
   EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 
-  std::unique_ptr<EntityData> entity_data = base::MakeUnique<EntityData>();
+  std::unique_ptr<EntityData> entity_data = std::make_unique<EntityData>();
   entity_data->specifics.mutable_preference()->set_name(kKey1);
   entity_data->specifics.mutable_preference()->set_value(kValue1);
 
@@ -790,7 +789,7 @@ TEST_F(SharedModelTypeProcessorTest, LocalUpdateItemWithOverrides) {
   EXPECT_EQ(kId1, metadata_v1.server_id());
   EXPECT_EQ(metadata_v1.client_tag_hash(), out_entity1.client_tag_hash);
 
-  entity_data = base::MakeUnique<EntityData>();
+  entity_data = std::make_unique<EntityData>();
   // This is a sketchy move here, changing the name will change the generated
   // storage key and client tag values.
   entity_data->specifics.mutable_preference()->set_name(kKey2);

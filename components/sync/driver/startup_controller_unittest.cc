@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/sync/base/sync_prefs.h"
@@ -31,8 +30,8 @@ class StartupControllerTest : public testing::Test {
 
   void SetUp() override {
     SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
-    sync_prefs_ = base::MakeUnique<SyncPrefs>(&pref_service_);
-    controller_ = base::MakeUnique<StartupController>(
+    sync_prefs_ = std::make_unique<SyncPrefs>(&pref_service_);
+    controller_ = std::make_unique<StartupController>(
         sync_prefs_.get(),
         base::Bind(&StartupControllerTest::CanStart, base::Unretained(this)),
         base::Bind(&StartupControllerTest::FakeStartBackend,

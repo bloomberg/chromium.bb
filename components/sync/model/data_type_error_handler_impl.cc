@@ -39,7 +39,7 @@ SyncError DataTypeErrorHandlerImpl::CreateAndUploadError(
 }
 
 std::unique_ptr<DataTypeErrorHandler> DataTypeErrorHandlerImpl::Copy() const {
-  return base::MakeUnique<DataTypeErrorHandlerImpl>(ui_thread_, dump_stack_,
+  return std::make_unique<DataTypeErrorHandlerImpl>(ui_thread_, dump_stack_,
                                                     sync_callback_);
 }
 

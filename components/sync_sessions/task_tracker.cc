@@ -131,10 +131,10 @@ TabTasks* TaskTracker::GetTabTasks(SessionID::id_type tab_id,
     // larger task encompassing the parent tab. Perform a deep copy of the
     // parent's TabTasks object in order to simplify tracking this relationship.
     local_tab_tasks_map_[tab_id] =
-        base::MakeUnique<TabTasks>(*local_tab_tasks_map_[parent_tab_id]);
+        std::make_unique<TabTasks>(*local_tab_tasks_map_[parent_tab_id]);
     local_tab_tasks_map_[tab_id]->set_parent_tab_id(parent_tab_id);
   } else {
-    local_tab_tasks_map_[tab_id] = base::MakeUnique<TabTasks>();
+    local_tab_tasks_map_[tab_id] = std::make_unique<TabTasks>();
   }
   return local_tab_tasks_map_[tab_id].get();
 }

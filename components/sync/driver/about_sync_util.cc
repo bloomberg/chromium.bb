@@ -79,10 +79,10 @@ namespace {
 // |parent_list|, not the caller, owns the newly added section.
 base::ListValue* AddSection(base::ListValue* parent_list,
                             const std::string& title) {
-  auto section = base::MakeUnique<base::DictionaryValue>();
+  auto section = std::make_unique<base::DictionaryValue>();
   section->SetString("title", title);
   base::ListValue* section_contents =
-      section->SetList("data", base::MakeUnique<base::ListValue>());
+      section->SetList("data", std::make_unique<base::ListValue>());
   section->SetBoolean("is_sensitive", false);
   // If the following |Append| results in a reallocation, pointers to the
   // members of |parent_list| will be invalidated. This would result in
@@ -98,10 +98,10 @@ base::ListValue* AddSection(base::ListValue* parent_list,
 // form and posted in a public forum (e.g. unique identifiers).
 base::ListValue* AddSensitiveSection(base::ListValue* parent_list,
                                      const std::string& title) {
-  auto section = base::MakeUnique<base::DictionaryValue>();
+  auto section = std::make_unique<base::DictionaryValue>();
   section->SetString("title", title);
   base::ListValue* section_contents =
-      section->SetList("data", base::MakeUnique<base::ListValue>());
+      section->SetList("data", std::make_unique<base::ListValue>());
   section->SetBoolean("is_sensitive", true);
   // If the following |Append| results in a reallocation, pointers to
   // |parent_list| and its members will be invalidated. This would result in
@@ -286,10 +286,10 @@ std::string GetConnectionStatus(const SyncService::SyncTokenStatus& status) {
 std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     SyncService* service,
     version_info::Channel channel) {
-  auto about_info = base::MakeUnique<base::DictionaryValue>();
+  auto about_info = std::make_unique<base::DictionaryValue>();
 
   // 'details': A list of sections.
-  auto stats_list = base::MakeUnique<base::ListValue>();
+  auto stats_list = std::make_unique<base::ListValue>();
   // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
   stats_list->Reserve(12);
 
@@ -561,7 +561,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   // NOTE: We won't bother showing any of the following values unless
   // actionable_error_detected is set.
 
-  auto actionable_error = base::MakeUnique<base::ListValue>();
+  auto actionable_error = std::make_unique<base::ListValue>();
   // TODO(crbug.com/702230): Remove the usages of raw pointers in this file.
   actionable_error->Reserve(4);
 

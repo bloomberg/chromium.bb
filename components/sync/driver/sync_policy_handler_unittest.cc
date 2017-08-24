@@ -4,7 +4,8 @@
 
 #include "components/sync/driver/sync_policy_handler.h"
 
-#include "base/memory/ptr_util.h"
+#include <memory>
+
 #include "base/values.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -30,7 +31,7 @@ TEST_F(SyncPolicyHandlerTest, Enabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(false), nullptr);
+             std::make_unique<base::Value>(false), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);
@@ -43,7 +44,7 @@ TEST_F(SyncPolicyHandlerTest, Disabled) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kSyncDisabled, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::Value>(true), nullptr);
+             std::make_unique<base::Value>(true), nullptr);
   SyncPolicyHandler handler;
   PrefValueMap prefs;
   handler.ApplyPolicySettings(policy, &prefs);

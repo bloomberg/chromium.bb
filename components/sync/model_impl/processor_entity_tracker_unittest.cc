@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
@@ -65,7 +64,7 @@ UpdateResponseData GenerateTombstone(const ProcessorEntityTracker& entity,
                                      const std::string& name,
                                      const base::Time& mtime,
                                      int64_t version) {
-  std::unique_ptr<EntityData> data = base::MakeUnique<EntityData>();
+  std::unique_ptr<EntityData> data = std::make_unique<EntityData>();
   data->client_tag_hash = hash;
   data->non_unique_name = name;
   data->id = id;

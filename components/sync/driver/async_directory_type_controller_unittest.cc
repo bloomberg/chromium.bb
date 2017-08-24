@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -188,8 +187,8 @@ class SyncAsyncDirectoryTypeControllerTest : public testing::Test,
     change_processor_ = new SharedChangeProcessorMock(kType);
     // All of these are refcounted, so don't need to be released.
     dtc_mock_ =
-        base::MakeUnique<StrictMock<AsyncDirectoryTypeControllerMock>>();
-    non_ui_dtc_ = base::MakeUnique<AsyncDirectoryTypeControllerFake>(
+        std::make_unique<StrictMock<AsyncDirectoryTypeControllerMock>>();
+    non_ui_dtc_ = std::make_unique<AsyncDirectoryTypeControllerFake>(
         this, dtc_mock_.get(), change_processor_.get(),
         backend_thread_.task_runner());
   }

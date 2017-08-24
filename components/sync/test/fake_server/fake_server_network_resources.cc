@@ -4,7 +4,6 @@
 
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
 
-#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
@@ -29,7 +28,7 @@ FakeServerNetworkResources::GetHttpPostProviderFactory(
     const scoped_refptr<net::URLRequestContextGetter>& baseline_context_getter,
     const NetworkTimeUpdateCallback& network_time_update_callback,
     CancelationSignal* cancelation_signal) {
-  return base::MakeUnique<FakeServerHttpPostProviderFactory>(
+  return std::make_unique<FakeServerHttpPostProviderFactory>(
       fake_server_, fake_server_task_runner_);
 }
 

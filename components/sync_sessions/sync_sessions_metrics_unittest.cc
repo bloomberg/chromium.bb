@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <memory>
 
-#include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
 #include "components/sessions/core/session_types.h"
@@ -65,12 +64,12 @@ class SyncSessionsMetricsTest : public ::testing::Test {
   void PushTab(size_t tabIndex, int windowIndex, Time timestamp) {
     // First add sessions/windows as necessary.
     while (tabIndex >= sessions_.size()) {
-      sessions_.push_back(base::MakeUnique<SyncedSession>());
+      sessions_.push_back(std::make_unique<SyncedSession>());
     }
     if (sessions_[tabIndex]->windows.find(windowIndex) ==
         sessions_[tabIndex]->windows.end()) {
       sessions_[tabIndex]->windows[windowIndex] =
-          base::MakeUnique<SyncedSessionWindow>();
+          std::make_unique<SyncedSessionWindow>();
     }
 
     sessions_[tabIndex]->modified_time =
@@ -80,7 +79,7 @@ class SyncSessionsMetricsTest : public ::testing::Test {
             sessions_[tabIndex]->windows[windowIndex]->wrapped_window.timestamp,
             timestamp);
     sessions_[tabIndex]->windows[windowIndex]->wrapped_window.tabs.push_back(
-        base::MakeUnique<SessionTab>());
+        std::make_unique<SessionTab>());
     sessions_[tabIndex]
         ->windows[windowIndex]
         ->wrapped_window.tabs.back()

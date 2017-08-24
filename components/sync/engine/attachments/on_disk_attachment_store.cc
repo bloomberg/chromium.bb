@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sync/engine/attachments/attachment_util.h"
@@ -433,7 +432,7 @@ std::unique_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
       return attachment;
     }
   }
-  attachment = base::MakeUnique<Attachment>(
+  attachment = std::make_unique<Attachment>(
       Attachment::CreateFromParts(attachment_id, data));
   return attachment;
 }

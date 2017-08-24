@@ -24,7 +24,7 @@ const TimeDelta kZero;
 class TaskQueueTest : public testing::Test {
  protected:
   TaskQueueTest() : weak_ptr_factory_(this) {
-    queue_ = base::MakeUnique<TaskQueue<int>>(
+    queue_ = std::make_unique<TaskQueue<int>>(
         base::Bind(&TaskQueueTest::Process, weak_ptr_factory_.GetWeakPtr()),
         TimeDelta::FromMinutes(1), TimeDelta::FromMinutes(8));
   }

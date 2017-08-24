@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -58,11 +57,11 @@ class UssMigratorTest : public ::testing::Test {
  public:
   UssMigratorTest() : debug_emitter_(kModelType, &debug_observers_) {
     test_user_share_.SetUp();
-    entry_factory_ = base::MakeUnique<TestEntryFactory>(directory());
+    entry_factory_ = std::make_unique<TestEntryFactory>(directory());
 
-    auto processor = base::MakeUnique<MockModelTypeProcessor>();
+    auto processor = std::make_unique<MockModelTypeProcessor>();
     processor_ = processor.get();
-    worker_ = base::MakeUnique<ModelTypeWorker>(
+    worker_ = std::make_unique<ModelTypeWorker>(
         kModelType, sync_pb::ModelTypeState(), false, nullptr, &nudge_handler_,
         std::move(processor), &debug_emitter_, &cancelation_signal_);
   }

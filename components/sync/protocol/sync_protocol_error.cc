@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 
 namespace syncer {
 #define ENUM_CASE(x) \
@@ -56,7 +55,7 @@ SyncProtocolError::SyncProtocolError(const SyncProtocolError& other) = default;
 SyncProtocolError::~SyncProtocolError() {}
 
 std::unique_ptr<base::DictionaryValue> SyncProtocolError::ToValue() const {
-  auto value = base::MakeUnique<base::DictionaryValue>();
+  auto value = std::make_unique<base::DictionaryValue>();
   value->SetString("ErrorType", GetSyncErrorTypeString(error_type));
   value->SetString("ErrorDescription", error_description);
   value->SetString("url", url);

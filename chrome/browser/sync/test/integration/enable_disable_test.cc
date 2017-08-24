@@ -110,7 +110,7 @@ class EnableDisableSingleClientTest : public SyncTest {
  protected:
   void SetupTest(bool all_types_enabled) {
     ASSERT_TRUE(SetupClients());
-    sync_prefs_ = base::MakeUnique<SyncPrefs>(GetProfile(0)->GetPrefs());
+    sync_prefs_ = std::make_unique<SyncPrefs>(GetProfile(0)->GetPrefs());
     if (all_types_enabled) {
       ASSERT_TRUE(GetClient(0)->SetupSync());
     } else {

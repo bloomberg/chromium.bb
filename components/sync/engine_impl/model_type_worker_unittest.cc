@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -144,9 +143,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
       : foreign_encryption_key_index_(0),
         update_encryption_filter_index_(0),
         mock_type_processor_(nullptr),
-        mock_server_(base::MakeUnique<SingleTypeMockServer>(kModelType)),
+        mock_server_(std::make_unique<SingleTypeMockServer>(kModelType)),
         is_processor_disconnected_(false),
-        emitter_(base::MakeUnique<NonBlockingTypeDebugInfoEmitter>(
+        emitter_(std::make_unique<NonBlockingTypeDebugInfoEmitter>(
             kModelType,
             &type_observers_)) {}
 
@@ -189,8 +188,8 @@ class ModelTypeWorkerTest : public ::testing::Test {
   }
 
   void InitializeCommitOnly() {
-    mock_server_ = base::MakeUnique<SingleTypeMockServer>(USER_EVENTS);
-    emitter_ = base::MakeUnique<NonBlockingTypeDebugInfoEmitter>(
+    mock_server_ = std::make_unique<SingleTypeMockServer>(USER_EVENTS);
+    emitter_ = std::make_unique<NonBlockingTypeDebugInfoEmitter>(
         USER_EVENTS, &type_observers_);
 
     // Don't set progress marker, commit only types don't use them.
@@ -208,18 +207,18 @@ class ModelTypeWorkerTest : public ::testing::Test {
     DCHECK(!worker_);
 
     // We don't get to own this object. The |worker_| keeps a unique_ptr to it.
-    auto processor = base::MakeUnique<MockModelTypeProcessor>();
+    auto processor = std::make_unique<MockModelTypeProcessor>();
     mock_type_processor_ = processor.get();
     processor->SetDisconnectCallback(base::Bind(
         &ModelTypeWorkerTest::DisconnectProcessor, base::Unretained(this)));
 
     std::unique_ptr<Cryptographer> cryptographer_copy;
     if (cryptographer_) {
-      cryptographer_copy = base::MakeUnique<Cryptographer>(*cryptographer_);
+      cryptographer_copy = std::make_unique<Cryptographer>(*cryptographer_);
     }
 
     // TODO(maxbogue): crbug.com/529498: Inject pending updates somehow.
-    worker_ = base::MakeUnique<ModelTypeWorker>(
+    worker_ = std::make_unique<ModelTypeWorker>(
         type, state, !state.initial_sync_done(), std::move(cryptographer_copy),
         &mock_nudge_handler_, std::move(processor), emitter_.get(),
         &cancelation_signal_);
@@ -228,7 +227,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   // Introduce a new key that the local cryptographer can't decrypt.
   void AddPendingKey() {
     if (!cryptographer_) {
-      cryptographer_ = base::MakeUnique<Cryptographer>(&fake_encryptor_);
+      cryptographer_ = std::make_unique<Cryptographer>(&fake_encryptor_);
     }
 
     foreign_encryption_key_index_++;
@@ -268,14 +267,14 @@ class ModelTypeWorkerTest : public ::testing::Test {
     // Update the worker with the latest cryptographer.
     if (worker_) {
       worker_->UpdateCryptographer(
-          base::MakeUnique<Cryptographer>(*cryptographer_));
+          std::make_unique<Cryptographer>(*cryptographer_));
     }
   }
 
   // Update the local cryptographer with all relevant keys.
   void DecryptPendingKey() {
     if (!cryptographer_) {
-      cryptographer_ = base::MakeUnique<Cryptographer>(&fake_encryptor_);
+      cryptographer_ = std::make_unique<Cryptographer>(&fake_encryptor_);
     }
 
     KeyParams params = GetNthKeyParams(foreign_encryption_key_index_);
@@ -285,7 +284,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     // Update the worker with the latest cryptographer.
     if (worker_) {
       worker_->UpdateCryptographer(
-          base::MakeUnique<Cryptographer>(*cryptographer_));
+          std::make_unique<Cryptographer>(*cryptographer_));
     }
   }
 

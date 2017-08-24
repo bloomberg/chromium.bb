@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -60,7 +59,7 @@ class TestValue {
     ASSERT_FALSE(is_default());
     ASSERT_TRUE(from.is_initialized());
     ASSERT_FALSE(from.is_default());
-    value_ = base::MakeUnique<IntValue>(from.value());
+    value_ = std::make_unique<IntValue>(from.value());
     g_copy_count++;
   }
 
@@ -83,7 +82,7 @@ class TestValue {
     ASSERT_FALSE(is_default());
     // The blob is an address of an integer
     ASSERT_EQ(static_cast<int>(sizeof(int)), length);
-    value_ = base::MakeUnique<IntValue>(*static_cast<const int*>(blob));
+    value_ = std::make_unique<IntValue>(*static_cast<const int*>(blob));
     g_parse_count++;
   }
 

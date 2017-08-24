@@ -11,7 +11,6 @@
 
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -41,11 +40,11 @@ FakeServer::FakeServer()
       network_enabled_(true),
       weak_ptr_factory_(this) {
   base::ThreadRestrictions::SetIOAllowed(true);
-  loopback_server_storage_ = base::MakeUnique<base::ScopedTempDir>();
+  loopback_server_storage_ = std::make_unique<base::ScopedTempDir>();
   if (!loopback_server_storage_->CreateUniqueTempDir()) {
     NOTREACHED() << "Creating temp dir failed.";
   }
-  loopback_server_ = base::MakeUnique<syncer::LoopbackServer>(
+  loopback_server_ = std::make_unique<syncer::LoopbackServer>(
       loopback_server_storage_->GetPath().AppendASCII("profile.pb"));
   loopback_server_->set_observer_for_tests(this);
 }

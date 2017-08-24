@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/deferred_sequenced_task_runner.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/gtest_util.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -36,7 +35,7 @@ class ModelTypeRegistryTest : public ::testing::Test {
     workers_.push_back(ui_worker);
     workers_.push_back(db_worker);
 
-    registry_ = base::MakeUnique<ModelTypeRegistry>(
+    registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         base::Bind(&ModelTypeRegistryTest::MigrateDirectory,
                    base::Unretained(this)),
@@ -60,9 +59,9 @@ class ModelTypeRegistryTest : public ::testing::Test {
 
   static std::unique_ptr<ActivationContext> MakeActivationContext(
       const sync_pb::ModelTypeState& model_type_state) {
-    auto context = base::MakeUnique<ActivationContext>();
+    auto context = std::make_unique<ActivationContext>();
     context->model_type_state = model_type_state;
-    context->type_processor = base::MakeUnique<FakeModelTypeProcessor>();
+    context->type_processor = std::make_unique<FakeModelTypeProcessor>();
     return context;
   }
 

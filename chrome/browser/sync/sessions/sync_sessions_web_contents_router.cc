@@ -47,7 +47,7 @@ SyncSessionsWebContentsRouter::SyncSessionsWebContentsRouter(Profile* profile) {
 
 #if !defined(OS_ANDROID)
   browser_list_helper_ =
-      base::MakeUnique<BrowserListRouterHelper>(this, profile);
+      std::make_unique<BrowserListRouterHelper>(this, profile);
 #endif  // !defined(OS_ANDROID)
 }
 

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
@@ -111,7 +110,7 @@ void SyncServiceBase::InitializeEngine() {
   DCHECK(engine_);
 
   if (!sync_thread_) {
-    sync_thread_ = base::MakeUnique<base::Thread>("Chrome_SyncThread");
+    sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
     base::Thread::Options options;
     options.timer_slack = base::TIMER_SLACK_MAXIMUM;
     CHECK(sync_thread_->StartWithOptions(options));
@@ -120,7 +119,7 @@ void SyncServiceBase::InitializeEngine() {
   SyncEngine::InitParams params;
   params.sync_task_runner = sync_thread_->task_runner();
   params.host = this;
-  params.registrar = base::MakeUnique<SyncBackendRegistrar>(
+  params.registrar = std::make_unique<SyncBackendRegistrar>(
       debug_identifier_, base::Bind(&SyncClient::CreateModelWorkerForGroup,
                                     base::Unretained(sync_client_.get())));
   params.encryption_observer_proxy = crypto_->GetEncryptionObserverProxy();
@@ -134,7 +133,7 @@ void SyncServiceBase::InitializeEngine() {
       sync_client_->GetInvalidationService();
   params.invalidator_client_id =
       invalidator ? invalidator->GetInvalidatorClientId() : "",
-  params.sync_manager_factory = base::MakeUnique<SyncManagerFactory>();
+  params.sync_manager_factory = std::make_unique<SyncManagerFactory>();
   // The first time we start up the engine we want to ensure we have a clean
   // directory, so delete any old one that might be there.
   params.delete_sync_data_folder = !IsFirstSetupComplete();
@@ -145,7 +144,7 @@ void SyncServiceBase::InitializeEngine() {
   params.restored_keystore_key_for_bootstrapping =
       sync_prefs_.GetKeystoreEncryptionBootstrapToken();
   params.engine_components_factory =
-      base::MakeUnique<EngineComponentsFactoryImpl>(
+      std::make_unique<EngineComponentsFactoryImpl>(
           EngineSwitchesFromCommandLine());
   params.unrecoverable_error_handler = GetUnrecoverableErrorHandler();
   params.report_unrecoverable_error_function =
@@ -157,7 +156,7 @@ void SyncServiceBase::InitializeEngine() {
 }
 
 void SyncServiceBase::ResetCryptoState() {
-  crypto_ = base::MakeUnique<SyncServiceCrypto>(
+  crypto_ = std::make_unique<SyncServiceCrypto>(
       base::BindRepeating(&SyncServiceBase::NotifyObservers,
                           base::Unretained(this)),
       base::BindRepeating(&SyncService::GetPreferredDataTypes,

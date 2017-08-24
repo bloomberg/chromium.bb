@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
@@ -83,9 +82,9 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
   explicit SyncSessionsClientImpl(ios::ChromeBrowserState* browser_state)
       : browser_state_(browser_state),
         window_delegates_getter_(
-            base::MakeUnique<TabModelSyncedWindowDelegatesGetter>()),
+            std::make_unique<TabModelSyncedWindowDelegatesGetter>()),
         local_session_event_router_(
-            base::MakeUnique<IOSChromeLocalSessionEventRouter>(
+            std::make_unique<IOSChromeLocalSessionEventRouter>(
                 browser_state_,
                 this,
                 ios::sync_start_util::GetFlareForSyncableService(
@@ -146,7 +145,7 @@ class SyncSessionsClientImpl : public sync_sessions::SyncSessionsClient {
 IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
       sync_sessions_client_(
-          base::MakeUnique<SyncSessionsClientImpl>(browser_state)),
+          std::make_unique<SyncSessionsClientImpl>(browser_state)),
       weak_ptr_factory_(this) {}
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}

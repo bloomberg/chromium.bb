@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -366,7 +365,7 @@ void SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_type_manager_);
   DCHECK(!saved_nigori_state_);
-  saved_nigori_state_ = base::MakeUnique<SyncEncryptionHandler::NigoriState>();
+  saved_nigori_state_ = std::make_unique<SyncEncryptionHandler::NigoriState>();
   sync_prefs_->GetNigoriSpecificsForPassphraseTransition(
       &saved_nigori_state_->nigori_specifics);
   const ModelTypeSet types = data_type_manager_->GetActiveDataTypes();
@@ -376,7 +375,7 @@ void SyncServiceCrypto::BeginConfigureCatchUpBeforeClear() {
 std::unique_ptr<SyncEncryptionHandler::Observer>
 SyncServiceCrypto::GetEncryptionObserverProxy() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::MakeUnique<SyncEncryptionObserverProxy>(
+  return std::make_unique<SyncEncryptionObserverProxy>(
       weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get());
 }
 

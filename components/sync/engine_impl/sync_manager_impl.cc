@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/json/json_writer.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
@@ -230,7 +229,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
 
   allstatus_.SetHasKeystoreKey(
       !args->restored_keystore_key_for_bootstrapping.empty());
-  sync_encryption_handler_ = base::MakeUnique<SyncEncryptionHandlerImpl>(
+  sync_encryption_handler_ = std::make_unique<SyncEncryptionHandlerImpl>(
       &share_, args->encryptor, args->restored_key_for_bootstrapping,
       args->restored_keystore_key_for_bootstrapping);
   sync_encryption_handler_->AddObserver(this);
@@ -246,7 +245,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
           args->credentials.account_id, absolute_db_path);
 
   DCHECK(backing_store.get());
-  share_.directory = base::MakeUnique<syncable::Directory>(
+  share_.directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
       report_unrecoverable_error_function_, sync_encryption_handler_.get(),
       sync_encryption_handler_->GetCryptographerUnsafe());
@@ -275,10 +274,10 @@ void SyncManagerImpl::Init(InitArgs* args) {
     VLOG(1) << "Running against local sync backend.";
     allstatus_.SetLocalBackendFolder(
         args->local_sync_backend_folder.AsUTF8Unsafe());
-    connection_manager_ = base::MakeUnique<LoopbackConnectionManager>(
+    connection_manager_ = std::make_unique<LoopbackConnectionManager>(
         args->cancelation_signal, args->local_sync_backend_folder);
   } else {
-    connection_manager_ = base::MakeUnique<SyncServerConnectionManager>(
+    connection_manager_ = std::make_unique<SyncServerConnectionManager>(
         args->service_url.host() + args->service_url.path(),
         args->service_url.EffectiveIntPort(),
         args->service_url.SchemeIsCryptographic(), args->post_factory.release(),
@@ -294,7 +293,7 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DVLOG(1) << "Setting invalidator client ID: " << args->invalidator_client_id;
   allstatus_.SetInvalidatorClientId(args->invalidator_client_id);
 
-  model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
+  model_type_registry_ = std::make_unique<ModelTypeRegistry>(
       args->workers, &share_, this, base::Bind(&MigrateDirectoryData),
       args->cancelation_signal);
   sync_encryption_handler_->AddObserver(model_type_registry_.get());
@@ -910,7 +909,7 @@ ModelTypeConnector* SyncManagerImpl::GetModelTypeConnector() {
 std::unique_ptr<ModelTypeConnector>
 SyncManagerImpl::GetModelTypeConnectorProxy() {
   DCHECK(initialized_);
-  return base::MakeUnique<ModelTypeConnectorProxy>(
+  return std::make_unique<ModelTypeConnectorProxy>(
       base::ThreadTaskRunnerHandle::Get(), model_type_registry_->AsWeakPtr());
 }
 

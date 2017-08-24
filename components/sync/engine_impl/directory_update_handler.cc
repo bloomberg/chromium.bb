@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/engine_impl/conflict_resolver.h"
 #include "components/sync/engine_impl/cycle/data_type_debug_info_emitter.h"

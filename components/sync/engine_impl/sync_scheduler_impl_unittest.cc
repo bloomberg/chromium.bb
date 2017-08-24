@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -127,18 +126,18 @@ class SyncSchedulerImplTest : public testing::Test {
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_DB)));
     workers_.push_back(make_scoped_refptr(new FakeModelWorker(GROUP_PASSIVE)));
 
-    connection_ = base::MakeUnique<MockConnectionManager>(directory(),
+    connection_ = std::make_unique<MockConnectionManager>(directory(),
                                                           &cancelation_signal_);
     connection_->SetServerReachable();
 
-    model_type_registry_ = base::MakeUnique<ModelTypeRegistry>(
+    model_type_registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
         UssMigrator(), &cancelation_signal_);
     model_type_registry_->RegisterDirectoryType(NIGORI, GROUP_PASSIVE);
     model_type_registry_->RegisterDirectoryType(THEMES, GROUP_UI);
     model_type_registry_->RegisterDirectoryType(TYPED_URLS, GROUP_DB);
 
-    context_ = base::MakeUnique<SyncCycleContext>(
+    context_ = std::make_unique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),
         std::vector<SyncEngineEventListener*>(), nullptr,
         model_type_registry_.get(),
@@ -147,7 +146,7 @@ class SyncSchedulerImplTest : public testing::Test {
         "fake_invalidator_client_id");
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");
-    scheduler_ = base::MakeUnique<SyncSchedulerImpl>(
+    scheduler_ = std::make_unique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(), context(),
         syncer_, false);
     scheduler_->SetDefaultNudgeDelay(default_delay());
@@ -275,7 +274,7 @@ class SyncSchedulerImplTest : public testing::Test {
   void NewSchedulerForLocalBackend() {
     // The old syncer is destroyed with the scheduler that owns it.
     syncer_ = new testing::StrictMock<MockSyncer>();
-    scheduler_ = base::MakeUnique<SyncSchedulerImpl>(
+    scheduler_ = std::make_unique<SyncSchedulerImpl>(
         "TestSyncScheduler", BackoffDelayProvider::FromDefaults(), context(),
         syncer_, true);
     scheduler_->SetDefaultNudgeDelay(default_delay());

@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
@@ -45,7 +44,7 @@ void UserEventServiceImpl::RecordUserEvent(
 
 void UserEventServiceImpl::RecordUserEvent(
     const UserEventSpecifics& specifics) {
-  RecordUserEvent(base::MakeUnique<UserEventSpecifics>(specifics));
+  RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
 }
 
 base::WeakPtr<ModelTypeSyncBridge> UserEventServiceImpl::GetSyncBridge() {

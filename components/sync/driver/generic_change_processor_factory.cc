@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "components/sync/driver/generic_change_processor.h"
 #include "components/sync/model/syncable_service.h"
 
@@ -25,7 +24,7 @@ GenericChangeProcessorFactory::CreateGenericChangeProcessor(
     const base::WeakPtr<SyncMergeResult>& merge_result,
     SyncClient* sync_client) {
   DCHECK(user_share);
-  return base::MakeUnique<GenericChangeProcessor>(
+  return std::make_unique<GenericChangeProcessor>(
       type, std::move(error_handler), local_service, merge_result, user_share,
       sync_client, local_service->GetAttachmentStoreForSync());
 }

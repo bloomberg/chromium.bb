@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -58,7 +57,7 @@ KeyedService* UserEventServiceFactory::BuildServiceInstanceFor(
       base::BindRepeating(&syncer::ModelTypeChangeProcessor::Create,
                           base::BindRepeating(&syncer::ReportUnrecoverableError,
                                               chrome::GetChannel()));
-  auto bridge = base::MakeUnique<syncer::UserEventSyncBridge>(
+  auto bridge = std::make_unique<syncer::UserEventSyncBridge>(
       std::move(store_factory), std::move(processor_factory),
       sync_service->GetGlobalIdMapper());
   return new syncer::UserEventServiceImpl(sync_service, std::move(bridge));
