@@ -29,7 +29,7 @@ NGConstraintSpace::NGConstraintSpace(
     const NGMarginStrut& margin_strut,
     const NGLogicalOffset& bfc_offset,
     const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
-    const std::shared_ptr<NGExclusionSpace>& exclusion_space,
+    const NGExclusionSpace& exclusion_space,
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     const WTF::Optional<LayoutUnit>& clearance_offset,
     Vector<NGBaselineRequest>& baseline_requests)
@@ -54,7 +54,7 @@ NGConstraintSpace::NGConstraintSpace(
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
       floats_bfc_offset_(floats_bfc_offset),
-      exclusion_space_(exclusion_space),
+      exclusion_space_(WTF::MakeUnique<NGExclusionSpace>(exclusion_space)),
       clearance_offset_(clearance_offset) {
   unpositioned_floats_.swap(unpositioned_floats);
   baseline_requests_.swap(baseline_requests);

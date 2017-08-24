@@ -27,7 +27,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode,
       is_new_fc_(false),
       is_anonymous_(false),
       text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
-      exclusion_space_(new NGExclusionSpace()) {}
+      exclusion_space_(nullptr) {}
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
     NGLogicalSize available_size) {
@@ -72,8 +72,8 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetClearanceOffset(
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetExclusionSpace(
-    std::shared_ptr<NGExclusionSpace> exclusion_space) {
-  exclusion_space_ = exclusion_space;
+    const NGExclusionSpace& exclusion_space) {
+  exclusion_space_ = &exclusion_space;
   return *this;
 }
 
@@ -196,11 +196,15 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
           ? parent_percentage_resolution_size->inline_size
           : Optional<LayoutUnit>();
 
+  DEFINE_STATIC_LOCAL(NGExclusionSpace, empty_exclusion_space, ());
+
   // Reset things that do not pass the Formatting Context boundary.
-  std::shared_ptr<NGExclusionSpace> exclusion_space(
-      is_new_fc_ ? std::make_shared<NGExclusionSpace>() : exclusion_space_);
   if (is_new_fc_)
     DCHECK(unpositioned_floats_.IsEmpty());
+
+  const NGExclusionSpace& exclusion_space = (is_new_fc_ || !exclusion_space_)
+                                                ? empty_exclusion_space
+                                                : *exclusion_space_;
   NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
   WTF::Optional<LayoutUnit> clearance_offset =

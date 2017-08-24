@@ -373,6 +373,14 @@ RefPtr<NGLayoutResult> NGBlockNode::RunOldLayout(
                             box_->StyleRef().Direction());
   builder.SetSize(box_size)
       .SetOverflowSize(overflow_size);
+
+  // For now we copy the exclusion space straight through, this is incorrect
+  // but needed as not all elements which participate in a BFC are switched
+  // over to LayoutNG yet.
+  // TODO(ikilpatrick): Remove this once the above isn't true.
+  builder.SetExclusionSpace(
+      WTF::WrapUnique(new NGExclusionSpace(constraint_space.ExclusionSpace())));
+
   CopyBaselinesFromOldLayout(constraint_space, &builder);
   return builder.ToBoxFragment();
 }

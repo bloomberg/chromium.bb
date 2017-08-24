@@ -67,11 +67,12 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
 
 bool NGInlineLayoutAlgorithm::CreateLine(
     NGLineInfo* line_info,
+    NGExclusionSpace* exclusion_space,
     RefPtr<NGInlineBreakToken> break_token) {
   if (Node().IsBidiEnabled())
     BidiReorder(&line_info->Results());
 
-  if (!PlaceItems(line_info, break_token))
+  if (!PlaceItems(line_info, *exclusion_space, break_token))
     return false;
 
   // If something has resolved our BFC offset we can place all of the
@@ -79,8 +80,9 @@ bool NGInlineLayoutAlgorithm::CreateLine(
   if (container_builder_.BfcOffset()) {
     NGLogicalOffset origin_point =
         GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
-    PositionPendingFloats(origin_point.block_offset, &container_builder_,
-                          &unpositioned_floats_, MutableConstraintSpace());
+    PositionPendingFloats(ConstraintSpace(), origin_point.block_offset,
+                          &container_builder_, &unpositioned_floats_,
+                          exclusion_space);
   }
 
   return true;
@@ -133,6 +135,7 @@ void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
 
 bool NGInlineLayoutAlgorithm::PlaceItems(
     NGLineInfo* line_info,
+    const NGExclusionSpace& exclusion_space,
     RefPtr<NGInlineBreakToken> break_token) {
   NGInlineItemResults* line_items = &line_info->Results();
 
@@ -268,7 +271,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   container_builder_.AddChild(line_box.ToLineBoxFragment(), offset);
 
   max_inline_size_ = std::max(max_inline_size_, inline_size);
-  content_size_ = ComputeContentSize(*line_info, line_bottom);
+  content_size_ = ComputeContentSize(*line_info, exclusion_space, line_bottom);
 
   return true;
 }
@@ -374,6 +377,7 @@ void NGInlineLayoutAlgorithm::ApplyTextAlign(ETextAlign text_align,
 
 LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
     const NGLineInfo& line_info,
+    const NGExclusionSpace& exclusion_space,
     LayoutUnit line_bottom) {
   LayoutUnit content_size = line_bottom;
 
@@ -392,8 +396,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
   if (layout_object && layout_object->IsBR()) {
     NGLogicalOffset bfc_offset =
         ContainerBfcOffset() + NGLogicalOffset(LayoutUnit(), content_size);
-    AdjustToClearance(ConstraintSpace().ExclusionSpace()->ClearanceOffset(
-                          item.Style()->Clear()),
+    AdjustToClearance(exclusion_space.ClearanceOffset(item.Style()->Clear()),
                       &bfc_offset);
     content_size = bfc_offset.block_offset - ContainerBfcOffset().block_offset;
   }
@@ -469,11 +472,19 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     }
   }
 
-  NGLineBreaker line_breaker(Node(), constraint_space_, &container_builder_,
+  NGLineBreaker line_breaker(Node(), *constraint_space_, &container_builder_,
                              &unpositioned_floats_, BreakToken());
+
+  std::unique_ptr<NGExclusionSpace> exclusion_space(
+      WTF::MakeUnique<NGExclusionSpace>(ConstraintSpace().ExclusionSpace()));
   NGLineInfo line_info;
-  while (line_breaker.NextLine(&line_info, {LayoutUnit(), content_size_}))
-    CreateLine(&line_info, line_breaker.CreateBreakToken());
+  while (line_breaker.NextLine({LayoutUnit(), content_size_}, *exclusion_space,
+                               &line_info)) {
+    CreateLine(&line_info, line_breaker.ExclusionSpace(),
+               line_breaker.CreateBreakToken());
+    exclusion_space =
+        WTF::MakeUnique<NGExclusionSpace>(*line_breaker.ExclusionSpace());
+  }
 
   // Place any remaining floats which couldn't fit on the previous line.
   // TODO(ikilpatrick): This is duplicated from CreateLine, but flushes any
@@ -482,8 +493,9 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   if (container_builder_.BfcOffset()) {
     NGLogicalOffset origin_point =
         GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
-    PositionPendingFloats(origin_point.block_offset, &container_builder_,
-                          &unpositioned_floats_, MutableConstraintSpace());
+    PositionPendingFloats(ConstraintSpace(), origin_point.block_offset,
+                          &container_builder_, &unpositioned_floats_,
+                          exclusion_space.get());
   }
 
   // TODO(kojii): Check if the line box width should be content or available.
@@ -505,6 +517,8 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     DCHECK(!container_builder_.BfcOffset());
     container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
   }
+
+  container_builder_.SetExclusionSpace(std::move(exclusion_space));
 
   PropagateBaselinesFromChildren();
 

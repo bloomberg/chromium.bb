@@ -45,9 +45,7 @@ class CORE_EXPORT NGConstraintSpace final
       Optional<LayoutUnit> override_logical_width = WTF::nullopt,
       Optional<LayoutUnit> override_logical_height = WTF::nullopt);
 
-  const std::shared_ptr<NGExclusionSpace>& ExclusionSpace() const {
-    return exclusion_space_;
-  }
+  const NGExclusionSpace& ExclusionSpace() const { return *exclusion_space_; }
 
   TextDirection Direction() const {
     return static_cast<TextDirection>(direction_);
@@ -198,7 +196,7 @@ class CORE_EXPORT NGConstraintSpace final
       const NGMarginStrut& margin_strut,
       const NGLogicalOffset& bfc_offset,
       const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
-      const std::shared_ptr<NGExclusionSpace>& exclusion_space,
+      const NGExclusionSpace& exclusion_space,
       Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
       const WTF::Optional<LayoutUnit>& clearance_offset,
       Vector<NGBaselineRequest>& baseline_requests);
@@ -233,7 +231,7 @@ class CORE_EXPORT NGConstraintSpace final
   NGLogicalOffset bfc_offset_;
   WTF::Optional<NGLogicalOffset> floats_bfc_offset_;
 
-  const std::shared_ptr<NGExclusionSpace> exclusion_space_;
+  const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   WTF::Optional<LayoutUnit> clearance_offset_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
 

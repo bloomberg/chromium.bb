@@ -18,6 +18,8 @@
 
 namespace blink {
 
+class NGExclusionSpace;
+
 class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   DISALLOW_NEW();
 
@@ -33,6 +35,8 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
                     RefPtr<const ComputedStyle>,
                     NGWritingMode,
                     TextDirection);
+
+  ~NGFragmentBuilder();
 
   using WeakBoxList = PersistentHeapLinkedHashSet<WeakMember<NGBlockNode>>;
 
@@ -109,10 +113,14 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   const Vector<NGLogicalOffset>& Offsets() const { return offsets_; }
   Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
 
-  void SwapUnpositionedFloats(
+  NGFragmentBuilder& SwapUnpositionedFloats(
       Vector<RefPtr<NGUnpositionedFloat>>* unpositioned_floats) {
     unpositioned_floats_.swap(*unpositioned_floats);
+    return *this;
   }
+
+  NGFragmentBuilder& SetExclusionSpace(
+      std::unique_ptr<const NGExclusionSpace> exclusion_space);
 
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
     return bfc_offset_;
@@ -177,6 +185,8 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
 
   Vector<NGOutOfFlowPositionedCandidate> oof_positioned_candidates_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
+
+  std::unique_ptr<const NGExclusionSpace> exclusion_space_;
 
   // Floats that need to be positioned by the next in-flow fragment that can
   // determine its block position in space.

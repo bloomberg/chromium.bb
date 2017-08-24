@@ -63,7 +63,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
       const WTF::Optional<LayoutUnit>& clearance_offset);
 
   NGConstraintSpaceBuilder& SetExclusionSpace(
-      std::shared_ptr<NGExclusionSpace> exclusion_space);
+      const NGExclusionSpace& exclusion_space);
 
   void AddBaselineRequests(const Vector<NGBaselineRequest>&);
   NGConstraintSpaceBuilder& AddBaselineRequest(const NGBaselineRequest&);
@@ -101,7 +101,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   NGMarginStrut margin_strut_;
   NGLogicalOffset bfc_offset_;
   WTF::Optional<NGLogicalOffset> floats_bfc_offset_;
-  std::shared_ptr<NGExclusionSpace> exclusion_space_;
+  const NGExclusionSpace* exclusion_space_;
   WTF::Optional<LayoutUnit> clearance_offset_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
   Vector<NGBaselineRequest> baseline_requests_;
