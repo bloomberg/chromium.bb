@@ -4,6 +4,8 @@
 
 #include "chromeos/components/tether/keep_alive_operation.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/time/default_clock.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -45,7 +47,8 @@ KeepAliveOperation::KeepAliveOperation(
     : MessageTransferOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
-      remote_device_(device_to_connect) {}
+      remote_device_(device_to_connect),
+      clock_(base::MakeUnique<base::DefaultClock>()) {}
 
 KeepAliveOperation::~KeepAliveOperation() {}
 
@@ -60,7 +63,7 @@ void KeepAliveOperation::RemoveObserver(Observer* observer) {
 void KeepAliveOperation::OnDeviceAuthenticated(
     const cryptauth::RemoteDevice& remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
-
+  keep_alive_tickle_request_start_time_ = clock_->Now();
   SendMessageToDevice(remote_device,
                       base::MakeUnique<MessageWrapper>(KeepAliveTickle()));
 }
@@ -83,6 +86,11 @@ void KeepAliveOperation::OnMessageReceived(
       static_cast<KeepAliveTickleResponse*>(message_wrapper->GetProto().get());
   device_status_ = base::MakeUnique<DeviceStatus>(response->device_status());
 
+  DCHECK(!keep_alive_tickle_request_start_time_.is_null());
+  UMA_HISTOGRAM_TIMES(
+      "InstantTethering.Performance.KeepAliveTickleResponseDuration",
+      clock_->Now() - keep_alive_tickle_request_start_time_);
+
   // Now that a response has been received, the device can be unregistered.
   UnregisterDevice(remote_device);
 }
@@ -100,6 +108,11 @@ void KeepAliveOperation::OnOperationFinished() {
 
 MessageType KeepAliveOperation::GetMessageTypeForConnection() {
   return MessageType::KEEP_ALIVE_TICKLE;
+}
+
+void KeepAliveOperation::SetClockForTest(
+    std::unique_ptr<base::Clock> clock_for_test) {
+  clock_ = std::move(clock_for_test);
 }
 
 }  // namespace tether

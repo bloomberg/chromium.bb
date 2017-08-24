@@ -7,6 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
@@ -19,6 +21,9 @@ namespace chromeos {
 namespace tether {
 
 namespace {
+
+constexpr base::TimeDelta kKeepAliveTickleResponseTime =
+    base::TimeDelta::FromSeconds(3);
 
 class TestObserver : public KeepAliveOperation::Observer {
  public:
@@ -79,6 +84,10 @@ class KeepAliveOperationTest : public testing::Test {
     test_observer_ = base::WrapUnique(new TestObserver());
     operation_->AddObserver(test_observer_.get());
 
+    test_clock_ = new base::SimpleTestClock();
+    test_clock_->SetNow(base::Time::UnixEpoch());
+    operation_->SetClockForTest(base::WrapUnique(test_clock_));
+
     operation_->Initialize();
   }
 
@@ -97,9 +106,12 @@ class KeepAliveOperationTest : public testing::Test {
   const cryptauth::RemoteDevice test_device_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
+  base::SimpleTestClock* test_clock_;
   std::unique_ptr<TestObserver> test_observer_;
 
   std::unique_ptr<KeepAliveOperation> operation_;
+
+  base::HistogramTester histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(KeepAliveOperationTest);
@@ -111,6 +123,8 @@ TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
   SimulateDeviceAuthenticationAndVerifyMessageSent();
   EXPECT_FALSE(test_observer_->has_run_callback());
 
+  test_clock_->Advance(kKeepAliveTickleResponseTime);
+
   fake_ble_connection_manager_->ReceiveMessage(
       test_device_, CreateKeepAliveTickleResponseString());
   EXPECT_TRUE(test_observer_->has_run_callback());
@@ -118,6 +132,10 @@ TEST_F(KeepAliveOperationTest, TestSendsKeepAliveTickleAndReceivesResponse) {
   ASSERT_TRUE(test_observer_->last_device_status_received());
   EXPECT_EQ(CreateDeviceStatusWithFakeFields().SerializeAsString(),
             test_observer_->last_device_status_received()->SerializeAsString());
+
+  histogram_tester_.ExpectTimeBucketCount(
+      "InstantTethering.Performance.KeepAliveTickleResponseDuration",
+      kKeepAliveTickleResponseTime, 1);
 }
 
 TEST_F(KeepAliveOperationTest, TestCannotConnect) {
@@ -139,6 +157,9 @@ TEST_F(KeepAliveOperationTest, TestCannotConnect) {
   EXPECT_TRUE(test_observer_->has_run_callback());
   EXPECT_EQ(test_device_, test_observer_->last_remote_device_received());
   EXPECT_FALSE(test_observer_->last_device_status_received());
+
+  histogram_tester_.ExpectTotalCount(
+      "InstantTethering.Performance.KeepAliveTickleResponseDuration", 0);
 }
 
 }  // namespace tether
