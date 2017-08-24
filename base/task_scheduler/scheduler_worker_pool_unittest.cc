@@ -22,7 +22,12 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_WIN)
+#include "base/task_scheduler/platform_native_worker_pool_win.h"
+#endif
 
 namespace base {
 namespace internal {
@@ -33,7 +38,12 @@ constexpr size_t kNumWorkersInWorkerPool = 4;
 constexpr size_t kNumThreadsPostingTasks = 4;
 constexpr size_t kNumTasksPostedPerThread = 150;
 
-enum class PoolType { GENERIC };
+enum class PoolType {
+  GENERIC,
+#if defined(OS_WIN)
+  WINDOWS,
+#endif
+};
 
 struct PoolExecutionType {
   PoolType pool_type;
@@ -103,6 +113,12 @@ class TaskSchedulerWorkerPoolTest
             "TestWorkerPool", ThreadPriority::NORMAL, &task_tracker_,
             &delayed_task_manager_);
         break;
+#if defined(OS_WIN)
+      case PoolType::WINDOWS:
+        worker_pool_ = std::make_unique<PlatformNativeWorkerPoolWin>(
+            &task_tracker_, &delayed_task_manager_);
+        break;
+#endif
     }
     ASSERT_TRUE(worker_pool_);
   }
@@ -117,6 +133,14 @@ class TaskSchedulerWorkerPoolTest
             kNumWorkersInWorkerPool, TimeDelta::Max()));
         break;
       }
+#if defined(OS_WIN)
+      case PoolType::WINDOWS: {
+        PlatformNativeWorkerPoolWin* scheduler_worker_pool_windows_impl =
+            static_cast<PlatformNativeWorkerPoolWin*>(worker_pool_.get());
+        scheduler_worker_pool_windows_impl->Start();
+        break;
+      }
+#endif
     }
   }
 
@@ -279,6 +303,18 @@ INSTANTIATE_TEST_CASE_P(GenericSequenced,
                         ::testing::Values(PoolExecutionType{
                             PoolType::GENERIC,
                             test::ExecutionMode::SEQUENCED}));
+
+#if defined(OS_WIN)
+INSTANTIATE_TEST_CASE_P(WinParallel,
+                        TaskSchedulerWorkerPoolTest,
+                        ::testing::Values(PoolExecutionType{
+                            PoolType::WINDOWS, test::ExecutionMode::PARALLEL}));
+INSTANTIATE_TEST_CASE_P(WinSequenced,
+                        TaskSchedulerWorkerPoolTest,
+                        ::testing::Values(PoolExecutionType{
+                            PoolType::WINDOWS,
+                            test::ExecutionMode::SEQUENCED}));
+#endif
 
 }  // namespace internal
 }  // namespace base

@@ -802,6 +802,8 @@ component("base") {
     "task_scheduler/initialization_util.h",
     "task_scheduler/lazy_task_runner.cc",
     "task_scheduler/lazy_task_runner.h",
+    "task_scheduler/platform_native_worker_pool_win.cc",
+    "task_scheduler/platform_native_worker_pool_win.h",
     "task_scheduler/post_task.cc",
     "task_scheduler/post_task.h",
     "task_scheduler/priority_queue.cc",
