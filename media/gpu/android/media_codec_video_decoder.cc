@@ -358,7 +358,7 @@ void MediaCodecVideoDecoder::OnCodecCreated(
 
 void MediaCodecVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                                     const DecodeCB& decode_cb) {
-  DVLOG(2) << __func__ << " pts=" << buffer->timestamp().InMilliseconds();
+  DVLOG(2) << __func__ << buffer->AsHumanReadableString();
   if (state_ == State::kError) {
     decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -473,7 +473,7 @@ bool MediaCodecVideoDecoder::QueueInput() {
   MediaCodecStatus queue_status = codec_->QueueInputBuffer(
       input_buffer, pending_decode.buffer->data(),
       pending_decode.buffer->data_size(), pending_decode.buffer->timestamp());
-  DVLOG(2) << ": QueueInputBuffer(pts="
+  DVLOG(2) << "QueueInputBuffer(pts="
            << pending_decode.buffer->timestamp().InMilliseconds()
            << ") status=" << queue_status;
 

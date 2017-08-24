@@ -106,22 +106,20 @@ bool DecoderBuffer::MatchesForTesting(const DecoderBuffer& buffer) const {
 }
 
 std::string DecoderBuffer::AsHumanReadableString() const {
-  if (end_of_stream()) {
-    return "end of stream";
-  }
+  if (end_of_stream())
+    return "EOS";
 
   std::ostringstream s;
-  s << "timestamp: " << timestamp_.InMicroseconds()
-    << " duration: " << duration_.InMicroseconds()
-    << " size: " << size_
-    << " side_data_size: " << side_data_size_
-    << " is_key_frame: " << is_key_frame_
-    << " encrypted: " << (decrypt_config_ != NULL)
-    << " discard_padding (ms): (" << discard_padding_.first.InMilliseconds()
-    << ", " << discard_padding_.second.InMilliseconds() << ")";
+  s << "timestamp=" << timestamp_.InMicroseconds()
+    << " duration=" << duration_.InMicroseconds() << " size=" << size_
+    << " side_data_size=" << side_data_size_
+    << " is_key_frame=" << is_key_frame_
+    << " encrypted=" << (decrypt_config_ != NULL) << " discard_padding (ms)=("
+    << discard_padding_.first.InMilliseconds() << ", "
+    << discard_padding_.second.InMilliseconds() << ")";
 
   if (decrypt_config_)
-    s << " decrypt:" << (*decrypt_config_);
+    s << " decrypt=" << (*decrypt_config_);
 
   return s.str();
 }
