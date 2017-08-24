@@ -147,7 +147,8 @@ TEST_F(CommonJsTest, IsSameOrigin) {
       {@"'http://abc.com', 'http://abc.com'", @YES},
       {@"'http://abc.com',  'https://abc.com'", @NO},
       {@"'http://abc.com', 'http://abc.com:123'", @NO},
-      {@"'http://abc.com', 'http://def.com'", @NO}};
+      {@"'http://abc.com', 'http://def.com'", @NO},
+      {@"'http://abc.com/def', 'http://abc.com/xyz'", @YES}};
 
   for (size_t i = 0; i < arraysize(test_data); i++) {
     TestScriptAndExpectedValue& data = test_data[i];

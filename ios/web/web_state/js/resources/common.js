@@ -707,8 +707,7 @@ __gCrWeb['common'] = __gCrWeb.common;
    * Checks whether the two URLs are from the same origin.
    */
   __gCrWeb.common.isSameOrigin = function(url_one, url_two) {
-    return __gCrWeb.common.removeQueryAndReferenceFromURL(url_one) ==
-      __gCrWeb.common.removeQueryAndReferenceFromURL(url_two);
+    return new URL(url_one).origin == new URL(url_two).origin;
   }
 
 }());  // End of anonymous object
