@@ -60,6 +60,7 @@
 #include "core/css/PropertyRegistry.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/resolver/CSSVariableResolver.h"
 #include "core/css/resolver/ElementStyleResources.h"
 #include "core/css/resolver/FilterOperationResolver.h"
@@ -114,6 +115,7 @@ static inline bool IsValidVisitedLinkProperty(CSSPropertyID id) {
 void StyleBuilder::ApplyProperty(CSSPropertyID id,
                                  StyleResolverState& state,
                                  const CSSValue& value) {
+  bool is_inherited = CSSPropertyAPI::Get(id).IsInherited();
   if (id != CSSPropertyVariable && (value.IsVariableReferenceValue() ||
                                     value.IsPendingSubstitutionValue())) {
     bool omit_animation_tainted =
@@ -124,7 +126,7 @@ void StyleBuilder::ApplyProperty(CSSPropertyID id,
     ApplyProperty(id, state, *resolved_value);
 
     if (!state.Style()->HasVariableReferenceFromNonInheritedProperty() &&
-        !CSSPropertyMetadata::IsInheritedProperty(id))
+        !is_inherited)
       state.Style()->SetHasVariableReferenceFromNonInheritedProperty();
     return;
   }
@@ -150,11 +152,11 @@ void StyleBuilder::ApplyProperty(CSSPropertyID id,
   }
 
   if (is_inherit && !state.ParentStyle()->HasExplicitlyInheritedProperties() &&
-      !CSSPropertyMetadata::IsInheritedProperty(id)) {
+      !is_inherited) {
     state.ParentStyle()->SetHasExplicitlyInheritedProperties();
   } else if (value.IsUnsetValue()) {
     DCHECK(!is_inherit && !is_initial);
-    if (CSSPropertyMetadata::IsInheritedProperty(id))
+    if (is_inherited)
       is_inherit = true;
     else
       is_initial = true;
