@@ -15,13 +15,13 @@ class Browser;
 
 // This utility class is meant to be used in a "mix-in" fashion, giving the
 // derived test class additional Instant-related functionality.
+// TODO(treib): Merge this class into InstantUITestBase.
 class InstantTestBase {
  protected:
   InstantTestBase();
   virtual ~InstantTestBase();
 
  protected:
-  void set_browser(Browser* browser) { browser_ = browser; }
   Browser* instant_browser() { return browser_; }
 
   void SetupInstant(Browser* browser);
