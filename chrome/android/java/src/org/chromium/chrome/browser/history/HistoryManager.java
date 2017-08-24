@@ -75,6 +75,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
     private boolean mIsSearching;
     private boolean mShouldShowInfoHeader;
+
     /**
      * Creates a new HistoryManager.
      * @param activity The Activity associated with the HistoryManager.
@@ -149,8 +150,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                         (LinearLayoutManager) recyclerView.getLayoutManager();
                 // Show info button if available if first visible position is close to info header;
                 // otherwise hide info button.
-                mToolbar.updateInfoMenuItem(infoHeaderIsVisible() && shouldShowInfoButton(),
-                        shouldShowInfoHeaderIfAvailable());
+                mToolbar.updateInfoMenuItem(
+                        shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
 
                 if (!mHistoryAdapter.canLoadMoreItems()) return;
                 // Load more items if the scroll position is close to the bottom of the list.
@@ -423,8 +424,16 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      * @return True if info menu item should be shown on history toolbar, false otherwise.
      */
     boolean shouldShowInfoButton() {
-        return mHistoryAdapter.hasPrivacyDisclaimers() && mHistoryAdapter.getItemCount() > 0
-                && !mToolbar.isSearching() && !mSelectionDelegate.isSelectionEnabled();
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        // Before the RecyclerView binds its items, LinearLayoutManager#firstVisibleItemPosition()
+        // returns {@link RecyclerView#NO_POSITION}. If #findVisibleItemPosition() returns
+        // NO_POSITION, the current adapter position should not prevent the info button from being
+        // displayed if all of the other criteria is met. See crbug.com/756249#c3.
+        boolean firstAdapterItemScrolledOff = layoutManager.findFirstVisibleItemPosition() > 0;
+
+        return !firstAdapterItemScrolledOff && mHistoryAdapter.hasPrivacyDisclaimers()
+                && mHistoryAdapter.getItemCount() > 0 && !mToolbar.isSearching()
+                && !mSelectionDelegate.isSelectionEnabled();
     }
 
     /**
@@ -433,14 +442,6 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      */
     boolean shouldShowInfoHeaderIfAvailable() {
         return mShouldShowInfoHeader;
-    }
-
-    /**
-     * @return True if info header is visible on history page.
-     */
-    boolean infoHeaderIsVisible() {
-        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
-        return (layoutManager.findFirstVisibleItemPosition() == 0);
     }
 
     @Override
