@@ -23233,6 +23233,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-996673716" label="enable-web-app-frame"/>
   <int value="-991253797"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
+  <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
   <int value="-980260493" label="NTPSnippets:disabled"/>
   <int value="-979313250" label="enable-google-branded-context-menu"/>
   <int value="-979057409" label="enable-seccomp-filter-sandbox"/>
@@ -23357,6 +23358,7 @@ uploading your change for review.  These are checked by presubmit scripts.
       label="ContentSuggestionsFaviconsFromNewServer:enabled"/>
   <int value="-604068396" label="disable-input-ime-api"/>
   <int value="-601384286" label="disable-contextual-search"/>
+  <int value="-599932554" label="DoodlesOnLocalNtp:disabled"/>
   <int value="-598050737" label="disable-es3-apis"/>
   <int value="-589096918" label="ash-enable-fullscreen-app-list"/>
   <int value="-579192400" label="disable-input-view"/>

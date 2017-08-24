@@ -21,6 +21,10 @@ struct OneGoogleBarData;
 class OneGoogleBarService;
 class Profile;
 
+namespace search_provider_logos {
+class LogoService;
+}  // namespace search_provider_logos
+
 // Serves HTML and resources for the local new tab page i.e.
 // chrome-search://local-ntp/local-ntp.html
 class LocalNtpSource : public content::URLDataSource,
@@ -30,6 +34,7 @@ class LocalNtpSource : public content::URLDataSource,
 
  private:
   class GoogleSearchProviderTracker;
+  class DesktopLogoObserver;
 
   struct OneGoogleBarRequest {
     OneGoogleBarRequest(
@@ -78,6 +83,9 @@ class LocalNtpSource : public content::URLDataSource,
 
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
       one_google_bar_service_observer_;
+
+  search_provider_logos::LogoService* logo_service_;
+  std::unique_ptr<DesktopLogoObserver> logo_observer_;
 
   std::vector<OneGoogleBarRequest> one_google_bar_requests_;
 

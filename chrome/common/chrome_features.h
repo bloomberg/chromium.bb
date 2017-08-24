@@ -93,6 +93,10 @@ extern const base::Feature kDesktopPWAWindowing;
 
 extern const base::Feature kDisplayPersistenceToggleInPermissionPrompts;
 
+#if !defined(OS_ANDROID)
+extern const base::Feature kDoodlesOnLocalNtp;
+#endif
+
 extern const base::Feature kExpectCTReporting;
 
 extern const base::Feature kExperimentalAppBanners;
