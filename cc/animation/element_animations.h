@@ -114,15 +114,8 @@ class CC_ANIMATION_EXPORT ElementAnimations
     has_element_in_pending_list_ = has_element_in_pending_list;
   }
 
-  bool HasFilterAnimationThatInflatesBounds() const;
   bool HasTransformAnimationThatInflatesBounds() const;
-  bool HasAnimationThatInflatesBounds() const {
-    return HasTransformAnimationThatInflatesBounds() ||
-           HasFilterAnimationThatInflatesBounds();
-  }
 
-  bool FilterAnimationBoundsForBox(const gfx::BoxF& box,
-                                   gfx::BoxF* bounds) const;
   bool TransformAnimationBoundsForBox(const gfx::BoxF& box,
                                       gfx::BoxF* bounds) const;
 

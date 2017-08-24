@@ -264,6 +264,7 @@ class CC_EXPORT LayerTreeImpl {
   }
 
   void UpdatePropertyTreeAnimationFromMainThread();
+
   void SetPageScaleOnActiveTree(float active_page_scale);
   void PushPageScaleFromMainThread(float page_scale_factor,
                                    float min_page_scale_factor,
@@ -557,6 +558,10 @@ class CC_EXPORT LayerTreeImpl {
   void DidUpdatePageScale();
   void PushBrowserControls(const float* top_controls_shown_ratio);
   bool ClampBrowserControlsShownRatio();
+
+ private:
+  ElementListType GetElementTypeForAnimation() const;
+  void UpdateTransformAnimation(ElementId element_id, int transform_node_index);
 
   LayerTreeHostImpl* host_impl_;
   int source_frame_number_;

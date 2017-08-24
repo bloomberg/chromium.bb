@@ -471,35 +471,11 @@ bool AnimationHost::HasAnyAnimationTargetingProperty(
   return element_animations->HasAnyAnimationTargetingProperty(property);
 }
 
-bool AnimationHost::HasFilterAnimationThatInflatesBounds(
-    ElementId element_id) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->HasFilterAnimationThatInflatesBounds()
-             : false;
-}
-
 bool AnimationHost::HasTransformAnimationThatInflatesBounds(
     ElementId element_id) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
   return element_animations
              ? element_animations->HasTransformAnimationThatInflatesBounds()
-             : false;
-}
-
-bool AnimationHost::HasAnimationThatInflatesBounds(ElementId element_id) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->HasAnimationThatInflatesBounds()
-             : false;
-}
-
-bool AnimationHost::FilterAnimationBoundsForBox(ElementId element_id,
-                                                const gfx::BoxF& box,
-                                                gfx::BoxF* bounds) const {
-  auto element_animations = GetElementAnimationsForElementId(element_id);
-  return element_animations
-             ? element_animations->FilterAnimationBoundsForBox(box, bounds)
              : false;
 }
 
