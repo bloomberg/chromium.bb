@@ -374,13 +374,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
         // active).
         UmaUtils.recordForegroundStartTime();
         stopProgressionIfNotAcceptedTermsOfService();
-        if (!mFreProperties.getBoolean(EXTRA_USE_FRE_FLOW_SEQUENCER)) {
-            if (FirstRunStatus.getFirstRunFlowComplete()) {
-                // This is a parallel flow that needs to be refreshed/re-fired.
-                // Signal the FRE flow completion and re-launch the original intent.
-                completeFirstRunExperience();
-            }
-        }
     }
 
     @Override
