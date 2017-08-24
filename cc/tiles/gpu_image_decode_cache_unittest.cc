@@ -1745,15 +1745,15 @@ TEST_P(GpuImageDecodeCacheTest, RemoveUnusedImage) {
   TestGpuImageDecodeCache cache(context_provider.get(), GetParam());
   bool is_decomposable = true;
   SkFilterQuality quality = kHigh_SkFilterQuality;
-  std::vector<uint32_t> unique_ids(10);
+  std::vector<PaintImage::FrameKey> frame_keys;
 
   for (int i = 0; i < 10; ++i) {
     PaintImage image = CreateDiscardablePaintImage(gfx::Size(100, 100));
-    unique_ids[i] = image.GetSkImage()->uniqueID();
     DrawImage draw_image(
         image, SkIRect::MakeWH(image.width(), image.height()), quality,
         CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
         DefaultColorSpace());
+    frame_keys.push_back(draw_image.frame_key());
     scoped_refptr<TileTask> task;
     bool need_unref = cache.GetTaskForImageAndRef(
         draw_image, ImageDecodeCache::TracingInfo(), &task);
@@ -1770,7 +1770,7 @@ TEST_P(GpuImageDecodeCacheTest, RemoveUnusedImage) {
 
   // Remove unused ids.
   for (uint32_t i = 0; i < 10; ++i) {
-    cache.NotifyImageUnused(unique_ids[i]);
+    cache.NotifyImageUnused(frame_keys[i]);
     EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), (10 - i - 1));
   }
 }

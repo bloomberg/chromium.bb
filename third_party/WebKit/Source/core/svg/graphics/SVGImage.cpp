@@ -406,7 +406,8 @@ void SVGImage::PopulatePaintRecordForCurrentFrameForContainer(
   PaintCanvas* canvas = recorder.beginRecording(container_rect);
   DrawForContainer(canvas, PaintFlags(), FloatSize(container_rect.Size()), 1,
                    container_rect, container_rect, url);
-  builder.set_paint_record(recorder.finishRecordingAsPicture(), container_rect);
+  builder.set_paint_record(recorder.finishRecordingAsPicture(), container_rect,
+                           PaintImage::GetNextContentId());
 }
 
 static bool DrawNeedsLayer(const PaintFlags& flags) {

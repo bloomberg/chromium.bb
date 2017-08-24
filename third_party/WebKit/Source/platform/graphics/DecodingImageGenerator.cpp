@@ -40,14 +40,15 @@ DecodingImageGenerator::DecodingImageGenerator(
     PassRefPtr<ImageFrameGenerator> frame_generator,
     const SkImageInfo& info,
     PassRefPtr<SegmentReader> data,
-    bool all_data_received,
-    size_t index)
-    : PaintImageGenerator(info),
+    std::vector<FrameMetadata> frames,
+    PaintImage::ContentId complete_frame_content_id,
+    bool all_data_received)
+    : PaintImageGenerator(info, std::move(frames)),
       frame_generator_(std::move(frame_generator)),
       data_(std::move(data)),
       all_data_received_(all_data_received),
-      frame_index_(index),
-      can_yuv_decode_(false) {}
+      can_yuv_decode_(false),
+      complete_frame_content_id_(complete_frame_content_id) {}
 
 DecodingImageGenerator::~DecodingImageGenerator() {}
 
@@ -64,9 +65,10 @@ sk_sp<SkData> DecodingImageGenerator::GetEncodedData() const {
 bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
                                        void* pixels,
                                        size_t row_bytes,
+                                       size_t frame_index,
                                        uint32_t lazy_pixel_ref) {
   TRACE_EVENT1("blink", "DecodingImageGenerator::getPixels", "frame index",
-               static_cast<int>(frame_index_));
+               static_cast<int>(frame_index));
 
   // Implementation doesn't support scaling yet, so make sure we're not given a
   // different size.
@@ -100,7 +102,7 @@ bool DecodingImageGenerator::GetPixels(const SkImageInfo& dst_info,
 
   PlatformInstrumentation::WillDecodeLazyPixelRef(lazy_pixel_ref);
   const bool decoded = frame_generator_->DecodeAndScale(
-      data_.Get(), all_data_received_, frame_index_, decode_info, pixels,
+      data_.Get(), all_data_received_, frame_index, decode_info, pixels,
       row_bytes, alpha_option);
   PlatformInstrumentation::DidDecodeLazyPixelRef();
 
@@ -125,8 +127,7 @@ bool DecodingImageGenerator::QueryYUV8(SkYUVSizeInfo* size_info,
   if (!can_yuv_decode_ || !all_data_received_)
     return false;
 
-  TRACE_EVENT1("blink", "DecodingImageGenerator::queryYUV8", "sizes",
-               static_cast<int>(frame_index_));
+  TRACE_EVENT0("blink", "DecodingImageGenerator::queryYUV8");
 
   if (color_space)
     *color_space = kJPEG_SkYUVColorSpace;
@@ -136,22 +137,32 @@ bool DecodingImageGenerator::QueryYUV8(SkYUVSizeInfo* size_info,
 
 bool DecodingImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& size_info,
                                            void* planes[3],
+                                           size_t frame_index,
                                            uint32_t lazy_pixel_ref) {
   // YUV decoding does not currently support progressive decoding. See comment
   // in ImageFrameGenerator.h.
   DCHECK(can_yuv_decode_);
   DCHECK(all_data_received_);
 
-  TRACE_EVENT1("blink", "DecodingImageGenerator::getYUV8Planes", "frame index",
-               static_cast<int>(frame_index_));
+  TRACE_EVENT0("blink", "DecodingImageGenerator::getYUV8Planes");
 
   PlatformInstrumentation::WillDecodeLazyPixelRef(lazy_pixel_ref);
   bool decoded =
-      frame_generator_->DecodeToYUV(data_.Get(), frame_index_, size_info.fSizes,
+      frame_generator_->DecodeToYUV(data_.Get(), frame_index, size_info.fSizes,
                                     planes, size_info.fWidthBytes);
   PlatformInstrumentation::DidDecodeLazyPixelRef();
 
   return decoded;
+}
+
+PaintImage::ContentId DecodingImageGenerator::GetContentIdForFrame(
+    size_t frame_index) const {
+  // If we have all the data for the image, or this particular frame, we can
+  // consider the decoded frame constant.
+  if (all_data_received_ || GetFrameMetadata()[frame_index].complete)
+    return complete_frame_content_id_;
+
+  return PaintImageGenerator::GetContentIdForFrame(frame_index);
 }
 
 std::unique_ptr<SkImageGenerator> DecodingImageGenerator::Create(SkData* data) {
@@ -177,9 +188,12 @@ std::unique_ptr<SkImageGenerator> DecodingImageGenerator::Create(SkData* data) {
   if (!frame)
     return nullptr;
 
+  auto frames = {PaintImageGenerator::FrameMetadata()};
   sk_sp<DecodingImageGenerator> generator = sk_make_sp<DecodingImageGenerator>(
-      frame, info, std::move(segment_reader), true, 0);
-  return WTF::WrapUnique(new SkiaPaintImageGenerator(std::move(generator)));
+      frame, info, std::move(segment_reader), std::move(frames),
+      PaintImage::GetNextContentId(), true);
+  return WTF::WrapUnique(new SkiaPaintImageGenerator(
+      std::move(generator), PaintImage::kDefaultFrameIndex));
 }
 
 }  // namespace blink

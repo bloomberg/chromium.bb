@@ -46,13 +46,11 @@ struct DeferredFrameData {
   DeferredFrameData()
       : orientation_(kDefaultImageOrientation),
         duration_(0),
-        is_received_(false),
-        frame_bytes_(0) {}
+        is_received_(false) {}
 
   ImageOrientation orientation_;
   float duration_;
   bool is_received_;
-  size_t frame_bytes_;
 };
 
 std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
@@ -86,7 +84,8 @@ DeferredImageDecoder::DeferredImageDecoder(
       repetition_count_(kAnimationNone),
       all_data_received_(false),
       can_yuv_decode_(false),
-      has_hot_spot_(false) {}
+      has_hot_spot_(false),
+      complete_frame_content_id_(PaintImage::GetNextContentId()) {}
 
 DeferredImageDecoder::~DeferredImageDecoder() {}
 
@@ -95,23 +94,11 @@ String DeferredImageDecoder::FilenameExtension() const {
                          : filename_extension_;
 }
 
-sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGeneratorAtIndex(
-    size_t index) {
+sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGenerator(size_t index) {
   if (frame_generator_ && frame_generator_->DecodeFailed())
     return nullptr;
 
   PrepareLazyDecodedFrames();
-
-  // PrepareLazyDecodedFrames should have populated the |frame_data_| for each
-  // frame in this image.
-  if (index >= frame_data_.size())
-    return nullptr;
-
-  DeferredFrameData* frame_data = &frame_data_[index];
-  if (actual_decoder_)
-    frame_data->frame_bytes_ = actual_decoder_->FrameBytesAtIndex(index);
-  else
-    frame_data->frame_bytes_ = size_.Area() * sizeof(ImageFrame::PixelData);
 
   // ImageFrameGenerator has the latest known alpha state. There will be a
   // performance boost if this frame is opaque.
@@ -123,16 +110,23 @@ sk_sp<PaintImageGenerator> DeferredImageDecoder::CreateGeneratorAtIndex(
   sk_sp<SkROBuffer> ro_buffer(rw_buffer_->makeROBufferSnapshot());
   RefPtr<SegmentReader> segment_reader =
       SegmentReader::CreateFromSkROBuffer(std::move(ro_buffer));
-  const bool known_to_be_opaque = !frame_generator_->HasAlpha(index);
 
-  SkImageInfo info = SkImageInfo::MakeN32(
-      decoded_size.width(), decoded_size.height(),
-      known_to_be_opaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
-      color_space_for_sk_images_);
+  SkAlphaType alpha_type = frame_generator_->HasAlpha(index)
+                               ? kPremul_SkAlphaType
+                               : kOpaque_SkAlphaType;
+  SkImageInfo info =
+      SkImageInfo::MakeN32(decoded_size.width(), decoded_size.height(),
+                           alpha_type, color_space_for_sk_images_);
+
+  std::vector<PaintImageGenerator::FrameMetadata> frames(frame_data_.size());
+  for (const auto& frame : frame_data_) {
+    frames.push_back(PaintImageGenerator::FrameMetadata(
+        frame.is_received_, base::TimeDelta::FromSecondsD(frame.duration_)));
+  }
 
   auto generator = sk_make_sp<DecodingImageGenerator>(
-      frame_generator_, info, std::move(segment_reader), all_data_received_,
-      index);
+      frame_generator_, info, std::move(segment_reader), std::move(frames),
+      all_data_received_, complete_frame_content_id_);
   generator->SetCanYUVDecode(can_yuv_decode_);
 
   return generator;
@@ -209,17 +203,9 @@ int DeferredImageDecoder::RepetitionCount() const {
                          : repetition_count_;
 }
 
-size_t DeferredImageDecoder::ClearCacheExceptFrame(size_t clear_except_frame) {
+void DeferredImageDecoder::ClearCacheExceptFrame(size_t clear_except_frame) {
   if (actual_decoder_)
-    return actual_decoder_->ClearCacheExceptFrame(clear_except_frame);
-  size_t frame_bytes_cleared = 0;
-  for (size_t i = 0; i < frame_data_.size(); ++i) {
-    if (i != clear_except_frame) {
-      frame_bytes_cleared += frame_data_[i].frame_bytes_;
-      frame_data_[i].frame_bytes_ = 0;
-    }
-  }
-  return frame_bytes_cleared;
+    actual_decoder_->ClearCacheExceptFrame(clear_except_frame);
 }
 
 bool DeferredImageDecoder::FrameHasAlphaAtIndex(size_t index) const {
@@ -243,14 +229,6 @@ float DeferredImageDecoder::FrameDurationAtIndex(size_t index) const {
     return actual_decoder_->FrameDurationAtIndex(index);
   if (index < frame_data_.size())
     return frame_data_[index].duration_;
-  return 0;
-}
-
-size_t DeferredImageDecoder::FrameBytesAtIndex(size_t index) const {
-  if (actual_decoder_)
-    return actual_decoder_->FrameBytesAtIndex(index);
-  if (index < frame_data_.size())
-    return frame_data_[index].frame_bytes_;
   return 0;
 }
 

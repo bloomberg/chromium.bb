@@ -133,7 +133,7 @@ class CC_EXPORT ImageDecodeCache {
   // to be used. This means it can be deleted altogether. If the
   // image is locked, then the cache can do its best to clean it
   // up later.
-  virtual void NotifyImageUnused(uint32_t skimage_id) = 0;
+  virtual void NotifyImageUnused(const PaintImage::FrameKey& frame_key) = 0;
 
  protected:
   void RecordImageMipLevelUMA(int mip_level);

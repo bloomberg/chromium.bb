@@ -18,11 +18,13 @@ class StubPaintImageGenerator : public PaintImageGenerator {
   bool GetPixels(const SkImageInfo& info,
                  void* pixels,
                  size_t row_bytes,
+                 size_t frame_index,
                  uint32_t lazy_pixel_ref) override;
   bool QueryYUV8(SkYUVSizeInfo* info,
                  SkYUVColorSpace* color_space) const override;
   bool GetYUV8Planes(const SkYUVSizeInfo& info,
                      void* planes[3],
+                     size_t frame_index,
                      uint32_t lazy_pixel_ref) override;
 };
 

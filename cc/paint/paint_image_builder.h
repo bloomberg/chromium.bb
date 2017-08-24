@@ -32,16 +32,27 @@ class CC_PAINT_EXPORT PaintImageBuilder {
 #endif
     return *this;
   }
+
   PaintImageBuilder& set_image(sk_sp<SkImage> sk_image) {
     paint_image_.sk_image_ = std::move(sk_image);
     return *this;
   }
   PaintImageBuilder& set_paint_record(sk_sp<PaintRecord> paint_record,
-                                      const gfx::Rect& rect) {
+                                      const gfx::Rect& rect,
+                                      PaintImage::ContentId content_id) {
+    DCHECK_NE(content_id, PaintImage::kInvalidContentId);
+
     paint_image_.paint_record_ = std::move(paint_record);
     paint_image_.paint_record_rect_ = rect;
+    paint_image_.paint_record_content_id_ = content_id;
     return *this;
   }
+  PaintImageBuilder& set_paint_image_generator(
+      sk_sp<PaintImageGenerator> generator) {
+    paint_image_.paint_image_generator_ = std::move(generator);
+    return *this;
+  }
+
   PaintImageBuilder& set_animation_type(PaintImage::AnimationType type) {
     paint_image_.animation_type_ = type;
     return *this;
@@ -50,30 +61,17 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     paint_image_.completion_state_ = state;
     return *this;
   }
-  PaintImageBuilder& set_frame_count(size_t frame_count) {
-    paint_image_.frame_count_ = frame_count;
-    return *this;
-  }
   PaintImageBuilder& set_is_multipart(bool is_multipart) {
     paint_image_.is_multipart_ = is_multipart;
     return *this;
   }
+  PaintImageBuilder& set_frame_index(size_t frame_index) {
+    paint_image_.frame_index_ = frame_index;
+    return *this;
+  }
 
-  // |unique_id| is the id used when constructing an SkImage representation for
-  // a generator backed image. |allocated_unique_id| will be set to the id
-  // allocated to the resulting image.
-  // TODO(khushalsagar): Remove the use of this uniqueID. See crbug.com/753639.
-  PaintImageBuilder& set_paint_image_generator(
-      sk_sp<PaintImageGenerator> generator,
-      uint32_t unique_id = SkiaPaintImageGenerator::kNeedNewImageUniqueID,
-      uint32_t* allocated_unique_id = nullptr) {
-    paint_image_.paint_image_generator_ = std::move(generator);
-
-    paint_image_.cached_sk_image_ =
-        SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
-            paint_image_.paint_image_generator_, unique_id));
-    if (allocated_unique_id)
-      *allocated_unique_id = paint_image_.cached_sk_image_->uniqueID();
+  PaintImageBuilder& set_sk_image_id(uint32_t sk_image_id) {
+    paint_image_.sk_image_id_ = sk_image_id;
     return *this;
   }
 
