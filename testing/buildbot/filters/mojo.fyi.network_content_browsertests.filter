@@ -62,7 +62,6 @@
 -DevToolsDownloadContentTest.DefaultDownloadHeadless
 -DevToolsDownloadContentTest.SingleDownload
 -DevToolsProtocolTest.CertificateError
--DevToolsProtocolTest.CertificateExplanations
 -DevToolsProtocolTest.ControlNavigationsMainFrame
 -DevToolsProtocolTest.SubresourceWithCertificateError
 -GetUserMediaVideoCaptureBrowserTest.RecoverFromCrashInVideoCaptureProcess
@@ -70,7 +69,6 @@
 -HostZoomMapImplBrowserTest.GetZoomForView_HostAndScheme
 -IsolatedDevToolsProtocolTest.ControlNavigationsChildFrames
 -IsolateIcelandFrameTreeBrowserTest.ProcessSwitchForIsolatedBlob
--ManifestBrowserTest.MixedContentManifest
 -ManifestBrowserTest.UseCredentialsSendCookies
 -NavigationControllerBrowserTest.ErrorPageReplacement
 -NavigationControllerBrowserTest.NavigateFromLoadDataWithBaseURL
@@ -132,7 +130,6 @@
 -WebContentsImplBrowserTest.GetSizeForNewRenderView
 -WebContentsImplBrowserTest.LoadingStateChangedForSameDocumentNavigation
 -WebContentsImplBrowserTest.UserAgentOverride
--WebContentsViewAuraTest.ScreenshotForSwappedOutRenderViews
 -WorkerFetchTest.*
 
 # content/network/url_loader_impl.cc should handle failure in
