@@ -101515,6 +101515,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="WebRTC.PeerConnection.SslCipherSuite"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="WebRTCVideoSimulcastId" separator=".">
+  <suffix name="S0"/>
+  <suffix name="S1"/>
+  <suffix name="S2"/>
+  <affected-histogram name="WebRTC.Video.EndToEndDelayInMs"/>
+  <affected-histogram name="WebRTC.Video.EndToEndDelayMaxInMs"/>
+  <affected-histogram name="WebRTC.Video.InterframeDelayInMs"/>
+  <affected-histogram name="WebRTC.Video.InterframeDelayMaxInMs"/>
+  <affected-histogram name="WebRTC.Video.Screenshare.EndToEndDelayInMs"/>
+  <affected-histogram name="WebRTC.Video.Screenshare.EndToEndDelayMaxInMs"/>
+  <affected-histogram name="WebRTC.Video.Screenshare.InterframeDelayInMs"/>
+  <affected-histogram name="WebRTC.Video.Screenshare.InterframeDelayMaxInMs"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="WebSocketErrorCodesVariants" separator="_">
   <suffix name="Localhost"/>
   <suffix name="NotLocalhost"/>
