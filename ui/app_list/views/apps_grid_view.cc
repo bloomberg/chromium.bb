@@ -470,6 +470,10 @@ void AppsGridView::ClearAnySelectedView() {
     selected_view_->SchedulePaint();
     selected_view_ = nullptr;
   }
+  if (suggestions_container_)
+    suggestions_container_->ClearSelectedIndex();
+  if (expand_arrow_view_)
+    expand_arrow_view_->SetSelected(false);
 }
 
 bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
@@ -929,18 +933,15 @@ void AppsGridView::UpdateControlVisibility(
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
   bool handled = false;
-  if (is_fullscreen_app_list_enabled_ &&
+  if (suggestions_container_ &&
       suggestions_container_->selected_index() != -1) {
     int selected_suggested_index = suggestions_container_->selected_index();
     handled = suggestions_container_->GetTileItemView(selected_suggested_index)
                   ->OnKeyPressed(event);
   }
 
-  // Only suggestions apps can be selected in STATE_START state.
-  if (is_fullscreen_app_list_enabled_ &&
-      contents_view_->GetActiveState() == AppListModel::STATE_START) {
-    ClearSelectedView(selected_view_);
-  }
+  if (expand_arrow_view_ && expand_arrow_view_->selected())
+    handled = expand_arrow_view_->OnKeyPressed(event);
 
   if (selected_view_)
     handled = static_cast<views::View*>(selected_view_)->OnKeyPressed(event);
@@ -955,8 +956,11 @@ bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {
         MoveSelected(0, forward_dir, 0);
         return true;
       case ui::VKEY_UP:
-        if (selected_view_)  // Don't initiate selection with UP
+        if (is_fullscreen_app_list_enabled_ || selected_view_) {
+          // Don't initiate selection with UP in non-fullscreen app list. In
+          // fullscreen app list, UP is already handled by SearchBoxView.
           MoveSelected(0, 0, -1);
+        }
         return true;
       case ui::VKEY_DOWN:
         MoveSelected(0, 0, 1);
@@ -1213,11 +1217,16 @@ AppsGridView::Index AppsGridView::GetLastViewIndex() const {
 void AppsGridView::MoveSelected(int page_delta,
                                 int slot_x_delta,
                                 int slot_y_delta) {
+  if (expand_arrow_view_ && expand_arrow_view_->selected() &&
+      HandleExpandArrowMove(page_delta, slot_x_delta, slot_y_delta)) {
+    return;
+  }
+
   if (!selected_view_) {
     // If fullscreen app list is enabled and we are on the first page, moving
     // selected should consider suggested apps tiles before all apps tiles.
     int current_page = pagination_model_.selected_page();
-    if (!is_fullscreen_app_list_enabled_ || current_page != 0)
+    if (!suggestions_container_ || current_page != 0)
       return SetSelectedItemByIndex(Index(current_page, 0));
     if (HandleSuggestionsMove(page_delta, slot_x_delta, slot_y_delta))
       return;
@@ -1315,6 +1324,9 @@ void AppsGridView::MoveSelected(int page_delta,
 bool AppsGridView::HandleSuggestionsMove(int page_delta,
                                          int slot_x_delta,
                                          int slot_y_delta) {
+  DCHECK(suggestions_container_);
+  DCHECK(expand_arrow_view_);
+
   if (suggestions_container_->selected_index() == -1) {
     suggestions_container_->SetSelectedIndex(0);
     return true;
@@ -1325,21 +1337,36 @@ bool AppsGridView::HandleSuggestionsMove(int page_delta,
 
   if (slot_x_delta != 0) {
     int new_index = suggestions_container_->selected_index() + slot_x_delta;
-    // Moving right out of |suggestions_container_| should give focus to the
-    // first tile of all apps.
     if (new_index == suggestions_container_->num_results()) {
       suggestions_container_->ClearSelectedIndex();
-      SetSelectedItemByIndex(Index(0, 0));
+      if (contents_view_->GetActiveState() == AppListModel::STATE_START) {
+        // In state start, moving right out of |suggestions_container_| should
+        // give selection to the expand arrow.
+        expand_arrow_view_->SetSelected(true);
+      } else {
+        DCHECK(contents_view_->GetActiveState() == AppListModel::STATE_APPS);
+        // In state apps, moving right out of |suggestions_container_| should
+        // give selection to the first tile of all apps.
+        SetSelectedItemByIndex(Index(0, 0));
+      }
     } else if (suggestions_container_->IsValidSelectionIndex(new_index)) {
       suggestions_container_->SetSelectedIndex(new_index);
     }
     return true;
   }
 
-  // Moving down from |suggestions_container_| should give focus to the first
-  // row of all apps.
   if (slot_y_delta == 1) {
-    SetSelectedItemByIndex(Index(0, suggestions_container_->selected_index()));
+    if (contents_view_->GetActiveState() == AppListModel::STATE_START) {
+      // In state start, moving down from |suggestions_container_| should give
+      // selection to the expand arrow.
+      expand_arrow_view_->SetSelected(true);
+    } else {
+      DCHECK(contents_view_->GetActiveState() == AppListModel::STATE_APPS);
+      // In state apps, moving down from |suggestions_container_| should give
+      // selection to the first row of all apps.
+      SetSelectedItemByIndex(
+          Index(0, suggestions_container_->selected_index()));
+    }
     suggestions_container_->ClearSelectedIndex();
     return true;
   }
@@ -1351,6 +1378,29 @@ bool AppsGridView::HandleSuggestionsMove(int page_delta,
     suggestions_container_->ClearSelectedIndex();
     return true;
   }
+  return false;
+}
+
+bool AppsGridView::HandleExpandArrowMove(int page_delta,
+                                         int slot_x_delta,
+                                         int slot_y_delta) {
+  DCHECK(suggestions_container_);
+  DCHECK(expand_arrow_view_);
+  DCHECK(contents_view_->GetActiveState() == AppListModel::STATE_START);
+
+  if (page_delta != 0 || slot_x_delta == 1 || slot_y_delta == 1 ||
+      (slot_x_delta == 0 && slot_y_delta == 0)) {
+    return true;
+  }
+
+  if (slot_x_delta == -1 || slot_y_delta == -1) {
+    // Move focus to the last app in ||suggestions_container|.
+    expand_arrow_view_->SetSelected(false);
+    suggestions_container_->SetSelectedIndex(
+        suggestions_container_->num_results() - 1);
+    return true;
+  }
+
   return false;
 }
 
