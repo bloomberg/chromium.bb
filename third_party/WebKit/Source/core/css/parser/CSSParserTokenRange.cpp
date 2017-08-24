@@ -18,12 +18,12 @@ void CSSParserTokenRange::InitStaticEOFToken() {
 CSSParserTokenRange CSSParserTokenRange::MakeSubRange(
     const CSSParserToken* first,
     const CSSParserToken* last) const {
-  if (first == &g_static_eof_token)
-    first = last_;
-  if (last == &g_static_eof_token)
-    last = last_;
-  DCHECK_LE(first, last);
-  return CSSParserTokenRange(first, last);
+  // Convert first and last pointers into indices.
+  size_t sub_range_first =
+      (first == &g_static_eof_token) ? last_ : first - buffer_->begin();
+  size_t sub_range_last =
+      (last == &g_static_eof_token) ? last_ : last - buffer_->begin();
+  return CSSParserTokenRange(*buffer_, sub_range_first, sub_range_last);
 }
 
 CSSParserTokenRange CSSParserTokenRange::ConsumeBlock() {
@@ -39,8 +39,8 @@ CSSParserTokenRange CSSParserTokenRange::ConsumeBlock() {
   } while (nesting_level && first_ < last_);
 
   if (nesting_level)
-    return MakeSubRange(start, first_);  // Ended at EOF
-  return MakeSubRange(start, first_ - 1);
+    return MakeSubRange(start, begin());  // Ended at EOF
+  return MakeSubRange(start, begin() - 1);
 }
 
 void CSSParserTokenRange::ConsumeComponentValue() {
@@ -62,7 +62,7 @@ String CSSParserTokenRange::Serialize() const {
   // as per spec, but since this is currently only used for @supports CSSOM
   // we just get these cases wrong and avoid the additional complexity.
   StringBuilder builder;
-  for (const CSSParserToken* it = first_; it < last_; ++it)
+  for (const CSSParserToken* it = begin(); it != end(); ++it)
     it->Serialize(builder);
   return builder.ToString();
 }
