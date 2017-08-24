@@ -24,33 +24,28 @@ namespace {
 // real builds using MSVC, and this is just to avoid crashing bots that
 // still need to use MSVC (e.g. for the dEQP tests, which use exceptions).
 // See http://crbug.com/753010.
+#define STATIC_CONSTEXPR static const
+#define STATIC_CONSTEXPR_CONST static const
+#else
+#define STATIC_CONSTEXPR static constexpr
+#define STATIC_CONSTEXPR_CONST static constexpr const
+#endif
 
 {% for api_class in api_classnames %}
-static const {{api_class}} api_{{api_class.lower()}};
+STATIC_CONSTEXPR {{api_class}} api_{{api_class.lower()}};
 {% endfor %}
-#else
-{% for api_class in api_classnames %}
-static constexpr {{api_class}} api_{{api_class.lower()}};
-{% endfor %}
-#endif
 
 const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
-#if defined(OS_WIN) && defined(COMPILER_MSVC)
-  static const CSSPropertyAPI* const property_apis[] = {
+  STATIC_CONSTEXPR_CONST CSSPropertyAPI* const property_apis[] = {
     {% for api_class_data in api_classes_by_property_id %}
     &api_{{api_class_data.classname.lower()}},  // {{api_class_data.property_id}}
     {% endfor %}
   };
-#else
-  static constexpr const CSSPropertyAPI* const property_apis[] = {
-    {% for api_class_data in api_classes_by_property_id %}
-    &api_{{api_class_data.classname.lower()}},  // {{api_class_data.property_id}}
-    {% endfor %}
-  };
-#endif
   // Subtract 1 because CSSPropertyInvalid does not appear in the array.
   return *property_apis[id - 1];
 }
+#undef STATIC_CONSTEXPR
+#undef STATIC_CONSTEXPR_CONST
 
 } // namespace
 
