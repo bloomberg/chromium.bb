@@ -12,11 +12,6 @@ using base::android::JavaRef;
 
 namespace device {
 
-// static
-bool PlatformSensorAndroid::RegisterJNI(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 PlatformSensorAndroid::PlatformSensorAndroid(
     mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,

@@ -33,10 +33,6 @@ source_set("time_zone_monitor") {
   ]
 
   if (is_android) {
-    sources += [
-      "android/time_zone_monitor_jni_registrar.cc",
-      "android/time_zone_monitor_jni_registrar.h",
-    ]
     deps += [ ":time_zone_monitor_jni_headers" ]
   }
 
