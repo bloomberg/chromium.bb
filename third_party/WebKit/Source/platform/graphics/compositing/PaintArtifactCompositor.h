@@ -77,6 +77,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor
   struct ExtraDataForTesting {
     Vector<scoped_refptr<cc::Layer>> content_layers;
     Vector<scoped_refptr<cc::Layer>> synthesized_clip_layers;
+    Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers;
   };
   void EnableExtraDataForTesting();
   ExtraDataForTesting* GetExtraDataForTesting() const {
@@ -99,7 +100,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
   struct PLATFORM_EXPORT PendingLayer {
-    PendingLayer(const PaintChunk& first_paint_chunk, bool chunk_is_foreign);
+    PendingLayer(const PaintChunk& first_paint_chunk, bool requires_own_layer);
     // Merge another pending layer after this one, appending all its paint
     // chunks after chunks in this layer, with appropriate space conversion
     // applied. The merged layer must have a property tree state that's deeper
@@ -118,7 +119,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor
     bool known_to_be_opaque;
     bool backface_hidden;
     PropertyTreeState property_tree_state;
-    bool is_foreign;
+    bool requires_own_layer;
   };
 
   PaintArtifactCompositor();
@@ -166,7 +167,25 @@ class PLATFORM_EXPORT PaintArtifactCompositor
       gfx::Vector2dF& layer_offset,
       Vector<std::unique_ptr<ContentLayerClientImpl>>&
           new_content_layer_clients,
+      Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers,
       bool store_debug_info);
+
+  const TransformPaintPropertyNode& ScrollTranslationForPendingLayer(
+      const PaintArtifact&,
+      const PendingLayer&);
+
+  // If the pending layer is a special scroll hit test layer, return the
+  // associated scroll offset translation node.
+  const TransformPaintPropertyNode* ScrollTranslationForScrollHitTestLayer(
+      const PaintArtifact&,
+      const PendingLayer&);
+
+  // Finds an existing or creates a new scroll hit test layer for the pending
+  // layer, returning nullptr if the layer is not a scroll hit test layer.
+  scoped_refptr<cc::Layer> ScrollHitTestLayerForPendingLayer(
+      const PaintArtifact&,
+      const PendingLayer&,
+      gfx::Vector2dF& layer_offset);
 
   // Finds a client among the current vector of clients that matches the paint
   // chunk's id, or otherwise allocates a new one.
@@ -189,6 +208,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor
     bool in_use;
   };
   std::vector<SynthesizedClipEntry> synthesized_clip_cache_;
+
+  Vector<scoped_refptr<cc::Layer>> scroll_hit_test_layers_;
 
   bool extra_data_for_testing_enabled_ = false;
   std::unique_ptr<ExtraDataForTesting> extra_data_for_testing_;

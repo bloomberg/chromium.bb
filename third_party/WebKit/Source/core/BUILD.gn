@@ -1584,6 +1584,7 @@ jumbo_source_set("unit_tests") {
     "page/scrolling/ScrollingCoordinatorTest.cpp",
     "page/scrolling/SmoothScrollTest.cpp",
     "page/scrolling/SnapCoordinatorTest.cpp",
+    "paint/BlockPainterTest.cpp",
     "paint/BoxPaintInvalidatorTest.cpp",
     "paint/FirstMeaningfulPaintDetectorTest.cpp",
     "paint/HTMLCanvasPainterTest.cpp",
