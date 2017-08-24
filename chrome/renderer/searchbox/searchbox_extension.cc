@@ -376,6 +376,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void GetMostVisitedItemData(
     const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Returns true if the Chrome UI is rendered right-to-left.
+  static void GetRightToLeft(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Gets the Embedded Search request params. Used for logging purposes.
   static void GetSearchRequestParams(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -526,6 +529,8 @@ SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
     return v8::FunctionTemplate::New(isolate, GetMostVisitedItems);
   if (name_str == "GetMostVisitedItemData")
     return v8::FunctionTemplate::New(isolate, GetMostVisitedItemData);
+  if (name_str == "GetRightToLeft")
+    return v8::FunctionTemplate::New(isolate, GetRightToLeft);
   if (name_str == "GetSearchRequestParams")
     return v8::FunctionTemplate::New(isolate, GetSearchRequestParams);
   if (name_str == "GetSuggestionToPrefetch")
@@ -667,6 +672,12 @@ void SearchBoxExtensionWrapper::GetMostVisitedItemData(
   args.GetReturnValue().Set(GenerateMostVisitedItem(
       isolate, render_frame->GetRenderView()->GetRoutingID(), restricted_id,
       mv_item));
+}
+
+// static
+void SearchBoxExtensionWrapper::GetRightToLeft(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  args.GetReturnValue().Set(base::i18n::IsRTL());
 }
 
 // static

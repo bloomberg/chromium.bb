@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/i18n/base_i18n_switches.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
@@ -258,6 +259,32 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest,
 
   // Verify that the NTP is in French.
   EXPECT_EQ(base::ASCIIToUTF16("Nouvel onglet"), active_tab->GetTitle());
+}
+
+// In contrast to LocalNTPTest, this one doesn't set up any special NTP
+// wrangling. It just turns on the local NTP and forces the UI to RTL.
+class LocalNTPRTLTest : public InProcessBrowserTest {
+ public:
+  LocalNTPRTLTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* cmdline) override {
+    cmdline->AppendSwitchASCII(switches::kEnableFeatures, "UseGoogleLocalNtp");
+    cmdline->AppendSwitchASCII(switches::kForceUIDirection,
+                               switches::kForceDirectionRTL);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPRTLTest, RightToLeft) {
+  // Open an NTP.
+  content::WebContents* active_tab =
+      OpenNewTab(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+  // Check that the "dir" attribute on the main "html" element says "rtl".
+  std::string dir;
+  ASSERT_TRUE(instant_test_utils::GetStringFromJS(
+      active_tab, "document.documentElement.dir", &dir));
+  EXPECT_EQ("rtl", dir);
 }
 
 // In contrast to LocalNTPTest, this one doesn't set up any special NTP
