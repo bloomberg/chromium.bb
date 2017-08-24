@@ -341,3 +341,14 @@ message GetAccountDiskUsageReply {
   // The size of cryptohome in bytes.
   optional int64 size = 1;
 }
+
+// Request parameters for MigrateToDircryptoEx.
+// TODO(pmarko): Update comment when MigrateToDircryptoEx gets renamed to
+// MigrateToDircrypto: crbug.com/758837.
+message MigrateToDircryptoRequest {
+  // Next ID to use: 2
+
+  // If true, only a few paths (specified in cryptohomed) that are necessary for
+  // a working profile will be migrated. Most user data will be wiped.
+  optional bool minimal_migration = 1;
+}

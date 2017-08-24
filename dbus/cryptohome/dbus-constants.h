@@ -124,6 +124,7 @@ const char kCryptohomeSetFirmwareManagementParameters[] =
 const char kCryptohomeRemoveFirmwareManagementParameters[] =
     "RemoveFirmwareManagementParameters";
 const char kCryptohomeMigrateToDircrypto[] = "MigrateToDircrypto";
+const char kCryptohomeMigrateToDircryptoEx[] = "MigrateToDircryptoEx";
 const char kCryptohomeNeedsDircryptoMigration[] = "NeedsDircryptoMigration";
 
 // Signals
