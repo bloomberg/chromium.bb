@@ -333,7 +333,7 @@ bool Scrollbar::GestureEvent(const WebGestureEvent& evt,
   switch (evt.GetType()) {
     case WebInputEvent::kGestureTapDown: {
       IntPoint position = FlooredIntPoint(evt.PositionInRootFrame());
-      SetPressedPart(GetTheme().HitTestWithRootFramePoint(*this, position));
+      SetPressedPart(GetTheme().HitTest(*this, position));
       pressed_pos_ = Orientation() == kHorizontalScrollbar
                          ? ConvertFromRootFrame(position).X()
                          : ConvertFromRootFrame(position).Y();
@@ -436,7 +436,7 @@ void Scrollbar::MouseMoved(const WebMouseEvent& evt) {
                        : ConvertFromRootFrame(position).Y();
   }
 
-  ScrollbarPart part = GetTheme().HitTestWithRootFramePoint(*this, position);
+  ScrollbarPart part = GetTheme().HitTest(*this, position);
   if (part != hovered_part_) {
     if (pressed_part_ != kNoPart) {
       if (part == pressed_part_) {
@@ -478,7 +478,7 @@ void Scrollbar::MouseUp(const WebMouseEvent& mouse_event) {
     if (is_captured)
       scrollable_area_->MouseReleasedScrollbar();
 
-    ScrollbarPart part = GetTheme().HitTestWithRootFramePoint(
+    ScrollbarPart part = GetTheme().HitTest(
         *this, FlooredIntPoint(mouse_event.PositionInRootFrame()));
     if (part == kNoPart) {
       SetHoveredPart(kNoPart);
@@ -493,7 +493,7 @@ void Scrollbar::MouseDown(const WebMouseEvent& evt) {
     return;
 
   IntPoint position = FlooredIntPoint(evt.PositionInRootFrame());
-  SetPressedPart(GetTheme().HitTestWithRootFramePoint(*this, position));
+  SetPressedPart(GetTheme().HitTest(*this, position));
   int pressed_pos = Orientation() == kHorizontalScrollbar
                         ? ConvertFromRootFrame(position).X()
                         : ConvertFromRootFrame(position).Y();
@@ -566,36 +566,42 @@ bool Scrollbar::IsWindowActive() const {
 
 IntPoint Scrollbar::ConvertFromRootFrame(
     const IntPoint& point_in_root_frame) const {
-  DCHECK(scrollable_area_);
   if (scrollable_area_) {
     IntPoint parent_point =
         scrollable_area_->ConvertFromRootFrame(point_in_root_frame);
-    return scrollable_area_->ConvertFromParentViewToScrollbar(*this,
+    return scrollable_area_
+        ->ConvertFromContainingEmbeddedContentViewToScrollbar(*this,
                                                               parent_point);
   }
 
   return point_in_root_frame;
 }
 
-IntPoint Scrollbar::ConvertFromRootFrameToParentView(
-    const IntPoint& point_in_root_frame) const {
-  DCHECK(scrollable_area_);
-  return scrollable_area_->ConvertFromRootFrame(point_in_root_frame);
+IntRect Scrollbar::ConvertToContainingEmbeddedContentView(
+    const IntRect& local_rect) const {
+  if (scrollable_area_) {
+    return scrollable_area_
+        ->ConvertFromScrollbarToContainingEmbeddedContentView(*this,
+                                                              local_rect);
+  }
+
+  return local_rect;
 }
 
-IntRect Scrollbar::ConvertToParentView(const IntRect& local_rect) const {
-  DCHECK(scrollable_area_);
-  return scrollable_area_->ConvertFromScrollbarToParentView(*this, local_rect);
-}
+IntPoint Scrollbar::ConvertFromContainingEmbeddedContentView(
+    const IntPoint& parent_point) const {
+  if (scrollable_area_) {
+    return scrollable_area_
+        ->ConvertFromContainingEmbeddedContentViewToScrollbar(*this,
+                                                              parent_point);
+  }
 
-IntPoint Scrollbar::ConvertFromParentView(const IntPoint& parent_point) const {
-  DCHECK(scrollable_area_);
-  return scrollable_area_->ConvertFromParentViewToScrollbar(*this,
-                                                            parent_point);
+  return parent_point;
 }
 
 float Scrollbar::ScrollableAreaCurrentPos() const {
-  DCHECK(scrollable_area_);
+  if (!scrollable_area_)
+    return 0;
 
   if (orientation_ == kHorizontalScrollbar) {
     return scrollable_area_->GetScrollOffset().Width() -
@@ -607,7 +613,8 @@ float Scrollbar::ScrollableAreaCurrentPos() const {
 }
 
 float Scrollbar::ScrollableAreaTargetPos() const {
-  DCHECK(scrollable_area_);
+  if (!scrollable_area_)
+    return 0;
 
   if (orientation_ == kHorizontalScrollbar) {
     return scrollable_area_->GetScrollAnimator().DesiredTargetOffset().Width() -

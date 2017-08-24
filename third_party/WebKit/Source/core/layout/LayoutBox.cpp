@@ -1524,11 +1524,11 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
       return false;
   }
 
-  if (action == kHitTestForeground && HasOverflowClip() &&
-      HitTestOverflowControl(result, location_in_container,
-                             adjusted_location)) {
+  bool should_hit_test_self = IsInSelfHitTestingPhase(action);
+
+  if (should_hit_test_self && HasOverflowClip() &&
+      HitTestOverflowControl(result, location_in_container, adjusted_location))
     return true;
-  }
 
   bool skip_children = false;
   if (ShouldClipOverflow()) {
@@ -1537,7 +1537,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     // so only do the overflow clip check here for non-self-painting layers.
     if (!HasSelfPaintingLayer() &&
         !location_in_container.Intersects(OverflowClipRect(
-            adjusted_location, kIgnorePlatformOverlayScrollbarSize))) {
+            adjusted_location, kExcludeOverlayScrollbarSizeForHitTesting))) {
       skip_children = true;
     }
     if (!skip_children && Style()->HasBorderRadius()) {
@@ -1557,7 +1557,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     return false;
 
   // Now hit test ourselves.
-  if (IsInSelfHitTestingPhase(action) &&
+  if (should_hit_test_self &&
       VisibleToHitTestRequest(result.GetHitTestRequest())) {
     LayoutRect bounds_rect(adjusted_location, Size());
     if (location_in_container.Intersects(bounds_rect)) {

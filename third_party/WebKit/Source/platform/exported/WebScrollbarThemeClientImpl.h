@@ -61,8 +61,6 @@ class PLATFORM_EXPORT WebScrollbarThemeClientImpl
   void GetTickmarks(Vector<IntRect>&) const override;
   bool IsScrollableAreaActive() const override;
   IntPoint ConvertFromRootFrame(const IntPoint&) const override;
-  IntPoint ConvertFromRootFrameToParentView(const IntPoint&) const override;
-  IntPoint ConvertFromParentView(const IntPoint&) const override;
   bool IsCustomScrollbar() const override;
   ScrollbarOrientation Orientation() const override;
   bool IsLeftSideVerticalScrollbar() const override;
