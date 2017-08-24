@@ -54,6 +54,12 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Presents a new SadTabView via the web_state object.
   void PresentSadTab(const GURL& url_causing_failure);
 
+  // Loads the current page after renderer crash while displaying the page
+  // placeholder during the load. Reloading the page which was not visible to
+  // the user during the crash is a better user experience than presenting
+  // Sad Tab.
+  void ReloadTab();
+
   // WebStateObserver:
   void WasShown() override;
   void WasHidden() override;

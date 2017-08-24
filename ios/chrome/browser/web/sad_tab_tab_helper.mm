@@ -10,6 +10,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
+#import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/navigation_context.h"
 #import "ios/web/public/web_state/ui/crw_generic_content_view.h"
@@ -65,6 +66,11 @@ void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
 
 void SadTabTabHelper::WasShown() {
   is_visible_ = true;
+
+  if (requires_reload_on_becoming_visible_) {
+    ReloadTab();
+    requires_reload_on_becoming_visible_ = false;
+  }
 }
 
 void SadTabTabHelper::WasHidden() {
@@ -118,4 +124,10 @@ void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
 
   last_failed_url_ = url_causing_failure;
   last_failed_timer_ = base::MakeUnique<base::ElapsedTimer>();
+}
+
+void SadTabTabHelper::ReloadTab() {
+  PagePlaceholderTabHelper::FromWebState(web_state())
+      ->AddPlaceholderForNextNavigation();
+  web_state()->GetNavigationManager()->LoadIfNecessary();
 }

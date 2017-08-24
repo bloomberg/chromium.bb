@@ -1809,14 +1809,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (self.webState)
     self.webState->WasShown();
   [_inputAccessoryViewController wasShown];
-
-  auto* sadTabTabHelper = SadTabTabHelper::FromWebState(self.webState);
-  if (sadTabTabHelper->requires_reload_on_becoming_visible()) {
-    PagePlaceholderTabHelper::FromWebState(self.webState)
-        ->AddPlaceholderForNextNavigation();
-    self.webState->GetNavigationManager()->LoadIfNecessary();
-    sadTabTabHelper->set_requires_reload_on_becoming_visible(false);
-  }
 }
 
 - (void)wasHidden {
