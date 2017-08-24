@@ -1565,18 +1565,7 @@ void BluetoothAdapterBlueZ::OnStartDiscoveryError(
   DCHECK(discovery_request_pending_);
   discovery_request_pending_ = false;
 
-  // Discovery request may fail if discovery was previously initiated by Chrome,
-  // but the session were invalidated due to the discovery state unexpectedly
-  // changing to false and then back to true. In this case, report success.
-  if (IsPresent() && error_name == bluetooth_device::kErrorInProgress &&
-      IsDiscovering()) {
-    BLUETOOTH_LOG(DEBUG)
-        << "Discovery previously initiated. Reporting success.";
-    num_discovery_sessions_++;
-    callback.Run();
-  } else {
-    error_callback.Run(TranslateDiscoveryErrorToUMA(error_name));
-  }
+  error_callback.Run(TranslateDiscoveryErrorToUMA(error_name));
 
   // Try to add a new discovery session for each queued request.
   ProcessQueuedDiscoveryRequests();
