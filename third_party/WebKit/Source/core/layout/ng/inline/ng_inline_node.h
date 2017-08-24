@@ -19,7 +19,6 @@ template <typename OffsetMappingBuilder>
 class NGInlineItemsBuilderTemplate;
 
 class EmptyOffsetMappingBuilder;
-class LayoutBlockFlow;
 class LayoutNGBlockFlow;
 struct MinMaxSize;
 class NGConstraintSpace;
@@ -37,8 +36,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
   NGInlineNode(LayoutNGBlockFlow*);
 
-  LayoutBlockFlow* GetLayoutBlockFlow() const {
-    return ToLayoutBlockFlow(box_);
+  LayoutNGBlockFlow* GetLayoutBlockFlow() const {
+    return ToLayoutNGBlockFlow(box_);
   }
   NGLayoutInputNode NextSibling();
 
