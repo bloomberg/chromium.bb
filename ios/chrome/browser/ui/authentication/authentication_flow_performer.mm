@@ -134,10 +134,6 @@ const int64_t kAuthenticationFlowTimeoutSeconds = 10;
 
 - (void)fetchManagedStatus:(ios::ChromeBrowserState*)browserState
                forIdentity:(ChromeIdentity*)identity {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    [_delegate didFetchManagedStatus:nil];
-    return;
-  }
   if (gaia::ExtractDomainName(gaia::CanonicalizeEmail(
           base::SysNSStringToUTF8(identity.userEmail))) == "gmail.com") {
     // Do nothing for @gmail.com addresses as they can't have a hosted domain.

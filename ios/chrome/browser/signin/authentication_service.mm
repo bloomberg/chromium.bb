@@ -468,10 +468,6 @@ void AuthenticationService::OnIdentityListChanged() {
 
 bool AuthenticationService::HandleMDMNotification(ChromeIdentity* identity,
                                                   NSDictionary* user_info) {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    return false;
-  }
-
   ios::ChromeIdentityService* identity_service =
       ios::GetChromeBrowserProvider()->GetChromeIdentityService();
   ios::MDMDeviceStatus status = identity_service->GetMDMDeviceStatus(user_info);
@@ -606,11 +602,6 @@ NSString* AuthenticationService::GetAuthenticatedUserEmail() {
 }
 
 bool AuthenticationService::IsAuthenticatedIdentityManaged() {
-  if (!experimental_flags::IsMDMIntegrationEnabled()) {
-    // Behavior based on whether an account is managed are only enabled if MDM
-    // integration is enabled.
-    return false;
-  }
   std::string hosted_domain =
       ios::SigninManagerFactory::GetForBrowserState(browser_state_)
           ->GetAuthenticatedAccountInfo()
