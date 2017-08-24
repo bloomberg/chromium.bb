@@ -1039,6 +1039,8 @@ public class BottomSheet
         AnimatorSet animatorSet = new AnimatorSet();
         List<Animator> animators = new ArrayList<>();
 
+        newView.setVisibility(View.VISIBLE);
+
         // Fade out the old view.
         if (oldView != null) {
             ValueAnimator fadeOutAnimator = ObjectAnimator.ofFloat(oldView, View.ALPHA, 0);
@@ -1048,6 +1050,8 @@ public class BottomSheet
                 public void onAnimationEnd(Animator animation) {
                     if (detachOldView && oldView.getParent() != null) {
                         parent.removeView(oldView);
+                    } else {
+                        oldView.setVisibility(View.INVISIBLE);
                     }
                 }
             });
