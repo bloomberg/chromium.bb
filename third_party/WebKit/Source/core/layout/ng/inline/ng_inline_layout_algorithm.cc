@@ -464,10 +464,7 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // If we have unpositioned floats from a previous sibling, we need to abort
     // our layout, and tell our parent that we now know our BFC offset.
     if (!unpositioned_floats_.IsEmpty()) {
-      // TODO(ikilpatrick): This should be swapping in its unpositioned floats
-      // before aborting, but as because NGLayoutInputNode::IsInline isn't
-      // stable, we can't do this yet.
-      // container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
+      container_builder_.SwapUnpositionedFloats(&unpositioned_floats_);
       return container_builder_.Abort(NGLayoutResult::kBfcOffsetResolved);
     }
   }
