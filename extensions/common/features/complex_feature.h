@@ -33,12 +33,11 @@ class ComplexFeature : public Feature {
                                      Manifest::Location location,
                                      int manifest_version,
                                      Platform platform) const override;
-
   Availability IsAvailableToContext(const Extension* extension,
                                     Context context,
                                     const GURL& url,
                                     Platform platform) const override;
-
+  Availability IsAvailableToEnvironment() const override;
   bool IsIdInBlacklist(const HashedExtensionId& hashed_id) const override;
   bool IsIdInWhitelist(const HashedExtensionId& hashed_id) const override;
 

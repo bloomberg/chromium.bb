@@ -78,6 +78,23 @@ Feature::Availability ComplexFeature::IsAvailableToContext(
   return first_availability;
 }
 
+Feature::Availability ComplexFeature::IsAvailableToEnvironment() const {
+  Feature::Availability first_availability =
+      features_[0]->IsAvailableToEnvironment();
+  if (first_availability.is_available())
+    return first_availability;
+
+  for (FeatureList::const_iterator iter = features_.begin() + 1;
+       iter != features_.end(); ++iter) {
+    Availability availability = (*iter)->IsAvailableToEnvironment();
+    if (availability.is_available())
+      return availability;
+  }
+  // If none of the SimpleFeatures are available, we return the availability
+  // info of the first SimpleFeature that was not available.
+  return first_availability;
+}
+
 bool ComplexFeature::IsIdInBlacklist(const HashedExtensionId& hashed_id) const {
   for (FeatureList::const_iterator it = features_.begin();
        it != features_.end();
