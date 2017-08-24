@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "chrome/browser/vr/toolbar_state.h"
 #include "chrome/browser/vr/ui_interface.h"
@@ -37,7 +36,6 @@ class UrlBarTexture : public UiTexture {
   };
 
   UrlBarTexture(
-      bool web_vr,
       const base::Callback<void(UiUnsupportedMode)>& failure_callback);
   ~UrlBarTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
@@ -57,7 +55,7 @@ class UrlBarTexture : public UiTexture {
   static void ApplyUrlStyling(const base::string16& formatted_url,
                               const url::Parsed& parsed,
                               security_state::SecurityLevel security_level,
-                              vr::RenderTextWrapper* render_text,
+                              RenderTextWrapper* render_text,
                               const ColorScheme& color_scheme);
 
   std::unique_ptr<gfx::RenderText> url_render_text_;
@@ -73,7 +71,7 @@ class UrlBarTexture : public UiTexture {
   float ToPixels(float meters) const;
   float ToMeters(float pixels) const;
   bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
-  void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& bounds);
+  void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& text_bounds);
   void OnSetMode() override;
   SkColor GetLeftCornerColor() const;
 
@@ -86,8 +84,6 @@ class UrlBarTexture : public UiTexture {
 
   bool url_dirty_ = true;
 
-  bool has_back_button_ = true;
-  bool opaque_background_ = false;
   base::Callback<void(UiUnsupportedMode)> failure_callback_;
   gfx::RectF security_hit_region_ = gfx::RectF(0, 0, 0, 0);
   gfx::RectF back_button_hit_region_ = gfx::RectF(0, 0, 0, 0);

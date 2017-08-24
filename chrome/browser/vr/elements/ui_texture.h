@@ -42,6 +42,12 @@ class UiTexture {
 
   void SetMode(ColorScheme::Mode mode);
 
+  // This function sets |font_list| to a list of available fonts for |text|. If
+  // no font supports |text|, it returns false and leave |font_list| untouched.
+  static bool GetFontList(int size,
+                          base::string16 text,
+                          gfx::FontList* font_list);
+
  protected:
   enum TextAlignment {
     kTextAlignmentNone,
@@ -85,9 +91,6 @@ class UiTexture {
 
   static bool IsRTL();
   static gfx::FontList GetDefaultFontList(int size);
-  static bool GetFontList(int size,
-                          base::string16 text,
-                          gfx::FontList* font_list);
   static void SetForceFontFallbackFailureForTesting(bool force);
 
  private:

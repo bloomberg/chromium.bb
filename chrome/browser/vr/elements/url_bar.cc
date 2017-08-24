@@ -14,7 +14,7 @@ UrlBar::UrlBar(int preferred_width,
                const base::Callback<void()>& security_icon_callback,
                const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<UrlBarTexture>(false, failure_callback)),
+      texture_(base::MakeUnique<UrlBarTexture>(failure_callback)),
       back_button_callback_(back_button_callback),
       security_icon_callback_(security_icon_callback) {}
 

@@ -30,7 +30,7 @@ enum UiElementDebugId {
   kExitWarning,
   kExitPrompt,
   kExitPromptBackplane,
-  kTransientUrlBar,
+  kWebVrUrlToast,
   kLocationAccessIndicator,
   kExclusiveScreenToast,
   kExclusiveScreenToastViewportAware,

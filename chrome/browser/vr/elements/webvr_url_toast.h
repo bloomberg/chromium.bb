@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_ELEMENTS_TRANSIENT_URL_BAR_H_
-#define CHROME_BROWSER_VR_ELEMENTS_TRANSIENT_URL_BAR_H_
+#ifndef CHROME_BROWSER_VR_ELEMENTS_WEBVR_URL_TOAST_H_
+#define CHROME_BROWSER_VR_ELEMENTS_WEBVR_URL_TOAST_H_
 
 #include <memory>
 
@@ -18,18 +18,18 @@
 
 namespace vr {
 
-class UrlBarTexture;
+class WebVrUrlToastTexture;
 struct ToolbarState;
 
 // The non-interactive URL bar that shows for some time when WebVR content is
 // autopresented.
-class TransientUrlBar : public TexturedElement {
+class WebVrUrlToast : public TexturedElement {
  public:
-  TransientUrlBar(
+  WebVrUrlToast(
       int preferred_width,
       const base::TimeDelta& timeout,
       const base::Callback<void(UiUnsupportedMode)>& failure_callback);
-  ~TransientUrlBar() override;
+  ~WebVrUrlToast() override;
 
   void SetEnabled(bool enabled) override;
 
@@ -38,12 +38,12 @@ class TransientUrlBar : public TexturedElement {
  private:
   UiTexture* GetTexture() const override;
 
-  std::unique_ptr<UrlBarTexture> texture_;
+  std::unique_ptr<WebVrUrlToastTexture> texture_;
   TransienceManager transience_;
 
-  DISALLOW_COPY_AND_ASSIGN(TransientUrlBar);
+  DISALLOW_COPY_AND_ASSIGN(WebVrUrlToast);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_ELEMENTS_TRANSIENT_URL_BAR_H_
+#endif  // CHROME_BROWSER_VR_ELEMENTS_WEBVR_URL_TOAST_H_
