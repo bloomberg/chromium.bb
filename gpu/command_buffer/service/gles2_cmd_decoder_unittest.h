@@ -106,6 +106,18 @@ class GLES3DecoderManualInitTest : public GLES2DecoderManualInitTest {
   GLES3DecoderManualInitTest() { shader_language_version_ = 300; }
 };
 
+class GLES2DecoderPassthroughTest : public GLES2DecoderPassthroughTestBase {
+ public:
+  GLES2DecoderPassthroughTest()
+      : GLES2DecoderPassthroughTestBase(CONTEXT_TYPE_OPENGLES2) {}
+};
+
+class GLES3DecoderPassthroughTest : public GLES2DecoderPassthroughTestBase {
+ public:
+  GLES3DecoderPassthroughTest()
+      : GLES2DecoderPassthroughTestBase(CONTEXT_TYPE_OPENGLES3) {}
+};
+
 }  // namespace gles2
 }  // namespace gpu
 

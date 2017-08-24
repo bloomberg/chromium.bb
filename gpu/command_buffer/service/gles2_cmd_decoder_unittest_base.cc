@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -20,6 +21,7 @@
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/test_helper.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -2187,6 +2189,162 @@ void GLES2DecoderTestBase::DoLockDiscardableTextureCHROMIUM(GLuint texture_id) {
 // we can easily edit the non-auto generated parts right here in this file
 // instead of having to edit some template or the code generator.
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_0_autogen.h"
+
+namespace {
+
+GpuPreferences GenerateGpuPreferencesForPassthroughTests() {
+  GpuPreferences preferences;
+  preferences.use_passthrough_cmd_decoder = true;
+  return preferences;
+}
+}  // anonymous namespace
+
+GLES2DecoderPassthroughTestBase::GLES2DecoderPassthroughTestBase(
+    ContextType context_type)
+    : gpu_preferences_(GenerateGpuPreferencesForPassthroughTests()),
+      shader_translator_cache_(gpu_preferences_) {
+  context_creation_attribs_.context_type = context_type;
+}
+
+GLES2DecoderPassthroughTestBase::~GLES2DecoderPassthroughTestBase() {}
+
+void GLES2DecoderPassthroughTestBase::OnConsoleMessage(
+    int32_t id,
+    const std::string& message) {}
+void GLES2DecoderPassthroughTestBase::CacheShader(const std::string& key,
+                                                  const std::string& shader) {}
+void GLES2DecoderPassthroughTestBase::OnFenceSyncRelease(uint64_t release) {}
+bool GLES2DecoderPassthroughTestBase::OnWaitSyncToken(const gpu::SyncToken&) {
+  return false;
+}
+void GLES2DecoderPassthroughTestBase::OnDescheduleUntilFinished() {}
+void GLES2DecoderPassthroughTestBase::OnRescheduleAfterFinished() {}
+
+void GLES2DecoderPassthroughTestBase::SetUp() {
+  base::CommandLine::Init(0, NULL);
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->AppendSwitch(switches::kUsePassthroughCmdDecoder);
+  command_line->AppendSwitchASCII(switches::kUseGL,
+                                  gl::kGLImplementationANGLEName);
+  command_line->AppendSwitchASCII(switches::kUseANGLE,
+                                  gl::kANGLEImplementationNullName);
+
+  context_creation_attribs_.offscreen_framebuffer_size = gfx::Size(4, 4);
+  context_creation_attribs_.alpha_size = 8;
+  context_creation_attribs_.blue_size = 8;
+  context_creation_attribs_.green_size = 8;
+  context_creation_attribs_.red_size = 8;
+  context_creation_attribs_.depth_size = 24;
+  context_creation_attribs_.stencil_size = 8;
+  context_creation_attribs_.bind_generates_resource = true;
+
+  gl::init::InitializeGLOneOffImplementation(gl::kGLImplementationEGLGLES2,
+                                             false, false, false);
+  surface_ = gl::init::CreateOffscreenGLSurface(
+      context_creation_attribs_.offscreen_framebuffer_size);
+  context_ = gl::init::CreateGLContext(
+      nullptr, surface_.get(),
+      GenerateGLContextAttribs(context_creation_attribs_, gpu_preferences_));
+
+  context_->MakeCurrent(surface_.get());
+  scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo();
+  group_ = new gles2::ContextGroup(
+      gpu_preferences_, &mailbox_manager_, nullptr /* memory_tracker */,
+      &shader_translator_cache_, &framebuffer_completeness_cache_, feature_info,
+      context_creation_attribs_.bind_generates_resource, &image_manager_,
+      nullptr /* image_factory */, nullptr /* progress_reporter */,
+      GpuFeatureInfo(), &discardable_manager_);
+
+  command_buffer_service_.reset(new FakeCommandBufferServiceBase());
+
+  decoder_.reset(new GLES2DecoderPassthroughImpl(
+      this, command_buffer_service_.get(), group_.get()));
+  ASSERT_TRUE(group_->Initialize(decoder_.get(),
+                                 context_creation_attribs_.context_type,
+                                 DisallowedFeatures()));
+  ASSERT_TRUE(decoder_->Initialize(surface_, context_, false,
+                                   DisallowedFeatures(),
+                                   context_creation_attribs_));
+
+  scoped_refptr<gpu::Buffer> buffer =
+      command_buffer_service_->CreateTransferBufferHelper(kSharedBufferSize,
+                                                          &shared_memory_id_);
+  shared_memory_offset_ = kSharedMemoryOffset;
+  shared_memory_address_ =
+      reinterpret_cast<int8_t*>(buffer->memory()) + shared_memory_offset_;
+  shared_memory_base_ = buffer->memory();
+
+  decoder_->MakeCurrent();
+  decoder_->BeginDecoding();
+}
+
+void GLES2DecoderPassthroughTestBase::TearDown() {
+  surface_ = nullptr;
+  context_ = nullptr;
+  decoder_->EndDecoding();
+  decoder_->Destroy(!decoder_->WasContextLost());
+  group_->Destroy(decoder_.get(), false);
+  decoder_.reset();
+  group_ = nullptr;
+  command_buffer_service_.reset();
+  gl::init::ShutdownGL();
+}
+
+GLint GLES2DecoderPassthroughTestBase::GetGLError() {
+  cmds::GetError cmd;
+  cmd.Init(shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  return static_cast<GLint>(*GetSharedMemoryAs<GLenum*>());
+}
+
+void GLES2DecoderPassthroughTestBase::DoBindBuffer(GLenum target,
+                                                   GLuint client_id) {
+  cmds::BindBuffer cmd;
+  cmd.Init(target, client_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderPassthroughTestBase::DoDeleteBuffer(GLuint client_id) {
+  GenHelper<cmds::DeleteBuffersImmediate>(client_id);
+}
+
+void GLES2DecoderPassthroughTestBase::DoBufferData(GLenum target,
+                                                   GLsizei size,
+                                                   const void* data,
+                                                   GLenum usage) {
+  cmds::BufferData cmd;
+  if (data) {
+    EXPECT_TRUE(size >= 0);
+    EXPECT_LT(static_cast<size_t>(size),
+              kSharedBufferSize - kSharedMemoryOffset);
+    memcpy(shared_memory_address_, data, size);
+    cmd.Init(target, size, shared_memory_id_, shared_memory_offset_, usage);
+  } else {
+    cmd.Init(target, size, 0, 0, usage);
+  }
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+void GLES2DecoderPassthroughTestBase::DoBufferSubData(GLenum target,
+                                                      GLint offset,
+                                                      GLsizeiptr size,
+                                                      const void* data) {
+  memcpy(shared_memory_address_, data, size);
+  cmds::BufferSubData cmd;
+  cmd.Init(target, offset, size, shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+// GCC requires these declarations, but MSVC requires they not be present
+#ifndef COMPILER_MSVC
+const size_t GLES2DecoderPassthroughTestBase::kSharedBufferSize;
+const uint32_t GLES2DecoderPassthroughTestBase::kSharedMemoryOffset;
+const uint32_t GLES2DecoderPassthroughTestBase::kInvalidSharedMemoryOffset;
+const int32_t GLES2DecoderPassthroughTestBase::kInvalidSharedMemoryId;
+
+const uint32_t GLES2DecoderPassthroughTestBase::kNewClientId;
+const GLuint GLES2DecoderPassthroughTestBase::kClientBufferId;
+#endif
 
 }  // namespace gles2
 }  // namespace gpu

@@ -69,7 +69,7 @@ struct PassthroughResources {
   std::unordered_map<GLuint, MappedBuffer> mapped_buffer_map;
 };
 
-class GLES2DecoderPassthroughImpl : public GLES2Decoder {
+class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
  public:
   GLES2DecoderPassthroughImpl(GLES2DecoderClient* client,
                               CommandBufferServiceBase* command_buffer_service,

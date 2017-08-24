@@ -1405,6 +1405,8 @@ void FeatureInfo::InitializeFeatures() {
   feature_flags_.ext_robustness = extensions.Contains("GL_EXT_robustness");
   feature_flags_.chromium_texture_filtering_hint =
       extensions.Contains("GL_CHROMIUM_texture_filtering_hint");
+  feature_flags_.ext_pixel_buffer_object =
+      extensions.Contains("GL_NV_pixel_buffer_object");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
