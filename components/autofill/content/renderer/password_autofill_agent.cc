@@ -655,13 +655,16 @@ blink::WebInputElement FindUsernameElementPrecedingPasswordElement(
   return blink::WebInputElement();
 }
 
-bool ShouldShowStandaloneManuallFallback(
-    const blink::WebInputElement& element) {
-  return (element.IsPasswordField() &&
-          !IsCreditCardVerificationPasswordField(element) &&
-          !HasCreditCardAutocompleteAttributes(element) &&
-          base::FeatureList::IsEnabled(
-              password_manager::features::kEnableManualFallbacksFilling));
+bool ShouldShowStandaloneManuallFallback(const blink::WebInputElement& element,
+                                         const GURL& url) {
+  return (
+      element.IsPasswordField() &&
+      !IsCreditCardVerificationPasswordField(element) &&
+      !HasCreditCardAutocompleteAttributes(element) &&
+      !base::StartsWith(url.scheme(), "chrome", base::CompareCase::SENSITIVE) &&
+      !url.SchemeIs(url::kAboutScheme) &&
+      base::FeatureList::IsEnabled(
+          password_manager::features::kEnableManualFallbacksFilling));
 }
 
 }  // namespace
@@ -1038,6 +1041,8 @@ bool PasswordAutofillAgent::ShowSuggestions(
   if (!FindPasswordInfoForElement(element, &username_element, &password_element,
                                   &password_info)) {
     if (IsUsernameOrPasswordField(element)) {
+      blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+      GURL frame_url = GURL(frame->GetDocument().Url());
 #if defined(SAFE_BROWSING_DB_LOCAL)
       if (!checked_safe_browsing_reputation_) {
         checked_safe_browsing_reputation_ = true;
@@ -1045,13 +1050,11 @@ bool PasswordAutofillAgent::ShowSuggestions(
             element.Form().IsNull()
                 ? GURL()
                 : form_util::GetCanonicalActionForForm(element.Form());
-        blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-        GURL frame_url = GURL(frame->GetDocument().Url());
         GetPasswordManagerDriver()->CheckSafeBrowsingReputation(action_url,
                                                                 frame_url);
       }
 #endif
-      if (ShouldShowStandaloneManuallFallback(element) &&
+      if (ShouldShowStandaloneManuallFallback(element, frame_url) &&
           ShowManualFallbackSuggestion(element)) {
         return true;
       }
