@@ -432,7 +432,7 @@ cr.define('settings', function() {
       this.currentRoute = route;
       this.currentQueryParameters_ = queryParameters;
       this.wasLastRouteChangePopstate_ = isPopstate;
-      routeObservers.forEach((observer) => {
+      new Set(routeObservers).forEach((observer) => {
         observer.currentRouteChanged(this.currentRoute, oldRoute);
       });
     }
