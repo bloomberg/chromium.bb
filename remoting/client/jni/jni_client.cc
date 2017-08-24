@@ -148,11 +148,6 @@ void JniClient::HandleExtensionMessage(const std::string& type,
   Java_Client_handleExtensionMessage(env, java_client_, j_type, j_message);
 }
 
-// static
-bool JniClient::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void JniClient::Connect(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller,

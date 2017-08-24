@@ -35,8 +35,6 @@ class JniGlDisplayHandler {
   std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub();
   std::unique_ptr<protocol::VideoRenderer> CreateVideoRenderer();
 
-  static bool RegisterJni(JNIEnv* env);
-
   void OnSurfaceCreated(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& caller,

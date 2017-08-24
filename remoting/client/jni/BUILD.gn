@@ -40,8 +40,6 @@ shared_library("remoting_client_jni") {
     "jni_touch_event_data.cc",
     "jni_touch_event_data.h",
     "remoting_jni_onload.cc",
-    "remoting_jni_registrar.cc",
-    "remoting_jni_registrar.h",
   ]
   libs = [
     "android",

@@ -24,8 +24,6 @@ struct DefaultSingletonTraits;
 
 namespace remoting {
 
-bool RegisterJniRuntimeDelegate(JNIEnv* env);
-
 // JniRuntimeDelegate is a singleton that hooks into delegate role for
 // the ChromotingClientRuntime object. This class handles Android specific
 // integrations for the runtime. Proxies outgoing JNI calls from
