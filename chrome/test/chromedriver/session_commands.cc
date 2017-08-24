@@ -562,6 +562,18 @@ Status ExecuteSetTimeout(Session* session,
   return Status(kOk);
 }
 
+Status ExecuteGetTimeouts(Session* session,
+                          const base::DictionaryValue& params,
+                          std::unique_ptr<base::Value>* value) {
+  base::DictionaryValue timeouts;
+  timeouts.SetInteger("script", session->script_timeout.InMilliseconds());
+  timeouts.SetInteger("pageLoad", session->page_load_timeout.InMilliseconds());
+  timeouts.SetInteger("implicit", session->implicit_wait.InMilliseconds());
+
+  value->reset(timeouts.DeepCopy());
+  return Status(kOk);
+}
+
 Status ExecuteSetScriptTimeout(Session* session,
                                const base::DictionaryValue& params,
                                std::unique_ptr<base::Value>* value) {
