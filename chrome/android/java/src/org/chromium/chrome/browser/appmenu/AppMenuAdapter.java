@@ -8,9 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -22,11 +20,10 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.TintedImageButton;
+import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
@@ -103,12 +100,6 @@ class AppMenuAdapter extends BaseAdapter {
     private final Integer mHighlightedItemId;
     private final float mDpToPx;
     private final boolean mTranslateMenuItemsOnShow;
-
-    // Use a single PulseDrawable to spawn the other drawables so that the ConstantState gets
-    // shared.  This allows the animation to stay in step even as the views are recycled and the
-    // background gets changed.  This Drawable isn't just used directly because Drawables need to
-    // have a single owner or the internals of View can modify it's state as it gets cleared later.
-    private PulseDrawable mHighlightDrawableSource;
 
     public AppMenuAdapter(AppMenu appMenu, List<MenuItem> menuItems, LayoutInflater inflater,
             Integer highlightedItemId, boolean translateMenuItemsOnShow) {
@@ -283,7 +274,11 @@ class AppMenuAdapter extends BaseAdapter {
                 assert false : "Unexpected MenuItem type";
         }
 
-        highlightItemIfNecessary(convertView, false, item.getItemId());
+        if (mHighlightedItemId != null && item.getItemId() == mHighlightedItemId) {
+            ViewHighlighter.turnOnHighlight(convertView, false);
+        } else {
+            ViewHighlighter.turnOffHighlight(convertView);
+        }
 
         return convertView;
     }
@@ -328,7 +323,11 @@ class AppMenuAdapter extends BaseAdapter {
 
         button.setOnLongClickListener(v -> mAppMenu.onItemLongClick(item, v));
 
-        highlightItemIfNecessary(button, true, item.getItemId());
+        if (mHighlightedItemId != null && item.getItemId() == mHighlightedItemId) {
+            ViewHighlighter.turnOnHighlight(button, true);
+        } else {
+            ViewHighlighter.turnOffHighlight(button);
+        }
 
         // Menu items may be hidden by command line flags before they get to this point.
         button.setVisibility(item.isVisible() ? View.VISIBLE : View.GONE);
@@ -468,35 +467,6 @@ class AppMenuAdapter extends BaseAdapter {
         convertView.setFocusable(false);
         convertView.setEnabled(false);
         return convertView;
-    }
-
-    private void highlightItemIfNecessary(View view, boolean isIcon, int itemId) {
-        if (mHighlightedItemId == null) return;
-
-        Drawable background = (Drawable) view.getTag(R.id.menu_item_original_background);
-        if (background == null) return;
-
-        if (itemId != mHighlightedItemId) {
-            view.setBackground(background);
-            return;
-        }
-
-        if (mHighlightDrawableSource == null) {
-            mHighlightDrawableSource = isIcon ? PulseDrawable.createCircle(view.getContext())
-                                              : PulseDrawable.createHighlight();
-        }
-
-        Resources resources = ContextUtils.getApplicationContext().getResources();
-
-        PulseDrawable pulse =
-                (PulseDrawable) mHighlightDrawableSource.getConstantState().newDrawable(resources);
-        if (background.getConstantState() != null) {
-            background = background.getConstantState().newDrawable(resources);
-        }
-
-        LayerDrawable drawable = new LayerDrawable(new Drawable[] {background, pulse});
-        view.setBackground(drawable);
-        pulse.start();
     }
 
     static class StandardMenuItemViewHolder {

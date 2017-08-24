@@ -57,6 +57,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -560,9 +561,6 @@ public class BottomSheet
     public void onExpandButtonPressed() {
         mMetrics.recordSheetOpenReason(BottomSheetMetrics.OPENED_BY_EXPAND_BUTTON);
         setSheetState(BottomSheet.SHEET_STATE_HALF, true);
-
-        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-        tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED);
     }
 
     /** Immediately end all animations and null the animators. */
@@ -1114,6 +1112,9 @@ public class BottomSheet
         setContentDescription(
                 getResources().getString(R.string.bottom_sheet_accessibility_description));
         if (getFocusedChild() == null) requestFocus();
+
+        Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+        tracker.notifyEvent(EventConstants.BOTTOM_SHEET_EXPANDED);
     }
 
     /**
@@ -1628,8 +1629,13 @@ public class BottomSheet
                     @Override
                     public void onDismiss() {
                         tracker.dismissed(FeatureConstants.CHROME_HOME_EXPAND_FEATURE);
+                        ViewHighlighter.turnOffHighlight(anchorView);
                     }
                 });
+
+                if (showExpandButtonHelpBubble) {
+                    ViewHighlighter.turnOnHighlight(anchorView, true);
+                }
 
                 int inset = getContext().getResources().getDimensionPixelSize(
                         R.dimen.bottom_sheet_help_bubble_inset);
