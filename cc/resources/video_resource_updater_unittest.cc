@@ -216,14 +216,15 @@ class VideoResourceUpdaterTest : public testing::Test {
     return video_frame;
   }
 
-  scoped_refptr<media::VideoFrame> CreateTestYuvHardwareVideoFrame() {
+  scoped_refptr<media::VideoFrame> CreateTestYuvHardwareVideoFrame(
+      media::VideoPixelFormat format,
+      size_t num_textures,
+      unsigned target) {
     const int kDimension = 10;
     gfx::Size size(kDimension, kDimension);
 
-    const unsigned target = GL_TEXTURE_RECTANGLE_ARB;
-    const int kPlanesNum = 3;
     gpu::MailboxHolder mailbox_holders[media::VideoFrame::kMaxPlanes];
-    for (int i = 0; i < kPlanesNum; ++i) {
+    for (size_t i = 0; i < num_textures; ++i) {
       gpu::Mailbox mailbox;
       mailbox.name[0] = 50 + 1;
       mailbox_holders[i] =
@@ -231,7 +232,7 @@ class VideoResourceUpdaterTest : public testing::Test {
     }
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapNativeTextures(
-            media::PIXEL_FORMAT_I420, mailbox_holders,
+            format, mailbox_holders,
             base::Bind(&VideoResourceUpdaterTest::SetReleaseSyncToken,
                        base::Unretained(this)),
             size,                // coded_size
@@ -498,7 +499,8 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
   EXPECT_EQ(1u, resources.release_callbacks.size());
   EXPECT_EQ(0u, resources.software_resources.size());
 
-  video_frame = CreateTestYuvHardwareVideoFrame();
+  video_frame = CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_I420, 3,
+                                                GL_TEXTURE_RECTANGLE_ARB);
 
   resources = updater.CreateExternalResourcesFromVideoFrame(video_frame);
   EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
@@ -507,7 +509,8 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
   EXPECT_EQ(0u, resources.software_resources.size());
   EXPECT_FALSE(resources.read_lock_fences_enabled);
 
-  video_frame = CreateTestYuvHardwareVideoFrame();
+  video_frame = CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_I420, 3,
+                                                GL_TEXTURE_RECTANGLE_ARB);
   video_frame->metadata()->SetBoolean(
       media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED, true);
 
@@ -685,6 +688,28 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_SingleNV12) {
   EXPECT_EQ(1u, resources.mailboxes.size());
   EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES, resources.mailboxes[0].target());
   EXPECT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR, resources.buffer_format);
+  EXPECT_EQ(0, context3d_->TextureCreationCount());
+}
+
+TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes_DualNV12) {
+  bool use_stream_video_draw_quad = false;
+  VideoResourceUpdater updater(context_provider_.get(),
+                               resource_provider3d_.get(),
+                               use_stream_video_draw_quad);
+  context3d_->ResetTextureCreationCount();
+  scoped_refptr<media::VideoFrame> video_frame =
+      CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_NV12, 2,
+                                      GL_TEXTURE_EXTERNAL_OES);
+
+  VideoFrameExternalResources resources =
+      updater.CreateExternalResourcesFromVideoFrame(video_frame);
+  EXPECT_EQ(VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+  EXPECT_EQ(2u, resources.mailboxes.size());
+  EXPECT_EQ(2u, resources.release_callbacks.size());
+  EXPECT_EQ(0u, resources.software_resources.size());
+  EXPECT_EQ((GLenum)GL_TEXTURE_EXTERNAL_OES, resources.mailboxes[0].target());
+  // |updater| doesn't set |buffer_format| in this case.
+  EXPECT_EQ(gfx::BufferFormat::RGBA_8888, resources.buffer_format);
   EXPECT_EQ(0, context3d_->TextureCreationCount());
 }
 
