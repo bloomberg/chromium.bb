@@ -55,8 +55,6 @@ class PLATFORM_EXPORT ScrollbarThemeClient {
   virtual bool IsScrollableAreaActive() const = 0;
 
   virtual IntPoint ConvertFromRootFrame(const IntPoint&) const = 0;
-  virtual IntPoint ConvertFromRootFrameToParentView(const IntPoint&) const = 0;
-  virtual IntPoint ConvertFromParentView(const IntPoint&) const = 0;
 
   virtual bool IsCustomScrollbar() const = 0;
   virtual ScrollbarOrientation Orientation() const = 0;

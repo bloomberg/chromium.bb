@@ -84,7 +84,6 @@
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
-#include "platform/scroll/ScrollbarTheme.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -2001,7 +2000,7 @@ PaintLayer* PaintLayer::HitTestLayer(
       Clipper(PaintLayer::kDoNotUseGeometryMapper)
           .CalculateBackgroundClipRect(
               ClipRectsContext(root_layer, clip_rects_cache_slot,
-                               kIgnorePlatformOverlayScrollbarSize),
+                               kExcludeOverlayScrollbarSizeForHitTesting),
               clip_rect);
       // Go ahead and test the enclosing clip now.
       if (!clip_rect.Intersects(hit_test_location))
@@ -2079,39 +2078,6 @@ PaintLayer* PaintLayer::HitTestLayer(
   // This variable tracks which layer the mouse ends up being inside.
   PaintLayer* candidate_layer = 0;
 
-  // Check current layer for overflow controls first.
-  if (GetLayoutObject().VisibleToHitTestRequest(result.GetHitTestRequest()) &&
-      scrollable_area_ && scrollable_area_->HasScrollbar()) {
-    LocalFrameView* frame_view = GetLayoutObject().GetFrameView();
-    DCHECK(frame_view);
-
-    IntPoint frame_point =
-        frame_view->ContentsToFrame(RoundedIntPoint(hit_test_location.Point()));
-    IntPoint local_point = frame_view->ConvertToLayoutItem(
-        LayoutBoxItem(GetLayoutBox()), frame_point);
-
-    bool hit_overflow_controls =
-        scrollable_area_->HitTestOverflowControls(result, local_point);
-
-    // If hit overflow controls, innerNode should be the scrollable_area_ node.
-    if (hit_overflow_controls) {
-      if (scrollable_area_ && scrollable_area_->GetLayoutBox() &&
-          scrollable_area_->GetLayoutBox()->GetNode()) {
-        Node* node = scrollable_area_->GetLayoutBox()->GetNode();
-
-        // If scrollbar belongs to Document, we should set innerNode to the
-        // <html> element to match other browser.
-        if (node->IsDocumentNode())
-          node = node->GetDocument().documentElement();
-
-        result.SetInnerNode(node);
-        result.SetURLElement(node->EnclosingLinkEventParentOrSelf());
-      }
-
-      return this;
-    }
-  }
-
   // Begin by walking our list of positive layers from highest z-index down to
   // the lowest z-index.
   PaintLayer* hit_layer = HitTestChildren(
@@ -2140,14 +2106,14 @@ PaintLayer* PaintLayer::HitTestLayer(
   // fragment.
   PaintLayerFragments layer_fragments;
   if (applied_transform) {
-    AppendSingleFragmentIgnoringPagination(layer_fragments, root_layer,
-                                           hit_test_rect, clip_rects_cache_slot,
-                                           PaintLayer::kDoNotUseGeometryMapper,
-                                           kIgnorePlatformOverlayScrollbarSize);
+    AppendSingleFragmentIgnoringPagination(
+        layer_fragments, root_layer, hit_test_rect, clip_rects_cache_slot,
+        PaintLayer::kDoNotUseGeometryMapper,
+        kExcludeOverlayScrollbarSizeForHitTesting);
   } else {
     CollectFragments(layer_fragments, root_layer, hit_test_rect,
                      clip_rects_cache_slot, PaintLayer::kDoNotUseGeometryMapper,
-                     kIgnorePlatformOverlayScrollbarSize);
+                     kExcludeOverlayScrollbarSizeForHitTesting);
   }
 
   if (scrollable_area_ && scrollable_area_->HitTestResizerInFragments(
@@ -2267,7 +2233,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
   EnclosingPaginationLayer()->CollectFragments(
       enclosing_pagination_fragments, root_layer, hit_test_rect,
       clip_rects_cache_slot, PaintLayer::kDoNotUseGeometryMapper,
-      kIgnorePlatformOverlayScrollbarSize, kRespectOverflowClip,
+      kExcludeOverlayScrollbarSizeForHitTesting, kRespectOverflowClip,
       &offset_of_pagination_layer_from_root, LayoutSize(), &transformed_extent);
 
   for (int i = enclosing_pagination_fragments.size() - 1; i >= 0; --i) {
@@ -2287,7 +2253,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
           .CalculateBackgroundClipRect(
               ClipRectsContext(EnclosingPaginationLayer(),
                                clip_rects_cache_slot,
-                               kIgnorePlatformOverlayScrollbarSize),
+                               kExcludeOverlayScrollbarSizeForHitTesting),
               parent_clip_rect);
 
       parent_clip_rect.MoveBy(fragment.pagination_offset +
