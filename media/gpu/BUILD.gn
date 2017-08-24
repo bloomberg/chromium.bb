@@ -534,6 +534,7 @@ if (is_chromeos) {
       "//base",
       "//media:test_support",
       "//media/gpu",
+      "//media/gpu/ipc/service",
       "//testing/gtest",
       "//third_party/libyuv",
       "//ui/base",
