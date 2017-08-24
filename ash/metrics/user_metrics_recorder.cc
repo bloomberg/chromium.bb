@@ -96,11 +96,9 @@ bool IsUserActive() {
 // UMA statistics. Note the containers are ordered from top most visible
 // container to the lowest to allow the |GetNumVisibleWindows| method to short
 // circuit when processing a maximized or fullscreen window.
-int kVisibleWindowContainerIds[] = {
-    kShellWindowId_PanelContainer,
-    kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_DefaultContainer
-};
+int kVisibleWindowContainerIds[] = {kShellWindowId_PanelContainer,
+                                    kShellWindowId_AlwaysOnTopContainer,
+                                    kShellWindowId_DefaultContainer};
 
 // Returns an approximate count of how many windows are currently visible in the
 // primary root window.
@@ -407,12 +405,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_VPN_SETTINGS_OPENED:
       RecordAction(UserMetricsAction("StatusArea_VPN_Settings"));
       break;
-    case UMA_TABLET_WINDOW_CLOSE_THROUGH_CAPTION_BUTTON:
-      RecordAction(UserMetricsAction("Tablet_WindowCloseFromCaptionButton"));
-      break;
-    case UMA_TABLET_WINDOW_CLOSE_THROUGH_OVERVIEW_CLOSE_BUTTON:
-      RecordAction(UserMetricsAction("Tablet_WindowCloseFromOverviewButton"));
-      break;
     case UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK:
       RecordAction(UserMetricsAction("Caption_ClickTogglesMaximize"));
       break;
@@ -461,47 +453,6 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
       break;
     case UMA_WINDOW_APP_CLOSE_BUTTON_CLICK:
       RecordAction(UserMetricsAction("AppCloseButton_Clk"));
-      break;
-    case UMA_WINDOW_CLOSE_BUTTON_CLICK:
-      RecordAction(UserMetricsAction("CloseButton_Clk"));
-      break;
-    case UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_EXIT_FULLSCREEN:
-      RecordAction(UserMetricsAction("MaxButton_Clk_ExitFS"));
-      break;
-    case UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_RESTORE:
-      RecordAction(UserMetricsAction("MaxButton_Clk_Restore"));
-      break;
-    case UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MAXIMIZE:
-      RecordAction(UserMetricsAction("MaxButton_Clk_Maximize"));
-      break;
-    case UMA_WINDOW_MAXIMIZE_BUTTON_CLICK_MINIMIZE:
-      RecordAction(UserMetricsAction("MinButton_Clk"));
-      break;
-    case UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_LEFT:
-      RecordAction(UserMetricsAction("MaxButton_MaxLeft"));
-      break;
-    case UMA_WINDOW_MAXIMIZE_BUTTON_MAXIMIZE_RIGHT:
-      RecordAction(UserMetricsAction("MaxButton_MaxRight"));
-      break;
-    case UMA_WINDOW_CYCLE:
-      RecordAction(UserMetricsAction("WindowCycleController_Cycle"));
-      break;
-    case UMA_WINDOW_OVERVIEW:
-      RecordAction(UserMetricsAction("WindowSelector_Overview"));
-      break;
-    case UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED:
-      RecordAction(UserMetricsAction("WindowSelector_ActiveWindowChanged"));
-      task_switch_metrics_recorder_.OnTaskSwitch(
-          TaskSwitchSource::OVERVIEW_MODE);
-      break;
-    case UMA_WINDOW_OVERVIEW_ENTER_KEY:
-      RecordAction(UserMetricsAction("WindowSelector_OverviewEnterKey"));
-      break;
-    case UMA_WINDOW_OVERVIEW_CLOSE_BUTTON:
-      RecordAction(UserMetricsAction("WindowSelector_OverviewCloseButton"));
-      break;
-    case UMA_WINDOW_OVERVIEW_CLOSE_KEY:
-      RecordAction(UserMetricsAction("WindowSelector_OverviewCloseKey"));
       break;
   }
 }

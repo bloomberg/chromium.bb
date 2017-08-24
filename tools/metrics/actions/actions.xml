@@ -18169,7 +18169,8 @@ should be able to be added at any place in this file.
   <owner>tdanderson@chromium.org</owner>
   <owner>flackr@chromium.org</owner>
   <description>
-    Starting a window selection cycle by pressing alt-tab.
+    Starting a window selection cycle by pressing alt-tab. Only counts the
+    initial alt-tab, not each step in the cycle.
   </description>
 </action>
 
