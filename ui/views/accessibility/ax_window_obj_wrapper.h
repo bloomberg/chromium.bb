@@ -52,6 +52,8 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
 
   bool is_alert_;
 
+  bool is_root_window_;
+
   DISALLOW_COPY_AND_ASSIGN(AXWindowObjWrapper);
 };
 
