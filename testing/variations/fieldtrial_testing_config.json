@@ -731,6 +731,25 @@
             ]
         }
     ],
+    "DecoupleTranslateLanguage": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Experiment",
+                    "enable_features": [
+                        "DecoupleTranslateLanguageFeature"
+                    ]
+                }
+            ]
+        }
+    ],
     "DefaultBrowserInfobar": [
         {
             "platforms": [
