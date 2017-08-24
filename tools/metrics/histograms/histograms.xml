@@ -85341,6 +85341,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time spent in starting incremental marking.</summary>
 </histogram>
 
+<histogram name="V8.GCIncrementalMarkingSum" units="ms">
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    The total time spent in incremental marking steps in one GC cycle. It is
+    only recorded if the time is non-zero.
+  </summary>
+</histogram>
+
 <histogram name="V8.GCLowMemoryNotification" units="ms">
   <owner>hpayer@chromium.org</owner>
   <summary>Time spent in LowMemoryNotifications.</summary>
