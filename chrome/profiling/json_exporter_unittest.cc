@@ -21,6 +21,8 @@ namespace {
 
 using MemoryMap = std::vector<memory_instrumentation::mojom::VmRegionPtr>;
 
+static constexpr int kNoParent = -1;
+
 // Finds the first period_interval trace event in the given JSON trace.
 // Returns null on failure.
 const base::Value* FindFirstPeriodicInterval(const base::Value& root) {
@@ -72,6 +74,23 @@ const base::Value* FindFirstRegionWithAnyName(
   return nullptr;
 }
 
+bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
+  for (const auto& backtrace : backtraces->GetList()) {
+    const base::Value* backtrace_id =
+        backtrace.FindKeyOfType("id", base::Value::Type::INTEGER);
+    const base::Value* backtrace_parent =
+        backtrace.FindKeyOfType("parent", base::Value::Type::INTEGER);
+
+    int backtrace_parent_int = kNoParent;
+    if (backtrace_parent)
+      backtrace_parent_int = backtrace_parent->GetInt();
+
+    if (backtrace_id->GetInt() == id && backtrace_parent_int == parent)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 TEST(ProfilingJsonExporterTest, Simple) {
@@ -83,7 +102,9 @@ TEST(ProfilingJsonExporterTest, Simple) {
   const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
 
   std::vector<Address> stack2;
+  stack2.push_back(Address(1234));
   stack2.push_back(Address(9012));
+  stack2.push_back(Address(9013));
   const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
 
   AllocationEventSet events;
@@ -121,6 +142,19 @@ TEST(ProfilingJsonExporterTest, Simple) {
                counts->GetList()[1].GetInt() == 2) ||
               (counts->GetList()[0].GetInt() == 2 &&
                counts->GetList()[1].GetInt() == 1));
+
+  // Nodes should be a list with 4 items.
+  //   [0] => address: 1234  parent: none
+  //   [1] => address: 5678  parent: 0
+  //   [2] => address: 9012  parent: 0
+  //   [3] => address: 9013  parent: 2
+  const base::Value* nodes = heaps_v2->FindPath({"maps", "nodes"});
+  ASSERT_TRUE(nodes);
+  EXPECT_EQ(4u, nodes->GetList().size());
+  EXPECT_TRUE(IsBacktraceInList(nodes, 0, kNoParent));
+  EXPECT_TRUE(IsBacktraceInList(nodes, 1, 0));
+  EXPECT_TRUE(IsBacktraceInList(nodes, 2, 0));
+  EXPECT_TRUE(IsBacktraceInList(nodes, 3, 2));
 }
 
 TEST(ProfilingJsonExporterTest, MemoryMaps) {
