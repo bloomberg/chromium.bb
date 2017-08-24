@@ -767,7 +767,6 @@ mojom("mojo_bindings") {
   ]
   sources = [
     "platform/display_mode.mojom",
-    "platform/frame_broker.mojom",
     "platform/media_download_in_product_help.mojom",
     "platform/media_engagement.mojom",
     "platform/mime_registry.mojom",
