@@ -125,16 +125,11 @@ class CONTENT_EXPORT DevToolsAgentHost
   static void RemoveObserver(DevToolsAgentHostObserver*);
 
   // Attaches |client| to this agent host to start debugging.
-  // Returns true iff attach succeeded.
-  virtual bool AttachClient(DevToolsAgentHostClient* client) = 0;
+  virtual void AttachClient(DevToolsAgentHostClient* client) = 0;
 
   // Attaches |client| to this agent host to start debugging. Disconnects
   // any existing clients.
   virtual void ForceAttachClient(DevToolsAgentHostClient* client) = 0;
-
-  // Attaches |client| to this agent host to start debugging. Allows multiple
-  // clients to be attached.
-  virtual void AttachMultiClient(DevToolsAgentHostClient* client) = 0;
 
   // Already attached client detaches from this agent host to stop debugging it.
   // Returns true iff detach succeeded.

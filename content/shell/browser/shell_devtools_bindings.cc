@@ -155,6 +155,8 @@ void ShellDevToolsBindings::ReadyToCommitNavigation(
 }
 
 void ShellDevToolsBindings::DocumentAvailableInMainFrame() {
+  if (agent_host_)
+    agent_host_->DetachClient(this);
   agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents_);
   agent_host_->AttachClient(this);
   if (inspect_element_at_x_ != -1) {
@@ -166,8 +168,10 @@ void ShellDevToolsBindings::DocumentAvailableInMainFrame() {
 }
 
 void ShellDevToolsBindings::WebContentsDestroyed() {
-  if (agent_host_)
+  if (agent_host_) {
     agent_host_->DetachClient(this);
+    agent_host_ = nullptr;
+  }
 }
 
 void ShellDevToolsBindings::SetPreferences(const std::string& json) {
@@ -202,8 +206,6 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
   dict->GetList("params", &params);
 
   if (method == "dispatchProtocolMessage" && params && params->GetSize() == 1) {
-    if (!agent_host_ || !agent_host_->IsAttached())
-      return;
     std::string protocol_message;
     if (!params->GetString(0, &protocol_message))
       return;
