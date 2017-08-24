@@ -112,11 +112,10 @@ class CheckerImageTrackerTest : public testing::Test,
         break;
     }
 
-    sk_sp<SkImage> image =
-        CreateDiscardableImage(gfx::Size(dimension, dimension));
+    auto generator = CreatePaintImageGenerator(gfx::Size(dimension, dimension));
     return DrawImage(PaintImageBuilder()
                          .set_id(PaintImage::GetNextId())
-                         .set_image(std::move(image))
+                         .set_paint_image_generator(std::move(generator))
                          .set_animation_type(animation)
                          .set_completion_state(completion)
                          .set_frame_count(1)
@@ -436,13 +435,13 @@ TEST_F(CheckerImageTrackerTest, CheckersOnlyStaticCompletedImages) {
   // be checkered.
   gfx::Size image_size = gfx::Size(partial_image.paint_image().width(),
                                    partial_image.paint_image().height());
-  DrawImage completed_paint_image =
-      DrawImage(PaintImageBuilder()
-                    .set_id(partial_image.paint_image().stable_id())
-                    .set_image(CreateDiscardableImage(image_size))
-                    .TakePaintImage(),
-                SkIRect::MakeWH(image_size.width(), image_size.height()),
-                kNone_SkFilterQuality, SkMatrix::I(), gfx::ColorSpace());
+  DrawImage completed_paint_image = DrawImage(
+      PaintImageBuilder()
+          .set_id(partial_image.paint_image().stable_id())
+          .set_paint_image_generator(CreatePaintImageGenerator(image_size))
+          .TakePaintImage(),
+      SkIRect::MakeWH(image_size.width(), image_size.height()),
+      kNone_SkFilterQuality, SkMatrix::I(), gfx::ColorSpace());
   EXPECT_FALSE(checker_image_tracker_->ShouldCheckerImage(
       completed_paint_image, WhichTree::PENDING_TREE));
 }

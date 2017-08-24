@@ -7639,7 +7639,7 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
         FakeRecordingSource::CreateFilledRecordingSource(
             gfx::Size(10000, 10000));
 
-    recording->add_draw_image(CreateDiscardableImage(large_image_size_),
+    recording->add_draw_image(CreateDiscardablePaintImage(large_image_size_),
                               gfx::Point(0, 0));
     recording->Rerecord();
 

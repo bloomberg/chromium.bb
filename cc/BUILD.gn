@@ -558,6 +558,8 @@ cc_static_library("test_support") {
     "test/stub_layer_tree_host_client.h",
     "test/stub_layer_tree_host_single_thread_client.cc",
     "test/stub_layer_tree_host_single_thread_client.h",
+    "test/stub_paint_image_generator.cc",
+    "test/stub_paint_image_generator.h",
     "test/task_graph_runner_test_template.cc",
     "test/task_graph_runner_test_template.h",
     "test/test_context_provider.cc",

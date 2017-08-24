@@ -185,10 +185,10 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
   std::unique_ptr<FakeRecordingSource> recording_source =
       FakeRecordingSource::CreateFilledRecordingSource(layer_bounds);
 
-  sk_sp<SkImage> discardable_image[2][2];
-  discardable_image[0][0] = CreateDiscardableImage(gfx::Size(32, 32));
-  discardable_image[0][1] = CreateDiscardableImage(gfx::Size(32, 32));
-  discardable_image[1][1] = CreateDiscardableImage(gfx::Size(32, 32));
+  PaintImage discardable_image[2][2];
+  discardable_image[0][0] = CreateDiscardablePaintImage(gfx::Size(32, 32));
+  discardable_image[0][1] = CreateDiscardablePaintImage(gfx::Size(32, 32));
+  discardable_image[1][1] = CreateDiscardablePaintImage(gfx::Size(32, 32));
 
   // Discardable pixel refs are found in the following cells:
   // |---|---|
@@ -211,7 +211,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 256, 256), &images);
     EXPECT_EQ(1u, images.size());
     DrawImage image(*images[0], 1.f, target_color_space);
-    EXPECT_EQ(discardable_image[0][0], image.paint_image().GetSkImage());
+    EXPECT_EQ(discardable_image[0][0], images[0]->paint_image());
     EXPECT_EQ(target_color_space, image.target_color_space());
   }
   // Shifted tile sized iterators. These should find only one pixel ref.
@@ -221,7 +221,7 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     raster->GetDiscardableImagesInRect(gfx::Rect(260, 260, 256, 256), &images);
     EXPECT_EQ(1u, images.size());
     DrawImage image(*images[0], 1.f, target_color_space);
-    EXPECT_EQ(discardable_image[1][1], image.paint_image().GetSkImage());
+    EXPECT_EQ(discardable_image[1][1], images[0]->paint_image());
     EXPECT_EQ(target_color_space, image.target_color_space());
   }
   // Ensure there's no discardable pixel refs in the empty cell
@@ -235,9 +235,9 @@ TEST(RasterSourceTest, PixelRefIteratorDiscardableRefsOneTile) {
     std::vector<const DrawImage*> images;
     raster->GetDiscardableImagesInRect(gfx::Rect(0, 0, 512, 512), &images);
     EXPECT_EQ(3u, images.size());
-    EXPECT_EQ(discardable_image[0][0], images[0]->paint_image().GetSkImage());
-    EXPECT_EQ(discardable_image[0][1], images[1]->paint_image().GetSkImage());
-    EXPECT_EQ(discardable_image[1][1], images[2]->paint_image().GetSkImage());
+    EXPECT_EQ(discardable_image[0][0], images[0]->paint_image());
+    EXPECT_EQ(discardable_image[0][1], images[1]->paint_image());
+    EXPECT_EQ(discardable_image[1][1], images[2]->paint_image());
   }
 }
 
@@ -552,7 +552,7 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
       FakeRecordingSource::CreateFilledRecordingSource(size);
 
   // 1. Paint the image.
-  recording_source->add_draw_image(CreateDiscardableImage(gfx::Size(5, 5)),
+  recording_source->add_draw_image(CreateDiscardablePaintImage(gfx::Size(5, 5)),
                                    gfx::Point(0, 0));
 
   // 2. Cover everything in red.

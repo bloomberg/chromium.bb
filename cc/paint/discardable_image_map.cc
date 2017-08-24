@@ -204,7 +204,7 @@ class DiscardableImageGenerator {
 
     // Make a note if any image was originally specified in a non-sRGB color
     // space.
-    SkColorSpace* source_color_space = paint_image.GetSkImage()->colorSpace();
+    SkColorSpace* source_color_space = paint_image.color_space();
     color_stats_total_pixel_count_ += image_rect.size().GetCheckedArea();
     color_stats_total_image_count_++;
     if (!source_color_space || source_color_space->isSRGB()) {

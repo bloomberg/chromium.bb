@@ -36,8 +36,8 @@ class LayerTreeHostCheckerImagingTest : public LayerTreeTest {
     gfx::Size layer_size(1000, 500);
     content_layer_client_.set_bounds(layer_size);
     content_layer_client_.set_fill_with_nonsolid_color(true);
-    sk_sp<SkImage> checkerable_image =
-        CreateDiscardableImage(gfx::Size(450, 450));
+    PaintImage checkerable_image =
+        CreateDiscardablePaintImage(gfx::Size(450, 450));
     content_layer_client_.add_draw_image(checkerable_image, gfx::Point(0, 0),
                                          PaintFlags());
 
