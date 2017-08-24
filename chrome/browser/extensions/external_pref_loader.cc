@@ -73,34 +73,6 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
   return external_extension_paths;
 }
 
-// Extracts extension information from a json file serialized by |serializer|.
-// |path| is only used for informational purposes (outputted when an error
-// occurs). An empty dictionary is returned in case of failure (e.g. invalid
-// path or json content).
-// Caller takes ownership of the returned dictionary.
-std::unique_ptr<base::DictionaryValue> ExtractExtensionPrefs(
-    base::ValueDeserializer* deserializer,
-    const base::FilePath& path) {
-  std::string error_msg;
-  std::unique_ptr<base::Value> extensions =
-      deserializer->Deserialize(NULL, &error_msg);
-  if (!extensions) {
-    LOG(WARNING) << "Unable to deserialize json data: " << error_msg
-                 << " in file " << path.value() << ".";
-    return base::WrapUnique(new base::DictionaryValue);
-  }
-
-  std::unique_ptr<base::DictionaryValue> ext_dictionary =
-      base::DictionaryValue::From(std::move(extensions));
-  if (ext_dictionary) {
-    return ext_dictionary;
-  }
-
-  LOG(WARNING) << "Expected a JSON dictionary in file " << path.value()
-                 << ".";
-  return base::WrapUnique(new base::DictionaryValue);
-}
-
 }  // namespace
 
 namespace extensions {
@@ -149,6 +121,28 @@ void ExternalPrefLoader::StartLoading() {
     GetExtensionFileTaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
   }
+}
+
+// static.
+std::unique_ptr<base::DictionaryValue>
+ExternalPrefLoader::ExtractExtensionPrefs(base::ValueDeserializer* deserializer,
+                                          const base::FilePath& path) {
+  std::string error_msg;
+  std::unique_ptr<base::Value> extensions =
+      deserializer->Deserialize(NULL, &error_msg);
+  if (!extensions) {
+    LOG(WARNING) << "Unable to deserialize json data: " << error_msg
+                 << " in file " << path.value() << ".";
+    return base::MakeUnique<base::DictionaryValue>();
+  }
+
+  std::unique_ptr<base::DictionaryValue> ext_dictionary =
+      base::DictionaryValue::From(std::move(extensions));
+  if (ext_dictionary)
+    return ext_dictionary;
+
+  LOG(WARNING) << "Expected a JSON dictionary in file " << path.value() << ".";
+  return base::MakeUnique<base::DictionaryValue>();
 }
 
 void ExternalPrefLoader::OnIsSyncingChanged() {
@@ -308,28 +302,6 @@ void ExternalPrefLoader::ReadStandaloneExtensionPrefFiles(
       prefs->Set(id, std::move(ext_prefs));
     }
   }
-}
-
-ExternalTestingLoader::ExternalTestingLoader(
-    const std::string& json_data,
-    const base::FilePath& fake_base_path)
-    : fake_base_path_(fake_base_path) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  JSONStringValueDeserializer deserializer(json_data);
-  base::FilePath fake_json_path = fake_base_path.AppendASCII("fake.json");
-  testing_prefs_ = ExtractExtensionPrefs(&deserializer, fake_json_path);
-}
-
-void ExternalTestingLoader::StartLoading() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  prefs_.reset(testing_prefs_->DeepCopy());
-  LoadFinished();
-}
-
-ExternalTestingLoader::~ExternalTestingLoader() {}
-
-const base::FilePath ExternalTestingLoader::GetBaseCrxFilePath() {
-  return fake_base_path_;
 }
 
 }  // namespace extensions

@@ -70,6 +70,15 @@ class ExternalPrefLoader : public ExternalLoader,
 
  private:
   friend class base::RefCountedThreadSafe<ExternalLoader>;
+  friend class ExternalTestingLoader;
+
+  // Extracts extension information from a json file serialized by |serializer|.
+  // |path| is only used for informational purposes (outputted when an error
+  // occurs). An empty dictionary is returned in case of failure (e.g. invalid
+  // path or json content).
+  static std::unique_ptr<base::DictionaryValue> ExtractExtensionPrefs(
+      base::ValueDeserializer* deserializer,
+      const base::FilePath& path);
 
   // sync_preferences::PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
@@ -115,29 +124,6 @@ class ExternalPrefLoader : public ExternalLoader,
       syncable_pref_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoader);
-};
-
-// A simplified version of ExternalPrefLoader that loads the dictionary
-// from json data specified in a string.
-class ExternalTestingLoader : public ExternalLoader {
- public:
-  ExternalTestingLoader(const std::string& json_data,
-                        const base::FilePath& fake_base_path);
-
-  const base::FilePath GetBaseCrxFilePath() override;
-
- protected:
-  void StartLoading() override;
-
- private:
-  friend class base::RefCountedThreadSafe<ExternalLoader>;
-
-  ~ExternalTestingLoader() override;
-
-  base::FilePath fake_base_path_;
-  std::unique_ptr<base::DictionaryValue> testing_prefs_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExternalTestingLoader);
 };
 
 }  // namespace extensions
