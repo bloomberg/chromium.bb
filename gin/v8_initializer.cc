@@ -177,17 +177,15 @@ base::PlatformFile OpenV8File(const char* file_name,
 
 OpenedFileMap::mapped_type& GetOpenedFile(const char* filename) {
   OpenedFileMap& opened_files(g_opened_files.Get());
-  // If we have a cache, return it.
-  const auto& itr = opened_files.find(filename);
-  if (itr != opened_files.end()) {
-    return itr->second;
-  }
+  auto result = opened_files.emplace(filename, OpenedFileMap::mapped_type());
+  OpenedFileMap::mapped_type& opened_file = result.first->second;
+  bool is_new_file = result.second;
 
-  // Otherwise, try to open it and cache the result.
-  base::MemoryMappedFile::Region region;
-  base::PlatformFile platform_file = OpenV8File(filename, &region);
-  opened_files[filename] = std::make_pair(platform_file, region);
-  return opened_files[filename];
+  // If we have no cache, try to open it and cache the result.
+  if (is_new_file)
+    opened_file.first = OpenV8File(filename, &opened_file.second);
+
+  return opened_file;
 }
 
 bool GenerateEntropy(unsigned char* buffer, size_t amount) {
