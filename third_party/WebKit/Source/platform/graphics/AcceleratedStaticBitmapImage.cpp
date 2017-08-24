@@ -68,10 +68,18 @@ namespace {
 
 void DestroySkImageOnOriginalThread(
     sk_sp<SkImage> image,
-    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper) {
+    WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
+    std::unique_ptr<gpu::SyncToken> sync_token) {
   if (context_provider_wrapper &&
       image->isValid(
           context_provider_wrapper->ContextProvider()->GetGrContext())) {
+    if (sync_token->HasData()) {
+      // To make sure skia does not recycle the texture while it is still in use
+      // by another context.
+      context_provider_wrapper->ContextProvider()
+          ->ContextGL()
+          ->WaitSyncTokenCHROMIUM(sync_token->GetData());
+    }
     // In case texture was used by compositor, which may have changed params.
     image->getTexture()->textureParamsModified();
   }
@@ -85,17 +93,21 @@ AcceleratedStaticBitmapImage::~AcceleratedStaticBitmapImage() {
   // where it came from. In the same thread case, there is nothing to do because
   // the regular destruction flow is fine.
   if (original_skia_image_) {
+    std::unique_ptr<gpu::SyncToken> sync_token =
+        base::WrapUnique(new gpu::SyncToken(texture_holder_->GetSyncToken()));
     if (original_skia_image_thread_id_ !=
         Platform::Current()->CurrentThread()->ThreadId()) {
       original_skia_image_task_runner_->PostTask(
           BLINK_FROM_HERE,
           CrossThreadBind(
               &DestroySkImageOnOriginalThread, std::move(original_skia_image_),
-              std::move(original_skia_image_context_provider_wrapper_)));
+              std::move(original_skia_image_context_provider_wrapper_),
+              WTF::Passed(std::move(sync_token))));
     } else {
       DestroySkImageOnOriginalThread(
           std::move(original_skia_image_),
-          std::move(original_skia_image_context_provider_wrapper_));
+          std::move(original_skia_image_context_provider_wrapper_),
+          std::move(sync_token));
     }
   }
 }
@@ -136,7 +148,10 @@ void AcceleratedStaticBitmapImage::CopyToTexture(
     return;
   // |destProvider| may not be the same context as the one used for |m_image|,
   // so we use a mailbox to generate a texture id for |destProvider| to access.
-  EnsureMailbox();
+
+  // TODO(junov) : could reduce overhead by using kOrderingBarrier when we know
+  // that the source and destination context or on the same stream.
+  EnsureMailbox(kUnverifiedSyncToken);
 
   // Get a texture id that |destProvider| knows about and copy from it.
   gpu::gles2::GLES2Interface* dest_gl = dest_provider->ContextGL();
@@ -206,17 +221,24 @@ void AcceleratedStaticBitmapImage::CreateImageFromMailboxIfNeeded() {
       WTF::WrapUnique(new SkiaTextureHolder(std::move(texture_holder_)));
 }
 
-void AcceleratedStaticBitmapImage::EnsureMailbox() {
-  if (texture_holder_->IsMailboxTextureHolder())
-    return;
+void AcceleratedStaticBitmapImage::EnsureMailbox(MailboxSyncMode mode) {
+  if (!texture_holder_->IsMailboxTextureHolder()) {
+    if (!original_skia_image_) {
+      // To ensure that the texture resource stays alive we only really need
+      // to retain the source SkImage until the mailbox is consumed, but this
+      // works too.
+      RetainOriginalSkImageForCopyOnWrite();
+    }
 
-  texture_holder_ =
-      WTF::WrapUnique(new MailboxTextureHolder(std::move(texture_holder_)));
+    texture_holder_ =
+        WTF::WrapUnique(new MailboxTextureHolder(std::move(texture_holder_)));
+  }
+  texture_holder_->Sync(mode);
 }
 
 void AcceleratedStaticBitmapImage::Transfer() {
   CheckThread();
-  EnsureMailbox();
+  EnsureMailbox(kUnverifiedSyncToken);
   detach_thread_at_next_check_ = true;
 }
 
@@ -231,6 +253,10 @@ void AcceleratedStaticBitmapImage::CheckThread() {
     detach_thread_at_next_check_ = false;
   }
   CHECK(thread_checker_.CalledOnValidThread());
+}
+
+void AcceleratedStaticBitmapImage::Abandon() {
+  texture_holder_->Abandon();
 }
 
 }  // namespace blink

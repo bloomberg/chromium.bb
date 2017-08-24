@@ -125,6 +125,12 @@ enum FlushReason {
   kFlushReasonDrawImageOfWebGL,
 };
 
+enum MailboxSyncMode {
+  kVerifiedSyncToken,
+  kUnverifiedSyncToken,
+  kOrderingBarrier,
+};
+
 enum ImageInitializationMode {
   kInitializeImagePixels,
   kDoNotInitializeImagePixels,

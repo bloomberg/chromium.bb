@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -33,16 +34,17 @@ class PLATFORM_EXPORT TextureHolder {
     return gpu::Mailbox();
   }
   virtual gpu::SyncToken GetSyncToken() {
-    NOTREACHED();
     return gpu::SyncToken();
   }
   virtual void UpdateSyncToken(gpu::SyncToken) { NOTREACHED(); }
+  virtual void Sync(MailboxSyncMode) { NOTREACHED(); }
 
   // Methods overridden by SkiaTextureHolder
   virtual sk_sp<SkImage> GetSkImage() {
     NOTREACHED();
     return nullptr;
   }
+  virtual void Abandon() { is_abandoned_ = true; }  // Overrides must call base.
 
   // Methods that have exactly the same impelmentation for all sub-classes
   WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper() const {
@@ -54,6 +56,7 @@ class PLATFORM_EXPORT TextureHolder {
                ? context_provider_wrapper_->ContextProvider()
                : nullptr;
   }
+  bool IsAbandoned() const { return is_abandoned_; }
 
  protected:
   TextureHolder(
@@ -67,6 +70,7 @@ class PLATFORM_EXPORT TextureHolder {
   // to clear the resouces associated with that AcceleratedStaticBitmapImage on
   // the original thread.
   WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
+  bool is_abandoned_ = false;
 };
 
 }  // namespace blink
