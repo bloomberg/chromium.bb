@@ -244,14 +244,16 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
                             'GetAllSlaveCIDBStatusInfo',
                             return_value=cidb_status)
 
-  def _Mock_GetSlaveStatusesFromBuildbucket(self, buildbucket_info_dict=None):
+  def _Mock_GetSlaveStatusesFromBuildbucket(self, buildbucket_info_dict=None,
+                                            mock_GetBuildInfoDict=True):
     self.PatchObject(builder_status_lib.SlaveBuilderStatus,
                      'GetAllSlaveBuildbucketInfo')
     self.PatchObject(build_status.SlaveStatus,
                      '_GetNewSlaveBuildbucketInfo',
                      return_value=buildbucket_info_dict)
-    self.PatchObject(buildbucket_lib, 'GetBuildInfoDict',
-                     return_value=buildbucket_info_dict)
+    if mock_GetBuildInfoDict:
+      self.PatchObject(buildbucket_lib, 'GetBuildInfoDict',
+                       return_value=buildbucket_info_dict)
 
   def _Mock_GetRetriableBuilds(self, builds=None):
     return self.PatchObject(build_status.SlaveStatus,
@@ -1017,23 +1019,89 @@ class SlaveStatusTest(cros_test_lib.MockTestCase):
     })
     self.assertFalse(slave_status.ShouldWait())
 
-  def testUpdateSlaveStatusUpdatesExperimentalBuilders(self):
-    """Tests that UpdateSlaveStatus updates the experimental builders list."""
+  def testUpdateSlaveStatusWithoutExperimentalBuilders(self):
+    """UpdateSlaveStatus without experimental builders."""
+    self._Mock_GetSlaveStatusesFromCIDB(CIDBStatusInfos.GetFullCIDBStatusInfo())
+    self._Mock_GetSlaveStatusesFromBuildbucket(
+        BuildbucketInfos.GetFullBuildbucketInfoDict())
+
+    scheduled_slave_builds = [(build, 'bb_id', None)
+                              for build in self._GetFullBuildConfigs()]
+    self.metadata.UpdateWithDict({
+        constants.METADATA_SCHEDULED_SLAVES: scheduled_slave_builds})
+
+    slave_status = self._GetSlaveStatus(
+        builders_array=self._GetFullBuildConfigs(),
+        config=self.master_cq_config)
+
+    slave_status.UpdateSlaveStatus()
+    self.assertItemsEqual(slave_status.metadata.GetValueWithDefault(
+        constants.METADATA_EXPERIMENTAL_BUILDERS, []), [])
+    self.assertItemsEqual(slave_status.all_builders,
+                          self._GetFullBuildConfigs())
+
+  def testUpdateSlaveStatusRemovesScheduledExperimentalBuilders(self):
+    """UpdateSlaveStatus removes experimental from scheduled builds."""
     cidb_status = {
         'build1': CIDBStatusInfos.GetInflightBuild(),
-        'build2': CIDBStatusInfos.GetFailedBuild()
+        'build2': CIDBStatusInfos.GetInflightBuild(),
+        'build3': CIDBStatusInfos.GetFailedBuild(),
+        'build4': CIDBStatusInfos.GetFailedBuild(),
     }
     self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
 
+    buildbucket_info_dict = {
+        'build1': BuildbucketInfos.GetStartedBuild(),
+        'build2': BuildbucketInfos.GetStartedBuild(),
+        'build3': BuildbucketInfos.GetFailureBuild(),
+        'build4': BuildbucketInfos.GetFailureBuild()}
+    self._Mock_GetSlaveStatusesFromBuildbucket(
+        buildbucket_info_dict, mock_GetBuildInfoDict=False)
+
+    scheduled_slave_builds = [(build, 'bb_id', None) for build in
+                              ('build1', 'build2', 'build3', 'build4')]
+    self.metadata.UpdateWithDict({
+        constants.METADATA_SCHEDULED_SLAVES: scheduled_slave_builds})
+
     slave_status = self._GetSlaveStatus(
-        builders_array=['build1', 'build2'])
+        builders_array=['build1', 'build2', 'build3', 'build4'],
+        config=self.master_cq_config)
 
-    with mock.patch.object(tree_status, 'GetExperimentalBuilders') as m:
-      m.return_value = ['build1']
-      slave_status.UpdateSlaveStatus()
-      self.assertItemsEqual(slave_status.metadata.GetValueWithDefault(
-          constants.METADATA_EXPERIMENTAL_BUILDERS, []), ['build1'])
+    self.PatchObject(tree_status, 'GetExperimentalBuilders',
+                     return_value=['build1', 'build3'])
+    slave_status.UpdateSlaveStatus()
+    self.assertItemsEqual(slave_status.metadata.GetValueWithDefault(
+        constants.METADATA_EXPERIMENTAL_BUILDERS, []), ['build1', 'build3'])
+    self.assertItemsEqual(slave_status.all_builders, ['build2', 'build4'])
 
+  def testUpdateSlaveStatusRemovesCompletedExperimentalBuilders(self):
+    """UpdateSlaveStatus removes experimental builds from completed_builds."""
+    cidb_status = {
+        'build1': CIDBStatusInfos.GetInflightBuild(),
+        'build2': CIDBStatusInfos.GetInflightBuild(),
+        'build3': CIDBStatusInfos.GetFailedBuild(),
+        'build4': CIDBStatusInfos.GetFailedBuild(),
+    }
+    self._Mock_GetSlaveStatusesFromCIDB(cidb_status)
+
+    buildbucket_info_dict = {
+        'build1': BuildbucketInfos.GetStartedBuild(),
+        'build2': BuildbucketInfos.GetStartedBuild(),
+        'build3': BuildbucketInfos.GetFailureBuild(),
+        'build4': BuildbucketInfos.GetFailureBuild()}
+    self._Mock_GetSlaveStatusesFromBuildbucket(buildbucket_info_dict)
+
+    slave_status = self._GetSlaveStatus(
+        builders_array=['build1', 'build2', 'build3', 'build4'],
+        config=self.master_cq_config)
+    slave_status.completed_builds = {'build3', 'build4'}
+
+    self.PatchObject(tree_status, 'GetExperimentalBuilders',
+                     return_value=['build1', 'build3'])
+    slave_status.UpdateSlaveStatus()
+    self.assertItemsEqual(slave_status.metadata.GetValueWithDefault(
+        constants.METADATA_EXPERIMENTAL_BUILDERS, []), ['build1', 'build3'])
+    self.assertItemsEqual(slave_status.completed_builds, {'build4'})
 
   def testShouldWaitBuildersStillBuildingWithBuildbucket(self):
     """ShouldWait says yes because builders still in started status."""
