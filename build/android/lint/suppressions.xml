@@ -110,8 +110,8 @@ Still reading?
     <ignore regexp="chrome/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="chrome/android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="chromecast/internal"/>
-    <ignore regexp="components/web_contents_delegate_android/android/java/res/drawable-xxhdpi"/>
-    <ignore regexp="components/web_contents_delegate_android/android/java/res/drawable-xxxhdpi"/>
+    <ignore regexp="components/web_contents_delegate_android/java/res/drawable-xxhdpi"/>
+    <ignore regexp="components/web_contents_delegate_android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="content/public/android/java/res/drawable-xxhdpi"/>
     <ignore regexp="content/public/android/java/res/drawable-xxxhdpi"/>
     <ignore regexp="ui/android/java/res/drawable-xxhdpi"/>
@@ -307,8 +307,8 @@ Still reading?
     <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits_css.css"/>
     <ignore regexp="PRODUCT_DIR/gen/remoting/android/.*/res/raw/credits_js.js"/>
     <!-- 2 dimens override support library's res, will be changing soon -->
-    <ignore regexp="design_bottom_navigation_text_size"/>
-    <ignore regexp="design_bottom_navigation_active_text_size"/>
+    <ignore regexp="R.dimen.design_bottom_navigation_text_size"/>
+    <ignore regexp="R.dimen.design_bottom_navigation_active_text_size"/>
     <!-- 1 string is used in CronetSmokeTestCase dynamically -->
     <ignore regexp="R.string.TestSupportImplClass"/>
     <!-- 1 string used by Android's policies system, pulled from app directly -->
