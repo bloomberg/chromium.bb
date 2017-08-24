@@ -100,6 +100,11 @@ class BubbleObserver {
   // PasswordManagerBrowserTestBase.
   void WaitForAccountChooser() const;
 
+  // Returns once the UI controller is in inactive state.
+  // |web_contents| must be the custom one returned by
+  // PasswordManagerBrowserTestBase.
+  void WaitForInactiveState() const;
+
   // Returns once the UI controller is in the management state due to matching
   // credentials autofilled.
   // |web_contents| must be the custom one returned by

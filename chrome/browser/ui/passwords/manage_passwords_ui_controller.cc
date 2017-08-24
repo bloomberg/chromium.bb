@@ -128,7 +128,12 @@ void ManagePasswordsUIController::OnHideManualFallbackForSaving() {
     return;
 
   save_fallback_timer_.Stop();
-  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+
+  if (passwords_data_.GetCurrentForms().empty())
+    passwords_data_.OnInactive();
+  else
+    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+
   UpdateBubbleAndIconVisibility();
 }
 
