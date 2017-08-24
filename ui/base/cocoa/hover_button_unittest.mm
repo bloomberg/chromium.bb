@@ -39,6 +39,23 @@
 }
 @end
 
+@interface HoverButtonTestDragDelegate : NSObject<HoverButtonDragDelegate>
+@property(nonatomic, copy) void (^dragHandler)(HoverButton*, NSEvent*);
+@end
+
+@implementation HoverButtonTestDragDelegate
+@synthesize dragHandler = dragHandler_;
+
+- (void)dealloc {
+  [dragHandler_ release];
+  [super dealloc];
+}
+
+- (void)beginDragFromHoverButton:(HoverButton*)button event:(NSEvent*)event {
+  dragHandler_(button, event);
+}
+@end
+
 namespace {
 
 class HoverButtonTest : public ui::CocoaTest {
@@ -147,5 +164,36 @@ TEST_F(HoverButtonTest, CustomHitbox) {
     EXPECT_NE(button_, [button_ hitTest:inside_hit_point]);
     EXPECT_EQ(nil, [button_ hitTest:outside_hit_point]);
   }
+}
+
+TEST_F(HoverButtonTest, DragDelegate) {
+  base::scoped_nsobject<HoverButtonTestDragDelegate> dragDelegate(
+      [[HoverButtonTestDragDelegate alloc] init]);
+
+  __block bool dragged = false;
+  dragDelegate.get().dragHandler = ^(HoverButton* button, NSEvent* event) {
+    dragged = true;
+  };
+  button_.dragDelegate = dragDelegate;
+
+  const auto click = cocoa_test_event_utils::MouseClickInView(button_, 1);
+  NSPoint targetPoint = click.first.locationInWindow;
+  targetPoint.x += 5;  // *Not* enough to trigger a drag.
+  [NSApp postEvent:cocoa_test_event_utils::MouseEventAtPointInWindow(
+                       targetPoint, NSEventTypeLeftMouseDragged,
+                       [button_ window], 1)
+           atStart:NO];
+  [NSApp postEvent:click.second atStart:NO];
+  EXPECT_TRUE(HandleMouseDown(click.first));
+  EXPECT_FALSE(dragged);
+
+  targetPoint.x += 1;  // Now it's enough to trigger a drag.
+  [NSApp postEvent:cocoa_test_event_utils::MouseEventAtPointInWindow(
+                       targetPoint, NSEventTypeLeftMouseDragged,
+                       [button_ window], 1)
+           atStart:NO];
+  [NSApp postEvent:click.second atStart:NO];
+  EXPECT_FALSE(HandleMouseDown(click.first));
+  EXPECT_TRUE(dragged);
 }
 }  // namespace

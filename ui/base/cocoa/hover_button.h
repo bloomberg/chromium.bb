@@ -10,6 +10,22 @@
 #import "ui/base/cocoa/tracking_area.h"
 #import "ui/base/ui_base_export.h"
 
+@class HoverButton;
+
+// Assign an object which conforms to this protocol to a HoverButton's
+// dragDelegate property to make the button draggable.
+UI_BASE_EXPORT
+@protocol HoverButtonDragDelegate
+
+// When the user performs a drag on the HoverButton, this method will be called
+// with the button and the mouse down event. The delegate is expected to begin
+// a drag by calling -[NSView beginDraggingSessionWithItems:event:source:] with
+// the event or run a nested tracking loop. When it returns, the HoverButton
+// returns to kHoverStateNone and stops tracking the mouse.
+- (void)beginDragFromHoverButton:(HoverButton*)button event:(NSEvent*)event;
+
+@end
+
 // A button that changes when you hover over it and click it.
 UI_BASE_EXPORT
 @interface HoverButton : NSButton {
@@ -34,6 +50,9 @@ UI_BASE_EXPORT
 
 // Enables or disables the tracking for the button.
 @property(nonatomic) BOOL trackingEnabled;
+
+// Assign an object to make the button a drag source.
+@property(nonatomic, assign) id<HoverButtonDragDelegate> dragDelegate;
 
 // An NSRect in the view's coordinate space which is used for hover and hit
 // testing. Default value is NSZeroRect, which makes the hitbox equal to the
