@@ -37,8 +37,9 @@ namespace media {
 
 class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
  public:
-  MOCK_METHOD4(OnData,
-               void(AudioInputStream*, const AudioBus*, uint32_t, double));
+  MOCK_METHOD4(
+      OnData,
+      void(AudioInputStream*, const AudioBus*, base::TimeTicks, double));
   MOCK_METHOD1(OnError, void(AudioInputStream*));
 };
 

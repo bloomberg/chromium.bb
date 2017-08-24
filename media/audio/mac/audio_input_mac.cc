@@ -252,6 +252,8 @@ void PCMQueueInAudioInputStream::HandleInputBuffer(
     // TODO(dalecurtis): This is a HACK.  Long term the AudioQueue path is going
     // away in favor of the AudioUnit based AUAudioInputStream().  Tracked by
     // http://crbug.com/161383.
+    // TODO(dalecurtis): Delete all this. It shouldn't be necessary now that we
+    // have a ring buffer and FIFO on the actual shared memory.
     base::TimeDelta elapsed = base::TimeTicks::Now() - last_fill_;
     const base::TimeDelta kMinDelay = base::TimeDelta::FromMilliseconds(5);
     if (elapsed < kMinDelay) {
@@ -260,11 +262,19 @@ void PCMQueueInAudioInputStream::HandleInputBuffer(
       base::PlatformThread::Sleep(kMinDelay - elapsed);
     }
 
+    // TODO(dalecurtis): This should be updated to include the device latency,
+    // but really since Pepper (which ignores the delay value) is on the only
+    // one creating AUDIO_PCM_LINEAR input devices, it doesn't matter.
+    // https://lists.apple.com/archives/coreaudio-api/2017/Jul/msg00035.html
+    const base::TimeTicks capture_time =
+        start_time->mFlags & kAudioTimeStampHostTimeValid
+            ? base::TimeTicks::FromMachAbsoluteTime(start_time->mHostTime)
+            : base::TimeTicks::Now();
+
     uint8_t* audio_data = reinterpret_cast<uint8_t*>(audio_buffer->mAudioData);
-    audio_bus_->FromInterleaved(
-        audio_data, audio_bus_->frames(), format_.mBitsPerChannel / 8);
-    callback_->OnData(
-        this, audio_bus_.get(), audio_buffer->mAudioDataByteSize, 0.0);
+    audio_bus_->FromInterleaved(audio_data, audio_bus_->frames(),
+                                format_.mBitsPerChannel / 8);
+    callback_->OnData(this, audio_bus_.get(), capture_time, 0.0);
 
     last_fill_ = base::TimeTicks::Now();
   }

@@ -51,7 +51,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD4(OnData,
                void(AudioInputStream* stream,
                     const AudioBus* src,
-                    uint32_t hardware_delay_bytes,
+                    base::TimeTicks capture_time,
                     double volume));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 };
@@ -72,10 +72,9 @@ class FakeAudioInputCallback : public AudioInputStream::AudioInputCallback {
 
   void OnData(AudioInputStream* stream,
               const AudioBus* src,
-              uint32_t hardware_delay_bytes,
+              base::TimeTicks capture_time,
               double volume) override {
-    EXPECT_GE(hardware_delay_bytes, 0u);
-    EXPECT_LT(hardware_delay_bytes, 0xFFFFu);  // Arbitrarily picked.
+    EXPECT_GE(capture_time, base::TimeTicks());
     num_received_audio_frames_ += src->frames();
     data_event_.Signal();
   }
@@ -132,7 +131,7 @@ class WriteToFileAudioSink : public AudioInputStream::AudioInputCallback {
   // AudioInputStream::AudioInputCallback implementation.
   void OnData(AudioInputStream* stream,
               const AudioBus* src,
-              uint32_t hardware_delay_bytes,
+              base::TimeTicks capture_time,
               double volume) override {
     EXPECT_EQ(bits_per_sample_, 16);
     const int num_samples = src->frames() * src->channels();

@@ -82,7 +82,7 @@ class MockSyncWriter : public AudioInputController::SyncWriter {
                void(const AudioBus* data,
                     double volume,
                     bool key_pressed,
-                    uint32_t hardware_delay_bytes));
+                    base::TimeTicks capture_time));
   MOCK_METHOD0(Close, void());
 };
 

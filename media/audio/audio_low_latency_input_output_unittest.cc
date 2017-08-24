@@ -153,7 +153,7 @@ class FullDuplexAudioSinkSource
   // AudioInputStream::AudioInputCallback.
   void OnData(AudioInputStream* stream,
               const AudioBus* src,
-              uint32_t hardware_delay_bytes,
+              base::TimeTicks capture_time,
               double volume) override {
     base::AutoLock lock(lock_);
 
@@ -167,7 +167,7 @@ class FullDuplexAudioSinkSource
       delay_states_[input_elements_to_write_].buffer_delay_ms =
           BytesToMilliseconds(buffer_->forward_bytes());
       delay_states_[input_elements_to_write_].input_delay_ms =
-          BytesToMilliseconds(hardware_delay_bytes);
+          (base::TimeTicks::Now() - capture_time).InMilliseconds();
       ++input_elements_to_write_;
     }
 

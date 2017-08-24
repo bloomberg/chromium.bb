@@ -197,7 +197,7 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
   void OnData(media::AudioBus* data) {
     auto* writer =
         static_cast<AudioInputController::SyncWriter*>(recognizer_.get());
-    writer->Write(data, 0.0, false, 0);
+    writer->Write(data, 0.0, false, base::TimeTicks::Now());
   }
 
   void WaitForAudioThreadToPostDeviceInfo() {
