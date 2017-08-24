@@ -241,15 +241,14 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
 
   VerifyElementsVisible("Initial", initial_elements);
   manager_->OnWebVrFrameAvailable();
-  VerifyElementsVisible("Autopresented", std::set<UiElementDebugId>{
-                                             kWebVrPermanentHttpSecurityWarning,
-                                             kWebVrTransientHttpSecurityWarning,
-                                             kTransientUrlBar});
+  VerifyElementsVisible(
+      "Autopresented", std::set<UiElementDebugId>{
+                           kWebVrPermanentHttpSecurityWarning,
+                           kWebVrTransientHttpSecurityWarning, kWebVrUrlToast});
 
   // Make sure the transient elements go away.
   task_runner_->FastForwardUntilNoTasksRemain();
-  UiElement* transient_url_bar =
-      scene_->GetUiElementByDebugId(kTransientUrlBar);
+  UiElement* transient_url_bar = scene_->GetUiElementByDebugId(kWebVrUrlToast);
   EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
   // Finish the transition.
   AnimateBy(MsToDelta(1000));
@@ -273,17 +272,16 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   manager_->SetWebVrMode(true, false);
   manager_->OnWebVrFrameAvailable();
   VerifyElementsVisible("Autopresented",
-                        std::set<UiElementDebugId>{kTransientUrlBar});
+                        std::set<UiElementDebugId>{kWebVrUrlToast});
 
   // Make sure the transient URL bar times out.
   task_runner_->FastForwardUntilNoTasksRemain();
-  UiElement* transient_url_bar =
-      scene_->GetUiElementByDebugId(kTransientUrlBar);
+  UiElement* transient_url_bar = scene_->GetUiElementByDebugId(kWebVrUrlToast);
   EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
   // Finish the transition.
   AnimateBy(MsToDelta(1000));
   EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY, VISIBILITY}));
-  EXPECT_FALSE(IsVisible(kTransientUrlBar));
+  EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 }
 
 TEST_F(UiSceneManagerTest, AppButtonClickForAutopresentation) {

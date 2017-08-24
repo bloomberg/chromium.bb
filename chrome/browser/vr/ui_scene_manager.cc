@@ -20,13 +20,13 @@
 #include "chrome/browser/vr/elements/screen_dimmer.h"
 #include "chrome/browser/vr/elements/system_indicator.h"
 #include "chrome/browser/vr/elements/text.h"
-#include "chrome/browser/vr/elements/transient_url_bar.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
 #include "chrome/browser/vr/elements/ui_element_transform_operations.h"
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "chrome/browser/vr/elements/url_bar.h"
 #include "chrome/browser/vr/elements/viewport_aware_root.h"
+#include "chrome/browser/vr/elements/webvr_url_toast.h"
 #include "chrome/browser/vr/target_property.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -88,14 +88,14 @@ static constexpr float kIndicatorGap = 0.05;
 static constexpr float kIndicatorVerticalOffset = 0.1;
 static constexpr float kIndicatorDistanceOffset = 0.1;
 
-static constexpr float kTransientUrlBarDistance = 1.0;
-static constexpr float kTransientUrlBarWidth =
-    kUrlBarWidthDMM * kTransientUrlBarDistance;
-static constexpr float kTransientUrlBarHeight =
-    kUrlBarHeightDMM * kTransientUrlBarDistance;
-static constexpr float kTransientUrlBarVerticalOffset =
-    -0.2 * kTransientUrlBarDistance;
-static constexpr int kTransientUrlBarTimeoutSeconds = 6;
+static constexpr float kWebVrUrlToastDistance = 1.0;
+static constexpr float kWebVrUrlToastWidth =
+    kUrlBarWidthDMM * kWebVrUrlToastDistance;
+static constexpr float kWebVrUrlToastHeight =
+    kUrlBarHeightDMM * kWebVrUrlToastDistance;
+static constexpr float kWebVrUrlToastVerticalOffset =
+    -0.2 * kWebVrUrlToastDistance;
+static constexpr int kWebVrUrlToastTimeoutSeconds = 6;
 
 static constexpr float kWebVrToastDistance = 1.0;
 static constexpr float kFullscreenToastDistance = kFullscreenDistance;
@@ -105,7 +105,7 @@ static constexpr float kToastOffsetDMM = 0.004;
 // When changing the value here, make sure it doesn't collide with
 // kWarningAngleRadians.
 static constexpr float kWebVrAngleRadians = 9.88 * M_PI / 180.0;
-static constexpr int kToastTimeoutSeconds = kTransientUrlBarTimeoutSeconds;
+static constexpr int kToastTimeoutSeconds = kWebVrUrlToastTimeoutSeconds;
 
 static constexpr float kSplashScreenTextDistance = 2.5;
 static constexpr float kSplashScreenTextFontHeightM =
@@ -183,7 +183,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateSecurityWarnings();
   CreateSystemIndicators();
   CreateUrlBar();
-  CreateTransientUrlBar();
+  CreateWebVrUrlToast();
   CreateCloseButton();
   CreateScreenDimmer();
   CreateExitPrompt();
@@ -487,22 +487,22 @@ void UiSceneManager::CreateUrlBar() {
   scene_->AddUiElement(std::move(indicator));
 }
 
-void UiSceneManager::CreateTransientUrlBar() {
-  auto url_bar = base::MakeUnique<TransientUrlBar>(
-      512, base::TimeDelta::FromSeconds(kTransientUrlBarTimeoutSeconds),
+void UiSceneManager::CreateWebVrUrlToast() {
+  auto url_bar = base::MakeUnique<WebVrUrlToast>(
+      512, base::TimeDelta::FromSeconds(kWebVrUrlToastTimeoutSeconds),
       base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
-  url_bar->set_debug_id(kTransientUrlBar);
+  url_bar->set_debug_id(kWebVrUrlToast);
   url_bar->set_id(AllocateId());
   url_bar->set_draw_phase(kPhaseForeground);
   url_bar->set_viewport_aware(true);
   viewport_aware_root_->AddChild(url_bar.get());
   url_bar->SetVisible(false);
   url_bar->set_hit_testable(false);
-  url_bar->SetTranslate(0, kTransientUrlBarVerticalOffset,
-                        -kTransientUrlBarDistance);
+  url_bar->SetTranslate(0, kWebVrUrlToastVerticalOffset,
+                        -kWebVrUrlToastDistance);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
-  url_bar->SetSize(kTransientUrlBarWidth, kTransientUrlBarHeight);
-  transient_url_bar_ = url_bar.get();
+  url_bar->SetSize(kWebVrUrlToastWidth, kWebVrUrlToastHeight);
+  webvr_url_toast_ = url_bar.get();
   scene_->AddUiElement(std::move(url_bar));
 }
 
@@ -742,8 +742,8 @@ void UiSceneManager::ConfigureScene() {
   for (auto& element : scene_->GetUiElements())
     element->SetMode(mode());
 
-  transient_url_bar_->SetEnabled(started_for_autopresentation_ &&
-                                 !showing_web_vr_splash_screen_);
+  webvr_url_toast_->SetEnabled(started_for_autopresentation_ &&
+                               !showing_web_vr_splash_screen_);
 
   scene_->set_reticle_rendering_enabled(
       !(web_vr_mode_ || exiting_ || showing_web_vr_splash_screen_));
@@ -901,7 +901,7 @@ void UiSceneManager::OnExitPromptChoice(bool chose_exit) {
 
 void UiSceneManager::SetToolbarState(const ToolbarState& state) {
   url_bar_->SetToolbarState(state);
-  transient_url_bar_->SetToolbarState(state);
+  webvr_url_toast_->SetToolbarState(state);
 }
 
 void UiSceneManager::SetLoading(bool loading) {
