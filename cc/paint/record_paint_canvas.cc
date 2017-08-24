@@ -165,12 +165,6 @@ void RecordPaintCanvas::clipPath(const SkPath& path,
   return;
 }
 
-void RecordPaintCanvas::clipDeviceRect(const SkIRect& device_rect,
-                                       const SkIRect& subtract_rect,
-                                       SkClipOp op) {
-  list_->push<ClipDeviceRectOp>(device_rect, subtract_rect, op);
-}
-
 bool RecordPaintCanvas::quickReject(const SkRect& rect) const {
   return GetCanvas()->quickReject(rect);
 }

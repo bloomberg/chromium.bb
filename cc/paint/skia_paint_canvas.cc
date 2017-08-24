@@ -157,16 +157,6 @@ void SkiaPaintCanvas::clear(SkColor color) {
   canvas_->clear(color);
 }
 
-void SkiaPaintCanvas::clipDeviceRect(const SkIRect& device_rect,
-                                     const SkIRect& subtract_rect,
-                                     SkClipOp op) {
-  SkRegion device_region;
-  device_region.setRect(device_rect);
-  if (!subtract_rect.isEmpty())
-    device_region.op(subtract_rect, SkRegion::kDifference_Op);
-  canvas_->clipRegion(device_region, op);
-}
-
 void SkiaPaintCanvas::drawLine(SkScalar x0,
                                SkScalar y0,
                                SkScalar x1,

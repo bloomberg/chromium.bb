@@ -172,48 +172,6 @@ TEST_F(SolidColorAnalyzerTest, DrawRectClippedDifference) {
   EXPECT_FALSE(IsSolidColor());
 }
 
-TEST_F(SolidColorAnalyzerTest, DrawRectClipRegionUnclipped) {
-  Initialize();
-  PaintFlags flags;
-  SkColor color = SkColorSetARGB(255, 11, 22, 33);
-  flags.setColor(color);
-  static constexpr int kTranslate = 3000;
-  canvas()->translate(kTranslate, kTranslate);
-  SkRect rect = SkRect::MakeXYWH(-kTranslate, -kTranslate, 100, 100);
-  // Clip exactly the device bounds.
-  canvas()->clipDeviceRect(SkIRect::MakeWH(100, 100), SkIRect::MakeEmpty(),
-                           SkClipOp::kIntersect);
-  canvas()->drawRect(rect, flags);
-  EXPECT_EQ(color, GetColor());
-}
-
-TEST_F(SolidColorAnalyzerTest, DrawRectClipRegionClipped) {
-  Initialize();
-  PaintFlags flags;
-  SkColor color = SkColorSetARGB(255, 11, 22, 33);
-  flags.setColor(color);
-  SkRect rect = SkRect::MakeWH(100, 100);
-  // Clip less than the device bounds.
-  canvas()->clipDeviceRect(SkIRect::MakeWH(50, 50), SkIRect::MakeEmpty(),
-                           SkClipOp::kIntersect);
-  canvas()->drawRect(rect, flags);
-  EXPECT_FALSE(IsSolidColor());
-}
-
-TEST_F(SolidColorAnalyzerTest, DrawRectClipRegionClipped2) {
-  Initialize();
-  PaintFlags flags;
-  SkColor color = SkColorSetARGB(255, 11, 22, 33);
-  flags.setColor(color);
-  SkRect rect = SkRect::MakeWH(100, 100);
-  // Clip a reverse L shape (100x100 with a 50x50 corner bite out of it).
-  // This should not be solid.
-  canvas()->clipDeviceRect(SkIRect::MakeWH(100, 100), SkIRect::MakeWH(50, 50),
-                           SkClipOp::kIntersect);
-  canvas()->drawRect(rect, flags);
-  EXPECT_FALSE(IsSolidColor());
-}
-
 TEST_F(SolidColorAnalyzerTest, DrawRectWithTranslateNotSolid) {
   Initialize();
   PaintFlags flags;
