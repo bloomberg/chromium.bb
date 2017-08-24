@@ -138,12 +138,12 @@ void ScreenlockBridge::SetLockHandler(LockHandler* lock_handler) {
   else
     screen_type = lock_handler->GetScreenType();
 
-  focused_account_id_ = EmptyAccountId();
   lock_handler_ = lock_handler;
   if (lock_handler_) {
     for (auto& observer : observers_)
       observer.OnScreenDidLock(screen_type);
   } else {
+    focused_account_id_ = EmptyAccountId();
     for (auto& observer : observers_)
       observer.OnScreenDidUnlock(screen_type);
   }
