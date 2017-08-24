@@ -124,8 +124,10 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
     }
   }
 
-  if (reset_scroll_state)
+  if (reset_scroll_state) {
     scroll_state_ = STATE_UNKNOWN;
+    locked_mode_ = OVERSCROLL_NONE;
+  }
 
   if (DispatchEventCompletesAction(event)) {
     CompleteAction();
@@ -148,7 +150,6 @@ bool OverscrollController::WillHandleEvent(const blink::WebInputEvent& event) {
   } else if (reset_scroll_state) {
     overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
   }
-
 
   return false;
 }
@@ -183,6 +184,7 @@ void OverscrollController::DiscardingGestureEvent(
 
 void OverscrollController::Reset() {
   overscroll_mode_ = OVERSCROLL_NONE;
+  locked_mode_ = OVERSCROLL_NONE;
   overscroll_source_ = OverscrollSource::NONE;
   overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
   scroll_state_ = STATE_UNKNOWN;
@@ -190,6 +192,7 @@ void OverscrollController::Reset() {
 
 void OverscrollController::Cancel() {
   SetOverscrollMode(OVERSCROLL_NONE, OverscrollSource::NONE);
+  locked_mode_ = OVERSCROLL_NONE;
   overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
   scroll_state_ = STATE_UNKNOWN;
 }
@@ -446,9 +449,7 @@ bool OverscrollController::ProcessOverscroll(float delta_x,
 void OverscrollController::CompleteAction() {
   if (delegate_)
     delegate_->OnOverscrollComplete(overscroll_mode_);
-  overscroll_mode_ = OVERSCROLL_NONE;
-  overscroll_source_ = OverscrollSource::NONE;
-  overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
+  Reset();
 }
 
 void OverscrollController::SetOverscrollMode(OverscrollMode mode,
@@ -459,13 +460,22 @@ void OverscrollController::SetOverscrollMode(OverscrollMode mode,
   // If the mode changes to NONE, source is also NONE.
   DCHECK(mode != OVERSCROLL_NONE || source == OverscrollSource::NONE);
 
+  // When setting to a non-NONE mode and there is a locked mode, don't set the
+  // mode if the new mode is not the same as the locked mode.
+  if (mode != OVERSCROLL_NONE && locked_mode_ != OVERSCROLL_NONE &&
+      mode != locked_mode_) {
+    return;
+  }
+
   OverscrollMode old_mode = overscroll_mode_;
   overscroll_mode_ = mode;
   overscroll_source_ = source;
-  if (overscroll_mode_ == OVERSCROLL_NONE)
+  if (overscroll_mode_ == OVERSCROLL_NONE) {
     overscroll_delta_x_ = overscroll_delta_y_ = 0.f;
-  else
+  } else {
     scroll_state_ = STATE_OVERSCROLLING;
+    locked_mode_ = overscroll_mode_;
+  }
   if (delegate_)
     delegate_->OnOverscrollModeChange(old_mode, overscroll_mode_, source);
 }

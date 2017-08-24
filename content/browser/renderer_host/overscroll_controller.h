@@ -122,6 +122,11 @@ class OverscrollController {
   // The current state of overscroll gesture.
   OverscrollMode overscroll_mode_ = OVERSCROLL_NONE;
 
+  // When set to something other than OVERSCROLL_NONE, the overscroll cannot
+  // switch to any other mode, except to OVERSCROLL_NONE. This is set when an
+  // overscroll is started until the touch sequence is completed.
+  OverscrollMode locked_mode_ = OVERSCROLL_NONE;
+
   // Source of the current overscroll gesture.
   OverscrollSource overscroll_source_ = OverscrollSource::NONE;
 
