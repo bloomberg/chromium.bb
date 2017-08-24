@@ -61,6 +61,15 @@ void PrefetchDispatcherImpl::SchedulePipelineProcessing() {
   needs_pipeline_processing_ = true;
 }
 
+void PrefetchDispatcherImpl::EnsureTaskScheduled() {
+  if (background_task_) {
+    background_task_->SetNeedsReschedule(true /* reschedule */,
+                                         false /* backoff */);
+  } else {
+    service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled();
+  }
+}
+
 void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
     const std::string& name_space,
     const std::vector<PrefetchURL>& prefetch_urls) {
@@ -69,11 +78,11 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
 
   PrefetchStore* prefetch_store = service_->GetPrefetchStore();
   std::unique_ptr<Task> add_task = base::MakeUnique<AddUniqueUrlsTask>(
-      prefetch_store, name_space, prefetch_urls);
+      this, prefetch_store, name_space, prefetch_urls);
   task_queue_.AddTask(std::move(add_task));
 
   // TODO(dewittj): Remove when we have proper scheduling.
-  service_->GetPrefetchBackgroundTaskHandler()->EnsureTaskScheduled();
+  EnsureTaskScheduled();
 }
 
 void PrefetchDispatcherImpl::RemoveAllUnprocessedPrefetchURLs(
@@ -109,8 +118,8 @@ void PrefetchDispatcherImpl::QueueReconcileTasks() {
   // other reconciler tasks that deal with external systems so that entries
   // finalized by it will promptly effect any external processing they relate
   // to.
-  task_queue_.AddTask(
-      base::MakeUnique<StaleEntryFinalizerTask>(service_->GetPrefetchStore()));
+  task_queue_.AddTask(base::MakeUnique<StaleEntryFinalizerTask>(
+      this, service_->GetPrefetchStore()));
 
   task_queue_.AddTask(base::MakeUnique<GeneratePageBundleReconcileTask>(
       service_->GetPrefetchStore(),
@@ -197,8 +206,8 @@ void PrefetchDispatcherImpl::GCMOperationCompletedMessageReceived(
     return;
 
   PrefetchStore* prefetch_store = service_->GetPrefetchStore();
-  task_queue_.AddTask(
-      base::MakeUnique<MarkOperationDoneTask>(prefetch_store, operation_name));
+  task_queue_.AddTask(base::MakeUnique<MarkOperationDoneTask>(
+      this, prefetch_store, operation_name));
 }
 
 void PrefetchDispatcherImpl::DidGenerateBundleRequest(

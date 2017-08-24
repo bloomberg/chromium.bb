@@ -43,6 +43,10 @@ void TestPrefetchDispatcher::SchedulePipelineProcessing() {
   processing_schedule_count++;
 }
 
+void TestPrefetchDispatcher::EnsureTaskScheduled() {
+  task_schedule_count++;
+}
+
 void TestPrefetchDispatcher::GCMOperationCompletedMessageReceived(
     const std::string& operation_name) {
   operation_list.push_back(operation_name);
