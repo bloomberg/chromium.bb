@@ -322,8 +322,6 @@ Still reading?
     <ignore regexp="R.string.private_browsing_warning"/>
     <!-- 1 set of strings used dynamically by remoting apk -->
     <ignore regexp="R.string.offline_reason_*"/>
-    <!-- TODO(wnwen): Clean up components strings so it is linted -->
-    <ignore regexp="components/strings/components_strings_grd.resources.zip/values.*/components_strings.xml"/>
   </issue>
   <issue id="UseCompoundDrawables">
     <!-- Upscaling 24dp to 48dp doesn't work as expected with a TextView compound drawable. -->

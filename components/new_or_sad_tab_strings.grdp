@@ -34,22 +34,22 @@
       <message name="IDS_SAD_TAB_RELOAD_TITLE" desc="The title of the web page displayed if content in Chrome browser does not load for an unknown reason, and a reload failed to fix the issue." formatter_data="android_java">
         Can't open this page
       </message>
-      <message name="IDS_SAD_TAB_OOM_MESSAGE_TABS" desc="The message displayed on the web page if content in Chrome browser does not load due to the browser being out of memory, a reload failed to fix the issue and other tabs are open." formatter_data="android_java">
+      <message name="IDS_SAD_TAB_OOM_MESSAGE_TABS" desc="The message displayed on the web page if content in Chrome browser does not load due to the browser being out of memory, a reload failed to fix the issue and other tabs are open.">
         Try closing other tabs or programs to free up memory.
       </message>
-      <message name="IDS_SAD_TAB_OOM_MESSAGE_NOTABS" desc="The message displayed on the web page if content in Chrome browser does not load due to the browser being out of memory, a reload failed to fix the issue and no other tabs are open." formatter_data="android_java">
+      <message name="IDS_SAD_TAB_OOM_MESSAGE_NOTABS" desc="The message displayed on the web page if content in Chrome browser does not load due to the browser being out of memory, a reload failed to fix the issue and no other tabs are open.">
         Try exiting other programs to free up memory.
       </message>
       <message name="IDS_SAD_TAB_RELOAD_TRY" desc="The message displayed on the web page if content in Chrome browser does not load and a reload failed to fix the issue. Introduces a bulleted list of solutions/tips for the user to try." formatter_data="android_java">
         Try the following tips:
       </message>
       <if expr="is_macosx">
-        <message name="IDS_SAD_TAB_RELOAD_INCOGNITO" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to open the web page in Chrome's Incognito mode." formatter_data="android_java">
+        <message name="IDS_SAD_TAB_RELOAD_INCOGNITO" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to open the web page in Chrome's Incognito mode.">
           Open page in a new Incognito window (⇧⌘N)
         </message>
       </if>
       <if expr="is_win or is_linux or chromeos">
-        <message name="IDS_SAD_TAB_RELOAD_INCOGNITO" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to open the web page in Chrome's Incognito mode." formatter_data="android_java">
+        <message name="IDS_SAD_TAB_RELOAD_INCOGNITO" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to open the web page in Chrome's Incognito mode.">
           Open page in a new Incognito window (Ctrl-Shift-N)
         </message>
       </if>
@@ -59,22 +59,22 @@
         </message>
       </if>
       <if expr="is_macosx or chromeos">
-        <message name="IDS_SAD_TAB_RELOAD_CLOSE_TABS" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to close other Chrome tabs or apps running on their computer (Mac, Chrome OS)." formatter_data="android_java">
+        <message name="IDS_SAD_TAB_RELOAD_CLOSE_TABS" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to close other Chrome tabs or apps running on their computer (Mac, Chrome OS).">
           Close other tabs or apps
         </message>
       </if>
       <if expr="is_linux and not chromeos">
-        <message name="IDS_SAD_TAB_RELOAD_CLOSE_TABS" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to close other Chrome tabs or programs running on their computer." formatter_data="android_java">
+        <message name="IDS_SAD_TAB_RELOAD_CLOSE_TABS" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to close other Chrome tabs or programs running on their computer.">
           Close other tabs or programs
         </message>
       </if>
-      <if expr="is_macosx or chromeos or is_android or is_ios">
-        <message name="IDS_SAD_TAB_RELOAD_CLOSE_NOTABS" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to close other apps running on their computer or device." formatter_data="android_java">
+      <if expr="is_macosx or chromeos or is_ios">
+        <message name="IDS_SAD_TAB_RELOAD_CLOSE_NOTABS" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to close other apps running on their computer or device.">
           Close other apps
         </message>
       </if>
       <if expr="is_linux and not chromeos">
-        <message name="IDS_SAD_TAB_RELOAD_CLOSE_NOTABS" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to close other programs running on their computer (Linux)." formatter_data="android_java">
+        <message name="IDS_SAD_TAB_RELOAD_CLOSE_NOTABS" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to close other programs running on their computer (Linux).">
           Close other programs
         </message>
       </if>
@@ -89,7 +89,7 @@
         </message>
       </if>
       <if expr="is_win or is_linux or is_macosx or chromeos">
-        <message name="IDS_SAD_TAB_RELOAD_RESTART_DEVICE" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to restart their computer." formatter_data="android_java">
+        <message name="IDS_SAD_TAB_RELOAD_RESTART_DEVICE" desc="One of the bullet points displayed on the web page if a reload failed to fix the issue, advising the user to restart their computer.">
           Restart your computer
         </message>
       </if>
@@ -103,9 +103,6 @@
           Learn more
         </message>
       </if>
-      <message name="IDS_SAD_TAB_UMA_OPTIN" desc="Text that appears next to a checkbox, allowing the user to opt-in to sending statistics about their Chrome browser usage and reports of crashes to Google." formatter_data="android_java">
-        Automatically send usage statistics and crash reports to Google
-      </message>
 
       <!-- New Tab -->
       <message name="IDS_NEW_TAB_TITLE"
