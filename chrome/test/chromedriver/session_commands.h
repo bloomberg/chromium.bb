@@ -149,6 +149,10 @@ Status ExecuteMaximizeWindow(Session* session,
                              const base::DictionaryValue& params,
                              std::unique_ptr<base::Value>* value);
 
+Status ExecuteFullScreenWindow(Session* session,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value);
+
 Status ExecuteGetAvailableLogTypes(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value);

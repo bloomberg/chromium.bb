@@ -331,6 +331,28 @@ Status ChromeDesktopImpl::MaximizeWindow(const std::string& target_id) {
   return SetWindowBounds(window.id, std::move(bounds));
 }
 
+Status ChromeDesktopImpl::FullScreenWindow(const std::string& target_id) {
+  Window window;
+  Status status = GetWindow(target_id, &window);
+  if (status.IsError())
+    return status;
+
+  if (window.state == "fullscreen")
+    return Status(kOk);
+
+  if (window.state != "normal") {
+    auto bounds = base::MakeUnique<base::DictionaryValue>();
+    bounds->SetString("windowState", "normal");
+    status = SetWindowBounds(window.id, std::move(bounds));
+    if (status.IsError())
+      return status;
+  }
+
+  auto bounds = base::MakeUnique<base::DictionaryValue>();
+  bounds->SetString("windowState", "fullscreen");
+  return SetWindowBounds(window.id, std::move(bounds));
+}
+
 Status ChromeDesktopImpl::ParseWindowBounds(
     std::unique_ptr<base::DictionaryValue> params,
     Window* window) {
