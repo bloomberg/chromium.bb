@@ -2731,14 +2731,14 @@ inline LayoutUnit AdjustLayoutUnitForAbsoluteZoom(LayoutUnit value,
 }
 
 inline void AdjustFloatQuadForAbsoluteZoom(FloatQuad& quad,
-                                           LayoutObject& layout_object) {
+                                           const LayoutObject& layout_object) {
   float zoom = layout_object.StyleRef().EffectiveZoom();
   if (zoom != 1)
     quad.Scale(1 / zoom, 1 / zoom);
 }
 
 inline void AdjustFloatRectForAbsoluteZoom(FloatRect& rect,
-                                           LayoutObject& layout_object) {
+                                           const LayoutObject& layout_object) {
   float zoom = layout_object.StyleRef().EffectiveZoom();
   if (zoom != 1)
     rect.Scale(1 / zoom, 1 / zoom);
