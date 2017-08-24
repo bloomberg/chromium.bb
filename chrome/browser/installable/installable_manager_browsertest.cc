@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-  EXPECT_TRUE(manager->task_queue_.IsEmpty());
+  EXPECT_TRUE(!manager->task_queue_.HasCurrent());
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckNoManifest) {
@@ -565,7 +565,7 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
     EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
-    EXPECT_TRUE(manager->task_queue_.IsEmpty());
+    EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   }
 
   // Request everything except badge icon again without navigating away. This
@@ -602,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
     EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
-    EXPECT_TRUE(manager->task_queue_.IsEmpty());
+    EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   }
 
   {
@@ -617,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckWebapp) {
     EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
     EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-    EXPECT_TRUE(manager->task_queue_.IsEmpty());
+    EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   }
 }
 
@@ -730,8 +730,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
   EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
-  EXPECT_TRUE(manager->task_queue_.IsEmpty());
-  EXPECT_TRUE(manager->task_queue_.HasPaused());
+  EXPECT_TRUE(!manager->task_queue_.HasCurrent());
+  EXPECT_TRUE(!manager->task_queue_.paused_tasks_.empty());
 
   {
     // Fetching just the manifest and icons should not hang while the other call
@@ -782,8 +782,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
   EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
   EXPECT_EQ(NO_ERROR_DETECTED, (manager->icon_error(kPrimaryIconParams)));
-  EXPECT_TRUE(manager->task_queue_.IsEmpty());
-  EXPECT_FALSE(manager->task_queue_.HasPaused());
+  EXPECT_TRUE(!manager->task_queue_.HasCurrent());
+  EXPECT_FALSE(!manager->task_queue_.paused_tasks_.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
@@ -809,8 +809,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   sw_run_loop.Run();
 
   // We should now be waiting for the service worker.
-  EXPECT_TRUE(manager->task_queue_.IsEmpty());
-  EXPECT_TRUE(manager->task_queue_.HasPaused());
+  EXPECT_TRUE(!manager->task_queue_.HasCurrent());
+  EXPECT_TRUE(!manager->task_queue_.paused_tasks_.empty());
 
   // Load the service worker with no fetch handler.
   EXPECT_TRUE(content::ExecuteScript(web_contents,
