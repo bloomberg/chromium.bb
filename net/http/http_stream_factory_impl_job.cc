@@ -315,6 +315,7 @@ void HttpStreamFactoryImpl::Job::Resume() {
 }
 
 void HttpStreamFactoryImpl::Job::Orphan() {
+  DCHECK_EQ(job_type_, ALTERNATIVE);
   net_log_.AddEvent(NetLogEventType::HTTP_STREAM_JOB_ORPHANED);
 }
 

@@ -211,8 +211,8 @@ class HttpStreamFactoryImpl::Job {
   // connecting.
   virtual void Resume();
 
-  // Called to detach |this| Job. May resume the other Job, will disconnect
-  // the socket for |this| Job, and notify |delegate| upon completion.
+  // Called when |this| is orphaned by Delegate. This is valid for
+  // ALTERNATIVE job only.
   void Orphan();
 
   void SetPriority(RequestPriority priority);

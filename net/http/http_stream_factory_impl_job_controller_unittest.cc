@@ -808,6 +808,51 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
 
+// Tests that when alt job succeeds, main job is destroyed.
+TEST_F(HttpStreamFactoryImplJobControllerTest, AltJobSucceedsMainJobDestroyed) {
+  quic_data_ = base::MakeUnique<MockQuicData>();
+  quic_data_->AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  // Use cold start and complete alt job manually.
+  crypto_client_stream_factory_.set_handshake_mode(
+      MockCryptoClientStream::COLD_START);
+  tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
+  tcp_data_->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.google.com");
+
+  Initialize(request_info);
+
+  url::SchemeHostPort server(request_info.url);
+  AlternativeService alternative_service(kProtoQUIC, server.host(), 443);
+  SetAlternativeService(request_info, alternative_service);
+  request_ =
+      job_controller_->Start(&request_delegate_, nullptr, net_log_.bound(),
+                             HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+  EXPECT_TRUE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+  EXPECT_FALSE(JobControllerPeer::main_job_is_blocked(job_controller_));
+
+  // Make |alternative_job| succeed.
+  HttpStream* http_stream =
+      new HttpBasicStream(base::MakeUnique<ClientSocketHandle>(), false, false);
+
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream));
+
+  job_factory_.alternative_job()->SetStream(http_stream);
+  job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(job_controller_->main_job());
+  EXPECT_TRUE(job_controller_->alternative_job());
+
+  request_.reset();
+  VerifyBrokenAlternateProtocolMapping(request_info, false);
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+}
+
 // Tests that if alt job succeeds and main job is blocked, main job should be
 // cancelled immediately. |request_| completion will clean up the JobController.
 // Regression test for crbug.com/678768.
