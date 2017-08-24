@@ -197,6 +197,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   bool IsLoading() const override;
   double GetLoadingProgress() const override;
   bool IsCrashed() const override;
+  bool IsEvicted() const override;
   bool IsBeingDestroyed() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
