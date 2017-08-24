@@ -89,22 +89,22 @@ var DumpCreator = (function() {
 
   DumpCreator.prototype = {
     // Mark the diagnostic audio recording checkbox checked.
-    enableAudioDebugRecordings: function() {
+    setAudioDebugRecordingsCheckbox: function() {
       this.root_.getElementsByTagName('input')[0].checked = true;
     },
 
     // Mark the diagnostic audio recording checkbox unchecked.
-    disableAudioDebugRecordings: function() {
+    clearAudioDebugRecordingsCheckbox: function() {
       this.root_.getElementsByTagName('input')[0].checked = false;
     },
 
     // Mark the event log recording checkbox checked.
-    enableEventLogRecordings: function() {
+    setEventLogRecordingsCheckbox: function() {
       this.root_.getElementsByTagName('input')[1].checked = true;
     },
 
     // Mark the event log recording checkbox unchecked.
-    disableEventLogRecordings: function() {
+    clearEventLogRecordingsCheckbox: function() {
       this.root_.getElementsByTagName('input')[1].checked = false;
     },
 
