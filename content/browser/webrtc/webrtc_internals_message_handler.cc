@@ -109,20 +109,21 @@ void WebRTCInternalsMessageHandler::OnDOMLoadDone(
     const base::ListValue* /* unused_list */) {
   webrtc_internals_->UpdateObserver(this);
 
-  if (webrtc_internals_->IsAudioDebugRecordingsEnabled()) {
-    RenderFrameHost* host = GetWebRTCInternalsHost();
-    if (!host)
-      return;
+  if (webrtc_internals_->IsAudioDebugRecordingsEnabled())
+    ExecuteJavascriptCommand("setAudioDebugRecordingsEnabled", nullptr);
 
-    std::vector<const base::Value*> args_vector;
-    base::string16 script =
-        WebUI::GetJavascriptCall("setAudioDebugRecordingsEnabled", args_vector);
-    host->ExecuteJavaScript(script);
-  }
+  if (webrtc_internals_->IsEventLogRecordingsEnabled())
+    ExecuteJavascriptCommand("setEventLogRecordingsEnabled", nullptr);
 }
 
 void WebRTCInternalsMessageHandler::OnUpdate(const char* command,
                                              const base::Value* args) {
+  ExecuteJavascriptCommand(command, args);
+}
+
+void WebRTCInternalsMessageHandler::ExecuteJavascriptCommand(
+    const char* command,
+    const base::Value* args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderFrameHost* host = GetWebRTCInternalsHost();
@@ -133,8 +134,8 @@ void WebRTCInternalsMessageHandler::OnUpdate(const char* command,
   if (args)
     args_vector.push_back(args);
 
-  base::string16 update = WebUI::GetJavascriptCall(command, args_vector);
-  host->ExecuteJavaScript(update);
+  base::string16 script = WebUI::GetJavascriptCall(command, args_vector);
+  host->ExecuteJavaScript(script);
 }
 
 }  // namespace content

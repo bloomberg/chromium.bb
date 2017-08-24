@@ -52,6 +52,9 @@ class CONTENT_EXPORT WebRTCInternalsMessageHandler
   // WebRTCInternalsUIObserver override.
   void OnUpdate(const char* command, const base::Value* args) override;
 
+  // Executes Javascript command.
+  void ExecuteJavascriptCommand(const char* command, const base::Value* args);
+
   DISALLOW_COPY_AND_ASSIGN(WebRTCInternalsMessageHandler);
 };
 
