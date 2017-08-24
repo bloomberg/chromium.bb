@@ -608,7 +608,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   std::unique_ptr<RenderWidgetHostViewEventHandler> event_handler_;
 
   viz::FrameSinkId frame_sink_id_;
-  viz::LocalSurfaceId local_surface_id_;
 
   std::unique_ptr<CursorManager> cursor_manager_;
 
