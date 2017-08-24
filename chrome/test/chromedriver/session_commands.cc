@@ -880,6 +880,25 @@ Status ExecuteMaximizeWindow(Session* session,
   return extension->MaximizeWindow();
 }
 
+Status ExecuteFullScreenWindow(Session* session,
+                               const base::DictionaryValue& params,
+                               std::unique_ptr<base::Value>* value) {
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
+
+  if (desktop->GetBrowserInfo()->build_no >= kBrowserWindowDevtoolsBuildNo)
+    return desktop->FullScreenWindow(session->window);
+
+  AutomationExtension* extension = NULL;
+  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
+  if (status.IsError())
+    return status;
+
+  return extension->FullScreenWindow();
+}
+
 Status ExecuteGetAvailableLogTypes(Session* session,
                                    const base::DictionaryValue& params,
                                    std::unique_ptr<base::Value>* value) {

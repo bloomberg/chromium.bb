@@ -84,6 +84,8 @@ class Command(object):
       _Method.POST, '/session/:sessionId/window/:windowHandle/position')
   MAXIMIZE_WINDOW = (
       _Method.POST, '/session/:sessionId/window/:windowHandle/maximize')
+  FULLSCREEN_WINDOW = (
+      _Method.POST, '/session/:sessionId/window/fullscreen')
   CLOSE = (_Method.DELETE, '/session/:sessionId/window')
   DRAG_ELEMENT = (_Method.POST, '/session/:sessionId/element/:id/drag')
   GET_ELEMENT_VALUE_OF_CSS_PROPERTY = (

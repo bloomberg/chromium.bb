@@ -78,6 +78,7 @@ _VERSION_SPECIFIC_FILTER['HEAD'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1819
     'ChromeExtensionsCapabilityTest.testIFrameWithExtensionsSource',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1918
+    'ChromeDriverTest.testWindowFullScreen',
     'ChromeDriverTest.testWindowMaximize',
     'ChromeDriverTest.testWindowPosition',
     'ChromeDriverTest.testWindowSize',
@@ -111,6 +112,8 @@ _OS_SPECIFIC_FILTER['linux'] = [
 _OS_SPECIFIC_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1927
     'MobileEmulationCapabilityTest.testTapElement',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1945
+    'ChromeDriverTest.testWindowFullScreen',
 ]
 
 _DESKTOP_NEGATIVE_FILTER = [
@@ -947,6 +950,20 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.SetWindowPosition(100, 200)
     self._driver.SetWindowSize(500, 300)
     self._driver.MaximizeWindow()
+
+    self.assertNotEqual([100, 200], self._driver.GetWindowPosition())
+    self.assertNotEqual([500, 300], self._driver.GetWindowSize())
+    # Set size first so that the window isn't moved offscreen.
+    # See https://bugs.chromium.org/p/chromedriver/issues/detail?id=297.
+    self._driver.SetWindowSize(600, 400)
+    self._driver.SetWindowPosition(100, 200)
+    self.assertEquals([100, 200], self._driver.GetWindowPosition())
+    self.assertEquals([600, 400], self._driver.GetWindowSize())
+
+  def testWindowFullScreen(self):
+    self._driver.SetWindowPosition(100, 200)
+    self._driver.SetWindowSize(500, 300)
+    self._driver.FullScreenWindow()
 
     self.assertNotEqual([100, 200], self._driver.GetWindowPosition())
     self.assertNotEqual([500, 300], self._driver.GetWindowSize())
