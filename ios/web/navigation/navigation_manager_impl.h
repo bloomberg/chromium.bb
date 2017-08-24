@@ -60,7 +60,7 @@ class NavigationManagerImpl : public NavigationManager {
   // Keeps a strong reference to |session_controller|.
   // This method should only be called when deserializing |session_controller|
   // and joining it with its NavigationManager. Other cases should call
-  // InitializeSession() or ReplaceSessionHistory().
+  // InitializeSession() or Restore().
   // TODO(stuartmorgan): Also move deserialization of CRWSessionControllers
   // under the control of this class, and move the bulk of CRWSessionController
   // logic into it.
@@ -69,13 +69,6 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Initializes a new session history.
   virtual void InitializeSession() = 0;
-
-  // Replace the session history with a new one, where |items| is the
-  // complete set of navigation items in the new history, and |current_index|
-  // is the index of the currently active item.
-  virtual void ReplaceSessionHistory(
-      std::vector<std::unique_ptr<NavigationItem>> items,
-      int current_index) = 0;
 
   // Helper functions for notifying WebStateObservers of changes.
   // TODO(stuartmorgan): Make these private once the logic triggering them moves

@@ -180,6 +180,13 @@ class NavigationManager {
   virtual NavigationItemList GetBackwardItems() const = 0;
   virtual NavigationItemList GetForwardItems() const = 0;
 
+  // Initializes this NavigationManager with the given saved navigations, using
+  // |last_committed_item_index| as the currently loaded item. Before this call
+  // the NavigationManager should be unused (there should be no current item).
+  // This takes ownership of |items| (must be moved).
+  virtual void Restore(int last_committed_item_index,
+                       std::vector<std::unique_ptr<NavigationItem>> items) = 0;
+
   // Removes all items from this except the last committed item, and inserts
   // copies of all items from |source| at the beginning of the session history.
   //

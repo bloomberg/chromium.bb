@@ -49,11 +49,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-namespace sessions {
-class SerializedNavigationEntry;
-struct SessionTab;
-}
-
 namespace web {
 class NavigationItem;
 class NavigationManager;
@@ -177,9 +172,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // TODO(crbug.com/228575): Create a delegate interface and remove this.
 - (void)setParentTabModel:(TabModel*)model;
 
-// Replace the content of the tab with the content described by |SessionTab|.
-- (void)loadSessionTab:(const sessions::SessionTab*)sessionTab;
-
 // Triggers the asynchronous loading of the tab's favicon. This will be done
 // automatically when a page loads, but this can be used to trigger favicon
 // fetch earlier (e.g., for a tab that will be shown without loading).
@@ -211,12 +203,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // nor exposes private ios/web/ API.
 - (web::NavigationManager*)navigationManager;
 - (web::NavigationManagerImpl*)navigationManagerImpl;
-
-// Update the tab's history by replacing all previous navigations with
-// |navigations|.
-- (void)replaceHistoryWithNavigations:
-            (const std::vector<sessions::SerializedNavigationEntry>&)navigations
-                         currentIndex:(NSInteger)currentIndex;
 
 // Navigate forwards or backwards to |item|.
 - (void)goToItem:(const web::NavigationItem*)item;

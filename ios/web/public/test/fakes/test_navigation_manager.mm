@@ -158,6 +158,12 @@ NavigationItemList TestNavigationManager::GetForwardItems() const {
   return NavigationItemList();
 }
 
+void TestNavigationManager::Restore(
+    int last_committed_item_index,
+    std::vector<std::unique_ptr<NavigationItem>> items) {
+  NOTREACHED();
+}
+
 void TestNavigationManager::CopyStateFromAndPrune(
     const NavigationManager* source) {
   NOTREACHED();
