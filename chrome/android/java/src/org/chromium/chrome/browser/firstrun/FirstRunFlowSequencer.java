@@ -391,7 +391,6 @@ public abstract class FirstRunFlowSequencer  {
             // Add a PendingIntent so that the intent used to launch Chrome will be resent when
             // First Run is completed or canceled.
             addPendingIntent(caller, freIntent, intent, requiresBroadcast);
-            freIntent.putExtra(FirstRunActivity.EXTRA_FINISH_ON_TOUCH_OUTSIDE, true);
 
             if (!(caller instanceof Activity)) freIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             if (isVrIntent) freIntent = VrIntentUtils.setupVrFreIntent(caller, freIntent);

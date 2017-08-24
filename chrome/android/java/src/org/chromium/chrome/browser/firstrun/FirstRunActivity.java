@@ -75,7 +75,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     public static final String EXTRA_USE_FRE_FLOW_SEQUENCER = "Extra.UseFreFlowSequencer";
     public static final String EXTRA_START_LIGHTWEIGHT_FRE = "Extra.StartLightweightFRE";
     public static final String EXTRA_CHROME_LAUNCH_INTENT = "Extra.FreChromeLaunchIntent";
-    public static final String EXTRA_FINISH_ON_TOUCH_OUTSIDE = "Extra.FreFinishOnTouchOutside";
 
     static final String SHOW_WELCOME_PAGE = "ShowWelcome";
     static final String SHOW_DATA_REDUCTION_PAGE = "ShowDataReduction";
@@ -227,8 +226,7 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
             mFreProperties = new Bundle();
         }
 
-        setFinishOnTouchOutside(
-                mFreProperties.getBoolean(FirstRunActivity.EXTRA_FINISH_ON_TOUCH_OUTSIDE));
+        setFinishOnTouchOutside(true);
 
         // Skip creating content view if it is to start a lightweight First Run Experience.
         if (mFreProperties.getBoolean(FirstRunActivity.EXTRA_START_LIGHTWEIGHT_FRE)) {
