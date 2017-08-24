@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/policy_ui.h"
 
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/policy_ui_handler.h"
 #include "chrome/common/url_constants.h"
@@ -48,7 +49,11 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
   source->AddLocalizedString("hideExpandedValue",
                              IDS_POLICY_HIDE_EXPANDED_VALUE);
   // Add required resources.
+#if !defined(OS_ANDROID)
+  source->AddResourcePath("policy_common.css", IDR_POLICY_COMMON_CSS);
+#endif
   source->AddResourcePath("policy.css", IDR_POLICY_CSS);
+  source->AddResourcePath("policy_base.js", IDR_POLICY_BASE_JS);
   source->AddResourcePath("policy.js", IDR_POLICY_JS);
   source->SetDefaultResource(IDR_POLICY_HTML);
   return source;
