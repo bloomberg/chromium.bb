@@ -55,6 +55,7 @@ class TestWebState : public WebState {
   bool IsLoading() const override;
   double GetLoadingProgress() const override;
   bool IsCrashed() const override;
+  bool IsEvicted() const override;
   bool IsBeingDestroyed() const override;
   const GURL& GetVisibleURL() const override;
   const GURL& GetLastCommittedURL() const override;
@@ -92,6 +93,8 @@ class TestWebState : public WebState {
   void SetNavigationManager(
       std::unique_ptr<NavigationManager> navigation_manager);
   void SetView(UIView* view);
+  void SetIsCrashed(bool value);
+  void SetIsEvicted(bool value);
 
   // Getters for test data.
   CRWContentView* GetTransientContentView();
@@ -106,6 +109,8 @@ class TestWebState : public WebState {
   BrowserState* browser_state_;
   bool web_usage_enabled_;
   bool is_loading_;
+  bool is_crashed_;
+  bool is_evicted_;
   CRWContentView* transient_content_view_;
   GURL url_;
   base::string16 title_;

@@ -931,6 +931,7 @@ TEST_F(CRWWebControllerWebProcessTest, Crash) {
   ASSERT_TRUE([web_controller() isViewAlive]);
   ASSERT_FALSE([web_controller() isWebProcessCrashed]);
   ASSERT_FALSE(web_state()->IsCrashed());
+  ASSERT_FALSE(web_state()->IsEvicted());
 
   TestWebStateObserver observer(web_state());
   TestWebStateObserver* observer_ptr = &observer;
@@ -942,6 +943,22 @@ TEST_F(CRWWebControllerWebProcessTest, Crash) {
   EXPECT_FALSE([web_controller() isViewAlive]);
   EXPECT_TRUE([web_controller() isWebProcessCrashed]);
   EXPECT_TRUE(web_state()->IsCrashed());
+  EXPECT_TRUE(web_state()->IsEvicted());
+};
+
+// Tests that WebState is considered as evicted but not crashed when calling
+// SetWebUsageEnabled(false).
+TEST_F(CRWWebControllerWebProcessTest, Eviction) {
+  ASSERT_TRUE([web_controller() isViewAlive]);
+  ASSERT_FALSE([web_controller() isWebProcessCrashed]);
+  ASSERT_FALSE(web_state()->IsCrashed());
+  ASSERT_FALSE(web_state()->IsEvicted());
+
+  web_state()->SetWebUsageEnabled(false);
+  EXPECT_FALSE([web_controller() isViewAlive]);
+  EXPECT_FALSE([web_controller() isWebProcessCrashed]);
+  EXPECT_FALSE(web_state()->IsCrashed());
+  EXPECT_TRUE(web_state()->IsEvicted());
 };
 
 // Test fixture for -[CRWWebController loadCurrentURLIfNecessary] method.
