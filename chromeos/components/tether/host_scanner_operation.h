@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/clock.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/message_transfer_operation.h"
 #include "components/cryptauth/remote_device.h"
@@ -104,8 +105,15 @@ class HostScannerOperation : public MessageTransferOperation {
  private:
   friend class HostScannerOperationTest;
 
+  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+  void RecordTetherAvailabilityResponseDuration(const std::string device_id);
+
   TetherHostResponseRecorder* tether_host_response_recorder_;
+  std::unique_ptr<base::Clock> clock_;
   base::ObserverList<Observer> observer_list_;
+
+  std::map<std::string, base::Time>
+      device_id_to_tether_availability_request_start_time_map_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScannerOperation);
 };

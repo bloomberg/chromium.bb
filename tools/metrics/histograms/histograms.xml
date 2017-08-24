@@ -27924,6 +27924,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="InstantTethering.Performance.AdvertisementToConnectionDuration"
+    units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of time between when a client began advertising to a host, and
+    connected to that host (before authentication).
+  </summary>
+</histogram>
+
+<histogram
+    name="InstantTethering.Performance.ConnectionToAuthenticationDuration"
+    units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of time between when a client connects to a host,  and
+    authenticates with that host.
+  </summary>
+</histogram>
+
+<histogram name="InstantTethering.Performance.ConnectTetheringResponseDuration"
+    units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of time between when a client authenticates with a host, and
+    receives a ConnectTetheringResponse.
+  </summary>
+</histogram>
+
 <histogram name="InstantTethering.Performance.ConnectToHotspotDuration"
     units="ms">
   <owner>hansberry@chromium.org</owner>
@@ -27941,6 +27970,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The duration of time it takes for the client to send off a
     DisconnectTetheringRequest.
+  </summary>
+</histogram>
+
+<histogram name="InstantTethering.Performance.KeepAliveTickleResponseDuration"
+    units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of time between when a client authenticates with a host, and
+    receives a KeepAliveTickleResponse.
+  </summary>
+</histogram>
+
+<histogram
+    name="InstantTethering.Performance.TetherAvailabilityResponseDuration"
+    units="ms">
+  <owner>hansberry@chromium.org</owner>
+  <summary>
+    The duration of time between when a client authenticates with a host, and
+    receives a TetherAvailabilityResponse.
   </summary>
 </histogram>
 

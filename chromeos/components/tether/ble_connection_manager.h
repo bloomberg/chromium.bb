@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/tether/ble_advertisement_device_queue.h"
 #include "chromeos/components/tether/ble_advertiser.h"
@@ -210,6 +211,14 @@ class BleConnectionManager : public BleScanner::Observer {
       const cryptauth::SecureChannel::Status& old_status,
       const cryptauth::SecureChannel::Status& new_status);
 
+  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+
+  // Record various operation durations. These need to be separate methods
+  // because internally they use a macro which maintains a static state that
+  // does not tolerate different histogram names being passed to it.
+  void RecordAdvertisementToConnectionDuration(const std::string device_id);
+  void RecordConnectionToAuthenticationDuration(const std::string device_id);
+
   cryptauth::CryptAuthService* cryptauth_service_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   std::unique_ptr<BleScanner> ble_scanner_;
@@ -217,10 +226,14 @@ class BleConnectionManager : public BleScanner::Observer {
   std::unique_ptr<BleAdvertisementDeviceQueue> device_queue_;
   std::unique_ptr<TimerFactory> timer_factory_;
   cryptauth::BluetoothThrottler* bluetooth_throttler_;
+  std::unique_ptr<base::Clock> clock_;
 
   bool has_registered_observer_;
   std::map<cryptauth::RemoteDevice, std::unique_ptr<ConnectionMetadata>>
       device_to_metadata_map_;
+
+  std::map<std::string, base::Time> device_id_to_advertising_start_time_map_;
+  std::map<std::string, base::Time> device_id_to_status_connected_time_map_;
 
   base::ObserverList<Observer> observer_list_;
   base::WeakPtrFactory<BleConnectionManager> weak_ptr_factory_;

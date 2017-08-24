@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/test/histogram_tester.h"
+#include "base/test/simple_test_clock.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
@@ -29,6 +31,9 @@ namespace {
 
 const char kTestSsid[] = "testSsid";
 const char kTestPassword[] = "testPassword";
+
+constexpr base::TimeDelta kConnectTetheringResponseTime =
+    base::TimeDelta::FromSeconds(15);
 
 class TestObserver : public ConnectTetheringOperation::Observer {
  public:
@@ -107,6 +112,11 @@ class ConnectTetheringOperationTest : public testing::Test {
         test_device_, fake_ble_connection_manager_.get(),
         mock_tether_host_response_recorder_.get(), false /* setup_required */));
     operation_->AddObserver(test_observer_.get());
+
+    test_clock_ = new base::SimpleTestClock();
+    test_clock_->SetNow(base::Time::UnixEpoch());
+    operation_->SetClockForTest(base::WrapUnique(test_clock_));
+
     operation_->Initialize();
   }
 
@@ -126,6 +136,8 @@ class ConnectTetheringOperationTest : public testing::Test {
   void SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode response_code,
       bool use_proto_without_ssid_and_password) {
+    test_clock_->Advance(kConnectTetheringResponseTime);
+
     fake_ble_connection_manager_->ReceiveMessage(
         test_device_, CreateConnectTetheringResponseString(
                           response_code, use_proto_without_ssid_and_password));
@@ -154,6 +166,10 @@ class ConnectTetheringOperationTest : public testing::Test {
       EXPECT_TRUE(test_observer_->has_received_failure);
       EXPECT_EQ(expected_response_code, test_observer_->error_code);
     }
+
+    histogram_tester_.ExpectTimeBucketCount(
+        "InstantTethering.Performance.ConnectTetheringResponseDuration",
+        kConnectTetheringResponseTime, 1);
   }
 
   void VerifyResponseTimeoutSeconds(bool setup_required) {
@@ -173,7 +189,10 @@ class ConnectTetheringOperationTest : public testing::Test {
   std::unique_ptr<StrictMock<MockTetherHostResponseRecorder>>
       mock_tether_host_response_recorder_;
   std::unique_ptr<TestObserver> test_observer_;
+  base::SimpleTestClock* test_clock_;
   std::unique_ptr<ConnectTetheringOperation> operation_;
+
+  base::HistogramTester histogram_tester_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ConnectTetheringOperationTest);
@@ -250,6 +269,9 @@ TEST_F(ConnectTetheringOperationTest, TestCannotConnect) {
   EXPECT_EQ(ConnectTetheringResponse_ResponseCode::
                 ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR,
             test_observer_->error_code);
+
+  histogram_tester_.ExpectTotalCount(
+      "InstantTethering.Performance.ConnectTetheringResponseDuration", 0);
 }
 
 TEST_F(ConnectTetheringOperationTest, TestOperation_SetupRequired) {

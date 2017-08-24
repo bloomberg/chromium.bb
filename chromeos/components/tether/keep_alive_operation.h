@@ -6,6 +6,7 @@
 #define CHROMEOS_COMPONENTS_TETHER_KEEP_ALIVE_OPERATION_H_
 
 #include "base/observer_list.h"
+#include "base/time/clock.h"
 #include "chromeos/components/tether/message_transfer_operation.h"
 
 namespace chromeos {
@@ -65,8 +66,13 @@ class KeepAliveOperation : public MessageTransferOperation {
  private:
   friend class KeepAliveOperationTest;
 
+  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+
   cryptauth::RemoteDevice remote_device_;
+  std::unique_ptr<base::Clock> clock_;
   base::ObserverList<Observer> observer_list_;
+
+  base::Time keep_alive_tickle_request_start_time_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveOperation);
 };

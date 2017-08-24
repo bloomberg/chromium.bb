@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/time/clock.h"
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/message_transfer_operation.h"
 #include "components/cryptauth/remote_device.h"
@@ -86,12 +87,15 @@ class ConnectTetheringOperation : public MessageTransferOperation {
  private:
   friend class ConnectTetheringOperationTest;
 
+  void SetClockForTest(std::unique_ptr<base::Clock> clock_for_test);
+
   // The amount of time this operation will wait for if first time setup is
   // required on the host device.
   static uint32_t kSetupRequiredResponseTimeoutSeconds;
 
   cryptauth::RemoteDevice remote_device_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
+  std::unique_ptr<base::Clock> clock_;
   bool setup_required_;
 
   // These values are saved in OnMessageReceived() and returned in
@@ -99,6 +103,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   std::string ssid_to_return_;
   std::string password_to_return_;
   ConnectTetheringResponse_ResponseCode error_code_to_return_;
+  base::Time connect_tethering_request_start_time_;
 
   base::ObserverList<Observer> observer_list_;
 
