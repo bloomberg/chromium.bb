@@ -9969,7 +9969,7 @@
       If the policy is set to false or not configured, machine policy takes precedence if it conflicts with cloud policy.
       For more details about policy priority, please visit: https://support.google.com/chrome?p=set_chrome_policies_for_devices
 
-      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain.
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME">MicrosoftÂ® Active DirectoryÂ®</ph> domain.
       '''
     }
   ],
