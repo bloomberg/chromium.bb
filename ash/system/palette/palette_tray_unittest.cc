@@ -22,6 +22,7 @@
 #include "ash/test_shell_delegate.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -71,6 +72,16 @@ class PaletteTrayTest : public AshTestBase {
  protected:
   TestPaletteDelegate* test_palette_delegate() {
     return static_cast<TestPaletteDelegate*>(Shell::Get()->palette_delegate());
+  }
+
+  bool ToolExists(PaletteToolId tool_id) {
+    std::vector<PaletteToolView> views =
+        test_api_->GetPaletteToolManager()->CreateViews();
+    for (const PaletteToolView& view : views) {
+      if (view.tool_id == tool_id)
+        return true;
+    }
+    return false;
   }
 
   PaletteTray* palette_tray_ = nullptr;  // not owned
@@ -191,9 +202,30 @@ TEST_F(PaletteTrayTest, ModeToolDeactivatedAutomatically) {
   EXPECT_FALSE(palette_tray_->is_active());
 }
 
-TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
-  ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(
-      ash::VoiceInteractionState::RUNNING);
+TEST_F(PaletteTrayTest, NoMetalayerToolViewCreated) {
+  EXPECT_FALSE(ToolExists(PaletteToolId::METALAYER));
+}
+
+// Base class for tests that rely on voice interaction enabled.
+class PaletteTrayTestWithVoiceInteraction : public PaletteTrayTest {
+ public:
+  PaletteTrayTestWithVoiceInteraction() {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        chromeos::switches::kEnableVoiceInteraction);
+  }
+  ~PaletteTrayTestWithVoiceInteraction() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PaletteTrayTestWithVoiceInteraction);
+};
+
+TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolViewCreated) {
+  EXPECT_TRUE(ToolExists(PaletteToolId::METALAYER));
+}
+
+TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
+  Shell::Get()->NotifyVoiceInteractionStatusChanged(
+      VoiceInteractionState::RUNNING);
 
   HighlighterController highlighter_controller;
   HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
@@ -265,9 +297,10 @@ TEST_F(PaletteTrayTest, MetalayerToolActivatesHighlighter) {
   test_palette_delegate()->set_highlighter_test_api(nullptr);
 }
 
-TEST_F(PaletteTrayTest, StylusBarrelButtonActivatesHighlighter) {
-  ash::Shell::Get()->NotifyVoiceInteractionStatusChanged(
-      ash::VoiceInteractionState::RUNNING);
+TEST_F(PaletteTrayTestWithVoiceInteraction,
+       StylusBarrelButtonActivatesHighlighter) {
+  Shell::Get()->NotifyVoiceInteractionStatusChanged(
+      VoiceInteractionState::RUNNING);
 
   HighlighterController highlighter_controller;
   HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
