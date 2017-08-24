@@ -25,7 +25,9 @@
       }
 
       h2 ~ .settings-box,
-      iron-collapse .settings-box {
+      h2 ~ settings-toggle-button,
+      iron-collapse .settings-box,
+      iron-collapse settings-toggle-button {
         -webkit-margin-end: var(--settings-box-row-padding);
         -webkit-margin-start: var(--settings-box-row-indent);
         -webkit-padding-end: 0;
@@ -80,9 +82,7 @@
     <div class="settings-box two-line" on-tap="onDisplayTap_" actionable>
       <div class="start">
         $i18n{displaySettingsTitle}
-        <div class="secondary" id="deisplaySettingsSecondary">
-          $i18n{displaySettingsDescription}
-        </div>
+        <div class="secondary">$i18n{displaySettingsDescription}</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"
           aria-label="$i18n{displaySettingsTitle}"
@@ -146,9 +146,9 @@
         pref="{{prefs.settings.a11y.autoclick}}"
         label="$i18n{clickOnStopLabel}">
     </settings-toggle-button>
-    <div class="settings-box">
-      <div class="list-item settings-toggle-button-spacer">
-        <div>$i18n{delayBeforeClickLabel}</div>
+    <div class="settings-box block first">
+      <div class="list-item sub-item">
+        <div class="start">$i18n{delayBeforeClickLabel}</div>
         <settings-dropdown-menu label="$i18n{delayBeforeClickLabel}"
             pref="{{prefs.settings.a11y.autoclick_delay_ms}}"
             menu-options="[[autoClickDelayOptions_]]"
@@ -164,15 +164,17 @@
         pref="{{prefs.settings.a11y.large_cursor_enabled}}"
         label="$i18n{largeMouseCursorLabel}">
     </settings-toggle-button>
-    <div class="list-item sub-item"
+    <div class="settings-box block continuation"
         hidden$="[[!prefs.settings.a11y.large_cursor_enabled.value]]">
-      <div class="start">$i18n{largeMouseCursorSizeLabel}</div>
-      <settings-slider
-          pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
-          min="25" max="64"
-          label-min="$i18n{largeMouseCursorSizeDefaultLabel}"
-          label-max="$i18n{largeMouseCursorSizeLargeLabel}">
-      </settings-slider>
+      <div class="list-item sub-item">
+        <div class="start">$i18n{largeMouseCursorSizeLabel}</div>
+        <settings-slider
+            pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
+            min="25" max="64"
+            label-min="$i18n{largeMouseCursorSizeDefaultLabel}"
+            label-max="$i18n{largeMouseCursorSizeLargeLabel}">
+        </settings-slider>
+      </div>
     </div>
     <settings-toggle-button class="continuation"
         pref="{{prefs.settings.a11y.cursor_highlight}}"
