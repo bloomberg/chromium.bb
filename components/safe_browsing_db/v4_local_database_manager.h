@@ -91,14 +91,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Must be initialized by calling StartOnIOThread() before using.
   V4LocalDatabaseManager(
       const base::FilePath& base_path,
-      ExtendedReportingLevelCallback extended_reporting_level_callback);
+      ExtendedReportingLevelCallback extended_reporting_level_callback,
+      scoped_refptr<base::SequencedTaskRunner> task_runner_for_tests);
 
   ~V4LocalDatabaseManager() override;
-
-  void SetTaskRunnerForTest(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-    task_runner_ = task_runner;
-  }
 
   enum class ClientCallbackType {
     // This represents the case when we're trying to determine if a URL is
