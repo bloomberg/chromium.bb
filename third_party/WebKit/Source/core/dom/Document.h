@@ -698,7 +698,7 @@ class CORE_EXPORT Document : public ContainerNode,
   enum DocumentReadyState { kLoading, kInteractive, kComplete };
 
   void SetReadyState(DocumentReadyState);
-  bool IsLoadCompleted();
+  bool IsLoadCompleted() const;
 
   enum ParsingState { kParsing, kInDOMContentLoaded, kFinishedParsing };
   void SetParsingState(ParsingState);

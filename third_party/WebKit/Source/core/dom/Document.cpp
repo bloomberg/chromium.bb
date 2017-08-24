@@ -1436,7 +1436,7 @@ void Document::SetReadyState(DocumentReadyState ready_state) {
   DispatchEvent(Event::Create(EventTypeNames::readystatechange));
 }
 
-bool Document::IsLoadCompleted() {
+bool Document::IsLoadCompleted() const {
   return ready_state_ == kComplete;
 }
 
