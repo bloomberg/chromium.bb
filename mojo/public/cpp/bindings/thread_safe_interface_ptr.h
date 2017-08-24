@@ -115,7 +115,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     // this sequence) to guarantee that two async calls can't be reordered.
     if (!message->has_flag(Message::kFlagIsSync)) {
       auto reply_forwarder =
-          base::MakeUnique<ForwardToCallingThread>(std::move(responder));
+          std::make_unique<ForwardToCallingThread>(std::move(responder));
       task_runner_->PostTask(
           FROM_HERE, base::Bind(forward_with_responder_, base::Passed(message),
                                 base::Passed(&reply_forwarder)));
@@ -134,7 +134,7 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     // TODO(yzshen, watk): We block both this sequence and the InterfacePtr
     // sequence. Ideally only this sequence would block.
     auto response = make_scoped_refptr(new SyncResponseInfo());
-    auto response_signaler = base::MakeUnique<SyncResponseSignaler>(response);
+    auto response_signaler = std::make_unique<SyncResponseSignaler>(response);
     task_runner_->PostTask(
         FROM_HERE, base::Bind(forward_with_responder_, base::Passed(message),
                               base::Passed(&response_signaler)));
@@ -331,7 +331,7 @@ class ThreadSafeInterfacePtrBase
     }
 
     std::unique_ptr<ThreadSafeForwarder<InterfaceType>> CreateForwarder() {
-      return base::MakeUnique<ThreadSafeForwarder<InterfaceType>>(
+      return std::make_unique<ThreadSafeForwarder<InterfaceType>>(
           task_runner_, base::Bind(&PtrWrapper::Accept, this),
           base::Bind(&PtrWrapper::AcceptWithResponder, this),
           associated_group_);

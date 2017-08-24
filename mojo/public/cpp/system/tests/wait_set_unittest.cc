@@ -333,7 +333,7 @@ TEST_F(WaitSetTest, NoStarvation) {
 
   std::vector<std::unique_ptr<base::WaitableEvent>> events(kNumTestEvents);
   for (auto& event_ptr : events) {
-    event_ptr = base::MakeUnique<base::WaitableEvent>(
+    event_ptr = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     event_ptr->Signal();

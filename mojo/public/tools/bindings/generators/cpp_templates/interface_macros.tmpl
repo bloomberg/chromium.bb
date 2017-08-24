@@ -109,7 +109,7 @@ class {{message_typename}}
                           "kFlags")}}
 
     if (!serialize) {
-      return mojo::Message(base::MakeUnique<{{message_typename}}>(
+      return mojo::Message(std::make_unique<{{message_typename}}>(
           kFlags
 {%-     for param in parameters %}
           , std::move(param_{{param.name}})

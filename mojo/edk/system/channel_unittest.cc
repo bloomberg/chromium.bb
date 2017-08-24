@@ -66,7 +66,7 @@ class MockChannelDelegate : public Channel::Delegate {
 
 Channel::MessagePtr CreateDefaultMessage(bool legacy_message) {
   const size_t payload_size = 100;
-  Channel::MessagePtr message = base::MakeUnique<Channel::Message>(
+  Channel::MessagePtr message = std::make_unique<Channel::Message>(
       payload_size, 0,
       legacy_message ? Channel::Message::MessageType::NORMAL_LEGACY
                      : Channel::Message::MessageType::NORMAL);

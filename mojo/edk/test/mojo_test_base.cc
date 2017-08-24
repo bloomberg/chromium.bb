@@ -48,7 +48,7 @@ MojoTestBase::~MojoTestBase() {}
 
 MojoTestBase::ClientController& MojoTestBase::StartClient(
     const std::string& client_name) {
-  clients_.push_back(base::MakeUnique<ClientController>(
+  clients_.push_back(std::make_unique<ClientController>(
       client_name, this, process_error_callback_, launch_type_));
   return *clients_.back();
 }

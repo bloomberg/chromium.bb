@@ -325,7 +325,7 @@ class CallbackFilter : public MessageReceiver {
   ~CallbackFilter() override {}
 
   static std::unique_ptr<CallbackFilter> Wrap(const base::Closure& callback) {
-    return base::MakeUnique<CallbackFilter>(callback);
+    return std::make_unique<CallbackFilter>(callback);
   }
 
   // MessageReceiver:
@@ -547,7 +547,7 @@ TEST_P(StrongBindingTest, DestroyClosesMessagePipe) {
   bool called = false;
   base::RunLoop run_loop2;
 
-  auto binding = MakeStrongBinding(base::MakeUnique<ServiceImpl>(&was_deleted),
+  auto binding = MakeStrongBinding(std::make_unique<ServiceImpl>(&was_deleted),
                                    std::move(request));
   ptr->Frobinate(
       nullptr, sample::Service::BazOptions::REGULAR, nullptr,
@@ -590,7 +590,7 @@ TEST_P(StrongBindingTest, FlushForTesting) {
   bool was_deleted = false;
   sample::ServicePtr ptr;
   auto request = MakeRequest(&ptr);
-  auto binding = MakeStrongBinding(base::MakeUnique<ServiceImpl>(&was_deleted),
+  auto binding = MakeStrongBinding(std::make_unique<ServiceImpl>(&was_deleted),
                                    std::move(request));
   binding->set_connection_error_handler(base::Bind(&Fail));
 
@@ -618,7 +618,7 @@ TEST_P(StrongBindingTest, FlushForTestingWithClosedPeer) {
   bool was_deleted = false;
   sample::ServicePtr ptr;
   auto request = MakeRequest(&ptr);
-  auto binding = MakeStrongBinding(base::MakeUnique<ServiceImpl>(&was_deleted),
+  auto binding = MakeStrongBinding(std::make_unique<ServiceImpl>(&was_deleted),
                                    std::move(request));
   binding->set_connection_error_handler(SetFlagAndRunClosure(&called));
   ptr.reset();
@@ -636,7 +636,7 @@ TEST_P(StrongBindingTest, ConnectionErrorWithReason) {
   sample::ServicePtr ptr;
   auto request = MakeRequest(&ptr);
   auto binding =
-      MakeStrongBinding(base::MakeUnique<ServiceImpl>(), std::move(request));
+      MakeStrongBinding(std::make_unique<ServiceImpl>(), std::move(request));
   base::RunLoop run_loop;
   binding->set_connection_error_with_reason_handler(base::Bind(
       [](const base::Closure& quit_closure, uint32_t custom_reason,

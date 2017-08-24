@@ -753,7 +753,7 @@ class DatabaseImpl : public db::mojom::Database {
 
   // db::mojom::Database:
   void AddTable(db::mojom::TableRequest table) {
-    tables_.emplace_back(base::MakeUnique<TableImpl>(std::move(table)));
+    tables_.emplace_back(std::make_unique<TableImpl>(std::move(table)));
   }
 
  private:
@@ -848,7 +848,7 @@ class LoggerImpl : public sample::mojom::Logger {
 };
 
 db::mojom::LoggerPtr logger;
-mojo::MakeStrongBinding(base::MakeUnique<LoggerImpl>(),
+mojo::MakeStrongBinding(std::make_unique<LoggerImpl>(),
                         mojo::MakeRequest(&logger));
 
 logger->Log("NOM NOM NOM MESSAGES");

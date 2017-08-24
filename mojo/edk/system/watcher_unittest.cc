@@ -47,7 +47,7 @@ class WatchHelper {
 
   uintptr_t CreateContextWithCancel(const ContextCallback& callback,
                                     const base::Closure& cancel_callback) {
-    auto context = base::MakeUnique<NotificationContext>(callback);
+    auto context = std::make_unique<NotificationContext>(callback);
     NotificationContext* raw_context = context.get();
     raw_context->SetCancelCallback(base::Bind(
         [](std::unique_ptr<NotificationContext> context,
@@ -1832,7 +1832,7 @@ TEST_F(WatcherTest, ConcurrencyStressTest) {
       g_do_random_thing_callback.Run();
   });
   for (size_t i = 0; i < kNumThreads; ++i) {
-    threads[i] = base::MakeUnique<ThreadedRunner>(runner_callback);
+    threads[i] = std::make_unique<ThreadedRunner>(runner_callback);
     threads[i]->Start();
   }
   for (size_t i = 0; i < kNumThreads; ++i)

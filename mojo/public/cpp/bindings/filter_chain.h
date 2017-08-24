@@ -48,7 +48,7 @@ class MOJO_CPP_BINDINGS_EXPORT FilterChain : public MessageReceiver {
 
 template <typename FilterType, typename... Args>
 inline void FilterChain::Append(Args&&... args) {
-  Append(base::MakeUnique<FilterType>(std::forward<Args>(args)...));
+  Append(std::make_unique<FilterType>(std::forward<Args>(args)...));
 }
 
 template <>

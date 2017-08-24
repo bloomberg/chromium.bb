@@ -226,9 +226,9 @@ void DumpMessages(std::string output_directory) {
   fuzz::mojom::FuzzDummyInterfaceAssociatedPtr dummy;
 
   /* Create the impl and add a MessageDumper to the filter chain. */
-  env->impl = base::MakeUnique<FuzzImpl>(MakeRequest(&fuzz));
+  env->impl = std::make_unique<FuzzImpl>(MakeRequest(&fuzz));
   env->impl->binding_.RouterForTesting()->AddIncomingMessageFilter(
-      base::MakeUnique<MessageDumper>(output_directory));
+      std::make_unique<MessageDumper>(output_directory));
 
   /* Call methods in various ways to generate interesting messages. */
   fuzz->FuzzBasic();

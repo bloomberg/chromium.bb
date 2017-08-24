@@ -223,7 +223,7 @@ PortAcceptedEvent::~PortAcceptedEvent() = default;
 ScopedEvent PortAcceptedEvent::Deserialize(const PortName& port_name,
                                            const void* buffer,
                                            size_t num_bytes) {
-  return base::MakeUnique<PortAcceptedEvent>(port_name);
+  return std::make_unique<PortAcceptedEvent>(port_name);
 }
 
 size_t PortAcceptedEvent::GetSerializedDataSize() const {
@@ -253,7 +253,7 @@ ScopedEvent ObserveProxyEvent::Deserialize(const PortName& port_name,
     return nullptr;
 
   const auto* data = static_cast<const ObserveProxyEventData*>(buffer);
-  return base::MakeUnique<ObserveProxyEvent>(
+  return std::make_unique<ObserveProxyEvent>(
       port_name, data->proxy_node_name, data->proxy_port_name,
       data->proxy_target_node_name, data->proxy_target_port_name);
 }
@@ -271,7 +271,7 @@ void ObserveProxyEvent::SerializeData(void* buffer) const {
 }
 
 ScopedEvent ObserveProxyEvent::Clone() const {
-  return base::MakeUnique<ObserveProxyEvent>(
+  return std::make_unique<ObserveProxyEvent>(
       port_name(), proxy_node_name_, proxy_port_name_, proxy_target_node_name_,
       proxy_target_port_name_);
 }
@@ -291,7 +291,7 @@ ScopedEvent ObserveProxyAckEvent::Deserialize(const PortName& port_name,
     return nullptr;
 
   const auto* data = static_cast<const ObserveProxyAckEventData*>(buffer);
-  return base::MakeUnique<ObserveProxyAckEvent>(port_name,
+  return std::make_unique<ObserveProxyAckEvent>(port_name,
                                                 data->last_sequence_num);
 }
 
@@ -305,7 +305,7 @@ void ObserveProxyAckEvent::SerializeData(void* buffer) const {
 }
 
 ScopedEvent ObserveProxyAckEvent::Clone() const {
-  return base::MakeUnique<ObserveProxyAckEvent>(port_name(),
+  return std::make_unique<ObserveProxyAckEvent>(port_name(),
                                                 last_sequence_num_);
 }
 
@@ -324,7 +324,7 @@ ScopedEvent ObserveClosureEvent::Deserialize(const PortName& port_name,
     return nullptr;
 
   const auto* data = static_cast<const ObserveClosureEventData*>(buffer);
-  return base::MakeUnique<ObserveClosureEvent>(port_name,
+  return std::make_unique<ObserveClosureEvent>(port_name,
                                                data->last_sequence_num);
 }
 
@@ -338,7 +338,7 @@ void ObserveClosureEvent::SerializeData(void* buffer) const {
 }
 
 ScopedEvent ObserveClosureEvent::Clone() const {
-  return base::MakeUnique<ObserveClosureEvent>(port_name(), last_sequence_num_);
+  return std::make_unique<ObserveClosureEvent>(port_name(), last_sequence_num_);
 }
 
 MergePortEvent::MergePortEvent(const PortName& port_name,
@@ -358,7 +358,7 @@ ScopedEvent MergePortEvent::Deserialize(const PortName& port_name,
     return nullptr;
 
   const auto* data = static_cast<const MergePortEventData*>(buffer);
-  return base::MakeUnique<MergePortEvent>(port_name, data->new_port_name,
+  return std::make_unique<MergePortEvent>(port_name, data->new_port_name,
                                           data->new_port_descriptor);
 }
 

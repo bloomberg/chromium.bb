@@ -11,7 +11,7 @@
 
 void FuzzMessage(const uint8_t* data, size_t size, base::RunLoop* run) {
   fuzz::mojom::FuzzInterfacePtr fuzz;
-  auto impl = base::MakeUnique<FuzzImpl>(MakeRequest(&fuzz));
+  auto impl = std::make_unique<FuzzImpl>(MakeRequest(&fuzz));
   auto router = impl->binding_.RouterForTesting();
 
   /* Create a mojo message with the appropriate payload size. */

@@ -162,7 +162,7 @@ class MojoE2EPerftest : public edk::test::MojoTestBase {
 
 void CreateAndRunService(InterfaceRequest<test::EchoService> request,
                          const base::Closure& cb) {
-  MakeStrongBinding(base::MakeUnique<EchoServiceImpl>(cb), std::move(request));
+  MakeStrongBinding(std::make_unique<EchoServiceImpl>(cb), std::move(request));
 }
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(PingService, MojoE2EPerftest, mp) {
