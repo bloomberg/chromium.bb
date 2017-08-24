@@ -43,9 +43,6 @@ class JniClient : public ChromotingSession::Delegate {
   // Pops up a dialog box asking the user to enter a PIN. Call on UI thread.
   void DisplayAuthenticationPrompt(bool pairing_supported);
 
-  // Register C++ methods exposed to Java using JNI.
-  static bool RegisterJni(JNIEnv* env);
-
   // ChromotingSession::Delegate implementation
 
   // Notifies Java code of the current connection status. Call on UI thread.

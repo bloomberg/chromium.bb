@@ -243,11 +243,6 @@ JniGlDisplayHandler::CreateVideoRenderer() {
   return base::MakeUnique<SoftwareVideoRenderer>(core_->GrabFrameConsumer());
 }
 
-// static
-bool JniGlDisplayHandler::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void JniGlDisplayHandler::OnSurfaceCreated(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& caller,

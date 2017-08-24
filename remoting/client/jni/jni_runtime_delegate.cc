@@ -27,10 +27,6 @@ using base::android::ToJavaByteArray;
 
 namespace remoting {
 
-bool RegisterJniRuntimeDelegate(JNIEnv* env) {
-  return remoting::RegisterNativesImpl(env);
-}
-
 // Implementation of stubs defined in JniInterface_jni.h. These are the entry
 // points for JNI calls from Java into C++.
 
