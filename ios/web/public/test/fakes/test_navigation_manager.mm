@@ -15,13 +15,14 @@ TestNavigationManager::TestNavigationManager()
       pending_item_(nullptr),
       last_committed_item_(nullptr),
       visible_item_(nullptr),
-      load_url_with_params_was_called_(false) {}
+      browser_state_(nullptr),
+      load_url_with_params_was_called_(false),
+      load_if_necessary_was_called_(false) {}
 
 TestNavigationManager::~TestNavigationManager() {}
 
 BrowserState* TestNavigationManager::GetBrowserState() const {
-  NOTREACHED();
-  return nullptr;
+  return browser_state_;
 }
 
 WebState* TestNavigationManager::GetWebState() const {
@@ -68,7 +69,7 @@ void TestNavigationManager::LoadURLWithParams(
 }
 
 void TestNavigationManager::LoadIfNecessary() {
-  NOTREACHED();
+  load_if_necessary_was_called_ = true;
 }
 
 void TestNavigationManager::AddTransientURLRewriter(
@@ -177,8 +178,16 @@ void TestNavigationManager::AddItem(const GURL& url,
   SetLastCommittedItemIndex(GetItemCount() - 1);
 }
 
+void TestNavigationManager::SetBrowserState(web::BrowserState* browser_state) {
+  browser_state_ = browser_state;
+}
+
 bool TestNavigationManager::LoadURLWithParamsWasCalled() {
   return load_url_with_params_was_called_;
+}
+
+bool TestNavigationManager::LoadIfNecessaryWasCalled() {
+  return load_if_necessary_was_called_;
 }
 
 }  // namespace web
