@@ -35,6 +35,13 @@ UI_BASE_EXPORT
 // Enables or disables the tracking for the button.
 @property(nonatomic) BOOL trackingEnabled;
 
+// An NSRect in the view's coordinate space which is used for hover and hit
+// testing. Default value is NSZeroRect, which makes the hitbox equal to the
+// view's bounds. May be overridden by subclasses. Example: A button in the
+// corner of a fullscreen window might extend its hitbox to the edges of the
+// window so that it can be clicked more easily (Fitts's law).
+@property(readonly, nonatomic) NSRect hitbox;
+
 // Common initialization called from initWithFrame: and awakeFromNib.
 // Subclassers should call [super commonInit].
 - (void)commonInit;

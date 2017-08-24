@@ -30,6 +30,10 @@
   [super dealloc];
 }
 
+- (NSRect)hitbox {
+  return NSZeroRect;
+}
+
 - (void)setTrackingEnabled:(BOOL)trackingEnabled {
   if (trackingEnabled == trackingEnabled_)
     return;
@@ -107,16 +111,20 @@
 
 - (void)updateTrackingAreas {
   if (trackingEnabled_ && self.enabled) {
-    if (trackingArea_.get())
-      return;
-    trackingArea_.reset(
-        [[CrTrackingArea alloc] initWithRect:NSZeroRect
-                                     options:NSTrackingMouseEnteredAndExited |
-                                             NSTrackingMouseMoved |
-                                             NSTrackingActiveAlways |
-                                             NSTrackingInVisibleRect
-                                       owner:self
-                                    userInfo:nil]);
+    NSRect hitbox = self.hitbox;
+    if (CrTrackingArea* trackingArea = trackingArea_.get()) {
+      if (NSEqualRects(trackingArea.rect, hitbox))
+        return;
+      [self removeTrackingArea:trackingArea];
+    }
+    trackingArea_.reset([[CrTrackingArea alloc]
+        initWithRect:hitbox
+             options:NSTrackingMouseEnteredAndExited |
+                     NSTrackingMouseMoved |
+                     NSTrackingActiveAlways |
+                     (NSIsEmptyRect(hitbox) ? NSTrackingInVisibleRect : 0)
+               owner:self
+            userInfo:nil]);
     [self addTrackingArea:trackingArea_.get()];
 
     // If you have a separate window that overlaps the close button, and you
@@ -145,9 +153,10 @@
     return;
 
   // Update the button's state if the button has moved.
-  NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
-  mouseLoc = [self convertPoint:mouseLoc fromView:nil];
-  BOOL mouseInBounds = NSPointInRect(mouseLoc, [self bounds]);
+  const NSPoint mouseLoc = [self.superview
+      convertPoint:[[self window] mouseLocationOutsideOfEventStream]
+          fromView:nil];
+  BOOL mouseInBounds = [self hitTest:mouseLoc] != nil;
   if (mouseDown_ && mouseInBounds) {
     self.hoverState = kHoverStateMouseDown;
   } else {
@@ -160,6 +169,14 @@
     return;
   hoverState_ = hoverState;
   self.needsDisplay = YES;
+}
+
+- (NSView*)hitTest:(NSPoint)point {
+  if (NSPointInRect([self.superview convertPoint:point toView:self],
+                    self.hitbox)) {
+    return self;
+  }
+  return [super hitTest:point];
 }
 
 @end
