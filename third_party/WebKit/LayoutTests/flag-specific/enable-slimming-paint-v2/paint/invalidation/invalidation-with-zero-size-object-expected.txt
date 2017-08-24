@@ -7,8 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'ab'",
-          "rect": [8, 8, 200, 100],
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 200, 200],
           "reason": "disappeared"
         }
       ]
@@ -16,8 +16,8 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "style change"
+      "object": "LayoutBlockFlow DIV id='element'",
+      "reason": "disappeared"
     }
   ]
 }

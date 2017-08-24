@@ -12,6 +12,11 @@
           "reason": "subtree"
         },
         {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [3, 65, 235, 235],
+          "reason": "paint property change"
+        },
+        {
           "object": "LayoutView #document",
           "rect": [3, 65, 235, 235],
           "reason": "paint property change"

@@ -149,7 +149,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   EXPECT_FALSE(div.Layer()->IsJustCreated());
   // Client used by only paint chunks and non-cachaeable display items but not
   // by any cacheable display items won't be marked as validly cached.
-  EXPECT_FALSE(RootPaintController().ClientCacheIsValid(*div.Layer()));
+  EXPECT_TRUE(RootPaintController().ClientCacheIsValid(*div.Layer()));
   EXPECT_FALSE(RootPaintController().ClientCacheIsValid(div));
   EXPECT_TRUE(RootPaintController().ClientCacheIsValid(sub_div));
 }

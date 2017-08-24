@@ -7,13 +7,8 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "LayoutView #document",
-          "rect": [0, 0, 800, 600],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutBlockFlow HTML",
-          "rect": [50, 50, 700, 500],
+          "rect": [8, 108, 100, 100],
           "reason": "appeared"
         }
       ]
@@ -21,11 +16,11 @@
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutView #document",
-      "reason": "style change"
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "appeared"
     },
     {
-      "object": "LayoutBlockFlow BODY",
+      "object": "LayoutBlockFlow (floating) DIV",
       "reason": "appeared"
     }
   ]
