@@ -54,7 +54,7 @@ display log messages to the `LogCat` pane.
 <classpathentry kind="src" path="components/cronet/android/sample/src"/>
 <classpathentry kind="src" path="components/cronet/android/sample/javatests/src"/>
 <classpathentry kind="src" path="components/autofill/core/browser/android/java/src"/>
-<classpathentry kind="src" path="components/web_contents_delegate_android/android/java/src"/>
+<classpathentry kind="src" path="components/web_contents_delegate_android/java/src"/>
 <classpathentry kind="src" path="components/dom_distiller/android/java/src"/>
 <classpathentry kind="src" path="components/navigation_interception/android/java/src"/>
 <classpathentry kind="src" path="ui/android/java/src"/>
