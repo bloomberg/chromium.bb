@@ -738,7 +738,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
                void(bool rtt_updated,
                     QuicByteCount bytes_in_flight,
                     QuicTime event_time,
-                    const CongestionVector& acked_packets,
+                    const AckedPacketVector& acked_packets,
                     const CongestionVector& lost_packets));
   MOCK_METHOD5(OnPacketSent,
                bool(QuicTime,
@@ -759,6 +759,7 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MOCK_CONST_METHOD0(GetDebugState, std::string());
   MOCK_CONST_METHOD0(InSlowStart, bool());
   MOCK_CONST_METHOD0(InRecovery, bool());
+  MOCK_CONST_METHOD0(IsProbingForMoreBandwidth, bool());
   MOCK_CONST_METHOD0(GetSlowStartThreshold, QuicByteCount());
   MOCK_CONST_METHOD0(GetCongestionControlType, CongestionControlType());
   MOCK_METHOD2(AdjustNetworkParameters, void(QuicBandwidth, QuicTime::Delta));
