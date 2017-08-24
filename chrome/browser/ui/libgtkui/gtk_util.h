@@ -10,6 +10,7 @@
 
 #include "ui/base/glib/scoped_gobject.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/window/frame_buttons.h"
 
 namespace aura {
 class Window;
@@ -75,6 +76,14 @@ aura::Window* GetAuraTransientParent(GtkWidget* dialog);
 
 // Clears the transient parent for |dialog|.
 void ClearAuraTransientParent(GtkWidget* dialog);
+
+// Parses |button_string| into |leading_buttons| and
+// |trailing_buttons|.  The string is of the format
+// "<button>*:<button*>", for example, "close:minimize:maximize".
+// This format is used by GTK3 settings and several gconf settings.
+void ParseButtonLayout(const std::string& button_string,
+                       std::vector<views::FrameButton>* leading_buttons,
+                       std::vector<views::FrameButton>* trailing_buttons);
 
 #if GTK_MAJOR_VERSION > 2
 // These constants are defined in gtk/gtkenums.h in Gtk3.12 or later.

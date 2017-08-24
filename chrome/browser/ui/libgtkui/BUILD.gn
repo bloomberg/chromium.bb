@@ -47,6 +47,7 @@ template("libgtkui") {
                 "libgtkui_export.h",
                 "menu_util.cc",
                 "menu_util.h",
+                "nav_button_layout_manager.h",
                 "print_dialog_gtk.cc",
                 "print_dialog_gtk.h",
                 "printing_gtk_util.cc",
@@ -68,8 +69,8 @@ template("libgtkui") {
 
     if (use_gconf) {
       sources += [
-        "gconf_listener.cc",
-        "gconf_listener.h",
+        "nav_button_layout_manager_gconf.cc",
+        "nav_button_layout_manager_gconf.h",
       ]
       configs += [ "//build/config/linux/gconf" ]
     }
@@ -127,6 +128,8 @@ if (use_gtk3) {
     sources = [
       "native_theme_gtk3.cc",
       "native_theme_gtk3.h",
+      "nav_button_layout_manager_gtk3.cc",
+      "nav_button_layout_manager_gtk3.h",
       "nav_button_provider_gtk3.cc",
       "nav_button_provider_gtk3.h",
     ]
