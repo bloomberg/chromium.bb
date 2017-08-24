@@ -327,7 +327,6 @@ Bug(none) compositing/overflow/overflow-scroll-background-transparent-to-opaque.
 Bug(none) compositing/overflow/overflow-scroll-content-fractional-offset.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-opaque-background-will-change.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-opaque-background.html [ Failure ]
-Bug(none) compositing/overflow/overflow-scroll-with-pointer-events-toggle.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scroll-with-transparent-background.html [ Failure ]
 Bug(none) compositing/overflow/overflow-scrollbar-layers.html [ Failure ]
 Bug(none) compositing/overflow/reparented-scrollbars-non-sc-anc.html [ Failure ]
@@ -1046,6 +1045,7 @@ Bug(none) paint/invalidation/compositing/should-not-repaint-composited-filter.ht
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-opacity.html [ Failure ]
 Bug(none) paint/invalidation/document-flipped-blocks-writing-mode-scroll.html [ Failure ]
 Bug(none) paint/invalidation/empty-object-move-and-resize.html [ Failure ]
+Bug(none) paint/invalidation/flexbox/repaint-on-layout.html [ Failure ]
 Bug(none) paint/invalidation/iframe-scroll-repaint.html [ Failure ]
 Bug(none) paint/invalidation/invalidate-after-composited-scroll-of-window.html [ Failure ]
 Bug(none) paint/invalidation/invalidation-after-opacity-change-subtree.html [ Failure ]
@@ -1144,6 +1144,7 @@ Bug(none) paint/invalidation/svg/text-mask-update.svg [ Failure ]
 Bug(none) paint/invalidation/backgroundSizeRepaint.html [ Failure ]
 Bug(none) paint/invalidation/clipped-overflow-visible-subtree.html [ Failure ]
 Bug(none) paint/invalidation/compositing/fixed-pos-with-abs-pos-child-scroll.html [ Failure ]
+Bug(none) paint/invalidation/create-layer-repaint.html [ Failure ]
 Bug(none) paint/invalidation/filter-on-html-element-with-fixed-position-child.html [ Failure ]
 Bug(none) paint/invalidation/mix-blend-mode-separate-stacking-context.html [ Failure ]
 Bug(none) paint/invalidation/paint-invalidation-with-opacity.html [ Failure ]
@@ -1224,21 +1225,11 @@ Bug(none) paint/invalidation/compositing/overlap-test-with-filter.html [ Failure
 Bug(none) paint/invalidation/compositing/should-not-repaint-composited-descendants.html [ Failure ]
 Bug(none) paint/invalidation/filter-repaint-accelerated-child-with-filter-child.html [ Failure ]
 
-# Extra invalidation caused by change of subsequence existence.
-crbug.com/757082 paint/invalidation/absolute-display-block-to-none.html [ Failure ]
-crbug.com/757082 paint/invalidation/block-layout-inline-children-float-positioned.html [ Failure ]
-crbug.com/757082 paint/invalidation/create-layer-repaint.html [ Failure ]
-crbug.com/757082 paint/invalidation/flexbox/repaint-on-layout.html [ Failure ]
-crbug.com/757082 paint/invalidation/iframe-display-none-to-display-block.html [ Failure ]
-crbug.com/757082 paint/invalidation/remove-block-after-layout.html [ Failure ]
-crbug.com/757082 paint/invalidation/remove-inline-layer-after-layout.html [ Failure ]
-crbug.com/757082 paint/invalidation/trailing-floats-root-line-box-overflow.html [ Failure ]
-crbug.com/757082 paint/invalidation/justify-items-overflow-change.html [ Failure ]
-crbug.com/757082 paint/invalidation/justify-self-overflow-change.html [ Failure ]
-
 # Negative layer position because of negative content position. Extra invalidation caused by layer position change.
 crbug.com/757090 paint/invalidation/abspos-shift-image-incorrect-repaint.html [ Failure ]
 crbug.com/757090 paint/invalidation/inline-focus.html [ Failure ]
+crbug.com/757090 paint/invalidation/justify-items-overflow-change.html [ Failure ]
+crbug.com/757090 paint/invalidation/justify-self-overflow-change.html [ Failure ]
 crbug.com/757090 paint/invalidation/offset-change-wrong-invalidation-with-float.html [ Failure ]
 crbug.com/757090 paint/invalidation/outline-add-repaint.html [ Failure ]
 crbug.com/757090 paint/invalidation/outline-change-repaint.html [ Failure ]
@@ -1919,6 +1910,9 @@ crbug.com/738613 paint/invalidation/overflow-scroll-after-move.html [ Failure ]
 crbug.com/738613 paint/invalidation/repaint-composited-child-in-scrolled-container.html [ Failure ]
 crbug.com/738613 paint/invalidation/scroll-stacking-context-backface-visiblity-leaves-traces.html [ Failure ]
 crbug.com/738613 paint/invalidation/selection/selection-within-composited-scroller.html [ Failure ]
+
+# Subsequence under-invalidation of scroller related to ScrollHitTest.
+crbug.com/738613 compositing/overflow/overflow-scroll-with-pointer-events-toggle.html [ Failure Crash ]
 
 # See comment regarding this test in NeverFixTests. It also fails for other
 # reasons, in particular that the composited layerization algorithm provides

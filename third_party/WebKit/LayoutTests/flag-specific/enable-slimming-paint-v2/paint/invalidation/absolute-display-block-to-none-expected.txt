@@ -7,17 +7,11 @@
       "drawsContent": true,
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'ab'",
-          "rect": [8, 8, 200, 100],
+          "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
+          "rect": [100, 100, 100, 100],
           "reason": "disappeared"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV",
-      "reason": "style change"
     }
   ]
 }
