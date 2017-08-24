@@ -11,6 +11,8 @@ source_set("web") {
     "dom_altering_lock.mm",
     "features.h",
     "features.mm",
+    "legacy_mailto_url_rewriter.h",
+    "legacy_mailto_url_rewriter.mm",
     "mailto_handler.h",
     "mailto_handler.mm",
     "mailto_handler_gmail.h",
@@ -60,10 +62,10 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "legacy_mailto_url_rewriter_unittest.mm",
     "mailto_handler_gmail_unittest.mm",
     "mailto_handler_system_mail_unittest.mm",
     "mailto_handler_unittest.mm",
-    "mailto_url_rewriter_unittest.mm",
     "navigation_manager_util_unittest.mm",
     "network_activity_indicator_tab_helper_unittest.mm",
     "page_placeholder_tab_helper_unittest.mm",
