@@ -1314,8 +1314,10 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             if (mJoystickScrollEnabled) {
                 float velocityX = getFilteredAxisValue(event, MotionEvent.AXIS_X);
                 float velocityY = getFilteredAxisValue(event, MotionEvent.AXIS_Y);
-                flingViewport(event.getEventTime(), -velocityX, -velocityY, true);
-                return true;
+                if (velocityX != 0.f || velocityY != 0.f) {
+                    flingViewport(event.getEventTime(), -velocityX, -velocityY, true);
+                    return true;
+                }
             }
         }
         return mContainerViewInternals.super_onGenericMotionEvent(event);
