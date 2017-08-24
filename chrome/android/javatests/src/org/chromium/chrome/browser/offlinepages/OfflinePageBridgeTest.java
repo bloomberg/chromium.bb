@@ -390,6 +390,49 @@ public class OfflinePageBridgeTest {
         Assert.assertEquals(originString, pages.get(0).getRequestOrigin());
     }
 
+    @Test
+    @SmallTest
+    public void testSavePageWithRequestOrigin() throws Exception {
+        final OfflinePageOrigin origin =
+                new OfflinePageOrigin("abc.xyz", new String[] {"deadbeef"});
+        mActivityTestRule.loadUrl(mTestPage);
+        final String originString = origin.encodeAsJsonString();
+        final Semaphore semaphore = new Semaphore(0);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mOfflinePageBridge.addObserver(new OfflinePageModelObserver() {
+                    @Override
+                    public void offlinePageAdded(OfflinePageItem newPage) {
+                        mOfflinePageBridge.removeObserver(this);
+                        semaphore.release();
+                    }
+                });
+                mOfflinePageBridge.savePage(
+                        mActivityTestRule.getActivity().getActivityTab().getWebContents(),
+                        BOOKMARK_ID, origin, new SavePageCallback() {
+                            @Override
+                            public void onSavePageDone(
+                                    int savePageResult, String url, long offlineId) {}
+                        });
+            }
+        });
+
+        Assert.assertTrue("Semaphore acquire failed. Timed out.",
+                semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        List<OfflinePageItem> pages = getAllPages();
+        Assert.assertEquals(originString, pages.get(0).getRequestOrigin());
+    }
+
+    @Test
+    @SmallTest
+    public void testSavePageNoOrigin() throws Exception {
+        mActivityTestRule.loadUrl(mTestPage);
+        savePage(SavePageResult.SUCCESS, mTestPage);
+        List<OfflinePageItem> pages = getAllPages();
+        Assert.assertEquals("", pages.get(0).getRequestOrigin());
+    }
+
     // Returns offline ID.
     private long savePage(final int expectedResult, final String expectedUrl)
             throws InterruptedException {
