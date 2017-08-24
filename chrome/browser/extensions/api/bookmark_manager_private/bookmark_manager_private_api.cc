@@ -371,9 +371,12 @@ void BookmarkManagerPrivateDragEventRouter::ClearBookmarkNodeData() {
 bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut,
     const std::vector<std::string>& id_list) {
   BookmarkModel* model = GetBookmarkModel();
-  bookmarks::ManagedBookmarkService* managed = GetManagedBookmarkService();
   std::vector<const BookmarkNode*> nodes;
-  EXTENSION_FUNCTION_VALIDATE(GetNodesFromVector(model, id_list, &nodes));
+  if (!GetNodesFromVector(model, id_list, &nodes)) {
+    error_ = "Could not find bookmark nodes with given ids.";
+    return false;
+  }
+  bookmarks::ManagedBookmarkService* managed = GetManagedBookmarkService();
   if (cut && bookmarks::HasDescendantsOf(nodes, managed->managed_node())) {
     error_ = bookmark_keys::kModifyManagedError;
     return false;
@@ -561,8 +564,8 @@ bool BookmarkManagerPrivateStartDragFunction::RunOnReady() {
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(GetProfile());
   std::vector<const BookmarkNode*> nodes;
-  EXTENSION_FUNCTION_VALIDATE(
-      GetNodesFromVector(model, params->id_list, &nodes));
+  if (!GetNodesFromVector(model, params->id_list, &nodes))
+    return false;
 
   content::WebContents* web_contents = GetAssociatedWebContents();
   CHECK(web_contents);
