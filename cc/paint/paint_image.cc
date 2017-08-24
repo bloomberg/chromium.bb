@@ -25,9 +25,12 @@ PaintImage& PaintImage::operator=(const PaintImage& other) = default;
 PaintImage& PaintImage::operator=(PaintImage&& other) = default;
 
 bool PaintImage::operator==(const PaintImage& other) const {
-  return id_ == other.id_ && sk_image_ == other.sk_image_ &&
-         animation_type_ == other.animation_type_ &&
+  return sk_image_ == other.sk_image_ && paint_record_ == other.paint_record_ &&
+         paint_record_rect_ == other.paint_record_rect_ &&
+         paint_image_generator_ == other.paint_image_generator_ &&
+         id_ == other.id_ && animation_type_ == other.animation_type_ &&
          completion_state_ == other.completion_state_ &&
+         subset_rect_ == other.subset_rect_ &&
          frame_count_ == other.frame_count_ &&
          is_multipart_ == other.is_multipart_;
 }
@@ -51,7 +54,38 @@ const sk_sp<SkImage>& PaintImage::GetSkImage() const {
     cached_sk_image_ = SkImage::MakeFromGenerator(
         base::MakeUnique<SkiaPaintImageGenerator>(paint_image_generator_));
   }
+
+  if (!subset_rect_.IsEmpty() && cached_sk_image_) {
+    cached_sk_image_ =
+        cached_sk_image_->makeSubset(gfx::RectToSkIRect(subset_rect_));
+  }
   return cached_sk_image_;
+}
+
+PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
+  DCHECK(!subset.IsEmpty());
+
+  // If the subset is the same as the image bounds, we can return the same
+  // image.
+  gfx::Rect bounds(width(), height());
+  if (bounds == subset)
+    return *this;
+
+  DCHECK(bounds.Contains(subset))
+      << "Subset should not be greater than the image bounds";
+  PaintImage result(*this);
+  result.subset_rect_ = subset;
+  // Store the subset from the original image.
+  result.subset_rect_.Offset(subset_rect_.x(), subset_rect_.y());
+
+  // Creating the |cached_sk_image_| is an optimization to allow re-use of the
+  // original decode for image subsets in skia, for cases that rely on skia's
+  // image decode cache.
+  // TODO(khushalsagar): Remove this when we no longer have such cases. See
+  // crbug.com/753639.
+  result.cached_sk_image_ =
+      GetSkImage()->makeSubset(gfx::RectToSkIRect(subset));
+  return result;
 }
 
 }  // namespace cc

@@ -692,6 +692,7 @@ cc_test("cc_unittests") {
     "output/texture_mailbox_deleter_unittest.cc",
     "paint/discardable_image_map_unittest.cc",
     "paint/display_item_list_unittest.cc",
+    "paint/paint_image_unittest.cc",
     "paint/paint_op_buffer_unittest.cc",
     "paint/solid_color_analyzer_unittest.cc",
     "quads/draw_polygon_unittest.cc",

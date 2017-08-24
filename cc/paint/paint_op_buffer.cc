@@ -86,7 +86,8 @@ class ScopedImageFlags {
 
     sk_sp<SkImage> sk_image =
         sk_ref_sp<SkImage>(const_cast<SkImage*>(decoded_image.image().get()));
-    PaintImage decoded_paint_image = PaintImageBuilder(std::move(paint_image))
+    PaintImage decoded_paint_image = PaintImageBuilder()
+                                         .set_id(paint_image.stable_id())
                                          .set_image(std::move(sk_image))
                                          .TakePaintImage();
     decoded_flags_.emplace(flags);

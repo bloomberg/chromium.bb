@@ -1062,11 +1062,7 @@ void SkCanvasVideoRenderer::CorrectLastImageDimensions(
     return;
   SkIRect bounds = SkIRect::MakeWH(last_image_.width(), last_image_.height());
   if (bounds.size() != visible_rect.size() && bounds.contains(visible_rect)) {
-    sk_sp<SkImage> subset_image =
-        last_image_.GetSkImage()->makeSubset(visible_rect);
-    last_image_ = cc::PaintImageBuilder(last_image_)
-                      .set_image(std::move(subset_image))
-                      .TakePaintImage();
+    last_image_ = last_image_.MakeSubset(gfx::SkIRectToRect(visible_rect));
   }
 }
 
