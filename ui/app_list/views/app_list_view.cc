@@ -1345,8 +1345,10 @@ void AppListView::OnDisplayMetricsChanged(const display::Display& display,
 }
 
 void AppListView::DraggingLayout() {
+  float shield_opacity =
+      is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
   app_list_background_shield_->layer()->SetOpacity(
-      is_in_drag_ ? background_opacity_ : kAppListOpacity);
+      is_in_drag_ ? background_opacity_ : shield_opacity);
 
   // Updates the opacity of the items in the app list.
   search_box_view_->UpdateOpacity();
@@ -1360,7 +1362,9 @@ float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   float dragging_height = std::max((work_area_bottom_ - top_of_applist), 0.f);
   float coefficient =
       std::min(dragging_height / (kNumOfShelfSize * kShelfSize), 1.0f);
-  return coefficient * kAppListOpacity;
+  float shield_opacity =
+      is_background_blur_enabled_ ? kAppListOpacityWithBlur : kAppListOpacity;
+  return coefficient * shield_opacity;
 }
 
 void AppListView::GetWallpaperProminentColors(std::vector<SkColor>* colors) {

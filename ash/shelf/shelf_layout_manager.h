@@ -383,6 +383,9 @@ class ASH_EXPORT ShelfLayoutManager
   // The show hide animation duration override or 0 for default.
   int duration_override_in_ms_;
 
+  // Whether background blur is enabled.
+  const bool is_background_blur_enabled_;
+
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.
   ShelfBackgroundType shelf_background_type_;
