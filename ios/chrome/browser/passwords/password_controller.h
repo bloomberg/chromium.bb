@@ -48,19 +48,20 @@ class PasswordManagerDriver;
 @property(readonly)
     password_manager::PasswordManagerDriver* passwordManagerDriver;
 
+// The dispatcher used for the PasswordController. This property can return nil
+// even after being set to a non-nil object.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
+
 // |webState| should not be nil.
 - (instancetype)initWithWebState:(web::WebState*)webState
-             passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
-                      dispatcher:(id<ApplicationCommands>)dispatcher;
+             passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate;
 
 // This is just for testing.
 - (instancetype)
    initWithWebState:(web::WebState*)webState
-passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate
+passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate
              client:(std::unique_ptr<password_manager::PasswordManagerClient>)
-                        passwordManagerClient
-         dispatcher:(id<ApplicationCommands>)dispatcher
-    NS_DESIGNATED_INITIALIZER;
+                        passwordManagerClient NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
 
