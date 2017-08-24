@@ -115,12 +115,32 @@ TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
                                                        info_.get());
   EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
       .WillRepeatedly(Return(destination_dir_));
+  base::FilePath strings_file =
+      destination_dir_.Append(".localized").Append("en_US.strings");
+
+  // The Chrome Apps folder shouldn't be localized yet.
+  EXPECT_FALSE(base::PathExists(strings_file));
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(
       SHORTCUT_CREATION_AUTOMATED, web_app::ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(shim_path_));
   EXPECT_TRUE(base::PathExists(destination_dir_));
   EXPECT_EQ(shim_base_name_, shortcut_creator.GetShortcutBasename());
+
+  // When a shortcut is created, the parent, "Chrome Apps" folder should become
+  // localized, but only once, to avoid concurrency issues in NSWorkspace. Note
+  // this will fail if the CreateShortcuts test is run multiple times in the
+  // same process, but the test runner should never do that.
+  EXPECT_TRUE(base::PathExists(strings_file));
+
+  // Delete it here, just to test that it is not recreated.
+  EXPECT_TRUE(base::DeleteFile(strings_file, true));
+
+  // Ensure the strings file wasn't recreated. It's not needed for any other
+  // tests.
+  EXPECT_TRUE(shortcut_creator.CreateShortcuts(SHORTCUT_CREATION_AUTOMATED,
+                                               web_app::ShortcutLocations()));
+  EXPECT_FALSE(base::PathExists(strings_file));
 
   base::FilePath plist_path =
       shim_path_.Append("Contents").Append("Info.plist");
