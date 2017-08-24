@@ -1425,7 +1425,8 @@
             "au",
             "bvt-cq",
             "bvt-perbuild"
-          ]
+          ],
+          "cq_test_enabled": false
         }
       ]
     },
@@ -1438,7 +1439,8 @@
       "models": [
         {
           "board_name": "reef-uni",
-          "name": "pyro"
+          "name": "pyro",
+          "cq_test_enabled": false
         },
         {
           "board_name": "reef-uni",
@@ -1450,7 +1452,8 @@
             "au",
             "bvt-cq",
             "bvt-perbuild"
-          ]
+          ],
+          "cq_test_enabled": false
         },
         {
           "board_name": "reef-uni",
@@ -1462,11 +1465,13 @@
             "au",
             "bvt-cq",
             "bvt-perbuild"
-          ]
+          ],
+          "cq_test_enabled": false
         },
         {
           "board_name": "reef-uni",
-          "name": "snappy"
+          "name": "snappy",
+          "cq_test_enabled": false
         }
       ]
     }
