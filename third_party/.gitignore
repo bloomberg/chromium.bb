@@ -71,6 +71,7 @@
 /google_toolbox_for_mac/src
 /googlemac
 /googletest/src
+/gson/lib/*.jar
 /gvr-android-sdk/common_library.aar
 /gvr-android-sdk/test-libraries/controller_test_api.aar
 /gvr-android-sdk/libgvr_shim_static_arm.a
