@@ -22,25 +22,19 @@
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/test_data_util.h"
 #include "media/filters/jpeg_parser.h"
 #include "media/gpu/features.h"
+#include "media/gpu/ipc/service/gpu_jpeg_decode_accelerator_factory_provider.h"
 #include "media/gpu/video_accelerator_unittest_helpers.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
-#if defined(OS_CHROMEOS)
-#if defined(USE_V4L2_CODEC)
-#include "media/gpu/v4l2_device.h"
-#include "media/gpu/v4l2_jpeg_decode_accelerator.h"
-#endif
-#endif
-
 #if BUILDFLAG(USE_VAAPI)
-#include "media/gpu/vaapi_jpeg_decode_accelerator.h"
 #include "media/gpu/vaapi_wrapper.h"
 #endif
 
@@ -135,21 +129,28 @@ JpegClient::JpegClient(const std::vector<TestImageFile*>& test_image_files,
 JpegClient::~JpegClient() {}
 
 void JpegClient::CreateJpegDecoder() {
-#if BUILDFLAG(USE_VAAPI)
-  decoder_.reset(
-      new VaapiJpegDecodeAccelerator(base::ThreadTaskRunnerHandle::Get()));
-#elif defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  scoped_refptr<V4L2Device> device = V4L2Device::Create();
-  if (!device.get()) {
-    LOG(ERROR) << "V4L2Device::Create failed";
+  decoder_ = nullptr;
+
+  auto jda_factories =
+      GpuJpegDecodeAcceleratorFactoryProvider::GetAcceleratorFactories();
+  if (jda_factories.size() == 0) {
+    LOG(ERROR) << "JpegDecodeAccelerator not supported on this platform.";
     SetState(CS_ERROR);
     return;
   }
-  decoder_.reset(new V4L2JpegDecodeAccelerator(
-      device, base::ThreadTaskRunnerHandle::Get()));
-#else
-#error The JpegDecodeAccelerator is not supported on this platform.
-#endif
+
+  for (const auto& create_jda_func : jda_factories) {
+    decoder_ = create_jda_func.Run(base::ThreadTaskRunnerHandle::Get());
+    if (decoder_) {
+      break;
+    }
+  }
+  if (!decoder_) {
+    LOG(ERROR) << "Failed to create JpegDecodeAccelerator.";
+    SetState(CS_ERROR);
+    return;
+  }
+
   if (!decoder_->Initialize(this)) {
     LOG(ERROR) << "JpegDecodeAccelerator::Initialize() failed";
     SetState(CS_ERROR);
