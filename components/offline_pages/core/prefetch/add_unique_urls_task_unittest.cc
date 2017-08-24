@@ -56,11 +56,10 @@ class AddUniqueUrlsTaskTest : public testing::Test {
   TestPrefetchDispatcher* dispatcher() { return &dispatcher_; }
 
  private:
-  TestPrefetchDispatcher dispatcher_;
-
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
   PrefetchStoreTestUtil store_test_util_;
+  TestPrefetchDispatcher dispatcher_;
 };
 
 AddUniqueUrlsTaskTest::AddUniqueUrlsTaskTest()
