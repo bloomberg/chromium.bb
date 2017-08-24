@@ -127,7 +127,6 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   CommandBuffer::State state_;
   int32_t put_offset_ = 0;
 
-  int32_t ring_buffer_id_ = -1;
   int32_t num_entries_ = 0;
   scoped_refptr<Buffer> ring_buffer_;
   volatile CommandBufferEntry* buffer_ = nullptr;

@@ -323,13 +323,13 @@ TEST_F(CommandBufferServiceTest, TestError) {
 }
 
 TEST_F(CommandBufferServiceTest, SetBuffer) {
-  MakeService(3);
+  MakeService(5);
   AdvancePut(2);
   // We should have advanced 2 entries.
   EXPECT_EQ(2, GetGet());
 
   CommandBuffer::State state1 = command_buffer_service()->GetState();
-  int32_t id = SetNewGetBuffer(3 * sizeof(CommandBufferEntry));
+  int32_t id = SetNewGetBuffer(5 * sizeof(CommandBufferEntry));
   CommandBuffer::State state2 = command_buffer_service()->GetState();
   // The put and get should have reset to 0.
   EXPECT_EQ(0, GetGet());
@@ -342,22 +342,34 @@ TEST_F(CommandBufferServiceTest, SetBuffer) {
   // We should have advanced 2 entries.
   EXPECT_EQ(2, GetGet());
 
-  // Destroy current get buffer, should reset.
+  // Destroy current get buffer, should not reset.
   command_buffer_service()->DestroyTransferBuffer(id);
   CommandBuffer::State state3 = command_buffer_service()->GetState();
-  EXPECT_EQ(0, GetGet());
-  EXPECT_EQ(0, GetPut());
+  EXPECT_EQ(2, GetGet());
+  EXPECT_EQ(2, GetPut());
   EXPECT_EQ(error::kNoError, state3.error);
-  // Should not update the set_get_buffer_count however, since SetGetBuffer was
-  // not called.
+  // Should not update the set_get_buffer_count either.
   EXPECT_EQ(state2.set_get_buffer_count, state3.set_get_buffer_count);
 
-  // Trying to execute commands should fail however.
+  AdvancePut(2);
+  // We should have advanced 2 entries.
+  EXPECT_EQ(4, GetGet());
+
+  // Reseting the get buffer should reset get and put
+  command_buffer_service()->SetGetBuffer(-1);
+  CommandBuffer::State state4 = command_buffer_service()->GetState();
+  EXPECT_EQ(0, GetGet());
+  EXPECT_EQ(0, GetPut());
+  EXPECT_EQ(error::kNoError, state4.error);
+  // Should not update the set_get_buffer_count either.
+  EXPECT_EQ(state3.set_get_buffer_count + 1, state4.set_get_buffer_count);
+
+  // Trying to execute commands should now fail.
   EXPECT_CALL(*this, OnParseError()).Times(1);
   command_buffer_service()->Flush(2, api_mock());
-  CommandBuffer::State state4 = command_buffer_service()->GetState();
+  CommandBuffer::State state5 = command_buffer_service()->GetState();
   EXPECT_EQ(0, GetPut());
-  EXPECT_EQ(error::kOutOfBounds, state4.error);
+  EXPECT_EQ(error::kOutOfBounds, state5.error);
   Mock::VerifyAndClearExpectations(this);
 }
 
@@ -366,7 +378,7 @@ TEST_F(CommandBufferServiceTest, InvalidSetBuffer) {
   CommandBuffer::State state1 = command_buffer_service()->GetState();
 
   // Set an invalid transfer buffer, should succeed.
-  command_buffer_service()->SetGetBuffer(0);
+  command_buffer_service()->SetGetBuffer(-1);
   CommandBuffer::State state2 = command_buffer_service()->GetState();
   EXPECT_EQ(0, GetGet());
   EXPECT_EQ(0, GetPut());

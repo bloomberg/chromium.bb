@@ -265,6 +265,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   uint32_t flush_count_ = 0;
   int32_t last_put_offset_ = -1;
   int32_t last_barrier_put_offset_ = -1;
+  bool has_buffer_ = false;
 
   // Next generated fence sync.
   uint64_t next_fence_sync_release_ = 1;
