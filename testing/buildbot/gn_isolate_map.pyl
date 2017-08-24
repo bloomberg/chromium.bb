@@ -164,6 +164,14 @@
       "-v",
     ],
   },
+  "vr_perf_tests": {
+    "label": "//tools/perf/contrib/vr_benchmarks:vr_perf_tests",
+    "type": "script",
+    "script": "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
+    "args": [
+      "../../tools/perf/run_benchmark",
+    ],
+  },
   "base_junit_tests": {
     "label": "//base:base_junit_tests",
     "type": "junit_test",
