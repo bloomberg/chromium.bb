@@ -127,7 +127,7 @@ class CC_EXPORT GpuImageDecodeCache
       bool aggressively_free_resources) override;
   void ClearCache() override;
   size_t GetMaximumMemoryLimitBytes() const override;
-  void NotifyImageUnused(const PaintImage::FrameKey& frame_key) override;
+  void NotifyImageUnused(uint32_t skimage_id) override;
 
   // MemoryDumpProvider overrides.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -282,7 +282,7 @@ class CC_EXPORT GpuImageDecodeCache
     friend struct GpuImageDecodeCache::InUseCacheKeyHash;
     explicit InUseCacheKey(const DrawImage& draw_image);
 
-    PaintImage::FrameKey frame_key;
+    uint32_t image_id;
     int mip_level;
     SkFilterQuality filter_quality;
     gfx::ColorSpace target_color_space;
@@ -359,9 +359,7 @@ class CC_EXPORT GpuImageDecodeCache
 
   // |persistent_cache_| represents the long-lived cache, keeping a certain
   // budget of ImageDatas alive even when their ref count reaches zero.
-  using PersistentCache = base::HashingMRUCache<PaintImage::FrameKey,
-                                                scoped_refptr<ImageData>,
-                                                PaintImage::FrameKeyHash>;
+  using PersistentCache = base::MRUCache<uint32_t, scoped_refptr<ImageData>>;
   PersistentCache persistent_cache_;
 
   // |in_use_cache_| represents the in-use (short-lived) cache. Entries are

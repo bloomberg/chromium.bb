@@ -10,11 +10,9 @@ namespace cc {
 
 SkiaPaintImageGenerator::SkiaPaintImageGenerator(
     sk_sp<PaintImageGenerator> paint_image_generator,
-    size_t frame_index,
     uint32_t unique_id)
     : SkImageGenerator(paint_image_generator->GetSkImageInfo(), unique_id),
-      paint_image_generator_(std::move(paint_image_generator)),
-      frame_index_(frame_index) {}
+      paint_image_generator_(std::move(paint_image_generator)) {}
 
 SkiaPaintImageGenerator::~SkiaPaintImageGenerator() = default;
 
@@ -26,8 +24,7 @@ bool SkiaPaintImageGenerator::onGetPixels(const SkImageInfo& info,
                                           void* pixels,
                                           size_t row_bytes,
                                           const Options& options) {
-  return paint_image_generator_->GetPixels(info, pixels, row_bytes,
-                                           frame_index_, uniqueID());
+  return paint_image_generator_->GetPixels(info, pixels, row_bytes, uniqueID());
 }
 
 bool SkiaPaintImageGenerator::onQueryYUV8(SkYUVSizeInfo* size_info,
@@ -37,8 +34,7 @@ bool SkiaPaintImageGenerator::onQueryYUV8(SkYUVSizeInfo* size_info,
 
 bool SkiaPaintImageGenerator::onGetYUV8Planes(const SkYUVSizeInfo& size_info,
                                               void* planes[3]) {
-  return paint_image_generator_->GetYUV8Planes(size_info, planes, frame_index_,
-                                               uniqueID());
+  return paint_image_generator_->GetYUV8Planes(size_info, planes, uniqueID());
 }
 
 }  // namespace cc

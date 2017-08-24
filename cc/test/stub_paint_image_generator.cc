@@ -13,7 +13,6 @@ sk_sp<SkData> StubPaintImageGenerator::GetEncodedData() const {
 bool StubPaintImageGenerator::GetPixels(const SkImageInfo& info,
                                         void* pixels,
                                         size_t row_bytes,
-                                        size_t frame_index,
                                         uint32_t lazy_pixel_ref) {
   return false;
 }
@@ -25,7 +24,6 @@ bool StubPaintImageGenerator::QueryYUV8(SkYUVSizeInfo* info,
 
 bool StubPaintImageGenerator::GetYUV8Planes(const SkYUVSizeInfo& info,
                                             void* planes[3],
-                                            size_t frame_index,
                                             uint32_t lazy_pixel_ref) {
   return false;
 }

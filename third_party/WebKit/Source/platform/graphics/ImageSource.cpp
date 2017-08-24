@@ -38,9 +38,8 @@ ImageSource::ImageSource() {}
 
 ImageSource::~ImageSource() {}
 
-void ImageSource::ClearCacheExceptFrame(size_t clear_except_frame) {
-  if (decoder_)
-    decoder_->ClearCacheExceptFrame(clear_except_frame);
+size_t ImageSource::ClearCacheExceptFrame(size_t clear_except_frame) {
+  return decoder_ ? decoder_->ClearCacheExceptFrame(clear_except_frame) : 0;
 }
 
 PassRefPtr<SharedBuffer> ImageSource::Data() {
@@ -112,11 +111,11 @@ size_t ImageSource::FrameCount() const {
   return decoder_ ? decoder_->FrameCount() : 0;
 }
 
-sk_sp<PaintImageGenerator> ImageSource::CreateGenerator(size_t index) {
+sk_sp<PaintImageGenerator> ImageSource::CreateGeneratorAtIndex(size_t index) {
   if (!decoder_)
     return nullptr;
 
-  return decoder_->CreateGenerator(index);
+  return decoder_->CreateGeneratorAtIndex(index);
 }
 
 float ImageSource::FrameDurationAtIndex(size_t index) const {
@@ -144,6 +143,10 @@ bool ImageSource::FrameHasAlphaAtIndex(size_t index) const {
 
 bool ImageSource::FrameIsReceivedAtIndex(size_t index) const {
   return decoder_ && decoder_->FrameIsReceivedAtIndex(index);
+}
+
+size_t ImageSource::FrameBytesAtIndex(size_t index) const {
+  return decoder_ ? decoder_->FrameBytesAtIndex(index) : 0;
 }
 
 }  // namespace blink

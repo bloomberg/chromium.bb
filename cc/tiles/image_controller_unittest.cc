@@ -14,7 +14,6 @@
 #include "base/threading/thread_checker_impl.h"
 #include "cc/paint/paint_image_builder.h"
 #include "cc/test/skia_common.h"
-#include "cc/test/stub_decode_cache.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -94,7 +93,7 @@ class WorkerTaskRunner : public base::SequencedTaskRunner {
 };
 
 // Image decode cache with introspection!
-class TestableCache : public StubDecodeCache {
+class TestableCache : public ImageDecodeCache {
  public:
   ~TestableCache() override { EXPECT_EQ(number_of_refs_, 0); }
 
@@ -123,6 +122,16 @@ class TestableCache : public StubDecodeCache {
     ASSERT_GT(number_of_refs_, 0);
     --number_of_refs_;
   }
+  DecodedDrawImage GetDecodedImageForDraw(const DrawImage& image) override {
+    return DecodedDrawImage(nullptr, kNone_SkFilterQuality);
+  }
+  void DrawWithImageFinished(const DrawImage& image,
+                             const DecodedDrawImage& decoded_image) override {}
+  void ReduceCacheUsage() override {}
+  void SetShouldAggressivelyFreeResources(
+      bool aggressively_free_resources) override {}
+  void ClearCache() override {}
+  void NotifyImageUnused(uint32_t skimage_id) override {}
   size_t GetMaximumMemoryLimitBytes() const override {
     return 256 * 1024 * 1024;
   }

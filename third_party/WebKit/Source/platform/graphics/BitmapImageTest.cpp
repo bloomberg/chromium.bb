@@ -269,12 +269,9 @@ TEST_F(BitmapImageTest, ConstantSkImageIdForPartiallyLoadedImages) {
   // First partial load. Repeated calls for a PaintImage should have the same
   // image until the data changes or the decoded data is destroyed.
   ASSERT_EQ(image_->SetData(partial_buffer, false), Image::kSizeAvailable);
-  auto image1 = image_->PaintImageForCurrentFrame();
-  auto image2 = image_->PaintImageForCurrentFrame();
-  EXPECT_EQ(image1, image2);
-  auto sk_image1 = image1.GetSkImage();
-  auto sk_image2 = image2.GetSkImage();
-  EXPECT_EQ(sk_image1->uniqueID(), sk_image2->uniqueID());
+  auto sk_image1 = image_->PaintImageForCurrentFrame().GetSkImage();
+  auto sk_image2 = image_->PaintImageForCurrentFrame().GetSkImage();
+  EXPECT_EQ(sk_image1, sk_image2);
 
   // Destroy the decoded data. This generates a new id since we don't cache
   // image ids for partial decodes.

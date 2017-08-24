@@ -40,10 +40,10 @@ class CC_EXPORT ImageDecodeCacheKey {
   ImageDecodeCacheKey(const ImageDecodeCacheKey& other);
 
   bool operator==(const ImageDecodeCacheKey& other) const {
-    // The frame_key always has to be the same. However, after that all original
+    // The image_id always has to be the same. However, after that all original
     // decodes are the same, so if we can use the original decode, return true.
     // If not, then we have to compare every field.
-    return frame_key_ == other.frame_key_ &&
+    return image_id_ == other.image_id_ &&
            can_use_original_size_decode_ ==
                other.can_use_original_size_decode_ &&
            target_color_space_ == other.target_color_space_ &&
@@ -57,7 +57,7 @@ class CC_EXPORT ImageDecodeCacheKey {
     return !(*this == other);
   }
 
-  const PaintImage::FrameKey& frame_key() const { return frame_key_; }
+  uint32_t image_id() const { return image_id_; }
   SkFilterQuality filter_quality() const { return filter_quality_; }
   gfx::Rect src_rect() const { return src_rect_; }
   gfx::Size target_size() const { return target_size_; }
@@ -84,7 +84,7 @@ class CC_EXPORT ImageDecodeCacheKey {
   std::string ToString() const;
 
  private:
-  ImageDecodeCacheKey(PaintImage::FrameKey frame_key,
+  ImageDecodeCacheKey(uint32_t image_id,
                       const gfx::Rect& src_rect,
                       const gfx::Size& size,
                       const gfx::ColorSpace& target_color_space,
@@ -92,7 +92,7 @@ class CC_EXPORT ImageDecodeCacheKey {
                       bool can_use_original_size_decode,
                       bool should_use_subrect);
 
-  PaintImage::FrameKey frame_key_;
+  uint32_t image_id_;
   gfx::Rect src_rect_;
   gfx::Size target_size_;
   gfx::ColorSpace target_color_space_;
@@ -140,7 +140,7 @@ class CC_EXPORT SoftwareImageDecodeCache
       bool aggressively_free_resources) override {}
   void ClearCache() override;
   size_t GetMaximumMemoryLimitBytes() const override;
-  void NotifyImageUnused(const PaintImage::FrameKey& frame_key) override;
+  void NotifyImageUnused(uint32_t skimage_id) override;
 
   // Decode the given image and store it in the cache. This is only called by an
   // image decode task from a worker thread.
@@ -320,12 +320,9 @@ class CC_EXPORT SoftwareImageDecodeCache
   ImageMRUCache decoded_images_;
   std::unordered_map<ImageKey, int, ImageKeyHash> decoded_images_ref_counts_;
 
-  // A map of PaintImage::FrameKey to the ImageKeys for cached decodes of this
-  // PaintImage.
-  std::unordered_map<PaintImage::FrameKey,
-                     std::vector<ImageKey>,
-                     PaintImage::FrameKeyHash>
-      frame_key_to_image_keys_;
+  // Decoded ImageKey vector and Skimage uniqueID.
+  std::unordered_map<uint32_t, std::vector<ImageKey>>
+      decoded_images_unique_ids_;
 
   // Decoded image and ref counts (at-raster decode path).
   ImageMRUCache at_raster_decoded_images_;
