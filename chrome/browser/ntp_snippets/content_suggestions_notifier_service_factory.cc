@@ -13,6 +13,7 @@
 #include "components/variations/variations_associated_data.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/ntp/android_content_suggestions_notifier.h"
 #include "chrome/browser/android/ntp/content_suggestions_notifier_service.h"
 #endif
 
@@ -63,7 +64,9 @@ KeyedService* ContentSuggestionsNotifierServiceFactory::BuildServiceInstanceFor(
     Profile* profile = Profile::FromBrowserContext(context);
     ntp_snippets::ContentSuggestionsService* suggestions =
         ContentSuggestionsServiceFactory::GetForProfile(profile);
-    return new ContentSuggestionsNotifierService(profile, suggestions);
+    return new ContentSuggestionsNotifierService(
+        profile, suggestions,
+        base::MakeUnique<AndroidContentSuggestionsNotifier>());
   }
 #endif
   return nullptr;

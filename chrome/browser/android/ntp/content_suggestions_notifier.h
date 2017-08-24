@@ -2,39 +2,38 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_NTP_CONTENT_SUGGESTIONS_NOTIFICATION_HELPER_H_
-#define CHROME_BROWSER_ANDROID_NTP_CONTENT_SUGGESTIONS_NOTIFICATION_HELPER_H_
-
-#include <jni.h>
-#include <string>
+#ifndef CHROME_BROWSER_ANDROID_NTP_CONTENT_SUGGESTIONS_NOTIFIER_H_
+#define CHROME_BROWSER_ANDROID_NTP_CONTENT_SUGGESTIONS_NOTIFIER_H_
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
 #include "components/ntp_snippets/content_suggestion.h"
-#include "url/gurl.h"
 
+class GURL;
 class Profile;
 
 namespace gfx {
 class Image;
 }  // namespace gfx
 
-namespace ntp_snippets {
-
-class ContentSuggestionsNotificationHelper {
+class ContentSuggestionsNotifier {
  public:
-  static bool SendNotification(const ContentSuggestion::ID& id,
-                               const GURL& url,
-                               const base::string16& title,
-                               const base::string16& text,
-                               const gfx::Image& image,
-                               base::Time timeout_at,
-                               int priority);
-  static void HideNotification(const ContentSuggestion::ID& id,
-                               ContentSuggestionsNotificationAction why);
-  static void HideAllNotifications(ContentSuggestionsNotificationAction why);
+  ContentSuggestionsNotifier();
+  virtual ~ContentSuggestionsNotifier();
+
+  virtual bool SendNotification(const ntp_snippets::ContentSuggestion::ID& id,
+                                const GURL& url,
+                                const base::string16& title,
+                                const base::string16& text,
+                                const gfx::Image& image,
+                                base::Time timeout_at,
+                                int priority) = 0;
+  virtual void HideNotification(const ntp_snippets::ContentSuggestion::ID& id,
+                                ContentSuggestionsNotificationAction why) = 0;
+  virtual void HideAllNotifications(
+      ContentSuggestionsNotificationAction why) = 0;
 
   // Moves metrics tracked in Java into native histograms. Should be called when
   // the native library starts up, to capture any actions that were taken since
@@ -43,22 +42,20 @@ class ContentSuggestionsNotificationHelper {
   // Also updates the "consecutive ignored" preference, which is computed from
   // the actions taken on notifications, and maybe the "opt outs" metric, which
   // is computed in turn from that.
-  static void FlushCachedMetrics();
+  virtual void FlushCachedMetrics() = 0;
 
   // False if auto opt out is enabled and the user has ignored enough
   // notifications that we no longer think that the user is interested in them.
-  static bool IsEnabledForProfile(Profile* profile);
+  virtual bool IsEnabledForProfile(Profile* profile) = 0;
 
   // Registers or unregisters the notification channel on Android O. May be
   // called regardless of Android version or registration state; they are no-ops
   // before Android O, or if the channel is already (de)registered.
-  static void RegisterChannel();
-  static void UnregisterChannel();
+  virtual void RegisterChannel() = 0;
+  virtual void UnregisterChannel() = 0;
 
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSuggestionsNotificationHelper);
+  DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsNotifier);
 };
 
-}  // namespace ntp_snippets
-
-#endif  // CHROME_BROWSER_ANDROID_NTP_CONTENT_SUGGESTIONS_NOTIFICATION_HELPER_H_
+#endif  // CHROME_BROWSER_ANDROID_NTP_CONTENT_SUGGESTIONS_NOTIFIER_H_

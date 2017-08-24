@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class ContentSuggestionsNotifier;
 class Profile;
 
 namespace ntp_snippets {
@@ -24,7 +25,8 @@ class ContentSuggestionsNotifierService : public KeyedService {
  public:
   ContentSuggestionsNotifierService(
       Profile* profile,
-      ntp_snippets::ContentSuggestionsService* suggestions);
+      ntp_snippets::ContentSuggestionsService* suggestions,
+      std::unique_ptr<ContentSuggestionsNotifier> notifier);
 
   ~ContentSuggestionsNotifierService() override;
 
@@ -37,17 +39,19 @@ class ContentSuggestionsNotifierService : public KeyedService {
   bool IsEnabled() const;
 
  private:
+  class NotifyingObserver;
+
   // Creates |observer_| if necessary and registers notification channel.
   void Enable();
 
   // Destroys |observer_| if necessary and deregisters notification channel.
   void Disable();
 
-  class NotifyingObserver;
-  std::unique_ptr<NotifyingObserver> observer_;
-
   Profile* const profile_;
   ntp_snippets::ContentSuggestionsService* const suggestions_service_;
+  const std::unique_ptr<ContentSuggestionsNotifier> notifier_;
+
+  std::unique_ptr<NotifyingObserver> observer_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSuggestionsNotifierService);
 };
