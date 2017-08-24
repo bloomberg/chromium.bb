@@ -180,8 +180,8 @@ const V4LocalDatabaseManager*
 scoped_refptr<V4LocalDatabaseManager> V4LocalDatabaseManager::Create(
     const base::FilePath& base_path,
     ExtendedReportingLevelCallback extended_reporting_level_callback) {
-  return make_scoped_refptr(
-      new V4LocalDatabaseManager(base_path, extended_reporting_level_callback));
+  return make_scoped_refptr(new V4LocalDatabaseManager(
+      base_path, extended_reporting_level_callback, nullptr));
 }
 
 void V4LocalDatabaseManager::CollectDatabaseManagerInfo(
@@ -203,12 +203,16 @@ void V4LocalDatabaseManager::CollectDatabaseManagerInfo(
 
 V4LocalDatabaseManager::V4LocalDatabaseManager(
     const base::FilePath& base_path,
-    ExtendedReportingLevelCallback extended_reporting_level_callback)
+    ExtendedReportingLevelCallback extended_reporting_level_callback,
+    scoped_refptr<base::SequencedTaskRunner> task_runner_for_tests)
     : base_path_(base_path),
       extended_reporting_level_callback_(extended_reporting_level_callback),
       list_infos_(GetListInfos()),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      task_runner_(task_runner_for_tests
+                       ? task_runner_for_tests
+                       : base::CreateSequencedTaskRunnerWithTraits(
+                             {base::MayBlock(),
+                              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       weak_factory_(this) {
   DCHECK(!base_path_.empty());
   DCHECK(!list_infos_.empty());
