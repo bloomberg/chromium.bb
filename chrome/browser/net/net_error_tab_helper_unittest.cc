@@ -9,7 +9,6 @@
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "net/base/net_errors.h"
@@ -370,11 +369,6 @@ TEST_F(NetErrorTabHelperTest, NoDiagnosticsForNonHttpSchemes) {
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 TEST_F(NetErrorTabHelperTest, DownloadPageLater) {
-  if (content::IsBrowserSideNavigationEnabled()) {
-    // TODO(clamy): re-enable this test with PlzNavigate. See
-    // http://crbug.com/757606.
-    return;
-  }
   GURL url("http://somewhere:123/");
   LoadURL(url, false /*succeeded*/);
   tab_helper()->OnDownloadPageLater();
@@ -395,20 +389,10 @@ TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterOnNonErrorPage) {
 // deal with pending RFH correctly. This works because most tests only load
 // once. So workaround it by puting each test case in a separate test.
 TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes1) {
-  if (content::IsBrowserSideNavigationEnabled()) {
-    // TODO(clamy): re-enable this test with PlzNavigate. See
-    // http://crbug.com/757606.
-    return;
-  }
   NoDownloadPageLaterForNonHttpSchemes("file:///blah/blah", false);
 }
 
 TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes2) {
-  if (content::IsBrowserSideNavigationEnabled()) {
-    // TODO(clamy): re-enable this test with PlzNavigate. See
-    // http://crbug.com/757606.
-    return;
-  }
   NoDownloadPageLaterForNonHttpSchemes("chrome://blah/", false);
 }
 
