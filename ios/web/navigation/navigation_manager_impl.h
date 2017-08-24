@@ -128,6 +128,13 @@ class NavigationManagerImpl : public NavigationManager {
   // redirects. Does nothing if there is no pending item.
   void UpdatePendingItemUrl(const GURL& url) const;
 
+  // The current NavigationItem. During a pending navigation, returns the
+  // NavigationItem for that navigation. If a transient NavigationItem exists,
+  // this NavigationItem will be returned.
+  // TODO(crbug.com/661316): Make this private once all navigation code is moved
+  // out of CRWWebController.
+  NavigationItemImpl* GetCurrentItemImpl() const;
+
   // NavigationManager:
   NavigationItem* GetLastCommittedItem() const final;
   NavigationItem* GetPendingItem() const final;

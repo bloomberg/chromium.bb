@@ -148,6 +148,18 @@ void NavigationManagerImpl::UpdatePendingItemUrl(const GURL& url) const {
   pending_item->ResetHttpRequestHeaders();
 }
 
+NavigationItemImpl* NavigationManagerImpl::GetCurrentItemImpl() const {
+  NavigationItemImpl* transient_item = GetTransientItemImpl();
+  if (transient_item)
+    return transient_item;
+
+  NavigationItemImpl* pending_item = GetPendingItemImpl();
+  if (pending_item)
+    return pending_item;
+
+  return GetLastCommittedItemImpl();
+}
+
 void NavigationManagerImpl::GoToIndex(int index) {
   if (index < 0 || index > GetItemCount()) {
     NOTREACHED();

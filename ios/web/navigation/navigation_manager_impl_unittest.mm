@@ -2335,6 +2335,36 @@ TEST_P(NavigationManagerTest, LoadIfNecessary) {
   navigation_manager()->LoadIfNecessary();
 }
 
+// Tests that GetCurrentItemImpl() returns the transient item, pending item or
+// last committed item in that precedence order.
+TEST_P(NavigationManagerTest, GetCurrentItemImpl) {
+  ASSERT_EQ(nullptr, navigation_manager()->GetCurrentItemImpl());
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/0"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/0"];
+  navigation_manager()->CommitPendingItem();
+  NavigationItem* last_committed_item =
+      navigation_manager()->GetLastCommittedItem();
+  ASSERT_NE(last_committed_item, nullptr);
+  EXPECT_EQ(last_committed_item, navigation_manager()->GetCurrentItemImpl());
+
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com/1"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  NavigationItem* pending_item = navigation_manager()->GetPendingItem();
+  ASSERT_NE(pending_item, nullptr);
+  EXPECT_EQ(pending_item, navigation_manager()->GetCurrentItemImpl());
+
+  navigation_manager()->AddTransientItem(GURL("http://www.url.com/2"));
+  NavigationItem* transient_item = navigation_manager()->GetTransientItem();
+  ASSERT_NE(transient_item, nullptr);
+  EXPECT_EQ(transient_item, navigation_manager()->GetCurrentItemImpl());
+}
+
 INSTANTIATE_TEST_CASE_P(
     ProgrammaticNavigationManagerTest,
     NavigationManagerTest,

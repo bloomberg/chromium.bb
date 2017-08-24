@@ -3258,13 +3258,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
 }
 
 - (web::NavigationItemImpl*)currentNavItem {
-  // This goes through the legacy Session* interface rather than Navigation*
-  // because it is itself a legacy method that should not exist, and this
-  // avoids needing to add a GetActiveItem to NavigationManager. If/when this
-  // method chain becomes a blocker to eliminating SessionController, the logic
-  // can be moved here, using public NavigationManager getters. That's not
-  // done now in order to avoid code duplication.
-  return [[self sessionController] currentItem];
+  return self.navigationManagerImpl->GetCurrentItemImpl();
 }
 
 - (ui::PageTransition)currentTransition {
