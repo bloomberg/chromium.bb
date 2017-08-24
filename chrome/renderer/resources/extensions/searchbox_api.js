@@ -13,6 +13,7 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                            Private functions
       // =======================================================================
+      native function GetRightToLeft();
       native function GetSearchRequestParams();
       native function GetSuggestionToPrefetch();
       native function IsFocused();
@@ -24,6 +25,7 @@ if (!chrome.embeddedSearch) {
       // =======================================================================
       //                           Exported functions
       // =======================================================================
+      Object.defineProperty(this, 'rtl', { get: GetRightToLeft });
       this.__defineGetter__('isFocused', IsFocused);
       this.__defineGetter__('isKeyCaptureEnabled', IsKeyCaptureEnabled);
       this.__defineGetter__('suggestion', GetSuggestionToPrefetch);
