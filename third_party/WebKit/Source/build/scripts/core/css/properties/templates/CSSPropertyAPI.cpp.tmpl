@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-{% from 'templates/macros.tmpl' import print_if, source_files_for_generated_file %}
+{% from 'templates/macros.tmpl' import source_files_for_generated_file %}
 {{source_files_for_generated_file(template_file, input_files)}}
 // clang-format off
 
@@ -16,47 +16,49 @@ namespace blink {
 
 namespace {
 
-const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
-
 #if defined(OS_WIN) && defined(COMPILER_MSVC)
-  // TODO(meade): Delete the Windows+MSVC-specific code when we stop compiling
-  // blink with MSVC. In the meantime, this special implementation is required
-  // because MSVC doesn't initialize vtables for objects defined as constexpr.
-  // Not using constexpr is considerably slower, however we don't ship any
-  // real builds using MSVC, and this is just to avoid crashing bots that
-  // still need to use MSVC (e.g. for the dEQP tests, which use exceptions).
-  // See http://crbug.com/753010.
+// TODO(meade): Delete the Windows+MSVC-specific code when we stop compiling
+// blink with MSVC. In the meantime, this special implementation is required
+// because MSVC doesn't initialize vtables for objects defined as constexpr.
+// Not using constexpr is considerably slower, however we don't ship any
+// real builds using MSVC, and this is just to avoid crashing bots that
+// still need to use MSVC (e.g. for the dEQP tests, which use exceptions).
+// See http://crbug.com/753010.
 
-  {% for api_class in api_classnames %}
-  static const {{api_class}} api_{{api_class.lower()}};
-  {% endfor %}
+{% for api_class in api_classnames %}
+static const {{api_class}} api_{{api_class.lower()}};
+{% endfor %}
+#else
+{% for api_class in api_classnames %}
+static constexpr {{api_class}} api_{{api_class.lower()}};
+{% endfor %}
+#endif
 
+const CSSPropertyAPI& GetAPI(CSSPropertyID id) {
+#if defined(OS_WIN) && defined(COMPILER_MSVC)
   static const CSSPropertyAPI* const property_apis[] = {
     {% for api_class_data in api_classes_by_property_id %}
     &api_{{api_class_data.classname.lower()}},  // {{api_class_data.property_id}}
     {% endfor %}
   };
-
 #else
-
-  {% for api_class in api_classnames %}
-  static constexpr {{api_class}} api_{{api_class.lower()}};
-  {% endfor %}
-
   static constexpr const CSSPropertyAPI* const property_apis[] = {
     {% for api_class_data in api_classes_by_property_id %}
     &api_{{api_class_data.classname.lower()}},  // {{api_class_data.property_id}}
     {% endfor %}
   };
-
 #endif
-
   // Subtract 1 because CSSPropertyInvalid does not appear in the array.
   return *property_apis[id - 1];
-
 }
 
 } // namespace
+
+{% for api_class_data in api_classes_by_property_id %}
+const CSSPropertyAPI& Get{{api_class_data.property_id}}API() {
+  return api_{{api_class_data.classname.lower()}};
+}
+{% endfor %}
 
 const CSSPropertyAPI& CSSPropertyAPI::Get(CSSPropertyID id) {
   DCHECK_NE(id, CSSPropertyInvalid);

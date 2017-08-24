@@ -23,7 +23,8 @@ class CSSPropertyAPIWriter(css_properties.CSSProperties):
     def __init__(self, json5_file_paths):
         super(CSSPropertyAPIWriter, self).__init__([json5_file_paths[0]])
         self._outputs = {
-            'CSSPropertyAPI.cpp': self.generate_property_api_baseclass,
+            'CSSPropertyAPI.h': self.generate_property_api_header,
+            'CSSPropertyAPI.cpp': self.generate_property_api_implementation,
         }
 
         # A list of (enum_value, property_id, api_class_name) tuples.
@@ -86,8 +87,17 @@ class CSSPropertyAPIWriter(css_properties.CSSProperties):
         return property_['api_class']
 
     @template_expander.use_jinja(
+        'core/css/properties/templates/CSSPropertyAPI.h.tmpl')
+    def generate_property_api_header(self):
+        return {
+            'input_files': self._input_files,
+            'api_classnames': self._api_classes,
+            'api_classes_by_property_id': self._api_classes_by_property_id,
+        }
+
+    @template_expander.use_jinja(
         'core/css/properties/templates/CSSPropertyAPI.cpp.tmpl')
-    def generate_property_api_baseclass(self):
+    def generate_property_api_implementation(self):
         return {
             'input_files': self._input_files,
             'api_classnames': self._api_classes,
