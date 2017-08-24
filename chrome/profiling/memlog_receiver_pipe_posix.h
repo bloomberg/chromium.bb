@@ -34,6 +34,10 @@ class MemlogReceiverPipe
   void SetReceiver(scoped_refptr<base::TaskRunner> task_runner,
                    scoped_refptr<MemlogStreamReceiver> receiver);
 
+  // Callback that indicates an error has occurred and the connection should
+  // be closed. May be called more than once in an error condition.
+  void ReportError();
+
  private:
   friend class base::RefCountedThreadSafe<MemlogReceiverPipe>;
   ~MemlogReceiverPipe() override;

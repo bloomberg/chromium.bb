@@ -18,11 +18,12 @@ class MemlogStreamReceiver
  public:
   MemlogStreamReceiver() {}
 
-  // Returns true on success, false on unrecoverable error (in which case no
-  // more blocks will be sent). May take a ref to the block, so the caller
-  // should not modify it later.
-  virtual void OnStreamData(std::unique_ptr<char[]> data, size_t sz) = 0;
+  // Returns true on success, false on unrecoverable error. The implementation
+  // should be able to handle calls after an error has been reported (some
+  // cross-thread calls may have been dispatched before the flag propagates).
+  virtual bool OnStreamData(std::unique_ptr<char[]> data, size_t sz) = 0;
 
+  // Indicates the connection has been closed.
   virtual void OnStreamComplete() = 0;
 
  protected:
