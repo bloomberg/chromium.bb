@@ -90,6 +90,20 @@ bool FormatHasAlpha(gfx::BufferFormat format) {
   }
 }
 
+// Helper function that returns |size| after adjusting for |transform|.
+gfx::Size ToTransformedSize(const gfx::Size& size, Transform transform) {
+  switch (transform) {
+    case Transform::NORMAL:
+    case Transform::ROTATE_180:
+      return size;
+    case Transform::ROTATE_90:
+    case Transform::ROTATE_270:
+      return gfx::Size(size.height(), size.width());
+  }
+
+  NOTREACHED();
+}
+
 class CustomWindowDelegate : public aura::WindowDelegate {
  public:
   explicit CustomWindowDelegate(Surface* surface) : surface_(surface) {}
@@ -262,6 +276,13 @@ void Surface::SetBufferScale(float scale) {
   pending_state_.buffer_scale = scale;
 }
 
+void Surface::SetBufferTransform(Transform transform) {
+  TRACE_EVENT1("exo", "Surface::SetBufferTransform", "transform",
+               static_cast<int>(transform));
+
+  pending_state_.buffer_transform = transform;
+}
+
 void Surface::AddSubSurface(Surface* sub_surface) {
   TRACE_EVENT1("exo", "Surface::AddSubSurface", "sub_surface",
                sub_surface->AsTracedValue());
@@ -418,6 +439,7 @@ void Surface::CommitSurfaceHierarchy(
 
     if (pending_state_.opaque_region != state_.opaque_region ||
         pending_state_.buffer_scale != state_.buffer_scale ||
+        pending_state_.buffer_transform != state_.buffer_transform ||
         pending_state_.viewport != state_.viewport ||
         pending_state_.crop != state_.crop ||
         pending_state_.only_visible_on_secure_output !=
@@ -597,11 +619,13 @@ Surface::State::State() : input_region(SkIRect::MakeLargest()) {}
 Surface::State::~State() = default;
 
 bool Surface::State::operator==(const State& other) {
-  return (other.crop == crop && alpha == other.alpha &&
-          other.blend_mode == blend_mode && other.viewport == viewport &&
-          other.opaque_region == opaque_region &&
-          other.buffer_scale == buffer_scale &&
-          other.input_region == input_region);
+  return other.opaque_region == opaque_region &&
+         other.input_region == input_region &&
+         other.buffer_scale == buffer_scale &&
+         other.buffer_transform == buffer_transform &&
+         other.viewport == viewport && other.crop == crop &&
+         other.only_visible_on_secure_output == only_visible_on_secure_output &&
+         other.blend_mode == blend_mode && other.alpha == alpha;
 }
 
 Surface::BufferAttachment::BufferAttachment() {}
@@ -656,9 +680,10 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
                                     bool needs_full_damage) {
   const std::unique_ptr<cc::RenderPass>& render_pass =
       frame->render_pass_list.back();
-  gfx::Rect output_rect = gfx::Rect(origin, content_size_);
-  gfx::Rect quad_rect = output_rect;
+  gfx::Rect output_rect(origin, content_size_);
+  gfx::Rect quad_rect(origin, current_resource_.size);
   gfx::Rect damage_rect;
+
   if (needs_full_damage) {
     damage_rect = output_rect;
   } else {
@@ -667,14 +692,41 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
     damage_rect.set_origin(origin);
     damage_rect.Intersect(output_rect);
   }
-
   render_pass->damage_rect.Union(damage_rect);
+
+  // Create a transformation matrix that maps buffer coordinates to target by
+  // inverting the transform and scale of buffer.
+  SkMatrix buffer_to_target_matrix;
+  switch (state_.buffer_transform) {
+    case Transform::NORMAL:
+      buffer_to_target_matrix.setIdentity();
+      break;
+    case Transform::ROTATE_90:
+      buffer_to_target_matrix.setSinCos(-1, 0);
+      buffer_to_target_matrix.postTranslate(0, output_rect.height());
+      break;
+    case Transform::ROTATE_180:
+      buffer_to_target_matrix.setSinCos(0, -1);
+      buffer_to_target_matrix.postTranslate(output_rect.width(),
+                                            output_rect.height());
+      break;
+    case Transform::ROTATE_270:
+      buffer_to_target_matrix.setSinCos(1, 0);
+      buffer_to_target_matrix.postTranslate(output_rect.width(), 0);
+      break;
+  }
+  gfx::SizeF transformed_buffer_size(
+      ToTransformedSize(current_resource_.size, state_.buffer_transform));
+  buffer_to_target_matrix.preScale(
+      output_rect.width() / transformed_buffer_size.width(),
+      output_rect.height() / transformed_buffer_size.height());
+
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(
-      gfx::Transform() /* quad_to_target_transform */,
+      gfx::Transform(buffer_to_target_matrix),
       gfx::Rect(content_size_) /* quad_layer_rect */,
-      quad_rect /* visible_quad_layer_rect */, gfx::Rect() /* clip_rect */,
+      output_rect /* visible_quad_layer_rect */, gfx::Rect() /* clip_rect */,
       false /* is_clipped */, state_.alpha /* opacity */,
       SkBlendMode::kSrcOver /* blend_mode */, 0 /* sorting_context_id */);
 
@@ -682,10 +734,9 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
     gfx::PointF uv_top_left(0.f, 0.f);
     gfx::PointF uv_bottom_right(1.f, 1.f);
     if (!state_.crop.IsEmpty()) {
-      gfx::SizeF scaled_buffer_size(gfx::ScaleSize(
-          gfx::SizeF(current_resource_.size), 1.0f / state_.buffer_scale));
+      gfx::SizeF scaled_buffer_size(
+          gfx::ScaleSize(transformed_buffer_size, 1.0f / state_.buffer_scale));
       uv_top_left = state_.crop.origin();
-
       uv_top_left.Scale(1.f / scaled_buffer_size.width(),
                         1.f / scaled_buffer_size.height());
       uv_bottom_right = state_.crop.bottom_right();
@@ -701,11 +752,9 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
       bool needs_blending = true;
       if (!current_resource_has_alpha_ ||
           state_.blend_mode == SkBlendMode::kSrc ||
-          state_.opaque_region.contains(gfx::RectToSkIRect(quad_rect))) {
+          state_.opaque_region.contains(gfx::RectToSkIRect(output_rect))) {
         opaque_rect = quad_rect;
         needs_blending = false;
-      } else if (state_.opaque_region.isRect()) {
-        opaque_rect = gfx::SkIRectToRect(state_.opaque_region.getBounds());
       }
 
       texture_quad->SetNew(
@@ -728,9 +777,6 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
 
 void Surface::UpdateContentSize() {
   gfx::Size content_size;
-  gfx::Size buffer_size = current_resource_.size;
-  gfx::SizeF scaled_buffer_size(
-      gfx::ScaleSize(gfx::SizeF(buffer_size), 1.0f / state_.buffer_scale));
   if (!state_.viewport.IsEmpty()) {
     content_size = state_.viewport;
   } else if (!state_.crop.IsEmpty()) {
@@ -740,7 +786,10 @@ void Surface::UpdateContentSize() {
         << ") most be expressible using integers when viewport is not set";
     content_size = gfx::ToCeiledSize(state_.crop.size());
   } else {
-    content_size = gfx::ToCeiledSize(scaled_buffer_size);
+    content_size = gfx::ToCeiledSize(
+        gfx::ScaleSize(gfx::SizeF(ToTransformedSize(current_resource_.size,
+                                                    state_.buffer_transform)),
+                       1.0f / state_.buffer_scale));
   }
 
   // Enable/disable sub-surface based on if it has contents.

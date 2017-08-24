@@ -216,6 +216,31 @@ TEST_F(SurfaceTest, SetBufferScale) {
             frame.render_pass_list.back()->damage_rect);
 }
 
+TEST_F(SurfaceTest, SetBufferTransform) {
+  gfx::Size buffer_size(256, 512);
+  auto buffer = base::MakeUnique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = base::MakeUnique<Surface>();
+  auto shell_surface = base::MakeUnique<ShellSurface>(surface.get());
+
+  // This will update the bounds of the surface and take the buffer transform
+  // into account.
+  surface->Attach(buffer.get());
+  surface->SetBufferTransform(Transform::ROTATE_90);
+  surface->Commit();
+  EXPECT_EQ(gfx::Size(buffer_size.height(), buffer_size.width()).ToString(),
+            surface->window()->bounds().size().ToString());
+  EXPECT_EQ(gfx::Size(buffer_size.height(), buffer_size.width()).ToString(),
+            surface->content_size().ToString());
+
+  RunAllPendingInMessageLoop();
+
+  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+  ASSERT_EQ(1u, frame.render_pass_list.size());
+  EXPECT_EQ(gfx::Rect(0, 0, buffer_size.height(), buffer_size.width()),
+            frame.render_pass_list.back()->damage_rect);
+}
+
 TEST_F(SurfaceTest, MirrorLayers) {
   gfx::Size buffer_size(512, 512);
   auto buffer = base::MakeUnique<Buffer>(

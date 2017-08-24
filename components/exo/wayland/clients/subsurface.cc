@@ -98,9 +98,8 @@ void SubSurfaceClient::Run(const ClientBase::InitParams& params) {
         gr_context_->flush();
         glFinish();
       }
-      wl_surface_set_buffer_scale(child_surface.get(), scale_);
-      wl_surface_damage(child_surface.get(), 0, 0, kSubsurfaceWidth / scale_,
-                        kSubsurfaceHeight / scale_);
+      wl_surface_damage(child_surface.get(), 0, 0, kSubsurfaceWidth,
+                        kSubsurfaceHeight);
       wl_surface_attach(child_surface.get(), subbuffer->buffer.get(), 0, 0);
       wl_surface_commit(child_surface.get());
     }
@@ -116,8 +115,9 @@ void SubSurfaceClient::Run(const ClientBase::InitParams& params) {
         glFinish();
       }
       wl_surface_set_buffer_scale(surface_.get(), scale_);
-      wl_surface_damage(surface_.get(), 0, 0, size_.width() / scale_,
-                        size_.height() / scale_);
+      wl_surface_set_buffer_transform(surface_.get(), transform_);
+      wl_surface_damage(surface_.get(), 0, 0, surface_size_.width(),
+                        surface_size_.height());
       wl_surface_attach(surface_.get(), buffer->buffer.get(), 0, 0);
 
       callback_pending = true;
