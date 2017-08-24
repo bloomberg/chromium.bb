@@ -11,6 +11,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
+import org.chromium.chrome.browser.offlinepages.DeviceConditions;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
@@ -18,6 +19,7 @@ import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
+import org.chromium.net.ConnectionType;
 
 import java.util.concurrent.TimeUnit;
 
@@ -30,10 +32,13 @@ import java.util.concurrent.TimeUnit;
 @JNINamespace("offline_pages::prefetch")
 public class PrefetchBackgroundTask extends NativeBackgroundTask {
     public static final long DEFAULT_START_DELAY_SECONDS = 15 * 60;
+    private static final int MINIMUM_BATTERY_PERCENTAGE_FOR_PREFETCHING = 50;
 
     private static final String TAG = "OPPrefetchBGTask";
 
     private static BackgroundTaskScheduler sSchedulerInstance;
+
+    private static boolean sSkipConditionCheckingForTesting = false;
 
     private long mNativeTask = 0;
     private TaskFinishedCallback mTaskFinishedCallback = null;
@@ -89,13 +94,35 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     @Override
     public int onStartTaskBeforeNativeLoaded(
             Context context, TaskParameters taskParameters, TaskFinishedCallback callback) {
-        // TODO(dewittj): Ensure that the conditions are right to do work.  If the maximum time to
+        // Ensure that the conditions are right to do work.  If the maximum time to
         // wait is reached, it is possible the task will fire even if network conditions are
         // incorrect.  We want:
         // * Unmetered WiFi connection
         // * >50% battery
-        // * Preferences enabled.
+        // TODO(dewittj): * Preferences enabled.
+
+        mTaskFinishedCallback = callback;
+
+        if (sSkipConditionCheckingForTesting) return NativeBackgroundTask.LOAD_NATIVE;
+
+        // Check current device conditions.
+        DeviceConditions deviceConditions = DeviceConditions.getCurrentConditions(context);
+
+        if (!areBatteryConditionsMet(deviceConditions)
+                || !areNetworkConditionsMet(context, deviceConditions)) {
+            return NativeBackgroundTask.RESCHEDULE;
+        }
+
         return NativeBackgroundTask.LOAD_NATIVE;
+    }
+
+    /**
+     * For integration tests, skip checking the condition since the testing conditions
+     * won't be what we expect for the scenario.
+     */
+    @VisibleForTesting
+    static void skipConditionCheckingForTesting() {
+        sSkipConditionCheckingForTesting = true;
     }
 
     @Override
@@ -104,7 +131,6 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         assert taskParameters.getTaskId() == TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID;
         if (mNativeTask != 0) return;
 
-        mTaskFinishedCallback = callback;
         nativeStartPrefetchTask(getProfile());
     }
 
@@ -148,6 +174,20 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         assert mTaskFinishedCallback != null;
         mTaskFinishedCallback.taskFinished(needsReschedule);
         setNativeTask(0);
+    }
+
+    /** Whether battery conditions (on power or enough battery percentage) are met. */
+    private static boolean areBatteryConditionsMet(DeviceConditions deviceConditions) {
+        return deviceConditions.isPowerConnected()
+                || (deviceConditions.getBatteryPercentage()
+                           >= MINIMUM_BATTERY_PERCENTAGE_FOR_PREFETCHING);
+    }
+
+    /** Whether network conditions are met. */
+    private static boolean areNetworkConditionsMet(
+            Context context, DeviceConditions deviceConditions) {
+        return !DeviceConditions.isActiveNetworkMetered(context)
+                && deviceConditions.getNetConnectionType() == ConnectionType.CONNECTION_WIFI;
     }
 
     @VisibleForTesting

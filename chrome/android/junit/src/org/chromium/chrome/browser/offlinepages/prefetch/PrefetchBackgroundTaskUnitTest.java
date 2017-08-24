@@ -28,18 +28,23 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.offlinepages.DeviceConditions;
+import org.chromium.chrome.browser.offlinepages.ShadowDeviceConditions;
 import org.chromium.components.background_task_scheduler.BackgroundTask.TaskFinishedCallback;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerFactory;
 import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.background_task_scheduler.TaskInfo;
 import org.chromium.components.background_task_scheduler.TaskParameters;
+import org.chromium.net.ConnectionType;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.ArrayList;
@@ -48,7 +53,7 @@ import java.util.concurrent.TimeUnit;
 
 /** Unit tests for {@link PrefetchBackgroundTask}. */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowMultiDex.class})
+@Config(manifest = Config.NONE, shadows = {ShadowMultiDex.class, ShadowDeviceConditions.class})
 public class PrefetchBackgroundTaskUnitTest {
     /**
      * Fake of BackgroundTaskScheduler system service.
@@ -81,6 +86,9 @@ public class PrefetchBackgroundTaskUnitTest {
             mTaskInfos = new HashMap<>();
         }
     }
+    public static final boolean POWER_CONNECTED = true;
+    public static final int HIGH_BATTERY_LEVEL = 75;
+    public static final int LOW_BATTERY_LEVEL = 25;
 
     @Spy
     private PrefetchBackgroundTask mPrefetchBackgroundTask = new PrefetchBackgroundTask();
@@ -93,6 +101,7 @@ public class PrefetchBackgroundTaskUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        // ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
         try {
             doAnswer(new Answer<Void>() {
@@ -162,6 +171,11 @@ public class PrefetchBackgroundTaskUnitTest {
         TaskParameters params = mock(TaskParameters.class);
         when(params.getTaskId()).thenReturn(TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID);
 
+        // Setup battery conditions with no power connected.
+        DeviceConditions deviceConditions = new DeviceConditions(
+                !POWER_CONNECTED, HIGH_BATTERY_LEVEL - 1, ConnectionType.CONNECTION_WIFI);
+        ShadowDeviceConditions.setCurrentConditions(deviceConditions, false /* metered */);
+
         mPrefetchBackgroundTask.onStartTask(null, params, new TaskFinishedCallback() {
             @Override
             public void taskFinished(boolean needsReschedule) {
@@ -172,5 +186,158 @@ public class PrefetchBackgroundTaskUnitTest {
 
         assertEquals(1, reschedules.size());
         assertEquals(false, reschedules.get(0));
+    }
+
+    @Test
+    public void testBatteryLow() throws Exception {
+        // Setup low battery conditions with no power connected.
+        DeviceConditions deviceConditionsLowBattery = new DeviceConditions(
+                !POWER_CONNECTED, LOW_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI);
+        ShadowDeviceConditions.setCurrentConditions(deviceConditionsLowBattery, true /* metered */);
+
+        // Check impact on starting before native loaded.
+        TaskParameters params =
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+
+        int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params, new TaskFinishedCallback() {
+                    @Override
+                    public void taskFinished(boolean needsReschedule) {
+                        fail("Finished callback should not be run, battery conditions not met.");
+                    }
+                });
+        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+    }
+
+    @Test
+    public void testBatteryHigh() throws Exception {
+        // Setup high battery conditions with no power connected.
+        DeviceConditions deviceConditionsHighBattery = new DeviceConditions(
+                !POWER_CONNECTED, HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI);
+        ShadowDeviceConditions.setCurrentConditions(
+                deviceConditionsHighBattery, false /* metered */);
+
+        // Check impact on starting before native loaded.
+        TaskParameters params =
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+
+        int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params, new TaskFinishedCallback() {
+                    @Override
+                    public void taskFinished(boolean needsReschedule) {
+                        // Nothing to do.
+                    }
+                });
+        assertEquals(NativeBackgroundTask.LOAD_NATIVE, result);
+    }
+
+    @Test
+    public void testNoNetwork() throws Exception {
+        // Setup high battery conditions with no power connected.
+        DeviceConditions deviceConditionsHighBattery = new DeviceConditions(
+                !POWER_CONNECTED, HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_NONE);
+        ShadowDeviceConditions.setCurrentConditions(
+                deviceConditionsHighBattery, false /* metered */);
+
+        // Check impact on starting before native loaded.
+        TaskParameters params =
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+
+        int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params, new TaskFinishedCallback() {
+                    @Override
+                    public void taskFinished(boolean needsReschedule) {
+                        fail("Finished callback should not be run, network conditions not met.");
+                    }
+                });
+        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+    }
+
+    @Test
+    public void testUnmeteredWifiNetwork() throws Exception {
+        // Setup high battery conditions with no power connected.
+        DeviceConditions deviceConditionsHighBattery = new DeviceConditions(
+                !POWER_CONNECTED, HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI);
+        ShadowDeviceConditions.setCurrentConditions(
+                deviceConditionsHighBattery, false /* metered */);
+
+        // Check impact on starting before native loaded.
+        TaskParameters params =
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+
+        int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params, new TaskFinishedCallback() {
+                    @Override
+                    public void taskFinished(boolean needsReschedule) {
+                        fail("Finished callback should not be run, network conditions not met.");
+                    }
+                });
+        assertEquals(NativeBackgroundTask.LOAD_NATIVE, result);
+    }
+
+    @Test
+    public void testMeteredWifiNetwork() throws Exception {
+        // Setup high battery conditions with no power connected.
+        DeviceConditions deviceConditionsHighBattery = new DeviceConditions(
+                !POWER_CONNECTED, HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_WIFI);
+        ShadowDeviceConditions.setCurrentConditions(
+                deviceConditionsHighBattery, true /* metered */);
+
+        // Check impact on starting before native loaded.
+        TaskParameters params =
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+
+        int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params, new TaskFinishedCallback() {
+                    @Override
+                    public void taskFinished(boolean needsReschedule) {
+                        fail("Finished callback should not be run, network conditions not met.");
+                    }
+                });
+        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+    }
+
+    @Test
+    public void testMetered2GNetwork() throws Exception {
+        // Setup high battery conditions with no power connected.
+        DeviceConditions deviceConditionsHighBattery = new DeviceConditions(
+                !POWER_CONNECTED, HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_2G);
+        ShadowDeviceConditions.setCurrentConditions(
+                deviceConditionsHighBattery, false /* metered */);
+
+        // Check impact on starting before native loaded.
+        TaskParameters params =
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+
+        int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params, new TaskFinishedCallback() {
+                    @Override
+                    public void taskFinished(boolean needsReschedule) {
+                        fail("Finished callback should not be run, network conditions not met.");
+                    }
+                });
+        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
+    }
+
+    @Test
+    public void testBluetoothNetwork() throws Exception {
+        // Setup high battery conditions with no power connected.
+        DeviceConditions deviceConditionsHighBattery = new DeviceConditions(
+                !POWER_CONNECTED, HIGH_BATTERY_LEVEL, ConnectionType.CONNECTION_BLUETOOTH);
+        ShadowDeviceConditions.setCurrentConditions(
+                deviceConditionsHighBattery, false /* metered */);
+
+        // Check impact on starting before native loaded.
+        TaskParameters params =
+                TaskParameters.create(TaskIds.OFFLINE_PAGES_BACKGROUND_JOB_ID).build();
+
+        int result = mPrefetchBackgroundTask.onStartTaskBeforeNativeLoaded(
+                RuntimeEnvironment.application, params, new TaskFinishedCallback() {
+                    @Override
+                    public void taskFinished(boolean needsReschedule) {
+                        fail("Finished callback should not be run, network conditions not met.");
+                    }
+                });
+        assertEquals(NativeBackgroundTask.RESCHEDULE, result);
     }
 }

@@ -84,6 +84,14 @@ public class DeviceConditions {
     public int getNetConnectionType() {
         return mNetConnectionType;
     }
+    /**
+     * @return true if the active network is a metered network
+     */
+    public static boolean isActiveNetworkMetered(Context context) {
+        ConnectivityManager cm =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.isActiveNetworkMetered();
+    }
 
     private static Intent getBatteryStatus(Context context) {
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
