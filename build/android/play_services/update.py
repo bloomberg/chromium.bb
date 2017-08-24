@@ -22,8 +22,8 @@ import devil_chromium
 from devil.utils import cmd_helper
 from play_services import utils
 from pylib import constants
+from pylib import logging_ext
 from pylib.constants import host_paths
-from pylib.utils import logging_utils
 
 sys.path.append(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build'))
 import find_depot_tools  # pylint: disable=import-error,unused-import
@@ -89,10 +89,8 @@ def main(raw_args):
   AddBucketArguments(parser_upload)
 
   args = parser.parse_args(raw_args)
-  if args.verbose:
-    logging.basicConfig(level=logging.DEBUG)
-  logging_utils.ColorStreamHandler.MakeDefault(not _IsBotEnvironment())
   devil_chromium.Initialize()
+  logging_ext.Initialize(args.verbose_count)
   return args.func(args)
 
 
@@ -102,25 +100,21 @@ def AddBasicArguments(parser):
   allows to put arguments after the command: `foo.py upload --debug --force`
   instead of `foo.py --debug upload --force`
   '''
-
   parser.add_argument('--sdk-root',
                       help='base path to the Android SDK tools root',
                       default=constants.ANDROID_SDK_ROOT)
-
   parser.add_argument('-v', '--verbose',
-                      action='store_true',
-                      help='print debug information')
+                      dest='verbose_count', default=0, action='count',
+                      help='Verbose level (multiple times for more)')
 
 
 def AddBucketArguments(parser):
   parser.add_argument('--bucket',
                       help='name of the bucket where the files are stored',
                       default=GMS_CLOUD_STORAGE)
-
   parser.add_argument('--config',
                       help='JSON Configuration file',
                       default=CONFIG_DEFAULT_PATH)
-
   parser.add_argument('--dry-run',
                       action='store_true',
                       help=('run the script in dry run mode. Files will be '
@@ -128,7 +122,6 @@ def AddBucketArguments(parser):
                             'cloud storage. The bucket name will be as path '
                             'to that directory relative to the repository '
                             'root.'))
-
   parser.add_argument('-f', '--force',
                       action='store_true',
                       help='run even if the library is already up to date')
@@ -184,7 +177,7 @@ def Download(args):
 
     license_sha1 = os.path.join(SHA1_DIRECTORY, LICENSE_FILE_NAME + '.sha1')
     _DownloadFromBucket(bucket_path, license_sha1, new_license,
-                        args.verbose, args.dry_run)
+                        bool(args.verbose_count), args.dry_run)
 
     if (not _IsBotEnvironment() and
         not _CheckLicenseAgreement(new_license, paths.license,
@@ -197,7 +190,7 @@ def Download(args):
 
     new_lib_zip = os.path.join(tmp_root, ZIP_FILE_NAME)
     _DownloadFromBucket(bucket_path, new_lib_zip_sha1, new_lib_zip,
-                        args.verbose, args.dry_run)
+                        bool(args.verbose_count), args.dry_run)
 
     try:
       # Remove the deprecated sdk directory.

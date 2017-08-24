@@ -6,6 +6,7 @@ import fnmatch
 import logging
 import posixpath
 import signal
+import time
 import thread
 import threading
 
@@ -13,6 +14,7 @@ from devil import base_error
 from devil.android import crash_handler
 from devil.android import device_errors
 from devil.utils import signal_handler
+from pylib import logging_ext
 from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.base import test_run
@@ -51,10 +53,15 @@ class LocalDeviceTestRun(test_run.TestRun):
     super(LocalDeviceTestRun, self).__init__(env, test_instance)
     self._tools = {}
 
+    # Fields used for logging time remaining estimates
+    self._start_tests_remaining = None
+    self._start_time = None
+    self._last_time_log = None
+    self._log_lock = threading.Lock()
+
   #override
   def RunTests(self):
     tests = self._GetTests()
-
     exit_now = threading.Event()
 
     @local_device_environment.handle_shard_failures
@@ -65,6 +72,8 @@ class LocalDeviceTestRun(test_run.TestRun):
 
         result = None
         rerun = None
+        if isinstance(tests, test_collection.TestCollection):
+          self._MaybeLogTimeRemaining(tests)
         try:
           result, rerun = crash_handler.RetryOnSystemCrash(
               lambda d, t=test: self._RunTest(d, t),
@@ -120,6 +129,9 @@ class LocalDeviceTestRun(test_run.TestRun):
           try:
             if self._ShouldShard():
               tc = test_collection.TestCollection(self._CreateShards(tests))
+              self._start_tests_remaining = len(tc)
+              self._start_time = time.time()
+              self._last_time_log = time.time()
               self._env.parallel_devices.pMap(
                   run_tests_on_device, tc, try_results).pGet(None)
             else:
@@ -148,6 +160,41 @@ class LocalDeviceTestRun(test_run.TestRun):
       pass
 
     return results
+
+  def _MaybeLogTimeRemaining(self, tests):
+    """Log an estimate for how long remains to run the test suite.
+
+    If this function has not logged an estimate in the previous |LOG_COOLDOWN|
+    then it will log the number of tests remaining to run. This function will
+    also attempt to estimate the time remaining in the test run. It does this
+    by (1) looking to see if runtimes for tests were cached by a previous run,
+    (2) else attempt to extrapolate test runtimes from the tests run so far,
+    (3) or fall back to a hardcoded fix value.
+
+    Args:
+      tests: Test collection.
+    """
+    LOG_COOLDOWN = 60 # seconds
+
+    # Lock is to prevent multiple test shards from simultaneously printing
+    # time estimate.
+    with self._log_lock:
+      if time.time() - self._last_time_log < LOG_COOLDOWN:
+        return
+      self._last_time_log = time.time()
+
+    tests_remaining = len(tests)
+    if tests_remaining < self._start_tests_remaining:
+      avg_test_duration = (float(time.time() - self._start_time) /
+                           (self._start_tests_remaining - tests_remaining))
+    else:
+      avg_test_duration = 1.0
+
+    time_estimate = (avg_test_duration * tests_remaining /
+                     len(self._env.devices))
+    logging_ext.test_time('Tests remaining: %d, '
+                          'Estimated time remaining: %.2f seconds',
+                          tests_remaining, time_estimate)
 
   def _GetTestsToRetry(self, tests, try_results):
 

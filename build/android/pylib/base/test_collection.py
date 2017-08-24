@@ -74,7 +74,3 @@ class TestCollection(object):
     """Return the number of tests currently in the collection."""
     return len(self._tests)
 
-  def test_names(self):
-    """Return a list of the names of the tests currently in the collection."""
-    with self._lock:
-      return list(t.test for t in self._tests)
