@@ -23661,6 +23661,7 @@ from previous Chrome versions.
   <int value="360599302" label="enable-gpu-rasterization"/>
   <int value="365467768" label="prefetch-search-results"/>
   <int value="368854020" label="ash-screen-rotation-animation"/>
+  <int value="369352033" label="GenericSensorExtraClasses:enabled"/>
   <int value="370486304" label="enable-origin-chip-on-srp"/>
   <int value="371268743" label="OmniboxUIExperimentVerticalMargin:disabled"/>
   <int value="372460068" label="QuickUnlockFingerprint:disabled"/>
@@ -23671,6 +23672,7 @@ from previous Chrome versions.
   <int value="387178525" label="VideoFullscreenOrientationLock:enabled"/>
   <int value="388996324" label="CustomContextMenu:disabled"/>
   <int value="393704200" label="account-consistency"/>
+  <int value="398903399" label="GenericSensorExtraClasses:disabled"/>
   <int value="400322063" label="ash-disable-screen-orientation-lock"/>
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>

@@ -328,7 +328,16 @@ const char kEnableEnumeratingAudioDevicesDescription[] =
 
 const char kEnableGenericSensorName[] = "Generic Sensor";
 const char kEnableGenericSensorDescription[] =
-    "Enable sensor APIs based on Generic Sensor API.";
+    "Enables motion sensor classes based on Generic Sensor API, i.e. "
+    "Accelerometer, LinearAccelerationSensor, Gyroscope, "
+    "AbsoluteOrientationSensor and RelativeOrientationSensor interfaces.";
+
+const char kEnableGenericSensorExtraClassesName[] =
+    "Generic Sensor Extra Classes";
+const char kEnableGenericSensorExtraClassesDescription[] =
+    "Enables an extra set of sensor classes based on Generic Sensor API, which "
+    "expose previously unavailable platform features, i.e. AmbientLightSensor "
+    "and Magnetometer interfaces.";
 
 const char kEnableHDRName[] = "HDR mode";
 const char kEnableHDRDescription[] =

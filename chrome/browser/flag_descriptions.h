@@ -222,6 +222,9 @@ extern const char kEnableEnumeratingAudioDevicesDescription[];
 extern const char kEnableGenericSensorName[];
 extern const char kEnableGenericSensorDescription[];
 
+extern const char kEnableGenericSensorExtraClassesName[];
+extern const char kEnableGenericSensorExtraClassesDescription[];
+
 extern const char kEnableHDRName[];
 extern const char kEnableHDRDescription[];
 

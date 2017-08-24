@@ -148,6 +148,10 @@ void WebRuntimeFeatures::EnableGenericSensor(bool enable) {
   RuntimeEnabledFeatures::SetSensorEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableGenericSensorExtraClasses(bool enable) {
+  RuntimeEnabledFeatures::SetSensorExtraClassesEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableHeapCompaction(bool enable) {
   RuntimeEnabledFeatures::SetHeapCompactionEnabled(enable);
 }
