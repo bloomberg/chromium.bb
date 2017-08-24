@@ -919,15 +919,6 @@ void VRDisplay::ProcessScheduledAnimations(double timestamp) {
   // Sanity check: If pending_vrdisplay_raf_ is true and the vsync provider
   // is connected, we must now have a pending vsync.
   DCHECK(!pending_vrdisplay_raf_ || pending_vsync_);
-
-  // For GVR, we shut down normal vsync processing during VR presentation.
-  // Trigger any callbacks on window.rAF manually so that they run after
-  // completing the vrDisplay.rAF processing.
-  if (is_presenting_ && !capabilities_->hasExternalDisplay()) {
-    Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
-        BLINK_FROM_HERE, WTF::Bind(&VRDisplay::ProcessScheduledWindowAnimations,
-                                   WrapWeakPersistent(this), timestamp));
-  }
 }
 
 void VRDisplay::OnPresentingVSync(
