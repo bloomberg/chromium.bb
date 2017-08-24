@@ -299,6 +299,7 @@ class ManagePasswordsBubbleView::PendingView
   void OnDidChangeFocus(View* focused_before, View* focused_now) override;
   // views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
+  gfx::Size CalculatePreferredSize() const override;
 
   void ToggleEditingState(bool accept_changes);
 
@@ -391,7 +392,6 @@ ManagePasswordsBubbleView::PendingView::~PendingView() {
 void ManagePasswordsBubbleView::PendingView::ButtonPressed(
     views::Button* sender,
     const ui::Event& event) {
-  // TODO(https://crbug.com/734965): Implement edit button logic.
   if (sender == edit_button_) {
     ToggleEditingState(false);
     return;
@@ -433,6 +433,13 @@ bool ManagePasswordsBubbleView::PendingView::OnKeyPressed(
     return true;
   }
   return false;
+}
+
+gfx::Size ManagePasswordsBubbleView::PendingView::CalculatePreferredSize()
+    const {
+  return gfx::Size(kDesiredBubbleWidth,
+                   GetLayoutManager()->GetPreferredHeightForWidth(
+                       this, kDesiredBubbleWidth));
 }
 
 void ManagePasswordsBubbleView::PendingView::ToggleEditingState(
@@ -705,6 +712,8 @@ class ManagePasswordsBubbleView::UpdatePendingView
  private:
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
 
   ManagePasswordsBubbleView* parent_;
 
@@ -775,6 +784,13 @@ void ManagePasswordsBubbleView::UpdatePendingView::ButtonPressed(
     parent_->model()->OnNopeUpdateClicked();
   }
   parent_->CloseBubble();
+}
+
+gfx::Size ManagePasswordsBubbleView::UpdatePendingView::CalculatePreferredSize()
+    const {
+  return gfx::Size(kDesiredBubbleWidth,
+                   GetLayoutManager()->GetPreferredHeightForWidth(
+                       this, kDesiredBubbleWidth));
 }
 
 // ManagePasswordsBubbleView --------------------------------------------------
