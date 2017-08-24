@@ -3174,6 +3174,9 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
   // If the visible content rect is empty, then it makes no sense to map it back
   // since there is nothing to map.
   if (!visible_content_rect.IsEmpty()) {
+    // Expand by interest rect padding amount.
+    visible_content_rect.Inflate(kPixelDistanceToRecord);
+
     local_interest_rect =
         anchor_layout_object
             ->AbsoluteToLocalQuad(visible_content_rect,
@@ -3188,10 +3191,11 @@ IntRect CompositedLayerMapping::RecomputeInterestRect(
     // cases, fall back to painting the first kPixelDistanceToRecord pixels in
     // each direction.
     local_interest_rect.Intersect(enclosing_graphics_layer_bounds);
+  } else {
+    // Expand by interest rect padding amount.
+    local_interest_rect.Inflate(kPixelDistanceToRecord);
+    local_interest_rect.Intersect(enclosing_graphics_layer_bounds);
   }
-  // Expand by interest rect padding amount.
-  local_interest_rect.Inflate(kPixelDistanceToRecord);
-  local_interest_rect.Intersect(enclosing_graphics_layer_bounds);
   return local_interest_rect;
 }
 
