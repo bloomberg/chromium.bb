@@ -179,6 +179,8 @@
 	<string>IDS_IOS_MICROPHONE_USAGE_DESCRIPTION</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>IDS_IOS_PHOTO_LIBRARY_USAGE_DESCRIPTION</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>IDS_IOS_PHOTO_LIBRARY_ADD_USAGE_DESCRIPTION</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>IDS_IOS_BLUETOOTH_USAGE_DESCRIPTION</string>
 </dict>
