@@ -51,7 +51,7 @@
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -125,7 +125,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterVoiceSearchBrowserStatePrefs(registry);
 
   [BookmarkCollectionView registerBrowserStatePrefs:registry];
-  [BookmarkInteractionController registerBrowserStatePrefs:registry];
+  [BookmarkMediator registerBrowserStatePrefs:registry];
   [BookmarkPromoController registerBrowserStatePrefs:registry];
   [HandoffManager registerBrowserStatePrefs:registry];
   registry->RegisterIntegerPref(prefs::kIosSettingsSigninPromoDisplayedCount,
