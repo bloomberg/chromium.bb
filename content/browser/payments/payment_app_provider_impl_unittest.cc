@@ -167,8 +167,7 @@ TEST_F(PaymentAppProviderTest, InvokePaymentAppTest) {
   ASSERT_EQ(2U, apps.size());
 
   int64_t bobpay_registration_id = last_sw_registration_id();
-  EXPECT_EQ(apps[bobpay_registration_id]->origin.Serialize(),
-            "https://bobpay.com");
+  EXPECT_EQ(apps[bobpay_registration_id]->scope.spec(), "https://bobpay.com/b");
 
   payments::mojom::PaymentRequestEventDataPtr event_data =
       payments::mojom::PaymentRequestEventData::New();

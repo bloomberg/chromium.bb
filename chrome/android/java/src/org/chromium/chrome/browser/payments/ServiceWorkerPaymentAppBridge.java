@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.text.TextUtils;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -17,6 +18,7 @@ import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
+import java.net.URI;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -29,6 +31,8 @@ import javax.annotation.Nullable;
 @SuppressFBWarnings({"UWF_NULL_FIELD", "URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD",
         "UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD", "UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"})
 public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentAppFactoryAddition {
+    private static final String TAG = "SWPaymentApp";
+
     @Override
     public void create(WebContents webContents, Set<String> methodNames,
             PaymentAppFactory.PaymentAppCreatedCallback callback) {
@@ -100,15 +104,20 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     }
 
     @CalledByNative
-    private static void onPaymentAppCreated(long registrationId, String label,
+    private static void onPaymentAppCreated(long registrationId, String scope, String label,
             @Nullable String sublabel, @Nullable Bitmap icon, String[] methodNameArray,
             String[] preferredRelatedApplications, WebContents webContents, Object callback) {
         assert callback instanceof PaymentAppFactory.PaymentAppCreatedCallback;
         Context context = ChromeActivity.fromWebContents(webContents);
         if (context == null) return;
+        URI scopeUri = UriUtils.parseUriFromString(scope);
+        if (scopeUri == null) {
+            Log.e(TAG, "%s service worker scope is not a valid URI", scope);
+            return;
+        }
         ((PaymentAppFactory.PaymentAppCreatedCallback) callback)
-                .onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, registrationId, label,
-                        sublabel,
+                .onPaymentAppCreated(new ServiceWorkerPaymentApp(webContents, registrationId,
+                        scopeUri, label, sublabel,
                         icon == null ? null : new BitmapDrawable(context.getResources(), icon),
                         methodNameArray, preferredRelatedApplications));
     }

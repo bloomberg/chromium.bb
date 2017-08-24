@@ -35,6 +35,7 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -98,21 +99,25 @@ public class AndroidPaymentApp
     private InstrumentsCallback mInstrumentsCallback;
     private InstrumentDetailsCallback mInstrumentDetailsCallback;
     private ServiceConnection mServiceConnection;
+    @Nullable
+    private URI mCanDedupedApplicationId;
     private boolean mIsReadyToPayQueried;
 
     /**
      * Builds the point of interaction with a locally installed 3rd party native Android payment
      * app.
      *
-     * @param webContents The web contents.
-     * @param packageName The name of the package of the payment app.
-     * @param activity    The name of the payment activity in the payment app.
-     * @param label       The UI label to use for the payment app.
-     * @param icon        The icon to use in UI for the payment app.
-     * @param isIncognito Whether the user is in incognito mode.
+     * @param webContents             The web contents.
+     * @param packageName             The name of the package of the payment app.
+     * @param activity                The name of the payment activity in the payment app.
+     * @param label                   The UI label to use for the payment app.
+     * @param icon                    The icon to use in UI for the payment app.
+     * @param isIncognito             Whether the user is in incognito mode.
+     * @param canDedupedApplicationId The corresponding app Id this app can deduped.
      */
     public AndroidPaymentApp(WebContents webContents, String packageName, String activity,
-            String label, Drawable icon, boolean isIncognito) {
+            String label, Drawable icon, boolean isIncognito,
+            @Nullable URI canDedupedApplicationId) {
         super(packageName, label, null, icon);
         ThreadUtils.assertOnUiThread();
         mHandler = new Handler();
@@ -124,6 +129,7 @@ public class AndroidPaymentApp
         mPayIntent.setAction(ACTION_PAY);
         mMethodNames = new HashSet<>();
         mIsIncognito = isIncognito;
+        mCanDedupedApplicationId = canDedupedApplicationId;
     }
 
     /** @param methodName A payment method that this app supports, e.g., "https://bobpay.com". */
@@ -241,6 +247,11 @@ public class AndroidPaymentApp
     @Override
     public Set<String> getPreferredRelatedApplicationIds() {
         return null;
+    }
+
+    @Override
+    public URI getCanDedupedApplicationId() {
+        return mCanDedupedApplicationId;
     }
 
     @Override

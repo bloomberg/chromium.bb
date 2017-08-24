@@ -55,11 +55,14 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
 
     Java_ServiceWorkerPaymentAppBridge_onPaymentAppCreated(
         env, app_info.second->registration_id,
+        ConvertUTF8ToJavaString(env, app_info.second->scope.spec()),
         ConvertUTF8ToJavaString(env, app_info.second->name),
-        // Do not show duplicate information.
-        app_info.second->name.compare(app_info.second->origin.Serialize()) == 0
+        // Do not show duplicate information in sublabel as in label.
+        app_info.second->name.compare(
+            app_info.second->scope.GetOrigin().spec()) == 0
             ? nullptr
-            : ConvertUTF8ToJavaString(env, app_info.second->origin.Serialize()),
+            : ConvertUTF8ToJavaString(
+                  env, app_info.second->scope.GetOrigin().spec()),
         app_info.second->icon == nullptr
             ? nullptr
             : gfx::ConvertToJavaBitmap(app_info.second->icon.get()),
