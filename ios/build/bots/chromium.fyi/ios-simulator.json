@@ -104,7 +104,7 @@
     },
     {
       "include": "common_tests.json",
-      "device type": "iPhone 5",
+      "device type": "iPhone 5s",
       "os": "11.0",
       "xcode version": "9.0"
     },
