@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "android_webview/browser/aw_download_manager_delegate.h"
 #include "android_webview/browser/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
 #include "base/compiler_specific.h"
@@ -133,8 +132,6 @@ class AwBrowserContext : public content::BrowserContext,
   scoped_refptr<AwURLRequestContextGetter> url_request_context_getter_;
   scoped_refptr<AwQuotaManagerBridge> quota_manager_bridge_;
   std::unique_ptr<AwFormDatabaseService> form_database_service_;
-
-  AwDownloadManagerDelegate download_manager_delegate_;
 
   std::unique_ptr<visitedlink::VisitedLinkMaster> visitedlink_master_;
   std::unique_ptr<content::ResourceContext> resource_context_;

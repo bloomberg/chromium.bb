@@ -23,6 +23,10 @@
 namespace chromecast {
 namespace shell {
 
+namespace {
+const void* const kDownloadManagerDelegateKey = &kDownloadManagerDelegateKey;
+}
+
 class CastBrowserContext::CastResourceContext :
     public content::ResourceContext {
  public:
@@ -51,8 +55,7 @@ class CastBrowserContext::CastResourceContext :
 CastBrowserContext::CastBrowserContext(
     URLRequestContextFactory* url_request_context_factory)
     : url_request_context_factory_(url_request_context_factory),
-      resource_context_(new CastResourceContext(url_request_context_factory)),
-      download_manager_delegate_(new CastDownloadManagerDelegate()) {
+      resource_context_(new CastResourceContext(url_request_context_factory)) {
   InitWhileIOAllowed();
 }
 
@@ -107,7 +110,12 @@ content::ResourceContext* CastBrowserContext::GetResourceContext() {
 
 content::DownloadManagerDelegate*
 CastBrowserContext::GetDownloadManagerDelegate() {
-  return download_manager_delegate_.get();
+  if (!GetUserData(kDownloadManagerDelegateKey)) {
+    SetUserData(kDownloadManagerDelegateKey,
+                base::MakeUnique<CastDownloadManagerDelegate>());
+  }
+  return static_cast<CastDownloadManagerDelegate*>(
+      GetUserData(kDownloadManagerDelegateKey));
 }
 
 content::BrowserPluginGuestManager* CastBrowserContext::GetGuestManager() {

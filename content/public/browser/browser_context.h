@@ -215,7 +215,10 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
   // Returns the DownloadManagerDelegate for this context. This will be called
   // once per context. The embedder owns the delegate and is responsible for
-  // ensuring that it outlives DownloadManager. It's valid to return nullptr.
+  // ensuring that it outlives DownloadManager. Note in particular that it is
+  // unsafe to destroy the delegate in the destructor of a subclass of
+  // BrowserContext, since it needs to be alive in ~BrowserContext.
+  // It's valid to return nullptr.
   virtual DownloadManagerDelegate* GetDownloadManagerDelegate() = 0;
 
   // Returns the guest manager for this context.
