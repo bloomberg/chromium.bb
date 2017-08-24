@@ -85,6 +85,8 @@ class ServiceWorkerURLTrackingRequestHandler
 void RemoveProviderHost(base::WeakPtr<ServiceWorkerContextCore> context,
                         int process_id,
                         int provider_id) {
+  // Temporary CHECK for debugging https://crbug.com/750267.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerProviderHost::RemoveProviderHost");
   if (!context || !context->GetProviderHost(process_id, provider_id)) {
@@ -220,6 +222,8 @@ ServiceWorkerProviderHost::ServiceWorkerProviderHost(
 }
 
 ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
+  // Temporary CHECK for debugging https://crbug.com/750267.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (context_)
     context_->UnregisterProviderHostByClientID(client_uuid_);
 
