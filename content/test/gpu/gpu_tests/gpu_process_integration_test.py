@@ -15,7 +15,6 @@ data_path = os.path.join(
 test_harness_script = r"""
   var domAutomationController = {};
   domAutomationController._finished = false;
-  domAutomationController.setAutomationId = function(id) {}
   domAutomationController.send = function(msg) {
     domAutomationController._finished = true;
   }

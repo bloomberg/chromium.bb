@@ -30,8 +30,6 @@ test_harness_script = r"""
 
   domAutomationController._finished = false;
 
-  domAutomationController.setAutomationId = function(id) {}
-
   domAutomationController.send = function(msg) {
     // Issue a read pixel to synchronize the gpu process to ensure
     // the asynchronous category enabling is finished.

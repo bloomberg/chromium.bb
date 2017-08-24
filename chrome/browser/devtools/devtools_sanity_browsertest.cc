@@ -1504,8 +1504,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                          // Whitelist the script we stuff into the 'blob:' URL:
                          .Set("content_security_policy",
                               "script-src 'self' "
-                              "'sha256-95xJWHeV+"
-                              "1zjAKQufDVW0misgmR4gCjgpipP2LJ5iis='; "
+                              "'sha256-uv9gxBEOFchPzak3TK6O39RdKxJeZvfha9zOHGam"
+                              "TB4='; "
                               "object-src 'none'")
                          .Set("manifest_version", 2)
                          .Set("devtools_page", "devtools.html")
@@ -1538,7 +1538,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
       "var xhr = new XMLHttpRequest();\n"
       "xhr.open('GET', blob_url, true);\n"
       "xhr.onload = function (e) {\n"
-      "    domAutomationController.setAutomationId(0);\n"
       "    domAutomationController.send(xhr.response);\n"
       "};\n"
       "xhr.send(null);\n");
@@ -1547,7 +1546,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
       "var payload = `"
       "<html><body>iframe blob contents"
       "<script>"
-      "    domAutomationController.setAutomationId(0);"
       "    domAutomationController.send(document.body.innerText);\n"
       "</script></body></html>"
       "`;"

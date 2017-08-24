@@ -14,7 +14,6 @@ function toggleHelpBox() {
 }
 
 function diagnoseErrors() {
-  window.domAutomationController.setAutomationId(1);
   window.domAutomationController.send('open_connectivity_diagnostics');
 }
 

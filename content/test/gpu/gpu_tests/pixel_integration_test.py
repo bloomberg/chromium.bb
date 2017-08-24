@@ -31,8 +31,6 @@ test_harness_script = r"""
   domAutomationController._succeeded = false;
   domAutomationController._finished = false;
 
-  domAutomationController.setAutomationId = function(id) {}
-
   domAutomationController.send = function(msg) {
     domAutomationController._finished = true;
 
