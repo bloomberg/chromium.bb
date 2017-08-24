@@ -85,7 +85,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     static final String POST_NATIVE_SETUP_NEEDED = "PostNativeSetupNeeded";
 
     // Outgoing results:
-    public static final String RESULT_CLOSE_APP = "Close App";
     public static final String RESULT_SIGNIN_ACCOUNT_NAME = "ResultSignInTo";
     public static final String RESULT_SHOW_SIGNIN_SETTINGS = "ResultShowSignInSettings";
     public static final String EXTRA_FIRST_RUN_ACTIVITY_RESULT = "Extra.FreActivityResult";
@@ -420,7 +419,6 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     public void abortFirstRunExperience() {
         Intent intent = new Intent();
         if (mFreProperties != null) intent.putExtras(mFreProperties);
-        intent.putExtra(RESULT_CLOSE_APP, true);
         finishAllTheActivities(getLocalClassName(), Activity.RESULT_CANCELED, intent);
 
         sendPendingIntentIfNecessary(false);
