@@ -153,7 +153,7 @@ std::unique_ptr<AudioInputSyncWriter> AudioInputSyncWriter::Create(
 void AudioInputSyncWriter::Write(const AudioBus* data,
                                  double volume,
                                  bool key_pressed,
-                                 uint32_t hardware_delay_bytes) {
+                                 base::TimeTicks capture_time) {
   TRACE_EVENT0("audio", "AudioInputSyncWriter::Write");
   ++write_count_;
   CheckTimeSinceLastWrite();
@@ -182,7 +182,7 @@ void AudioInputSyncWriter::Write(const AudioBus* data,
   // Write the current data to the shared memory if there is room, otherwise
   // put it in the fifo.
   if (number_of_filled_segments_ < audio_buses_.size()) {
-    WriteParametersToCurrentSegment(volume, key_pressed, hardware_delay_bytes);
+    WriteParametersToCurrentSegment(volume, key_pressed, capture_time);
 
     // Copy data into shared memory using pre-allocated audio buses.
     data->CopyTo(audio_buses_[current_segment_id_].get());
@@ -192,7 +192,7 @@ void AudioInputSyncWriter::Write(const AudioBus* data,
 
     trailing_write_to_fifo_count_ = 0;
   } else {
-    if (!PushDataToFifo(data, volume, key_pressed, hardware_delay_bytes))
+    if (!PushDataToFifo(data, volume, key_pressed, capture_time))
       write_error = true;
 
     ++write_to_fifo_count_;
@@ -251,7 +251,7 @@ void AudioInputSyncWriter::AddToNativeLog(const std::string& message) {
 bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
                                           double volume,
                                           bool key_pressed,
-                                          uint32_t hardware_delay_bytes) {
+                                          base::TimeTicks capture_time) {
   if (overflow_buses_.size() == kMaxOverflowBusesSize) {
     // We use |write_error_count_| for capping number of log messages.
     // |write_error_count_| also includes socket Send() errors, but those should
@@ -277,7 +277,7 @@ bool AudioInputSyncWriter::PushDataToFifo(const AudioBus* data,
   }
 
   // Push parameters to fifo.
-  OverflowParams params = { volume, hardware_delay_bytes, key_pressed };
+  OverflowParams params = {volume, key_pressed, capture_time};
   overflow_params_.push_back(params);
 
   // Push audio data to fifo.
@@ -307,7 +307,7 @@ bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
     // Write parameters to shared memory.
     WriteParametersToCurrentSegment((*params_it).volume,
                                     (*params_it).key_pressed,
-                                    (*params_it).hardware_delay_bytes);
+                                    (*params_it).capture_time);
 
     // Copy data from the fifo into shared memory using pre-allocated audio
     // buses.
@@ -337,7 +337,7 @@ bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
 void AudioInputSyncWriter::WriteParametersToCurrentSegment(
     double volume,
     bool key_pressed,
-    uint32_t hardware_delay_bytes) {
+    base::TimeTicks capture_time) {
   uint8_t* ptr = static_cast<uint8_t*>(shared_memory_->memory());
   CHECK_LT(current_segment_id_, audio_buses_.size());
   ptr += current_segment_id_ * shared_memory_segment_size_;
@@ -345,7 +345,8 @@ void AudioInputSyncWriter::WriteParametersToCurrentSegment(
   buffer->params.volume = volume;
   buffer->params.size = audio_bus_memory_size_;
   buffer->params.key_pressed = key_pressed;
-  buffer->params.hardware_delay_bytes = hardware_delay_bytes;
+  buffer->params.capture_time =
+      (capture_time - base::TimeTicks()).InMicroseconds();
   buffer->params.id = next_buffer_id_;
 }
 

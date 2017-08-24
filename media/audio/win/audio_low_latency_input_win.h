@@ -188,14 +188,6 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // device role and is not a valid ID as such.
   std::string device_id_;
 
-  // Conversion factor used in delay-estimation calculations.
-  // Converts a raw performance counter value to 100-nanosecond unit.
-  double perf_count_to_100ns_units_ = 0.0;
-
-  // Conversion factor used in delay-estimation calculations.
-  // Converts from milliseconds to audio frames.
-  double ms_to_frame_count_ = 0.0;
-
   // Pointer to the object that will receive the recorded audio samples.
   AudioInputCallback* sink_ = nullptr;
 

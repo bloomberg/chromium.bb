@@ -171,7 +171,7 @@ class MockAudioInputCallback : public AudioInputStream::AudioInputCallback {
   MOCK_METHOD4(OnData,
                void(AudioInputStream* stream,
                     const media::AudioBus* src,
-                    uint32_t hardware_delay_bytes,
+                    base::TimeTicks capture_time,
                     double volume));
   MOCK_METHOD1(OnError, void(AudioInputStream* stream));
 

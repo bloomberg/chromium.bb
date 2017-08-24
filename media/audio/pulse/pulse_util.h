@@ -54,10 +54,6 @@ void WaitForOperationCompletion(pa_threaded_mainloop* mainloop,
 
 base::TimeDelta GetHardwareLatency(pa_stream* stream);
 
-int GetHardwareLatencyInBytes(pa_stream* stream,
-                              int sample_rate,
-                              int bytes_per_frame);
-
 // Create a recording stream for the threaded mainloop, return true if success,
 // otherwise false. |mainloop| and |context| have to be from a valid Pulse
 // threaded mainloop and the handle of the created stream will be returned by

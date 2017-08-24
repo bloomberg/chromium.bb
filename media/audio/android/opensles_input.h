@@ -100,6 +100,8 @@ class OpenSLESInputStream : public AudioInputStream {
 
   bool started_;
 
+  base::TimeDelta hardware_delay_;
+
   std::unique_ptr<media::AudioBus> audio_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenSLESInputStream);

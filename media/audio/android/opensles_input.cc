@@ -42,6 +42,8 @@ OpenSLESInputStream::OpenSLESInputStream(AudioManagerAndroid* audio_manager,
   format_.channelMask = ChannelCountToSLESChannelMask(params.channels());
 
   buffer_size_bytes_ = params.GetBytesPerBuffer();
+  hardware_delay_ = base::TimeDelta::FromSecondsD(
+      params.frames_per_buffer() / static_cast<double>(params.sample_rate()));
 
   memset(&audio_data_, 0, sizeof(audio_data_));
 }
@@ -306,7 +308,8 @@ void OpenSLESInputStream::ReadBufferQueue() {
 
   // TODO(henrika): Investigate if it is possible to get an accurate
   // delay estimation.
-  callback_->OnData(this, audio_bus_.get(), buffer_size_bytes_, 0.0);
+  callback_->OnData(this, audio_bus_.get(),
+                    base::TimeTicks::Now() - hardware_delay_, 0.0);
 
   // Done with this buffer. Send it to device for recording.
   SLresult err =

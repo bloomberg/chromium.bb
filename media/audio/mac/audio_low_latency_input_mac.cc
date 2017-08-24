@@ -18,6 +18,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/audio/mac/audio_manager_mac.h"
 #include "media/base/audio_bus.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/data_buffer.h"
 
 namespace media {
@@ -229,7 +230,6 @@ AUAudioInputStream::AUAudioInputStream(
       sink_(nullptr),
       audio_unit_(0),
       input_device_id_(audio_device_id),
-      hardware_latency_frames_(0),
       number_of_channels_in_frame_(0),
       fifo_(input_params.channels(),
             number_of_frames_,
@@ -485,7 +485,7 @@ bool AUAudioInputStream::Open() {
   }
 
   // The hardware latency is fixed and will not change during the call.
-  hardware_latency_frames_ = GetHardwareLatency();
+  hardware_latency_ = GetHardwareLatency();
 
   // The master channel is 0, Left and right are channels 1 and 2.
   // And the master channel is not counted in |number_of_channels_in_frame_|.
@@ -901,8 +901,7 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
   if (number_of_frames != number_of_frames_ && number_of_frames_provided_ == 0)
     number_of_frames_provided_ = number_of_frames;
 
-  // Update the capture latency.
-  double capture_latency_frames = GetCaptureLatency(time_stamp);
+  base::TimeTicks capture_time = GetCaptureTime(time_stamp);
 
   // The AGC volume level is updated once every second on a separate thread.
   // Note that, |volume| is also updated each time SetVolume() is called
@@ -912,8 +911,6 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
 
   AudioBuffer& buffer = io_data->mBuffers[0];
   uint8_t* audio_data = reinterpret_cast<uint8_t*>(buffer.mData);
-  uint32_t capture_delay_bytes = static_cast<uint32_t>(
-      (capture_latency_frames + 0.5) * format_.mBytesPerFrame);
   DCHECK(audio_data);
   if (!audio_data)
     return kAudioUnitErr_InvalidElement;
@@ -936,6 +933,10 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
     fifo_.IncreaseCapacity(blocks);
   }
 
+  // Compensate the capture time for the FIFO before pushing an new frames.
+  capture_time -= AudioTimestampHelper::FramesToTime(fifo_.GetAvailableFrames(),
+                                                     format_.mSampleRate);
+
   // Copy captured (and interleaved) data into FIFO.
   fifo_.Push(audio_data, number_of_frames, format_.mBitsPerChannel / 8);
 
@@ -944,9 +945,11 @@ OSStatus AUAudioInputStream::Provide(UInt32 number_of_frames,
     const AudioBus* audio_bus = fifo_.Consume();
     DCHECK_EQ(audio_bus->frames(), static_cast<int>(number_of_frames_));
 
-    // Compensate the audio delay caused by the FIFO.
-    capture_delay_bytes += fifo_.GetAvailableFrames() * format_.mBytesPerFrame;
-    sink_->OnData(this, audio_bus, capture_delay_bytes, normalized_volume);
+    sink_->OnData(this, audio_bus, capture_time, normalized_volume);
+
+    // Move the capture time forward for each vended block.
+    capture_time += AudioTimestampHelper::FramesToTime(audio_bus->frames(),
+                                                       format_.mSampleRate);
   }
 
   return noErr;
@@ -1056,10 +1059,10 @@ int AUAudioInputStream::HardwareSampleRate() {
   return static_cast<int>(nominal_sample_rate);
 }
 
-double AUAudioInputStream::GetHardwareLatency() {
+base::TimeDelta AUAudioInputStream::GetHardwareLatency() {
   if (!audio_unit_ || input_device_id_ == kAudioObjectUnknown) {
     DLOG(WARNING) << "Audio unit object is NULL or device ID is unknown";
-    return 0.0;
+    return base::TimeDelta();
   }
 
   // Get audio unit latency.
@@ -1081,23 +1084,21 @@ double AUAudioInputStream::GetHardwareLatency() {
                                       nullptr, &size, &device_latency_frames);
   DLOG_IF(WARNING, result != noErr) << "Could not get audio device latency.";
 
-  return static_cast<double>((audio_unit_latency_sec * format_.mSampleRate) +
-                             device_latency_frames);
+  return base::TimeDelta::FromSecondsD(audio_unit_latency_sec) +
+         AudioTimestampHelper::FramesToTime(device_latency_frames,
+                                            format_.mSampleRate);
 }
 
-double AUAudioInputStream::GetCaptureLatency(
+base::TimeTicks AUAudioInputStream::GetCaptureTime(
     const AudioTimeStamp* input_time_stamp) {
-  // Get the delay between between the actual recording instant and the time
-  // when the data packet is provided as a callback.
-  UInt64 capture_time_ns =
-      AudioConvertHostTimeToNanos(input_time_stamp->mHostTime);
-  UInt64 now_ns = AudioConvertHostTimeToNanos(AudioGetCurrentHostTime());
-  double delay_frames = static_cast<double>(1e-9 * (now_ns - capture_time_ns) *
-                                            format_.mSampleRate);
-
   // Total latency is composed by the dynamic latency and the fixed
   // hardware latency.
-  return (delay_frames + hardware_latency_frames_);
+  // https://lists.apple.com/archives/coreaudio-api/2017/Jul/msg00035.html
+  return (input_time_stamp->mFlags & kAudioTimeStampHostTimeValid
+              ? base::TimeTicks::FromMachAbsoluteTime(
+                    input_time_stamp->mHostTime)
+              : base::TimeTicks::Now()) -
+         hardware_latency_;
 }
 
 int AUAudioInputStream::GetNumberOfChannelsFromStream() {

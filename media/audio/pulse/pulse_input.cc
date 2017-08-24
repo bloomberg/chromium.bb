@@ -10,6 +10,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/pulse/audio_manager_pulse.h"
 #include "media/audio/pulse/pulse_util.h"
+#include "media/base/audio_timestamp_helper.h"
 
 namespace media {
 
@@ -270,9 +271,6 @@ void PulseAudioInputStream::StreamNotifyCallback(pa_stream* s,
 }
 
 void PulseAudioInputStream::ReadData() {
-  uint32_t hardware_delay = pulse::GetHardwareLatencyInBytes(
-      handle_, params_.sample_rate(), params_.GetBytesPerFrame());
-
   // Update the AGC volume level once every second. Note that,
   // |volume| is also updated each time SetVolume() is called
   // through IPC by the render-side AGC.
@@ -282,6 +280,14 @@ void PulseAudioInputStream::ReadData() {
   GetAgcVolume(&normalized_volume);
   normalized_volume = volume_ / GetMaxVolume();
 
+  // Compensate the audio delay caused by the FIFO.
+  // TODO(dalecurtis): This should probably use pa_stream_get_time() so we can
+  // get the capture time directly.
+  base::TimeTicks capture_time =
+      base::TimeTicks::Now() -
+      (pulse::GetHardwareLatency(handle_) +
+       AudioTimestampHelper::FramesToTime(fifo_.GetAvailableFrames(),
+                                          params_.sample_rate()));
   do {
     size_t length = 0;
     const void* data = NULL;
@@ -308,12 +314,16 @@ void PulseAudioInputStream::ReadData() {
   while (fifo_.available_blocks()) {
     const AudioBus* audio_bus = fifo_.Consume();
 
-    // Compensate the audio delay caused by the FIFO.
-    hardware_delay += fifo_.GetAvailableFrames() * params_.GetBytesPerFrame();
-    callback_->OnData(this, audio_bus, hardware_delay, normalized_volume);
+    callback_->OnData(this, audio_bus, capture_time, normalized_volume);
+
+    // Move the capture time forward for each vended block.
+    capture_time += AudioTimestampHelper::FramesToTime(audio_bus->frames(),
+                                                       params_.sample_rate());
 
     // Sleep 5ms to wait until render consumes the data in order to avoid
     // back to back OnData() method.
+    // TODO(dalecurtis): Delete all this. It shouldn't be necessary now that we
+    // have a ring buffer and FIFO on the actual shared memory.,
     if (fifo_.available_blocks())
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(5));
   }

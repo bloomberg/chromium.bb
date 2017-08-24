@@ -138,10 +138,10 @@ class MEDIA_EXPORT AUAudioInputStream
 
   // Gets the fixed capture hardware latency and store it during initialization.
   // Returns 0 if not available.
-  double GetHardwareLatency();
+  base::TimeDelta GetHardwareLatency();
 
-  // Gets the current capture delay value.
-  double GetCaptureLatency(const AudioTimeStamp* input_time_stamp);
+  // Gets the current capture time.
+  base::TimeTicks GetCaptureTime(const AudioTimeStamp* input_time_stamp);
 
   // Gets the number of channels for a stream of audio data.
   int GetNumberOfChannelsFromStream();
@@ -220,8 +220,8 @@ class MEDIA_EXPORT AUAudioInputStream
   // array as soon as a frame of the desired buffer size has been recorded.
   std::unique_ptr<uint8_t[]> audio_data_buffer_;
 
-  // Fixed capture hardware latency in frames.
-  double hardware_latency_frames_;
+  // Fixed capture hardware latency.
+  base::TimeDelta hardware_latency_;
 
   // The number of channels in each frame of audio data, which is used
   // when querying the volume of each channel.

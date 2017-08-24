@@ -256,15 +256,6 @@ base::TimeDelta GetHardwareLatency(pa_stream* stream) {
   return base::TimeDelta::FromMicroseconds(latency_micros);
 }
 
-int GetHardwareLatencyInBytes(pa_stream* stream,
-                              int sample_rate,
-                              int bytes_per_frame) {
-  DCHECK(stream);
-  return AudioTimestampHelper::TimeToFrames(GetHardwareLatency(stream),
-                                            sample_rate) *
-         bytes_per_frame;
-}
-
 // Helper macro for CreateInput/OutputStream() to avoid code spam and
 // string bloat.
 #define RETURN_ON_FAILURE(expression, message) do { \
