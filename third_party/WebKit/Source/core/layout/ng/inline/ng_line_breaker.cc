@@ -18,42 +18,6 @@
 
 namespace blink {
 
-namespace {
-
-// Use a mock of ShapingLineBreaker for test/debug purposes.
-// #define MOCK_SHAPE_LINE
-
-#if defined(MOCK_SHAPE_LINE)
-// The mock for ShapingLineBreaker::ShapeLine().
-// See BreakText() for the expected semantics.
-std::pair<unsigned, LayoutUnit> ShapeLineMock(
-    const NGInlineItem& item,
-    unsigned offset,
-    LayoutUnit available_width,
-    const LazyLineBreakIterator& break_iterator) {
-  bool has_break_opportunities = false;
-  LayoutUnit inline_size;
-  while (true) {
-    unsigned next_break = break_iterator.NextBreakOpportunity(offset + 1);
-    next_break = std::min(next_break, item.EndOffset());
-    LayoutUnit next_inline_size =
-        inline_size + item.InlineSize(offset, next_break);
-    if (next_inline_size > available_width) {
-      if (!has_break_opportunities)
-        return std::make_pair(next_break, next_inline_size);
-      return std::make_pair(offset, inline_size);
-    }
-    if (next_break >= item.EndOffset())
-      return std::make_pair(next_break, next_inline_size);
-    offset = next_break;
-    inline_size = next_inline_size;
-    has_break_opportunities = true;
-  }
-}
-#endif
-
-}  // namespace
-
 NGLineBreaker::NGLineBreaker(
     NGInlineNode node,
     const NGConstraintSpace& space,
@@ -359,10 +323,6 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   DCHECK_EQ(item.Type(), NGInlineItem::kText);
   item.AssertOffset(item_result->start_offset);
 
-#if defined(MOCK_SHAPE_LINE)
-  std::tie(item_result->end_offset, item_result->inline_size) = ShapeLineMock(
-      item, item_result->start_offset, available_width, break_iterator_);
-#else
   // TODO(kojii): We need to instantiate ShapingLineBreaker here because it
   // has item-specific info as context. Should they be part of ShapeLine() to
   // instantiate once, or is this just fine since instatiation is not
@@ -371,20 +331,29 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   DCHECK_EQ(item.TextShapeResult()->EndIndexForResult(), item.EndOffset());
   ShapingLineBreaker breaker(&shaper_, &item.Style()->GetFont(),
                              item.TextShapeResult(), &break_iterator_,
-                             &spacing_);
+                             &spacing_, hyphenation_);
   available_width = std::max(LayoutUnit(0), available_width);
-  item_result->shape_result = breaker.ShapeLine(
-      item_result->start_offset, available_width, &item_result->end_offset,
-      &item_result->has_hanging_spaces);
-  if (item_result->has_hanging_spaces) {
+  ShapingLineBreaker::Result result;
+  RefPtr<ShapeResult> shape_result =
+      breaker.ShapeLine(item_result->start_offset, available_width, &result);
+  if (result.has_hanging_spaces) {
+    item_result->has_hanging_spaces = true;
     // Hanging spaces do not expand min-content. Handle them simliar to visual
     // overflow. Some details are different, but it's the closest behavior.
     item_result->inline_size = available_width;
+    DCHECK(!result.is_hyphenated);
+  } else if (result.is_hyphenated) {
+    AppendHyphen(*item.Style(), shape_result.Get());
+    item_result->inline_size = shape_result->SnappedWidth();
+    // TODO(kojii): Implement when adding a hyphen caused overflow.
+    item_result->text_end_effect = NGTextEndEffect::kHyphen;
   } else {
-    item_result->inline_size = item_result->shape_result->SnappedWidth();
+    item_result->inline_size = shape_result->SnappedWidth();
   }
-#endif
+  item_result->end_offset = result.break_offset;
+  item_result->shape_result = std::move(shape_result);
   DCHECK_GT(item_result->end_offset, item_result->start_offset);
+
   // * If width <= available_width:
   //   * If offset < item.EndOffset(): the break opportunity to fit is found.
   //   * If offset == item.EndOffset(): the break opportunity at the end fits,
@@ -400,6 +369,17 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
     item_result->prohibit_break_after =
         !break_iterator_.IsBreakable(item_result->end_offset);
   }
+}
+
+void NGLineBreaker::AppendHyphen(const ComputedStyle& style,
+                                 ShapeResult* shape_result) {
+  TextDirection direction = style.Direction();
+  String hyphen_string = style.HyphenString();
+  hyphen_string.Ensure16Bit();
+  HarfBuzzShaper shaper(hyphen_string.Characters16(), hyphen_string.length());
+  RefPtr<ShapeResult> hyphen_result = shaper.Shape(&style.GetFont(), direction);
+  // TODO(kojii): Should probably prepend if the base direction is RTL.
+  hyphen_result->CopyRange(0, hyphen_string.length(), shape_result);
 }
 
 // Measure control items; new lines and tab, that are similar to text, affect
@@ -783,6 +763,9 @@ void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
         break;
     }
     break_iterator_.SetBreakAfterSpace(style.BreakOnlyAfterWhiteSpace());
+
+    // TODO(kojii): Implement 'hyphens: none'.
+    hyphenation_ = style.GetHyphenation();
   }
 
   spacing_.SetSpacing(style.GetFontDescription());

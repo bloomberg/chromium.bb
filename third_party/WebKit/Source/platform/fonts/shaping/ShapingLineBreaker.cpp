@@ -18,14 +18,14 @@ ShapingLineBreaker::ShapingLineBreaker(
     const Font* font,
     const ShapeResult* result,
     const LazyLineBreakIterator* break_iterator,
-    ShapeResultSpacing<String>* spacing)
+    ShapeResultSpacing<String>* spacing,
+    const Hyphenation* hyphenation)
     : shaper_(shaper),
       font_(font),
       result_(result),
       break_iterator_(break_iterator),
-      spacing_(spacing) {
-  text_ = String(shaper->GetText(), shaper->TextLength());
-
+      spacing_(spacing),
+      hyphenation_(hyphenation) {
   // ShapeResultSpacing is stateful when it has expansions. We may use it in
   // arbitrary order that it cannot have expansions.
   DCHECK(!spacing_ || !spacing_->HasExpansion());
@@ -81,6 +81,74 @@ LayoutUnit SnapEnd(float value, TextDirection direction) {
 
 }  // namespace
 
+inline const String& ShapingLineBreaker::GetText() const {
+  return break_iterator_->GetString();
+}
+
+unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
+                                       unsigned word_start,
+                                       unsigned word_end,
+                                       bool backwards) {
+  DCHECK(hyphenation_);
+  DCHECK_GT(word_end, word_start);
+  DCHECK_GE(offset, word_start);
+  DCHECK_LE(offset, word_end);
+  unsigned word_len = word_end - word_start;
+  if (word_len <= Hyphenation::kMinimumSuffixLength)
+    return 0;
+
+  // TODO(kojii): Check min-width?
+
+  const String& text = GetText();
+  if (backwards) {
+    return hyphenation_->LastHyphenLocation(
+        StringView(text, word_start, word_len), offset - word_start);
+  } else {
+    return hyphenation_->FirstHyphenLocation(
+        StringView(text, word_start, word_len), offset - word_start);
+  }
+}
+
+unsigned ShapingLineBreaker::Hyphenate(unsigned offset,
+                                       unsigned start,
+                                       bool backwards,
+                                       bool* is_hyphenated) {
+  const String& text = GetText();
+  unsigned previous_break_opportunity =
+      break_iterator_->PreviousBreakOpportunity(offset, start);
+  unsigned word_start = previous_break_opportunity;
+  if (!break_iterator_->BreakAfterSpace()) {
+    while (word_start < text.length() && text[word_start] == kSpaceCharacter)
+      word_start++;
+  }
+  unsigned word_end = break_iterator_->NextBreakOpportunity(offset + 1);
+
+  unsigned prefix_length = Hyphenate(offset, word_start, word_end, backwards);
+  if (!prefix_length) {
+    *is_hyphenated = false;
+    return backwards ? previous_break_opportunity : word_end;
+  }
+
+  *is_hyphenated = true;
+  return word_start + prefix_length;
+}
+
+unsigned ShapingLineBreaker::PreviousBreakOpportunity(unsigned offset,
+                                                      unsigned start,
+                                                      bool* is_hyphenated) {
+  if (!hyphenation_)
+    return break_iterator_->PreviousBreakOpportunity(offset, start);
+  return Hyphenate(offset, start, true, is_hyphenated);
+}
+
+unsigned ShapingLineBreaker::NextBreakOpportunity(unsigned offset,
+                                                  unsigned start,
+                                                  bool* is_hyphenated) {
+  if (!hyphenation_)
+    return break_iterator_->NextBreakOpportunity(offset);
+  return Hyphenate(offset, start, false, is_hyphenated);
+}
+
 inline PassRefPtr<ShapeResult> ShapingLineBreaker::Shape(
     TextDirection direction,
     unsigned start,
@@ -125,14 +193,15 @@ inline PassRefPtr<ShapeResult> ShapingLineBreaker::Shape(
 PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
     unsigned start,
     LayoutUnit available_space,
-    unsigned* break_offset,
-    bool* has_hanging_spaces_out) {
+    ShapingLineBreaker::Result* result_out) {
   DCHECK_GE(available_space, LayoutUnit(0));
   unsigned range_start = result_->StartIndexForResult();
   unsigned range_end = result_->EndIndexForResult();
   DCHECK_GE(start, range_start);
   DCHECK_LT(start, range_end);
-  DCHECK(has_hanging_spaces_out || !break_iterator_->BreakAfterSpace());
+  result_out->is_hyphenated = false;
+  result_out->has_hanging_spaces = false;
+  const String& text = GetText();
 
   // The start position in the original shape results.
   float start_position_float = result_->PositionForOffset(start - range_start);
@@ -152,7 +221,7 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
     // The |result_| does not have glyphs to fill the available space,
     // and thus unable to compute. Return the result up to range_end.
     DCHECK_EQ(candidate_break, range_end);
-    *break_offset = range_end;
+    result_out->break_offset = range_end;
     return ShapeToEnd(start, start_position, range_end);
   }
 
@@ -162,24 +231,25 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
 
   unsigned break_opportunity;
   if (break_iterator_->BreakAfterSpace() &&
-      IsHangableSpace(text_[candidate_break])) {
+      IsHangableSpace(text[candidate_break])) {
     // If BreakAfterSpace, allow spaces to hang over the available space.
-    *has_hanging_spaces_out = true;
+    result_out->has_hanging_spaces = true;
     break_opportunity = break_iterator_->NextBreakOpportunity(candidate_break);
     if (break_opportunity >= range_end) {
-      *break_offset = range_end;
+      result_out->break_offset = range_end;
       return ShapeToEnd(start, start_position, range_end);
     }
   } else {
-    break_opportunity =
-        break_iterator_->PreviousBreakOpportunity(candidate_break, start);
+    break_opportunity = PreviousBreakOpportunity(candidate_break, start,
+                                                 &result_out->is_hyphenated);
     if (break_opportunity <= start) {
-      break_opportunity = break_iterator_->NextBreakOpportunity(
-          std::max(candidate_break, start + 1));
+      break_opportunity =
+          NextBreakOpportunity(std::max(candidate_break, start + 1), start,
+                               &result_out->is_hyphenated);
       // |range_end| may not be a break opportunity, but this function cannot
       // measure beyond it.
       if (break_opportunity >= range_end) {
-        *break_offset = range_end;
+        result_out->break_offset = range_end;
         return ShapeToEnd(start, start_position, range_end);
       }
     }
@@ -227,12 +297,14 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
           break;
         // Doesn't fit after the reshape. Try previous break opportunity, or
         // overflow if there were none.
+        bool is_previous_break_opportunity_hyphenated;
         unsigned previous_break_opportunity =
-            break_iterator_->PreviousBreakOpportunity(break_opportunity - 1,
-                                                      start);
+            PreviousBreakOpportunity(break_opportunity - 1, start,
+                                     &is_previous_break_opportunity_hyphenated);
         if (previous_break_opportunity <= start)
           break;
         break_opportunity = previous_break_opportunity;
+        result_out->is_hyphenated = is_previous_break_opportunity_hyphenated;
         line_end_result = nullptr;
       }
     }
@@ -244,7 +316,8 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
 
     // No suitable break opportunity, not exceeding the available space,
     // found. Choose the next valid one even though it will overflow.
-    break_opportunity = break_iterator_->NextBreakOpportunity(candidate_break);
+    break_opportunity = NextBreakOpportunity(candidate_break, start,
+                                             &result_out->is_hyphenated);
     // |range_end| may not be a break opportunity, but this function cannot
     // measure beyond it.
     break_opportunity = std::min(break_opportunity, range_end);
@@ -265,7 +338,10 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
   DCHECK_EQ(std::min(break_opportunity, range_end) - start,
             line_result->NumCharacters());
 
-  *break_offset = break_opportunity;
+  result_out->break_offset = break_opportunity;
+  if (!result_out->is_hyphenated &&
+      text[break_opportunity - 1] == kSoftHyphenCharacter)
+    result_out->is_hyphenated = true;
   return line_result;
 }
 

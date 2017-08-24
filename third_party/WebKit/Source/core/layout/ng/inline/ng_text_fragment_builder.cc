@@ -50,6 +50,12 @@ NGTextFragmentBuilder& NGTextFragmentBuilder::SetShapeResult(
   return *this;
 }
 
+NGTextFragmentBuilder& NGTextFragmentBuilder::SetEndEffect(
+    NGTextEndEffect end_effect) {
+  end_effect_ = end_effect;
+  return *this;
+}
+
 RefPtr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
     unsigned index,
     unsigned start_offset,
@@ -57,7 +63,7 @@ RefPtr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
   return AdoptRef(new NGPhysicalTextFragment(
       node_.GetLayoutObject(), Style(), node_.Text(), index, start_offset,
       end_offset, size_.ConvertToPhysical(WritingMode()),
-      ToLineOrientation(WritingMode()), std::move(shape_result_)));
+      ToLineOrientation(WritingMode()), end_effect_, std::move(shape_result_)));
 }
 
 }  // namespace blink

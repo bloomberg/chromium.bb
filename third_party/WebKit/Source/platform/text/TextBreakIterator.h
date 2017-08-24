@@ -116,7 +116,7 @@ class PLATFORM_EXPORT LazyLineBreakIterator final {
       ReleaseLineBreakIterator(iterator_);
   }
 
-  String GetString() const { return string_; }
+  const String& GetString() const { return string_; }
 
   UChar LastCharacter() const {
     static_assert(WTF_ARRAY_LENGTH(prior_context_) == 2,
