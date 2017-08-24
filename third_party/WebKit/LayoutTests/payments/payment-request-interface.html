@@ -305,9 +305,6 @@ generate_tests(assert_throws, [
     ['Negative total value in PaymentDetailsModifier should throw a TypeError.', new TypeError(), function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': ['foo'], 'total': buildItem({'value': '-0.01'})}]})
     }],
-    ['Null supportedMethods in modifiers should throw TypeError.', new TypeError(), function() {
-        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': null}]})
-    }],
     ['Undefined supportedMethods in modifiers should throw TypeError.', new TypeError(), function() {
         new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'modifiers': [{'supportedMethods': undefined}]})
     }],

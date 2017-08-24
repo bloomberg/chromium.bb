@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Throws if the promise [[state]] is not "created" promise_test: Unhandled rejection with value: object "UnknownError: Request failed"
-FAIL If the user agent's "payment request is showing" boolean is true, then return a promise rejected with an "AbortError" DOMException. assert_throws: function "function () { throw e }" threw object "UnknownError: Request failed" that is not a DOMException AbortError: property "code" is equal to 0, expected 20
-Harness: the test ran to completion.
-

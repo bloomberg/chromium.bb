@@ -571,19 +571,31 @@ void ValidateAndConvertPaymentDetailsModifiers(
         return;
     }
 
-    if (modifier.supportedMethods().IsEmpty()) {
+    Vector<String> supported_methods;
+    if (modifier.supportedMethods().isString()) {
+      supported_methods.push_back(modifier.supportedMethods().getAsString());
+    }
+    if (modifier.supportedMethods().isStringSequence()) {
+      supported_methods = modifier.supportedMethods().getAsStringSequence();
+      if (supported_methods.size() > 1) {
+        Deprecation::CountDeprecation(
+            &execution_context,
+            WebFeature::kPaymentRequestSupportedMethodsArray);
+      }
+    }
+    if (supported_methods.IsEmpty()) {
       exception_state.ThrowTypeError(
           "Must specify at least one payment method identifier");
       return;
     }
 
-    if (modifier.supportedMethods().size() > kMaxListSize) {
+    if (supported_methods.size() > kMaxListSize) {
       exception_state.ThrowTypeError(
           "At most 1024 supportedMethods allowed for modifier");
       return;
     }
 
-    for (const String& method : modifier.supportedMethods()) {
+    for (const String& method : supported_methods) {
       if (method.length() > kMaxStringLength) {
         exception_state.ThrowTypeError(
             "Supported method name for identifier cannot be longer than 1024 "
@@ -591,17 +603,17 @@ void ValidateAndConvertPaymentDetailsModifiers(
         return;
       }
     }
-    CountPaymentRequestNetworkNameInSupportedMethods(
-        modifier.supportedMethods(), execution_context);
+    CountPaymentRequestNetworkNameInSupportedMethods(supported_methods,
+                                                     execution_context);
 
     output.back()->method_data =
         payments::mojom::blink::PaymentMethodData::New();
-    output.back()->method_data->supported_methods = modifier.supportedMethods();
+    output.back()->method_data->supported_methods = supported_methods;
 
     if (modifier.hasData() && !modifier.data().IsEmpty()) {
-      StringifyAndParseMethodSpecificData(
-          modifier.supportedMethods(), modifier.data(),
-          output.back()->method_data, exception_state);
+      StringifyAndParseMethodSpecificData(supported_methods, modifier.data(),
+                                          output.back()->method_data,
+                                          exception_state);
     } else {
       output.back()->method_data->stringified_data = "";
     }
@@ -700,20 +712,34 @@ void ValidateAndConvertPaymentMethodData(
   }
 
   for (const PaymentMethodData payment_method_data : input) {
-    if (payment_method_data.supportedMethods().IsEmpty()) {
+    Vector<String> supported_methods;
+    if (payment_method_data.supportedMethods().isString()) {
+      supported_methods.push_back(
+          payment_method_data.supportedMethods().getAsString());
+    }
+    if (payment_method_data.supportedMethods().isStringSequence()) {
+      supported_methods =
+          payment_method_data.supportedMethods().getAsStringSequence();
+      if (supported_methods.size() > 1) {
+        Deprecation::CountDeprecation(
+            &execution_context,
+            WebFeature::kPaymentRequestSupportedMethodsArray);
+      }
+    }
+    if (supported_methods.IsEmpty()) {
       exception_state.ThrowTypeError(
           "Each payment method needs to include at least one payment method "
           "identifier");
       return;
     }
 
-    if (payment_method_data.supportedMethods().size() > kMaxListSize) {
+    if (supported_methods.size() > kMaxListSize) {
       exception_state.ThrowTypeError(
           "At most 1024 payment method identifiers are supported");
       return;
     }
 
-    for (const String identifier : payment_method_data.supportedMethods()) {
+    for (const String identifier : supported_methods) {
       if (identifier.length() > kMaxStringLength) {
         exception_state.ThrowTypeError(
             "A payment method identifier cannot be longer than 1024 "
@@ -722,17 +748,17 @@ void ValidateAndConvertPaymentMethodData(
       }
     }
 
-    CountPaymentRequestNetworkNameInSupportedMethods(
-        payment_method_data.supportedMethods(), execution_context);
+    CountPaymentRequestNetworkNameInSupportedMethods(supported_methods,
+                                                     execution_context);
 
     output.push_back(payments::mojom::blink::PaymentMethodData::New());
-    output.back()->supported_methods = payment_method_data.supportedMethods();
+    output.back()->supported_methods = supported_methods;
 
     if (payment_method_data.hasData() &&
         !payment_method_data.data().IsEmpty()) {
-      StringifyAndParseMethodSpecificData(
-          payment_method_data.supportedMethods(), payment_method_data.data(),
-          output.back(), exception_state);
+      StringifyAndParseMethodSpecificData(supported_methods,
+                                          payment_method_data.data(),
+                                          output.back(), exception_state);
     } else {
       output.back()->stringified_data = "";
     }

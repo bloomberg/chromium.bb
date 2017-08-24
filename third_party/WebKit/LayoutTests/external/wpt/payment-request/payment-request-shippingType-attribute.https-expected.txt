@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL If options.requestShipping is false, then request.shippingType attribute is null. Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
-FAIL If options.requestShipping is true, request.shippingType will be options.shippingType. Failed to construct 'PaymentRequest': The provided value cannot be converted to a sequence.
-Harness: the test ran to completion.
-

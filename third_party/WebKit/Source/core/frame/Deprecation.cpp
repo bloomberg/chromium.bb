@@ -561,6 +561,11 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
           "switching your application to a secure origin, such as HTTPS. See "
           "https://goo.gl/rStTGz for more details.");
 
+    case WebFeature::kPaymentRequestSupportedMethodsArray:
+      return replacedWillBeRemoved(
+          "PaymentRequest's supportedMethods taking an array",
+          "a single string", M64, "5177301645918208");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();
