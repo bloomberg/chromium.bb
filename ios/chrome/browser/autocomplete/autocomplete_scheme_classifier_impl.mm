@@ -17,7 +17,7 @@ AutocompleteSchemeClassifierImpl::AutocompleteSchemeClassifierImpl() {}
 
 AutocompleteSchemeClassifierImpl::~AutocompleteSchemeClassifierImpl() {}
 
-metrics::OmniboxInputType::Type
+metrics::OmniboxInputType
 AutocompleteSchemeClassifierImpl::GetInputTypeForScheme(
     const std::string& scheme) const {
   DCHECK_EQ(scheme, base::ToLowerASCII(scheme));

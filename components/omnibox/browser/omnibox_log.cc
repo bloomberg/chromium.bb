@@ -7,7 +7,7 @@
 OmniboxLog::OmniboxLog(
     const base::string16& text,
     bool just_deleted_text,
-    metrics::OmniboxInputType::Type input_type,
+    metrics::OmniboxInputType input_type,
     bool is_popup_open,
     size_t selected_index,
     bool is_paste_and_go,
@@ -31,7 +31,6 @@ OmniboxLog::OmniboxLog(
       elapsed_time_since_last_change_to_default_match(
           elapsed_time_since_last_change_to_default_match),
       result(result),
-      providers_info() {
-}
+      providers_info() {}
 
 OmniboxLog::~OmniboxLog() {}

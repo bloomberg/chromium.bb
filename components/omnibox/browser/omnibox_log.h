@@ -19,20 +19,19 @@ class AutocompleteResult;
 // The data to log (via the metrics service) when the user selects an item from
 // the omnibox popup.
 struct OmniboxLog {
-  OmniboxLog(
-      const base::string16& text,
-      bool just_deleted_text,
-      metrics::OmniboxInputType::Type input_type,
-      bool is_popup_open,
-      size_t selected_index,
-      bool is_paste_and_go,
-      SessionID::id_type tab_id,
-      metrics::OmniboxEventProto::PageClassification
-          current_page_classification,
-      base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
-      size_t completed_length,
-      base::TimeDelta elapsed_time_since_last_change_to_default_match,
-      const AutocompleteResult& result);
+  OmniboxLog(const base::string16& text,
+             bool just_deleted_text,
+             metrics::OmniboxInputType input_type,
+             bool is_popup_open,
+             size_t selected_index,
+             bool is_paste_and_go,
+             SessionID::id_type tab_id,
+             metrics::OmniboxEventProto::PageClassification
+                 current_page_classification,
+             base::TimeDelta elapsed_time_since_user_first_modified_omnibox,
+             size_t completed_length,
+             base::TimeDelta elapsed_time_since_last_change_to_default_match,
+             const AutocompleteResult& result);
   ~OmniboxLog();
 
   // The user's input text in the omnibox.
@@ -43,7 +42,7 @@ struct OmniboxLog {
   bool just_deleted_text;
 
   // The detected type of the user's input.
-  metrics::OmniboxInputType::Type input_type;
+  metrics::OmniboxInputType input_type;
 
   // True if the popup is open.
   bool is_popup_open;

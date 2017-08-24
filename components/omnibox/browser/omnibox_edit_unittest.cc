@@ -124,7 +124,7 @@ class TestingSchemeClassifier : public AutocompleteSchemeClassifier {
  public:
   TestingSchemeClassifier() {}
 
-  metrics::OmniboxInputType::Type GetInputTypeForScheme(
+  metrics::OmniboxInputType GetInputTypeForScheme(
       const std::string& scheme) const override {
     return metrics::OmniboxInputType::URL;
   }

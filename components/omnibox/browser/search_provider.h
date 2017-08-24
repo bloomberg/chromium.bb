@@ -71,7 +71,7 @@ class SearchProvider : public BaseSearchProvider,
   // |allow_exact_keyword_match| is false, the relevance for complete
   // keywords that support replacements is degraded.
   static int CalculateRelevanceForKeywordVerbatim(
-      metrics::OmniboxInputType::Type type,
+      metrics::OmniboxInputType type,
       bool allow_exact_keyword_match,
       bool prefer_keyword);
 

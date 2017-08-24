@@ -89,7 +89,7 @@ class AutocompleteInput {
   ~AutocompleteInput();
 
   // Converts |type| to a string representation.  Used in logging.
-  static std::string TypeToString(metrics::OmniboxInputType::Type type);
+  static std::string TypeToString(metrics::OmniboxInputType type);
 
   // Parses |text| (including an optional |desired_tld|) and returns the type of
   // input this will be interpreted as.  |scheme_classifier| is used to check
@@ -98,7 +98,7 @@ class AutocompleteInput {
   // it is non-NULL. The scheme is stored in |scheme| if it is non-NULL. The
   // canonicalized URL is stored in |canonicalized_url|; however, this URL is
   // not guaranteed to be valid, especially if the parsed type is, e.g., QUERY.
-  static metrics::OmniboxInputType::Type Parse(
+  static metrics::OmniboxInputType Parse(
       const base::string16& text,
       const std::string& desired_tld,
       const AutocompleteSchemeClassifier& scheme_classifier,
@@ -164,7 +164,7 @@ class AutocompleteInput {
   }
 
   // The type of input supplied.
-  metrics::OmniboxInputType::Type type() const { return type_; }
+  metrics::OmniboxInputType type() const { return type_; }
 
   // Returns parsed URL components.
   const url::Parsed& parts() const { return parts_; }
@@ -220,7 +220,7 @@ class AutocompleteInput {
   GURL current_url_;
   base::string16 current_title_;
   metrics::OmniboxEventProto::PageClassification current_page_classification_;
-  metrics::OmniboxInputType::Type type_;
+  metrics::OmniboxInputType type_;
   url::Parsed parts_;
   base::string16 scheme_;
   GURL canonicalized_url_;

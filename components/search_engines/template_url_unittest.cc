@@ -637,18 +637,16 @@ TEST_F(TemplateURLTest, ReplaceCursorPosition) {
 TEST_F(TemplateURLTest, ReplaceInputType) {
   struct TestData {
     const base::string16 search_term;
-    metrics::OmniboxInputType::Type input_type;
+    metrics::OmniboxInputType input_type;
     const std::string url;
     const std::string expected_result;
   } test_data[] = {
-    { ASCIIToUTF16("foo"),
-      metrics::OmniboxInputType::UNKNOWN,
-      "{google:baseURL}?{searchTerms}&{google:inputType}",
-      "http://www.google.com/?foo&oit=1&" },
-    { ASCIIToUTF16("foo"),
-      metrics::OmniboxInputType::URL,
-      "{google:baseURL}?{searchTerms}&{google:inputType}",
-      "http://www.google.com/?foo&oit=3&" },
+      {ASCIIToUTF16("foo"), metrics::OmniboxInputType::UNKNOWN,
+       "{google:baseURL}?{searchTerms}&{google:inputType}",
+       "http://www.google.com/?foo&oit=1&"},
+      {ASCIIToUTF16("foo"), metrics::OmniboxInputType::URL,
+       "{google:baseURL}?{searchTerms}&{google:inputType}",
+       "http://www.google.com/?foo&oit=3&"},
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
