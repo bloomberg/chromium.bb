@@ -20,6 +20,12 @@ import org.chromium.base.Callback;
  */
 public interface AccountManagerDelegate {
     /**
+     * Registers internal observers used for notifying {@link AccountsChangeObserver}. Must be
+     * invoked before calling {@link #addObserver}.
+     */
+    void registerObservers();
+
+    /**
      * Adds an observer to get notified about accounts changes.
      * @param observer the observer to add.
      */

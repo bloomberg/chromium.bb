@@ -34,7 +34,9 @@ public class AccountManagerFacadeTest {
     public void setUp() throws Exception {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mDelegate = new FakeAccountManagerDelegate(context);
+        Assert.assertFalse(mDelegate.isRegisterObserversCalled());
         AccountManagerFacade.overrideAccountManagerFacadeForTests(context, mDelegate);
+        Assert.assertTrue(mDelegate.isRegisterObserversCalled());
         mHelper = AccountManagerFacade.get();
     }
 

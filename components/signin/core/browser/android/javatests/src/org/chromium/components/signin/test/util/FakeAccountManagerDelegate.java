@@ -47,6 +47,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     private final Context mContext;
     private final Set<AccountHolder> mAccounts = new HashSet<>();
     private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
+    private boolean mRegisterObserversCalled;
 
     @VisibleForTesting
     public FakeAccountManagerDelegate(Context context, Account... accounts) {
@@ -56,6 +57,15 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
                 mAccounts.add(AccountHolder.builder(account).alwaysAccept(true).build());
             }
         }
+    }
+
+    @Override
+    public void registerObservers() {
+        mRegisterObserversCalled = true;
+    }
+
+    public boolean isRegisterObserversCalled() {
+        return mRegisterObserversCalled;
     }
 
     @Override
