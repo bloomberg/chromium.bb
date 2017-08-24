@@ -51,14 +51,21 @@ import java.util.concurrent.TimeUnit;
 public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     private final AccountManager mAccountManager;
     private final ObserverList<AccountsChangeObserver> mObservers = new ObserverList<>();
+    private boolean mRegisterObserversCalled;
 
     private static final String TAG = "Auth";
 
-    @SuppressWarnings("deprecation")
     public SystemAccountManagerDelegate() {
         Context context = ContextUtils.getApplicationContext();
         mAccountManager = AccountManager.get(context);
+    }
 
+    @SuppressWarnings("deprecation")
+    @Override
+    public void registerObservers() {
+        assert !mRegisterObserversCalled;
+
+        Context context = ContextUtils.getApplicationContext();
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override
             public void onReceive(final Context context, final Intent intent) {
@@ -76,6 +83,8 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
                 "com.google.android.gms", PatternMatcher.PATTERN_PREFIX);
 
         context.registerReceiver(receiver, gmsPackageReplacedFilter);
+
+        mRegisterObserversCalled = true;
     }
 
     protected void checkCanUseGooglePlayServices() throws AccountManagerDelegateException {
@@ -96,12 +105,14 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
 
     @Override
     public void addObserver(AccountsChangeObserver observer) {
+        assert mRegisterObserversCalled : "Should call registerObservers first";
         mObservers.addObserver(observer);
     }
 
     @Override
     public void removeObserver(AccountsChangeObserver observer) {
-        mObservers.removeObserver(observer);
+        boolean success = mObservers.removeObserver(observer);
+        assert success : "Can't find observer";
     }
 
     @Override
