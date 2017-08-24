@@ -24,6 +24,7 @@
  */
 
 #include "modules/webaudio/DefaultAudioDestinationNode.h"
+
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
@@ -80,8 +81,8 @@ void DefaultAudioDestinationHandler::Uninitialize() {
 }
 
 void DefaultAudioDestinationHandler::CreateDestination() {
-  destination_ = AudioDestination::Create(*this, ChannelCount(), latency_hint_,
-                                          Context()->GetSecurityOrigin());
+  destination_ = AudioDestination::Create(*this,
+      ChannelCount(), latency_hint_, Context()->GetSecurityOrigin());
 }
 
 void DefaultAudioDestinationHandler::StartDestination() {

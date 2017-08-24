@@ -32,8 +32,8 @@
 #include <memory>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioIOCallback.h"
-#include "platform/wtf/Allocator.h"
-#include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/ThreadSafeRefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebAudioDevice.h"
 #include "public/platform/WebThread.h"
@@ -49,7 +49,15 @@ class WebAudioLatencyHint;
 // renderer and the Blink's WebAudio module. It has a FIFO to adapt the
 // different processing block sizes of WebAudio renderer and actual hardware
 // audio callback.
-class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
+//
+// Currently AudioDestination supports two types of threading models:
+//  - Single-thread (default): process the entire WebAudio render call chain by
+//    AudioDeviceThread.
+//  - Dual-thread (experimental): Use WebThread for the WebAudio rendering with
+//    AudioWorkletThread.
+class PLATFORM_EXPORT AudioDestination
+    : public ThreadSafeRefCounted<AudioDestination>,
+      public WebAudioDevice::RenderCallback {
   USING_FAST_MALLOC(AudioDestination);
   WTF_MAKE_NONCOPYABLE(AudioDestination);
 
@@ -60,27 +68,28 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
                    RefPtr<SecurityOrigin>);
   ~AudioDestination() override;
 
-  static std::unique_ptr<AudioDestination> Create(
+  static RefPtr<AudioDestination> Create(
       AudioIOCallback&,
       unsigned number_of_output_channels,
       const WebAudioLatencyHint&,
       RefPtr<SecurityOrigin>);
 
   // The actual render function (WebAudioDevice::RenderCallback) isochronously
-  // invoked by the media renderer.
+  // invoked by the media renderer. This is never called after Stop() is called.
   void Render(const WebVector<float*>& destination_data,
               size_t number_of_frames,
               double delay,
               double delay_timestamp,
               size_t prior_frames_skipped) override;
 
-  // The actual render request to the WebAudio destination node. This triggers
-  // the WebAudio rendering pipe line on the web thread.
-  void RequestRenderOnWebThread(size_t frames_requested,
-                                size_t frames_to_render,
-                                double delay,
-                                double delay_timestamp,
-                                size_t prior_frames_skipped);
+  // The actual render request to the WebAudio destination node. This method
+  // can be invoked on both AudioDeviceThread (single-thread rendering) and
+  // AudioWorkletThread (dual-thread rendering).
+  void RequestRender(size_t frames_requested,
+                     size_t frames_to_render,
+                     double delay,
+                     double delay_timestamp,
+                     size_t prior_frames_skipped);
 
   virtual void Start();
   virtual void Stop();
@@ -109,28 +118,18 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback {
 
   size_t HardwareBufferSize();
 
-  bool IsRenderingThread();
-
-  // Because the alternative thread can exist, this method returns what is
-  // currently valid/available.
-  WebThread* GetRenderingThread();
-
-  void ClearRenderingThread();
-
   // Accessed by the main thread.
   std::unique_ptr<WebAudioDevice> web_audio_device_;
   const unsigned number_of_output_channels_;
   size_t callback_buffer_size_;
   bool is_playing_;
 
-  // Accessed by the device thread. Rendering thread for WebAudio graph.
-  std::unique_ptr<WebThread> rendering_thread_;
-
-  // The experimental worklet rendering thread.
+  // The experimental rendering thread from AudioWorkletThread. This stays
+  // |nullptr| when AudioWorklet is not enabled.
   WebThread* worklet_backing_thread_ = nullptr;
 
-  // Accessed by both threads: resolves the buffer size mismatch between the
-  // WebAudio engine and the callback function from the actual audio device.
+  // Can be accessed by both threads: resolves the buffer size mismatch between
+  // the WebAudio engine and the callback function from the actual audio device.
   std::unique_ptr<PushPullFIFO> fifo_;
 
   // Accessed by device thread: to pass the data from FIFO to the device.
