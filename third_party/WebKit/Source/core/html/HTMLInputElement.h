@@ -194,8 +194,8 @@ class CORE_EXPORT HTMLInputElement
 
   const AtomicString& DefaultValue() const;
 
-  Vector<String> AcceptMIMETypes();
-  Vector<String> AcceptFileExtensions();
+  Vector<String> AcceptMIMETypes() const;
+  Vector<String> AcceptFileExtensions() const;
   const AtomicString& Alt() const;
 
   void setSize(unsigned);

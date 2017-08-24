@@ -49,6 +49,21 @@ namespace blink {
 using blink::WebLocalizedString;
 using namespace HTMLNames;
 
+namespace {
+
+WebVector<WebString> CollectAcceptTypes(const HTMLInputElement& input) {
+  Vector<String> mime_types = input.AcceptMIMETypes();
+  Vector<String> extensions = input.AcceptFileExtensions();
+
+  Vector<String> accept_types;
+  accept_types.ReserveCapacity(mime_types.size() + extensions.size());
+  accept_types.AppendVector(mime_types);
+  accept_types.AppendVector(extensions);
+  return accept_types;
+}
+
+}  // namespace
+
 inline FileInputType::FileInputType(HTMLInputElement& element)
     : InputType(element),
       KeyboardClickableInputTypeView(element),
@@ -136,20 +151,20 @@ void FileInputType::HandleDOMActivateEvent(Event* event) {
     return;
 
   if (ChromeClient* chrome_client = this->GetChromeClient()) {
-    FileChooserSettings settings;
+    WebFileChooserParams params;
     HTMLInputElement& input = GetElement();
-    settings.allows_directory_upload =
-        input.FastHasAttribute(webkitdirectoryAttr);
-    settings.allows_multiple_files = settings.allows_directory_upload ||
-                                     input.FastHasAttribute(multipleAttr);
-    settings.accept_mime_types = input.AcceptMIMETypes();
-    settings.accept_file_extensions = input.AcceptFileExtensions();
-    settings.selected_files = file_list_->PathsForUserVisibleFiles();
-    settings.use_media_capture =
-        RuntimeEnabledFeatures::MediaCaptureEnabled() &&
-        input.FastHasAttribute(captureAttr);
+    bool is_directory = input.FastHasAttribute(webkitdirectoryAttr);
+    params.directory = is_directory;
+    params.need_local_path = is_directory;
+    params.multi_select = is_directory || input.FastHasAttribute(multipleAttr);
+    params.accept_types = CollectAcceptTypes(input);
+    params.selected_files = file_list_->PathsForUserVisibleFiles();
+    params.use_media_capture = RuntimeEnabledFeatures::MediaCaptureEnabled() &&
+                               input.FastHasAttribute(captureAttr);
+    params.requestor = input.GetDocument().Url();
+
     chrome_client->OpenFileChooser(input.GetDocument().GetFrame(),
-                                   NewFileChooser(settings));
+                                   NewFileChooser(params));
   }
   event->SetDefaultHandled();
 }
@@ -330,14 +345,15 @@ void FileInputType::FilesChosen(const Vector<FileChooserFileInfo>& files) {
 
 void FileInputType::SetFilesFromDirectory(const String& path) {
   if (ChromeClient* chrome_client = this->GetChromeClient()) {
-    FileChooserSettings settings;
-    HTMLInputElement& input = GetElement();
-    settings.allows_directory_upload = true;
-    settings.allows_multiple_files = true;
-    settings.selected_files.push_back(path);
-    settings.accept_mime_types = input.AcceptMIMETypes();
-    settings.accept_file_extensions = input.AcceptFileExtensions();
-    chrome_client->EnumerateChosenDirectory(NewFileChooser(settings));
+    Vector<String> files;
+    files.push_back(path);
+    WebFileChooserParams params;
+    params.directory = true;
+    params.multi_select = true;
+    params.selected_files = files;
+    params.accept_types = CollectAcceptTypes(GetElement());
+    params.requestor = GetElement().GetDocument().Url();
+    chrome_client->EnumerateChosenDirectory(NewFileChooser(params));
   }
 }
 

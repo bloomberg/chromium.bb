@@ -33,45 +33,42 @@ namespace blink {
 FileChooserClient::~FileChooserClient() {}
 
 FileChooser* FileChooserClient::NewFileChooser(
-    const FileChooserSettings& settings) {
+    const WebFileChooserParams& params) {
   if (chooser_)
     chooser_->DisconnectClient();
 
-  chooser_ = FileChooser::Create(this, settings);
+  chooser_ = FileChooser::Create(this, params);
   return chooser_.Get();
 }
 
 inline FileChooser::FileChooser(FileChooserClient* client,
-                                const FileChooserSettings& settings)
-    : client_(client), settings_(settings) {}
+                                const WebFileChooserParams& params)
+    : client_(client), params_(params) {}
 
 PassRefPtr<FileChooser> FileChooser::Create(
     FileChooserClient* client,
-    const FileChooserSettings& settings) {
-  return AdoptRef(new FileChooser(client, settings));
+    const WebFileChooserParams& params) {
+  return AdoptRef(new FileChooser(client, params));
 }
 
 FileChooser::~FileChooser() {}
 
 void FileChooser::ChooseFiles(const Vector<FileChooserFileInfo>& files) {
-  // FIXME: This is inelegant. We should not be looking at settings here.
-  Vector<String> paths;
-  for (unsigned i = 0; i < files.size(); ++i)
-    paths.push_back(files[i].path);
-  if (settings_.selected_files == paths)
-    return;
+  // FIXME: This is inelegant. We should not be looking at params_ here.
+  if (params_.selected_files.size() == files.size()) {
+    bool was_changed = false;
+    for (unsigned i = 0; i < files.size(); ++i) {
+      if (String(params_.selected_files[i]) != files[i].path) {
+        was_changed = true;
+        break;
+      }
+    }
+    if (!was_changed)
+      return;
+  }
 
   if (client_)
     client_->FilesChosen(files);
-}
-
-Vector<String> FileChooserSettings::AcceptTypes() const {
-  Vector<String> accept_types;
-  accept_types.ReserveCapacity(accept_mime_types.size() +
-                               accept_file_extensions.size());
-  accept_types.AppendVector(accept_mime_types);
-  accept_types.AppendVector(accept_file_extensions);
-  return accept_types;
 }
 
 }  // namespace blink

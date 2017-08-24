@@ -1404,11 +1404,11 @@ static Vector<String> ParseAcceptAttribute(const String& accept_string,
   return types;
 }
 
-Vector<String> HTMLInputElement::AcceptMIMETypes() {
+Vector<String> HTMLInputElement::AcceptMIMETypes() const {
   return ParseAcceptAttribute(FastGetAttribute(acceptAttr), IsValidMIMEType);
 }
 
-Vector<String> HTMLInputElement::AcceptFileExtensions() {
+Vector<String> HTMLInputElement::AcceptFileExtensions() const {
   return ParseAcceptAttribute(FastGetAttribute(acceptAttr),
                               IsValidFileExtension);
 }
