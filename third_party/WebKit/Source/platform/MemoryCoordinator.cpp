@@ -26,6 +26,7 @@ void DecommitFreeableMemory() {
 }
 
 // static
+float MemoryCoordinator::approximated_device_memory_gb_ = 0.0;
 bool MemoryCoordinator::is_low_end_device_ = false;
 int64_t MemoryCoordinator::physical_memory_mb_ = 0;
 
@@ -43,6 +44,39 @@ int64_t MemoryCoordinator::GetPhysicalMemoryMB() {
 void MemoryCoordinator::SetPhysicalMemoryMBForTesting(
     int64_t physical_memory_mb) {
   physical_memory_mb_ = physical_memory_mb;
+  CalculateAndSetApproximatedDeviceMemory();
+}
+
+// static
+float MemoryCoordinator::GetApproximatedDeviceMemory() {
+  return approximated_device_memory_gb_;
+}
+
+// static
+void MemoryCoordinator::CalculateAndSetApproximatedDeviceMemory() {
+  // The calculations in this method are described in the specifcations:
+  // https://github.com/WICG/device-memory.
+  DCHECK_GT(physical_memory_mb_, 0);
+  int lower_bound = physical_memory_mb_;
+  int power = 0;
+
+  // Extract the most significant 2-bits and their location.
+  while (lower_bound >= 4) {
+    lower_bound >>= 1;
+    power++;
+  }
+  // The lower_bound value is either 0b10 or 0b11.
+  DCHECK(lower_bound & 2);
+
+  int64_t upper_bound = lower_bound + 1;
+  lower_bound = lower_bound << power;
+  upper_bound = upper_bound << power;
+
+  // Find the closest bound, and convert it to GB.
+  if (physical_memory_mb_ - lower_bound <= upper_bound - physical_memory_mb_)
+    approximated_device_memory_gb_ = static_cast<float>(lower_bound) / 1024.0;
+  else
+    approximated_device_memory_gb_ = static_cast<float>(upper_bound) / 1024.0;
 }
 
 // static
@@ -58,6 +92,7 @@ bool MemoryCoordinator::IsCurrentlyLowMemory() {
 void MemoryCoordinator::Initialize() {
   is_low_end_device_ = ::base::SysInfo::IsLowEndDevice();
   physical_memory_mb_ = ::base::SysInfo::AmountOfPhysicalMemoryMB();
+  CalculateAndSetApproximatedDeviceMemory();
 }
 
 // static

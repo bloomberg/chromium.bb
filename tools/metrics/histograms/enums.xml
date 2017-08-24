@@ -16167,6 +16167,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2118" label="ARIAValueTextAttribute"/>
   <int value="2119" label="V8LabeledExpressionStatement"/>
   <int value="2120" label="PaymentRequestSupportedMethodsArray"/>
+  <int value="2121" label="NavigatorDeviceMemory"/>
 </enum>
 
 <enum name="FeedbackSource">

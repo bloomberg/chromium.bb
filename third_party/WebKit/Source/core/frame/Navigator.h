@@ -52,6 +52,7 @@ class CORE_EXPORT Navigator final : public GarbageCollected<Navigator>,
   // NavigatorCookies
   bool cookieEnabled() const;
 
+  float deviceMemory() const;
   String productSub() const;
   String vendor() const;
   String vendorSub() const;

@@ -1,0 +1,18 @@
+<html>
+<body>
+<p>Tests for <a href="https://github.com/w3c/device-memory#the-web-exposed-api">navigator.deviceMemory</a>:</p>
+<script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+
+    var deviceMemory = navigator.deviceMemory;
+
+    document.write("navigator.deviceMemory should be a positive value: " + (deviceMemory >= 0) + "<br>");
+    var deviceMemoryInMB = deviceMemory * 1024.0;
+    while ((deviceMemoryInMB % 2) == 0) {
+      deviceMemoryInMB = deviceMemoryInMB / 2;
+    }
+    document.write("navigator.deviceMemory should have only the most 2 significant bits are set in MB: " + (deviceMemoryInMB < 4));
+</script>
+</body>
+</html>

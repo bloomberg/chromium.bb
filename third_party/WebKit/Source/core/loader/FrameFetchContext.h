@@ -149,7 +149,6 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   void AddClientHintsIfNecessary(const ClientHintsPreferences&,
                                  const FetchParameters::ResourceWidth&,
                                  ResourceRequest&);
-  static float ClientHintsDeviceMemory(int64_t physical_memory_mb);
 
   MHTMLArchive* Archive() const override;
 

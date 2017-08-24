@@ -760,31 +760,6 @@ void FrameFetchContext::ModifyRequestForCSP(ResourceRequest& resource_request) {
   GetFrame()->Loader().ModifyRequestForCSP(resource_request, document_);
 }
 
-float FrameFetchContext::ClientHintsDeviceMemory(int64_t physical_memory_mb) {
-  // The calculations in this method are described in the specifcations:
-  // https://github.com/WICG/device-memory.
-  DCHECK_GT(physical_memory_mb, 0);
-  int lower_bound = physical_memory_mb;
-  int power = 0;
-
-  // Extract the most significant 2-bits and their location.
-  while (lower_bound >= 4) {
-    lower_bound >>= 1;
-    power++;
-  }
-  // The lower_bound value is either 0b10 or 0b11.
-  DCHECK(lower_bound & 2);
-
-  int64_t upper_bound = lower_bound + 1;
-  lower_bound = lower_bound << power;
-  upper_bound = upper_bound << power;
-
-  // Find the closest bound, and convert it to GB.
-  if (physical_memory_mb - lower_bound <= upper_bound - physical_memory_mb)
-    return static_cast<float>(lower_bound) / 1024.0;
-  return static_cast<float>(upper_bound) / 1024.0;
-}
-
 void FrameFetchContext::AddClientHintsIfNecessary(
     const ClientHintsPreferences& hints_preferences,
     const FetchParameters::ResourceWidth& resource_width,
@@ -794,10 +769,10 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   if (ShouldSendClientHint(kWebClientHintsTypeDeviceMemory,
                            hints_preferences)) {
-    int64_t physical_memory = MemoryCoordinator::GetPhysicalMemoryMB();
     request.AddHTTPHeaderField(
         "Device-Memory",
-        AtomicString(String::Number(ClientHintsDeviceMemory(physical_memory))));
+        AtomicString(
+            String::Number(MemoryCoordinator::GetApproximatedDeviceMemory())));
   }
 
   float dpr = GetDevicePixelRatio();
