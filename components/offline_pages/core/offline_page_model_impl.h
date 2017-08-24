@@ -57,7 +57,7 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   // All blocking calls/disk access will happen on the provided |task_runner|.
   OfflinePageModelImpl(
       std::unique_ptr<OfflinePageMetadataStore> store,
-      const base::FilePath& archives_dir,
+      std::unique_ptr<ArchiveManager> archive_manager,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~OfflinePageModelImpl() override;
 
@@ -266,9 +266,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Persistent store for offline page metadata.
   std::unique_ptr<OfflinePageMetadataStore> store_;
-
-  // Location where all of the archive files will be stored.
-  base::FilePath archives_dir_;
 
   // The observers.
   base::ObserverList<Observer> observers_;
