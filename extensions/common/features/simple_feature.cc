@@ -61,6 +61,10 @@ Feature::Availability IsAvailableToContextForBind(const Extension* extension,
   return feature->IsAvailableToContext(extension, context, url, platform);
 }
 
+Feature::Availability IsAvailableToEnvironmentForBind(const Feature* feature) {
+  return feature->IsAvailableToEnvironment();
+}
+
 // Gets a human-readable name for the given extension type, suitable for giving
 // to developers in an error message.
 std::string GetDisplayName(Manifest::Type type) {
@@ -263,6 +267,15 @@ Feature::Availability SimpleFeature::IsAvailableToContext(
   return CheckDependencies(base::Bind(&IsAvailableToContextForBind,
                                       base::RetainedRef(extension), context,
                                       url, platform));
+}
+
+Feature::Availability SimpleFeature::IsAvailableToEnvironment() const {
+  Availability environment_availability = GetEnvironmentAvailability(
+      GetCurrentPlatform(), GetCurrentChannel(), GetCurrentFeatureSessionType(),
+      base::CommandLine::ForCurrentProcess());
+  if (!environment_availability.is_available())
+    return environment_availability;
+  return CheckDependencies(base::Bind(&IsAvailableToEnvironmentForBind));
 }
 
 std::string SimpleFeature::GetAvailabilityMessage(

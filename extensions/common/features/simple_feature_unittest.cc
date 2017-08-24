@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
 #include "base/values.h"
 #include "extensions/common/features/complex_feature.h"
@@ -917,6 +918,55 @@ TEST(SimpleFeatureUnitTest, TestChannelsWithoutExtension) {
                                         kWhitelistedUrl)
                   .result());
   }
+}
+
+TEST(SimpleFeatureUnitTest, TestAvailableToEnvironment) {
+  {
+    // Test with no environment restrictions, but with other restrictions. The
+    // result should always be available.
+    SimpleFeature feature;
+    feature.set_min_manifest_version(2);
+    feature.set_extension_types({Manifest::TYPE_EXTENSION});
+    feature.set_contexts({Feature::BLESSED_EXTENSION_CONTEXT});
+    EXPECT_EQ(Feature::IS_AVAILABLE,
+              feature.IsAvailableToEnvironment().result());
+  }
+
+  {
+    // Test with channel restrictions.
+    SimpleFeature feature;
+    feature.set_channel(Channel::BETA);
+    {
+      ScopedCurrentChannel current_channel(Channel::BETA);
+      EXPECT_EQ(Feature::IS_AVAILABLE,
+                feature.IsAvailableToEnvironment().result());
+    }
+    {
+      ScopedCurrentChannel current_channel(Channel::STABLE);
+      EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
+                feature.IsAvailableToEnvironment().result());
+    }
+  }
+
+  {
+    // Test with command-line restrictions.
+    const char kFakeSwitch[] = "some-fake-switch";
+    SimpleFeature feature;
+    feature.set_command_line_switch(kFakeSwitch);
+
+    EXPECT_EQ(Feature::MISSING_COMMAND_LINE_SWITCH,
+              feature.IsAvailableToEnvironment().result());
+    {
+      base::test::ScopedCommandLine command_line;
+      command_line.GetProcessCommandLine()->AppendSwitch(
+          base::StringPrintf("enable-%s", kFakeSwitch));
+      EXPECT_EQ(Feature::IS_AVAILABLE,
+                feature.IsAvailableToEnvironment().result());
+    }
+  }
+
+  // Note: if we wanted, we could add a ScopedCurrentPlatform() and add
+  // platform-test restrictions?
 }
 
 }  // namespace extensions
