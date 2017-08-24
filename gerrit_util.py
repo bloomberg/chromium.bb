@@ -624,7 +624,7 @@ def SetCommitMessage(host, change, description, notify='ALL'):
   """Updates a commit message."""
   assert notify in ('ALL', 'NONE')
   path = 'changes/%s/message' % change
-  body = {'message': description}
+  body = {'message': description, 'notify': notify}
   conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
   try:
     ReadHttpResponse(conn, accept_statuses=[200, 204])
