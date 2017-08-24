@@ -17,9 +17,9 @@ class GURL;
 - (void)rewriterDidChange:(MailtoURLRewriter*)rewriter;
 @end
 
-// An object that manages the available Mail client apps. The currently selected
-// Mail client to handle mailto: URL is stored in a key in NSUserDefaults.
-// If the key in NSUserDefaults is not set or the corresponding app is no longer
+// An abstract base class for objects that manage the available Mail client
+// apps. The currently selected Mail client to handle mailto: URL is available
+// through -defaultHandlerID property. If the corresponding app is no longer
 // installed, the system-provided Mail client app will be used.
 @interface MailtoURLRewriter : NSObject
 
@@ -45,10 +45,10 @@ class GURL;
 // Returns the name of the application that handles mailto: URLs.
 - (NSString*)defaultHandlerName;
 
-// Rewrites |gURL| into a new URL that can be "opened" to launch the Mail
-// client app. May return nil if |gURL| is not a mailto: URL or there are no
+// Rewrites |URL| into a new URL that can be "opened" to launch the Mail
+// client app. May return nil if |URL| is not a mailto: URL or there are no
 // Mail client app available.
-- (NSString*)rewriteMailtoURL:(const GURL&)gURL;
+- (NSString*)rewriteMailtoURL:(const GURL&)URL;
 
 @end
 

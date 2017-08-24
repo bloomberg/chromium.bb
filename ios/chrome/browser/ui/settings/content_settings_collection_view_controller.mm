@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/settings/translate_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 #include "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -106,7 +107,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                               inverted:YES];
     [_disablePopupsSetting setObserver:self];
 
-    _mailtoURLRewriter = [[MailtoURLRewriter alloc] initWithStandardHandlers];
+    _mailtoURLRewriter =
+        [[LegacyMailtoURLRewriter alloc] initWithStandardHandlers];
     [_mailtoURLRewriter setObserver:self];
 
     [self loadModel];

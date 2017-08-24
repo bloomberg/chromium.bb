@@ -13,6 +13,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/open_url_util.h"
 #include "ios/chrome/browser/web/features.h"
+#import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
 #import "ios/chrome/browser/web/mailto_url_rewriter.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
@@ -175,7 +176,7 @@ NSString* PromptActionString(NSString* scheme) {
   if (base::FeatureList::IsEnabled(kMailtoUrlRewriting) &&
       gURL.SchemeIs(url::kMailToScheme)) {
     MailtoURLRewriter* rewriter =
-        [[MailtoURLRewriter alloc] initWithStandardHandlers];
+        [[LegacyMailtoURLRewriter alloc] initWithStandardHandlers];
     NSString* launchURL = [rewriter rewriteMailtoURL:gURL];
     if (launchURL)
       URL = [NSURL URLWithString:launchURL];

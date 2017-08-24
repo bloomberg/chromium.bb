@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/web/mailto_url_rewriter.h"
+#import "ios/chrome/browser/web/legacy_mailto_url_rewriter.h"
 
 #import "ios/chrome/browser/web/fake_mailto_handler_helpers.h"
 #import "ios/chrome/browser/web/mailto_handler_system_mail.h"
@@ -27,28 +27,30 @@ NSString* const kGmailAppStoreID = @"422689480";
 
 }  // namespace
 
-#pragma mark - MailtoURLRewriter private interfaces for testing.
+#pragma mark - LegacyMailtoURLRewriter private interfaces for testing.
 
-@interface MailtoURLRewriter ()
+@interface LegacyMailtoURLRewriter ()
 + (void)resetDefaultHandlerIDForTesting;
 - (void)addMailtoApps:(NSArray<MailtoHandler*>*)handlerApps;
 @end
 
 #pragma mark - Unit Test Cases
 
-class MailtoURLRewriterTest : public PlatformTest {
+class LegacyMailtoURLRewriterTest : public PlatformTest {
  protected:
-  void SetUp() override { [MailtoURLRewriter resetDefaultHandlerIDForTesting]; }
+  void SetUp() override {
+    [LegacyMailtoURLRewriter resetDefaultHandlerIDForTesting];
+  }
 };
 
 // Tests that a standard instance has the expected values.
-TEST_F(MailtoURLRewriterTest, TestStandardInstance) {
-  MailtoURLRewriter* rewriter =
-      [[MailtoURLRewriter alloc] initWithStandardHandlers];
+TEST_F(LegacyMailtoURLRewriterTest, TestStandardInstance) {
+  LegacyMailtoURLRewriter* rewriter =
+      [[LegacyMailtoURLRewriter alloc] initWithStandardHandlers];
   EXPECT_TRUE(rewriter);
   EXPECT_GT([[rewriter defaultHandlerName] length], 0U);
   // ID for system Mail client app must not be an empty string.
-  EXPECT_GT([[MailtoURLRewriter systemMailApp] length], 0U);
+  EXPECT_GT([[LegacyMailtoURLRewriter systemMailApp] length], 0U);
 
   NSArray<MailtoHandler*>* handlers = [rewriter defaultHandlers];
   EXPECT_GE([handlers count], 1U);
@@ -56,17 +58,18 @@ TEST_F(MailtoURLRewriterTest, TestStandardInstance) {
     ASSERT_TRUE(handler);
     NSString* appStoreID = [handler appStoreID];
     NSString* expectedDefaultAppID =
-        [handler isAvailable] ? appStoreID : [MailtoURLRewriter systemMailApp];
+        [handler isAvailable] ? appStoreID
+                              : [LegacyMailtoURLRewriter systemMailApp];
     [rewriter setDefaultHandlerID:appStoreID];
     EXPECT_NSEQ(expectedDefaultAppID, [rewriter defaultHandlerID]);
   }
 }
 
-TEST_F(MailtoURLRewriterTest, TestDefaultsInvalidToSystemMail) {
-  // Sets up a MailtoURLRewriter with 2 MailtoHandler objects:
+TEST_F(LegacyMailtoURLRewriterTest, TestDefaultsInvalidToSystemMail) {
+  // Sets up a LegacyMailtoURLRewriter with 2 MailtoHandler objects:
   // - system-provided Mail client app
   // - Gmail app, but it is not installed
-  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  LegacyMailtoURLRewriter* rewriter = [[LegacyMailtoURLRewriter alloc] init];
   MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
   MailtoHandler* fakeGmailHandler =
       [[FakeMailtoHandlerGmailNotInstalled alloc] init];
@@ -77,14 +80,15 @@ TEST_F(MailtoURLRewriterTest, TestDefaultsInvalidToSystemMail) {
   [rewriter setDefaultHandlerID:[fakeGmailHandler appStoreID]];
   // Verifies that the system-provided Mail app automatically assumes the
   // default handler.
-  EXPECT_NSEQ([MailtoURLRewriter systemMailApp], [rewriter defaultHandlerID]);
+  EXPECT_NSEQ([LegacyMailtoURLRewriter systemMailApp],
+              [rewriter defaultHandlerID]);
 }
 
-TEST_F(MailtoURLRewriterTest, TestUserPreferencePersistence) {
-  // Sets up a first MailtoURLRewriter with at least 2 MailtoHandler objects.
-  // A faked Gmail handler that is installed must be used or -addMailtoApp:
-  // will just skip it.
-  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+TEST_F(LegacyMailtoURLRewriterTest, TestUserPreferencePersistence) {
+  // Sets up a first LegacyMailtoURLRewriter with at least 2 MailtoHandler
+  // objects. A faked Gmail handler that is installed must be used or
+  // -addMailtoApp: will just skip it.
+  LegacyMailtoURLRewriter* rewriter = [[LegacyMailtoURLRewriter alloc] init];
   MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
   MailtoHandler* fakeGmailHandler =
       [[FakeMailtoHandlerGmailInstalled alloc] init];
@@ -106,21 +110,21 @@ TEST_F(MailtoURLRewriterTest, TestUserPreferencePersistence) {
   ASSERT_TRUE([otherHandlerID length]);
   [rewriter setDefaultHandlerID:otherHandlerID];
 
-  // Create a new MailtoURLRewriter object and verify that the current
+  // Create a new LegacyMailtoURLRewriter object and verify that the current
   // default is the |otherHandlerID| set in the previous step.
-  MailtoURLRewriter* rewriter2 = [[MailtoURLRewriter alloc] init];
+  LegacyMailtoURLRewriter* rewriter2 = [[LegacyMailtoURLRewriter alloc] init];
   [rewriter2 addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
   EXPECT_NSEQ(otherHandlerID, [rewriter2 defaultHandlerID]);
 }
 
-TEST_F(MailtoURLRewriterTest, TestChangeObserver) {
+TEST_F(LegacyMailtoURLRewriterTest, TestChangeObserver) {
   CountingMailtoURLRewriterObserver* observer =
       [[CountingMailtoURLRewriterObserver alloc] init];
   ASSERT_EQ(0, [observer changeCount]);
 
-  // Sets up a MailtoURLRewriter object. The default handler is Gmail app
+  // Sets up a LegacyMailtoURLRewriter object. The default handler is Gmail app
   // because |fakeGmailHandler| reports that it is "installed".
-  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  LegacyMailtoURLRewriter* rewriter = [[LegacyMailtoURLRewriter alloc] init];
   MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
   MailtoHandler* fakeGmailHandler =
       [[FakeMailtoHandlerGmailInstalled alloc] init];
@@ -151,7 +155,7 @@ TEST_F(MailtoURLRewriterTest, TestChangeObserver) {
 }
 
 // Tests that a new user without Gmail app installed launches system Mail app.
-TEST_F(MailtoURLRewriterTest, TestNewUserNoGmail) {
+TEST_F(LegacyMailtoURLRewriterTest, TestNewUserNoGmail) {
   // Sets pre-condition for a user who did not have Chrome installed.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kLegacyShouldAutoOpenKey];
@@ -159,17 +163,18 @@ TEST_F(MailtoURLRewriterTest, TestNewUserNoGmail) {
   MailtoHandler* fakeGmailHandler =
       [[FakeMailtoHandlerGmailNotInstalled alloc] init];
 
-  // Sets up a MailtoURLRewriter for testing.
-  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  // Sets up a LegacyMailtoURLRewriter for testing.
+  LegacyMailtoURLRewriter* rewriter = [[LegacyMailtoURLRewriter alloc] init];
   MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
   [rewriter addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
 
-  // Verify that MailtoURLRewriter will use the system Mail app.
-  EXPECT_NSEQ([MailtoURLRewriter systemMailApp], [rewriter defaultHandlerID]);
+  // Verify that LegacyMailtoURLRewriter will use the system Mail app.
+  EXPECT_NSEQ([LegacyMailtoURLRewriter systemMailApp],
+              [rewriter defaultHandlerID]);
 }
 
 // Tests that a new user with Gmail app installed launches Gmail app.
-TEST_F(MailtoURLRewriterTest, TestNewUserWithGmail) {
+TEST_F(LegacyMailtoURLRewriterTest, TestNewUserWithGmail) {
   // Sets pre-condition for a user who did not have Chrome installed.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kLegacyShouldAutoOpenKey];
@@ -177,19 +182,19 @@ TEST_F(MailtoURLRewriterTest, TestNewUserWithGmail) {
   MailtoHandler* fakeGmailHandler =
       [[FakeMailtoHandlerGmailInstalled alloc] init];
 
-  // Sets up a MailtoURLRewriter for testing.
-  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  // Sets up a LegacyMailtoURLRewriter for testing.
+  LegacyMailtoURLRewriter* rewriter = [[LegacyMailtoURLRewriter alloc] init];
   MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
   [rewriter addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
 
-  // Verify that MailtoURLRewriter will use Gmail app.
+  // Verify that LegacyMailtoURLRewriter will use Gmail app.
   EXPECT_NSEQ(kGmailAppStoreID, [rewriter defaultHandlerID]);
 }
 
 // Tests that a user who has Gmail installed but has chosen not to use Gmail
 // as the app to handle mailto: links retains the same behavior when upgrading
 // Chrome.
-TEST_F(MailtoURLRewriterTest, TestUpgradeUserWithGmailDisabled) {
+TEST_F(LegacyMailtoURLRewriterTest, TestUpgradeUserWithGmailDisabled) {
   // Sets pre-condition for a user who had Chrome installed.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setObject:@(kAutoOpenLinksNo) forKey:kLegacyShouldAutoOpenKey];
@@ -197,20 +202,21 @@ TEST_F(MailtoURLRewriterTest, TestUpgradeUserWithGmailDisabled) {
   MailtoHandler* fakeGmailHandler =
       [[FakeMailtoHandlerGmailInstalled alloc] init];
 
-  // Sets up a MailtoURLRewriter for testing.
-  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  // Sets up a LegacyMailtoURLRewriter for testing.
+  LegacyMailtoURLRewriter* rewriter = [[LegacyMailtoURLRewriter alloc] init];
   MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
   [rewriter addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
 
-  // Verify that MailtoURLRewriter will use the system Mail app. As part of the
-  // "upgrade", the legacy key should be removed as well.
-  EXPECT_NSEQ([MailtoURLRewriter systemMailApp], [rewriter defaultHandlerID]);
+  // Verify that LegacyMailtoURLRewriter will use the system Mail app. As part
+  // of the "upgrade", the legacy key should be removed as well.
+  EXPECT_NSEQ([LegacyMailtoURLRewriter systemMailApp],
+              [rewriter defaultHandlerID]);
   EXPECT_FALSE([defaults objectForKey:kLegacyShouldAutoOpenKey]);
 }
 
 // Tests that a user who has Gmail installed and has chosen to use Gmail as the
 // app to handle mailto: links retains the same behavior.
-TEST_F(MailtoURLRewriterTest, TestUpgradeUserWithGmailEnabled) {
+TEST_F(LegacyMailtoURLRewriterTest, TestUpgradeUserWithGmailEnabled) {
   // Sets pre-condition for a user who did not have Chrome installed.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults setObject:@(kAutoOpenLinksYes) forKey:kLegacyShouldAutoOpenKey];
@@ -218,20 +224,20 @@ TEST_F(MailtoURLRewriterTest, TestUpgradeUserWithGmailEnabled) {
   MailtoHandler* fakeGmailHandler =
       [[FakeMailtoHandlerGmailInstalled alloc] init];
 
-  // Sets up a MailtoURLRewriter for testing.
-  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  // Sets up a LegacyMailtoURLRewriter for testing.
+  LegacyMailtoURLRewriter* rewriter = [[LegacyMailtoURLRewriter alloc] init];
   MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
   [rewriter addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
 
-  // Verify that MailtoURLRewriter will use Gmail app. As part of the upgrade,
-  // the legacy key should be removed as well.
+  // Verify that LegacyMailtoURLRewriter will use Gmail app. As part of the
+  // upgrade, the legacy key should be removed as well.
   EXPECT_NSEQ(kGmailAppStoreID, [rewriter defaultHandlerID]);
   EXPECT_FALSE([defaults objectForKey:kLegacyShouldAutoOpenKey]);
 }
 
 // Tests that a user who installed Gmail after started using Chrome gets Gmail
 // as the handler of mailto: links.
-TEST_F(MailtoURLRewriterTest, TestInstalledGmailAfterChrome) {
+TEST_F(LegacyMailtoURLRewriterTest, TestInstalledGmailAfterChrome) {
   // Pre-condition for a user who did not have Chrome installed.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   [defaults removeObjectForKey:kLegacyShouldAutoOpenKey];
@@ -239,11 +245,11 @@ TEST_F(MailtoURLRewriterTest, TestInstalledGmailAfterChrome) {
   MailtoHandler* fakeGmailHandler =
       [[FakeMailtoHandlerGmailInstalled alloc] init];
 
-  // Sets up a MailtoURLRewriter for testing.
-  MailtoURLRewriter* rewriter = [[MailtoURLRewriter alloc] init];
+  // Sets up a LegacyMailtoURLRewriter for testing.
+  LegacyMailtoURLRewriter* rewriter = [[LegacyMailtoURLRewriter alloc] init];
   MailtoHandler* systemMailHandler = [[MailtoHandlerSystemMail alloc] init];
   [rewriter addMailtoApps:@[ systemMailHandler, fakeGmailHandler ]];
 
-  // Verify that MailtoURLRewriter will use Gmail app.
+  // Verify that LegacyMailtoURLRewriter will use Gmail app.
   EXPECT_NSEQ(kGmailAppStoreID, [rewriter defaultHandlerID]);
 }
