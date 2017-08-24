@@ -80,7 +80,7 @@ bool ImageLayerBridge::PrepareTextureMailbox(
   has_presented_since_last_set_image_ = true;
 
   if (image_->IsTextureBacked()) {
-    image_->EnsureMailbox();
+    image_->EnsureMailbox(kUnverifiedSyncToken);
     *out_mailbox = viz::TextureMailbox(image_->GetMailbox(),
                                        image_->GetSyncToken(), GL_TEXTURE_2D);
     auto func = WTF::Bind(&ImageLayerBridge::MailboxReleasedGpu,

@@ -7,6 +7,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/TextureHolder.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/wtf/WeakPtr.h"
@@ -30,6 +31,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
     sync_token_ = sync_token;
   }
 
+  void Sync(MailboxSyncMode) final;
   // In WebGL's commit or transferToImageBitmap calls, it will call the
   // DrawingBuffer::transferToStaticBitmapImage function, which produces the
   // input parameters for this method.
@@ -52,6 +54,7 @@ class PLATFORM_EXPORT MailboxTextureHolder final : public TextureHolder {
   bool is_converted_from_skia_texture_;
   RefPtr<WebTaskRunner> texture_thread_task_runner_;
   PlatformThreadId thread_id_;
+  bool did_issue_ordering_barrier_ = false;
 };
 
 }  // namespace blink

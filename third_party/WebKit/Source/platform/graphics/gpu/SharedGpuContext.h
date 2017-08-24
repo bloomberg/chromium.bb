@@ -25,7 +25,6 @@ class PLATFORM_EXPORT SharedGpuContext {
   // May re-create context if context was lost
   static WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper();
   static bool AllowSoftwareToAcceleratedCanvasUpgrade();
-
   static bool IsValidWithoutRestoring();
   typedef std::function<std::unique_ptr<WebGraphicsContext3DProvider>()>
       ContextProviderFactory;

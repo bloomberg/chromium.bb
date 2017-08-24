@@ -93,6 +93,7 @@ TEST_F(OffscreenCanvasTest, AnimationActiveAfterCommit) {
   DummyExceptionStateForTesting exception_state;
   EXPECT_FALSE(Dispatcher()->NeedsBeginFrame());
   Context().commit(GetScriptState(), exception_state);
+  platform()->RunUntilIdle();
   EXPECT_TRUE(Dispatcher()->NeedsBeginFrame());
 }
 

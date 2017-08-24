@@ -710,7 +710,7 @@ void VRDisplay::submitFrame() {
   StaticBitmapImage* static_image =
       static_cast<StaticBitmapImage*>(image_ref.Get());
   TRACE_EVENT_BEGIN0("gpu", "VRDisplay::EnsureMailbox");
-  static_image->EnsureMailbox();
+  static_image->EnsureMailbox(kVerifiedSyncToken);
   TRACE_EVENT_END0("gpu", "VRDisplay::EnsureMailbox");
 
   // Save a reference to the image to keep it alive until next frame,

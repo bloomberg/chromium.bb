@@ -22,11 +22,12 @@ class PLATFORM_EXPORT SkiaTextureHolder final : public TextureHolder {
   IntSize Size() const final {
     return IntSize(image_->width(), image_->height());
   }
-  bool IsValid() const final { return !!ContextProviderWrapper(); }
+  bool IsValid() const final;
   bool CurrentFrameKnownToBeOpaque(Image::MetadataMode) final {
     return image_->isOpaque();
   }
   sk_sp<SkImage> GetSkImage() final { return image_; }
+  void Abandon() final;
 
   // When creating a AcceleratedStaticBitmap from a texture-backed SkImage, this
   // function will be called to create a TextureHolder object.

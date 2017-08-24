@@ -1076,6 +1076,8 @@ component("platform") {
     "graphics/gpu/DrawingBuffer.h",
     "graphics/gpu/Extensions3DUtil.cpp",
     "graphics/gpu/Extensions3DUtil.h",
+    "graphics/gpu/GraphicsContext3DUtils.cpp",
+    "graphics/gpu/GraphicsContext3DUtils.h",
     "graphics/gpu/ImageLayerBridge.cpp",
     "graphics/gpu/ImageLayerBridge.h",
     "graphics/gpu/SharedContextRateLimiter.cpp",

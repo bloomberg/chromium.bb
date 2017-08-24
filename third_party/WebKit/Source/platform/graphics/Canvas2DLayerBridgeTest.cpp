@@ -1114,11 +1114,6 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
   EXPECT_EQ(1u, gl_.DestroyImageCount());
 }
 
-class FlushMockGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
- public:
-  MOCK_METHOD0(Flush, void());
-};
-
 TEST_F(Canvas2DLayerBridgeTest, NoUnnecessaryFlushes) {
   EXPECT_CALL(gl_, Flush()).Times(0);
   Canvas2DLayerBridgePtr bridge(WTF::WrapUnique(
