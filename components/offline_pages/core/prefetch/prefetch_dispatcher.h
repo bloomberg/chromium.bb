@@ -5,8 +5,11 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_H_
 
+#include <map>
 #include <memory>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -96,6 +99,16 @@ class PrefetchDispatcher {
   // operation name.
   virtual void GCMOperationCompletedMessageReceived(
       const std::string& operation_name) = 0;
+
+  // Called when a download service is up and notifies us about the ongoing and
+  // success downloads. The prefetch system should clean up the database to
+  // be consistent with those reported from the download system.
+  // Note that the failed downloads are not reported. The cleanup task can
+  // easily figure this out from both sides and take care of them.
+  virtual void CleanupDownloads(
+      const std::set<std::string>& outstanding_download_ids,
+      const std::map<std::string, std::pair<base::FilePath, int64_t>>&
+          success_downloads) = 0;
 
   // Called when a download is completed successfully or fails.
   virtual void DownloadCompleted(

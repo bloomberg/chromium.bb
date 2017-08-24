@@ -18,6 +18,30 @@ using testing::_;
 
 namespace offline_pages {
 
+// static
+std::vector<PrefetchItemState> TaskTestBase::GetAllStatesExcept(
+    PrefetchItemState state_to_exclude) {
+  static const PrefetchItemState all_states[] = {
+      PrefetchItemState::NEW_REQUEST,
+      PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE,
+      PrefetchItemState::AWAITING_GCM,
+      PrefetchItemState::RECEIVED_GCM,
+      PrefetchItemState::SENT_GET_OPERATION,
+      PrefetchItemState::RECEIVED_BUNDLE,
+      PrefetchItemState::DOWNLOADING,
+      PrefetchItemState::DOWNLOADED,
+      PrefetchItemState::IMPORTING,
+      PrefetchItemState::FINISHED,
+      PrefetchItemState::ZOMBIE,
+  };
+  std::vector<PrefetchItemState> states;
+  for (const auto& state : all_states) {
+    if (state != state_to_exclude)
+      states.push_back(state);
+  }
+  return states;
+}
+
 TaskTestBase::TaskTestBase()
     : task_runner_(new base::TestSimpleTaskRunner),
       task_runner_handle_(task_runner_),

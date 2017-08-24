@@ -169,18 +169,11 @@ TEST_F(GeneratePageBundleReconcileTaskTest, NoUpdateForOtherStates) {
   std::set<PrefetchItem> items;
   const int attempts_count =
       GeneratePageBundleReconcileTask::kMaxGenerateBundleAttempts;
-  // Add items in all states other than SENT_GENERATE_PAGE_BUNDLE.
-  items.insert(InsertItem(PrefetchItemState::NEW_REQUEST, attempts_count));
-  items.insert(InsertItem(PrefetchItemState::AWAITING_GCM, attempts_count));
-  items.insert(InsertItem(PrefetchItemState::RECEIVED_GCM, attempts_count));
-  items.insert(
-      InsertItem(PrefetchItemState::SENT_GET_OPERATION, attempts_count));
-  items.insert(InsertItem(PrefetchItemState::RECEIVED_BUNDLE, attempts_count));
-  items.insert(InsertItem(PrefetchItemState::DOWNLOADING, attempts_count));
-  items.insert(InsertItem(PrefetchItemState::DOWNLOADED, attempts_count));
-  items.insert(InsertItem(PrefetchItemState::IMPORTING, attempts_count));
-  items.insert(InsertItem(PrefetchItemState::FINISHED, attempts_count));
-  items.insert(InsertItem(PrefetchItemState::ZOMBIE, attempts_count));
+  std::vector<PrefetchItemState> all_other_states =
+      TaskTestBase::GetAllStatesExcept(
+          PrefetchItemState::SENT_GENERATE_PAGE_BUNDLE);
+  for (const auto& state : all_other_states)
+    items.insert(InsertItem(state, attempts_count));
 
   GeneratePageBundleReconcileTask task(store(), request_factory());
   ExpectTaskCompletes(&task);

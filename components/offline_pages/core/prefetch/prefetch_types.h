@@ -135,10 +135,12 @@ enum class PrefetchItemErrorCode {
   STALE_AT_RECEIVED_BUNDLE = 900,
   STALE_AT_DOWNLOADING = 1000,
   STALE_AT_UNKNOWN = 1100,
-  // Exceeding maximum retries for get operation request.
+  // Exceeded maximum retries for get operation request.
   GET_OPERATION_MAX_ATTEMPTS_REACHED = 1200,
   // Exceeded maximum retries limit for generate page bundle request.
   GENERATE_PAGE_BUNDLE_REQUEST_MAX_ATTEMPTS_REACHED = 1300,
+  // Exceeded maximum retries for download.
+  DOWNLOAD_MAX_ATTEMPTS_REACHED = 1400,
 };
 
 // Callback invoked upon completion of a prefetch request.

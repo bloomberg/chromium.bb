@@ -29,6 +29,9 @@ class Task;
 // Base class for testing prefetch requests with simulated responses.
 class TaskTestBase : public testing::Test {
  public:
+  static std::vector<PrefetchItemState> GetAllStatesExcept(
+      PrefetchItemState state_to_exclude);
+
   TaskTestBase();
   ~TaskTestBase() override;
 

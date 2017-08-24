@@ -88,12 +88,16 @@ void PrefetchDownloaderImpl::CancelDownload(const std::string& download_id) {
 }
 
 void PrefetchDownloaderImpl::OnDownloadServiceReady(
-    const std::vector<std::string>& outstanding_download_ids) {
+    const std::set<std::string>& outstanding_download_ids,
+    const std::map<std::string, std::pair<base::FilePath, int64_t>>&
+        success_downloads) {
   DCHECK_EQ(download::DownloadService::ServiceStatus::READY,
             download_service_->GetStatus());
   service_started_ = true;
 
-  // TODO(jianli): Remove orphaned downloads.
+  PrefetchDispatcher* dispatcher = prefetch_service_->GetPrefetchDispatcher();
+  if (dispatcher)
+    dispatcher->CleanupDownloads(outstanding_download_ids, success_downloads);
 
   for (const auto& entry : pending_downloads_)
     StartDownload(entry.first, entry.second);
@@ -115,16 +119,9 @@ void PrefetchDownloaderImpl::OnDownloadServiceShutdown() {
 void PrefetchDownloaderImpl::OnDownloadSucceeded(
     const std::string& download_id,
     const base::FilePath& file_path,
-    uint64_t file_size) {
-  // The file is not likely to be that big. Treat it as error if so.
-  if (file_size > static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
-    OnDownloadFailed(download_id);
-    return;
-  }
-
+    int64_t file_size) {
   NotifyDispatcher(prefetch_service_,
-                   PrefetchDownloadResult(download_id, file_path,
-                                          static_cast<int64_t>(file_size)));
+                   PrefetchDownloadResult(download_id, file_path, file_size));
 }
 
 void PrefetchDownloaderImpl::OnDownloadFailed(const std::string& download_id) {

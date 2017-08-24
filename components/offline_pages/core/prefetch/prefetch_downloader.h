@@ -5,10 +5,13 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DOWNLOADER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DOWNLOADER_H_
 
+#include <map>
+#include <set>
 #include <string>
+#include <utility>
 
 #include "base/callback.h"
-#include "components/offline_pages/core/prefetch/prefetch_types.h"
+#include "base/files/file_path.h"
 
 namespace offline_pages {
 class PrefetchService;
@@ -29,8 +32,12 @@ class PrefetchDownloader {
 
   // Called when the download service is initialized and can accept the
   // downloads.
+  // |success_downloads| is a map with download_id as key and pair of file path
+  // and file size as value.
   virtual void OnDownloadServiceReady(
-      const std::vector<std::string>& outstanding_download_ids) = 0;
+      const std::set<std::string>& outstanding_download_ids,
+      const std::map<std::string, std::pair<base::FilePath, int64_t>>&
+          success_downloads) = 0;
 
   // Called when the download service fails to initialize and should not be
   // used.
@@ -43,7 +50,7 @@ class PrefetchDownloader {
   // can be scheduled in previous sessions.
   virtual void OnDownloadSucceeded(const std::string& download_id,
                                    const base::FilePath& file_path,
-                                   uint64_t file_size) = 0;
+                                   int64_t file_size) = 0;
 
   // Called when a download fails.
   virtual void OnDownloadFailed(const std::string& download_id) = 0;
