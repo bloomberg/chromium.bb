@@ -514,6 +514,7 @@ MojoResult Core::AttachSerializedMessageBuffer(MojoMessageHandle message_handle,
                                                uint32_t* buffer_size) {
   if (!message_handle || (num_handles && !handles) || !buffer || !buffer_size)
     return MOJO_RESULT_INVALID_ARGUMENT;
+  RequestContext request_context;
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
   MojoResult rv = message->AttachSerializedMessageBuffer(payload_size, handles,
@@ -557,6 +558,7 @@ MojoResult Core::CommitSerializedMessageContents(
     uint32_t* buffer_size) {
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
+  RequestContext request_context;
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
   MojoResult rv = message->CommitSerializedContents(final_payload_size);
