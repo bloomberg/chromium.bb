@@ -6,6 +6,7 @@
 #define NGPhysicalTextFragment_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/inline/ng_text_end_effect.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 
@@ -42,6 +43,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          unsigned end_offset,
                          NGPhysicalSize size,
                          NGLineOrientation line_orientation,
+                         NGTextEndEffect end_effect,
                          RefPtr<const ShapeResult> shape_result)
       : NGPhysicalFragment(layout_object, style, size, kFragmentText),
         text_(text),
@@ -49,7 +51,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
         start_offset_(start_offset),
         end_offset_(end_offset),
         shape_result_(shape_result),
-        line_orientation_(static_cast<unsigned>(line_orientation)) {}
+        line_orientation_(static_cast<unsigned>(line_orientation)),
+        end_effect_(static_cast<unsigned>(end_effect)) {}
 
   unsigned Length() const { return end_offset_ - start_offset_; }
   StringView Text() const { return StringView(text_, start_offset_, Length()); }
@@ -72,10 +75,14 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return LineOrientation() == NGLineOrientation::kHorizontal;
   }
 
+  NGTextEndEffect EndEffect() const {
+    return static_cast<NGTextEndEffect>(end_effect_);
+  }
+
   RefPtr<NGPhysicalFragment> CloneWithoutOffset() const {
     return AdoptRef(new NGPhysicalTextFragment(
         layout_object_, Style(), text_, item_index_, start_offset_, end_offset_,
-        size_, LineOrientation(), shape_result_));
+        size_, LineOrientation(), EndEffect(), shape_result_));
   }
 
  private:
@@ -93,6 +100,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   RefPtr<const ShapeResult> shape_result_;
 
   unsigned line_orientation_ : 2;  // NGLineOrientation
+  unsigned end_effect_ : 1;        // NGTextEndEffect
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,

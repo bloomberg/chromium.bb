@@ -6,6 +6,7 @@
 #define NGInlineItemResult_h
 
 #include "core/layout/ng/geometry/ng_box_strut.h"
+#include "core/layout/ng/inline/ng_text_end_effect.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/shaping/ShapeResult.h"
@@ -67,6 +68,10 @@ struct CORE_EXPORT NGInlineItemResult {
   // Has spaces that hangs beyond the end margin.
   // Set only for text items.
   bool has_hanging_spaces = false;
+
+  // End effects for text items.
+  // The effects are included in |shape_result|, but not in text content.
+  NGTextEndEffect text_end_effect = NGTextEndEffect::kNone;
 
   NGInlineItemResult();
   NGInlineItemResult(const NGInlineItem*,

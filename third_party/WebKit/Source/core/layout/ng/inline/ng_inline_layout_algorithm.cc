@@ -173,6 +173,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
           box->AccumulateUsedFonts(item_result.shape_result.Get(),
                                    baseline_type_);
         }
+        text_builder.SetEndEffect(item_result.text_end_effect);
         text_builder.SetShapeResult(std::move(item_result.shape_result));
       } else {
         DCHECK(!item.TextShapeResult());  // kControl or unit tests.
