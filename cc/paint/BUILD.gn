@@ -28,6 +28,7 @@ cc_component("paint") {
     "paint_image.h",
     "paint_image_builder.cc",
     "paint_image_builder.h",
+    "paint_image_generator.cc",
     "paint_image_generator.h",
     "paint_op_buffer.cc",
     "paint_op_buffer.h",

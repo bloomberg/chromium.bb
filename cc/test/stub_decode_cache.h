@@ -29,7 +29,7 @@ class StubDecodeCache : public ImageDecodeCache {
       bool aggressively_free_resources) override {}
   void ClearCache() override {}
   size_t GetMaximumMemoryLimitBytes() const override;
-  void NotifyImageUnused(uint32_t skimage_id) override {}
+  void NotifyImageUnused(const PaintImage::FrameKey& frame_key) override {}
 };
 
 }  // namespace cc

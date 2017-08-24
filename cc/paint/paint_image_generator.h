@@ -5,8 +5,12 @@
 #ifndef CC_PAINT_PAINT_IMAGE_GENERATOR_H_
 #define CC_PAINT_PAINT_IMAGE_GENERATOR_H_
 
+#include <vector>
+
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "cc/paint/paint_export.h"
+#include "cc/paint/paint_image.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkYUVSizeInfo.h"
@@ -19,6 +23,20 @@ namespace cc {
 // be called from any thread.
 class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
  public:
+  ~PaintImageGenerator() override;
+
+  struct CC_PAINT_EXPORT FrameMetadata {
+    FrameMetadata() {}
+    FrameMetadata(bool complete, base::TimeDelta duration)
+        : complete(complete), duration(duration) {}
+
+    // True if the decoder has all encoded content for this frame.
+    bool complete = true;
+
+    // The duration for which this frame should be displayed.
+    base::TimeDelta duration;
+  };
+
   // Returns a reference to the encoded content of this image.
   virtual sk_sp<SkData> GetEncodedData() const = 0;
 
@@ -31,6 +49,7 @@ class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
   virtual bool GetPixels(const SkImageInfo& info,
                          void* pixels,
                          size_t row_bytes,
+                         size_t frame_index,
                          uint32_t lazy_pixel_ref) = 0;
 
   // Returns true if the generator supports YUV decoding, providing the output
@@ -48,15 +67,26 @@ class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
   // DecodingImageGenerator tracing needs. Remove it.
   virtual bool GetYUV8Planes(const SkYUVSizeInfo& info,
                              void* planes[3],
+                             size_t frame_index,
                              uint32_t lazy_pixel_ref) = 0;
 
+  // Returns the content id to key the decoded output produced by this
+  // generator for a frame at |frame_index|. The generator promises that
+  // the output for repeated calls to decode a frame will be consistent across
+  // all generators for a PaintImage, if this function returns the same id.
+  virtual PaintImage::ContentId GetContentIdForFrame(size_t frame_index) const;
+
   const SkImageInfo& GetSkImageInfo() const { return info_; }
+  const std::vector<FrameMetadata>& GetFrameMetadata() const { return frames_; }
 
  protected:
-  explicit PaintImageGenerator(const SkImageInfo& info) : info_(info) {}
+  PaintImageGenerator(const SkImageInfo& info,
+                      std::vector<FrameMetadata> frames = {FrameMetadata()});
 
  private:
   const SkImageInfo info_;
+  const PaintImage::ContentId generator_content_id_;
+  const std::vector<FrameMetadata> frames_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintImageGenerator);
 };

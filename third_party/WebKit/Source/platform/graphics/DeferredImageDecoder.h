@@ -60,7 +60,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
 
   String FilenameExtension() const;
 
-  sk_sp<PaintImageGenerator> CreateGeneratorAtIndex(size_t index);
+  sk_sp<PaintImageGenerator> CreateGenerator(size_t index);
 
   PassRefPtr<SharedBuffer> Data();
   void SetData(PassRefPtr<SharedBuffer> data, bool all_data_received);
@@ -71,11 +71,10 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   IntSize FrameSizeAtIndex(size_t index) const;
   size_t FrameCount();
   int RepetitionCount() const;
-  size_t ClearCacheExceptFrame(size_t index);
+  void ClearCacheExceptFrame(size_t index);
   bool FrameHasAlphaAtIndex(size_t index) const;
   bool FrameIsReceivedAtIndex(size_t index) const;
   float FrameDurationAtIndex(size_t index) const;
-  size_t FrameBytesAtIndex(size_t index) const;
   ImageOrientation OrientationAtIndex(size_t index) const;
   bool HotSpot(IntPoint&) const;
 
@@ -106,6 +105,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   bool has_hot_spot_;
   sk_sp<SkColorSpace> color_space_for_sk_images_;
   IntPoint hot_spot_;
+  const PaintImage::ContentId complete_frame_content_id_;
 
   // Caches frame state information.
   Vector<DeferredFrameData> frame_data_;

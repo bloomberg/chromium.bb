@@ -67,6 +67,7 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   // Lazily initialized.
   sk_sp<PaintRecord> paint_record_for_current_frame_;
+  PaintImage::ContentId paint_record_content_id_;
 };
 
 }  // namespace blink

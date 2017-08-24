@@ -32,7 +32,8 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
 
   const IntRect dest_rect(0, 0, size_.Width(), size_.Height());
   if (paint_record_for_current_frame_) {
-    builder.set_paint_record(paint_record_for_current_frame_, dest_rect);
+    builder.set_paint_record(paint_record_for_current_frame_, dest_rect,
+                             paint_record_content_id_);
     return builder.TakePaintImage();
   }
 
@@ -42,7 +43,9 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
        kDoNotRespectImageOrientation, kClampImageToSourceRect);
 
   paint_record_for_current_frame_ = paint_recorder.finishRecordingAsPicture();
-  builder.set_paint_record(paint_record_for_current_frame_, dest_rect);
+  paint_record_content_id_ = PaintImage::GetNextContentId();
+  builder.set_paint_record(paint_record_for_current_frame_, dest_rect,
+                           paint_record_content_id_);
   return builder.TakePaintImage();
 }
 
