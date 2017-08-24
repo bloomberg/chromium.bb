@@ -5,13 +5,15 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_AW_DOWNLOAD_MANAGER_DELEGATE_H_
 #define ANDROID_WEBVIEW_BROWSER_AW_DOWNLOAD_MANAGER_DELEGATE_H_
 
+#include "base/supports_user_data.h"
 #include "content/public/browser/download_manager_delegate.h"
 
 namespace android_webview {
 
 // Android WebView does not use Chromium downloads, so implement methods here to
 // unconditionally cancel the download.
-class AwDownloadManagerDelegate : public content::DownloadManagerDelegate {
+class AwDownloadManagerDelegate : public content::DownloadManagerDelegate,
+                                  public base::SupportsUserData::Data {
  public:
   ~AwDownloadManagerDelegate() override;
 
