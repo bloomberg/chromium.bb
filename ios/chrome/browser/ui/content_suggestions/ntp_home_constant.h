@@ -9,6 +9,18 @@
 
 namespace ntp_home {
 
+// Type of content displayed when a NTP is opened, for UMA report. It should be
+// treated as append-only.
+// These match tools/metrics/histograms/enums.xml.
+typedef NS_ENUM(NSUInteger, IOSNTPImpression) {
+  // The NTP only displays the local suggestions.
+  LOCAL_SUGGESTIONS = 0,
+  // The NTP displays local and remote suggestions.
+  REMOTE_SUGGESTIONS = 1,
+  // Add new enum above COUNT.
+  COUNT
+};
+
 // Returns the accessibility identifier used by the fake omnibox.
 NSString* FakeOmniboxAccessibilityID();
 

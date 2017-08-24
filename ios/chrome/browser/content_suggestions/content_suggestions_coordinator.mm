@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -19,12 +20,14 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
+#import "ios/chrome/browser/content_suggestions/ntp_home_metrics.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/favicon/large_icon_cache.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
+#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/tabs/tab_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
@@ -46,6 +49,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
+#import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_mediator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
@@ -132,6 +136,15 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
           self.browserState);
   contentSuggestionsService->remote_suggestions_scheduler()
       ->OnSuggestionsSurfaceOpened();
+  PrefService* prefs =
+      ios::ChromeBrowserState::FromBrowserState(self.browserState)->GetPrefs();
+  bool contentSuggestionsEnabled =
+      prefs->GetBoolean(prefs::kSearchSuggestEnabled);
+  if (contentSuggestionsEnabled) {
+    ntp_home::RecordNTPImpression(ntp_home::REMOTE_SUGGESTIONS);
+  } else {
+    ntp_home::RecordNTPImpression(ntp_home::LOCAL_SUGGESTIONS);
+  }
 
   self.headerController = [[ContentSuggestionsHeaderViewController alloc] init];
   self.headerController.dispatcher = self.dispatcher;
