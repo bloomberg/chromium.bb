@@ -4666,7 +4666,7 @@ LayoutRect LocalFrameView::ScrollIntoView(const LayoutRect& rect_in_content,
                         : target_offset;
 
     if (is_for_scroll_sequence) {
-      DCHECK(scroll_type == kProgrammaticScroll || scroll_type == kUserScroll);
+      DCHECK(scroll_type == kProgrammaticScroll);
       ScrollBehavior behavior =
           is_smooth ? kScrollBehaviorSmooth : kScrollBehaviorInstant;
       GetSmoothScrollSequencer()->QueueAnimation(this, target_offset, behavior);
