@@ -53,6 +53,8 @@ TEST(TextEliderTest, TestGeneralEliding) {
       {"http://www.google.com/intl/en/ads/", "google.com/" + kEllipsisStr},
       {"http://www.google.com/intl/en/ads/", "goog" + kEllipsisStr},
       {"https://subdomain.foo.com/bar/filename.html",
+       "https://subdomain.foo.com/bar/filename.html"},
+      {"https://subdomain.foo.com/bar/filename.html",
        "subdomain.foo.com/bar/filename.html"},
       {"https://subdomain.foo.com/bar/filename.html",
        "subdomain.foo.com/" + kEllipsisStr + "/filename.html"},
