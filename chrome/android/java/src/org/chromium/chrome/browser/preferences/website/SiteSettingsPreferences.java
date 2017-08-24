@@ -224,7 +224,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
             }
 
             if (p.isEnabled()) {
-                p.setIcon(ContentSettingsResources.getIcon(contentType));
+                p.setIcon(ContentSettingsResources.getTintedIcon(contentType, getResources()));
             } else {
                 p.setIcon(ContentSettingsResources.getDisabledIcon(contentType, getResources()));
             }
