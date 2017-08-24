@@ -7,6 +7,7 @@
 @implementation HoverButton
 
 @synthesize hoverState = hoverState_;
+@synthesize trackingEnabled = trackingEnabled_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
@@ -20,14 +21,27 @@
 }
 
 - (void)commonInit {
-  [self setTrackingEnabled:YES];
   self.hoverState = kHoverStateNone;
-  [self updateTrackingAreas];
+  self.trackingEnabled = YES;
 }
 
 - (void)dealloc {
-  [self setTrackingEnabled:NO];
+  self.trackingEnabled = NO;
   [super dealloc];
+}
+
+- (void)setTrackingEnabled:(BOOL)trackingEnabled {
+  if (trackingEnabled == trackingEnabled_)
+    return;
+  trackingEnabled_ = trackingEnabled;
+  [self updateTrackingAreas];
+}
+
+- (void)setEnabled:(BOOL)enabled {
+  if (enabled == self.enabled)
+    return;
+  super.enabled = enabled;
+  [self updateTrackingAreas];
 }
 
 - (void)mouseEntered:(NSEvent*)theEvent {
@@ -45,6 +59,8 @@
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
+  if (!self.enabled)
+    return;
   mouseDown_ = YES;
   self.hoverState = kHoverStateMouseDown;
 
@@ -64,24 +80,23 @@
                                    NSKeyDownMask | NSKeyUpMask);
 
     while ((nextEvent = [window nextEventMatchingMask:eventMask])) {
+      if ([nextEvent type] == NSLeftMouseUp)
+        break;
       // Update the image state, which will change if the user moves the mouse
       // into or out of the button.
       [self checkImageState];
-
-      if ([nextEvent type] == NSLeftMouseUp) {
-        break;
-      }
     }
   }
 
   // If the mouse is still over the button, it means the user clicked the
   // button.
   if (self.hoverState == kHoverStateMouseDown) {
-    [self performClick:nil];
+    [self sendAction:self.action to:self.target];
   }
 
   // Clean up.
   mouseDown_ = NO;
+  [self checkImageState];
 }
 
 - (void)setAccessibilityTitle:(NSString*)accessibilityTitle {
@@ -90,8 +105,10 @@
                          forAttribute:NSAccessibilityTitleAttribute];
 }
 
-- (void)setTrackingEnabled:(BOOL)enabled {
-  if (enabled) {
+- (void)updateTrackingAreas {
+  if (trackingEnabled_ && self.enabled) {
+    if (trackingArea_.get())
+      return;
     trackingArea_.reset(
         [[CrTrackingArea alloc] initWithRect:NSZeroRect
                                      options:NSTrackingMouseEnteredAndExited |
@@ -119,9 +136,6 @@
       trackingArea_.reset(nil);
     }
   }
-}
-
-- (void)updateTrackingAreas {
   [super updateTrackingAreas];
   [self checkImageState];
 }
@@ -141,10 +155,11 @@
   }
 }
 
-- (void)setHoverState:(HoverState)state {
-  BOOL stateChanged = (hoverState_ != state);
-  hoverState_ = state;
-  [self setNeedsDisplay:stateChanged];
+- (void)setHoverState:(HoverState)hoverState {
+  if (hoverState == hoverState_)
+    return;
+  hoverState_ = hoverState;
+  self.needsDisplay = YES;
 }
 
 @end
