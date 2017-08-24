@@ -127,6 +127,7 @@ bool MHTMLArchive::CanLoadArchive(const KURL& url) {
 }
 
 void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
+                                       const KURL& url,
                                        const String& title,
                                        const String& mime_type,
                                        Vector<char>& output_buffer) {
@@ -142,7 +143,27 @@ void MHTMLArchive::GenerateMHTMLHeader(const String& boundary,
 
   StringBuilder string_builder;
   string_builder.Append("From: <Saved by Blink>\r\n");
-  string_builder.Append("Subject: ");
+
+  // Add the versioning information. This can be used to maintain these headers
+  // for backward compatibility.
+  string_builder.Append("X-Snapshot-Version: 1.0\r\n");
+  // Encode the title as sequences of printable ASCII characters per RFC 1342
+  // (https://tools.ietf.org/html/rfc1342). Specially, the encoded title will be
+  // as:   =?utf-8?Q?encoded_text?=
+  // where, "utf-8" is the chosen charset to represent the title and "Q" is the
+  // Quoted-Printable format to convert to 7-bit printable ASCII characters.
+  CString utf8_title = title.Utf8();
+  Vector<char> encoded_title;
+  QuotedPrintableEncode(utf8_title.data(), utf8_title.length(), encoded_title);
+  string_builder.Append("X-Snapshot-Title: =?utf-8?Q?");
+  string_builder.Append(encoded_title.data(), encoded_title.size());
+  string_builder.Append("?=\r\n");
+  // Add the document URL in the MHTML headers in order to avoid complicated
+  // parsing to locate it in the multipart body headers.
+  string_builder.Append("X-Snapshot-Content-Location: ");
+  string_builder.Append(url.GetString());
+
+  string_builder.Append("\r\nSubject: ");
   // We replace non ASCII characters with '?' characters to match IE's behavior.
   string_builder.Append(ReplaceNonPrintableCharacters(title));
   string_builder.Append("\r\nDate: ");

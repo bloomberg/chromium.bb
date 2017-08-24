@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <map>
+
 #include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -151,6 +153,7 @@ class MHTMLTest : public ::testing::Test {
   static RefPtr<RawData> GenerateMHTMLData(
       const Vector<SerializedResource>& resources,
       MHTMLArchive::EncodingPolicy encoding_policy,
+      const KURL& url,
       const String& title,
       const String& mime_type) {
     // This boundary is as good as any other.  Plus it gets used in almost
@@ -158,7 +161,7 @@ class MHTMLTest : public ::testing::Test {
     String boundary = String::FromUTF8("boundary-example");
 
     RefPtr<RawData> mhtml_data = RawData::Create();
-    MHTMLArchive::GenerateMHTMLHeader(boundary, title, mime_type,
+    MHTMLArchive::GenerateMHTMLHeader(boundary, url, title, mime_type,
                                       *mhtml_data->MutableData());
     for (const auto& resource : resources) {
       MHTMLArchive::GenerateMHTMLPart(boundary, String(), encoding_policy,
@@ -176,10 +179,11 @@ class MHTMLTest : public ::testing::Test {
     return mhtml_data;
   }
 
-  RefPtr<RawData> Serialize(const char* title,
+  RefPtr<RawData> Serialize(const KURL& url,
+                            const char* title,
                             const char* mime,
                             MHTMLArchive::EncodingPolicy encoding_policy) {
-    return GenerateMHTMLData(resources_, encoding_policy, title, mime);
+    return GenerateMHTMLData(resources_, encoding_policy, url, title, mime);
   }
 
  private:
@@ -214,10 +218,43 @@ TEST_F(MHTMLTest, CheckDomain) {
   EXPECT_STRNE("localhost", origin->Domain().Ascii().data());
 }
 
-TEST_F(MHTMLTest, TestMHTMLEncoding) {
+TEST_F(MHTMLTest, TestMHTMLHeaders) {
+  const char kURL[] = "http://www.example.com/";
+  const char kTitle[] = u8"abc=\u261D\U0001F3FB";
   AddTestResources();
-  RefPtr<RawData> data = Serialize("Test Serialization", "text/html",
+  RefPtr<RawData> data = Serialize(ToKURL(kURL), kTitle, "text/html",
                                    MHTMLArchive::kUseDefaultEncoding);
+
+  // Read the MHTML data per line until reaching the empty line.
+  std::map<std::string, std::string> mhtml_headers;
+  LineReader line_reader(std::string(data->data(), data->length()));
+  std::string line;
+  while (line_reader.GetNextLine(&line) && line.length()) {
+    std::string::size_type pos = line.find(':');
+    if (pos == std::string::npos)
+      continue;
+    std::string key = line.substr(0, pos);
+    std::string value = line.substr(pos + 2);
+    mhtml_headers.emplace(key, value);
+  }
+
+  EXPECT_EQ("<Saved by Blink>", mhtml_headers["From"]);
+  EXPECT_EQ("abc=???????", mhtml_headers["Subject"]);
+  EXPECT_FALSE(mhtml_headers["Date"].empty());
+  EXPECT_EQ("multipart/related;", mhtml_headers["Content-Type"]);
+
+  EXPECT_EQ("1.0", mhtml_headers["X-Snapshot-Version"]);
+  EXPECT_EQ("=?utf-8?Q?abc=3D=C3=A2=C2=98=C2=9D=C3=B0=C2=9F=C2=8F=C2=BB?=",
+            mhtml_headers["X-Snapshot-Title"]);
+  EXPECT_EQ(kURL, mhtml_headers["X-Snapshot-Content-Location"]);
+}
+
+TEST_F(MHTMLTest, TestMHTMLEncoding) {
+  const char kURL[] = "http://www.example.com";
+  AddTestResources();
+  RefPtr<RawData> data =
+      Serialize(ToKURL(kURL), "Test Serialization", "text/html",
+                MHTMLArchive::kUseDefaultEncoding);
 
   // Read the MHTML data line per line and do some pseudo-parsing to make sure
   // the right encoding is used for the different sections.
@@ -251,9 +288,11 @@ TEST_F(MHTMLTest, TestMHTMLEncoding) {
 }
 
 TEST_F(MHTMLTest, MHTMLFromScheme) {
+  const char kURL[] = "http://www.example.com";
   AddTestResources();
-  RefPtr<RawData> raw_data = Serialize("Test Serialization", "text/html",
-                                       MHTMLArchive::kUseDefaultEncoding);
+  RefPtr<RawData> raw_data =
+      Serialize(ToKURL(kURL), "Test Serialization", "text/html",
+                MHTMLArchive::kUseDefaultEncoding);
 
   RefPtr<SharedBuffer> data =
       SharedBuffer::Create(raw_data->data(), raw_data->length());

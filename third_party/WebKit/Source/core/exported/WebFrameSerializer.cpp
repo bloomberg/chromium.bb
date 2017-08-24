@@ -450,9 +450,9 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
   Document* document = web_local_frame->GetFrame()->GetDocument();
 
   RefPtr<RawData> buffer = RawData::Create();
-  MHTMLArchive::GenerateMHTMLHeader(boundary, document->title(),
-                                    document->SuggestedMIMEType(),
-                                    *buffer->MutableData());
+  MHTMLArchive::GenerateMHTMLHeader(
+      boundary, document->Url(), document->title(),
+      document->SuggestedMIMEType(), *buffer->MutableData());
   return WebThreadSafeData(buffer);
 }
 
