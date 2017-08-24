@@ -287,7 +287,7 @@ UserMessageImpl::~UserMessageImpl() {
 // static
 std::unique_ptr<ports::UserMessageEvent>
 UserMessageImpl::CreateEventForNewMessage() {
-  auto message_event = base::MakeUnique<ports::UserMessageEvent>(0);
+  auto message_event = std::make_unique<ports::UserMessageEvent>(0);
   message_event->AttachMessage(
       base::WrapUnique(new UserMessageImpl(message_event.get())));
   return message_event;
@@ -302,7 +302,7 @@ MojoResult UserMessageImpl::CreateEventForNewSerializedMessage(
   Channel::MessagePtr channel_message;
   void* header = nullptr;
   void* user_payload = nullptr;
-  auto event = base::MakeUnique<ports::UserMessageEvent>(0);
+  auto event = std::make_unique<ports::UserMessageEvent>(0);
   size_t header_size = 0;
   MojoResult rv = CreateOrExtendSerializedEventMessage(
       event.get(), num_bytes, num_bytes, dispatchers, num_dispatchers,

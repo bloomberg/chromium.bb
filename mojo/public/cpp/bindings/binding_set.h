@@ -209,7 +209,7 @@ class BindingSetBase {
           binding_set_(binding_set),
           binding_id_(binding_id),
           context_(std::move(context)) {
-      binding_.AddFilter(base::MakeUnique<DispatchFilter>(this));
+      binding_.AddFilter(std::make_unique<DispatchFilter>(this));
       binding_.set_connection_error_with_reason_handler(
           base::BindOnce(&Entry::OnConnectionError, base::Unretained(this)));
     }
@@ -264,7 +264,7 @@ class BindingSetBase {
                            Context context) {
     BindingId id = next_binding_id_++;
     DCHECK_GE(next_binding_id_, 0u);
-    auto entry = base::MakeUnique<Entry>(std::move(impl), std::move(request),
+    auto entry = std::make_unique<Entry>(std::move(impl), std::move(request),
                                          this, id, std::move(context));
     bindings_.insert(std::make_pair(id, std::move(entry)));
     return id;

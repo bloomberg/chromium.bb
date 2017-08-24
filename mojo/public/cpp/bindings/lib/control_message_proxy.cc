@@ -81,7 +81,7 @@ void SendRunMessage(MessageReceiverWithResponder* receiver,
   Serialize<interface_control::RunMessageParamsDataView>(
       params_ptr, message.payload_buffer(), &params, &context);
   std::unique_ptr<MessageReceiver> responder =
-      base::MakeUnique<RunResponseForwardToCallback>(callback);
+      std::make_unique<RunResponseForwardToCallback>(callback);
   ignore_result(receiver->AcceptWithResponder(&message, std::move(responder)));
 }
 

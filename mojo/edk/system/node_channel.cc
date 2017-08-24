@@ -136,7 +136,7 @@ Channel::MessagePtr CreateMessage(MessageType type,
   else
     capacity = std::max(total_size, capacity);
   auto message =
-      base::MakeUnique<Channel::Message>(capacity, total_size, num_handles);
+      std::make_unique<Channel::Message>(capacity, total_size, num_handles);
   Header* header = reinterpret_cast<Header*>(message->mutable_payload());
   header->type = type;
   header->padding = 0;

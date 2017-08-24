@@ -56,8 +56,8 @@ const UserMessage::TypeInfo TestMessage::kUserMessageTypeInfo = {};
 
 ScopedMessage NewUserMessageEvent(const base::StringPiece& payload,
                                   size_t num_ports) {
-  auto event = base::MakeUnique<UserMessageEvent>(num_ports);
-  event->AttachMessage(base::MakeUnique<TestMessage>(payload));
+  auto event = std::make_unique<UserMessageEvent>(num_ports);
+  event->AttachMessage(std::make_unique<TestMessage>(payload));
   return event;
 }
 

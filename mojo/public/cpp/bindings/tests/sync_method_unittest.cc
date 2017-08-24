@@ -456,7 +456,7 @@ class SyncMethodOnSequenceCommonTest : public SequencedTaskRunnerTestBase {
  public:
   void SetUp() override {
     BindingsTestBase::SetupSerializationBehavior(TypeParam::kSerializationMode);
-    impl_ = base::MakeUnique<ImplTypeFor<typename TypeParam::Interface>>(
+    impl_ = std::make_unique<ImplTypeFor<typename TypeParam::Interface>>(
         MakeRequest(&ptr_));
   }
 
@@ -541,7 +541,7 @@ TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
   };                                                                \
   TYPED_TEST(SequencedTaskRunnerTestLauncher, name) {               \
     RunTestOnSequencedTaskRunner(                                   \
-        base::MakeUnique<SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(     \
+        std::make_unique<SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(     \
                              fixture_name, name) < TypeParam>> ()); \
   }                                                                 \
   template <typename TypeParam>                                     \
@@ -553,7 +553,7 @@ TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
   class SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(fixture_name, name);  \
   TYPED_TEST(SequencedTaskRunnerTestLauncher, name) {               \
     RunTestOnSequencedTaskRunner(                                   \
-        base::MakeUnique<SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(     \
+        std::make_unique<SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(     \
                              fixture_name, name) < TypeParam>> ()); \
   }                                                                 \
   template <typename TypeParam>                                     \
@@ -1195,7 +1195,7 @@ SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
         InterfacePtrInfo<InterfaceType>(std::move(pipe.handle0), 0u));
 
     MessagePipeHandle raw_binding_handle = pipe.handle1.get();
-    this->impl_ = base::MakeUnique<ImplTypeFor<InterfaceType>>(
+    this->impl_ = std::make_unique<ImplTypeFor<InterfaceType>>(
         InterfaceRequest<InterfaceType>(std::move(pipe.handle1)));
 
     this->impl_->set_echo_handler(

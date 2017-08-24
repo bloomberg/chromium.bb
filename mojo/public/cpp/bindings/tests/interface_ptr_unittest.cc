@@ -243,8 +243,8 @@ class EndToEndInterfacePtrTest : public InterfacePtrTest {
  private:
   void RunTestImpl() {
     math::CalculatorPtr calc;
-    calc_impl_ = base::MakeUnique<MathCalculatorImpl>(MakeRequest(&calc));
-    calculator_ui_ = base::MakeUnique<MathCalculatorUI>(std::move(calc));
+    calc_impl_ = std::make_unique<MathCalculatorImpl>(MakeRequest(&calc));
+    calculator_ui_ = std::make_unique<MathCalculatorUI>(std::move(calc));
     calculator_ui_->Add(2.0, base::Bind(&EndToEndInterfacePtrTest::AddDone,
                                         base::Unretained(this)));
     calculator_ui_->Multiply(5.0,
@@ -523,7 +523,7 @@ TEST(StrongConnectorTest, Math) {
   base::RunLoop run_loop;
 
   auto binding =
-      MakeStrongBinding(base::MakeUnique<StrongMathCalculatorImpl>(&destroyed),
+      MakeStrongBinding(std::make_unique<StrongMathCalculatorImpl>(&destroyed),
                         MakeRequest(&calc));
   binding->set_connection_error_handler(base::Bind(
       &SetFlagAndRunClosure, &error_received, run_loop.QuitClosure()));
@@ -650,7 +650,7 @@ class BImpl : public B {
 
  private:
   void GetC(InterfaceRequest<C> c) override {
-    MakeStrongBinding(base::MakeUnique<CImpl>(d_called_, closure_),
+    MakeStrongBinding(std::make_unique<CImpl>(d_called_, closure_),
                       std::move(c));
   }
 
@@ -669,7 +669,7 @@ class AImpl : public A {
 
  private:
   void GetB(InterfaceRequest<B> b) override {
-    MakeStrongBinding(base::MakeUnique<BImpl>(&d_called_, closure_),
+    MakeStrongBinding(std::make_unique<BImpl>(&d_called_, closure_),
                       std::move(b));
   }
 

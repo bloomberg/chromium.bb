@@ -204,9 +204,9 @@ class InterfacePtrState : public InterfacePtrStateBase {
 
     if (InitializeEndpointClient(
             Interface::PassesAssociatedKinds_, Interface::HasSyncMethods_,
-            base::MakeUnique<typename Interface::ResponseValidator_>())) {
+            std::make_unique<typename Interface::ResponseValidator_>())) {
       router()->SetMasterInterfaceName(Interface::Name_);
-      proxy_ = base::MakeUnique<Proxy>(endpoint_client());
+      proxy_ = std::make_unique<Proxy>(endpoint_client());
     }
   }
 

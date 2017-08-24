@@ -201,7 +201,7 @@ TEST_F(MessageTest, InvalidMessageObjects) {
 TEST_F(MessageTest, SendLocalMessageWithContext) {
   // Simple write+read of a message with context. Verifies that such messages
   // are passed through a local pipe without serialization.
-  auto message = base::MakeUnique<NeverSerializedMessage>();
+  auto message = std::make_unique<NeverSerializedMessage>();
   auto* original_message = message.get();
 
   MojoHandle a, b;
@@ -226,7 +226,7 @@ TEST_F(MessageTest, SendLocalMessageWithContext) {
 TEST_F(MessageTest, DestroyMessageWithContext) {
   // Tests that |MojoDestroyMessage()| destroys any attached context.
   bool was_deleted = false;
-  auto message = base::MakeUnique<NeverSerializedMessage>(
+  auto message = std::make_unique<NeverSerializedMessage>(
       base::Bind([](bool* was_deleted) { *was_deleted = true; }, &was_deleted));
   MojoMessageHandle handle =
       TestMessageBase::MakeMessageHandle(std::move(message));
@@ -251,7 +251,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageNoHandles, MessageTest, h) {
 
 TEST_F(MessageTest, SerializeSimpleMessageNoHandlesWithContext) {
   RunTestClient("ReceiveMessageNoHandles", [&](MojoHandle h) {
-    auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
+    auto message = std::make_unique<SimpleMessage>(kTestMessageWithContext1);
     MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
                      MOJO_WRITE_MESSAGE_FLAG_NONE);
   });
@@ -289,7 +289,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageOneHandle, MessageTest, h) {
 
 TEST_F(MessageTest, SerializeSimpleMessageOneHandleWithContext) {
   RunTestClient("ReceiveMessageOneHandle", [&](MojoHandle h) {
-    auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
+    auto message = std::make_unique<SimpleMessage>(kTestMessageWithContext1);
     mojo::MessagePipe pipe;
     message->AddMessagePipe(std::move(pipe.handle0));
     MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
@@ -312,7 +312,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageWithHandles, MessageTest, h) {
 
 TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
   RunTestClient("ReceiveMessageWithHandles", [&](MojoHandle h) {
-    auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
+    auto message = std::make_unique<SimpleMessage>(kTestMessageWithContext1);
     mojo::MessagePipe pipes[4];
     message->AddMessagePipe(std::move(pipes[0].handle0));
     message->AddMessagePipe(std::move(pipes[1].handle0));
@@ -334,7 +334,7 @@ TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
 #endif  // !defined(OS_IOS)
 
 TEST_F(MessageTest, SendLocalSimpleMessageWithHandlesWithContext) {
-  auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
+  auto message = std::make_unique<SimpleMessage>(kTestMessageWithContext1);
   auto* original_message = message.get();
   mojo::MessagePipe pipes[4];
   MojoHandle original_handles[4] = {
@@ -375,7 +375,7 @@ TEST_F(MessageTest, DropUnreadLocalMessageWithContext) {
   // receiver closes without reading the message, the context is properly
   // cleaned up.
   bool message_was_destroyed = false;
-  auto message = base::MakeUnique<SimpleMessage>(
+  auto message = std::make_unique<SimpleMessage>(
       kTestMessageWithContext1,
       base::Bind([](bool* was_destroyed) { *was_destroyed = true; },
                  &message_was_destroyed));
@@ -399,7 +399,7 @@ TEST_F(MessageTest, DropUnreadLocalMessageWithContext) {
 TEST_F(MessageTest, ReadMessageWithContextAsSerializedMessage) {
   bool message_was_destroyed = false;
   std::unique_ptr<TestMessageBase> message =
-      base::MakeUnique<NeverSerializedMessage>(
+      std::make_unique<NeverSerializedMessage>(
           base::Bind([](bool* was_destroyed) { *was_destroyed = true; },
                      &message_was_destroyed));
 
@@ -453,7 +453,7 @@ TEST_F(MessageTest, ReadSerializedMessageAsMessageWithContext) {
 TEST_F(MessageTest, ForceSerializeMessageWithContext) {
   // Basic test - we can serialize a simple message.
   bool message_was_destroyed = false;
-  auto message = base::MakeUnique<SimpleMessage>(
+  auto message = std::make_unique<SimpleMessage>(
       kTestMessageWithContext1,
       base::Bind([](bool* was_destroyed) { *was_destroyed = true; },
                  &message_was_destroyed));
@@ -465,7 +465,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
   // Serialize a message with a single handle. Freeing the message should close
   // the handle.
   message_was_destroyed = false;
-  message = base::MakeUnique<SimpleMessage>(
+  message = std::make_unique<SimpleMessage>(
       kTestMessageWithContext1,
       base::Bind([](bool* was_destroyed) { *was_destroyed = true; },
                  &message_was_destroyed));
@@ -480,7 +480,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
 
   // Serialize a message with a handle and extract its serialized contents.
   message_was_destroyed = false;
-  message = base::MakeUnique<SimpleMessage>(
+  message = std::make_unique<SimpleMessage>(
       kTestMessageWithContext1,
       base::Bind([](bool* was_destroyed) { *was_destroyed = true; },
                  &message_was_destroyed));
@@ -519,7 +519,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
 
 TEST_F(MessageTest, DoubleSerialize) {
   bool message_was_destroyed = false;
-  auto message = base::MakeUnique<SimpleMessage>(
+  auto message = std::make_unique<SimpleMessage>(
       kTestMessageWithContext1,
       base::Bind([](bool* was_destroyed) { *was_destroyed = true; },
                  &message_was_destroyed));

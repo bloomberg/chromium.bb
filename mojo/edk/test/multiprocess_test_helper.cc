@@ -169,7 +169,7 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
     command_line.AppendSwitch(kRunAsBrokerClient);
   } else if (launch_type == LaunchType::PEER ||
              launch_type == LaunchType::NAMED_PEER) {
-    peer_connection_ = base::MakeUnique<PeerConnection>();
+    peer_connection_ = std::make_unique<PeerConnection>();
     pipe = peer_connection_->Connect(
         ConnectionParams(TransportProtocol::kLegacy, std::move(server_handle)));
   }

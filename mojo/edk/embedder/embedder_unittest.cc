@@ -162,7 +162,7 @@ TEST_F(EmbedderTest, PipeSetup_LaunchDeath) {
 TEST_F(EmbedderTest, PipeSetup_LaunchFailure) {
   PlatformChannelPair pair;
 
-  auto invitation = base::MakeUnique<OutgoingBrokerClientInvitation>();
+  auto invitation = std::make_unique<OutgoingBrokerClientInvitation>();
   ScopedMessagePipeHandle parent_mp = invitation->AttachMessagePipe("unused");
 
   // Ensure that if an OutgoingBrokerClientInvitation goes away before Send() is
@@ -517,7 +517,7 @@ TEST_F(EmbedderTest, ClosePendingPeerConnection) {
   NamedPlatformHandle named_handle = GenerateChannelName();
   std::string peer_token = GenerateRandomToken();
 
-  auto peer_connection = base::MakeUnique<PeerConnection>();
+  auto peer_connection = std::make_unique<PeerConnection>();
   ScopedMessagePipeHandle server_pipe =
       peer_connection->Connect(ConnectionParams(
           TransportProtocol::kLegacy, CreateServerHandle(named_handle)));

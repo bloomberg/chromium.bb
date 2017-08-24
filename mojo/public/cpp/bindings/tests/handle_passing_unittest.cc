@@ -129,7 +129,7 @@ class SampleFactoryImpl : public sample::Factory {
   void CreateNamedObject(
       InterfaceRequest<sample::NamedObject> object_request) override {
     EXPECT_TRUE(object_request.is_pending());
-    MakeStrongBinding(base::MakeUnique<SampleNamedObjectImpl>(),
+    MakeStrongBinding(std::make_unique<SampleNamedObjectImpl>(),
                       std::move(object_request));
   }
 

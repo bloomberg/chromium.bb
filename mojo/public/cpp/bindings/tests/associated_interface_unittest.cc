@@ -670,7 +670,7 @@ class CallbackFilter : public MessageReceiver {
   ~CallbackFilter() override {}
 
   static std::unique_ptr<CallbackFilter> Wrap(const base::Closure& callback) {
-    return base::MakeUnique<CallbackFilter>(callback);
+    return std::make_unique<CallbackFilter>(callback);
   }
 
   // MessageReceiver:
@@ -865,7 +865,7 @@ TEST_F(AssociatedInterfaceTest, BindingFlushForTestingWithClosedPeer) {
 TEST_F(AssociatedInterfaceTest, StrongBindingFlushForTesting) {
   IntegerSenderConnectionPtr ptr;
   auto binding =
-      MakeStrongBinding(base::MakeUnique<IntegerSenderConnectionImpl>(
+      MakeStrongBinding(std::make_unique<IntegerSenderConnectionImpl>(
                             IntegerSenderConnectionRequest{}),
                         MakeRequest(&ptr));
   bool called = false;
@@ -887,7 +887,7 @@ TEST_F(AssociatedInterfaceTest, StrongBindingFlushForTestingWithClosedPeer) {
   IntegerSenderConnectionPtr ptr;
   bool called = false;
   auto binding =
-      MakeStrongBinding(base::MakeUnique<IntegerSenderConnectionImpl>(
+      MakeStrongBinding(std::make_unique<IntegerSenderConnectionImpl>(
                             IntegerSenderConnectionRequest{}),
                         MakeRequest(&ptr));
   binding->set_connection_error_handler(base::Bind(&SetBool, &called));
@@ -1112,7 +1112,7 @@ TEST_F(AssociatedInterfaceTest,
   auto setup = [](base::WaitableEvent* sender_info_bound_event,
                   IntegerSenderAssociatedPtrInfo* sender_info,
                   ForwarderTestContext* context) {
-    context->interface_impl = base::MakeUnique<IntegerSenderConnectionImpl>(
+    context->interface_impl = std::make_unique<IntegerSenderConnectionImpl>(
         MakeRequest(&context->connection_ptr));
 
     auto sender_request = MakeRequest(sender_info);

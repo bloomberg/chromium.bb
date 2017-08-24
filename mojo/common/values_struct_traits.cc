@@ -20,7 +20,7 @@ bool StructTraits<common::mojom::ListValueDataView,
   mojo::ArrayDataView<common::mojom::ValueDataView> view;
   data.GetValuesDataView(&view);
 
-  auto list_value = base::MakeUnique<base::ListValue>();
+  auto list_value = std::make_unique<base::ListValue>();
   for (size_t i = 0; i < view.size(); ++i) {
     std::unique_ptr<base::Value> value;
     if (!view.Read(i, &value))
@@ -49,7 +49,7 @@ bool StructTraits<common::mojom::DictionaryValueDataView,
     dict_storage.emplace_back(key.as_string(), std::move(value));
   }
   *value_out = base::DictionaryValue::From(
-      base::MakeUnique<base::Value>(base::Value::DictStorage(
+      std::make_unique<base::Value>(base::Value::DictStorage(
           std::move(dict_storage), base::KEEP_LAST_OF_DUPES)));
   return true;
 }
@@ -65,26 +65,26 @@ bool UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>>::
          std::unique_ptr<base::Value>* value_out) {
   switch (data.tag()) {
     case common::mojom::ValueDataView::Tag::NULL_VALUE: {
-      *value_out = base::MakeUnique<base::Value>();
+      *value_out = std::make_unique<base::Value>();
       return true;
     }
     case common::mojom::ValueDataView::Tag::BOOL_VALUE: {
-      *value_out = base::MakeUnique<base::Value>(data.bool_value());
+      *value_out = std::make_unique<base::Value>(data.bool_value());
       return true;
     }
     case common::mojom::ValueDataView::Tag::INT_VALUE: {
-      *value_out = base::MakeUnique<base::Value>(data.int_value());
+      *value_out = std::make_unique<base::Value>(data.int_value());
       return true;
     }
     case common::mojom::ValueDataView::Tag::DOUBLE_VALUE: {
-      *value_out = base::MakeUnique<base::Value>(data.double_value());
+      *value_out = std::make_unique<base::Value>(data.double_value());
       return true;
     }
     case common::mojom::ValueDataView::Tag::STRING_VALUE: {
       base::StringPiece string_value;
       if (!data.ReadStringValue(&string_value))
         return false;
-      *value_out = base::MakeUnique<base::Value>(string_value);
+      *value_out = std::make_unique<base::Value>(string_value);
       return true;
     }
     case common::mojom::ValueDataView::Tag::BINARY_VALUE: {

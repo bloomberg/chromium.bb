@@ -288,7 +288,7 @@ int Node::ClosePort(const PortRef& port_ref) {
     DVLOG(2) << "Sending ObserveClosure from " << port_ref.name() << "@"
              << name_ << " to " << peer_port_name << "@" << peer_node_name;
     delegate_->ForwardEvent(peer_node_name,
-                            base::MakeUnique<ObserveClosureEvent>(
+                            std::make_unique<ObserveClosureEvent>(
                                 peer_port_name, last_sequence_num));
     for (const auto& message : undelivered_messages) {
       for (size_t i = 0; i < message->num_ports(); ++i) {
@@ -422,7 +422,7 @@ int Node::MergePorts(const PortRef& port_ref,
 
   delegate_->ForwardEvent(
       destination_node_name,
-      base::MakeUnique<MergePortEvent>(destination_port_name, new_port_name,
+      std::make_unique<MergePortEvent>(destination_port_name, new_port_name,
                                        new_port_descriptor));
   return OK;
 }
@@ -596,7 +596,7 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
         port->peer_node_name = event->proxy_target_node_name();
         port->peer_port_name = event->proxy_target_port_name();
         event_target_node = event->proxy_node_name();
-        event_to_forward = base::MakeUnique<ObserveProxyAckEvent>(
+        event_to_forward = std::make_unique<ObserveProxyAckEvent>(
             event->proxy_port_name(), port->next_sequence_num_to_send - 1);
         update_status = true;
         DVLOG(2) << "Forwarding ObserveProxyAck from " << event->port_name()
@@ -618,7 +618,7 @@ int Node::OnObserveProxy(std::unique_ptr<ObserveProxyEvent> event) {
 
         port->send_on_proxy_removal.reset(new std::pair<NodeName, ScopedEvent>(
             event->proxy_node_name(),
-            base::MakeUnique<ObserveProxyAckEvent>(event->proxy_port_name(),
+            std::make_unique<ObserveProxyAckEvent>(event->proxy_port_name(),
                                                    kInvalidSequenceNum)));
       }
     } else {
@@ -919,7 +919,7 @@ int Node::MergePortsInternal(const PortRef& port0_ref,
           // If either end of the port cycle is closed, we propagate an
           // ObserveClosure event.
           closure_event_target_node = port->peer_node_name;
-          closure_event = base::MakeUnique<ObserveClosureEvent>(
+          closure_event = std::make_unique<ObserveClosureEvent>(
               port->peer_port_name, port->last_sequence_num_to_receive);
         }
       }
@@ -1025,7 +1025,7 @@ int Node::AcceptPort(const PortName& port_name,
   // Allow referring port to forward messages.
   delegate_->ForwardEvent(
       port_descriptor.referring_node_name,
-      base::MakeUnique<PortAcceptedEvent>(port_descriptor.referring_port_name));
+      std::make_unique<PortAcceptedEvent>(port_descriptor.referring_port_name));
   return OK;
 }
 
@@ -1188,7 +1188,7 @@ int Node::BeginProxying(const PortRef& port_ref) {
     if (try_remove_proxy_immediately) {
       // Make sure we propagate closure to our current peer.
       closure_target_node = port->peer_node_name;
-      closure_event = base::MakeUnique<ObserveClosureEvent>(
+      closure_event = std::make_unique<ObserveClosureEvent>(
           port->peer_port_name, port->last_sequence_num_to_receive);
     }
   }
@@ -1244,7 +1244,7 @@ void Node::InitiateProxyRemoval(const PortRef& port_ref) {
   // Eventually, this node will receive ObserveProxyAck (or ObserveClosure if
   // the peer was closed in the meantime).
   delegate_->ForwardEvent(peer_node_name,
-                          base::MakeUnique<ObserveProxyEvent>(
+                          std::make_unique<ObserveProxyEvent>(
                               peer_port_name, name_, port_ref.name(),
                               peer_node_name, peer_port_name));
 }
@@ -1347,7 +1347,7 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
 
   for (const auto& proxy_name : dead_proxies_to_broadcast) {
     // Broadcast an event signifying that this proxy is no longer functioning.
-    delegate_->BroadcastEvent(base::MakeUnique<ObserveProxyEvent>(
+    delegate_->BroadcastEvent(std::make_unique<ObserveProxyEvent>(
         kInvalidPortName, name_, proxy_name, kInvalidNodeName,
         kInvalidPortName));
 

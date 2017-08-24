@@ -64,11 +64,11 @@ class MultiplexRouterTest : public testing::Test {
 
 TEST_F(MultiplexRouterTest, BasicRequestResponse) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  base::MakeUnique<PassThroughFilter>(), false,
+                                  std::make_unique<PassThroughFilter>(), false,
                                   base::ThreadTaskRunnerHandle::Get(), 0u);
   ResponseGenerator generator;
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
-                                  base::MakeUnique<PassThroughFilter>(), false,
+                                  std::make_unique<PassThroughFilter>(), false,
                                   base::ThreadTaskRunnerHandle::Get(), 0u);
 
   Message request;
@@ -77,7 +77,7 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
   MessageQueue message_queue;
   base::RunLoop run_loop;
   client0.AcceptWithResponder(
-      &request, base::MakeUnique<MessageAccumulator>(&message_queue,
+      &request, std::make_unique<MessageAccumulator>(&message_queue,
                                                      run_loop.QuitClosure()));
 
   run_loop.Run();
@@ -96,7 +96,7 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
 
   base::RunLoop run_loop2;
   client0.AcceptWithResponder(
-      &request2, base::MakeUnique<MessageAccumulator>(&message_queue,
+      &request2, std::make_unique<MessageAccumulator>(&message_queue,
                                                       run_loop2.QuitClosure()));
 
   run_loop2.Run();
@@ -111,11 +111,11 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
 
 TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
   InterfaceEndpointClient client0(std::move(endpoint0_), nullptr,
-                                  base::MakeUnique<PassThroughFilter>(), false,
+                                  std::make_unique<PassThroughFilter>(), false,
                                   base::ThreadTaskRunnerHandle::Get(), 0u);
   ResponseGenerator generator;
   InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
-                                  base::MakeUnique<PassThroughFilter>(), false,
+                                  std::make_unique<PassThroughFilter>(), false,
                                   base::ThreadTaskRunnerHandle::Get(), 0u);
 
   Message request;
@@ -123,7 +123,7 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
 
   MessageQueue message_queue;
   client0.AcceptWithResponder(
-      &request, base::MakeUnique<MessageAccumulator>(&message_queue));
+      &request, std::make_unique<MessageAccumulator>(&message_queue));
 
   router1_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
   router0_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
@@ -141,7 +141,7 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
   AllocRequestMessage(1, "hello again", &request2);
 
   client0.AcceptWithResponder(
-      &request2, base::MakeUnique<MessageAccumulator>(&message_queue));
+      &request2, std::make_unique<MessageAccumulator>(&message_queue));
 
   router1_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
   router0_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
@@ -173,7 +173,7 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
   MessageQueue message_queue;
   base::RunLoop run_loop2;
   client0.AcceptWithResponder(
-      &request, base::MakeUnique<MessageAccumulator>(&message_queue,
+      &request, std::make_unique<MessageAccumulator>(&message_queue,
                                                      run_loop2.QuitClosure()));
   run_loop.Run();
 
@@ -200,7 +200,7 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
 
   base::RunLoop run_loop4;
   client0.AcceptWithResponder(
-      &request2, base::MakeUnique<MessageAccumulator>(&message_queue,
+      &request2, std::make_unique<MessageAccumulator>(&message_queue,
                                                       run_loop4.QuitClosure()));
   run_loop3.Run();
 
@@ -253,7 +253,7 @@ TEST_F(MultiplexRouterTest, MissingResponses) {
 
   MessageQueue message_queue;
   client0.AcceptWithResponder(
-      &request, base::MakeUnique<MessageAccumulator>(&message_queue));
+      &request, std::make_unique<MessageAccumulator>(&message_queue));
   run_loop3.Run();
 
   // The request has been received but no response has been sent.
@@ -289,10 +289,10 @@ TEST_F(MultiplexRouterTest, LateResponse) {
   LazyResponseGenerator generator(run_loop.QuitClosure());
   {
     InterfaceEndpointClient client0(
-        std::move(endpoint0_), nullptr, base::MakeUnique<PassThroughFilter>(),
+        std::move(endpoint0_), nullptr, std::make_unique<PassThroughFilter>(),
         false, base::ThreadTaskRunnerHandle::Get(), 0u);
     InterfaceEndpointClient client1(std::move(endpoint1_), &generator,
-                                    base::MakeUnique<PassThroughFilter>(),
+                                    std::make_unique<PassThroughFilter>(),
                                     false, base::ThreadTaskRunnerHandle::Get(),
                                     0u);
 
@@ -301,7 +301,7 @@ TEST_F(MultiplexRouterTest, LateResponse) {
 
     MessageQueue message_queue;
     client0.AcceptWithResponder(
-        &request, base::MakeUnique<MessageAccumulator>(&message_queue));
+        &request, std::make_unique<MessageAccumulator>(&message_queue));
 
     run_loop.Run();
 

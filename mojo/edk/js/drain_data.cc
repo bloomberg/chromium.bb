@@ -70,7 +70,7 @@ MojoResult DrainData::ReadData() {
   if (result != MOJO_RESULT_OK)
     return result;
   const char* p = static_cast<const char*>(buffer);
-  data_buffers_.push_back(base::MakeUnique<DataBuffer>(p, p + num_bytes));
+  data_buffers_.push_back(std::make_unique<DataBuffer>(p, p + num_bytes));
   return handle_->EndReadData(num_bytes);
 }
 
