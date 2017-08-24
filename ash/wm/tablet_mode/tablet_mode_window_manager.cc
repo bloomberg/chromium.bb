@@ -11,6 +11,7 @@
 #include "ash/shell_port.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector_controller.h"
+#include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
 #include "ash/wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_event_handler.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
@@ -213,6 +214,9 @@ TabletModeWindowManager::TabletModeWindowManager() {
 }
 
 void TabletModeWindowManager::MaximizeAllWindows() {
+  // For maximizing and tracking windows, we want the build mru list to ignore
+  // the fact that the windows are on the lock screen.
+  ScopedSkipUserSessionBlockedCheck scoped_skip_user_session_blocked_check;
   MruWindowTracker::WindowList windows =
       Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
   // Add all existing MRU windows.

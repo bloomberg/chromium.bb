@@ -19,6 +19,9 @@ EventClientImpl::~EventClientImpl() {}
 
 bool EventClientImpl::CanProcessEventsWithinSubtree(
     const aura::Window* window) const {
+  if (skip_user_session_blocked_check_)
+    return true;
+
   // TODO(oshima): Migrate this logic to Shell::CanWindowReceieveEvents and
   // remove this.
   const aura::Window* root_window = window ? window->GetRootWindow() : NULL;

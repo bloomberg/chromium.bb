@@ -307,6 +307,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
   }
+  EventClientImpl* event_client() { return event_client_.get(); }
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
   ImeController* ime_controller() { return ime_controller_.get(); }
@@ -322,9 +323,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   LockScreenController* lock_screen_controller() {
     return lock_screen_controller_.get();
-  }
-  TabletModeController* tablet_mode_controller() {
-    return tablet_mode_controller_.get();
   }
   MediaController* media_controller() { return media_controller_.get(); }
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
@@ -343,6 +341,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
+  }
+  TabletModeController* tablet_mode_controller() {
+    return tablet_mode_controller_.get();
   }
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();

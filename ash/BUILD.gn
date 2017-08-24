@@ -747,6 +747,8 @@ component("ash") {
     "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard.h",
     "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_ozone.cc",
     "wm/tablet_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h",
+    "wm/tablet_mode/scoped_skip_user_session_blocked_check.cc",
+    "wm/tablet_mode/scoped_skip_user_session_blocked_check.h",
     "wm/tablet_mode/tablet_mode_backdrop_delegate_impl.cc",
     "wm/tablet_mode/tablet_mode_backdrop_delegate_impl.h",
     "wm/tablet_mode/tablet_mode_controller.cc",

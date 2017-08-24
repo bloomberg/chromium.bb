@@ -10,6 +10,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -105,7 +106,7 @@ class TabletModeWindowManagerTest : public AshTestBase {
     return window;
   }
 
-  // Create the Maximized mode window manager.
+  // Create the tablet mode window manager.
   TabletModeWindowManager* CreateTabletModeWindowManager() {
     EXPECT_FALSE(tablet_mode_window_manager());
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -119,7 +120,7 @@ class TabletModeWindowManagerTest : public AshTestBase {
     EXPECT_FALSE(tablet_mode_window_manager());
   }
 
-  // Get the maximze window manager.
+  // Get the tablet window manager.
   TabletModeWindowManager* tablet_mode_window_manager() {
     return Shell::Get()
         ->tablet_mode_controller()
@@ -171,7 +172,7 @@ TEST_F(TabletModeWindowManagerTest, SimpleStart) {
   DestroyTabletModeWindowManager();
 }
 
-// Test that existing windows will handled properly when going into maximized
+// Test that existing windows will handled properly when going into tablet
 // mode.
 TEST_F(TabletModeWindowManagerTest, PreCreateWindows) {
   // Bounds for windows we know can be controlled.
@@ -934,8 +935,7 @@ TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case1) {
   }
   EXPECT_TRUE(window_state->IsPinned());
 
-  // Enter to Maximized mode.
-  // The pinned mode should continue to be on.
+  // Enter tablet mode. The pinned mode should continue to be on.
   CreateTabletModeWindowManager();
   EXPECT_TRUE(window_state->IsPinned());
 
@@ -943,22 +943,20 @@ TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case1) {
   window_state->Restore();
   EXPECT_FALSE(window_state->IsPinned());
 
-  // Exit from Maximized mode.
-  // The window should not be back to the pinned mode.
+  // Exit tablet mode. The window should not be back to the pinned mode.
   DestroyTabletModeWindowManager();
   EXPECT_FALSE(window_state->IsPinned());
 }
 
 TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case2) {
-  // Scenario: in the tablet mode, pin a window, exit from the maximized
-  // mode, then unpin.
+  // Scenario: in the tablet mode, pin a window, exit tablet mode, then unpin.
   gfx::Rect rect(20, 140, 100, 100);
   std::unique_ptr<aura::Window> w1(
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
   EXPECT_FALSE(window_state->IsPinned());
 
-  // Enter to Maximized mode.
+  // Enter tablet mode.
   CreateTabletModeWindowManager();
   EXPECT_FALSE(window_state->IsPinned());
 
@@ -969,8 +967,7 @@ TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case2) {
   }
   EXPECT_TRUE(window_state->IsPinned());
 
-  // Exit from Maximized mode.
-  // The pinned mode should continue to be on.
+  // Exit tablet mode. The pinned mode should continue to be on.
   DestroyTabletModeWindowManager();
   EXPECT_TRUE(window_state->IsPinned());
 
@@ -978,12 +975,12 @@ TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case2) {
   window_state->Restore();
   EXPECT_FALSE(window_state->IsPinned());
 
-  // Enter again to Maximized mode for verification.
-  // The window should not be back to the pinned mode.
+  // Enter tablet mode again for verification. The window should not be back to
+  // the pinned mode.
   CreateTabletModeWindowManager();
   EXPECT_FALSE(window_state->IsPinned());
 
-  // Exit from Maximized mode.
+  // Exit tablet mode.
   DestroyTabletModeWindowManager();
   EXPECT_FALSE(window_state->IsPinned());
 }
@@ -1004,13 +1001,11 @@ TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case3) {
   }
   EXPECT_TRUE(window_state->IsPinned());
 
-  // Enter to Maximized mode.
-  // The pinned mode should continue to be on.
+  // Enter tablet mode. The pinned mode should continue to be on.
   CreateTabletModeWindowManager();
   EXPECT_TRUE(window_state->IsPinned());
 
-  // Exit from Maximized mode.
-  // The pinned mode should continue to be on, too.
+  // Exit tablet mode. The pinned mode should continue to be on, too.
   DestroyTabletModeWindowManager();
   EXPECT_TRUE(window_state->IsPinned());
 
@@ -1018,25 +1013,25 @@ TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case3) {
   window_state->Restore();
   EXPECT_FALSE(window_state->IsPinned());
 
-  // Enter again to Maximized mode for verification.
-  // The window should not be back to the pinned mode.
+  // Enter tablet mode again for verification. The window should not be back to
+  // the pinned mode.
   CreateTabletModeWindowManager();
   EXPECT_FALSE(window_state->IsPinned());
 
-  // Exit from Maximized mode.
+  // Exit tablet mode.
   DestroyTabletModeWindowManager();
 }
 
 TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case4) {
-  // Scenario: in the tablet mode, pin a window, exit from the maximized
-  // mode, enter back to the tablet mode, then unpin.
+  // Scenario: in tablet mode, pin a window, exit tablet mode, enter tablet mode
+  // again, then unpin.
   gfx::Rect rect(20, 140, 100, 100);
   std::unique_ptr<aura::Window> w1(
       CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
   EXPECT_FALSE(window_state->IsPinned());
 
-  // Enter to Maximized mode.
+  // Enter tablet mode.
   CreateTabletModeWindowManager();
   EXPECT_FALSE(window_state->IsPinned());
 
@@ -1047,13 +1042,11 @@ TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case4) {
   }
   EXPECT_TRUE(window_state->IsPinned());
 
-  // Exit from Maximized mode.
-  // The pinned mode should continue to be on.
+  // Exit tablet mode. The pinned mode should continue to be on.
   DestroyTabletModeWindowManager();
   EXPECT_TRUE(window_state->IsPinned());
 
-  // Enter again to Maximized mode.
-  // The pinned mode should continue to be on, too.
+  // Enter tablet mode again. The pinned mode should continue to be on, too.
   CreateTabletModeWindowManager();
   EXPECT_TRUE(window_state->IsPinned());
 
@@ -1061,8 +1054,7 @@ TEST_F(TabletModeWindowManagerTest, KeepPinnedModeOn_Case4) {
   window_state->Restore();
   EXPECT_FALSE(window_state->IsPinned());
 
-  // Exit from Maximized mode.
-  // The window should not be back to the pinned mode.
+  // Exit tablet mode. The window should not be back to the pinned mode.
   DestroyTabletModeWindowManager();
   EXPECT_FALSE(window_state->IsPinned());
 }
@@ -1615,6 +1607,25 @@ TEST_F(TabletModeWindowManagerTest, DontMaximizeClientManagedWindows) {
   EXPECT_EQ(0, manager->GetNumberOfManagedWindows());
 }
 
+// Verify that if tablet mode is started in the lock screen, windows will still
+// be maximized after leaving the lock screen.
+TEST_F(TabletModeWindowManagerTest, CreateManagerInLockScreen) {
+  gfx::Rect rect(10, 10, 200, 50);
+  std::unique_ptr<aura::Window> window(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  ASSERT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // Create the tablet mode window manager while inside the lock screen.
+  GetSessionControllerClient()->RequestLockScreen();
+  CreateTabletModeWindowManager();
+  GetSessionControllerClient()->UnlockScreen();
+
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  DestroyTabletModeWindowManager();
+  EXPECT_FALSE(wm::GetWindowState(window.get())->IsMaximized());
+}
+
 namespace {
 
 class TestObserver : public wm::WindowStateObserver {
@@ -1663,7 +1674,7 @@ class TestObserver : public wm::WindowStateObserver {
 
 }  // namespace
 
-TEST_F(TabletModeWindowManagerTest, StateTyepChange) {
+TEST_F(TabletModeWindowManagerTest, StateTypeChange) {
   TestObserver observer;
   gfx::Rect rect(10, 10, 200, 50);
   std::unique_ptr<aura::Window> window(
