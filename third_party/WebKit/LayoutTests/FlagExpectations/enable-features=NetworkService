@@ -491,6 +491,7 @@ Bug(none) http/tests/origin_trials/webexposed/foreignfetch-origin-trial-interfac
 Bug(none) http/tests/payments/abort-payment-event.html [ Crash Timeout ]
 Bug(none) http/tests/payments/payment-app-interfaces.html [ Crash Failure Timeout ]
 Bug(none) http/tests/payments/payment-instruments.html [ Crash Failure Timeout ]
+Bug(none) http/tests/payments/payment-request-event.html [ Pass Failure Timeout ]
 Bug(none) http/tests/permissions/test-query.html [ Crash Failure ]
 Bug(none) http/tests/push_messaging/application-server-key-format-test.html [ Crash Failure Timeout ]
 Bug(none) http/tests/push_messaging/application-server-key-standard-endpoint.html [ Crash Failure Timeout ]
