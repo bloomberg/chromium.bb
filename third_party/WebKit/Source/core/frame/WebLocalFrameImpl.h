@@ -64,7 +64,6 @@ class WebAutofillClient;
 class WebDevToolsAgentImpl;
 class WebDevToolsFrontendImpl;
 class WebFrameClient;
-class WebInputMethodControllerImpl;
 class WebNode;
 class WebPerformance;
 class WebPlugin;
