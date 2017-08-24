@@ -64,39 +64,38 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
   if (!profile)
     return StartupTabs();
 
-  bool is_first_run = first_run::IsChromeFirstRun();
+  StandardOnboardingTabsParams standard_params;
+  standard_params.is_first_run = first_run::IsChromeFirstRun();
   PrefService* prefs = profile->GetPrefs();
-  bool has_seen_welcome_page =
+  standard_params.has_seen_welcome_page =
       prefs && prefs->GetBoolean(prefs::kHasSeenWelcomePage);
-  bool is_signin_allowed = profile->IsSyncAllowed();
-  SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfile(profile);
-  bool is_signed_in = signin_manager && signin_manager->IsAuthenticated();
-  bool is_supervised_user = profile->IsSupervised();
+  standard_params.is_signin_allowed = profile->IsSyncAllowed();
+  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
+  standard_params.is_signed_in = signin_manager->IsAuthenticated();
+  standard_params.is_signin_in_progress = signin_manager->AuthInProgress();
+  standard_params.is_supervised_user = profile->IsSupervised();
 
 #if defined(OS_WIN)
   // Windows 10 has unique onboarding policies and content.
   if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    Win10OnboardingTabsParams win10_params;
     PrefService* local_state = g_browser_process->local_state();
-    bool has_seen_win10_promo =
-        local_state && local_state->GetBoolean(prefs::kHasSeenWin10PromoPage);
     const shell_integration::DefaultWebClientState web_client_state =
         g_browser_process->CachedDefaultWebClientState();
+    win10_params.has_seen_win10_promo =
+        local_state && local_state->GetBoolean(prefs::kHasSeenWin10PromoPage);
+    win10_params.set_default_browser_allowed =
+        SetDefaultBrowserAllowed(local_state);
     // Do not welcome if this Chrome or another side-by-side install was the
     // default browser at startup.
-    bool is_default_browser =
+    win10_params.is_default_browser =
         web_client_state == shell_integration::IS_DEFAULT ||
         web_client_state == shell_integration::OTHER_MODE_IS_DEFAULT;
-    return GetWin10OnboardingTabsForState(
-        is_first_run, has_seen_welcome_page, has_seen_win10_promo,
-        is_signin_allowed, is_signed_in, SetDefaultBrowserAllowed(local_state),
-        is_default_browser, is_supervised_user);
+    return GetWin10OnboardingTabsForState(standard_params, win10_params);
   }
 #endif  // defined(OS_WIN)
 
-  return GetStandardOnboardingTabsForState(is_first_run, has_seen_welcome_page,
-                                           is_signin_allowed, is_signed_in,
-                                           is_supervised_user);
+  return GetStandardOnboardingTabsForState(standard_params);
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -179,21 +178,20 @@ bool StartupTabProviderImpl::CanShowWelcome(bool is_signin_allowed,
 // static
 bool StartupTabProviderImpl::ShouldShowWelcomeForOnboarding(
     bool has_seen_welcome_page,
-    bool is_signed_in) {
-  return !has_seen_welcome_page && !is_signed_in;
+    bool is_signed_in,
+    bool is_signin_in_progress) {
+  return !has_seen_welcome_page && !is_signed_in && !is_signin_in_progress;
 }
 
 // static
 StartupTabs StartupTabProviderImpl::GetStandardOnboardingTabsForState(
-    bool is_first_run,
-    bool has_seen_welcome_page,
-    bool is_signin_allowed,
-    bool is_signed_in,
-    bool is_supervised_user) {
+    const StandardOnboardingTabsParams& params) {
   StartupTabs tabs;
-  if (CanShowWelcome(is_signin_allowed, is_supervised_user) &&
-      ShouldShowWelcomeForOnboarding(has_seen_welcome_page, is_signed_in)) {
-    tabs.emplace_back(GetWelcomePageUrl(!is_first_run), false);
+  if (CanShowWelcome(params.is_signin_allowed, params.is_supervised_user) &&
+      ShouldShowWelcomeForOnboarding(params.has_seen_welcome_page,
+                                     params.is_signed_in,
+                                     params.is_signin_in_progress)) {
+    tabs.emplace_back(GetWelcomePageUrl(!params.is_first_run), false);
   }
   return tabs;
 }
@@ -215,23 +213,17 @@ bool StartupTabProviderImpl::ShouldShowWin10WelcomeForOnboarding(
 
 // static
 StartupTabs StartupTabProviderImpl::GetWin10OnboardingTabsForState(
-    bool is_first_run,
-    bool has_seen_welcome_page,
-    bool has_seen_win10_promo,
-    bool is_signin_allowed,
-    bool is_signed_in,
-    bool set_default_browser_allowed,
-    bool is_default_browser,
-    bool is_supervised_user) {
-  if (CanShowWin10Welcome(set_default_browser_allowed, is_supervised_user) &&
-      ShouldShowWin10WelcomeForOnboarding(has_seen_win10_promo,
-                                          is_default_browser)) {
-    return {StartupTab(GetWin10WelcomePageUrl(!is_first_run), false)};
+    const StandardOnboardingTabsParams& standard_params,
+    const Win10OnboardingTabsParams& win10_params) {
+  if (CanShowWin10Welcome(win10_params.set_default_browser_allowed,
+                          standard_params.is_supervised_user) &&
+      ShouldShowWin10WelcomeForOnboarding(win10_params.has_seen_win10_promo,
+                                          win10_params.is_default_browser)) {
+    return {StartupTab(GetWin10WelcomePageUrl(!standard_params.is_first_run),
+                       false)};
   }
 
-  return GetStandardOnboardingTabsForState(is_first_run, has_seen_welcome_page,
-                                           is_signin_allowed, is_signed_in,
-                                           is_supervised_user);
+  return GetStandardOnboardingTabsForState(standard_params);
 }
 #endif
 
