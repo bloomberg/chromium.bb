@@ -29,27 +29,6 @@ namespace chromeos {
 
 namespace {
 
-// Adds |printer| with |id| to prefs.  Returns true if the printer is new,
-// false for an update.
-bool UpdatePrinterPref(PrintersSyncBridge* sync_bridge,
-                       const std::string& id,
-                       const Printer& printer) {
-  base::Optional<sync_pb::PrinterSpecifics> specifics =
-      sync_bridge->GetPrinter(id);
-  if (!specifics.has_value()) {
-    sync_bridge->AddPrinter(PrinterToSpecifics(printer));
-    return true;
-  }
-
-  // Preserve fields in the proto which we don't understand.
-  std::unique_ptr<sync_pb::PrinterSpecifics> updated_printer =
-      base::MakeUnique<sync_pb::PrinterSpecifics>(*specifics);
-  MergePrinterToSpecifics(printer, updated_printer.get());
-  sync_bridge->AddPrinter(std::move(updated_printer));
-
-  return false;
-}
-
 class SyncedPrintersManagerImpl : public SyncedPrintersManager {
  public:
   SyncedPrintersManagerImpl(Profile* profile,
@@ -108,7 +87,7 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager {
     }
 
     DCHECK_EQ(Printer::SRC_USER_PREFS, printer.source());
-    UpdatePrinterPref(sync_bridge_.get(), printer.id(), printer);
+    sync_bridge_->UpdatePrinter(PrinterToSpecifics(printer));
 
     NotifyConfiguredObservers();
   }

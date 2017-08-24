@@ -12,6 +12,7 @@
 
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/model_type_sync_bridge.h"
@@ -47,9 +48,12 @@ class PrintersSyncBridge : public syncer::ModelTypeSyncBridge {
       const syncer::EntityData& local_data,
       const syncer::EntityData& remote_data) const override;
 
-  // Store a new or updated |printer|.
+  // Stores a |printer|.  Overwrites a printer with a matching id if it exists.
   void AddPrinter(std::unique_ptr<sync_pb::PrinterSpecifics> printer);
-  // Remove a printer by |id|.
+  // Merges the |printer| with an existing |printer| if their ids match.
+  // Otherwise, adds the printer.  Returns true if the printer is new.
+  bool UpdatePrinter(std::unique_ptr<sync_pb::PrinterSpecifics> printer);
+  // Removes a printer by |id|.
   bool RemovePrinter(const std::string& id);
   // Returns all printers stored in the database and synced.
   std::vector<sync_pb::PrinterSpecifics> GetAllPrinters() const;
@@ -60,9 +64,25 @@ class PrintersSyncBridge : public syncer::ModelTypeSyncBridge {
  private:
   class StoreProxy;
 
+  // Notifies the change processor that |printer| has been modified.
+  void CommitPrinterPut(const sync_pb::PrinterSpecifics& printer);
+  // Performs |printer| store after lock has been acquired.
+  void AddPrinterLocked(std::unique_ptr<sync_pb::PrinterSpecifics> printer);
+  // Stores |specifics| locally in |all_data_| and record change in |batch|.
+  // |data_lock_| must be acquired before calling this funciton.
+  void StoreSpecifics(std::unique_ptr<sync_pb::PrinterSpecifics> specifics,
+                      syncer::ModelTypeStore::WriteBatch* batch);
+  // Removes the specific with |id| from |all_data_| and update |batch| with the
+  // change. |data_lock_| must be acquired before calling this function.
+  bool DeleteSpecifics(const std::string& id,
+                       syncer::ModelTypeStore::WriteBatch* batch);
+
   std::unique_ptr<StoreProxy> store_delegate_;
 
-  // In memory cache of printer information.
+  // Lock over |all_data_|.
+  mutable base::Lock data_lock_;
+  // In memory cache of printer information. Access to this is synchronized with
+  // |data_lock_|.
   std::map<std::string, std::unique_ptr<sync_pb::PrinterSpecifics>> all_data_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintersSyncBridge);
