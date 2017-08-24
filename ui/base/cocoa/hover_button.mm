@@ -4,10 +4,20 @@
 
 #import "ui/base/cocoa/hover_button.h"
 
+#include <cmath>
+
+namespace {
+
+// Distance to start a drag when a dragDelegate is assigned.
+constexpr CGFloat kDragDistance = 5;
+
+}  // namespace
+
 @implementation HoverButton
 
 @synthesize hoverState = hoverState_;
 @synthesize trackingEnabled = trackingEnabled_;
+@synthesize dragDelegate = dragDelegate_;
 
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
@@ -89,6 +99,17 @@
       // Update the image state, which will change if the user moves the mouse
       // into or out of the button.
       [self checkImageState];
+      if (dragDelegate_ && [nextEvent type] == NSLeftMouseDragged) {
+        const NSPoint startPos = [theEvent locationInWindow];
+        const NSPoint pos = [nextEvent locationInWindow];
+        if (std::abs(startPos.x - pos.x) > kDragDistance ||
+            std::abs(startPos.y - pos.y) > kDragDistance) {
+          [dragDelegate_ beginDragFromHoverButton:self event:nextEvent];
+          mouseDown_ = NO;
+          self.hoverState = kHoverStateNone;
+          return;
+        }
+      }
     }
   }
 
@@ -152,10 +173,13 @@
   if (!trackingArea_.get())
     return;
 
+  NSEvent* currentEvent = [NSApp currentEvent];
+  if (!currentEvent || currentEvent.window != self.window)
+    return;
+
   // Update the button's state if the button has moved.
-  const NSPoint mouseLoc = [self.superview
-      convertPoint:[[self window] mouseLocationOutsideOfEventStream]
-          fromView:nil];
+  const NSPoint mouseLoc =
+      [self.superview convertPoint:currentEvent.locationInWindow fromView:nil];
   BOOL mouseInBounds = [self hitTest:mouseLoc] != nil;
   if (mouseDown_ && mouseInBounds) {
     self.hoverState = kHoverStateMouseDown;
