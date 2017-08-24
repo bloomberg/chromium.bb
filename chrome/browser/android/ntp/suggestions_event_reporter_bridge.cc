@@ -17,6 +17,7 @@
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "jni/SuggestionsEventReporterBridge_jni.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/window_open_disposition.h"
 
 using base::android::AttachCurrentThread;
@@ -64,22 +65,33 @@ static void OnPageShown(
     const JavaParamRef<jclass>& caller,
     const JavaParamRef<jintArray>& jcategories,
     const JavaParamRef<jintArray>& jsuggestions_per_category,
+    const JavaParamRef<jintArray>& jprefetched_suggestions_per_category,
     const JavaParamRef<jbooleanArray>& jis_category_visible) {
   std::vector<int> categories_int;
   JavaIntArrayToIntVector(env, jcategories, &categories_int);
+
   std::vector<int> suggestions_per_category;
   JavaIntArrayToIntVector(env, jsuggestions_per_category,
                           &suggestions_per_category);
   DCHECK_EQ(categories_int.size(), suggestions_per_category.size());
+
+  std::vector<int> prefetched_suggestions_per_category;
+  JavaIntArrayToIntVector(env, jprefetched_suggestions_per_category,
+                          &prefetched_suggestions_per_category);
+  DCHECK_EQ(categories_int.size(), prefetched_suggestions_per_category.size());
+
   std::vector<bool> is_category_visible;
   JavaBooleanArrayToBoolVector(env, jis_category_visible, &is_category_visible);
   DCHECK_EQ(categories_int.size(), is_category_visible.size());
+
   std::vector<Category> categories;
   for (size_t i = 0; i < categories_int.size(); i++) {
     categories.push_back(Category::FromIDValue(categories_int[i]));
   }
-  ntp_snippets::metrics::OnPageShown(categories, suggestions_per_category,
-                                     is_category_visible);
+
+  ntp_snippets::metrics::OnPageShown(
+      categories, suggestions_per_category, prefetched_suggestions_per_category,
+      is_category_visible, net::NetworkChangeNotifier::IsOffline());
   GetUserClassifier()->OnEvent(UserClassifier::Metric::NTP_OPENED);
 }
 
@@ -90,11 +102,13 @@ static void OnSuggestionShown(JNIEnv* env,
                               jint position_in_category,
                               jlong publish_timestamp_ms,
                               jfloat score,
-                              jlong fetch_timestamp_ms) {
+                              jlong fetch_timestamp_ms,
+                              jboolean is_prefetched) {
   ntp_snippets::metrics::OnSuggestionShown(
       global_position, Category::FromIDValue(j_category_id),
       position_in_category, base::Time::FromJavaTime(publish_timestamp_ms),
-      score, base::Time::FromJavaTime(fetch_timestamp_ms));
+      score, base::Time::FromJavaTime(fetch_timestamp_ms), is_prefetched,
+      net::NetworkChangeNotifier::IsOffline());
   if (global_position == 0) {
     GetUserClassifier()->OnEvent(UserClassifier::Metric::SUGGESTIONS_SHOWN);
   }
@@ -108,12 +122,14 @@ static void OnSuggestionOpened(JNIEnv* env,
                                jint position_in_category,
                                jlong publish_timestamp_ms,
                                jfloat score,
-                               int windowOpenDisposition) {
+                               int windowOpenDisposition,
+                               jboolean is_prefetched) {
   const Category category = Category::FromIDValue(j_category_id);
   ntp_snippets::metrics::OnSuggestionOpened(
       global_position, category, category_index, position_in_category,
       base::Time::FromJavaTime(publish_timestamp_ms), score,
-      static_cast<WindowOpenDisposition>(windowOpenDisposition));
+      static_cast<WindowOpenDisposition>(windowOpenDisposition), is_prefetched,
+      net::NetworkChangeNotifier::IsOffline());
   ntp_snippets::ContentSuggestionsService* content_suggestions_service =
       ContentSuggestionsServiceFactory::GetForProfile(
           ProfileManager::GetLastUsedProfile());

@@ -368,6 +368,14 @@ public class SuggestionsSection extends InnerNode {
         return mSuggestionsList.getItemCount();
     }
 
+    public int getPrefetchedSuggestionsCount() {
+        int count = 0;
+        for (SnippetArticle suggestion : mSuggestionsList) {
+            if (suggestion.isPrefetched()) ++count;
+        }
+        return count;
+    }
+
     public boolean isDataStale() {
         return mIsDataStale;
     }
