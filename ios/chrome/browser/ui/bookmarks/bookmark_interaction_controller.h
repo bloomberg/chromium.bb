@@ -9,32 +9,15 @@
 @class Tab;
 @protocol UrlLoader;
 
-namespace bookmarks {
-class BookmarkNode;
-}  // namespace bookmarks
-
 namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}  // namespace user_prefs
 
 // The BookmarkInteractionController abstracts the management of the various
 // UIViewControllers used to create, remove and edit a bookmark. Its main entry
 // point is called when the user taps on the star icon.
 @interface BookmarkInteractionController : NSObject
 
-// Registers the feature preferences.
-+ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
-
-// Accesses the default folder for new bookmarks. The default folder is Mobile
-// Bookmarks.
-+ (const bookmarks::BookmarkNode*)folderForNewBookmarksInBrowserState:
-    (ios::ChromeBrowserState*)browserState;
-+ (void)setFolderForNewBookmarks:(const bookmarks::BookmarkNode*)folder
-                  inBrowserState:(ios::ChromeBrowserState*)browserState;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                               loader:(id<UrlLoader>)loader

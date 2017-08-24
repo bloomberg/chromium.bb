@@ -15,17 +15,15 @@
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
-#include "components/pref_registry/pref_registry_syncable.h"
-#include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
-#include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_controller_factory.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_navigation_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -33,7 +31,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/referrer.h"
-#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -41,10 +38,6 @@
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-
-namespace {
-const int64_t kLastUsedFolderNone = -1;
-}  // namespace
 
 @interface BookmarkInteractionController ()<
     BookmarkEditViewControllerDelegate,
@@ -72,8 +65,7 @@ const int64_t kLastUsedFolderNone = -1;
 // A reference to the potentially presented single bookmark editor.
 @property(nonatomic, strong) BookmarkEditViewController* bookmarkEditor;
 
-// The user wants to bookmark the current tab.
-- (void)addBookmarkForTab:(Tab*)tab;
+@property(nonatomic, strong) BookmarkMediator* mediator;
 
 // Builds a controller and brings it on screen.
 - (void)presentBookmarkForTab:(Tab*)tab;
@@ -90,37 +82,7 @@ const int64_t kLastUsedFolderNone = -1;
 @synthesize bookmarkBrowser = _bookmarkBrowser;
 @synthesize bookmarkEditor = _bookmarkEditor;
 @synthesize bookmarkModel = _bookmarkModel;
-
-+ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
-  registry->RegisterInt64Pref(prefs::kIosBookmarkFolderDefault,
-                              kLastUsedFolderNone);
-}
-
-+ (const BookmarkNode*)folderForNewBookmarksInBrowserState:
-    (ios::ChromeBrowserState*)browserState {
-  bookmarks::BookmarkModel* bookmarks =
-      ios::BookmarkModelFactory::GetForBrowserState(browserState);
-  const BookmarkNode* defaultFolder = bookmarks->mobile_node();
-
-  PrefService* prefs = browserState->GetPrefs();
-  int64_t node_id = prefs->GetInt64(prefs::kIosBookmarkFolderDefault);
-  if (node_id == kLastUsedFolderNone)
-    node_id = defaultFolder->id();
-  const BookmarkNode* result =
-      bookmarks::GetBookmarkNodeByID(bookmarks, node_id);
-
-  if (result)
-    return result;
-
-  return defaultFolder;
-}
-
-+ (void)setFolderForNewBookmarks:(const BookmarkNode*)folder
-                  inBrowserState:(ios::ChromeBrowserState*)browserState {
-  DCHECK(folder && folder->is_folder());
-  browserState->GetPrefs()->SetInt64(prefs::kIosBookmarkFolderDefault,
-                                     folder->id());
-}
+@synthesize mediator = _mediator;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                               loader:(id<UrlLoader>)loader
@@ -135,6 +97,7 @@ const int64_t kLastUsedFolderNone = -1;
     _parentController = parentController;
     _bookmarkModel =
         ios::BookmarkModelFactory::GetForBrowserState(_browserState);
+    _mediator = [[BookmarkMediator alloc] initWithBrowserState:_browserState];
     DCHECK(_bookmarkModel);
     DCHECK(_parentController);
   }
@@ -144,41 +107,6 @@ const int64_t kLastUsedFolderNone = -1;
 - (void)dealloc {
   _bookmarkBrowser.homeDelegate = nil;
   _bookmarkEditor.delegate = nil;
-}
-
-- (void)addBookmarkForTab:(Tab*)tab {
-  base::RecordAction(base::UserMetricsAction("BookmarkAdded"));
-  const BookmarkNode* defaultFolder =
-      [[self class] folderForNewBookmarksInBrowserState:_browserState];
-  self.bookmarkModel->AddURL(defaultFolder, defaultFolder->child_count(),
-                             base::SysNSStringToUTF16(tab.title),
-                             tab.lastCommittedURL);
-
-  MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
-  __weak BookmarkInteractionController* weakSelf = self;
-  __weak Tab* weakTab = tab;
-  action.handler = ^{
-    BookmarkInteractionController* strongSelf = weakSelf;
-    if (!strongSelf || !weakTab)
-      return;
-    [strongSelf presentBookmarkForTab:weakTab];
-  };
-  action.title = l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON);
-  action.accessibilityIdentifier = @"Edit";
-
-  NSString* folderTitle =
-      bookmark_utils_ios::TitleForBookmarkNode(defaultFolder);
-  NSString* text =
-      _browserState->GetPrefs()->GetInt64(prefs::kIosBookmarkFolderDefault) !=
-              kLastUsedFolderNone
-          ? l10n_util::GetNSStringF(IDS_IOS_BOOKMARK_PAGE_SAVED_FOLDER,
-                                    base::SysNSStringToUTF16(folderTitle))
-          : l10n_util::GetNSString(IDS_IOS_BOOKMARK_PAGE_SAVED);
-  TriggerHapticFeedbackForNotification(UINotificationFeedbackTypeSuccess);
-  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
-  message.action = action;
-  message.category = bookmark_utils_ios::kBookmarksSnackbarCategory;
-  [MDCSnackbarManager showMessage:message];
 }
 
 - (void)presentBookmarkForTab:(Tab*)tab {
@@ -215,10 +143,21 @@ const int64_t kLastUsedFolderNone = -1;
   if (!tab)
     return;
 
-  if (bookmarked)
+  if (bookmarked) {
     [self presentBookmarkForTab:tab];
-  else
-    [self addBookmarkForTab:tab];
+  } else {
+    __weak BookmarkInteractionController* weakSelf = self;
+    __weak Tab* weakTab = tab;
+    void (^editAction)() = ^() {
+      BookmarkInteractionController* strongSelf = weakSelf;
+      if (!strongSelf || !weakTab)
+        return;
+      [strongSelf presentBookmarkForTab:weakTab];
+    };
+    [self.mediator addBookmarkWithTitle:tab.title
+                                    URL:tab.lastCommittedURL
+                             editAction:editAction];
+  }
 }
 
 - (void)presentBookmarks {

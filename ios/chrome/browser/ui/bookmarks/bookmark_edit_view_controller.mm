@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_elevated_toolbar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_extended_button.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_parent_folder_item.h"
@@ -304,8 +304,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)changeFolder:(const BookmarkNode*)folder {
   DCHECK(folder->is_folder());
   self.folder = folder;
-  [BookmarkInteractionController setFolderForNewBookmarks:self.folder
-                                           inBrowserState:self.browserState];
+  [BookmarkMediator setFolderForNewBookmarks:self.folder
+                              inBrowserState:self.browserState];
   [self updateFolderLabel];
 }
 
