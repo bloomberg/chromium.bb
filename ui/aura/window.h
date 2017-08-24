@@ -317,8 +317,16 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Create a LayerTreeFrameSink for the aura::Window.
   std::unique_ptr<cc::LayerTreeFrameSink> CreateLayerTreeFrameSink();
 
-  // Get the current viz::SurfaceId.
+  // Gets the current viz::SurfaceId.
   viz::SurfaceId GetSurfaceId() const;
+
+  // Forces the window to allocate a new viz::LocalSurfaceId for the next
+  // CompositorFrame submission in anticipation of a synchronization operation
+  // that does not involve a resize or a device scale factor change.
+  void AllocateLocalSurfaceId();
+
+  // Gets the current viz::LocalSurfaceId.
+  const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
  protected:
   // Deletes (or removes if not owned by parent) all child windows. Intended for

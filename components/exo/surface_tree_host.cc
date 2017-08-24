@@ -262,7 +262,7 @@ void SurfaceTreeHost::OnUpdateVSyncParameters(base::TimeTicks timebase,
 // ui::ContextFactoryObserver overrides:
 
 void SurfaceTreeHost::OnLostResources() {
-  if (!host_window_->GetSurfaceId().is_valid())
+  if (!host_window_->GetSurfaceId().is_valid() || !root_surface_)
     return;
   root_surface_->RecreateResources(layer_tree_frame_sink_holder_.get());
   SubmitCompositorFrame(Surface::FRAME_TYPE_RECREATED_RESOURCES);
@@ -292,8 +292,7 @@ void SurfaceTreeHost::SubmitCompositorFrame(Surface::FrameType frame_type) {
       gfx::Rect(root_surface_->content_size());
   host_window_->layer()->SetFillsBoundsOpaquely(
       root_surface_->FillsBoundsOpaquely());
-  frame.metadata.device_scale_factor =
-      host_window_->layer()->device_scale_factor();
+  frame.metadata.device_scale_factor = 1.0f;
   layer_tree_frame_sink_holder_->frame_sink()->SubmitCompositorFrame(
       std::move(frame));
 
