@@ -31,9 +31,9 @@ if host_paths.DEVIL_PATH not in sys.path:
 
 from devil import base_error
 from devil.utils import reraiser_thread
+from devil.utils import run_tests_helper
 
 from pylib import constants
-from pylib import logging_ext
 from pylib.base import base_test_result
 from pylib.base import environment_factory
 from pylib.base import test_instance_factory
@@ -41,6 +41,7 @@ from pylib.base import test_run_factory
 from pylib.results import json_results
 from pylib.results import report_results
 from pylib.utils import logdog_helper
+from pylib.utils import logging_utils
 
 from py_utils import contextlib_ext
 
@@ -178,6 +179,7 @@ def AddCommonOptions(parser):
       '--gs-results-bucket',
       help='Google Storage bucket to upload results to.')
 
+
   parser.add_argument(
       '--output-directory',
       dest='output_directory', type=os.path.realpath,
@@ -192,17 +194,20 @@ def AddCommonOptions(parser):
       '-v', '--verbose',
       dest='verbose_count', default=0, action='count',
       help='Verbose level (multiple times for more)')
-  parser.add_argument(
-      '-q', '--quiet',
-      dest='quiet', action='store_true',
-      help='Option for very quiet logging.')
 
   AddTestLauncherOptions(parser)
 
 
 def ProcessCommonOptions(args):
   """Processes and handles all common options."""
-  logging_ext.Initialize(-1 if args.quiet else args.verbose_count)
+  run_tests_helper.SetLogLevel(args.verbose_count, add_handler=False)
+  if args.verbose_count > 0:
+    handler = logging_utils.ColorStreamHandler()
+  else:
+    handler = logging.StreamHandler(sys.stdout)
+  handler.setFormatter(run_tests_helper.CustomFormatter())
+  logging.getLogger().addHandler(handler)
+
   constants.SetBuildType(args.build_type)
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
@@ -844,6 +849,7 @@ def RunTestsInPlatformMode(args):
         continue
 
       all_raw_results.append(raw_results)
+
       iteration_results = base_test_result.TestRunResults()
       for r in reversed(raw_results):
         iteration_results.AddTestRunResults(r)

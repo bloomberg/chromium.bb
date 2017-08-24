@@ -21,7 +21,6 @@ from devil.android.sdk import shared_prefs
 from devil.android.tools import system_app
 from devil.utils import reraiser_thread
 from incremental_install import installer
-from pylib import logging_ext
 from pylib import valgrind_tools
 from pylib.android import logdog_logcat_monitor
 from pylib.base import base_test_result
@@ -589,15 +588,6 @@ class LocalDeviceInstrumentationTestRun(
 
     if self._env.concurrent_adb:
       post_test_step_thread_group.JoinAll()
-
-    if result.GetType() == base_test_result.ResultType.PASS:
-      logging_ext.test_pass('%s %s', result.GetType(), test_display_name)
-    elif result.GetType() in (base_test_result.ResultType.NOTRUN,
-                              base_test_result.ResultType.SKIP):
-      pass
-    else:
-      logging_ext.test_fail('%s %s', result.GetType(), test_display_name)
-
     return results, None
 
   def _GetTestsFromRunner(self):
