@@ -329,6 +329,27 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     bound_textures_[GL_TEXTURE_EXTERNAL_OES].resize(num_texture_units);
   }
 
+  // Initialize the tracked buffer bindings
+  bound_buffers_[GL_ARRAY_BUFFER] = 0;
+  bound_buffers_[GL_ELEMENT_ARRAY_BUFFER] = 0;
+  if (feature_info_->gl_version_info().IsAtLeastGLES(3, 0) ||
+      feature_info_->feature_flags().ext_pixel_buffer_object) {
+    bound_buffers_[GL_PIXEL_PACK_BUFFER] = 0;
+    bound_buffers_[GL_PIXEL_UNPACK_BUFFER] = 0;
+  }
+  if (feature_info_->gl_version_info().IsAtLeastGLES(3, 0)) {
+    bound_buffers_[GL_COPY_READ_BUFFER] = 0;
+    bound_buffers_[GL_COPY_WRITE_BUFFER] = 0;
+    bound_buffers_[GL_TRANSFORM_FEEDBACK_BUFFER] = 0;
+    bound_buffers_[GL_UNIFORM_BUFFER] = 0;
+  }
+  if (feature_info_->gl_version_info().IsAtLeastGLES(3, 1)) {
+    bound_buffers_[GL_ATOMIC_COUNTER_BUFFER] = 0;
+    bound_buffers_[GL_SHADER_STORAGE_BUFFER] = 0;
+    bound_buffers_[GL_DRAW_INDIRECT_BUFFER] = 0;
+    bound_buffers_[GL_DISPATCH_INDIRECT_BUFFER] = 0;
+  }
+
   if (group_->gpu_preferences().enable_gpu_driver_debug_logging &&
       feature_info_->feature_flags().khr_debug) {
     InitializeGLDebugLogging();

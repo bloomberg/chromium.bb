@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/service/gl_context_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
@@ -800,6 +801,121 @@ MATCHER_P2(PointsToArray, array, size, "") {
   }
   return true;
 }
+
+class GLES2DecoderPassthroughTestBase : public testing::Test,
+                                        public GLES2DecoderClient {
+ public:
+  GLES2DecoderPassthroughTestBase(ContextType context_type);
+  ~GLES2DecoderPassthroughTestBase() override;
+
+  void OnConsoleMessage(int32_t id, const std::string& message) override;
+  void CacheShader(const std::string& key, const std::string& shader) override;
+  void OnFenceSyncRelease(uint64_t release) override;
+  bool OnWaitSyncToken(const gpu::SyncToken&) override;
+  void OnDescheduleUntilFinished() override;
+  void OnRescheduleAfterFinished() override;
+
+  void SetUp() override;
+  void TearDown() override;
+
+  template <typename T>
+  void GenHelper(GLuint client_id) {
+    int8_t buffer[sizeof(T) + sizeof(client_id)];
+    T& cmd = *reinterpret_cast<T*>(&buffer);
+    cmd.Init(1, &client_id);
+    EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(client_id)));
+  }
+
+  template <typename Command>
+  bool IsObjectHelper(GLuint client_id) {
+    typename Command::Result* result =
+        static_cast<typename Command::Result*>(shared_memory_address_);
+    Command cmd;
+    cmd.Init(client_id, shared_memory_id_, kSharedMemoryOffset);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+    bool isObject = static_cast<bool>(*result);
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
+    return isObject;
+  }
+
+  template <typename T>
+  error::Error ExecuteCmd(const T& cmd) {
+    static_assert(T::kArgFlags == cmd::kFixed,
+                  "T::kArgFlags should equal cmd::kFixed");
+    int entries_processed = 0;
+    return decoder_->DoCommands(1, (const void*)&cmd,
+                                ComputeNumEntries(sizeof(cmd)),
+                                &entries_processed);
+  }
+
+  template <typename T>
+  error::Error ExecuteImmediateCmd(const T& cmd, size_t data_size) {
+    static_assert(T::kArgFlags == cmd::kAtLeastN,
+                  "T::kArgFlags should equal cmd::kAtLeastN");
+    int entries_processed = 0;
+    return decoder_->DoCommands(1, (const void*)&cmd,
+                                ComputeNumEntries(sizeof(cmd) + data_size),
+                                &entries_processed);
+  }
+
+  template <typename T>
+  T GetSharedMemoryAs() {
+    return reinterpret_cast<T>(shared_memory_address_);
+  }
+
+  template <typename T>
+  T GetSharedMemoryAsWithOffset(uint32_t offset) {
+    void* ptr = reinterpret_cast<int8_t*>(shared_memory_address_) + offset;
+    return reinterpret_cast<T>(ptr);
+  }
+
+  PassthroughResources* GetPassthroughResources() const {
+    return group_->passthrough_resources();
+  }
+
+  GLint GetGLError();
+
+ protected:
+  void DoBindBuffer(GLenum target, GLuint client_id);
+  void DoDeleteBuffer(GLuint client_id);
+  void DoBufferData(GLenum target,
+                    GLsizei size,
+                    const void* data,
+                    GLenum usage);
+  void DoBufferSubData(GLenum target,
+                       GLint offset,
+                       GLsizeiptr size,
+                       const void* data);
+
+  static const size_t kSharedBufferSize = 2048;
+  static const uint32_t kSharedMemoryOffset = 132;
+  static const uint32_t kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
+  static const int32_t kInvalidSharedMemoryId =
+      FakeCommandBufferServiceBase::kTransferBufferBaseId - 1;
+
+  static const uint32_t kNewClientId = 501;
+  static const GLuint kClientBufferId = 100;
+
+  int32_t shared_memory_id_;
+  uint32_t shared_memory_offset_;
+  void* shared_memory_address_;
+  void* shared_memory_base_;
+
+ private:
+  ContextCreationAttribHelper context_creation_attribs_;
+  GpuPreferences gpu_preferences_;
+  MailboxManagerImpl mailbox_manager_;
+  ShaderTranslatorCache shader_translator_cache_;
+  FramebufferCompletenessCache framebuffer_completeness_cache_;
+  ImageManager image_manager_;
+  ServiceDiscardableManager discardable_manager_;
+
+  scoped_refptr<gl::GLSurface> surface_;
+  scoped_refptr<gl::GLContext> context_;
+  std::unique_ptr<FakeCommandBufferServiceBase> command_buffer_service_;
+  std::unique_ptr<GLES2DecoderPassthroughImpl> decoder_;
+  scoped_refptr<ContextGroup> group_;
+};
 
 }  // namespace gles2
 }  // namespace gpu

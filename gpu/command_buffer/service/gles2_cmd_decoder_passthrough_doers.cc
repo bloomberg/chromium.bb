@@ -311,6 +311,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBindBuffer(GLenum target,
     return error::kNoError;
   }
 
+  DCHECK(bound_buffers_.find(target) != bound_buffers_.end());
   bound_buffers_[target] = buffer;
 
   return error::kNoError;
@@ -327,6 +328,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBindBufferBase(GLenum target,
     return error::kNoError;
   }
 
+  DCHECK(bound_buffers_.find(target) != bound_buffers_.end());
   bound_buffers_[target] = buffer;
 
   return error::kNoError;
@@ -346,6 +348,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBindBufferRange(GLenum target,
     return error::kNoError;
   }
 
+  DCHECK(bound_buffers_.find(target) != bound_buffers_.end());
   bound_buffers_[target] = buffer;
 
   return error::kNoError;
@@ -463,7 +466,15 @@ error::Error GLES2DecoderPassthroughImpl::DoBufferData(GLenum target,
                                                        GLsizeiptr size,
                                                        const void* data,
                                                        GLenum usage) {
+  FlushErrors();
   glBufferData(target, size, data, usage);
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
+  // Calling buffer data on a mapped buffer will implicitly unmap it
+  resources_->mapped_buffer_map.erase(bound_buffers_[target]);
+
   return error::kNoError;
 }
 
@@ -704,16 +715,26 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteBuffers(
     InsertError(GL_INVALID_VALUE, "n cannot be negative.");
     return error::kNoError;
   }
-  return DeleteHelper(n, buffers, &resources_->buffer_id_map,
-                      [this](GLsizei n, GLuint* buffers) {
-                        glDeleteBuffersARB(n, buffers);
-                        for (GLsizei i = 0; i < n; i++)
-                          for (auto buffer_binding : bound_buffers_) {
-                            if (buffer_binding.second == buffers[i]) {
-                              buffer_binding.second = 0;
-                            }
-                          }
-                      });
+
+  std::vector<GLuint> service_ids(n, 0);
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    GLuint client_id = buffers[ii];
+
+    // Update the bound and mapped buffer state tracking
+    for (auto& buffer_binding : bound_buffers_) {
+      if (buffer_binding.second == client_id) {
+        buffer_binding.second = 0;
+      }
+      resources_->mapped_buffer_map.erase(client_id);
+    }
+
+    service_ids[ii] =
+        resources_->buffer_id_map.GetServiceIDOrInvalid(client_id);
+    resources_->buffer_id_map.RemoveClientID(client_id);
+  }
+  glDeleteBuffersARB(n, service_ids.data());
+
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteFramebuffers(
@@ -2949,8 +2970,12 @@ error::Error GLES2DecoderPassthroughImpl::DoMapBufferRange(
 
 error::Error GLES2DecoderPassthroughImpl::DoUnmapBuffer(GLenum target) {
   auto bound_buffers_iter = bound_buffers_.find(target);
-  if (bound_buffers_iter == bound_buffers_.end() ||
-      bound_buffers_iter->second == 0) {
+  if (bound_buffers_iter == bound_buffers_.end()) {
+    InsertError(GL_INVALID_ENUM, "Invalid buffer target.");
+    return error::kNoError;
+  }
+
+  if (bound_buffers_iter->second == 0) {
     InsertError(GL_INVALID_OPERATION, "No buffer bound to this target.");
     return error::kNoError;
   }
