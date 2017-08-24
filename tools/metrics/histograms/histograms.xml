@@ -2036,6 +2036,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.FirstAppLaunchDelay.TimeDelta" units="ms">
+  <owner>yusukes@google.com</owner>
+  <owner>khmel@google.com</owner>
+  <summary>
+    How long the user sees the spinning icon waiting for ARC container boot.
+    Zero when the container has already been up and running when the user
+    launches the ARC app.
+  </summary>
+</histogram>
+
 <histogram name="Arc.FirstAppLaunchRequest.TimeDelta" units="ms">
   <owner>yusukes@google.com</owner>
   <owner>khmel@google.com</owner>

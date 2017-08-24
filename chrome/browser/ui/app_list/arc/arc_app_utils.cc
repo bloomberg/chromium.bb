@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
@@ -350,6 +351,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
       }
     }
 
+    arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
     ChromeLauncherController* chrome_controller =
         ChromeLauncherController::instance();
     DCHECK(chrome_controller || !ash::Shell::HasInstance());
@@ -366,6 +368,7 @@ bool LaunchAppWithIntent(content::BrowserContext* context,
     prefs->SetLastLaunchTime(app_id);
     return true;
   }
+  arc::ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMA(context);
   return (new AppLauncher(context, app_id, launch_intent, landscape_layout,
                           event_flags))
       ->LaunchAndRelease();
