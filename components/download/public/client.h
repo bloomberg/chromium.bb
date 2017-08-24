@@ -107,6 +107,15 @@ class Client {
   // TODO(dtrainor): Point to finch configurable timeout when it is added.
   virtual void OnDownloadSucceeded(const std::string& guid,
                                    const CompletionInfo& completion_info) = 0;
+
+  // Called by the service to ask the client whether it is okay to remove a
+  // completed file. If true, the file is deleted. If false, the file life time
+  // is granted another grace period (12 hours, configurable) after which
+  // the service will try again. If |force_delete| is true which happens when
+  // the file was completed too long ago, the file will be deleted regardless of
+  // the outcome of this function.
+  virtual bool CanServiceRemoveDownloadedFile(const std::string& guid,
+                                              bool force_delete) = 0;
 };
 
 }  // namespace download

@@ -25,7 +25,12 @@ constexpr char kMaxScheduledDownloadsConfig[] = "max_scheduled_downloads";
 constexpr char kMaxRetryCountConfig[] = "max_retry_count";
 
 // Configuration name for file keep alive time.
-constexpr char kFileKeepAliveTimeMinutesConfig[] = "file_keep_alive_time";
+constexpr char kFileKeepAliveTimeMinutesConfig[] =
+    "file_keep_alive_time_minutes";
+
+// Configuration name for maximum duration that the file can be kept alive.
+constexpr char kMaxFileKeepAliveTimeMinutesConfig[] =
+    "max_file_keep_alive_time_minutes";
 
 // Configuration name for file keep alive time.
 constexpr char kFileCleanupWindowMinutesConfig[] = "file_cleanup_window";
@@ -72,6 +77,10 @@ struct Configuration {
   // The time that the download service will keep the files around before
   // deleting them if the client hasn't handle the files.
   base::TimeDelta file_keep_alive_time;
+
+  // The maximum time that the download service can keep the files around before
+  // forcefully deleting them even if the client doesn't agree.
+  base::TimeDelta max_file_keep_alive_time;
 
   // The length of the flexible time window during which the scheduler must
   // schedule a file cleanup task.

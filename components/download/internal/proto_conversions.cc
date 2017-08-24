@@ -262,7 +262,10 @@ Entry ProtoConversions::EntryFromProto(const protodb::Entry& proto) {
   entry.create_time = base::Time::FromInternalValue(proto.create_time());
   entry.completion_time =
       base::Time::FromInternalValue(proto.completion_time());
+  entry.last_cleanup_check_time =
+      base::Time::FromInternalValue(proto.last_cleanup_check_time());
   entry.attempt_count = proto.attempt_count();
+  entry.cleanup_attempt_count = proto.cleanup_attempt_count();
   entry.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag({proto.traffic_annotation()});
   entry.bytes_downloaded = proto.bytes_downloaded();
@@ -282,7 +285,10 @@ protodb::Entry ProtoConversions::EntryToProto(const Entry& entry) {
   proto.set_target_file_path(entry.target_file_path.AsUTF8Unsafe());
   proto.set_create_time(entry.create_time.ToInternalValue());
   proto.set_completion_time(entry.completion_time.ToInternalValue());
+  proto.set_last_cleanup_check_time(
+      entry.last_cleanup_check_time.ToInternalValue());
   proto.set_attempt_count(entry.attempt_count);
+  proto.set_cleanup_attempt_count(entry.cleanup_attempt_count);
   proto.set_traffic_annotation(entry.traffic_annotation.unique_id_hash_code);
   proto.set_bytes_downloaded(entry.bytes_downloaded);
   return proto;

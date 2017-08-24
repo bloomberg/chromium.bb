@@ -27,13 +27,18 @@ const uint32_t kDefaultMaxScheduledDownloads = 15;
 // Default value for maximum retry count.
 const uint32_t kDefaultMaxRetryCount = 5;
 
-// Default value for file keep alive time in minutes, keep the file alive for
-// 12 hours by default.
+// Default value for file keep alive time, keep the file alive for 12 hours by
+// default.
 const base::TimeDelta kDefaultFileKeepAliveTime =
     base::TimeDelta::FromHours(12);
 
-// Default value for file cleanup window in minutes, the system will schedule a
-// cleanup task within this window.
+// Default value for maximum duration that the file can be kept alive time,
+// default is 7 days.
+const base::TimeDelta kDefaultMaxFileKeepAliveTime =
+    base::TimeDelta::FromDays(7);
+
+// Default value for file cleanup window, the system will schedule a cleanup
+// task within this window.
 const base::TimeDelta kDefaultFileCleanupWindow =
     base::TimeDelta::FromHours(24);
 
@@ -79,6 +84,10 @@ std::unique_ptr<Configuration> Configuration::CreateFromFinch() {
       base::TimeDelta::FromMinutes(base::saturated_cast<int>(
           GetFinchConfigUInt(kFileKeepAliveTimeMinutesConfig,
                              kDefaultFileKeepAliveTime.InMinutes())));
+  config->max_file_keep_alive_time =
+      base::TimeDelta::FromMinutes(base::saturated_cast<int>(
+          GetFinchConfigUInt(kMaxFileKeepAliveTimeMinutesConfig,
+                             kDefaultMaxFileKeepAliveTime.InMinutes())));
   config->file_cleanup_window =
       base::TimeDelta::FromMinutes(base::saturated_cast<int>(
           GetFinchConfigUInt(kFileCleanupWindowMinutesConfig,
@@ -106,6 +115,7 @@ Configuration::Configuration()
       max_scheduled_downloads(kDefaultMaxScheduledDownloads),
       max_retry_count(kDefaultMaxRetryCount),
       file_keep_alive_time(kDefaultFileKeepAliveTime),
+      max_file_keep_alive_time(kDefaultMaxFileKeepAliveTime),
       file_cleanup_window(kDefaultFileCleanupWindow),
       window_start_time(kDefaultWindowStartTime),
       window_end_time(kDefaultWindowEndTime),

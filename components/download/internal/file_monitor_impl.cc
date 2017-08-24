@@ -173,21 +173,17 @@ void FileMonitorImpl::DeleteUnknownFiles(
                             download_file_paths));
 }
 
-std::vector<Entry*> FileMonitorImpl::CleanupFilesForCompletedEntries(
+void FileMonitorImpl::CleanupFilesForCompletedEntries(
     const Model::EntryList& entries,
     const base::Closure& completion_callback) {
-  std::vector<Entry*> entries_to_remove;
   std::set<base::FilePath> files_to_remove;
   for (auto* entry : entries) {
-    if (!ReadyForCleanup(entry))
-      continue;
-
-    entries_to_remove.push_back(entry);
     files_to_remove.insert(entry->target_file_path);
 
     // TODO(xingliu): Consider logs life time after the file being deleted on
     // the file thread.
-    stats::LogFileLifeTime(base::Time::Now() - entry->completion_time);
+    stats::LogFileLifeTime(base::Time::Now() - entry->completion_time,
+                           entry->cleanup_attempt_count);
   }
 
   file_thread_task_runner_->PostTaskAndReply(
@@ -195,7 +191,6 @@ std::vector<Entry*> FileMonitorImpl::CleanupFilesForCompletedEntries(
       base::Bind(&DeleteFilesOnFileThread, files_to_remove,
                  stats::FileCleanupReason::TIMEOUT),
       completion_callback);
-  return entries_to_remove;
 }
 
 void FileMonitorImpl::DeleteFiles(
@@ -209,11 +204,6 @@ void FileMonitorImpl::HardRecover(const InitCallback& callback) {
   base::PostTaskAndReplyWithResult(
       file_thread_task_runner_.get(), FROM_HERE,
       base::Bind(&HardRecoverOnFileThread, download_file_dir_), callback);
-}
-
-bool FileMonitorImpl::ReadyForCleanup(const Entry* entry) {
-  return entry->state == Entry::State::COMPLETE &&
-         (base::Time::Now() - entry->completion_time) > file_keep_alive_time_;
 }
 
 }  // namespace download
