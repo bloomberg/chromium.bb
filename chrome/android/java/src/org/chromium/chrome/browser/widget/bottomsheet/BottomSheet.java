@@ -1545,6 +1545,15 @@ public class BottomSheet
     }
 
     /**
+     * Tells {@link BottomSheetNewTabController} to display the specified content in a new tab.
+     * @param isIncognito Whether to display the incognito new tab UI.
+     * @param actionId The action id of the bottom sheet content to be displayed.
+     */
+    public void displayNewTabUi(boolean isIncognito, int actionId) {
+        mNtpController.displayNewTabUi(isIncognito, actionId);
+    }
+
+    /**
      * @return Whether or not the browser is in overview mode.
      */
     private boolean isInOverviewMode() {
