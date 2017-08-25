@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+'use strict';
+
+function assertTestRunner() {
+  assert_true(window.testRunner instanceof Object,
+    "This test can not be run without the window.testRunner.");
+}
+
+var mockAccelerationX = 1;
+var mockAccelerationY = 2;
+var mockAccelerationZ = 3;
+
+var mockAccelerationIncludingGravityX = 4;
+var mockAccelerationIncludingGravityY = 5;
+var mockAccelerationIncludingGravityZ = 6;
+
+var mockRotationRateAlpha = 7;
+var mockRotationRateBeta = 8;
+var mockRotationRateGamma = 9;
+
+var mockInterval = 10;
+
+function checkMotion(event) {
+  assert_equals(mockAccelerationX, event.acceleration.x);
+  assert_equals(mockAccelerationY, event.acceleration.y);
+  assert_equals(mockAccelerationZ, event.acceleration.z);
+
+  assert_equals(mockAccelerationIncludingGravityX, event.accelerationIncludingGravity.x);
+  assert_equals(mockAccelerationIncludingGravityY, event.accelerationIncludingGravity.y);
+  assert_equals(mockAccelerationIncludingGravityZ, event.accelerationIncludingGravity.z);
+
+  assert_equals(mockRotationRateAlpha, event.rotationRate.alpha);
+  assert_equals(mockRotationRateBeta, event.rotationRate.beta);
+  assert_equals(mockRotationRateGamma, event.rotationRate.gamma);
+
+  assert_equals(mockInterval, event.interval);
+}
+
+async_test(test => {
+  assertTestRunner();
+  window.testRunner.setMockDeviceMotion(true, mockAccelerationX,
+      true, mockAccelerationY, true, mockAccelerationZ,
+      true, mockAccelerationIncludingGravityX,
+      true, mockAccelerationIncludingGravityY,
+      true, mockAccelerationIncludingGravityZ, true, mockRotationRateAlpha,
+      true, mockRotationRateBeta, true, mockRotationRateGamma, mockInterval);
+  var childFrame = document.createElement('iframe');
+  document.body.appendChild(childFrame);
+  childFrame.contentWindow.addEventListener('devicemotion', () => {
+    document.body.removeChild(childFrame);
+    setTimeout(() => {
+      window.addEventListener('devicemotion', test.step_func_done(checkMotion));
+    }, 300);
+  });
+}, 'Tests adding a devicemotion event listener in an iframe, removing the iframe, and then adding a devicemotion event listener in the main frame.');
+</script>
+</body>
+</html>
