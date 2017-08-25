@@ -79,6 +79,7 @@ public class WebappActivity extends SingleTabActivity {
             | View.SYSTEM_UI_FLAG_LOW_PROFILE
             | View.SYSTEM_UI_FLAG_IMMERSIVE;
 
+    private final WebappActionsNotificationManager mNotificationManager;
     private final WebappDirectoryManager mDirectoryManager;
 
     private WebContents mWebContents;
@@ -112,6 +113,7 @@ public class WebappActivity extends SingleTabActivity {
         mWebappInfo = createWebappInfo(null);
         mDirectoryManager = new WebappDirectoryManager();
         mSplashController = createWebappSplashScreenController();
+        mNotificationManager = new WebappActionsNotificationManager(this);
     }
 
     protected WebappSplashScreenController createWebappSplashScreenController() {
@@ -121,6 +123,9 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         if (intent == null) return;
+
+        if (mNotificationManager.handleNotificationAction(intent)) return;
+
         super.onNewIntent(intent);
 
         WebappInfo newWebappInfo = popWebappInfo(WebappInfo.idFromIntent(intent));
@@ -340,6 +345,18 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
+    public void onResumeWithNative() {
+        super.onResumeWithNative();
+        mNotificationManager.maybeShowNotification();
+    }
+
+    @Override
+    public void onPauseWithNative() {
+        mNotificationManager.cancelNotification();
+        super.onPauseWithNative();
+    }
+
+    @Override
     protected void initDeferredStartupForActivity() {
         super.initDeferredStartupForActivity();
 
@@ -493,6 +510,17 @@ public class WebappActivity extends SingleTabActivity {
         return new EmptyTabObserver() {
 
             @Override
+            public void onDidFinishNavigation(Tab tab, String url, boolean isInMainFrame,
+                    boolean isErrorPage, boolean hasCommitted, boolean isSameDocument,
+                    boolean isFragmentNavigation, Integer pageTransition, int errorCode,
+                    int httpStatusCode) {
+                if (hasCommitted && isInMainFrame) {
+                    // Updates the URL.
+                    mNotificationManager.maybeShowNotification();
+                }
+            }
+
+            @Override
             public void onDidChangeThemeColor(Tab tab, int color) {
                 if (!isWebappDomain()) return;
                 mBrandColor = color;
@@ -636,7 +664,11 @@ public class WebappActivity extends SingleTabActivity {
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         if (id == R.id.open_in_browser_id) {
             openCurrentUrlInChrome();
-            RecordUserAction.record("WebappMenuOpenInChrome");
+            if (fromMenu) {
+                RecordUserAction.record("WebappMenuOpenInChrome");
+            } else {
+                RecordUserAction.record("Webapp.NotificationOpenInChrome");
+            }
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);

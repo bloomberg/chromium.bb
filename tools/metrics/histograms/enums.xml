@@ -37170,6 +37170,7 @@ would be helpful to identify which type is being sent.
   <int value="8" label="Sync"/>
   <int value="9" label="WebApk"/>
   <int value="10" label="Browser Actions"/>
+  <int value="11" label="Webapp Actions"/>
 </enum>
 
 <enum name="TabBackgroundLoadStatus">

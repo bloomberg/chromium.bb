@@ -290,7 +290,8 @@ public class WebApkActivity extends WebappActivity {
      */
     private void maybeShowDisclosure(WebappDataStorage storage) {
         if (!getWebApkPackageName().startsWith(WEBAPK_PACKAGE_PREFIX)
-                && !storage.hasDismissedDisclosure() && !mNotificationShowing) {
+                && !storage.hasDismissedDisclosure() && !mNotificationShowing
+                && !WebappActionsNotificationManager.isEnabled()) {
             int activityState = ApplicationStatus.getStateForActivity(this);
             if (activityState == ActivityState.STARTED || activityState == ActivityState.RESUMED
                     || activityState == ActivityState.PAUSED) {
