@@ -8,6 +8,7 @@
 #include <magenta/syscalls.h>
 
 #include "base/debug/activity_tracker.h"
+#include "base/fuchsia/default_job.h"
 #include "base/strings/stringprintf.h"
 
 namespace base {
@@ -50,7 +51,7 @@ Process Process::Open(ProcessId pid) {
   // mx_job_default() might not contain it, so this call can fail.
   ScopedMxHandle handle;
   mx_status_t status = mx_object_get_child(
-      mx_job_default(), pid, MX_RIGHT_SAME_RIGHTS, handle.receive());
+      GetDefaultJob(), pid, MX_RIGHT_SAME_RIGHTS, handle.receive());
   if (status != MX_OK) {
     DLOG(ERROR) << "mx_object_get_child failed: " << status;
     return Process();
