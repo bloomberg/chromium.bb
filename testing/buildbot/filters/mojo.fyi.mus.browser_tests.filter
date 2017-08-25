@@ -10,6 +10,7 @@
 -ForceMaximizeOnFirstRunTest.TwoRuns
 
 # TODO: fails because of screen capture. http://crbug.com/754899.
+-ChromeScreenshotGrabberBrowserTest.TakeScreenshot
 -LoginFeedbackTest.Basic
 -TabCaptureApiPixelTest.EndToEndThroughWebRTC
 -TabCaptureApiPixelTest.EndToEndWithoutRemoting
@@ -18,6 +19,9 @@
 
 # TODO: fix, see http://crbug.com/755272.
 -PDFExtensionTest.RedirectsFailInPlugin
+
+# TODO: fix, http://crbug.com/759156.
+-PolicyDisplayRotationDefault/DisplayRotationDefaultTest.RefreshSecondDisplay/2
 
 # TODO: fix, see http://crbug.com/755303.
 -StartupMetricsTest.ReportsValues
@@ -52,7 +56,3 @@
 -WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/0
 -WebViewTests/WebViewSizeTest.Shim_TestResizeWebviewWithDisplayNoneResizesContent/1
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
-
-# TODO(sky): file bugs for these.
--ChromeScreenshotGrabberBrowserTest.TakeScreenshot
--PolicyDisplayRotationDefault/DisplayRotationDefaultTest.RefreshSecondDisplay/2
