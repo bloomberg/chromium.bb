@@ -69,14 +69,6 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
                                      const GURL& origin_url,
                                      const GURL& top_origin_url,
                                      IPC::Message* message);
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  static void FileSystemAccessedSyncOnUIThread(
-      int render_process_id,
-      int render_frame_id,
-      const GURL& url,
-      bool blocked_by_policy,
-      IPC::Message* reply_msg);
-#endif
   void OnRequestFileSystemAccessAsync(int render_frame_id,
                                       int request_id,
                                       const GURL& origin_url,
