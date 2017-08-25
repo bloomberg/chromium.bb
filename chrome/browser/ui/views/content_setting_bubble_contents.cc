@@ -290,7 +290,6 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
       content_setting_bubble_model_(content_setting_bubble_model),
       list_item_container_(nullptr),
       custom_link_(nullptr),
-      manage_link_(nullptr),
       manage_checkbox_(nullptr),
       learn_more_button_(nullptr) {
   // Compensate for built-in vertical padding in the anchor view's image.
@@ -524,11 +523,6 @@ void ContentSettingBubbleContents::Init() {
     manage_checkbox_ = new views::Checkbox(bubble_content.manage_text);
     manage_checkbox_->set_listener(this);
     layout->AddView(manage_checkbox_);
-  } else {
-    layout->StartRow(0, kSingleColumnSetId);
-    manage_link_ = new views::Link(bubble_content.manage_text);
-    manage_link_->set_listener(this);
-    layout->AddView(manage_link_);
   }
 
   if (!bubble_content_empty) {
@@ -557,6 +551,12 @@ views::View* ContentSettingBubbleContents::CreateExtraView() {
   return learn_more_button_;
 }
 
+// Note: The cancel button is really the "Manage" button.
+bool ContentSettingBubbleContents::Cancel() {
+  content_setting_bubble_model_->OnManageButtonClicked();
+  return true;
+}
+
 bool ContentSettingBubbleContents::Accept() {
   content_setting_bubble_model_->OnDoneClicked();
   return true;
@@ -567,16 +567,31 @@ bool ContentSettingBubbleContents::Close() {
 }
 
 int ContentSettingBubbleContents::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
+  int buttons = ui::DIALOG_BUTTON_OK;
+
+  // Use the CANCEL button as a manage button.
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model_->bubble_content();
+  if (!bubble_content.manage_text.empty() &&
+      !bubble_content.show_manage_text_as_checkbox) {
+    buttons |= ui::DIALOG_BUTTON_CANCEL;
+  }
+  return buttons;
 }
 
 base::string16 ContentSettingBubbleContents::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  const base::string16& done_text =
-      content_setting_bubble_model_->bubble_content().done_button_text;
-  if (!done_text.empty())
-    return done_text;
-  return l10n_util::GetStringUTF16(IDS_DONE);
+  const ContentSettingBubbleModel::BubbleContent& bubble_content =
+      content_setting_bubble_model_->bubble_content();
+  if (button == ui::DIALOG_BUTTON_OK) {
+    return bubble_content.done_button_text.empty()
+               ? l10n_util::GetStringUTF16(IDS_DONE)
+               : bubble_content.done_button_text;
+  }
+  DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
+  DCHECK(!bubble_content.show_manage_text_as_checkbox);
+  DCHECK(!bubble_content.manage_text.empty());
+  return bubble_content.manage_text;
 }
 
 void ContentSettingBubbleContents::StyleLearnMoreButton(
@@ -628,14 +643,6 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
     GetWidget()->Close();
     return;
   }
-  if (source == manage_link_) {
-    GetWidget()->Close();
-    content_setting_bubble_model_->OnManageLinkClicked();
-    // CAREFUL: Showing the settings window activates it, which deactivates the
-    // info bubble, which causes it to close, which deletes us.
-    return;
-  }
-
   int row = list_item_container_->GetRowIndexOf(source);
   DCHECK_NE(row, -1);
   content_setting_bubble_model_->OnListItemClicked(row, event_flags);

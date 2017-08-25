@@ -166,7 +166,7 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnRadioClicked(int radio_index) {}
   virtual void OnListItemClicked(int index, int event_flags) {}
   virtual void OnCustomLinkClicked() {}
-  virtual void OnManageLinkClicked() {}
+  virtual void OnManageButtonClicked() {}
   virtual void OnManageCheckboxChecked(bool is_checked) {}
   virtual void OnLearnMoreClicked() {}
   virtual void OnMediaMenuClicked(content::MediaStreamType type,
@@ -287,7 +287,7 @@ class ContentSettingSimpleBubbleModel : public ContentSettingBubbleModel {
   // ContentSettingBubbleModel implementation.
   void SetTitle() override;
   void SetManageText() override;
-  void OnManageLinkClicked() override;
+  void OnManageButtonClicked() override;
   void SetCustomLink();
   void OnCustomLinkClicked() override;
 
@@ -363,7 +363,7 @@ class ContentSettingMediaStreamBubbleModel : public ContentSettingBubbleModel {
 
   // ContentSettingBubbleModel:
   ContentSettingMediaStreamBubbleModel* AsMediaStreamBubbleModel() override;
-  void OnManageLinkClicked() override;
+  void OnManageButtonClicked() override;
 
  private:
   // Helper functions to check if this bubble was invoked for microphone,
@@ -426,7 +426,7 @@ class ContentSettingDownloadsBubbleModel : public ContentSettingBubbleModel {
   void OnRadioClicked(int radio_index) override;
   void SetTitle() override;
   void SetManageText() override;
-  void OnManageLinkClicked() override;
+  void OnManageButtonClicked() override;
 
   int selected_item_ = 0;
 
