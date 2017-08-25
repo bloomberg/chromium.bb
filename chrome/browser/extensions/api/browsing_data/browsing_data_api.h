@@ -13,6 +13,7 @@
 
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
+#include "components/browsing_data/core/browsing_data_utils.h"
 #include "content/public/browser/browsing_data_remover.h"
 
 class PluginPrefs;
@@ -73,6 +74,10 @@ class BrowsingDataSettingsFunction : public UIThreadExtensionFunction {
                   base::DictionaryValue* permitted_dict,
                   const char* data_type,
                   bool is_selected);
+
+  // Returns whether |data_type| is currently selected for deletion on |tab|.
+  bool isDataTypeSelected(browsing_data::BrowsingDataType data_type,
+                          browsing_data::ClearBrowsingDataTab tab);
 
   PrefService* prefs_ = nullptr;
 };
