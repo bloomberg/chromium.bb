@@ -89,7 +89,7 @@ TEST_P(ExperimentStorageTest, TestEncodeDecodeForMax) {
   // it to its maximum value.
   metrics.toast_hour = 24;
   base::string16 encoded_metrics(ExperimentStorage::EncodeMetrics(metrics));
-  EXPECT_EQ(L"///j//8f", encoded_metrics);
+  EXPECT_EQ(L"///j//9B", encoded_metrics);
   ExperimentMetrics decoded_metrics;
   ASSERT_TRUE(
       ExperimentStorage::DecodeMetrics(encoded_metrics, &decoded_metrics));
