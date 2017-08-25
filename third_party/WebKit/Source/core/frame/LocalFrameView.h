@@ -848,6 +848,11 @@ class CORE_EXPORT LocalFrameView final
 
   size_t PaintFrameCount() const { return paint_frame_count_; };
 
+  // Return the ScrollableArea in a FrameView with the given ElementId, if any.
+  // This is not recursive and will only return ScrollableAreas owned by this
+  // LocalFrameView (or possibly the LocalFrameView itself).
+  ScrollableArea* ScrollableAreaWithElementId(const CompositorElementId&);
+
  protected:
   // Scroll the content via the compositor.
   bool ScrollContentsFastPath(const IntSize& scroll_delta);

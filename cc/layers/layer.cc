@@ -807,7 +807,7 @@ void Layer::SetScrollOffsetFromImplSide(
   UpdateScrollOffset(scroll_offset);
 
   if (!inputs_.did_scroll_callback.is_null())
-    inputs_.did_scroll_callback.Run(scroll_offset);
+    inputs_.did_scroll_callback.Run(scroll_offset, element_id());
 
   // The callback could potentially change the layer structure:
   // "this" may have been destroyed during the process.

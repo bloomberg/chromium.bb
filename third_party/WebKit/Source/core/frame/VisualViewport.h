@@ -217,6 +217,11 @@ class CORE_EXPORT VisualViewport final
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   RefPtr<WebTaskRunner> GetTimerTaskRunner() const final;
 
+  // VisualViewport scrolling may involve pinch zoom and gets routed through
+  // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
+  // since it needs to be set in tandem with the page scale delta.
+  void DidScroll(const gfx::ScrollOffset&) final { NOTREACHED(); }
+
   // Visual Viewport API implementation.
   double OffsetLeft() const;
   double OffsetTop() const;

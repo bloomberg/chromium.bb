@@ -16,6 +16,8 @@
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResources.h"
 #include "core/layout/svg/SVGResourcesCache.h"
+#include "core/page/Page.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h"
 #include "core/paint/FindPropertiesNeedingUpdate.h"
 #include "core/paint/ObjectPaintProperties.h"
@@ -194,7 +196,7 @@ void PaintPropertyTreeBuilder::UpdateProperties(
       full_context.force_subtree_update |= UpdateScroll(
           frame_view, context.current.scroll, scroll_clip, scroll_bounds,
           user_scrollable_horizontal, user_scrollable_vertical, reasons,
-          frame_view.GetScrollableArea());
+          frame_view.GetPage()->GetScrollingCoordinator());
     } else if (frame_view.ScrollNode()) {
       // Ensure pre-existing properties are cleared if there is no scrolling.
       frame_view.SetScrollNode(nullptr);
@@ -1018,14 +1020,14 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
           force_subtree_update = true;
       }
 
-      auto element_id = CompositorElementIdFromLayoutObjectId(
-          object.UniqueId(), CompositorElementIdNamespace::kScroll);
+      auto element_id = scrollable_area->GetCompositorElementId();
 
       // TODO(pdr): Set the correct compositing reasons here.
       auto result = properties.UpdateScroll(
           context.current.scroll, bounds_offset, container_bounds,
           scroll_bounds, user_scrollable_horizontal, user_scrollable_vertical,
-          reasons, element_id, scrollable_area);
+          reasons, element_id,
+          object.GetFrameView()->GetPage()->GetScrollingCoordinator());
       force_subtree_update |= result.NewNodeCreated();
     } else {
       // Ensure pre-existing properties are cleared.

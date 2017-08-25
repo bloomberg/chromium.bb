@@ -124,6 +124,7 @@ class CC_BLINK_EXPORT WebLayerImpl : public blink::WebLayer {
   blink::WebLayerStickyPositionConstraint StickyPositionConstraint()
       const override;
   void SetScrollClient(blink::WebLayerScrollClient* client) override;
+  void SetScrollOffsetFromImplSideForTesting(const gfx::ScrollOffset&) override;
   void SetLayerClient(cc::LayerClient* client) override;
   const cc::Layer* CcLayer() const override;
   cc::Layer* CcLayer() override;

@@ -51,7 +51,6 @@
 #include "platform/exported/WebScrollbarThemeGeometryNative.h"
 #include "platform/geometry/Region.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #if defined(OS_MACOSX)
@@ -172,6 +171,29 @@ void ScrollingCoordinator::ScrollableAreasDidChange() {
     return;
 
   scroll_gesture_region_is_dirty_ = true;
+}
+
+void ScrollingCoordinator::DidScroll(const gfx::ScrollOffset& offset,
+                                     const CompositorElementId& element_id) {
+  for (auto* frame = page_->MainFrame(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    // Remote frames will receive DidScroll callbacks from their own compositor.
+    if (!frame->IsLocalFrame())
+      continue;
+
+    // Find the associated scrollable area using the element id and notify it
+    // of the compositor-side scroll. We explicitly do not check the
+    // VisualViewport which handles scroll offset differently (see:
+    // VisualViewport::didScroll).
+    if (LocalFrameView* view = ToLocalFrame(frame)->View()) {
+      if (auto* scrollable = view->ScrollableAreaWithElementId(element_id)) {
+        scrollable->DidScroll(offset);
+        return;
+      }
+    }
+  }
+  // The ScrollableArea with matching ElementId may have been deleted and we can
+  // safely ignore the DidScroll callback.
 }
 
 void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded() {
@@ -302,12 +324,6 @@ void ScrollingCoordinator::UpdateLayerPositionConstraint(PaintLayer* layer) {
 
 void ScrollingCoordinator::WillDestroyScrollableArea(
     ScrollableArea* scrollable_area) {
-  {
-    // Remove any callback from |scroll_layer| to this object.
-    DisableCompositingQueryAsserts disabler;
-    if (GraphicsLayer* scroll_layer = scrollable_area->LayerForScrolling())
-      scroll_layer->SetScrollableArea(nullptr, false);
-  }
   RemoveWebScrollbarLayer(scrollable_area, kHorizontalScrollbar);
   RemoveWebScrollbarLayer(scrollable_area, kVerticalScrollbar);
 }
@@ -483,12 +499,8 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     return false;
 
   GraphicsLayer* scroll_layer = scrollable_area->LayerForScrolling();
-
-  if (scroll_layer) {
-    bool is_for_visual_viewport =
-        scrollable_area == &page_->GetVisualViewport();
-    scroll_layer->SetScrollableArea(scrollable_area, is_for_visual_viewport);
-  }
+  if (scroll_layer)
+    scroll_layer->SetScrollableArea(scrollable_area);
 
   UpdateUserInputScrollable(scrollable_area);
 
@@ -499,8 +511,12 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
     FloatPoint scroll_position(scrollable_area->ScrollOrigin() +
                                scrollable_area->GetScrollOffset());
     web_layer->SetScrollPosition(scroll_position);
-
     web_layer->SetBounds(scrollable_area->ContentsSize());
+    // VisualViewport scrolling may involve pinch zoom and gets routed through
+    // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
+    // since it needs to be set in tandem with the page scale delta.
+    if (scrollable_area != &page_->GetVisualViewport())
+      web_layer->SetScrollClient(this);
   }
   if (WebScrollbarLayer* scrollbar_layer =
           GetWebScrollbarLayer(scrollable_area, kHorizontalScrollbar)) {
