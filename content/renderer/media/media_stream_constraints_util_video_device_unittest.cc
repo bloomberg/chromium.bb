@@ -105,6 +105,13 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
                                   media::PIXEL_FORMAT_I420),
         media::VideoCaptureFormat(gfx::Size(640, 480), 10.0f,
                                   media::PIXEL_FORMAT_I420),
+        // This format has default for all settings, except that the resolution
+        // is inverted.
+        media::VideoCaptureFormat(
+            gfx::Size(MediaStreamVideoSource::kDefaultHeight,
+                      MediaStreamVideoSource::kDefaultWidth),
+            MediaStreamVideoSource::kDefaultFrameRate,
+            media::PIXEL_FORMAT_I420),
         // This format has defaults for all settings
         media::VideoCaptureFormat(
             gfx::Size(MediaStreamVideoSource::kDefaultWidth,
@@ -160,8 +167,8 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     invalid_frame_rate_device_ = capabilities_.device_capabilities[4].get();
     default_closest_format_ = &default_device_->formats[1];
     low_res_closest_format_ = &low_res_device_->formats[2];
-    high_res_closest_format_ = &high_res_device_->formats[2];
-    high_res_highest_format_ = &high_res_device_->formats[5];
+    high_res_closest_format_ = &high_res_device_->formats[3];
+    high_res_highest_format_ = &high_res_device_->formats[6];
   }
 
  protected:
@@ -927,12 +934,12 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealWidth) {
     constraint_factory_.basic().width.SetIdeal(kIdealWidth);
     auto result = SelectSettings();
     EXPECT_TRUE(result.HasValue());
-    // In this case, the default device is selected because it can satisfy the
-    // ideal at a lower cost than the other devices (500 vs 640).
+    // In this case, the high_res device is selected because it has a mode that
+    // can satisfy the ideal at a lower cost than other devices (480 vs 500).
     // Note that a native resolution of 320 is further from the ideal value of
-    // 321 than 500 cropped to 321.
-    EXPECT_EQ(default_device_->device_id, result.device_id());
-    EXPECT_EQ(*default_closest_format_, result.Format());
+    // 321 than 480 cropped to 321.
+    EXPECT_EQ(high_res_device_->device_id, result.device_id());
+    EXPECT_EQ(480, result.Width());
     // The track is cropped to kIdealWidth and keeps the source aspect ratio.
     EXPECT_EQ(std::round(kIdealWidth / AspectRatio(result.Format())),
               result.track_adapter_settings().max_height);
@@ -2274,6 +2281,19 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, InvalidFrameRateDevice) {
   EXPECT_LT(result.FrameRate(), 1.0);
   EXPECT_FALSE(result.min_frame_rate().has_value());
   EXPECT_FALSE(result.max_frame_rate().has_value());
+}
+
+// This test verifies that an inverted default resolution is not preferred over
+// the actual default resolution.
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, InvertedDefaultResolution) {
+  constraint_factory_.Reset();
+  constraint_factory_.basic().device_id.SetExact(
+      blink::WebString::FromASCII(high_res_device_->device_id));
+  auto result = SelectSettings();
+  EXPECT_TRUE(result.HasValue());
+  EXPECT_EQ(high_res_device_->device_id, result.device_id());
+  EXPECT_EQ(result.Width(), MediaStreamVideoSource::kDefaultWidth);
+  EXPECT_EQ(result.Height(), MediaStreamVideoSource::kDefaultHeight);
 }
 
 }  // namespace content
