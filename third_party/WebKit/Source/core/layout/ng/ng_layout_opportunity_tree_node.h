@@ -8,6 +8,7 @@
 #include "core/layout/ng/geometry/ng_bfc_rect.h"
 #include "core/layout/ng/geometry/ng_edge.h"
 #include "core/layout/ng/ng_exclusion.h"
+#include "platform/wtf/Vector.h"
 
 namespace blink {
 
@@ -53,15 +54,8 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode {
   String ToString() const;
 };
 
-inline std::ostream& operator<<(std::ostream& stream,
-                                const NGLayoutOpportunityTreeNode& value) {
-  return stream << value.ToString();
-}
-
-inline std::ostream& operator<<(std::ostream& out,
-                                const NGLayoutOpportunityTreeNode* value) {
-  return out << (value ? value->ToString() : "(null)");
-}
+std::ostream& operator<<(std::ostream&, const NGLayoutOpportunityTreeNode&);
+std::ostream& operator<<(std::ostream&, const NGLayoutOpportunityTreeNode*);
 
 }  // namespace blink
 #endif  // NGLayoutOpportunityTreeNode_h

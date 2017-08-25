@@ -150,22 +150,9 @@ inline NGLogicalSize CalculateBorderBoxSize(
       ComputeBlockSizeForFragment(constraint_space, style, block_content_size));
 }
 
-inline NGLogicalSize CalculateContentBoxSize(
+NGLogicalSize CalculateContentBoxSize(
     const NGLogicalSize border_box_size,
-    const NGBoxStrut& border_scrollbar_padding) {
-  NGLogicalSize size = border_box_size;
-  size.inline_size -= border_scrollbar_padding.InlineSum();
-  size.inline_size = std::max(size.inline_size, LayoutUnit());
-
-  // Our calculated block-axis size may still be indefinite. If so, just leave
-  // the size as NGSizeIndefinite instead of subtracting borders and padding.
-  if (size.block_size != NGSizeIndefinite) {
-    size.block_size -= border_scrollbar_padding.BlockSum();
-    size.block_size = std::max(size.block_size, LayoutUnit());
-  }
-
-  return size;
-}
+    const NGBoxStrut& border_scrollbar_padding);
 
 }  // namespace blink
 
