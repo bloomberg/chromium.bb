@@ -187,6 +187,14 @@ void Label::SetMultiLine(bool multi_line) {
   ResetLayout();
 }
 
+void Label::SetMaxLines(int max_lines) {
+  if (max_lines_ == max_lines)
+    return;
+  is_first_paint_text_ = true;
+  max_lines_ = max_lines;
+  ResetLayout();
+}
+
 void Label::SetObscured(bool obscured) {
   if (this->obscured() == obscured)
     return;
@@ -329,6 +337,8 @@ gfx::Size Label::CalculatePreferredSize() const {
   if (multi_line() && max_width_ != 0 && max_width_ < size.width())
     return gfx::Size(max_width_, GetHeightForWidth(max_width_));
 
+  if (multi_line() && max_lines() > 0)
+    return gfx::Size(size.width(), GetHeightForWidth(size.width()));
   return size;
 }
 
@@ -356,8 +366,9 @@ int Label::GetHeightForWidth(int w) const {
 
   w -= GetInsets().width();
   int height = 0;
+  int base_line_height = std::max(line_height(), font_list().GetHeight());
   if (!multi_line() || text().empty() || w <= 0) {
-    height = std::max(line_height(), font_list().GetHeight());
+    height = base_line_height;
   } else if (render_text_->MultilineSupported()) {
     // SetDisplayRect() has a side effect for later calls of GetStringSize().
     // Be careful to invoke |render_text_->SetDisplayRect(gfx::Rect())| to
@@ -366,7 +377,12 @@ int Label::GetHeightForWidth(int w) const {
     // managers invoke GetHeightForWidth() for the same width multiple times
     // and |render_text_| can cache the height.
     render_text_->SetDisplayRect(gfx::Rect(0, 0, w, 0));
-    height = render_text_->GetStringSize().height();
+    int string_height = render_text_->GetStringSize().height();
+    // Cap the number of lines to |max_lines()| if multi-line and non-zero
+    // |max_lines()|.
+    height = multi_line() && max_lines() > 0
+                 ? std::min(max_lines() * base_line_height, string_height)
+                 : string_height;
   } else {
     std::vector<base::string16> lines = GetLinesForWidth(w);
     height = lines.size() * std::max(line_height(), font_list().GetHeight());
@@ -819,6 +835,7 @@ void Label::Init(const base::string16& text, const gfx::FontList& font_list) {
   subpixel_rendering_enabled_ = true;
   auto_color_readability_ = true;
   multi_line_ = false;
+  max_lines_ = 0;
   UpdateColorsFromTheme(GetNativeTheme());
   handles_tooltips_ = true;
   collapse_when_hidden_ = false;
@@ -867,15 +884,17 @@ void Label::MaybeBuildRenderTextLines() const {
         rtl ? gfx::DIRECTIONALITY_FORCE_RTL : gfx::DIRECTIONALITY_FORCE_LTR;
   }
 
-  // Text eliding is not supported for multi-lined Labels.
-  // TODO(mukai): Add multi-lined elided text support.
+  // Multi-line labels only support NO_ELIDE and ELIDE_TAIL for now.
+  // TODO(warx): Investigate more elide text support.
   gfx::ElideBehavior elide_behavior =
-      multi_line() ? gfx::NO_ELIDE : elide_behavior_;
+      multi_line() && (elide_behavior_ != gfx::NO_ELIDE) ? gfx::ELIDE_TAIL
+                                                         : elide_behavior_;
   if (!multi_line() || render_text_->MultilineSupported()) {
     std::unique_ptr<gfx::RenderText> render_text =
         CreateRenderText(text(), alignment, directionality, elide_behavior);
     render_text->SetDisplayRect(rect);
     render_text->SetMultiline(multi_line());
+    render_text->SetMaxLines(multi_line() ? max_lines() : 0);
     render_text->SetWordWrapBehavior(render_text_->word_wrap_behavior());
 
     // Setup render text for selection controller.
@@ -887,6 +906,8 @@ void Label::MaybeBuildRenderTextLines() const {
 
     lines_.push_back(std::move(render_text));
   } else {
+    // TODO(warx): Apply max_lines property when RenderText doesn't support
+    // multi-line (crbug.com/758720).
     std::vector<base::string16> lines = GetLinesForWidth(rect.width());
     if (lines.size() > 1)
       rect.set_height(std::max(line_height(), font_list().GetHeight()));
