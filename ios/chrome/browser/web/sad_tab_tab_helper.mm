@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 
-#import <Foundation/Foundation.h>
-
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -21,17 +19,15 @@
 
 DEFINE_WEB_STATE_USER_DATA_KEY(SadTabTabHelper);
 
-namespace {
-// The default window of time a failure of the same URL needs to occur
-// to be considered a repeat failure.
-NSTimeInterval const kDefaultRepeatFailureInterval = 60.0f;
+const double SadTabTabHelper::kDefaultRepeatFailureInterval = 60.0f;
 
+namespace {
 // Returns true if the application is in UIApplicationStateActive state.
 bool IsApplicationStateActive() {
   return UIApplication.sharedApplication.applicationState ==
          UIApplicationStateActive;
 }
-}
+}  // namespace
 
 SadTabTabHelper::SadTabTabHelper(web::WebState* web_state)
     : SadTabTabHelper(web_state, kDefaultRepeatFailureInterval) {}
@@ -39,10 +35,7 @@ SadTabTabHelper::SadTabTabHelper(web::WebState* web_state)
 SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
                                  double repeat_failure_interval)
     : web::WebStateObserver(web_state),
-      repeat_failure_interval_(repeat_failure_interval),
-      is_visible_(false),
-      requires_reload_on_becoming_visible_(false),
-      requires_reload_on_becoming_active_(false) {
+      repeat_failure_interval_(repeat_failure_interval) {
   AddApplicationDidBecomeActiveObserver();
 }
 
