@@ -22,6 +22,8 @@ message FileTransferResponse {
   enum ErrorCode {
     OUT_OF_DISK_SPACE = 1;
     PERMISSIONS_ERROR = 2;
+    FILE_IO_ERROR = 3;
+    UNEXPECTED_ERROR = 4;
   }
   optional ErrorCode error = 2;
 
