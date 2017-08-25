@@ -959,6 +959,14 @@ be describing additional metrics about the same event.
     interactions with them. No events are created for pages that don't contain
     password forms.
   </summary>
+  <metric name="PageLevelUserAction">
+    <summary>
+      Records if the user interacts with the password manager in a way that
+      cannot (reliably) be attributed to a specific PasswordFormManager. Values
+      correspond to the enum
+      PasswordManagerMetricsRecorder::PageLevelUserAction.
+    </summary>
+  </metric>
   <metric name="ProvisionalSaveFailure">
     <summary>
       Records a provisional save failure in case the password manager cannot
