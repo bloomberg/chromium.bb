@@ -64,8 +64,8 @@ void RecordFailureResult(ServiceWorkerMetrics::EventType event,
 }  // namespace
 
 BackgroundFetchEventDispatcher::BackgroundFetchEventDispatcher(
-    const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
-    : service_worker_context_(service_worker_context) {
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
+    : service_worker_context_(std::move(service_worker_context)) {
   // Constructed on the UI thread, then lives on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }

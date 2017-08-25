@@ -11,9 +11,9 @@
 #include <unordered_map>
 
 #include "base/callback_forward.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/sequence_checker.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
@@ -26,11 +26,20 @@ struct BackgroundFetchSettledFetch;
 class BlobHandle;
 class BrowserContext;
 class ChromeBlobStorageContext;
+class ServiceWorkerContextWrapper;
 
-// The BackgroundFetchDataManager keeps track of all of the outstanding requests
-// which are in process in the DownloadManager. When Chromium restarts, it is
-// responsibile for reconnecting all the in progress downloads with an observer
-// which will keep the metadata up to date.
+// The BackgroundFetchDataManager is a wrapper around persistent storage (the
+// Service Worker database), exposing APIs for the read and write queries needed
+// for Background Fetch.
+//
+// There must only be a single instance of this class per StoragePartition, and
+// it must only be used on the IO thread, since it relies on there being no
+// other code concurrently reading/writing the Background Fetch keys of the same
+// Service Worker database (except for deletions, e.g. it's safe for the Service
+// Worker code to remove a ServiceWorkerRegistration and all its keys).
+//
+// Schema design doc:
+// https://docs.google.com/document/d/1-WPPTP909Gb5PnaBOKP58tPVLw2Fq0Ln-u1EBviIBns/edit
 class CONTENT_EXPORT BackgroundFetchDataManager {
  public:
   using CreateRegistrationCallback =
@@ -47,7 +56,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
                               std::vector<BackgroundFetchSettledFetch>,
                               std::vector<std::unique_ptr<BlobHandle>>)>;
 
-  explicit BackgroundFetchDataManager(BrowserContext* browser_context);
+  class DatabaseTask;
+
+  BackgroundFetchDataManager(
+      BrowserContext* browser_context,
+      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
   ~BackgroundFetchDataManager();
 
   // Creates and stores a new registration with the given properties. Will
@@ -95,6 +108,10 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
 
   class RegistrationData;
 
+  void AddDatabaseTask(std::unique_ptr<DatabaseTask> task);
+
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+
   // The blob storage request with which response information will be stored.
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
 
@@ -102,7 +119,9 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   std::map<BackgroundFetchRegistrationId, std::unique_ptr<RegistrationData>>
       registrations_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  // Pending database operations, serialized to ensure consistency.
+  // Invariant: the frontmost task, if any, has already been started.
+  base::queue<std::unique_ptr<DatabaseTask>> database_tasks_;
 
   base::WeakPtrFactory<BackgroundFetchDataManager> weak_ptr_factory_;
 

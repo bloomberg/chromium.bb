@@ -11,7 +11,8 @@ enum BackgroundFetchError {
   NONE,
   DUPLICATED_ID,
   INVALID_ARGUMENT,
-  INVALID_ID
+  INVALID_ID,
+  STORAGE_ERROR
 };
 
 // Represents the definition of an icon developers can optionally provide with a

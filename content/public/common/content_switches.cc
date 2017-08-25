@@ -346,6 +346,10 @@ const char kEnableDistanceFieldText[]       = "enable-distance-field-text";
 const char kEnablePreferCompositingToLCDText[] =
     "enable-prefer-compositing-to-lcd-text";
 
+// Enable work-in-progress persistent storage for the Background Fetch API.
+const char kEnableBackgroundFetchPersistence[] =
+    "enable-background-fetch-persistence";
+
 // Enable one or more Blink runtime-enabled features.
 // Use names from RuntimeEnabledFeatures.json5, separated by commas.
 // Applied before kDisableBlinkFeatures, and after other flags that change these
