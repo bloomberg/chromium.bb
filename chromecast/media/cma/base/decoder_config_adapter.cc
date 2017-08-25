@@ -74,6 +74,8 @@ SampleFormat ToSampleFormat(const ::media::SampleFormat sample_format) {
       return ::media::ChannelLayout::CHANNEL_LAYOUT_MONO;
     case 2:
       return ::media::ChannelLayout::CHANNEL_LAYOUT_STEREO;
+    case 6:
+      return ::media::ChannelLayout::CHANNEL_LAYOUT_5_1;
     default:
       return ::media::ChannelLayout::CHANNEL_LAYOUT_UNSUPPORTED;
   }
