@@ -20,13 +20,16 @@ void ThrottleInstance(aura::Window* active) {
 }  // namespace
 
 ArcInstanceThrottle::ArcInstanceThrottle() {
+  if (!ash::Shell::HasInstance())  // for unit testing.
+    return;
   ash::Shell::Get()->activation_client()->AddObserver(this);
   ThrottleInstance(ash::wm::GetActiveWindow());
 }
 
 ArcInstanceThrottle::~ArcInstanceThrottle() {
-  if (ash::Shell::HasInstance())
-    ash::Shell::Get()->activation_client()->RemoveObserver(this);
+  if (!ash::Shell::HasInstance())
+    return;
+  ash::Shell::Get()->activation_client()->RemoveObserver(this);
 }
 
 void ArcInstanceThrottle::OnWindowActivated(ActivationReason reason,

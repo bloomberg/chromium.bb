@@ -254,6 +254,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // require ToS acceptance. Returns false in other cases, including one when
   // ARC is not currently running.
   bool is_directly_started() const { return directly_started_; }
+  void set_directly_started_for_testing(bool directly_started) {
+    directly_started_ = directly_started;
+  }
 
   // Injectors for testing.
   void SetArcSessionRunnerForTesting(

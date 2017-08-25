@@ -81,15 +81,19 @@ ArcBootPhaseMonitorBridge::ArcBootPhaseMonitorBridge(
     : arc_bridge_service_(bridge_service),
       account_id_(multi_user_util::GetAccountIdFromProfile(
           Profile::FromBrowserContext(context))),
-      binding_(this) {
+      binding_(this),
+      first_app_launch_delay_recorder_(
+          base::BindRepeating(&RecordAppLaunchDelay)) {
   arc_bridge_service_->boot_phase_monitor()->AddObserver(this);
-  ArcSessionManager::Get()->AddObserver(this);
+  auto* arc_session_manager = ArcSessionManager::Get();
+  DCHECK(arc_session_manager);
+  arc_session_manager->AddObserver(this);
 }
 
 ArcBootPhaseMonitorBridge::~ArcBootPhaseMonitorBridge() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   arc_bridge_service_->boot_phase_monitor()->RemoveObserver(this);
-  ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
+  auto* arc_session_manager = ArcSessionManager::Get();
   DCHECK(arc_session_manager);
   arc_session_manager->RemoveObserver(this);
 }
@@ -102,7 +106,7 @@ void ArcBootPhaseMonitorBridge::RecordFirstAppLaunchDelayUMAInternal() {
 
   if (boot_completed_) {
     VLOG(2) << "ARC has already fully started. Recording the UMA now.";
-    RecordAppLaunchDelay(base::TimeDelta());
+    first_app_launch_delay_recorder_.Run(base::TimeDelta());
     return;
   }
   app_launch_time_ = base::TimeTicks::Now();
@@ -137,8 +141,10 @@ void ArcBootPhaseMonitorBridge::OnBootCompleted() {
     VLOG(2) << "ArcInstanceThrottle created in OnBootCompleted()";
   }
 
-  if (!app_launch_time_.is_null())
-    RecordAppLaunchDelay(base::TimeTicks::Now() - app_launch_time_);
+  if (!app_launch_time_.is_null()) {
+    first_app_launch_delay_recorder_.Run(base::TimeTicks::Now() -
+                                         app_launch_time_);
+  }
 }
 
 void ArcBootPhaseMonitorBridge::OnArcInitialStart() {
