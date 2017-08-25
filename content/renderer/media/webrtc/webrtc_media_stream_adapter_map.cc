@@ -76,11 +76,13 @@ WebRtcMediaStreamAdapterMap::GetOrCreateLocalStreamAdapter(
   std::string id = web_stream.Id().Utf8();
   auto it = local_stream_adapters_.find(id);
   if (it == local_stream_adapters_.end()) {
-    it = local_stream_adapters_
-             .insert(std::make_pair(
-                 id, AdapterEntry(base::MakeUnique<WebRtcMediaStreamAdapter>(
-                         factory_, track_adapter_map_, web_stream))))
-             .first;
+    it =
+        local_stream_adapters_
+            .insert(std::make_pair(
+                id,
+                AdapterEntry(WebRtcMediaStreamAdapter::CreateLocalStreamAdapter(
+                    factory_, track_adapter_map_, web_stream))))
+            .first;
   }
   return base::WrapUnique(new AdapterRef(this, it));
 }

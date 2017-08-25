@@ -1580,7 +1580,7 @@ bool RTCPeerConnectionHandler::AddStream(
       stream_adapter_map_->GetOrCreateLocalStreamAdapter(stream));
 
   webrtc::MediaStreamInterface* webrtc_stream =
-      local_streams_.back()->adapter().webrtc_media_stream();
+      local_streams_.back()->adapter().webrtc_stream().get();
   track_metrics_.AddStream(MediaStreamTrackMetrics::SENT_STREAM,
                            webrtc_stream);
 
@@ -1605,7 +1605,7 @@ void RTCPeerConnectionHandler::RemoveStream(
   for (auto adapter_it = local_streams_.begin();
        adapter_it != local_streams_.end(); ++adapter_it) {
     if ((*adapter_it)->adapter().IsEqual(stream)) {
-      webrtc_stream = (*adapter_it)->adapter().webrtc_media_stream();
+      webrtc_stream = (*adapter_it)->adapter().webrtc_stream();
       local_streams_.erase(adapter_it);
       break;
     }
@@ -1760,7 +1760,7 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
   for (size_t i = 0; i < streams.size(); ++i) {
     stream_adapters[i] =
         stream_adapter_map_->GetOrCreateLocalStreamAdapter(streams[i]);
-    webrtc_streams[i] = stream_adapters[i]->adapter().webrtc_media_stream();
+    webrtc_streams[i] = stream_adapters[i]->adapter().webrtc_stream().get();
   }
 
   rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender =
@@ -1859,7 +1859,7 @@ blink::WebRTCDTMFSenderHandler* RTCPeerConnectionHandler::CreateDTMFSender(
   // Find the WebRtc track referenced by the blink track's ID.
   webrtc::AudioTrackInterface* webrtc_track = nullptr;
   for (const auto& adapter_ref : local_streams_) {
-    webrtc_track = adapter_ref->adapter().webrtc_media_stream()->FindAudioTrack(
+    webrtc_track = adapter_ref->adapter().webrtc_stream()->FindAudioTrack(
         track.Id().Utf8());
     if (webrtc_track)
       break;
