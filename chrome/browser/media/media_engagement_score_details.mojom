@@ -16,6 +16,9 @@ struct MediaEngagementScoreDetails {
 
   // Last media playback time in milliseconds since the epoch format.
   double last_media_playback_time;
+
+  // Whether the score is considered to be high.
+  bool is_high;
 };
 
 interface MediaEngagementScoreDetailsProvider {
