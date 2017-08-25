@@ -71,7 +71,7 @@ class ActivationStateComputingNavigationThrottle
 
   AsyncDocumentSubresourceFilter* filter() const;
 
-  void CouldSendActivationToRenderer();
+  void WillSendActivationToRenderer();
 
  private:
   void OnActivationStateComputed(ActivationState state);
@@ -95,12 +95,11 @@ class ActivationStateComputingNavigationThrottle
   // Callback to be run in the destructor.
   base::OnceClosure destruction_closure_;
 
-  // Can become true when the throttle manager reaches ReadyToCommitNavigation.
+  // Will become true when the throttle manager reaches ReadyToCommitNavigation.
   // Makes sure a caller cannot take ownership of the subresource filter unless
   // the throttle has reached this point. After this point the throttle manager
-  // can send an activation IPC to the render process. Note that an IPC is not
-  // always sent in case this activation is ignoring ruleset rules.
-  bool could_send_activation_to_renderer_ = false;
+  // will send an activation IPC to the render process.
+  bool will_send_activation_to_renderer_ = false;
 
   base::WeakPtrFactory<ActivationStateComputingNavigationThrottle>
       weak_ptr_factory_;
