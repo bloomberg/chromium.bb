@@ -14,5 +14,5 @@
     }
   });
 
-  dp.Page.navigate({url: testRunner.url('../resources/image.html')});
+  dp.Page.navigate({url: 'data:,Hello!'});
 })

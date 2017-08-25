@@ -731,9 +731,9 @@ void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
     FinishReload();
     script_to_evaluate_on_load_once_ = pending_script_to_evaluate_on_load_once_;
     pending_script_to_evaluate_on_load_once_ = String();
+    GetFrontend()->lifecycleEvent("commit", MonotonicallyIncreasingTime());
   }
   GetFrontend()->frameNavigated(BuildObjectForFrame(loader->GetFrame()));
-  GetFrontend()->lifecycleEvent("commit", MonotonicallyIncreasingTime());
 }
 
 void InspectorPageAgent::FrameAttachedToParent(LocalFrame* frame) {

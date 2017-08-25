@@ -556,7 +556,8 @@ void FrameFetchContext::DispatchDidFail(unsigned long identifier,
     return;
 
   GetFrame()->Loader().Progress().CompleteProgress(identifier);
-  probe::didFailLoading(GetFrame()->GetDocument(), identifier, error);
+  probe::didFailLoading(GetFrame()->GetDocument(), identifier,
+                        MasterDocumentLoader(), error);
   // Notification to FrameConsole should come AFTER InspectorInstrumentation
   // call, DevTools front-end relies on this.
   if (!is_internal_request)

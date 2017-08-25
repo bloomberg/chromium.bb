@@ -159,8 +159,6 @@ void FirstMeaningfulPaintDetector::Network0QuietTimerFired(TimerBase*) {
       !paint_timing_->FirstContentfulPaintRendered())
     return;
   network0_quiet_reached_ = true;
-  probe::lifecycleEvent(GetDocument(), "networkIdle",
-                        MonotonicallyIncreasingTime());
 
   if (provisional_first_meaningful_paint_) {
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
@@ -176,8 +174,6 @@ void FirstMeaningfulPaintDetector::Network2QuietTimerFired(TimerBase*) {
       !paint_timing_->FirstContentfulPaintRendered())
     return;
   network2_quiet_reached_ = true;
-  probe::lifecycleEvent(GetDocument(), "networkAlmostIdle",
-                        MonotonicallyIncreasingTime());
 
   if (provisional_first_meaningful_paint_) {
     // If there's only been one contentful paint, then there won't have been

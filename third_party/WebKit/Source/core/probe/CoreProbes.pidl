@@ -96,7 +96,7 @@ interface CoreProbes {
   void didReceiveEncodedDataLength(ExecutionContext*, unsigned long identifier, int encodedDataLength);
   void didFinishLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, double finishTime, int64_t encodedDataLength, int64_t decodedBodyLength);
   void didReceiveCORSRedirectResponse(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceResponse&, Resource*);
-  void didFailLoading(ExecutionContext*, unsigned long identifier, const ResourceError&);
+  void didFailLoading(ExecutionContext*, unsigned long identifier, DocumentLoader*, const ResourceError&);
   void documentThreadableLoaderStartedLoadingForClient(ExecutionContext*, unsigned long identifier, ThreadableLoaderClient* client);
   void documentThreadableLoaderFailedToStartLoadingForClient(ExecutionContext*, ThreadableLoaderClient* client);
   void willSendEventSourceRequest(ExecutionContext*, ThreadableLoaderClient* eventSource);
