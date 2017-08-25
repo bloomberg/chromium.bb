@@ -378,6 +378,7 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetNavigationItemImplAtIndex(
           // an infinite cycle.
           net::GURLWithNSURL(prev_wk_item.URL),
           nullptr /* use default rewriters only */);
+  new_item->SetTimestamp(time_smoother_.GetSmoothedTime(base::Time::Now()));
   SetNavigationItemInWKItem(wk_item, std::move(new_item));
   return GetNavigationItemFromWKItem(wk_item);
 }

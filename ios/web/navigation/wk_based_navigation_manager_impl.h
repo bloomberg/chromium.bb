@@ -145,7 +145,10 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
 
   // Time smoother for navigation item timestamps. See comment in
   // navigation_controller_impl.h.
-  TimeSmoother time_smoother_;
+  // NOTE: This is mutable because GetNavigationItemImplAtIndex() needs to call
+  // TimeSmoother::GetSmoothedTime() with a const 'this'. Since NavigationItems
+  // have to be lazily created on read, this is the only workaround.
+  mutable TimeSmoother time_smoother_;
 
   DISALLOW_COPY_AND_ASSIGN(WKBasedNavigationManagerImpl);
 };
