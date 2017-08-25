@@ -234,6 +234,7 @@ static_library("common") {
     "//components/network_session_configurator/common",
     "//components/ntp_tiles",
     "//components/offline_pages/core:switches",
+    "//components/offline_pages/features:features",
     "//components/omnibox/common",
     "//components/password_manager/core/common",
     "//components/policy:generated",

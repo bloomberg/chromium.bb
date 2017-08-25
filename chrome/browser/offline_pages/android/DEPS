@@ -2,7 +2,4 @@ include_rules = [
   # This folder contains Android-specific code.
   "+base/android",
   "+chrome/browser/android",
-  # c/b/a/o_p folder will eventually be refactored into
-  # platform-independent code and Android-specific, and will go away.
-  "!chrome/browser/android/offline_pages",
 ]

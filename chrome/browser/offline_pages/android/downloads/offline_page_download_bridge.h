@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_DOWNLOADS_OFFLINE_PAGE_DOWNLOAD_BRIDGE_H_
-#define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_DOWNLOADS_OFFLINE_PAGE_DOWNLOAD_BRIDGE_H_
+#ifndef CHROME_BROWSER_OFFLINE_PAGES_ANDROID_DOWNLOADS_OFFLINE_PAGE_DOWNLOAD_BRIDGE_H_
+#define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_DOWNLOADS_OFFLINE_PAGE_DOWNLOAD_BRIDGE_H_
 
 #include <stdint.h>
 
@@ -31,29 +31,24 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
                             content::BrowserContext* browser_context);
   ~OfflinePageDownloadBridge() override;
 
-  void Destroy(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  void GetAllItems(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jobject>& j_result_obj);
+  void GetAllItems(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& obj,
+                   const base::android::JavaParamRef<jobject>& j_result_obj);
 
   base::android::ScopedJavaLocalRef<jobject> GetItemByGuid(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& j_guid);
 
-  void DeleteItemByGuid(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_guid);
+  void DeleteItemByGuid(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj,
+                        const base::android::JavaParamRef<jstring>& j_guid);
 
-  jlong GetOfflineIdByGuid(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_guid);
+  jlong GetOfflineIdByGuid(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           const base::android::JavaParamRef<jstring>& j_guid);
 
   void StartDownload(JNIEnv* env,
                      const base::android::JavaParamRef<jobject>& obj,
@@ -95,4 +90,4 @@ class OfflinePageDownloadBridge : public DownloadUIAdapter::Observer {
 }  // namespace android
 }  // namespace offline_pages
 
-#endif  // CHROME_BROWSER_ANDROID_OFFLINE_PAGES_DOWNLOADS_OFFLINE_PAGE_DOWNLOAD_BRIDGE_H_
+#endif  // CHROME_BROWSER_OFFLINE_PAGES_ANDROID_DOWNLOADS_OFFLINE_PAGE_DOWNLOAD_BRIDGE_H_

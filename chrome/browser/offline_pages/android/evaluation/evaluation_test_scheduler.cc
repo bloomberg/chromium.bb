@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/offline_pages/evaluation/evaluation_test_scheduler.h"
+#include "chrome/browser/offline_pages/android/evaluation/evaluation_test_scheduler.h"
 
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"

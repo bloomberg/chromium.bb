@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/offline_pages/downloads/offline_page_download_bridge.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.h"
 
 #include <vector>
 
@@ -12,9 +12,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/download/download_controller_base.h"
-#include "chrome/browser/android/offline_pages/downloads/offline_page_infobar_delegate.h"
-#include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
@@ -204,8 +204,7 @@ ScopedJavaLocalRef<jobject> ToJavaOfflinePageDownloadItem(
   return Java_OfflinePageDownloadBridge_createDownloadItem(
       env, ConvertUTF8ToJavaString(env, item.guid),
       ConvertUTF8ToJavaString(env, item.url.spec()), item.download_state,
-      item.download_progress_bytes,
-      ConvertUTF16ToJavaString(env, item.title),
+      item.download_progress_bytes, ConvertUTF16ToJavaString(env, item.title),
       ConvertUTF8ToJavaString(env, item.target_path.value()),
       item.start_time.ToJavaTime(), item.total_bytes);
 }

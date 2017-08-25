@@ -11,6 +11,7 @@
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/macros.h"
 #include "components/bookmarks/browser/bookmark_client.h"
+#include "components/offline_pages/features/features.h"
 
 class GURL;
 class Profile;
@@ -22,7 +23,7 @@ class BookmarkPermanentNode;
 class ManagedBookmarkService;
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 namespace offline_pages {
 class OfflinePageBookmarkObserver;
 }
@@ -62,7 +63,7 @@ class ChromeBookmarkClient : public bookmarks::BookmarkClient {
   // be null during testing.
   bookmarks::ManagedBookmarkService* managed_bookmark_service_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // Owns the observer used by Offline Page listening to Bookmark Model events.
   std::unique_ptr<offline_pages::OfflinePageBookmarkObserver>
       offline_page_observer_;

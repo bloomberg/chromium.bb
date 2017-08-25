@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 
 #include "base/android/jni_string.h"
-#include "chrome/browser/android/offline_pages/downloads/offline_page_download_bridge.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_download_bridge.h"
 #include "jni/OfflinePageNotificationBridge_jni.h"
 
 using base::android::AttachCurrentThread;
