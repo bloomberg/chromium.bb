@@ -82,25 +82,6 @@ class Smoke(IntegrationTest):
       succeeded = t.GetHistogram('DataReductionProxy.Pingback.Succeeded')
       self.assertEqual(1, succeeded['count'])
 
-  # Ensure client config is fetched at the start of the Chrome session, and the
-  # session ID is correctly set in the chrome-proxy request header.
-  def testClientConfig(self):
-    with TestDriver() as t:
-      t.AddChromeArg('--enable-spdy-proxy-auth')
-      t.SleepUntilHistogramHasEntry(
-        'DataReductionProxy.ConfigService.FetchResponseCode')
-      t.LoadURL('http://check.googlezip.net/test.html')
-      responses = t.GetHTTPResponses()
-      self.assertEqual(2, len(responses))
-      for response in responses:
-        chrome_proxy_header = response.request_headers['chrome-proxy']
-        self.assertIn('s=', chrome_proxy_header)
-        self.assertNotIn('ps=', chrome_proxy_header)
-        self.assertNotIn('sid=', chrome_proxy_header)
-        # Verify that the proxy server honored the session ID.
-        self.assertHasChromeProxyViaHeader(response)
-        self.assertEqual(200, response.status)
-
   # Verify unique page IDs are sent in the Chrome-Proxy header.
   @ChromeVersionEqualOrAfterM(59)
   def testPageID(self):
