@@ -517,8 +517,8 @@ void EventDispatcher::ProcessPointerEventOnFoundTarget(
       if (is_mouse_event)
         SetMouseCursorSourceWindow(pointer_target.window);
       if (!any_pointers_down) {
-        if (pointer_target.window)
-          delegate_->SetFocusedWindowFromEventDispatcher(pointer_target.window);
+        // Don't attempt to change focus on pointer downs. We assume client code
+        // will do that.
         ServerWindow* capture_window = pointer_target.window;
         if (!capture_window) {
           gfx::Point event_location =

@@ -225,8 +225,8 @@ void WindowTreeTest::SetupEventTargeting(TestWindowTreeClient** out_client,
   FirstRoot(*window_tree)->set_is_activation_parent(true);
 }
 
-// Verifies focus correctly changes on pointer events.
-TEST_F(WindowTreeTest, FocusOnPointer) {
+// Verifies focus does not change on pointer events.
+TEST_F(WindowTreeTest, DontFocusOnPointer) {
   const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
   EXPECT_TRUE(
       wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
@@ -262,54 +262,12 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   child1->SetVisible(true);
   child1->SetBounds(gfx::Rect(20, 20, 20, 20));
 
-  TestWindowTreeClient* tree1_client = last_window_tree_client();
-  tree1_client->tracker()->changes()->clear();
-  wm_client()->tracker()->changes()->clear();
+  embed_window->set_is_activation_parent(true);
 
-  // Focus should not go to |child1| yet, since the parent still doesn't allow
-  // active children.
+  // Dispatch a pointer event to the child1, focus should be null.
   DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
   Display* display1 = tree1->GetDisplay(embed_window);
   EXPECT_EQ(nullptr, display1->GetFocusedWindow());
-  DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
-  tree1_client->tracker()->changes()->clear();
-  wm_client()->tracker()->changes()->clear();
-
-  embed_window->set_is_activation_parent(true);
-
-  // Focus should go to child1. This result in notifying both the window
-  // manager and client client being notified.
-  DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
-  EXPECT_EQ(child1, display1->GetFocusedWindow());
-  ASSERT_GE(wm_client()->tracker()->changes()->size(), 1u);
-  EXPECT_EQ("Focused id=2,1",
-            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
-  ASSERT_GE(tree1_client->tracker()->changes()->size(), 1u);
-  EXPECT_EQ("Focused id=2,1",
-            ChangesToDescription1(*tree1_client->tracker()->changes())[0]);
-
-  DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
-  wm_client()->tracker()->changes()->clear();
-  tree1_client->tracker()->changes()->clear();
-
-  // Press outside of the embedded window. Note that root cannot be focused
-  // (because it cannot be activated). So the focus would not move in this case.
-  DispatchEventAndAckImmediately(CreatePointerDownEvent(61, 22));
-  EXPECT_EQ(child1, display()->GetFocusedWindow());
-
-  DispatchEventAndAckImmediately(CreatePointerUpEvent(21, 22));
-  wm_client()->tracker()->changes()->clear();
-  tree1_client->tracker()->changes()->clear();
-
-  // Press in the same location. Should not get a focus change event (only input
-  // event).
-  DispatchEventAndAckImmediately(CreatePointerDownEvent(61, 22));
-  EXPECT_EQ(child1, display()->GetFocusedWindow());
-  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size())
-      << SingleChangeToDescription(*wm_client()->tracker()->changes());
-  EXPECT_EQ("InputEvent window=0,3 event_action=16",
-            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
-  EXPECT_TRUE(tree1_client->tracker()->changes()->empty());
 }
 
 TEST_F(WindowTreeTest, BasicInputEventTarget) {
@@ -322,14 +280,10 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
   // Send an event to |v1|. |embed_client| should get the event, not
   // |wm_client|, since |v1| lives inside an embedded window.
   DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
-  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
-  EXPECT_EQ("Focused id=2,1",
-            ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
-  ASSERT_EQ(2u, embed_client->tracker()->changes()->size());
-  EXPECT_EQ("Focused id=2,1",
-            ChangesToDescription1(*embed_client->tracker()->changes())[0]);
+  ASSERT_EQ(0u, wm_client()->tracker()->changes()->size());
+  ASSERT_EQ(1u, embed_client->tracker()->changes()->size());
   EXPECT_EQ("InputEvent window=2,1 event_action=16",
-            ChangesToDescription1(*embed_client->tracker()->changes())[1]);
+            ChangesToDescription1(*embed_client->tracker()->changes())[0]);
 }
 
 // Verifies SetChildModalParent() works correctly.
@@ -417,13 +371,11 @@ TEST_F(WindowTreeTest, PointerWatcherGetsWindow) {
   ui::PointerEvent pointer_down = CreatePointerDownEvent(25, 25);
   DispatchEventAndAckImmediately(pointer_down);
 
-  // Expect two changes, the first is focus, the second the pointer watcher
-  // event.
-  ASSERT_EQ(2u, wm_client()->tracker()->changes()->size());
+  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
   EXPECT_EQ(
       "PointerWatcherEvent event_action=16 window=" +
           ClientWindowIdToString(ClientWindowIdForWindow(wm_tree(), window)),
-      ChangesToDescription1(*wm_client()->tracker()->changes())[1]);
+      ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
 }
 
 // Tests that a client using a pointer watcher does not receive events that

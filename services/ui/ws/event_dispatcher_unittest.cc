@@ -1003,18 +1003,16 @@ TEST_P(EventDispatcherTest, HitTestMask) {
 }
 
 TEST_P(EventDispatcherTest, DontFocusOnSecondDown) {
-  std::unique_ptr<ServerWindow> child1 = CreateChildWindow(WindowId(1, 3));
-  std::unique_ptr<ServerWindow> child2 = CreateChildWindow(WindowId(1, 4));
+  std::unique_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
 
   root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
-  child1->SetBounds(gfx::Rect(10, 10, 20, 20));
-  child2->SetBounds(gfx::Rect(50, 51, 11, 12));
+  child->SetBounds(gfx::Rect(10, 10, 20, 20));
 
   TestEventDispatcherDelegate* event_dispatcher_delegate =
       test_event_dispatcher_delegate();
   EventDispatcher* dispatcher = event_dispatcher();
 
-  // Press on child1. First press event should change focus.
+  // Press on |child|. Press should not change focus.
   const ui::PointerEvent press_event(ui::MouseEvent(
       ui::ET_MOUSE_PRESSED, gfx::Point(12, 12), gfx::Point(12, 12),
       base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
@@ -1023,20 +1021,7 @@ TEST_P(EventDispatcherTest, DontFocusOnSecondDown) {
   std::unique_ptr<DispatchedEventDetails> details =
       event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
-  EXPECT_EQ(child1.get(), details->window);
-  EXPECT_EQ(child1.get(),
-            event_dispatcher_delegate->GetAndClearLastFocusedWindow());
-
-  // Press (with a different pointer id) on child2. Event should go to child2,
-  // but focus should not change.
-  const ui::PointerEvent touch_event(ui::TouchEvent(
-      ui::ET_TOUCH_PRESSED, gfx::Point(53, 54), base::TimeTicks(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 2)));
-  DispatchEvent(dispatcher, touch_event, 0,
-                EventDispatcher::AcceleratorMatchPhase::ANY);
-  details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
-  EXPECT_FALSE(event_dispatcher_delegate->has_queued_events());
-  EXPECT_EQ(child2.get(), details->window);
+  EXPECT_EQ(child.get(), details->window);
   EXPECT_EQ(nullptr, event_dispatcher_delegate->GetAndClearLastFocusedWindow());
 }
 
