@@ -1070,7 +1070,9 @@ void CopyFeatureSwitch(const base::CommandLine& src,
 
 }  // namespace
 
-RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
+RendererMainThreadFactoryFunction g_renderer_main_thread_factory = nullptr;
+RenderProcessHostImpl::CreateStoragePartitionServiceFunction
+    g_create_storage_partition = nullptr;
 
 base::MessageLoop* g_in_process_thread;
 
@@ -1388,6 +1390,11 @@ void RenderProcessHostImpl::ShutDownInProcessRenderer() {
 void RenderProcessHostImpl::RegisterRendererMainThreadFactory(
     RendererMainThreadFactoryFunction create) {
   g_renderer_main_thread_factory = create;
+}
+
+void RenderProcessHostImpl::SetCreateStoragePartitionServiceFunction(
+    CreateStoragePartitionServiceFunction function) {
+  g_create_storage_partition = function;
 }
 
 RenderProcessHostImpl::~RenderProcessHostImpl() {
@@ -2056,7 +2063,12 @@ void RenderProcessHostImpl::CreateStoragePartitionService(
     mojom::StoragePartitionServiceRequest request) {
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableMojoLocalStorage)) {
-    storage_partition_impl_->Bind(std::move(request));
+    if (g_create_storage_partition) {
+      g_create_storage_partition(this, std::move(request));
+      return;
+    }
+
+    storage_partition_impl_->Bind(id_, std::move(request));
   }
 }
 
