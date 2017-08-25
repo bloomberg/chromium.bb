@@ -2811,6 +2811,10 @@ void RenderWidgetHostImpl::SetupInputRouter() {
   }
 }
 
+void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
+  input_router_->SetForceEnableZoom(enabled);
+}
+
 void RenderWidgetHostImpl::SetWidgetInputHandler(
     mojom::WidgetInputHandlerAssociatedPtr widget_input_handler) {
   associated_widget_input_handler_ = std::move(widget_input_handler);

@@ -517,6 +517,10 @@ cc::TouchAction InputRouterImpl::AllowedTouchAction() {
   return touch_action_filter_.allowed_touch_action();
 }
 
+void InputRouterImpl::SetForceEnableZoom(bool enabled) {
+  touch_action_filter_.SetForceEnableZoom(enabled);
+}
+
 void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
   for (size_t i = 0; i < event->touches_length; ++i) {
     blink::WebTouchPoint* touch_point = &event->touches[i];

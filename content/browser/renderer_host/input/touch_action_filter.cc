@@ -38,6 +38,7 @@ TouchActionFilter::TouchActionFilter()
     : suppress_manipulation_events_(false),
       drop_current_tap_ending_event_(false),
       allow_current_double_tap_event_(true),
+      force_enable_zoom_(false),
       allowed_touch_action_(cc::kTouchActionAuto),
       white_listed_touch_action_(cc::kTouchActionAuto) {}
 
@@ -172,6 +173,11 @@ void TouchActionFilter::OnSetTouchAction(cc::TouchAction touch_action) {
   // 2. Only subtractive - eg. can't trigger scrolling on a element that
   //    otherwise has scrolling disabling by the addition of a finger.
   allowed_touch_action_ &= touch_action;
+
+  // When user enabled force enable zoom, we should always allow pinch-zoom
+  // except for touch-action:none.
+  if (force_enable_zoom_ && allowed_touch_action_ != cc::kTouchActionNone)
+    allowed_touch_action_ |= cc::kTouchActionPinchZoom;
 }
 
 void TouchActionFilter::ReportAndResetTouchAction() {

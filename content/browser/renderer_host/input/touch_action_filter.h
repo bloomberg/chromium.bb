@@ -50,6 +50,8 @@ class CONTENT_EXPORT TouchActionFilter {
 
   cc::TouchAction allowed_touch_action() const { return allowed_touch_action_; }
 
+  void SetForceEnableZoom(bool enabled) { force_enable_zoom_ = enabled; }
+
  private:
   bool ShouldSuppressManipulation(const blink::WebGestureEvent&);
   bool FilterManipulationEventAndResetState();
@@ -66,6 +68,9 @@ class CONTENT_EXPORT TouchActionFilter {
   // previous tap or tap unconfirmed. Only valid between a TapUnconfirmed or Tap
   // and the next DoubleTap.
   bool allow_current_double_tap_event_;
+
+  // Force enable zoom for Accessibility.
+  bool force_enable_zoom_;
 
   // What touch actions are currently permitted.
   cc::TouchAction allowed_touch_action_;

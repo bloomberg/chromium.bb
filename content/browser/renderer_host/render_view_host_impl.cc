@@ -883,6 +883,9 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
     return;
   updating_web_preferences_ = true;
   UpdateWebkitPreferences(ComputeWebkitPrefs());
+#if defined(OS_ANDROID)
+  GetWidget()->SetForceEnableZoom(web_preferences_->force_enable_zoom);
+#endif
   updating_web_preferences_ = false;
 }
 
