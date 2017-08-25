@@ -47,11 +47,6 @@ SurroundingText::SurroundingText(const EphemeralRange& range,
   Initialize(range.StartPosition(), range.EndPosition(), max_length);
 }
 
-SurroundingText::SurroundingText(const Position& position, unsigned max_length)
-    : start_offset_in_content_(0), end_offset_in_content_(0) {
-  Initialize(position, position, max_length);
-}
-
 void SurroundingText::Initialize(const Position& start_position,
                                  const Position& end_position,
                                  unsigned max_length) {

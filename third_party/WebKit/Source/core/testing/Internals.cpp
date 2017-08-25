@@ -3095,10 +3095,11 @@ String Internals::textSurroundingNode(Node* node,
     return String();
   blink::WebPoint point(x, y);
   SurroundingText surrounding_text(
-      CreateVisiblePosition(node->GetLayoutObject()->PositionForPoint(
-                                static_cast<IntPoint>(point)))
-          .DeepEquivalent()
-          .ParentAnchoredEquivalent(),
+      EphemeralRange(
+          CreateVisiblePosition(node->GetLayoutObject()->PositionForPoint(
+                                    static_cast<IntPoint>(point)))
+              .DeepEquivalent()
+              .ParentAnchoredEquivalent()),
       max_length);
   return surrounding_text.Content();
 }
