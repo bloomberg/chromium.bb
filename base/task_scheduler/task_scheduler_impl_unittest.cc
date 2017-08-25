@@ -15,6 +15,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
@@ -189,22 +191,31 @@ std::vector<TraitsExecutionModePair> GetTraitsExecutionModePairs() {
 class TaskSchedulerImplTest
     : public testing::TestWithParam<TraitsExecutionModePair> {
  protected:
-  TaskSchedulerImplTest() : scheduler_("Test") {}
+  TaskSchedulerImplTest() : scheduler_("Test"), field_trial_list_(nullptr) {}
 
-  void StartTaskScheduler(
-      TaskScheduler::TaskPriorityAdjustment task_priority_adjustment =
-          TaskScheduler::TaskPriorityAdjustment::NONE) {
+  void EnableAllTasksUserBlocking() {
+    constexpr char kFieldTrialName[] = "BrowserScheduler";
+    constexpr char kFieldTrialTestGroup[] = "DummyGroup";
+    std::map<std::string, std::string> variation_params;
+    variation_params["AllTasksUserBlocking"] = "true";
+    base::AssociateFieldTrialParams(kFieldTrialName, kFieldTrialTestGroup,
+                                    variation_params);
+    base::FieldTrialList::CreateFieldTrial(kFieldTrialName,
+                                           kFieldTrialTestGroup);
+  }
+
+  void StartTaskScheduler() {
     constexpr TimeDelta kSuggestedReclaimTime = TimeDelta::FromSeconds(30);
     constexpr int kMaxNumBackgroundThreads = 1;
     constexpr int kMaxNumBackgroundBlockingThreads = 3;
     constexpr int kMaxNumForegroundThreads = 4;
     constexpr int kMaxNumForegroundBlockingThreads = 12;
 
-    scheduler_.Start({{kMaxNumBackgroundThreads, kSuggestedReclaimTime},
-                      {kMaxNumBackgroundBlockingThreads, kSuggestedReclaimTime},
-                      {kMaxNumForegroundThreads, kSuggestedReclaimTime},
-                      {kMaxNumForegroundBlockingThreads, kSuggestedReclaimTime},
-                      task_priority_adjustment});
+    scheduler_.Start(
+        {{kMaxNumBackgroundThreads, kSuggestedReclaimTime},
+         {kMaxNumBackgroundBlockingThreads, kSuggestedReclaimTime},
+         {kMaxNumForegroundThreads, kSuggestedReclaimTime},
+         {kMaxNumForegroundBlockingThreads, kSuggestedReclaimTime}});
   }
 
   void TearDown() override {
@@ -215,6 +226,8 @@ class TaskSchedulerImplTest
   TaskSchedulerImpl scheduler_;
 
  private:
+  base::FieldTrialList field_trial_list_;
+
   DISALLOW_COPY_AND_ASSIGN(TaskSchedulerImplTest);
 };
 
@@ -342,11 +355,11 @@ TEST_P(TaskSchedulerImplTest, PostTaskViaTaskRunnerBeforeStart) {
 }
 
 // Verify that all tasks posted to a TaskRunner after Start() run in a
-// USER_BLOCKING environment when |all_tasks_are_user_blocking_in| is true in
-// TaskScheduler::InitParams.
+// USER_BLOCKING environment when the AllTasksUserBlocking variation param of
+// the BrowserScheduler experiment is true.
 TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlockingTaskRunner) {
-  StartTaskScheduler(TaskScheduler::TaskPriorityAdjustment::
-                         EXPERIMENTAL_ALL_TASKS_USER_BLOCKING);
+  EnableAllTasksUserBlocking();
+  StartTaskScheduler();
 
   WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
                              WaitableEvent::InitialState::NOT_SIGNALED);
@@ -361,11 +374,11 @@ TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlockingTaskRunner) {
 }
 
 // Verify that all tasks posted via PostDelayedTaskWithTraits() after Start()
-// run in a USER_BLOCKING environment when |all_tasks_are_user_blocking_in| is
-// true in TaskScheduler::InitParams.
+// run in a USER_BLOCKING environment when the AllTasksUserBlocking variation
+// param of the BrowserScheduler experiment is true.
 TEST_P(TaskSchedulerImplTest, AllTasksAreUserBlocking) {
-  StartTaskScheduler(TaskScheduler::TaskPriorityAdjustment::
-                         EXPERIMENTAL_ALL_TASKS_USER_BLOCKING);
+  EnableAllTasksUserBlocking();
+  StartTaskScheduler();
 
   WaitableEvent task_running(WaitableEvent::ResetPolicy::MANUAL,
                              WaitableEvent::InitialState::NOT_SIGNALED);

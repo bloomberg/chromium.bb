@@ -102,6 +102,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   // TaskPriority::USER_BLOCKING. Since this is set in Start(), it doesn't apply
   // to tasks posted before Start() or to tasks posted to TaskRunners created
   // before Start().
+  //
+  // TODO(fdoray): Remove after experiment. https://crbug.com/757022
   AtomicFlag all_tasks_user_blocking_;
 
   // There are 4 SchedulerWorkerPoolImpl in this array to match the 4
