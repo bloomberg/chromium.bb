@@ -409,7 +409,7 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
     const MV diff = { mvs[i].as_mv.row - ref->row,
                       mvs[i].as_mv.col - ref->col };
     av1_inc_mv(&diff, counts, 1);
-    inc_mv_cdf(&diff, fc->nmvc[nmv_ctx], 1);
+    inc_mv_cdf(&diff, &fc->nmvc[nmv_ctx], 1);
   }
 }
 #endif  // CONFIG_EXT_INTER
