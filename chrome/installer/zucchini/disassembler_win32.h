@@ -50,7 +50,7 @@ struct Win32X64Traits {
 };
 
 template <class Traits>
-class DisassemblerWin32 : public Disassembler, public AddressTranslatorFactory {
+class DisassemblerWin32 : public Disassembler {
  public:
   enum ReferenceType : uint8_t { kRel32, kTypeCount };
 
@@ -69,13 +69,6 @@ class DisassemblerWin32 : public Disassembler, public AddressTranslatorFactory {
   std::string GetExeTypeString() const override;
   std::vector<ReferenceGroup> MakeReferenceGroups() const override;
 
-  // AddressTranslatorFactory:
-  // The returned objects must not outlive |this|, since it uses the pointer.
-  std::unique_ptr<RVAToOffsetTranslator> MakeRVAToOffsetTranslator()
-      const override;
-  std::unique_ptr<OffsetToRVATranslator> MakeOffsetToRVATranslator()
-      const override;
-
   // Functions that return reader / writer for references.
   std::unique_ptr<ReferenceReader> MakeReadRel32(offset_t lower,
                                                  offset_t upper);
@@ -92,13 +85,9 @@ class DisassemblerWin32 : public Disassembler, public AddressTranslatorFactory {
   // parsing was successful (failures are non-fatal).
   bool ParseAndStoreRel32();
 
-  // Translation utilities.
-  const pe::ImageSectionHeader* RVAToSection(rva_t rva) const;
-  const pe::ImageSectionHeader* OffsetToSection(offset_t offset) const;
-  offset_t RVAToOffset(rva_t rva) const;
-  rva_t OffsetToRVA(offset_t offset) const;
-  rva_t AddressToRVA(typename Traits::Address address) const;
-  typename Traits::Address RVAToAddress(rva_t rva) const;
+  // PE-specific translation utilities.
+  rva_t AddressToRva(typename Traits::Address address) const;
+  typename Traits::Address RvaToAddress(rva_t rva) const;
 
   // In-memory copy of sections.
   std::vector<pe::ImageSectionHeader> sections_;
@@ -106,21 +95,8 @@ class DisassemblerWin32 : public Disassembler, public AddressTranslatorFactory {
   // Image base address to translate between RVA and VA.
   typename Traits::Address image_base_ = 0;
 
-  // An exclusive upper bound on all RVAs used in the image.
-  rva_t rva_bound_ = 0;
-
-  // Some RVAs have no matching offset on disk (e.g., RVAs to .bss sections).
-  // However, Zucchini reprsents all references using offsets. To accommodate
-  // these RVAs, Zucchini assigns "fake offsets" to these RVAs so they can be
-  // processed and restored. |fake_offset_adjust_| is the adjustment factor.
-  // This is made into a large value (e.g., max of |rva_bound_| and image size)
-  // to prevent collision with regular offsets.
-  uint32_t fake_offset_adjust_ = 0;
-
-  // Maps for address translation, sorted by the first element. The second
-  // element of each std::pair is an index in into |sections_|.
-  std::vector<std::pair<rva_t, int>> section_rva_map_;
-  std::vector<std::pair<offset_t, int>> section_offset_map_;
+  // Translator between offsets and RVAs.
+  AddressTranslator translator_;
 
   // Reference storage.
   std::vector<offset_t> rel32_locations_;

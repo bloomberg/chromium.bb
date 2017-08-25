@@ -18,6 +18,9 @@ namespace zucchini {
 // offset_t is used to describe an offset in an image.
 // Files bigger than 4GB are not supported.
 using offset_t = uint32_t;
+// Divide by 2 since label marking uses the most significant bit.
+constexpr offset_t kOffsetBound = static_cast<offset_t>(-1) / 2;
+constexpr offset_t kInvalidOffset = static_cast<offset_t>(-1);
 
 // Used to uniquely identify a reference type.
 // Strongly typed objects are used to avoid ambiguitees with PoolTag.

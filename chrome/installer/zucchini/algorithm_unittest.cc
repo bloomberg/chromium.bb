@@ -57,4 +57,47 @@ TEST(Algorithm, RangeIsBounded) {
       RangeIsBounded<uint32_t>(0xFFFFFFFFU, +0xFFFFFFFFU, 0xFFFFFFFFU));
 }
 
+TEST(Algorithm, RangeCovers) {
+  // Basic tests.
+  EXPECT_TRUE(RangeCovers<uint8_t>(0U, +10U, 0U));
+  EXPECT_TRUE(RangeCovers<uint8_t>(0U, +10U, 5U));
+  EXPECT_TRUE(RangeCovers<uint8_t>(0U, +10U, 9U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(0U, +10U, 10U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(0U, +10U, 100U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(0U, +10U, 255U));
+
+  EXPECT_FALSE(RangeCovers<uint8_t>(42U, +137U, 0U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(42U, +137U, 41U));
+  EXPECT_TRUE(RangeCovers<uint8_t>(42U, +137U, 42U));
+  EXPECT_TRUE(RangeCovers<uint8_t>(42U, +137U, 100U));
+  EXPECT_TRUE(RangeCovers<uint8_t>(42U, +137U, 178U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(42U, +137U, 179U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(42U, +137U, 255U));
+
+  // 0-size ranges.
+  EXPECT_FALSE(RangeCovers<uint8_t>(42U, +0U, 41U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(42U, +0U, 42U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(42U, +0U, 43U));
+
+  // Test at boundary of overflow.
+  EXPECT_TRUE(RangeCovers<uint8_t>(254U, +1U, 254U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(254U, +1U, 255U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(255U, +0U, 255U));
+  EXPECT_TRUE(RangeCovers<uint8_t>(255U, +1U, 255U));
+  EXPECT_FALSE(RangeCovers<uint8_t>(255U, +5U, 0U));
+
+  // Test with unit32_t.
+  EXPECT_FALSE(RangeCovers<uint32_t>(1234567U, +7654321U, 0U));
+  EXPECT_FALSE(RangeCovers<uint32_t>(1234567U, +7654321U, 1234566U));
+  EXPECT_TRUE(RangeCovers<uint32_t>(1234567U, +7654321U, 1234567U));
+  EXPECT_TRUE(RangeCovers<uint32_t>(1234567U, +7654321U, 4444444U));
+  EXPECT_TRUE(RangeCovers<uint32_t>(1234567U, +7654321U, 8888887U));
+  EXPECT_FALSE(RangeCovers<uint32_t>(1234567U, +7654321U, 8888888U));
+  EXPECT_FALSE(RangeCovers<uint32_t>(1234567U, +7654321U, 0x80000000U));
+  EXPECT_FALSE(RangeCovers<uint32_t>(1234567U, +7654321U, 0xFFFFFFFFU));
+  EXPECT_FALSE(RangeCovers<uint32_t>(0xFFFFFFFFU, +0, 0xFFFFFFFFU));
+  EXPECT_TRUE(RangeCovers<uint32_t>(0xFFFFFFFFU, +1, 0xFFFFFFFFU));
+  EXPECT_FALSE(RangeCovers<uint32_t>(0xFFFFFFFFU, +2, 0));
+}
+
 }  // namespace zucchini
