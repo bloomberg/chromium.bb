@@ -72,6 +72,22 @@ class GitCLTest(unittest.TestCase):
             'Waiting. 6600 seconds passed.\n'
             'Timed out waiting for try results.\n')
 
+    def test_wait_for_try_jobs_no_results_not_considered_finished(self):
+        host = MockHost()
+        git_cl = GitCL(host)
+        git_cl.fetch_raw_try_job_results = lambda: []
+        git_cl.wait_for_try_jobs()
+        self.assertEqual(
+            host.stdout.getvalue(),
+            'Waiting for try jobs (timeout: 7200 seconds).\n'
+            'Waiting. 600 seconds passed.\n'
+            'Waiting. 1800 seconds passed.\n'
+            'Waiting. 3000 seconds passed.\n'
+            'Waiting. 4200 seconds passed.\n'
+            'Waiting. 5400 seconds passed.\n'
+            'Waiting. 6600 seconds passed.\n'
+            'Timed out waiting for try results.\n')
+
     def test_wait_for_try_jobs_done(self):
         host = MockHost()
         git_cl = GitCL(host)
