@@ -45,6 +45,7 @@ class CORE_EXPORT CSSPropertyAPI {
     NOTREACHED();
     return 0;
   }
+  virtual bool IsDescriptor() const { return false; }
 };
 
 {% for api_class_data in api_classes_by_property_id %}

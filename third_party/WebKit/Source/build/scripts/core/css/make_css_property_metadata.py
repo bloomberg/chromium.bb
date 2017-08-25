@@ -33,8 +33,7 @@ class CSSPropertyMetadataWriter(css_properties.CSSProperties):
         return {
             'input_files': self._input_files,
             'properties_including_aliases': self._properties_including_aliases,
-            'switches': [('is_descriptor', 'IsDescriptor'),
-                         ('is_property', 'IsProperty'),
+            'switches': [('is_property', 'IsProperty'),
                          ('supports_percentage', 'PropertySupportsPercentage')],
             'first_enum_value': self._first_enum_value,
         }
