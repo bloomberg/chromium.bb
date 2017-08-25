@@ -266,6 +266,11 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   box_layout_->SetFlexForView(search_box_, 1);
 
   if (is_fullscreen_app_list_enabled_) {
+    // An invisible space view to align |search_box_| to center.
+    search_box_right_space_ = new views::View();
+    search_box_right_space_->SetPreferredSize(gfx::Size(kSearchIconSize, 0));
+    content_container_->AddChildView(search_box_right_space_);
+
     close_button_ = new SearchBoxImageButton(this);
     close_button_->SetImage(
         views::ImageButton::STATE_NORMAL,
@@ -541,6 +546,7 @@ void SearchBoxView::SetSearchBoxActive(bool active) {
   search_box_->set_placeholder_text_color(active ? kZeroQuerySearchboxColor
                                                  : search_box_color_);
   search_box_->SetCursorEnabled(active);
+  search_box_right_space_->SetVisible(!active);
 
   UpdateKeyboardVisibility();
 
