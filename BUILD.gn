@@ -15,6 +15,7 @@ import("//build/config/ui.gni")
 import("//device/vr/features/features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
+import("//media/gpu/args.gni")
 import("//remoting/remoting_enable.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
@@ -816,8 +817,6 @@ if (is_chromeos) {
       "//chrome",
       "//chrome/test/chromedriver",
       "//media:media_unittests",
-      "//media/gpu:video_decode_accelerator_unittest",
-      "//media/gpu:video_encode_accelerator_unittest",
       "//ppapi/examples/video_decode",
       "//sandbox/linux:chrome_sandbox",
       "//sandbox/linux:sandbox_linux_unittests",
@@ -826,6 +825,13 @@ if (is_chromeos) {
       #"//third_party/catapult/telemetry:bitmaptools",
       "//tools/perf/clear_system_cache",
     ]
+
+    if (use_v4l2_codec || use_vaapi) {
+      deps += [
+        "//media/gpu:video_decode_accelerator_unittest",
+        "//media/gpu:video_encode_accelerator_unittest",
+      ]
+    }
   }
 }
 
