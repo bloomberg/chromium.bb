@@ -65,6 +65,7 @@ template("android_gcc_toolchain") {
     readelf = _tool_prefix + "readelf"
     nm = _tool_prefix + "nm"
     strip = "${_tool_prefix}strip"
+    use_unstripped_as_runtime_outputs = true
 
     # Don't use .cr.so for loadable_modules since they are always loaded via
     # absolute path.
