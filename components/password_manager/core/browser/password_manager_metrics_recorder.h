@@ -28,6 +28,9 @@ extern const char kUkmUserModifiedPasswordField[];
 // offer to save a credential.
 extern const char kUkmProvisionalSaveFailure[];
 
+// UKM that records a PasswordManagerMetricsRecorder::PageLevelUserAction.
+extern const char kUkmPageLevelUserAction[];
+
 class BrowserSavePasswordProgressLogger;
 
 // The pupose of this class is to record various types of metrics about the
@@ -62,6 +65,16 @@ class PasswordManagerMetricsRecorder {
     MAX_FAILURE_VALUE
   };
 
+  // This enum represents user actions on a page with a password form that
+  // cannot (reliably) be attributed to a specific form manager.
+  enum class PageLevelUserAction {
+    kUnknown = 0,
+
+    // User chose to open the password viewer as part of a manual fallback.
+    kShowAllPasswordsWhileSomeAreSuggested,
+    kShowAllPasswordsWhileNoneAreSuggested,
+  };
+
   // Records UKM metrics and reports them on destruction. The |source_id| is
   // (re-)bound to |main_frame_url| shortly before reporting. As such it is
   // crucial that the |source_id| is never bound to a different URL by another
@@ -91,6 +104,9 @@ class PasswordManagerMetricsRecorder {
                                     const GURL& main_frame_url,
                                     const GURL& form_origin,
                                     BrowserSavePasswordProgressLogger* logger);
+
+  // Records a user action.
+  void RecordPageLevelUserAction(PageLevelUserAction action);
 
  private:
   // Records a metric into |ukm_entry_builder_| if it is not nullptr.

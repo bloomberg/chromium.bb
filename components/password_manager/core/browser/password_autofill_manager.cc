@@ -26,7 +26,10 @@
 #include "components/autofill/core/common/autofill_data_validation.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/password_manager.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_recorder.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
@@ -383,6 +386,28 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
 
     metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
         show_all_saved_passwords_shown_context_);
+
+    PasswordManager* password_manager =
+        password_manager_driver_->GetPasswordManager();
+    PasswordManagerClient* client =
+        password_manager ? password_manager->client() : nullptr;
+    if (client) {
+      using UserAction =
+          password_manager::PasswordManagerMetricsRecorder::PageLevelUserAction;
+      switch (show_all_saved_passwords_shown_context_) {
+        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD:
+          client->GetMetricsRecorder().RecordPageLevelUserAction(
+              UserAction::kShowAllPasswordsWhileSomeAreSuggested);
+          break;
+        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK:
+          client->GetMetricsRecorder().RecordPageLevelUserAction(
+              UserAction::kShowAllPasswordsWhileNoneAreSuggested);
+          break;
+        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_NONE:
+        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT:
+          NOTREACHED();
+      }
+    }
   }
 
   autofill_client_->HideAutofillPopup();
