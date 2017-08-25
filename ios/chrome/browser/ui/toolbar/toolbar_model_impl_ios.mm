@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #include "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 

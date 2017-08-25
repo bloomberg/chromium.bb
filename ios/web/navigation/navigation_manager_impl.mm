@@ -206,8 +206,6 @@ void NavigationManagerImpl::LoadURLWithParams(
   delegate_->ClearTransientContent();
   delegate_->RecordPageStateInNavigationItem();
 
-  bool is_initial_navigation = !GetItemCount();
-
   NavigationInitiationType initiation_type =
       params.is_renderer_initiated
           ? NavigationInitiationType::RENDERER_INITIATED
@@ -249,7 +247,7 @@ void NavigationManagerImpl::LoadURLWithParams(
     added_item->SetShouldSkipRepostFormConfirmation(true);
   }
 
-  delegate_->WillLoadCurrentItemWithParams(params, is_initial_navigation);
+  delegate_->WillLoadCurrentItemWithUrl(params.url);
   delegate_->LoadCurrentItem();
 }
 

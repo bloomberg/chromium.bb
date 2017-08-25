@@ -8,7 +8,6 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/web/net/crw_request_tracker_delegate.h"
-#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
@@ -155,13 +154,10 @@ class WebStateImpl;
 // to generate an overlay placeholder view.
 - (BOOL)canUseViewForGeneratingOverlayPlaceholderView;
 
-// Notifies delegate that |currentNavItem| will be loaded with |params|. If this
-// is the first navigation, |isInitialNavigation| is YES.
+// Notifies delegate that |currentNavItem| will be loaded with |url|.
 // TODO(crbug.com/674991): Remove this method when CRWWebDelegate is no longer
 // used.
-- (void)willLoadCurrentItemWithParams:
-            (const web::NavigationManager::WebLoadParams&)params
-                  isInitialNavigation:(BOOL)isInitialNavigation;
+- (void)willLoadCurrentItemWithURL:(const GURL&)URL;
 
 // Loads the URL indicated by current session state.
 - (void)loadCurrentURL;

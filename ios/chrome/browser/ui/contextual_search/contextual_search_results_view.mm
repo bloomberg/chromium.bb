@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/common/material_timing.h"
 #include "ios/web/public/load_committed_details.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/serializable_user_data_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"

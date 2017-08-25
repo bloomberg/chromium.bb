@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 #import "ios/chrome/browser/tabs/tab_private.h"
 #include "ios/chrome/browser/ui/prerender_final_status.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #include "ios/web/public/web_thread.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
