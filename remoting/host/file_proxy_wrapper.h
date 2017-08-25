@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/files/file_proxy.h"
+#include "base/optional.h"
 #include "remoting/proto/file_transfer.pb.h"
 
 namespace remoting {
@@ -18,10 +19,6 @@ class CompoundBuffer;
 // thread, and possibly a different process depending on the platform.
 class FileProxyWrapper {
  public:
-  typedef base::Callback<void(protocol::FileTransferResponse_ErrorCode)>
-      ErrorCallback;
-  typedef base::Callback<void()> SuccessCallback;
-
   enum State {
     // Created, but Init() has not been called yet.
     kUninitialized = 0,
@@ -29,7 +26,8 @@ class FileProxyWrapper {
     // Init() has been called.
     kInitialized = 1,
 
-    // CreateFile() has been called. The file may or may not exist yet.
+    // CreateFile() has been called. The file may or may not exist yet, but
+    // this means that WriteChunk() can now be called.
     kFileCreated = 2,
 
     // Close() has been called. WriteChunk() can no longer be called, but not
@@ -44,25 +42,29 @@ class FileProxyWrapper {
     kFailed = 5,
   };
 
+  // If an error occured while writing the file, State will be kFailed and the
+  // Optional will contain the error which occured. If the file was written to
+  // and closed successfully, State will be kClosed and the Optional will be
+  // empty.
+  typedef base::OnceCallback<
+      void(State, base::Optional<protocol::FileTransferResponse_ErrorCode>)>
+      StatusCallback;
+
   // Creates a platform-specific FileProxyWrapper.
   static std::unique_ptr<FileProxyWrapper> Create();
 
   FileProxyWrapper();
   virtual ~FileProxyWrapper();
 
-  // |error_callback| must not immediately destroy this FileProxyWrapper.
-  virtual void Init(const ErrorCallback& error_callback) = 0;
-  // TODO(jarhar): Remove |success_callback| from CreateFile(), and instead
-  // allow WriteChunk() to be called immediately after CreateFile(). This also
-  // means that FileTransferMessageHandler will no longer send a
-  // FileTransferResponse with the "READY" state.
+  // |status_callback| is called either when FileProxyWrapper encounters an
+  // error or when Close() has been called and the file has been written
+  // successfully. |status_callback| must not immediately destroy this
+  // FileProxyWrapper.
+  virtual void Init(StatusCallback status_callback) = 0;
   virtual void CreateFile(const base::FilePath& directory,
-                          const std::string& filename,
-                          const SuccessCallback& success_callback) = 0;
+                          const std::string& filename) = 0;
   virtual void WriteChunk(std::unique_ptr<CompoundBuffer> buffer) = 0;
-  // TODO(jarhar): Remove |success_callback| from Close() and instead use the
-  // ErrorCallback sent to Init() to signify success after Close().
-  virtual void Close(const SuccessCallback& success_callback) = 0;
+  virtual void Close() = 0;
   virtual void Cancel() = 0;
   virtual State state() = 0;
 };
