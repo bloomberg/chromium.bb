@@ -33,8 +33,7 @@ namespace media {
 
 namespace {
 
-const int kOutputChannelCount = 2;  // Always output stereo audio.
-const int kMaxChannelInput = 2;
+const int kStereoChannelCount = 2;  // Number of channel for stereo
 
 class CastAudioDecoderImpl : public CastAudioDecoder {
  public:
@@ -53,7 +52,6 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
 
   void Initialize(const media::AudioConfig& config) {
     DCHECK(!initialized_);
-    DCHECK_LE(config_.channel_number, kMaxChannelInput);
     config_ = config;
 
     // Media pipeline should already decrypt the stream with the selected key
@@ -204,9 +202,9 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
     }
 
     if (mixer_) {
-      // Convert to stereo if necessary.
+      // Convert mono to stereo if necessary.
       std::unique_ptr<::media::AudioBus> converted_to_stereo =
-          ::media::AudioBus::Create(kOutputChannelCount, num_frames);
+          ::media::AudioBus::Create(kStereoChannelCount, num_frames);
       mixer_->Transform(decoded.get(), converted_to_stereo.get());
       decoded.swap(converted_to_stereo);
     }
@@ -217,8 +215,7 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
 
   scoped_refptr<media::DecoderBufferBase> FinishConversion(
       ::media::AudioBus* bus) {
-    DCHECK_EQ(kOutputChannelCount, bus->channels());
-    int size = bus->frames() * kOutputChannelCount *
+    int size = bus->frames() * bus->channels() *
                OutputFormatSizeInBytes(output_format_);
     scoped_refptr<::media::DecoderBuffer> result(
         new ::media::DecoderBuffer(size));
