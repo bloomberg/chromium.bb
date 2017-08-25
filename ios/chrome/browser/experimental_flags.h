@@ -78,9 +78,6 @@ bool IsSuggestionsUIEnabled();
 // Whether Sign-in promo is enabled.
 bool IsSigninPromoEnabled();
 
-// Whether Bookmark reordering is enabled.
-bool IsBookmarkReorderingEnabled();
-
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
 bool IsNewFeedbackKitEnabled();
 

@@ -30,9 +30,6 @@ const char kDisableIOSPhysicalWeb[] = "disable-ios-physical-web";
 // Disables the Suggestions UI
 const char kDisableSuggestionsUI[] = "disable-suggestions-ui";
 
-// Disables bookmark reordering.
-const char kDisableBookmarkReordering[] = "disable-bookmark-reordering";
-
 // Disables the WKBackForwardList based navigation manager experiment.
 const char kDisableSlimNavigationManager[] = "disable-slim-navigation-manager";
 
@@ -60,9 +57,6 @@ const char kEnableIOSPhysicalWeb[] = "enable-ios-physical-web";
 
 // Enables the Suggestions UI
 const char kEnableSuggestionsUI[] = "enable-suggestions-ui";
-
-// Enables bookmark reordering.
-const char kEnableBookmarkReordering[] = "enable-bookmark-reordering";
 
 // Enables the WKBackForwardList based navigation manager experiment.
 const char kEnableSlimNavigationManager[] = "enable-slim-navigation-manager";

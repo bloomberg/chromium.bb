@@ -13,9 +13,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
@@ -95,7 +95,8 @@ using bookmarks::BookmarkNode;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  if (!experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (!base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     self.navigationBar.frame = [self navigationBarFrame];
     [self.navigationBar setMenuTarget:self
                                action:@selector(navigationBarToggledMenu:)];
@@ -132,8 +133,8 @@ using bookmarks::BookmarkNode;
 
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
-
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     // TODO(crbug.com/695749): See if we need to store/restore the content
     // scroll position for BookmarkTableView here.
     return;
@@ -184,7 +185,8 @@ using bookmarks::BookmarkNode;
   // TODO(crbug.com/695749): Restore the content scroll position for
   // BookmarkTableView in the UI.
 
-  if (!experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (!base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     self.menuView.delegate = self;
 
     // Set view frames and add them to hierarchy.
