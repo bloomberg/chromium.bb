@@ -52,6 +52,7 @@
 #include "ui/events/test/test_event_handler.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/transform.h"
 
 namespace aura {
 
@@ -2319,6 +2320,7 @@ TEST_F(WindowTreeClientWmTest, ManuallyCreateDisplay) {
   WindowTreeHostMusInitParams init_params =
       WindowTreeClientPrivate(window_tree_client_impl())
           .CallCreateInitParamsForNewDisplay();
+  init_params.display_id = display_params->display->id();
   init_params.display_init_params = std::move(display_params);
   WindowTreeHostMus window_tree_host(std::move(init_params));
   window_tree_host.InitHost();
@@ -2392,7 +2394,9 @@ TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDip) {
   // Delegate received the event in Dips.
   const ui::PointerEvent* last_event = last_event_observed();
   ASSERT_TRUE(last_event);
-  EXPECT_EQ(gfx::ConvertPointToDIP(2.0f, location_pixels),
+  // NOTE: the root and location are the same as there was no window supplied to
+  // OnPointerEventObserved().
+  EXPECT_EQ(gfx::ConvertPointToDIP(2.0f, root_location_pixels),
             last_event->location());
   EXPECT_EQ(gfx::ConvertPointToDIP(2.0f, root_location_pixels),
             last_event->root_location());
@@ -2491,6 +2495,78 @@ TEST_F(WindowTreeClientDestructionTest, Shutdown) {
   // been deleted.
   aura::Window window2(nullptr);
   window2.Init(ui::LAYER_NOT_DRAWN);
+}
+
+TEST_F(WindowTreeClientWmTest, ObservedPointerEvents) {
+  const gfx::Rect bounds(1, 2, 101, 102);
+  std::unique_ptr<DisplayInitParams> display_params =
+      base::MakeUnique<DisplayInitParams>();
+  const int64_t display_id = 201;
+  float device_scale_factor = 2.0f;
+  float ui_scale_factor = 1.5f;
+  display_params->display = base::MakeUnique<display::Display>(display_id);
+  display_params->display->set_bounds(bounds);
+  display_params->viewport_metrics.bounds_in_pixels = bounds;
+  display_params->viewport_metrics.device_scale_factor = device_scale_factor;
+  display_params->viewport_metrics.ui_scale_factor = ui_scale_factor;
+  WindowTreeHostMusInitParams init_params =
+      WindowTreeClientPrivate(window_tree_client_impl())
+          .CallCreateInitParamsForNewDisplay();
+  init_params.display_id = display_id;
+  init_params.display_init_params = std::move(display_params);
+
+  WindowTreeHostMus window_tree_host(std::move(init_params));
+  window_tree_host.InitHost();
+  gfx::Transform scale_transform;
+  scale_transform.Scale(ui_scale_factor, ui_scale_factor);
+  window_tree_host.window()->SetTransform(scale_transform);
+  window_tree_host.compositor()->SetScaleAndSize(device_scale_factor,
+                                                 bounds.size());
+
+  // Start a pointer watcher for all events excluding move events.
+  window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
+
+  // Simulate the server sending an observed event.
+  const gfx::Point location_pixels(10, 12);
+  const gfx::Point root_location_pixels(14, 16);
+  std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
+      ui::ET_POINTER_DOWN, location_pixels, root_location_pixels,
+      ui::EF_CONTROL_DOWN, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
+      base::TimeTicks()));
+  std::unique_ptr<ui::PointerEvent> pointer_event_down2(
+      ui::Event::Clone(*pointer_event_down).release()->AsPointerEvent());
+  window_tree_client()->OnPointerEventObserved(std::move(pointer_event_down),
+                                               0u, display_id);
+
+  ASSERT_FALSE(observed_pointer_events().empty());
+  const ui::PointerEvent* last_event = observed_pointer_events().back().get();
+  ASSERT_TRUE(last_event);
+  EXPECT_EQ(nullptr, last_event->target());
+  // NOTE: the root and location are the same as there was no window supplied to
+  // OnPointerEventObserved().
+  EXPECT_EQ(gfx::ConvertPointToDIP(device_scale_factor * ui_scale_factor,
+                                   root_location_pixels),
+            last_event->location());
+  EXPECT_EQ(gfx::ConvertPointToDIP(device_scale_factor * ui_scale_factor,
+                                   root_location_pixels),
+            last_event->root_location());
+
+  observed_pointer_events().clear();
+  window_tree_client()->OnPointerEventObserved(
+      std::move(pointer_event_down2),
+      WindowMus::Get(window_tree_host.window())->server_id(), display_id);
+  ASSERT_FALSE(observed_pointer_events().empty());
+  last_event = observed_pointer_events().back().get();
+  ASSERT_TRUE(last_event);
+  EXPECT_EQ(nullptr, last_event->target());
+  // |location| from the server has already had |ui_scale_factor| applied, so
+  // it won't be reapplied here.
+  EXPECT_EQ(gfx::ConvertPointToDIP(device_scale_factor, location_pixels),
+            last_event->location());
+  EXPECT_EQ(gfx::ConvertPointToDIP(device_scale_factor * ui_scale_factor,
+                                   root_location_pixels),
+            last_event->root_location());
 }
 
 }  // namespace aura

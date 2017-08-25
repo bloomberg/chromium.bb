@@ -92,6 +92,10 @@ class AuraTestBase : public testing::Test,
   }
   ui::mojom::WindowTreeClient* window_tree_client();
 
+  std::vector<std::unique_ptr<ui::PointerEvent>>& observed_pointer_events() {
+    return observed_pointer_events_;
+  }
+
   // WindowTreeClientDelegate:
   void OnEmbed(std::unique_ptr<WindowTreeHostMus> window_tree_host) override;
   void OnUnembed(Window* root) override;
@@ -158,6 +162,7 @@ class AuraTestBase : public testing::Test,
   PropertyConverter property_converter_;
   std::unique_ptr<AuraTestHelper> helper_;
   std::vector<std::unique_ptr<WindowTreeHostMus>> window_tree_hosts_;
+  std::vector<std::unique_ptr<ui::PointerEvent>> observed_pointer_events_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };
