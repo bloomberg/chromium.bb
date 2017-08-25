@@ -4,45 +4,37 @@
 
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 
-#include "base/feature_list.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/web_url_loader_impl.h"
-#include "content/public/common/content_features.h"
 
 namespace content {
 
 ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     const GURL& worker_script_url,
-    ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info,
+    mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info,
     int service_worker_provider_id)
     : worker_script_url_(worker_script_url),
-      url_loader_factory_getter_info_(
-          std::move(url_loader_factory_getter_info)),
+      provider_info_(std::move(provider_info)),
       service_worker_provider_id_(service_worker_provider_id) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
 void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread(
     base::SingleThreadTaskRunner* loading_task_runner) {
+  DCHECK(provider_info_.is_valid());
   resource_dispatcher_ =
       base::MakeUnique<ResourceDispatcher>(nullptr, loading_task_runner);
-
-  url_loader_factory_getter_ = url_loader_factory_getter_info_.Bind();
+  provider_.Bind(std::move(provider_info_));
+  provider_->GetURLLoaderFactory(mojo::MakeRequest(&url_loader_factory_));
 }
 
 std::unique_ptr<blink::WebURLLoader>
 ServiceWorkerFetchContextImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     base::SingleThreadTaskRunner* task_runner) {
-  if (request.Url().ProtocolIs(url::kBlobScheme)) {
-    return base::MakeUnique<content::WebURLLoaderImpl>(
-        resource_dispatcher_.get(), task_runner,
-        url_loader_factory_getter_->GetBlobLoaderFactory());
-  }
   return base::MakeUnique<content::WebURLLoaderImpl>(
-      resource_dispatcher_.get(), task_runner,
-      url_loader_factory_getter_->GetNetworkLoaderFactory());
+      resource_dispatcher_.get(), task_runner, url_loader_factory_.get());
 }
 
 void ServiceWorkerFetchContextImpl::WillSendRequest(

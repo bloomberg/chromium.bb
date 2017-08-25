@@ -5,8 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
-#include "content/child/child_url_loader_factory_getter.h"
-#include "content/public/common/url_loader_factory.mojom.h"
+#include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
 #include "url/gurl.h"
 
@@ -21,7 +20,7 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
  public:
   ServiceWorkerFetchContextImpl(
       const GURL& worker_script_url,
-      ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info,
+      mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info,
       int service_worker_provider_id);
   ~ServiceWorkerFetchContextImpl() override;
 
@@ -38,13 +37,13 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
 
  private:
   const GURL worker_script_url_;
-  // Consumed on the worker thread to create |url_loader_factory_getter_|.
-  ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info_;
+  mojom::WorkerURLLoaderFactoryProviderPtrInfo provider_info_;
   const int service_worker_provider_id_;
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
-  scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter_;
+  mojom::WorkerURLLoaderFactoryProviderPtr provider_;
+  mojom::URLLoaderFactoryAssociatedPtr url_loader_factory_;
 
   bool is_data_saver_enabled_ = false;
 };

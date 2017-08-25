@@ -1,0 +1,33 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module content.mojom;
+
+import "content/public/common/url_loader_factory.mojom";
+
+// A renderer-side interface that is returned by CreateWorkerFetchContext for
+// the browser to notify the renderer process when there's a controller change.
+interface ServiceWorkerWorkerClient {
+  // Called when the ServiceWorkerWorkerClient (which is a dedicated worker or
+  // a shared worker) is controlled by a new service worker.
+  SetControllerServiceWorker(int64 controller_version_id);
+};
+
+// A browser-side interface which provides URLLoaderFactory for worker contexts
+// in the renderer process.
+interface WorkerURLLoaderFactoryProvider {
+  // Called from a dedicated (or shared) worker thread to get the
+  // URLLoaderFactory and register ServiceWorkerWorkerClient of the worker.
+  // SetControllerServiceWorker method of the passed ServiceWorkerWorkerClient
+  // interface will be called when the parent frame and the worker context is
+  // controlled by a service worker. |service_worker_provider_id| is the service
+  // worker provider id of the parent frame.
+  GetURLLoaderFactoryAndRegisterClient(
+      associated URLLoaderFactory& loader,
+      associated ServiceWorkerWorkerClient client,
+      int32 service_worker_provider_id);
+
+  // Called from the service worker thread to get the URLLoaderFactory.
+  GetURLLoaderFactory(associated URLLoaderFactory& loader);
+};
