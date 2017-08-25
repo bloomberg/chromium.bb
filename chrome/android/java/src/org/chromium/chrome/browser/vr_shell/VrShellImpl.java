@@ -507,6 +507,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     @Override
     public void onBeforeWindowDetached() {
         mRenderToSurfaceLayout.getViewTreeObserver().removeOnPreDrawListener(mPredrawListener);
+        if (mNativeVrShell != 0) nativeRestoreLayer(mNativeVrShell);
     }
 
     @Override
@@ -735,6 +736,7 @@ public class VrShellImpl extends GvrLayout implements VrShell, SurfaceHolder.Cal
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(
             long nativeVrShell, Tab tab, AndroidUiGestureTarget androidUiGestureTarget);
+    private native void nativeRestoreLayer(long nativeVrShell);
     private native void nativeDestroy(long nativeVrShell);
     private native void nativeOnTriggerEvent(long nativeVrShell, boolean touched);
     private native void nativeOnPause(long nativeVrShell);
