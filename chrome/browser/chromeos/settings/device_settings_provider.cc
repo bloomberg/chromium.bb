@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/device_off_hours_controller.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -100,6 +101,7 @@ const char* const kKnownSettings[] = {
     kVariationsRestrictParameter,
     kDeviceLoginScreenLocales,
     kDeviceLoginScreenInputMethods,
+    kDeviceOffHours,
 };
 
 void DecodeLoginPolicies(
@@ -564,6 +566,13 @@ void DecodeGenericPolicies(
         base::DictionaryValue::From(base::JSONReader::Read(
             policy.device_wallpaper_image().device_wallpaper_image()));
     new_values_cache->SetValue(kDeviceWallpaperImage, std::move(dict_val));
+  }
+
+  if (policy.has_device_off_hours()) {
+    auto off_hours_policy =
+        policy::off_hours::ConvertPolicyProtoToValue(policy.device_off_hours());
+    if (off_hours_policy)
+      new_values_cache->SetValue(kDeviceOffHours, std::move(off_hours_policy));
   }
 }
 

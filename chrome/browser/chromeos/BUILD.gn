@@ -1243,6 +1243,8 @@ source_set("chromeos") {
     "policy/device_local_account_policy_store.h",
     "policy/device_network_configuration_updater.cc",
     "policy/device_network_configuration_updater.h",
+    "policy/device_off_hours_controller.cc",
+    "policy/device_off_hours_controller.h",
     "policy/device_policy_decoder_chromeos.cc",
     "policy/device_policy_decoder_chromeos.h",
     "policy/device_policy_remover.h",
