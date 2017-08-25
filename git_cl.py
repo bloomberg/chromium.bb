@@ -2835,19 +2835,19 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def ParseIssueURL(parsed_url):
     if not parsed_url.scheme or not parsed_url.scheme.startswith('http'):
       return None
-    # Gerrit's new UI is https://domain/c/<issue_number>[/[patchset]]
-    # But current GWT UI is https://domain/#/c/<issue_number>[/[patchset]]
+    # Gerrit's new UI is https://domain/c/project/+/<issue_number>[/[patchset]]
+    # But old GWT UI is https://domain/#/c/project/+/<issue_number>[/[patchset]]
     # Short urls like https://domain/<issue_number> can be used, but don't allow
     # specifying the patchset (you'd 404), but we allow that here.
     if parsed_url.path == '/':
       part = parsed_url.fragment
     else:
       part = parsed_url.path
-    match = re.match('(/c)?/(\d+)(/(\d+)?/?)?$', part)
+    match = re.match('(/c(/.*/\+)?)?/(\d+)(/(\d+)?/?)?$', part)
     if match:
       return _ParsedIssueNumberArgument(
-          issue=int(match.group(2)),
-          patchset=int(match.group(4)) if match.group(4) else None,
+          issue=int(match.group(3)),
+          patchset=int(match.group(5)) if match.group(5) else None,
           hostname=parsed_url.netloc,
           codereview='gerrit')
     return None
