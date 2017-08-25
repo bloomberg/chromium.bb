@@ -88,4 +88,37 @@ PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
   return result;
 }
 
+SkISize PaintImage::GetSupportedDecodeSize(
+    const SkISize& requested_size) const {
+  // TODO(vmpstr): For now, we ignore the requested size and just return the
+  // available image size.
+  return SkISize::Make(width(), height());
+}
+
+SkImageInfo PaintImage::CreateDecodeImageInfo(const SkISize& size,
+                                              SkColorType color_type) const {
+  DCHECK(GetSupportedDecodeSize(size) == size);
+  return SkImageInfo::Make(size.width(), size.height(), color_type,
+                           kPremul_SkAlphaType);
+}
+
+bool PaintImage::Decode(void* memory,
+                        SkImageInfo* info,
+                        sk_sp<SkColorSpace> color_space) const {
+  auto image = GetSkImage();
+  DCHECK(image);
+  if (color_space) {
+    image =
+        image->makeColorSpace(color_space, SkTransferFunctionBehavior::kIgnore);
+    if (!image)
+      return false;
+  }
+  // Note that the readPixels has to happen before converting the info to the
+  // given color space, since it can produce incorrect results.
+  bool result = image->readPixels(*info, memory, info->minRowBytes(), 0, 0,
+                                  SkImage::kDisallow_CachingHint);
+  *info = info->makeColorSpace(color_space);
+  return result;
+}
+
 }  // namespace cc

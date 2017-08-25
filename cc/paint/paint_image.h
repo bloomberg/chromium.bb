@@ -49,6 +49,31 @@ class CC_PAINT_EXPORT PaintImage {
 
   bool operator==(const PaintImage& other) const;
 
+  // Returns the smallest size that is at least as big as the requested_size
+  // such that we can decode to exactly that scale. If the requested size is
+  // larger than the image, this returns the image size. Any returned value is
+  // guaranteed to be stable. That is,
+  // GetSupportedDecodeSize(GetSupportedDecodeSize(size)) is guaranteed to be
+  // GetSupportedDecodeSize(size).
+  SkISize GetSupportedDecodeSize(const SkISize& requested_size) const;
+
+  // Returns SkImageInfo that should be used to decode this image to the given
+  // size and color type. The size must be supported.
+  SkImageInfo CreateDecodeImageInfo(const SkISize& size,
+                                    SkColorType color_type) const;
+
+  // Decode the image into the given memory for the given SkImageInfo.
+  // - Size in |info| must be supported.
+  // - The amount of memory allocated must be at least
+  //   |info|.minRowBytes() * |info|.height().
+  // Returns true on success and false on failure. Updates |info| to match the
+  // requested color space, if provided.
+  // Note that for non-lazy images this will do a copy or readback if the image
+  // is texture backed.
+  bool Decode(void* memory,
+              SkImageInfo* info,
+              sk_sp<SkColorSpace> color_space) const;
+
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& GetSkImage() const;
   AnimationType animation_type() const { return animation_type_; }

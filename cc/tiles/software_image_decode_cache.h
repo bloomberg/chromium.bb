@@ -252,17 +252,17 @@ class CC_EXPORT SoftwareImageDecodeCache
   DecodedDrawImage GetDecodedImageForDrawInternal(const ImageKey& key,
                                                   const DrawImage& draw_image);
 
-  // GetOriginalSizeImageDecode is called by DecodeImageInternal when the
+  // GetExactSizeImageDecode is called by DecodeImageInternal when the
   // quality does not scale the image. Like DecodeImageInternal, it should be
   // called with no lock acquired and it returns nullptr if the decoding failed.
-  std::unique_ptr<DecodedImage> GetOriginalSizeImageDecode(
+  std::unique_ptr<DecodedImage> GetExactSizeImageDecode(
       const ImageKey& key,
       const PaintImage& image);
 
-  // GetSubrectImageDecode is similar to GetOriginalSizeImageDecode in that no
-  // scale is performed on the image. However, we extract a subrect (copy it
+  // GetSubrectImageDecode is similar to GetExactSizeImageDecode in that the
+  // image is decoded to exact scale. However, we extract a subrect (copy it
   // out) and only return this subrect in order to cache a smaller amount of
-  // memory. Note that this uses GetOriginalSizeImageDecode to get the initial
+  // memory. Note that this uses GetExactSizeImageDecode to get the initial
   // data, which ensures that we cache an unlocked version of the original image
   // in case we need to extract multiple subrects (as would be the case in an
   // atlas).
