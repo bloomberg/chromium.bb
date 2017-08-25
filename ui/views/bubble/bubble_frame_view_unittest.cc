@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/insets.h"
@@ -598,10 +599,13 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
   }
 
   void set_override_snap(bool value) { override_snap_ = value; }
+  void set_icon(const gfx::ImageSkia& icon) { icon_ = icon; }
 
   // BubbleDialogDelegateView:
   using BubbleDialogDelegateView::SetAnchorView;
   using BubbleDialogDelegateView::SizeToContents;
+  gfx::ImageSkia GetWindowIcon() override { return icon_; }
+  bool ShouldShowWindowIcon() const override { return !icon_.isNull(); }
   base::string16 GetWindowTitle() const override { return title_; }
   bool ShouldShowWindowTitle() const override { return !title_.empty(); }
 
@@ -619,7 +623,13 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
     return gfx::Size(200, 200);
   }
 
+  BubbleFrameView* GetBubbleFrameView() const {
+    return static_cast<BubbleFrameView*>(
+        GetWidget()->non_client_view()->frame_view());
+  }
+
  private:
+  gfx::ImageSkia icon_;
   base::string16 title_;
   base::Optional<bool> override_snap_;
 
@@ -756,6 +766,31 @@ TEST_F(BubbleFrameViewTest, LayoutEdgeCases) {
   EXPECT_GT(40u, title.size() - old_title_size);
 
   // When |anchor| goes out of scope it should take |bubble| with it.
+}
+
+TEST_F(BubbleFrameViewTest, LayoutWithIcon) {
+  TestBubbleDialogDelegateView delegate;
+  TestAnchor anchor(CreateParams(Widget::InitParams::TYPE_WINDOW));
+  delegate.SetAnchorView(anchor.widget().GetContentsView());
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(20, 80);
+  delegate.set_icon(gfx::ImageSkia::CreateFrom1xBitmap(bitmap));
+
+  Widget* widget = BubbleDialogDelegateView::CreateBubble(&delegate);
+  widget->Show();
+
+  delegate.ChangeTitle(base::ASCIIToUTF16("test title"));
+  BubbleFrameView* frame = delegate.GetBubbleFrameView();
+  View* icon = frame->title_icon_;
+  View* title = frame->title();
+
+  // There should be equal amounts of space on the left and right of the icon.
+  EXPECT_EQ(icon->x() * 2 + icon->width(), title->x());
+
+  // The title should be vertically centered relative to the icon.
+  EXPECT_LT(title->height(), icon->height());
+  const int title_offset_y = (icon->height() - title->height()) / 2;
+  EXPECT_EQ(icon->y() + title_offset_y, title->y());
 }
 
 }  // namespace views
