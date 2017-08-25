@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
@@ -175,6 +176,13 @@ void URLRequest::Delegate::OnResponseStarted(URLRequest* request) {
 
 URLRequest::~URLRequest() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // Log the redirect count during destruction, to ensure that it is only
+  // recorded at the end of following all redirect chains.
+  UMA_HISTOGRAM_EXACT_LINEAR("Net.RedirectChainLength",
+                             kMaxRedirects - redirect_limit_,
+                             kMaxRedirects + 1);
+
   Cancel();
 
   if (network_delegate_) {
