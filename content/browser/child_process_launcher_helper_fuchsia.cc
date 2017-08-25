@@ -4,6 +4,10 @@
 
 #include "content/browser/child_process_launcher_helper.h"
 
+#include "base/command_line.h"
+#include "base/process/launch.h"
+#include "mojo/edk/embedder/platform_channel_pair.h"
+
 namespace content {
 namespace internal {
 
@@ -12,6 +16,7 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     bool background,
     bool boost_for_pending_views,
     ChildProcessImportance importance) {
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   // TODO(fuchsia): Implement this. (crbug.com/707031)
   NOTIMPLEMENTED();
 }
@@ -20,17 +25,13 @@ base::TerminationStatus ChildProcessLauncherHelper::GetTerminationStatus(
     const ChildProcessLauncherHelper::Process& process,
     bool known_dead,
     int* exit_code) {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
-  return base::GetTerminationStatus(0, 0);
+  return base::GetTerminationStatus(process.process.Handle(), exit_code);
 }
 
 // static
 bool ChildProcessLauncherHelper::TerminateProcess(const base::Process& process,
                                                   int exit_code,
                                                   bool wait) {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
   return process.Terminate(exit_code, wait);
 }
 
@@ -49,29 +50,31 @@ void ChildProcessLauncherHelper::ResetRegisteredFilesForTesting() {
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnClientThread() {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(client_thread_id_);
 }
 
 mojo::edk::ScopedPlatformHandle
 ChildProcessLauncherHelper::PrepareMojoPipeHandlesOnClientThread() {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(client_thread_id_);
+
+  // By doing nothing here, StartLaunchOnClientThread() will construct a channel
+  // pair instead.
   return mojo::edk::ScopedPlatformHandle();
 }
 
 std::unique_ptr<FileMappedForLaunch>
 ChildProcessLauncherHelper::GetFilesToMap() {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
-  return nullptr;
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  return std::unique_ptr<FileMappedForLaunch>();
 }
 
 void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
     const PosixFileDescriptorInfo& files_to_register,
     base::LaunchOptions* options) {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+
+  mojo::edk::PlatformChannelPair::PrepareToPassHandleToChildProcess(
+      mojo_client_handle(), command_line(), &options->handles_to_transfer);
 }
 
 ChildProcessLauncherHelper::Process
@@ -80,23 +83,33 @@ ChildProcessLauncherHelper::LaunchProcessOnLauncherThread(
     std::unique_ptr<FileMappedForLaunch> files_to_register,
     bool* is_synchronous_launch,
     int* launch_result) {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
-  return Process();
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  DCHECK(mojo_client_handle().is_valid());
+
+  // TODO(750938): Implement sandboxed/isolated subprocess launching.
+  Process child_process;
+  child_process.process = base::LaunchProcess(*command_line(), options);
+  return child_process;
 }
 
 void ChildProcessLauncherHelper::AfterLaunchOnLauncherThread(
     const ChildProcessLauncherHelper::Process& process,
     const base::LaunchOptions& options) {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+
+  if (process.process.IsValid()) {
+    // |mojo_client_handle_| has already been transferred to the child process
+    // by this point. Remove it from the scoped container so that we don't
+    // erroneously delete it.
+    ignore_result(mojo_client_handle_.release());
+  }
 }
 
 // static
 void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
     ChildProcessLauncherHelper::Process process) {
-  // TODO(fuchsia): Implement this. (crbug.com/707031)
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
+  process.process.Terminate(RESULT_CODE_NORMAL_EXIT, true);
 }
 
 }  // namespace internal
