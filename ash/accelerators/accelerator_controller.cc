@@ -83,6 +83,11 @@ using message_center::Notification;
 const char kHighContrastToggleAccelNotificationId[] =
     "chrome://settings/accessibility/highcontrast";
 
+// Toast id and duration for voice interaction shortcuts
+const char kSecondaryUserToastId[] = "voice_interaction_secondary_user";
+const char kUnsupportedLocaleToastId[] = "voice_interaction_locale_unsupported";
+const int kToastDurationMs = 2500;
+
 // The notification delegate that will be used to open the keyboard shortcut
 // help page when the notification is clicked.
 class DeprecatedAcceleratorNotificationDelegate
@@ -603,16 +608,29 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
   }
 
-  // Show a toast if voice interaction is disabled due to unsupported locales.
-  if (!chromeos::switches::IsVoiceInteractionLocalesSupported()) {
+  // Show a toast if the active user is not primary.
+  if (Shell::Get()->session_controller()->GetPrimaryUserSession() !=
+      Shell::Get()->session_controller()->GetUserSession(0)) {
     ash::ToastData toast(
-        "voice_interaction_locales_unsupported",
+        kSecondaryUserToastId,
         l10n_util::GetStringUTF16(
-            IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE),
-        2500, base::Optional<base::string16>());
+            IDS_ASH_VOICE_INTERACTION_SECONDARY_USER_TOAST_MESSAGE),
+        kToastDurationMs, base::Optional<base::string16>());
     ash::Shell::Get()->toast_manager()->Show(toast);
     return;
   }
+
+  // Show a toast if voice interaction is disabled due to unsupported locales.
+  if (!chromeos::switches::IsVoiceInteractionLocalesSupported()) {
+    ash::ToastData toast(
+        kUnsupportedLocaleToastId,
+        l10n_util::GetStringUTF16(
+            IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE),
+        kToastDurationMs, base::Optional<base::string16>());
+    ash::Shell::Get()->toast_manager()->Show(toast);
+    return;
+  }
+
   Shell::Get()->app_list()->ToggleVoiceInteractionSession();
 }
 
