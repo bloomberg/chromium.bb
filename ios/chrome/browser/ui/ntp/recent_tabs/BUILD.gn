@@ -30,7 +30,7 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/sessions",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/authentication:authentication_arc",
+    "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/context_menu",

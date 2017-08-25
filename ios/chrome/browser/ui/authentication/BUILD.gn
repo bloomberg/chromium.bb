@@ -18,6 +18,8 @@ source_set("authentication") {
     "chrome_signin_view_controller.mm",
     "re_signin_infobar_delegate.h",
     "re_signin_infobar_delegate.mm",
+    "resized_avatar_cache.h",
+    "resized_avatar_cache.mm",
     "signed_in_accounts_view_controller.h",
     "signed_in_accounts_view_controller.mm",
     "signin_account_selector_view_controller.h",
@@ -26,9 +28,10 @@ source_set("authentication") {
     "signin_confirmation_view_controller.mm",
     "signin_interaction_controller.h",
     "signin_interaction_controller.mm",
+    "signin_promo_view_mediator.h",
+    "signin_promo_view_mediator.mm",
   ]
   deps = [
-    ":authentication_arc",
     ":authentication_ui",
     "resources:signin_confirmation_more",
     "resources:signin_promo_close_gray",
@@ -79,32 +82,6 @@ source_set("authentication") {
   ]
 }
 
-source_set("authentication_arc") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "resized_avatar_cache.h",
-    "resized_avatar_cache.mm",
-    "signin_promo_view_mediator.h",
-    "signin_promo_view_mediator.mm",
-  ]
-  deps = [
-    ":authentication_ui",
-    "//base",
-    "//components/prefs",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/signin",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/commands",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/signin",
-    "//ios/third_party/material_components_ios",
-    "//ui/base",
-  ]
-  libs = [ "UIKit.framework" ]
-}
-
 source_set("authentication_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -149,7 +126,6 @@ source_set("unit_tests") {
   ]
   deps = [
     ":authentication",
-    ":authentication_arc",
     ":authentication_ui",
     "//base",
     "//base/test:test_support",
