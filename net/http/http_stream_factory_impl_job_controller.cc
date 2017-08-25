@@ -937,23 +937,7 @@ void HttpStreamFactoryImpl::JobController::OrphanUnboundJob() {
 }
 
 void HttpStreamFactoryImpl::JobController::OnJobSucceeded(Job* job) {
-  // |job| should only be nullptr if we're being serviced by a late bound
-  // SpdySession (one that was not created by a job in our |jobs_| set).
-  if (!job) {
-    // TODO(xunjieli): This seems to be dead code. Remove it. crbug.com/475060.
-    CHECK(false);
-    DCHECK(!bound_job_);
-    // NOTE(willchan): We do *NOT* call OrphanUnboundJob() here. The reason is
-    // because we *WANT* to cancel the unnecessary Jobs from other requests if
-    // another Job completes first.
-    // TODO(mbelshe): Revisit this when we implement ip connection pooling of
-    // SpdySessions. Do we want to orphan the jobs for a different hostname so
-    // they complete? Or do we want to prevent connecting a new SpdySession if
-    // we've already got one available for a different hostname where the ip
-    // address matches up?
-    CancelJobs();
-    return;
-  }
+  DCHECK(job);
 
   if (job->job_type() == MAIN && alternative_job_net_error_ != OK)
     ReportBrokenAlternativeService();
