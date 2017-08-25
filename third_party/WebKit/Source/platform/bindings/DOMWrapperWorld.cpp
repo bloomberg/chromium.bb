@@ -316,9 +316,6 @@ bool DOMWrapperWorld::HasWrapperInAnyWorldInMainThread(
     ScriptWrappable* script_wrappable) {
   DCHECK(IsMainThread());
 
-  v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
-  v8::HandleScope handle_scope(isolate);
-
   Vector<RefPtr<DOMWrapperWorld>> worlds;
   DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
   for (const auto& world : worlds) {
