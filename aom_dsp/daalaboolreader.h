@@ -45,11 +45,7 @@ uint32_t aom_daala_reader_tell_frac(const daala_reader *r);
 
 static INLINE int aom_daala_read(daala_reader *r, int prob) {
   int bit;
-#if CONFIG_EC_SMALLMUL
   int p = (0x7FFFFF - (prob << 15) + prob) >> 8;
-#else
-  int p = ((prob << 15) + 256 - prob) >> 8;
-#endif
 #if CONFIG_BITSTREAM_DEBUG
 /*{
   const int queue_r = bitstream_queue_get_read();

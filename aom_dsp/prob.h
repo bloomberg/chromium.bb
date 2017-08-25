@@ -160,7 +160,7 @@ static INLINE void update_cdf(aom_cdf_prob *cdf, int val, int nsymbs) {
   tmp = AOM_ICDF(tmp0);
   diff = ((CDF_PROB_TOP - (nsymbs << rate2)) >> rate) << rate;
 // Single loop (faster)
-#if !CONFIG_ANS && CONFIG_EC_SMALLMUL
+#if !CONFIG_ANS
   for (i = 0; i < nsymbs - 1; ++i, tmp -= tmp0) {
     tmp -= (i == val ? diff : 0);
     cdf[i] += ((tmp - cdf[i]) >> rate);

@@ -288,7 +288,6 @@ EXPERIMENT_LIST="
     inter_stats_only
     palette_delta_encoding
     rawbits
-    ec_smallmul
     pvq
     cfl
     xiphrc
@@ -510,7 +509,6 @@ post_process_cmdline() {
     soft_enable warped_motion
     soft_enable ext_delta_q
     soft_enable loopfiltering_across_tiles
-    soft_enable ec_smallmul
     soft_enable var_tx
     soft_enable ext_inter
     soft_enable wedge
@@ -568,10 +566,6 @@ post_process_cmdline() {
     if enabled rawbits && enabled ans; then
       log_echo "rawbits requires not ans, so disabling rawbits"
       disable_feature rawbits
-    fi
-    if enabled ec_smallmul && enabled ans; then
-      log_echo "ec_smallmul requires not ans, so disabling ec_smallmul"
-      disable_feature ec_smallmul
     fi
     if enabled daala_dct64; then
       enable_feature tx64x64

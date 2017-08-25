@@ -86,11 +86,7 @@ TEST(AV1, TestBitIO) {
   }
 }
 
-#if CONFIG_EC_SMALLMUL
 #define FRAC_DIFF_TOTAL_ERROR 0.16
-#else
-#define FRAC_DIFF_TOTAL_ERROR 0.07
-#endif
 
 TEST(AV1, TestTell) {
   const int kBufferSize = 10000;
