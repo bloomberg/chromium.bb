@@ -224,12 +224,6 @@ void EventFactoryEvdev::DispatchMouseMoveEvent(
   gfx::PointF location = params.location;
   PointerDetails details = params.pointer_details;
 
-  if (params.flags & EF_DIRECT_INPUT) {
-    details = GetTransformedEventPointerDetails(params);
-    cursor_->MoveCursorTo(GetTransformedEventLocation(params));
-    location = cursor_->GetLocation();
-  }
-
   MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
                    params.timestamp,
                    modifiers_.GetModifierFlags() | params.flags,
@@ -247,12 +241,6 @@ void EventFactoryEvdev::DispatchMouseButtonEvent(
 
   gfx::PointF location = params.location;
   PointerDetails details = params.pointer_details;
-
-  if (params.flags & EF_DIRECT_INPUT) {
-    details = GetTransformedEventPointerDetails(params);
-    cursor_->MoveCursorTo(GetTransformedEventLocation(params));
-    location = cursor_->GetLocation();
-  }
 
   // Mouse buttons can be remapped, touchpad taps & clicks cannot.
   unsigned int button = params.button;
