@@ -8,6 +8,7 @@
 
 #import "ios/web/public/test/http_server/http_server.h"
 #import "ios/web/shell/test/earl_grey/shell_matchers.h"
+#include "testing/coverage_util_ios.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -39,6 +40,8 @@ using web::test::HttpServer;
 + (void)setUp {
   [super setUp];
   HttpServer::GetSharedInstance().StartOrDie();
+
+  coverage_util::ConfigureCoverageReportPath();
 }
 
 // Tear down called once for the class.

@@ -49,7 +49,10 @@ PROFRAW_LOG_IDENTIFIER = 'Coverage data at '
 DEFAULT_FILTERS = ['ios/']
 
 # Only test targets with the following postfixes are considered to be valid.
-VALID_TEST_TARGET_POSTFIXES = ['unittests', 'inttests']
+VALID_TEST_TARGET_POSTFIXES = ['unittests', 'inttests', 'egtests']
+
+# Used to determine if a test target is an earl grey test.
+EARL_GREY_TEST_TARGET_POSTFIX = 'egtests'
 
 
 def CreateCoverageProfileDataForTarget(target, jobs_count=None):
@@ -112,6 +115,10 @@ def _GetProfileRawDataPathByRunningTarget(target):
       profraw_path = log.split(PROFRAW_LOG_IDENTIFIER)[1][:-1]
       return os.path.abspath(profraw_path)
 
+  assert False, ('No profraw data file is generated, did you call '
+                 'coverage_util::ConfigureCoverageReportPath() in test setup? '
+                 'Please refer to base/test/test_support_ios.mm for example.')
+
 
 def _RunTestTargetWithCoverageConfiguration(target):
   """Runs tests to generate the profraw data file.
@@ -130,8 +137,12 @@ def _RunTestTargetWithCoverageConfiguration(target):
 
   iossim_path = _GetIOSSimPath()
   application_path = _GetApplicationBundlePath(target)
-  logs_chracters = subprocess.check_output([iossim_path, application_path])
 
+  cmd = [iossim_path, application_path]
+  if _TargetIsEarlGreyTest(target):
+    cmd.append(_GetXCTestBundlePath(target))
+
+  logs_chracters = subprocess.check_output(cmd)
   return ''.join(logs_chracters).split('\n')
 
 
@@ -148,6 +159,8 @@ def _CreateCoverageProfileDataFromProfRawData(profraw_path):
   Raises:
     CalledProcessError: An error occurred merging profraw data files.
   """
+  print 'Creating the profile data file'
+
   default_root = _GetSrcRootPath()
   profdata_path = os.path.join(default_root, BUILD_DIRECTORY,
                                PROFDATA_FILE_NAME)
@@ -185,6 +198,20 @@ def _GetApplicationBundlePath(target):
   return os.path.join(default_root, BUILD_DIRECTORY, application_bundle_name)
 
 
+def _GetXCTestBundlePath(target):
+  """Returns the path to the xctest bundle after building.
+
+  Args:
+    target: A string representing the name of the target to be tested.
+
+  Returns:
+    A string representing the path to the generated xctest bundle.
+  """
+  application_path = _GetApplicationBundlePath(target);
+  xctest_bundle_name = target + '_module.xctest'
+  return os.path.join(application_path, 'PlugIns', xctest_bundle_name)
+
+
 def _GetIOSSimPath():
   """Returns the path to the iossim executable file after building.
 
@@ -206,6 +233,18 @@ def _IsGomaConfigured():
   settings = ConfigParser.SafeConfigParser()
   settings.read(os.path.expanduser('~/.setup-gn'))
   return settings.getboolean('goma', 'enabled')
+
+
+def _TargetIsEarlGreyTest(target):
+  """Returns true if the target is an earl grey test.
+
+  Args:
+    target: A string representing the name of the target to be tested.
+
+  Returns:
+    A boolean indicates whether the target is an earl grey test or not.
+  """
+  return target.endswith(EARL_GREY_TEST_TARGET_POSTFIX)
 
 
 def _TargetNameIsValidTestTarget(target):
