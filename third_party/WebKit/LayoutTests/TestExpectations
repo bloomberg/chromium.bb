@@ -119,9 +119,6 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.htm
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 
-crbug.com/749760 compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
-crbug.com/749760 virtual/prefer_compositing_to_lcd_text/compositing/overflow/relpos-under-abspos-border-radius.html [ Failure ]
-
 # ====== Paint team owned tests to here ======
 
 #### external/wpt/css/css-position-3
