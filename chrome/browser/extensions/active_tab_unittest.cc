@@ -41,7 +41,9 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/login/scoped_test_public_session_login_state.h"
+#include "components/browser_sync/browser_sync_switches.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #endif
@@ -442,6 +444,13 @@ TEST_F(ActiveTabTest, Delegate) {
 // Test that the platform delegate is being set and the permission is prompted
 // for.
 TEST_F(ActiveTabTest, DelegateIsSet) {
+  // Necessary to prevent instantiation of ProfileSyncService, which messes with
+  // our signin state below.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(switches::kDisableSync);
+  // Necessary because no ProfileManager instance exists in this test.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      chromeos::switches::kIgnoreUserProfileMappingForTests);
+
   // Setup, login a public account user.
   chromeos::ScopedTestPublicSessionLoginState login_state;
   std::string user_id = "public@account.user";
