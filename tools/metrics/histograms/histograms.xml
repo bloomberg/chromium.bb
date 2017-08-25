@@ -71482,6 +71482,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Security.TreatInsecureOriginAsSecure">
+  <owner>mkwst@chromium.org</owner>
+  <summary>
+    Records the number of origins which will be treated as secure based on their
+    presence in the '--unsafely-treat-insecure-origin-as-secure' command-line
+    flag.
+  </summary>
+</histogram>
+
 <histogram name="Security.XFrameOptions" enum="XFrameOptions">
   <owner>mkwst@chromium.org</owner>
   <owner>arthursonzogni@chromium.org</owner>
