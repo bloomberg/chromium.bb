@@ -58,8 +58,35 @@ void PrefetchDownloaderImpl::StartDownload(
   }
 
   download::DownloadParams params;
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("prefetch_download", R"(
+        semantics {
+          sender: "Prefetch Downloader"
+          description:
+            "Chromium interacts with Offline Page Service to prefetch "
+            "suggested website resources."
+          trigger:
+            "When there are suggested website resources to fetch."
+          data:
+            "The link to the contents of the suggested website resources to "
+            "fetch."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "Users can enable or disable the offline prefetch on desktop by "
+            "toggling 'Use a prediction service to load pages more quickly' in "
+            "settings under Privacy and security, or on Android by toggling "
+            "chrome://flags#offline-prefetch."
+          chrome_policy {
+            NetworkPredictionOptions {
+              NetworkPredictionOptions: 2
+            }
+          }
+        })");
   params.traffic_annotation =
-      net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET);
+      net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
   params.client = download::DownloadClient::OFFLINE_PAGE_PREFETCH;
   params.guid = download_id;
   params.callback = base::Bind(&PrefetchDownloaderImpl::OnStartDownload,
