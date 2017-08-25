@@ -117,14 +117,14 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
   void LogPasswordReuseLookupResult(
       content::WebContents* web_contents,
-      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
           LookupResult result);
 
   void LogPasswordReuseLookupResultWithVerdict(
       content::WebContents* web_contents,
-      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
           LookupResult result,
-      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
           ReputationVerdict verdict,
       const std::string& verdict_token);
 

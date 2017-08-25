@@ -69,20 +69,20 @@ const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::Translation::Interaction interaction);
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseDetected::
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected::
         SafeBrowsingStatus::ReportingPopulation
             safe_browsing_reporting_population);
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::
         PasswordReuseDialogInteraction::InteractionResult interaction_result);
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
         LookupResult lookup_result);
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
         ReputationVerdict verdict);
 
 const char* ProtoEnumToString(

@@ -317,24 +317,24 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseDetected::
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseDetected::
         SafeBrowsingStatus::ReportingPopulation
             safe_browsing_reporting_population) {
-  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                          PasswordReuseDetected::SafeBrowsingStatus,
                      ReportingPopulation, REPORTING_POPULATION_UNSPECIFIED,
                      SCOUT);
   switch (safe_browsing_reporting_population) {
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDetected::SafeBrowsingStatus,
               REPORTING_POPULATION_UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDetected::SafeBrowsingStatus,
               NONE);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDetected::SafeBrowsingStatus,
               EXTENDED_REPORTING);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDetected::SafeBrowsingStatus,
               SCOUT);
   }
@@ -343,22 +343,22 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::
         PasswordReuseDialogInteraction::InteractionResult interaction_result) {
-  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+  ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                          PasswordReuseDialogInteraction,
                      InteractionResult, UNSPECIFIED, WARNING_UI_IGNORED);
   switch (interaction_result) {
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDialogInteraction,
               UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDialogInteraction,
               WARNING_ACTION_TAKEN);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDialogInteraction,
               WARNING_ACTION_IGNORED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
+    ENUM_CASE(sync_pb::UserEventSpecifics::GaiaPasswordReuse::
                   PasswordReuseDialogInteraction,
               WARNING_UI_IGNORED);
   }
@@ -367,54 +367,54 @@ const char* ProtoEnumToString(
 }
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
         LookupResult lookup_result) {
   ASSERT_ENUM_BOUNDS(
-      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup,
+      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
       LookupResult, UNSPECIFIED, URL_UNSUPPORTED);
   switch (lookup_result) {
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              WHITELIST_HIT);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              CACHE_HIT);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              REQUEST_SUCCESS);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              REQUEST_FAILURE);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              URL_UNSUPPORTED);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        UNSPECIFIED);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        WHITELIST_HIT);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        CACHE_HIT);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        REQUEST_SUCCESS);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        REQUEST_FAILURE);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        URL_UNSUPPORTED);
   }
   NOTREACHED();
   return "";
 }
 
 const char* ProtoEnumToString(
-    sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup::
+    sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup::
         ReputationVerdict verdict) {
   ASSERT_ENUM_BOUNDS(
-      sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::PasswordReuseLookup,
+      sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
       ReputationVerdict, VERDICT_UNSPECIFIED, PHISHING);
   switch (verdict) {
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              VERDICT_UNSPECIFIED);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              SAFE);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              LOW_REPUTATION);
-    ENUM_CASE(sync_pb::UserEventSpecifics::SyncPasswordReuseEvent::
-                  PasswordReuseLookup,
-              PHISHING);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        VERDICT_UNSPECIFIED);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        SAFE);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        LOW_REPUTATION);
+    ENUM_CASE(
+        sync_pb::UserEventSpecifics::GaiaPasswordReuse::PasswordReuseLookup,
+        PHISHING);
   }
   NOTREACHED();
   return "";

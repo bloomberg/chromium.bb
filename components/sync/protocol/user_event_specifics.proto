@@ -94,7 +94,7 @@ message UserEventSpecifics {
   }
 
   // User reused their GAIA password on another website.
-  message SyncPasswordReuseEvent {
+  message GaiaPasswordReuse {
     // Logged when we detect a password re-use event on a non-GAIA site.
     // If the user hasn’t enabled SafeBrowsing, this will be the last event.
     message PasswordReuseDetected {
@@ -177,7 +177,7 @@ message UserEventSpecifics {
     FieldTrial field_trial_event = 9;
     LanguageDetection language_detection_event = 10;
     Translation translation_event = 11;
-    // Password reuse event.
-    SyncPasswordReuseEvent sync_password_reuse_event = 104;
+    // Happens when a user types their Google account password on another site.
+    GaiaPasswordReuse gaia_password_reuse_event = 104;
   }
 }
