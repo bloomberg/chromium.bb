@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/offline_pages/evaluation/offline_page_evaluation_bridge.h"
+#include "chrome/browser/offline_pages/android/evaluation/offline_page_evaluation_bridge.h"
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
@@ -12,11 +12,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
-#include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
-#include "chrome/browser/android/offline_pages/evaluation/evaluation_test_scheduler.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/offline_pages/android/background_scheduler_bridge.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
+#include "chrome/browser/offline_pages/android/evaluation/evaluation_test_scheduler.h"
 #include "chrome/browser/offline_pages/android/prerendering_offliner.h"
 #include "chrome/browser/offline_pages/background_loader_offliner.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_DOWNLOADS_RESOURCE_THROTTLE_H_
-#define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_DOWNLOADS_RESOURCE_THROTTLE_H_
+#ifndef CHROME_BROWSER_OFFLINE_PAGES_DOWNLOADS_RESOURCE_THROTTLE_H_
+#define CHROME_BROWSER_OFFLINE_PAGES_DOWNLOADS_RESOURCE_THROTTLE_H_
 
 #include "content/public/browser/resource_throttle.h"
 #include "net/url_request/url_request.h"
@@ -35,4 +35,4 @@ class ResourceThrottle : public content::ResourceThrottle {
 }  // namespace downloads
 }  // namespace offline_pages
 
-#endif  // CHROME_BROWSER_ANDROID_OFFLINE_PAGES_DOWNLOADS_RESOURCE_THROTTLE_H_
+#endif  // CHROME_BROWSER_OFFLINE_PAGES_DOWNLOADS_RESOURCE_THROTTLE_H_

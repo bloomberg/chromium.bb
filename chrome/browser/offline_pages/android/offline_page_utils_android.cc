@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/android/offline_pages/downloads/offline_page_infobar_delegate.h"
-#include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_infobar_delegate.h"
+#include "chrome/browser/offline_pages/android/downloads/offline_page_notification_bridge.h"
 #include "content/public/browser/web_contents.h"
 
 // Android-specific part of OfflinePageUtils.

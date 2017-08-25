@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_EVALUATION_TEST_SCHEDULER_H_
-#define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_EVALUATION_TEST_SCHEDULER_H_
+#ifndef CHROME_BROWSER_OFFLINE_PAGES_ANDROID_EVALUATION_EVALUATION_TEST_SCHEDULER_H_
+#define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_EVALUATION_EVALUATION_TEST_SCHEDULER_H_
 
 #include "components/offline_pages/core/background/scheduler.h"
 
@@ -36,4 +36,4 @@ class EvaluationTestScheduler : public Scheduler {
 }  // namespace android
 }  // namespace offline_pages
 
-#endif  // CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_EVALUATION_TEST_SCHEDULER_H_
+#endif  // CHROME_BROWSER_OFFLINE_PAGES_ANDROID_EVALUATION_EVALUATION_TEST_SCHEDULER_H_

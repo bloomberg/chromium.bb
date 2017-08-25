@@ -19,6 +19,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/offline_pages/features/features.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/webplugininfo.h"
@@ -139,7 +140,7 @@ IPC_MESSAGE_ROUTED0(ChromeFrameMsg_GetWebApplicationInfo)
 // Tells the frame it is displaying an interstitial page.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_SetAsInterstitial)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
 // Message sent from the renderer to the browser to schedule to download the
 // page at a later time.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DownloadPageLater)
@@ -148,7 +149,9 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DownloadPageLater)
 // is being shown in error page.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage,
                     bool /* showing download button */)
+#endif
 
+#if defined(OS_ANDROID)
 // Sent when navigating to chrome://sandbox to install bindings onto the WebUI.
 IPC_MESSAGE_ROUTED0(ChromeViewMsg_AddSandboxStatusExtension)
 #endif  // defined(OS_ANDROID)

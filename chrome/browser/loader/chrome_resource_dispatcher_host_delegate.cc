@@ -105,13 +105,13 @@
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+#include "chrome/browser/offline_pages/downloads/resource_throttle.h"
 #include "chrome/browser/offline_pages/offliner_user_data.h"
 #include "chrome/browser/offline_pages/resource_loading_observer.h"
 #endif
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/download/intercept_download_resource_throttle.h"
-#include "chrome/browser/android/offline_pages/downloads/resource_throttle.h"
 #include "chrome/browser/loader/data_reduction_proxy_resource_throttle_android.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif

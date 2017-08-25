@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_OFFLINE_PAGE_EVALUATION_BRIDGE_H_
-#define CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_OFFLINE_PAGE_EVALUATION_BRIDGE_H_
+#ifndef CHROME_BROWSER_OFFLINE_PAGES_ANDROID_EVALUATION_OFFLINE_PAGE_EVALUATION_BRIDGE_H_
+#define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_EVALUATION_OFFLINE_PAGE_EVALUATION_BRIDGE_H_
 
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -109,4 +109,4 @@ class OfflinePageEvaluationBridge : public OfflinePageModel::Observer,
 }  // namespace android
 }  // namespace offline_pages
 
-#endif  // CHROME_BROWSER_ANDROID_OFFLINE_PAGES_EVALUATION_OFFLINE_PAGE_EVALUATION_BRIDGE_H_
+#endif  // CHROME_BROWSER_OFFLINE_PAGES_ANDROID_EVALUATION_OFFLINE_PAGE_EVALUATION_BRIDGE_H_
