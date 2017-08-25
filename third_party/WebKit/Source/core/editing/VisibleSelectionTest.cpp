@@ -266,6 +266,92 @@ TEST_F(VisibleSelectionTest, Initialisation) {
   EXPECT_TRUE(no_selection.IsNone());
 }
 
+TEST_F(VisibleSelectionTest, FirstLetter) {
+  SetBodyContent(
+      "<style>p::first-letter { font-color: red; }</style>"
+      "<p>abc def</p>");
+  const Element* sample = GetDocument().QuerySelector("p");
+  const SelectionInDOMTree selection =
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(sample->firstChild(), 0))
+          .Extend(Position(sample->firstChild(), 3))
+          .Build();
+  const VisibleSelection visible_selection = CreateVisibleSelection(selection);
+
+  EXPECT_EQ(selection, visible_selection.AsSelection());
+}
+
+TEST_F(VisibleSelectionTest, FirstLetterCollapsedWhitespace) {
+  SetBodyContent(
+      "<style>p::first-letter { font-color: red; }</style>"
+      "<p>  abc def</p>");
+  const Element* sample = GetDocument().QuerySelector("p");
+  const SelectionInDOMTree selection =
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(sample->firstChild(), 0))
+          .Extend(Position(sample->firstChild(), 5))
+          .Build();
+  const VisibleSelection visible_selection = CreateVisibleSelection(selection);
+
+  EXPECT_EQ(SelectionInDOMTree::Builder()
+                .Collapse(Position(sample->firstChild(), 2))
+                .Extend(Position(sample->firstChild(), 5))
+                .Build(),
+            visible_selection.AsSelection())
+      << "VisibleSelection doesn't contains collapsed whitespaces";
+}
+
+TEST_F(VisibleSelectionTest, FirstLetterPartial) {
+  SetBodyContent(
+      "<style>p::first-letter { font-color: red; }</style>"
+      "<p>((a))bc def</p>");
+  const Element* sample = GetDocument().QuerySelector("p");
+  const SelectionInDOMTree selection =
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(sample->firstChild(), 1))
+          .Extend(Position(sample->firstChild(), 4))
+          .Build();
+  const VisibleSelection visible_selection = CreateVisibleSelection(selection);
+
+  EXPECT_EQ(selection, visible_selection.AsSelection())
+      << "Select '(a)' of '((a))";
+}
+
+TEST_F(VisibleSelectionTest, FirstLetterTextTransform) {
+  SetBodyContent(
+      "<style>p::first-letter { text-transform: uppercase; }</style>"
+      "<p>\u00DFbc def</p>");  // uppercase(U+00DF) = "SS"
+  const Element* sample = GetDocument().QuerySelector("p");
+  const SelectionInDOMTree selection =
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(sample->firstChild(), 0))
+          .Extend(Position(sample->firstChild(), 3))
+          .Build();
+  const VisibleSelection visible_selection = CreateVisibleSelection(selection);
+
+  EXPECT_EQ(selection, visible_selection.AsSelection());
+}
+
+TEST_F(VisibleSelectionTest, FirstLetterVisibilityHidden) {
+  SetBodyContent(
+      "<style>p::first-letter { visibility: hidden; }</style>"
+      "<p>abc def</p>");
+  const Element* sample = GetDocument().QuerySelector("p");
+  const SelectionInDOMTree selection =
+      SelectionInDOMTree::Builder()
+          .Collapse(Position(sample->firstChild(), 0))
+          .Extend(Position(sample->firstChild(), 3))
+          .Build();
+  const VisibleSelection visible_selection = CreateVisibleSelection(selection);
+
+  EXPECT_EQ(SelectionInDOMTree::Builder()
+                .Collapse(Position(sample->firstChild(), 1))
+                .Extend(Position(sample->firstChild(), 3))
+                .Build(),
+            visible_selection.AsSelection())
+      << "Exclude first-letter part since it is visibility::hidden";
+}
+
 // For http://crbug.com/695317
 TEST_F(VisibleSelectionTest, SelectAllWithInputElement) {
   SetBodyContent("<input>123");
