@@ -520,6 +520,7 @@
 
     'tryserver.chromium.angle': {
       'android_angle_rel_ng': 'gpu_tests_deqp_android_release_trybot_arm64',
+      'android_angle_deqp_rel_ng': 'gpu_tests_deqp_android_release_trybot_arm64',
       'linux_angle_chromeos_rel_ng': 'gpu_fyi_tests_chromeos_cros_release_trybot',
       'linux_angle_dbg_ng': 'gpu_fyi_tests_debug_trybot',
       'linux_angle_deqp_rel_ng': 'gpu_fyi_tests_release_trybot',
