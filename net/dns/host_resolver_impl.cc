@@ -31,7 +31,6 @@
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/debug/debugger.h"
-#include "base/debug/leak_annotations.h"
 #include "base/debug/stack_trace.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1043,13 +1042,6 @@ class HostResolverImpl::LoopbackProbeJob {
                    base::TaskRunner* worker_task_runner)
       : resolver_(resolver), result_(false) {
     DCHECK(resolver.get());
-
-    // |worker_task_runner| may posts tasks to the WorkerPool, so need this to
-    // avoid reporting worker pool leaks in tests. The WorkerPool doesn't have a
-    // flushing API, so can't do anything about them, other than using another
-    // task runner.
-    // http://crbug.com/248513
-    ANNOTATE_SCOPED_MEMORY_LEAK;
 
     worker_task_runner->PostTaskAndReply(
         FROM_HERE,
