@@ -65,6 +65,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_accessibility.1x.icon",
     "notification_accessibility.icon",
     "notification_accessibility_braille.icon",
+    "notification_bluetooth.icon",
     "notification_capslock.1x.icon",
     "notification_capslock.icon",
     "notification_chromevox.1x.icon",
