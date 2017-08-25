@@ -15,7 +15,6 @@ bool ShouldAlwaysShowIcon(SecurityLevel security_level) {
     case HTTP_SHOW_WARNING:
     case EV_SECURE:
     case SECURE:
-    case SECURITY_WARNING:
     case SECURE_WITH_POLICY_INSTALLED_CERT:
     case DANGEROUS:
       return true;

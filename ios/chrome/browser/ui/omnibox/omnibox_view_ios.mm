@@ -640,7 +640,6 @@ void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
     return;
   }
 
-  DCHECK_NE(security_state::SECURITY_WARNING, security_level);
   DCHECK_NE(security_state::SECURE_WITH_POLICY_INSTALLED_CERT, security_level);
 
   if (security_level == security_state::DANGEROUS) {

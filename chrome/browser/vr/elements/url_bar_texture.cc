@@ -4,6 +4,8 @@
 
 #include "chrome/browser/vr/elements/url_bar_texture.h"
 
+#include <utility>
+
 #include "base/strings/utf_string_conversions.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/vr/color_scheme.h"
@@ -46,8 +48,6 @@ SkColor GetSchemeColor(SecurityLevel level, const ColorScheme& color_scheme) {
     case SecurityLevel::EV_SECURE:
     case SecurityLevel::SECURE:
       return color_scheme.secure;
-    case SecurityLevel::SECURITY_WARNING:
-      return color_scheme.url_deemphasized;
     case SecurityLevel::SECURE_WITH_POLICY_INSTALLED_CERT:  // ChromeOS only.
       return color_scheme.insecure;
     case SecurityLevel::DANGEROUS:

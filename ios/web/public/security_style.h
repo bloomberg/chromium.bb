@@ -28,11 +28,6 @@ enum SecurityStyle {
   // this object in an authenticated manner but were unable to do so.
   SECURITY_STYLE_AUTHENTICATION_BROKEN,
 
-  // SECURITY_STYLE_WARNING means that the object was retrieved in an
-  // authenticated manner, but there were security issues with the retrieval or
-  // the object interacted with less secure objects.
-  SECURITY_STYLE_WARNING,
-
   // SECURITY_STYLE_AUTHENTICATED indicates that we successfully retrieved this
   // object over an authenticated protocol, such as HTTPS.
   SECURITY_STYLE_AUTHENTICATED,

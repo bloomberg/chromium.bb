@@ -948,7 +948,6 @@ public class Tab
         // Do not apply the theme color if there are any security issues on the page.
         int securityLevel = getSecurityLevel();
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS
-                || securityLevel == ConnectionSecurityLevel.SECURITY_WARNING
                 || securityLevel == ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT) {
             themeColor = getDefaultThemeColor();
         }

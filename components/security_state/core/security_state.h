@@ -56,11 +56,10 @@ enum SecurityLevel {
   // HTTPS (non-EV) with valid cert.
   SECURE,
 
-  // Obsolete, do not use. TODO(lgarron): Remove via https://crbug.com/645698.
-  SECURITY_WARNING,
-
   // HTTPS, but the certificate verification chain is anchored on a
   // certificate that was installed by the system administrator.
+  //
+  // Currently used only on ChromeOS.
   SECURE_WITH_POLICY_INSTALLED_CERT,
 
   // Attempted HTTPS and failed, page not authenticated, HTTPS with

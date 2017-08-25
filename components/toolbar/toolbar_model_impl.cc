@@ -89,9 +89,6 @@ const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
     case security_state::EV_SECURE:
     case security_state::SECURE:
       return toolbar::kHttpsValidIcon;
-    case security_state::SECURITY_WARNING:
-      // Surface Dubious as Neutral.
-      return toolbar::kHttpIcon;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return vector_icons::kBusinessIcon;
     case security_state::DANGEROUS:

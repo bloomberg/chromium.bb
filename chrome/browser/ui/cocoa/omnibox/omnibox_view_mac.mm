@@ -88,11 +88,6 @@ NSColor* SecureSchemeColor(bool in_dark_mode) {
   return in_dark_mode ? skia::SkColorToSRGBNSColor(SK_ColorWHITE)
                       : skia::SkColorToSRGBNSColor(gfx::kGoogleGreen700);
 }
-NSColor* SecurityWarningSchemeColor(bool in_dark_mode) {
-  return in_dark_mode
-      ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F))
-      : skia::SkColorToSRGBNSColor(gfx::kGoogleYellow700);
-}
 NSColor* SecurityErrorSchemeColor(bool in_dark_mode) {
   return in_dark_mode
       ? skia::SkColorToSRGBNSColor(SkColorSetA(SK_ColorWHITE, 0x7F))
@@ -161,11 +156,8 @@ NSColor* OmniboxViewMac::GetSecureTextColor(
     return SecureSchemeColor(in_dark_mode);
   }
 
-  if (security_level == security_state::DANGEROUS)
-    return SecurityErrorSchemeColor(in_dark_mode);
-
-  DCHECK_EQ(security_state::SECURITY_WARNING, security_level);
-  return SecurityWarningSchemeColor(in_dark_mode);
+  DCHECK_EQ(security_state::DANGEROUS, security_level);
+  return SecurityErrorSchemeColor(in_dark_mode);
 }
 
 OmniboxViewMac::OmniboxViewMac(OmniboxEditController* controller,
