@@ -1878,20 +1878,39 @@ void AppsGridView::UpdateOpacity() {
   // of work area and transitioning to 1.0f by the time the centerline reaches
   // |kAllAppsOpacityEndPx| above the work area bottom.
   float centerline_above_work_area = 0.f;
+  const float drag_amount_above_peeking = work_area_bottom + kShelfSize -
+                                          app_list_y_position_in_screen -
+                                          kPeekingAppListHeight;
+  const float opacity_factor = drag_amount_above_peeking / kShelfSize;
   for (int i = 0; i < view_model_.view_size(); ++i) {
     AppListItemView* item_view = GetItemViewAt(i);
-    if (item_view != drag_view_) {
-      gfx::Rect view_bounds = view_model_.ideal_bounds(i);
-      views::View::ConvertRectToScreen(this, &view_bounds);
-      centerline_above_work_area = std::max<float>(
-          work_area_bottom + kShelfSize - view_bounds.CenterPoint().y(), 0.f);
-      opacity = std::min(
-          std::max((centerline_above_work_area - kAllAppsOpacityStartPx) /
-                       (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
-                   0.f),
-          1.0f);
-      item_view->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
+    if (item_view == drag_view_)
+      continue;
+
+    gfx::Rect view_bounds = view_model_.ideal_bounds(i);
+    views::View::ConvertRectToScreen(this, &view_bounds);
+    centerline_above_work_area = std::max<float>(
+        work_area_bottom + kShelfSize - view_bounds.CenterPoint().y(), 0.f);
+    opacity = std::min(
+        std::max((centerline_above_work_area - kAllAppsOpacityStartPx) /
+                     (kAllAppsOpacityEndPx - kAllAppsOpacityStartPx),
+                 0.f),
+        1.0f);
+
+    // The first row of apps should be shown gradually if start with dragging up
+    // from PEEKING and should not be shown if start with dragging down from
+    // PEEKING.
+    Index index = GetIndexOfView(item_view);
+    if ((index.page == 0 && index.slot < cols_ &&
+         contents_view_->app_list_view()->drag_started_from_peeking()) &&
+        ((drag_amount_above_peeking >= 0 &&
+          drag_amount_above_peeking <= kShelfSize) ||
+         (drag_amount_above_peeking < 0 &&
+          centerline_above_work_area >= kAllAppsOpacityStartPx))) {
+      opacity = std::max(opacity * opacity_factor, 0.f);
     }
+
+    item_view->layer()->SetOpacity(is_in_drag ? opacity : 1.0f);
   }
 
   // Updates the opacity of page switcher buttons. The same rule as all apps.
