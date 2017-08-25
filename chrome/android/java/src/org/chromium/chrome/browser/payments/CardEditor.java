@@ -827,7 +827,10 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         if (expirationYear >= 2000) mYearField.setValue(Integer.toString(expirationYear));
 
         if (expirationMonth >= 1 && expirationMonth <= 12) {
-            mMonthField.setValue(Integer.toString(expirationMonth));
+            String monthKey = Integer.toString(expirationMonth);
+            // The month key format is 'MM' in the dropdown.
+            if (monthKey.length() == 1) monthKey = '0' + monthKey;
+            mMonthField.setValue(monthKey);
         }
 
         mEditorDialog.update();
