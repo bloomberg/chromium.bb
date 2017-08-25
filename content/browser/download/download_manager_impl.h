@@ -21,7 +21,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/synchronization/lock.h"
 #include "content/browser/download/download_item_impl_delegate.h"
-#include "content/browser/download/url_downloader.h"
+#include "content/browser/download/url_download_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -40,7 +40,7 @@ class DownloadRequestHandleInterface;
 class ResourceContext;
 
 class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
-                                           public UrlDownloader::Delegate,
+                                           public UrlDownloadHandler::Delegate,
                                            private DownloadItemImplDelegate {
  public:
   using DownloadItemImplCreated = base::Callback<void(DownloadItemImpl*)>;
@@ -114,12 +114,12 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   DownloadItem* GetDownload(uint32_t id) override;
   DownloadItem* GetDownloadByGuid(const std::string& guid) override;
 
-  // UrlDownloader::Delegate implementation.
-  void OnUrlDownloaderStarted(
+  // UrlDownloadHandler::Delegate implementation.
+  void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> download_create_info,
-      std::unique_ptr<ByteStreamReader> stream_reader,
+      std::unique_ptr<UrlDownloadHandler::InputStream> input_stream,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
-  void OnUrlDownloaderStopped(UrlDownloader* downloader) override;
+  void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
 
   // For testing; specifically, accessed from TestFileErrorInjector.
   void SetDownloadItemFactoryForTesting(
@@ -199,8 +199,8 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   void ShowDownloadInShell(DownloadItemImpl* download) override;
   void DownloadRemoved(DownloadItemImpl* download) override;
 
-  void AddUrlDownloader(
-      std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>
+  void AddUrlDownloadHandler(
+      std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
           downloader);
 
   // Factory for creation of downloads items.
@@ -240,8 +240,9 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   net::NetLog* net_log_;
 
-  std::vector<std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>>
-      url_downloaders_;
+  std::vector<
+      std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>>
+      url_download_handlers_;
 
   base::WeakPtrFactory<DownloadManagerImpl> weak_factory_;
 

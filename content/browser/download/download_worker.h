@@ -22,7 +22,7 @@ namespace content {
 // file after handling response of the original non-range request.
 // TODO(xingliu): we should consider to reuse this class for single connection
 // download.
-class CONTENT_EXPORT DownloadWorker : public UrlDownloader::Delegate {
+class CONTENT_EXPORT DownloadWorker : public UrlDownloadHandler::Delegate {
  public:
   class Delegate {
    public:
@@ -52,14 +52,14 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloader::Delegate {
 
  private:
   // UrlDownloader::Delegate implementation.
-  void OnUrlDownloaderStarted(
+  void OnUrlDownloadStarted(
       std::unique_ptr<DownloadCreateInfo> create_info,
-      std::unique_ptr<ByteStreamReader> stream_reader,
+      std::unique_ptr<UrlDownloadHandler::InputStream> input_stream,
       const DownloadUrlParameters::OnStartedCallback& callback) override;
-  void OnUrlDownloaderStopped(UrlDownloader* downloader) override;
+  void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
 
-  void AddUrlDownloader(
-      std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>
+  void AddUrlDownloadHandler(
+      std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
           downloader);
 
   DownloadWorker::Delegate* const delegate_;
@@ -79,8 +79,8 @@ class CONTENT_EXPORT DownloadWorker : public UrlDownloader::Delegate {
   std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
 
   // Used to handle the url request. Live and die on IO thread.
-  std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>
-      url_downloader_;
+  std::unique_ptr<UrlDownloadHandler, BrowserThread::DeleteOnIOThread>
+      url_download_handler_;
 
   base::WeakPtrFactory<DownloadWorker> weak_factory_;
 

@@ -6,12 +6,15 @@
 
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/download/download_interrupt_reasons_impl.h"
 #include "content/browser/download/download_stats.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/resource_request.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/load_flags.h"
@@ -167,6 +170,23 @@ std::unique_ptr<ResourceRequest> CreateResourceRequest(
   request->referrer = params->referrer().url;
   request->referrer_policy = params->referrer().policy;
   request->download_to_file = true;
+  request->allow_download = true;
+
+  if (params->render_process_host_id()) {
+    request->origin_pid = params->render_process_host_id();
+    RenderFrameHost* render_frame_host =
+        RenderFrameHost::FromID(params->render_process_host_id(),
+                                params->render_frame_host_routing_id());
+    RenderFrameHost* parent_frame = render_frame_host->GetParent();
+    if (parent_frame) {
+      request->parent_render_frame_id = parent_frame->GetRoutingID();
+      request->parent_is_main_frame = (parent_frame->GetParent() == nullptr);
+    } else {
+      request->is_main_frame = true;
+    }
+
+    request->render_frame_id = params->render_frame_host_routing_id();
+  }
 
   bool has_upload_data = false;
   if (!params->post_body().empty()) {
