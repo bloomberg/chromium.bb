@@ -111,11 +111,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     }
 
     @Override
-    public int getAdditionalAppTextResourceId() {
-        return 0;
-    }
-
-    @Override
     public Set<String> getInstrumentMethodNames() {
         return getAppMethodNames();
     }
