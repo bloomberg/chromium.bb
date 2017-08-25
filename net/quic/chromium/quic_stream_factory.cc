@@ -746,7 +746,7 @@ QuicStreamFactory::QuicStreamFactory(
       force_hol_blocking_(force_hol_blocking),
       race_cert_verification_(race_cert_verification),
       estimate_initial_rtt(estimate_initial_rtt),
-      check_persisted_supports_quic_(true),
+      need_to_check_persisted_supports_quic_(true),
       num_push_streams_created_(0),
       task_runner_(nullptr),
       ssl_config_service_(ssl_config_service),
@@ -818,8 +818,13 @@ void QuicStreamFactory::set_require_confirmation(bool require_confirmation) {
 
 base::TimeDelta QuicStreamFactory::GetTimeDelayForWaitingJob(
     const QuicServerId& server_id) {
-  if (require_confirmation_)
-    return base::TimeDelta();
+  if (require_confirmation_) {
+    IPAddress last_address;
+    if (!need_to_check_persisted_supports_quic_ ||
+        !http_server_properties_->GetSupportsQuic(&last_address)) {
+      return base::TimeDelta();
+    }
+  }
 
   int64_t srtt =
       1.5 * GetServerNetworkStatsSmoothedRttInMicroseconds(server_id);
@@ -1476,8 +1481,8 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   }
 
   socket->GetLocalAddress(&local_address_);
-  if (check_persisted_supports_quic_) {
-    check_persisted_supports_quic_ = false;
+  if (need_to_check_persisted_supports_quic_) {
+    need_to_check_persisted_supports_quic_ = false;
     IPAddress last_address;
     if (http_server_properties_->GetSupportsQuic(&last_address) &&
         last_address == local_address_.address()) {

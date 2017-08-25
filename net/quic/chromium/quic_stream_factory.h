@@ -559,7 +559,9 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;
-  bool check_persisted_supports_quic_;
+  // True if we need to check HttpServerProperties if QUIC was supported last
+  // time.
+  bool need_to_check_persisted_supports_quic_;
 
   NetworkConnection network_connection_;
 
