@@ -23167,6 +23167,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1269084216" label="ash-md"/>
   <int value="-1268836676" label="disable-out-of-process-pdf"/>
   <int value="-1267958145" label="disable-pdf-material-ui"/>
+  <int value="-1262152606" label="disable-lock-screen-apps"/>
   <int value="-1254070521" label="enable-slimming-paint-invalidation"/>
   <int value="-1251411236" label="disable-new-md-input-view"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>

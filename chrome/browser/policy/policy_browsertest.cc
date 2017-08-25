@@ -4506,7 +4506,6 @@ class NoteTakingOnLockScreenPolicyTest : public PolicyTest {
   ~NoteTakingOnLockScreenPolicyTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kEnableLockScreenApps);
     // An app requires lockScreen permission to be enabled as a lock screen app.
     // This permission is protected by a whitelist, so the test app has to be
     // whitelisted as well.

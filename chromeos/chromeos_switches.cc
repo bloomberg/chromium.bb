@@ -281,7 +281,7 @@ const char kEnableFileManagerTouchMode[] = "enable-file-manager-touch-mode";
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 
 // Enables action handler apps (e.g. creating new notes) on lock screen.
-const char kEnableLockScreenApps[] = "enable-lock-screen-apps";
+const char kDisableLockScreenApps[] = "disable-lock-screen-apps";
 
 // Overrides Tether with stub service. Provide integer arguments for the number
 // of fake networks desired, e.g. 'tether-stub=2'.

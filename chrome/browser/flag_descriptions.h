@@ -1373,6 +1373,9 @@ extern const char kCrosRegionsModeDefault[];
 extern const char kCrosRegionsModeOverride[];
 extern const char kCrosRegionsModeHide[];
 
+extern const char kDisableLockScreenAppsName[];
+extern const char kDisableLockScreenAppsDescription[];
+
 extern const char kDisableNewVirtualKeyboardBehaviorName[];
 extern const char kDisableNewVirtualKeyboardBehaviorDescription[];
 
@@ -1402,9 +1405,6 @@ extern const char kEnableEncryptionMigrationDescription[];
 
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
-
-extern const char kEnableLockScreenAppsName[];
-extern const char kEnableLockScreenAppsDescription[];
 
 extern const char kEnableZipArchiverOnFileManagerName[];
 extern const char kEnableZipArchiverOnFileManagerDescription[];

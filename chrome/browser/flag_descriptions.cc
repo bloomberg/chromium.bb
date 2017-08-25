@@ -2240,6 +2240,12 @@ const char kCrosRegionsModeDefault[] = "Default";
 const char kCrosRegionsModeOverride[] = "Override VPD values.";
 const char kCrosRegionsModeHide[] = "Hide VPD values.";
 
+const char kDisableLockScreenAppsName[] = "Disable lock screen note taking";
+const char kDisableLockScreenAppsDescription[] =
+    "Disable new-note action handler apps on the lock screen. The user will "
+    "not be able to launch the preferred note-taking action from the lock "
+    "screen, provided that the app supports lock screen note taking.";
+
 const char kDisableNewVirtualKeyboardBehaviorName[] =
     "New window behavior for the accessibility keyboard";
 const char kDisableNewVirtualKeyboardBehaviorDescription[] =
@@ -2289,12 +2295,6 @@ const char kEnableEncryptionMigrationDescription[] =
 const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
-
-const char kEnableLockScreenAppsName[] = "Enable lock screen note taking";
-const char kEnableLockScreenAppsDescription[] =
-    "Enable new-note action handler apps on the lock screen. The user will be "
-    "able to launch the preferred note-taking action from the lock screen, "
-    "provided that the app supports lock screen note taking.";
 
 const char kEnableZipArchiverOnFileManagerName[] = "ZIP archiver for Drive";
 const char kEnableZipArchiverOnFileManagerDescription[] =

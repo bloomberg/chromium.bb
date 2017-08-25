@@ -364,7 +364,8 @@ class LockScreenAppStateNotSupportedTest : public testing::Test {
 
   void SetUp() override {
     command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
-    command_line_->GetProcessCommandLine()->InitFromArgv({""});
+    command_line_->GetProcessCommandLine()->InitFromArgv(
+        {"", "--disable-lock-screen-apps"});
   }
 
  private:
@@ -381,8 +382,7 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
   void SetUp() override {
     command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
-    command_line_->GetProcessCommandLine()->InitFromArgv(
-        {"", "--enable-lock-screen-apps"});
+    command_line_->GetProcessCommandLine()->InitFromArgv({""});
 
     ASSERT_TRUE(profile_manager_.SetUp());
 
