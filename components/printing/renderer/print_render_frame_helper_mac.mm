@@ -45,7 +45,7 @@ void PrintRenderFrameHelper::PrintPagesInternal(
     const std::vector<int>& printed_pages,
     int page_count,
     blink::WebLocalFrame* frame) {
-  PdfMetafileSkia metafile(SkiaDocumentType::PDF);
+  PdfMetafileSkia metafile(params.printed_doc_type);
   CHECK(metafile.Init());
 
   gfx::Size page_size_in_dpi;
@@ -64,7 +64,7 @@ void PrintRenderFrameHelper::PrintPagesInternal(
 
   // Ask the browser to create the shared memory for us.
   if (!CopyMetafileDataToSharedMem(metafile,
-                                   &(page_params.metafile_data_handle))) {
+                                   &page_params.metafile_data_handle)) {
     // TODO(thestig): Fail and return false instead.
     page_params.data_size = 0;
   }
@@ -80,7 +80,6 @@ void PrintRenderFrameHelper::PrintPagesInternal(
 bool PrintRenderFrameHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
-  PrintMsg_Print_Params printParams = print_params;
   std::unique_ptr<PdfMetafileSkia> draft_metafile;
   PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
 
@@ -88,14 +87,15 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
       print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_;
 
   if (render_to_draft) {
-    draft_metafile.reset(new PdfMetafileSkia(SkiaDocumentType::PDF));
+    draft_metafile =
+        base::MakeUnique<PdfMetafileSkia>(print_params.printed_doc_type);
     CHECK(draft_metafile->Init());
     initial_render_metafile = draft_metafile.get();
   }
 
   base::TimeTicks begin_time = base::TimeTicks::Now();
   gfx::Size page_size;
-  RenderPage(printParams, page_number,
+  RenderPage(print_params, page_number,
              print_preview_context_.total_page_count(),
              print_preview_context_.prepared_frame(), true,
              initial_render_metafile, &page_size, NULL);
@@ -110,7 +110,7 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
       DCHECK(!draft_metafile.get());
       draft_metafile =
           print_preview_context_.metafile()->GetMetafileForCurrentPage(
-              SkiaDocumentType::PDF);
+              print_params.printed_doc_type);
     }
   }
   return PreviewPageRendered(page_number, draft_metafile.get());

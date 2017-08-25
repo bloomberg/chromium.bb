@@ -46,10 +46,11 @@ namespace printing {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
                                               int page_count) {
-  PdfMetafileSkia metafile(SkiaDocumentType::PDF);
+  const PrintMsg_PrintPages_Params& params = *print_pages_params_;
+  const PrintMsg_Print_Params& print_params = params.params;
+  PdfMetafileSkia metafile(print_params.printed_doc_type);
   CHECK(metafile.Init());
 
-  const PrintMsg_PrintPages_Params& params = *print_pages_params_;
   std::vector<int> printed_pages = GetPrintedPages(params, page_count);
   if (printed_pages.empty())
     return false;
