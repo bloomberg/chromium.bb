@@ -1666,6 +1666,24 @@ static INLINE void av1_get_block_dimensions(BLOCK_SIZE bsize, int plane,
   if (cols_within_bounds) *cols_within_bounds = block_cols >> pd->subsampling_x;
 }
 
+/* clang-format off */
+typedef aom_cdf_prob (*MapCdf)[PALETTE_COLOR_INDEX_CONTEXTS]
+                              [CDF_SIZE(PALETTE_COLORS)];
+typedef const int (*ColorCost)[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
+                              [PALETTE_COLORS];
+/* clang-format on */
+
+typedef struct {
+  int rows;
+  int cols;
+  int n_colors;
+  int plane_width;
+  int plane_height;
+  uint8_t *color_map;
+  MapCdf map_cdf;
+  ColorCost color_cost;
+} Av1ColorMapParam;
+
 #if CONFIG_GLOBAL_MOTION
 static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
   const MODE_INFO *mi = xd->mi[0];
