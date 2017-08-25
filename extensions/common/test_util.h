@@ -10,13 +10,7 @@
 #include "base/memory/ref_counted.h"
 
 namespace extensions {
-class Extension;
-
 namespace test_util {
-
-// Create an extension with a variable |id|, for tests that require multiple
-// extensions side-by-side having distinct IDs.
-scoped_refptr<Extension> CreateEmptyExtension(const std::string& id);
 
 }  // namespace test_util
 }  // namespace extensions

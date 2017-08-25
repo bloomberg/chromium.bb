@@ -432,7 +432,7 @@ TEST_F(ActivityLogTestWithoutSwitch, TestShouldLog) {
   EXPECT_FALSE(activity_log->ShouldLog(empty_extension->id()));
   const char kWhitelistedExtensionId[] = "eplckmlabaanikjjcgnigddmagoglhmp";
   scoped_refptr<const Extension> activity_log_extension =
-      test_util::CreateEmptyExtension(kWhitelistedExtensionId);
+      ExtensionBuilder("Test").SetID(kWhitelistedExtensionId).Build();
   extension_service_->AddExtension(activity_log_extension.get());
   // Loading a watchdog app means the activity log should log other extension
   // activities...
