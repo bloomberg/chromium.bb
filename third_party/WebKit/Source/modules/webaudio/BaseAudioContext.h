@@ -377,6 +377,7 @@ class MODULES_EXPORT BaseAudioContext
 
  private:
   friend class BaseAudioContextAutoplayTest;
+  friend class DISABLED_BaseAudioContextAutoplayTest;
 
   // Do not change the order of this enum, it is used for metrics.
   enum AutoplayStatus {
