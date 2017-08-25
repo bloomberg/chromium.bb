@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -32,7 +33,8 @@ class SplitViewController;
 // to resize the left and right windows accordingly. The divider widget should
 // always placed above its observed windows to be able to receive events.
 class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
-                                    public ::wm::ActivationChangeObserver {
+                                    public ::wm::ActivationChangeObserver,
+                                    public display::DisplayObserver {
  public:
   SplitViewDivider(SplitViewController* controller, aura::Window* root_window);
   ~SplitViewDivider() override;
@@ -58,6 +60,10 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
+
+  // display::DisplayObserver:
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override;
 
   views::Widget* divider_widget() { return divider_widget_.get(); }
 

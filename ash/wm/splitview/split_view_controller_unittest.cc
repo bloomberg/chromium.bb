@@ -275,4 +275,49 @@ TEST_F(SplitViewControllerTest, SplitDividerBasicTest) {
   EXPECT_TRUE(!split_view_divider());
 }
 
+// Tests that the bounds of the snapped windows and divider are adjusted when
+// the screen display configuration changes.
+TEST_F(SplitViewControllerTest, DisplayConfigurationChangeTest) {
+  UpdateDisplay("407x400");
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  const gfx::Rect bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that |window1| and |window2| has the same width and height after snap.
+  EXPECT_EQ(bounds_window1.width(), bounds_window2.width());
+  EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
+  EXPECT_EQ(bounds_divider.height(), bounds_window1.height());
+
+  // Test that |window1|, divider, |window2| are aligned properly.
+  EXPECT_EQ(bounds_divider.x(), bounds_window1.x() + bounds_window1.width());
+  EXPECT_EQ(bounds_window2.x(), bounds_divider.x() + bounds_divider.width());
+
+  // Now change the display configuration.
+  UpdateDisplay("507x500");
+  const gfx::Rect new_bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect new_bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect new_bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that the new bounds are different with the old ones.
+  EXPECT_FALSE(bounds_window1 == new_bounds_window1);
+  EXPECT_FALSE(bounds_window2 == new_bounds_window2);
+  EXPECT_FALSE(bounds_divider == new_bounds_divider);
+
+  // Test that |window1|, divider, |window2| are still aligned properly.
+  EXPECT_EQ(new_bounds_divider.x(),
+            new_bounds_window1.x() + new_bounds_window1.width());
+  EXPECT_EQ(new_bounds_window2.x(),
+            new_bounds_divider.x() + new_bounds_divider.width());
+}
+
 }  // namespace ash

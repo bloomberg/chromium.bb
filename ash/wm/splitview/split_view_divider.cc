@@ -13,6 +13,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/display.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -159,6 +160,7 @@ SplitViewDivider::SplitViewDivider(SplitViewController* controller,
                                    aura::Window* root_window)
     : controller_(controller) {
   Shell::Get()->activation_client()->AddObserver(this);
+  display::Screen::GetScreen()->AddObserver(this);
   CreateDividerWidget(root_window);
 
   aura::Window* always_on_top_container =
@@ -170,6 +172,7 @@ SplitViewDivider::SplitViewDivider(SplitViewController* controller,
 
 SplitViewDivider::~SplitViewDivider() {
   Shell::Get()->activation_client()->RemoveObserver(this);
+  display::Screen::GetScreen()->RemoveObserver(this);
   divider_widget_.reset();
   split_view_window_targeter_.reset();
   for (auto* iter : observed_windows_)
@@ -234,7 +237,20 @@ void SplitViewDivider::OnWindowActivated(ActivationReason reason,
                                          aura::Window* lost_active) {
   auto iter = std::find(observed_windows_.begin(), observed_windows_.end(),
                         gained_active);
-  divider_widget_->SetAlwaysOnTop(iter != observed_windows_.end());
+  if (iter != observed_windows_.end()) {
+    divider_widget_->SetAlwaysOnTop(true);
+  } else {
+    divider_widget_->SetAlwaysOnTop(false);
+    divider_widget_->Deactivate();
+  }
+}
+
+void SplitViewDivider::OnDisplayMetricsChanged(const display::Display& display,
+                                               uint32_t metrics) {
+  // Update the bounds of the divider.
+  bool is_dragging = divider_widget_->GetWindowBoundsInScreen().width() ==
+                     kDividerEnlargedShortSideLength;
+  UpdateDividerBounds(is_dragging);
 }
 
 void SplitViewDivider::CreateDividerWidget(aura::Window* root_window) {
