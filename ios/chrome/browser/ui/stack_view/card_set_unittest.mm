@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/tabs/tab_private.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/stack_view/card_set.h"
 #import "ios/chrome/browser/ui/stack_view/card_stack_layout_manager.h"

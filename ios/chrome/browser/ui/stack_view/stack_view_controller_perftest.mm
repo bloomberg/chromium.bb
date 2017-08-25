@@ -19,6 +19,7 @@
 #import "ios/chrome/browser/ui/stack_view/stack_view_controller.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/web_state/web_state.h"
 #import "net/base/mac/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
