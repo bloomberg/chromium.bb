@@ -45,6 +45,14 @@ void ImmersiveModeControllerStub::OnFindBarVisibleBoundsChanged(
     const gfx::Rect& new_visible_bounds_in_screen) {
 }
 
+bool ImmersiveModeControllerStub::ShouldStayImmersiveAfterExitingFullscreen() {
+  return false;
+}
+
 views::Widget* ImmersiveModeControllerStub::GetRevealWidget() {
   return nullptr;
 }
+
+void ImmersiveModeControllerStub::OnWidgetActivationChanged(
+    views::Widget* widget,
+    bool active) {}

@@ -1793,6 +1793,8 @@ void BrowserView::OnWidgetActivationChanged(views::Widget* widget,
              extension_keybinding_registry_.get()) {
     registry->set_registry_for_active_window(nullptr);
   }
+
+  immersive_mode_controller()->OnWidgetActivationChanged(widget, active);
 }
 
 void BrowserView::OnWindowBeginUserBoundsChange() {
@@ -2353,7 +2355,10 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   frame_->SetFullscreen(fullscreen);
 
   // Enable immersive before the browser refreshes its list of enabled commands.
-  if (ShouldUseImmersiveFullscreenForUrl(url))
+  const bool should_stay_in_immersive =
+      !fullscreen &&
+      immersive_mode_controller_->ShouldStayImmersiveAfterExitingFullscreen();
+  if (ShouldUseImmersiveFullscreenForUrl(url) && !should_stay_in_immersive)
     immersive_mode_controller_->SetEnabled(fullscreen);
 
   browser_->WindowFullscreenStateWillChange();

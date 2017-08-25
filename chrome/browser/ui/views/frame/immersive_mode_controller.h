@@ -109,11 +109,23 @@ class ImmersiveModeController {
   virtual void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) = 0;
 
+  // Returns true if we should stay in immersive mode after exiting fullscreen.
+  // This should be true unless we are leaving fullscreen while in tablet mode,
+  // in which case we should stay in immersive mode.
+  virtual bool ShouldStayImmersiveAfterExitingFullscreen() = 0;
+
   Type type() const { return type_; }
 
   // Returns the widget hosting the reveal, null if a widget isn't used to
   // host the reveal, or not currently revealed.
   virtual views::Widget* GetRevealWidget() = 0;
+
+  // Called by browser view to indicate the widget activation has changed.
+  // Immersive mode should be enabled/disabled if the widget is
+  // active/nonactive when the auto hide title bars in tablet mode feature is
+  // on.
+  virtual void OnWidgetActivationChanged(views::Widget* widget,
+                                         bool active) = 0;
 
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
