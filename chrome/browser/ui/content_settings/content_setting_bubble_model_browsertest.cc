@@ -188,9 +188,9 @@ class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
             browser()->content_setting_bubble_model_delegate(), original_tab,
             browser()->profile()));
 
-    // Click the management link, which opens in a new tab or window.
-    // Wait until it loads.
-    bubble->OnManageLinkClicked();
+    // Click the manage button, which opens in a new tab or window. Wait until
+    // it loads.
+    bubble->OnManageButtonClicked();
     ASSERT_NE(GetActiveTab(), original_tab);
     content::TestNavigationObserver observer(GetActiveTab());
     observer.Wait();
@@ -204,14 +204,14 @@ class ContentSettingBubbleModelMediaStreamTest : public InProcessBrowserTest {
   }
 };
 
-// Tests that clicking on the management link in the media bubble opens
-// the correct section of the settings UI.
-// This test sometimes leaks memory, detected by linux_chromium_asan_rel_ng. See
-// http://crbug/668693 for more info.
+// Tests that clicking on the manage button in the media bubble opens the
+// correct section of the settings UI. This test sometimes leaks memory,
+// detected by linux_chromium_asan_rel_ng. See http://crbug/668693 for more
+// info.
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelMediaStreamTest,
                        DISABLED_ManageLink) {
-  // For each of the three options, we click the management link and check if
-  // the active tab loads the correct internal url.
+  // For each of the three options, we click the manage button and check if the
+  // active tab loads the correct internal url.
 
   // The microphone bubble links to microphone exceptions.
   ManageMediaStreamSettings(TabSpecificContentSettings::MICROPHONE_ACCESSED);
@@ -271,7 +271,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleModelPopupTest,
         "ContentSettings.Popups",
         content_settings::POPUPS_ACTION_CLICKED_LIST_ITEM_CLICKED, 1);
 
-  model->OnManageLinkClicked();
+  model->OnManageButtonClicked();
   histograms.ExpectBucketCount(
         "ContentSettings.Popups",
         content_settings::POPUPS_ACTION_CLICKED_MANAGE_POPUPS_BLOCKING, 1);

@@ -38,7 +38,7 @@ class LabelButton;
 // were blocked, and the user can click one to get a bubble hosting a few
 // controls.  This class provides the content of that bubble.  In general,
 // these bubbles typically have a title, a pair of radio buttons for toggling
-// the blocking settings for the current site, a close button, and a link to
+// the blocking settings for the current site, a close button, and a button to
 // get to a more comprehensive settings management dialog.  A few types have
 // more or fewer controls than this.
 class ContentSettingBubbleContents : public content::WebContentsObserver,
@@ -67,6 +67,7 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   // views::BubbleDialogDelegateView:
   void Init() override;
   View* CreateExtraView() override;
+  bool Cancel() override;
   bool Accept() override;
   bool Close() override;
   int GetDialogButtons() const override;
@@ -125,7 +126,6 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
   typedef std::vector<views::RadioButton*> RadioGroup;
   RadioGroup radio_group_;
   views::Link* custom_link_;
-  views::Link* manage_link_;
   views::LabelButton* manage_button_;
   views::Checkbox* manage_checkbox_;
   views::ImageButton* learn_more_button_;
