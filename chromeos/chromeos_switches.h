@@ -169,6 +169,12 @@ CHROMEOS_EXPORT bool IsGaiaIdMigrationStarted();
 // Returns true if this is a Cellular First device.
 CHROMEOS_EXPORT bool IsCellularFirstDevice();
 
+// Returns true if the locale is supported by voice interaction.
+CHROMEOS_EXPORT bool IsVoiceInteractionLocalesSupported();
+
+// Returns true if voice interaction flags are enabled.
+CHROMEOS_EXPORT bool IsVoiceInteractionFlagsEnabled();
+
 // Returns true if voice interaction is enabled.
 CHROMEOS_EXPORT bool IsVoiceInteractionEnabled();
 

@@ -586,9 +586,9 @@ void AppListButton::GenerateAndSendBackEvent(
 }
 
 bool AppListButton::IsVoiceInteractionActive() {
-  if (chromeos::switches::IsVoiceInteractionEnabled() &&
+  if (voice_interaction_overlay_ &&
+      chromeos::switches::IsVoiceInteractionEnabled() &&
       is_primary_user_active_ && voice_interaction_settings_enabled_) {
-    DCHECK(voice_interaction_overlay_);
     return true;
   }
   return false;
