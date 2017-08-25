@@ -150,6 +150,7 @@ std::string GenerateContentSettingsExceptionsSubPage(ContentSettingsType type) {
         {CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, "backgroundSync"},
         {CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, "microphone"},
         {CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, "camera"},
+        {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, "midiDevices"},
         {CONTENT_SETTINGS_TYPE_PLUGINS, "flash"},
         {CONTENT_SETTINGS_TYPE_ADS, "ads"},
         {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, "unsandboxedPlugins"}}));
