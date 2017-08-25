@@ -249,6 +249,23 @@ int av1_get_active_map(AV1_COMP *cpi, unsigned char *new_map_16x16, int rows,
   }
 }
 
+void av1_set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv) {
+  MACROBLOCK *const mb = &cpi->td.mb;
+  cpi->common.allow_high_precision_mv = allow_high_precision_mv;
+
+  if (cpi->common.allow_high_precision_mv) {
+    int i;
+    for (i = 0; i < NMV_CONTEXTS; ++i) {
+      mb->mv_cost_stack[i] = mb->nmvcost_hp[i];
+    }
+  } else {
+    int i;
+    for (i = 0; i < NMV_CONTEXTS; ++i) {
+      mb->mv_cost_stack[i] = mb->nmvcost[i];
+    }
+  }
+}
+
 static BLOCK_SIZE select_sb_size(const AV1_COMP *const cpi) {
 #if CONFIG_EXT_PARTITION
   if (cpi->oxcf.superblock_size == AOM_SUPERBLOCK_SIZE_64X64)
@@ -523,11 +540,18 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 static void save_coding_context(AV1_COMP *cpi) {
   CODING_CONTEXT *const cc = &cpi->coding_context;
   AV1_COMMON *cm = &cpi->common;
+  int i;
 
   // Stores a snapshot of key state variables which can subsequently be
   // restored with a call to av1_restore_coding_context. These functions are
   // intended for use in a re-code loop in av1_compress_frame where the
   // quantizer value is adjusted between loop iterations.
+  for (i = 0; i < NMV_CONTEXTS; ++i) {
+    av1_copy(cc->nmv_vec_cost[i], cpi->td.mb.nmv_vec_cost[i]);
+    av1_copy(cc->nmv_costs, cpi->nmv_costs);
+    av1_copy(cc->nmv_costs_hp, cpi->nmv_costs_hp);
+  }
+
   av1_copy(cc->last_ref_lf_deltas, cm->lf.last_ref_deltas);
   av1_copy(cc->last_mode_lf_deltas, cm->lf.last_mode_deltas);
 
@@ -537,9 +561,16 @@ static void save_coding_context(AV1_COMP *cpi) {
 static void restore_coding_context(AV1_COMP *cpi) {
   CODING_CONTEXT *const cc = &cpi->coding_context;
   AV1_COMMON *cm = &cpi->common;
+  int i;
 
   // Restore key state variables to the snapshot state stored in the
   // previous call to av1_save_coding_context.
+  for (i = 0; i < NMV_CONTEXTS; ++i) {
+    av1_copy(cpi->td.mb.nmv_vec_cost[i], cc->nmv_vec_cost[i]);
+    av1_copy(cpi->nmv_costs, cc->nmv_costs);
+    av1_copy(cpi->nmv_costs_hp, cc->nmv_costs_hp);
+  }
+
   av1_copy(cm->lf.last_ref_deltas, cc->last_ref_lf_deltas);
   av1_copy(cm->lf.last_mode_deltas, cc->last_mode_lf_deltas);
 
@@ -2296,7 +2327,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   set_compound_tools(cm);
 #endif  // CONFIG_EXT_INTER
   av1_reset_segment_features(cm);
-  cm->allow_high_precision_mv = 0;
+  av1_set_high_precision_mv(cpi, 0);
 
   set_rc_buffer_sizes(rc, &cpi->oxcf);
 
@@ -2426,6 +2457,11 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
   realloc_segmentation_maps(cpi);
 
+  for (i = 0; i < NMV_CONTEXTS; ++i) {
+    memset(cpi->nmv_costs, 0, sizeof(cpi->nmv_costs));
+    memset(cpi->nmv_costs_hp, 0, sizeof(cpi->nmv_costs_hp));
+  }
+
   for (i = 0; i < (sizeof(cpi->mbgraph_stats) / sizeof(cpi->mbgraph_stats[0]));
        i++) {
     CHECK_MEM_ERROR(
@@ -2487,6 +2523,13 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 #endif  // CONFIG_ENTROPY_STATS
 
   cpi->first_time_stamp_ever = INT64_MAX;
+
+  for (i = 0; i < NMV_CONTEXTS; ++i) {
+    cpi->td.mb.nmvcost[i][0] = &cpi->nmv_costs[i][0][MV_MAX];
+    cpi->td.mb.nmvcost[i][1] = &cpi->nmv_costs[i][1][MV_MAX];
+    cpi->td.mb.nmvcost_hp[i][0] = &cpi->nmv_costs_hp[i][0][MV_MAX];
+    cpi->td.mb.nmvcost_hp[i][1] = &cpi->nmv_costs_hp[i][1][MV_MAX];
+  }
 
 #ifdef OUTPUT_YUV_SKINMAP
   yuv_skinmap_file = fopen("skinmap.yuv", "ab");
@@ -3875,8 +3918,9 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   *q = av1_rc_pick_q_and_bounds(cpi, bottom_index, top_index);
 #endif
 
-  if (!frame_is_intra_only(cm))
-    cm->allow_high_precision_mv = (*q) < HIGH_PRECISION_MV_QTHRESH;
+  if (!frame_is_intra_only(cm)) {
+    av1_set_high_precision_mv(cpi, (*q) < HIGH_PRECISION_MV_QTHRESH);
+  }
 
   // Configure experimental use of segmentation for enhanced coding of
   // static regions if indicated.
@@ -5689,7 +5733,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   aom_usec_timer_start(&cmptimer);
 
-  cm->allow_high_precision_mv = ALTREF_HIGH_PRECISION_MV;
+  av1_set_high_precision_mv(cpi, ALTREF_HIGH_PRECISION_MV);
 
   // Is multi-arf enabled.
   // Note that at the moment multi_arf is only configured for 2 pass VBR
