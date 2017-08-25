@@ -388,7 +388,7 @@ component("gpu") {
 }
 
 # TODO(watk): Run this on bots. http://crbug.com/461437
-if (is_win || is_android || is_chromeos) {
+if (is_win || is_android || use_v4l2_codec || use_vaapi) {
   test("video_decode_accelerator_unittest") {
     sources = [
       "video_accelerator_unittest_helpers.h",
@@ -500,7 +500,7 @@ source_set("android_video_decode_accelerator_unittests") {
   }
 }
 
-if (is_chromeos || is_mac || is_win) {
+if (use_v4l2_codec || use_vaapi || is_mac || is_win) {
   test("video_encode_accelerator_unittest") {
     deps = [
       "//base",
@@ -531,7 +531,7 @@ if (is_chromeos || is_mac || is_win) {
   }
 }
 
-if (is_chromeos) {
+if (use_v4l2_codec || use_vaapi) {
   test("jpeg_decode_accelerator_unittest") {
     deps = [
       "//base",
