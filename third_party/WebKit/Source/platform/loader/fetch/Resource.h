@@ -339,7 +339,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
  protected:
   Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
-  virtual void CheckNotify();
+  virtual void NotifyFinished();
 
   void MarkClientFinished(ResourceClient*);
 

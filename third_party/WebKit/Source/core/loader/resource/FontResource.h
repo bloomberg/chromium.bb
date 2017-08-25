@@ -81,7 +81,7 @@ class CORE_EXPORT FontResource final : public Resource {
   };
   FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
-  void CheckNotify() override;
+  void NotifyFinished() override;
   void FontLoadShortLimitCallback(TimerBase*);
   void FontLoadLongLimitCallback(TimerBase*);
   void NotifyClientsShortLimitExceeded();

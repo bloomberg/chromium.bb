@@ -46,7 +46,7 @@ class CORE_EXPORT DocumentResource final : public TextResource {
 
   Document* GetDocument() const { return document_.Get(); }
 
-  void CheckNotify() override;
+  void NotifyFinished() override;
 
  private:
   class SVGDocumentResourceFactory : public ResourceFactory {

@@ -247,13 +247,13 @@ DEFINE_TRACE(ImageResource) {
   MultipartImageResourceParser::Client::Trace(visitor);
 }
 
-void ImageResource::CheckNotify() {
+void ImageResource::NotifyFinished() {
   // Don't notify clients of completion if this ImageResource is
   // about to be reloaded.
   if (is_scheduling_reload_ || ShouldReloadBrokenPlaceholder())
     return;
 
-  Resource::CheckNotify();
+  Resource::NotifyFinished();
 }
 
 bool ImageResource::HasClientsOrObservers() const {
@@ -642,7 +642,7 @@ void ImageResource::OnePartInMultipartReceived(
     // We notify clients and observers of finish in checkNotify() and
     // updateImageAndClearBuffer(), respectively, and they will not be
     // notified again in Resource::finish()/error().
-    CheckNotify();
+    NotifyFinished();
     if (Loader())
       Loader()->DidFinishLoadingFirstPartInMultipart();
   }

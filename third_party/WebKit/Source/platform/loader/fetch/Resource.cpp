@@ -360,7 +360,7 @@ void Resource::CheckResourceIntegrity() {
   DCHECK_NE(IntegrityDisposition(), ResourceIntegrityDisposition::kNotChecked);
 }
 
-void Resource::CheckNotify() {
+void Resource::NotifyFinished() {
   DCHECK(IsLoaded());
 
   TriggerNotificationForFinishObservers();
@@ -444,7 +444,7 @@ void Resource::FinishAsError(const ResourceError& error) {
   ClearData();
   loader_ = nullptr;
   CheckResourceIntegrity();
-  CheckNotify();
+  NotifyFinished();
 }
 
 void Resource::Finish(double load_finish_time) {
@@ -454,7 +454,7 @@ void Resource::Finish(double load_finish_time) {
     status_ = ResourceStatus::kCached;
   loader_ = nullptr;
   CheckResourceIntegrity();
-  CheckNotify();
+  NotifyFinished();
 }
 
 AtomicString Resource::HttpContentType() const {

@@ -152,7 +152,7 @@ void CSSStyleSheetResource::AppendData(const char* data, size_t length) {
   did_notify_first_data_ = true;
 }
 
-void CSSStyleSheetResource::CheckNotify() {
+void CSSStyleSheetResource::NotifyFinished() {
   TriggerNotificationForFinishObservers();
 
   // Decode the data to find out the encoding and cache the decoded sheet text.
