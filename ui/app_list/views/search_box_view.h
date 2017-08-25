@@ -231,6 +231,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   SearchBoxImageButton* speech_button_ = nullptr;
   SearchBoxImageButton* close_button_ = nullptr;
   views::Textfield* search_box_;
+  views::View* search_box_right_space_ = nullptr;
   views::View* contents_view_ = nullptr;
   app_list::AppListView* app_list_view_;
 
