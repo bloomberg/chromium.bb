@@ -24,6 +24,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/management_policy.h"
 #include "extensions/browser/test_management_policy.h"
+#include "extensions/common/api/management.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -274,6 +275,78 @@ TEST_F(ManagementApiUnitTest, ManagementEnableOrDisableBlacklisted) {
     EXPECT_TRUE(RunFunction(function, disable_args)) << function->GetError();
     EXPECT_FALSE(registry()->enabled_extensions().Contains(id));
     EXPECT_FALSE(registry()->disabled_extensions().Contains(id));
+  }
+}
+
+TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
+  using ExtensionInfo = api::management::ExtensionInfo;
+
+  scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
+  service()->AddExtension(extension.get());
+
+  const std::string args =
+      base::StringPrintf("[\"%s\"]", extension->id().c_str());
+  scoped_refptr<UIThreadExtensionFunction> function;
+
+  // Initially the extension should show as enabled.
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+  {
+    function = new ManagementGetFunction();
+    std::unique_ptr<base::Value> value(
+        extension_function_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(), args, browser()));
+    ASSERT_TRUE(value);
+    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    ASSERT_TRUE(info);
+    EXPECT_TRUE(info->enabled);
+    // |may_enable| is only returned for extensions which are not enabled.
+    EXPECT_FALSE(info->may_enable.get());
+  }
+
+  // Simulate blacklisting the extension and verify that the extension shows as
+  // disabled with a false value of |may_enable|.
+  ManagementPolicy* policy =
+      ExtensionSystem::Get(profile())->management_policy();
+  policy->UnregisterAllProviders();
+  TestManagementPolicyProvider provider(
+      TestManagementPolicyProvider::PROHIBIT_LOAD);
+  policy->RegisterProvider(&provider);
+  service()->CheckManagementPolicy();
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(extension->id()));
+  {
+    function = new ManagementGetFunction();
+    std::unique_ptr<base::Value> value(
+        extension_function_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(), args, browser()));
+    ASSERT_TRUE(value);
+    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    ASSERT_TRUE(info);
+    EXPECT_FALSE(info->enabled);
+    ASSERT_TRUE(info->may_enable.get());
+    EXPECT_FALSE(*(info->may_enable));
+  }
+
+  // Re-enable the extension.
+  policy->UnregisterAllProviders();
+  service()->CheckManagementPolicy();
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(extension->id()));
+
+  // Disable the extension with a normal user action. Verify the extension shows
+  // as disabled with |may_enable| as true.
+  service()->DisableExtension(extension->id(),
+                              disable_reason::DISABLE_USER_ACTION);
+  EXPECT_TRUE(registry()->disabled_extensions().Contains(extension->id()));
+  {
+    function = new ManagementGetFunction();
+    std::unique_ptr<base::Value> value(
+        extension_function_test_utils::RunFunctionAndReturnSingleResult(
+            function.get(), args, browser()));
+    ASSERT_TRUE(value);
+    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    ASSERT_TRUE(info);
+    EXPECT_FALSE(info->enabled);
+    ASSERT_TRUE(info->may_enable.get());
+    EXPECT_TRUE(*(info->may_enable));
   }
 }
 
