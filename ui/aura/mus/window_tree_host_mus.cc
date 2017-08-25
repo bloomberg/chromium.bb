@@ -41,8 +41,11 @@ WindowTreeHostMus::WindowTreeHostMus(WindowTreeHostMusInitParams init_params)
       delegate_(init_params.window_tree_client) {
   gfx::Rect bounds_in_pixels;
   display_init_params_ = std::move(init_params.display_init_params);
-  if (display_init_params_)
+  if (display_init_params_) {
     bounds_in_pixels = display_init_params_->viewport_metrics.bounds_in_pixels;
+    if (display_init_params_->display)
+      DCHECK_EQ(display_id_, display_init_params_->display->id());
+  }
   window()->SetProperty(kWindowTreeHostMusKey, this);
   // TODO(sky): find a cleaner way to set this! Better solution is to likely
   // have constructor take aura::Window.
