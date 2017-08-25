@@ -180,6 +180,11 @@ void KioskExternalUpdater::OnFormatEvent(
     const std::string& device_path) {
 }
 
+void KioskExternalUpdater::OnRenameEvent(
+    disks::DiskMountManager::RenameEvent event,
+    RenameError error_code,
+    const std::string& device_path) {}
+
 void KioskExternalUpdater::OnExtenalUpdateUnpackSuccess(
     const std::string& app_id,
     const std::string& version,

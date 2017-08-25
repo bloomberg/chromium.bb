@@ -187,6 +187,10 @@ void StorageMonitorCros::OnFormatEvent(DiskMountManager::FormatEvent event,
                                        chromeos::FormatError error_code,
                                        const std::string& device_path) {}
 
+void StorageMonitorCros::OnRenameEvent(DiskMountManager::RenameEvent event,
+                                       chromeos::RenameError error_code,
+                                       const std::string& device_path) {}
+
 void StorageMonitorCros::SetMediaTransferProtocolManagerForTest(
     device::MediaTransferProtocolManager* test_manager) {
   DCHECK(!media_transfer_protocol_manager_);

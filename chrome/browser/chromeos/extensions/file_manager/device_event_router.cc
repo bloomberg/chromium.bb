@@ -121,6 +121,24 @@ void DeviceEventRouter::OnFormatCompleted(const std::string& device_path,
                 device_path);
 }
 
+void DeviceEventRouter::OnRenameStarted(const std::string& device_path,
+                                        bool success) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  OnDeviceEvent(success ? file_manager_private::DEVICE_EVENT_TYPE_RENAME_START
+                        : file_manager_private::DEVICE_EVENT_TYPE_RENAME_FAIL,
+                device_path);
+}
+
+void DeviceEventRouter::OnRenameCompleted(const std::string& device_path,
+                                          bool success) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  OnDeviceEvent(success ? file_manager_private::DEVICE_EVENT_TYPE_RENAME_SUCCESS
+                        : file_manager_private::DEVICE_EVENT_TYPE_RENAME_FAIL,
+                device_path);
+}
+
 void DeviceEventRouter::SuspendImminent() {
   DCHECK(thread_checker_.CalledOnValidThread());
   is_resuming_ = true;

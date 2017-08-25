@@ -57,6 +57,9 @@ class StorageMonitorCros : public StorageMonitor,
   void OnFormatEvent(chromeos::disks::DiskMountManager::FormatEvent event,
                      chromeos::FormatError error_code,
                      const std::string& device_path) override;
+  void OnRenameEvent(chromeos::disks::DiskMountManager::RenameEvent event,
+                     chromeos::RenameError error_code,
+                     const std::string& device_path) override;
 
   // StorageMonitor implementation.
   bool GetStorageInfoForPath(const base::FilePath& path,

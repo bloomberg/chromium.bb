@@ -93,6 +93,13 @@ void ArcVolumeMounterBridge::OnFormatEvent(
   // Ignored. ARC doesn't care about events other than Disk and Mount events.
 }
 
+void ArcVolumeMounterBridge::OnRenameEvent(
+    chromeos::disks::DiskMountManager::RenameEvent event,
+    chromeos::RenameError error_code,
+    const std::string& device_path) {
+  // Ignored. ARC doesn't care about events other than Disk and Mount events.
+}
+
 void ArcVolumeMounterBridge::OnMountEvent(
     DiskMountManager::MountEvent event,
     chromeos::MountError error_code,

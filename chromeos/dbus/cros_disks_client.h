@@ -72,6 +72,21 @@ enum MountError {
   // consider doing explicit translation from cros-disks error_types.
 };
 
+// Rename error reported by cros-disks.
+enum RenameError {
+  RENAME_ERROR_NONE,
+  RENAME_ERROR_UNKNOWN,
+  RENAME_ERROR_INTERNAL,
+  RENAME_ERROR_INVALID_DEVICE_PATH,
+  RENAME_ERROR_DEVICE_BEING_RENAMED,
+  RENAME_ERROR_UNSUPPORTED_FILESYSTEM,
+  RENAME_ERROR_RENAME_PROGRAM_NOT_FOUND,
+  RENAME_ERROR_RENAME_PROGRAM_FAILED,
+  RENAME_ERROR_DEVICE_NOT_ALLOWED,
+  RENAME_ERROR_LONG_NAME,
+  RENAME_ERROR_INVALID_CHARACTER,
+};
+
 // Format error reported by cros-disks.
 enum FormatError {
   FORMAT_ERROR_NONE,
@@ -271,6 +286,13 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
                               const std::string& device_path)>
       FormatCompletedHandler;
 
+  // A callback to handle RenameCompleted signal.
+  // The first argument is the error code.
+  // The second argument is the device path.
+  typedef base::Callback<void(RenameError error_code,
+                              const std::string& device_path)>
+      RenameCompletedHandler;
+
   // A callback to handle mount events.
   // The first argument is the event type.
   // The second argument is the device path.
@@ -323,6 +345,13 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
                       const base::Closure& callback,
                       const base::Closure& error_callback) = 0;
 
+  // Calls Rename method. |callback| is called after the method call succeeds,
+  // otherwise, |error_callback| is called.
+  virtual void Rename(const std::string& device_path,
+                      const std::string& volume_name,
+                      const base::Closure& callback,
+                      const base::Closure& error_callback) = 0;
+
   // Calls GetDeviceProperties method.  |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.
   virtual void GetDeviceProperties(const std::string& device_path,
@@ -343,6 +372,11 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   // FormatCompleted signal is received.
   virtual void SetFormatCompletedHandler(
       const FormatCompletedHandler& format_completed_handler) = 0;
+
+  // Registers |rename_completed_handler| as a callback to be invoked when a
+  // RenameCompleted signal is received.
+  virtual void SetRenameCompletedHandler(
+      const RenameCompletedHandler& rename_completed_handler) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

@@ -48,6 +48,8 @@ class MockDiskMountManager : public DiskMountManager {
                                  const DiskMountManager::UnmountPathCallback&));
   MOCK_METHOD1(RemountAllRemovableDrives, void(MountAccessMode));
   MOCK_METHOD1(FormatMountedDevice, void(const std::string&));
+  MOCK_METHOD2(RenameMountedDevice,
+               void(const std::string&, const std::string&));
   MOCK_METHOD2(
       UnmountDeviceRecursively,
       void(const std::string&,

@@ -143,7 +143,8 @@ class EventRouter : public KeyedService,
                          const Volume& volume) override;
   void OnFormatStarted(const std::string& device_path, bool success) override;
   void OnFormatCompleted(const std::string& device_path, bool success) override;
-
+  void OnRenameStarted(const std::string& device_path, bool success) override;
+  void OnRenameCompleted(const std::string& device_path, bool success) override;
   // Set custom dispatch directory change event implementation for testing.
   void SetDispatchDirectoryChangeEventImplForTesting(
       const DispatchDirectoryChangeEventImplCallback& callback);

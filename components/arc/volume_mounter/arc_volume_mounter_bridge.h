@@ -54,6 +54,9 @@ class ArcVolumeMounterBridge
   void OnFormatEvent(chromeos::disks::DiskMountManager::FormatEvent event,
                      chromeos::FormatError error_code,
                      const std::string& device_path) override;
+  void OnRenameEvent(chromeos::disks::DiskMountManager::RenameEvent event,
+                     chromeos::RenameError error_code,
+                     const std::string& device_path) override;
 
  private:
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.

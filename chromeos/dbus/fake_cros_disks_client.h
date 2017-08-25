@@ -49,6 +49,10 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
               const std::string& filesystem,
               const base::Closure& callback,
               const base::Closure& error_callback) override;
+  void Rename(const std::string& device_path,
+              const std::string& volume_name,
+              const base::Closure& callback,
+              const base::Closure& error_callback) override;
   void GetDeviceProperties(const std::string& device_path,
                            const GetDevicePropertiesCallback& callback,
                            const base::Closure& error_callback) override;
@@ -58,6 +62,8 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
       const MountCompletedHandler& mount_completed_handler) override;
   void SetFormatCompletedHandler(
       const FormatCompletedHandler& format_completed_handler) override;
+  void SetRenameCompletedHandler(
+      const RenameCompletedHandler& rename_completed_handler) override;
 
   // Used in tests to simulate signals sent by cros disks layer.
   // Invokes handlers set in |SetMountEventHandler|, |SetMountCompletedHandler|,
@@ -68,6 +74,8 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
                                MountType mount_type,
                                const std::string& mount_path);
   bool SendFormatCompletedEvent(FormatError error_code,
+                                const std::string& device_path);
+  bool SendRenameCompletedEvent(RenameError error_code,
                                 const std::string& device_path);
 
   // Returns how many times Unmount() was called.
@@ -116,10 +124,27 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
     format_success_ = false;
   }
 
+  // Returns how many times Rename() was called.
+  int rename_call_count() const { return rename_call_count_; }
+
+  // Returns the |device_path| parameter from the last invocation of Rename().
+  const std::string& last_rename_device_path() const {
+    return last_rename_device_path_;
+  }
+
+  // Returns the |volume_name| parameter from the last invocation of Rename().
+  const std::string& last_rename_volume_name() const {
+    return last_rename_volume_name_;
+  }
+
+  // Makes the subsequent Rename() calls fail. Rename() succeeds by default.
+  void MakeRenameFail() { rename_success_ = false; }
+
  private:
   MountEventHandler mount_event_handler_;
   MountCompletedHandler mount_completed_handler_;
   FormatCompletedHandler format_completed_handler_;
+  RenameCompletedHandler rename_completed_handler_;
 
   int unmount_call_count_;
   std::string last_unmount_device_path_;
@@ -130,6 +155,10 @@ class CHROMEOS_EXPORT FakeCrosDisksClient : public CrosDisksClient {
   std::string last_format_device_path_;
   std::string last_format_filesystem_;
   bool format_success_;
+  int rename_call_count_;
+  std::string last_rename_device_path_;
+  std::string last_rename_volume_name_;
+  bool rename_success_;
   std::set<base::FilePath> mounted_paths_;
 };
 
