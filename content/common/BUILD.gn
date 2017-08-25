@@ -637,7 +637,6 @@ mojom("mojo_bindings") {
     "storage_partition_service.mojom",
     "video_capture.mojom",
     "widget.mojom",
-    "worker_url_loader_factory_provider.mojom",
   ]
 
   import_dirs = [ "//mojo/services" ]

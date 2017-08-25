@@ -12,7 +12,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -26,7 +25,6 @@
 #include "content/common/service_worker/service_worker_provider_host_info.h"
 #include "content/common/service_worker/service_worker_provider_interfaces.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/common/resource_type.h"
@@ -325,12 +323,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // cache.
   void NotifyControllerLost();
 
-  // Binds the ServiceWorkerWorkerClient of a dedicated (or shared) worker to
-  // the parent frame's ServiceWorkerProviderHost. (This is used only when
-  // off-main-thread-fetch is enabled.)
-  void BindWorkerFetchContext(
-      mojom::ServiceWorkerWorkerClientAssociatedPtrInfo client_ptr_info);
-
  private:
   friend class ForeignFetchRequestHandlerTest;
   friend class LinkHeaderServiceWorkerTest;
@@ -409,10 +401,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void SendSetControllerServiceWorker(ServiceWorkerVersion* version,
                                       bool notify_controllerchange);
 
-  // Clears the information of the ServiceWorkerWorkerClient of dedicated (or
-  // shared) worker, when the connection to the worker is disconnected.
-  void UnregisterWorkerFetchContext(mojom::ServiceWorkerWorkerClient*);
-
   const std::string client_uuid_;
   const base::TimeTicks create_time_;
   int render_process_id_;
@@ -466,12 +454,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   mojo::AssociatedBinding<mojom::ServiceWorkerProviderHost> binding_;
 
   std::vector<base::Closure> queued_events_;
-
-  // Keeps ServiceWorkerWorkerClient pointers of dedicated or shared workers
-  // which are associated with the ServiceWorkerProviderHost.
-  std::unordered_map<mojom::ServiceWorkerWorkerClient*,
-                     mojom::ServiceWorkerWorkerClientAssociatedPtr>
-      worker_clients_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };

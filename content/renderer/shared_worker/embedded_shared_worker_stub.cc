@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
+#include "content/child/child_url_loader_factory_getter.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/child/service_worker/service_worker_handle_reference.h"
@@ -19,7 +20,6 @@
 #include "content/child/shared_worker_devtools_agent.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/worker_messages.h"
-#include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "content/public/common/appcache_info.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
@@ -71,10 +71,10 @@ class SharedWorkerWebApplicationCacheHostImpl
 };
 
 // Called on the main thread only and blink owns it.
-class WebServiceWorkerNetworkProviderImpl
+class WebServiceWorkerNetworkProviderForSharedWorker
     : public blink::WebServiceWorkerNetworkProvider {
  public:
-  WebServiceWorkerNetworkProviderImpl(
+  WebServiceWorkerNetworkProviderForSharedWorker(
       std::unique_ptr<ServiceWorkerNetworkProvider> provider,
       bool is_secure_context)
       : provider_(std::move(provider)), is_secure_context_(is_secure_context) {}
@@ -113,6 +113,8 @@ class WebServiceWorkerNetworkProviderImpl
       return provider_->context()->controller()->version_id();
     return kInvalidServiceWorkerVersionId;
   }
+
+  ServiceWorkerNetworkProvider* provider() { return provider_.get(); }
 
   // TODO(kinuko): Implement CreateURLLoader with provider_->context()->
   // subresource_loader if Servicification is enabled.
@@ -239,7 +241,7 @@ EmbeddedSharedWorkerStub::CreateServiceWorkerNetworkProvider() {
       ServiceWorkerNetworkProvider::CreateForSharedWorker(route_id_));
 
   // Blink is responsible for deleting the returned object.
-  return base::MakeUnique<WebServiceWorkerNetworkProviderImpl>(
+  return base::MakeUnique<WebServiceWorkerNetworkProviderForSharedWorker>(
       std::move(provider), IsOriginSecure(url_));
 }
 
@@ -261,14 +263,22 @@ std::unique_ptr<blink::WebWorkerFetchContext>
 EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
     blink::WebServiceWorkerNetworkProvider* web_network_provider) {
   DCHECK(base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
-  mojom::WorkerURLLoaderFactoryProviderPtr worker_url_loader_factory_provider;
-  RenderThreadImpl::current()
-      ->blink_platform_impl()
-      ->GetInterfaceProvider()
-      ->GetInterface(mojo::MakeRequest(&worker_url_loader_factory_provider));
-  std::unique_ptr<WorkerFetchContextImpl> worker_fetch_context =
-      base::MakeUnique<WorkerFetchContextImpl>(
-          worker_url_loader_factory_provider.PassInterface());
+  DCHECK(web_network_provider);
+  mojom::ServiceWorkerWorkerClientRequest request =
+      static_cast<WebServiceWorkerNetworkProviderForSharedWorker*>(
+          web_network_provider)
+          ->provider()
+          ->context()
+          ->CreateWorkerClientRequest();
+
+  scoped_refptr<ChildURLLoaderFactoryGetter> url_loader_factory_getter =
+      RenderThreadImpl::current()
+          ->blink_platform_impl()
+          ->CreateDefaultURLLoaderFactoryGetter();
+  DCHECK(url_loader_factory_getter);
+  auto worker_fetch_context = base::MakeUnique<WorkerFetchContextImpl>(
+      std::move(request), url_loader_factory_getter->GetClonedInfo());
+
   // TODO(horo): To get the correct first_party_to_cookies for the shared
   // worker, we need to check the all documents bounded by the shared worker.
   // (crbug.com/723553)

@@ -24,10 +24,33 @@ class CONTENT_EXPORT ChildURLLoaderFactoryGetter
   using URLLoaderFactoryGetterCallback =
       base::OnceCallback<mojom::URLLoaderFactoryPtr()>;
 
+  // Info class stores necessary information to create a clone of
+  // ChildURLLoaderFactoryGetter in worker thread.
+  class Info {
+   public:
+    Info(mojom::URLLoaderFactoryPtrInfo network_loader_factory_info,
+         mojom::URLLoaderFactoryPtrInfo blob_loader_factory_info);
+    Info(Info&& other);
+    ~Info();
+
+    scoped_refptr<ChildURLLoaderFactoryGetter> Bind();
+
+   private:
+    mojom::URLLoaderFactoryPtrInfo network_loader_factory_info_;
+    mojom::URLLoaderFactoryPtrInfo blob_loader_factory_info_;
+  };
+
   ChildURLLoaderFactoryGetter();
+
   ChildURLLoaderFactoryGetter(
       PossiblyAssociatedURLLoaderFactory network_loader_factory,
       URLLoaderFactoryGetterCallback blob_loader_factory_getter);
+
+  ChildURLLoaderFactoryGetter(
+      PossiblyAssociatedURLLoaderFactory network_loader_factory,
+      PossiblyAssociatedURLLoaderFactory blob_loader_factory_getter);
+
+  Info GetClonedInfo();
 
   mojom::URLLoaderFactory* GetNetworkLoaderFactory();
   mojom::URLLoaderFactory* GetBlobLoaderFactory();
