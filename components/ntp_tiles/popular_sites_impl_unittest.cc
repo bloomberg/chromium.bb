@@ -25,6 +25,7 @@
 #include "components/ntp_tiles/json_unsafe_parser.h"
 #include "components/ntp_tiles/pref_names.h"
 #include "components/ntp_tiles/switches.h"
+#include "components/ntp_tiles/tile_source.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/http/http_status_code.h"
@@ -295,6 +296,7 @@ TEST_F(PopularSitesTest, PopulatesWithDefaultResoucesOnFailure) {
   EXPECT_THAT(sites.size(), Eq(GetNumberOfDefaultPopularSitesForPlatform()));
 }
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
 TEST_F(PopularSitesTest, AddsIconResourcesToDefaultPages) {
   scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
       new net::TestURLRequestContextGetter(
@@ -302,15 +304,17 @@ TEST_F(PopularSitesTest, AddsIconResourcesToDefaultPages) {
   std::unique_ptr<PopularSites> popular_sites =
       CreatePopularSites(url_request_context.get());
 
-#if defined(GOOGLE_CHROME_BUILD) && (defined(OS_ANDROID) || defined(OS_IOS))
   const PopularSites::SitesVector& sites =
       popular_sites->sections().at(SectionType::PERSONALIZED);
   ASSERT_FALSE(sites.empty());
   for (const auto& site : sites) {
+    EXPECT_TRUE(site.baked_in);
+#if defined(GOOGLE_CHROME_BUILD)
     EXPECT_THAT(site.default_icon_resource, Gt(0));
-  }
 #endif
+  }
 }
+#endif
 
 TEST_F(PopularSitesTest, ProvidesDefaultSitesUntilCallbackReturns) {
   SetCountryAndVersion("ZZ", "5");

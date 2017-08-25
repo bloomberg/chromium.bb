@@ -39,6 +39,7 @@ class PopularSites {
     GURL favicon_url;
     GURL large_icon_url;
     GURL thumbnail_url;
+    bool baked_in;
     int default_icon_resource;  // < 0 if there is none. Used for popular sites.
   };
 

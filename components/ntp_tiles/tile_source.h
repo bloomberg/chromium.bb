@@ -17,6 +17,8 @@ enum class TileSource {
   SUGGESTIONS_SERVICE,
   // Tile is regionally popular.
   POPULAR,
+  // Tile is a popular site baked into the binary.
+  POPULAR_BAKED_IN,
   // Tile is on a custodian-managed whitelist.
   WHITELIST,
   // Tile containing the user-set home page is replacing the home page button.
