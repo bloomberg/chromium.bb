@@ -355,6 +355,41 @@ TEST_F(ProfileAttributesStorageTest, EntryInternalAccessors) {
   EXPECT_TRUE(entry->SetBool("test2", false));
 }
 
+TEST_F(ProfileAttributesStorageTest, ProfileActiveTime) {
+  AddTestingProfile();
+
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(storage()->GetProfileAttributesWithPath(
+      GetProfilePath("testing_profile_path0"), &entry));
+
+  // Check the state before active time is stored.
+  const char kActiveTimeKey[] = "active_time";
+  EXPECT_FALSE(entry->IsDouble(kActiveTimeKey));
+  EXPECT_EQ(base::Time(), entry->GetActiveTime());
+
+  // Store the time and check for the result. Allow for a difference one second
+  // because the 64-bit integral representation in base::Time is rounded off to
+  // a double, which is what base::Value stores. http://crbug.com/346827
+  base::Time lower_bound = base::Time::Now() - base::TimeDelta::FromSeconds(1);
+  entry->SetActiveTimeToNow();
+  base::Time upper_bound = base::Time::Now() + base::TimeDelta::FromSeconds(1);
+  EXPECT_TRUE(entry->IsDouble(kActiveTimeKey));
+  EXPECT_LE(lower_bound, entry->GetActiveTime());
+  EXPECT_GE(upper_bound, entry->GetActiveTime());
+
+  // If the active time was less than one hour ago, SetActiveTimeToNow should do
+  // nothing.
+  base::Time past = base::Time::Now() - base::TimeDelta::FromMinutes(10);
+  lower_bound = past - base::TimeDelta::FromSeconds(1);
+  upper_bound = past + base::TimeDelta::FromSeconds(1);
+  ASSERT_TRUE(entry->SetDouble(kActiveTimeKey, past.ToDoubleT()));
+  base::Time stored_time = entry->GetActiveTime();
+  ASSERT_LE(lower_bound, stored_time);
+  ASSERT_GE(upper_bound, stored_time);
+  entry->SetActiveTimeToNow();
+  EXPECT_EQ(stored_time, entry->GetActiveTime());
+}
+
 TEST_F(ProfileAttributesStorageTest, AuthInfo) {
   AddTestingProfile();
 
