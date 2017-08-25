@@ -320,11 +320,8 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableServiceWorkerScriptStreaming(
       base::FeatureList::IsEnabled(features::kServiceWorkerScriptStreaming));
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService)) {
-    // http://crbug.com/756571: fix this to work with network service.
-    WebRuntimeFeatures::EnableOffMainThreadFetch(
-        base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
-  }
+  WebRuntimeFeatures::EnableOffMainThreadFetch(
+      base::FeatureList::IsEnabled(features::kOffMainThreadFetch));
 
   WebRuntimeFeatures::EnableMojoBlobs(
       base::FeatureList::IsEnabled(features::kMojoBlobs));

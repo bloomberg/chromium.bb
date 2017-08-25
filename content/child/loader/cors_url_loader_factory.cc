@@ -46,10 +46,11 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
 }
 
 void CORSURLLoaderFactory::Clone(mojom::URLLoaderFactoryRequest request) {
-  // Cloning a CORSURLLoaderFactory so that it can be used from a different
-  // thread is not useful because that thread will still be dependent on the
-  // current one to handle requests.
-  NOTREACHED();
+  mojom::URLLoaderFactoryPtr network_loader_factory_copy;
+  network_loader_factory_->Clone(
+      mojo::MakeRequest(&network_loader_factory_copy));
+  CORSURLLoaderFactory::CreateAndBind(std::move(network_loader_factory_copy),
+                                      std::move(request));
 }
 
 }  // namespace content
