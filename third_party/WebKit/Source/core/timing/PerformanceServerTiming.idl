@@ -10,4 +10,5 @@
     readonly attribute DOMString name;
     readonly attribute DOMHighResTimeStamp duration;
     readonly attribute DOMString description;
+    serializer = {attribute};
 };
