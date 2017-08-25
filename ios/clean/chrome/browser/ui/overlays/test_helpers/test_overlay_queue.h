@@ -7,6 +7,7 @@
 
 #import "ios/clean/chrome/browser/ui/overlays/overlay_queue.h"
 
+class Browser;
 @class BrowserCoordinator;
 @class OverlayCoordinator;
 
@@ -18,9 +19,16 @@ class TestOverlayQueue : public OverlayQueue {
   void StartNextOverlay() override;
   void AddOverlay(OverlayCoordinator* overlay);
 
+  // Seting the Browser also sets the Browser of |parent_|, which will be passed
+  // along to OverlayCoordinators presented by this queue when they are started.
+  Browser* browser() const { return browser_; }
+  void SetBrowser(Browser* browser);
+
  private:
   // The coordinator to use as the parent for overlays added via AddOverlay().
   __strong BrowserCoordinator* parent_;
+  // The Browser to use, if any.
+  Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(TestOverlayQueue);
 };
