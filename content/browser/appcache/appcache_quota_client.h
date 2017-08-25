@@ -31,7 +31,7 @@ class AppCacheStorageImpl;
 // been destroyed.
 class AppCacheQuotaClient : public storage::QuotaClient {
  public:
-  typedef std::deque<base::Closure> RequestQueue;
+  typedef std::deque<base::OnceClosure> RequestQueue;
 
   ~AppCacheQuotaClient() override;
 
