@@ -2583,8 +2583,8 @@ TEST_F(PasswordFormManagerTest, ProcessFrame_StoreUpdatesCausesAutofill) {
 }
 
 // TODO(crbug.com/639786): Restore the following test:
-// when PasswordFormManager::Save is called, then PasswordFormManager also
-// calls PasswordManager::UpdateFormManagers.
+// when PasswordFormManager::Save or PasswordFormManager::Update is called, then
+// PasswordFormManager also calls PasswordManager::UpdateFormManagers.
 
 TEST_F(PasswordFormManagerTest, UploadChangePasswordForm) {
   autofill::ServerFieldType kChangePasswordVotes[] = {
