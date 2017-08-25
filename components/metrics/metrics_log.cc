@@ -175,7 +175,7 @@ void MetricsLog::RecordCoreSystemProfile(MetricsServiceClient* client,
   os->set_name(base::SysInfo::OperatingSystemName());
   os->set_version(base::SysInfo::OperatingSystemVersion());
 #if defined(OS_ANDROID)
-  os->set_fingerprint(
+  os->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
 #endif
 }

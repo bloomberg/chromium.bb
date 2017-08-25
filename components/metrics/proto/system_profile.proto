@@ -89,7 +89,7 @@ message SystemProfileProto {
     optional string version = 2;
 
     // The fingerprint of the build.  This field is used only on Android.
-    optional string fingerprint = 3;
+    optional string build_fingerprint = 3;
 
     // Whether the version of iOS appears to be "jailbroken". This field is
     // used only on iOS. Chrome for iOS detects whether device contains a
