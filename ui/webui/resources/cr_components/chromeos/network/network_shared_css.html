@@ -10,8 +10,8 @@
         align-items: center;
         border-top: var(--cr-separator-line);
         display: flex;
-        min-height: 64px;  /* matches --settings-row-two-line-min-height */
-        padding: 0 20px;  /* matches --settings-box-row-padding */
+        min-height: var(--cr-section-two-line-min-height);
+        padding: 0 var(--cr-section-padding);
       }
 
       .property-box.first,
@@ -20,7 +20,7 @@
       }
 
       .property-box.indented {
-        -webkit-margin-start: 20px;  /* matches --settings-box-row-padding */
+        -webkit-margin-start: var(--cr-section-padding);
       }
 
       .property-box.single-column {
