@@ -183,11 +183,12 @@ void AppMenuButton::UpdateIcon(bool should_animate) {
     // Only show a special color for severity when using the classic Chrome
     // theme. Otherwise, we can't be sure that it contrasts with the toolbar
     // background.
-    new_icon_->SetColor(
-        ThemeServiceFactory::GetForProfile(toolbar_view_->browser()->profile())
-                ->UsingDefaultTheme()
-            ? severity_color
-            : toolbar_icon_color);
+    ThemeService* theme_service =
+        ThemeServiceFactory::GetForProfile(toolbar_view_->browser()->profile());
+    new_icon_->SetColor(theme_service->UsingSystemTheme() ||
+                                theme_service->UsingDefaultTheme()
+                            ? severity_color
+                            : toolbar_icon_color);
 
     if (should_animate)
       AnimateIconIfPossible();
