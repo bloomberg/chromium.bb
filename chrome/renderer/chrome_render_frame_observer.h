@@ -8,10 +8,12 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/image_context_menu_renderer.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "chrome/common/thumbnail_capturer.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
@@ -21,7 +23,6 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/web_ui_tester.mojom.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
 #endif
 
 namespace gfx {
@@ -47,7 +48,8 @@ class ChromeRenderFrameObserver
 #if !defined(OS_ANDROID)
       public chrome::mojom::WebUITester,
 #endif
-      public chrome::mojom::ThumbnailCapturer {
+      public chrome::mojom::ThumbnailCapturer,
+      public chrome::mojom::ChromeRenderFrame {
  public:
   explicit ChromeRenderFrameObserver(content::RenderFrame* render_frame);
   ~ChromeRenderFrameObserver() override;
@@ -113,6 +115,12 @@ class ChromeRenderFrameObserver
   void OnPrintNodeUnderContextMenu();
   void OnSetClientSidePhishingDetection(bool enable_phishing_detection);
 
+  // chrome::mojom::ChromeRenderFrame:
+  void SetWindowFeatures(
+      blink::mojom::WindowFeaturesPtr window_features) override;
+  void OnRenderFrameObserverRequest(
+      chrome::mojom::ChromeRenderFrameAssociatedRequest request);
+
   // Captures page information using the top (main) frame of a frame tree.
   // Currently, this page information is just the text content of the all
   // frames, collected and concatenated until a certain limit (kMaxIndexChars)
@@ -143,6 +151,9 @@ class ChromeRenderFrameObserver
 
   mojo::BindingSet<chrome::mojom::ThumbnailCapturer>
       thumbnail_capturer_bindings_;
+
+  mojo::AssociatedBindingSet<chrome::mojom::ChromeRenderFrame>
+      window_features_client_bindings_;
 
   service_manager::BinderRegistry registry_;
 

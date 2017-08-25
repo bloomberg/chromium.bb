@@ -25,7 +25,6 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "content/public/renderer/window_features_converter.h"
 #include "extensions/features/features.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -50,17 +49,17 @@ ChromeRenderViewObserver::~ChromeRenderViewObserver() {
 }
 
 bool ChromeRenderViewObserver::OnMessageReceived(const IPC::Message& message) {
+#if defined(OS_ANDROID)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderViewObserver, message)
-#if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_UpdateBrowserControlsState,
                         OnUpdateBrowserControlsState)
-#endif
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_SetWindowFeatures, OnSetWindowFeatures)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-
   return handled;
+#else
+  return false;
+#endif
 }
 
 #if defined(OS_ANDROID)
@@ -71,12 +70,6 @@ void ChromeRenderViewObserver::OnUpdateBrowserControlsState(
   render_view()->UpdateBrowserControlsState(constraints, current, animate);
 }
 #endif
-
-void ChromeRenderViewObserver::OnSetWindowFeatures(
-    const blink::mojom::WindowFeatures& window_features) {
-  render_view()->GetWebView()->SetWindowFeatures(
-      content::ConvertMojoWindowFeaturesToWebWindowFeatures(window_features));
-}
 
 void ChromeRenderViewObserver::Navigate(const GURL& url) {
   // Execute cache clear operations that were postponed until a navigation
