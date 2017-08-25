@@ -20,10 +20,10 @@ namespace ukm {
  *  ukm::mojom::UkmRecorderInterfacePtr interface;
  *  content::RenderThread::Get()->GetConnector()->BindInterface(
  *      content::mojom::kBrowserServiceName, mojo::MakeRequest(&interface));
- *  ukm::MojoUkmRecorder recorder(std::move(interface));
- *  std::unique_ptr<ukm::UkmEntryBuilder> builder =
- *      recorder.GetEntryBuilder(coordination_unit_id, "MyEvent");
- *  builder->AddMetric("MyMetric", metric_value);
+ *  ukm::MojoUkmRecorder ukm_recorder(std::move(interface));
+ *  ukm::builders::MyEvent(source_id)
+ *      .SetMyMetric(metric_value)
+ *      .Record(ukm_recorder);
  */
 class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
  public:
