@@ -4430,6 +4430,21 @@ void LocalFrameView::AdjustScrollOffsetFromUpdateScrollbars() {
     SetScrollOffset(clamped, kClampingScroll);
 }
 
+ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
+    const CompositorElementId& id) {
+  if (id == GetCompositorElementId())
+    return this;
+  if (scrollable_areas_) {
+    // This requires iterating over all scrollable areas. We may want to store a
+    // map of ElementId to ScrollableArea if this is an issue for performance.
+    for (ScrollableArea* scrollable_area : *scrollable_areas_) {
+      if (id == scrollable_area->GetCompositorElementId())
+        return scrollable_area;
+    }
+  }
+  return nullptr;
+}
+
 void LocalFrameView::ScrollContentsIfNeeded() {
   if (pending_scroll_delta_.IsZero())
     return;

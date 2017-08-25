@@ -763,7 +763,7 @@ void ScrollView::ScrollToOffset(const gfx::ScrollOffset& offset) {
     // but will only be invoked (asynchronously) when a Compositor is present
     // and commits a frame, which isn't true in some tests.
     // See http://crbug.com/637521.
-    OnLayerScrolled(offset);
+    OnLayerScrolled(offset, contents_->layer()->element_id());
   } else {
     contents_->SetPosition(gfx::Point(-offset.x(), -offset.y()));
     ScrollHeader();
@@ -787,7 +787,8 @@ void ScrollView::EnableViewPortLayer() {
   UpdateBackground();
 }
 
-void ScrollView::OnLayerScrolled(const gfx::ScrollOffset&) {
+void ScrollView::OnLayerScrolled(const gfx::ScrollOffset&,
+                                 const cc::ElementId&) {
   UpdateScrollBarPositions();
   ScrollHeader();
 }

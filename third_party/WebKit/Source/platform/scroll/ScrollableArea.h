@@ -38,7 +38,6 @@
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
-#include "public/platform/WebLayerScrollClient.h"
 
 namespace blink {
 
@@ -61,8 +60,7 @@ enum IncludeScrollbarsInRect {
   kIncludeScrollbars,
 };
 
-class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
-                                       public WebLayerScrollClient {
+class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   WTF_MAKE_NONCOPYABLE(ScrollableArea);
 
  public:
@@ -379,7 +377,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   virtual RefPtr<WebTaskRunner> GetTimerTaskRunner() const = 0;
 
   // Callback for compositor-side scrolling.
-  void DidScroll(const gfx::ScrollOffset&) override;
+  virtual void DidScroll(const gfx::ScrollOffset&);
 
   virtual void ScrollbarFrameRectChanged() {}
 

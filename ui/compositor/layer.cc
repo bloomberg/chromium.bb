@@ -921,7 +921,8 @@ void Layer::OnDelegatedFrameDamage(const gfx::Rect& damage_rect_in_dip) {
 }
 
 void Layer::SetDidScrollCallback(
-    base::Callback<void(const gfx::ScrollOffset&)> callback) {
+    base::Callback<void(const gfx::ScrollOffset&, const cc::ElementId&)>
+        callback) {
   cc_layer_->set_did_scroll_callback(std::move(callback));
 }
 

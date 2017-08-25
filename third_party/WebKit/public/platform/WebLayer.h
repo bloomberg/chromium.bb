@@ -215,6 +215,11 @@ class WebLayer {
   // deleting the scroll client.
   virtual void SetScrollClient(WebLayerScrollClient*) = 0;
 
+  // Sets a synthetic impl-side scroll offset which will end up reporting this
+  // call back to blink via the |WebLayerScrollClient| callback.
+  virtual void SetScrollOffsetFromImplSideForTesting(
+      const gfx::ScrollOffset&) = 0;
+
   // The scroll-boundary-behavior allows developers to specify whether the
   // scroll should be propagated to its ancestors at the beginning of the
   // scroll, and whether the overscroll should cause UI affordance such as

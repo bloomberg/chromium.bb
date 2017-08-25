@@ -11678,4 +11678,63 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
   tester.ExpectTotalCount(histogramName, 3);
 }
 
+// TODO(pdr): Create a version of this test for SPV2 (crbug.com.758028).
+TEST_P(ParameterizedWebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.Initialize();
+  web_view_helper.Resize(WebSize(200, 200));
+  WebViewImpl* web_view = web_view_helper.WebView();
+
+  InitializeWithHTML(*web_view->MainFrameImpl()->GetFrame(),
+                     "<style>"
+                     "  #scrollable {"
+                     "    height: 100px;"
+                     "    width: 100px;"
+                     "    overflow: scroll;"
+                     "    will-change: transform;"
+                     "  }"
+                     "  #forceScroll { height: 120px; width: 50px; }"
+                     "</style>"
+                     "<div id='scrollable'>"
+                     "  <div id='forceScroll'></div>"
+                     "</div>");
+
+  web_view->UpdateAllLifecyclePhases();
+
+  Document* document = web_view->MainFrameImpl()->GetFrame()->GetDocument();
+  Element* scrollable = document->getElementById("scrollable");
+
+  auto* scrollable_area =
+      ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea();
+  EXPECT_NE(nullptr, scrollable_area);
+
+  // We should have a composited layer for scrolling due to will-change.
+  WebLayer* web_scroll_layer =
+      scrollable_area->LayerForScrolling()->PlatformLayer();
+  EXPECT_NE(nullptr, web_scroll_layer);
+
+  EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
+  web_scroll_layer->SetScrollOffsetFromImplSideForTesting(
+      gfx::ScrollOffset(0, 1));
+  web_view->UpdateAllLifecyclePhases();
+  EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
+
+  // Make the scrollable area non-scrollable.
+  scrollable->setAttribute(HTMLNames::styleAttr, "overflow: visible");
+
+  // Update layout without updating compositing state.
+  WebLocalFrame* frame = web_view_helper.LocalMainFrame();
+  frame->ExecuteScript(
+      WebScriptSource("var forceLayoutFromScript = scrollable.offsetTop;"));
+  EXPECT_EQ(document->Lifecycle().GetState(), DocumentLifecycle::kLayoutClean);
+
+  EXPECT_EQ(nullptr,
+            ToLayoutBox(scrollable->GetLayoutObject())->GetScrollableArea());
+
+  // The web scroll layer has not been deleted yet and we should be able to
+  // apply impl-side offsets without crashing.
+  web_scroll_layer->SetScrollOffsetFromImplSideForTesting(
+      gfx::ScrollOffset(0, 3));
+}
+
 }  // namespace blink

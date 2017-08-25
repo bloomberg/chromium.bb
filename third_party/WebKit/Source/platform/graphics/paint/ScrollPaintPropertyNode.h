@@ -191,8 +191,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // The scrolling element id is stored directly on the scroll node and not on
   // the associated TransformPaintPropertyNode used for scroll offset.
   CompositorElementId compositor_element_id_;
-  // TODO(pdr): This can be destroyed and be not safe to use. Refactor this to
-  // use ElementIds for safety (crbug.com/758360).
+  // TODO(pdr): This is the same on all scroll nodes. Refactor this to be stored
+  // in a more central place.
   WebLayerScrollClient* scroll_client_;
 };
 
