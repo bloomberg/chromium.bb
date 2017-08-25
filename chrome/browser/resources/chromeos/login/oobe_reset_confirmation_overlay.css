@@ -9,8 +9,10 @@
 .reset-popup {
   background: white;
   border-radius: 2px;
+  border-width: 0;
   box-shadow: 0 0 16px rgba(0, 0, 0, .12), 0 16px 16px rgba(0, 0, 0, .24);
   min-height: 158px;
+  padding: 0;
   position: relative;
   width: 512px;
   z-index: 10;
