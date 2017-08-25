@@ -25,8 +25,8 @@
 
 namespace gl {
 
-// static
-void GLSurfaceTestSupport::InitializeOneOff() {
+namespace {
+void InitializeOneOffHelper(bool init_extensions) {
   DCHECK_EQ(kGLImplementationNone, GetGLImplementation());
 
 #if defined(USE_X11)
@@ -76,7 +76,19 @@ void GLSurfaceTestSupport::InitializeOneOff() {
   bool disable_gl_drawing = true;
 
   CHECK(init::InitializeGLOneOffImplementation(
-      impl, fallback_to_software_gl, gpu_service_logging, disable_gl_drawing));
+      impl, fallback_to_software_gl, gpu_service_logging, disable_gl_drawing,
+      init_extensions));
+}
+}  // namespace
+
+// static
+void GLSurfaceTestSupport::InitializeOneOff() {
+  InitializeOneOffHelper(true);
+}
+
+// static
+void GLSurfaceTestSupport::InitializeNoExtensionsOneOff() {
+  InitializeOneOffHelper(false);
 }
 
 // static
@@ -93,8 +105,9 @@ void GLSurfaceTestSupport::InitializeOneOffImplementation(
   bool gpu_service_logging = false;
   bool disable_gl_drawing = false;
 
-  CHECK(init::InitializeGLOneOffImplementation(
-      impl, fallback_to_software_gl, gpu_service_logging, disable_gl_drawing));
+  CHECK(init::InitializeGLOneOffImplementation(impl, fallback_to_software_gl,
+                                               gpu_service_logging,
+                                               disable_gl_drawing, true));
 }
 
 // static
