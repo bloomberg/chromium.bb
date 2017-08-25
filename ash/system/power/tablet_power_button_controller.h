@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -30,15 +29,14 @@ class CommandLine;
 namespace ash {
 
 class LockStateController;
+class PowerButtonDisplayController;
 
 // Handles power button events on convertible/tablet device. This class is
 // instantiated and used in PowerButtonController.
 class ASH_EXPORT TabletPowerButtonController
     : public chromeos::AccelerometerReader::Observer,
       public chromeos::PowerManagerClient::Observer,
-      public TabletModeObserver,
-      public ui::EventHandler,
-      public ui::InputDeviceEventObserver {
+      public TabletModeObserver {
  public:
   // Helper class used by tablet power button tests to access internal state.
   class ASH_EXPORT TestApi {
@@ -62,6 +60,9 @@ class ASH_EXPORT TabletPowerButtonController
 
     // Calls |controller_|'s IsSpuriousPowerButtonEvent() method.
     bool IsSpuriousPowerButtonEvent() const;
+
+    // Sends |event| to |display_controller_|.
+    void SendKeyEvent(ui::KeyEvent* event);
 
    private:
     TabletPowerButtonController* controller_;  // Not owned.
@@ -87,22 +88,11 @@ class ASH_EXPORT TabletPowerButtonController
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
   // Overridden from chromeos::PowerManagerClient::Observer:
-  void PowerManagerRestarted() override;
-  void BrightnessChanged(int level, bool user_initiated) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
-  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
-                        const base::TimeTicks& timestamp) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
-
-  // Overridden from ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
-
-  // Overridden from ui::InputDeviceObserver:
-  void OnStylusStateChanged(ui::StylusState state) override;
 
   // Overrides the tick clock used by |this| for testing.
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
@@ -117,22 +107,6 @@ class ASH_EXPORT TabletPowerButtonController
   // received to be accidental and ignore it.
   bool IsSpuriousPowerButtonEvent() const;
 
-  // Updates the power manager's backlights-forced-off state and enables or
-  // disables the touchscreen. No-op if |backlights_forced_off_| already equals
-  // |forced_off|.
-  void SetDisplayForcedOff(bool forced_off);
-
-  // Sends a request to powerd to get the backlights forced off state so that
-  // |backlights_forced_off_| can be initialized.
-  void GetInitialBacklightsForcedOff();
-
-  // Initializes |backlights_forced_off_|.
-  void OnGotInitialBacklightsForcedOff(bool is_forced_off);
-
-  // Enables or disables the touchscreen, also writing its state to a pref in
-  // local state. The touchscreen is disabled when backlights are forced off.
-  void UpdateTouchscreenStatus();
-
   // Starts |shutdown_timer_| when the power button is pressed while in
   // tablet mode.
   void StartShutdownTimer();
@@ -144,23 +118,8 @@ class ASH_EXPORT TabletPowerButtonController
   // and locking is possible.
   void LockScreenIfRequired();
 
-  // Screen state as communicated by D-Bus signals from powerd about backlight
-  // brightness changes.
-  enum class ScreenState {
-    // The screen is on.
-    ON,
-    // The screen is off.
-    OFF,
-    // The screen is off, specifically due to an automated change like user
-    // inactivity.
-    OFF_AUTO,
-  };
-
-  // Current screen state.
-  ScreenState screen_state_ = ScreenState::ON;
-
-  // Current forced-off state of backlights.
-  bool backlights_forced_off_ = false;
+  // Used to interact with the display.
+  std::unique_ptr<PowerButtonDisplayController> display_controller_;
 
   // True if the screen was off when the power button was pressed.
   bool screen_off_when_power_button_down_ = false;
@@ -212,8 +171,6 @@ class ASH_EXPORT TabletPowerButtonController
   // Threshold for the lid angle change seen within |accelerometer_samples_|
   // in order for a power button event to be considered spurious.
   float spurious_lid_angle_change_ = 0;
-
-  base::WeakPtrFactory<TabletPowerButtonController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonController);
 };

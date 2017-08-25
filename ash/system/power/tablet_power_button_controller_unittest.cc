@@ -396,15 +396,15 @@ TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
   // generated for each pressing and releasing, and multiple repeating pressed
   // events depending on holding.
   ASSERT_EQ(0, power_manager_client_->num_set_backlights_forced_off_calls());
-  tablet_controller_->OnKeyEvent(&power_key_pressed);
-  tablet_controller_->OnKeyEvent(&power_key_pressed);
+  test_api_->SendKeyEvent(&power_key_pressed);
+  test_api_->SendKeyEvent(&power_key_pressed);
   PressPowerButton();
-  tablet_controller_->OnKeyEvent(&power_key_pressed);
-  tablet_controller_->OnKeyEvent(&power_key_pressed);
-  tablet_controller_->OnKeyEvent(&power_key_pressed);
+  test_api_->SendKeyEvent(&power_key_pressed);
+  test_api_->SendKeyEvent(&power_key_pressed);
+  test_api_->SendKeyEvent(&power_key_pressed);
   ReleasePowerButton();
-  tablet_controller_->OnKeyEvent(&power_key_released);
-  tablet_controller_->OnKeyEvent(&power_key_released);
+  test_api_->SendKeyEvent(&power_key_released);
+  test_api_->SendKeyEvent(&power_key_released);
   EXPECT_EQ(1, power_manager_client_->num_set_backlights_forced_off_calls());
 }
 
