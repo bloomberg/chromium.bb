@@ -29,6 +29,7 @@ const int kNotificationImageBorderSize = 10;
 const int kNotificationPreferredImageWidth = 360;
 const int kNotificationPreferredImageHeight = 240;
 const int kSmallImageSize = 16;
+const int kSmallImageSizeMD = 18;
 const int kSmallImagePadding = 4;
 
 // Limits.

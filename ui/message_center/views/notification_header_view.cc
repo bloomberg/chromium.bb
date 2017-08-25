@@ -168,7 +168,7 @@ NotificationHeaderView::NotificationHeaderView(
 
   // App icon view
   app_icon_view_ = new views::ImageView();
-  app_icon_view_->SetImageSize(gfx::Size(kSmallImageSize, kSmallImageSize));
+  app_icon_view_->SetImageSize(gfx::Size(kSmallImageSizeMD, kSmallImageSizeMD));
   app_info_container->AddChildView(app_icon_view_);
 
   // App name view
