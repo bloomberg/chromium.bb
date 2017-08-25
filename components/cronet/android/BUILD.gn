@@ -197,6 +197,8 @@ source_set("cronet_static") {
     "//components/cronet/android/metrics_util.h",
     "//components/cronet/android/url_request_error.cc",
     "//components/cronet/android/url_request_error.h",
+    "//components/cronet/cronet_prefs_manager.cc",
+    "//components/cronet/cronet_prefs_manager.h",
     "//components/cronet/histogram_manager.cc",
     "//components/cronet/histogram_manager.h",
     "//components/cronet/host_cache_persistence_manager.cc",
