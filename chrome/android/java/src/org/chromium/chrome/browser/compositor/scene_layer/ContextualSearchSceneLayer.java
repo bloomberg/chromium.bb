@@ -132,7 +132,7 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
 
         nativeUpdateContextualSearchLayer(mNativePtr, R.drawable.contextual_search_bar_background,
                 searchContextViewId, searchTermViewId, searchCaptionViewId,
-                R.drawable.contextual_search_bar_shadow, R.drawable.googleg, quickActionIconResId,
+                R.drawable.modern_toolbar_shadow, R.drawable.googleg, quickActionIconResId,
                 R.drawable.breadcrumb_arrow, ContextualSearchPanel.CLOSE_ICON_DRAWABLE_ID,
                 R.drawable.progress_bar_background, R.drawable.progress_bar_foreground,
                 searchPromoViewId, R.drawable.contextual_search_promo_ripple,

@@ -88,10 +88,13 @@ public class ContextualSearchPanel extends OverlayPanel {
         mSceneLayer = createNewContextualSearchSceneLayer();
         mPanelMetrics = new ContextualSearchPanelMetrics();
 
-        mBarShadowHeightPx = ApiCompatibilityUtils.getDrawable(mContext.getResources(),
-                R.drawable.contextual_search_bar_shadow).getIntrinsicHeight();
-        mEndButtonWidthDp = mPxToDp * (float) mContext.getResources().getDimensionPixelSize(
-                R.dimen.contextual_search_end_button_width);
+        mBarShadowHeightPx =
+                ApiCompatibilityUtils
+                        .getDrawable(mContext.getResources(), R.drawable.modern_toolbar_shadow)
+                        .getIntrinsicHeight();
+        mEndButtonWidthDp = mPxToDp
+                * mContext.getResources().getDimensionPixelSize(
+                          R.dimen.contextual_search_end_button_width);
     }
 
     @Override
