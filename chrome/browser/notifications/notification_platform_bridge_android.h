@@ -44,6 +44,7 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
       const base::android::JavaParamRef<jobject>& java_object,
       const base::android::JavaParamRef<jstring>& java_notification_id,
       const base::android::JavaParamRef<jstring>& java_origin,
+      const base::android::JavaParamRef<jstring>& java_scope_url,
       const base::android::JavaParamRef<jstring>& java_profile_id,
       jboolean incognito,
       const base::android::JavaParamRef<jstring>& java_tag,
@@ -102,14 +103,15 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
   // query is done.
   struct RegeneratedNotificationInfo {
     RegeneratedNotificationInfo();
-    RegeneratedNotificationInfo(const std::string& origin,
-                                const std::string& tag);
-    RegeneratedNotificationInfo(const std::string& origin,
-                                const std::string& tag,
-                                const std::string& webapk_package);
+    RegeneratedNotificationInfo(
+        const std::string& origin,
+        const std::string& service_worker_scope,
+        const std::string& tag,
+        const base::Optional<std::string>& webapk_package);
     ~RegeneratedNotificationInfo();
 
     std::string origin;
+    std::string service_worker_scope;
     std::string tag;
     base::Optional<std::string> webapk_package;
   };
