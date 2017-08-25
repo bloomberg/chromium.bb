@@ -57,7 +57,11 @@ if sys.platform == 'win32':
     https://msdn.microsoft.com/library/windows/desktop/aa365682.aspx
     """
     FILE_ATTRIBUTE_REPARSE_POINT = 1024
-    return bool(GetFileAttributesW(extend(path)) & FILE_ATTRIBUTE_REPARSE_POINT)
+    INVALID_FILE_ATTRIBUTES = 0xFFFFFFFF
+    res = GetFileAttributesW(extend(path))
+    if res == INVALID_FILE_ATTRIBUTES:
+      return False
+    return bool(res & FILE_ATTRIBUTE_REPARSE_POINT)
 
 
   def symlink(source, link_name):
