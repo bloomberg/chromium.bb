@@ -948,4 +948,82 @@ TEST_F(VolumeManagerTest, MTPPlugAndUnplug) {
   EXPECT_FALSE(volume.get());
 }
 
+TEST_F(VolumeManagerTest, OnRenameEvent_Started) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnRenameEvent(
+      chromeos::disks::DiskMountManager::RENAME_STARTED,
+      chromeos::RENAME_ERROR_NONE, "device1");
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::RENAME_STARTED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_TRUE(event.success);
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnRenameEvent_StartFailed) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnRenameEvent(
+      chromeos::disks::DiskMountManager::RENAME_STARTED,
+      chromeos::RENAME_ERROR_UNKNOWN, "device1");
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::RENAME_STARTED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_FALSE(event.success);
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnRenameEvent_Completed) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnRenameEvent(
+      chromeos::disks::DiskMountManager::RENAME_COMPLETED,
+      chromeos::RENAME_ERROR_NONE, "device1");
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::RENAME_COMPLETED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_TRUE(event.success);
+
+  // When "rename" is successfully done, VolumeManager requests to mount it.
+  ASSERT_EQ(1U, disk_mount_manager_->mount_requests().size());
+  const FakeDiskMountManager::MountRequest& mount_request =
+      disk_mount_manager_->mount_requests()[0];
+  EXPECT_EQ("device1", mount_request.source_path);
+  EXPECT_EQ("", mount_request.source_format);
+  EXPECT_EQ(chromeos::MOUNT_TYPE_DEVICE, mount_request.type);
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
+TEST_F(VolumeManagerTest, OnRenameEvent_CompletedFailed) {
+  LoggingObserver observer;
+  volume_manager()->AddObserver(&observer);
+
+  volume_manager()->OnRenameEvent(
+      chromeos::disks::DiskMountManager::RENAME_COMPLETED,
+      chromeos::RENAME_ERROR_UNKNOWN, "device1");
+
+  ASSERT_EQ(1U, observer.events().size());
+  const LoggingObserver::Event& event = observer.events()[0];
+  EXPECT_EQ(LoggingObserver::Event::RENAME_COMPLETED, event.type);
+  EXPECT_EQ("device1", event.device_path);
+  EXPECT_FALSE(event.success);
+
+  EXPECT_EQ(0U, disk_mount_manager_->mount_requests().size());
+
+  volume_manager()->RemoveObserver(&observer);
+}
+
 }  // namespace file_manager
