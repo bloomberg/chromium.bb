@@ -4,9 +4,17 @@
 
 #include "chrome/renderer/content_settings_observer.h"
 
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/string_number_conversions.h"
+#include "chrome/common/client_hints.mojom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/ssl_insecure_content.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/content_settings/core/common/content_settings.mojom.h"
+#include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/content_settings_utils.h"
+#include "content/public/common/associated_interface_provider.h"
+#include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -21,6 +29,7 @@
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
+#include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
 
@@ -130,6 +139,8 @@ ContentSettingsObserver::~ContentSettingsObserver() {
 void ContentSettingsObserver::SetContentSettingRules(
     const RendererContentSettingRules* content_setting_rules) {
   content_setting_rules_ = content_setting_rules;
+  UMA_HISTOGRAM_COUNTS("ClientHints.CountRulesReceived",
+                       content_setting_rules_->client_hints_rules.size());
 }
 
 bool ContentSettingsObserver::IsPluginTemporarilyAllowed(
@@ -437,8 +448,43 @@ void ContentSettingsObserver::PersistClientHints(
     const blink::WebEnabledClientHints& enabled_client_hints,
     base::TimeDelta duration,
     const blink::WebURL& url) {
-  // TODO (tbansal): Send it back to browser which should persist the
-  // preferences.
+  if (duration <= base::TimeDelta())
+    return;
+
+  const GURL primary_url(url);
+  const url::Origin primary_origin(primary_url);
+  if (!content::IsOriginSecure(primary_url))
+    return;
+
+  // TODO(tbansal): crbug.com/735518. Determine if the value should be
+  // merged or overridden. Also, determine if the merger should happen on the
+  // browser side or the renderer. If the value needs to be overridden,
+  // this method should not return early if |update_count| is 0.
+  std::vector<::blink::mojom::WebClientHintsType> client_hints;
+
+  size_t update_count = 0;
+  for (size_t i = 0;
+       i < static_cast<int>(blink::mojom::WebClientHintsType::kLast) + 1; ++i) {
+    if (enabled_client_hints.IsEnabled(
+            static_cast<blink::mojom::WebClientHintsType>(i))) {
+      client_hints.push_back(static_cast<blink::mojom::WebClientHintsType>(i));
+      update_count++;
+    }
+  }
+  if (update_count == 0)
+    return;
+
+  UMA_HISTOGRAM_CUSTOM_TIMES("ClientHints.PersistDuration", duration,
+                             base::TimeDelta::FromSeconds(1),
+                             base::TimeDelta::FromDays(365), 100);
+
+  UMA_HISTOGRAM_COUNTS_100("ClientHints.UpdateSize", update_count);
+
+  // Notify the embedder.
+  client_hints::mojom::ClientHintsAssociatedPtr host_observer;
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&host_observer);
+  host_observer->PersistClientHints(primary_origin, std::move(client_hints),
+                                    duration);
 }
 
 void ContentSettingsObserver::DidNotAllowPlugins() {

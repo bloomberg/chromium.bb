@@ -34,32 +34,38 @@ TEST_F(ClientHintsPreferencesTest, Basic) {
     ClientHintsPreferences preferences;
     preferences.UpdateFromAcceptClientHintsHeader(test_case.header_value,
                                                   nullptr);
-    EXPECT_EQ(test_case.expectation_resource_width,
-              preferences.ShouldSend(kWebClientHintsTypeResourceWidth));
+    EXPECT_EQ(
+        test_case.expectation_resource_width,
+        preferences.ShouldSend(mojom::WebClientHintsType::kResourceWidth));
     EXPECT_EQ(test_case.expectation_dpr,
-              preferences.ShouldSend(kWebClientHintsTypeDpr));
-    EXPECT_EQ(test_case.expectation_viewport_width,
-              preferences.ShouldSend(kWebClientHintsTypeViewportWidth));
+              preferences.ShouldSend(mojom::WebClientHintsType::kDpr));
+    EXPECT_EQ(
+        test_case.expectation_viewport_width,
+        preferences.ShouldSend(mojom::WebClientHintsType::kViewportWidth));
 
     // Calling UpdateFromAcceptClientHintsHeader with empty header should have
     // no impact on client hint preferences.
     preferences.UpdateFromAcceptClientHintsHeader("", nullptr);
-    EXPECT_EQ(test_case.expectation_resource_width,
-              preferences.ShouldSend(kWebClientHintsTypeResourceWidth));
+    EXPECT_EQ(
+        test_case.expectation_resource_width,
+        preferences.ShouldSend(mojom::WebClientHintsType::kResourceWidth));
     EXPECT_EQ(test_case.expectation_dpr,
-              preferences.ShouldSend(kWebClientHintsTypeDpr));
-    EXPECT_EQ(test_case.expectation_viewport_width,
-              preferences.ShouldSend(kWebClientHintsTypeViewportWidth));
+              preferences.ShouldSend(mojom::WebClientHintsType::kDpr));
+    EXPECT_EQ(
+        test_case.expectation_viewport_width,
+        preferences.ShouldSend(mojom::WebClientHintsType::kViewportWidth));
 
     // Calling UpdateFromAcceptClientHintsHeader with an invalid header should
     // have no impact on client hint preferences.
     preferences.UpdateFromAcceptClientHintsHeader("foobar", nullptr);
-    EXPECT_EQ(test_case.expectation_resource_width,
-              preferences.ShouldSend(kWebClientHintsTypeResourceWidth));
+    EXPECT_EQ(
+        test_case.expectation_resource_width,
+        preferences.ShouldSend(mojom::WebClientHintsType::kResourceWidth));
     EXPECT_EQ(test_case.expectation_dpr,
-              preferences.ShouldSend(kWebClientHintsTypeDpr));
-    EXPECT_EQ(test_case.expectation_viewport_width,
-              preferences.ShouldSend(kWebClientHintsTypeViewportWidth));
+              preferences.ShouldSend(mojom::WebClientHintsType::kDpr));
+    EXPECT_EQ(
+        test_case.expectation_viewport_width,
+        preferences.ShouldSend(mojom::WebClientHintsType::kViewportWidth));
   }
 }
 
@@ -103,15 +109,21 @@ TEST_F(ClientHintsPreferencesTest, PersistentHints) {
     EXPECT_EQ(test.expect_persist_duration_seconds,
               persist_duration.InSeconds());
     if (test.expect_persist_duration_seconds > 0) {
-      EXPECT_FALSE(enabled_types.IsEnabled(kWebClientHintsTypeDeviceMemory));
-      EXPECT_TRUE(enabled_types.IsEnabled(kWebClientHintsTypeDpr));
-      EXPECT_TRUE(enabled_types.IsEnabled(kWebClientHintsTypeResourceWidth));
-      EXPECT_FALSE(enabled_types.IsEnabled(kWebClientHintsTypeViewportWidth));
+      EXPECT_FALSE(
+          enabled_types.IsEnabled(mojom::WebClientHintsType::kDeviceMemory));
+      EXPECT_TRUE(enabled_types.IsEnabled(mojom::WebClientHintsType::kDpr));
+      EXPECT_TRUE(
+          enabled_types.IsEnabled(mojom::WebClientHintsType::kResourceWidth));
+      EXPECT_FALSE(
+          enabled_types.IsEnabled(mojom::WebClientHintsType::kViewportWidth));
     } else {
-      EXPECT_FALSE(enabled_types.IsEnabled(kWebClientHintsTypeDeviceMemory));
-      EXPECT_FALSE(enabled_types.IsEnabled(kWebClientHintsTypeDpr));
-      EXPECT_FALSE(enabled_types.IsEnabled(kWebClientHintsTypeResourceWidth));
-      EXPECT_FALSE(enabled_types.IsEnabled(kWebClientHintsTypeViewportWidth));
+      EXPECT_FALSE(
+          enabled_types.IsEnabled(mojom::WebClientHintsType::kDeviceMemory));
+      EXPECT_FALSE(enabled_types.IsEnabled(mojom::WebClientHintsType::kDpr));
+      EXPECT_FALSE(
+          enabled_types.IsEnabled(mojom::WebClientHintsType::kResourceWidth));
+      EXPECT_FALSE(
+          enabled_types.IsEnabled(mojom::WebClientHintsType::kViewportWidth));
     }
   }
 }

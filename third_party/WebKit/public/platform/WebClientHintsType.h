@@ -5,32 +5,24 @@
 #ifndef WebClientHintsType_h
 #define WebClientHintsType_h
 
+#include "public/platform/web_client_hints_types.mojom-shared.h"
+
 namespace blink {
-
-enum WebClientHintsType {
-  // The order of the enums or the values must not be changed. New values should
-  // only be added after the last value, and kWebClientHintsTypeLast should be
-  // updated accordingly.
-  kWebClientHintsTypeDeviceMemory,
-  kWebClientHintsTypeDpr,
-  kWebClientHintsTypeResourceWidth,
-  kWebClientHintsTypeViewportWidth,
-
-  // Last client hint type.
-  kWebClientHintsTypeLast = kWebClientHintsTypeViewportWidth
-};
 
 // WebEnabledClientHints stores all the client hints along with whether the hint
 // is enabled or not.
 struct WebEnabledClientHints {
   WebEnabledClientHints() {}
 
-  bool IsEnabled(WebClientHintsType type) const { return enabled_types_[type]; }
-  void SetIsEnabled(WebClientHintsType type, bool should_send) {
-    enabled_types_[type] = should_send;
+  bool IsEnabled(mojom::WebClientHintsType type) const {
+    return enabled_types_[static_cast<int>(type)];
+  }
+  void SetIsEnabled(mojom::WebClientHintsType type, bool should_send) {
+    enabled_types_[static_cast<int>(type)] = should_send;
   }
 
-  bool enabled_types_[kWebClientHintsTypeLast + 1] = {};
+  bool enabled_types_[static_cast<int>(mojom::WebClientHintsType::kLast) + 1] =
+      {};
 };
 
 }  // namespace blink
