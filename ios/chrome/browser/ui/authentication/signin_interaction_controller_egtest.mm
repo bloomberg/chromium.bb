@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
@@ -496,7 +497,8 @@ void AssertAuthenticatedIdentityInActiveProfile(ChromeIdentity* identity) {
 // new tab. Ensures that the sign in screen is correctly dismissed.
 // Regression test for crbug.com/596029.
 - (void)testSignInCancelFromBookmarks {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old Bookmarks UI.");
   }
   ChromeIdentity* identity = GetFakeIdentity1();

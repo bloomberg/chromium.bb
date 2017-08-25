@@ -41,7 +41,7 @@ class BookmarkNode;
 @property(nonatomic, strong) BookmarkCollectionView* folderView;
 
 // The main view showing all the bookmarks. (Used only when
-// IsBookmarkReorderingEnabled is set)
+// features::kBookmarkNewGeneration is enabled)
 @property(nonatomic, strong) BookmarkTableView* bookmarksTableView;
 
 // The view controller used to pick a folder in which to move the selected
@@ -58,7 +58,7 @@ class BookmarkNode;
 @property(nonatomic, strong) BookmarkNavigationBar* navigationBar;
 
 // The context bar at the bottom of the bookmarks. (Used only when
-// IsBookmarkReorderingEnabled is set)
+// features::kBookmarkNewGeneration is enabled)
 @property(nonatomic, strong) BookmarkContextBar* contextBar;
 
 // At any point in time, there is exactly one collection view whose view is part

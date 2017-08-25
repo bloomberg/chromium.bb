@@ -14,9 +14,9 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "ios/chrome/browser/bookmarks/bookmark_new_generation_features.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -227,7 +227,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that tapping a bookmark on the NTP navigates to the proper URL.
 - (void)testTapBookmark {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   const GURL bookmarkURL = web::test::HttpServer::MakeUrl(
@@ -290,7 +291,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Try deleting a bookmark, then undoing that delete.
 - (void)testUndoDeleteBookmark {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -318,7 +320,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Try deleting a bookmark from the edit screen, then undoing that delete.
 - (void)testUndoDeleteBookmarkFromEditScreen {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -357,7 +360,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 }
 
 - (void)testUndoDeleteBookmarkFromSwipe {
-  if (!experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (!base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with new UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -385,7 +389,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Try moving bookmarks, then undoing that move.
 - (void)testUndoMoveBookmark {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -440,7 +445,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 }
 
 - (void)testLabelUpdatedUponMove {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -526,7 +532,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that changing a folder's title in edit mode works as expected.
 - (void)testChangeFolderTitle {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   NSString* existingFolderTitle = @"Folder 1";
@@ -555,7 +562,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that the default folder bookmarks are saved in is updated to the last
 // used folder.
 - (void)testStickyDefaultFolder {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -633,7 +641,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that changes to the parent folder from the Single Bookmark Controller
 // are saved to the bookmark only when saving the results.
 - (void)testMoveDoesSaveOnSave {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -685,7 +694,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Test thats editing a single bookmark correctly persists data.
 - (void)testSingleBookmarkEdit {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -722,7 +732,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that cancelling editing a single bookmark correctly doesn't persist
 // data.
 - (void)testSingleBookmarkCancelEdit {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -758,7 +769,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that long pressing a bookmark selects it and gives access to editing,
 // as does the Info menu.
 - (void)testLongPressBookmark {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -791,7 +803,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests the editing of a folder.
 - (void)testEditFolder {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -830,7 +843,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests the deletion of a folder.
 - (void)testDeleteFolder {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -846,7 +860,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Navigates to a deeply nested folder, deletes it and makes sure the UI is
 // consistent.
 - (void)testDeleteCurrentSubfolder {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -871,7 +886,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Navigates to a deeply nested folder, delete its parent programatically.
 // Verifies that the UI is as expected.
 - (void)testDeleteParentFolder {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -917,7 +933,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that the menu button changes to a back button as expected when browsing
 // nested folders.
 - (void)testBrowseNestedFolders {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -960,7 +977,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests moving a bookmark into a new folder created in the moving process.
 - (void)testCreateNewFolderWhileMovingBookmark {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -1042,7 +1060,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Navigates to a deeply nested folder, deletes its root ancestor and checks
 // that the UI is on the top level folder.
 - (void)testDeleteRootFolder {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -1128,7 +1147,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that tapping No thanks on the promo make it disappear.
 - (void)testPromoNoThanksMakeItDisappear {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -1160,7 +1180,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that tapping Sign in on the promo make the Sign in sheet appear and
 // the promo still appears after dismissing the Sign in sheet.
 - (void)testUIPromoSignIn {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -1204,7 +1225,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on the bookmarks landing page are accessible.
 - (void)testAccessibilityOnBookmarksLandingPage {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
@@ -1219,7 +1241,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on the bookmarks Edit page are accessible.
 - (void)testAccessibilityOnBookmarksEditPage {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
@@ -1243,7 +1266,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on the bookmarks Move page are accessible.
 - (void)testAccessibilityOnBookmarksMovePage {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
@@ -1268,7 +1292,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that all elements on the bookmarks Move to New Folder page are
 // accessible.
 - (void)testAccessibilityOnBookmarksMoveToNewFolderPage {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
@@ -1296,7 +1321,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on bookmarks Delete and Undo are accessible.
 - (void)testAccessibilityOnBookmarksDeleteUndo {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
@@ -1318,7 +1344,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that all elements on the bookmarks Select page are accessible.
 - (void)testAccessibilityOnBookmarksSelect {
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
   }
   [BookmarksTestCase openMobileBookmarksPrepopulatedWithOneBookmark];
@@ -1338,7 +1365,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that the bookmark context bar is shown in MobileBookmarks.
 - (void)testBookmarkContextBarShown {
-  if (!experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (!base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     EARL_GREY_TEST_SKIPPED(@"Only enabled with new UI.");
   }
   [BookmarksTestCase setupStandardBookmarks];
@@ -1377,7 +1405,8 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Navigates to the bookmark manager UI, and selects |bookmarkFolder|.
 + (void)openBookmarkFolder:(NSString*)bookmarkFolder {
   [BookmarksTestCase openBookmarks];
-  if (experimental_flags::IsBookmarkReorderingEnabled()) {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
     [[EarlGrey
         selectElementWithMatcher:grey_allOf(grey_kindOfClass(NSClassFromString(
                                                 @"UITableViewCell")),
