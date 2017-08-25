@@ -20,7 +20,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::file_system_api::ConsentProvider;

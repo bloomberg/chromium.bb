@@ -26,7 +26,6 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
-#include "extensions/common/test_util.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace keys = extension_management_api_constants;

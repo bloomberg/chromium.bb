@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 #include "components/storage_monitor/storage_info.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;

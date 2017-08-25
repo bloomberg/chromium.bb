@@ -49,7 +49,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
 
 using testing::Return;

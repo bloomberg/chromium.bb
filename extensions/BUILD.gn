@@ -102,8 +102,6 @@ static_library("test_support") {
     "common/permissions/mock_manifest_permission.h",
     "common/permissions/permission_message_test_util.cc",
     "common/permissions/permission_message_test_util.h",
-    "common/test_util.cc",
-    "common/test_util.h",
     "renderer/test_extensions_renderer_client.cc",
     "renderer/test_extensions_renderer_client.h",
     "test/background_page_watcher.cc",

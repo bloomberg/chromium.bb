@@ -25,7 +25,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "extensions/common/test_util.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"

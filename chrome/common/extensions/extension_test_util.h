@@ -14,7 +14,6 @@ namespace extensions {
 class Extension;
 }
 
-// Newer functions go in extensions/common/test_util.h.
 namespace extension_test_util {
 
 // Helpers for loading manifests, |dir| is relative to chrome::DIR_TEST_DATA

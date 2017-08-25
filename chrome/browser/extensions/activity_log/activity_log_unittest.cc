@@ -32,7 +32,6 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/dom_action_types.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
