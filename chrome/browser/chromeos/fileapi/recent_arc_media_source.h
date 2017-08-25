@@ -34,7 +34,8 @@ class RecentArcMediaSource : public RecentSource {
   void GetRecentFiles(Params params) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(RecentArcMediaSourceTest, GetRecentFiles_UmaStats);
+  FRIEND_TEST_ALL_PREFIXES(RecentArcMediaSourceTest, UmaStats);
+  FRIEND_TEST_ALL_PREFIXES(RecentArcMediaSourceTest, UmaStats_Deferred);
 
   class MediaRoot;
 
@@ -42,6 +43,8 @@ class RecentArcMediaSource : public RecentSource {
 
   void OnGetRecentFilesForRoot(std::vector<RecentFile> files);
   void OnComplete();
+
+  bool WillArcFileSystemOperationsRunImmediately();
 
   Profile* const profile_;
   std::vector<std::unique_ptr<MediaRoot>> roots_;
