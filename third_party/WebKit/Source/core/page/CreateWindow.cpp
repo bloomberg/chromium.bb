@@ -34,6 +34,7 @@
 #include "core/frame/FrameClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/FocusController.h"
@@ -403,6 +404,23 @@ DOMWindow* CreateWindow(const String& url_string,
         kSyntaxError, "Unable to open a window with invalid URL '" +
                           completed_url.GetString() + "'.\n");
     return nullptr;
+  }
+
+  if (completed_url.ProtocolIsJavaScript() &&
+      opener_frame.GetDocument()->GetContentSecurityPolicy() &&
+      !ContentSecurityPolicy::ShouldBypassMainWorld(
+          opener_frame.GetDocument())) {
+    const int kJavascriptSchemeLength = sizeof("javascript:") - 1;
+    String script_source = DecodeURLEscapeSequences(completed_url.GetString())
+                               .Substring(kJavascriptSchemeLength);
+
+    if (!opener_frame.GetDocument()
+             ->GetContentSecurityPolicy()
+             ->AllowJavaScriptURLs(nullptr, script_source,
+                                   opener_frame.GetDocument()->Url(),
+                                   OrdinalNumber())) {
+      return nullptr;
+    }
   }
 
   WebWindowFeatures window_features =
