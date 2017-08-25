@@ -58,6 +58,7 @@ struct TestDiskInfo {
   bool on_removable_device;
   bool is_hidden;
   const char* file_system_type;
+  const char* base_mount_path;
 };
 
 // Holds information to create a DiskMOuntManager::MountPointInfo instance.
@@ -70,72 +71,81 @@ struct TestMountPointInfo {
 
 // List of disks held in DiskMountManager at the begining of the test.
 const TestDiskInfo kTestDisks[] = {
-    {kDevice1SourcePath,
-     kDevice1MountPath,
-     false,  // write_disabled_by_policy
-     "/device/prefix/system_path",
-     "/device/file_path",
-     "/device/device_label",
-     "/device/drive_label",
-     "/device/vendor_id",
-     "/device/vendor_name",
-     "/device/product_id",
-     "/device/product_name",
-     "/device/fs_uuid",
-     "/device/prefix",
-     chromeos::DEVICE_TYPE_USB,
-     1073741824,  // size in bytes
-     false,       // is parent
-     false,       // is read only
-     true,        // has media
-     false,       // is on boot device
-     true,        // is on removable device
-     false,       // is hidden
-     kFileSystemType1},
-    {kDevice2SourcePath,
-     "",     // not mounted initially
-     false,  // write_disabled_by_policy
-     "/device/prefix/system_path2",
-     "/device/file_path2",
-     "/device/device_label2",
-     "/device/drive_label2",
-     "/device/vendor_id2",
-     "/device/vendor_name2",
-     "/device/product_id2",
-     "/device/product_name2",
-     "/device/fs_uuid2",
-     "/device/prefix2",
-     chromeos::DEVICE_TYPE_SD,
-     1073741824,  // size in bytes
-     false,       // is parent
-     false,       // is read only
-     true,        // has media
-     false,       // is on boot device
-     true,        // is on removable device
-     false,       // is hidden
-     kFileSystemType2},
-    {kReadOnlyDeviceSourcePath,
-     kReadOnlyDeviceMountPath,
-     false,  // write_disabled_by_policy
-     "/device/prefix/system_path_3",
-     "/device/file_path_3",
-     "/device/device_label_3",
-     "/device/drive_label_3",
-     "/device/vendor_id_3",
-     "/device/vendor_name_3",
-     "/device/product_id_3",
-     "/device/product_name_3",
-     "/device/fs_uuid_3",
-     "/device/prefix",
-     chromeos::DEVICE_TYPE_USB,
-     1073741824,  // size in bytes
-     false,       // is parent
-     true,        // is read only
-     true,        // has media
-     false,       // is on boot device
-     true,        // is on removable device
-     false,       // is hidden
-     kFileSystemType2},
+    {
+        kDevice1SourcePath,
+        kDevice1MountPath,
+        false,  // write_disabled_by_policy
+        "/device/prefix/system_path",
+        "/device/file_path",
+        "/device/device_label",
+        "/device/drive_label",
+        "/device/vendor_id",
+        "/device/vendor_name",
+        "/device/product_id",
+        "/device/product_name",
+        "/device/fs_uuid",
+        "/device/prefix",
+        chromeos::DEVICE_TYPE_USB,
+        1073741824,  // size in bytes
+        false,       // is parent
+        false,       // is read only
+        true,        // has media
+        false,       // is on boot device
+        true,        // is on removable device
+        false,       // is hidden
+        kFileSystemType1,
+        ""  // base mount path
+    },
+    {
+        kDevice2SourcePath,
+        "",     // not mounted initially
+        false,  // write_disabled_by_policy
+        "/device/prefix/system_path2",
+        "/device/file_path2",
+        "/device/device_label2",
+        "/device/drive_label2",
+        "/device/vendor_id2",
+        "/device/vendor_name2",
+        "/device/product_id2",
+        "/device/product_name2",
+        "/device/fs_uuid2",
+        "/device/prefix2",
+        chromeos::DEVICE_TYPE_SD,
+        1073741824,  // size in bytes
+        false,       // is parent
+        false,       // is read only
+        true,        // has media
+        false,       // is on boot device
+        true,        // is on removable device
+        false,       // is hidden
+        kFileSystemType2,
+        ""  // base mount path
+    },
+    {
+        kReadOnlyDeviceSourcePath,
+        kReadOnlyDeviceMountPath,
+        false,  // write_disabled_by_policy
+        "/device/prefix/system_path_3",
+        "/device/file_path_3",
+        "/device/device_label_3",
+        "/device/drive_label_3",
+        "/device/vendor_id_3",
+        "/device/vendor_name_3",
+        "/device/product_id_3",
+        "/device/product_name_3",
+        "/device/fs_uuid_3",
+        "/device/prefix",
+        chromeos::DEVICE_TYPE_USB,
+        1073741824,  // size in bytes
+        false,       // is parent
+        true,        // is read only
+        true,        // has media
+        false,       // is on boot device
+        true,        // is on removable device
+        false,       // is hidden
+        kFileSystemType2,
+        ""  // base mount path
+    },
 };
 
 // List of mount points  held in DiskMountManager at the begining of the test.
@@ -312,6 +322,13 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
     events_.push_back(MakeUnique<FormatEvent>(event, error_code, device_path));
   }
 
+  void OnRenameEvent(DiskMountManager::RenameEvent event,
+                     chromeos::RenameError error_code,
+                     const std::string& device_path) override {
+    // TODO(klemenko): Add implementation when you will add unit tests for
+    // rename
+  }
+
   void OnMountEvent(
       DiskMountManager::MountEvent event,
       chromeos::MountError error_code,
@@ -454,7 +471,8 @@ class DiskMountManagerTest : public testing::Test {
             disk.product_name, disk.fs_uuid, disk.system_path_prefix,
             disk.device_type, disk.size_in_bytes, disk.is_parent,
             disk.is_read_only, disk.has_media, disk.on_boot_device,
-            disk.on_removable_device, disk.is_hidden, disk.file_system_type)));
+            disk.on_removable_device, disk.is_hidden, disk.file_system_type,
+            disk.base_mount_path)));
   }
 
   // Adds a new mount point to the disk mount manager.

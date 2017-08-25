@@ -67,6 +67,9 @@ class KioskExternalUpdater : public disks::DiskMountManager::Observer,
   void OnFormatEvent(disks::DiskMountManager::FormatEvent event,
                      FormatError error_code,
                      const std::string& device_path) override;
+  void OnRenameEvent(disks::DiskMountManager::RenameEvent event,
+                     RenameError error_code,
+                     const std::string& device_path) override;
 
   // KioskExternalUpdateValidatorDelegate overrides:
   void OnExtenalUpdateUnpackSuccess(const std::string& app_id,

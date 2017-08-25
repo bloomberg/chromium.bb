@@ -131,6 +131,10 @@ bool FakeDiskMountManager::FinishAllUnmountPathRequests() {
 void FakeDiskMountManager::FormatMountedDevice(const std::string& mount_path) {
 }
 
+void FakeDiskMountManager::RenameMountedDevice(const std::string& mount_path,
+                                               const std::string& volume_name) {
+}
+
 void FakeDiskMountManager::UnmountDeviceRecursively(
     const std::string& device_path,
     const UnmountDeviceRecursivelyCallbackType& callback) {

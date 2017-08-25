@@ -48,6 +48,14 @@ class VolumeManagerObserver {
   // Fired when formatting a device is completed (or terminated on error).
   virtual void OnFormatCompleted(
       const std::string& device_path, bool success) = 0;
+
+  // Fired when renaming a device is started (or failed to start).
+  virtual void OnRenameStarted(const std::string& device_path,
+                               bool success) = 0;
+
+  // Fired when renaming a device is completed (or terminated on error).
+  virtual void OnRenameCompleted(const std::string& device_path,
+                                 bool success) = 0;
 };
 
 }  // namespace file_manager

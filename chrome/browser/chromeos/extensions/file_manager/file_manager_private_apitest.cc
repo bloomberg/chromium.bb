@@ -51,6 +51,7 @@ struct TestDiskInfo {
   bool on_removable_device;
   bool is_hidden;
   const char* file_system_type;
+  const char* base_mount_path;
 };
 
 struct TestMountPoint {
@@ -82,7 +83,8 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               false,
                               false,
                               false,
-                              "exfat"},
+                              "exfat",
+                              ""},
                              {"system_path2",
                               "file_path2",
                               false,
@@ -102,7 +104,8 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               true,
                               false,
                               false,
-                              "exfat"},
+                              "exfat",
+                              ""},
                              {"system_path3",
                               "file_path3",
                               true,  // write_disabled_by_policy
@@ -122,7 +125,8 @@ TestDiskInfo kTestDisks[] = {{"system_path1",
                               true,
                               false,
                               false,
-                              "exfat"}};
+                              "exfat",
+                              ""}};
 
 void DispatchDirectoryChangeEventImpl(
     int* counter,
@@ -289,7 +293,8 @@ class FileManagerPrivateApiTest : public ExtensionApiTest {
                 kTestDisks[disk_info_index].on_boot_device,
                 kTestDisks[disk_info_index].on_removable_device,
                 kTestDisks[disk_info_index].is_hidden,
-                kTestDisks[disk_info_index].file_system_type)));
+                kTestDisks[disk_info_index].file_system_type,
+                kTestDisks[disk_info_index].base_mount_path)));
       }
     }
   }

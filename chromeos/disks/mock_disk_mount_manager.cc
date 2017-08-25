@@ -87,7 +87,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
           false,  // on_boot_device
           true,   // on_removable_device
           false,  // is_hidden
-          std::string(kTestFileSystemType));
+          std::string(kTestFileSystemType), std::string());
   DiskMountManager::Disk* disk1 = disk1_ptr.get();
 
   disks_.clear();
@@ -116,7 +116,7 @@ void MockDiskMountManager::NotifyDeviceInsertEvents() {
           false,  // on_boot_device
           true,   // on_removable_device
           false,  // is_hidden
-          std::string(kTestFileSystemType));
+          std::string(kTestFileSystemType), std::string());
   DiskMountManager::Disk* disk2 = disk2_ptr.get();
   disks_.clear();
   disks_[std::string(kTestDevicePath)] = std::move(disk2_ptr);
@@ -140,7 +140,7 @@ void MockDiskMountManager::NotifyDeviceRemoveEvents() {
           false,  // on_boot_device
           true,   // on_removable_device
           false,  // is_hidden
-          std::string(kTestFileSystemType));
+          std::string(kTestFileSystemType), std::string());
   DiskMountManager::Disk* disk = disk_ptr.get();
   disks_.clear();
   disks_[std::string(kTestDevicePath)] = std::move(disk_ptr);
@@ -199,7 +199,7 @@ void MockDiskMountManager::CreateDiskEntryForMountDevice(
           false,  // is_read_only
           has_media, on_boot_device, on_removable_device,
           false,  // is_hidden
-          file_system_type);
+          file_system_type, std::string());
   disks_[std::string(mount_info.source_path)] = std::move(disk_ptr);
 }
 

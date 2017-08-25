@@ -625,10 +625,8 @@ bool FileManagerPrivateRenameVolumeFunction::RunAsync() {
   if (!volume)
     return false;
 
-  // TODO(klemenko): Uncomment the code below when RenameMountedDevice is
-  // implemented
-  /*DiskMountManager::GetInstance()->RenameMountedDevice(
-    volume->mount_path().AsUTF8Unsafe(), params->new_name);*/
+  DiskMountManager::GetInstance()->RenameMountedDevice(
+      volume->mount_path().AsUTF8Unsafe(), params->new_name);
   SendResponse(true);
   return true;
 }

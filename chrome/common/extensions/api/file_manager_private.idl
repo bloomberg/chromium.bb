@@ -112,7 +112,13 @@ enum DeviceEventType {
   // Format succeeded.
   format_success,
   // Format failed.
-  format_fail
+  format_fail,
+  // Rename started.
+  rename_start,
+  // Rename succeeded.
+  rename_success,
+  // Rename failed.
+  rename_fail
 };
 
 // Drive sync error type.
