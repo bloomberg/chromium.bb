@@ -53,8 +53,6 @@ const char kUserNameKey[] = "user_name";
 const char kIsUsingDefaultNameKey[] = "is_using_default_name";
 const char kIsUsingDefaultAvatarKey[] = "is_using_default_avatar";
 const char kAvatarIconKey[] = "avatar_icon";
-const char kAuthCredentialsKey[] = "local_auth_credentials";
-const char kPasswordTokenKey[] = "gaia_password_token";
 const char kUseGAIAPictureKey[] = "use_gaia_picture";
 const char kBackgroundAppsKey[] = "background_apps";
 const char kGAIAPictureFileNameKey[] = "gaia_picture_file_name";
@@ -62,8 +60,6 @@ const char kIsOmittedFromProfileListKey[] = "is_omitted_from_profile_list";
 const char kSigninRequiredKey[] = "signin_required";
 const char kSupervisedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
-const char kActiveTimeKey[] = "active_time";
-const char kIsAuthErrorKey[] = "is_auth_error";
 
 // TODO(dullweber): Remove these constants after the stored data is removed.
 const char kStatsBrowsingHistoryKeyDeprecated[] = "stats_browsing_history";
@@ -278,15 +274,6 @@ base::FilePath ProfileInfoCache::GetPathOfProfileAtIndex(size_t index) const {
   return user_data_dir_.AppendASCII(sorted_keys_[index]);
 }
 
-base::Time ProfileInfoCache::GetProfileActiveTimeAtIndex(size_t index) const {
-  double dt;
-  if (GetInfoForProfileAtIndex(index)->GetDouble(kActiveTimeKey, &dt)) {
-    return base::Time::FromDoubleT(dt);
-  } else {
-    return base::Time();
-  }
-}
-
 base::string16 ProfileInfoCache::GetUserNameOfProfileAtIndex(
     size_t index) const {
   base::string16 user_name;
@@ -313,20 +300,6 @@ const gfx::Image& ProfileInfoCache::GetAvatarIconOfProfileAtIndex(
   int resource_id = profiles::GetDefaultAvatarIconResourceIDAtIndex(
       GetAvatarIconIndexOfProfileAtIndex(index));
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
-}
-
-std::string ProfileInfoCache::GetLocalAuthCredentialsOfProfileAtIndex(
-    size_t index) const {
-  std::string credentials;
-  GetInfoForProfileAtIndex(index)->GetString(kAuthCredentialsKey, &credentials);
-  return credentials;
-}
-
-std::string ProfileInfoCache::GetPasswordChangeDetectionTokenAtIndex(
-    size_t index) const {
-  std::string token;
-  GetInfoForProfileAtIndex(index)->GetString(kPasswordTokenKey, &token);
-  return token;
 }
 
 bool ProfileInfoCache::GetBackgroundStatusOfProfileAtIndex(
@@ -426,36 +399,15 @@ std::string ProfileInfoCache::GetSupervisedUserIdOfProfileAtIndex(
   return supervised_user_id;
 }
 
-bool ProfileInfoCache::ProfileIsEphemeralAtIndex(size_t index) const {
-  bool value = false;
-  GetInfoForProfileAtIndex(index)->GetBoolean(kProfileIsEphemeral, &value);
-  return value;
-}
-
 bool ProfileInfoCache::ProfileIsUsingDefaultNameAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kIsUsingDefaultNameKey, &value);
   return value;
 }
 
-bool ProfileInfoCache::ProfileIsAuthenticatedAtIndex(size_t index) const {
-  // The profile is authenticated if the gaia_id of the info is not empty.
-  // If it is empty, also check if the user name is not empty.  This latter
-  // check is needed in case the profile has not been loaded yet and the
-  // gaia_id property has not yet been written.
-  return !GetGAIAIdOfProfileAtIndex(index).empty() ||
-      !GetUserNameOfProfileAtIndex(index).empty();
-}
-
 bool ProfileInfoCache::ProfileIsUsingDefaultAvatarAtIndex(size_t index) const {
   bool value = false;
   GetInfoForProfileAtIndex(index)->GetBoolean(kIsUsingDefaultAvatarKey, &value);
-  return value;
-}
-
-bool ProfileInfoCache::ProfileIsAuthErrorAtIndex(size_t index) const {
-  bool value = false;
-  GetInfoForProfileAtIndex(index)->GetBoolean(kIsAuthErrorKey, &value);
   return value;
 }
 
@@ -473,18 +425,6 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
     DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
 
   return icon_index;
-}
-
-void ProfileInfoCache::SetProfileActiveTimeAtIndex(size_t index) {
-  if (base::Time::Now() - GetProfileActiveTimeAtIndex(index) <
-      base::TimeDelta::FromHours(1)) {
-    return;
-  }
-
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetDouble(kActiveTimeKey, base::Time::Now().ToDoubleT());
-  SetInfoForProfileAtIndex(index, std::move(info));
 }
 
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,
@@ -583,24 +523,6 @@ void ProfileInfoCache::SetSupervisedUserIdOfProfileAtIndex(
   base::FilePath profile_path = GetPathOfProfileAtIndex(index);
   for (auto& observer : observer_list_)
     observer.OnProfileSupervisedUserIdChanged(profile_path);
-}
-
-void ProfileInfoCache::SetLocalAuthCredentialsOfProfileAtIndex(
-    size_t index,
-    const std::string& credentials) {
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetString(kAuthCredentialsKey, credentials);
-  SetInfoForProfileAtIndex(index, std::move(info));
-}
-
-void ProfileInfoCache::SetPasswordChangeDetectionTokenAtIndex(
-    size_t index,
-    const std::string& token) {
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetString(kPasswordTokenKey, token);
-  SetInfoForProfileAtIndex(index, std::move(info));
 }
 
 void ProfileInfoCache::SetBackgroundStatusOfProfileAtIndex(
@@ -717,16 +639,6 @@ void ProfileInfoCache::SetProfileSigninRequiredAtIndex(size_t index,
   NotifyIsSigninRequiredChanged(GetPathOfProfileAtIndex(index));
 }
 
-void ProfileInfoCache::SetProfileIsEphemeralAtIndex(size_t index, bool value) {
-  if (value == ProfileIsEphemeralAtIndex(index))
-    return;
-
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(kProfileIsEphemeral, value);
-  SetInfoForProfileAtIndex(index, std::move(info));
-}
-
 void ProfileInfoCache::SetProfileIsUsingDefaultNameAtIndex(
     size_t index, bool value) {
   if (value == ProfileIsUsingDefaultNameAtIndex(index))
@@ -756,16 +668,6 @@ void ProfileInfoCache::SetProfileIsUsingDefaultAvatarAtIndex(
   std::unique_ptr<base::DictionaryValue> info(
       GetInfoForProfileAtIndex(index)->DeepCopy());
   info->SetBoolean(kIsUsingDefaultAvatarKey, value);
-  SetInfoForProfileAtIndex(index, std::move(info));
-}
-
-void ProfileInfoCache::SetProfileIsAuthErrorAtIndex(size_t index, bool value) {
-  if (value == ProfileIsAuthErrorAtIndex(index))
-    return;
-
-  std::unique_ptr<base::DictionaryValue> info(
-      GetInfoForProfileAtIndex(index)->DeepCopy());
-  info->SetBoolean(kIsAuthErrorKey, value);
   SetInfoForProfileAtIndex(index, std::move(info));
 }
 

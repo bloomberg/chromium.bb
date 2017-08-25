@@ -46,9 +46,10 @@ class ProfileAttributesEntry {
   const gfx::Image& GetAvatarIcon() const;
   std::string GetLocalAuthCredentials() const;
   std::string GetPasswordChangeDetectionToken() const;
-  // Note that a return value of false could mean an error in collection or
-  // that there are currently no background apps running. However, the action
-  // which results is the same in both cases (thus far).
+  // Returns true if the profile is currently running any background apps. Note
+  // that a return value of false could mean an error in collection or that
+  // there are currently no background apps running. However, the action which
+  // results is the same in both cases (thus far).
   bool GetBackgroundStatus() const;
   // Gets the GAIA full name associated with this profile if it's signed in.
   base::string16 GetGAIAName() const;
@@ -121,6 +122,7 @@ class ProfileAttributesEntry {
   friend class ProfileInfoCache;
   FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest,
                            EntryInternalAccessors);
+  FRIEND_TEST_ALL_PREFIXES(ProfileAttributesStorageTest, ProfileActiveTime);
 
   void Initialize(ProfileInfoCache* cache,
                   const base::FilePath& path,

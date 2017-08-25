@@ -148,9 +148,11 @@ class GAIAInfoUpdateServiceTest : public ProfileInfoCacheTest {
     ProfileDownloadSuccess(full_name, given_name, image, url, base::string16());
 
     // Make sure the right profile was updated correctly.
-    size_t index = GetCache()->GetIndexOfProfileWithPath(profile()->GetPath());
-    EXPECT_EQ(full_name, GetCache()->GetGAIANameOfProfileAtIndex(index));
-    EXPECT_EQ(given_name, GetCache()->GetGAIAGivenNameOfProfileAtIndex(index));
+    ProfileAttributesEntry* entry;
+    ASSERT_TRUE(
+        storage()->GetProfileAttributesWithPath(profile()->GetPath(), &entry));
+    EXPECT_EQ(full_name, entry->GetGAIAName());
+    EXPECT_EQ(given_name, entry->GetGAIAGivenName());
   }
 
  private:
