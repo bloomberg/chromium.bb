@@ -387,6 +387,35 @@ TEST_F(SmoothScrollTest, FindDoesNotScrollOverflowHidden) {
   ASSERT_EQ(container->scrollTop(), 0);
 }
 
+TEST_F(SmoothScrollTest, ApplyRootElementScrollBehaviorToViewport) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete("<html style='scroll-behavior: smooth'>"
+      "<div id='space' style='height: 1000px'></div>"
+      "<div id='content' style='height: 1000px'></div></html>");
+
+  Element* content = GetDocument().getElementById("content");
+  ScrollIntoViewOptionsOrBoolean arg;
+  ScrollIntoViewOptions options;
+  options.setBlock("start");
+  arg.setScrollIntoViewOptions(options);
+  Compositor().BeginFrame();
+  ASSERT_EQ(Window().scrollY(), 0);
+
+  content->scrollIntoView(arg);
+  // Scrolling the container
+  Compositor().BeginFrame();  // update run_state_.
+  Compositor().BeginFrame();  // Set start_time = now.
+  Compositor().BeginFrame(0.2);
+  ASSERT_EQ(Window().scrollY(), 299);
+
+  // Finish scrolling the container
+  Compositor().BeginFrame(1);
+  ASSERT_EQ(Window().scrollY(), content->OffsetTop());
+}
+
 }  // namespace
 
 }  // namespace blink
