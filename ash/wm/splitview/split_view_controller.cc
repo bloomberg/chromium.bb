@@ -53,14 +53,9 @@ float FindClosestFixedPositionRatio(
 
 }  // namespace
 
-SplitViewController::SplitViewController() {
-  Shell::Get()->AddShellObserver(this);
-  Shell::Get()->activation_client()->AddObserver(this);
-}
+SplitViewController::SplitViewController() {}
 
 SplitViewController::~SplitViewController() {
-  Shell::Get()->RemoveShellObserver(this);
-  Shell::Get()->activation_client()->RemoveObserver(this);
   EndSplitView();
 }
 
@@ -87,7 +82,12 @@ void SplitViewController::SnapWindow(aura::Window* window,
   DCHECK(window && CanSnap(window));
 
   if (state_ == NO_SNAP) {
+    // Add observers when the split view mode starts.
+    Shell::Get()->AddShellObserver(this);
+    Shell::Get()->activation_client()->AddObserver(this);
     Shell::Get()->NotifySplitViewModeStarting();
+
+    divider_position_ = GetDefaultDividerPosition(window);
     split_view_divider_ =
         base::MakeUnique<SplitViewDivider>(this, window->GetRootWindow());
   }
@@ -280,6 +280,7 @@ void SplitViewController::RemoveObserver(Observer* observer) {
 void SplitViewController::OnWindowDestroying(aura::Window* window) {
   // If one of the snapped window gets closed, end the split view mode. The
   // behavior might change in the future.
+  DCHECK(IsSplitViewModeActive());
   DCHECK(window == left_window_ || window == right_window_);
   EndSplitView();
 }
@@ -287,6 +288,8 @@ void SplitViewController::OnWindowDestroying(aura::Window* window) {
 void SplitViewController::OnPostWindowStateTypeChange(
     ash::wm::WindowState* window_state,
     ash::wm::WindowStateType old_type) {
+  DCHECK(IsSplitViewModeActive());
+
   if (window_state->IsFullscreen() || window_state->IsMinimized() ||
       window_state->IsMaximized()) {
     // TODO(xdai): Decide what to do if one of the snapped windows gets
@@ -299,8 +302,7 @@ void SplitViewController::OnPostWindowStateTypeChange(
 void SplitViewController::OnWindowActivated(ActivationReason reason,
                                             aura::Window* gained_active,
                                             aura::Window* lost_active) {
-  if (!IsSplitViewModeActive())
-    return;
+  DCHECK(IsSplitViewModeActive());
 
   // If |gained_active| was activated as a side effect of a window disposition
   // change, do nothing. For example, when a snapped window is closed, another
@@ -330,25 +332,29 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
 }
 
 void SplitViewController::OnOverviewModeStarting() {
+  DCHECK(IsSplitViewModeActive());
+
   // If split view mode is active, reset |state_| to make it be able to select
   // another window from overview window grid.
-  if (IsSplitViewModeActive()) {
-    State previous_state = state_;
-    if (default_snap_position_ == LEFT) {
-      StopObserving(right_window_);
-      state_ = LEFT_SNAPPED;
-    } else if (default_snap_position_ == RIGHT) {
-      StopObserving(left_window_);
-      state_ = RIGHT_SNAPPED;
-    }
-    NotifySplitViewStateChanged(previous_state, state_);
+  State previous_state = state_;
+  if (default_snap_position_ == LEFT) {
+    StopObserving(right_window_);
+    right_window_ = nullptr;
+    state_ = LEFT_SNAPPED;
+  } else if (default_snap_position_ == RIGHT) {
+    StopObserving(left_window_);
+    left_window_ = nullptr;
+    state_ = RIGHT_SNAPPED;
   }
+  NotifySplitViewStateChanged(previous_state, state_);
 }
 
 void SplitViewController::OnOverviewModeEnded() {
+  DCHECK(IsSplitViewModeActive());
+
   // If split view mode is active but only has one snapped window, use the MRU
   // window list to auto select another window to snap.
-  if (IsSplitViewModeActive() && state_ != BOTH_SNAPPED) {
+  if (state_ != BOTH_SNAPPED) {
     aura::Window::Windows windows =
         Shell::Get()->mru_window_tracker()->BuildMruWindowList();
     for (auto* window : windows) {
@@ -366,6 +372,10 @@ void SplitViewController::OnOverviewModeEnded() {
 void SplitViewController::EndSplitView() {
   if (!IsSplitViewModeActive())
     return;
+
+  // Remove observers when the split view mode ends.
+  Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->activation_client()->RemoveObserver(this);
 
   StopObserving(left_window_);
   StopObserving(right_window_);
