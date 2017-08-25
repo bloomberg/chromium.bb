@@ -249,6 +249,7 @@
 
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
+      'Android dEQP Release (Nexus 5X)': 'gpu_tests_deqp_android_release_trybot_arm64',
       'Android Release (Nexus 5)': 'android_release_trybot',
       'Android Release (Nexus 5X)': 'gpu_tests_deqp_android_release_trybot_arm64',
       'Android Release (Nexus 6)': 'android_release_trybot',

@@ -740,6 +740,20 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'android',
     },
+    'Android dEQP Release (Nexus 5X)': {
+      'swarming_dimensions': [
+        {
+          'android_devices': '1',
+          'device_type': 'bullhead',
+          'device_os': 'M',
+          'os': 'Android'
+        },
+      ],
+      'build_config': 'android-chromium',
+      'swarming': True,
+      'os_type': 'android',
+      'type': Types.DEQP,
+    },
 
     # The following "optional" testers don't actually exist on the
     # waterfall. They are present here merely to specify additional
