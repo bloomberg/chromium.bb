@@ -56,6 +56,7 @@
      * manager. */
 
     #outer-container {
+      -webkit-box-orient: vertical;
       min-height: 0;
       overflow-x: hidden;
       overflow-y: auto;
@@ -308,11 +309,23 @@
       };
       @apply(--action-button);
     }
+
+    #user-manager-prompt-message {
+      font-size: 19px;
+      margin-bottom: 45px;
+      text-align: center;
+    }
+
+    #user-manager-prompt-message:empty {
+      display: none;
+    }
+
   </style>
 </head>
 <body>
   <user-manager-pages>
     <div id="outer-container">
+      <div id="user-manager-prompt-message">$i18n{userManagerPromptMessage}</div>
       <user-manager-tutorial></user-manager-tutorial>
       <div id="oobe" class="faded">
         <div id="inner-container">
