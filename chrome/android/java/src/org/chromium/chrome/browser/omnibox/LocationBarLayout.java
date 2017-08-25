@@ -1319,10 +1319,9 @@ public class LocationBarLayout extends FrameLayout
                 return isSmallDevice ? 0 : R.drawable.omnibox_info;
             case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
                 return R.drawable.omnibox_info;
-            case ConnectionSecurityLevel.SECURITY_WARNING:
-                return R.drawable.omnibox_info;
             case ConnectionSecurityLevel.DANGEROUS:
                 return R.drawable.omnibox_https_invalid;
+            case ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT:
             case ConnectionSecurityLevel.SECURE:
             case ConnectionSecurityLevel.EV_SECURE:
                 return R.drawable.omnibox_https_valid;

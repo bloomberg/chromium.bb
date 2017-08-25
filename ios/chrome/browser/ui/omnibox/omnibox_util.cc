@@ -57,9 +57,6 @@ int GetIconForSecurityState(security_state::SecurityLevel security_level) {
     case security_state::EV_SECURE:
     case security_state::SECURE:
       return IDR_IOS_OMNIBOX_HTTPS_VALID;
-    case security_state::SECURITY_WARNING:
-      // Surface Dubious as Neutral.
-      return IDR_IOS_OMNIBOX_HTTP;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING;
     case security_state::DANGEROUS:

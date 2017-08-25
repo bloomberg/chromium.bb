@@ -214,29 +214,26 @@ public class OmniboxUrlEmphasizerTest {
     }
 
     /**
-     * Verify that a very short, warning HTTPS URL is colored correctly by
+     * Verify that a very short, HTTP Warning URL is colored correctly by
      * OmniboxUrlEmphasizer.emphasizeUrl().
      */
     @Test
     @MediumTest
     @UiThreadTest
     @Feature({"Browser", "Main"})
-    public void testVeryShortWarningHTTPSUrl() throws Throwable {
-        Spannable url = new SpannableStringBuilder("https://www.dodgysite.com");
+    public void testVeryShortHTTPWarningUrl() throws Throwable {
+        Spannable url = new SpannableStringBuilder("m.w.co/p");
         OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mProfile,
-                ConnectionSecurityLevel.SECURITY_WARNING, false, true, true);
+                ConnectionSecurityLevel.HTTP_SHOW_WARNING, false, true, false);
         EmphasizedUrlSpanHelper[] spans = EmphasizedUrlSpanHelper.getSpansForEmphasizedUrl(url);
 
-        Assert.assertEquals("Unexpected number of spans:", 3, spans.length);
-        spans[0].assertIsColoredSpan("https", 0,
-                ApiCompatibilityUtils.getColor(
-                        mResources, R.color.url_emphasis_non_emphasized_text));
-        spans[1].assertIsColoredSpan("://", 5,
-                ApiCompatibilityUtils.getColor(
-                        mResources, R.color.url_emphasis_non_emphasized_text));
-        spans[2].assertIsColoredSpan("www.dodgysite.com", 8,
+        Assert.assertEquals("Unexpected number of spans:", 2, spans.length);
+        spans[0].assertIsColoredSpan("m.w.co", 0,
                 ApiCompatibilityUtils.getColor(
                         mResources, R.color.url_emphasis_domain_and_registry));
+        spans[1].assertIsColoredSpan("/p", 6,
+                ApiCompatibilityUtils.getColor(
+                        mResources, R.color.url_emphasis_non_emphasized_text));
     }
 
     /**

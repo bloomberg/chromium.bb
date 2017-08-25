@@ -4,7 +4,10 @@
 
 #include "content/browser/devtools/protocol/security_handler.h"
 
+#include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "content/browser/devtools/devtools_session.h"
@@ -34,8 +37,6 @@ std::string SecurityStyleToProtocolSecurityState(
       return Security::SecurityStateEnum::Neutral;
     case blink::kWebSecurityStyleInsecure:
       return Security::SecurityStateEnum::Insecure;
-    case blink::kWebSecurityStyleWarning:
-      return Security::SecurityStateEnum::Warning;
     case blink::kWebSecurityStyleSecure:
       return Security::SecurityStateEnum::Secure;
     default:

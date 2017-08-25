@@ -10,7 +10,6 @@ enum WebSecurityStyle {
   kWebSecurityStyleUnknown,
   kWebSecurityStyleNeutral,
   kWebSecurityStyleInsecure,
-  kWebSecurityStyleWarning,
   kWebSecurityStyleSecure,
   kWebSecurityStyleLast = kWebSecurityStyleSecure
 };
