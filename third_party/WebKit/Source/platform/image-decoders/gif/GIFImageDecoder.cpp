@@ -237,6 +237,9 @@ void GIFImageDecoder::Decode(size_t index) {
       if (previous_frame_index == kNotFound) {
         previous_frame_index = required_previous_frame_index;
         Decode(previous_frame_index);
+        if (Failed()) {
+          return;
+        }
       }
 
       // We try to reuse |previous_frame| as starting state to avoid copying.

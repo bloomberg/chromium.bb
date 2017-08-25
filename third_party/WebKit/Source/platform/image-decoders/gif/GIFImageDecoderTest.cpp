@@ -430,4 +430,43 @@ TEST(GIFImageDecoderTest, externalAllocator) {
   EXPECT_FALSE(frame->HasAlpha());
 }
 
+TEST(GIFImageDecoderTest, recursiveDecodeFailure) {
+  auto data = ReadFile(kLayoutTestResourcesDir, "count-down-color-test.gif");
+  ASSERT_TRUE(data.Get());
+
+  {
+    auto decoder = CreateDecoder();
+    decoder->SetData(data.Get(), true);
+    for (size_t i = 0; i <= 3; ++i) {
+      ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(i);
+      ASSERT_NE(frame, nullptr);
+      ASSERT_EQ(frame->GetStatus(), ImageFrame::kFrameComplete);
+    }
+  }
+
+  // Modify data to have an error in frame 2.
+  const size_t kErrorOffset = 15302u;
+  RefPtr<SharedBuffer> modified_data =
+      SharedBuffer::Create(data->Data(), kErrorOffset);
+  modified_data->Append("A", 1u);
+  modified_data->Append(data->Data() + kErrorOffset + 1,
+                        data->size() - kErrorOffset - 1);
+  {
+    auto decoder = CreateDecoder();
+    decoder->SetData(modified_data.Get(), true);
+    decoder->DecodeFrameBufferAtIndex(2);
+    ASSERT_TRUE(decoder->Failed());
+  }
+
+  {
+    // Decode frame 3, recursively decoding frame 2, which 3 depends on.
+    auto decoder = CreateDecoder();
+    decoder->SetData(modified_data.Get(), true);
+    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(3);
+    EXPECT_TRUE(decoder->Failed());
+    ASSERT_NE(frame, nullptr);
+    ASSERT_EQ(frame->RequiredPreviousFrameIndex(), 2u);
+  }
+}
+
 }  // namespace blink
