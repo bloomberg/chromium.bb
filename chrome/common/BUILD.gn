@@ -672,6 +672,7 @@ source_set("app_mode_app_support") {
 mojom("mojo_bindings") {
   sources = [
     "cache_stats_recorder.mojom",
+    "chrome_render_frame.mojom",
     "constants.mojom",
     "file_patcher.mojom",
     "image_context_menu_renderer.mojom",
@@ -711,9 +712,13 @@ mojom("mojo_bindings") {
   public_deps = [
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/common:common_custom_types",
+    "//third_party/WebKit/public:mojo_bindings",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]
+
+  overridden_deps = [ "//third_party/WebKit/public:mojo_bindings" ]
+  component_deps = [ "//content/public/common" ]
 
   # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
   use_once_callback = false

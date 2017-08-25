@@ -32,6 +32,7 @@
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/window_features_converter.h"
 #include "extensions/common/constants.h"
 #include "printing/features/features.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -45,6 +46,7 @@
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebNode.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
+#include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -134,7 +136,9 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
   // Don't do anything else for subframes.
   if (!render_frame->IsMainFrame())
     return;
-
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
+      base::Bind(&ChromeRenderFrameObserver::OnRenderFrameObserverRequest,
+                 base::Unretained(this)));
 #if defined(SAFE_BROWSING_CSD)
   registry_.AddInterface(
       base::Bind(&ChromeRenderFrameObserver::OnPhishingDetectorRequest,
@@ -472,4 +476,15 @@ void ChromeRenderFrameObserver::OnWebUITesterRequest(
 void ChromeRenderFrameObserver::OnThumbnailCapturerRequest(
     chrome::mojom::ThumbnailCapturerRequest request) {
   thumbnail_capturer_bindings_.AddBinding(this, std::move(request));
+}
+
+void ChromeRenderFrameObserver::OnRenderFrameObserverRequest(
+    chrome::mojom::ChromeRenderFrameAssociatedRequest request) {
+  window_features_client_bindings_.AddBinding(this, std::move(request));
+}
+
+void ChromeRenderFrameObserver::SetWindowFeatures(
+    blink::mojom::WindowFeaturesPtr window_features) {
+  render_frame()->GetRenderView()->GetWebView()->SetWindowFeatures(
+      content::ConvertMojoWindowFeaturesToWebWindowFeatures(*window_features));
 }

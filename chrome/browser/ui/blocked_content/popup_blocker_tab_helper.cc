@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -21,8 +22,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -174,9 +177,12 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
 #endif
   if (popup->params.disposition == WindowOpenDisposition::NEW_POPUP &&
       popup->params.target_contents) {
-    popup->params.target_contents->Send(new ChromeViewMsg_SetWindowFeatures(
-        popup->params.target_contents->GetRenderViewHost()->GetRoutingID(),
-        popup->window_features));
+    content::RenderFrameHost* host =
+        popup->params.target_contents->GetMainFrame();
+    DCHECK(host);
+    chrome::mojom::ChromeRenderFrameAssociatedPtr client;
+    host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
+    client->SetWindowFeatures(popup->window_features.Clone());
   }
 
   blocked_popups_.Remove(id);
