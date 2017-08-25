@@ -15,8 +15,7 @@ class ModuleWatcherTest : public testing::Test {
       : module_(nullptr),
         module_event_count_(0),
         module_already_loaded_event_count_(0),
-        module_loaded_event_count_(0),
-        module_unloaded_event_count_(0) {}
+        module_loaded_event_count_(0) {}
 
   void OnModuleEvent(const ModuleWatcher::ModuleEvent& event) {
     ++module_event_count_;
@@ -26,9 +25,6 @@ class ModuleWatcherTest : public testing::Test {
         break;
       case mojom::ModuleEventType::MODULE_LOADED:
         ++module_loaded_event_count_;
-        break;
-      case mojom::ModuleEventType::MODULE_UNLOADED:
-        ++module_unloaded_event_count_;
         break;
     }
   }
@@ -69,8 +65,6 @@ class ModuleWatcherTest : public testing::Test {
   int module_already_loaded_event_count_;
   // Total number of MODULE_LOADED events seen.
   int module_loaded_event_count_;
-  // Total number of MODULE_UNLOADED events seen.
-  int module_unloaded_event_count_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ModuleWatcherTest);
@@ -91,28 +85,26 @@ TEST_F(ModuleWatcherTest, ModuleEvents) {
   EXPECT_LT(0, module_event_count_);
   EXPECT_LT(0, module_already_loaded_event_count_);
   EXPECT_EQ(0, module_loaded_event_count_);
-  EXPECT_EQ(0, module_unloaded_event_count_);
 
   // Dynamically load a module and ensure a notification is received for it.
   int previous_module_loaded_event_count = module_loaded_event_count_;
   LoadModule();
   EXPECT_LT(previous_module_loaded_event_count, module_loaded_event_count_);
 
-  // Unload the module and ensure another notification is received.
-  int previous_module_unloaded_event_count = module_unloaded_event_count_;
   UnloadModule();
-  EXPECT_LT(previous_module_unloaded_event_count, module_unloaded_event_count_);
 
   // Dynamically load a module and ensure a notification is received for it.
   previous_module_loaded_event_count = module_loaded_event_count_;
   LoadModule();
   EXPECT_LT(previous_module_loaded_event_count, module_loaded_event_count_);
 
+  UnloadModule();
+
   // Destroy the module watcher.
   mw.reset();
 
-  // Unload the module and ensure no notification is received this time.
-  previous_module_unloaded_event_count = module_unloaded_event_count_;
-  UnloadModule();
-  EXPECT_EQ(previous_module_unloaded_event_count, module_unloaded_event_count_);
+  // Load the module and ensure no notification is received this time.
+  previous_module_loaded_event_count = module_loaded_event_count_;
+  LoadModule();
+  EXPECT_EQ(previous_module_loaded_event_count, module_loaded_event_count_);
 }

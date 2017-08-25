@@ -15,16 +15,15 @@ class ModuleWatcherTest;
 
 union LDR_DLL_NOTIFICATION_DATA;
 
-// This class observes modules as they are loaded and unloaded into a process's
-// address space.
+// This class observes modules as they are loaded into a process's address
+// space.
 //
 // This class is safe to be created on any thread. Similarly, it is safe to be
 // destroyed on any thread, independent of the thread on which the instance was
 // created.
 class ModuleWatcher {
  public:
-  // Houses information about a module load/unload event, and some module
-  // metadata.
+  // Houses information about a module event, and some module metadata.
   struct ModuleEvent {
     ModuleEvent() = default;
     ModuleEvent(const ModuleEvent& other) = default;
@@ -57,11 +56,11 @@ class ModuleWatcher {
 
   // Creates and starts a watcher. This enumerates all loaded modules
   // synchronously on the current thread during construction, and provides
-  // synchronous notifications as modules are loaded and unloaded. The callback
-  // is invoked in the context of the thread that is loading a module, and as
-  // such may be invoked on any thread in the process. Note that it is possible
-  // to receive two notifications for some modules as the initial loaded module
-  // enumeration races briefly with the callback mechanism. In this case both a
+  // synchronous notifications as modules are loaded. The callback is invoked in
+  // the context of the thread that is loading a module, and as such may be
+  // invoked on any thread in the process. Note that it is possible to receive
+  // two notifications for some modules as the initial loaded module enumeration
+  // races briefly with the callback mechanism. In this case both a
   // MODULE_LOADED and a MODULE_ALREADY_LOADED event will be received for the
   // same module. Since the callback is installed first no modules can be
   // missed, however. This factory function may be called on any thread.

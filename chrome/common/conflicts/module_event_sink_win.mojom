@@ -10,8 +10,6 @@ enum ModuleEventType {
   MODULE_ALREADY_LOADED,
   // A module is in the process of being loaded.
   MODULE_LOADED,
-  // A module is in the process of being unloaded.
-  MODULE_UNLOADED,
 };
 
 // Interface for a remote consumer of module events.
