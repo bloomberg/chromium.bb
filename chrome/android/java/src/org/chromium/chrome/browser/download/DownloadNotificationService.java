@@ -56,8 +56,6 @@ public class DownloadNotificationService {
     public static final String ACTION_DOWNLOAD_OPEN =
             "org.chromium.chrome.browser.download.DOWNLOAD_OPEN";
 
-    public static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
-
     public static final String EXTRA_NOTIFICATION_BUNDLE_ICON_ID =
             "Chrome.NotificationBundleIconIdExtra";
     /** Notification Id starting value, to avoid conflicts from IDs used in prior versions. */
@@ -200,9 +198,8 @@ public class DownloadNotificationService {
             long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isDownloadPending, boolean isTransient,
             Bitmap icon, boolean hasUserGesture) {
-        int notificationId = getNotificationId(id);
         Context context = ContextUtils.getApplicationContext();
-
+        int notificationId = getNotificationId(id);
         DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
                                                 .setContentId(id)
                                                 .setFileName(fileName)
@@ -236,7 +233,8 @@ public class DownloadNotificationService {
     }
 
     public void cancelNotification(int notificationId) {
-        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificationId);
+        // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
+        mNotificationManager.cancel(notificationId);
     }
 
     /**
@@ -306,9 +304,9 @@ public class DownloadNotificationService {
             stopTrackingInProgressDownload(id);
             return;
         }
-        int notificationId = entry == null ? getNotificationId(id) : entry.notificationId;
-        Context context = ContextUtils.getApplicationContext();
 
+        Context context = ContextUtils.getApplicationContext();
+        int notificationId = entry == null ? getNotificationId(id) : entry.notificationId;
         DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
                                                 .setContentId(id)
                                                 .setFileName(fileName)
@@ -317,10 +315,8 @@ public class DownloadNotificationService {
                                                 .setIcon(icon)
                                                 .setNotificationId(notificationId)
                                                 .build();
-
         Notification notification = DownloadNotificationFactory.buildNotification(
                 context, DownloadNotificationFactory.DownloadStatus.PAUSED, downloadUpdate);
-
         updateNotification(notificationId, notification, id,
                 new DownloadSharedPreferenceEntry(id, notificationId, isOffTheRecord,
                         canDownloadWhileMetered, fileName, isAutoResumable, isTransient));
@@ -406,9 +402,8 @@ public class DownloadNotificationService {
             fileName = entry.fileName;
         }
 
-        int notificationId = getNotificationId(id);
         Context context = ContextUtils.getApplicationContext();
-
+        int notificationId = getNotificationId(id);
         DownloadUpdate downloadUpdate = new DownloadUpdate.Builder()
                                                 .setContentId(id)
                                                 .setFileName(fileName)
@@ -452,7 +447,8 @@ public class DownloadNotificationService {
 
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
-        mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
+        // TODO(b/65052774): Add back NOTIFICATION_NAMESPACE when able to.
+        mNotificationManager.notify(id, notification);
     }
 
     private void updateNotification(int notificationId, Notification notification, ContentId id,
@@ -491,11 +487,10 @@ public class DownloadNotificationService {
      * already in progress, do nothing.
      */
     void resumeAllPendingDownloads() {
-        Context context = ContextUtils.getApplicationContext();
         List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();
         for (int i = 0; i < entries.size(); ++i) {
             DownloadSharedPreferenceEntry entry = entries.get(i);
-            if (!canResumeDownload(context, entry)) continue;
+            if (!canResumeDownload(ContextUtils.getApplicationContext(), entry)) continue;
             if (mDownloadsInProgress.contains(entry.id)) continue;
 
             Intent intent = new Intent();

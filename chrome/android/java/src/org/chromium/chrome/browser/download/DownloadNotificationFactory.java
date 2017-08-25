@@ -17,10 +17,8 @@ import static org.chromium.chrome.browser.download.DownloadNotificationService.E
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_OFF_THE_RECORD;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_IS_SUPPORTED_MIME_TYPE;
 import static org.chromium.chrome.browser.download.DownloadNotificationService.EXTRA_NOTIFICATION_BUNDLE_ICON_ID;
-import static org.chromium.chrome.browser.download.DownloadNotificationService.NOTIFICATION_NAMESPACE;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
@@ -53,27 +51,6 @@ public final class DownloadNotificationFactory {
         FAILED,
         DELETED,
         SUMMARY // TODO(jming): Remove when summary notification is no longer in-use.
-    }
-
-    /**
-     * Call from the DownloadNotificationStore when downloads are updated (added, changed, deleted)
-     * to trigger the creation, display, or removal of a corresponding notification.
-     * NOTE: This is currently not being used because DownloadNotificationStore does not yet exist.
-     * @param context of the application.
-     * @param downloadStatus (in progress, paused, successful, failed, deleted, or summary).
-     * @param downloadUpdate information about the download (ie. contentId, fileName, icon, etc).
-     */
-    public static void updateDownloadStatus(
-            Context context, DownloadStatus downloadStatus, DownloadUpdate downloadUpdate) {
-        NotificationManager notificationManager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        if (downloadStatus == DownloadStatus.DELETED) {
-            notificationManager.cancel(NOTIFICATION_NAMESPACE, downloadUpdate.getNotificationId());
-        } else {
-            Notification notification = buildNotification(context, downloadStatus, downloadUpdate);
-            notificationManager.notify(
-                    NOTIFICATION_NAMESPACE, downloadUpdate.getNotificationId(), notification);
-        }
     }
 
     /**

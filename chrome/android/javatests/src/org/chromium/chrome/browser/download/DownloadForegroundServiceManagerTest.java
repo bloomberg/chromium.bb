@@ -65,14 +65,14 @@ public final class DownloadForegroundServiceManagerTest {
         void startAndBindServiceInternal(Context context) {}
 
         @Override
-        void stopAndUnbindService(boolean isComplete) {
-            mIsNotificationKilled = isComplete;
+        void stopAndUnbindService(boolean isCancelled) {
+            mIsNotificationKilled = isCancelled;
             mIsServiceBound = false;
-            super.stopAndUnbindService(isComplete);
+            super.stopAndUnbindService(isCancelled);
         }
 
         @Override
-        void stopAndUnbindServiceInternal(boolean isComplete) {}
+        void stopAndUnbindServiceInternal(boolean isCancelled) {}
 
         @Override
         void startOrUpdateForegroundService(int notificationId, Notification notification) {
@@ -210,14 +210,14 @@ public final class DownloadForegroundServiceManagerTest {
         assertFalse(mDownloadServiceManager.mIsServiceBound);
         assertFalse(mDownloadServiceManager.mIsNotificationKilled);
 
-        // Service restarts and then completes, so notification is killed.
+        // Service restarts and then is cancelled, so notification is killed.
         mDownloadServiceManager.updateDownloadStatus(
                 mContext, DownloadStatus.IN_PROGRESS, FAKE_DOWNLOAD_1, mNotification);
         assertTrue(mDownloadServiceManager.mIsServiceBound);
         mDownloadServiceManager.onServiceConnected();
 
         mDownloadServiceManager.updateDownloadStatus(
-                mContext, DownloadStatus.COMPLETE, FAKE_DOWNLOAD_1, mNotification);
+                mContext, DownloadStatus.CANCEL, FAKE_DOWNLOAD_1, mNotification);
         assertFalse(mDownloadServiceManager.mIsServiceBound);
         assertTrue(mDownloadServiceManager.mIsNotificationKilled);
     }
