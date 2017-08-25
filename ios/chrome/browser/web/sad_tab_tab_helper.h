@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/web_state/web_state_observer.h"
-#import "ios/web/public/web_state/web_state_user_data.h"
+#import <Foundation/Foundation.h>
 
 #include "base/macros.h"
 #include "base/timer/elapsed_timer.h"
+#import "ios/web/public/web_state/web_state_observer.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 // SadTabTabHelper listens to RenderProcessGone events and presents a
 // SadTabView view appropriately.
@@ -61,6 +62,10 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   void DidFinishNavigation(web::NavigationContext* navigation_context) override;
   void WebStateDestroyed() override;
 
+  // The default window of time a failure of the same URL needs to occur
+  // to be considered a repeat failure.
+  static const double kDefaultRepeatFailureInterval;
+
   // Stores the last URL that caused a renderer crash,
   // used to detect repeated crashes.
   GURL last_failed_url_;
@@ -69,21 +74,21 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // used to determine time window for repeated crashes.
   std::unique_ptr<base::ElapsedTimer> last_failed_timer_;
 
-  // Stores the interval window during which a second RenderProcessGone failure
-  // will be considered a repeat failure.
-  double repeat_failure_interval_;
+  // Stores the interval window in seconds during which a second
+  // RenderProcessGone failure will be considered a repeat failure.
+  double repeat_failure_interval_ = kDefaultRepeatFailureInterval;
 
   // Whether or not WebState is currently being displayed.
-  bool is_visible_;
+  bool is_visible_ = false;
 
   // true if the WebState needs to be reloaded after web state becomes visible.
-  bool requires_reload_on_becoming_visible_;
+  bool requires_reload_on_becoming_visible_ = false;
 
   // true if the WebState needs to be reloaded after the app becomes active.
-  bool requires_reload_on_becoming_active_;
+  bool requires_reload_on_becoming_active_ = false;
 
   // Observer for UIApplicationDidBecomeActiveNotification.
-  __strong id<NSObject> application_did_become_active_observer_;
+  __strong id<NSObject> application_did_become_active_observer_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabTabHelper);
 };
