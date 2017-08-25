@@ -1851,6 +1851,10 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
   // process's channel.
   remote_associated_interfaces_.reset();
 
+  // Any termination disablers in content loaded by the new process will
+  // be sent again.
+  sudden_termination_disabler_types_enabled_ = 0;
+
   if (!is_active()) {
     // If the process has died, we don't need to wait for the swap out ack from
     // this RenderFrame if it is pending deletion.  Complete the swap out to
