@@ -31,6 +31,7 @@
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValuePool.h"
+#include "core/css/properties/CSSPropertyAPI.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "platform/wtf/text/StringBuilder.h"
 
@@ -232,7 +233,7 @@ String StylePropertySerializer::AsText() const {
            (CSSPropertyMetadata::IsProperty(property_id) &&
             !isShorthandProperty(property_id)));
     DCHECK(!property_set_.IsDescriptorContext() ||
-           CSSPropertyMetadata::IsDescriptor(property_id));
+           CSSPropertyAPI::Get(property_id).IsDescriptor());
 
     switch (property_id) {
       case CSSPropertyVariable:
