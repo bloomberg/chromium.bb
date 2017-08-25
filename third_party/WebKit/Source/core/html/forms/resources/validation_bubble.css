@@ -21,7 +21,7 @@
 
 #container.shown-initially {
   /* If scaleY is smaller than 0.2, an assertion failure occurs in Skia. */
-  transform: scale(0.96, 0.96);
+  transform: scale(0.96, 1);
 }
 
 #container.shown-fully {
