@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
-#import "ios/chrome/browser/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/content_suggestions/ntp_home_metrics.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
@@ -94,7 +93,6 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 @property(nonatomic, strong) GoogleLandingMediator* googleLandingMediator;
 @property(nonatomic, strong)
     ContentSuggestionsHeaderSynchronizer* headerCollectionInteractionHandler;
-@property(nonatomic, strong) ContentSuggestionsMetricsRecorder* metricsRecorder;
 
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite)
@@ -119,7 +117,6 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 @synthesize webStateList = _webStateList;
 @synthesize dispatcher = _dispatcher;
 @synthesize delegate = _delegate;
-@synthesize metricsRecorder = _metricsRecorder;
 
 - (void)start {
   if (self.visible || !self.browserState) {
@@ -174,8 +171,6 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
              mostVisitedSite:std::move(mostVisitedFactory)];
   self.contentSuggestionsMediator.commandHandler = self;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
-  self.metricsRecorder = [[ContentSuggestionsMetricsRecorder alloc] init];
-  self.metricsRecorder.delegate = self.contentSuggestionsMediator;
 
   self.suggestionsViewController = [[ContentSuggestionsViewController alloc]
       initWithStyle:CollectionViewControllerStyleDefault];
@@ -185,7 +180,6 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
   self.suggestionsViewController.suggestionsDelegate = self;
   self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
-  self.suggestionsViewController.metricsRecorder = self.metricsRecorder;
 
   [self.suggestionsViewController addChildViewController:self.headerController];
   [self.headerController
@@ -234,20 +228,11 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
   [self.dispatcher showReadingList];
 }
 
-- (void)openPageForItemAtIndexPath:(NSIndexPath*)indexPath {
-  CollectionViewItem* item = [self.suggestionsViewController.collectionViewModel
-      itemAtIndexPath:indexPath];
+- (void)openPageForItem:(CollectionViewItem*)item {
+  // TODO(crbug.com/691979): Add metrics.
+
   ContentSuggestionsItem* suggestionItem =
       base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
-
-  [self.metricsRecorder
-         onSuggestionOpened:suggestionItem
-                atIndexPath:indexPath
-         sectionsShownAbove:[self.suggestionsViewController
-                                numberOfSectionsAbove:indexPath.section]
-      suggestionsShownAbove:[self.suggestionsViewController
-                                numberOfSuggestionsAbove:indexPath.section]
-                 withAction:WindowOpenDisposition::CURRENT_TAB];
 
   // Use a referrer with a specific URL to mark this entry as coming from
   // ContentSuggestions.
@@ -281,14 +266,6 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
                         readLaterAction:(BOOL)readLaterAction {
   ContentSuggestionsItem* suggestionsItem =
       base::mac::ObjCCastStrict<ContentSuggestionsItem>(item);
-
-  [self.metricsRecorder
-      onMenuOpenedForSuggestion:suggestionsItem
-                    atIndexPath:indexPath
-          suggestionsShownAbove:[self.suggestionsViewController
-                                    numberOfSuggestionsAbove:indexPath
-                                                                 .section]];
-
   self.alertCoordinator = [ContentSuggestionsAlertFactory
       alertCoordinatorForSuggestionItem:suggestionsItem
                        onViewController:self.suggestionsViewController
@@ -355,40 +332,10 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
                             incognito:(BOOL)incognito {
   new_tab_page_uma::RecordAction(self.browserState,
                                  new_tab_page_uma::ACTION_OPENED_SUGGESTION);
-
-  NSIndexPath* indexPath = [self.suggestionsViewController.collectionViewModel
-      indexPathForItem:item];
-  if (indexPath) {
-    WindowOpenDisposition disposition =
-        incognito ? WindowOpenDisposition::OFF_THE_RECORD
-                  : WindowOpenDisposition::NEW_BACKGROUND_TAB;
-    [self.metricsRecorder
-           onSuggestionOpened:item
-                  atIndexPath:indexPath
-           sectionsShownAbove:[self.suggestionsViewController
-                                  numberOfSectionsAbove:indexPath.section]
-        suggestionsShownAbove:[self.suggestionsViewController
-                                  numberOfSuggestionsAbove:indexPath.section]
-                   withAction:disposition];
-  }
-
   [self openNewTabWithURL:item.URL incognito:incognito];
 }
 
 - (void)addItemToReadingList:(ContentSuggestionsItem*)item {
-  NSIndexPath* indexPath = [self.suggestionsViewController.collectionViewModel
-      indexPathForItem:item];
-  if (indexPath) {
-    [self.metricsRecorder
-           onSuggestionOpened:item
-                  atIndexPath:indexPath
-           sectionsShownAbove:[self.suggestionsViewController
-                                  numberOfSectionsAbove:indexPath.section]
-        suggestionsShownAbove:[self.suggestionsViewController
-                                  numberOfSuggestionsAbove:indexPath.section]
-                   withAction:WindowOpenDisposition::SAVE_TO_DISK];
-  }
-
   self.contentSuggestionsMediator.readingListNeedsReload = YES;
   ReadingListAddCommand* command =
       [[ReadingListAddCommand alloc] initWithURL:item.URL title:item.title];
@@ -404,6 +351,7 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
         indexPathForItem:item];
   }
 
+  // TODO(crbug.com/691979): Add metrics.
   [self.contentSuggestionsMediator dismissSuggestion:item.suggestionIdentifier];
   [self.suggestionsViewController dismissEntryAtIndexPath:itemIndexPath];
 }
@@ -586,6 +534,8 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 
 // Opens the |URL| in a new tab |incognito| or not.
 - (void)openNewTabWithURL:(const GURL&)URL incognito:(BOOL)incognito {
+  // TODO(crbug.com/691979): Add metrics.
+
   // Open the tab in background if it is non-incognito only.
   [self.URLLoader webPageOrderedOpen:URL
                             referrer:web::Referrer()

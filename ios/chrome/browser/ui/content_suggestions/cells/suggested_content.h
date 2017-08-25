@@ -15,10 +15,7 @@
 @protocol SuggestedContent
 
 // Identifier for this content.
-@property(nonatomic, strong, nullable)
-    ContentSuggestionIdentifier* suggestionIdentifier;
-// Whether the metrics for this suggestion have been recorded.
-@property(nonatomic, assign) BOOL metricsRecorded;
+@property(nonatomic, strong) ContentSuggestionIdentifier* suggestionIdentifier;
 
 // The height needed by a cell configured by this item, for a |width|.
 - (CGFloat)cellHeightForWidth:(CGFloat)width;

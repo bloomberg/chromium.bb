@@ -21,7 +21,6 @@
 @synthesize publisher;
 @synthesize publicationDate;
 @synthesize availableOffline;
-@synthesize metricsRecorded;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];

@@ -19,7 +19,6 @@ source_set("content_suggestions") {
     "content_suggestions_header_view_controller_delegate.h",
     "content_suggestions_layout.h",
     "content_suggestions_layout.mm",
-    "content_suggestions_metrics_recording.h",
     "content_suggestions_view_controller.h",
     "content_suggestions_view_controller.mm",
     "content_suggestions_view_controller_audience.h",

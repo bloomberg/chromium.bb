@@ -13,8 +13,8 @@
 
 // Opens the Reading List.
 - (void)openReadingList;
-// Opens the page associated with the item at |indexPath|.
-- (void)openPageForItemAtIndexPath:(nonnull NSIndexPath*)indexPath;
+// Opens the page associated with this |item|.
+- (void)openPageForItem:(nonnull CollectionViewItem*)item;
 // Opens the Most Visited associated with this |item| at the |mostVisitedItem|.
 - (void)openMostVisitedItem:(nonnull CollectionViewItem*)item
                     atIndex:(NSInteger)mostVisitedIndex;

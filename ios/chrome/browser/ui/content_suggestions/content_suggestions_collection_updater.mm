@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recording.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
@@ -126,7 +125,7 @@ SectionIdentifier SectionIdentifierForInfo(
 }
 
 // Returns whether this |sectionIdentifier| comes from ContentSuggestions.
-BOOL IsFromContentSuggestionsService(NSInteger sectionIdentifier) {
+BOOL IsFromContentSuggestions(NSInteger sectionIdentifier) {
   return sectionIdentifier == SectionIdentifierArticles ||
          sectionIdentifier == SectionIdentifierReadingList;
 }
@@ -407,7 +406,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
         [model itemsInSectionWithIdentifier:sectionIdentifier].count > 0) {
       return @[];
     }
-  } else if (IsFromContentSuggestionsService(sectionIdentifier)) {
+  } else if (IsFromContentSuggestions(sectionIdentifier)) {
     // If the section is a ContentSuggestions section, add the "Learn more"
     // items if they are not already present.
     if ([model hasSectionForSectionIdentifier:SectionIdentifierLearnMore] &&
@@ -531,12 +530,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
              sectionIdentifierForSection:section] == SectionIdentifierPromo;
 }
 
-- (BOOL)isContentSuggestionsSection:(NSInteger)section {
-  return IsFromContentSuggestionsService(
-      [self.collectionViewController.collectionViewModel
-          sectionIdentifierForSection:section]);
-}
-
 - (void)updateMostVisitedForSize:(CGSize)size {
   self.collectionWidth = size.width;
 
@@ -621,7 +614,7 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
       sectionInfo.title) {
     BOOL addHeader = YES;
 
-    if (IsFromContentSuggestionsService(sectionIdentifier)) {
+    if (IsFromContentSuggestions(sectionIdentifier)) {
       addHeader = NO;
 
       if ([self.sectionIdentifiersFromContentSuggestions
@@ -690,19 +683,6 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
                                  cell:(ContentSuggestionsFooterCell*)cell {
   SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
 
-  CSCollectionViewModel* model =
-      self.collectionViewController.collectionViewModel;
-  if (![model hasSectionForSectionIdentifier:sectionIdentifier])
-    return;
-
-  // The more button is the footer of the section. So its position is the number
-  // of items in the section.
-  [self.collectionViewController.metricsRecorder
-      onMoreButtonTappedAtPosition:
-          [model numberOfItemsInSection:
-                     [model sectionForSectionIdentifier:sectionIdentifier]]
-                         inSection:sectionInfo];
-
   item.loading = YES;
   [item configureCell:cell];
 
@@ -710,7 +690,8 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
       [NSMutableArray array];
 
   NSArray<CSCollectionViewItem*>* knownSuggestions =
-      [model itemsInSectionWithIdentifier:sectionIdentifier];
+      [self.collectionViewController.collectionViewModel
+          itemsInSectionWithIdentifier:sectionIdentifier];
   for (CSCollectionViewItem* suggestion in knownSuggestions) {
     if (suggestion.type != ItemTypeEmpty) {
       [knownSuggestionIdentifiers addObject:suggestion.suggestionIdentifier];
