@@ -130,7 +130,7 @@ class CORE_EXPORT ImageResource final
                    ImageResourceContent::UpdateImageOption,
                    bool all_data_received);
 
-  void CheckNotify() override;
+  void NotifyFinished() override;
 
   void DestroyDecodedDataIfPossible() override;
   void DestroyDecodedDataForFailedRevalidation() override;

@@ -203,11 +203,11 @@ void FontResource::AllClientsAndObserversRemoved() {
   Resource::AllClientsAndObserversRemoved();
 }
 
-void FontResource::CheckNotify() {
+void FontResource::NotifyFinished() {
   font_load_short_limit_timer_.Stop();
   font_load_long_limit_timer_.Stop();
 
-  Resource::CheckNotify();
+  Resource::NotifyFinished();
 }
 
 bool FontResource::IsLowPriorityLoadingAllowedForRemoteFont() const {
