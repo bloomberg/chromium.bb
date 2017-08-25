@@ -11,13 +11,6 @@
 #include "net/test/net_test_suite.h"
 #include "url/url_features.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
-#include "base/android/jni_registrar.h"
-#include "net/android/dummy_spnego_authenticator.h"
-#include "net/android/net_jni_registrar.h"
-#endif
-
 #if !defined(OS_IOS)
 #include "mojo/edk/embedder/embedder.h"  // nogncheck
 #endif
@@ -59,21 +52,6 @@ bool VerifyBuildIsTimely() {
 int main(int argc, char** argv) {
   // Record histograms, so we can get histograms data in tests.
   base::StatisticsRecorder::Initialize();
-
-#if defined(OS_ANDROID)
-  const base::android::RegistrationMethod kNetTestRegisteredMethods[] = {
-    {"DummySpnegoAuthenticator",
-     net::android::DummySpnegoAuthenticator::RegisterJni},
-    {"NetAndroid", net::android::RegisterJni},
-  };
-
-  // Register JNI bindings for android. Doing it early as the test suite setup
-  // may initiate a call to Java.
-  base::android::RegisterNativeMethods(
-      base::android::AttachCurrentThread(),
-      kNetTestRegisteredMethods,
-      arraysize(kNetTestRegisteredMethods));
-#endif
 
   if (!VerifyBuildIsTimely())
     return 1;
