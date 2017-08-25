@@ -925,6 +925,7 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
     // need to prepare a break token.
     container_builder_.SetUsedBlockSize(std::min(space_left, block_size) +
                                         used_block_size);
+    container_builder_.SetDidBreak();
     container_builder_.SetBlockSize(std::min(space_left, block_size));
     container_builder_.SetBlockOverflow(space_left);
     return;
@@ -933,12 +934,14 @@ void NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   if (block_size > space_left) {
     // Need a break inside this block.
     container_builder_.SetUsedBlockSize(space_left + used_block_size);
+    container_builder_.SetDidBreak();
     container_builder_.SetBlockSize(space_left);
     container_builder_.SetBlockOverflow(space_left);
     return;
   }
 
   // The end of the block fits in the current fragmentainer.
+  container_builder_.SetUsedBlockSize(used_block_size + block_size);
   container_builder_.SetBlockSize(block_size);
   container_builder_.SetBlockOverflow(content_size_);
 }

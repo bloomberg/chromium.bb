@@ -87,12 +87,16 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
 
   NGFragmentBuilder& AddOutOfFlowDescendant(NGOutOfFlowPositionedDescendant);
 
-  // Sets how much of the block size we've used so far for this box.
-  //
-  // This will result in a fragment which has an unfinished break token, which
-  // contains this information.
+  // Set how much of the block size we've used so far for this box.
   NGFragmentBuilder& SetUsedBlockSize(LayoutUnit used_block_size) {
     used_block_size_ = used_block_size;
+    return *this;
+  }
+
+  // Specify that we broke.
+  //
+  // This will result in a fragment which has an unfinished break token.
+  NGFragmentBuilder& SetDidBreak() {
     did_break_ = true;
     return *this;
   }
