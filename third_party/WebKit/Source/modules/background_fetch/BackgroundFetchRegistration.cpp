@@ -4,6 +4,7 @@
 
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 
+#include "core/dom/DOMException.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -66,6 +67,10 @@ void BackgroundFetchRegistration::DidAbort(
       return;
     case mojom::blink::BackgroundFetchError::INVALID_ID:
       resolver->Resolve(false /* success */);
+      return;
+    case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
+      resolver->Reject(DOMException::Create(
+          kAbortError, "Failed to abort registration due to I/O error."));
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
