@@ -94,6 +94,7 @@ bool MostVisitedSites::DoesSourceExist(TileSource source) const {
       return top_sites_ != nullptr;
     case TileSource::SUGGESTIONS_SERVICE:
       return suggestions_service_ != nullptr;
+    case TileSource::POPULAR_BAKED_IN:
     case TileSource::POPULAR:
       return popular_sites_ != nullptr;
     case TileSource::WHITELIST:
@@ -406,7 +407,8 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
     NTPTile tile;
     tile.title = popular_site.title;
     tile.url = GURL(popular_site.url);
-    tile.source = TileSource::POPULAR;
+    tile.source = popular_site.baked_in ? TileSource::POPULAR_BAKED_IN
+                                        : TileSource::POPULAR;
     popular_sites_tiles.push_back(std::move(tile));
     base::Closure icon_available =
         base::Bind(&MostVisitedSites::OnIconMadeAvailable,
