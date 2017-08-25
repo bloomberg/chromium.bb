@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
@@ -61,6 +62,10 @@ const char kColorLaserJson[] = R"json({
 // Helper class to record observed events.
 class LoggingObserver : public SyncedPrintersManager::Observer {
  public:
+  explicit LoggingObserver(SyncedPrintersManager* source) : observer_(this) {
+    observer_.Add(source);
+  }
+
   void OnConfiguredPrintersChanged(
       const std::vector<Printer>& printers) override {
     configured_printers_ = printers;
@@ -81,6 +86,8 @@ class LoggingObserver : public SyncedPrintersManager::Observer {
  private:
   std::vector<Printer> configured_printers_;
   std::vector<Printer> enterprise_printers_;
+  ScopedObserver<SyncedPrintersManager, SyncedPrintersManager::Observer>
+      observer_;
 };
 
 class SyncedPrintersManagerTest : public testing::Test {
@@ -107,8 +114,11 @@ class SyncedPrintersManagerTest : public testing::Test {
 
 // Add a test failure if the ids of printers are not those in expected.  Order
 // is not considered.
-void ExpectPrinterIdsAre(const std::vector<Printer>& printers,
-                         std::vector<std::string> expected_ids) {
+void ExpectObservedPrinterIdsAre(const std::vector<Printer>& printers,
+                                 std::vector<std::string> expected_ids) {
+  // Ensure all callbacks have completed before we check.
+  base::RunLoop().RunUntilIdle();
+
   std::sort(expected_ids.begin(), expected_ids.end());
   std::vector<std::string> printer_ids;
   for (const Printer& printer : printers) {
@@ -123,8 +133,7 @@ void ExpectPrinterIdsAre(const std::vector<Printer>& printers,
 }
 
 TEST_F(SyncedPrintersManagerTest, AddPrinter) {
-  LoggingObserver observer;
-  manager_->AddObserver(&observer);
+  LoggingObserver observer(manager_.get());
   manager_->UpdateConfiguredPrinter(Printer(kTestPrinterId));
 
   auto printers = manager_->GetConfiguredPrinters();
@@ -132,7 +141,7 @@ TEST_F(SyncedPrintersManagerTest, AddPrinter) {
   EXPECT_EQ(kTestPrinterId, printers[0].id());
   EXPECT_EQ(Printer::Source::SRC_USER_PREFS, printers[0].source());
 
-  ExpectPrinterIdsAre(observer.configured_printers(), {kTestPrinterId});
+  ExpectObservedPrinterIdsAre(observer.configured_printers(), {kTestPrinterId});
 }
 
 TEST_F(SyncedPrintersManagerTest, UpdatePrinterAssignsId) {
@@ -149,8 +158,7 @@ TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
   updated_printer.set_uri(kTestUri);
 
   // Register observer so it only receives the update event.
-  LoggingObserver observer;
-  manager_->AddObserver(&observer);
+  LoggingObserver observer(manager_.get());
 
   manager_->UpdateConfiguredPrinter(updated_printer);
 
@@ -158,7 +166,7 @@ TEST_F(SyncedPrintersManagerTest, UpdatePrinter) {
   ASSERT_EQ(1U, printers.size());
   EXPECT_EQ(kTestUri, printers[0].uri());
 
-  ExpectPrinterIdsAre(observer.configured_printers(), {kTestPrinterId});
+  ExpectObservedPrinterIdsAre(observer.configured_printers(), {kTestPrinterId});
 }
 
 TEST_F(SyncedPrintersManagerTest, RemovePrinter) {
@@ -252,7 +260,9 @@ TEST_F(SyncedPrintersManagerTest, PrinterInstalledConfiguresPrinter) {
   // Installing the configured printer should *not* update it.
   configured.set_display_name("display name");
   manager_->PrinterInstalled(configured);
-  EXPECT_TRUE(manager_->GetPrinter(kTestPrinterId)->display_name().empty());
+  auto found_printer = manager_->GetPrinter(kTestPrinterId);
+  ASSERT_FALSE(found_printer == nullptr);
+  EXPECT_TRUE(found_printer->display_name().empty());
 
   // Installing the enterprise printer should *not* generate a configuration
   // update.

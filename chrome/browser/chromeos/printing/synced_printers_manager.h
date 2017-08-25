@@ -30,6 +30,8 @@ namespace chromeos {
 // and ENTERPRISE).  Provides an interface to a user's printers and
 // printers provided by policy.  User printers are backed by the
 // PrintersSyncBridge.
+//
+// This class is thread-safe.
 class SyncedPrintersManager : public KeyedService {
  public:
   class Observer {
