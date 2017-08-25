@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
-#include "gpu/command_buffer/service/command_buffer_direct.h"
+#include "gpu/command_buffer/client/command_buffer_direct_locked.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,7 +37,7 @@ class MappedMemoryTestBase : public testing::Test {
   void SetUp() override {
     transfer_buffer_manager_ = base::MakeUnique<TransferBufferManager>(nullptr);
     command_buffer_.reset(
-        new CommandBufferDirect(transfer_buffer_manager_.get()));
+        new CommandBufferDirectLocked(transfer_buffer_manager_.get()));
     api_mock_.reset(new AsyncAPIMock(true, command_buffer_->service()));
     command_buffer_->set_handler(api_mock_.get());
 
@@ -57,7 +57,7 @@ class MappedMemoryTestBase : public testing::Test {
   int32_t GetToken() { return command_buffer_->GetLastState().token; }
 
   std::unique_ptr<TransferBufferManager> transfer_buffer_manager_;
-  std::unique_ptr<CommandBufferDirect> command_buffer_;
+  std::unique_ptr<CommandBufferDirectLocked> command_buffer_;
   std::unique_ptr<AsyncAPIMock> api_mock_;
   std::unique_ptr<CommandBufferHelper> helper_;
   base::MessageLoop message_loop_;
@@ -242,23 +242,60 @@ TEST_F(MappedMemoryManagerTest, FreePendingToken) {
 }
 
 TEST_F(MappedMemoryManagerTest, FreeUnused) {
+  command_buffer_->LockFlush();
   int32_t id = -1;
   unsigned int offset = 0xFFFFFFFFU;
-  void* m1 = manager_->Alloc(kBufferSize, &id, &offset);
-  void* m2 = manager_->Alloc(kBufferSize, &id, &offset);
+  const unsigned int kAllocSize = 2048;
+  manager_->set_chunk_size_multiple(kAllocSize * 2);
+
+  void* m1 = manager_->Alloc(kAllocSize, &id, &offset);
+  void* m2 = manager_->Alloc(kAllocSize, &id, &offset);
   ASSERT_TRUE(m1 != NULL);
   ASSERT_TRUE(m2 != NULL);
+  // m1 and m2 fit in one chunk
+  EXPECT_EQ(1u, manager_->num_chunks());
+
+  void* m3 = manager_->Alloc(kAllocSize, &id, &offset);
+  ASSERT_TRUE(m3 != NULL);
+  // m3 needs another chunk
   EXPECT_EQ(2u, manager_->num_chunks());
+
+  // Nothing to free, both chunks are in-use.
   manager_->FreeUnused();
   EXPECT_EQ(2u, manager_->num_chunks());
+
+  manager_->Free(m3);
+  EXPECT_EQ(2u, manager_->num_chunks());
+  // The second chunk is no longer in use, we can remove.
+  manager_->FreeUnused();
+  EXPECT_EQ(1u, manager_->num_chunks());
+
+  int32_t token = helper_->InsertToken();
+  manager_->FreePendingToken(m1, token);
+  // The way we hooked up the helper and engine, it won't process commands
+  // until it has to wait for something. Which means the token shouldn't have
+  // passed yet at this point.
+  EXPECT_GT(token, GetToken());
+  EXPECT_EQ(1u, manager_->num_chunks());
+
+  int old_flush_count = command_buffer_->FlushCount();
+  // The remaining chunk is still busy, can't free it.
+  manager_->FreeUnused();
+  EXPECT_EQ(1u, manager_->num_chunks());
+  // This should not have caused a Flush or a Finish.
+  EXPECT_GT(token, GetToken());
+  EXPECT_EQ(old_flush_count, command_buffer_->FlushCount());
+
   manager_->Free(m2);
-  EXPECT_EQ(2u, manager_->num_chunks());
-  manager_->FreeUnused();
   EXPECT_EQ(1u, manager_->num_chunks());
-  manager_->Free(m1);
-  EXPECT_EQ(1u, manager_->num_chunks());
+  // The remaining chunk is free pending token, we can release the shared
+  // memory.
   manager_->FreeUnused();
   EXPECT_EQ(0u, manager_->num_chunks());
+  // This should have triggered a Flush, but not forced a Finish, i.e. the token
+  // shouldn't have passed yet.
+  EXPECT_EQ(old_flush_count + 1, command_buffer_->FlushCount());
+  EXPECT_GT(token, GetToken());
 }
 
 TEST_F(MappedMemoryManagerTest, ChunkSizeMultiple) {

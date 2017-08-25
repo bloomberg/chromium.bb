@@ -17,7 +17,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
-#include "gpu/command_buffer/service/command_buffer_direct.h"
+#include "gpu/command_buffer/client/command_buffer_direct_locked.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,71 +36,6 @@ const int32_t kTotalNumCommandEntries = 32;
 const int32_t kCommandBufferSizeBytes =
     kTotalNumCommandEntries * sizeof(CommandBufferEntry);
 const int32_t kUnusedCommandId = 5;  // we use 0 and 2 currently.
-
-// Override CommandBufferDirect::Flush() to lock flushing and simulate
-// the buffer becoming full in asynchronous mode.
-class CommandBufferDirectLocked : public CommandBufferDirect {
- public:
-  explicit CommandBufferDirectLocked(
-      TransferBufferManager* transfer_buffer_manager)
-      : CommandBufferDirect(transfer_buffer_manager) {}
-  ~CommandBufferDirectLocked() override {}
-
-  // Overridden from CommandBufferDirect
-  void Flush(int32_t put_offset) override {
-    flush_count_++;
-    if (!flush_locked_) {
-      last_flush_ = -1;
-      previous_put_offset_ = put_offset;
-      CommandBufferDirect::Flush(put_offset);
-    } else {
-      last_flush_ = put_offset;
-    }
-  }
-
-  void LockFlush() { flush_locked_ = true; }
-
-  void UnlockFlush() { flush_locked_ = false; }
-
-  int FlushCount() { return flush_count_; }
-
-  State WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
-                                int32_t start,
-                                int32_t end) override {
-    // Flush only if it's required to unblock this Wait.
-    if (last_flush_ != -1 && !InRange(start, end, previous_put_offset_)) {
-      previous_put_offset_ = last_flush_;
-      CommandBufferDirect::Flush(last_flush_);
-      last_flush_ = -1;
-    }
-    return CommandBufferDirect::WaitForGetOffsetInRange(set_get_buffer_count,
-                                                        start, end);
-  }
-
-  scoped_refptr<Buffer> CreateTransferBuffer(size_t size,
-                                             int32_t* id) override {
-    if (fail_create_transfer_buffer_) {
-      *id = -1;
-      return nullptr;
-    } else {
-      return CommandBufferDirect::CreateTransferBuffer(size, id);
-    }
-  }
-
-  int GetServicePutOffset() { return previous_put_offset_; }
-
-  void set_fail_create_transfer_buffer(bool fail) {
-    fail_create_transfer_buffer_ = fail;
-  }
-
- private:
-  bool fail_create_transfer_buffer_ = false;
-  bool flush_locked_ = false;
-  int last_flush_ = -1;
-  int previous_put_offset_ = 0;
-  int flush_count_ = 0;
-  DISALLOW_COPY_AND_ASSIGN(CommandBufferDirectLocked);
-};
 
 // Test fixture for CommandBufferHelper test - Creates a CommandBufferHelper,
 // using a CommandBufferServiceLocked with a mock AsyncAPIInterface for its

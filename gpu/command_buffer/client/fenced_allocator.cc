@@ -36,15 +36,10 @@ FencedAllocator::FencedAllocator(unsigned int size, CommandBufferHelper* helper)
 }
 
 FencedAllocator::~FencedAllocator() {
-  // Free blocks pending tokens.
-  for (unsigned int i = 0; i < blocks_.size(); ++i) {
-    if (blocks_[i].state == FREE_PENDING_TOKEN) {
-      i = WaitForTokenAndFreeBlock(i);
-    }
-  }
-
-  DCHECK_EQ(blocks_.size(), 1u);
-  DCHECK_EQ(blocks_[0].state, FREE);
+  // All IN_USE blocks should be released at this point. There may still be
+  // FREE_PENDING_TOKEN blocks, the assumption is that the underlying memory
+  // will not be re-used without higher level synchronization.
+  DCHECK_EQ(bytes_in_use_, 0u);
 }
 
 // Looks for a non-allocated block that is big enough. Search in the FREE
@@ -171,7 +166,7 @@ bool FencedAllocator::CheckConsistency() {
 
 // Returns false if all blocks are actually FREE, in which
 // case they would be coalesced into one block, true otherwise.
-bool FencedAllocator::InUse() {
+bool FencedAllocator::InUseOrFreePending() {
   return blocks_.size() != 1 || blocks_[0].state != FREE;
 }
 
