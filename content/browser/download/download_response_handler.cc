@@ -6,18 +6,18 @@
 
 #include "content/browser/download/download_stats.h"
 #include "content/browser/download/download_utils.h"
+#include "content/public/browser/download_url_parameters.h"
 
 namespace content {
 
-DownloadResponseHandler::DownloadResponseHandler(
-    ResourceRequest* resource_request,
-    Delegate* delegate,
-    bool is_parallel_request)
+DownloadResponseHandler::DownloadResponseHandler(DownloadUrlParameters* params,
+                                                 Delegate* delegate,
+                                                 bool is_parallel_request)
     : delegate_(delegate) {
   if (!is_parallel_request)
     RecordDownloadCount(UNTHROTTLED_COUNT);
 
-  // TODO(qinmin): create the DownloadSaveInfo from |resource_request|
+  // TODO(qinmin): create the DownloadSaveInfo from |params|
 }
 
 DownloadResponseHandler::~DownloadResponseHandler() = default;
@@ -34,7 +34,7 @@ void DownloadResponseHandler::OnReceiveResponse(
           ? HandleSuccessfulServerResponse(*(head.headers.get()), nullptr)
           : DOWNLOAD_INTERRUPT_REASON_NONE;
   if (result != DOWNLOAD_INTERRUPT_REASON_NONE) {
-    delegate_->OnResponseStarted(download_create_info_,
+    delegate_->OnResponseStarted(base::MakeUnique<DownloadCreateInfo>(),
                                  mojo::ScopedDataPipeConsumerHandle());
   }
 }
@@ -59,7 +59,8 @@ void DownloadResponseHandler::OnTransferSizeUpdated(
 
 void DownloadResponseHandler::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
-  delegate_->OnResponseStarted(download_create_info_, std::move(body));
+  delegate_->OnResponseStarted(base::MakeUnique<DownloadCreateInfo>(),
+                               std::move(body));
 }
 
 void DownloadResponseHandler::OnComplete(
