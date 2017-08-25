@@ -660,6 +660,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
         updateToolbarBackground(mVisualState);
         updateVisualsForToolbarState();
 
+        mBottomToolbarTopShadow.setImageResource(R.drawable.toolbar_shadow);
+
         invalidate();
         requestLayout();
     }
