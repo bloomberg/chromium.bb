@@ -54,8 +54,7 @@ void TreeViewExample::CreateExampleView(View* container) {
   change_title_->SetFocusForPlatform();
   change_title_->set_request_focus_on_press(true);
 
-  GridLayout* layout = new GridLayout(container);
-  container->SetLayoutManager(layout);
+  GridLayout* layout = GridLayout::CreateAndInstall(container);
 
   const int tree_view_column = 0;
   ColumnSet* column_set = layout->AddColumnSet(tree_view_column);

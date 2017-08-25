@@ -68,7 +68,7 @@ void FirstRunBubble::Init() {
   views::Label* subtext = new views::Label(
       l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT), {original_font_list});
 
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   SetBorder(views::CreateEmptyBorder(kTopInset, kLeftInset, kBottomInset,
                                      kRightInset));
 

@@ -544,8 +544,7 @@ views::View* TranslateBubbleView::CreateViewBeforeTranslate() {
   }
 
   views::View* view = new views::View();
-  views::GridLayout* layout = new views::GridLayout(view);
-  view->SetLayoutManager(layout);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
 
   using views::GridLayout;
 
@@ -673,8 +672,7 @@ views::View* TranslateBubbleView::CreateViewTranslating() {
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRANSLATING));
 
   views::View* view = new views::View();
-  views::GridLayout* layout = new views::GridLayout(view);
-  view->SetLayoutManager(layout);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
 
   using views::GridLayout;
 
@@ -725,8 +723,7 @@ views::View* TranslateBubbleView::CreateViewAfterTranslate() {
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_TRANSLATED));
 
   views::View* view = new views::View();
-  views::GridLayout* layout = new views::GridLayout(view);
-  view->SetLayoutManager(layout);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
 
   using views::GridLayout;
 
@@ -776,8 +773,7 @@ views::View* TranslateBubbleView::CreateViewError() {
       l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_COULD_NOT_TRANSLATE));
 
   views::View* view = new views::View();
-  views::GridLayout* layout = new views::GridLayout(view);
-  view->SetLayoutManager(layout);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
 
   using views::GridLayout;
 
@@ -857,8 +853,7 @@ views::View* TranslateBubbleView::CreateViewAdvanced() {
   }
 
   views::View* view = new views::View();
-  views::GridLayout* layout = new views::GridLayout(view);
-  view->SetLayoutManager(layout);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(view);
 
   using views::GridLayout;
 

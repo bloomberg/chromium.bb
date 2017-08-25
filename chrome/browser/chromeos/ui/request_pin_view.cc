@@ -162,7 +162,10 @@ void RequestPinView::UpdateHeaderText() {
 }
 
 void RequestPinView::Init() {
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::INSETS_DIALOG_CONTENTS));
+
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
   int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);

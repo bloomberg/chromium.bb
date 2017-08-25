@@ -100,12 +100,10 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
     USE_PREF
   };
 
-  explicit GridLayout(View* host);
-  ~GridLayout() override;
+  // Creates a new GridLayout and installs it as the LayoutManager for |host|.
+  static GridLayout* CreateAndInstall(View* host);
 
-  // Creates a GridLayout, assigns it as the LayoutManager of |host|, and gives
-  // it a INSETS_PANEL-sized padding border.
-  static GridLayout* CreatePanel(View* host);
+  ~GridLayout() override;
 
   // Creates a new column set with the specified id and returns it.
   // The id is later used when starting a new row.
@@ -180,6 +178,8 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   void set_minimum_size(const gfx::Size& size) { minimum_size_ = size; }
 
  private:
+  explicit GridLayout(View* host);
+
   // As both Layout and GetPreferredSize need to do nearly the same thing,
   // they both call into this method. This sizes the Columns/Rows as
   // appropriate. If layout is true, width/height give the width/height the

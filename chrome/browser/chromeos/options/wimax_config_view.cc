@@ -27,6 +27,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
@@ -196,6 +197,10 @@ void WimaxConfigView::Cancel() {
 }
 
 void WimaxConfigView::Init() {
+  const views::LayoutProvider* provider = views::LayoutProvider::Get();
+  SetBorder(views::CreateEmptyBorder(
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)));
+
   const NetworkState* wimax = NetworkHandler::Get()->network_state_handler()->
       GetNetworkState(service_path_);
   DCHECK(wimax && wimax->type() == shill::kTypeWimax);
@@ -207,8 +212,7 @@ void WimaxConfigView::Init() {
   WifiConfigView::ParseUIProperty(
       &passphrase_ui_data_, wimax, ::onc::wifi::kPassphrase);
 
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
-  views::LayoutProvider* provider = views::LayoutProvider::Get();
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
 
   const int column_view_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);

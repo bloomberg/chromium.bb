@@ -27,8 +27,7 @@ void MessageBoxExample::CreateExampleView(View* container) {
   status_ = new LabelButton(this, ASCIIToUTF16("Show Status"));
   toggle_ = new LabelButton(this, ASCIIToUTF16("Toggle Checkbox"));
 
-  GridLayout* layout = new GridLayout(container);
-  container->SetLayoutManager(layout);
+  GridLayout* layout = GridLayout::CreateAndInstall(container);
 
   message_box_view_->SetCheckBoxLabel(ASCIIToUTF16("Check Box"));
 

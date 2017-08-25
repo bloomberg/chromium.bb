@@ -94,6 +94,8 @@ EnrollmentDialogView::EnrollmentDialogView(const std::string& network_name,
       target_uri_(target_uri),
       connect_(connect),
       added_cert_(false) {
+  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::INSETS_DIALOG_CONTENTS));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ENROLLMENT);
 }
 
@@ -164,7 +166,7 @@ void EnrollmentDialogView::InitDialog() {
   label->SetMultiLine(true);
   label->SetAllowCharacterBreak(true);
 
-  views::GridLayout* grid_layout = views::GridLayout::CreatePanel(this);
+  views::GridLayout* grid_layout = views::GridLayout::CreateAndInstall(this);
 
   views::ColumnSet* columns = grid_layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::FILL,  // Horizontal resize.

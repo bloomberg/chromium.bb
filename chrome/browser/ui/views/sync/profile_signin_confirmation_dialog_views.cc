@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -205,11 +206,14 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
   // insets.
   SetBorder(views::CreateEmptyBorder(content_insets.top(), 0,
                                      content_insets.bottom(), 0));
-  views::GridLayout* dialog_layout = new views::GridLayout(this);
-  SetLayoutManager(dialog_layout);
+  views::GridLayout* dialog_layout = views::GridLayout::CreateAndInstall(this);
 
   // Use GridLayout inside the prompt bar because StyledLabel requires it.
-  views::GridLayout* prompt_layout = views::GridLayout::CreatePanel(prompt_bar);
+  views::GridLayout* prompt_layout =
+      views::GridLayout::CreateAndInstall(prompt_bar);
+  prompt_bar->SetBorder(
+      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
+          views::INSETS_DIALOG_CONTENTS)));
   constexpr int kPromptBarColumnSetId = 0;
   prompt_layout->AddColumnSet(kPromptBarColumnSetId)
       ->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 100,

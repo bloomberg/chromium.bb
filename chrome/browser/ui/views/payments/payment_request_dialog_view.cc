@@ -344,8 +344,8 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
   // would be under it.
   throbber_overlay_.SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
-  std::unique_ptr<views::GridLayout> layout =
-      base::MakeUnique<views::GridLayout>(&throbber_overlay_);
+  views::GridLayout* layout =
+      views::GridLayout::CreateAndInstall(&throbber_overlay_);
   views::ColumnSet* throbber_columns = layout->AddColumnSet(0);
   throbber_columns->AddPaddingColumn(0.5, 0);
   throbber_columns->AddColumn(views::GridLayout::Alignment::CENTER,
@@ -367,7 +367,6 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
   layout->AddView(new views::Label(
       l10n_util::GetStringUTF16(IDS_PAYMENTS_PROCESSING_MESSAGE)));
 
-  throbber_overlay_.SetLayoutManager(layout.release());
   AddChildView(&throbber_overlay_);
 }
 
