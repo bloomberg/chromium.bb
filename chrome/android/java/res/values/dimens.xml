@@ -120,8 +120,6 @@
 
     <!-- Overlay panel dimensions -->
     <dimen name="overlay_panel_bar_height">56dp</dimen>
-    <dimen name="overlay_panel_bar_handle_offset_y">6dp</dimen>
-    <dimen name="overlay_panel_bar_padding_bottom">4dp</dimen>
 
     <!-- Password generation popup dimensions -->
     <dimen name="password_generation_divider_height">1dp</dimen>

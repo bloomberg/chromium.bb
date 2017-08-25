@@ -101,9 +101,6 @@ class ContextualSearchSceneLayer : public SceneLayer,
       jboolean touch_highlight_visible,
       jfloat touch_highlight_x_offset,
       jfloat touch_highlight_width,
-      jint bar_handle_resource_id,
-      jfloat bar_handle_offset_y,
-      jfloat bar_padding_bottom,
       const base::android::JavaRef<jobject>& j_profile);
 
   // Inherited from BitmapFetcherDelegate

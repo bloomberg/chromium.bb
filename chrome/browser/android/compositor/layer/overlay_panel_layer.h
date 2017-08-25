@@ -28,8 +28,7 @@ class OverlayPanelLayer : public Layer {
                       int panel_shadow_resource_id,
                       int bar_shadow_resource_id,
                       int panel_icon_resource_id,
-                      int close_icon_resource_id,
-                      int handle_resource_id);
+                      int close_icon_resource_id);
 
   void SetProperties(float dp_to_px,
                      const scoped_refptr<cc::Layer>& content_layer,
@@ -46,9 +45,7 @@ class OverlayPanelLayer : public Layer {
                      float bar_border_height,
                      bool bar_shadow_visible,
                      float bar_shadow_opacity,
-                     float close_icon_opacity,
-                     float bar_handle_offset_y,
-                     float bar_padding_bottom);
+                     float close_icon_opacity);
 
   scoped_refptr<cc::Layer> layer() override;
 
@@ -71,17 +68,12 @@ class OverlayPanelLayer : public Layer {
   scoped_refptr<cc::Layer> content_container_;
   scoped_refptr<cc::Layer> text_container_;
   scoped_refptr<cc::SolidColorLayer> bar_border_;
-  scoped_refptr<cc::UIResourceLayer> bar_handle_;
-  scoped_refptr<cc::Layer> bar_content_layer_;
 
   int panel_icon_resource_id_;
   int bar_text_resource_id_;
   int panel_shadow_resource_id_;
   int bar_shadow_resource_id_;
   int close_icon_resource_id_;
-  int bar_handle_resource_id_;
-
-  int bar_content_height_;
 };
 
 }  //  namespace android
