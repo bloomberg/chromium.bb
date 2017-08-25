@@ -26,14 +26,7 @@
     {
       "name": "Ancestor Clipping Layer",
       "bounds": [285, 300],
-      "shouldFlattenTransform": false,
-      "maskLayer": [
-        {
-          "name": "Ancestor Clipping Mask Layer",
-          "bounds": [285, 300],
-          "drawsContent": true
-        }
-      ]
+      "shouldFlattenTransform": false
     },
     {
       "name": "LayoutBlockFlow DIV id='content'",

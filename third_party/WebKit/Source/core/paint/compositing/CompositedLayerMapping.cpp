@@ -584,17 +584,26 @@ void CompositedLayerMapping::
   // TODO(schenney): CSS clips are not applied to composited children, and
   // should be via mask or by compositing the parent too.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=615870
-  if (owning_layer_is_clipped) {
-    FloatRect bounds_in_ancestor_space =
-        GetLayoutObject()
-            .LocalToAncestorQuad(FloatRect(composited_bounds_),
-                                 &compositing_ancestor->GetLayoutObject(),
-                                 kUseTransforms)
-            .BoundingBox();
-    owning_layer_is_masked = AncestorRoundedCornersWillClip(
-        bounds_in_ancestor_space, clipping_container->Layer(),
-        compositing_ancestor);
+  if (!(owning_layer_is_clipped && clip_rect.HasRadius()))
+    return;
+
+  // If there are any rounded corners we must use a mask in the presence of
+  // composited descendants because we have no efficient way to determine the
+  // bounds of those children for optimizing the mask.
+  if (owning_layer_.HasCompositingDescendant()) {
+    owning_layer_is_masked = true;
+    return;
   }
+
+  FloatRect bounds_in_ancestor_space =
+      GetLayoutObject()
+          .LocalToAncestorQuad(FloatRect(composited_bounds_),
+                               &compositing_ancestor->GetLayoutObject(),
+                               kUseTransforms)
+          .BoundingBox();
+  owning_layer_is_masked = AncestorRoundedCornersWillClip(
+      bounds_in_ancestor_space, clipping_container->Layer(),
+      compositing_ancestor);
 }
 
 const PaintLayer* CompositedLayerMapping::ScrollParent() {
