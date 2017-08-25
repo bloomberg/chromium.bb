@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.suggestions;
 
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
 
@@ -26,6 +27,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
+import org.chromium.chrome.test.util.RenderTestRule;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -54,6 +56,10 @@ public class TileGridLayoutTest {
     @Rule
     public EmbeddedTestServerRule mTestServerRule = new EmbeddedTestServerRule();
 
+    @Rule
+    public RenderTestRule mRenderTestRule =
+            new RenderTestRule("chrome/test/data/android/render_tests");
+
     private static final String HOME_PAGE_URL = "http://ho.me/";
 
     private static final String[] FAKE_MOST_VISITED_URLS = new String[] {
@@ -67,6 +73,9 @@ public class TileGridLayoutTest {
             "/chrome/test/data/android/navigate/eight.html",
             "/chrome/test/data/android/navigate/nine.html",
     };
+
+    private static final String[] FAKE_MOST_VISITED_TITLES =
+            new String[] {"ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE"};
 
     private NewTabPage mNtp;
 
@@ -104,11 +113,24 @@ public class TileGridLayoutTest {
         Assert.assertTrue(isTileViewOnFirstRow(homePageTileView));
     }
 
+    @Test
+    @MediumTest
+    @Feature({"NewTabPage", "RenderTest"})
+    @RetryOnFailure
+    public void testTileGridAppearance() throws Exception {
+        setUpFakeDataToShow(2);
+        mRenderTestRule.render(getTileGridLayout(), "ntp_tile_grid_layout");
+    }
     private void setUpFakeDataToShow(int homePagePosition) throws InterruptedException {
         List<SiteSuggestion> siteSuggestions = new ArrayList<>();
-        for (String url : FAKE_MOST_VISITED_URLS) {
+
+        assert FAKE_MOST_VISITED_URLS.length == FAKE_MOST_VISITED_TITLES.length;
+
+        for (int i = 0; i < FAKE_MOST_VISITED_URLS.length; i++) {
+            String url = FAKE_MOST_VISITED_URLS[i];
+            String title = FAKE_MOST_VISITED_TITLES[i];
             siteSuggestions.add(FakeMostVisitedSites.createSiteSuggestion(
-                    mTestServerRule.getServer().getURL(url)));
+                    title, mTestServerRule.getServer().getURL(url)));
         }
 
         siteSuggestions.add(homePagePosition,

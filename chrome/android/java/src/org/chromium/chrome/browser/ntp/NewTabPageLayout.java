@@ -98,6 +98,9 @@ public class NewTabPageLayout extends LinearLayout {
 
     public void insertSiteSectionView() {
         mSiteSectionView = SiteSection.inflateSiteSection(this);
+        ViewGroup.LayoutParams layoutParams = mSiteSectionView.getLayoutParams();
+        layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        mSiteSectionView.setLayoutParams(layoutParams);
 
         int insertionPoint = indexOfChild(mMiddleSpacer) + 1;
         addView(mSiteSectionView, insertionPoint);
