@@ -66,6 +66,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     constants.PAYLOADS_TYPE,
     'cbuildbot',
     'unittest-stress',
+    'infra-go',
 )
 
 # In the Json, this special build config holds the default values for all

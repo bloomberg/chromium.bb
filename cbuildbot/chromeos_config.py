@@ -3684,6 +3684,22 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       prebuilts=False,
   )
 
+  site_config.AddWithoutTemplate(
+      'chromeos-infra-go',
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_unittest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      build_type=constants.GENERIC_TYPE,
+      buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
+      builder_class_name='infra_builders.InfraGoBuilder',
+      use_sdk=True,
+      prebuilts=constants.PUBLIC,
+      build_timeout=60 * 60,
+      description='Build Chromium OS infra Go binaries',
+      doc='https://goto.google.com/cros-infra-go-packaging',
+  )
+
 
 def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
   """Make sure VMTests have a builder than can run them.

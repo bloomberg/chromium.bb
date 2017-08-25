@@ -5951,6 +5951,18 @@
             "chrome_internal"
         ]
     },
+    "chromeos-infra-go": {
+        "boards": [],
+        "build_timeout": 3600,
+        "build_type": "generic",
+        "builder_class_name": "infra_builders.InfraGoBuilder",
+        "description": "Build Chromium OS infra Go binaries",
+        "doc": "https://goto.google.com/cros-infra-go-packaging",
+        "hw_tests_override": [],
+        "prebuilts": "public",
+        "unittests": false,
+        "vm_tests": []
+    },
     "chromite-pre-cq": {
         "_template": "pre_cq",
         "boards": [],
