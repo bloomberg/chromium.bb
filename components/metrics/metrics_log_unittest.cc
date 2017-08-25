@@ -154,7 +154,7 @@ TEST_F(MetricsLogTest, BasicRecord) {
   system_profile->mutable_os()->set_version(
       base::SysInfo::OperatingSystemVersion());
 #if defined(OS_ANDROID)
-  system_profile->mutable_os()->set_fingerprint(
+  system_profile->mutable_os()->set_build_fingerprint(
       base::android::BuildInfo::GetInstance()->android_build_fp());
 #endif
 
