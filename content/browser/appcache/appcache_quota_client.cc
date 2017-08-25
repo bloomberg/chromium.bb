@@ -25,9 +25,9 @@ storage::QuotaStatusCode NetErrorCodeToQuotaStatus(int code) {
 }
 
 void RunFront(content::AppCacheQuotaClient::RequestQueue* queue) {
-  base::Closure request = queue->front();
+  base::OnceClosure request = std::move(queue->front());
   queue->pop_front();
-  request.Run();
+  std::move(request).Run();
 }
 }  // namespace
 
