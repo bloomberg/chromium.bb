@@ -10,8 +10,10 @@
 #include "base/logging.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #include "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
@@ -141,10 +143,12 @@ const CGFloat kFaviconSize = 16.0;
         forControlEvents:UIControlEventTouchUpInside];
 
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
-    if (@available(iOS 11, *)) {
-      _dropInteraction =
-          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-      [self addInteraction:_dropInteraction];
+    if (DragAndDropIsEnabled()) {
+      if (@available(iOS 11, *)) {
+        _dropInteraction =
+            [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+        [self addInteraction:_dropInteraction];
+      }
     }
 #endif
   }

@@ -5,6 +5,8 @@
 source_set("drag_and_drop") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "drag_and_drop_flag.h",
+    "drag_and_drop_flag.mm",
     "drop_and_navigate_delegate.h",
     "drop_and_navigate_interaction.h",
     "drop_and_navigate_interaction.mm",
