@@ -76,6 +76,7 @@ void ReadDirectoryCallback(base::RunLoop* run_loop,
 void DidGetUsageAndQuota(storage::QuotaStatusCode* status_out,
                          int64_t* usage_out,
                          int64_t* quota_out,
+                         base::OnceClosure done_callback,
                          storage::QuotaStatusCode status,
                          int64_t usage,
                          int64_t quota) {
@@ -85,6 +86,8 @@ void DidGetUsageAndQuota(storage::QuotaStatusCode* status_out,
     *usage_out = usage;
   if (quota_out)
     *quota_out = quota;
+  if (done_callback)
+    std::move(done_callback).Run();
 }
 
 }  // namespace
@@ -259,10 +262,12 @@ storage::QuotaStatusCode AsyncFileTestHelper::GetUsageAndQuota(
     int64_t* usage,
     int64_t* quota) {
   storage::QuotaStatusCode status = storage::kQuotaStatusUnknown;
+  base::RunLoop run_loop;
   quota_manager->GetUsageAndQuota(
       origin, FileSystemTypeToQuotaStorageType(type),
-      base::Bind(&DidGetUsageAndQuota, &status, usage, quota));
-  base::RunLoop().RunUntilIdle();
+      base::Bind(&DidGetUsageAndQuota, &status, usage, quota,
+                 run_loop.QuitWhenIdleClosure()));
+  run_loop.Run();
   return status;
 }
 
