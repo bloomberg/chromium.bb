@@ -51,14 +51,12 @@ void OverlayPanelLayer::SetResourceIds(int bar_text_resource_id,
                                        int panel_shadow_resource_id,
                                        int bar_shadow_resource_id,
                                        int panel_icon_resource_id,
-                                       int close_icon_resource_id,
-                                       int handle_resource_id) {
+                                       int close_icon_resource_id) {
   bar_text_resource_id_ = bar_text_resource_id;
   panel_shadow_resource_id_ = panel_shadow_resource_id;
   bar_shadow_resource_id_ = bar_shadow_resource_id;
   panel_icon_resource_id_ = panel_icon_resource_id;
   close_icon_resource_id_ = close_icon_resource_id;
-  bar_handle_resource_id_ = handle_resource_id;
 }
 
 void OverlayPanelLayer::SetProperties(
@@ -77,9 +75,7 @@ void OverlayPanelLayer::SetProperties(
     float bar_border_height,
     bool bar_shadow_visible,
     float bar_shadow_opacity,
-    float close_icon_opacity,
-    float bar_handle_offset_y,
-    float bar_padding_bottom) {
+    float close_icon_opacity) {
   // Grabs required static resources.
   ui::NinePatchResource* panel_shadow_resource =
       ui::NinePatchResource::From(resource_manager_->GetResource(
@@ -121,43 +117,6 @@ void OverlayPanelLayer::SetProperties(
   bar_background_->SetPosition(gfx::PointF(0.f, bar_top));
 
   // ---------------------------------------------------------------------------
-  // Bar Handle
-  // ---------------------------------------------------------------------------
-
-  float bar_content_top = bar_top;
-  bar_content_height_ = bar_height - bar_padding_bottom;
-
-  if (bar_handle_resource_id_ != 0) {
-    if (bar_handle_ == nullptr) {
-      bar_handle_ = cc::UIResourceLayer::Create();
-      bar_handle_->SetIsDrawable(true);
-      layer_->AddChild(bar_handle_);
-    }
-
-    // Grab the bar handle resource.
-    ui::Resource* bar_handle_resource = resource_manager_->GetResource(
-        ui::ANDROID_RESOURCE_TYPE_STATIC, bar_handle_resource_id_);
-
-    // Center the handle horizontally.
-    float bar_handle_left =
-        (panel_width - bar_handle_resource->size().width()) / 2;
-    float bar_handle_top = bar_top + bar_handle_offset_y;
-
-    bar_handle_->SetUIResourceId(bar_handle_resource->ui_resource()->id());
-    bar_handle_->SetBounds(bar_handle_resource->size());
-    bar_handle_->SetPosition(gfx::PointF(bar_handle_left, bar_handle_top));
-
-    bar_content_top = bar_handle_top + bar_handle_resource->size().height();
-    bar_content_height_ = bar_height - bar_content_top - bar_padding_bottom;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Bar Content Layer
-  // ---------------------------------------------------------------------------
-  bar_content_layer_->SetBounds(gfx::Size(panel_width, bar_content_height_));
-  bar_content_layer_->SetPosition(gfx::PointF(0.f, bar_content_top));
-
-  // ---------------------------------------------------------------------------
   // Bar Text
   // ---------------------------------------------------------------------------
   ui::Resource* bar_text_resource = resource_manager_->GetResource(
@@ -166,7 +125,7 @@ void OverlayPanelLayer::SetProperties(
   if (bar_text_resource) {
     // Centers the text vertically in the Search Bar.
     float bar_padding_top =
-        (bar_content_height_ - bar_text_resource->size().height()) / 2;
+        bar_top + bar_height / 2 - bar_text_resource->size().height() / 2;
     bar_text_->SetUIResourceId(bar_text_resource->ui_resource()->id());
     bar_text_->SetBounds(bar_text_resource->size());
     bar_text_->SetPosition(gfx::PointF(0.f, bar_padding_top));
@@ -193,7 +152,7 @@ void OverlayPanelLayer::SetProperties(
     }
 
     // Centers the Icon vertically in the bar.
-    float icon_y = (bar_content_height_ - icon_layer->bounds().height()) / 2;
+    float icon_y = bar_top + bar_height / 2 - icon_layer->bounds().height() / 2;
 
     icon_layer->SetPosition(gfx::PointF(icon_x, icon_y));
   }
@@ -216,7 +175,7 @@ void OverlayPanelLayer::SetProperties(
 
   // Centers the Close Icon vertically in the bar.
   float close_icon_top =
-      (bar_content_height_ - close_icon_resource->size().height()) / 2;
+      bar_top + bar_height / 2 - close_icon_resource->size().height() / 2;
 
   close_icon_->SetUIResourceId(close_icon_resource->ui_resource()->id());
   close_icon_->SetBounds(close_icon_resource->size());
@@ -293,8 +252,7 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
       close_icon_(cc::UIResourceLayer::Create()),
       content_container_(cc::SolidColorLayer::Create()),
       text_container_(cc::Layer::Create()),
-      bar_border_(cc::SolidColorLayer::Create()),
-      bar_content_layer_(cc::UIResourceLayer::Create()) {
+      bar_border_(cc::SolidColorLayer::Create()) {
   layer_->SetMasksToBounds(false);
   layer_->SetIsDrawable(true);
 
@@ -308,14 +266,10 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
   bar_background_->SetBackgroundColor(kBarBackgroundColor);
   layer_->AddChild(bar_background_);
 
-  // Bar Content Layer
-  bar_content_layer_->SetIsDrawable(true);
-  layer_->AddChild(bar_content_layer_);
-
   // Bar Text
   bar_text_->SetIsDrawable(true);
   AddBarTextLayer(bar_text_);
-  bar_content_layer_->AddChild(text_container_);
+  layer_->AddChild(text_container_);
 
   // Panel Icon
   panel_icon_->SetIsDrawable(true);
@@ -325,7 +279,7 @@ OverlayPanelLayer::OverlayPanelLayer(ui::ResourceManager* resource_manager)
 
   // Close Icon
   close_icon_->SetIsDrawable(true);
-  bar_content_layer_->AddChild(close_icon_);
+  layer_->AddChild(close_icon_);
 
   // Content Container
   content_container_->SetIsDrawable(true);

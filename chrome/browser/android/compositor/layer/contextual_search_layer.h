@@ -90,10 +90,7 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float divider_line_x_offset,
                      bool touch_highlight_visible,
                      float touch_highlight_x_offset,
-                     float touch_highlight_width,
-                     int bar_handle_resource_id,
-                     float bar_handle_offset_y,
-                     float bar_padding_bottom);
+                     float touch_highlight_width);
 
   void SetThumbnail(const SkBitmap* thumbnail);
 
@@ -119,7 +116,8 @@ class ContextualSearchLayer : public OverlayPanelLayer {
 
   // Sets up |text_layer_|, which contains |bar_text_|, |search_context_| and
   // |search_caption_|.
-  void SetupTextLayer(float search_bar_height,
+  void SetupTextLayer(float search_bar_top,
+                      float search_bar_height,
                       float search_text_layer_min_height,
                       int search_caption_resource_id,
                       bool search_caption_visible,
