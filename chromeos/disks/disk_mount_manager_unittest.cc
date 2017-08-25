@@ -175,7 +175,8 @@ enum ObserverEventType {
   DEVICE_EVENT,  // OnDeviceEvent()
   DISK_EVENT,    // OnDiskEvent()
   FORMAT_EVENT,  // OnFormatEvent()
-  MOUNT_EVENT    // OnMountEvent()
+  MOUNT_EVENT,   // OnMountEvent()
+  RENAME_EVENT   // OnRenameEvent()
 };
 
 // Represents every event notified to |DiskMountManager::Observer|.
@@ -259,6 +260,30 @@ struct FormatEvent : public ObserverEvent {
   }
 };
 
+// Represents an invocation of |DiskMountManager::Observer::OnRenameEvent()|.
+struct RenameEvent : public ObserverEvent {
+  DiskMountManager::RenameEvent event;
+  chromeos::RenameError error_code;
+  std::string device_path;
+
+  RenameEvent(DiskMountManager::RenameEvent event,
+              chromeos::RenameError error_code,
+              const std::string& device_path)
+      : event(event), error_code(error_code), device_path(device_path) {}
+
+  ObserverEventType type() const override { return RENAME_EVENT; }
+
+  bool operator==(const RenameEvent& other) const {
+    return event == other.event && error_code == other.error_code &&
+           device_path == other.device_path;
+  }
+
+  std::string DebugString() const {
+    return StringPrintf("OnRenameEvent(%d, %d, %s)", event, error_code,
+                        device_path.c_str());
+  }
+};
+
 // Represents an invocation of |DiskMountManager::Observer::OnMountEvent()|.
 struct MountEvent : public ObserverEvent {
   DiskMountManager::MountEvent event;
@@ -325,8 +350,7 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
   void OnRenameEvent(DiskMountManager::RenameEvent event,
                      chromeos::RenameError error_code,
                      const std::string& device_path) override {
-    // TODO(klemenko): Add implementation when you will add unit tests for
-    // rename
+    events_.push_back(MakeUnique<RenameEvent>(event, error_code, device_path));
   }
 
   void OnMountEvent(
@@ -362,6 +386,14 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
     DCHECK_GT(events_.size(), index);
     DCHECK_EQ(FORMAT_EVENT, events_[index]->type());
     return static_cast<const FormatEvent&>(*events_[index]);
+  }
+
+  // Verifies if the |index|th invocation is OnRenameEvent() and returns
+  // details.
+  const RenameEvent& GetRenameEvent(size_t index) {
+    DCHECK_GT(events_.size(), index);
+    DCHECK_EQ(RENAME_EVENT, events_[index]->type());
+    return static_cast<const RenameEvent&>(*events_[index]);
   }
 
   // Verifies if the |index|th invocation is OnMountEvent() and returns details.
@@ -400,6 +432,19 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
       if (it->type() != FORMAT_EVENT)
         continue;
       if (static_cast<const FormatEvent&>(*it) == exptected_format_event)
+        num_matched++;
+    }
+    return num_matched;
+  }
+
+  // Counts the number of |RenameEvent| recorded so far that matches with
+  // |rename_event|.
+  size_t CountRenameEvents(const RenameEvent& exptected_rename_event) {
+    size_t num_matched = 0;
+    for (const auto& event : events_) {
+      if (event->type() != RENAME_EVENT)
+        continue;
+      if (static_cast<const RenameEvent&>(*event) == exptected_rename_event)
         num_matched++;
     }
     return num_matched;
@@ -962,6 +1007,353 @@ TEST_F(DiskMountManagerTest, RemountRemovableDrives) {
       manager->FindDiskBySourcePath(kDevice1SourcePath)->is_read_only());
   // Remounted disk should also appear as writable to observers.
   EXPECT_FALSE(observer_->GetMountEvent(1).disk->is_read_only());
+}
+
+// Tests that the observer gets notified on attempt to rename non existent mount
+// point.
+TEST_F(DiskMountManagerTest, Rename_NotMounted) {
+  DiskMountManager::GetInstance()->RenameMountedDevice("/mount/non_existent",
+                                                       "MYUSB");
+  ASSERT_EQ(1U, observer_->GetEventCount());
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
+                        chromeos::RENAME_ERROR_UNKNOWN, "/mount/non_existent"),
+            observer_->GetRenameEvent(0));
+}
+
+// Tests that the observer gets notified on attempt to rename read-only mount
+// point.
+TEST_F(DiskMountManagerTest, Rename_ReadOnly) {
+  DiskMountManager::GetInstance()->RenameMountedDevice(kReadOnlyDeviceMountPath,
+                                                       "MYUSB");
+  ASSERT_EQ(1U, observer_->GetEventCount());
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
+                        chromeos::RENAME_ERROR_DEVICE_NOT_ALLOWED,
+                        kReadOnlyDeviceMountPath),
+            observer_->GetRenameEvent(0));
+}
+
+// Tests that it is not possible to rename archive mount point.
+TEST_F(DiskMountManagerTest, Rename_Archive) {
+  DiskMountManager::GetInstance()->RenameMountedDevice("/archive/mount_path",
+                                                       "MYUSB");
+  ASSERT_EQ(1U, observer_->GetEventCount());
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
+                        chromeos::RENAME_ERROR_UNKNOWN, "/archive/source_path"),
+            observer_->GetRenameEvent(0));
+}
+
+// Tests that rename fails if the device cannot be unmounted.
+TEST_F(DiskMountManagerTest, Rename_FailToUnmount) {
+  // Before renaming mounted device, the device should be unmounted.
+  // In this test unmount will fail, and there should be no attempt to
+  // rename the device.
+
+  fake_cros_disks_client_->MakeUnmountFail();
+  // Start test.
+  DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
+                                                       "MYUSB");
+
+  // Cros disks will respond asynchronoulsy, so let's drain the message loop.
+  base::RunLoop().RunUntilIdle();
+
+  // Observer should be notified that unmount attempt fails and rename task
+  // failed to start.
+  ASSERT_EQ(2U, observer_->GetEventCount());
+  const MountEvent& mount_event = observer_->GetMountEvent(0);
+  EXPECT_EQ(DiskMountManager::UNMOUNTING, mount_event.event);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_INTERNAL, mount_event.error_code);
+  EXPECT_EQ(kDevice1MountPath, mount_event.mount_point.mount_path);
+
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
+                        chromeos::RENAME_ERROR_UNKNOWN, kDevice1SourcePath),
+            observer_->GetRenameEvent(1));
+  EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(kDevice1MountPath,
+            fake_cros_disks_client_->last_unmount_device_path());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(0, fake_cros_disks_client_->rename_call_count());
+
+  // The device mount should still be here.
+  EXPECT_TRUE(HasMountPoint(kDevice1MountPath));
+}
+
+// Tests that observer is notified when cros disks fails to start rename
+// process.
+TEST_F(DiskMountManagerTest, Rename_RenameFailsToStart) {
+  // Before renaming mounted device, the device should be unmounted.
+  // In this test, unmount will succeed, but call to Rename method will
+  // fail.
+
+  fake_cros_disks_client_->MakeRenameFail();
+  // Start the test.
+  DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
+                                                       "MYUSB");
+
+  // Cros disks will respond asynchronoulsy, so let's drain the message loop.
+  base::RunLoop().RunUntilIdle();
+
+  // Observer should be notified that the device was unmounted and rename task
+  // failed to start.
+  ASSERT_EQ(2U, observer_->GetEventCount());
+  const MountEvent& mount_event = observer_->GetMountEvent(0);
+  EXPECT_EQ(DiskMountManager::UNMOUNTING, mount_event.event);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, mount_event.error_code);
+  EXPECT_EQ(kDevice1MountPath, mount_event.mount_point.mount_path);
+
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
+                        chromeos::RENAME_ERROR_UNKNOWN, kDevice1SourcePath),
+            observer_->GetRenameEvent(1));
+
+  EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(kDevice1MountPath,
+            fake_cros_disks_client_->last_unmount_device_path());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
+  EXPECT_EQ(kDevice1SourcePath,
+            fake_cros_disks_client_->last_rename_device_path());
+  EXPECT_EQ("MYUSB", fake_cros_disks_client_->last_rename_volume_name());
+
+  // The device mount should be gone.
+  EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
+}
+
+// Tests the case where there are two rename requests for the same device.
+TEST_F(DiskMountManagerTest, Rename_ConcurrentRenameCalls) {
+  // Only the first rename request should be processed (the second unmount
+  // request fails because the device is already unmounted at that point).
+  // CrosDisksClient will report that the rename process for the first request
+  // is successfully started.
+
+  fake_cros_disks_client_->set_unmount_listener(
+      base::Bind(&FakeCrosDisksClient::MakeUnmountFail,
+                 base::Unretained(fake_cros_disks_client_)));
+  // Start the test.
+  DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
+                                                       "MYUSB1");
+  DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
+                                                       "MYUSB2");
+
+  // Cros disks will respond asynchronoulsy, so let's drain the message loop.
+  base::RunLoop().RunUntilIdle();
+
+  // The observer should get a RENAME_STARTED event for one rename request and a
+  // RENAME_COMPLETED with an error code for the other rename request. The
+  // renaming will be started only for the first request.
+  // There should be only one UNMOUNTING event. The result of the second one
+  // should not be reported as the mount point will go away after the first
+  // request.
+  //
+  // Note that in this test the rename completion signal will not be simulated,
+  // so the observer should not get RENAME_COMPLETED signal.
+
+  ASSERT_EQ(3U, observer_->GetEventCount());
+  const MountEvent& mount_event = observer_->GetMountEvent(0);
+  EXPECT_EQ(DiskMountManager::UNMOUNTING, mount_event.event);
+  EXPECT_EQ(chromeos::MOUNT_ERROR_NONE, mount_event.error_code);
+  EXPECT_EQ(kDevice1MountPath, mount_event.mount_point.mount_path);
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
+                        chromeos::RENAME_ERROR_UNKNOWN, kDevice1SourcePath),
+            observer_->GetRenameEvent(1));
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_STARTED,
+                        chromeos::RENAME_ERROR_NONE, kDevice1SourcePath),
+            observer_->GetRenameEvent(2));
+
+  EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(kDevice1MountPath,
+            fake_cros_disks_client_->last_unmount_device_path());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
+  EXPECT_EQ(kDevice1SourcePath,
+            fake_cros_disks_client_->last_rename_device_path());
+  EXPECT_EQ("MYUSB1", fake_cros_disks_client_->last_rename_volume_name());
+
+  // The device mount should be gone.
+  EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
+}
+
+// Tests the case when the rename process actually starts and fails.
+TEST_F(DiskMountManagerTest, Rename_RenameFails) {
+  // Both unmount and rename device calls are successful in this test.
+
+  // Start the test.
+  DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
+                                                       "MYUSB");
+
+  // Wait for Unmount and Rename calls to end.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(kDevice1MountPath,
+            fake_cros_disks_client_->last_unmount_device_path());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
+  EXPECT_EQ(kDevice1SourcePath,
+            fake_cros_disks_client_->last_rename_device_path());
+  EXPECT_EQ("MYUSB", fake_cros_disks_client_->last_rename_volume_name());
+
+  // The device should be unmounted by now.
+  EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
+
+  // Send failing RENAME_COMPLETED signal.
+  // The failure is marked by ! in fromt of the path (but this should change
+  // soon).
+  fake_cros_disks_client_->SendRenameCompletedEvent(
+      chromeos::RENAME_ERROR_UNKNOWN, kDevice1SourcePath);
+
+  // The observer should get notified that the device was unmounted and that
+  // renaming has started.
+  // After the renaming starts, the test will simulate failing
+  // RENAME_COMPLETED signal, so the observer should also be notified the
+  // renaming has failed (RENAME_COMPLETED event).
+  ASSERT_EQ(3U, observer_->GetEventCount());
+  VerifyMountEvent(observer_->GetMountEvent(0), DiskMountManager::UNMOUNTING,
+                   chromeos::MOUNT_ERROR_NONE, kDevice1MountPath);
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_STARTED,
+                        chromeos::RENAME_ERROR_NONE, kDevice1SourcePath),
+            observer_->GetRenameEvent(1));
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
+                        chromeos::RENAME_ERROR_UNKNOWN, kDevice1SourcePath),
+            observer_->GetRenameEvent(2));
+}
+
+// Tests the case when renaming completes successfully.
+TEST_F(DiskMountManagerTest, Rename_RenameSuccess) {
+  DiskMountManager* manager = DiskMountManager::GetInstance();
+  const DiskMountManager::DiskMap& disks = manager->disks();
+  // Set up cros disks client mocks.
+  // Both unmount and rename device calls are successful in this test.
+
+  // Start the test.
+  DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
+                                                       "MYUSB1");
+
+  // Wait for Unmount and Rename calls to end.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(kDevice1MountPath,
+            fake_cros_disks_client_->last_unmount_device_path());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
+  EXPECT_EQ(kDevice1SourcePath,
+            fake_cros_disks_client_->last_rename_device_path());
+  EXPECT_EQ("MYUSB1", fake_cros_disks_client_->last_rename_volume_name());
+
+  // The device should be unmounted by now.
+  EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
+
+  // Simulate cros_disks reporting success.
+  fake_cros_disks_client_->SendRenameCompletedEvent(chromeos::RENAME_ERROR_NONE,
+                                                    kDevice1SourcePath);
+
+  // The observer should receive UNMOUNTING, RENAME_STARTED and RENAME_COMPLETED
+  // events (all of them without an error set).
+  ASSERT_EQ(3U, observer_->GetEventCount());
+  VerifyMountEvent(observer_->GetMountEvent(0), DiskMountManager::UNMOUNTING,
+                   chromeos::MOUNT_ERROR_NONE, kDevice1MountPath);
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_STARTED,
+                        chromeos::RENAME_ERROR_NONE, kDevice1SourcePath),
+            observer_->GetRenameEvent(1));
+  EXPECT_EQ(RenameEvent(DiskMountManager::RENAME_COMPLETED,
+                        chromeos::RENAME_ERROR_NONE, kDevice1SourcePath),
+            observer_->GetRenameEvent(2));
+
+  // Disk should have new value for device label name
+  EXPECT_EQ("MYUSB1", disks.find(kDevice1SourcePath)->second->device_label());
+}
+
+// Tests that it's possible to rename the device twice in a row (this may not be
+// true if the list of pending renames is not properly cleared).
+TEST_F(DiskMountManagerTest, Rename_ConsecutiveRenameCalls) {
+  DiskMountManager* manager = DiskMountManager::GetInstance();
+  const DiskMountManager::DiskMap& disks = manager->disks();
+  // All unmount and rename device calls are successful in this test.
+  // Each of the should be made twice (once for each renaming task).
+
+  // Start the test.
+  DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
+                                                       "MYUSB");
+
+  // Wait for Unmount and Rename calls to end.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(kDevice1MountPath,
+            fake_cros_disks_client_->last_unmount_device_path());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(1, fake_cros_disks_client_->rename_call_count());
+  EXPECT_EQ(kDevice1SourcePath,
+            fake_cros_disks_client_->last_rename_device_path());
+  EXPECT_EQ("MYUSB", fake_cros_disks_client_->last_rename_volume_name());
+  EXPECT_EQ("", disks.find(kDevice1SourcePath)->second->base_mount_path());
+
+  // The device should be unmounted by now.
+  EXPECT_FALSE(HasMountPoint(kDevice1MountPath));
+
+  // Simulate cros_disks reporting success.
+  fake_cros_disks_client_->SendRenameCompletedEvent(chromeos::RENAME_ERROR_NONE,
+                                                    kDevice1SourcePath);
+
+  // Simulate the device remounting.
+  fake_cros_disks_client_->SendMountCompletedEvent(
+      chromeos::MOUNT_ERROR_NONE, kDevice1SourcePath,
+      chromeos::MOUNT_TYPE_DEVICE, kDevice1MountPath);
+
+  EXPECT_TRUE(HasMountPoint(kDevice1MountPath));
+
+  auto previousMountPath = disks.find(kDevice1SourcePath)->second->mount_path();
+  // Try renaming again.
+  DiskMountManager::GetInstance()->RenameMountedDevice(kDevice1MountPath,
+                                                       "MYUSB2");
+
+  // Wait for Unmount and Rename calls to end.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(2, fake_cros_disks_client_->unmount_call_count());
+  EXPECT_EQ(kDevice1MountPath,
+            fake_cros_disks_client_->last_unmount_device_path());
+  EXPECT_EQ(chromeos::UNMOUNT_OPTIONS_NONE,
+            fake_cros_disks_client_->last_unmount_options());
+  EXPECT_EQ(2, fake_cros_disks_client_->rename_call_count());
+  EXPECT_EQ(kDevice1SourcePath,
+            fake_cros_disks_client_->last_rename_device_path());
+  EXPECT_EQ("MYUSB2", fake_cros_disks_client_->last_rename_volume_name());
+  // Base mount path should be set to previous mount path.
+  EXPECT_EQ(previousMountPath,
+            disks.find(kDevice1SourcePath)->second->base_mount_path());
+
+  // Simulate cros_disks reporting success.
+  fake_cros_disks_client_->SendRenameCompletedEvent(chromeos::RENAME_ERROR_NONE,
+                                                    kDevice1SourcePath);
+
+  // The observer should receive UNMOUNTING, RENAME_STARTED and RENAME_COMPLETED
+  // events (all of them without an error set) twice (once for each renaming
+  // task).
+  // Also, there should be a MOUNTING event when the device remounting is
+  // simulated.
+  EXPECT_EQ(7U, observer_->GetEventCount());
+
+  EXPECT_EQ(2U, observer_->CountRenameEvents(RenameEvent(
+                    DiskMountManager::RENAME_COMPLETED,
+                    chromeos::RENAME_ERROR_NONE, kDevice1SourcePath)));
+
+  EXPECT_EQ(2U, observer_->CountRenameEvents(RenameEvent(
+                    DiskMountManager::RENAME_STARTED,
+                    chromeos::RENAME_ERROR_NONE, kDevice1SourcePath)));
+
+  EXPECT_EQ(2U, observer_->CountMountEvents(DiskMountManager::UNMOUNTING,
+                                            chromeos::MOUNT_ERROR_NONE,
+                                            kDevice1MountPath));
+
+  EXPECT_EQ(1U, observer_->CountMountEvents(DiskMountManager::MOUNTING,
+                                            chromeos::MOUNT_ERROR_NONE,
+                                            kDevice1MountPath));
 }
 
 }  // namespace
