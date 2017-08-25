@@ -59,9 +59,6 @@ suite('SiteDetails', function() {
         unsandboxed_plugins: {
           setting: settings.ContentSetting.ASK,
         },
-        protectedContent: {
-          setting: settings.ContentSetting.ALLOW,
-        },
       },
       exceptions: {
         auto_downloads: [
@@ -161,14 +158,6 @@ suite('SiteDetails', function() {
           },
         ],
         unsandboxed_plugins: [
-          {
-            embeddingOrigin: 'https://foo.com:443',
-            origin: 'https://foo.com:443',
-            setting: settings.ContentSetting.ALLOW,
-            source: settings.SiteSettingSource.PREFERENCE,
-          },
-        ],
-        protectedContent: [
           {
             embeddingOrigin: 'https://foo.com:443',
             origin: 'https://foo.com:443',
