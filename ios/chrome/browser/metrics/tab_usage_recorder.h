@@ -242,6 +242,10 @@ class TabUsageRecorder : public WebStateListObserver {
   // be null during unit testing.
   PrerenderService* prerender_service_;
 
+  // Observers for NSNotificationCenter notifications.
+  __strong id<NSObject> application_backgrounding_observer_;
+  __strong id<NSObject> application_foregrounding_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(TabUsageRecorder);
 };
 
