@@ -62,9 +62,6 @@ class MediaPlayerListener {
       const base::android::JavaRef<jobject>& media_player);
   void ReleaseMediaPlayerListenerResources();
 
-  // Register MediaPlayerListener in the system library loader.
-  static bool RegisterMediaPlayerListener(JNIEnv* env);
-
  private:
   // The message loop where |media_player_| lives.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

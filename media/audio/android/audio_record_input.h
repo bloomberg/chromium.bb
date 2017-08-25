@@ -44,8 +44,6 @@ class MEDIA_EXPORT AudioRecordInputStream : public AudioInputStream {
   bool GetAutomaticGainControl() override;
   bool IsMuted() override;
 
-  static bool RegisterAudioRecordInput(JNIEnv* env);
-
   // Called from Java when data is available.
   void OnData(JNIEnv* env,
               const base::android::JavaParamRef<jobject>& obj,

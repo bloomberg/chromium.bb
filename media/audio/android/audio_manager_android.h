@@ -67,8 +67,6 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const std::string& device_id,
       const LogCallback& log_callback) override;
 
-  static bool RegisterAudioManager(JNIEnv* env);
-
   // Indicates if there's support for the OpenSLES performance mode keys. See
   // OpenSLESOutputStream for specific details. Essentially this allows for low
   // power audio when large buffer sizes can be used.

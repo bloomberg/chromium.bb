@@ -41,8 +41,6 @@ class USB_MIDI_EXPORT UsbMidiDeviceFactoryAndroid
       const base::android::JavaParamRef<jobject>& caller,
       jint index);
 
-  static bool RegisterUsbMidiDeviceFactory(JNIEnv* env);
-
  private:
   base::android::ScopedJavaGlobalRef<jobject> raw_factory_;
   // Not owned.

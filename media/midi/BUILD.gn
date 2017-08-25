@@ -110,8 +110,6 @@ component("midi") {
     sources += [
                  "midi_device_android.cc",
                  "midi_device_android.h",
-                 "midi_jni_registrar.cc",
-                 "midi_jni_registrar.h",
                  "midi_input_port_android.cc",
                  "midi_input_port_android.h",
                  "midi_manager_android.cc",

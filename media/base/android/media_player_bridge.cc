@@ -579,10 +579,6 @@ void MediaPlayerBridge::OnTimeUpdateTimerFired() {
   last_time_update_timestamp_ = current_timestamp;
 }
 
-bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 bool MediaPlayerBridge::CanPause() {
   return can_pause_;
 }

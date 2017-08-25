@@ -178,9 +178,4 @@ jlong AudioTrackOutputStream::GetAddress(JNIEnv* env,
   return reinterpret_cast<jlong>(env->GetDirectBufferAddress(byte_buffer));
 }
 
-// static
-bool AudioTrackOutputStream::RegisterAudioTrackOutputStream(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace media

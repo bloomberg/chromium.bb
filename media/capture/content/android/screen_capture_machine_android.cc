@@ -16,11 +16,6 @@ using base::android::ScopedJavaLocalRef;
 
 namespace media {
 
-// static
-bool ScreenCaptureMachineAndroid::RegisterScreenCaptureMachine(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 ScreenCaptureMachineAndroid::ScreenCaptureMachineAndroid() {}
 
 ScreenCaptureMachineAndroid::~ScreenCaptureMachineAndroid() {}

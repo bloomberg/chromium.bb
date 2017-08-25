@@ -40,8 +40,6 @@ class USB_MIDI_EXPORT UsbMidiDeviceAndroid : public UsbMidiDevice {
               jint endpoint_number,
               const base::android::JavaParamRef<jbyteArray>& data);
 
-  static bool RegisterUsbMidiDevice(JNIEnv* env);
-
  private:
   void GetDescriptorsInternal();
   void InitDeviceInfo();

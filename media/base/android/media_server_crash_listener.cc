@@ -10,11 +10,6 @@
 
 namespace media {
 
-// static
-bool MediaServerCrashListener::RegisterMediaServerCrashListener(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 MediaServerCrashListener::MediaServerCrashListener(
     const OnMediaServerCrashCB& on_server_crash_cb,
     scoped_refptr<base::SingleThreadTaskRunner> callback_thread)

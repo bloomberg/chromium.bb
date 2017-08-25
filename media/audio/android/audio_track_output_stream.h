@@ -35,9 +35,6 @@ class MEDIA_EXPORT AudioTrackOutputStream : public MuteableAudioOutputStream {
   // MuteableAudioOutputStream implementation.
   void SetMute(bool muted) override;
 
-  // JNI registry.
-  static bool RegisterAudioTrackOutputStream(JNIEnv* env);
-
   // AudioOutputStream::SourceCallback implementation methods called from Java.
   base::android::ScopedJavaLocalRef<jobject> OnMoreData(JNIEnv* env,
                                                         jobject obj,

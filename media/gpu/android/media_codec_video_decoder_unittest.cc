@@ -3,13 +3,11 @@
 // found in the LICENSE file.
 
 #include "media/gpu/android/media_codec_video_decoder.h"
-#include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/android/media_codec_util.h"
-#include "media/base/android/media_jni_registrar.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
@@ -74,9 +72,6 @@ class MediaCodecVideoDecoderTest : public testing::Test {
   MediaCodecVideoDecoderTest() = default;
 
   void SetUp() override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    RegisterJni(env);
-
     uint8_t data = 0;
     fake_decoder_buffer_ = DecoderBuffer::CopyFrom(&data, 1);
     codec_allocator_ = base::MakeUnique<FakeCodecAllocator>();

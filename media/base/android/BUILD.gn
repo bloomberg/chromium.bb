@@ -45,8 +45,6 @@ if (is_android) {
       "media_drm_storage.h",
       "media_drm_storage_bridge.cc",
       "media_drm_storage_bridge.h",
-      "media_jni_registrar.cc",
-      "media_jni_registrar.h",
       "media_player_android.cc",
       "media_player_android.h",
       "media_player_bridge.cc",
