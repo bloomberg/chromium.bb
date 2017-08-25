@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/payments_validators.h"
+#include "components/payments/core/payments_validators.h"
 
 #include <ostream>  // NOLINT
 #include "testing/gtest/include/gtest/gtest.h"
@@ -271,59 +271,6 @@ INSTANTIATE_TEST_CASE_P(
                     LanguageTagTestCase("en-Latn", "en", "Latn"),
                     LanguageTagTestCase("en-Latn-US", "en", "Latn"),
                     LanguageTagTestCase("en-US", "en", "")));
-
-struct ShippingAddressTestCase {
-  ShippingAddressTestCase(const char* country_code,
-                          const char* language_code,
-                          const char* script_code,
-                          bool expected_valid)
-      : country_code(country_code),
-        language_code(language_code),
-        script_code(script_code),
-        expected_valid(expected_valid) {}
-  ~ShippingAddressTestCase() {}
-
-  const char* country_code;
-  const char* language_code;
-  const char* script_code;
-  bool expected_valid;
-};
-
-class PaymentsShippingAddressValidatorTest
-    : public testing::TestWithParam<ShippingAddressTestCase> {};
-
-TEST_P(PaymentsShippingAddressValidatorTest, IsValidShippingAddress) {
-  payments::mojom::PaymentAddressPtr address =
-      payments::mojom::PaymentAddress::New();
-  address->country = GetParam().country_code;
-  address->language_code = GetParam().language_code;
-  address->script_code = GetParam().script_code;
-
-  std::string error_message;
-  EXPECT_EQ(GetParam().expected_valid,
-            payments::PaymentsValidators::IsValidShippingAddress(
-                address, &error_message))
-      << error_message;
-  EXPECT_EQ(GetParam().expected_valid, error_message.empty()) << error_message;
-
-  EXPECT_EQ(
-      GetParam().expected_valid,
-      payments::PaymentsValidators::IsValidShippingAddress(address, nullptr));
-}
-
-INSTANTIATE_TEST_CASE_P(
-    ShippingAddresses,
-    PaymentsShippingAddressValidatorTest,
-    testing::Values(
-        ShippingAddressTestCase("US", "en", "Latn", true),
-        ShippingAddressTestCase("US", "en", "", true),
-        ShippingAddressTestCase("US", "", "", true),
-        // Invalid shipping addresses
-        ShippingAddressTestCase("", "", "", false),
-        ShippingAddressTestCase("InvalidCountryCode", "", "", false),
-        ShippingAddressTestCase("US", "InvalidLanguageCode", "", false),
-        ShippingAddressTestCase("US", "en", "InvalidScriptCode", false),
-        ShippingAddressTestCase("US", "", "Latn", false)));
 
 }  // namespace
 }  // namespace payments

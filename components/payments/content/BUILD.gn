@@ -42,12 +42,9 @@ static_library("utils") {
     "payment_details_validation.h",
     "payment_manifest_parser_host.cc",
     "payment_manifest_parser_host.h",
-    "payments_validators.cc",
-    "payments_validators.h",
   ]
 
   deps = [
-    "//base",
     "//components/autofill/core/browser",
     "//components/payments/core",
     "//components/payments/mojom:mojom_parser",
@@ -55,9 +52,7 @@ static_library("utils") {
     "//content/public/browser",
     "//net",
     "//third_party/WebKit/public:blink_headers",
-    "//third_party/re2",
     "//ui/base",
-    "//url",
   ]
 
   public_deps = [
@@ -72,7 +67,6 @@ source_set("unit_tests") {
     "payment_request_spec_unittest.cc",
     "payment_request_state_unittest.cc",
     "payment_response_helper_unittest.cc",
-    "payments_validators_unittest.cc",
   ]
 
   deps = [

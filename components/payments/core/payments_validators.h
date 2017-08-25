@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENTS_VALIDATORS_H_
-#define COMPONENTS_PAYMENTS_CONTENT_PAYMENTS_VALIDATORS_H_
+#ifndef COMPONENTS_PAYMENTS_CORE_PAYMENTS_VALIDATORS_H_
+#define COMPONENTS_PAYMENTS_CORE_PAYMENTS_VALIDATORS_H_
 
 #include <string>
 
 #include "base/macros.h"
-#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace payments {
 
@@ -47,14 +46,6 @@ class PaymentsValidators {
                                std::string* language_code,
                                std::string* script_code);
 
-  // Returns true if the payment address is valid:
-  //  - Has a valid region code
-  //  - Has a valid language code, if any.
-  //  - Has a valid script code, if any.
-  // A script code should be present only if language code is present.
-  static bool IsValidShippingAddress(const mojom::PaymentAddressPtr& address,
-                                     std::string* optional_error_message);
-
   // Returns false if |error| is too long (greater than 2048).
   static bool IsValidErrorMsgFormat(const std::string& code,
                                     std::string* optional_error_message);
@@ -65,4 +56,4 @@ class PaymentsValidators {
 
 }  // namespace payments
 
-#endif  // COMPONENTS_PAYMENTS_CONTENT_PAYMENTS_VALIDATORS_H_
+#endif  // COMPONENTS_PAYMENTS_CORE_PAYMENTS_VALIDATORS_H_

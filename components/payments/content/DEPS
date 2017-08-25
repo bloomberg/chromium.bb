@@ -10,6 +10,5 @@ include_rules = [
   "+net",
   "+third_party/WebKit/public/platform/modules/payments",
   "+third_party/libphonenumber",
-  "+third_party/re2",
   "+ui/base",
 ]
