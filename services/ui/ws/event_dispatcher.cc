@@ -357,7 +357,7 @@ LocationTarget EventDispatcher::AdjustLocationTargetForModal(
   updated_target.deepest_window.window =
       location_target.deepest_window.window
           ? delegate_->GetFallbackTargetForEventBlockedByModal(
-                location_target.deepest_window.window->GetRoot())
+                location_target.deepest_window.window->GetRootForDrawn())
           : nullptr;
   return updated_target;
 }
@@ -691,7 +691,9 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
 void EventDispatcher::DispatchToClient(ServerWindow* window,
                                        ClientSpecificId client_id,
                                        const ui::LocatedEvent& event) {
-  gfx::Point location = ConvertPointFromRoot(window, event.location());
+  gfx::Point location = ConvertPointFromRootForEventDispatch(
+      delegate_->GetRootWindowForEventDispatch(window), window,
+      event.location());
   std::unique_ptr<ui::Event> clone = ui::Event::Clone(event);
   clone->AsLocatedEvent()->set_location(location);
   // TODO(jonross): add post-target accelerator support once accelerators
@@ -799,7 +801,7 @@ void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,
   //   sending exit as necessary.
   // http://crbug.com/613646 .
   if (!new_parent || !new_parent->IsDrawn() ||
-      new_parent->GetRoot() != old_parent->GetRoot()) {
+      new_parent->GetRootForDrawn() != old_parent->GetRootForDrawn()) {
     CancelPointerEventsToTarget(window);
   }
 }

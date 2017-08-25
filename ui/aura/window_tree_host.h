@@ -83,6 +83,13 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   virtual void SetRootTransform(const gfx::Transform& transform);
   virtual gfx::Transform GetInverseRootTransform() const;
 
+  // These functions are used in event translation for translating the local
+  // coordinates of LocatedEvents. Default implementation calls to non-event
+  // ones (e.g. GetRootTransform()).
+  virtual gfx::Transform GetRootTransformForLocalEventCoordinates() const;
+  virtual gfx::Transform GetInverseRootTransformForLocalEventCoordinates()
+      const;
+
   // Sets padding applied to the output surface. The output surface is sized to
   // to the size of the host plus output surface padding. |window()| is offset
   // by |padding_in_pixels|, that is, |window|'s origin is set to

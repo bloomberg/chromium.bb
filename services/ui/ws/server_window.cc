@@ -231,8 +231,8 @@ void ServerWindow::SetCanAcceptDrops(bool accepts_drops) {
   accepts_drops_ = accepts_drops;
 }
 
-const ServerWindow* ServerWindow::GetRoot() const {
-  return delegate_->GetRootWindow(this);
+const ServerWindow* ServerWindow::GetRootForDrawn() const {
+  return delegate_->GetRootWindowForDrawn(this);
 }
 
 ServerWindow* ServerWindow::GetChildWindow(const WindowId& window_id) {
@@ -414,7 +414,7 @@ void ServerWindow::SetTextInputState(const ui::TextInputState& state) {
 }
 
 bool ServerWindow::IsDrawn() const {
-  const ServerWindow* root = delegate_->GetRootWindow(this);
+  const ServerWindow* root = delegate_->GetRootWindowForDrawn(this);
   if (!root || !root->visible())
     return false;
   const ServerWindow* window = this;

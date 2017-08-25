@@ -806,6 +806,18 @@ ServerWindow* WindowManagerState::GetRootWindowContaining(
   return target_display_root->GetClientVisibleRoot();
 }
 
+ServerWindow* WindowManagerState::GetRootWindowForEventDispatch(
+    ServerWindow* window) {
+  for (auto& display_root_ptr : window_manager_display_roots_) {
+    ServerWindow* client_visible_root =
+        display_root_ptr->GetClientVisibleRoot();
+    if (client_visible_root->Contains(window))
+      return client_visible_root;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 void WindowManagerState::OnEventTargetNotFound(const ui::Event& event,
                                                int64_t display_id) {
   window_server()->SendToPointerWatchers(event, user_id(), nullptr, /* window */

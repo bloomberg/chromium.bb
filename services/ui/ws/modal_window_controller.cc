@@ -278,7 +278,7 @@ bool ModalWindowController::IsWindowBlockedBySystemModalOrMinContainer(
 bool ModalWindowController::IsWindowInSystemModalContainer(
     const ServerWindow* window) const {
   DCHECK(window->IsDrawn());
-  const ServerWindow* root = window->GetRoot();
+  const ServerWindow* root = window->GetRootForDrawn();
   DCHECK(root);
   for (auto& blocking_containers : all_blocking_containers_) {
     if (blocking_containers->IsInDisplayWithRoot(root))
@@ -292,7 +292,7 @@ bool ModalWindowController::IsWindowInSystemModalContainer(
 const ServerWindow* ModalWindowController::GetMinContainer(
     const ServerWindow* window) const {
   DCHECK(window->IsDrawn());
-  const ServerWindow* root = window->GetRoot();
+  const ServerWindow* root = window->GetRootForDrawn();
   DCHECK(root);
   for (auto& blocking_containers : all_blocking_containers_) {
     if (blocking_containers->IsInDisplayWithRoot(root))

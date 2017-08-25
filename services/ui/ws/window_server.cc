@@ -731,7 +731,7 @@ void WindowServer::CreateFrameSinkManager() {
       std::move(frame_sink_manager));
 }
 
-ServerWindow* WindowServer::GetRootWindow(const ServerWindow* window) {
+ServerWindow* WindowServer::GetRootWindowForDrawn(const ServerWindow* window) {
   Display* display = display_manager_->GetDisplayContaining(window);
   return display ? display->root_window() : nullptr;
 }

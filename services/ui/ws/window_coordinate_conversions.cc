@@ -14,11 +14,8 @@ namespace ui {
 namespace ws {
 namespace {
 
-gfx::Transform GetTransformToRoot(const ServerWindow* window) {
-  // This code should only be called when |window| is connected to a display.
-  const ServerWindow* root = window->GetRoot();
-  DCHECK(root);
-
+gfx::Transform GetTransformToRoot(const ServerWindow* root,
+                                  const ServerWindow* window) {
   gfx::Transform transform;
   const ServerWindow* w = window;
   for (; w && w != root; w = w->parent()) {
@@ -29,16 +26,30 @@ gfx::Transform GetTransformToRoot(const ServerWindow* window) {
       transform.ConcatTransform(w->transform());
     transform.ConcatTransform(translation);
   }
+  // Allow the root to also have a transform. This mirrors how
+  // WindowManagerDisplayRoot works. Ash sets the transform for rotation as well
+  // as ui scale.
+  if (w == root && !w->transform().IsIdentity())
+    transform.ConcatTransform(w->transform());
   return transform;
 }
 
 }  // namespace
 
-gfx::Point ConvertPointFromRoot(const ServerWindow* window,
-                                const gfx::Point& location_in_root) {
-  const gfx::Transform transform = GetTransformToRoot(window);
+gfx::Point ConvertPointFromRootForEventDispatch(
+    const ServerWindow* root,
+    const ServerWindow* window,
+    const gfx::Point& location_in_root) {
+  // This code should only be called when |window| is connected to a display.
+  DCHECK(root);
+
+  if (root == window)
+    return location_in_root;
+
+  const gfx::Transform transform = GetTransformToRoot(root, window);
   gfx::Point3F location_in_root3(gfx::PointF{location_in_root});
   transform.TransformPointReverse(&location_in_root3);
+
   return gfx::ToFlooredPoint(location_in_root3.AsPointF());
 }
 

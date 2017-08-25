@@ -480,20 +480,21 @@ LocatedEvent::LocatedEvent(EventType type,
       root_location_(root_location) {}
 
 void LocatedEvent::UpdateForRootTransform(
-    const gfx::Transform& reversed_root_transform) {
-  // Transform has to be done at root level.
-  gfx::Point3F p(location_);
-  reversed_root_transform.TransformPoint(&p);
-  location_ = p.AsPointF();
+    const gfx::Transform& reversed_root_transform,
+    const gfx::Transform& reversed_local_transform) {
   if (target()) {
-    // If a target is already set, that means that |location_| and
-    // |root_location_| are in different coordinate space. So apply the
-    // transformation separately.
-    p = gfx::Point3F(root_location_);
-    reversed_root_transform.TransformPoint(&p);
-    root_location_ = p.AsPointF();
+    gfx::Point3F transformed_location(location_);
+    reversed_local_transform.TransformPoint(&transformed_location);
+    location_ = transformed_location.AsPointF();
+
+    gfx::Point3F transformed_root_location(root_location_);
+    reversed_root_transform.TransformPoint(&transformed_root_location);
+    root_location_ = transformed_root_location.AsPointF();
   } else {
-    root_location_ = location_;
+    // This mirrors what the code previously did.
+    gfx::Point3F transformed_location(location_);
+    reversed_root_transform.TransformPoint(&transformed_location);
+    root_location_ = location_ = transformed_location.AsPointF();
   }
 }
 
@@ -915,8 +916,10 @@ TouchEvent::~TouchEvent() {
 }
 
 void TouchEvent::UpdateForRootTransform(
-    const gfx::Transform& inverted_root_transform) {
-  LocatedEvent::UpdateForRootTransform(inverted_root_transform);
+    const gfx::Transform& inverted_root_transform,
+    const gfx::Transform& inverted_local_transform) {
+  LocatedEvent::UpdateForRootTransform(inverted_root_transform,
+                                       inverted_local_transform);
   gfx::DecomposedTransform decomp;
   bool success = gfx::DecomposeTransform(&decomp, inverted_root_transform);
   DCHECK(success);
