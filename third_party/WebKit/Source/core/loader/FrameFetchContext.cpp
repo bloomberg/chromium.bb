@@ -767,7 +767,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (!RuntimeEnabledFeatures::ClientHintsEnabled())
     return;
 
-  if (ShouldSendClientHint(kWebClientHintsTypeDeviceMemory,
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
                            hints_preferences)) {
     request.AddHTTPHeaderField(
         "Device-Memory",
@@ -776,10 +776,10 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   }
 
   float dpr = GetDevicePixelRatio();
-  if (ShouldSendClientHint(kWebClientHintsTypeDpr, hints_preferences))
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kDpr, hints_preferences))
     request.AddHTTPHeaderField("DPR", AtomicString(String::Number(dpr)));
 
-  if (ShouldSendClientHint(kWebClientHintsTypeResourceWidth,
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kResourceWidth,
                            hints_preferences)) {
     if (resource_width.is_set) {
       float physical_width = resource_width.width * dpr;
@@ -788,7 +788,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     }
   }
 
-  if (ShouldSendClientHint(kWebClientHintsTypeViewportWidth,
+  if (ShouldSendClientHint(mojom::WebClientHintsType::kViewportWidth,
                            hints_preferences) &&
       !IsDetached() && GetFrame()->View()) {
     request.AddHTTPHeaderField(
@@ -1081,7 +1081,7 @@ float FrameFetchContext::GetDevicePixelRatio() const {
 }
 
 bool FrameFetchContext::ShouldSendClientHint(
-    WebClientHintsType type,
+    mojom::WebClientHintsType type,
     const ClientHintsPreferences& hints_preferences) const {
   return GetClientHintsPreferences().ShouldSend(type) ||
          hints_preferences.ShouldSend(type);

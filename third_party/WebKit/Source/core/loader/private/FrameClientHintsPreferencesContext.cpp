@@ -18,7 +18,8 @@ static constexpr WebFeature kWebFeatureMapping[] = {
     WebFeature::kClientHintsViewportWidth,
 };
 
-static_assert(kWebClientHintsTypeLast + 1 == arraysize(kWebFeatureMapping),
+static_assert(static_cast<int>(mojom::WebClientHintsType::kLast) + 1 ==
+                  arraysize(kWebFeatureMapping),
               "unhandled client hint type");
 
 }  // namespace
@@ -28,7 +29,7 @@ FrameClientHintsPreferencesContext::FrameClientHintsPreferencesContext(
     : frame_(frame) {}
 
 void FrameClientHintsPreferencesContext::CountClientHints(
-    WebClientHintsType type) {
+    mojom::WebClientHintsType type) {
   UseCounter::Count(frame_, kWebFeatureMapping[static_cast<int32_t>(type)]);
 }
 

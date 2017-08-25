@@ -231,7 +231,8 @@ static void ConfigureRequest(
         element.GetDocument().GetSecurityOrigin(), cross_origin);
   }
 
-  if (client_hints_preferences.ShouldSend(kWebClientHintsTypeResourceWidth) &&
+  if (client_hints_preferences.ShouldSend(
+          mojom::WebClientHintsType::kResourceWidth) &&
       isHTMLImageElement(element))
     params.SetResourceWidth(toHTMLImageElement(element).GetResourceWidth());
 }

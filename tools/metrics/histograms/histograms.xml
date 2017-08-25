@@ -8804,6 +8804,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ClientHints.CountRulesReceived" units="count">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Count of client hints that were received by the render process. Recorded
+    approximately at the time of the renderer startup.
+  </summary>
+</histogram>
+
+<histogram name="ClientHints.PersistDuration" units="ms">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Duration for which the origin requested the client hints to be persisted.
+    Collected on the renderer side.
+  </summary>
+</histogram>
+
+<histogram name="ClientHints.UpdateEventCount" units="count">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Count of events when the client hints needs to be persisted to the disk by
+    the browser.
+  </summary>
+</histogram>
+
+<histogram name="ClientHints.UpdateSize" units="count">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Count of client hints that need to be persisted to the disk. Recorded by the
+    renderer.
+  </summary>
+</histogram>
+
 <histogram name="Clipboard.ConstructedHasher" enum="BooleanSuccess">
   <obsolete>
     Launched briefly in M-59 dev, then refactoring made obsolete.

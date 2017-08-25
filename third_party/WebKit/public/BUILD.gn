@@ -806,6 +806,7 @@ mojom("mojo_bindings") {
   ]
   public_deps = [
     ":android_mojo_bindings",
+    ":web_client_hints_types_mojo_bindings",
     ":web_feature_mojo_bindings",
     "//device/bluetooth/public/interfaces",
     "//device/screen_orientation/public/interfaces",
@@ -922,6 +923,15 @@ group("generate_mojo_bindings") {
 mojom("web_feature_mojo_bindings") {
   sources = [
     "platform/web_feature.mojom",
+  ]
+}
+
+# The web_feature_mojo_bindings is separated from the rest of the mojom files
+# because the chromium typemap for blink mojo_bindings has private content
+# dependencies.
+mojom("web_client_hints_types_mojo_bindings") {
+  sources = [
+    "platform/web_client_hints_types.mojom",
   ]
 }
 
