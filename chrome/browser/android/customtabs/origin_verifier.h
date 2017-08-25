@@ -34,8 +34,7 @@ class OriginVerifier {
                     const base::android::JavaParamRef<jobject>& obj,
                     const base::android::JavaParamRef<jstring>& j_package_name,
                     const base::android::JavaParamRef<jstring>& j_fingerprint,
-                    const base::android::JavaParamRef<jstring>& j_origin,
-                    const base::android::JavaParamRef<jstring>& j_relationship);
+                    const base::android::JavaParamRef<jstring>& j_origin);
 
   void Destroy(JNIEnv* env, const base::android::JavaRef<jobject>& obj);
 
