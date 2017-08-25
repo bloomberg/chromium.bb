@@ -29,7 +29,6 @@ class APP_LIST_EXPORT SearchResultAnswerCardView
   int DoUpdate() override;
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetSelectedView() const override;
 
  private:

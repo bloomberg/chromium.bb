@@ -163,7 +163,8 @@ int SearchResultAnswerCardView::DoUpdate() {
 
   set_container_score(have_result ? display_results.front()->relevance() : 0);
   if (title_changed && search_answer_container_view_->selected())
-    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    search_answer_container_view_->NotifyAccessibilityEvent(
+        ui::AX_EVENT_SELECTION, true);
   return have_result ? 1 : 0;
 }
 
@@ -175,7 +176,8 @@ void SearchResultAnswerCardView::UpdateSelectedIndex(int old_selected,
   const bool is_selected = new_selected == 0;
   search_answer_container_view_->SetSelected(is_selected);
   if (is_selected)
-    NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    search_answer_container_view_->NotifyAccessibilityEvent(
+        ui::AX_EVENT_SELECTION, true);
 }
 
 bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -185,11 +187,6 @@ bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
   }
 
   return SearchResultContainerView::OnKeyPressed(event);
-}
-
-void SearchResultAnswerCardView::GetAccessibleNodeData(
-    ui::AXNodeData* node_data) {
-  search_answer_container_view_->GetAccessibleNodeData(node_data);
 }
 
 views::View* SearchResultAnswerCardView::GetSelectedView() const {
