@@ -437,29 +437,9 @@ void ContentSuggestionsService::ReloadSuggestions() {
   }
 }
 
-void ContentSuggestionsService::SetRemoteSuggestionsEnabled(bool enabled) {
-  // TODO(dgn): Rewire if we decide to implement a dedicated prefs page. If not
-  // remove by M62.
-  NOTREACHED();
-}
-
 bool ContentSuggestionsService::AreRemoteSuggestionsEnabled() const {
   return remote_suggestions_provider_ &&
          !remote_suggestions_provider_->IsDisabled();
-}
-
-bool ContentSuggestionsService::AreRemoteSuggestionsManaged() const {
-  // TODO(dgn): Rewire if we decide to implement a dedicated prefs page. If not
-  // remove by M62.
-  NOTREACHED();
-  return false;
-}
-
-bool ContentSuggestionsService::AreRemoteSuggestionsManagedByCustodian() const {
-  // TODO(dgn): Rewire if we decide to implement a dedicated prefs page. If not
-  // remove by M62.
-  NOTREACHED();
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

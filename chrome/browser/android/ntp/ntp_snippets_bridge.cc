@@ -149,44 +149,6 @@ static void RemoteSuggestionsSchedulerOnBrowserUpgraded(
   scheduler->OnBrowserUpgraded();
 }
 
-static void SetRemoteSuggestionsEnabled(JNIEnv* env,
-                                        const JavaParamRef<jclass>& caller,
-                                        jboolean enabled) {
-  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
-      ContentSuggestionsServiceFactory::GetForProfile(
-          ProfileManager::GetLastUsedProfile());
-  if (!content_suggestions_service)
-    return;
-
-  content_suggestions_service->SetRemoteSuggestionsEnabled(enabled);
-}
-
-// Returns true if the remote provider is managed by an adminstrator's policy.
-static jboolean AreRemoteSuggestionsManaged(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
-  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
-      ContentSuggestionsServiceFactory::GetForProfile(
-          ProfileManager::GetLastUsedProfile());
-  if (!content_suggestions_service)
-    return false;
-
-  return content_suggestions_service->AreRemoteSuggestionsManaged();
-}
-
-// Returns true if the remote provider is managed by a supervisor
-static jboolean AreRemoteSuggestionsManagedByCustodian(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& caller) {
-  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
-      ContentSuggestionsServiceFactory::GetForProfile(
-          ProfileManager::GetLastUsedProfile());
-  if (!content_suggestions_service)
-    return false;
-
-  return content_suggestions_service->AreRemoteSuggestionsManagedByCustodian();
-}
-
 static void SetContentSuggestionsNotificationsEnabled(
     JNIEnv* env,
     const JavaParamRef<jclass>& caller,
