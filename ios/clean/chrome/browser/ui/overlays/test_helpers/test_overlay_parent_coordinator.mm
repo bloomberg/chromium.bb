@@ -15,19 +15,33 @@
 #endif
 
 @interface TestOverlayParentCoordinator ()
+// The parent view controller's window.  Necessary for UIViewControllers to
+// present properly.
+@property(nonatomic, readonly, strong) UIWindow* window;
 // The parent UIViewController.
-@property(nonatomic, readonly) UIViewController* viewController;
+@property(nonatomic, readonly, strong) UIViewController* viewController;
 @end
 
 @implementation TestOverlayParentCoordinator
+@synthesize window = _window;
 @synthesize viewController = _viewController;
 
 - (instancetype)init {
   if ((self = [super init])) {
+    _window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
     _viewController = [[UIViewController alloc] init];
+    _window.rootViewController = _viewController;
+    [_window makeKeyAndVisible];
   }
   return self;
 }
+
+- (void)dealloc {
+  [_window removeFromSuperview];
+  [_window resignKeyWindow];
+}
+
+#pragma mark - Public
 
 - (OverlayCoordinator*)presentedOverlay {
   NSUInteger childCount = self.children.count;
@@ -35,6 +49,20 @@
   return childCount == 1U ? base::mac::ObjCCastStrict<OverlayCoordinator>(
                                 [self.children anyObject])
                           : nil;
+}
+
+@end
+
+@implementation TestOverlayParentCoordinator (Internal)
+
+- (void)childCoordinatorDidStart:(BrowserCoordinator*)childCoordinator {
+  [self.viewController presentViewController:childCoordinator.viewController
+                                    animated:NO
+                                  completion:nil];
+}
+
+- (void)childCoordinatorWillStop:(BrowserCoordinator*)childCoordinator {
+  [self.viewController dismissViewControllerAnimated:NO completion:nil];
 }
 
 @end
