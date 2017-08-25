@@ -95,6 +95,7 @@ TEST_F(WKBasedNavigationManagerTest, SyncAfterItemAtIndex) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_LINK,
                                            item->GetTransitionType()));
   EXPECT_EQ(UserAgentType::MOBILE, item->GetUserAgentType());
+  EXPECT_FALSE(item->GetTimestamp().is_null());
 }
 
 // Tests that Referrer is inferred from the previous WKBackForwardListItem.
@@ -114,6 +115,7 @@ TEST_F(WKBasedNavigationManagerTest, SyncAfterItemAtIndexWithPreviousItem) {
                                            item2->GetTransitionType()));
   EXPECT_EQ(UserAgentType::MOBILE, item2->GetUserAgentType());
   EXPECT_EQ(GURL("http://www.1.com"), item2->GetReferrer().url);
+  EXPECT_FALSE(item2->GetTimestamp().is_null());
 
   NavigationItem* item1 = manager_->GetItemAtIndex(1);
   ASSERT_NE(item1, nullptr);
@@ -122,6 +124,7 @@ TEST_F(WKBasedNavigationManagerTest, SyncAfterItemAtIndexWithPreviousItem) {
                                            item1->GetTransitionType()));
   EXPECT_EQ(UserAgentType::MOBILE, item1->GetUserAgentType());
   EXPECT_EQ(GURL("http://www.0.com"), item1->GetReferrer().url);
+  EXPECT_FALSE(item1->GetTimestamp().is_null());
 
   NavigationItem* item0 = manager_->GetItemAtIndex(0);
   ASSERT_NE(item0, nullptr);
@@ -129,6 +132,7 @@ TEST_F(WKBasedNavigationManagerTest, SyncAfterItemAtIndexWithPreviousItem) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(ui::PAGE_TRANSITION_LINK,
                                            item0->GetTransitionType()));
   EXPECT_EQ(UserAgentType::MOBILE, item0->GetUserAgentType());
+  EXPECT_FALSE(item0->GetTimestamp().is_null());
 }
 
 // Tests that GetLastCommittedItem() creates a default NavigationItem when the
@@ -140,6 +144,7 @@ TEST_F(WKBasedNavigationManagerTest, SyncInGetLastCommittedItem) {
   NavigationItem* item = manager_->GetLastCommittedItem();
   ASSERT_NE(item, nullptr);
   EXPECT_EQ("http://www.0.com/", item->GetURL().spec());
+  EXPECT_FALSE(item->GetTimestamp().is_null());
 }
 
 // Tests that GetLastCommittedItem() creates a default NavigationItem when the
