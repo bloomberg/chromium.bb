@@ -129,8 +129,9 @@ void WidgetInputHandlerManager::WillShutdown() {}
 void WidgetInputHandlerManager::TransferActiveWheelFlingAnimation(
     const blink::WebActiveWheelFlingParameters& params) {
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RenderWidget::TransferActiveWheelFlingAnimation,
-                            render_widget_, params));
+      FROM_HERE,
+      base::BindOnce(&RenderWidget::TransferActiveWheelFlingAnimation,
+                     render_widget_, params));
 }
 
 void WidgetInputHandlerManager::DispatchNonBlockingEventToMainThread(

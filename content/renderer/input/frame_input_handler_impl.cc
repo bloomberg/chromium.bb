@@ -424,7 +424,7 @@ void FrameInputHandlerImpl::Release() {
     // thread to delete this object.
     binding_.Close();
     main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FrameInputHandlerImpl::Release, weak_this_));
+        FROM_HERE, base::BindOnce(&FrameInputHandlerImpl::Release, weak_this_));
     return;
   }
   delete this;
@@ -433,7 +433,7 @@ void FrameInputHandlerImpl::Release() {
 void FrameInputHandlerImpl::BindNow(mojom::FrameInputHandlerRequest request) {
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(
-      base::Bind(&FrameInputHandlerImpl::Release, base::Unretained(this)));
+      base::BindOnce(&FrameInputHandlerImpl::Release, base::Unretained(this)));
 }
 
 FrameInputHandlerImpl::HandlingState::HandlingState(

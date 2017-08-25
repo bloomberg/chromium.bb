@@ -196,8 +196,8 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
   }
 
   bool postedTask = target_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputEventFilter::ForwardToHandler, this,
-                            routing_id, message, received_time));
+      FROM_HERE, base::BindOnce(&InputEventFilter::ForwardToHandler, this,
+                                routing_id, message, received_time));
   LOG_IF(WARNING, !postedTask) << "PostTask failed";
   return true;
 }
@@ -299,8 +299,8 @@ void InputEventFilter::SendInputEventAck(
 
 void InputEventFilter::SendMessage(std::unique_ptr<IPC::Message> message) {
   CHECK(io_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&InputEventFilter::SendMessageOnIOThread, this,
-                            base::Passed(&message))))
+      FROM_HERE, base::BindOnce(&InputEventFilter::SendMessageOnIOThread, this,
+                                base::Passed(&message))))
       << "PostTask failed";
 }
 

@@ -81,10 +81,11 @@ void InputHandlerManager::AddInputHandler(
   } else {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&InputHandlerManager::AddInputHandlerOnCompositorThread,
-                   base::Unretained(this), routing_id,
-                   base::ThreadTaskRunnerHandle::Get(), input_handler,
-                   input_event_queue, render_widget, enable_smooth_scrolling));
+        base::BindOnce(&InputHandlerManager::AddInputHandlerOnCompositorThread,
+                       base::Unretained(this), routing_id,
+                       base::ThreadTaskRunnerHandle::Get(), input_handler,
+                       input_event_queue, render_widget,
+                       enable_smooth_scrolling));
   }
 }
 
@@ -142,10 +143,11 @@ void InputHandlerManager::RegisterAssociatedRenderFrameRoutingID(
   } else {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&InputHandlerManager::
-                       RegisterAssociatedRenderFrameRoutingIDOnCompositorThread,
-                   base::Unretained(this), render_frame_routing_id,
-                   render_view_routing_id));
+        base::BindOnce(
+            &InputHandlerManager::
+                RegisterAssociatedRenderFrameRoutingIDOnCompositorThread,
+            base::Unretained(this), render_frame_routing_id,
+            render_view_routing_id));
   }
 }
 
@@ -164,8 +166,9 @@ void InputHandlerManager::UnregisterRoutingID(int routing_id) {
   } else {
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&InputHandlerManager::UnregisterRoutingIDOnCompositorThread,
-                   base::Unretained(this), routing_id));
+        base::BindOnce(
+            &InputHandlerManager::UnregisterRoutingIDOnCompositorThread,
+            base::Unretained(this), routing_id));
   }
 }
 
@@ -181,7 +184,7 @@ void InputHandlerManager::ObserveGestureEventAndResultOnMainThread(
     const cc::InputHandlerScrollResult& scroll_result) {
   task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
+      base::BindOnce(
           &InputHandlerManager::ObserveGestureEventAndResultOnCompositorThread,
           base::Unretained(this), routing_id, gesture_event, scroll_result));
 }
