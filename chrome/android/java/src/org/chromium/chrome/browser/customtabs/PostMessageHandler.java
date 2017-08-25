@@ -8,6 +8,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsService;
+import android.support.customtabs.CustomTabsService.Relation;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.support.customtabs.PostMessageServiceConnection;
 
@@ -35,6 +36,7 @@ public class PostMessageHandler
     private AppWebMessagePort[] mChannel;
     private Uri mOrigin;
     private String mPackageName;
+    private @Relation int mRelation;
 
     /**
      * Basic constructor. Everytime the given {@link CustomTabsSessionToken} is associated with a
@@ -146,8 +148,9 @@ public class PostMessageHandler
      * will be overridden.
      * @param origin The origin to verify for.
      */
-    public void verifyAndInitializeWithOrigin(final Uri origin) {
-        if (mOriginVerifier == null) mOriginVerifier = new OriginVerifier(this, mPackageName);
+    public void verifyAndInitializeWithOrigin(final Uri origin, @Relation int relation) {
+        mRelation = relation;
+        mOriginVerifier = new OriginVerifier(this, mPackageName, mRelation);
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
