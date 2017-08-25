@@ -404,6 +404,8 @@ NativeThemeGtk3::NativeThemeGtk3() {
   // doesn't optimize away this code.
   g_type_class_unref(g_type_class_ref(gtk_button_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_entry_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_header_bar_get_type()));
+  g_type_class_unref(g_type_class_ref(gtk_image_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_info_bar_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_label_get_type()));
   g_type_class_unref(g_type_class_ref(gtk_menu_get_type()));

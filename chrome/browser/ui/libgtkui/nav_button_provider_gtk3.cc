@@ -115,6 +115,25 @@ ScopedGObject<GdkPixbuf> LoadNavButtonIcon(chrome::FrameButtonDisplayType type,
       icon_info, button_context, nullptr, nullptr));
 }
 
+gfx::Size GetMinimumWidgetSize(gfx::Size content_size,
+                               GtkStyleContext* content_context,
+                               GtkStyleContext* widget_context,
+                               GtkStateFlags state) {
+  gfx::Rect widget_rect = gfx::Rect(content_size);
+  if (content_context)
+    widget_rect.Inset(-MarginFromStyleContext(content_context, state));
+  if (GtkVersionCheck(3, 20)) {
+    int min_width, min_height;
+    gtk_style_context_get(widget_context, state, "min-width", &min_width,
+                          "min-height", &min_height, NULL);
+    widget_rect.set_width(std::max(widget_rect.width(), min_width));
+    widget_rect.set_height(std::max(widget_rect.height(), min_height));
+  }
+  widget_rect.Inset(-PaddingFromStyleContext(widget_context, state));
+  widget_rect.Inset(-BorderFromStyleContext(widget_context, state));
+  return widget_rect.size();
+}
+
 void CalculateUnscaledButtonSize(chrome::FrameButtonDisplayType type,
                                  gfx::Size* button_size,
                                  gfx::Insets* button_margin) {
@@ -124,9 +143,8 @@ void CalculateUnscaledButtonSize(chrome::FrameButtonDisplayType type,
   // states at the size of a GTK_STATE_FLAG_NORMAL button.
   auto button_context = GetStyleContextFromCss(
       "GtkHeaderBar#headerbar.header-bar.titlebar "
-      "GtkButton#button.titlebutton");
-  gtk_style_context_add_class(button_context,
-                              ButtonStyleClassFromButtonType(type));
+      "GtkButton#button.titlebutton." +
+      std::string(ButtonStyleClassFromButtonType(type)));
 
   ScopedGObject<GdkPixbuf> icon_pixbuf =
       LoadNavButtonIcon(type, button_context, 1);
@@ -135,23 +153,13 @@ void CalculateUnscaledButtonSize(chrome::FrameButtonDisplayType type,
 
   gfx::Size icon_size(gdk_pixbuf_get_width(icon_pixbuf) / monitor_scale,
                       gdk_pixbuf_get_height(icon_pixbuf) / monitor_scale);
-  gfx::Rect button_rect(icon_size);
-  if (GtkVersionCheck(3, 20)) {
-    int min_width, min_height;
-    gtk_style_context_get(button_context, GTK_STATE_FLAG_NORMAL, "min-width",
-                          &min_width, "min-height", &min_height, NULL);
-    button_rect.set_width(std::max(button_rect.width(), min_width));
-    button_rect.set_height(std::max(button_rect.height(), min_height));
-  }
+  auto image_context =
+      AppendCssNodeToStyleContext(button_context, "GtkImage#image");
+  gfx::Size image_size = GetMinimumWidgetSize(icon_size, nullptr, image_context,
+                                              GTK_STATE_FLAG_NORMAL);
 
-  // TODO(thomasanderson): Factor in the GtkImage size, border, padding, and
-  // margin
-  button_rect.Inset(
-      -PaddingFromStyleContext(button_context, GTK_STATE_FLAG_NORMAL));
-  button_rect.Inset(
-      -BorderFromStyleContext(button_context, GTK_STATE_FLAG_NORMAL));
-
-  *button_size = button_rect.size();
+  *button_size = GetMinimumWidgetSize(image_size, image_context, button_context,
+                                      GTK_STATE_FLAG_NORMAL);
   *button_margin =
       MarginFromStyleContext(button_context, GTK_STATE_FLAG_NORMAL);
 }
