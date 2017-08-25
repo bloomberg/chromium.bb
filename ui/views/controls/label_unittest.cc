@@ -572,8 +572,7 @@ TEST_F(LabelTest, SingleLineSizing) {
   EXPECT_EQ(size, label()->GetPreferredSize());
 
   const gfx::Insets border(10, 20, 30, 40);
-  label()->SetBorder(CreateEmptyBorder(border.top(), border.left(),
-                                       border.bottom(), border.right()));
+  label()->SetBorder(CreateEmptyBorder(border));
   const gfx::Size size_with_border = label()->GetPreferredSize();
   EXPECT_EQ(size_with_border.height(), size.height() + border.height());
   EXPECT_EQ(size_with_border.width(), size.width() + border.width());
@@ -652,8 +651,7 @@ TEST_F(LabelTest, MultiLineSizing) {
 
   // Test everything with borders.
   gfx::Insets border(10, 20, 30, 40);
-  label()->SetBorder(CreateEmptyBorder(border.top(), border.left(),
-                                       border.bottom(), border.right()));
+  label()->SetBorder(CreateEmptyBorder(border));
 
   // SizeToFit and borders.
   label()->SizeToFit(0);
@@ -685,6 +683,52 @@ TEST_F(LabelTest, MultiLineSizing) {
             required_size.width() + border.width());
 }
 
+#if !defined(OS_MACOSX)
+// TODO(warx): Remove !defined(OS_MACOSX) once SetMaxLines() is applied to MAC
+// (crbug.com/758720).
+TEST_F(LabelTest, MultiLineSetMaxLines) {
+  // Ensure SetMaxLines clamps the line count of a string with returns.
+  label()->SetText(ASCIIToUTF16("first line\nsecond line\nthird line"));
+  label()->SetMultiLine(true);
+  gfx::Size string_size = label()->GetPreferredSize();
+  label()->SetMaxLines(2);
+  gfx::Size two_line_size = label()->GetPreferredSize();
+  EXPECT_EQ(string_size.width(), two_line_size.width());
+  EXPECT_GT(string_size.height(), two_line_size.height());
+
+  // Ensure GetHeightForWidth also respects SetMaxLines.
+  int height = label()->GetHeightForWidth(string_size.width() / 2);
+  EXPECT_EQ(height, two_line_size.height());
+
+  // Ensure SetMaxLines also works with line wrapping for SizeToFit.
+  label()->SetText(ASCIIToUTF16("A long string that will be wrapped"));
+  label()->SetMaxLines(0);  // Used to get the uncapped height.
+  label()->SizeToFit(0);    // Used to get the uncapped width.
+  label()->SizeToFit(label()->GetPreferredSize().width() / 4);
+  string_size = label()->GetPreferredSize();
+  label()->SetMaxLines(2);
+  two_line_size = label()->GetPreferredSize();
+  EXPECT_EQ(string_size.width(), two_line_size.width());
+  EXPECT_GT(string_size.height(), two_line_size.height());
+
+  // Ensure SetMaxLines also works with line wrapping for SetMaximumWidth.
+  label()->SetMaxLines(0);  // Used to get the uncapped height.
+  label()->SizeToFit(0);    // Used to get the uncapped width.
+  label()->SetMaximumWidth(label()->GetPreferredSize().width() / 4);
+  string_size = label()->GetPreferredSize();
+  label()->SetMaxLines(2);
+  two_line_size = label()->GetPreferredSize();
+  EXPECT_EQ(string_size.width(), two_line_size.width());
+  EXPECT_GT(string_size.height(), two_line_size.height());
+
+  // Ensure SetMaxLines respects the requested inset height.
+  const gfx::Insets border(1, 2, 3, 4);
+  label()->SetBorder(CreateEmptyBorder(border));
+  EXPECT_EQ(two_line_size.height() + border.height(),
+            label()->GetPreferredSize().height());
+}
+#endif
+
 // Verifies if the combination of text eliding and multiline doesn't cause
 // any side effects of size / layout calculation.
 TEST_F(LabelTest, MultiLineSizingWithElide) {
@@ -699,7 +743,7 @@ TEST_F(LabelTest, MultiLineSizingWithElide) {
   label()->SetBoundsRect(gfx::Rect(required_size));
 
   label()->SetElideBehavior(gfx::ELIDE_TAIL);
-  EXPECT_EQ(required_size.ToString(), label()->GetPreferredSize().ToString());
+  EXPECT_EQ(required_size, label()->GetPreferredSize());
   EXPECT_EQ(text, label()->GetDisplayTextForTesting());
 
   label()->SizeToFit(required_size.width() - 1);
@@ -709,12 +753,12 @@ TEST_F(LabelTest, MultiLineSizingWithElide) {
 
   // SetBounds() doesn't change the preferred size.
   label()->SetBounds(0, 0, narrow_size.width() - 1, narrow_size.height());
-  EXPECT_EQ(narrow_size.ToString(), label()->GetPreferredSize().ToString());
+  EXPECT_EQ(narrow_size, label()->GetPreferredSize());
 
   // Paint() doesn't change the preferred size.
   gfx::Canvas canvas;
   label()->OnPaint(&canvas);
-  EXPECT_EQ(narrow_size.ToString(), label()->GetPreferredSize().ToString());
+  EXPECT_EQ(narrow_size, label()->GetPreferredSize());
 }
 
 // Check that labels support GetTooltipHandlerForPoint.
@@ -769,7 +813,7 @@ TEST_F(LabelTest, ResetRenderTextData) {
   label()->SizeToPreferredSize();
   gfx::Size preferred_size = label()->GetPreferredSize();
 
-  EXPECT_NE(gfx::Size().ToString(), preferred_size.ToString());
+  EXPECT_NE(gfx::Size(), preferred_size);
   EXPECT_EQ(0u, label()->lines_.size());
 
   gfx::Canvas canvas(preferred_size, 1.0f, true);
@@ -786,7 +830,7 @@ TEST_F(LabelTest, ResetRenderTextData) {
   EXPECT_EQ(ASCIIToUTF16("Example"), label()->text());
   EXPECT_EQ(0u, label()->lines_.size());
 
-  EXPECT_EQ(preferred_size.ToString(), label()->GetPreferredSize().ToString());
+  EXPECT_EQ(preferred_size, label()->GetPreferredSize());
   EXPECT_EQ(0u, label()->lines_.size());
 
   // RenderText data should be back when it's necessary.
@@ -896,7 +940,7 @@ TEST_P(MDLabelTest, FocusBounds) {
 
   label()->SizeToPreferredSize();
   gfx::Rect focus_bounds = label()->GetFocusRingBounds();
-  EXPECT_EQ(label()->GetLocalBounds().ToString(), focus_bounds.ToString());
+  EXPECT_EQ(label()->GetLocalBounds(), focus_bounds);
 
   gfx::Size focusable_size = normal_label_size;
   label()->SetBounds(
@@ -906,7 +950,7 @@ TEST_P(MDLabelTest, FocusBounds) {
   EXPECT_EQ(0, focus_bounds.x());
   EXPECT_LT(0, focus_bounds.y());
   EXPECT_GT(label()->bounds().bottom(), focus_bounds.bottom());
-  EXPECT_EQ(focusable_size.ToString(), focus_bounds.size().ToString());
+  EXPECT_EQ(focusable_size, focus_bounds.size());
 
   label()->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
   focus_bounds = label()->GetFocusRingBounds();
@@ -914,7 +958,7 @@ TEST_P(MDLabelTest, FocusBounds) {
   EXPECT_EQ(label()->bounds().right(), focus_bounds.right());
   EXPECT_LT(0, focus_bounds.y());
   EXPECT_GT(label()->bounds().bottom(), focus_bounds.bottom());
-  EXPECT_EQ(focusable_size.ToString(), focus_bounds.size().ToString());
+  EXPECT_EQ(focusable_size, focus_bounds.size());
 
   label()->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label()->SetElideBehavior(gfx::FADE_TAIL);

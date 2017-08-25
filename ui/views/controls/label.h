@@ -132,6 +132,11 @@ class VIEWS_EXPORT Label : public View,
   bool multi_line() const { return multi_line_; }
   void SetMultiLine(bool multi_line);
 
+  // If multi-line, a non-zero value will cap the number of lines rendered, and
+  // elide the rest (currently only ELIDE_TAIL supported). See gfx::RenderText.
+  int max_lines() const { return max_lines_; }
+  void SetMaxLines(int max_lines);
+
   // Get or set if the label text should be obscured before rendering (e.g.
   // should "Password!" display as "*********"); default is false.
   bool obscured() const { return render_text_->obscured(); }
@@ -359,6 +364,7 @@ class VIEWS_EXPORT Label : public View,
   bool auto_color_readability_;
   // TODO(mukai): remove |multi_line_| when all RenderText can render multiline.
   bool multi_line_;
+  int max_lines_;
   base::string16 tooltip_text_;
   bool handles_tooltips_;
   // Whether to collapse the label when it's not visible.
