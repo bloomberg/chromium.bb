@@ -4,6 +4,8 @@
 
 #include "content/common/message_port_message_struct_traits.h"
 
+#include "base/containers/span.h"
+
 namespace mojo {
 
 bool StructTraits<content::mojom::MessagePortMessage::DataView,
@@ -14,8 +16,7 @@ bool StructTraits<content::mojom::MessagePortMessage::DataView,
       !data.ReadPorts(&out->ports))
     return false;
 
-  out->encoded_message = mojo::ConstCArray<uint8_t>(
-      out->owned_encoded_message.data(), out->owned_encoded_message.size());
+  out->encoded_message = out->owned_encoded_message;
   return true;
 }
 

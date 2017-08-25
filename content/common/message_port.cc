@@ -5,6 +5,7 @@
 #include "content/common/message_port.h"
 
 #include "base/bind.h"
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/message_port.mojom.h"
@@ -54,8 +55,7 @@ void MessagePort::PostMessage(const uint8_t* encoded_message,
   // HTML MessagePorts have no way of reporting when the peer is gone.
 
   MessagePortMessage msg;
-  msg.encoded_message =
-      mojo::ConstCArray<uint8_t>(encoded_message, encoded_message_size);
+  msg.encoded_message = base::make_span(encoded_message, encoded_message_size);
   msg.ports.resize(ports.size());
   for (size_t i = 0; i < ports.size(); ++i)
     msg.ports[i] = ports[i].ReleaseHandle();

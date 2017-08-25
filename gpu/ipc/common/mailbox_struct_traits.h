@@ -5,6 +5,7 @@
 #ifndef GPU_IPC_COMMON_MAILBOX_STRUCT_TRAITS_H_
 #define GPU_IPC_COMMON_MAILBOX_STRUCT_TRAITS_H_
 
+#include "base/containers/span.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/common/mailbox.mojom-shared.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
@@ -13,7 +14,7 @@ namespace mojo {
 
 template <>
 struct StructTraits<gpu::mojom::MailboxDataView, gpu::Mailbox> {
-  static ConstCArray<int8_t> name(const gpu::Mailbox& mailbox) {
+  static base::span<const int8_t> name(const gpu::Mailbox& mailbox) {
     return mailbox.name;
   }
   static bool Read(gpu::mojom::MailboxDataView data, gpu::Mailbox* out);

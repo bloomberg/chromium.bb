@@ -5,6 +5,7 @@
 #ifndef SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_QUADS_STRUCT_TRAITS_H_
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_QUADS_STRUCT_TRAITS_H_
 
+#include "base/containers/span.h"
 #include "base/logging.h"
 #include "cc/ipc/filter_operation_struct_traits.h"
 #include "cc/ipc/filter_operations_struct_traits.h"
@@ -281,7 +282,7 @@ struct StructTraits<viz::mojom::TextureQuadStateDataView, cc::DrawQuad> {
     return quad->background_color;
   }
 
-  static ConstCArray<float> vertex_opacity(const cc::DrawQuad& input) {
+  static base::span<const float> vertex_opacity(const cc::DrawQuad& input) {
     const cc::TextureDrawQuad* quad = cc::TextureDrawQuad::MaterialCast(&input);
     return quad->vertex_opacity;
   }

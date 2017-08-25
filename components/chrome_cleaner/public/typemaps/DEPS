@@ -1,4 +1,5 @@
 # Allow the typemaps to access their dependencies.
 include_rules = [
+  '+base/containers/span.h',
   '+base/files/file_path.h',
 ]
