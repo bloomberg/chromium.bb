@@ -105,6 +105,10 @@ enum class PasswordInfoBarType { SAVE, UPDATE };
 - (void)findPasswordFormsWithCompletionHandler:
     (void (^)(const std::vector<autofill::PasswordForm>&))completionHandler;
 
+// Finds all password forms in DOM and sends them to the password store for
+// fetching stored credentials.
+- (void)findPasswordFormsAndSendThemToPasswordStore;
+
 // Finds the currently submitted password form and calls |completionHandler|
 // with the populated data structure. |found| is YES if the current form was
 // found successfully, NO otherwise. |completionHandler| cannot be nil.
@@ -269,6 +273,10 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   // Bridge to observe WebState from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> webStateObserverBridge_;
+
+  // True indicates that a request for credentials has been sent to the password
+  // store.
+  BOOL sent_request_to_store_;
 }
 
 @synthesize isWebStateDestroyed = isWebStateDestroyed_;
@@ -311,6 +319,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
             instanceOfClass:[JsPasswordManager class]]);
     webStateObserverBridge_.reset(
         new web::WebStateObserverBridge(webState, self));
+    sent_request_to_store_ = NO;
   }
   return self;
 }
@@ -382,6 +391,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 - (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   // Clear per-page state.
   formData_.reset();
+  sent_request_to_store_ = NO;
 
   // Retrieve the identity of the page. In case the page might be malicous,
   // returns early.
@@ -402,13 +412,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
         didFinishPasswordFormExtraction:std::vector<autofill::PasswordForm>()];
   }
 
-  // Read all password forms from the page and send them to the password
-  // manager.
-  __weak PasswordController* weakSelf = self;
-  [self findPasswordFormsWithCompletionHandler:^(
-            const std::vector<autofill::PasswordForm>& forms) {
-    [weakSelf didFinishPasswordFormExtraction:forms];
-  }];
+  [self findPasswordFormsAndSendThemToPasswordStore];
 }
 
 - (void)webState:(web::WebState*)webState
@@ -454,6 +458,16 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     std::vector<autofill::PasswordForm> forms;
     [weakSelf getPasswordForms:&forms fromFormsJSON:jsonString pageURL:pageURL];
     completionHandler(forms);
+  }];
+}
+
+- (void)findPasswordFormsAndSendThemToPasswordStore {
+  // Read all password forms from the page and send them to the password
+  // manager.
+  __weak PasswordController* weakSelf = self;
+  [self findPasswordFormsWithCompletionHandler:^(
+            const std::vector<autofill::PasswordForm>& forms) {
+    [weakSelf didFinishPasswordFormExtraction:forms];
   }];
 }
 
@@ -573,6 +587,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       }
     }
 
+    sent_request_to_store_ = YES;
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     passwordManager_->OnPasswordFormsParsed(passwordManagerDriver_.get(),
@@ -610,6 +625,11 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
                                   webState:(web::WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
+  if (!sent_request_to_store_ && [type isEqual:@"focus"]) {
+    [self findPasswordFormsAndSendThemToPasswordStore];
+    completion(NO);
+    return;
+  }
   if (!formData_ || !GetPageURLAndCheckTrustLevel(webState, nullptr)) {
     completion(NO);
     return;
