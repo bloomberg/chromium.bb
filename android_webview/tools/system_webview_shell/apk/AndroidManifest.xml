@@ -33,6 +33,8 @@
         android:label="@string/app_name"
         android:theme="@android:style/Theme.Light"
         android:debuggable="true" >
+        <meta-data android:name="android.webkit.WebView.EnableSafeBrowsing"
+            android:value="true" />
         <activity
             android:name="org.chromium.webview_shell.TelemetryActivity"
             android:launchMode="singleTask"
