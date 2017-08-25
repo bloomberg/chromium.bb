@@ -216,7 +216,7 @@ void PaletteTray::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 bool PaletteTray::ContainsPointInScreen(const gfx::Point& point) {
-  if (icon_ && icon_->GetBoundsInScreen().Contains(point))
+  if (GetBoundsInScreen().Contains(point))
     return true;
 
   return bubble_ && bubble_->bubble_view()->GetBoundsInScreen().Contains(point);
