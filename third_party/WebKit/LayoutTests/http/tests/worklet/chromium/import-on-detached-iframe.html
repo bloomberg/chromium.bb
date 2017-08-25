@@ -25,7 +25,7 @@ promise_test(t => {
 
   return with_iframe(kFrameUrl)
     .then(frame => {
-        let worklet = frame.contentWindow.paintWorklet;
+        let worklet = frame.contentWindow.CSS.paintWorklet;
         frame.remove();
         return worklet.addModule(kScriptUrl);
       })

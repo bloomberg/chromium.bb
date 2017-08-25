@@ -13,7 +13,6 @@
 #include "modules/csspaint/CSSPaintDefinition.h"
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
 #include "modules/csspaint/PaintWorkletGlobalScopeProxy.h"
-#include "modules/csspaint/WindowPaintWorklet.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -25,8 +24,7 @@ class PaintWorkletTest : public ::testing::Test {
   void SetUp() override { proxy_ = GetPaintWorklet()->CreateGlobalScope(); }
 
   PaintWorklet* GetPaintWorklet() {
-    return WindowPaintWorklet::From(*page_->GetFrame().DomWindow())
-        .paintWorklet();
+    return PaintWorklet::From(*page_->GetDocument().domWindow());
   }
 
   size_t SelectGlobalScope(PaintWorklet* paint_worklet) {

@@ -15,8 +15,8 @@
 #include "core/inspector/MainThreadDebugger.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
+#include "modules/csspaint/CSSPaintWorklet.h"
 #include "modules/csspaint/PaintWorklet.h"
-#include "modules/csspaint/WindowPaintWorklet.h"
 #include "platform/bindings/V8BindingMacros.h"
 
 namespace blink {
@@ -206,9 +206,8 @@ void PaintWorkletGlobalScope::registerPaint(const String& name,
 
   // TODO(xidachen): the following steps should be done with a postTask when
   // we move PaintWorklet off main thread.
-  LocalDOMWindow* dom_window = GetFrame()->GetDocument()->domWindow();
   PaintWorklet* paint_worklet =
-      WindowPaintWorklet::From(*dom_window).paintWorklet();
+      PaintWorklet::From(*GetFrame()->GetDocument()->domWindow());
   PaintWorklet::DocumentDefinitionMap& document_definition_map =
       paint_worklet->GetDocumentDefinitionMap();
   if (document_definition_map.Contains(name)) {

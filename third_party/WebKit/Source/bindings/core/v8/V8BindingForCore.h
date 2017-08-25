@@ -485,7 +485,7 @@ CORE_EXPORT v8::Isolate* ToIsolate(ExecutionContext*);
 CORE_EXPORT v8::Isolate* ToIsolate(LocalFrame*);
 
 CORE_EXPORT DOMWindow* ToDOMWindow(v8::Isolate*, v8::Local<v8::Value>);
-LocalDOMWindow* ToLocalDOMWindow(v8::Local<v8::Context>);
+CORE_EXPORT LocalDOMWindow* ToLocalDOMWindow(v8::Local<v8::Context>);
 LocalDOMWindow* EnteredDOMWindow(v8::Isolate*);
 CORE_EXPORT LocalDOMWindow* CurrentDOMWindow(v8::Isolate*);
 CORE_EXPORT ExecutionContext* ToExecutionContext(v8::Local<v8::Context>);

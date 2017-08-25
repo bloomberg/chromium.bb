@@ -17,7 +17,7 @@ promise_test(() => {
           fs.root.getFile('test.js', {create: true}, resolve, assert_unreached);
         });
     }).then(entry => {
-      return paintWorklet.addModule(entry.toURL());
+      return CSS.paintWorklet.addModule(entry.toURL());
     }).then(() => {
       assert_unreached('addModule should fail.');
     }).catch(error => {

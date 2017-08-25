@@ -610,7 +610,7 @@ modules_dependency_idl_files =
           "credentialmanager/NavigatorCredentials.idl",
           "crypto/WindowCrypto.idl",
           "crypto/WorkerGlobalScopeCrypto.idl",
-          "csspaint/WindowPaintWorklet.idl",
+          "csspaint/CSSPaintWorklet.idl",
           "device_orientation/WindowDeviceMotion.idl",
           "device_orientation/WindowDeviceOrientation.idl",
           "donottrack/NavigatorDoNotTrack.idl",
