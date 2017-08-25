@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/cursor_location_manager.h"
+#include "services/ui/ws/debug_utils.h"
 #include "services/ui/ws/default_access_policy.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
@@ -650,6 +651,9 @@ bool WindowTree::SetWindowOpacity(const ClientWindowId& window_id,
 bool WindowTree::SetFocus(const ClientWindowId& window_id) {
   ServerWindow* window = GetWindowByClientId(window_id);
   ServerWindow* currently_focused = window_server_->GetFocusedWindow();
+  DVLOG(3) << "SetFocusedWindow client=" << id_
+           << " client window_id=" << window_id.id
+           << " window=" << DebugWindowId(window);
   if (!currently_focused && !window) {
     DVLOG(1) << "SetFocus failed (no focused window to clear)";
     return false;

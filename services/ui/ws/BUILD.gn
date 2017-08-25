@@ -28,6 +28,8 @@ static_library("lib") {
     "cursor_state.cc",
     "cursor_state.h",
     "cursor_state_delegate.h",
+    "debug_utils.cc",
+    "debug_utils.h",
     "default_access_policy.cc",
     "default_access_policy.h",
     "display.cc",
