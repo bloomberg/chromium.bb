@@ -11,15 +11,13 @@ DEFAULT_COMMIT_HISTORY_WINDOW = 5000
 
 
 def exportable_commits_over_last_n_commits(
-        host, local_wpt, wpt_github, number=DEFAULT_COMMIT_HISTORY_WINDOW, clean=True):
+        host, local_wpt, wpt_github, number=DEFAULT_COMMIT_HISTORY_WINDOW, require_clean=True):
     """Lists exportable commits after a certain point.
 
     Exportable commits contain changes in the wpt directory and have not been
     exported (no corresponding closed PRs on GitHub). Commits made by importer
     are ignored. Exportable commits may or may not apply cleanly against the
-    wpt HEAD. If the optional argument clean is True (default), only those that
-    can be applied cleanly (when tested individually) and produce non-empty diff
-    are returnd.
+    wpt HEAD (see argument require_clean).
 
     Args:
         host: A Host object.
@@ -28,9 +26,9 @@ def exportable_commits_over_last_n_commits(
         wpt_github: A WPTGitHub instance, used to check whether PRs are closed.
         number: The number of commits back to look. The commits to check will
             include all commits starting from the commit before HEAD~n, up
-            to and including HEAD. (Default is 5000.)
-        clean: Whether to only return exportable commits that can be applied
-            cleanly and produce non-empty diff. (Default is True.)
+            to and including HEAD.
+        require_clean: Whether to only return exportable commits that can be
+            applied cleanly and produce non-empty diff when tested individually.
 
     Returns:
         (exportable_commits, errors) where exportable_commits is a list of
@@ -39,10 +37,10 @@ def exportable_commits_over_last_n_commits(
         cleanly, both in chronological order.
     """
     start_commit = 'HEAD~{}'.format(number + 1)
-    return _exportable_commits_since(start_commit, host, local_wpt, wpt_github, clean)
+    return _exportable_commits_since(start_commit, host, local_wpt, wpt_github, require_clean)
 
 
-def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github, clean=True):
+def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github, require_clean=True):
     """Lists exportable commits after the given commit.
 
     Args:
@@ -65,7 +63,7 @@ def _exportable_commits_since(chromium_commit_hash, host, local_wpt, wpt_github,
     errors = []
     for commit in chromium_commits:
         state, error = get_commit_export_state(commit, local_wpt, wpt_github)
-        if clean:
+        if require_clean:
             success = state == CommitExportState.EXPORTABLE_CLEAN
         else:
             success = state in (CommitExportState.EXPORTABLE_CLEAN, CommitExportState.EXPORTABLE_DIRTY)
