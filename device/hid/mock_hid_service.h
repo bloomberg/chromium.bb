@@ -26,6 +26,11 @@ class MockHidService : public HidService {
   MOCK_METHOD2(Connect,
                void(const std::string& device_guid,
                     const ConnectCallback& callback));
+
+ private:
+  base::WeakPtr<HidService> GetWeakPtr() override;
+
+  base::WeakPtrFactory<MockHidService> weak_factory_;
 };
 
 }  // namespace device

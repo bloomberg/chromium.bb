@@ -254,6 +254,12 @@ void HidDeviceManager::OnDeviceRemoved(
                   hid::OnDeviceRemoved::kEventName, std::move(args),
                   device_info);
   }
+
+  // Remove permission entry for ephemeral hid device.
+  DevicePermissionsManager* permissions_manager =
+      DevicePermissionsManager::Get(browser_context_);
+  DCHECK(permissions_manager);
+  permissions_manager->RemoveEntryForEphemeralHidDevice(device_info);
 }
 
 void HidDeviceManager::LazyInitialize() {
@@ -266,9 +272,8 @@ void HidDeviceManager::LazyInitialize() {
   HidService* hid_service = device::DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
   hid_service->GetDevices(base::Bind(&HidDeviceManager::OnEnumerationComplete,
-                                     weak_factory_.GetWeakPtr()));
+                                     weak_factory_.GetWeakPtr(), hid_service));
 
-  hid_service_observer_.Add(hid_service);
   initialized_ = true;
 }
 
@@ -312,6 +317,7 @@ std::unique_ptr<base::ListValue> HidDeviceManager::CreateApiDeviceList(
 }
 
 void HidDeviceManager::OnEnumerationComplete(
+    HidService* hid_service,
     const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
   DCHECK(resource_ids_.empty());
   DCHECK(device_ids_.empty());
@@ -326,6 +332,8 @@ void HidDeviceManager::OnEnumerationComplete(
     params->callback.Run(std::move(devices));
   }
   pending_enumerations_.clear();
+
+  hid_service_observer_.Add(hid_service);
 }
 
 void HidDeviceManager::DispatchEvent(

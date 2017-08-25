@@ -200,6 +200,10 @@ HidServiceLinux::~HidServiceLinux() {
   blocking_task_runner_->DeleteSoon(FROM_HERE, helper_.release());
 }
 
+base::WeakPtr<HidService> HidServiceLinux::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 void HidServiceLinux::Connect(const std::string& device_guid,
                               const ConnectCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());

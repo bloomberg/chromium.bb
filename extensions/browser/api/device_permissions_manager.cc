@@ -21,6 +21,7 @@
 #include "device/hid/hid_service.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_ids.h"
+#include "extensions/browser/api/hid/hid_device_manager.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -588,13 +589,12 @@ void DevicePermissionsManager::AllowHidDevice(
     device_permissions->entries_.insert(device_entry);
     device_permissions->ephemeral_hid_devices_[device.get()] = device_entry;
 
-    // Only start observing when an ephemeral device has been added so that
-    // HidService is not automatically initialized on profile creation (which it
-    // would be if this call were in the constructor).
-    HidService* hid_service = device::DeviceClient::Get()->GetHidService();
-    if (!hid_service_observer_.IsObserving(hid_service)) {
-      hid_service_observer_.Add(hid_service);
-    }
+    // Make sure the HidDeviceManager is active. HidDeviceManager is
+    // responsible for removing the permission entry for an ephemeral hid
+    // device. Only do this when an ephemeral device has been added.
+    HidDeviceManager* device_manager = HidDeviceManager::Get(context_);
+    DCHECK(device_manager);
+    device_manager->LazyInitialize();
   }
 }
 
@@ -640,10 +640,7 @@ void DevicePermissionsManager::Clear(const std::string& extension_id) {
 
 DevicePermissionsManager::DevicePermissionsManager(
     content::BrowserContext* context)
-    : context_(context),
-      usb_service_observer_(this),
-      hid_service_observer_(this) {
-}
+    : context_(context), usb_service_observer_(this) {}
 
 DevicePermissionsManager::~DevicePermissionsManager() {
   for (const auto& map_entry : extension_id_to_device_permissions_) {
@@ -679,7 +676,7 @@ void DevicePermissionsManager::OnDeviceRemovedCleanup(
   }
 }
 
-void DevicePermissionsManager::OnDeviceRemovedCleanup(
+void DevicePermissionsManager::RemoveEntryForEphemeralHidDevice(
     scoped_refptr<device::HidDeviceInfo> device) {
   DCHECK(thread_checker_.CalledOnValidThread());
   for (const auto& map_entry : extension_id_to_device_permissions_) {

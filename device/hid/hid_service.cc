@@ -32,10 +32,6 @@ void HidService::Observer::OnDeviceRemoved(
     scoped_refptr<HidDeviceInfo> device_info) {
 }
 
-void HidService::Observer::OnDeviceRemovedCleanup(
-    scoped_refptr<HidDeviceInfo> device_info) {
-}
-
 // static
 constexpr base::TaskTraits HidService::kBlockingTaskTraits;
 
@@ -53,15 +49,13 @@ std::unique_ptr<HidService> HidService::Create() {
 
 void HidService::GetDevices(const GetDevicesCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (enumeration_ready_) {
-    std::vector<scoped_refptr<HidDeviceInfo>> devices;
-    for (const auto& map_entry : devices_) {
-      devices.push_back(map_entry.second);
-    }
+
+  bool was_empty = pending_enumerations_.empty();
+  pending_enumerations_.push_back(callback);
+  if (enumeration_ready_ && was_empty) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, devices));
-  } else {
-    pending_enumerations_.push_back(callback);
+        FROM_HERE,
+        base::Bind(&HidService::RunPendingEnumerations, GetWeakPtr()));
   }
 }
 
@@ -127,26 +121,27 @@ void HidService::RemoveDevice(const HidPlatformDeviceId& platform_device_id) {
         observer.OnDeviceRemoved(device);
     }
     devices_.erase(device_guid);
-    if (enumeration_ready_) {
-      for (auto& observer : observer_list_)
-        observer.OnDeviceRemovedCleanup(device);
-    }
   }
+}
+
+void HidService::RunPendingEnumerations() {
+  DCHECK(enumeration_ready_);
+  DCHECK(!pending_enumerations_.empty());
+
+  std::vector<scoped_refptr<HidDeviceInfo>> devices;
+  for (const auto& map_entry : devices_)
+    devices.push_back(map_entry.second);
+
+  std::vector<GetDevicesCallback> callbacks;
+  callbacks.swap(pending_enumerations_);
+  for (const auto& callback : callbacks)
+    callback.Run(devices);
 }
 
 void HidService::FirstEnumerationComplete() {
   enumeration_ready_ = true;
-
   if (!pending_enumerations_.empty()) {
-    std::vector<scoped_refptr<HidDeviceInfo>> devices;
-    for (const auto& map_entry : devices_) {
-      devices.push_back(map_entry.second);
-    }
-
-    for (const GetDevicesCallback& callback : pending_enumerations_) {
-      callback.Run(devices);
-    }
-    pending_enumerations_.clear();
+    RunPendingEnumerations();
   }
 }
 

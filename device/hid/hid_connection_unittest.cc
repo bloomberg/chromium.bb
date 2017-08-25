@@ -41,9 +41,8 @@ class DeviceCatcher : HidService::Observer {
  public:
   DeviceCatcher(HidService* hid_service, const base::string16& serial_number)
       : serial_number_(base::UTF16ToUTF8(serial_number)), observer_(this) {
-    observer_.Add(hid_service);
     hid_service->GetDevices(base::Bind(&DeviceCatcher::OnEnumerationComplete,
-                                       base::Unretained(this)));
+                                       base::Unretained(this), hid_service));
   }
 
   const std::string& WaitForDevice() {
@@ -54,6 +53,7 @@ class DeviceCatcher : HidService::Observer {
 
  private:
   void OnEnumerationComplete(
+      HidService* hid_service,
       const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
     for (const scoped_refptr<HidDeviceInfo>& device_info : devices) {
       if (device_info->serial_number() == serial_number_) {
@@ -62,6 +62,7 @@ class DeviceCatcher : HidService::Observer {
         break;
       }
     }
+    observer_.Add(hid_service);
   }
 
   void OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) override {

@@ -51,17 +51,19 @@ void U2fRequest::Start() {
 void U2fRequest::Enumerate() {
   HidService* hid_service = DeviceClient::Get()->GetHidService();
   DCHECK(hid_service);
-  hid_service_observer_.Add(hid_service);
-  hid_service->GetDevices(
-      base::Bind(&U2fRequest::OnEnumerate, weak_factory_.GetWeakPtr()));
+  hid_service->GetDevices(base::Bind(&U2fRequest::OnEnumerate,
+                                     weak_factory_.GetWeakPtr(), hid_service));
 }
 
 void U2fRequest::OnEnumerate(
+    HidService* hid_service,
     const std::vector<scoped_refptr<HidDeviceInfo>>& devices) {
   for (auto device_info : devices) {
     if (filter_.Matches(device_info))
       devices_.push_back(base::MakeUnique<U2fHidDevice>(device_info));
   }
+
+  hid_service_observer_.Add(hid_service);
 
   state_ = State::IDLE;
   Transition();
