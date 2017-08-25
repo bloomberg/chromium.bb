@@ -14,5 +14,5 @@
         android:bottom="@dimen/search_toolbar_modern_bg_top_bottom_inset"
         android:left="@dimen/search_toolbar_modern_bg_lateral_inset"
         android:right="@dimen/search_toolbar_modern_bg_lateral_inset"
-        android:drawable="@drawable/bottom_toolbar_background" />
+        android:drawable="@drawable/modern_toolbar_background" />
 </layer-list>

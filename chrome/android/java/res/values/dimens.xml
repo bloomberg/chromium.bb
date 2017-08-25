@@ -253,7 +253,6 @@
     <!-- location_bar_google_g_width + 2 * location_bar_google_g_margin -->
     <dimen name="location_bar_google_g_container_width">40dp</dimen>
     <dimen name="location_bar_vertical_margin">8dp</dimen>
-    <dimen name="bottom_location_bar_vertical_margin">9dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_incognito_badge_padding">7dp</dimen>
     <dimen name="location_bar_icon_width">32dp</dimen>
@@ -267,10 +266,15 @@
     <!-- Bottom toolbar dimensions -->
     <dimen name="bottom_toolbar_top_margin">2dp</dimen>
     <dimen name="bottom_toolbar_url_bar_top_margin">3.5dp</dimen>
-    <dimen name="bottom_toolbar_background_size">36dp</dimen>
-    <dimen name="bottom_toolbar_background_corner_radius">18dp</dimen>
-    <dimen name="bottom_toolbar_background_lateral_inset">2dp</dimen>
     <dimen name="bottom_toolbar_background_focused_left_margin">6dp</dimen>
+    <dimen name="bottom_location_bar_vertical_margin">9dp</dimen>
+    <dimen name="bottom_location_bar_content_lateral_inset">8dp</dimen>
+    <dimen name="bottom_location_bar_content_vertical_inset">4dp</dimen>
+
+    <!-- Modern toolbar background dimensions -->
+    <dimen name="modern_toolbar_background_size">36dp</dimen>
+    <dimen name="modern_toolbar_background_corner_radius">18dp</dimen>
+    <dimen name="modern_toolbar_background_lateral_inset">2dp</dimen>
 
     <!-- Omnibox suggestions -->
     <dimen name="omnibox_suggestion_height">60dp</dimen>
