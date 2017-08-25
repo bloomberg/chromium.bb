@@ -1928,7 +1928,7 @@ void av1_fht8x32_c(const int16_t *input, tran_low_t *output, int stride,
     for (j = 0; j < n4; ++j)
       output[i + j * n] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
   }
-  // Note: overall scale factor of transform is 4 times unitary
+  // Note: overall scale factor of transform is 8 times unitary
 }
 
 void av1_fht32x8_c(const int16_t *input, tran_low_t *output, int stride,
@@ -1995,7 +1995,7 @@ void av1_fht32x8_c(const int16_t *input, tran_low_t *output, int stride,
     for (j = 0; j < n4; ++j)
       output[j + i * n4] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
   }
-  // Note: overall scale factor of transform is 4 times unitary
+  // Note: overall scale factor of transform is 8 times unitary
 }
 
 void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,

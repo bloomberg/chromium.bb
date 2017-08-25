@@ -21,13 +21,8 @@
 #include "av1/common/idct.h"
 
 int av1_get_tx_scale(const TX_SIZE tx_size) {
-  if (txsize_sqr_up_map[tx_size] == TX_32X32) return 1;
-#if CONFIG_TX64X64
-  else if (txsize_sqr_up_map[tx_size] == TX_64X64)
-    return 2;
-#endif  // CONFIG_TX64X64
-  else
-    return 0;
+  const int pels = tx_size_2d[tx_size];
+  return (pels > 256) + (pels > 1024) + (pels > 4096);
 }
 
 // NOTE: The implementation of all inverses need to be aware of the fact
