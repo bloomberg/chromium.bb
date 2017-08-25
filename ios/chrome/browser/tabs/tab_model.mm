@@ -339,12 +339,6 @@ void CleanCertificatePolicyCache(
            selector:@selector(applicationDidEnterBackground:)
                name:UIApplicationDidEnterBackgroundNotification
              object:nil];
-    // Register for foregrounding notification.
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(applicationWillEnterForeground:)
-               name:UIApplicationWillEnterForegroundNotification
-             object:nil];
 
     // Associate with ios::ChromeBrowserState.
     RegisterTabModelWithChromeBrowserState(_browserState, self);
@@ -727,9 +721,6 @@ void CleanCertificatePolicyCache(
       web::BrowserState::GetCertificatePolicyCache(_browserState),
       _webStateList.get());
 
-  if (_tabUsageRecorder)
-    _tabUsageRecorder->AppDidEnterBackground();
-
   // Normally, the session is saved after some timer expires but since the app
   // is about to enter the background send YES to save the session immediately.
   [self saveSessionImmediately:YES];
@@ -738,13 +729,6 @@ void CleanCertificatePolicyCache(
   if (_webUsageEnabled && self.currentTab) {
     [SnapshotCacheFactory::GetForBrowserState(_browserState)
         saveGreyInBackgroundForSessionID:self.currentTab.tabId];
-  }
-}
-
-// Called when UIApplicationWillEnterForegroundNotification is received.
-- (void)applicationWillEnterForeground:(NSNotification*)notify {
-  if (_tabUsageRecorder) {
-    _tabUsageRecorder->AppWillEnterForeground();
   }
 }
 

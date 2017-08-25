@@ -70,10 +70,41 @@ TabUsageRecorder::TabUsageRecorder(WebStateList* web_state_list,
       prerender_service_(prerender_service) {
   DCHECK(web_state_list_);
   web_state_list_->AddObserver(this);
+
+  // Register for backgrounding and foregrounding notifications. It is safe for
+  // the block to capture a pointer to |this| as they are unregistered in the
+  // destructor and thus the block are not called after the end of its lifetime.
+  application_backgrounding_observer_ = [[NSNotificationCenter defaultCenter]
+      addObserverForName:UIApplicationDidEnterBackgroundNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification*) {
+                this->AppDidEnterBackground();
+              }];
+
+  application_foregrounding_observer_ = [[NSNotificationCenter defaultCenter]
+      addObserverForName:UIApplicationWillEnterForegroundNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification*) {
+                this->AppWillEnterForeground();
+              }];
 }
 
 TabUsageRecorder::~TabUsageRecorder() {
   web_state_list_->RemoveObserver(this);
+
+  if (application_backgrounding_observer_) {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:application_backgrounding_observer_];
+    application_backgrounding_observer_ = nil;
+  }
+
+  if (application_foregrounding_observer_) {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:application_foregrounding_observer_];
+    application_foregrounding_observer_ = nil;
+  }
 }
 
 void TabUsageRecorder::InitialRestoredTabs(
