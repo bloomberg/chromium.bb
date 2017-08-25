@@ -176,7 +176,7 @@ class ActivationStateComputingNavigationThrottleTest
       return;
     ASSERT_EQ(navigation_handle, test_throttle_->navigation_handle());
     if (test_throttle_->filter())
-      test_throttle_->CouldSendActivationToRenderer();
+      test_throttle_->WillSendActivationToRenderer();
 
     if (auto filter = test_throttle_->ReleaseFilter()) {
       EXPECT_NE(ActivationLevel::DISABLED,

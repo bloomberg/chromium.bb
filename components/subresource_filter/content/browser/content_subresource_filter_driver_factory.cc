@@ -9,10 +9,14 @@
 #include "base/time/time.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
+#include "components/subresource_filter/core/browser/subresource_filter_constants.h"
 #include "components/subresource_filter/core/common/activation_list.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/console_message_level.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
 
@@ -95,16 +99,43 @@ void ContentSubresourceFilterDriverFactory::NotifyPageActivationComputed(
                                      state);
 }
 
+// Blocking popups here should trigger the standard popup blocking UI, so don't
+// force the subresource filter specific UI.
+bool ContentSubresourceFilterDriverFactory::ShouldDisallowNewWindow(
+    const content::OpenURLParams* open_url_params) {
+  if (activation_options().activation_level != ActivationLevel::ENABLED ||
+      !activation_options().should_strengthen_popup_blocker)
+    return false;
+
+  // Block new windows from navigations whose triggering JS Event has an
+  // isTrusted bit set to false. This bit is set to true if the event is
+  // generated via a user action. See docs:
+  // https://developer.mozilla.org/en-US/docs/Web/API/Event/isTrusted
+  bool should_block = true;
+  if (open_url_params) {
+    should_block = open_url_params->triggering_event_info ==
+                   blink::WebTriggeringEventInfo::kFromUntrustedEvent;
+  }
+  if (should_block) {
+    // TODO(csharrison): This is logged erroneously if the user has whitelisted
+    // the site to make popups. We should refactor this so it is never logged
+    // incorrectly.
+    web_contents()->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_ERROR, kDisallowNewWindowMessage);
+  }
+  return should_block;
+}
+
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
   if (activation_options().should_suppress_notifications)
+    return;
+  // This shouldn't happen normally, but in the rare case that an IPC from a
+  // previous page arrives late we should guard against it.
+  if (activation_options().should_disable_ruleset_rules)
     return;
   DCHECK_EQ(activation_options().activation_level, ActivationLevel::ENABLED);
   client_->ToggleNotificationVisibility(activation_options().activation_level ==
                                         ActivationLevel::ENABLED);
-}
-
-bool ContentSubresourceFilterDriverFactory::AllowStrongPopupBlocking() {
-  return activation_options().should_strengthen_popup_blocker;
 }
 
 bool ContentSubresourceFilterDriverFactory::AllowRulesetRules() {

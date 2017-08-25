@@ -54,6 +54,10 @@ class ContentSubresourceFilterDriverFactory
       ActivationDecision activation_decision,
       const Configuration& matched_configuration);
 
+  // Returns whether or not the current WebContents is allowed to create a new
+  // window.
+  bool ShouldDisallowNewWindow(const content::OpenURLParams* open_url_params);
+
   // Returns the |ActivationOptions| for the current main frame
   // document. Do not rely on this API, it is only temporary.
   // TODO(csharrison): Remove this and |activation_options_| in place of adding
@@ -65,7 +69,6 @@ class ContentSubresourceFilterDriverFactory
 
   // ContentSubresourceFilterThrottleManager::Delegate:
   void OnFirstSubresourceLoadDisallowed() override;
-  bool AllowStrongPopupBlocking() override;
   bool AllowRulesetRules() override;
 
   ContentSubresourceFilterThrottleManager* throttle_manager() {
