@@ -3,15 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Pulls the latest revisions of the web-platform-tests or csswg-test repos."""
+"""Pulls the latest revisions of the web-platform-tests."""
 
 from webkitpy.common import exit_codes
-from webkitpy.common import version_check
 from webkitpy.common.host import Host
+
 from webkitpy.w3c.test_importer import TestImporter
 
 
-if __name__ == '__main__':
+def main():
     host = Host()
     importer = TestImporter(host)
     try:
@@ -19,3 +19,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         host.print_("Interrupted, exiting")
         host.exit(exit_codes.INTERRUPTED_EXIT_STATUS)
+
+
+if __name__ == '__main__':
+    main()
