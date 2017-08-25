@@ -24,7 +24,8 @@ const uint32_t kFallbackCrashTerminationCode = 0xFFFF8001;
 
 namespace {
 
-std::unique_ptr<FallbackCrashHandlerLauncher> g_fallback_crash_handler_launcher;
+// Intentionally leaked on program exit.
+FallbackCrashHandlerLauncher* g_fallback_crash_handler_launcher = nullptr;
 
 LONG WINAPI FallbackUnhandledExceptionFilter(EXCEPTION_POINTERS* exc_ptrs) {
   if (!g_fallback_crash_handler_launcher)
@@ -69,9 +70,8 @@ bool SetupFallbackCrashHandling(const base::CommandLine& command_line) {
 
   // This is necessary because chrome_elf stubs out the
   // SetUnhandledExceptionFilter in the IAT of chrome.exe.
-  typedef PTOP_LEVEL_EXCEPTION_FILTER(WINAPI *
-                                      SetUnhandledExceptionFilterFunction)(
-      PTOP_LEVEL_EXCEPTION_FILTER filter);
+  using SetUnhandledExceptionFilterFunction =
+      PTOP_LEVEL_EXCEPTION_FILTER(WINAPI*)(PTOP_LEVEL_EXCEPTION_FILTER filter);
   HMODULE kernel32 = GetModuleHandle(L"kernel32.dll");
   if (!kernel32)
     return false;
@@ -83,7 +83,7 @@ bool SetupFallbackCrashHandling(const base::CommandLine& command_line) {
     return false;
 
   // Success, pass ownership to the global.
-  g_fallback_crash_handler_launcher = std::move(fallback_launcher);
+  g_fallback_crash_handler_launcher = fallback_launcher.release();
 
   set_unhandled_exception_filter(&FallbackUnhandledExceptionFilter);
 
