@@ -228,12 +228,11 @@ class RemoteTryJob(object):
 
   def _GetBuilder(self, bot):
     """Find and return the builder for bot."""
-    # Default to etc builder.
-    builder = 'etc'
-    if bot in site_config and '_template' in site_config[bot]:
-      builder = site_config[bot]['_template']
+    if bot in site_config and site_config[bot]['_template']:
+      return site_config[bot]['_template']
 
-    return builder
+    # Default to etc builder.
+    return 'etc'
 
   def _GetProperties(self, bot):
     """Construct and return properties for buildbucket request."""
