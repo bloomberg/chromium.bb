@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Exports Chromium changes to web-platform-tests."""
+
+import argparse
 import logging
 
 from webkitpy.w3c.local_wpt import LocalWPT
@@ -10,7 +13,8 @@ from webkitpy.w3c.common import (
     WPT_GH_URL,
     WPT_REVISION_FOOTER,
     EXPORT_PR_LABEL,
-    PROVISIONAL_PR_LABEL
+    PROVISIONAL_PR_LABEL,
+    read_credentials
 )
 from webkitpy.w3c.gerrit import GerritAPI, GerritCL
 from webkitpy.w3c.wpt_github import WPTGitHub, MergeError
@@ -20,22 +24,34 @@ _log = logging.getLogger(__name__)
 
 class TestExporter(object):
 
-    def __init__(self, host, gh_user, gh_token, gerrit_user, gerrit_token, dry_run=False):
+    def __init__(self, host):
         self.host = host
-        self.wpt_github = WPTGitHub(host, gh_user, gh_token)
+        self.wpt_github = None
+        self.gerrit = None
+        self.dry_run = False
+        self.local_wpt = None
 
-        self.gerrit = GerritAPI(self.host, gerrit_user, gerrit_token)
-
-        self.dry_run = dry_run
-        self.local_wpt = LocalWPT(self.host, gh_token)
-        self.local_wpt.fetch()
-
-    def run(self):
+    def main(self, argv=None):
         """Creates PRs for in-flight CLs and merges changes that land on master.
 
         Returns:
             A boolean: True if success, False if there were any patch failures.
         """
+        args = self.parse_args(argv)
+        self.dry_run = args.dry_run
+        credentials = read_credentials(self.host, args.credentials_json)
+
+        if not (credentials['GH_USER'] and credentials['GH_TOKEN']):
+            _log.error('Must provide both user and token for GitHub.')
+            return False
+
+        self.wpt_github = self.wpt_github or WPTGitHub(self.host, credentials['GH_USER'], credentials['GH_TOKEN'])
+        self.gerrit = self.gerrit or GerritAPI(self.host, credentials['GERRIT_USER'], credentials['GERRIT_TOKEN'])
+        self.local_wpt = self.local_wpt or LocalWPT(self.host, credentials['GH_TOKEN'])
+        self.local_wpt.fetch()
+
+        logging.basicConfig(level=logging.INFO, format='%(message)s')
+
         open_gerrit_cls = self.gerrit.query_exportable_open_cls()
         self.process_gerrit_cls(open_gerrit_cls)
 
@@ -45,6 +61,18 @@ class TestExporter(object):
         self.process_chromium_commits(exportable_commits)
 
         return not bool(errors)
+
+    def parse_args(self, argv):
+        parser = argparse.ArgumentParser(description=__doc__)
+        parser.add_argument(
+            '--dry-run', action='store_true',
+            help='See what would be done without actually creating or merging '
+                 'any pull requests.')
+        parser.add_argument(
+            '--credentials-json', required=True,
+            help='A JSON file with an object containing zero or more of the '
+                 'following keys: GH_USER, GH_TOKEN, GERRIT_USER, GERRIT_TOKEN')
+        return parser.parse_args(argv)
 
     def process_gerrit_cls(self, gerrit_cls):
         for cl in gerrit_cls:

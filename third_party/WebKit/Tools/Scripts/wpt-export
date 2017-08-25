@@ -3,60 +3,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Exports local changes to web-platform-tests in Chromium to upstream repo.
+"""Pushes changes to web-platform-tests inside Chromium to the upstream repo."""
 
-This script checks LayoutTests/external/wpt for changes that can be exported,
-then creates a patch, and creates and lands a pull request for the upstream
-repository.
-
-For this script to be effective it needs to be run on a regular
-interval (e.g. every 10 mins).
-"""
-
-import argparse
-import json
-import logging
-import sys
-
+from webkitpy.common import exit_codes
 from webkitpy.common.host import Host
+
 from webkitpy.w3c.test_exporter import TestExporter
-from webkitpy.w3c.common import read_credentials
-
-
-_log = logging.getLogger(__name__)
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format='%(message)s')
-
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        '--dry-run', action='store_true',
-        help='See what would be done without actually creating or merging '
-             'any pull requests.')
-    parser.add_argument(
-        '--credentials-json', required=True,
-        help='A JSON file with an object containing zero or more of the '
-             'following keys: GH_USER, GH_TOKEN, GERRIT_USER, GERRIT_TOKEN')
-    args = parser.parse_args()
-
     host = Host()
-    credentials = read_credentials(host, args.credentials_json)
-
-    if not (credentials['GH_USER'] and credentials['GH_TOKEN']):
-        parser.error('Must provide both gh_user and gh_token for GitHub.')
-
-    success = TestExporter(
-        host=host,
-        gh_user=credentials['GH_USER'],
-        gh_token=credentials['GH_TOKEN'],
-        gerrit_user=credentials['GERRIT_USER'],
-        gerrit_token=credentials['GERRIT_TOKEN'],
-        dry_run=args.dry_run
-    ).run()
-
-    return 0 if success else 1
+    exporter = TestExporter(host)
+    try:
+        success = exporter.main()
+        host.exit(0 if success else 1)
+    except KeyboardInterrupt:
+        host.print_('Interrupted, exiting')
+        host.exit(exit_codes.INTERRUPTED_EXIT_STATUS)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()
