@@ -37,13 +37,15 @@ bool OriginVerifier::VerifyOrigin(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   const JavaParamRef<jstring>& j_package_name,
                                   const JavaParamRef<jstring>& j_fingerprint,
-                                  const JavaParamRef<jstring>& j_origin) {
-  if (!j_package_name || !j_fingerprint || !j_origin)
+                                  const JavaParamRef<jstring>& j_origin,
+                                  const JavaParamRef<jstring>& j_relationship) {
+  if (!j_package_name || !j_fingerprint || !j_origin || !j_relationship)
     return false;
 
   std::string package_name = ConvertJavaStringToUTF8(env, j_package_name);
   std::string fingerprint = ConvertJavaStringToUTF8(env, j_fingerprint);
   std::string origin = ConvertJavaStringToUTF8(env, j_origin);
+  std::string relationship = ConvertJavaStringToUTF8(env, j_relationship);
 
   // Multiple calls here will end up resetting the callback on the handler side
   // and cancelling previous requests.
@@ -54,8 +56,7 @@ bool OriginVerifier::VerifyOrigin(JNIEnv* env,
   return asset_link_handler_->CheckDigitalAssetLinkRelationship(
       base::Bind(&customtabs::OriginVerifier::OnRelationshipCheckComplete,
                  base::Unretained(this)),
-      origin, package_name, fingerprint,
-      "delegate_permission/common.use_as_origin");
+      origin, package_name, fingerprint, relationship);
 }
 
 void OriginVerifier::OnRelationshipCheckComplete(
