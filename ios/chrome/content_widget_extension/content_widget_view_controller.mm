@@ -68,11 +68,20 @@ const CGFloat widgetCompactHeightIOS9 = 110;
                 .height
           : widgetCompactHeightIOS9;
 
+  CGFloat width =
+      self.extensionContext && base::ios::IsRunningOnIOS10OrLater()
+          ? [self.extensionContext
+                widgetMaximumSizeForDisplayMode:NCWidgetDisplayModeCompact]
+                .width
+          // On the today view <iOS10, the full screen size is useable.
+          : [UIScreen mainScreen].bounds.size.width;
+
   // A local variable is necessary here as the property is declared weak and the
   // object would be deallocated before being retained by the addSubview call.
   ContentWidgetView* widgetView =
       [[ContentWidgetView alloc] initWithDelegate:self
                                     compactHeight:height
+                                            width:width
                                  initiallyCompact:self.isCompact];
   self.widgetView = widgetView;
   [self.view addSubview:self.widgetView];

@@ -13,6 +13,9 @@
 // It displays the favicon for this Most Visited suggestion and its title.
 @interface MostVisitedTileView : UIButton
 
+// Returns the fixed width of a tile.
++ (CGFloat)tileWidth;
+
 // Designated initializer.
 - (nonnull instancetype)init NS_DESIGNATED_INITIALIZER;
 - (nonnull instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
