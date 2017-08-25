@@ -137,8 +137,17 @@ class TestExporter(object):
             self.create_or_update_pull_request_from_commit(commit)
 
     def get_exportable_commits(self):
+        """Gets exportable commits that can apply cleanly and independently.
+
+        Returns:
+            A list of ChromiumCommit for clean exportable commits, and a list
+            of error messages for other exportable commits that fail to apply.
+        """
+        # Exportable commits that cannot apply cleanly are logged, and will be
+        # retried next time. A common case is that a commit depends on an
+        # earlier commit, and can only be exported after the earlier one.
         return exportable_commits_over_last_n_commits(
-            self.host, self.local_wpt, self.wpt_github)
+            self.host, self.local_wpt, self.wpt_github, require_clean=True)
 
     def remove_provisional_pr_label(self, pull_request):
         if self.dry_run:

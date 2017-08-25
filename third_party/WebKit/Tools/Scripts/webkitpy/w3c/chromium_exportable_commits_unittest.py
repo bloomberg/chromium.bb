@@ -27,6 +27,23 @@ class MockLocalWPT(object):
         return self.patch_success, self.patch_error
 
 
+class MultiResponseMockLocalWPT(object):
+
+    def __init__(self, test_results):
+        """A mock LocalWPT with canned responses of test_patch.
+
+        Args:
+            test_results: a list of (success, error).
+        """
+        self.test_results = test_results
+        self.count = 0
+
+    def test_patch(self, _):
+        success, error = self.test_results[self.count]
+        self.count += 1
+        return success, error
+
+
 class ChromiumExportableCommitsTest(unittest.TestCase):
 
     # TODO(qyearsley): Add a test for exportable_commits_over_last_n_commits.
@@ -42,7 +59,7 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
             'diff-tree': 'some\nfiles',
             'format-patch': 'hey I\'m a patch',
             'footers': 'cr-rev-position',
-        })
+        }, strict=True)
 
         commits, _ = _exportable_commits_since(
             'beefcafe', host, MockLocalWPT(), MockWPTGitHub(pull_requests=[]))
@@ -58,6 +75,46 @@ class ChromiumExportableCommitsTest(unittest.TestCase):
              '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt'],
             ['git', 'format-patch', '-1', '--stdout', 'add087a97844f4b9e307d9a216940582d96db306', '--', 'some', 'files'],
         ])
+
+    def test_exportable_commits_since_require_clean_by_default(self):
+        host = MockHost()
+        host.executive = mock_git_commands({
+            'diff-tree': 'some\nfiles',
+            'footers': 'cr-rev-position',
+            'format-patch': 'hey I\'m a patch',
+            'rev-list': 'add087a97844f4b9e307d9a216940582d96db306\n'
+                        'add087a97844f4b9e307d9a216940582d96db307\n'
+                        'add087a97844f4b9e307d9a216940582d96db308\n'
+        })
+        local_wpt = MultiResponseMockLocalWPT([
+            (True, ''),
+            (False, 'patch failure'),
+            (True, ''),
+        ])
+
+        commits, _ = _exportable_commits_since(
+            'beefcafe', host, local_wpt, MockWPTGitHub(pull_requests=[]))
+        self.assertEqual(len(commits), 2)
+
+    def test_exportable_commits_since_without_require_clean(self):
+        host = MockHost()
+        host.executive = mock_git_commands({
+            'diff-tree': 'some\nfiles',
+            'footers': 'cr-rev-position',
+            'format-patch': 'hey I\'m a patch',
+            'rev-list': 'add087a97844f4b9e307d9a216940582d96db306\n'
+                        'add087a97844f4b9e307d9a216940582d96db307\n'
+                        'add087a97844f4b9e307d9a216940582d96db308\n'
+        })
+        local_wpt = MultiResponseMockLocalWPT([
+            (True, ''),
+            (False, 'patch failure'),
+            (True, ''),
+        ])
+
+        commits, _ = _exportable_commits_since(
+            'beefcafe', host, local_wpt, MockWPTGitHub(pull_requests=[]), require_clean=False)
+        self.assertEqual(len(commits), 3)
 
     def test_get_commit_export_state(self):
         commit = MockChromiumCommit(MockHost())

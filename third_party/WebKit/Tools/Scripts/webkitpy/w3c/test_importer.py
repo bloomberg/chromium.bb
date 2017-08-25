@@ -242,8 +242,7 @@ class TestImporter(object):
             A list of commits applied (could be empty), or None if any
             of the patches could not be applied cleanly.
         """
-        # Ignore patch failures when importing. Exporter will report them.
-        commits, _ = self.exportable_but_not_exported_commits(local_wpt)
+        commits = self.exportable_but_not_exported_commits(local_wpt)
         for commit in commits:
             _log.info('Applying exportable commit locally:')
             _log.info(commit.url())
@@ -258,6 +257,8 @@ class TestImporter(object):
                 _log.warning('No pull request found.')
             error = local_wpt.apply_patch(commit.format_patch())
             if error:
+                _log.error('Commit cannot be applied cleanly:')
+                _log.error(error)
                 return None
             self.run(
                 ['git', 'commit', '--all', '-F', '-'],
@@ -266,9 +267,17 @@ class TestImporter(object):
         return commits
 
     def exportable_but_not_exported_commits(self, local_wpt):
-        """Returns a list of commits that would be clobbered by importer
-        and a list of error messages for patches failing to apply cleanly."""
-        return exportable_commits_over_last_n_commits(self.host, local_wpt, self.wpt_github)
+        """Returns a list of commits that would be clobbered by importer.
+
+        The list contains all exportable but not exported commits, not filtered
+        by whether they can apply cleanly.
+        """
+        # The errors returned by exportable_commits_over_last_n_commits are
+        # irrelevant and ignored here, because it tests patches *individually*
+        # while the importer tries to reapply these patches *cumulatively*.
+        commits, _ = exportable_commits_over_last_n_commits(
+            self.host, local_wpt, self.wpt_github, require_clean=False)
+        return commits
 
     def _generate_manifest(self):
         """Generates MANIFEST.json for imported tests.
