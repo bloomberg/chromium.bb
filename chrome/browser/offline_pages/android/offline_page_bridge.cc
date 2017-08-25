@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_utils.h"
@@ -280,6 +281,18 @@ ScopedJavaLocalRef<jobject> OfflinePageBridge::ConvertToJavaOfflinePage(
     JNIEnv* env,
     const OfflinePageItem& offline_page) {
   return ToJavaOfflinePageItem(env, offline_page);
+}
+
+// static
+std::string OfflinePageBridge::GetEncodedOriginApp(
+    const content::WebContents* web_contents) {
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  if (!tab)
+    return "";
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return ConvertJavaStringToUTF8(
+      env,
+      Java_OfflinePageBridge_getEncodedOriginApp(env, tab->GetJavaObject()));
 }
 
 OfflinePageBridge::OfflinePageBridge(JNIEnv* env,
