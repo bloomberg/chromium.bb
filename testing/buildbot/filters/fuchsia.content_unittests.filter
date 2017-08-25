@@ -89,13 +89,6 @@
 -URLLoaderImplTest.Empty
 -URLLoaderImplTest.SSLSentOnlyWhenRequested
 -URLLoaderImplTest.SniffMimeType
--V8ValueConverterImplTest.DetectCycles
--V8ValueConverterImplTest.MaxRecursionDepth
--V8ValueConverterImplTest.NegativeZero
--V8ValueConverterImplTest.RecursiveObjects
--V8ValueConverterImplTest.StrategyBypass
--V8ValueConverterImplTest.StripNullFromObjects
--V8ValueConverterImplTest.WeirdProperties
 -WebContentsAudioInputStreamTest.MirroringOneStreamAfterTargetChange/0
 
 
