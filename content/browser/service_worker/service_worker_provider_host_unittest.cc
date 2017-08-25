@@ -59,8 +59,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
  protected:
   ServiceWorkerProviderHostTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        next_renderer_provided_id_(1),
-        next_browser_provided_id_(-2) {
+        next_renderer_provided_id_(1) {
     SetContentClient(&test_content_client_);
   }
   ~ServiceWorkerProviderHostTest() override {}
@@ -106,8 +105,7 @@ class ServiceWorkerProviderHostTest : public testing::Test {
       host = ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true,
           base::Callback<WebContents*(void)>());
-      ServiceWorkerProviderHostInfo info(next_browser_provided_id_--,
-                                         1 /* route_id */,
+      ServiceWorkerProviderHostInfo info(host->provider_id(), 1 /* route_id */,
                                          SERVICE_WORKER_PROVIDER_FOR_WINDOW,
                                          true /* is_parent_frame_secure */);
       remote_endpoints_.back().BindWithProviderHostInfo(&info);
@@ -151,7 +149,6 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   TestContentBrowserClient test_content_browser_client_;
   ContentBrowserClient* old_content_browser_client_;
   int next_renderer_provided_id_;
-  int next_browser_provided_id_;
   std::vector<ServiceWorkerRemoteProviderEndpoint> remote_endpoints_;
 
  private:
@@ -377,9 +374,9 @@ TEST_F(ServiceWorkerProviderHostTest, Controller) {
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::Callback<WebContents*(void)>());
-  ServiceWorkerProviderHostInfo info(
-      next_browser_provided_id_--, 1 /* route_id */,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, true /* is_parent_frame_secure */);
+  ServiceWorkerProviderHostInfo info(host->provider_id(), 1 /* route_id */,
+                                     SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                     true /* is_parent_frame_secure */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
 
@@ -412,9 +409,9 @@ TEST_F(ServiceWorkerProviderHostTest, ActiveIsNotController) {
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           helper_->context()->AsWeakPtr(), true /* are_ancestors_secure */,
           base::Callback<WebContents*(void)>());
-  ServiceWorkerProviderHostInfo info(
-      next_browser_provided_id_--, 1 /* route_id */,
-      SERVICE_WORKER_PROVIDER_FOR_WINDOW, true /* is_parent_frame_secure */);
+  ServiceWorkerProviderHostInfo info(host->provider_id(), 1 /* route_id */,
+                                     SERVICE_WORKER_PROVIDER_FOR_WINDOW,
+                                     true /* is_parent_frame_secure */);
   remote_endpoints_.emplace_back();
   remote_endpoints_.back().BindWithProviderHostInfo(&info);
 
