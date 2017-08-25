@@ -48,12 +48,11 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
   ~FileProxyWrapperLinux() override;
 
   // FileProxyWrapper implementation.
-  void Init(const ErrorCallback& error_callback) override;
+  void Init(StatusCallback status_callback) override;
   void CreateFile(const base::FilePath& directory,
-                  const std::string& filename,
-                  const SuccessCallback& success_callback) override;
+                  const std::string& filename) override;
   void WriteChunk(std::unique_ptr<CompoundBuffer> buffer) override;
-  void Close(const SuccessCallback& success_callback) override;
+  void Close() override;
   void Cancel() override;
   State state() override;
 
@@ -64,10 +63,8 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
   };
 
   // Callbacks for CreateFile().
-  void CreateTempFile(const SuccessCallback& success_callback,
-                      int unique_path_number);
-  void CreateTempFileCallback(const SuccessCallback& success_callback,
-                              base::File::Error error);
+  void CreateTempFile(int unique_path_number);
+  void CreateTempFileCallback(base::File::Error error);
 
   // Callbacks for WriteChunk().
   void WriteFileChunk(std::unique_ptr<FileChunk> chunk);
@@ -86,8 +83,9 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
   std::unique_ptr<base::FileProxy> file_proxy_;
 
-  ErrorCallback error_callback_;
+  StatusCallback status_callback_;
 
+  bool temp_file_created_ = false;
   base::FilePath temp_filepath_;
   base::FilePath destination_filepath_;
 
@@ -96,8 +94,6 @@ class FileProxyWrapperLinux : public FileProxyWrapper {
   // active_file_chunk_ is the chunk currently being written to disk. It is
   // empty if nothing is being written to disk right now.
   std::unique_ptr<FileChunk> active_file_chunk_;
-
-  SuccessCallback close_success_callback_;
 
   base::ThreadChecker thread_checker_;
   base::WeakPtr<FileProxyWrapperLinux> weak_ptr_;
@@ -112,11 +108,11 @@ FileProxyWrapperLinux::~FileProxyWrapperLinux() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void FileProxyWrapperLinux::Init(const ErrorCallback& error_callback) {
+void FileProxyWrapperLinux::Init(StatusCallback status_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SetState(kInitialized);
-  error_callback_ = error_callback;
+  status_callback_ = std::move(status_callback);
 
   file_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BACKGROUND});
@@ -129,10 +125,8 @@ void FileProxyWrapperLinux::Init(const ErrorCallback& error_callback) {
   }
 }
 
-void FileProxyWrapperLinux::CreateFile(
-    const base::FilePath& directory,
-    const std::string& filename,
-    const SuccessCallback& success_callback) {
+void FileProxyWrapperLinux::CreateFile(const base::FilePath& directory,
+                                       const std::string& filename) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SetState(kFileCreated);
@@ -144,34 +138,37 @@ void FileProxyWrapperLinux::CreateFile(
       file_task_runner_.get(), FROM_HERE,
       base::BindOnce(&base::GetUniquePathNumber, temp_filepath_,
                      base::FilePath::StringType()),
-      base::BindOnce(&FileProxyWrapperLinux::CreateTempFile, weak_ptr_,
-                     success_callback));
+      base::BindOnce(&FileProxyWrapperLinux::CreateTempFile, weak_ptr_));
 }
 
-void FileProxyWrapperLinux::CreateTempFile(
-    const SuccessCallback& success_callback,
-    int unique_path_number) {
+void FileProxyWrapperLinux::CreateTempFile(int unique_path_number) {
   if (unique_path_number > 0) {
     temp_filepath_ = temp_filepath_.InsertBeforeExtensionASCII(
         base::StringPrintf(" (%d)", unique_path_number));
   }
   if (!file_proxy_->CreateOrOpen(
           temp_filepath_, base::File::FLAG_CREATE | base::File::FLAG_WRITE,
-          base::Bind(&FileProxyWrapperLinux::CreateTempFileCallback, weak_ptr_,
-                     success_callback))) {
+          base::Bind(&FileProxyWrapperLinux::CreateTempFileCallback,
+                     weak_ptr_))) {
     // file_proxy_ failed to post a task to file_task_runner_.
     CancelWithError(protocol::FileTransferResponse_ErrorCode_UNEXPECTED_ERROR);
   }
 }
 
-void FileProxyWrapperLinux::CreateTempFileCallback(
-    const SuccessCallback& success_callback,
-    base::File::Error error) {
+void FileProxyWrapperLinux::CreateTempFileCallback(base::File::Error error) {
   if (error) {
     LOG(ERROR) << "Creating the temp file failed with error: " << error;
     CancelWithError(FileErrorToResponseError(error));
   } else {
-    success_callback.Run();
+    temp_file_created_ = true;
+    // Chunks to write may have been queued while we were creating the file,
+    // start writing them now if there were any.
+    if (!file_chunks_.empty()) {
+      std::unique_ptr<FileChunk> chunk_to_write =
+          std::move(file_chunks_.front());
+      file_chunks_.pop();
+      WriteFileChunk(std::move(chunk_to_write));
+    }
   }
 }
 
@@ -190,7 +187,9 @@ void FileProxyWrapperLinux::WriteChunk(std::unique_ptr<CompoundBuffer> buffer) {
   new_file_chunk->write_offset = next_write_file_offset_;
   next_write_file_offset_ += new_file_chunk->data.size();
 
-  if (active_file_chunk_) {
+  // If the file hasn't been created yet or there is another chunk currently
+  // being written, we have to queue this chunk to be written later.
+  if (!temp_file_created_ || active_file_chunk_) {
     // TODO(jarhar): When flow control enabled QUIC-based WebRTC data channels
     // are implemented, block the flow of incoming chunks here if
     // file_chunks_ has reached a maximum size. This implementation will
@@ -235,11 +234,10 @@ void FileProxyWrapperLinux::WriteCallback(base::File::Error error,
   }
 }
 
-void FileProxyWrapperLinux::Close(const SuccessCallback& success_callback) {
+void FileProxyWrapperLinux::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SetState(kClosing);
-  close_success_callback_ = success_callback;
 
   if (!active_file_chunk_ && file_chunks_.empty()) {
     // All writes are complete, so we can finish up now.
@@ -282,7 +280,9 @@ void FileProxyWrapperLinux::MoveFileCallback(bool success) {
 
   if (success) {
     SetState(kClosed);
-    std::move(close_success_callback_).Run();
+    std::move(status_callback_)
+        .Run(state_,
+             base::Optional<protocol::FileTransferResponse_ErrorCode>());
   } else {
     CancelWithError(protocol::FileTransferResponse_ErrorCode_FILE_IO_ERROR);
   }
@@ -312,7 +312,9 @@ void FileProxyWrapperLinux::Cancel() {
 void FileProxyWrapperLinux::CancelWithError(
     protocol::FileTransferResponse_ErrorCode error) {
   Cancel();
-  std::move(error_callback_).Run(error);
+  std::move(status_callback_)
+      .Run(state_,
+           base::Optional<protocol::FileTransferResponse_ErrorCode>(error));
 }
 
 void FileProxyWrapperLinux::SetState(State state) {

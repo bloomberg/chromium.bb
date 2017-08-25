@@ -13,9 +13,8 @@ message FileTransferRequest {
 // Next Id: 4
 message FileTransferResponse {
   enum TransferState {
-    READY = 1;
-    IN_PROGRESS = 2;
-    DONE = 3;
+    IN_PROGRESS = 1;
+    DONE = 2;
   }
   optional TransferState state = 1;
 
