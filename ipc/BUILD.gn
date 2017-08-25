@@ -151,6 +151,9 @@ mojom_component("mojom") {
   sources = [
     "ipc.mojom",
   ]
+  public_deps = [
+    "//mojo/common:read_only_buffer",
+  ]
 }
 
 mojom("test_interfaces") {

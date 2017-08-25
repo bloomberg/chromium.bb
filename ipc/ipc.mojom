@@ -4,6 +4,8 @@
 
 module IPC.mojom;
 
+import "mojo/common/read_only_buffer.mojom";
+
 // NOTE: This MUST match the value of MSG_ROUTING_NONE in src/ipc/ipc_message.h.
 const int32 kRoutingIdNone = -2;
 
@@ -31,7 +33,8 @@ interface Channel {
   SetPeerPid(int32 pid);
 
   // Transmits a classical Chrome IPC message.
-  Receive(array<uint8> data, array<SerializedHandle>? handles);
+  Receive(mojo.common.mojom.ReadOnlyBuffer data,
+          array<SerializedHandle>? handles);
 
   // Requests a Channel-associated interface.
   GetAssociatedInterface(string name, associated GenericInterface& request);
