@@ -178,6 +178,10 @@ class NavigationManagerImpl : public NavigationManager {
       const GURL& previous_url,
       const std::vector<BrowserURLRewriter::URLRewriter>* url_rewriters) const;
 
+  // Returns the most recent NavigationItem that does not have an app-specific
+  // URL.
+  NavigationItem* GetLastCommittedNonAppSpecificItem() const;
+
   // Identical to GetItemAtIndex() but returns the underlying NavigationItemImpl
   // instead of the public NavigationItem interface. This is used by
   // SessionStorageBuilder to persist session state.

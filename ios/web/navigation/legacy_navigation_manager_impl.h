@@ -90,10 +90,6 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   // |index| has ui::PAGE_TRANSITION_IS_REDIRECT_MASK.
   bool IsRedirectItemAtIndex(int index) const;
 
-  // Returns the most recent NavigationItem that does not have an app-specific
-  // URL.
-  NavigationItem* GetLastCommittedNonAppSpecificItem() const;
-
   // CRWSessionController that backs this instance.
   // TODO(stuartmorgan): Fold CRWSessionController into this class.
   base::scoped_nsobject<CRWSessionController> session_controller_;

@@ -1321,11 +1321,11 @@ TEST_P(NavigationManagerTest, OverrideUserAgentWithInheritAfterDesktop) {
 // Tests that the UserAgentType is propagated to subsequent NavigationItems if
 // a native URL exists in between navigations.
 TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
-  if (GetParam() == TEST_WK_BASED_NAVIGATION_MANAGER) {
-    // TODO(crbug.com/734150): Enable this test once |AddPendingItem| is
-    // integrated with native views.
-    return;
-  }
+  // This test manipuates the WKBackForwardListItems in mock_wk_list_ directly
+  // because it relies on the associated NavigationItems.
+  WKBackForwardListItem* wk_item1 =
+      [CRWTestBackForwardList itemWithURLString:@"http://www.1.com"];
+
   // GURL::Replacements that will replace a GURL's scheme with the test native
   // scheme.
   GURL::Replacements native_scheme_replacement;
@@ -1337,7 +1337,7 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  [mock_wk_list_ setCurrentURL:@"http://www.1.com"];
+  mock_wk_list_.currentItem = wk_item1;
   navigation_manager()->CommitPendingItem();
 
   web::NavigationItem* item1 = navigation_manager()->GetLastCommittedItem();
@@ -1349,9 +1349,10 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  [mock_wk_list_ setCurrentURL:base::SysUTF8ToNSString(item2_url.spec())
-                  backListURLs:@[ @"http://www.1.com" ]
-               forwardListURLs:nil];
+  WKBackForwardListItem* wk_native_item2 = [CRWTestBackForwardList
+      itemWithURLString:base::SysUTF8ToNSString(item2_url.spec())];
+  mock_wk_list_.currentItem = wk_native_item2;
+  mock_wk_list_.backList = @[ wk_item1 ];
   navigation_manager()->CommitPendingItem();
 
   web::NavigationItem* native_item1 =
@@ -1362,12 +1363,10 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  [mock_wk_list_
-        setCurrentURL:@"http://www.2.com"
-         backListURLs:@[
-           @"http://www.1.com", base::SysUTF8ToNSString(item2_url.spec())
-         ]
-      forwardListURLs:nil];
+  WKBackForwardListItem* wk_item2 =
+      [CRWTestBackForwardList itemWithURLString:@"http://www.2.com"];
+  mock_wk_list_.currentItem = wk_item2;
+  mock_wk_list_.backList = @[ wk_item1, wk_native_item2 ];
   navigation_manager()->CommitPendingItem();
   web::NavigationItem* item2 = navigation_manager()->GetLastCommittedItem();
 
@@ -1385,14 +1384,12 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  [mock_wk_list_
-        setCurrentURL:base::SysUTF8ToNSString(item3_url.spec())
-         backListURLs:@[
-           @"http://www.1.com", base::SysUTF8ToNSString(item2_url.spec()),
-           @"http://www.2.com"
-         ]
-      forwardListURLs:nil];
+  WKBackForwardListItem* wk_native_item3 = [CRWTestBackForwardList
+      itemWithURLString:base::SysUTF8ToNSString(item3_url.spec())];
+  mock_wk_list_.currentItem = wk_native_item3;
+  mock_wk_list_.backList = @[ wk_item1, wk_native_item2, wk_item2 ];
   navigation_manager()->CommitPendingItem();
+
   web::NavigationItem* native_item2 =
       navigation_manager()->GetLastCommittedItem();
   ASSERT_EQ(web::UserAgentType::NONE, native_item2->GetUserAgentType());
@@ -1401,14 +1398,13 @@ TEST_P(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
       web::NavigationInitiationType::USER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 
-  [mock_wk_list_
-        setCurrentURL:@"http://www.3.com"
-         backListURLs:@[
-           @"http://www.1.com", base::SysUTF8ToNSString(item2_url.spec()),
-           @"http://www.2.com", base::SysUTF8ToNSString(item3_url.spec())
-         ]
-      forwardListURLs:nil];
+  WKBackForwardListItem* wk_item3 =
+      [CRWTestBackForwardList itemWithURLString:@"http://www.3.com"];
+  mock_wk_list_.currentItem = wk_item3;
+  mock_wk_list_.backList =
+      @[ wk_item1, wk_native_item2, wk_item2, wk_native_item3 ];
   navigation_manager()->CommitPendingItem();
+
   web::NavigationItem* item3 = navigation_manager()->GetLastCommittedItem();
 
   // Verify that |item2|'s UserAgentType is propagated to |item3|.

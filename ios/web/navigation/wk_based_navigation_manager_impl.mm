@@ -120,15 +120,9 @@ void WKBasedNavigationManagerImpl::AddPendingItem(
       last_committed_item ? last_committed_item->GetURL() : GURL::EmptyGURL(),
       &transient_url_rewriters_);
   RemoveTransientURLRewriters();
-
-  // WKBasedNavigationManagerImpl does not track
-  // native URLs yet so just inherit from the
-  // last committed item.
-  // TODO(crbug.com/734150): Change GetLastCommittedItem() to
-  // GetLastCommittedNonAppSpecificItem() after
-  // integrating with native URLs.
   UpdatePendingItemUserAgentType(user_agent_override_option,
-                                 GetLastCommittedItem(), pending_item_.get());
+                                 GetLastCommittedNonAppSpecificItem(),
+                                 pending_item_.get());
 
   // AddPendingItem is called no later than |didCommitNavigation|. The only time
   // when all three of WKWebView's URL, the pending URL and WKBackForwardList's
