@@ -92,6 +92,9 @@ class Connection {
   virtual std::unique_ptr<WireMessage> DeserializeWireMessage(
       bool* is_incomplete_message);
 
+  // Returns a string describing the associated device for logging purposes.
+  std::string GetDeviceInfoLogString();
+
  private:
   // The remote device corresponding to this connection.
   const RemoteDevice remote_device_;
