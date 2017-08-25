@@ -7,6 +7,8 @@
 #include "base/ios/ios_util.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/handoff/pref_names_ios.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -439,6 +441,14 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewSwitchCell* switchCell =
       base::mac::ObjCCastStrict<CollectionViewSwitchCell>(
           [self.collectionView cellForItemAtIndexPath:switchPath]);
+
+  if (switchCell.switchView.isOn) {
+    base::RecordAction(base::UserMetricsAction(
+        "ContentSuggestions.RemoteSuggestionsPreferenceOn"));
+  } else {
+    base::RecordAction(base::UserMetricsAction(
+        "ContentSuggestions.RemoteSuggestionsPreferenceOff"));
+  }
 
   DCHECK_EQ(switchCell.switchView, sender);
   BOOL isOn = switchCell.switchView.isOn;
