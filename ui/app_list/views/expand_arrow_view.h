@@ -6,6 +6,7 @@
 #define UI_APP_LIST_VIEWS_EXPAND_ARROW_VIEW_H_
 
 #include "base/memory/weak_ptr.h"
+#include "ui/app_list/app_list_export.h"
 #include "ui/views/controls/button/button.h"
 
 namespace gfx {
@@ -25,7 +26,8 @@ class AppListView;
 class ContentsView;
 
 // A tile item for the expand arrow on the start page.
-class ExpandArrowView : public views::Button, public views::ButtonListener {
+class APP_LIST_EXPORT ExpandArrowView : public views::Button,
+                                        public views::ButtonListener {
  public:
   ExpandArrowView(ContentsView* contents_view, AppListView* app_list_view);
   ~ExpandArrowView() override;

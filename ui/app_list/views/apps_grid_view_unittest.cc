@@ -34,6 +34,7 @@
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view_folder_delegate.h"
 #include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/expand_arrow_view.h"
 #include "ui/app_list/views/suggestions_container_view.h"
 #include "ui/app_list/views/test/apps_grid_view_test_api.h"
 #include "ui/aura/window.h"
@@ -125,9 +126,8 @@ class AppsGridViewTest : public views::ViewsTestBase,
     app_list_view_->set_app_list_animation_duration_ms_for_testing(0);
 
     app_list_view_->Initialize(parent, 0, false, false);
-    ContentsView* contents_view =
-        app_list_view_->app_list_main_view()->contents_view();
-    apps_grid_view_ = contents_view->apps_container_view()->apps_grid_view();
+    contents_view_ = app_list_view_->app_list_main_view()->contents_view();
+    apps_grid_view_ = contents_view_->apps_container_view()->apps_grid_view();
     // Initialize around a point that ensures the window is wholly shown. It
     // bails out early with |test_with_fullscreen_|.
     // TODO(warx): remove MaybeSetAnchorPoint setup here when bubble launcher is
@@ -138,6 +138,7 @@ class AppsGridViewTest : public views::ViewsTestBase,
 
     model_ = delegate_->GetTestModel();
     suggestions_container_ = apps_grid_view_->suggestions_container_for_test();
+    expand_arrow_view_ = apps_grid_view_->expand_arrow_view_for_test();
     for (size_t i = 0; i < kNumOfSuggestedApps; ++i)
       model_->results()->Add(base::MakeUnique<TestSuggestedSearchResult>());
     // Needed to update suggestions from |model_|.
@@ -148,8 +149,8 @@ class AppsGridViewTest : public views::ViewsTestBase,
       app_list_view_->Layout();
     } else {
       // Set app list view to show all apps page to test AppsGridView.
-      contents_view->SetActiveState(AppListModel::STATE_APPS);
-      contents_view->Layout();
+      contents_view_->SetActiveState(AppListModel::STATE_APPS);
+      contents_view_->Layout();
     }
 
     test_api_.reset(new AppsGridViewTestApi(apps_grid_view_));
@@ -214,14 +215,44 @@ class AppsGridViewTest : public views::ViewsTestBase,
   }
 
   void SimulateKeyPress(ui::KeyboardCode key_code) {
-    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
+    SimulateKeyPress(key_code, ui::EF_NONE);
+  }
+
+  void SimulateKeyPress(ui::KeyboardCode key_code, int flags) {
+    ui::KeyEvent key_event(ui::ET_KEY_PRESSED, key_code, flags);
     apps_grid_view_->OnKeyPressed(key_event);
+  }
+
+  void CheckNoSelection() {
+    EXPECT_FALSE(expand_arrow_view_->selected());
+    EXPECT_EQ(-1, suggestions_container_->selected_index());
+    EXPECT_FALSE(apps_grid_view_->has_selected_view());
+  }
+
+  void CheckSelectionAtSuggestionsContainer(int index) {
+    EXPECT_FALSE(expand_arrow_view_->selected());
+    EXPECT_EQ(index, suggestions_container_->selected_index());
+    EXPECT_FALSE(apps_grid_view_->has_selected_view());
+  }
+
+  void CheckSelectionAtExpandArrow() {
+    EXPECT_TRUE(expand_arrow_view_->selected());
+    EXPECT_EQ(-1, suggestions_container_->selected_index());
+    EXPECT_FALSE(apps_grid_view_->has_selected_view());
+  }
+
+  void CheckSelectionAtAppsGridView(int index) {
+    EXPECT_FALSE(expand_arrow_view_->selected());
+    EXPECT_EQ(-1, suggestions_container_->selected_index());
+    EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(index)));
   }
 
   AppListView* app_list_view_ = nullptr;    // Owned by native widget.
   AppsGridView* apps_grid_view_ = nullptr;  // Owned by |app_list_view_|.
+  ContentsView* contents_view_ = nullptr;   // Owned by |app_list_view_|.
   SuggestionsContainerView* suggestions_container_ =
       nullptr;  // Owned by |apps_grid_view_|.
+  ExpandArrowView* expand_arrow_view_ = nullptr;  // Owned by |apps_grid_view_|.
   std::unique_ptr<AppListTestViewDelegate> delegate_;
   AppListTestModel* model_ = nullptr;  // Owned by |delegate_|.
   std::unique_ptr<AppsGridViewTestApi> test_api_;
@@ -887,56 +918,160 @@ TEST_P(AppsGridViewTest, MoveSelectedOnAllAppsTiles) {
       apps_grid_view_->IsSelectedView(GetItemViewAt(kAllAppsItems - 1)));
 }
 
-TEST_P(AppsGridViewTest, HandleSuggestionsMove) {
+// Tests the selection movement in state apps.
+TEST_P(AppsGridViewTest, SelectionInStateApps) {
   if (!test_with_fullscreen_)
     return;
 
-  // Tests that a non-up arrow key would move focus to the first tile of
-  // suggestions container, and all apps grid view doesn't have focus.
+  // Simulates that the app list is at state apps.
+  contents_view_->SetActiveState(AppListModel::STATE_APPS);
   const int kPages = 2;
   const int kAllAppsItems = GetTilesPerPage(0) + 1;
   model_->PopulateApps(kAllAppsItems);
-  SimulateKeyPress(ui::VKEY_UP);
-  EXPECT_EQ(-1, suggestions_container_->selected_index());
-  EXPECT_FALSE(apps_grid_view_->has_selected_view());
+
+  // Moves selection to the first app in the suggestions container.
   SimulateKeyPress(ui::VKEY_DOWN);
-  EXPECT_EQ(0, suggestions_container_->selected_index());
-  EXPECT_FALSE(apps_grid_view_->has_selected_view());
 
   // Tests moving to previous page and moving up.
   SimulateKeyPress(ui::VKEY_PRIOR);
-  EXPECT_EQ(0, suggestions_container_->selected_index());
+  CheckSelectionAtSuggestionsContainer(0);
   SimulateKeyPress(ui::VKEY_UP);
-  EXPECT_EQ(0, suggestions_container_->selected_index());
+  CheckSelectionAtSuggestionsContainer(0);
 
   // Tests moving left, moving right and moving right out of suggestions.
   SimulateKeyPress(ui::VKEY_LEFT);
-  EXPECT_EQ(0, suggestions_container_->selected_index());
+  CheckSelectionAtSuggestionsContainer(0);
   SimulateKeyPress(ui::VKEY_RIGHT);
   SimulateKeyPress(ui::VKEY_RIGHT);
-  EXPECT_EQ(kNumOfSuggestedApps - 1, suggestions_container_->selected_index());
+  CheckSelectionAtSuggestionsContainer(kNumOfSuggestedApps - 1);
   SimulateKeyPress(ui::VKEY_RIGHT);
-  EXPECT_EQ(-1, suggestions_container_->selected_index());
-  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(0)));
+  CheckSelectionAtAppsGridView(0);
 
   // Tests moving down from |suggestions_container_|.
   apps_grid_view_->ClearAnySelectedView();
   SimulateKeyPress(ui::VKEY_RIGHT);
   SimulateKeyPress(ui::VKEY_RIGHT);
-  EXPECT_EQ(1, suggestions_container_->selected_index());
+  CheckSelectionAtSuggestionsContainer(1);
   SimulateKeyPress(ui::VKEY_DOWN);
-  EXPECT_EQ(-1, suggestions_container_->selected_index());
-  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(1)));
+  CheckSelectionAtAppsGridView(1);
 
   // Tests moving to next page.
   apps_grid_view_->ClearAnySelectedView();
-  SimulateKeyPress(ui::VKEY_LEFT);
-  EXPECT_EQ(0, suggestions_container_->selected_index());
+  SimulateKeyPress(ui::VKEY_DOWN);
   SimulateKeyPress(ui::VKEY_NEXT);
-  EXPECT_EQ(-1, suggestions_container_->selected_index());
-  EXPECT_TRUE(
-      apps_grid_view_->IsSelectedView(GetItemViewAt(kAllAppsItems - 1)));
+  CheckSelectionAtAppsGridView(kAllAppsItems - 1);
   EXPECT_EQ(kPages - 1, GetPaginationModel()->selected_page());
+}
+
+// Tests that in state start there's no selection at the beginning. And hitting
+// down/tab/right arrow key moves the selection to the first app in suggestions
+// container.
+TEST_P(AppsGridViewTest, InitialSelectionInStateStart) {
+  if (!test_with_fullscreen_)
+    return;
+
+  // Simulates that the app list is at state start.
+  contents_view_->SetActiveState(AppListModel::STATE_START);
+  model_->PopulateApps(GetTilesPerPage(0));
+  CheckNoSelection();
+
+  SimulateKeyPress(ui::VKEY_DOWN);
+  CheckSelectionAtSuggestionsContainer(0);
+
+  apps_grid_view_->ClearAnySelectedView();
+  SimulateKeyPress(ui::VKEY_RIGHT);
+  CheckSelectionAtSuggestionsContainer(0);
+
+  apps_grid_view_->ClearAnySelectedView();
+  SimulateKeyPress(ui::VKEY_TAB);
+  CheckSelectionAtSuggestionsContainer(0);
+}
+
+// Tests that in state start when selection exists. Hitting tab key does
+// nothing while hitting shift+tab key clears selection.
+TEST_P(AppsGridViewTest, ClearSelectionInStateStart) {
+  if (!test_with_fullscreen_)
+    return;
+
+  // Simulates that the app list is at state start.
+  contents_view_->SetActiveState(AppListModel::STATE_START);
+  model_->PopulateApps(GetTilesPerPage(0));
+
+  // Moves selection to the first app in the suggestions container.
+  SimulateKeyPress(ui::VKEY_DOWN);
+
+  SimulateKeyPress(ui::VKEY_TAB);
+  CheckSelectionAtSuggestionsContainer(0);
+
+  SimulateKeyPress(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  CheckNoSelection();
+}
+
+// Tests that in state start when selection is on expand arrow, only hitting
+// left/up arrow key moves the selection to the last app in suggestion
+// container.
+TEST_P(AppsGridViewTest, ExpandArrowSelectionInStateStart) {
+  if (!test_with_fullscreen_)
+    return;
+
+  // Simulates that the app list is at state start.
+  contents_view_->SetActiveState(AppListModel::STATE_START);
+  model_->PopulateApps(GetTilesPerPage(0));
+
+  // Moves selection to the expand arrow.
+  expand_arrow_view_->SetSelected(true);
+  CheckSelectionAtExpandArrow();
+
+  SimulateKeyPress(ui::VKEY_DOWN);
+  CheckSelectionAtExpandArrow();
+
+  SimulateKeyPress(ui::VKEY_RIGHT);
+  CheckSelectionAtExpandArrow();
+
+  SimulateKeyPress(ui::VKEY_TAB);
+  CheckSelectionAtExpandArrow();
+
+  SimulateKeyPress(ui::VKEY_UP);
+  CheckSelectionAtSuggestionsContainer(kNumOfSuggestedApps - 1);
+
+  // Resets selection to the expand arrow.
+  apps_grid_view_->ClearAnySelectedView();
+  expand_arrow_view_->SetSelected(true);
+  SimulateKeyPress(ui::VKEY_LEFT);
+  CheckSelectionAtSuggestionsContainer(kNumOfSuggestedApps - 1);
+}
+
+// Tests that in state start when selection is on app in suggestions container,
+// hitting up key does nothing. Hitting left/right key moves the selection to
+// app on the left/right if index is valid. Hitting right key when selection is
+// on the last app in suggestions container or hitting down key move the
+// selection to the expand arrow.
+TEST_P(AppsGridViewTest, SuggestionsContainerSelectionInStateStart) {
+  if (!test_with_fullscreen_)
+    return;
+
+  // Simulates that the app list is at state start.
+  contents_view_->SetActiveState(AppListModel::STATE_START);
+  model_->PopulateApps(GetTilesPerPage(0));
+  SimulateKeyPress(ui::VKEY_DOWN);
+
+  SimulateKeyPress(ui::VKEY_UP);
+  CheckSelectionAtSuggestionsContainer(0);
+
+  SimulateKeyPress(ui::VKEY_RIGHT);
+  CheckSelectionAtSuggestionsContainer(1);
+
+  SimulateKeyPress(ui::VKEY_LEFT);
+  CheckSelectionAtSuggestionsContainer(0);
+
+  SimulateKeyPress(ui::VKEY_DOWN);
+  CheckSelectionAtExpandArrow();
+
+  // Sets selection to the last app in the suggestions container.
+  apps_grid_view_->ClearAnySelectedView();
+  suggestions_container_->SetSelectedIndex(kNumOfSuggestedApps - 1);
+  SimulateKeyPress(ui::VKEY_RIGHT);
+  CheckSelectionAtExpandArrow();
 }
 
 TEST_P(AppsGridViewTest, ItemLabelShortNameOverride) {
