@@ -32,6 +32,7 @@ void RenderParamsFromPrintSettings(const PrintSettings& settings,
   params->display_header_footer = settings.display_header_footer();
   params->title = settings.title();
   params->url = settings.url();
+  params->printed_doc_type = SkiaDocumentType::PDF;
 }
 
 }  // namespace printing

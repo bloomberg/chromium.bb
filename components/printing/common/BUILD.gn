@@ -13,6 +13,7 @@ static_library("common") {
     "//base",
     "//ipc",
     "//printing",
+    "//printing/common:common",
     "//third_party/WebKit/public:blink_headers",
     "//ui/gfx",
     "//ui/gfx/geometry",
