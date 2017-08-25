@@ -6,6 +6,7 @@ package org.chromium.content.browser;
 
 import android.graphics.Rect;
 import android.os.SystemClock;
+import android.support.test.filters.SmallTest;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 
@@ -15,7 +16,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.blink_public.web.WebCursorInfoType;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
@@ -31,11 +32,12 @@ public class ContentViewPointerTypeTest {
     @Rule
     public ContentShellActivityTestRule mActivityTestRule = new ContentShellActivityTestRule();
 
-    private static final String CURSOR_PAGE = UrlUtils.encodeHtmlDataUri("<html>"
-            + "<body><a id=\"hand\" href=\"about:blank\">pointer</a>"
-            + "<span id=\"text\">text</span>"
-            + "<span id=\"help\" style=\"cursor:help;\">help</span></body>"
-            + "</html>");
+    private static final String CURSOR_PAGE = UrlUtils.encodeHtmlDataUri("<html><body>"
+            + "<style> div {height:33%; width:100%;} </style>"
+            + "<div id=\"hand\" style=\"cursor:pointer;\"></div>"
+            + "<div id=\"text\" style=\"cursor:text;\"></div>"
+            + "<div id=\"help\" style=\"cursor:help;\"></div>"
+            + "</body></html>");
 
     @Before
     public void setUp() throws Exception {
@@ -43,51 +45,50 @@ public class ContentViewPointerTypeTest {
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
     }
 
-    private void moveCursor(final float x, final float y) throws Throwable {
-        mActivityTestRule.runOnUiThreadForTestCommon(new Runnable() {
-            @Override
-            public void run() {
-                MotionEvent.PointerProperties[] pointerProperties =
-                        new MotionEvent.PointerProperties[1];
-                MotionEvent.PointerProperties pp = new MotionEvent.PointerProperties();
-                pp.id = 0;
-                pp.toolType = MotionEvent.TOOL_TYPE_MOUSE;
-                pointerProperties[0] = pp;
+    private void moveCursor(final float x, final float y) {
+        MotionEvent.PointerProperties[] pointerProperties = new MotionEvent.PointerProperties[1];
+        MotionEvent.PointerProperties pp = new MotionEvent.PointerProperties();
+        pp.id = 0;
+        pp.toolType = MotionEvent.TOOL_TYPE_MOUSE;
+        pointerProperties[0] = pp;
 
-                MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[1];
-                MotionEvent.PointerCoords pc = new MotionEvent.PointerCoords();
-                pc.x = x;
-                pc.y = y;
-                pointerCoords[0] = pc;
+        MotionEvent.PointerCoords[] pointerCoords = new MotionEvent.PointerCoords[1];
+        MotionEvent.PointerCoords pc = new MotionEvent.PointerCoords();
+        pc.x = x;
+        pc.y = y;
+        pointerCoords[0] = pc;
 
-                MotionEvent cursorMoveEvent = MotionEvent.obtain(SystemClock.uptimeMillis(),
-                        SystemClock.uptimeMillis() + 1, MotionEvent.ACTION_HOVER_MOVE, 1,
-                        pointerProperties, pointerCoords, 0, 0, 1.0f, 1.0f, 0, 0,
-                        InputDevice.SOURCE_MOUSE, 0);
-                cursorMoveEvent.setSource(InputDevice.SOURCE_MOUSE);
-                mActivityTestRule.getContentViewCore()
-                        .getContainerView()
-                        .dispatchGenericMotionEvent(cursorMoveEvent);
-            }
-        });
+        MotionEvent cursorMoveEvent = MotionEvent.obtain(SystemClock.uptimeMillis(),
+                SystemClock.uptimeMillis() + 1, MotionEvent.ACTION_HOVER_MOVE, 1, pointerProperties,
+                pointerCoords, 0, 0, 1.0f, 1.0f, 0, 0, InputDevice.SOURCE_MOUSE, 0);
+        cursorMoveEvent.setSource(InputDevice.SOURCE_MOUSE);
+        mActivityTestRule.getContentViewCore().getContainerView().dispatchGenericMotionEvent(
+                cursorMoveEvent);
     }
 
     private void checkPointerTypeForNode(final String nodeId, final int type) throws Throwable {
-        Rect rect = DOMUtils.getNodeBounds(mActivityTestRule.getWebContents(), nodeId);
-        float x = (float) (rect.left + rect.right) / 2.0f;
-        float y = (float) (rect.top + rect.bottom) / 2.0f;
-
+        final Rect rect = DOMUtils.getNodeBounds(mActivityTestRule.getWebContents(), nodeId);
         OnCursorUpdateHelper onCursorUpdateHelper = mActivityTestRule.getOnCursorUpdateHelper();
         int onCursorUpdateCount = onCursorUpdateHelper.getCallCount();
-        moveCursor(x, y);
+        mActivityTestRule.runOnUiThreadForTestCommon(new Runnable() {
+            @Override
+            public void run() {
+                float x = mActivityTestRule.getContentViewCore()
+                                  .getRenderCoordinates()
+                                  .fromLocalCssToPix((float) (rect.left + rect.right) / 2.0f);
+                float y = mActivityTestRule.getContentViewCore()
+                                  .getRenderCoordinates()
+                                  .fromLocalCssToPix((float) (rect.top + rect.bottom) / 2.0f);
+                moveCursor(x, y);
+            }
+        });
         onCursorUpdateHelper.waitForCallback(onCursorUpdateCount);
         Assert.assertEquals(type, onCursorUpdateHelper.getPointerType());
     }
 
     @Test
-    //@SmallTest
-    //@Feature({"Main"})
-    @DisabledTest(message = "crbug.com/755112")
+    @SmallTest
+    @Feature({"Main"})
     public void testPointerType() throws Throwable {
         checkPointerTypeForNode("hand", WebCursorInfoType.TYPE_HAND);
         checkPointerTypeForNode("text", WebCursorInfoType.TYPE_I_BEAM);
