@@ -605,6 +605,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void NotifyAppListVisibilityChanged(bool visible, aura::Window* root_window);
 
+  // TODO(kaznacheev) Move voice interaction related methods to a separate
+  // controller (crbug.com/758650)
   void NotifyVoiceInteractionStatusChanged(VoiceInteractionState state);
 
   void NotifyVoiceInteractionEnabled(bool enabled);

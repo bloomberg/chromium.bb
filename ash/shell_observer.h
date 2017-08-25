@@ -70,6 +70,8 @@ class ASH_EXPORT ShellObserver {
   // Called when a new KeyboardController is created.
   virtual void OnKeyboardControllerCreated() {}
 
+  // TODO(kaznacheev) Move voice interaction related methods to a separate
+  // observer (crbug.com/758650)
   // Called when voice interaction session state changes.
   virtual void OnVoiceInteractionStatusChanged(VoiceInteractionState state) {}
 
