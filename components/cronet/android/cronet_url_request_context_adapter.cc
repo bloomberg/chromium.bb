@@ -37,15 +37,10 @@
 #include "components/cronet/android/cert/cert_verifier_cache_serializer.h"
 #include "components/cronet/android/cert/proto/cert_verification.pb.h"
 #include "components/cronet/android/cronet_library_loader.h"
+#include "components/cronet/cronet_prefs_manager.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/host_cache_persistence_manager.h"
 #include "components/cronet/url_request_context_config.h"
-#include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_filter.h"
-#include "components/prefs/pref_registry.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/pref_service_factory.h"
 #include "jni/CronetUrlRequestContext_jni.h"
 #include "net/base/load_flags.h"
 #include "net/base/logging_network_change_observer.h"
@@ -56,11 +51,9 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_auth_handler_factory.h"
-#include "net/http/http_server_properties_manager.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
 #include "net/nqe/external_estimate_provider.h"
-#include "net/nqe/network_qualities_prefs_manager.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy/proxy_config_service_android.h"
 #include "net/proxy/proxy_service.h"
@@ -112,224 +105,6 @@ class NetLogWithNetworkChangeEvents {
 // Use a global NetLog instance. See crbug.com/486120.
 static base::LazyInstance<NetLogWithNetworkChangeEvents>::Leaky g_net_log =
     LAZY_INSTANCE_INITIALIZER;
-
-// Name of the pref used for host cache persistence.
-const char kHostCachePref[] = "net.host_cache";
-// Name of the pref used for HTTP server properties persistence.
-const char kHttpServerPropertiesPref[] = "net.http_server_properties";
-// Name of the pref used for NQE persistence.
-const char kNetworkQualitiesPref[] = "net.network_qualities";
-// Current version of disk storage.
-const int32_t kStorageVersion = 1;
-// Version number used when the version of disk storage is unknown.
-const uint32_t kStorageVersionUnknown = 0;
-// Name of preference directory.
-const char kPrefsDirectoryName[] = "prefs";
-// Name of preference file.
-const char kPrefsFileName[] = "local_prefs.json";
-
-// Connects the HttpServerPropertiesManager's storage to the prefs.
-class PrefServiceAdapter
-    : public net::HttpServerPropertiesManager::PrefDelegate {
- public:
-  explicit PrefServiceAdapter(PrefService* pref_service)
-      : pref_service_(pref_service), path_(kHttpServerPropertiesPref) {
-    pref_change_registrar_.Init(pref_service_);
-  }
-
-  ~PrefServiceAdapter() override {}
-
-  // PrefDelegate implementation.
-  bool HasServerProperties() override {
-    return pref_service_->HasPrefPath(path_);
-  }
-  const base::DictionaryValue& GetServerProperties() const override {
-    // Guaranteed not to return null when the pref is registered
-    // (RegisterProfilePrefs was called).
-    return *pref_service_->GetDictionary(path_);
-  }
-  void SetServerProperties(const base::DictionaryValue& value) override {
-    return pref_service_->Set(path_, value);
-  }
-  void StartListeningForUpdates(const base::Closure& callback) override {
-    pref_change_registrar_.Add(path_, callback);
-  }
-  void StopListeningForUpdates() override {
-    pref_change_registrar_.RemoveAll();
-  }
-
- private:
-  PrefService* pref_service_;
-  const std::string path_;
-  PrefChangeRegistrar pref_change_registrar_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefServiceAdapter);
-};
-
-class NetworkQualitiesPrefDelegateImpl
-    : public net::NetworkQualitiesPrefsManager::PrefDelegate {
- public:
-  // Caller must guarantee that |pref_service| outlives |this|.
-  explicit NetworkQualitiesPrefDelegateImpl(PrefService* pref_service)
-      : pref_service_(pref_service),
-        lossy_prefs_writing_task_posted_(false),
-        weak_ptr_factory_(this) {
-    DCHECK(pref_service_);
-  }
-
-  ~NetworkQualitiesPrefDelegateImpl() override {}
-
-  // net::NetworkQualitiesPrefsManager::PrefDelegate implementation.
-  void SetDictionaryValue(const base::DictionaryValue& value) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-
-    pref_service_->Set(kNetworkQualitiesPref, value);
-    if (lossy_prefs_writing_task_posted_)
-      return;
-
-    // Post the task that schedules the writing of the lossy prefs.
-    lossy_prefs_writing_task_posted_ = true;
-
-    // Delay after which the task that schedules the writing of the lossy prefs.
-    // This is needed in case the writing of the lossy prefs is not scheduled
-    // automatically. The delay was chosen so that it is large enough that it
-    // does not affect the startup performance.
-    static const int32_t kUpdatePrefsDelaySeconds = 10;
-
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(
-            &NetworkQualitiesPrefDelegateImpl::SchedulePendingLossyWrites,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(kUpdatePrefsDelaySeconds));
-  }
-  std::unique_ptr<base::DictionaryValue> GetDictionaryValue() override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.ReadCount", 1, 2);
-    return pref_service_->GetDictionary(kNetworkQualitiesPref)
-        ->CreateDeepCopy();
-  }
-
- private:
-  // Schedules the writing of the lossy prefs.
-  void SchedulePendingLossyWrites() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    UMA_HISTOGRAM_EXACT_LINEAR("NQE.Prefs.WriteCount", 1, 2);
-    pref_service_->SchedulePendingLossyWrites();
-    lossy_prefs_writing_task_posted_ = false;
-  }
-
-  PrefService* pref_service_;
-
-  // True if the task that schedules the writing of the lossy prefs has been
-  // posted.
-  bool lossy_prefs_writing_task_posted_;
-
-  base::ThreadChecker thread_checker_;
-
-  base::WeakPtrFactory<NetworkQualitiesPrefDelegateImpl> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkQualitiesPrefDelegateImpl);
-};
-
-// Connects the SdchOwner's storage to the prefs.
-class SdchOwnerPrefStorage : public net::SdchOwner::PrefStorage,
-                             public PrefStore::Observer {
- public:
-  explicit SdchOwnerPrefStorage(PersistentPrefStore* storage)
-      : storage_(storage), storage_key_("SDCH"), init_observer_(nullptr) {}
-  ~SdchOwnerPrefStorage() override {
-    if (init_observer_)
-      storage_->RemoveObserver(this);
-  }
-
-  ReadError GetReadError() const override {
-    PersistentPrefStore::PrefReadError error = storage_->GetReadError();
-
-    DCHECK_NE(
-        error,
-        PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE);
-    DCHECK_NE(error, PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM);
-
-    switch (error) {
-      case PersistentPrefStore::PREF_READ_ERROR_NONE:
-        return PERSISTENCE_FAILURE_NONE;
-
-      case PersistentPrefStore::PREF_READ_ERROR_NO_FILE:
-        return PERSISTENCE_FAILURE_REASON_NO_FILE;
-
-      case PersistentPrefStore::PREF_READ_ERROR_JSON_PARSE:
-      case PersistentPrefStore::PREF_READ_ERROR_JSON_TYPE:
-      case PersistentPrefStore::PREF_READ_ERROR_FILE_OTHER:
-      case PersistentPrefStore::PREF_READ_ERROR_FILE_LOCKED:
-      case PersistentPrefStore::PREF_READ_ERROR_JSON_REPEAT:
-        return PERSISTENCE_FAILURE_REASON_READ_FAILED;
-
-      case PersistentPrefStore::PREF_READ_ERROR_ACCESS_DENIED:
-      case PersistentPrefStore::PREF_READ_ERROR_FILE_NOT_SPECIFIED:
-      case PersistentPrefStore::PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE:
-      case PersistentPrefStore::PREF_READ_ERROR_MAX_ENUM:
-      default:
-        // We don't expect these other failures given our usage of prefs.
-        NOTREACHED();
-        return PERSISTENCE_FAILURE_REASON_OTHER;
-    }
-  }
-
-  bool GetValue(const base::DictionaryValue** result) const override {
-    const base::Value* result_value = nullptr;
-    if (!storage_->GetValue(storage_key_, &result_value))
-      return false;
-    return result_value->GetAsDictionary(result);
-  }
-
-  bool GetMutableValue(base::DictionaryValue** result) override {
-    base::Value* result_value = nullptr;
-    if (!storage_->GetMutableValue(storage_key_, &result_value))
-      return false;
-    return result_value->GetAsDictionary(result);
-  }
-
-  void SetValue(std::unique_ptr<base::DictionaryValue> value) override {
-    storage_->SetValue(storage_key_, std::move(value),
-                       WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  }
-
-  void ReportValueChanged() override {
-    storage_->ReportValueChanged(storage_key_,
-                                 WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
-  }
-
-  bool IsInitializationComplete() override {
-    return storage_->IsInitializationComplete();
-  }
-
-  void StartObservingInit(net::SdchOwner* observer) override {
-    DCHECK(!init_observer_);
-    init_observer_ = observer;
-    storage_->AddObserver(this);
-  }
-
-  void StopObservingInit() override {
-    DCHECK(init_observer_);
-    init_observer_ = nullptr;
-    storage_->RemoveObserver(this);
-  }
-
- private:
-  // PrefStore::Observer implementation.
-  void OnPrefValueChanged(const std::string& key) override {}
-  void OnInitializationCompleted(bool succeeded) override {
-    init_observer_->OnPrefStorageInitializationComplete(succeeded);
-  }
-
-  PersistentPrefStore* storage_;  // Non-owning.
-  const std::string storage_key_;
-
-  net::SdchOwner* init_observer_;  // Non-owning.
-
-  DISALLOW_COPY_AND_ASSIGN(SdchOwnerPrefStorage);
-};
 
 class BasicNetworkDelegate : public net::NetworkDelegateImpl {
  public:
@@ -416,59 +191,6 @@ std::string ConvertNullableJavaStringToUTF8(JNIEnv* env,
   return str;
 }
 
-bool IsCurrentVersion(const base::FilePath& version_filepath) {
-  if (!base::PathExists(version_filepath))
-    return false;
-  base::File version_file(version_filepath,
-                          base::File::FLAG_OPEN | base::File::FLAG_READ);
-  uint32_t version = kStorageVersionUnknown;
-  int bytes_read =
-      version_file.Read(0, reinterpret_cast<char*>(&version), sizeof(version));
-  if (bytes_read != sizeof(version)) {
-    DLOG(WARNING) << "Cannot read from version file.";
-    return false;
-  }
-  return version == kStorageVersion;
-}
-
-// TODO(xunjieli): Handle failures.
-void InitializeStorageDirectory(const base::FilePath& dir) {
-  // Checks version file and clear old storage.
-  base::FilePath version_filepath = dir.Append("version");
-  if (IsCurrentVersion(version_filepath)) {
-    // The version is up to date, so there is nothing to do.
-    return;
-  }
-  // Delete old directory recursively and create a new directory.
-  // base::DeleteFile returns true if the directory does not exist, so it is
-  // fine if there is nothing on disk.
-  if (!(base::DeleteFile(dir, true) && base::CreateDirectory(dir))) {
-    DLOG(WARNING) << "Cannot purge directory.";
-    return;
-  }
-  base::File new_version_file(version_filepath, base::File::FLAG_CREATE_ALWAYS |
-                                                    base::File::FLAG_WRITE);
-
-  if (!new_version_file.IsValid()) {
-    DLOG(WARNING) << "Cannot create a version file.";
-    return;
-  }
-
-  DCHECK(new_version_file.created());
-  uint32_t new_version = kStorageVersion;
-  int bytes_written = new_version_file.Write(
-      0, reinterpret_cast<char*>(&new_version), sizeof(new_version));
-  if (bytes_written != sizeof(new_version)) {
-    DLOG(WARNING) << "Cannot write to version file.";
-    return;
-  }
-  base::FilePath prefs_dir = dir.Append(FILE_PATH_LITERAL(kPrefsDirectoryName));
-  if (!base::CreateDirectory(prefs_dir)) {
-    DLOG(WARNING) << "Cannot create prefs directory";
-    return;
-  }
-}
-
 }  // namespace
 
 namespace cronet {
@@ -476,7 +198,6 @@ namespace cronet {
 CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
     std::unique_ptr<URLRequestContextConfig> context_config)
     : network_thread_(new base::Thread("network")),
-      http_server_properties_manager_(nullptr),
       context_config_(std::move(context_config)),
       is_context_initialized_(false),
       default_load_flags_(net::LOAD_NORMAL) {
@@ -488,12 +209,9 @@ CronetURLRequestContextAdapter::CronetURLRequestContextAdapter(
 CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
 
-  if (http_server_properties_manager_)
-    http_server_properties_manager_->ShutdownOnPrefSequence();
-  if (network_qualities_prefs_manager_)
-    network_qualities_prefs_manager_->ShutdownOnPrefSequence();
-  if (pref_service_)
-    pref_service_->CommitPendingWrite();
+  if (cronet_prefs_manager_)
+    cronet_prefs_manager_->PrepareForShutdown();
+
   if (network_quality_estimator_) {
     network_quality_estimator_->RemoveRTTObserver(this);
     network_quality_estimator_->RemoveThroughputObserver(this);
@@ -605,9 +323,8 @@ void CronetURLRequestContextAdapter::InitializeNQEPrefsOnNetworkThread() const {
   // Initializing |network_qualities_prefs_manager_| may post a callback to
   // |this|. So, |network_qualities_prefs_manager_| should be initialized after
   // |jcronet_url_request_context_| has been constructed.
-  DCHECK(jcronet_url_request_context_.obj() != nullptr);
-  network_qualities_prefs_manager_->InitializeOnNetworkThread(
-      network_quality_estimator_.get());
+  DCHECK(jcronet_url_request_context_.obj());
+  cronet_prefs_manager_->SetupNqePersistence(network_quality_estimator_.get());
 }
 
 void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
@@ -639,58 +356,6 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   effective_experimental_options_ =
       std::move(config->effective_experimental_options);
 
-  // Set up pref file if storage path is specified.
-  if (!config->storage_path.empty()) {
-    base::FilePath storage_path(config->storage_path);
-    // Make sure storage directory has correct version.
-    InitializeStorageDirectory(storage_path);
-    base::FilePath filepath =
-        storage_path.Append(FILE_PATH_LITERAL(kPrefsDirectoryName))
-            .Append(FILE_PATH_LITERAL(kPrefsFileName));
-    json_pref_store_ =
-        new JsonPrefStore(filepath, GetFileThread()->task_runner(),
-                          std::unique_ptr<PrefFilter>());
-
-    // Register prefs and set up the PrefService.
-    PrefServiceFactory factory;
-    factory.set_user_prefs(json_pref_store_);
-    scoped_refptr<PrefRegistrySimple> registry(new PrefRegistrySimple());
-    registry->RegisterDictionaryPref(kHttpServerPropertiesPref,
-                                     base::MakeUnique<base::DictionaryValue>());
-    if (config->enable_network_quality_estimator) {
-      // Use lossy prefs to limit the overhead of reading/writing the prefs.
-      registry->RegisterDictionaryPref(kNetworkQualitiesPref,
-                                       PrefRegistry::LOSSY_PREF);
-    }
-    if (config->enable_host_cache_persistence) {
-      registry->RegisterListPref(kHostCachePref);
-    }
-
-    {
-      SCOPED_UMA_HISTOGRAM_TIMER("Net.Cronet.PrefsInitTime");
-      pref_service_ = factory.Create(registry.get());
-    }
-
-    // Set up the HttpServerPropertiesManager.
-    std::unique_ptr<net::HttpServerPropertiesManager>
-        http_server_properties_manager(new net::HttpServerPropertiesManager(
-            new PrefServiceAdapter(pref_service_.get()),
-            base::ThreadTaskRunnerHandle::Get(), GetNetworkTaskRunner(),
-            g_net_log.Get().net_log()));
-    http_server_properties_manager->InitializeOnNetworkSequence();
-    http_server_properties_manager_ = http_server_properties_manager.get();
-    context_builder.SetHttpServerProperties(
-        std::move(http_server_properties_manager));
-  }
-
-  // Explicitly disable the persister for Cronet to avoid persistence of dynamic
-  // HPKP. This is a safety measure ensuring that nobody enables the persistence
-  // of HPKP by specifying transport_security_persister_path in the future.
-  context_builder.set_transport_security_persister_path(base::FilePath());
-
-  // Disable net::CookieStore and net::ChannelIDService.
-  context_builder.SetCookieAndChannelIdStores(nullptr, nullptr);
-
   if (config->enable_network_quality_estimator) {
     DCHECK(!network_quality_estimator_);
     std::unique_ptr<net::NetworkQualityEstimatorParams> nqe_params =
@@ -709,34 +374,41 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);
     network_quality_estimator_->AddRTTAndThroughputEstimatesObserver(this);
 
-    // Set up network quality prefs if the storage path is specified.
-    if (!config->storage_path.empty()) {
-      DCHECK(!network_qualities_prefs_manager_);
-      network_qualities_prefs_manager_ =
-          base::MakeUnique<net::NetworkQualitiesPrefsManager>(
-              base::MakeUnique<NetworkQualitiesPrefDelegateImpl>(
-                  pref_service_.get()));
-      PostTaskToNetworkThread(FROM_HERE,
-                              base::Bind(&CronetURLRequestContextAdapter::
-                                             InitializeNQEPrefsOnNetworkThread,
-                                         base::Unretained(this)));
-    }
     context_builder.set_network_quality_estimator(
         network_quality_estimator_.get());
   }
+
+  DCHECK(!cronet_prefs_manager_);
+
+  // Set up pref file if storage path is specified.
+  if (!config->storage_path.empty()) {
+    base::FilePath storage_path(config->storage_path);
+    // Set up the HttpServerPropertiesManager.
+    cronet_prefs_manager_ = std::make_unique<CronetPrefsManager>(
+        config->storage_path, GetNetworkTaskRunner(),
+        GetFileThread()->task_runner(),
+        config->enable_network_quality_estimator,
+        config->enable_host_cache_persistence, g_net_log.Get().net_log(),
+        &context_builder);
+  }
+
+  // Explicitly disable the persister for Cronet to avoid persistence of dynamic
+  // HPKP. This is a safety measure ensuring that nobody enables the persistence
+  // of HPKP by specifying transport_security_persister_path in the future.
+  context_builder.set_transport_security_persister_path(base::FilePath());
+
+  // Disable net::CookieStore and net::ChannelIDService.
+  context_builder.SetCookieAndChannelIdStores(nullptr, nullptr);
 
   context_ = context_builder.Build();
 
   // Set up host cache persistence if it's enabled. Happens after building the
   // URLRequestContext to get access to the HostCache.
-  if (pref_service_ && config->enable_host_cache_persistence) {
+  if (config->enable_host_cache_persistence && cronet_prefs_manager_) {
     net::HostCache* host_cache = context_->host_resolver()->GetHostCache();
-    host_cache_persistence_manager_ =
-        base::MakeUnique<HostCachePersistenceManager>(
-            host_cache, pref_service_.get(), kHostCachePref,
-            base::TimeDelta::FromMilliseconds(
-                config->host_cache_persistence_delay_ms),
-            g_net_log.Get().net_log());
+    cronet_prefs_manager_->SetupHostCachePersistence(
+        host_cache, config->host_cache_persistence_delay_ms,
+        g_net_log.Get().net_log());
   }
 
   context_->set_check_cleartext_permitted(true);
@@ -749,10 +421,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     DCHECK(context_->sdch_manager());
     sdch_owner_.reset(
         new net::SdchOwner(context_->sdch_manager(), context_.get()));
-    if (json_pref_store_) {
-      sdch_owner_->EnablePersistentStorage(
-          base::MakeUnique<SdchOwnerPrefStorage>(json_pref_store_.get()));
-    }
+    if (cronet_prefs_manager_)
+      cronet_prefs_manager_->SetupSdchPersistence(sdch_owner_.get());
   }
 
   if (config->enable_quic) {
@@ -826,6 +496,19 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
                                                  jcronet_url_request_context);
 
   is_context_initialized_ = true;
+
+  // Set up network quality prefs.
+  if (config->enable_network_quality_estimator && cronet_prefs_manager_) {
+    // TODO(crbug.com/758401): execute the content of
+    // InitializeNQEPrefsOnNetworkThread method directly (i.e. without posting)
+    // after the bug has been fixed.
+    PostTaskToNetworkThread(
+        FROM_HERE,
+        base::Bind(
+            &CronetURLRequestContextAdapter::InitializeNQEPrefsOnNetworkThread,
+            base::Unretained(this)));
+  }
+
   while (!tasks_waiting_for_context_.empty()) {
     tasks_waiting_for_context_.front().Run();
     tasks_waiting_for_context_.pop();
