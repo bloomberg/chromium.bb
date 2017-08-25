@@ -49,7 +49,6 @@ class OpenedFrameTracker;
 class Visitor;
 class WebElement;
 class WebLocalFrame;
-class WebPerformance;
 class WebRemoteFrame;
 class WebSecurityOrigin;
 class WebString;
@@ -173,10 +172,6 @@ class BLINK_EXPORT WebFrame {
 
   // Returns the next frame in "frame traversal order".
   WebFrame* TraverseNext() const;
-
-  // Content ------------------------------------------------------------
-
-  virtual WebPerformance Performance() const = 0;
 
   // Scripting ----------------------------------------------------------
 

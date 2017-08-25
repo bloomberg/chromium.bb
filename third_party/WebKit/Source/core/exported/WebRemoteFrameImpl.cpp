@@ -124,11 +124,6 @@ WebView* WebRemoteFrameImpl::View() const {
   return GetFrame()->GetPage()->GetChromeClient().GetWebView();
 }
 
-WebPerformance WebRemoteFrameImpl::Performance() const {
-  NOTREACHED();
-  return WebPerformance();
-}
-
 void WebRemoteFrameImpl::StopLoading() {
   // TODO(dcheng,japhet): Calling this method should stop loads
   // in all subframes, both remote and local.
