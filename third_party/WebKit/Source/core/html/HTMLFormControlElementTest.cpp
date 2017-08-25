@@ -30,11 +30,13 @@ class MockFormValidationMessageClient
                              const String&,
                              TextDirection) override {
     anchor_ = anchor;
+    ++operation_count_;
   }
 
   void HideValidationMessage(const Element& anchor) override {
     if (anchor_ == &anchor)
       anchor_ = nullptr;
+    ++operation_count_;
   }
 
   bool IsValidationMessageVisible(const Element& anchor) override {
@@ -48,8 +50,12 @@ class MockFormValidationMessageClient
     ValidationMessageClient::Trace(visitor);
   }
 
+  // The number of calls of ShowValidationMessage() and HideValidationMessage().
+  int OperationCount() const { return operation_count_; }
+
  private:
   Member<const Element> anchor_;
+  int operation_count_ = 0;
 };
 }
 
@@ -136,6 +142,26 @@ TEST_F(HTMLFormControlElementTest, UpdateValidationMessageSkippedIfPrinting) {
   ScopedPageSuspender suspender;  // print() suspends the page.
   input->reportValidity();
   EXPECT_FALSE(validation_message_client->IsValidationMessageVisible(*input));
+}
+
+TEST_F(HTMLFormControlElementTest, DoNotUpdateLayoutDuringDOMMutation) {
+  // The real ValidationMessageClient has UpdateStyleAndLayout*() in
+  // ShowValidationMessage(). So calling it during DOM mutation is
+  // dangerous. This test ensures ShowValidationMessage() is NOT called in
+  // appendChild(). crbug.com/756408
+  GetDocument().documentElement()->setInnerHTML("<select></select>");
+  HTMLFormControlElement* const select =
+      ToHTMLFormControlElement(GetDocument().QuerySelector("select"));
+  Element* const optgroup = GetDocument().createElement("optgroup");
+  auto validation_client = new MockFormValidationMessageClient();
+  GetDocument().GetPage()->SetValidationMessageClient(validation_client);
+
+  select->setCustomValidity("foobar");
+  select->reportValidity();
+  int start_operation_count = validation_client->OperationCount();
+  select->appendChild(optgroup);
+  EXPECT_EQ(start_operation_count, validation_client->OperationCount())
+      << "DOM mutation should not handle validation message UI in it.";
 }
 
 }  // namespace blink
