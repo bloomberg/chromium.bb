@@ -1019,6 +1019,7 @@ def prepare(options, git_slns, active):
 
 
 def checkout(options, git_slns, specs, revisions, step_text, shallow):
+  print 'Using Python version: %s' % (sys.version,)
   print 'Checking git version...'
   ver = git('version').strip()
   print 'Using %s' % ver
