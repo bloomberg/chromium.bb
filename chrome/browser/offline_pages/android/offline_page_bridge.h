@@ -17,6 +17,7 @@
 
 namespace content {
 class BrowserContext;
+class WebContents;
 }
 
 namespace offline_pages {
@@ -32,6 +33,9 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
   static base::android::ScopedJavaLocalRef<jobject> ConvertToJavaOfflinePage(
       JNIEnv* env,
       const OfflinePageItem& offline_page);
+
+  static std::string GetEncodedOriginApp(
+      const content::WebContents* web_contents);
 
   OfflinePageBridge(JNIEnv* env,
                     content::BrowserContext* browser_context,

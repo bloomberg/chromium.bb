@@ -13,6 +13,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.offlinepages.DeletePageResult;
 import org.chromium.content_public.browser.WebContents;
 
@@ -144,6 +145,15 @@ public class OfflinePageBridge {
      */
     public static boolean canSavePage(String url) {
         return nativeCanSavePage(url);
+    }
+
+    /**
+     * @Return the string representing the origin of the tab.
+     */
+    @CalledByNative
+    private static String getEncodedOriginApp(Tab tab) {
+        return new OfflinePageOrigin(ContextUtils.getApplicationContext(), tab)
+                .encodeAsJsonString();
     }
 
     /**

@@ -14,10 +14,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
+#include "chrome/browser/offline_pages/offline_page_origin_utils.h"
+#include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -300,7 +301,9 @@ void OfflinePageUtils::ScheduleDownload(content::WebContents* web_contents,
                                         const std::string& name_space,
                                         const GURL& url,
                                         DownloadUIActionFlags ui_action) {
-  ScheduleDownload(web_contents, name_space, url, ui_action, "");
+  std::string origin =
+      OfflinePageOriginUtils::GetEncodedOriginAppFor(web_contents);
+  ScheduleDownload(web_contents, name_space, url, ui_action, origin);
 }
 
 // static
