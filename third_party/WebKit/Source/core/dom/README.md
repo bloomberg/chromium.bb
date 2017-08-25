@@ -421,15 +421,84 @@ Further Info:
 - DOM Standard: [connected](https://dom.spec.whatwg.org/#connected)
 - DOM Standard: [retarget](https://dom.spec.whatwg.org/#retarget)
 
-# Layout Tree
+# Flat tree
 
-TODO(hayato): Explain.
+A composed tree itself can't be rendered *as is*. From the rendering's
+perspective, Blink has to construct a *layout tree*, which would be used as an input to
+the *paint phase*.  A layout tree is a tree whose node is `LayoutObject`, which
+points to `Node` in a node tree, plus additional calculated layout information.
 
-# Flat tree and `FlatTreeTraversal`
+Before the Web Platform got Shadow DOM, the structure of a layout tree is almost
+*similar* to the structure of a document tree; where only one node tree,
+*document tree*, is being involved there.
 
-TODO(hayato): Explain.
+Since the Web Platform got Shadow DOM, we now have a composed tree which is composed of multiple node
+trees, instead of a single node tree. That means We have to *flatten* the composed tree to the one node tree, called
+a *flat tree*, from which a layout tree is constructed.
+
+For example, given the following composed tree,
+
+``` text
+document
+├── a1 (host)
+│   ├──/shadowRoot1
+│   │   └── b1
+│   └── a2 (host)
+│       ├──/shadowRoot2
+│       │   ├── c1
+│       │   │   ├── c2
+│       │   │   └── c3
+│       │   └── c4
+│       ├── a3
+│       └── a4
+└── a5
+    └── a6 (host)
+        └──/shadowRoot3
+            └── d1
+                ├── d2
+                ├── d3 (host)
+                │   └──/shadowRoot4
+                │       ├── e1
+                │       └── e2
+                └── d4 (host)
+                    └──/shadowRoot5
+                        ├── f1
+                        └── f2
+
+```
+
+This composed tree would be flattened into the following *flat tree* (assuming there are not `<slot>` elements there):
+
+
+``` text
+document
+├── a1 (host)
+│   └── b1
+└── a5
+    └── a6 (host)
+        └── d1
+            ├── d2
+            ├── d3 (host)
+            │   ├── e1
+            │   └── e2
+            └── d4 (host)
+                ├── f1
+                └── f2
+```
+
+We can't explain the exact algorithm how to flatten a composed tree into a flat tree until I explain the concept of *slots* and *node distribution*
+If we are ignoring the effect of `<slot>`, we can have the following simple definition. A flat tree can be defined as:
+
+- A root of a flat tree: *document*
+- Given node *A* which is in a flat tree, its children are defined, recursively, as follows:
+  - If *A* is a shadow host, its shadow root's children
+  - Otherwise, *A*'s children
 
 # Distribution and slots
+
+TODO(hayato): Explain.
+
+# FlatTreeTraversal
 
 TODO(hayato): Explain.
 
