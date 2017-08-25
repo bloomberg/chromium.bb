@@ -6967,10 +6967,7 @@ class TestAccessInitialDocumentWebFrameClient
   int did_access_initial_document_ = 0;
 };
 
-// This test is not compatible with the fix of LAP context and disabled
-// temporarily while landing the fix.
-// https://crbug.com/v8/6156
-TEST_P(ParameterizedWebFrameTest, DISABLED_DidAccessInitialDocumentBody) {
+TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentBody) {
   TestAccessInitialDocumentWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
@@ -7017,10 +7014,7 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentOpen) {
   web_view_helper.Reset();
 }
 
-// This test is not compatible with the fix of LAP context and disabled
-// temporarily while landing the fix.
-// https://crbug.com/v8/6156
-TEST_P(ParameterizedWebFrameTest, DISABLED_DidAccessInitialDocumentNavigator) {
+TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentNavigator) {
   TestAccessInitialDocumentWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
@@ -7059,11 +7053,8 @@ TEST_P(ParameterizedWebFrameTest, DidAccessInitialDocumentViaJavascriptUrl) {
   web_view_helper.Reset();
 }
 
-// This test is not compatible with the fix of LAP context and disabled
-// temporarily while landing the fix.
-// https://crbug.com/v8/6156
 TEST_P(ParameterizedWebFrameTest,
-       DISABLED_DidAccessInitialDocumentBodyBeforeModalDialog) {
+       DidAccessInitialDocumentBodyBeforeModalDialog) {
   TestAccessInitialDocumentWebFrameClient web_frame_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.Initialize(&web_frame_client);
