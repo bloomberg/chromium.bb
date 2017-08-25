@@ -483,7 +483,7 @@ void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
 
 void MainThreadEventQueue::PostTaskToMainThread() {
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MainThreadEventQueue::DispatchEvents, this));
+      FROM_HERE, base::BindOnce(&MainThreadEventQueue::DispatchEvents, this));
 }
 
 void MainThreadEventQueue::QueueEvent(
@@ -556,7 +556,8 @@ void MainThreadEventQueue::SetNeedsMainFrame() {
   }
 
   main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&MainThreadEventQueue::SetNeedsMainFrame, this));
+      FROM_HERE,
+      base::BindOnce(&MainThreadEventQueue::SetNeedsMainFrame, this));
 }
 
 void MainThreadEventQueue::ClearClient() {

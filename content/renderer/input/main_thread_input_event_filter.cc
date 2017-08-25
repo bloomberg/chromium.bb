@@ -24,7 +24,7 @@ bool MainThreadInputEventFilter::OnMessageReceived(
   DCHECK_EQ(static_cast<int>(IPC_MESSAGE_ID_CLASS(message.type())),
             InputMsgStart);
   bool handled = main_task_runner_->PostTask(
-      FROM_HERE, base::Bind(main_listener_, message));
+      FROM_HERE, base::BindOnce(main_listener_, message));
   return handled;
 }
 

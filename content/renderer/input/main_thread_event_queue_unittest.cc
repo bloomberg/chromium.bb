@@ -181,8 +181,8 @@ class MainThreadEventQueueTest : public testing::TestWithParam<unsigned>,
 
   void QueueClosure() {
     unsigned closure_id = ++closure_count_;
-    queue_->QueueClosure(base::Bind(&MainThreadEventQueueTest::RunClosure,
-                                    base::Unretained(this), closure_id));
+    queue_->QueueClosure(base::BindOnce(&MainThreadEventQueueTest::RunClosure,
+                                        base::Unretained(this), closure_id));
   }
 
   MainThreadEventQueueTaskList& event_queue() {
