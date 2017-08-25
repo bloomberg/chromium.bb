@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -34,6 +35,9 @@ class ArcBootPhaseMonitorBridge
       public mojom::BootPhaseMonitorHost,
       public ArcSessionManager::Observer {
  public:
+  using FirstAppLaunchDelayRecorder =
+      base::RepeatingCallback<void(base::TimeDelta)>;
+
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
   static ArcBootPhaseMonitorBridge* GetForBrowserContext(
@@ -65,6 +69,16 @@ class ArcBootPhaseMonitorBridge
   void OnArcSessionStopped(ArcStopReason stop_reason) override;
   void OnArcSessionRestarting() override;
 
+  void RecordFirstAppLaunchDelayUMAForTesting() {
+    RecordFirstAppLaunchDelayUMAInternal();
+  }
+
+  ArcInstanceThrottle* throttle_for_testing() const { return throttle_.get(); }
+  void set_first_app_launch_delay_recorder_for_testing(
+      const FirstAppLaunchDelayRecorder& first_app_launch_delay_recorder) {
+    first_app_launch_delay_recorder_ = first_app_launch_delay_recorder;
+  }
+
  private:
   void RecordFirstAppLaunchDelayUMAInternal();
   void Reset();
@@ -74,6 +88,7 @@ class ArcBootPhaseMonitorBridge
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
   const AccountId account_id_;
   mojo::Binding<mojom::BootPhaseMonitorHost> binding_;
+  FirstAppLaunchDelayRecorder first_app_launch_delay_recorder_;
 
   // The following variables must be reset every time when the instance stops or
   // restarts.
