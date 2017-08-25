@@ -2260,6 +2260,7 @@ TEST_F(PasswordAutofillAgentTest, PasswordGenerationSupersedesAutofill) {
   SetFocused(password_element_);
   SimulateElementClick("new_password");
   EXPECT_FALSE(GetCalledShowPasswordSuggestions());
+  EXPECT_FALSE(GetCalledShowManualFallbackSuggestion());
   EXPECT_TRUE(GetCalledShowPasswordGenerationPopup());
 }
 
