@@ -41,6 +41,7 @@
 #include "content/browser/android/content_view_core.h"
 #include "content/browser/android/ime_adapter_android.h"
 #include "content/browser/android/overscroll_controller_android.h"
+#include "content/browser/android/popup_zoomer.h"
 #include "content/browser/android/selection_popup_controller.h"
 #include "content/browser/android/synchronous_compositor_host.h"
 #include "content/browser/android/text_suggestion_host_android.h"
@@ -1163,10 +1164,10 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
 
 void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
     const gfx::Rect& rect_pixels, const SkBitmap& zoomed_bitmap) {
-  if (!content_view_core_)
+  if (!popup_zoomer_)
     return;
 
-  content_view_core_->ShowDisambiguationPopup(rect_pixels, zoomed_bitmap);
+  popup_zoomer_->ShowPopup(rect_pixels, zoomed_bitmap);
 }
 
 std::unique_ptr<SyntheticGestureTarget>
