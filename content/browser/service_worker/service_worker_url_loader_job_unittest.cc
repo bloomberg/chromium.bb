@@ -353,6 +353,21 @@ TEST_F(ServiceWorkerURLLoaderJobTest, BlobResponse) {
   EXPECT_EQ(kResponseBody, response);
 }
 
+// Tell the helper to respond with a non-existent Blob.
+TEST_F(ServiceWorkerURLLoaderJobTest, NonExistentBlobUUIDResponse) {
+  helper_->RespondWithBlob("blob-id:nothing-is-here", 0);
+
+  // Perform the request.
+  JobResult result = TestRequest();
+  EXPECT_EQ(JobResult::kHandledRequest, result);
+  const ResourceResponseHead& info = client_.response_head();
+  // TODO(falken): Currently our code returns 404 not found (with net::OK), but
+  // the spec seems to say this should act as if a network error has occurred.
+  // See https://crbug.com/732750
+  EXPECT_EQ(404, info.headers->response_code());
+  ExpectFetchedViaServiceWorker(info);
+}
+
 TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
