@@ -174,4 +174,15 @@ TEST_F(TextBreakIteratorTest, KeepEmojiModifierSequence) {
   MATCH_BREAK_AFTER_SPACE(LineBreakType::kBreakAll, {1, 2, 4, 8, 9, 10, 11});
 }
 
+TEST_F(TextBreakIteratorTest, NextBreakOpportunityAtEnd) {
+  LineBreakType break_types[] = {
+      LineBreakType::kNormal, LineBreakType::kBreakAll,
+      LineBreakType::kBreakCharacter, LineBreakType::kKeepAll};
+  for (const auto break_type : break_types) {
+    LazyLineBreakIterator break_iterator(String("1"));
+    break_iterator.SetBreakType(break_type);
+    EXPECT_EQ(1u, break_iterator.NextBreakOpportunity(1));
+  }
+}
+
 }  // namespace blink
