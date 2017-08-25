@@ -146,7 +146,8 @@ std::string GLContext::GetGLRenderer() {
   return std::string(renderer ? renderer : "");
 }
 
-YUVToRGBConverter* GLContext::GetYUVToRGBConverter() {
+YUVToRGBConverter* GLContext::GetYUVToRGBConverter(
+    const gfx::ColorSpace& color_space) {
   return nullptr;
 }
 

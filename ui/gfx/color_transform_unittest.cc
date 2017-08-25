@@ -133,6 +133,14 @@ TEST(SimpleColorSpace, TransferFnCancel) {
       ColorTransform::NewColorTransform(
           bt709, gamma24, ColorTransform::Intent::INTENT_PERCEPTUAL));
   EXPECT_EQ(bt709_to_gamma24->NumberOfStepsForTesting(), 2u);
+
+  // Rec 601 YUV to RGB conversion should have a single step.
+  gfx::ColorSpace rec601 = gfx::ColorSpace::CreateREC601();
+  std::unique_ptr<ColorTransform> rec601_yuv_to_rgb(
+      ColorTransform::NewColorTransform(
+          rec601, rec601.GetAsFullRangeRGB(),
+          ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(rec601_yuv_to_rgb->NumberOfStepsForTesting(), 1u);
 }
 
 TEST(SimpleColorSpace, SRGBFromICCAndNotICC) {
@@ -440,9 +448,9 @@ TEST(SimpleColorSpace, MAYBE_SampleShaderSource) {
           ->GetShaderSource();
   std::string expected =
       "float TransferFn1(float v) {\n"
-      "  if (v < 4.04499359e-02)\n"
-      "    return 7.73993805e-02 * v;\n"
-      "  return pow(9.47867334e-01 * v + 5.21326549e-02, 2.40000010e+00);\n"
+      "  if (v < 8.12428594e-02)\n"
+      "    return 2.22222224e-01 * v;\n"
+      "  return pow(9.09672439e-01 * v + 9.03275684e-02, 2.22222233e+00);\n"
       "}\n"
       "float TransferFn3(float v) {\n"
       "  return pow(v, 3.57142866e-01);\n"

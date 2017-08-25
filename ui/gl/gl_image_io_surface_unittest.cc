@@ -14,10 +14,10 @@
 namespace gl {
 namespace {
 
-// These values are picked so that RGB -> YUV on the CPU converted
-// back to RGB on the GPU produces the original RGB values without
-// any error.
-const uint8_t kYuvImageColor[] = {0x10, 0x20, 0, 0xFF};
+// These values are picked so that RGB -> YUV on the CPU converted back to RGB
+// on the GPU produces the original RGB values without any error. Note that
+// some values will be off-by-one.
+const uint8_t kYuvImageColor[] = {0x30, 0x40, 0x10, 0xFF};
 
 template <gfx::BufferFormat format>
 class GLImageIOSurfaceTestDelegate {
