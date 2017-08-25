@@ -92,10 +92,7 @@ crbug.com/726075 [ Win Debug ] virtual/exotic-color-space/images/color-profile-b
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
-crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Pass Failure Crash ]
-
 crbug.com/693568 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality.html [ Failure ]
-
 
 # Looks like a filuare to get a paint on time. Test could be changed to use runAfterLayoutAndPaint
 # instead of a timeout, which may fix things.
