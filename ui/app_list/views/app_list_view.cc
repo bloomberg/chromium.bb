@@ -588,6 +588,8 @@ void AppListView::StartDrag(const gfx::Point& location) {
   initial_drag_point_ = location;
   ConvertPointToScreen(this, &initial_drag_point_);
   initial_window_bounds_ = fullscreen_widget_->GetWindowBoundsInScreen();
+  if (app_list_state_ == PEEKING)
+    drag_started_from_peeking_ = true;
 }
 
 void AppListView::UpdateDrag(const gfx::Point& location) {
@@ -716,6 +718,7 @@ void AppListView::EndDrag(const gfx::Point& location) {
     }
   }
 
+  drag_started_from_peeking_ = false;
   DraggingLayout();
 }
 
