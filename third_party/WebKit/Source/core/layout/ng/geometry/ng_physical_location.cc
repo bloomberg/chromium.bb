@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/geometry/ng_physical_location.h"
 
+#include <ostream>
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -14,6 +15,10 @@ bool NGPhysicalLocation::operator==(const NGPhysicalLocation& other) const {
 
 String NGPhysicalLocation::ToString() const {
   return String::Format("%dx%d", left.ToInt(), top.ToInt());
+}
+
+std::ostream& operator<<(std::ostream& os, const NGPhysicalLocation& value) {
+  return os << value.ToString();
 }
 
 }  // namespace blink

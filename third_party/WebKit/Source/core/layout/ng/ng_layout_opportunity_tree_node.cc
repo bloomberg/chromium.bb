@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
 
+#include "platform/wtf/text/WTFString.h"
+
 namespace blink {
 
 NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
@@ -26,6 +28,16 @@ String NGLayoutOpportunityTreeNode::ToString() const {
                         combined_exclusion
                             ? combined_exclusion->ToString().Ascii().data()
                             : "null");
+}
+
+std::ostream& operator<<(std::ostream& stream,
+                         const NGLayoutOpportunityTreeNode& value) {
+  return stream << value.ToString();
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const NGLayoutOpportunityTreeNode* value) {
+  return out << (value ? value->ToString() : "(null)");
 }
 
 }  // namespace blink

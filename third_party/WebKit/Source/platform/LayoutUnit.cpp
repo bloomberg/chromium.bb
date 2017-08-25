@@ -4,6 +4,7 @@
 
 #include "platform/LayoutUnit.h"
 
+#include <ostream>
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -18,6 +19,10 @@ String LayoutUnit::ToString() const {
   if (value_ == LayoutUnit::NearlyMin().RawValue())
     return "LayoutUnit::nearlyMin(" + String::Number(ToDouble()) + ")";
   return String::Number(ToDouble());
+}
+
+std::ostream& operator<<(std::ostream& stream, const LayoutUnit& value) {
+  return stream << value.ToString();
 }
 
 }  // namespace blink

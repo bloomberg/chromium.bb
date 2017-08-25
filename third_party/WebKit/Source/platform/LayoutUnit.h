@@ -31,17 +31,14 @@
 #ifndef LayoutUnit_h
 #define LayoutUnit_h
 
-#include <limits.h>
-#include <math.h>
-#include <stdlib.h>
-#include <algorithm>
+#include <iosfwd>
 #include <limits>
 #include "base/numerics/safe_conversions.h"
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/Forward.h"
 #include "platform/wtf/SaturatedArithmetic.h"
-#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -166,11 +163,11 @@ class LayoutUnit {
   }
 
   LayoutUnit ClampNegativeToZero() const {
-    return std::max(*this, LayoutUnit());
+    return value_ < 0 ? LayoutUnit() : *this;
   }
 
   LayoutUnit ClampPositiveToZero() const {
-    return std::min(*this, LayoutUnit());
+    return value_ > 0 ? LayoutUnit() : *this;
   }
 
   LayoutUnit Fraction() const {
@@ -707,9 +704,7 @@ inline bool IsIntegerValue(const LayoutUnit value) {
   return value.ToInt() == value;
 }
 
-inline std::ostream& operator<<(std::ostream& stream, const LayoutUnit& value) {
-  return stream << value.ToString();
-}
+PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutUnit&);
 
 }  // namespace blink
 
