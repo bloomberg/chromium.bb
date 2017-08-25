@@ -229,7 +229,7 @@ int ProcessMemoryMetricsEmitter::GetNumberOfExtensions(base::ProcessId pid) {
       // Only count non hosted apps extensions.
       const extensions::Extension* extension =
           registry->enabled_extensions().GetByID(extension_id);
-      if (!extension->is_hosted_app())
+      if (extension && !extension->is_hosted_app())
         number_of_extensions++;
     }
   }
