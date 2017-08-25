@@ -40,9 +40,10 @@ void PowerTracingAgent::StartAgentTracing(
     const StartAgentTracingCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&PowerTracingAgent::FindBattOrOnFileThread,
-                                     base::Unretained(this), callback));
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::BindOnce(&PowerTracingAgent::FindBattOrOnFileThread,
+                     base::Unretained(this), callback));
 }
 
 void PowerTracingAgent::FindBattOrOnFileThread(
@@ -53,14 +54,14 @@ void PowerTracingAgent::FindBattOrOnFileThread(
   if (path.empty()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, GetTracingAgentName(), false /* success */));
+        base::BindOnce(callback, GetTracingAgentName(), false /* success */));
     return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PowerTracingAgent::StartAgentTracingOnIOThread,
-                 base::Unretained(this), path, callback));
+      base::BindOnce(&PowerTracingAgent::StartAgentTracingOnIOThread,
+                     base::Unretained(this), path, callback));
 }
 
 void PowerTracingAgent::StartAgentTracingOnIOThread(
@@ -84,7 +85,7 @@ void PowerTracingAgent::OnStartTracingComplete(battor::BattOrError error) {
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(start_tracing_callback_, GetTracingAgentName(), success));
+      base::BindOnce(start_tracing_callback_, GetTracingAgentName(), success));
   start_tracing_callback_.Reset();
 }
 
@@ -94,8 +95,8 @@ void PowerTracingAgent::StopAgentTracing(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PowerTracingAgent::StopAgentTracingOnIOThread,
-                 base::Unretained(this), callback));
+      base::BindOnce(&PowerTracingAgent::StopAgentTracingOnIOThread,
+                     base::Unretained(this), callback));
 }
 
 void PowerTracingAgent::StopAgentTracingOnIOThread(
@@ -105,8 +106,8 @@ void PowerTracingAgent::StopAgentTracingOnIOThread(
   if (!battor_agent_) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(callback, GetTracingAgentName(), GetTraceEventLabel(),
-                   nullptr /* events_str_ptr */));
+        base::BindOnce(callback, GetTracingAgentName(), GetTraceEventLabel(),
+                       nullptr /* events_str_ptr */));
     return;
   }
 
@@ -124,8 +125,8 @@ void PowerTracingAgent::OnStopTracingComplete(const std::string& trace,
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(stop_tracing_callback_, GetTracingAgentName(),
-                 GetTraceEventLabel(), result));
+      base::BindOnce(stop_tracing_callback_, GetTracingAgentName(),
+                     GetTraceEventLabel(), result));
   stop_tracing_callback_.Reset();
   battor_agent_.reset();
 }
@@ -138,8 +139,8 @@ void PowerTracingAgent::RecordClockSyncMarker(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PowerTracingAgent::RecordClockSyncMarkerOnIOThread,
-                 base::Unretained(this), sync_id, callback));
+      base::BindOnce(&PowerTracingAgent::RecordClockSyncMarkerOnIOThread,
+                     base::Unretained(this), sync_id, callback));
 }
 
 void PowerTracingAgent::RecordClockSyncMarkerOnIOThread(
@@ -164,12 +165,10 @@ void PowerTracingAgent::OnRecordClockSyncMarkerComplete(
   if (error != battor::BATTOR_ERROR_NONE)
     issue_start_ts = issue_end_ts = base::TimeTicks();
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(record_clock_sync_marker_callback_,
-                 record_clock_sync_marker_sync_id_,
-                 issue_start_ts,
-                 issue_end_ts));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(record_clock_sync_marker_callback_,
+                                         record_clock_sync_marker_sync_id_,
+                                         issue_start_ts, issue_end_ts));
 
   record_clock_sync_marker_callback_.Reset();
   record_clock_sync_marker_sync_id_ = std::string();
