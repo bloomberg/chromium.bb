@@ -143,6 +143,12 @@ management::ExtensionInfo CreateExtensionInfo(
     } else {
       info.disabled_reason = management::EXTENSION_DISABLED_REASON_UNKNOWN;
     }
+
+    info.may_enable = base::MakeUnique<bool>(
+        system->management_policy()->UserMayModifySettings(&extension,
+                                                           nullptr) &&
+        !system->management_policy()->MustRemainDisabled(&extension, nullptr,
+                                                         nullptr));
   }
 
   if (!ManifestURL::GetUpdateURL(&extension).is_empty()) {

@@ -74,6 +74,11 @@
             "description": "Whether this extension can be disabled or uninstalled by the user.",
             "type": "boolean"
           },
+          "mayEnable" : {
+            "description": "Whether this extension can be enabled by the user. This is only returned for extensions which are not enabled.",
+            "type": "boolean",
+            "optional": true
+          },
           "enabled": {
             "description": "Whether it is currently enabled or disabled.",
             "type": "boolean"
