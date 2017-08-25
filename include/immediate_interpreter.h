@@ -706,6 +706,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   //     pinch_guess_ == true:  Guess there is a pinch
   //     pinch_guess_ == false: Guess there is no pinch
 
+  // Since the fingers changed, has a scroll or swipe gesture been detected?
+  bool these_fingers_scrolled_;
   // When guessing a pinch gesture. Do we guess pinch (true) or no-pinch?
   bool pinch_guess_;
   // Time when pinch guess was made. -1 if no guess has been made yet.
