@@ -58,6 +58,7 @@ p.title {
 #terms-view {
   display: block;
   margin: auto;
+  width: 638px;
 }
 
 .bubble-button > div {
