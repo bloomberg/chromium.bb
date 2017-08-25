@@ -1,5 +1,7 @@
-pkasting@chromium.org
-stevet@chromium.org
+file://components/search_engines/OWNERS
+
+bauerb@chromium.org
+treib@chromium.org
 
 per-file *_android.*=mariakhomenko@chromium.org
 
