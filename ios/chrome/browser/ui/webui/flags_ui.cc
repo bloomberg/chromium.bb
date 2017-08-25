@@ -182,6 +182,7 @@ void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(
 
   SetFeatureEntryEnabled(flags_storage_.get(), entry_internal_name,
                          enable_str == "true");
+  flags_storage_->CommitPendingWrites();
 }
 
 void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
@@ -191,6 +192,7 @@ void FlagsDOMHandler::HandleRestartBrowser(const base::ListValue* args) {
 void FlagsDOMHandler::HandleResetAllFlags(const base::ListValue* args) {
   DCHECK(flags_storage_);
   ResetAllFlags(flags_storage_.get());
+  flags_storage_->CommitPendingWrites();
 }
 
 }  // namespace
