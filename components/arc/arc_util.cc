@@ -33,6 +33,7 @@ constexpr char kAvailabilityOfficiallySupported[] = "officially-supported";
 constexpr char kAlwaysStart[] = "always-start";
 constexpr char kAlwaysStartWithNoPlayStore[] =
     "always-start-with-no-play-store";
+constexpr char kOnlyStartAfterLogin[] = "only-start-after-login";
 
 void SetArcCpuRestrictionCallback(
     login_manager::ContainerCpuRestrictionState state,
@@ -104,6 +105,15 @@ void SetArcAlwaysStartForTesting(bool play_store_available) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       chromeos::switches::kArcStartMode,
       play_store_available ? kAlwaysStart : kAlwaysStartWithNoPlayStore);
+}
+
+bool ShouldArcOnlyStartAfterLogin() {
+  const auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(chromeos::switches::kArcStartMode))
+    return false;
+  const std::string value =
+      command_line->GetSwitchValueASCII(chromeos::switches::kArcStartMode);
+  return value == kOnlyStartAfterLogin;
 }
 
 bool IsArcKioskAvailable() {

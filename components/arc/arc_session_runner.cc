@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_util.h"
 
 namespace arc {
 
@@ -236,6 +237,11 @@ void ArcSessionRunner::OnSessionStopped(ArcStopReason stop_reason) {
 }
 
 void ArcSessionRunner::EmitLoginPromptVisibleCalled() {
+  if (ShouldArcOnlyStartAfterLogin()) {
+    // Skip starting ARC for now. We'll have another chance to start the full
+    // instance after the user logs in.
+    return;
+  }
   // Since 'login-prompt-visible' Upstart signal starts all Upstart jobs the
   // container may depend on such as cras, EmitLoginPromptVisibleCalled() is the
   // safe place to start the container for login screen.

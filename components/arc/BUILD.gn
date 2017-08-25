@@ -7,8 +7,6 @@ import("//testing/test.gni")
 
 static_library("arc") {
   sources = [
-    "arc_util.cc",
-    "arc_util.h",
     "audio/arc_audio_bridge.cc",
     "audio/arc_audio_bridge.h",
     "bluetooth/arc_bluetooth_bridge.cc",
@@ -113,6 +111,8 @@ static_library("arc_base") {
     "arc_session_runner.h",
     "arc_stop_reason.cc",
     "arc_stop_reason.h",
+    "arc_util.cc",
+    "arc_util.h",
     "instance_holder.h",
   ]
 
@@ -123,6 +123,7 @@ static_library("arc_base") {
     "//components/signin/core/account_id",
     "//components/user_manager",
     "//mojo/edk/system",
+    "//ui/aura",
   ]
 
   public_deps = [

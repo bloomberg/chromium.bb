@@ -51,6 +51,9 @@ bool ShouldArcAlwaysStart();
 // Store UI is added.
 void SetArcAlwaysStartForTesting(bool play_store_available);
 
+// Returns true if ARC should only start after the user has logged in.
+bool ShouldArcOnlyStartAfterLogin();
+
 // Returns true if ARC is installed and running ARC kiosk apps on the current
 // device is officially supported.
 // It doesn't follow that ARC is available for user sessions and
