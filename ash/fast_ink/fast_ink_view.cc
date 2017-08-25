@@ -356,16 +356,7 @@ void FastInkView::UpdateSurface() {
   gfx::Rect output_rect(gfx::ScaleToEnclosingRect(
       gfx::Rect(widget_->GetNativeView()->GetBoundsInScreen().size()),
       device_scale_factor));
-  // |quad_rect| is under normal cricumstances equal to |buffer_size| but to
-  // be more resilient to rounding errors in the compositor that might cause
-  // off-by-one problems when the transform is non-trivial we compute this rect
-  // by mapping the output rect back into buffer space and intersecting by
-  // buffer bounds. This avoids some corner cases where one row or column
-  // would end up outside the screen and we would fail to take advantage of HW
-  // overlays.
-  gfx::Rect quad_rect = gfx::ToEnclosedRect(cc::MathUtil::MapClippedRect(
-      target_to_buffer_transform, gfx::RectF(output_rect)));
-  quad_rect.Intersect(gfx::Rect(buffer_size));
+  gfx::Rect quad_rect(buffer_size);
   gfx::Rect opaque_rect = gfx::Rect();
   bool needs_blending = true;
 
