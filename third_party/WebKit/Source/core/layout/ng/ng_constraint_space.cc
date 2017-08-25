@@ -27,8 +27,8 @@ NGConstraintSpace::NGConstraintSpace(
     bool is_new_fc,
     bool is_anonymous,
     const NGMarginStrut& margin_strut,
-    const NGLogicalOffset& bfc_offset,
-    const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
+    const NGBfcOffset& bfc_offset,
+    const WTF::Optional<NGBfcOffset>& floats_bfc_offset,
     const NGExclusionSpace& exclusion_space,
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     const WTF::Optional<LayoutUnit>& clearance_offset,
@@ -209,7 +209,7 @@ bool NGConstraintSpace::operator!=(const NGConstraintSpace& other) const {
 String NGConstraintSpace::ToString() const {
   return String::Format(
       "Offset: %s,%s Size: %sx%s Clearance: %s",
-      bfc_offset_.inline_offset.ToString().Ascii().data(),
+      bfc_offset_.line_offset.ToString().Ascii().data(),
       bfc_offset_.block_offset.ToString().Ascii().data(),
       AvailableSize().inline_size.ToString().Ascii().data(),
       AvailableSize().block_size.ToString().Ascii().data(),

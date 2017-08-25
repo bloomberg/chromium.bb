@@ -180,10 +180,14 @@ bool NGLineBreaker::HasFloatsAffectingCurrentLine() const {
 // Update the inline size of the first layout opportunity from the given
 // content_offset.
 void NGLineBreaker::FindNextLayoutOpportunity() {
-  const NGLogicalOffset& bfc_offset = container_builder_->BfcOffset().value();
+  const NGBfcOffset& bfc_offset = container_builder_->BfcOffset().value();
+
+  NGBfcOffset origin_offset = {
+      bfc_offset.line_offset,
+      bfc_offset.block_offset + content_offset_.block_offset};
 
   line_.opportunity = line_.exclusion_space->FindLayoutOpportunity(
-      bfc_offset + content_offset_, constraint_space_.AvailableSize(),
+      origin_offset, constraint_space_.AvailableSize(),
       /* minimum_size */ NGLogicalSize());
 
   // When floats/exclusions occupies the entire line (e.g., float: left; width:
@@ -202,23 +206,23 @@ void NGLineBreaker::FindNextLayoutOpportunity() {
 // has floats.
 void NGLineBreaker::FindNextLayoutOpportunityWithMinimumInlineSize(
     LayoutUnit min_inline_size) {
-  const NGLogicalOffset& bfc_offset = container_builder_->BfcOffset().value();
+  const NGBfcOffset& bfc_offset = container_builder_->BfcOffset().value();
+
+  NGBfcOffset origin_offset = {
+      bfc_offset.line_offset,
+      bfc_offset.block_offset + content_offset_.block_offset};
 
   NGLogicalSize minimum_size(min_inline_size, LayoutUnit());
   line_.opportunity = line_.exclusion_space->FindLayoutOpportunity(
-      bfc_offset + content_offset_, constraint_space_.AvailableSize(),
-      minimum_size);
+      origin_offset, constraint_space_.AvailableSize(), minimum_size);
 
   content_offset_.block_offset =
       line_.opportunity.value().BlockStartOffset() - bfc_offset.block_offset;
 }
 
 void NGLineBreaker::ComputeLineLocation(NGLineInfo* line_info) const {
-  // Both NGLayoutOpportunity and BfcOffset are in visual order that
-  // "inline-start" are actually "line-left".
-  // https://drafts.csswg.org/css-writing-modes-3/#line-left
-  LayoutUnit line_left = line_.opportunity.value().InlineStartOffset() -
-                         constraint_space_.BfcOffset().inline_offset;
+  LayoutUnit line_left = line_.opportunity.value().LineStartOffset() -
+                         constraint_space_.BfcOffset().line_offset;
   line_info->SetLineLocation(line_left, line_.AvailableWidth(),
                              content_offset_.block_offset);
 }
@@ -512,8 +516,8 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
   RefPtr<NGUnpositionedFloat> unpositioned_float = NGUnpositionedFloat::Create(
       constraint_space_.AvailableSize(),
       constraint_space_.PercentageResolutionSize(),
-      constraint_space_.BfcOffset().inline_offset,
-      constraint_space_.BfcOffset().inline_offset, margins, node,
+      constraint_space_.BfcOffset().line_offset,
+      constraint_space_.BfcOffset().line_offset, margins, node,
       /* break_token */ nullptr);
 
   LayoutUnit inline_size = ComputeInlineSizeForUnpositionedFloat(
@@ -532,17 +536,17 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleFloat(
   if (!unpositioned_floats_->IsEmpty() || float_does_not_fit) {
     unpositioned_floats_->push_back(std::move(unpositioned_float));
   } else {
-    NGLogicalOffset container_bfc_offset =
+    NGBfcOffset container_bfc_offset =
         container_builder_->BfcOffset()
             ? container_builder_->BfcOffset().value()
             : constraint_space_.FloatsBfcOffset().value();
     LayoutUnit origin_block_offset =
         container_bfc_offset.block_offset + content_offset_.block_offset;
 
-    NGPositionedFloat positioned_float =
-        PositionFloat(origin_block_offset, container_bfc_offset.block_offset,
-                      unpositioned_float.Get(), constraint_space_,
-                      line_.exclusion_space.get());
+    NGPositionedFloat positioned_float = PositionFloat(
+        origin_block_offset, container_bfc_offset.block_offset,
+        unpositioned_float.Get(), constraint_space_,
+        container_builder_->Size().inline_size, line_.exclusion_space.get());
     container_builder_->AddChild(positioned_float.layout_result,
                                  positioned_float.logical_offset);
 

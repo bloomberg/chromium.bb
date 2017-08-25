@@ -5,8 +5,8 @@
 #ifndef NGLayoutOpportunityTreeNode_h
 #define NGLayoutOpportunityTreeNode_h
 
+#include "core/layout/ng/geometry/ng_bfc_rect.h"
 #include "core/layout/ng/geometry/ng_edge.h"
-#include "core/layout/ng/geometry/ng_logical_rect.h"
 #include "core/layout/ng/ng_exclusion.h"
 
 namespace blink {
@@ -20,12 +20,12 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode {
   // Creates a Layout Opportunity tree node that is limited by it's own edge
   // from above.
   // @param opportunity The layout opportunity for this node.
-  NGLayoutOpportunityTreeNode(const NGLogicalRect opportunity);
+  NGLayoutOpportunityTreeNode(const NGBfcRect opportunity);
 
   // Constructor that creates a node with explicitly set exclusion edge.
   // @param opportunity The layout opportunity for this node.
   // @param exclusion_edge Edge that limits this node's opportunity from above.
-  NGLayoutOpportunityTreeNode(const NGLogicalRect opportunity,
+  NGLayoutOpportunityTreeNode(const NGBfcRect opportunity,
                               NGEdge exclusion_edge);
 
   // Children of the node.
@@ -34,7 +34,7 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode {
   std::unique_ptr<NGLayoutOpportunityTreeNode> right;
 
   // The top layout opportunity associated with this node.
-  NGLogicalRect opportunity;
+  NGBfcRect opportunity;
 
   // Edge that limits this layout opportunity from above.
   NGEdge exclusion_edge;

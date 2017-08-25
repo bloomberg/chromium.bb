@@ -30,7 +30,7 @@ struct NGPreviousInflowPosition {
 // This strut holds information for the current inflow child. The data is not
 // useful outside of handling this single inflow child.
 struct NGInflowChildData {
-  NGLogicalOffset bfc_offset_estimate;
+  NGBfcOffset bfc_offset_estimate;
   NGMarginStrut margin_strut;
   NGBoxStrut margins;
 };
@@ -73,7 +73,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
-      const WTF::Optional<NGLogicalOffset> floats_bfc_offset = WTF::nullopt);
+      const WTF::Optional<NGBfcOffset> floats_bfc_offset = WTF::nullopt);
 
   // @return Estimated BFC offset for the "to be layout" child.
   NGInflowChildData ComputeChildData(const NGPreviousInflowPosition&,
@@ -83,7 +83,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
       const NGPreviousInflowPosition& previous_inflow_position,
       const NGLayoutInputNode child,
       const NGInflowChildData& child_data,
-      const WTF::Optional<NGLogicalOffset>& child_bfc_offset,
+      const WTF::Optional<NGBfcOffset>& child_bfc_offset,
       const NGLogicalOffset& logical_offset,
       const NGLayoutResult& layout_result,
       const NGFragment& fragment,
@@ -113,13 +113,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                      const NGLayoutResult&,
                      const NGInflowChildData& child_data,
                      const NGConstraintSpace& child_space,
-                     WTF::Optional<NGLogicalOffset>* child_bfc_offset);
+                     WTF::Optional<NGBfcOffset>* child_bfc_offset);
 
   // Positions the fragment that knows its BFC offset.
-  WTF::Optional<NGLogicalOffset> PositionWithBfcOffset(
-      const NGLogicalOffset& bfc_offset);
-  bool PositionWithBfcOffset(const NGLogicalOffset& bfc_offset,
-                             WTF::Optional<NGLogicalOffset>* child_bfc_offset);
+  WTF::Optional<NGBfcOffset> PositionWithBfcOffset(
+      const NGBfcOffset& bfc_offset);
+  bool PositionWithBfcOffset(const NGBfcOffset& bfc_offset,
+                             WTF::Optional<NGBfcOffset>* child_bfc_offset);
 
   // Positions using the parent BFC offset.
   // Fragment doesn't know its offset but we can still calculate its BFC
@@ -128,15 +128,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //   BFC Offset is known here because of the padding.
   //   <div style="padding: 1px">
   //     <div id="empty-div" style="margins: 1px"></div>
-  NGLogicalOffset PositionWithParentBfc(
-      const NGLayoutInputNode& child,
-      const NGConstraintSpace&,
-      const NGInflowChildData& child_data,
-      const NGLayoutResult&,
-      bool* empty_block_affected_by_clearance);
-
-  NGLogicalOffset PositionLegacy(const NGConstraintSpace& child_space,
-                                 const NGInflowChildData& child_data);
+  NGBfcOffset PositionWithParentBfc(const NGLayoutInputNode& child,
+                                    const NGConstraintSpace&,
+                                    const NGInflowChildData& child_data,
+                                    const NGLayoutResult&,
+                                    bool* empty_block_affected_by_clearance);
 
   void HandleOutOfFlowPositioned(const NGPreviousInflowPosition&, NGBlockNode);
   void HandleFloat(const NGPreviousInflowPosition&,
@@ -165,8 +161,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // or {@code known_fragment_offset} if the fragment knows it's offset
   // @return Fragment's offset relative to the fragment's parent.
   NGLogicalOffset CalculateLogicalOffset(
+      const NGFragment&,
       const NGBoxStrut& child_margins,
-      const WTF::Optional<NGLogicalOffset>& known_fragment_offset);
+      const WTF::Optional<NGBfcOffset>& known_fragment_offset);
 
   NGLogicalSize child_available_size_;
   NGLogicalSize child_percentage_size_;

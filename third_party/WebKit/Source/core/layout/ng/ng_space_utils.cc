@@ -4,7 +4,7 @@
 
 #include "core/layout/ng/ng_space_utils.h"
 
-#include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/geometry/ng_bfc_offset.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "core/style/ComputedStyle.h"
 
@@ -23,7 +23,7 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
 }
 
 bool AdjustToClearance(const WTF::Optional<LayoutUnit>& clearance_offset,
-                       NGLogicalOffset* offset) {
+                       NGBfcOffset* offset) {
   DCHECK(offset);
   if (clearance_offset && clearance_offset.value() > offset->block_offset) {
     offset->block_offset = clearance_offset.value();

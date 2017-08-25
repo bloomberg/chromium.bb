@@ -7,14 +7,14 @@
 namespace blink {
 
 NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
-    const NGLogicalRect opportunity)
+    const NGBfcRect opportunity)
     : opportunity(opportunity), combined_exclusion(nullptr) {
-  exclusion_edge.start = opportunity.offset.inline_offset;
+  exclusion_edge.start = opportunity.offset.line_offset;
   exclusion_edge.end = exclusion_edge.start + opportunity.size.inline_size;
 }
 
 NGLayoutOpportunityTreeNode::NGLayoutOpportunityTreeNode(
-    const NGLogicalRect opportunity,
+    const NGBfcRect opportunity,
     NGEdge exclusion_edge)
     : opportunity(opportunity),
       exclusion_edge(exclusion_edge),

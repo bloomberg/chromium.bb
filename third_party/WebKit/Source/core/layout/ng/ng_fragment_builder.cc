@@ -100,8 +100,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
   return *this;
 }
 
-NGFragmentBuilder& NGFragmentBuilder::SetBfcOffset(
-    const NGLogicalOffset& offset) {
+NGFragmentBuilder& NGFragmentBuilder::SetBfcOffset(const NGBfcOffset& offset) {
   bfc_offset_ = offset;
   return *this;
 }

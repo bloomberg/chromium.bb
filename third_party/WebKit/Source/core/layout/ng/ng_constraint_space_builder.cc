@@ -54,13 +54,13 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetMarginStrut(
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetBfcOffset(
-    const NGLogicalOffset& bfc_offset) {
+    const NGBfcOffset& bfc_offset) {
   bfc_offset_ = bfc_offset;
   return *this;
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFloatsBfcOffset(
-    const WTF::Optional<NGLogicalOffset>& floats_bfc_offset) {
+    const WTF::Optional<NGBfcOffset>& floats_bfc_offset) {
   floats_bfc_offset_ = floats_bfc_offset;
   return *this;
 }
@@ -205,16 +205,16 @@ RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
   const NGExclusionSpace& exclusion_space = (is_new_fc_ || !exclusion_space_)
                                                 ? empty_exclusion_space
                                                 : *exclusion_space_;
-  NGLogicalOffset bfc_offset = is_new_fc_ ? NGLogicalOffset() : bfc_offset_;
+  NGBfcOffset bfc_offset = is_new_fc_ ? NGBfcOffset() : bfc_offset_;
   NGMarginStrut margin_strut = is_new_fc_ ? NGMarginStrut() : margin_strut_;
   WTF::Optional<LayoutUnit> clearance_offset =
       is_new_fc_ ? WTF::nullopt : clearance_offset_;
-  WTF::Optional<NGLogicalOffset> floats_bfc_offset =
+  WTF::Optional<NGBfcOffset> floats_bfc_offset =
       is_new_fc_ ? WTF::nullopt : floats_bfc_offset_;
 
   if (floats_bfc_offset) {
-    floats_bfc_offset = NGLogicalOffset(
-        {bfc_offset.inline_offset, floats_bfc_offset.value().block_offset});
+    floats_bfc_offset = NGBfcOffset(
+        {bfc_offset.line_offset, floats_bfc_offset.value().block_offset});
   }
 
   if (is_in_parallel_flow) {

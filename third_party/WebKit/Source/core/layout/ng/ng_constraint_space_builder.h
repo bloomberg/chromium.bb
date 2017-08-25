@@ -5,6 +5,7 @@
 #ifndef NGConstraintSpaceBuilder_h
 #define NGConstraintSpaceBuilder_h
 
+#include "core/layout/ng/geometry/ng_bfc_offset.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
@@ -55,9 +56,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetMarginStrut(const NGMarginStrut& margin_strut);
 
-  NGConstraintSpaceBuilder& SetBfcOffset(const NGLogicalOffset& bfc_offset);
+  NGConstraintSpaceBuilder& SetBfcOffset(const NGBfcOffset& bfc_offset);
   NGConstraintSpaceBuilder& SetFloatsBfcOffset(
-      const WTF::Optional<NGLogicalOffset>& floats_bfc_offset);
+      const WTF::Optional<NGBfcOffset>& floats_bfc_offset);
 
   NGConstraintSpaceBuilder& SetClearanceOffset(
       const WTF::Optional<LayoutUnit>& clearance_offset);
@@ -99,8 +100,8 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   unsigned text_direction_ : 1;
 
   NGMarginStrut margin_strut_;
-  NGLogicalOffset bfc_offset_;
-  WTF::Optional<NGLogicalOffset> floats_bfc_offset_;
+  NGBfcOffset bfc_offset_;
+  WTF::Optional<NGBfcOffset> floats_bfc_offset_;
   const NGExclusionSpace* exclusion_space_;
   WTF::Optional<LayoutUnit> clearance_offset_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;

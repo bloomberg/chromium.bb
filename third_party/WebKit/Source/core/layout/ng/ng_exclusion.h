@@ -6,7 +6,7 @@
 #define NGExclusion_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_rect.h"
+#include "core/layout/ng/geometry/ng_bfc_rect.h"
 
 namespace blink {
 
@@ -24,7 +24,7 @@ struct CORE_EXPORT NGExclusion {
   };
 
   // Rectangle in logical coordinates the represents this exclusion.
-  NGLogicalRect rect;
+  NGBfcRect rect;
 
   // Type of this exclusion.
   Type type = kExclusionTypeUndefined;

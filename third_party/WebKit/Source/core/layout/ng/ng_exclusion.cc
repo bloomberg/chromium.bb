@@ -26,14 +26,14 @@ bool NGExclusion::MaybeCombineWith(const NGExclusion& other) {
 
   switch (other.type) {
     case NGExclusion::kFloatLeft: {
-      if (other.rect.offset == rect.InlineEndBlockStartOffset()) {
+      if (other.rect.offset == rect.LineEndBlockStartOffset()) {
         rect.size = {other.rect.InlineSize() + rect.InlineSize(),
                      other.rect.BlockSize()};
         return true;
       }
     }
     case NGExclusion::kFloatRight: {
-      if (rect.offset == other.rect.InlineEndBlockStartOffset()) {
+      if (rect.offset == other.rect.LineEndBlockStartOffset()) {
         rect.offset = other.rect.offset;
         rect.size = {other.rect.InlineSize() + rect.InlineSize(),
                      other.rect.BlockSize()};
