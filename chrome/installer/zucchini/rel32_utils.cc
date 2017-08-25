@@ -17,10 +17,10 @@ Rel32ReaderX86::Rel32ReaderX86(ConstBufferView image,
                                offset_t lo,
                                offset_t hi,
                                const std::vector<offset_t>* locations,
-                               const AddressTranslatorFactory& factory)
+                               const AddressTranslator& translator)
     : image_(image),
-      target_rva_to_offset_(factory.MakeRVAToOffsetTranslator()),
-      location_offset_to_rva_(factory.MakeOffsetToRVATranslator()),
+      target_rva_to_offset_(translator),
+      location_offset_to_rva_(translator),
       hi_(hi),
       last_(locations->end()) {
   DCHECK_LE(lo, image.size());
@@ -34,9 +34,9 @@ base::Optional<Reference> Rel32ReaderX86::GetNext() {
   while (current_ < last_ && *current_ < hi_) {
     offset_t loc_offset = *(current_++);
     DCHECK_LE(loc_offset + 4, image_.size());  // Sanity check.
-    rva_t loc_rva = location_offset_to_rva_->Convert(loc_offset);
+    rva_t loc_rva = location_offset_to_rva_.Convert(loc_offset);
     rva_t target_rva = loc_rva + 4 + image_.read<int32_t>(loc_offset);
-    offset_t target_offset = target_rva_to_offset_->Convert(target_rva);
+    offset_t target_offset = target_rva_to_offset_.Convert(target_rva);
     // In rare cases, the most significant bit of |target| is set. This
     // interferes with label marking. We expect these to already be filtered out
     // from |locations|.
@@ -49,16 +49,16 @@ base::Optional<Reference> Rel32ReaderX86::GetNext() {
 /******** Rel32ReceptorX86 ********/
 
 Rel32WriterX86::Rel32WriterX86(MutableBufferView image,
-                               const AddressTranslatorFactory& factory)
+                               const AddressTranslator& translator)
     : image_(image),
-      target_offset_to_rva_(factory.MakeOffsetToRVATranslator()),
-      location_offset_to_rva_(factory.MakeOffsetToRVATranslator()) {}
+      target_offset_to_rva_(translator),
+      location_offset_to_rva_(translator) {}
 
 Rel32WriterX86::~Rel32WriterX86() = default;
 
 void Rel32WriterX86::PutNext(Reference ref) {
-  rva_t target_rva = target_offset_to_rva_->Convert(ref.target);
-  rva_t loc_rva = location_offset_to_rva_->Convert(ref.location);
+  rva_t target_rva = target_offset_to_rva_.Convert(ref.target);
+  rva_t loc_rva = location_offset_to_rva_.Convert(ref.location);
 
   // Subtraction underflow is okay
   uint32_t code =
