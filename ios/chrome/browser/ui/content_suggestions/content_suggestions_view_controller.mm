@@ -18,6 +18,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recording.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
@@ -62,6 +63,7 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollDelegate = _overscrollDelegate;
 @synthesize scrolledToTop = _scrolledToTop;
+@synthesize metricsRecorder = _metricsRecorder;
 @dynamic collectionViewModel;
 
 #pragma mark - Lifecycle
@@ -94,6 +96,11 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   if (!indexPath || ![self.collectionViewModel hasItemAtIndexPath:indexPath]) {
     return;
   }
+
+  [self.metricsRecorder
+      onSuggestionDismissed:[self.collectionViewModel itemAtIndexPath:indexPath]
+                atIndexPath:indexPath
+      suggestionsShownAbove:[self numberOfSuggestionsAbove:indexPath.section]];
 
   [self.collectionView performBatchUpdates:^{
     [self collectionView:self.collectionView
@@ -160,6 +167,27 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
       completion:^(BOOL) {
         [self.audience contentOffsetDidChange];
       }];
+}
+
+- (NSInteger)numberOfSuggestionsAbove:(NSInteger)section {
+  NSInteger suggestionsAbove = 0;
+  for (NSInteger sectionAbove = 0; sectionAbove < section; sectionAbove++) {
+    if ([self.collectionUpdater isContentSuggestionsSection:sectionAbove]) {
+      suggestionsAbove +=
+          [self.collectionViewModel numberOfItemsInSection:sectionAbove];
+    }
+  }
+  return suggestionsAbove;
+}
+
+- (NSInteger)numberOfSectionsAbove:(NSInteger)section {
+  NSInteger sectionsAbove = 0;
+  for (NSInteger sectionAbove = 0; sectionAbove < section; sectionAbove++) {
+    if ([self.collectionUpdater isContentSuggestionsSection:sectionAbove]) {
+      sectionsAbove++;
+    }
+  }
+  return sectionsAbove;
 }
 
 + (NSString*)collectionAccessibilityIdentifier {
@@ -256,10 +284,10 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   switch ([self.collectionUpdater contentSuggestionTypeForItem:item]) {
     case ContentSuggestionTypeReadingList:
       base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
-      [self.suggestionCommandHandler openPageForItem:item];
+      [self.suggestionCommandHandler openPageForItemAtIndexPath:indexPath];
       break;
     case ContentSuggestionTypeArticle:
-      [self.suggestionCommandHandler openPageForItem:item];
+      [self.suggestionCommandHandler openPageForItemAtIndexPath:indexPath];
       break;
     case ContentSuggestionTypeMostVisited:
       [self.suggestionCommandHandler openMostVisitedItem:item
@@ -276,6 +304,23 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
     case ContentSuggestionTypeEmpty:
       break;
   }
+}
+
+- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
+                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
+  CSCollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+
+  if (!item.metricsRecorded) {
+    [self.metricsRecorder
+            onSuggestionShown:item
+                  atIndexPath:indexPath
+        suggestionsShownAbove:[self
+                                  numberOfSuggestionsAbove:indexPath.section]];
+    item.metricsRecorded = YES;
+  }
+
+  return [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout

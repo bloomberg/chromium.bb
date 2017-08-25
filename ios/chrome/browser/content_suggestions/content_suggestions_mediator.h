@@ -10,6 +10,7 @@
 #include <memory>
 
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
+#import "ios/chrome/browser/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
 
 namespace favicon {
@@ -35,7 +36,9 @@ class NotificationPromoWhatsNew;
 // Mediator for ContentSuggestions. Makes the interface between a
 // ntp_snippets::ContentSuggestionsService and the Objective-C services using
 // its data.
-@interface ContentSuggestionsMediator : NSObject<ContentSuggestionsDataSource>
+@interface ContentSuggestionsMediator
+    : NSObject<ContentSuggestionsDataSource,
+               ContentSuggestionsMetricsRecorderDelegate>
 
 // Initialize the mediator with the |contentService| to mediate.
 - (nullable instancetype)
