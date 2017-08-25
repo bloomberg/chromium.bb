@@ -1483,7 +1483,7 @@
         {
           "board_name": "reef-uni",
           "name": "snappy",
-          "cq_test_enabled": false
+          "cq_test_enabled": true
         }
       ]
     }
