@@ -24,6 +24,7 @@
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
+#include "media/base/mock_media_log.h"
 #include "media/base/test_data_util.h"
 #include "media/base/timestamp_constants.h"
 #include "media/cdm/aes_decryptor.h"
@@ -76,11 +77,12 @@
 #define MAYBE_TEXT(test) test
 #endif
 
-using testing::_;
-using testing::AnyNumber;
-using testing::AtLeast;
-using testing::AtMost;
-using testing::SaveArg;
+using ::testing::_;
+using ::testing::AnyNumber;
+using ::testing::AtLeast;
+using ::testing::AtMost;
+using ::testing::HasSubstr;
+using ::testing::SaveArg;
 
 namespace media {
 
@@ -1197,6 +1199,41 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
   EXPECT_EQ(kAppendTimeMs + k640WebMFileDurationMs,
             pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  source.Shutdown();
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, MediaSource_AudioConfigChange_WebM) {
+  MockMediaSource source("bear-320x240-audio-only.webm", kAudioOnlyWebM,
+                         kAppendWholeFile);
+  EXPECT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source));
+
+  const int kNewSampleRate = 48000;
+  EXPECT_CALL(*this,
+              OnAudioConfigChange(::testing::Property(
+                  &AudioDecoderConfig::samples_per_second, kNewSampleRate)))
+      .Times(1);
+
+  // A higher sample rate will cause the audio buffer durations to change. This
+  // should not manifest as a timestamp gap in AudioTimestampValidator.
+  // Timestamp expectations should be reset across config changes.
+  EXPECT_MEDIA_LOG(Not(HasSubstr("Large timestamp gap detected")))
+      .Times(AnyNumber());
+
+  scoped_refptr<DecoderBuffer> second_file =
+      ReadTestDataFile("bear-320x240-audio-only-48khz.webm");
+  ASSERT_TRUE(source.AppendAtTime(base::TimeDelta::FromSeconds(kAppendTimeSec),
+                                  second_file->data(),
+                                  second_file->data_size()));
+  source.EndOfStream();
+
+  Play();
+  EXPECT_TRUE(WaitUntilOnEnded());
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(3773, pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
 
   source.Shutdown();
   Stop();

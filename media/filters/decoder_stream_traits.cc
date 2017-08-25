@@ -84,6 +84,13 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::OnDecodeDone(
   audio_ts_validator_->RecordOutputDuration(buffer);
 }
 
+void DecoderStreamTraits<DemuxerStream::AUDIO>::OnConfigChanged(
+    const DecoderConfigType& config) {
+  // Reset validator with the latest config. Also ensures that we do not attempt
+  // to match timestamps across config boundaries.
+  audio_ts_validator_.reset(new AudioTimestampValidator(config, media_log_));
+}
+
 // Video decoder stream traits implementation.
 
 // static
