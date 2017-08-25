@@ -60,11 +60,20 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   // Sad Tab.
   void ReloadTab();
 
+  // Called when the app becomes active.
+  void OnAppDidBecomeActive();
+
+  // Adds UIApplicationDidBecomeActiveNotification observer.
+  void AddApplicationDidBecomeActiveObserver();
+  // Removes UIApplicationDidBecomeActiveNotification observer.
+  void RemoveApplicationDidBecomeActiveObserver();
+
   // WebStateObserver:
   void WasShown() override;
   void WasHidden() override;
   void RenderProcessGone() override;
   void DidFinishNavigation(web::NavigationContext* navigation_context) override;
+  void WebStateDestroyed() override;
 
   // Stores the last URL that caused a renderer crash,
   // used to detect repeated crashes.
@@ -86,6 +95,9 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
 
   // true if the WebState needs to be reloaded after the app becomes active.
   bool requires_reload_on_becoming_active_;
+
+  // Observer for UIApplicationDidBecomeActiveNotification.
+  __strong id<NSObject> application_did_become_active_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabTabHelper);
 };

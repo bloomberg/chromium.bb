@@ -42,9 +42,13 @@ SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
       repeat_failure_interval_(repeat_failure_interval),
       is_visible_(false),
       requires_reload_on_becoming_visible_(false),
-      requires_reload_on_becoming_active_(false) {}
+      requires_reload_on_becoming_active_(false) {
+  AddApplicationDidBecomeActiveObserver();
+}
 
-SadTabTabHelper::~SadTabTabHelper() = default;
+SadTabTabHelper::~SadTabTabHelper() {
+  DCHECK(!application_did_become_active_observer_);
+}
 
 void SadTabTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
@@ -102,6 +106,10 @@ void SadTabTabHelper::DidFinishNavigation(
   }
 }
 
+void SadTabTabHelper::WebStateDestroyed() {
+  RemoveApplicationDidBecomeActiveObserver();
+}
+
 void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
   // Is this failure a repeat-failure requiring the presentation of the Feedback
   // UI rather than the Reload UI?
@@ -130,4 +138,34 @@ void SadTabTabHelper::ReloadTab() {
   PagePlaceholderTabHelper::FromWebState(web_state())
       ->AddPlaceholderForNextNavigation();
   web_state()->GetNavigationManager()->LoadIfNecessary();
+}
+
+void SadTabTabHelper::OnAppDidBecomeActive() {
+  if (!requires_reload_on_becoming_active_)
+    return;
+  if (is_visible_) {
+    ReloadTab();
+  } else {
+    requires_reload_on_becoming_visible_ = true;
+  }
+  requires_reload_on_becoming_active_ = false;
+}
+
+void SadTabTabHelper::AddApplicationDidBecomeActiveObserver() {
+  application_did_become_active_observer_ =
+      [[NSNotificationCenter defaultCenter]
+          addObserverForName:UIApplicationDidBecomeActiveNotification
+                      object:nil
+                       queue:nil
+                  usingBlock:^(NSNotification*) {
+                    OnAppDidBecomeActive();
+                  }];
+}
+
+void SadTabTabHelper::RemoveApplicationDidBecomeActiveObserver() {
+  if (application_did_become_active_observer_) {
+    [[NSNotificationCenter defaultCenter]
+        removeObserver:application_did_become_active_observer_];
+    application_did_become_active_observer_ = nil;
+  }
 }

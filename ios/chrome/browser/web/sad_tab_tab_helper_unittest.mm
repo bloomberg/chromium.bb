@@ -80,7 +80,8 @@ TEST_F(SadTabTabHelperTest, ReloadedWhenWebStateWasShown) {
   EXPECT_TRUE(navigation_manager_->LoadIfNecessaryWasCalled());
 }
 
-// Tests that SadTab is not presented if app is in background.
+// Tests that SadTab is not presented if app is in background and navigation
+// item is reloaded once the app became active.
 TEST_F(SadTabTabHelperTest, AppInBackground) {
   OCMStub([application_ applicationState])
       .andReturn(UIApplicationStateBackground);
@@ -93,9 +94,19 @@ TEST_F(SadTabTabHelperTest, AppInBackground) {
   // but Sad Tab should not be presented, because application is backgrounded.
   web_state_.OnRenderProcessGone();
   EXPECT_FALSE(web_state_.GetTransientContentView());
+
+  // Navigation item must be reloaded once the app became active.
+  EXPECT_FALSE(navigation_manager_->LoadIfNecessaryWasCalled());
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:UIApplicationDidBecomeActiveNotification
+                    object:nil];
+  EXPECT_TRUE(PagePlaceholderTabHelper::FromWebState(&web_state_)
+                  ->will_add_placeholder_for_next_navigation());
+  EXPECT_TRUE(navigation_manager_->LoadIfNecessaryWasCalled());
 }
 
-// Tests that SadTab is not presented if app is in inactive.
+// Tests that SadTab is not presented if app is in inactive  and navigation
+// item is reloaded once the app became active.
 TEST_F(SadTabTabHelperTest, AppIsInactive) {
   OCMStub([application_ applicationState])
       .andReturn(UIApplicationStateInactive);
@@ -108,6 +119,15 @@ TEST_F(SadTabTabHelperTest, AppIsInactive) {
   // but Sad Tab should not be presented, because application is inactive.
   web_state_.OnRenderProcessGone();
   EXPECT_FALSE(web_state_.GetTransientContentView());
+
+  // Navigation item must be reloaded once the app became active.
+  EXPECT_FALSE(navigation_manager_->LoadIfNecessaryWasCalled());
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:UIApplicationDidBecomeActiveNotification
+                    object:nil];
+  EXPECT_TRUE(PagePlaceholderTabHelper::FromWebState(&web_state_)
+                  ->will_add_placeholder_for_next_navigation());
+  EXPECT_TRUE(navigation_manager_->LoadIfNecessaryWasCalled());
 }
 
 // Tests that SadTab is presented for shown web states.
