@@ -49,6 +49,7 @@ public class UpdateMenuItemHelper {
     private static final String FIELD_TRIAL_NAME = "UpdateMenuItem";
     private static final String ENABLED_VALUE = "true";
     private static final String CUSTOM_SUMMARY = "custom_summary";
+    private static final String MIN_REQUIRED_STORAGE_MB = "min_required_storage_for_update_mb";
 
     // UMA constants for logging whether the menu item was clicked.
     private static final int ITEM_NOT_CLICKED = 0;
@@ -117,8 +118,7 @@ public class UpdateMenuItemHelper {
                     mUpdateUrl = MarketURLGetter.getMarketUrl(activity);
                     mLatestVersion =
                             VersionNumberGetter.getInstance().getLatestKnownVersion(activity);
-                    mUpdateAvailable = true;
-                    recordInternalStorageSize();
+                    mUpdateAvailable = checkForSufficientStorage();
                 } else {
                     mUpdateAvailable = false;
                 }
@@ -389,7 +389,28 @@ public class UpdateMenuItemHelper {
         return value;
     }
 
-    private void recordInternalStorageSize() {
+    /**
+     * Returns an integer value for a Finch parameter, or the default value if no parameter exists
+     * in the current configuration.  Also checks for a command-line switch with the same name.
+     * @param paramName The name of the Finch parameter (or command-line switch) to get a value for.
+     * @param defaultValue The default value to return when there's no param or switch.
+     * @return An integer value -- either the param or the default.
+     */
+    private static int getIntParamValueOrDefault(String paramName, int defaultValue) {
+        String value = CommandLine.getInstance().getSwitchValue(paramName);
+        if (TextUtils.isEmpty(value)) {
+            value = VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME, paramName);
+        }
+        if (TextUtils.isEmpty(value)) return defaultValue;
+
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
+
+    private boolean checkForSufficientStorage() {
         assert !ThreadUtils.runningOnUiThread();
 
         File path = Environment.getDataDirectory();
@@ -402,6 +423,13 @@ public class UpdateMenuItemHelper {
         }
         RecordHistogram.recordLinearCountHistogram(
                 "GoogleUpdate.InfoBar.InternalStorageSizeAvailable", (int) size, 1, 200, 100);
+        RecordHistogram.recordLinearCountHistogram(
+                "GoogleUpdate.InfoBar.DeviceFreeSpace", (int) size, 1, 1000, 50);
+
+        int minRequiredStorage = getIntParamValueOrDefault(MIN_REQUIRED_STORAGE_MB, -1);
+        if (minRequiredStorage == -1) return true;
+
+        return size >= minRequiredStorage;
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)

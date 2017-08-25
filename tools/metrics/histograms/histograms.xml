@@ -24543,13 +24543,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="GoogleUpdate.InfoBar.DeviceFreeSpace" units="MB">
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    (Android-only) The amount of internal memory storage that is free on the
+    file system and available to the applications when the InfoBar or update
+    menu item is shown.
+  </summary>
+</histogram>
+
 <histogram name="GoogleUpdate.InfoBar.InternalStorageSizeAvailable" units="MB">
   <owner>yfriedman@chromium.org</owner>
   <owner>dfalcantara@chromium.org</owner>
   <owner>khushalsagar@chromium.org</owner>
   <summary>
     (Android-only) The amount of internal memory storage available on the user's
-    device when the InfoBar or update menu item is shown.
+    device when the InfoBar or update menu item is shown. Deprecating soon in
+    M64.
   </summary>
 </histogram>
 
