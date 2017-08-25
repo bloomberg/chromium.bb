@@ -1019,16 +1019,6 @@ void ServiceWorkerContextWrapper::
                           base::BindOnce(callback, result));
 }
 
-void ServiceWorkerContextWrapper::BindWorkerFetchContext(
-    int render_process_id,
-    int service_worker_provider_id,
-    mojom::ServiceWorkerWorkerClientAssociatedPtrInfo client_ptr_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context()->BindWorkerFetchContext(render_process_id,
-                                    service_worker_provider_id,
-                                    std::move(client_ptr_info));
-}
-
 ServiceWorkerContextCore* ServiceWorkerContextWrapper::context() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return context_core_.get();
