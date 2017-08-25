@@ -20,8 +20,8 @@
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -29,9 +29,10 @@
 #include "extensions/common/extension.h"
 
 using content::BrowserThread;
+using browsing_data::ClearBrowsingDataTab;
+using browsing_data::BrowsingDataType;
 
 namespace extension_browsing_data_api_constants {
-
 // Parameter name keys.
 const char kDataRemovalPermittedKey[] = "dataRemovalPermitted";
 const char kDataToRemoveKey[] = "dataToRemove";
@@ -65,8 +66,9 @@ const char kUnprotectedWebKey[] = "unprotectedWeb";
 // The placeholder will be filled by the name of the affected data type (e.g.,
 // "history").
 const char kBadDataTypeDetails[] = "Invalid value for data type '%s'.";
-const char kDeleteProhibitedError[] = "Browsing history and downloads are not "
-                                      "permitted to be removed.";
+const char kDeleteProhibitedError[] =
+    "Browsing history and downloads are not "
+    "permitted to be removed.";
 
 }  // namespace extension_browsing_data_api_constants
 
@@ -123,8 +125,22 @@ bool IsRemovalPermitted(int removal_mask, PrefService* prefs) {
 
 }  // namespace
 
+bool BrowsingDataSettingsFunction::isDataTypeSelected(
+    BrowsingDataType data_type,
+    ClearBrowsingDataTab tab) {
+  std::string pref_name;
+  bool success = GetDeletionPreferenceFromDataType(data_type, tab, &pref_name);
+  return success && prefs_->GetBoolean(pref_name);
+}
+
 ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
   prefs_ = Profile::FromBrowserContext(browser_context())->GetPrefs();
+
+  ClearBrowsingDataTab tab =
+      base::FeatureList::IsEnabled(features::kTabsInCbd)
+          ? static_cast<ClearBrowsingDataTab>(prefs_->GetInteger(
+                browsing_data::prefs::kLastClearBrowsingDataTab))
+          : ClearBrowsingDataTab::ADVANCED;
 
   // Fill origin types.
   // The "cookies" and "hosted apps" UI checkboxes both map to
@@ -135,15 +151,17 @@ ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
       new base::DictionaryValue);
   origin_types->SetBoolean(
       extension_browsing_data_api_constants::kUnprotectedWebKey,
-      prefs_->GetBoolean(browsing_data::prefs::kDeleteCookies));
+      isDataTypeSelected(BrowsingDataType::COOKIES, tab));
   origin_types->SetBoolean(
       extension_browsing_data_api_constants::kProtectedWebKey,
-      prefs_->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData));
+      isDataTypeSelected(BrowsingDataType::HOSTED_APPS_DATA, tab));
   origin_types->SetBoolean(
       extension_browsing_data_api_constants::kExtensionsKey, false);
 
   // Fill deletion time period.
-  int period_pref = prefs_->GetInteger(browsing_data::prefs::kDeleteTimePeriod);
+  int period_pref =
+      prefs_->GetInteger(browsing_data::GetTimePeriodPreferenceName(tab));
+
   browsing_data::TimePeriod period =
       static_cast<browsing_data::TimePeriod>(period_pref);
   double since = 0;
@@ -162,8 +180,8 @@ ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
   std::unique_ptr<base::DictionaryValue> permitted(new base::DictionaryValue);
 
   bool delete_site_data =
-      prefs_->GetBoolean(browsing_data::prefs::kDeleteCookies) ||
-      prefs_->GetBoolean(browsing_data::prefs::kDeleteHostedAppsData);
+      isDataTypeSelected(BrowsingDataType::COOKIES, tab) ||
+      isDataTypeSelected(BrowsingDataType::HOSTED_APPS_DATA, tab);
 
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kAppCacheKey,
@@ -200,19 +218,19 @@ ExtensionFunction::ResponseAction BrowsingDataSettingsFunction::Run() {
 
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kHistoryKey,
-             prefs_->GetBoolean(browsing_data::prefs::kDeleteBrowsingHistory));
+             isDataTypeSelected(BrowsingDataType::HISTORY, tab));
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kDownloadsKey,
-             prefs_->GetBoolean(browsing_data::prefs::kDeleteDownloadHistory));
+             isDataTypeSelected(BrowsingDataType::DOWNLOADS, tab));
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kCacheKey,
-             prefs_->GetBoolean(browsing_data::prefs::kDeleteCache));
+             isDataTypeSelected(BrowsingDataType::CACHE, tab));
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kFormDataKey,
-             prefs_->GetBoolean(browsing_data::prefs::kDeleteFormData));
+             isDataTypeSelected(BrowsingDataType::FORM_DATA, tab));
   SetDetails(selected.get(), permitted.get(),
              extension_browsing_data_api_constants::kPasswordsKey,
-             prefs_->GetBoolean(browsing_data::prefs::kDeletePasswords));
+             isDataTypeSelected(BrowsingDataType::PASSWORDS, tab));
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue);
   result->Set(extension_browsing_data_api_constants::kOptionsKey,
