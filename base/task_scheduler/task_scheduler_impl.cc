@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/task_scheduler/delayed_task_manager.h"
 #include "base/task_scheduler/environment_config.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
@@ -47,9 +48,10 @@ TaskSchedulerImpl::~TaskSchedulerImpl() {
 }
 
 void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
-  if (init_params.task_priority_adjustment ==
-      TaskScheduler::TaskPriorityAdjustment::
-          EXPERIMENTAL_ALL_TASKS_USER_BLOCKING) {
+  // This is set in Start() and not in the constructor because variation params
+  // are usually not ready when TaskSchedulerImpl is instantiated in a process.
+  if (base::GetFieldTrialParamValue("BrowserScheduler",
+                                    "AllTasksUserBlocking") == "true") {
     all_tasks_user_blocking_.Set();
   }
 
