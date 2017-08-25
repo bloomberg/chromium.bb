@@ -195,6 +195,11 @@ target(link_target_type, "ffmpeg_internal") {
     # meantime, we directly disable those warnings locally in the C files.
   ]
 
+  # Disable internal ffmpeg logs in the official build; this saves ~158kb.
+  if (is_official_build) {
+    defines += [ "CHROMIUM_NO_LOGGING" ]
+  }
+
   # So we can append below and assume they're defined.
   cflags = []
   ldflags = []

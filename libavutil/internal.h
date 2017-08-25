@@ -225,8 +225,12 @@
  *                field is a pointer to an AVClass struct
  * @param[in] msg string containing the name of the missing feature
  */
+#if defined(CHROMIUM_NO_LOGGING)
+#define avpriv_report_missing_feature(...)
+#else
 void avpriv_report_missing_feature(void *avc,
                                    const char *msg, ...) av_printf_format(2, 3);
+#endif
 
 /**
  * Log a generic warning message about a missing feature.
@@ -236,8 +240,12 @@ void avpriv_report_missing_feature(void *avc,
  *                a pointer to an AVClass struct
  * @param[in] msg string containing the name of the missing feature
  */
+#if defined(CHROMIUM_NO_LOGGING)
+#define avpriv_request_sample(...)
+#else
 void avpriv_request_sample(void *avc,
                            const char *msg, ...) av_printf_format(2, 3);
+#endif
 
 #if HAVE_LIBC_MSVCRT
 #include <crtversion.h>

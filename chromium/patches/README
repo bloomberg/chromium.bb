@@ -61,6 +61,10 @@ Current patches:
     Change to 'return' in read_chapter to 'goto end' to fix a minor memory leak.
     crbug.com/689339
 
+  libavformat/log.{c,h}
+  libavformat/internal.{h}
+    Changes to #define logging functions to nothing to save ~158kb of strings.
+
   libavformat/mov.c
     Always use av_realloc() for |extradata|. https://crbug.com/721872
 

@@ -363,7 +363,7 @@ end:
 
 static void (*av_log_callback)(void*, int, const char*, va_list) =
     av_log_default_callback;
-
+#if !defined(CHROMIUM_NO_LOGGING)
 void av_log(void* avcl, int level, const char *fmt, ...)
 {
     AVClass* avc = avcl ? *(AVClass **) avcl : NULL;
@@ -375,13 +375,16 @@ void av_log(void* avcl, int level, const char *fmt, ...)
     av_vlog(avcl, level, fmt, vl);
     va_end(vl);
 }
+#endif
 
+#if !defined(CHROMIUM_NO_LOGGING)
 void av_vlog(void* avcl, int level, const char *fmt, va_list vl)
 {
     void (*log_callback)(void*, int, const char*, va_list) = av_log_callback;
     if (log_callback)
         log_callback(avcl, level, fmt, vl);
 }
+#endif
 
 int av_log_get_level(void)
 {
@@ -408,6 +411,7 @@ void av_log_set_callback(void (*callback)(void*, int, const char*, va_list))
     av_log_callback = callback;
 }
 
+#if !defined(CHROMIUM_NO_LOGGING)
 static void missing_feature_sample(int sample, void *avc, const char *msg,
                                    va_list argument_list)
 {
@@ -439,3 +443,4 @@ void avpriv_report_missing_feature(void *avc, const char *msg, ...)
     missing_feature_sample(0, avc, msg, argument_list);
     va_end(argument_list);
 }
+#endif

@@ -231,8 +231,11 @@ typedef struct AVClass {
  * @param fmt The format string (printf-compatible) that specifies how
  *        subsequent arguments are converted to output.
  */
+#if defined(CHROMIUM_NO_LOGGING)
+#define av_log(...)
+#else
 void av_log(void *avcl, int level, const char *fmt, ...) av_printf_format(3, 4);
-
+#endif
 
 /**
  * Send the specified message to the log if the level is less than or equal
@@ -249,7 +252,11 @@ void av_log(void *avcl, int level, const char *fmt, ...) av_printf_format(3, 4);
  *        subsequent arguments are converted to output.
  * @param vl The arguments referenced by the format string.
  */
+#if defined(CHROMIUM_NO_LOGGING)
+#define av_vlog(...)
+#else
 void av_vlog(void *avcl, int level, const char *fmt, va_list vl);
+#endif
 
 /**
  * Get the current log level
