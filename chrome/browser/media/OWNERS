@@ -7,6 +7,7 @@ per-file cast_*=hubbe@chromium.org
 per-file cast_*=miu@chromium.org
 
 # For Media Engagement
+per-file media_engagement*=beccahughes@chromium.org
 per-file media_engagement*=mlamouri@chromium.org
 
 # For IPC security review
