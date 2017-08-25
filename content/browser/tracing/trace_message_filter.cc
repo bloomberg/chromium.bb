@@ -34,9 +34,9 @@ void TraceMessageFilter::OnChannelClosing() {
     if (is_awaiting_buffer_percent_full_ack_)
       OnTraceLogStatusReply(base::trace_event::TraceLogStatus());
 
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&TraceMessageFilter::Unregister, base::RetainedRef(this)));
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::BindOnce(&TraceMessageFilter::Unregister,
+                                           base::RetainedRef(this)));
   }
 }
 
@@ -92,7 +92,7 @@ void TraceMessageFilter::OnChildSupportsTracing() {
   has_child_ = true;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&TraceMessageFilter::Register, base::RetainedRef(this)));
+      base::BindOnce(&TraceMessageFilter::Register, base::RetainedRef(this)));
 }
 
 void TraceMessageFilter::OnEndTracingAck(

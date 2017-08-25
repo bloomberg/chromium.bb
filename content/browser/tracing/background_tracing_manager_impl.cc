@@ -140,8 +140,8 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&BackgroundTracingManagerImpl::ValidateStartupScenario,
-                   base::Unretained(this)));
+        base::BindOnce(&BackgroundTracingManagerImpl::ValidateStartupScenario,
+                       base::Unretained(this)));
   }
 
   std::unique_ptr<const content::BackgroundTracingConfigImpl> config_impl(
@@ -310,8 +310,8 @@ void BackgroundTracingManagerImpl::OnHistogramTrigger(
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&BackgroundTracingManagerImpl::OnHistogramTrigger,
-                   base::Unretained(this), histogram_name));
+        base::BindOnce(&BackgroundTracingManagerImpl::OnHistogramTrigger,
+                       base::Unretained(this), histogram_name));
     return;
   }
 
@@ -327,8 +327,8 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&BackgroundTracingManagerImpl::TriggerNamedEvent,
-                   base::Unretained(this), handle, callback));
+        base::BindOnce(&BackgroundTracingManagerImpl::TriggerNamedEvent,
+                       base::Unretained(this), handle, callback));
     return;
   }
 
@@ -502,8 +502,8 @@ void BackgroundTracingManagerImpl::OnFinalizeComplete() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&BackgroundTracingManagerImpl::OnFinalizeComplete,
-                   base::Unretained(this)));
+        base::BindOnce(&BackgroundTracingManagerImpl::OnFinalizeComplete,
+                       base::Unretained(this)));
     return;
   }
 

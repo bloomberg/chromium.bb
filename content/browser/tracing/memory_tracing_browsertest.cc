@@ -55,9 +55,10 @@ class MemoryTracingTest : public ContentBrowserTest {
     // the run loop (which is the IN_PROC_BROWSER_TEST_F main thread).
     if (!task_runner->RunsTasksInCurrentSequence()) {
       task_runner->PostTask(
-          FROM_HERE, base::Bind(&MemoryTracingTest::OnGlobalMemoryDumpDone,
-                                base::Unretained(this), task_runner, closure,
-                                request_index, success, dump_guid));
+          FROM_HERE,
+          base::BindOnce(&MemoryTracingTest::OnGlobalMemoryDumpDone,
+                         base::Unretained(this), task_runner, closure,
+                         request_index, success, dump_guid));
       return;
     }
     if (success)
