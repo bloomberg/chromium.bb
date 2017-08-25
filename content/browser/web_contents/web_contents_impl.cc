@@ -519,6 +519,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       did_first_visually_non_empty_paint_(false),
       capturer_count_(0),
       should_normally_be_visible_(true),
+      should_normally_be_occluded_(false),
       did_first_set_visible_(false),
       is_being_destroyed_(false),
       is_notifying_observers_(false),
@@ -1358,7 +1359,7 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
   }
 
   // Ensure that all views are un-occluded before capture begins.
-  WasUnOccluded();
+  DoWasUnOccluded();
 }
 
 void WebContentsImpl::DecrementCapturerCount() {
@@ -1374,11 +1375,14 @@ void WebContentsImpl::DecrementCapturerCount() {
     const gfx::Size old_size = preferred_size_for_capture_;
     preferred_size_for_capture_ = gfx::Size();
     OnPreferredSizeChanged(old_size);
-  }
 
-  if (IsHidden()) {
-    DVLOG(1) << "Executing delayed WasHidden().";
-    WasHidden();
+    if (IsHidden()) {
+      DVLOG(1) << "Executing delayed WasHidden().";
+      WasHidden();
+    }
+
+    if (should_normally_be_occluded_)
+      WasOccluded();
   }
 }
 
@@ -1569,14 +1573,23 @@ bool WebContentsImpl::IsVisible() const {
 }
 
 void WebContentsImpl::WasOccluded() {
-  if (capturer_count_ > 0)
-    return;
+  if (capturer_count_ == 0) {
+    for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
+      view->WasOccluded();
+  }
 
-  for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
-    view->WasOccluded();
+  should_normally_be_occluded_ = true;
 }
 
 void WebContentsImpl::WasUnOccluded() {
+  if (capturer_count_ == 0)
+    DoWasUnOccluded();
+
+  should_normally_be_occluded_ = false;
+}
+
+void WebContentsImpl::DoWasUnOccluded() {
+  // TODO(fdoray): Only call WasUnOccluded on frames in the active viewport.
   for (RenderWidgetHostView* view : GetRenderWidgetHostViewsInTree())
     view->WasUnOccluded();
 }
