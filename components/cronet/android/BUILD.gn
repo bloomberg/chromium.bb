@@ -288,6 +288,7 @@ cronet_impl_common_java_srcjar_deps = [
 # by all Cronet engine implementations.
 android_library("cronet_impl_common_java") {
   java_files = [
+    "java/src/org/chromium/net/impl/BidirectionalStreamNetworkException.java",
     "java/src/org/chromium/net/impl/CallbackExceptionImpl.java",
     "java/src/org/chromium/net/impl/CronetExceptionImpl.java",
     "java/src/org/chromium/net/impl/CronetEngineBase.java",
