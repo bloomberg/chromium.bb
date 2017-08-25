@@ -136,9 +136,7 @@ enum MouseEventFlags {
                                      // from an unconsumed touch/gesture event.
   EF_TOUCH_ACCESSIBILITY = 1 << 19,  // Indicates this event was generated from
                                      // touch accessibility mode.
-  EF_DIRECT_INPUT = 1 << 20,         // Mouse event coming from direct,
-                                     // on-screen input.
-  EF_CURSOR_HIDE = 1 << 21,          // Indicates this mouse event is generated
+  EF_CURSOR_HIDE = 1 << 20,          // Indicates this mouse event is generated
                                      // because the cursor was just hidden. This
                                      // can be used to update hover state.
 };
