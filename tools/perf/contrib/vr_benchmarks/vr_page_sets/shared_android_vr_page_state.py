@@ -5,15 +5,16 @@
 import os
 from core import path_util
 path_util.AddAndroidPylibToPath()
+from page_sets import android_screen_restoration_shared_state as screen_state
 from pylib.utils import shared_preference_utils
 from telemetry.core import android_platform
 from telemetry.core import platform
 from telemetry.core import util
-from telemetry.page import shared_page_state
 from telemetry.internal.platform import android_device
 
 
-class SharedAndroidVrPageState(shared_page_state.SharedPageState):
+class SharedAndroidVrPageState(
+    screen_state.AndroidScreenRestorationSharedState):
   """SharedPageState for VR Telemetry tests.
 
   Performs the same functionality as SharedPageState, but with two main
@@ -21,6 +22,9 @@ class SharedAndroidVrPageState(shared_page_state.SharedPageState):
   1. It is currently restricted to Android
   2. It performs VR-specific setup such as installing and configuring
      additional APKs that are necessary for testing
+
+  Also ensures that the screen is on before the test starts by inheriting from
+  AndroidScreenRestorationSharedState.
   """
   def __init__(self, test, finder_options, story_set):
     # TODO(bsheedy): See about making this a cross-platform SharedVrPageState -
