@@ -53,7 +53,7 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
 
   {
     VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(selection.Start(), 1);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 1);
 
     EXPECT_EQ("f", surrounding_text.Content());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
@@ -62,7 +62,7 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
 
   {
     VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(selection.Start(), 5);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 5);
 
     // maxlength/2 is used on the left and right.
     EXPECT_EQ("foo", surrounding_text.Content().SimplifyWhiteSpace());
@@ -72,7 +72,7 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
 
   {
     VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(selection.Start(), 42);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 42);
 
     EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -81,7 +81,7 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
 
   {
     VisibleSelection selection = Select(7);
-    SurroundingText surrounding_text(selection.Start(), 42);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 42);
 
     EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(8u, surrounding_text.StartOffsetInContent());
@@ -90,7 +90,7 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
 
   {
     VisibleSelection selection = Select(6);
-    SurroundingText surrounding_text(selection.Start(), 2);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 2);
 
     EXPECT_EQ("ar", surrounding_text.Content());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -99,7 +99,7 @@ TEST_F(SurroundingTextTest, BasicCaretSelection) {
 
   {
     VisibleSelection selection = Select(6);
-    SurroundingText surrounding_text(selection.Start(), 42);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 42);
 
     EXPECT_EQ("foo bar", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(7u, surrounding_text.StartOffsetInContent());
@@ -175,7 +175,7 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
 
   {
     VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(selection.Start(), 1);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 1);
 
     EXPECT_EQ("f", surrounding_text.Content());
     EXPECT_EQ(0u, surrounding_text.StartOffsetInContent());
@@ -184,7 +184,7 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
 
   {
     VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(selection.Start(), 5);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 5);
 
     EXPECT_EQ("foo", surrounding_text.Content().SimplifyWhiteSpace());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -193,7 +193,7 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
 
   {
     VisibleSelection selection = Select(0);
-    SurroundingText surrounding_text(selection.Start(), 1337);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               surrounding_text.Content().SimplifyWhiteSpace());
@@ -203,7 +203,7 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
 
   {
     VisibleSelection selection = Select(6);
-    SurroundingText surrounding_text(selection.Start(), 2);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 2);
 
     EXPECT_EQ("ar", surrounding_text.Content());
     EXPECT_EQ(1u, surrounding_text.StartOffsetInContent());
@@ -212,7 +212,7 @@ TEST_F(SurroundingTextTest, TreeCaretSelection) {
 
   {
     VisibleSelection selection = Select(6);
-    SurroundingText surrounding_text(selection.Start(), 1337);
+    SurroundingText surrounding_text(EphemeralRange(selection.Start()), 1337);
 
     EXPECT_EQ("This is outside of foo bar the selected node",
               surrounding_text.Content().SimplifyWhiteSpace());
