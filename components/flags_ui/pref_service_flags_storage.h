@@ -27,6 +27,7 @@ class PrefServiceFlagsStorage : public FlagsStorage {
 
   std::set<std::string> GetFlags() override;
   bool SetFlags(const std::set<std::string>& flags) override;
+  void CommitPendingWrites() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 

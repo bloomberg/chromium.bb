@@ -21,6 +21,8 @@ class FlagsStorage {
   virtual std::set<std::string> GetFlags() = 0;
   // Stores the |flags| and returns true on success.
   virtual bool SetFlags(const std::set<std::string>& flags) = 0;
+  // Lands pending changes to disk immediately.
+  virtual void CommitPendingWrites() = 0;
 };
 
 }  // namespace flags_ui

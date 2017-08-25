@@ -48,6 +48,10 @@ bool PrefServiceFlagsStorage::SetFlags(const std::set<std::string>& flags) {
   return true;
 }
 
+void PrefServiceFlagsStorage::CommitPendingWrites() {
+  prefs_->CommitPendingWrite();
+}
+
 // static
 void PrefServiceFlagsStorage::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kEnabledLabsExperiments);
