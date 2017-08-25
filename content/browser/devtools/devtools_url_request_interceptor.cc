@@ -5,6 +5,7 @@
 #include "content/browser/devtools/devtools_url_request_interceptor.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/strings/pattern.h"
 #include "base/strings/stringprintf.h"
 #include "base/supports_user_data.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
@@ -85,6 +86,12 @@ DevToolsURLRequestInterceptor::State::State() : next_id_(0) {}
 
 DevToolsURLRequestInterceptor::State::~State() {}
 
+DevToolsURLRequestInterceptor::State::RenderFrameHostInfo::RenderFrameHostInfo(
+    RenderFrameHost* host)
+    : routing_id(host->GetRoutingID()),
+      frame_tree_node_id(host->GetFrameTreeNodeId()),
+      process_id(host->GetProcess()->GetID()) {}
+
 void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequest(
     std::string interception_id,
     std::unique_ptr<Modifications> modifications,
@@ -93,14 +100,13 @@ void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequest(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&DevToolsURLRequestInterceptor::State::
-                         ContinueInterceptedRequestOnIoThread,
-                     this, interception_id,
-                     base::Passed(std::move(modifications)),
-                     base::Passed(std::move(callback))));
+      base::BindOnce(
+          &DevToolsURLRequestInterceptor::State::ContinueInterceptedRequestOnIO,
+          this, interception_id, base::Passed(std::move(modifications)),
+          base::Passed(std::move(callback))));
 }
 
-void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequestOnIoThread(
+void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequestOnIO(
     std::string interception_id,
     std::unique_ptr<Modifications> modifications,
     std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
@@ -124,6 +130,7 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
     MaybeCreateDevToolsURLInterceptorRequestJob(
         net::URLRequest* request,
         net::NetworkDelegate* network_delegate) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Bail out if we're not intercepting anything.
   if (intercepted_render_frames_.empty()) {
     DCHECK(intercepted_frame_tree_nodes_.empty());
@@ -140,7 +147,7 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
     return nullptr;
   int child_id = resource_request_info->GetChildID();
   int frame_tree_node_id = resource_request_info->GetFrameTreeNodeId();
-  const InterceptedPage* intercepted_page;
+  WebContents* web_contents = nullptr;
   if (frame_tree_node_id == -1) {
     // |frame_tree_node_id| is not set for renderer side requests, fall back to
     // the RenderFrameID.
@@ -149,26 +156,41 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
         std::make_pair(render_frame_id, child_id));
     if (find_it == intercepted_render_frames_.end())
       return nullptr;
-    intercepted_page = &find_it->second;
+    web_contents = find_it->second;
   } else {
     // |frame_tree_node_id| is set for browser side navigations, so use that
     // because the RenderFrameID isn't known (neither is the ChildID).
     const auto find_it = intercepted_frame_tree_nodes_.find(frame_tree_node_id);
     if (find_it == intercepted_frame_tree_nodes_.end())
       return nullptr;
-    intercepted_page = &find_it->second;
+    web_contents = find_it->second;
   }
+
+  DCHECK(intercepted_page_for_web_contents_.count(web_contents));
+
+  const InterceptedPage& intercepted_page =
+      *intercepted_page_for_web_contents_.find(web_contents)->second;
 
   // We don't want to intercept our own sub requests.
   if (sub_requests_.find(request) != sub_requests_.end())
     return nullptr;
 
+  bool matchFound = false;
+  for (const std::string& pattern : intercepted_page.patterns) {
+    if (base::MatchPattern(request->url().spec(), pattern)) {
+      matchFound = true;
+      break;
+    }
+  }
+  if (!matchFound)
+    return nullptr;
+
   bool is_redirect;
-  std::string interception_id = GetIdForRequest(request, &is_redirect);
+  std::string interception_id = GetIdForRequestOnIO(request, &is_redirect);
   DevToolsURLInterceptorRequestJob* job = new DevToolsURLInterceptorRequestJob(
-      this, interception_id, request, network_delegate,
-      intercepted_page->web_contents, intercepted_page->network_handler,
-      is_redirect, resource_request_info->GetResourceType());
+      this, interception_id, request, network_delegate, web_contents,
+      intercepted_page.network_handler, is_redirect,
+      resource_request_info->GetResourceType());
   interception_id_to_job_map_[interception_id] = job;
   return job;
 }
@@ -180,82 +202,108 @@ class DevToolsURLRequestInterceptor::State::InterceptedWebContentsObserver
       WebContents* web_contents,
       scoped_refptr<DevToolsURLRequestInterceptor::State> state,
       base::WeakPtr<protocol::NetworkHandler> network_handler)
-      : WebContentsObserver(web_contents),
-        state_(state),
-        network_handler_(network_handler) {
+      : WebContentsObserver(web_contents), state_(state) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
   }
 
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (old_host)
-      FrameDeleted(old_host);
+    base::Optional<DevToolsURLRequestInterceptor::State::RenderFrameHostInfo>
+        old_host_info;
+    DevToolsURLRequestInterceptor::State::RenderFrameHostInfo new_host_info(
+        new_host);
+    if (old_host) {
+      old_host_info.emplace(
+          DevToolsURLRequestInterceptor::State::RenderFrameHostInfo(old_host));
+    }
+
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
-            &DevToolsURLRequestInterceptor::State::
-                StartInterceptingRequestsInternal,
-            state_, new_host->GetRoutingID(), new_host->GetFrameTreeNodeId(),
-            new_host->GetProcess()->GetID(), web_contents(), network_handler_));
+            &DevToolsURLRequestInterceptor::State::RenderFrameHostChangedOnIO,
+            state_, old_host_info, new_host_info, web_contents()));
   }
 
   void FrameDeleted(RenderFrameHost* render_frame_host) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&DevToolsURLRequestInterceptor::State::
-                           StopInterceptingRequestsInternal,
-                       state_, render_frame_host->GetRoutingID(),
-                       render_frame_host->GetFrameTreeNodeId(),
-                       render_frame_host->GetProcess()->GetID()));
+        base::BindOnce(
+            &DevToolsURLRequestInterceptor::State::
+                StopInterceptingRequestsForHostInfoOnIO,
+            state_,
+            DevToolsURLRequestInterceptor::State::RenderFrameHostInfo(
+                render_frame_host)));
   }
 
  private:
   scoped_refptr<DevToolsURLRequestInterceptor::State> state_;
-  base::WeakPtr<protocol::NetworkHandler> network_handler_;
 };
 
-void DevToolsURLRequestInterceptor::State::StartInterceptingRequestsInternal(
-    int render_frame_id,
-    int frame_tree_node_id,
-    int process_id,
-    WebContents* web_contents,
-    base::WeakPtr<protocol::NetworkHandler> network_handler) {
+void DevToolsURLRequestInterceptor::State::RenderFrameHostChangedOnIO(
+    base::Optional<RenderFrameHostInfo> old_host_info,
+    RenderFrameHostInfo new_host_info,
+    WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  intercepted_render_frames_.emplace(
-      std::piecewise_construct,
-      std::forward_as_tuple(render_frame_id, process_id),
-      std::forward_as_tuple(web_contents, network_handler));
-  intercepted_frame_tree_nodes_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(frame_tree_node_id),
-      std::forward_as_tuple(web_contents, network_handler));
+  if (old_host_info)
+    StopInterceptingRequestsForHostInfoOnIO(old_host_info.value());
+  StartInterceptingRequestsForHostInfoOnIOInternal(new_host_info, web_contents);
 }
 
-void DevToolsURLRequestInterceptor::State::StopInterceptingRequestsInternal(
-    int render_frame_id,
-    int frame_tree_node_id,
-    int process_id) {
+void DevToolsURLRequestInterceptor::State::
+    StartInterceptingRequestsForHostInfoOnIOInternal(
+        RenderFrameHostInfo host_info,
+        WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  intercepted_render_frames_.erase(std::make_pair(render_frame_id, process_id));
-  intercepted_frame_tree_nodes_.erase(frame_tree_node_id);
+  DCHECK(intercepted_page_for_web_contents_.count(web_contents));
+
+  // We can assume that if there are frames already in the map they are in the
+  // same web_contents as before.
+  intercepted_render_frames_[std::make_pair(
+      host_info.routing_id, host_info.process_id)] = web_contents;
+  intercepted_frame_tree_nodes_[host_info.frame_tree_node_id] = web_contents;
+}
+
+void DevToolsURLRequestInterceptor::State::StartInterceptingRequestsOnIO(
+    std::vector<RenderFrameHostInfo> host_info_list,
+    WebContents* web_contents,
+    std::unique_ptr<InterceptedPage> interceptedPage) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  intercepted_page_for_web_contents_[web_contents] = std::move(interceptedPage);
+  for (const auto host_info : host_info_list)
+    StartInterceptingRequestsForHostInfoOnIOInternal(host_info, web_contents);
+}
+
+void DevToolsURLRequestInterceptor::State::
+    StopInterceptingRequestsForHostInfoOnIO(RenderFrameHostInfo host_info) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Since Devtools has not unregistered to the web_contents, we do not remove
+  // it from the map.
+  intercepted_render_frames_.erase(
+      std::make_pair(host_info.routing_id, host_info.process_id));
+  intercepted_frame_tree_nodes_.erase(host_info.frame_tree_node_id);
 }
 
 void DevToolsURLRequestInterceptor::State::StartInterceptingRequests(
     WebContents* web_contents,
-    base::WeakPtr<protocol::NetworkHandler> network_handler) {
+    base::WeakPtr<protocol::NetworkHandler> network_handler,
+    std::vector<std::string> patterns) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // WebContents methods are UI thread only.
-  for (RenderFrameHost* render_frame_host : web_contents->GetAllFrames()) {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&DevToolsURLRequestInterceptor::State::
-                           StartInterceptingRequestsInternal,
-                       this, render_frame_host->GetRoutingID(),
-                       render_frame_host->GetFrameTreeNodeId(),
-                       render_frame_host->GetProcess()->GetID(), web_contents,
-                       network_handler));
-  }
+
+  std::vector<RenderFrameHostInfo> host_info_list;
+  for (RenderFrameHost* render_frame_host : web_contents->GetAllFrames())
+    host_info_list.push_back(RenderFrameHostInfo(render_frame_host));
+
+  std::unique_ptr<InterceptedPage> intercepted_page(
+      new InterceptedPage(network_handler, std::move(patterns)));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &DevToolsURLRequestInterceptor::State::StartInterceptingRequestsOnIO,
+          this, std::move(host_info_list), web_contents,
+          std::move(intercepted_page)));
 
   // Listen for future updates.
   observers_.emplace(web_contents,
@@ -267,34 +315,40 @@ void DevToolsURLRequestInterceptor::State::StopInterceptingRequests(
     WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.erase(web_contents);
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(&DevToolsURLRequestInterceptor::State::
-                                             StopInterceptingRequestsOnIoThread,
-                                         this, web_contents));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &DevToolsURLRequestInterceptor::State::StopInterceptingRequestsOnIO,
+          this, web_contents));
 }
 
-void DevToolsURLRequestInterceptor::State::StopInterceptingRequestsOnIoThread(
+void DevToolsURLRequestInterceptor::State::StopInterceptingRequestsOnIO(
     WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Remove any intercepted render frames associated with |web_contents|.
-  base::flat_map<std::pair<int, int>, InterceptedPage>
+  base::flat_map<std::pair<int, int>, WebContents*>
       remaining_intercepted_render_frames;
-  for (const auto pair : intercepted_render_frames_) {
-    if (pair.second.web_contents == web_contents)
+  for (const auto& pair : intercepted_render_frames_) {
+    DCHECK(intercepted_page_for_web_contents_.count(pair.second));
+    if (pair.second == web_contents)
       continue;
     remaining_intercepted_render_frames.insert(pair);
   }
   std::swap(remaining_intercepted_render_frames, intercepted_render_frames_);
 
   // Remove any intercepted frame tree nodes associated with |web_contents|.
-  base::flat_map<int, InterceptedPage> remaining_intercepted_frame_tree_nodes;
-  for (const auto pair : intercepted_frame_tree_nodes_) {
-    if (pair.second.web_contents == web_contents)
+  base::flat_map<FrameTreeNodeId, WebContents*>
+      remaining_intercepted_frame_tree_nodes;
+  for (const auto& pair : intercepted_frame_tree_nodes_) {
+    DCHECK(intercepted_page_for_web_contents_.count(pair.second));
+    if (pair.second == web_contents)
       continue;
     remaining_intercepted_frame_tree_nodes.insert(pair);
   }
   std::swap(remaining_intercepted_frame_tree_nodes,
             intercepted_frame_tree_nodes_);
+
+  intercepted_page_for_web_contents_.erase(web_contents);
 
   // Tell any jobs associated with |web_contents| to stop intercepting.
   for (const auto pair : interception_id_to_job_map_) {
@@ -324,7 +378,7 @@ void DevToolsURLRequestInterceptor::State::ExpectRequestAfterRedirect(
   expected_redirects_[request] = id;
 }
 
-std::string DevToolsURLRequestInterceptor::State::GetIdForRequest(
+std::string DevToolsURLRequestInterceptor::State::GetIdForRequestOnIO(
     const net::URLRequest* request,
     bool* is_redirect) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -358,9 +412,12 @@ void DevToolsURLRequestInterceptor::State::JobFinished(
 DevToolsURLRequestInterceptor*
 DevToolsURLRequestInterceptor::FromBrowserContext(BrowserContext* context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return static_cast<DevToolsURLRequestInterceptorUserData*>(
-             context->GetUserData(kDevToolsURLRequestInterceptorKeyName))
-      ->devtools_url_request_interceptor();
+  auto* interceptor_user_data =
+      static_cast<DevToolsURLRequestInterceptorUserData*>(
+          context->GetUserData(kDevToolsURLRequestInterceptorKeyName));
+  if (!interceptor_user_data)
+    return nullptr;
+  return interceptor_user_data->devtools_url_request_interceptor();
 }
 
 DevToolsURLRequestInterceptor::Modifications::Modifications(
@@ -382,16 +439,10 @@ DevToolsURLRequestInterceptor::Modifications::Modifications(
 
 DevToolsURLRequestInterceptor::Modifications::~Modifications() {}
 
-DevToolsURLRequestInterceptor::State::InterceptedPage::InterceptedPage()
-    : web_contents(nullptr) {}
-
 DevToolsURLRequestInterceptor::State::InterceptedPage::InterceptedPage(
-    const InterceptedPage& other) = default;
-
-DevToolsURLRequestInterceptor::State::InterceptedPage::InterceptedPage(
-    WebContents* web_contents,
-    base::WeakPtr<protocol::NetworkHandler> network_handler)
-    : web_contents(web_contents), network_handler(network_handler) {}
+    base::WeakPtr<protocol::NetworkHandler> network_handler,
+    std::vector<std::string> patterns)
+    : network_handler(network_handler), patterns(std::move(patterns)) {}
 
 DevToolsURLRequestInterceptor::State::InterceptedPage::~InterceptedPage() =
     default;
