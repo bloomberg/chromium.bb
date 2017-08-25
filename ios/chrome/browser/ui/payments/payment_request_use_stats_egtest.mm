@@ -77,7 +77,8 @@ const char kContactDetailsFreeShippingPage[] =
 
   // Tap the confirm button.
   [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_ACCNAME_OK)]
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON)]
       performAction:grey_tap()];
 }
 
