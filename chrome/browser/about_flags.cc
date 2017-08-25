@@ -3333,9 +3333,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
-    {"enable-lock-screen-apps", flag_descriptions::kEnableLockScreenAppsName,
-     flag_descriptions::kEnableLockScreenAppsDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableLockScreenApps)},
+    {"disable-lock-screen-apps", flag_descriptions::kDisableLockScreenAppsName,
+     flag_descriptions::kDisableLockScreenAppsDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kDisableLockScreenApps)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

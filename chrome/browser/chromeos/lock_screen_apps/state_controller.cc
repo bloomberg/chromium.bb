@@ -66,8 +66,8 @@ std::string GenerateCryptoKey() {
 
 // static
 bool StateController::IsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableLockScreenApps);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kDisableLockScreenApps);
 }
 
 // static

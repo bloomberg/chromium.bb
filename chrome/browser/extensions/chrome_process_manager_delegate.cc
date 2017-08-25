@@ -89,8 +89,8 @@ bool ChromeProcessManagerDelegate::IsExtensionBackgroundPageAllowed(
 
   if (chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
       !profile->IsOffTheRecord()) {
-    return base::CommandLine::ForCurrentProcess()->HasSwitch(
-               chromeos::switches::kEnableLockScreenApps) &&
+    return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+               chromeos::switches::kDisableLockScreenApps) &&
            extension.permissions_data()->HasAPIPermission(
                APIPermission::kLockScreen);
   }

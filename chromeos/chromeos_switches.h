@@ -89,7 +89,7 @@ CHROMEOS_EXPORT extern const char kEnableExperimentalAccessibilityFeatures[];
 CHROMEOS_EXPORT extern const char kEnableExtensionAssetsSharing[];
 CHROMEOS_EXPORT extern const char kEnableExternalDriveRename[];
 CHROMEOS_EXPORT extern const char kEnableFirstRunUITransitions[];
-CHROMEOS_EXPORT extern const char kEnableLockScreenApps[];
+CHROMEOS_EXPORT extern const char kDisableLockScreenApps[];
 CHROMEOS_EXPORT extern const char kTetherStub[];
 CHROMEOS_EXPORT extern const char kDisableMdOobe[];
 CHROMEOS_EXPORT extern const char kDisableMdErrorScreen[];

@@ -215,9 +215,9 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest,
           ash::switches::kAshForceEnableStylusTools);
     }
 
-    if (flags & ENABLE_LOCK_SCREEN_APPS) {
+    if (!(flags & ENABLE_LOCK_SCREEN_APPS)) {
       base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          chromeos::switches::kEnableLockScreenApps);
+          chromeos::switches::kDisableLockScreenApps);
     }
 
     // TODO(derat): Sigh, something in ArcAppTest appears to be re-enabling ARC.
