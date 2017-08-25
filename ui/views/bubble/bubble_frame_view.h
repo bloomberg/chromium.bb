@@ -109,6 +109,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
  private:
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, GetBoundsForClientView);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, RemoveFootnoteView);
+  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, LayoutWithIcon);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateTest, CloseMethods);
 
