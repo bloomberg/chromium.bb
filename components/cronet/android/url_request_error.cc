@@ -30,6 +30,10 @@ UrlRequestError NetErrorToUrlRequestError(int net_error) {
       return ADDRESS_UNREACHABLE;
     case net::ERR_QUIC_PROTOCOL_ERROR:
       return QUIC_PROTOCOL_FAILED;
+    case net::ERR_SPDY_PING_FAILED:
+      return HTTP2_PING_FAILED;
+    case net::ERR_QUIC_HANDSHAKE_FAILED:
+      return QUIC_HANDSHAKE_FAILED;
     default:
       return OTHER;
   }
