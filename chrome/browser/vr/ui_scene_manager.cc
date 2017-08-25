@@ -758,8 +758,13 @@ void UiSceneManager::ConfigureBackgroundColor() {
   // TODO(vollick): it would be nice if ceiling, floor and the grid were
   // UiElement subclasses and could respond to the OnSetMode signal.
   for (Rect* panel : background_panels_) {
-    panel->SetCenterColor(color_scheme().world_background);
-    panel->SetEdgeColor(color_scheme().world_background);
+    if (showing_web_vr_splash_screen_) {
+      panel->SetCenterColor(color_scheme().splash_screen_background);
+      panel->SetEdgeColor(color_scheme().splash_screen_background);
+    } else {
+      panel->SetCenterColor(color_scheme().world_background);
+      panel->SetEdgeColor(color_scheme().world_background);
+    }
   }
   ceiling_->SetCenterColor(color_scheme().ceiling);
   ceiling_->SetEdgeColor(color_scheme().world_background);

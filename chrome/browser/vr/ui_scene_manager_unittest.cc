@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "cc/base/math_util.h"
+#include "chrome/browser/vr/color_scheme.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/elements/ui_element_debug_id.h"
 #include "chrome/browser/vr/target_property.h"
@@ -238,8 +239,8 @@ TEST_F(UiSceneManagerTest, WebVrAutopresentedInsecureOrigin) {
   // WebVR frame is not received.
   auto initial_elements = kBackgroundElements;
   initial_elements.insert(kSplashScreenText);
-
   VerifyElementsVisible("Initial", initial_elements);
+
   manager_->OnWebVrFrameAvailable();
   VerifyElementsVisible(
       "Autopresented", std::set<UiElementDebugId>{
@@ -267,6 +268,9 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
   auto initial_elements = kBackgroundElements;
   initial_elements.insert(kSplashScreenText);
   VerifyElementsVisible("Initial", initial_elements);
+  EXPECT_EQ(ColorScheme::GetColorScheme(ColorScheme::kModeNormal)
+                .splash_screen_background,
+            GetBackgroundColor());
 
   // Enter WebVR with autopresentation.
   manager_->SetWebVrMode(true, false);
