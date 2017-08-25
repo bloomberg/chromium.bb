@@ -4185,6 +4185,111 @@ TEST_P(QuicNetworkTransactionTest, NoBrokenAlternateProtocolIfTcpFails) {
   ExpectQuicAlternateProtocolMapping();
 }
 
+TEST_P(QuicNetworkTransactionTest, DelayTCPOnStartWithQuicSupportOnSameIP) {
+  // Tests that TCP job is delayed and QUIC job does not require confirmation
+  // if QUIC was recently supported on the same IP on start.
+
+  // Set QUIC support on the last IP address, which is same with the local IP
+  // address. Require confirmation mode will be turned off immediately when
+  // local IP address is sorted out after we configure the UDP socket.
+  http_server_properties_.SetSupportsQuic(true, IPAddress(192, 0, 2, 33));
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(2, 2, 1, 1));
+  mock_quic_data.AddRead(ASYNC, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddRead(ASYNC, 0);               // EOF
+
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+  // No HTTP data is mocked as TCP job never starts in this case.
+
+  CreateSession();
+  // QuicStreamFactory by default requires confirmation on construction.
+  session_->quic_stream_factory()->set_require_confirmation(true);
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  // Stall host resolution so that QUIC job will not succeed synchronously.
+  // Socket will not be configured immediately and QUIC support is not sorted
+  // out, TCP job will still be delayed as server properties indicates QUIC
+  // support on last IP address.
+  host_resolver_.set_synchronous_mode(false);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_.bound()),
+              IsError(ERR_IO_PENDING));
+  // Complete host resolution in next message loop so that QUIC job could
+  // proceed.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  CheckWasQuicResponse(&trans);
+  CheckResponseData(&trans, "hello!");
+}
+
+TEST_P(QuicNetworkTransactionTest,
+       DelayTCPOnStartWithQuicSupportOnDifferentIP) {
+  // Tests that TCP job is delayed and QUIC job requires confirmation if QUIC
+  // was recently supported on a different IP address on start.
+
+  // Set QUIC support on the last IP address, which is different with the local
+  // IP address. Require confirmation mode will remain when local IP address is
+  // sorted out after we configure the UDP socket.
+  http_server_properties_.SetSupportsQuic(true, IPAddress(1, 2, 3, 4));
+
+  MockQuicData mock_quic_data;
+  QuicStreamOffset header_stream_offset = 0;
+  mock_quic_data.AddWrite(
+      ConstructInitialSettingsPacket(1, &header_stream_offset));
+  mock_quic_data.AddWrite(ConstructClientRequestHeadersPacket(
+      2, GetNthClientInitiatedStreamId(0), true, true,
+      GetRequestHeaders("GET", "https", "/"), &header_stream_offset));
+  mock_quic_data.AddRead(ConstructServerResponseHeadersPacket(
+      1, GetNthClientInitiatedStreamId(0), false, false,
+      GetResponseHeaders("200 OK")));
+  mock_quic_data.AddRead(ConstructServerDataPacket(
+      2, GetNthClientInitiatedStreamId(0), false, true, 0, "hello!"));
+  mock_quic_data.AddWrite(ConstructClientAckPacket(3, 2, 1, 1));
+  mock_quic_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
+  mock_quic_data.AddSocketDataToFactory(&socket_factory_);
+  // No HTTP data is mocked as TCP job will be delayed and never starts.
+
+  CreateSession();
+  session_->quic_stream_factory()->set_require_confirmation(true);
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  // Stall host resolution so that QUIC job could not proceed and unblocks TCP.
+  // Socket will not be configured immediately and QUIC support is not sorted
+  // out, TCP job will still be delayed as server properties indicates QUIC
+  // support on last IP address.
+  host_resolver_.set_synchronous_mode(false);
+
+  HttpNetworkTransaction trans(DEFAULT_PRIORITY, session_.get());
+  TestCompletionCallback callback;
+  EXPECT_THAT(trans.Start(&request_, callback.callback(), net_log_.bound()),
+              IsError(ERR_IO_PENDING));
+
+  // Complete host resolution in next message loop so that QUIC job could
+  // proceed.
+  base::RunLoop().RunUntilIdle();
+  // Explicitly confirm the handshake so that QUIC job could succeed.
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+  EXPECT_THAT(callback.WaitForResult(), IsOk());
+
+  CheckWasQuicResponse(&trans);
+  CheckResponseData(&trans, "hello!");
+}
+
 TEST_P(QuicNetworkTransactionTest, NetErrorDetailsSetBeforeHandshake) {
   // Test that NetErrorDetails is correctly populated, even if the
   // handshake has not yet been confirmed and no stream has been created.
