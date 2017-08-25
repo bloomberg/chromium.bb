@@ -82,7 +82,7 @@ class GitCL(object):
             self._host.sleep(poll_delay_seconds)
             try_results = self.try_job_results()
             _log.debug('Fetched try results: %s', try_results)
-            if self.all_finished(try_results):
+            if try_results and self.all_finished(try_results):
                 self._host.print_('All jobs finished.')
                 return try_results
             self._host.print_('Waiting. %d seconds passed.' % (self._host.time() - start))
