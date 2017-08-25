@@ -136,7 +136,7 @@ Status GetVisibleCookies(WebView* web_view,
     cookie_dict->GetString("path", &path);
     double expiry = 0;
     cookie_dict->GetDouble("expires", &expiry);
-    if (expiry > 1e14)
+    if (expiry > 1e12)
       expiry /= 1000;  // Backwards compatibility ms -> sec.
     bool http_only = false;
     cookie_dict->GetBoolean("httpOnly", &http_only);
