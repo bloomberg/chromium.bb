@@ -7,12 +7,14 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/core/features.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/payments/ios_payment_request_cache_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -46,6 +48,16 @@ std::vector<autofill::AutofillProfile> _profiles;
 std::vector<autofill::CreditCard> _cards;
 
 #pragma mark - XCTestCase
+
++ (void)setUp {
+  [super setUp];
+  if (!base::FeatureList::IsEnabled(payments::features::kWebPayments)) {
+    // payments::features::kWebPayments feature is not enabled,
+    // You have to pass --enable-features=WebPayments command line argument in
+    // order to run this test.
+    DCHECK(false);
+  }
+}
 
 - (void)tearDown {
   for (const auto& profile : _profiles) {
