@@ -342,7 +342,7 @@ immediately, disable the story on the failing platforms.
 For example:
 *  If a single story is failing on a single platform, disable only that story on that platform.
 *  If multiple stories are failing across all platforms, disable those stories on all platforms.
-*  If all stories are failing on a single platform, disable all stories on that platform. 
+*  If all stories are failing on a single platform, disable all stories on that platform.
 
 You can do this with [StoryExpectations](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/story/expectations.py).
 
@@ -368,7 +368,7 @@ Unexpected Failures:
 * foo
 ```
 
-Buildbot output for failing run on platfromQ
+Buildbot output for failing run on platform Q
 ```
 bar.benchmark_baz
 Bot id: 'buildxxx-xx'
@@ -402,6 +402,19 @@ If a particular story isn't applicable to a given platform, it should be
 disabled using [CanRunStory](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/page/shared_page_state.py?type=cs&q=CanRunOnBrowser&l=271).
 
 To find the currently supported disabling conditions view the [expectations file](https://cs.chromium.org/chromium/src/third_party/catapult/telemetry/telemetry/story/expectations.py).
+
+In the case that a benchmark is failing in its entirety on a platfrom that it
+should noramally run on, you can temporarily disable it by using
+DisableBenchmark():
+
+```
+class BarBenchmark(perf_benchmark.PerfBenchmark):
+  ...
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        self.DisableBenchmark([story.expectation.PLATFORM_Q], 'crbug.com/9876')
+```
 
 If for some reason you are unable to disable at the granularity you would like,
 disable the test at the lowest granularity possible and contact rnephew@ to
