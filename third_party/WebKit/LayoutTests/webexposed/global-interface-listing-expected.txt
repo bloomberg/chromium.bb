@@ -4947,6 +4947,7 @@ interface PerformanceServerTiming
     getter duration
     getter name
     method constructor
+    method toJSON
 interface PerformanceTiming
     attribute @@toStringTag
     getter connectEnd
