@@ -756,6 +756,11 @@ by a child template that "extends" this file.
             </intent-filter>
         </receiver>
 
+        <!-- Download foreground service -->
+        <service android:name="org.chromium.chrome.browser.download.DownloadForegroundService"
+            android:exported="false">
+        </service>
+
         <!-- Download broadcast manager service -->
         <service android:name="org.chromium.chrome.browser.download.DownloadBroadcastManager"
             android:exported="false">

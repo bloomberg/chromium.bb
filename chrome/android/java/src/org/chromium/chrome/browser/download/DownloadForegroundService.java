@@ -34,18 +34,14 @@ public class DownloadForegroundService extends Service {
      * @param notification The new notification to be pinned to.
      */
     public void startOrUpdateForegroundService(int notificationId, Notification notification) {
-        // TODO(jming): Make sure there is not weird UI in switching the pinned notification.
         startForeground(notificationId, notification);
     }
 
     /**
      * Stop the foreground service that is running.
-     * @param isComplete If the download has been complete and, therefore, if its notification
-     *                   should be killed.
      */
-    public void stopDownloadForegroundService(boolean isComplete) {
-        // TODO(jming): Check to make sure the notification does not get killed.
-        stopForeground(isComplete /* killNotification */);
+    public void stopDownloadForegroundService(boolean isCancelled) {
+        stopForeground(isCancelled /* kill notification if cancelled */);
     }
 
     @Override
