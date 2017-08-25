@@ -6,6 +6,7 @@
 
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
+#include "ui/gfx/color_transform.h"
 #include "ui/gl/gl_helper.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_binders.h"
@@ -55,21 +56,25 @@ STRINGIZE(
   uniform sampler2DRect a_uv_texture;
   VARYING vec2 v_texCoord;
   void main() {
-    vec3 yuv_adj = vec3(-0.0625, -0.5, -0.5);
-    mat3 yuv_matrix = mat3(vec3(1.164, 1.164, 1.164),
-                           vec3(0.0, -.391, 2.018),
-                           vec3(1.596, -.813, 0.0));
     vec3 yuv = vec3(
         TEX(a_y_texture, v_texCoord).r,
         TEX(a_uv_texture, v_texCoord * 0.5).rg);
-    FRAGCOLOR = vec4(yuv_matrix * (yuv + yuv_adj), 1.0);
+    FRAGCOLOR = vec4(DoColorConversion(yuv), 1.0);
   }
 );
 // clang-format on
 
 }  // namespace
 
-YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info) {
+YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
+                                     const gfx::ColorSpace color_space) {
+  std::unique_ptr<gfx::ColorTransform> color_transform =
+      gfx::ColorTransform::NewColorTransform(
+          color_space, color_space.GetAsFullRangeRGB(),
+          gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
+  DCHECK(color_transform->CanGetShaderSource());
+  std::string do_color_conversion = color_transform->GetShaderSource();
+
   bool use_core_profile = gl_version_info.is_desktop_core_profile;
   glGenFramebuffersEXT(1, &framebuffer_);
   vertex_buffer_ = GLHelper::SetupQuadVertexBuffer();
@@ -82,10 +87,10 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info) {
           .c_str());
   fragment_shader_ = GLHelper::LoadShader(
       GL_FRAGMENT_SHADER,
-      base::StringPrintf("%s\n%s",
+      base::StringPrintf("%s\n%s\n%s",
                          use_core_profile ? kFragmentHeaderCoreProfile
                                           : kFragmentHeaderCompatiblityProfile,
-                         kFragmentShader)
+                         do_color_conversion.c_str(), kFragmentShader)
           .c_str());
   program_ = GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
 

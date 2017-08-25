@@ -816,9 +816,10 @@ void ColorTransformInternal::AppendColorSpaceToColorSpaceTransform(
         // SMPTE 1886 suggests that we should be using gamma 2.4 for BT709
         // content. However, most displays actually use a gamma of 2.2, and
         // user studies shows that users don't really care. Using the same
-        // gamma as the display will let us optimize a lot more, so lets stick
-        // with using the SRGB transfer function.
-        src.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
+        // gamma as the destination will let us optimize a lot more, so use it
+        // if we can.
+        if (dst.transfer_ == ColorSpace::TransferID::IEC61966_2_1)
+          src.transfer_ = ColorSpace::TransferID::IEC61966_2_1;
         break;
 
       case ColorSpace::TransferID::SMPTEST2084:

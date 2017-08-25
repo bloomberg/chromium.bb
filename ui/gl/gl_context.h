@@ -20,6 +20,10 @@
 #include "ui/gl/gl_workarounds.h"
 #include "ui/gl/gpu_preference.h"
 
+namespace gfx {
+class ColorSpace;
+}  // namespace gfx
+
 namespace gl {
 class YUVToRGBConverter;
 }  // namespace gl
@@ -183,8 +187,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // Returns the GL renderer string. The context must be current.
   virtual std::string GetGLRenderer();
 
-  // Returns a helper structure to convert YUV textures to RGB textures.
-  virtual YUVToRGBConverter* GetYUVToRGBConverter();
+  // Returns a helper structure to convert the YUV color space |color_space|
+  // to its associated full-range RGB color space.
+  virtual YUVToRGBConverter* GetYUVToRGBConverter(
+      const gfx::ColorSpace& color_space);
 
   // Get the CurrentGL object for this context containing the driver, version
   // and API.

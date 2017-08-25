@@ -7,9 +7,11 @@
 
 #include <OpenGL/CGLTypes.h>
 
+#include <map>
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_export.h"
 
@@ -32,7 +34,8 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
   void OnSetSwapInterval(int interval) override;
   void SetSafeToForceGpuSwitch() override;
   bool ForceGpuSwitchIfNeeded() override;
-  YUVToRGBConverter* GetYUVToRGBConverter() override;
+  YUVToRGBConverter* GetYUVToRGBConverter(
+      const gfx::ColorSpace& color_space) override;
 
  protected:
   ~GLContextCGL() override;
@@ -43,7 +46,8 @@ class GL_EXPORT GLContextCGL : public GLContextReal {
 
   void* context_;
   GpuPreference gpu_preference_;
-  std::unique_ptr<YUVToRGBConverter> yuv_to_rgb_converter_;
+  std::map<gfx::ColorSpace, std::unique_ptr<YUVToRGBConverter>>
+      yuv_to_rgb_converters_;
 
   CGLPixelFormatObj discrete_pixelformat_;
 

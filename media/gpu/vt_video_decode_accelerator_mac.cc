@@ -1262,6 +1262,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
   }
+  gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
+  gl_image->SetColorSpaceForYUVToRGBConversion(color_space);
 
   // Assign the new image(s) to the the picture info.
   picture_info->gl_image = gl_image;
@@ -1271,8 +1273,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   DVLOG(3) << "PictureReady(picture_id=" << picture_id << ", "
            << "bitstream_id=" << frame.bitstream_id << ")";
   client_->PictureReady(Picture(picture_id, frame.bitstream_id,
-                                gfx::Rect(frame.image_size),
-                                GetImageBufferColorSpace(frame.image), true));
+                                gfx::Rect(frame.image_size), color_space,
+                                true));
   return true;
 }
 
