@@ -101,6 +101,7 @@ void MediaEngagementContentsObserver::RecordUkmMetrics() {
       .SetVisits_Total(score.visits())
       .SetEngagement_Score(ConvertScoreToPercentage(score.actual_score()))
       .SetPlaybacks_Delta(significant_playback_recorded_)
+      .SetEngagement_IsHigh(score.high_score())
       .Record(ukm_recorder);
 }
 
