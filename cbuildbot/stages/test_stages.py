@@ -18,6 +18,7 @@ from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cgroups
 from chromite.lib import config_lib
 from chromite.lib import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import failures_lib
 from chromite.lib import gs
@@ -660,6 +661,25 @@ class CrosSigningTestStage(generic_stages.BuilderStage):
   def PerformStage(self):
     """Run the cros-signing unittests."""
     commands.RunCrosSigningTests(self._build_root)
+
+
+class AutotestTestStage(generic_stages.BuilderStage):
+  """Stage that runs Chromite tests, including network tests."""
+
+  SUITE_SCHEDULER_TEST = ('src/third_party/autotest/files/'
+                          'site_utils/suite_scheduler/suite_scheduler.py')
+
+  SUITE_SCHEDULER_INI = ('chromeos-admin/puppet/modules/lab/files/'
+                         'autotest_cautotest/suite_scheduler.ini')
+
+  def PerformStage(self):
+    """Run the tests."""
+    # Run the Suite Scheduler INI test.
+    cmd = [os.path.join(self._build_root, self.SUITE_SCHEDULER_TEST),
+           '--sanity', '-f',
+           os.path.join(self._build_root, self.SUITE_SCHEDULER_INI)]
+
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root)
 
 
 class ChromiteTestStage(generic_stages.BuilderStage):

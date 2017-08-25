@@ -82,6 +82,13 @@ class SignerTestsBuilder(generic_builders.PreCqBuilder):
     self._RunStage(test_stages.CrosSigningTestStage)
 
 
+class AutotestTestsBuilder(generic_builders.PreCqBuilder):
+  """Builder that runs autotest unit tests."""
+  def RunTestStages(self):
+    """Run after sync/reexec."""
+    self._RunStage(test_stages.AutotesTestStage)
+
+
 class ChromiteTestsBuilder(generic_builders.PreCqBuilder):
   """Builder that runs chromite unit tests, including network."""
   def RunTestStages(self):
