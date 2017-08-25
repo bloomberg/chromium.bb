@@ -64,7 +64,7 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithFinishedChild) {
   NGLayoutInputNode node3 = node2.NextSibling();
 
   Vector<RefPtr<NGBreakToken>> child_break_tokens;
-  child_break_tokens.push_back(NGBlockBreakToken::Create(node1));
+  child_break_tokens.push_back(NGBlockBreakToken::Create(node1, LayoutUnit()));
   RefPtr<NGBlockBreakToken> parent_token =
       NGBlockBreakToken::Create(container, LayoutUnit(50), child_break_tokens);
 
@@ -75,7 +75,7 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithFinishedChild) {
   ASSERT_EQ(NGBlockChildIterator::Entry(nullptr, nullptr),
             iterator.NextChild());
 
-  child_break_tokens.push_back(NGBlockBreakToken::Create(node2));
+  child_break_tokens.push_back(NGBlockBreakToken::Create(node2, LayoutUnit()));
   parent_token =
       NGBlockBreakToken::Create(container, LayoutUnit(50), child_break_tokens);
 

@@ -31,8 +31,9 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
   }
 
   // Creates a break token for a node which cannot produce any more fragments.
-  static RefPtr<NGBlockBreakToken> Create(NGLayoutInputNode node) {
-    return AdoptRef(new NGBlockBreakToken(node));
+  static RefPtr<NGBlockBreakToken> Create(NGLayoutInputNode node,
+                                          LayoutUnit used_block_size) {
+    return AdoptRef(new NGBlockBreakToken(node, used_block_size));
   }
 
   // Represents the amount of block size used in previous fragments.
@@ -59,7 +60,7 @@ class CORE_EXPORT NGBlockBreakToken : public NGBreakToken {
                     LayoutUnit used_block_size,
                     Vector<RefPtr<NGBreakToken>>& child_break_tokens);
 
-  explicit NGBlockBreakToken(NGLayoutInputNode node);
+  NGBlockBreakToken(NGLayoutInputNode node, LayoutUnit used_block_size);
 
   LayoutUnit used_block_size_;
   Vector<RefPtr<NGBreakToken>> child_break_tokens_;

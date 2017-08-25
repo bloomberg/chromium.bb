@@ -46,30 +46,61 @@ bool IsFloatFragment(const NGPhysicalFragment& fragment) {
   return layout_object && layout_object->IsFloating() && fragment.IsBox();
 }
 
-void UpdateLegacyMultiColumnFlowThread(LayoutBox* layout_box,
-                                       const NGPhysicalBoxFragment* fragment) {
+void UpdateLegacyMultiColumnFlowThread(
+    LayoutBox* layout_box,
+    const NGConstraintSpace& constraint_space,
+    const NGPhysicalBoxFragment* fragment) {
   LayoutBlockFlow* multicol = ToLayoutBlockFlow(layout_box);
   LayoutMultiColumnFlowThread* flow_thread = multicol->MultiColumnFlowThread();
   if (!flow_thread)
     return;
+
+  NGWritingMode writing_mode = constraint_space.WritingMode();
+  LayoutUnit column_inline_size;
+  LayoutUnit flow_end;
+
+  // Stitch the columns together.
+  for (const RefPtr<NGPhysicalFragment> child : fragment->Children()) {
+    NGBoxFragment child_fragment(writing_mode,
+                                 ToNGPhysicalBoxFragment(child.Get()));
+    flow_end += child_fragment.BlockSize();
+    column_inline_size = child_fragment.InlineSize();
+  }
+
   if (LayoutMultiColumnSet* column_set = flow_thread->FirstMultiColumnSet()) {
-    column_set->SetWidth(fragment->Size().width);
-    column_set->SetHeight(fragment->Size().height);
-
-    // TODO(mstensho): This value has next to nothing to do with the flow thread
-    // portion size, but at least it's usually better than zero.
-    column_set->EndFlow(fragment->Size().height);
-
+    NGBoxFragment logical_fragment(writing_mode, fragment);
+    column_set->SetLogicalWidth(logical_fragment.InlineSize());
+    column_set->SetLogicalHeight(logical_fragment.BlockSize());
+    column_set->EndFlow(flow_end);
     column_set->UpdateFromNG();
   }
-  // TODO(mstensho): Fix the relatively nonsensical values here (the content box
-  // size of the multicol container has very little to do with the price of
-  // eggs).
-  flow_thread->SetWidth(fragment->Size().width);
-  flow_thread->SetHeight(fragment->Size().height);
+  // TODO(mstensho): Update all column boxes, not just the first column set
+  // (like we do above). This is needed to support column-span:all.
+  for (LayoutBox* column_box = flow_thread->FirstMultiColumnBox(); column_box;
+       column_box = column_box->NextSiblingMultiColumnBox())
+    column_box->ClearNeedsLayout();
 
   flow_thread->ValidateColumnSets();
+  flow_thread->SetLogicalWidth(column_inline_size);
+  flow_thread->SetLogicalHeight(flow_end);
   flow_thread->ClearNeedsLayout();
+}
+
+// Return true if the specified fragment is the first generated fragment of
+// some node.
+bool IsFirstFragment(const NGConstraintSpace& constraint_space,
+                     const NGPhysicalBoxFragment& fragment) {
+  const auto* break_token = ToNGBlockBreakToken(fragment.BreakToken());
+  if (!break_token)
+    return true;
+  NGBoxFragment logical_fragment(constraint_space.WritingMode(), &fragment);
+  return break_token->UsedBlockSize() <= logical_fragment.BlockSize();
+}
+
+// Return true if the specified fragment is the final fragment of some node.
+bool IsLastFragment(const NGPhysicalBoxFragment& fragment) {
+  const auto* break_token = fragment.BreakToken();
+  return !break_token || break_token->IsFinished();
 }
 
 }  // namespace
@@ -196,21 +227,38 @@ String NGBlockNode::ToString() const {
 void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     NGLayoutResult* layout_result) {
-  NGPhysicalBoxFragment* physical_fragment =
+  const NGPhysicalBoxFragment* physical_fragment =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().Get());
-  if (box_->Style()->SpecifiesColumns())
-    UpdateLegacyMultiColumnFlowThread(box_, physical_fragment);
-  box_->SetWidth(physical_fragment->Size().width);
-  box_->SetHeight(physical_fragment->Size().height);
+  if (box_->Style()->SpecifiesColumns()) {
+    UpdateLegacyMultiColumnFlowThread(box_, constraint_space,
+                                      physical_fragment);
+  }
+  NGBoxFragment fragment(constraint_space.WritingMode(), physical_fragment);
+  // For each fragment we process, we'll accumulate the logical height and
+  // logical intrinsic content box height. We reset it at the first fragment,
+  // and accumulate at each method call for fragments belonging to the same
+  // layout object. Logical width will only be set at the first fragment and is
+  // expected to remain the same throughout all subsequent fragments, since
+  // legacy layout doesn't support non-uniform fragmentainer widths.
+  LayoutUnit logical_height;
+  LayoutUnit intrinsic_content_logical_height;
+  if (IsFirstFragment(constraint_space, *physical_fragment)) {
+    box_->SetLogicalWidth(fragment.InlineSize());
+  } else {
+    DCHECK_EQ(box_->LogicalWidth(), fragment.InlineSize())
+        << "Variable fragment inline size not supported";
+    logical_height = box_->LogicalHeight();
+    intrinsic_content_logical_height = box_->IntrinsicContentLogicalHeight();
+  }
+  logical_height += fragment.BlockSize();
+  intrinsic_content_logical_height += fragment.OverflowSize().block_size;
   NGBoxStrut border_scrollbar_padding =
       ComputeBorders(constraint_space, Style()) +
       ComputePadding(constraint_space, Style()) + GetScrollbarSizes(box_);
-  LayoutUnit intrinsic_logical_height =
-      box_->Style()->IsHorizontalWritingMode()
-          ? physical_fragment->OverflowSize().height
-          : physical_fragment->OverflowSize().width;
-  intrinsic_logical_height -= border_scrollbar_padding.BlockSum();
-  box_->SetIntrinsicContentLogicalHeight(intrinsic_logical_height);
+  if (IsLastFragment(*physical_fragment))
+    intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
+  box_->SetLogicalHeight(logical_height);
+  box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
 
   // LayoutBox::Margin*() should be used value, while we set computed value
   // here. This is not entirely correct, but these values are not used for
@@ -247,7 +295,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
         }
       }
     } else {
-      CopyChildFragmentPosition(ToNGPhysicalBoxFragment(*child_fragment));
+      const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.Get());
+      if (IsFirstFragment(constraint_space, box_fragment))
+        CopyChildFragmentPosition(box_fragment);
 
       if (child_fragment->GetLayoutObject()->IsLayoutBlockFlow())
         ToLayoutBlockFlow(child_fragment->GetLayoutObject())

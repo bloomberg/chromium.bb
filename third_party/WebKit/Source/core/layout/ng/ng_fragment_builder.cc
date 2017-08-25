@@ -196,7 +196,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
       break_token = NGBlockBreakToken::Create(node_, used_block_size_,
                                               child_break_tokens_);
     } else {
-      break_token = NGBlockBreakToken::Create(node_);
+      break_token = NGBlockBreakToken::Create(node_, used_block_size_);
     }
   }
 
