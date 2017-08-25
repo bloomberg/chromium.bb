@@ -15,6 +15,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
 #import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #include "ios/chrome/browser/experimental_flags.h"
@@ -418,10 +419,12 @@ const CGFloat kNewTabButtonBottomOffsetHighRes = 2.0;
             forControlEvents:UIControlEventTouchUpInside];
 
 #if defined(__IPHONE_11_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_11_0)
-    if (@available(iOS 11.0, *)) {
-      _buttonNewTabInteraction =
-          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-      [_buttonNewTab addInteraction:_buttonNewTabInteraction];
+    if (DragAndDropIsEnabled()) {
+      if (@available(iOS 11.0, *)) {
+        _buttonNewTabInteraction =
+            [[DropAndNavigateInteraction alloc] initWithDelegate:self];
+        [_buttonNewTab addInteraction:_buttonNewTabInteraction];
+      }
     }
 #endif
 

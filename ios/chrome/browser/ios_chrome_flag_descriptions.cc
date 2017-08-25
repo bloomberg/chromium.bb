@@ -83,4 +83,7 @@ const char kWebPaymentsNativeAppsDescription[] =
 
 // Please insert your name/description above in alphabetical order.
 
+const char kDragAndDropName[] = "Drag and Drop";
+const char kDragAndDropDescription[] = "Enable support for drag and drop.";
+
 }  // namespace flag_descriptions
