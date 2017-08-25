@@ -188,6 +188,12 @@ public class WebappActivity extends SingleTabActivity {
             resetSavedInstanceState();
         }
 
+        if (info == null) {
+            // If {@link info} is null, there isn't much we can do, abort.
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            return;
+        }
+
         mWebappInfo = info;
 
         // Initialize the WebappRegistry and warm up the shared preferences for this web app. No-ops
