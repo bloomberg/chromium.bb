@@ -6,6 +6,7 @@
 
 #include "ash/public/cpp/immersive/immersive_revealed_lock.h"
 #include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -164,8 +165,31 @@ void ImmersiveModeControllerAsh::OnFindBarVisibleBoundsChanged(
   find_bar_visible_bounds_in_screen_ = new_visible_bounds_in_screen;
 }
 
+bool ImmersiveModeControllerAsh::ShouldStayImmersiveAfterExitingFullscreen() {
+  return !browser_view_->IsBrowserTypeNormal() &&
+         ash::Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars();
+}
+
 views::Widget* ImmersiveModeControllerAsh::GetRevealWidget() {
   return mash_reveal_widget_.get();
+}
+
+void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
+    views::Widget* widget,
+    bool active) {
+  if (browser_view_->IsBrowserTypeNormal())
+    return;
+
+  if (!ash::Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars())
+    return;
+
+  // Enable immersive mode if the widget is activated. Do not disable immersive
+  // mode if the widget deactivates, but is not minimized.
+  controller_->SetEnabled(
+      browser_view_->browser()->is_app()
+          ? ash::ImmersiveFullscreenController::WINDOW_TYPE_HOSTED_APP
+          : ash::ImmersiveFullscreenController::WINDOW_TYPE_BROWSER,
+      active || !widget->IsMinimized());
 }
 
 void ImmersiveModeControllerAsh::EnableWindowObservers(bool enable) {

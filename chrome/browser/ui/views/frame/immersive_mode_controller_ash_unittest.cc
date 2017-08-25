@@ -10,8 +10,10 @@
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -346,4 +348,64 @@ TEST_F(ImmersiveModeControllerAshTestHostedApp, Layout) {
   EXPECT_FALSE(tabstrip->visible());
   EXPECT_FALSE(toolbar->visible());
   EXPECT_EQ(header_height, GetBoundsInWidget(contents_web_view).y());
+}
+
+class ImmersiveModeControllerAshTestTabletMode
+    : public ImmersiveModeControllerAshTest {
+ public:
+  ImmersiveModeControllerAshTestTabletMode()
+      : ImmersiveModeControllerAshTest(Browser::TYPE_POPUP, false) {}
+  ~ImmersiveModeControllerAshTestTabletMode() override {}
+
+  void SetUp() override {
+    scoped_feature_list.InitAndEnableFeature(
+        ash::kAutoHideTitleBarsInTabletMode);
+    ImmersiveModeControllerAshTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshTestTabletMode);
+};
+
+// Verify the immersive mode status is as expected in tablet mode when the auto
+// hide title bars in tablet mode feature is enabled.
+TEST_F(ImmersiveModeControllerAshTestTabletMode, ImmersiveModeStatus) {
+  ASSERT_FALSE(controller()->IsEnabled());
+
+  // Verify that after entering tablet mode, immersive mode is enabled.
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      true);
+  EXPECT_TRUE(controller()->IsEnabled());
+
+  // Verify that after minimizing, immersive mode is disabled.
+  browser()->window()->Minimize();
+  EXPECT_FALSE(controller()->IsEnabled());
+
+  // Verify that after showing the browser, immersive mode is reenabled.
+  browser()->window()->Show();
+  EXPECT_TRUE(controller()->IsEnabled());
+
+  // Verify that immersive mode remains if fullscreen is toggled while in tablet
+  // mode.
+  ToggleFullscreen();
+  EXPECT_TRUE(controller()->IsEnabled());
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      false);
+  EXPECT_TRUE(controller()->IsEnabled());
+
+  // Verify that immersive mode remains if the browser was fullscreened when
+  // entering tablet mode.
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      true);
+  EXPECT_TRUE(controller()->IsEnabled());
+
+  // Verify that if the browser is not fullscreened, upon exiting tablet mode,
+  // immersive mode is not enabled.
+  ToggleFullscreen();
+  EXPECT_TRUE(controller()->IsEnabled());
+  ash::Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+      false);
+  EXPECT_FALSE(controller()->IsEnabled());
 }

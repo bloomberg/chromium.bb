@@ -29,7 +29,9 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
       WARN_UNUSED_RESULT;
   void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds_in_screen) override;
+  bool ShouldStayImmersiveAfterExitingFullscreen() override;
   views::Widget* GetRevealWidget() override;
+  void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerStub);
