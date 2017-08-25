@@ -24,23 +24,6 @@
 
 namespace subresource_filter {
 
-namespace {
-
-// Records histograms about the pattern of redirect chains, and about the
-// pattern of whether the last URL in the chain matched the activation list.
-#define REPORT_REDIRECT_PATTERN_FOR_SUFFIX(suffix, is_matched, chain_size)    \
-  do {                                                                        \
-    UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.PageLoad.FinalURLMatch." suffix, \
-                          is_matched);                                        \
-    if (is_matched) {                                                         \
-      UMA_HISTOGRAM_COUNTS(                                                   \
-          "SubresourceFilter.PageLoad.RedirectChainLength." suffix,           \
-          chain_size);                                                        \
-    };                                                                        \
-  } while (0)
-
-}  // namespace
-
 SubresourceFilterSafeBrowsingActivationThrottle::
     SubresourceFilterSafeBrowsingActivationThrottle(
         content::NavigationHandle* handle,
@@ -73,11 +56,37 @@ SubresourceFilterSafeBrowsingActivationThrottle::
   // The last check could be ongoing when the navigation is cancelled.
   if (check_results_.empty() || !check_results_.back().finished)
     return;
+  ActivationList matched_list = GetListForThreatTypeAndMetadata(
+      check_results_.back().threat_type, check_results_.back().threat_metadata);
+
   // TODO(csharrison): Log more metrics based on check_results_.
-  RecordRedirectChainMatchPatternForList(
-      ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
-  RecordRedirectChainMatchPatternForList(ActivationList::PHISHING_INTERSTITIAL);
-  RecordRedirectChainMatchPatternForList(ActivationList::SUBRESOURCE_FILTER);
+  UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationList",
+                            matched_list,
+                            static_cast<int>(ActivationList::LAST) + 1);
+
+  size_t chain_size = check_results_.size();
+  switch (matched_list) {
+    case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
+      UMA_HISTOGRAM_COUNTS(
+          "SubresourceFilter.PageLoad.RedirectChainLength."
+          "SocialEngineeringAdsInterstitial",
+          chain_size);
+      break;
+    case ActivationList::PHISHING_INTERSTITIAL:
+      UMA_HISTOGRAM_COUNTS(
+          "SubresourceFilter.PageLoad.RedirectChainLength."
+          "PhishingInterstitial",
+          chain_size);
+      break;
+    case ActivationList::SUBRESOURCE_FILTER:
+      UMA_HISTOGRAM_COUNTS(
+          "SubresourceFilter.PageLoad.RedirectChainLength."
+          "SubresourceFilterOnly",
+          chain_size);
+      break;
+    default:
+      break;
+  }
 }
 
 bool SubresourceFilterSafeBrowsingActivationThrottle::NavigationIsPageReload(
@@ -301,32 +310,6 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
   }
   NOTREACHED();
   return false;
-}
-
-void SubresourceFilterSafeBrowsingActivationThrottle::
-    RecordRedirectChainMatchPatternForList(ActivationList activation_list) {
-  DCHECK(check_results_.back().finished);
-  ActivationList matched_list = GetListForThreatTypeAndMetadata(
-      check_results_.back().threat_type, check_results_.back().threat_metadata);
-  bool is_matched = matched_list == activation_list;
-  size_t chain_size = check_results_.size();
-  switch (activation_list) {
-    case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
-      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SocialEngineeringAdsInterstitial",
-                                         is_matched, chain_size);
-      break;
-    case ActivationList::PHISHING_INTERSTITIAL:
-      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("PhishingInterstitial", is_matched,
-                                         chain_size);
-      break;
-    case ActivationList::SUBRESOURCE_FILTER:
-      REPORT_REDIRECT_PATTERN_FOR_SUFFIX("SubresourceFilterOnly", is_matched,
-                                         chain_size);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
 }
 
 }  //  namespace subresource_filter
