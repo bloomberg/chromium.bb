@@ -717,9 +717,11 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   }
   gfx::SizeF transformed_buffer_size(
       ToTransformedSize(current_resource_.size, state_.buffer_transform));
-  buffer_to_target_matrix.preScale(
-      output_rect.width() / transformed_buffer_size.width(),
-      output_rect.height() / transformed_buffer_size.height());
+  if (!transformed_buffer_size.IsEmpty()) {
+    buffer_to_target_matrix.preScale(
+        output_rect.width() / transformed_buffer_size.width(),
+        output_rect.height() / transformed_buffer_size.height());
+  }
 
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
