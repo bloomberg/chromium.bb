@@ -7911,6 +7911,10 @@ long Block::Parse(const Cluster* pCluster) {
         return E_FILE_FORMAT_INVALID;
 
       curr.len = static_cast<long>(frame_size);
+      // Check if size + curr.len could overflow.
+      if (size > LLONG_MAX - curr.len) {
+        return E_FILE_FORMAT_INVALID;
+      }
       size += curr.len;  // contribution of this frame
 
       --frame_count;
