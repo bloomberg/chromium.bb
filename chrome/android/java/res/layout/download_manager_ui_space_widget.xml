@@ -25,36 +25,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:textAppearance="@style/RobotoMediumStyle"
-            android:textColor="@color/google_blue_500"
-            android:textSize="16sp" />
+            android:textAppearance="@style/BlueLink2" />
 
         <!-- The progress bar uses 20dp of space, vertically, including spacing. -->
         <org.chromium.chrome.browser.widget.MaterialProgressBar
             android:id="@+id/space_bar"
             android:layout_width="match_parent"
-            android:layout_height="4dp"
+            android:layout_height="2dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            chrome:colorBackground="@color/black_alpha_38"
-            chrome:colorProgress="@color/google_blue_500"
-            chrome:colorSecondaryProgress="@color/black_alpha_87" />
+            chrome:colorBackground="@color/google_grey_500"
+            chrome:colorProgress="@color/google_grey_300"
+            chrome:colorSecondaryProgress="@color/google_blue_700" />
 
         <TextView
-            android:id="@+id/size_other_apps"
+            android:id="@+id/size_free_and_other_apps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:textColor="@color/black_alpha_87"
-            android:textSize="14sp" />
-
-        <TextView
-            android:id="@+id/size_free"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:textColor="@color/black_alpha_54"
-            android:textSize="14sp" />
+            android:textAppearance="@style/BlackDisabledText2" />
 
     </LinearLayout>
 

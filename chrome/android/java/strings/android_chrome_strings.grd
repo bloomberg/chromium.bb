@@ -2096,6 +2096,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_OPEN_DOWNLOADED_LABEL" desc="A text label on the snackbar widget to open the downloaded file.">
         Open
       </message>
+      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_FREE_AND_OTHER" desc="Formatted string indicating how much storage is available to use on this device and how much storage space on this device has been used by other apps.">
+        <ph name="SPACE_FREE">%1$s<ex>4.8 GB available</ex></ph> (<ph name="SPACE_OTHER">%2$s<ex>5.22 GB other apps</ex></ph>)
+      </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_FREE_KB" desc="String indicating how much storage is available to use on the device, in kilobytes.">
         <ph name="kilobytes">%1$3.2f<ex>12.5</ex></ph> KB available
       </message>

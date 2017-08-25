@@ -10,16 +10,14 @@
     android:paddingBottom="16dp" >
 
     <org.chromium.ui.widget.TextViewWithClickableSpans
-        android:id="@+id/signed_in_not_synced"
-        style="@style/PrivacyDisclaimerText" />
-
-    <org.chromium.ui.widget.TextViewWithClickableSpans
-        android:id="@+id/signed_in_synced"
-        style="@style/PrivacyDisclaimerText" />
-
-    <org.chromium.ui.widget.TextViewWithClickableSpans
-        android:id="@+id/other_forms_of_browsing_history"
-        style="@style/PrivacyDisclaimerText" />
+        android:id="@+id/privacy_disclaimer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="@dimen/list_item_default_margin"
+        android:layout_marginEnd="@dimen/list_item_default_margin"
+        android:textAppearance="@style/BlackBody"
+        android:lineSpacingExtra="6sp"/>
 
     <LinearLayout
         android:id="@+id/privacy_disclaimer_bottom_space"
