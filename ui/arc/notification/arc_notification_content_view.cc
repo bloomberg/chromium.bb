@@ -341,9 +341,11 @@ void ArcNotificationContentView::SetSurface(ArcNotificationSurface* surface) {
   if (surface_ == surface)
     return;
 
+  // Put null to |control_buttos|view_| before deleting the widget, since it may
+  // be referred while deletion.
+  control_buttons_view_ = nullptr;
   // Reset |floating_control_buttons_widget_| when |surface_| is changed.
   floating_control_buttons_widget_.reset();
-  control_buttons_view_ = nullptr;
 
   if (surface_) {
     DCHECK(surface_->GetWindow());
