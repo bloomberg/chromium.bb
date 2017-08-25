@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/memory/ptr_util.h"
+#include "base/test/histogram_tester.h"
 #include "components/offline_pages/core/prefetch/mock_prefetch_item_generator.h"
 #include "components/offline_pages/core/prefetch/prefetch_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
@@ -115,6 +116,138 @@ TEST_F(MetricsFinalizationTaskTest, FinalizesMultipleItems) {
   std::set<PrefetchItem> items_in_new_request_state =
       FilterByState(all_items, PrefetchItemState::NEW_REQUEST);
   EXPECT_EQ(1U, items_in_new_request_state.count(unfinished_item));
+}
+
+TEST_F(MetricsFinalizationTaskTest, MetricsAreReported) {
+  PrefetchItem successful_item =
+      item_generator()->CreateItem(PrefetchItemState::FINISHED);
+  successful_item.generate_bundle_attempts = 1;
+  successful_item.get_operation_attempts = 1;
+  successful_item.download_initiation_attempts = 1;
+  ASSERT_TRUE(store_util()->InsertPrefetchItem(successful_item));
+
+  PrefetchItem failed_item =
+      item_generator()->CreateItem(PrefetchItemState::RECEIVED_GCM);
+  failed_item.state = PrefetchItemState::FINISHED;
+  failed_item.error_code = PrefetchItemErrorCode::ARCHIVING_FAILED;
+  ASSERT_TRUE(store_util()->InsertPrefetchItem(failed_item));
+
+  PrefetchItem unfinished_item =
+      item_generator()->CreateItem(PrefetchItemState::NEW_REQUEST);
+  ASSERT_TRUE(store_util()->InsertPrefetchItem(unfinished_item));
+
+  // Execute the metrics task.
+  base::HistogramTester histogram_tester;
+  ExpectTaskCompletes(metrics_finalization_task_.get());
+  metrics_finalization_task_->Run();
+  RunUntilIdle();
+
+  std::set<PrefetchItem> all_items;
+  EXPECT_EQ(3U, store_util()->GetAllItems(&all_items));
+  EXPECT_EQ(2U, FilterByState(all_items, PrefetchItemState::ZOMBIE).size());
+  EXPECT_EQ(1U,
+            FilterByState(all_items, PrefetchItemState::NEW_REQUEST).size());
+
+  // One successful and one failed samples.
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.ItemLifetime.Successful", 0, 1);
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.ItemLifetime.Failed", 0, 1);
+
+  // One sample for each_error code value.
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.Prefetching.FinishedItemErrorCode", 2);
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.FinishedItemErrorCode",
+      static_cast<int>(PrefetchItemErrorCode::SUCCESS), 1);
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.FinishedItemErrorCode",
+      static_cast<int>(PrefetchItemErrorCode::ARCHIVING_FAILED), 1);
+
+  // One sample at the "size matches (100%)" bucket.
+  histogram_tester.ExpectUniqueSample(
+      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 11, 1);
+
+  // Attempt values match what was set above (non set values default to 0).
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.GeneratePageBundle", 2);
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.GeneratePageBundle", 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.GeneratePageBundle", 1, 1);
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.GetOperation", 2);
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.GetOperation", 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.GetOperation", 1, 1);
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.DownloadInitiation", 2);
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.DownloadInitiation", 0, 1);
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.ActionRetryAttempts.DownloadInitiation", 1, 1);
+}
+
+TEST_F(MetricsFinalizationTaskTest, FileSizeMetricsAreReportedCorrectly) {
+  PrefetchItem zero_body_length =
+      item_generator()->CreateItem(PrefetchItemState::RECEIVED_BUNDLE);
+  zero_body_length.state = PrefetchItemState::FINISHED;
+  zero_body_length.archive_body_length = 0;
+  zero_body_length.file_size = -1;
+  ASSERT_TRUE(store_util()->InsertPrefetchItem(zero_body_length));
+
+  PrefetchItem smaller_than_expected =
+      item_generator()->CreateItem(PrefetchItemState::FINISHED);
+  smaller_than_expected.archive_body_length = 1000;
+  smaller_than_expected.file_size = 999;
+  ASSERT_TRUE(store_util()->InsertPrefetchItem(smaller_than_expected));
+
+  PrefetchItem sizes_match =
+      item_generator()->CreateItem(PrefetchItemState::FINISHED);
+  sizes_match.archive_body_length = 1000;
+  sizes_match.file_size = 1000;
+  ASSERT_TRUE(store_util()->InsertPrefetchItem(sizes_match));
+
+  PrefetchItem larger_than_expected =
+      item_generator()->CreateItem(PrefetchItemState::FINISHED);
+  larger_than_expected.archive_body_length = 1000;
+  larger_than_expected.file_size = 1001;
+  ASSERT_TRUE(store_util()->InsertPrefetchItem(larger_than_expected));
+
+  PrefetchItem much_larger_than_expected =
+      item_generator()->CreateItem(PrefetchItemState::FINISHED);
+  much_larger_than_expected.archive_body_length = 1000;
+  much_larger_than_expected.file_size = 10000;
+  ASSERT_TRUE(store_util()->InsertPrefetchItem(much_larger_than_expected));
+
+  // Execute the metrics task.
+  base::HistogramTester histogram_tester;
+  ExpectTaskCompletes(metrics_finalization_task_.get());
+  metrics_finalization_task_->Run();
+  RunUntilIdle();
+
+  std::set<PrefetchItem> all_items;
+  EXPECT_EQ(5U, store_util()->GetAllItems(&all_items));
+  EXPECT_EQ(5U, FilterByState(all_items, PrefetchItemState::ZOMBIE).size());
+
+  histogram_tester.ExpectTotalCount(
+      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 5);
+  // One sample at the "archive_body_length = 0" bucket.
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 0, 1);
+  // One sample at the "90% to 100%" bucket.
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 10, 1);
+  // One sample at the "size matches (100%)" bucket.
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 11, 1);
+  // One sample at the "100% to 110%" bucket.
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 12, 1);
+  // One sample at the "above 200%" bucket.
+  histogram_tester.ExpectBucketCount(
+      "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected", 22, 1);
 }
 
 }  // namespace offline_pages

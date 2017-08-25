@@ -4,12 +4,14 @@
 
 #include "components/offline_pages/core/prefetch/metrics_finalization_task.h"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/offline_time_utils.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/prefetch/store/prefetch_store.h"
@@ -49,8 +51,7 @@ struct PrefetchItemStats {
   int64_t file_size;
 };
 
-std::unique_ptr<std::vector<PrefetchItemStats>> FetchUrlsSync(
-    sql::Connection* db) {
+std::vector<PrefetchItemStats> FetchUrlsSync(sql::Connection* db) {
   static const char kSql[] = R"(
   SELECT offline_id, generate_bundle_attempts, get_operation_attempts,
     download_initiation_attempts, archive_body_length, creation_time,
@@ -61,9 +62,9 @@ std::unique_ptr<std::vector<PrefetchItemStats>> FetchUrlsSync(
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt(0, static_cast<int>(PrefetchItemState::FINISHED));
 
-  auto urls = base::MakeUnique<std::vector<PrefetchItemStats>>();
+  std::vector<PrefetchItemStats> urls;
   while (statement.Step()) {
-    PrefetchItemStats stats(
+    urls.emplace_back(
         statement.ColumnInt64(0),  // offline_id
         statement.ColumnInt(1),    // generate_bundle_attempts
         statement.ColumnInt(2),    // get_operation_attempts
@@ -74,8 +75,6 @@ std::unique_ptr<std::vector<PrefetchItemStats>> FetchUrlsSync(
             statement.ColumnInt(6)),  // error_code
         statement.ColumnInt64(7)      // file_size
         );
-
-    urls->push_back(stats);
   }
 
   return urls;
@@ -94,7 +93,92 @@ bool MarkUrlAsZombie(sql::Connection* db,
   return statement.Run();
 }
 
-bool SelectUrlsToPrefetchSync(sql::Connection* db) {
+// These constants represent important indexes in the
+// OfflinePrefetchArchiveActualSizeVsExpected histogram enum.
+const int kEnumZeroArchiveBodyLength = 0;
+const int kEnumRange0To100Min = 1;
+const int kEnumRange0To100Max = 10;
+const int kEnumSizeMatches100 = 11;
+const int kEnumRange100To200OrMoreMin = 12;
+const int kEnumRange100To200OrMoreMax = 22;
+
+// Value meaning the file size should not be reported (not a valid index in the
+// OfflinePrefetchArchiveActualSizeVsExpected enum).
+const int kShouldNotReportFileSize = -1;
+
+// Returned values conform to the definition of the
+// OfflinePrefetchArchiveActualSizeVsExpected histogram enum. Except for -1
+// which means "do not report".
+int GetFileSizeEnumValueFor(int64_t archive_body_length, int64_t file_size) {
+  // Archiving service reported body length as zero.
+  if (archive_body_length == 0)
+    return kEnumZeroArchiveBodyLength;
+
+  // For other cases, reporting should only happen if both size values were set
+  // meaning the item reached at least the successfully downloaded state.
+  if (archive_body_length < 0 || file_size < 0)
+    return kShouldNotReportFileSize;
+
+  if (archive_body_length == file_size)
+    return kEnumSizeMatches100;
+
+  // For smaller sizes than expected, return an index in the 0% <= ratio < 100%
+  // range.
+  double ratio = static_cast<double>(file_size) / archive_body_length;
+  if (archive_body_length > file_size) {
+    return std::max(
+        kEnumRange0To100Min,
+        std::min(kEnumRange0To100Max, static_cast<int>(ratio * 10) + 1));
+  }
+
+  // Otherwise return an index in the 100% < ratio range.
+  return std::max(
+      kEnumRange100To200OrMoreMin,
+      std::min(kEnumRange100To200OrMoreMax, static_cast<int>(ratio * 10) + 2));
+}
+
+void ReportMetricsFor(const PrefetchItemStats& url, const base::Time now) {
+  // Lifetime reporting.
+  static const int kFourWeeksInSeconds =
+      base::TimeDelta::FromDays(28).InSeconds();
+  const bool successful = url.error_code == PrefetchItemErrorCode::SUCCESS;
+  int64_t lifetime_seconds = (now - url.creation_time).InSeconds();
+  if (successful) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "OfflinePages.Prefetching.ItemLifetime.Successful", lifetime_seconds, 1,
+        kFourWeeksInSeconds, 50);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("OfflinePages.Prefetching.ItemLifetime.Failed",
+                                lifetime_seconds, 1, kFourWeeksInSeconds, 50);
+  }
+
+  // Error code reporting.
+  UMA_HISTOGRAM_SPARSE_SLOWLY("OfflinePages.Prefetching.FinishedItemErrorCode",
+                              static_cast<int>(url.error_code));
+
+  // Unexpected file size reporting.
+  int file_size_enum_value =
+      GetFileSizeEnumValueFor(url.archive_body_length, url.file_size);
+  if (file_size_enum_value != kShouldNotReportFileSize) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected",
+        file_size_enum_value, kEnumRange100To200OrMoreMax);
+  }
+
+  // Attempt counts reporting.
+  static const int kMaxPossibleRetries = 20;
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "OfflinePages.Prefetching.ActionRetryAttempts.GeneratePageBundle",
+      url.generate_bundle_attempts, kMaxPossibleRetries);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "OfflinePages.Prefetching.ActionRetryAttempts.GetOperation",
+      url.get_operation_attempts, kMaxPossibleRetries);
+  UMA_HISTOGRAM_EXACT_LINEAR(
+      "OfflinePages.Prefetching.ActionRetryAttempts.DownloadInitiation",
+      url.download_initiation_attempts, kMaxPossibleRetries);
+}
+
+bool ReportMetricsAndFinalizeSync(sql::Connection* db) {
   if (!db)
     return false;
 
@@ -102,16 +186,15 @@ bool SelectUrlsToPrefetchSync(sql::Connection* db) {
   if (!transaction.Begin())
     return false;
 
-  auto urls = FetchUrlsSync(db);
+  const std::vector<PrefetchItemStats> urls = FetchUrlsSync(db);
 
   base::Time now = base::Time::Now();
-  for (const auto& url : *urls) {
+  for (const auto& url : urls) {
     MarkUrlAsZombie(db, now, url.offline_id);
   }
 
   if (transaction.Commit()) {
-    // TODO(dewittj): Report interesting UMA metrics for each prefetch item.
-    for (const auto& url : *urls) {
+    for (const auto& url : urls) {
       DVLOG(1) << "Finalized prefetch item: (" << url.offline_id << ", "
                << url.generate_bundle_attempts << ", "
                << url.get_operation_attempts << ", "
@@ -119,8 +202,8 @@ bool SelectUrlsToPrefetchSync(sql::Connection* db) {
                << url.archive_body_length << ", " << url.creation_time << ", "
                << static_cast<int>(url.error_code) << ", " << url.file_size
                << ")";
+      ReportMetricsFor(url, now);
     }
-
     return true;
   }
 
@@ -136,7 +219,7 @@ MetricsFinalizationTask::~MetricsFinalizationTask() {}
 
 void MetricsFinalizationTask::Run() {
   prefetch_store_->Execute(
-      base::BindOnce(&SelectUrlsToPrefetchSync),
+      base::BindOnce(&ReportMetricsAndFinalizeSync),
       base::BindOnce(&MetricsFinalizationTask::MetricsFinalized,
                      weak_factory_.GetWeakPtr()));
 }

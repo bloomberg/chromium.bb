@@ -115,7 +115,7 @@ TEST_F(DownloadCompletedTaskTest, UpdateItemOnDownloadError) {
   EXPECT_EQ(PrefetchItemErrorCode::DOWNLOAD_ERROR, item->error_code);
   EXPECT_EQ(kTestGUID, item->guid);
   EXPECT_TRUE(item->file_path.empty());
-  EXPECT_EQ(0, item->file_size);
+  EXPECT_EQ(-1, item->file_size);
 }
 
 TEST_F(DownloadCompletedTaskTest, NoUpdateOnMismatchedDownloadSuccess) {

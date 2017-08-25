@@ -50209,6 +50209,40 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Size of the saved copy of an offline page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.Prefetching.ActionRetryAttempts" units="retries">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Number of attempts to perform a specific retriable pipeline action for each
+    finished prefetch item.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Prefetching.DownloadedArchiveSizeVsExpected"
+    enum="OfflinePrefetchArchiveActualSizeVsExpected">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Reports differences between the expected size of a prefetch archive -- as
+    reported by the service -- and the actual downloaded file size.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Prefetching.FinishedItemErrorCode"
+    enum="OfflinePrefetchItemErrorCode">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    Error code representing the reason why each offline prefetch item was
+    finalized.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Prefetching.ItemLifetime" units="seconds">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    The lifetime of an offline prefetch item, from creation until
+    &quot;zombie-fication&quot; (after metrics collection).
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.RedirectResult" enum="OfflinePagesRedirectResult">
   <obsolete>
     Deprecated 8/2016. Use OfflinePages.RequestResult instead.
@@ -97728,6 +97762,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="OfflinePages.PageSize"/>
   <affected-histogram name="OfflinePages.SavePageResult"/>
   <affected-histogram name="OfflinePages.SavePageTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="OfflinePrefechItemFinalOutcome" separator=".">
+  <suffix name="Successful" label="For items that were completed sucessfully."/>
+  <suffix name="Failed"
+      label="For items that failed being prefetched for any reason."/>
+  <affected-histogram name="OfflinePages.Prefetching.ItemLifetime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="OfflinePrefechRetriableAction" separator=".">
+  <suffix name="GeneratePageBundle"
+      label="Action: GeneratePageBundle request."/>
+  <suffix name="GetOperation" label="Action: GetOperation request."/>
+  <suffix name="DownloadInitiation"
+      label="Action: start downloading an archive."/>
+  <affected-histogram name="OfflinePages.Prefetching.ActionRetryAttempts"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="OmniboxPageContext" separator=".">
