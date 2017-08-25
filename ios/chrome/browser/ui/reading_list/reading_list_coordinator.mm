@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
+#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_download_service_factory.h"
@@ -261,6 +262,8 @@ readingListCollectionViewController:
                  referrer:referrer
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
         rendererInitiated:NO];
+  new_tab_page_uma::RecordAction(
+      self.browserState, new_tab_page_uma::ACTION_OPENED_READING_LIST_ENTRY);
 
   [self stop];
 }

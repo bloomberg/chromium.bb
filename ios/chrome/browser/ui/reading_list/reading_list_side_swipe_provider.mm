@@ -9,6 +9,8 @@
 #include "base/metrics/user_metrics_action.h"
 #include "components/reading_list/core/reading_list_entry.h"
 #include "components/reading_list/core/reading_list_model.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
@@ -62,6 +64,9 @@ class ReadingListObserverBridge;
       net::NetworkChangeNotifier::IsOffline());
   DCHECK(firstEntry);
   base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
+  new_tab_page_uma::RecordAction(
+      ios::ChromeBrowserState::FromBrowserState(webState->GetBrowserState()),
+      new_tab_page_uma::ACTION_OPENED_READING_LIST_ENTRY);
 
   web::NavigationManager::WebLoadParams params(firstEntry->URL());
   params.transition_type = ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK;
