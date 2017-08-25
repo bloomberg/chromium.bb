@@ -77,10 +77,6 @@ addSuggestionsToModel:
 // header containing the fake omnibox and the logo.
 - (BOOL)isHeaderSection:(NSInteger)section;
 
-// Returns whether |section| is one of the section containing ContentSuggestions
-// items.
-- (BOOL)isContentSuggestionsSection:(NSInteger)section;
-
 // Updates the number of Most Visited tiles shown for the |size| on the model
 // only. The collection needs to be updated separately.
 - (void)updateMostVisitedForSize:(CGSize)size;

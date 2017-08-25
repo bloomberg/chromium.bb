@@ -62,7 +62,6 @@ ContentSuggestionsItem* ConvertSuggestion(
       initWithType:0
              title:base::SysUTF16ToNSString(contentSuggestion.title())
                url:contentSuggestion.url()];
-  suggestion.metricsRecorded = NO;
 
   suggestion.publisher =
       base::SysUTF16ToNSString(contentSuggestion.publisher_name());
@@ -72,9 +71,6 @@ ContentSuggestionsItem* ConvertSuggestion(
   suggestion.suggestionIdentifier.IDInSection =
       contentSuggestion.id().id_within_category();
   suggestion.suggestionIdentifier.sectionInfo = sectionInfo;
-
-  suggestion.score = contentSuggestion.score();
-  suggestion.fetchDate = contentSuggestion.fetch_date();
 
   if (category.IsKnownCategory(ntp_snippets::KnownCategories::READING_LIST)) {
     suggestion.faviconURL =

@@ -25,7 +25,6 @@
 @synthesize URL = _URL;
 @synthesize source = _source;
 @synthesize commandHandler = _commandHandler;
-@synthesize metricsRecorded = _metricsRecorded;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
