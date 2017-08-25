@@ -321,7 +321,11 @@ public class FeatureUtilities {
      */
     public static boolean isChromeHomeModernEnabled() {
         if (!isChromeHomeEnabled()) return false;
-        if (!ChromeFeatureList.isInitialized()) return false;
+
+        // Modern is enabled by default for Chrome Home, so return true if the feature list isn't
+        // yet initialized.
+        if (!ChromeFeatureList.isInitialized()) return true;
+
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_MODERN_LAYOUT);
     }
 

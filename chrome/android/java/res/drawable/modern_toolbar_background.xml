@@ -8,12 +8,12 @@
     android:shape="rectangle" >
     <solid android:color="@color/modern_light_grey" />
     <size
-        android:width="@dimen/bottom_toolbar_background_size"
-        android:height="@dimen/bottom_toolbar_background_size" />
-    <corners android:radius="@dimen/bottom_toolbar_background_corner_radius" />
+        android:width="@dimen/modern_toolbar_background_size"
+        android:height="@dimen/modern_toolbar_background_size" />
+    <corners android:radius="@dimen/modern_toolbar_background_corner_radius" />
     <padding
         android:top="0dp"
         android:bottom="0dp"
-        android:left="@dimen/bottom_toolbar_background_lateral_inset"
-        android:right="@dimen/bottom_toolbar_background_lateral_inset" />
+        android:left="@dimen/modern_toolbar_background_lateral_inset"
+        android:right="@dimen/modern_toolbar_background_lateral_inset" />
 </shape>
