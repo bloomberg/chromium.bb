@@ -29,6 +29,7 @@ const int kLinkColorRGB = 0x5595FE;
 @implementation ContentSuggestionsLearnMoreItem
 
 @synthesize suggestionIdentifier;
+@synthesize metricsRecorded;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
