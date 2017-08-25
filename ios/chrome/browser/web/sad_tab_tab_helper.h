@@ -25,20 +25,6 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
 
   ~SadTabTabHelper() override;
 
-  bool requires_reload_on_becoming_visible() const {
-    return requires_reload_on_becoming_visible_;
-  }
-  void set_requires_reload_on_becoming_visible(bool flag) {
-    requires_reload_on_becoming_visible_ = flag;
-  }
-
-  bool requires_reload_on_becoming_active() const {
-    return requires_reload_on_becoming_active_;
-  }
-  void set_requires_reload_on_becoming_active(bool flag) {
-    requires_reload_on_becoming_active_ = flag;
-  }
-
  private:
   // Constructs a SadTabTabHelper, assigning the helper to a web_state. A
   // default repeat_failure_interval will be used.
