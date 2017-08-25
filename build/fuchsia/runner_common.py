@@ -9,14 +9,12 @@ dependencies of a  binary, and then uses either QEMU from the Fuchsia SDK
 to run, or starts the bootserver to allow running on a hardware device."""
 
 import argparse
-import multiprocessing
 import os
 import re
 import shutil
 import signal
 import subprocess
 import sys
-import tempfile
 
 
 DIR_SOURCE_ROOT = os.path.abspath(
@@ -123,7 +121,7 @@ def _ExpandDirectories(file_mapping, mapper):
 def _StripBinary(dry_run, bin_path):
   """Creates a stripped copy of the executable at |bin_path| and returns the
   path to the stripped copy."""
-  strip_path = tempfile.mktemp()
+  strip_path = bin_path + '.bootfs_stripped'
   _RunAndCheck(dry_run, ['/usr/bin/strip', bin_path, '-o', strip_path])
   if not dry_run and not os.path.exists(strip_path):
     raise Exception('strip did not create output file')
@@ -131,15 +129,18 @@ def _StripBinary(dry_run, bin_path):
 
 
 def _StripBinaries(dry_run, file_mapping):
-  """Strips all executables in |file_mapping|, and returns a new mapping
-  dictionary, suitable to pass to _WriteManifest()"""
-  new_mapping = file_mapping.copy()
+  """Updates the supplied manifest |file_mapping|, by stripping any executables
+  and updating their entries to point to the stripped location. Returns a
+  mapping from target executables to their un-stripped paths, for use during
+  symbolization."""
+  symbols_mapping = {}
   for target, source in file_mapping.iteritems():
     with open(source, 'rb') as f:
       file_tag = f.read(4)
     if file_tag == '\x7fELF':
-      new_mapping[target] = _StripBinary(dry_run, source)
-  return new_mapping
+      symbols_mapping[target] = source
+      file_mapping[target] = _StripBinary(dry_run, source)
+  return symbols_mapping
 
 
 def _WriteManifest(manifest_file, file_mapping):
@@ -165,7 +166,7 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
   file_mapping = dict(runtime_deps)
 
   # Generate a script that runs the binaries and shuts down QEMU (if used).
-  autorun_file = tempfile.NamedTemporaryFile()
+  autorun_file = open(bin_name + '.bootfs_autorun', 'w')
   autorun_file.write('#!/bin/sh\n')
   if _IsRunningOnBot():
     # We drop to -smp 1 to avoid counterintuitive observations on the realtime
@@ -211,11 +212,11 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
       lambda x: _MakeTargetImageName(DIR_SOURCE_ROOT, output_directory, x))
 
   # Strip any binaries in the file list, and generate a manifest mapping.
-  manifest_mapping = _StripBinaries(dry_run, file_mapping)
+  symbols_mapping = _StripBinaries(dry_run, file_mapping)
 
   # Write the target, source mappings to a file suitable for bootfs.
-  manifest_file = tempfile.NamedTemporaryFile()
-  _WriteManifest(manifest_file.file, manifest_mapping)
+  manifest_file = open(bin_name + '.bootfs_manifest', 'w')
+  _WriteManifest(manifest_file, file_mapping)
   manifest_file.flush()
   _DumpFile(dry_run, manifest_file.name, 'manifest')
 
@@ -230,38 +231,45 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args,
     return None
 
   # Return both the name of the bootfs file, and the filename mapping.
-  return (bootfs_name, file_mapping)
+  return (bootfs_name, symbols_mapping)
 
 
-def _SymbolizeEntry(entry):
+def _SymbolizeEntries(entries):
   filename_re = re.compile(r'at ([-._a-zA-Z0-9/+]+):(\d+)')
-  raw, frame_id = entry['raw'], entry['frame_id']
-  prefix = '#%s: ' % frame_id
 
-  if entry.has_key('debug_binary') and entry.has_key('pc_offset'):
-    # Invoke addr2line on the host-side binary to resolve the symbol.
+  # Use addr2line to symbolize all the |pc_offset|s in |entries| in one go.
+  # Entries with no |debug_binary| are also processed here, so that we get
+  # consistent output in that case, with the cannot-symbolize case.
+  addr2line_output = None
+  if entries[0].has_key('debug_binary'):
     addr2line_output = subprocess.check_output(
-        ['addr2line', '-Cipf', '--exe=' + entry['debug_binary'],
-         entry['pc_offset']])
+        ['addr2line', '-Cipf', '-p', '--exe=' + entries[0]['debug_binary']] +
+        map(lambda entry: entry['pc_offset'], entries)).splitlines()
+    assert addr2line_output
 
-    # addr2line outputs a second line for inlining information, offset
-    # that to align it properly after the frame index.
-    addr2line_filtered = addr2line_output.strip().replace(
-        '(inlined', ' ' * len(prefix) + '(inlined')
+  # Collate a set of |(frame_id, result)| pairs from the output lines.
+  results = {}
+  for i in xrange(len(entries)):
+    entry = entries[i]
+    raw, frame_id = entry['raw'], entry['frame_id']
+    prefix = '#%s: ' % frame_id
 
-    # Relativize path to DIR_SOURCE_ROOT if we see a filename.
-    def RelativizePath(m):
-      relpath = os.path.relpath(os.path.normpath(m.group(1)), DIR_SOURCE_ROOT)
-      return 'at ' + relpath + ':' + m.group(2)
-    addr2line_filtered = filename_re.sub(RelativizePath, addr2line_filtered)
+    if addr2line_output:
+      # Relativize path to DIR_SOURCE_ROOT if we see a filename.
+      def RelativizePath(m):
+        relpath = os.path.relpath(os.path.normpath(m.group(1)), DIR_SOURCE_ROOT)
+        return 'at ' + relpath + ':' + m.group(2)
+      filtered_line = filename_re.sub(RelativizePath, addr2line_output[i])
 
-    # If symbolization fails just output the raw backtrace.
-    if '??' in addr2line_filtered:
-      addr2line_filtered = raw
-  else:
-    addr2line_filtered = raw
+      # If symbolization fails just output the raw backtrace.
+      if '??' in filtered_line:
+        filtered_line = raw
+    else:
+      filtered_line = raw
 
-  return '%s%s' % (prefix, addr2line_filtered)
+    results[entry['frame_id']] = prefix + filtered_line
+
+  return results
 
 
 def _FindDebugBinary(entry, file_mapping):
@@ -297,34 +305,24 @@ def _FindDebugBinary(entry, file_mapping):
 
   return None
 
-def _ParallelSymbolizeBacktrace(backtrace, file_mapping):
-  # Disable handling of SIGINT during sub-process creation, to prevent
-  # sub-processes from consuming Ctrl-C signals, rather than the parent
-  # process doing so.
-  saved_sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
-  p = multiprocessing.Pool(multiprocessing.cpu_count())
 
-  # Restore the signal handler for the parent process.
-  signal.signal(signal.SIGINT, saved_sigint_handler)
-
-  # Resolve the |binary| name in each entry to a host-accessible filename.
+def _SymbolizeBacktrace(backtrace, file_mapping):
+  # Group |backtrace| entries according to the associated binary, and locate
+  # the path to the debug symbols for that binary, if any.
+  batches = {}
   for entry in backtrace:
     debug_binary = _FindDebugBinary(entry, file_mapping)
     if debug_binary:
       entry['debug_binary'] = debug_binary
+    batches.setdefault(debug_binary, []).append(entry)
 
-  symbolized = []
-  try:
-    result = p.map_async(_SymbolizeEntry, backtrace)
-    symbolized = result.get(SYMBOLIZATION_TIMEOUT_SECS)
-    if not symbolized:
-      return []
-  except multiprocessing.TimeoutError:
-    return ['(timeout error occurred during symbolization)']
-  except KeyboardInterrupt:  # SIGINT
-    p.terminate()
+  # Run _SymbolizeEntries on each batch and collate the results.
+  symbolized = {}
+  for batch in batches.itervalues():
+    symbolized.update(_SymbolizeEntries(batch))
 
-  return symbolized
+  # Map each backtrace to its symbolized form, by frame-id, and return the list.
+  return map(lambda entry: symbolized[entry['frame_id']], backtrace)
 
 
 def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
@@ -424,8 +422,8 @@ def RunFuchsia(bootfs_and_manifest, use_device, dry_run):
     frame_id = matched.group('frame_id')
     if backtrace_line == 'end':
       if backtrace_entries:
-        for processed in _ParallelSymbolizeBacktrace(backtrace_entries,
-                                                     bootfs_manifest):
+        for processed in _SymbolizeBacktrace(backtrace_entries,
+                                             bootfs_manifest):
           print processed
       backtrace_entries = []
       continue
