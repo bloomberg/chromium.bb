@@ -949,7 +949,7 @@ class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
 
   def PerformStage(self):
     manager = self._run.attrs.manifest_manager
-    cmd = ['chrome_chromeos_lkgm', '--version=%s' % manager.current_version]
+    cmd = ['chrome_chromeos_lkgm', '--lkgm=%s' % manager.current_version]
     # Always do a dryrun for now so that we can check the output and ensure it
     # is doing the correct thing.
     # TODO(stevenjb): if self._run.options.debug:
