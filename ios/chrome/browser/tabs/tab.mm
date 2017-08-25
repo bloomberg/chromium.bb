@@ -526,10 +526,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                                     self.visibleURL.spec().c_str()];
 }
 
-- (CRWWebController*)webController {
-  return _webStateImpl ? _webStateImpl->GetWebController() : nil;
-}
-
 - (id<TabDialogDelegate>)dialogDelegate {
   return dialogDelegate_;
 }
@@ -652,10 +648,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (web::NavigationManager*)navigationManager {
   return self.webState ? self.webState->GetNavigationManager() : nullptr;
-}
-
-- (web::NavigationManagerImpl*)navigationManagerImpl {
-  return self.webState ? &(_webStateImpl->GetNavigationManagerImpl()) : nullptr;
 }
 
 - (void)setIsLinkLoadingPrerenderTab:(BOOL)isLinkLoadingPrerenderTab {
@@ -1742,6 +1734,18 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (FormInputAccessoryViewController*)inputAccessoryViewController {
   return _inputAccessoryViewController;
+}
+
+// TODO(crbug.com/620465): this require the Tab's WebState to be a WebStateImpl,
+// remove this helper once this is no longer true (and fix the unit tests).
+- (web::NavigationManagerImpl*)navigationManagerImpl {
+  return static_cast<web::NavigationManagerImpl*>(self.navigationManager);
+}
+
+// TODO(crbug.com/620465): this require the Tab's WebState to be a WebStateImpl,
+// remove this helper once this is no longer true (and fix the unit tests).
+- (CRWWebController*)webController {
+  return _webStateImpl ? _webStateImpl->GetWebController() : nil;
 }
 
 @end

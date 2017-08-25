@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/snapshots/snapshot_manager.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_headers_delegate.h"
+#import "ios/chrome/browser/tabs/tab_private.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 

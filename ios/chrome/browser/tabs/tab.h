@@ -14,7 +14,6 @@
 #import "ios/chrome/browser/web/page_placeholder_tab_helper_delegate.h"
 #include "ios/net/request_tracker.h"
 #include "ios/web/public/user_agent.h"
-#import "ios/web/public/web_state/ui/crw_web_delegate.h"
 #include "ui/base/page_transition_types.h"
 
 @protocol ApplicationCommands;
@@ -23,7 +22,6 @@
 @protocol BrowserCommands;
 @protocol IOSCaptivePortalBlockingPageDelegate;
 @class CastController;
-@class CRWWebController;
 @class ExternalAppLauncher;
 @class FormInputAccessoryViewController;
 @class FullScreenController;
@@ -52,7 +50,6 @@ class ChromeBrowserState;
 namespace web {
 class NavigationItem;
 class NavigationManager;
-class NavigationManagerImpl;
 class WebState;
 }
 
@@ -84,13 +81,12 @@ extern NSString* const kTabUrlKey;
 extern NSString* const kProxyPassthroughHeaderName;
 extern NSString* const kProxyPassthroughHeaderValue;
 
-// Information related to a single tab. The CRWWebController is similar to
-// desktop Chrome's TabContents in that it encapsulates rendering. Acts as the
-// delegate for the CRWWebController in order to process info about pages having
+// Information related to a single tab. The WebState is similar to desktop
+// Chrome's WebContents in that it encapsulates rendering. Acts as the
+// delegate for the WebState in order to process info about pages having
 // loaded.
-@interface Tab : NSObject<CRWWebDelegate,
-                          ManageAccountsDelegate,
-                          PagePlaceholderTabHelperDelegate>
+@interface Tab
+    : NSObject<ManageAccountsDelegate, PagePlaceholderTabHelperDelegate>
 
 // Browser state associated with this Tab.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;
@@ -120,8 +116,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // The Webstate associated with this Tab.
 @property(nonatomic, readonly) web::WebState* webState;
-
-@property(nonatomic, readonly) CRWWebController* webController;
 
 // Handles saving and autofill of passwords.
 @property(nonatomic, readonly) PasswordController* passwordController;
@@ -199,17 +193,14 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Returns the NavigationManager for this tab's WebState. Requires WebState to
 // be populated. Can return null.
-// TODO(crbug.com/620465): remove navigationManagerImpl once Tab no longer uses
-// nor exposes private ios/web/ API.
 - (web::NavigationManager*)navigationManager;
-- (web::NavigationManagerImpl*)navigationManagerImpl;
 
 // Navigate forwards or backwards to |item|.
 - (void)goToItem:(const web::NavigationItem*)item;
 
 // Navigates forwards or backwards.
-// TODO(crbug.com/661664): These are passthroughs to CRWWebController. Convert
-// all callers and remove these methods.
+// TODO(crbug.com/661664): These are passthroughs to the Tab's WebState's
+// NavigationManager. Convert all callers and remove these methods.
 - (void)goBack;
 - (void)goForward;
 

@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
 #include "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_private.h"
 #include "ios/chrome/browser/ui/toolbar/toolbar_model_delegate_ios.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
