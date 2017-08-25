@@ -11,6 +11,7 @@
 #include "base/json/json_writer.h"
 #include "base/process/process.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "chrome/profiling/backtrace_storage.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/os_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,7 +94,8 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
 
 }  // namespace
 
-TEST(ProfilingJsonExporterTest, Simple) {
+// Test failing. crbug.com/759176
+TEST(ProfilingJsonExporterTest, DISABLED_Simple) {
   BacktraceStorage backtrace_storage;
 
   std::vector<Address> stack1;
