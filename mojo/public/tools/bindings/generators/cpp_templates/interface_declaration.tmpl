@@ -63,3 +63,12 @@ class {{export_attribute}} {{interface.name}}
   virtual void {{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}}) = 0;
 {%- endfor %}
 };
+
+{#--- Testing interceptor #}
+class {{export_attribute}} {{interface.name}}InterceptorForTesting : public {{interface.name}} {
+  virtual {{interface.name}}* GetForwardingInterface() = 0;
+
+{%- for method in interface.methods %}
+  void {{method.name}}({{interface_macros.declare_request_params("", method, use_once_callback)}});
+{%- endfor %}
+};

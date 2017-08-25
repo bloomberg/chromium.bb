@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
@@ -15,6 +17,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -500,6 +503,82 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, IsolatedOriginWithSubdomain) {
                     "location.href = '" + isolated_subdomain_url.spec() + "'"));
   observer.Wait();
   EXPECT_EQ(isolated_instance, web_contents()->GetSiteInstance());
+}
+
+// This class allows intercepting the OpenLocalStorage method and changing
+// the parameters to the real implementation of it.
+class StoragePartitonInterceptor
+    : public mojom::StoragePartitionServiceInterceptorForTesting {
+ public:
+  StoragePartitonInterceptor(RenderProcessHostImpl* rph) {
+    // Install a custom callback for handling errors during interface calls.
+    // This is needed because the passthrough calls that this object makes
+    // to the real implementaion of the service don't have the correct
+    // context to invoke the real error callback.
+    mojo::edk::SetDefaultProcessErrorCallback(base::Bind(
+        [](int process_id, const std::string& s) {
+          bad_message::ReceivedBadMessage(process_id,
+                                          bad_message::DSMF_LOAD_STORAGE);
+        },
+        rph->GetID()));
+
+    static_cast<StoragePartitionImpl*>(rph->GetStoragePartition())
+        ->Bind(rph->GetID(), mojo::MakeRequest(&storage_partition_service_));
+  }
+
+  // Allow all methods that aren't explicitly overriden to pass through
+  // unmodified.
+  mojom::StoragePartitionService* GetForwardingInterface() override {
+    return storage_partition_service_.get();
+  }
+
+  // Override this method to allow changing the origin. It simulates a
+  // renderer process sending incorrect data to the browser process, so
+  // security checks can be tested.
+  void OpenLocalStorage(const url::Origin& origin,
+                        mojom::LevelDBWrapperRequest request) override {
+    url::Origin mismatched_origin(GURL("http://abc.foo.com"));
+    GetForwardingInterface()->OpenLocalStorage(mismatched_origin,
+                                               std::move(request));
+  }
+
+ private:
+  // Keep a pointer to the original implementation of the service, so all
+  // calls can be forwarded to it.
+  // Note: When making calls through this object, they are in-process calls,
+  // so state on the receiving side of the call will be missing the real
+  // information of which process has made the real method call.
+  mojom::StoragePartitionServicePtr storage_partition_service_;
+};
+
+void CreateTestStoragePartitionService(
+    RenderProcessHostImpl* rph,
+    mojom::StoragePartitionServiceRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<StoragePartitonInterceptor>(rph),
+                          std::move(request));
+}
+
+// Verify that an isolated renderer process cannot read localStorage of an
+// origin outside of its isolated site.
+// TODO(nasko): Write a test to verify the opposite - any non-isolated renderer
+// process cannot access data of an isolated site.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest, LocalStorageOriginEnforcement) {
+  RenderProcessHostImpl::SetCreateStoragePartitionServiceFunction(
+      CreateTestStoragePartitionService);
+
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+
+  content::RenderProcessHostWatcher crash_observer(
+      shell()->web_contents()->GetMainFrame()->GetProcess(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  // Use ignore_result here, since on Android the renderer process is
+  // terminated, but ExecuteScript still returns true. It properly returns
+  // false on all other platforms.
+  ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
+                              "localStorage.length;"));
+  crash_observer.Wait();
 }
 
 }  // namespace content
