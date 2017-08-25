@@ -59,12 +59,27 @@ class Helper : public EmbeddedWorkerTestHelper {
 
   // Tells this helper to respond to fetch events with network fallback.
   // i.e.,simulate the service worker not calling respondWith().
-  void RespondWithFallback() { response_mode_ = ResponseMode::kFallback; }
+  void RespondWithFallback() {
+    response_mode_ = ResponseMode::kFallbackResponse;
+  }
 
   // Tells this helper to simulate failure to dispatch the fetch event to the
   // service worker.
   void FailToDispatchFetchEvent() {
     response_mode_ = ResponseMode::kFailFetchEventDispatch;
+  }
+
+  // Tells this helper to simulate "early response", where the respondWith()
+  // promise resolves before the waitUntil() promise. In this mode, the
+  // helper sets the response mode to "early response", which simulates the
+  // promise passed to respondWith() resolving before the waitUntil() promise
+  // resolves. In this mode, the helper will respond to fetch events
+  // immediately, but will not finish the fetch event until FinishWaitUntil() is
+  // called.
+  void RespondEarly() { response_mode_ = ResponseMode::kEarlyResponse; }
+  void FinishWaitUntil() {
+    std::move(finish_callback_).Run(SERVICE_WORKER_OK, base::Time::Now());
+    base::RunLoop().RunUntilIdle();
   }
 
  protected:
@@ -112,7 +127,7 @@ class Helper : public EmbeddedWorkerTestHelper {
             std::move(stream_handle_), base::Time::Now());
         std::move(finish_callback).Run(SERVICE_WORKER_OK, base::Time::Now());
         return;
-      case ResponseMode::kFallback:
+      case ResponseMode::kFallbackResponse:
         response_callback->OnFallback(base::Time::Now());
         std::move(finish_callback).Run(SERVICE_WORKER_OK, base::Time::Now());
         return;
@@ -131,6 +146,22 @@ class Helper : public EmbeddedWorkerTestHelper {
         std::move(finish_callback)
             .Run(SERVICE_WORKER_ERROR_ABORT, base::Time::Now());
         return;
+      case ResponseMode::kEarlyResponse:
+        finish_callback_ = std::move(finish_callback);
+        response_callback->OnResponse(
+            ServiceWorkerResponse(
+                base::MakeUnique<std::vector<GURL>>(), 200, "OK",
+                network::mojom::FetchResponseType::kDefault,
+                base::MakeUnique<ServiceWorkerHeaderMap>(), "" /* blob_uuid */,
+                0 /* blob_size */, nullptr /* blob */,
+                blink::kWebServiceWorkerResponseErrorUnknown, base::Time(),
+                false /* response_is_in_cache_storage */,
+                std::string() /* response_cache_storage_cache_name */,
+                base::MakeUnique<
+                    ServiceWorkerHeaderList>() /* cors_exposed_header_names */),
+            base::Time::Now());
+        // Now the caller must call FinishWaitUntil() to finish the event.
+        return;
     }
     NOTREACHED();
   }
@@ -140,9 +171,11 @@ class Helper : public EmbeddedWorkerTestHelper {
     kDefault,
     kBlob,
     kStream,
-    kFallback,
-    kFailFetchEventDispatch
+    kFallbackResponse,
+    kFailFetchEventDispatch,
+    kEarlyResponse
   };
+
   ResponseMode response_mode_ = ResponseMode::kDefault;
 
   // For ResponseMode::kBlob.
@@ -151,6 +184,9 @@ class Helper : public EmbeddedWorkerTestHelper {
 
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
+
+  // For ResponseMode::kEarlyResponse.
+  FetchCallback finish_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Helper);
 };
@@ -351,7 +387,7 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
 
 // Test when the service worker responds with network fallback.
 // i.e., does not call respondWith().
-TEST_F(ServiceWorkerURLLoaderJobTest, Fallback) {
+TEST_F(ServiceWorkerURLLoaderJobTest, FallbackResponse) {
   helper_->RespondWithFallback();
 
   // Perform the request.
@@ -371,6 +407,44 @@ TEST_F(ServiceWorkerURLLoaderJobTest, FailFetchDispatch) {
   JobResult result = TestRequest();
   EXPECT_EQ(JobResult::kDidNotHandleRequest, result);
   EXPECT_TRUE(was_main_resource_load_failed_called_);
+}
+
+// Test when the respondWith() promise resolves before the waitUntil() promise
+// resolves. The response should be received before the event finishes.
+TEST_F(ServiceWorkerURLLoaderJobTest, EarlyResponse) {
+  helper_->RespondEarly();
+
+  // Perform the request.
+  JobResult result = TestRequest();
+  EXPECT_EQ(JobResult::kHandledRequest, result);
+  const ResourceResponseHead& info = client_.response_head();
+  EXPECT_EQ(200, info.headers->response_code());
+  ExpectFetchedViaServiceWorker(info);
+
+  // Although the response was already received, the event remains outstanding
+  // until waitUntil() resolves.
+  EXPECT_TRUE(version_->HasWork());
+  helper_->FinishWaitUntil();
+  EXPECT_FALSE(version_->HasWork());
+}
+
+// Test asking the job to fallback to network. In production code, this happens
+// when there is no active service worker for the URL, or it must be skipped,
+// etc.
+TEST_F(ServiceWorkerURLLoaderJobTest, FallbackToNetwork) {
+  ResourceRequest request;
+  request.url = GURL("https://www.example.com/");
+  request.method = "GET";
+
+  StartLoaderCallback callback;
+  auto job = base::MakeUnique<ServiceWorkerURLLoaderJob>(
+      base::BindOnce(&ReceiveStartLoaderCallback, &callback), this, request,
+      GetBlobStorageContext());
+  // Ask the job to fallback to network. In production code,
+  // ServiceWorkerControlleeRequestHandler calls FallbackToNetwork() to do this.
+  job->FallbackToNetwork();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback);
 }
 
 }  // namespace content
