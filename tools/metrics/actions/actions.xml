@@ -7053,11 +7053,15 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="InstantExtended.ShowNTP">
+  <obsolete>
+    Deprecated as of 8/2017 (and not recorded since long before that)
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
 <action name="InstantExtended.ShowSRP">
+  <obsolete>Deprecated as of 8/2017</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
