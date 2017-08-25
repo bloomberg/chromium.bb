@@ -30,8 +30,7 @@ const int kToastDurationMs = 2500;
 
 }  // namespace
 
-MetalayerMode::MetalayerMode(Delegate* delegate)
-    : CommonPaletteTool(delegate), weak_factory_(this) {
+MetalayerMode::MetalayerMode(Delegate* delegate) : CommonPaletteTool(delegate) {
   Shell::Get()->AddPreTargetHandler(this);
   Shell::Get()->AddShellObserver(this);
 }
@@ -52,8 +51,7 @@ PaletteToolId MetalayerMode::GetToolId() const {
 void MetalayerMode::OnEnable() {
   CommonPaletteTool::OnEnable();
 
-  Shell::Get()->palette_delegate()->ShowMetalayer(
-      base::Bind(&MetalayerMode::OnMetalayerDone, weak_factory_.GetWeakPtr()));
+  Shell::Get()->palette_delegate()->ShowMetalayer();
   delegate()->HidePalette();
 }
 
@@ -77,11 +75,14 @@ views::View* MetalayerMode::CreateView() {
   return view;
 }
 
-void MetalayerMode::OnMetalayerDone() {
-  delegate()->DisableTool(GetToolId());
-}
-
 void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
+  if (!feature_enabled())
+    return;
+
+  // The metalayer tool is already selected, no need to do anything.
+  if (enabled())
+    return;
+
   if (event->pointer_details().pointer_type !=
       ui::EventPointerType::POINTER_TYPE_PEN)
     return;
@@ -96,10 +97,7 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
   if (palette_utils::PaletteContainsPointInScreen(event->root_location()))
     return;
 
-  if (enabled())
-    return;
-
-  if (voice_interaction_state_ == ash::VoiceInteractionState::NOT_READY) {
+  if (loading()) {
     // Repetitive presses will create toasts with the same id which will be
     // ignored.
     ToastData toast(
@@ -107,53 +105,50 @@ void MetalayerMode::OnTouchEvent(ui::TouchEvent* event) {
         l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_METALAYER_TOAST_LOADING),
         kToastDurationMs, base::Optional<base::string16>());
     Shell::Get()->toast_manager()->Show(toast);
-    event->StopPropagation();
-    return;
+  } else {
+    delegate()->RecordPaletteOptionsUsage(
+        PaletteToolIdToPaletteTrayOptions(GetToolId()),
+        PaletteInvocationMethod::SHORTCUT);
+    delegate()->EnableTool(GetToolId());
   }
-  // TODO(kaznacheev) When DISABLED state is introduced, check it here and
-  // bail out.
-
-  // TODO(kaznacheev) Use prefs instead of IsMetalayerSupported
-  // when crbug.com/727873 is fixed.
-  // Shell::palette_delegate() might return null in some tests that are not
-  // concerned with palette but generate touch events.
-  if (!Shell::Get()->palette_delegate() ||
-      !Shell::Get()->palette_delegate()->IsMetalayerSupported())
-    return;
-
-  delegate()->RecordPaletteOptionsUsage(
-      PaletteToolIdToPaletteTrayOptions(GetToolId()),
-      PaletteInvocationMethod::SHORTCUT);
-  delegate()->EnableTool(GetToolId());
   event->StopPropagation();
 }
 
 void MetalayerMode::OnVoiceInteractionStatusChanged(
-    ash::VoiceInteractionState state) {
+    VoiceInteractionState state) {
   voice_interaction_state_ = state;
-  UpdateView();
-  if (voice_interaction_state_ != ash::VoiceInteractionState::NOT_READY)
+  UpdateState();
+}
+
+void MetalayerMode::OnVoiceInteractionEnabled(bool enabled) {
+  voice_interaction_enabled_ = enabled;
+  UpdateState();
+}
+
+void MetalayerMode::OnVoiceInteractionContextEnabled(bool enabled) {
+  voice_interaction_context_enabled_ = enabled;
+  UpdateState();
+}
+
+void MetalayerMode::UpdateState() {
+  if (enabled() && !selectable())
+    delegate()->DisableTool(GetToolId());
+
+  if (!loading())
     Shell::Get()->toast_manager()->Cancel(kToastId);
+
+  UpdateView();
 }
 
 void MetalayerMode::UpdateView() {
   if (!highlight_view_)
     return;
 
-  const bool ready =
-      voice_interaction_state_ != ash::VoiceInteractionState::NOT_READY;
-
-  // TODO(kaznacheev) Use prefs instead of IsMetalayerSupported
-  // when crbug.com/727873 is fixed.
-  const bool supported =
-      Shell::Get()->palette_delegate() &&
-      Shell::Get()->palette_delegate()->IsMetalayerSupported();
-
   highlight_view_->text_label()->SetText(l10n_util::GetStringUTF16(
-      ready ? IDS_ASH_STYLUS_TOOLS_METALAYER_MODE
-            : IDS_ASH_STYLUS_TOOLS_METALAYER_MODE_LOADING));
+      loading() ? IDS_ASH_STYLUS_TOOLS_METALAYER_MODE_LOADING
+                : IDS_ASH_STYLUS_TOOLS_METALAYER_MODE));
 
-  highlight_view_->SetEnabled(ready && supported);
+  highlight_view_->SetEnabled(selectable());
 
   TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::DETAILED_VIEW_LABEL);
   style.set_color_style(highlight_view_->enabled()

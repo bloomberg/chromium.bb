@@ -13,12 +13,6 @@ TestPaletteDelegate::TestPaletteDelegate() {}
 
 TestPaletteDelegate::~TestPaletteDelegate() {}
 
-void TestPaletteDelegate::SetMetalayerSupported(bool supported) {
-  is_metalayer_supported_ = supported;
-  if (!is_metalayer_supported_ && !metalayer_closed_.is_null())
-    base::ResetAndReturn(&metalayer_closed_).Run();
-}
-
 std::unique_ptr<PaletteDelegate::EnableListenerSubscription>
 TestPaletteDelegate::AddPaletteEnableListener(
     const EnableListener& on_state_changed) {
@@ -53,20 +47,14 @@ void TestPaletteDelegate::TakePartialScreenshot(const base::Closure& done) {
 
 void TestPaletteDelegate::CancelPartialScreenshot() {}
 
-bool TestPaletteDelegate::IsMetalayerSupported() {
-  return is_metalayer_supported_;
-}
-
-void TestPaletteDelegate::ShowMetalayer(const base::Closure& closed) {
+void TestPaletteDelegate::ShowMetalayer() {
   ++show_metalayer_count_;
-  metalayer_closed_ = closed;
   if (highlighter_test_api_)
     highlighter_test_api_->SetEnabled(true);
 }
 
 void TestPaletteDelegate::HideMetalayer() {
   ++hide_metalayer_count_;
-  metalayer_closed_ = base::Closure();
   if (highlighter_test_api_)
     highlighter_test_api_->SetEnabled(false);
 }

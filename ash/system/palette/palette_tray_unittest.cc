@@ -218,14 +218,14 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolViewCreated) {
 TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
   Shell::Get()->NotifyVoiceInteractionStatusChanged(
       VoiceInteractionState::RUNNING);
+  Shell::Get()->NotifyVoiceInteractionEnabled(true);
+  Shell::Get()->NotifyVoiceInteractionContextEnabled(true);
 
   HighlighterController highlighter_controller;
   HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
   test_palette_delegate()->set_highlighter_test_api(&highlighter_test_api);
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.EnterPenPointerMode();
-
-  test_palette_delegate()->SetMetalayerSupported(true);
 
   // Press/drag does not activate the highlighter unless the palette tool is
   // activated.
@@ -273,7 +273,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
   // Disabling metalayer support in the delegate should disable the palette
   // tool.
   test_api_->GetPaletteToolManager()->ActivateTool(PaletteToolId::METALAYER);
-  test_palette_delegate()->SetMetalayerSupported(false);
+  Shell::Get()->NotifyVoiceInteractionContextEnabled(false);
   EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
       PaletteToolId::METALAYER));
 
@@ -292,7 +292,9 @@ TEST_F(PaletteTrayTestWithVoiceInteraction, MetalayerToolActivatesHighlighter) {
 TEST_F(PaletteTrayTestWithVoiceInteraction,
        StylusBarrelButtonActivatesHighlighter) {
   Shell::Get()->NotifyVoiceInteractionStatusChanged(
-      VoiceInteractionState::RUNNING);
+      VoiceInteractionState::NOT_READY);
+  Shell::Get()->NotifyVoiceInteractionEnabled(false);
+  Shell::Get()->NotifyVoiceInteractionContextEnabled(false);
 
   HighlighterController highlighter_controller;
   HighlighterControllerTestApi highlighter_test_api(&highlighter_controller);
@@ -300,8 +302,8 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.EnterPenPointerMode();
 
-  // Press and drag while holding down the stylus button, no highlighter
-  // unless the metalayer support is enabled.
+  // Press and drag while holding down the stylus button, no highlighter unless
+  // the metalayer support is fully enabled and the the framework is ready.
   generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
   generator.PressTouch();
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
@@ -312,8 +314,34 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
   generator.ReleaseTouch();
 
-  // Now enable the metalayer support.
-  test_palette_delegate()->SetMetalayerSupported(true);
+  // Enable one of the two user prefs, should not be sufficient.
+  Shell::Get()->NotifyVoiceInteractionContextEnabled(true);
+  generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
+  generator.PressTouch();
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.set_flags(ui::EF_NONE);
+  generator.MoveTouch(gfx::Point(3, 3));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+
+  // Enable the other user pref, still not sufficient.
+  Shell::Get()->NotifyVoiceInteractionEnabled(true);
+  Shell::Get()->NotifyVoiceInteractionContextEnabled(true);
+  generator.set_flags(ui::EF_LEFT_MOUSE_BUTTON);
+  generator.PressTouch();
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.MoveTouch(gfx::Point(2, 2));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.set_flags(ui::EF_NONE);
+  generator.MoveTouch(gfx::Point(3, 3));
+  EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());
+  generator.ReleaseTouch();
+
+  // Once the service is ready, the button should start working.
+  Shell::Get()->NotifyVoiceInteractionStatusChanged(
+      VoiceInteractionState::RUNNING);
 
   // Press and drag with no button, still no highlighter.
   generator.MoveTouch(gfx::Point(1, 1));
@@ -368,7 +396,7 @@ TEST_F(PaletteTrayTestWithVoiceInteraction,
 
   // Disable the metalayer support.
   // This should deactivate both the palette tool and the highlighter.
-  test_palette_delegate()->SetMetalayerSupported(false);
+  Shell::Get()->NotifyVoiceInteractionContextEnabled(false);
   EXPECT_FALSE(test_api_->GetPaletteToolManager()->IsToolActive(
       PaletteToolId::METALAYER));
   EXPECT_FALSE(highlighter_test_api.IsShowingHighlighter());

@@ -73,8 +73,12 @@ class ASH_EXPORT ShellObserver {
   // Called when voice interaction session state changes.
   virtual void OnVoiceInteractionStatusChanged(VoiceInteractionState state) {}
 
-  // Called when voice interaction is enabled/disabled
+  // Called when voice interaction is enabled/disabled.
   virtual void OnVoiceInteractionEnabled(bool enabled) {}
+
+  // Called when voice interaction service is allowed/disallowed to access
+  // the "context" (text and graphic content that is currently on screen).
+  virtual void OnVoiceInteractionContextEnabled(bool enabled) {}
 
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}
