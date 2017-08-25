@@ -105,6 +105,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   int BlockingRequestCount() const;
   int NonblockingRequestCount() const;
+  int ActiveRequestCount() const;
 
   enum ClearPreloadsPolicy {
     kClearAllPreloads,

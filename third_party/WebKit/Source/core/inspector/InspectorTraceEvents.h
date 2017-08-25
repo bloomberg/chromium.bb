@@ -94,7 +94,9 @@ class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
                         double monotonic_finish_time,
                         int64_t encoded_data_length,
                         int64_t decoded_body_length);
-  void DidFailLoading(unsigned long identifier, const ResourceError&);
+  void DidFailLoading(unsigned long identifier,
+                      DocumentLoader*,
+                      const ResourceError&);
 
   void Will(const probe::ExecuteScript&);
   void Did(const probe::ExecuteScript&);

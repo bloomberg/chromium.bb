@@ -150,12 +150,16 @@
       include_path: "core/frame",
       probes: [
         "CallFunction",
-        "documentWriteFetchScript",
         "ExecuteScript",
         "RecalculateStyle",
         "UpdateLayout",
         "UserCallback",
         "V8Compile",
+        "didFailLoading",
+        "didFinishLoading",
+        "documentWriteFetchScript",
+        "domContentLoadedEventFired",
+        "willSendRequest",
       ]
     },
     PerformanceMetrics: {

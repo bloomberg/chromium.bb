@@ -1219,6 +1219,10 @@ int ResourceFetcher::NonblockingRequestCount() const {
   return non_blocking_loaders_.size();
 }
 
+int ResourceFetcher::ActiveRequestCount() const {
+  return loaders_.size() + non_blocking_loaders_.size();
+}
+
 void ResourceFetcher::EnableIsPreloadedForTest() {
   if (preloaded_urls_for_test_)
     return;
