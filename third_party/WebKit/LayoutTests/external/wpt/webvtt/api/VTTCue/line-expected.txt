@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS VTTCue.line, script-created cue 
-FAIL VTTCue.line, parsed cue assert_unreached: got error event Reached unreachable code
-Harness: the test ran to completion.
-

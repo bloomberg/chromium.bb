@@ -3295,7 +3295,6 @@ crbug.com/755405 [ Android ] external/wpt/webstorage/storage_length.html [ Failu
 crbug.com/755405 [ Android ] external/wpt/webvtt/api/VTTCue/size.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/webvtt/api/VTTRegion/constructor.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/webvtt/api/VTTRegion/regionAnchorX.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/webvtt/parsing/cue-text-parsing/tests/tags.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/webvtt/parsing/file-parsing/tests/settings-line.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/webvtt/parsing/file-parsing/tests/timings-too-short.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/workers/Worker_dispatchEvent_ErrorEvent.htm [ Failure ]
