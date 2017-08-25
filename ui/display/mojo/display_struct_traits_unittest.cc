@@ -13,12 +13,12 @@
 #include "ui/display/display_layout.h"
 #include "ui/display/mojo/display_layout_struct_traits.h"
 #include "ui/display/mojo/display_mode_struct_traits.h"
-#include "ui/display/mojo/display_snapshot_mojo_struct_traits.h"
+#include "ui/display/mojo/display_snapshot_struct_traits.h"
 #include "ui/display/mojo/display_struct_traits.h"
 #include "ui/display/mojo/gamma_ramp_rgb_entry_struct_traits.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
-#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -68,8 +68,8 @@ void CheckDisplayModesEqual(const DisplayMode* input,
   EXPECT_EQ(input->refresh_rate(), output->refresh_rate());
 }
 
-void CheckDisplaySnapShotMojoEqual(const DisplaySnapshotMojo& input,
-                                   const DisplaySnapshotMojo& output) {
+void CheckDisplaySnapShotMojoEqual(const DisplaySnapshot& input,
+                                   const DisplaySnapshot& output) {
   // We want to test each component individually to make sure each data member
   // was correctly serialized and deserialized.
   EXPECT_NE(&input, &output);  // Make sure they aren't the same object.
@@ -285,16 +285,14 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
   const DisplayMode* native_mode = nullptr;
   const std::vector<uint8_t> edid = {1};
 
-  std::unique_ptr<DisplaySnapshotMojo> input =
-      base::MakeUnique<DisplaySnapshotMojo>(
-          display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-          has_overscan, has_color_correction_matrix, display_name, sys_path,
-          product_id, std::move(modes), edid, current_mode, native_mode,
-          maximum_cursor_size);
+  std::unique_ptr<DisplaySnapshot> input = base::MakeUnique<DisplaySnapshot>(
+      display_id, origin, physical_size, type, is_aspect_preserving_scaling,
+      has_overscan, has_color_correction_matrix, display_name, sys_path,
+      std::move(modes), edid, current_mode, native_mode, product_id,
+      maximum_cursor_size);
 
-  std::unique_ptr<DisplaySnapshotMojo> output;
-  SerializeAndDeserialize<mojom::DisplaySnapshotMojo>(
-      DisplaySnapshotMojo::CreateFrom(*input), &output);
+  std::unique_ptr<DisplaySnapshot> output;
+  SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
@@ -323,16 +321,14 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
   const DisplayMode* native_mode = modes[0].get();
   const std::vector<uint8_t> edid = {1};
 
-  std::unique_ptr<DisplaySnapshotMojo> input =
-      base::MakeUnique<DisplaySnapshotMojo>(
-          display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-          has_overscan, has_color_correction_matrix, display_name, sys_path,
-          product_id, std::move(modes), edid, current_mode, native_mode,
-          maximum_cursor_size);
+  std::unique_ptr<DisplaySnapshot> input = base::MakeUnique<DisplaySnapshot>(
+      display_id, origin, physical_size, type, is_aspect_preserving_scaling,
+      has_overscan, has_color_correction_matrix, display_name, sys_path,
+      std::move(modes), edid, current_mode, native_mode, product_id,
+      maximum_cursor_size);
 
-  std::unique_ptr<DisplaySnapshotMojo> output;
-  SerializeAndDeserialize<mojom::DisplaySnapshotMojo>(
-      DisplaySnapshotMojo::CreateFrom(*input), &output);
+  std::unique_ptr<DisplaySnapshot> output;
+  SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
@@ -365,16 +361,14 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   const DisplayMode* native_mode = modes[2].get();
   const std::vector<uint8_t> edid = {2, 3, 4, 5};
 
-  std::unique_ptr<DisplaySnapshotMojo> input =
-      base::MakeUnique<DisplaySnapshotMojo>(
-          display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-          has_overscan, has_color_correction_matrix, display_name, sys_path,
-          product_id, std::move(modes), edid, current_mode, native_mode,
-          maximum_cursor_size);
+  std::unique_ptr<DisplaySnapshot> input = base::MakeUnique<DisplaySnapshot>(
+      display_id, origin, physical_size, type, is_aspect_preserving_scaling,
+      has_overscan, has_color_correction_matrix, display_name, sys_path,
+      std::move(modes), edid, current_mode, native_mode, product_id,
+      maximum_cursor_size);
 
-  std::unique_ptr<DisplaySnapshotMojo> output;
-  SerializeAndDeserialize<mojom::DisplaySnapshotMojo>(
-      DisplaySnapshotMojo::CreateFrom(*input), &output);
+  std::unique_ptr<DisplaySnapshot> output;
+  SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }
@@ -402,16 +396,14 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   const DisplayMode* native_mode = modes[0].get();
   const std::vector<uint8_t> edid = {2, 3};
 
-  std::unique_ptr<DisplaySnapshotMojo> input =
-      base::MakeUnique<DisplaySnapshotMojo>(
-          display_id, origin, physical_size, type, is_aspect_preserving_scaling,
-          has_overscan, has_color_correction_matrix, display_name, sys_path,
-          product_id, std::move(modes), edid, current_mode, native_mode,
-          maximum_cursor_size);
+  std::unique_ptr<DisplaySnapshot> input = base::MakeUnique<DisplaySnapshot>(
+      display_id, origin, physical_size, type, is_aspect_preserving_scaling,
+      has_overscan, has_color_correction_matrix, display_name, sys_path,
+      std::move(modes), edid, current_mode, native_mode, product_id,
+      maximum_cursor_size);
 
-  std::unique_ptr<DisplaySnapshotMojo> output;
-  SerializeAndDeserialize<mojom::DisplaySnapshotMojo>(
-      DisplaySnapshotMojo::CreateFrom(*input), &output);
+  std::unique_ptr<DisplaySnapshot> output;
+  SerializeAndDeserialize<mojom::DisplaySnapshot>(input->Clone(), &output);
 
   CheckDisplaySnapShotMojoEqual(*input, *output);
 }

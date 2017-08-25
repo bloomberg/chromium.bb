@@ -7,7 +7,7 @@
 #include <map>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
 
@@ -33,7 +33,6 @@ bool operator==(const ui::DisplaySnapshot_Params& a,
          a.current_mode == b.current_mode &&
          a.has_native_mode == b.has_native_mode &&
          a.native_mode == b.native_mode && a.product_id == b.product_id &&
-         a.string_representation == b.string_representation &&
          a.maximum_cursor_size == b.maximum_cursor_size;
 }
 
@@ -65,7 +64,6 @@ void DetailedCompare(const ui::DisplaySnapshot_Params& a,
   EXPECT_EQ(a.has_native_mode, b.has_native_mode);
   EXPECT_EQ(a.native_mode, b.native_mode);
   EXPECT_EQ(a.product_id, b.product_id);
-  EXPECT_EQ(a.string_representation, b.string_representation);
   EXPECT_EQ(a.maximum_cursor_size, b.maximum_cursor_size);
 }
 
@@ -106,7 +104,6 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   fp.has_native_mode = true;
   fp.native_mode = MakeDisplay(1.1);
   fp.product_id = 7;
-  fp.string_representation = "bending glass display";
   fp.maximum_cursor_size = gfx::Size(103, 44);
 
   sp.display_id = 1002;
@@ -125,7 +122,6 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   sp.has_native_mode = true;
   sp.native_mode = MakeDisplay(500.2);
   sp.product_id = 8;
-  sp.string_representation = "rigid glass display";
   sp.maximum_cursor_size = gfx::Size(500, 44);
 
   ep.display_id = 2002;
@@ -144,7 +140,6 @@ TEST_F(DrmUtilTest, RoundTripDisplaySnapshot) {
   ep.current_mode = MakeDisplay(1000.2);
   ep.has_native_mode = false;
   ep.product_id = 9;
-  ep.string_representation = "fluted glass display";
   ep.maximum_cursor_size = gfx::Size(1000, 44);
 
   orig_params.push_back(fp);

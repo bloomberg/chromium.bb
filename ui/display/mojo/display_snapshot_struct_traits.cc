@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/mojo/display_snapshot_mojo_struct_traits.h"
+#include "ui/display/mojo/display_snapshot_struct_traits.h"
 
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/size.h"
@@ -32,10 +32,9 @@ static uint64_t GetModeIndex(
 
 // static
 std::vector<std::unique_ptr<display::DisplayMode>>
-StructTraits<display::mojom::DisplaySnapshotMojoDataView,
-             std::unique_ptr<display::DisplaySnapshotMojo>>::
-    modes(
-        const std::unique_ptr<display::DisplaySnapshotMojo>& display_snapshot) {
+StructTraits<display::mojom::DisplaySnapshotDataView,
+             std::unique_ptr<display::DisplaySnapshot>>::
+    modes(const std::unique_ptr<display::DisplaySnapshot>& display_snapshot) {
   std::vector<std::unique_ptr<display::DisplayMode>> display_mode_list;
 
   for (const auto& display_mode : display_snapshot->modes())
@@ -45,28 +44,28 @@ StructTraits<display::mojom::DisplaySnapshotMojoDataView,
 }
 
 // static
-uint64_t StructTraits<display::mojom::DisplaySnapshotMojoDataView,
-                      std::unique_ptr<display::DisplaySnapshotMojo>>::
+uint64_t StructTraits<display::mojom::DisplaySnapshotDataView,
+                      std::unique_ptr<display::DisplaySnapshot>>::
     current_mode_index(
-        const std::unique_ptr<display::DisplaySnapshotMojo>& display_snapshot) {
+        const std::unique_ptr<display::DisplaySnapshot>& display_snapshot) {
   return GetModeIndex(display_snapshot->modes(),
                       display_snapshot->current_mode());
 }
 
 // static
-uint64_t StructTraits<display::mojom::DisplaySnapshotMojoDataView,
-                      std::unique_ptr<display::DisplaySnapshotMojo>>::
+uint64_t StructTraits<display::mojom::DisplaySnapshotDataView,
+                      std::unique_ptr<display::DisplaySnapshot>>::
     native_mode_index(
-        const std::unique_ptr<display::DisplaySnapshotMojo>& display_snapshot) {
+        const std::unique_ptr<display::DisplaySnapshot>& display_snapshot) {
   return GetModeIndex(display_snapshot->modes(),
                       display_snapshot->native_mode());
 }
 
 // static
-bool StructTraits<display::mojom::DisplaySnapshotMojoDataView,
-                  std::unique_ptr<display::DisplaySnapshotMojo>>::
-    Read(display::mojom::DisplaySnapshotMojoDataView data,
-         std::unique_ptr<display::DisplaySnapshotMojo>* out) {
+bool StructTraits<display::mojom::DisplaySnapshotDataView,
+                  std::unique_ptr<display::DisplaySnapshot>>::
+    Read(display::mojom::DisplaySnapshotDataView data,
+         std::unique_ptr<display::DisplaySnapshot>* out) {
   gfx::Point origin;
   if (!data.ReadOrigin(&origin))
     return false;
@@ -123,12 +122,12 @@ bool StructTraits<display::mojom::DisplaySnapshotMojoDataView,
   if (!data.ReadMaximumCursorSize(&maximum_cursor_size))
     return false;
 
-  *out = base::MakeUnique<display::DisplaySnapshotMojo>(
+  *out = base::MakeUnique<display::DisplaySnapshot>(
       data.display_id(), origin, physical_size, type,
       data.is_aspect_preserving_scaling(), data.has_overscan(),
       data.has_color_correction_matrix(), display_name, file_path,
-      data.product_id(), std::move(modes), std::move(edid), current_mode,
-      native_mode, maximum_cursor_size);
+      std::move(modes), std::move(edid), current_mode, native_mode,
+      data.product_id(), maximum_cursor_size);
   return true;
 }
 

@@ -93,8 +93,7 @@ TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
 TEST(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
   FakeDisplaySnapshot display_snapshot(
       123, gfx::Point(), gfx::Size(), DISPLAY_CONNECTION_TYPE_UNKNOWN, false,
-      false, false, std::string(), 0,
-      std::vector<std::unique_ptr<const DisplayMode>>(), nullptr, nullptr);
+      false, false, std::string(), {}, nullptr, nullptr, 0, gfx::Size());
 
   ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(

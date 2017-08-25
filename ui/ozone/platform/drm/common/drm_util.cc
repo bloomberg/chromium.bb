@@ -16,7 +16,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
 #include "ui/display/types/display_mode.h"
-#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/display/util/edid_parser.h"
 #include "ui/ozone/common/display_snapshot_proxy.h"
 
@@ -427,7 +427,6 @@ std::vector<DisplaySnapshot_Params> CreateParamsFromSnapshot(
     }
 
     p.product_id = d->product_id();
-    p.string_representation = d->ToString();
     p.maximum_cursor_size = d->maximum_cursor_size();
 
     params.push_back(p);

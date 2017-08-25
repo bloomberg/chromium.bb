@@ -6,7 +6,6 @@
 
 #include <inttypes.h>
 
-#include <sstream>
 #include <utility>
 #include <vector>
 
@@ -27,42 +26,6 @@ static const float kInchInMm = 25.4f;
 // Get pixel pitch in millimeters from DPI.
 float PixelPitchMmFromDPI(float dpi) {
   return (1.0f / dpi) * kInchInMm;
-}
-
-std::string ModeListString(
-    const std::vector<std::unique_ptr<const DisplayMode>>& modes) {
-  std::stringstream stream;
-  bool first = true;
-  for (auto& mode : modes) {
-    if (!first)
-      stream << ", ";
-    stream << mode->ToString();
-    first = false;
-  }
-  return stream.str();
-}
-
-std::string DisplayConnectionTypeString(DisplayConnectionType type) {
-  switch (type) {
-    case DISPLAY_CONNECTION_TYPE_NONE:
-      return "none";
-    case DISPLAY_CONNECTION_TYPE_UNKNOWN:
-      return "unknown";
-    case DISPLAY_CONNECTION_TYPE_INTERNAL:
-      return "internal";
-    case DISPLAY_CONNECTION_TYPE_VGA:
-      return "vga";
-    case DISPLAY_CONNECTION_TYPE_HDMI:
-      return "hdmi";
-    case DISPLAY_CONNECTION_TYPE_DVI:
-      return "dvi";
-    case DISPLAY_CONNECTION_TYPE_DISPLAYPORT:
-      return "dp";
-    case DISPLAY_CONNECTION_TYPE_NETWORK:
-      return "network";
-  }
-  NOTREACHED();
-  return "";
 }
 
 // Extracts text after specified delimiter. If the delimiter doesn't appear
@@ -200,8 +163,8 @@ std::unique_ptr<FakeDisplaySnapshot> Builder::Build() {
 
   return base::MakeUnique<FakeDisplaySnapshot>(
       id_, origin_, physical_size, type_, is_aspect_preserving_scaling_,
-      has_overscan_, has_color_correction_matrix_, name_, product_id_,
-      std::move(modes_), current_mode_, native_mode_);
+      has_overscan_, has_color_correction_matrix_, name_, std::move(modes_),
+      current_mode_, native_mode_, product_id_, maximum_cursor_size_);
 }
 
 Builder& Builder::SetId(int64_t id) {
@@ -274,6 +237,11 @@ Builder& Builder::SetProductId(int64_t product_id) {
   return *this;
 }
 
+Builder& Builder::SetMaximumCursorSize(const gfx::Size& maximum_cursor_size) {
+  maximum_cursor_size_ = maximum_cursor_size;
+  return *this;
+}
+
 Builder& Builder::SetDPI(int dpi) {
   dpi_ = static_cast<float>(dpi);
   return *this;
@@ -320,10 +288,11 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
                                          bool has_overscan,
                                          bool has_color_correction_matrix,
                                          std::string display_name,
-                                         int64_t product_id,
                                          DisplayModeList modes,
                                          const DisplayMode* current_mode,
-                                         const DisplayMode* native_mode)
+                                         const DisplayMode* native_mode,
+                                         int64_t product_id,
+                                         const gfx::Size& maximum_cursor_size)
     : DisplaySnapshot(display_id,
                       origin,
                       physical_size,
@@ -336,9 +305,9 @@ FakeDisplaySnapshot::FakeDisplaySnapshot(int64_t display_id,
                       std::move(modes),
                       std::vector<uint8_t>(),
                       current_mode,
-                      native_mode) {
-  product_id_ = product_id;
-}
+                      native_mode,
+                      product_id,
+                      maximum_cursor_size) {}
 
 FakeDisplaySnapshot::~FakeDisplaySnapshot() {}
 
@@ -369,19 +338,6 @@ std::unique_ptr<DisplaySnapshot> FakeDisplaySnapshot::CreateFromSpec(
     return nullptr;
 
   return builder.Build();
-}
-
-std::string FakeDisplaySnapshot::ToString() const {
-  return base::StringPrintf(
-      "id=%" PRId64
-      " current_mode=%s native_mode=%s origin=%s"
-      " physical_size=%s, type=%s name=\"%s\" modes=(%s)",
-      display_id_,
-      current_mode_ ? current_mode_->ToString().c_str() : "nullptr",
-      native_mode_ ? native_mode_->ToString().c_str() : "nullptr",
-      origin_.ToString().c_str(), physical_size_.ToString().c_str(),
-      DisplayConnectionTypeString(type_).c_str(), display_name_.c_str(),
-      ModeListString(modes_).c_str());
 }
 
 }  // namespace display

@@ -8,7 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_sender.h"
-#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"

@@ -11,6 +11,7 @@
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/gpu/inter_thread_messaging_proxy.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
@@ -19,10 +20,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace display {
-class DisplaySnapshotMojo;
 }
 
 namespace service_manager {
@@ -115,9 +112,7 @@ class MusThreadProxy : public GpuThreadAdapter,
   void GpuConfigureNativeDisplayCallback(int64_t display_id,
                                          bool success) const;
 
-  void GpuRefreshNativeDisplaysCallback(
-      std::vector<std::unique_ptr<display::DisplaySnapshotMojo>> displays)
-      const;
+  void GpuRefreshNativeDisplaysCallback(MovableDisplaySnapshots displays) const;
   void GpuDisableNativeDisplayCallback(int64_t display_id, bool success) const;
   void GpuTakeDisplayControlCallback(bool success) const;
   void GpuRelinquishDisplayControlCallback(bool success) const;

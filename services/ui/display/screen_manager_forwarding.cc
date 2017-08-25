@@ -11,7 +11,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/display/screen_base.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/fake_display_controller.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -247,15 +247,15 @@ void ScreenManagerForwarding::ForwardGetDisplays(
     const std::vector<DisplaySnapshot*>& snapshots) {
   snapshot_map_.clear();
 
-  // Convert the DisplaySnapshots to MojoDisplaySnapshots to allow sending
-  // over Mojo. Also caches the snapshots for lookup later.
-  std::vector<std::unique_ptr<DisplaySnapshotMojo>> mojo_snapshots;
+  std::vector<std::unique_ptr<DisplaySnapshot>> snapshot_clones;
   for (auto* snapshot : snapshots) {
     snapshot_map_[snapshot->display_id()] = snapshot;
-    mojo_snapshots.push_back(DisplaySnapshotMojo::CreateFrom(*snapshot));
+
+    // Clone display snapshots to send over IPC.
+    snapshot_clones.push_back(snapshot->Clone());
   }
 
-  callback.Run(std::move(mojo_snapshots));
+  callback.Run(std::move(snapshot_clones));
 }
 
 void ScreenManagerForwarding::ForwardConfigure(
