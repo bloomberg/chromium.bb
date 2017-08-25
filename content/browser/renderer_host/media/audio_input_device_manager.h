@@ -54,13 +54,40 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   void Close(int session_id) override;
 
 #if defined(OS_CHROMEOS)
-  // Registers and unregisters that a stream using keyboard mic has been opened
-  // or closed. Keeps count of how many such streams are open and activates and
+  // Owns a keyboard mic stream registration.
+  class KeyboardMicRegistration {
+   public:
+    // No registration.
+    KeyboardMicRegistration();
+
+    KeyboardMicRegistration(KeyboardMicRegistration&& other);
+    KeyboardMicRegistration& operator=(KeyboardMicRegistration&& other);
+
+    ~KeyboardMicRegistration();
+
+   private:
+    friend class AudioInputDeviceManager;
+
+    explicit KeyboardMicRegistration(int* shared_registration_count);
+
+    void DeregisterIfNeeded();
+
+    // Null to indicate that there is no stream registration. This points to
+    // a member of the AudioInputDeviceManager, which lives as long as the IO
+    // thread, so the pointer will be valid for the lifetime of the
+    // registration.
+    int* shared_registration_count_;
+  };
+
+  // Registers that a stream using keyboard mic has been opened or closed.
+  // Keeps count of how many such streams are open and activates and
   // inactivates the keyboard mic accordingly. The (in)activation is done on the
-  // UI thread and for the register case a callback must therefor be provided
-  // which is called when activated.
-  void RegisterKeyboardMicStream(base::OnceClosure callback);
-  void UnregisterKeyboardMicStream();
+  // UI thread and for the register case a callback must therefore be provided
+  // which is called when activated. Deregistration is done when the
+  // registration object is destructed or assigned to, which should only be
+  // done on the IO thread.
+  void RegisterKeyboardMicStream(
+      base::OnceCallback<void(KeyboardMicRegistration)> callback);
 #endif
 
  private:
@@ -82,11 +109,6 @@ class CONTENT_EXPORT AudioInputDeviceManager : public MediaStreamProvider {
   // Helper to return iterator to the device referenced by |session_id|. If no
   // device is found, it will return devices_.end().
   StreamDeviceList::iterator GetDevice(int session_id);
-
-#if defined(OS_CHROMEOS)
-  // Calls Cras audio handler and sets keyboard mic active status.
-  void SetKeyboardMicStreamActiveOnUIThread(bool active);
-#endif
 
   // Only accessed on Browser::IO thread.
   base::ObserverList<MediaStreamProviderListener> listeners_;

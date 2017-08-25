@@ -31,6 +31,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "media/audio/audio_input_controller.h"
@@ -149,10 +150,16 @@ class CONTENT_EXPORT AudioInputRendererHost
   // |session_id| is used to identify the device that should be used for the
   // stream. Upon success/failure, the peer is notified via the
   // NotifyStreamCreated message.
-  void DoCreateStream(int stream_id,
-                      int render_frame_id,
-                      int session_id,
-                      const AudioInputHostMsg_CreateStream_Config& config);
+  void DoCreateStream(
+      int stream_id,
+      int render_frame_id,
+      int session_id,
+      const AudioInputHostMsg_CreateStream_Config& config
+#if defined(OS_CHROMEOS)
+      ,
+      AudioInputDeviceManager::KeyboardMicRegistration registration
+#endif
+      );
 
   // Record the audio input stream referenced by |stream_id|.
   void OnRecordStream(int stream_id);
@@ -208,11 +215,6 @@ class CONTENT_EXPORT AudioInputRendererHost
   // This method is used to look up an AudioEntry after a controller
   // event is received.
   AudioEntry* LookupByController(media::AudioInputController* controller);
-
-  // If ChromeOS and |config|'s layout has keyboard mic, unregister in
-  // AudioInputDeviceManager.
-  void MaybeUnregisterKeyboardMicStream(
-      const AudioInputHostMsg_CreateStream_Config& config);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   // TODO(grunell): Move debug recording handling to AudioManager.
