@@ -378,6 +378,9 @@ dictionary VolumeMetadata {
 
   // Context in which the volume has been mounted.
   MountContext? mountContext;
+
+  // File system type indentifier.
+  DOMString? diskFileSystemType;
 };
 
 // Payload data for mount event.

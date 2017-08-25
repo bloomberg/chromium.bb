@@ -48,6 +48,7 @@ const char kProductName[] = "Z101";
 const char kUniqueId1[] = "FFFF-FFFF";
 const char kUniqueId2[] = "FFFF-FF0F";
 const char kVendorName[] = "CompanyA";
+const char kFileSystemType[] = "exfat";
 
 uint64_t kDevice1SizeInBytes = 113048;
 uint64_t kDevice2SizeInBytes = 212312;
@@ -199,17 +200,10 @@ void StorageMonitorCrosTest::MountDevice(
     uint64_t device_size_in_bytes) {
   if (error_code == chromeos::MOUNT_ERROR_NONE) {
     disk_mount_manager_mock_->CreateDiskEntryForMountDevice(
-        mount_info,
-        unique_id,
-        device_label,
-        vendor_name,
-        product_name,
-        device_type,
-        device_size_in_bytes,
-        false /* is_parent */,
-        true /* has_media */,
-        false /* on_boot_device */,
-        true /* on_removable_device */);
+        mount_info, unique_id, device_label, vendor_name, product_name,
+        device_type, device_size_in_bytes, false /* is_parent */,
+        true /* has_media */, false /* on_boot_device */,
+        true /* on_removable_device */, kFileSystemType);
   }
   monitor_->OnMountEvent(DiskMountManager::MOUNTING, error_code, mount_info);
   scoped_task_environment_.RunUntilIdle();

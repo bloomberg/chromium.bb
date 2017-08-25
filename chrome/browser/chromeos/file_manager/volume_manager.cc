@@ -209,8 +209,10 @@ std::unique_ptr<Volume> Volume::CreateForRemovable(
                         : SOURCE_DEVICE;
   volume->mount_path_ = base::FilePath(mount_point.mount_path);
   volume->mount_condition_ = mount_point.mount_condition;
-  volume->volume_label_ = volume->mount_path().BaseName().AsUTF8Unsafe();
+
   if (disk) {
+    volume->file_system_type_ = disk->file_system_type();
+    volume->volume_label_ = disk->device_label();
     volume->device_type_ = disk->device_type();
     volume->system_path_prefix_ = base::FilePath(disk->system_path_prefix());
     volume->is_parent_ = disk->is_parent();
@@ -218,6 +220,7 @@ std::unique_ptr<Volume> Volume::CreateForRemovable(
     volume->is_read_only_removable_device_ = disk->is_read_only_hardware();
     volume->has_media_ = disk->has_media();
   } else {
+    volume->volume_label_ = volume->mount_path().BaseName().AsUTF8Unsafe();
     volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
     volume->is_read_only_ =
         (mount_point.mount_type == chromeos::MOUNT_TYPE_ARCHIVE);
