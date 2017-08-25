@@ -459,6 +459,8 @@ component("ash") {
     "system/power/battery_notification.h",
     "system/power/dual_role_notification.cc",
     "system/power/dual_role_notification.h",
+    "system/power/power_button_display_controller.cc",
+    "system/power/power_button_display_controller.h",
     "system/power/power_event_observer.cc",
     "system/power/power_event_observer.h",
     "system/power/power_status.cc",
