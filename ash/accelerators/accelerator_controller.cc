@@ -35,6 +35,8 @@
 #include "ash/system/palette/palette_utils.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/system_notifier.h"
+#include "ash/system/toast/toast_data.h"
+#include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/web_notification/web_notification_tray.h"
@@ -586,7 +588,7 @@ bool CanHandleShowStylusTools() {
 }
 
 bool CanHandleStartVoiceInteraction() {
-  return chromeos::switches::IsVoiceInteractionEnabled();
+  return chromeos::switches::IsVoiceInteractionFlagsEnabled();
 }
 
 void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
@@ -599,6 +601,17 @@ void HandleToggleVoiceInteraction(const ui::Accelerator& accelerator) {
   } else if (accelerator.key_code() == ui::VKEY_ASSISTANT) {
     base::RecordAction(
         base::UserMetricsAction("VoiceInteraction.Started.Assistant"));
+  }
+
+  // Show a toast if voice interaction is disabled due to unsupported locales.
+  if (!chromeos::switches::IsVoiceInteractionLocalesSupported()) {
+    ash::ToastData toast(
+        "voice_interaction_locales_unsupported",
+        l10n_util::GetStringUTF16(
+            IDS_ASH_VOICE_INTERACTION_LOCALE_UNSUPPORTED_TOAST_MESSAGE),
+        2500, base::Optional<base::string16>());
+    ash::Shell::Get()->toast_manager()->Show(toast);
+    return;
   }
   Shell::Get()->app_list()->ToggleVoiceInteractionSession();
 }
