@@ -3586,6 +3586,8 @@ crbug.com/757955 [ Win7 Debug ] external/wpt/encoding/legacy-mb-japanese/shift_j
 crbug.com/757955 [ Win7 Debug ] inspector/tracing/frame-model-instrumentation.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] inspector/tracing/timeline-paint/layer-tree.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] virtual/threaded/transitions/transition-end-event-transform.html [ Pass Failure ]
 
 # Tests flakely timing out on WebKit Linux Trusty dbg builder
 crbug.com/758109 [ Linux Debug ] fast/workers/worker-multi-startup.html [ Pass Timeout ]
