@@ -96,15 +96,15 @@ struct ExperimentMetrics {
   bool operator==(const ExperimentMetrics& other) const;
 
   // The number of experiment groups (including the  holdback group).
-  enum : int { kNumGroups = 16 };
+  enum : int { kNumGroups = 17 };
 
   // The index of the holdback group.
   enum : int { kHoldbackGroup = kNumGroups - 1 };
 
   // Unix epoch of time from when time bucket for experiment is started.
   // This will be subtracted from the day the toast was shown to bucket user
-  // into cohorts for analysing retention. (13 Jun 2017 00:00:00 PST)
-  enum : int64_t { kExperimentStartSeconds = 1497337200 };
+  // into cohorts for analysing retention. (31 Aug 2017 00:00:00 PST)
+  enum : int64_t { kExperimentStartSeconds = 1504162800 };
 
   // Maximum number of time toast should be displayed (3 bits).
   enum : int { kMaxToastCount = 7 };
@@ -135,9 +135,9 @@ struct ExperimentMetrics {
 
   enum : int { kToastLocationBits = 1 };
 
-  enum : int { kStateBits = 4 };
+  enum : int { kStateBits = 5 };
 
-  enum : int { kGroupBits = 4 };
+  enum : int { kGroupBits = 5 };
 
   // The group to which this install has been assigned.
   int group = 0;
