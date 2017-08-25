@@ -3623,6 +3623,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       vm_tests_override=[config_lib.VMTestConfig(
           constants.VMTEST_INFORMATIONAL_TEST_TYPE,
           timeout=12*60*60)],
+      active_waterfall=constants.WATERFALL_INTERNAL,
   )
 
   # Create our unittest stress build configs (used for tryjobs only)
