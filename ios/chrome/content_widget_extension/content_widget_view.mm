@@ -20,8 +20,6 @@ namespace {
 const CGFloat kTileSpacing = 16;
 // Height of a tile row.
 const CGFloat kTileHeight = 100;
-// Icons to show per row.
-const int kIconsPerRow = 4;
 // Number of rows in the widget. Note that modifying this value will not add
 // extra rows and will break functionality unless additional changes are made.
 const int kRows = 2;
@@ -29,6 +27,8 @@ const int kRows = 2;
 
 @interface ContentWidgetView ()
 
+// The number of icons to show per row.
+@property(nonatomic, assign) int iconsPerRow;
 // The first row of sites.
 @property(nonatomic, strong) UIView* firstRow;
 // The second row of sites.
@@ -69,6 +69,7 @@ const int kRows = 2;
 
 @implementation ContentWidgetView
 
+@synthesize iconsPerRow = _iconsPerRow;
 @synthesize firstRow = _firstRow;
 @synthesize secondRow = _secondRow;
 @synthesize compactHeight = _compactHeight;
@@ -79,12 +80,18 @@ const int kRows = 2;
 
 - (instancetype)initWithDelegate:(id<ContentWidgetViewDelegate>)delegate
                    compactHeight:(CGFloat)compactHeight
+                           width:(CGFloat)width
                 initiallyCompact:(BOOL)compact {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(delegate);
     _delegate = delegate;
     _compactHeight = compactHeight;
+
+    // At least 1 tile and at most 4.
+    _iconsPerRow =
+        MIN(4, MAX(width / (MostVisitedTileView.tileWidth + kTileSpacing), 1));
+
     [self createUI:compact];
   }
   return self;
@@ -97,24 +104,24 @@ const int kRows = 2;
 }
 
 - (BOOL)shouldShowSecondRow {
-  return self.siteCount > kIconsPerRow;
+  return self.siteCount > self.iconsPerRow;
 }
 
 #pragma mark - UI creation
 
 - (void)createUI:(BOOL)compact {
   NSMutableArray* tiles = [[NSMutableArray alloc] init];
-  for (int i = 0; i < kIconsPerRow * kRows; i++) {
+  for (int i = 0; i < _iconsPerRow * kRows; i++) {
     [tiles addObject:[[MostVisitedTileView alloc] init]];
   }
   _mostVisitedTiles = tiles;
 
   _firstRow = [self
       createRowFromTiles:[tiles
-                             subarrayWithRange:NSMakeRange(0, kIconsPerRow)]];
+                             subarrayWithRange:NSMakeRange(0, _iconsPerRow)]];
   _secondRow = [self
-      createRowFromTiles:[tiles subarrayWithRange:NSMakeRange(kIconsPerRow,
-                                                              kIconsPerRow)]];
+      createRowFromTiles:[tiles subarrayWithRange:NSMakeRange(_iconsPerRow,
+                                                              _iconsPerRow)]];
 
   [self addSubview:_firstRow];
   [self addSubview:_secondRow];
@@ -161,7 +168,7 @@ const int kRows = 2;
     // If the site's position is > the # of tiles shown, there is no tile to
     // update. Remember that sites is a dictionary and is not ordered by
     // position.
-    if (static_cast<NSUInteger>(site.position) > self.mostVisitedTiles.count) {
+    if (static_cast<NSUInteger>(site.position) >= self.mostVisitedTiles.count) {
       continue;
     }
     MostVisitedTileView* tileView = self.mostVisitedTiles[site.position];
@@ -202,7 +209,7 @@ const int kRows = 2;
 }
 
 - (void)hideEmptyTiles {
-  for (int i = self.siteCount; i < kRows * kIconsPerRow; i++) {
+  for (int i = self.siteCount; i < kRows * self.iconsPerRow; i++) {
     self.mostVisitedTiles[i].alpha = 0;
     self.mostVisitedTiles[i].userInteractionEnabled = NO;
   }

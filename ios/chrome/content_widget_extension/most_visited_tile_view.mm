@@ -32,6 +32,10 @@ const CGFloat kTileWidth = 73;
 
 #pragma mark - Public
 
++ (CGFloat)tileWidth {
+  return kTileWidth;
+}
+
 - (instancetype)init {
   self = [super initWithFrame:CGRectZero];
   if (self) {
