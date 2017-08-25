@@ -29,6 +29,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -40,6 +41,7 @@ import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemViewHolder;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionObserver;
 import org.chromium.chrome.test.util.ChromeRestriction;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
@@ -225,11 +227,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
     public void testPrivacyDisclaimers_SignedOut() {
         ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName(null);
-
-        assertEquals(View.GONE, mAdapter.getSignedInNotSyncedViewForTests().getVisibility());
-        assertEquals(View.GONE, mAdapter.getSignedInSyncedViewForTests().getVisibility());
-        assertEquals(View.GONE,
-                mAdapter.getOtherFormsOfBrowsingHistoryViewForTests().getVisibility());
+        assertTrue(mAdapter.getPrivacyDisclaimerTextForTests().isEmpty());
     }
 
     @SmallTest
@@ -239,10 +237,8 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
 
         setHasOtherFormsOfBrowsingData(false, false);
 
-        assertEquals(View.VISIBLE, mAdapter.getSignedInNotSyncedViewForTests().getVisibility());
-        assertEquals(View.GONE, mAdapter.getSignedInSyncedViewForTests().getVisibility());
-        assertEquals(View.GONE,
-                mAdapter.getOtherFormsOfBrowsingHistoryViewForTests().getVisibility());
+        assertEquals(mAdapter.getSignedInNotSyncedTextForTests(),
+                mAdapter.getPrivacyDisclaimerTextForTests());
 
         signinController.setSignedInAccountName(null);
     }
@@ -254,25 +250,23 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
 
         setHasOtherFormsOfBrowsingData(false, true);
 
-        assertEquals(View.GONE, mAdapter.getSignedInNotSyncedViewForTests().getVisibility());
-        assertEquals(View.VISIBLE, mAdapter.getSignedInSyncedViewForTests().getVisibility());
-        assertEquals(View.GONE,
-                mAdapter.getOtherFormsOfBrowsingHistoryViewForTests().getVisibility());
+        assertEquals(mAdapter.getSignedInSyncedTextForTests(),
+                mAdapter.getPrivacyDisclaimerTextForTests());
 
         signinController.setSignedInAccountName(null);
     }
 
     @SmallTest
+    @Features(@Features.Register(ChromeFeatureList.TABS_IN_CBD))
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
         ChromeSigninController signinController = ChromeSigninController.get();
         signinController.setSignedInAccountName("test@gmail.com");
 
         setHasOtherFormsOfBrowsingData(true, true);
 
-        assertEquals(View.GONE, mAdapter.getSignedInNotSyncedViewForTests().getVisibility());
-        assertEquals(View.VISIBLE, mAdapter.getSignedInSyncedViewForTests().getVisibility());
-        assertEquals(View.VISIBLE,
-                mAdapter.getOtherFormsOfBrowsingHistoryViewForTests().getVisibility());
+        String expected = String.format("%1$s %2$s", mAdapter.getSignedInSyncedTextForTests(),
+                mAdapter.getOtherFormsOfBrowsingHistoryTextForTests());
+        assertEquals(expected, mAdapter.getPrivacyDisclaimerTextForTests());
 
         signinController.setSignedInAccountName(null);
     }
@@ -568,7 +562,7 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
             @Override
             public void run() {
                 mAdapter.setClearBrowsingDataButtonVisibilityForTest(false);
-                mAdapter.setPrivacyDisclaimerVisibility();
+                mAdapter.setPrivacyDisclaimer();
             }
         });
 
