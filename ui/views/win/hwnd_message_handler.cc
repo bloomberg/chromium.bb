@@ -1139,6 +1139,11 @@ void HWNDMessageHandler::PostProcessActivateMessage(
     GetMonitorInfo(MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY),
                    &monitor_info);
     SetBoundsInternal(gfx::Rect(monitor_info.rcMonitor), false);
+    // Inform the taskbar that this window is now a fullscreen window so it go
+    // behind the window in the Z-Order. The taskbar heuristics to detect
+    // fullscreen windows are not reliable. Marking it explicitly seems to work
+    // around these problems.
+    fullscreen_handler()->MarkFullscreen(true);
     background_fullscreen_hack_ = false;
   } else {
     // If the window becoming active has a fullscreen window on the same
@@ -3005,6 +3010,11 @@ void HWNDMessageHandler::OnBackgroundFullscreen() {
   shrunk_rect.set_height(shrunk_rect.height() - 1);
   background_fullscreen_hack_ = true;
   SetBoundsInternal(shrunk_rect, false);
+  // Inform the taskbar that this window is no longer a fullscreen window so it
+  // can bring itself to the top of the Z-Order. The taskbar heuristics to
+  // detect fullscreen windows are not reliable. Marking it explicitly seems to
+  // work around these problems.
+  fullscreen_handler()->MarkFullscreen(false);
 }
 
 void HWNDMessageHandler::DestroyAXSystemCaret() {
