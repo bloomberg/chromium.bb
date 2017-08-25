@@ -237,10 +237,11 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testSendTextToAlert',
         'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
         # The WebView shell that we test against (on Kitkat) does not yet
-        # support Network.setCookie DevTools command.
+        # support Network.setCookie & deleteCookies DevTools command.
         # TODO(gmanikpure): reenable when it does.
         'ChromeDriverLogTest.testDisablingDriverLogsSuppressesChromeDriverLog',
         'ChromeDriverTest.testCookiePath',
+        'ChromeDriverTest.testDeleteCookie',
         'ChromeDriverTest.testGetHttpOnlyCookie',
         'ChromeDriverTest.testGetNamedCookie',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1941
@@ -1496,6 +1497,19 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertRaisesRegexp(
         chromedriver.NoSuchCookie, "no such cookie",
         self._driver.GetNamedCookie, 'foo')
+
+  def testDeleteCookie(self):
+    self._driver.Load(self.GetHttpUrlForFile(
+        '/chromedriver/empty.html'))
+    self._driver.AddCookie({'name': 'a', 'value': 'b'})
+    self._driver.AddCookie({'name': 'x', 'value': 'y'})
+    self._driver.AddCookie({'name': 'p', 'value': 'q'})
+    cookies = self._driver.GetCookies()
+    self.assertEquals(3, len(cookies))
+    self._driver.DeleteCookie('a')
+    self.assertEquals(2, len(self._driver.GetCookies()))
+    self._driver.DeleteAllCookies()
+    self.assertEquals(0, len(self._driver.GetCookies()))
 
   def testGetUrlOnInvalidUrl(self):
     # Make sure we don't return 'chrome-error://chromewebdata/' (see

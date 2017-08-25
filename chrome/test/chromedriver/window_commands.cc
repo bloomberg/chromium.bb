@@ -1076,7 +1076,21 @@ Status ExecuteDeleteCookie(Session* session,
   Status status = GetUrl(web_view, session->GetCurrentFrameId(), &url);
   if (status.IsError())
     return status;
-  return web_view->DeleteCookie(name, url);
+
+  std::list<Cookie> cookies;
+  status = GetVisibleCookies(web_view, &cookies);
+  if (status.IsError())
+    return status;
+
+  for (std::list<Cookie>::const_iterator it = cookies.begin();
+       it != cookies.end(); ++it) {
+    if (name == it->name) {
+      status = web_view->DeleteCookie(it->name, url, it->domain, it->path);
+      if (status.IsError())
+        return status;
+    }
+  }
+  return Status(kOk);
 }
 
 Status ExecuteDeleteAllCookies(Session* session,
@@ -1098,7 +1112,7 @@ Status ExecuteDeleteAllCookies(Session* session,
       return status;
     for (std::list<Cookie>::const_iterator it = cookies.begin();
          it != cookies.end(); ++it) {
-      status = web_view->DeleteCookie(it->name, url);
+      status = web_view->DeleteCookie(it->name, url, it->domain, it->path);
       if (status.IsError())
         return status;
     }

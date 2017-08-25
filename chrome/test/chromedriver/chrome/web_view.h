@@ -137,7 +137,9 @@ class WebView {
 
   // Delete the cookie with the given name.
   virtual Status DeleteCookie(const std::string& name,
-                              const std::string& url) = 0;
+                              const std::string& url,
+                              const std::string& domain,
+                              const std::string& path) = 0;
 
   virtual Status AddCookie(const std::string& name,
                            const std::string& url,
