@@ -198,6 +198,10 @@ struct PendingPaymentResponse {
 // invocation was successful.
 - (BOOL)handleResponseComplete:(const base::DictionaryValue&)message;
 
+// Handles setting the "updating" state of the pending request. Returns YES if
+// the invocation was successful.
+- (BOOL)handleSetPendingRequestUpdating:(const base::DictionaryValue&)message;
+
 // Handles invocations of PaymentRequestUpdateEvent.updateWith(). Returns YES if
 // the invocation was successful.
 - (BOOL)handleUpdatePaymentDetails:(const base::DictionaryValue&)message;
@@ -385,6 +389,9 @@ struct PendingPaymentResponse {
   if (command == "paymentRequest.responseComplete") {
     return [self handleResponseComplete:JSONCommand];
   }
+  if (command == "paymentRequest.setPendingRequestUpdating") {
+    return [self handleSetPendingRequestUpdating:JSONCommand];
+  }
   if (command == "paymentRequest.updatePaymentDetails") {
     return [self handleUpdatePaymentDetails:JSONCommand];
   }
@@ -564,6 +571,8 @@ struct PendingPaymentResponse {
 - (BOOL)handleRequestAbort:(const base::DictionaryValue&)message {
   DCHECK(_pendingPaymentRequest);
 
+  _pendingPaymentRequest->set_updating(false);
+
   _pendingPaymentRequest->set_state(payments::PaymentRequest::State::CLOSED);
   _pendingPaymentRequest->journey_logger().SetAborted(
       payments::JourneyLogger::ABORT_REASON_ABORTED_BY_MERCHANT);
@@ -716,8 +725,31 @@ struct PendingPaymentResponse {
   return YES;
 }
 
+- (BOOL)handleSetPendingRequestUpdating:(const base::DictionaryValue&)message {
+  if (!_pendingPaymentRequest ||
+      _pendingPaymentRequest->state() !=
+          payments::PaymentRequest::State::INTERACTIVE ||
+      _pendingPaymentRequest->updating()) {
+    return YES;
+  }
+
+  bool updating;
+  if (!message.GetBoolean("updating", &updating)) {
+    DLOG(ERROR) << "JS message parameter 'updating' is missing";
+    return NO;
+  }
+
+  _pendingPaymentRequest->set_updating(updating);
+  return YES;
+}
+
 - (BOOL)handleUpdatePaymentDetails:(const base::DictionaryValue&)message {
-  // TODO(crbug.com/602666): Check that there is already a pending request.
+  if (!_pendingPaymentRequest ||
+      _pendingPaymentRequest->state() !=
+          payments::PaymentRequest::State::INTERACTIVE ||
+      !_pendingPaymentRequest->updating()) {
+    return YES;
+  }
 
   [_unblockEventQueueTimer invalidate];
   [_updateEventTimeoutTimer invalidate];
@@ -735,6 +767,8 @@ struct PendingPaymentResponse {
   }
 
   [_paymentRequestCoordinator updatePaymentDetails:paymentDetails];
+
+  _pendingPaymentRequest->set_updating(false);
 
   return YES;
 }
@@ -895,6 +929,12 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
          didSelectShippingAddress:
              (const autofill::AutofillProfile&)shippingAddress {
+  if (coordinator.paymentRequest->state() !=
+          payments::PaymentRequest::State::INTERACTIVE ||
+      coordinator.paymentRequest->updating()) {
+    return;
+  }
+
   payments::PaymentAddress address =
       payments::data_util::GetPaymentAddressFromAutofillProfile(
           shippingAddress, coordinator.paymentRequest->GetApplicationLocale());
@@ -907,6 +947,12 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 - (void)paymentRequestCoordinator:(PaymentRequestCoordinator*)coordinator
           didSelectShippingOption:
               (const web::PaymentShippingOption&)shippingOption {
+  if (coordinator.paymentRequest->state() !=
+          payments::PaymentRequest::State::INTERACTIVE ||
+      coordinator.paymentRequest->updating()) {
+    return;
+  }
+
   [_paymentRequestJsManager updateShippingOption:shippingOption
                                completionHandler:nil];
   [self setUnblockEventQueueTimer];
@@ -926,6 +972,13 @@ requestFullCreditCard:(const autofill::CreditCard&)creditCard
 
 - (void)paymentResponseHelperDidCompleteWithPaymentResponse:
     (const web::PaymentResponse&)paymentResponse {
+  if (!_pendingPaymentRequest ||
+      _pendingPaymentRequest->state() !=
+          payments::PaymentRequest::State::INTERACTIVE ||
+      _pendingPaymentRequest->updating()) {
+    return;
+  }
+
   [_paymentRequestCoordinator setCancellable:NO];
 
   [_paymentRequestJsManager

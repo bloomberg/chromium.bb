@@ -513,6 +513,64 @@ var SerializedPaymentResponse;
   };
 
   /**
+   * Validates an instance of PaymentDetailsInit and returns the validated
+   * shipping options.
+   * @param {!window.PaymentDetails} details
+   * @return {!Array<!window.PaymentShippingOption>} The validated shipping
+   *     options.
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validatePaymentDetailsInit = function(
+      details) {
+    // Validate details.total.
+    if (!details.total)
+      throw new TypeError('Total is missing.');
+    __gCrWeb['paymentRequestManager'].validatePaymentItem(
+        details.total, 'Total');
+    if (details.total.amount.value[0] == '-')
+      throw new TypeError('Total value should be non-negative');
+
+    return __gCrWeb['paymentRequestManager'].validatePaymentDetailsBase(
+        details);
+  };
+
+  /**
+   * Validates an instance of PaymentDetailsUpdate and returns the validated
+   * shipping options.
+   * @param {!window.PaymentDetails} details
+   * @return {!Array<!window.PaymentShippingOption>} The validated shipping
+   *     options.
+   * @throws {TypeError|RangeError}
+   */
+  __gCrWeb['paymentRequestManager'].validatePaymentDetailsUpdate = function(
+      details) {
+    // Validate details.total.
+    if (details.total) {
+      __gCrWeb['paymentRequestManager'].validatePaymentItem(
+          details.total, 'Total');
+      if (details.total.amount.value[0] == '-')
+        throw new TypeError('Total value should be non-negative');
+    }
+
+    // Validate details.error.
+    if (details.errorMessage) {
+      if (typeof details.error !== 'string') {
+        throw new TypeError('Error message must be a string');
+      }
+      if (details.error.length >
+          __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH) {
+        throw new TypeError(
+            'Error message cannot be longer than ' +
+            __gCrWeb['paymentRequestManager'].MAX_STRING_LENGTH +
+            ' characters');
+      }
+    }
+
+    return __gCrWeb['paymentRequestManager'].validatePaymentDetailsBase(
+        details);
+  };
+
+  /**
    * Validates the array of PaymentMethodData instances passed to the
    * PaymentRequest constructor.
    * @param {!Array<!window.PaymentMethodData>} methodData
@@ -640,8 +698,33 @@ var SerializedPaymentResponse;
    * with a valid one.
    * @param {!Promise<!window.PaymentDetails>|!window.PaymentDetails}
    *     detailsOrPromise
+   * @throws {DOMException}
+   * @suppress {checkTypes} Required for DOMException's constructor.
    */
   __gCrWeb['paymentRequestManager'].updateWith = function(detailsOrPromise) {
+    if (!this || this != __gCrWeb['paymentRequestManager'].updateEvent)
+      return;
+
+    if (!__gCrWeb['paymentRequestManager'].pendingRequest ||
+        __gCrWeb['paymentRequestManager'].pendingRequest.state !=
+            PaymentRequestState.INTERACTIVE) {
+      return;
+    }
+
+    if (__gCrWeb['paymentRequestManager'].pendingRequest.updating) {
+      throw new DOMException(
+          'Failed to execute \'updateWith\' on \'PaymentRequestUpdateEvent\'' +
+              ': \'Cannot update details twice',
+          'InvalidStateError');
+    }
+
+    __gCrWeb['paymentRequestManager'].pendingRequest.updating = true;
+    var message = {
+      'command': 'paymentRequest.setPendingRequestUpdating',
+      'updating': true,
+    };
+    __gCrWeb.message.invokeOnHost(message);
+
     // if |detailsOrPromise| is not an instance of a Promise, wrap it in a
     // Promise that fulfills with |detailsOrPromise|.
     if (!detailsOrPromise || !(detailsOrPromise.then instanceof Function) ||
@@ -655,12 +738,19 @@ var SerializedPaymentResponse;
             throw new TypeError(
                 'An instance of PaymentDetails must be provided.');
 
+          // Validate details and update the shipping options.
+          var validatedShippingOptions =
+              __gCrWeb['paymentRequestManager'].validatePaymentDetailsUpdate(
+                  paymentDetails);
+          paymentDetails.shippingOptions = validatedShippingOptions;
+
           var message = {
             'command': 'paymentRequest.updatePaymentDetails',
             'payment_details': paymentDetails,
           };
           __gCrWeb.message.invokeOnHost(message);
 
+          __gCrWeb['paymentRequestManager'].pendingRequest.updating = false;
           __gCrWeb['paymentRequestManager'].updateEvent = null;
         })
         .catch(function() {
@@ -814,17 +904,11 @@ var SerializedPaymentResponse;
    */
   __gCrWeb['paymentRequestManager'].updateShippingOptionAndDispatchEvent =
       function(shippingOptionID) {
-    if (!__gCrWeb['paymentRequestManager'].pendingRequest) {
-      __gCrWeb['paymentRequestManager'].rejectRequestPromise(
-          'Internal PaymentRequest error: No pending request.');
-    }
-
     var pendingRequest = __gCrWeb['paymentRequestManager'].pendingRequest;
-
-    if (__gCrWeb['paymentRequestManager'].updateEvent) {
-      __gCrWeb['paymentRequestManager'].rejectRequestPromise(
-          'Internal PaymentRequest error: Only one update may take ' +
-          'place at a time.');
+    if (!pendingRequest ||
+        pendingRequest.state != PaymentRequestState.INTERACTIVE ||
+        pendingRequest.updating) {
+      return;
     }
 
     pendingRequest.shippingOption = shippingOptionID;
@@ -851,17 +935,11 @@ var SerializedPaymentResponse;
    */
   __gCrWeb['paymentRequestManager'].updateShippingAddressAndDispatchEvent =
       function(shippingAddress) {
-    if (!__gCrWeb['paymentRequestManager'].pendingRequest) {
-      __gCrWeb['paymentRequestManager'].rejectRequestPromise(
-          'Internal PaymentRequest error: No pending request.');
-    }
-
     var pendingRequest = __gCrWeb['paymentRequestManager'].pendingRequest;
-
-    if (__gCrWeb['paymentRequestManager'].updateEvent) {
-      __gCrWeb['paymentRequestManager'].rejectRequestPromise(
-          'Internal PaymentRequest error: Only one update may take ' +
-          'place at a time.');
+    if (!pendingRequest ||
+        pendingRequest.state != PaymentRequestState.INTERACTIVE ||
+        pendingRequest.updating) {
+      return;
     }
 
     pendingRequest.shippingAddress = shippingAddress;
@@ -948,8 +1026,6 @@ function PaymentRequest(methodData, details, opt_options) {
   /**
    * True if there is a pending updateWith call to update the payment request
    * and false otherwise.
-   * TODO(crbug.com/602666): Implement changes in the value of this property per
-   * spec.
    * @type {boolean}
    * @private
    */
@@ -964,18 +1040,12 @@ function PaymentRequest(methodData, details, opt_options) {
    */
   this.methodData = methodData;
 
-  // Validate details.
+  // Validate details and update the shipping options.
   var validatedShippingOptions =
-      __gCrWeb['paymentRequestManager'].validatePaymentDetailsBase(details);
+      __gCrWeb['paymentRequestManager'].validatePaymentDetailsInit(details);
+  details.shippingOptions = validatedShippingOptions;
 
   this.id = details.id ? details.id : __gCrWeb['paymentRequestManager'].guid();
-
-  // Validate details.total.
-  if (!details.total)
-    throw new TypeError('Total is missing.');
-  __gCrWeb['paymentRequestManager'].validatePaymentItem(details.total, 'Total');
-  if (details.total.amount.value[0] == '-')
-    throw new TypeError('Total value should be non-negative');
 
   /**
    * @type {!window.PaymentDetails}
