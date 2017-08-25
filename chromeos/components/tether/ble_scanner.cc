@@ -21,11 +21,6 @@ namespace tether {
 
 namespace {
 
-// Minimum RSSI value to use for discovery. The -90 value was determined
-// empirically and is borrowed from
-// |proximity_auth::BluetoothLowEnergyConnectionFinder|.
-const int kMinDiscoveryRSSI = -90;
-
 // Valid service data must include at least 4 bytes: 2 bytes associated with the
 // scanning device (used as a scan filter) and 2 bytes which identify the
 // advertising device to the scanning device.
@@ -179,15 +174,15 @@ void BleScanner::StartDiscoverySession() {
   DCHECK(adapter_);
   is_initializing_discovery_session_ = true;
 
-  // Discover only low energy (LE) devices with strong enough signal.
-  std::unique_ptr<device::BluetoothDiscoveryFilter> filter =
-      base::MakeUnique<device::BluetoothDiscoveryFilter>(
-          device::BLUETOOTH_TRANSPORT_LE);
-  filter->SetRSSI(kMinDiscoveryRSSI);
-
-  adapter_->StartDiscoverySessionWithFilter(
-      std::move(filter), base::Bind(&BleScanner::OnDiscoverySessionStarted,
-                                    weak_ptr_factory_.GetWeakPtr()),
+  // Note: Ideally, we would use a filter for only LE devices here. However,
+  // using a filter here triggers a bug in some kernel implementations which
+  // causes LE scanning to toggle rapidly on and off. This can cause race
+  // conditions which result in Bluetooth bugs. See crbug.com/759090.
+  // TODO(mcchou): Once these issues have been resolved, add the filter back.
+  // See crbug.com/759091.
+  adapter_->StartDiscoverySession(
+      base::Bind(&BleScanner::OnDiscoverySessionStarted,
+                 weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&BleScanner::OnStartDiscoverySessionError,
                  weak_ptr_factory_.GetWeakPtr()));
 }
