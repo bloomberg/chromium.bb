@@ -196,16 +196,8 @@ class BASE_EXPORT MemoryDumpManager {
         scoped_refptr<SequencedTaskRunner> dump_thread_task_runner);
     ~ProcessMemoryDumpAsyncState();
 
-    // Gets or creates the memory dump container for the given target process.
-    ProcessMemoryDump* GetOrCreateMemoryDumpContainerForProcess(
-        ProcessId pid,
-        const MemoryDumpArgs& dump_args);
-
-    // A map of ProcessId -> ProcessMemoryDump, one for each target process
-    // being dumped from the current process. Typically each process dumps only
-    // for itself, unless dump providers specify a different |target_process| in
-    // MemoryDumpProvider::Options.
-    std::map<ProcessId, std::unique_ptr<ProcessMemoryDump>> process_dumps;
+    // A ProcessMemoryDump to collect data from MemoryDumpProviders.
+    std::unique_ptr<ProcessMemoryDump> process_memory_dump;
 
     // The arguments passed to the initial CreateProcessDump() request.
     const MemoryDumpRequestArgs req_args;
