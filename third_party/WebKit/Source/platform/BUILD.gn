@@ -1809,6 +1809,7 @@ test("blink_platform_unittests") {
     "graphics/compositing/ContentLayerClientImplTest.cpp",
     "graphics/compositing/PaintArtifactCompositorTest.cpp",
     "graphics/compositing/PaintChunksToCcLayerTest.cpp",
+    "graphics/filters/FECompositeTest.cpp",
     "graphics/filters/ImageFilterBuilderTest.cpp",
     "graphics/gpu/DrawingBufferTest.cpp",
     "graphics/gpu/SharedGpuContextTest.cpp",
