@@ -42,8 +42,6 @@ const char kLoFiFlagFieldTrial[] = "DataCompressionProxyLoFiFlag";
 const char kBlackListTransitionFieldTrial[] =
     "DataReductionProxyPreviewsBlackListTransition";
 
-const char kTrustedSpdyProxyFieldTrialName[] = "DataReductionTrustedSpdyProxy";
-
 // Default URL for retrieving the Data Reduction Proxy configuration.
 const char kClientConfigURL[] =
     "https://datasaver.googleapis.com/v1/clientConfigs";
@@ -134,25 +132,6 @@ bool IsIncludedInHoldbackFieldTrial() {
 
 std::string HoldbackFieldTrialGroup() {
   return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback");
-}
-
-const char* GetTrustedSpdyProxyFieldTrialName() {
-  return kTrustedSpdyProxyFieldTrialName;
-}
-
-bool IsIncludedInTrustedSpdyProxyFieldTrial() {
-  if (base::StartsWith(base::FieldTrialList::FindFullName(
-                           GetTrustedSpdyProxyFieldTrialName()),
-                       kControl, base::CompareCase::SENSITIVE)) {
-    return false;
-  }
-  if (base::StartsWith(base::FieldTrialList::FindFullName(
-                           GetTrustedSpdyProxyFieldTrialName()),
-                       kDisabled, base::CompareCase::SENSITIVE)) {
-    return false;
-  }
-  // Trusted SPDY proxy experiment is enabled by default.
-  return true;
 }
 
 const char* GetLoFiFieldTrialName() {

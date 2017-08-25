@@ -45,13 +45,6 @@ bool IsIncludedInHoldbackFieldTrial();
 // not included in a group.
 std::string HoldbackFieldTrialGroup();
 
-// Returns the name of the trusted SPDY/HTTP2 proxy field trial.
-const char* GetTrustedSpdyProxyFieldTrialName();
-
-// Returns true if this client is part of the enabled group of the trusted
-// SPDY/HTTP2 proxy field trial.
-bool IsIncludedInTrustedSpdyProxyFieldTrial();
-
 // Returns true if this client is part of the field trial that should display
 // a promotion for the data reduction proxy on Android One devices. This is for
 // testing purposes and should not be called outside of tests.
