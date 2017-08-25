@@ -1904,6 +1904,8 @@ def CMDdownload(parser, args):
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported arguments: %s' % args)
+  if not file_path.enable_symlink():
+    logging.error('Symlink support is not enabled')
 
   process_isolate_server_options(parser, options, True, True)
   if bool(options.isolated) == bool(options.file):
@@ -2075,5 +2077,4 @@ if __name__ == '__main__':
   fix_encoding.fix_encoding()
   tools.disable_buffering()
   colorama.init()
-  file_path.enable_symlink()
   sys.exit(main(sys.argv[1:]))

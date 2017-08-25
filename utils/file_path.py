@@ -348,7 +348,9 @@ if sys.platform == 'win32':
     try:
       if not AdjustTokenPrivileges(token, False, tp, 0, None, None):
         # pylint: disable=undefined-variable
-        raise WindowsError('Error in AdjustTokenPrivileges')
+        raise WindowsError(
+            u'AdjustTokenPrivileges(%r): failed: %s' %
+              (name, ctypes.GetLastError()))
     finally:
       ctypes.windll.kernel32.CloseHandle(token)
     return ctypes.windll.kernel32.GetLastError() != ERROR_NOT_ALL_ASSIGNED
@@ -359,8 +361,6 @@ if sys.platform == 'win32':
 
     Returns:
     - True if symlink support is enabled.
-
-    Thanks Microsoft. This is appreciated.
     """
     return enable_privilege(u'SeCreateSymbolicLinkPrivilege')
 

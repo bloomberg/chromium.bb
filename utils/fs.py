@@ -82,7 +82,10 @@ if sys.platform == 'win32':
     source = extend(source)
     flags = 1 if os.path.isdir(source) else 0
     if not CreateSymbolicLinkW(extend(link_name), source, flags):
-      raise WindowsError()  # pylint: disable=undefined-variable
+      # pylint: disable=undefined-variable
+      raise WindowsError(
+          u'symlink(%r, %r) failed: %s' %
+            (source, link_name, ctypes.GetLastError()))
 
 
   def unlink(path):
@@ -105,11 +108,15 @@ if sys.platform == 'win32':
     if os.path.isdir(path):
       if not RemoveDirectory(path):
         # pylint: disable=undefined-variable
-        raise WindowsError('could not remove directory "%s"' % path)
+        raise WindowsError(
+            u'unlink(%r): could not remove directory: %s' %
+              (path, ctypes.GetLastError()))
     else:
       if not DeleteFile(path):
         # pylint: disable=undefined-variable
-        raise WindowsError('could not delete file "%s"' % path)
+        raise WindowsError(
+            u'unlink(%r): could not delete file: %s' %
+              (path, ctypes.GetLastError()))
 
 
   def walk(top, *args, **kwargs):
