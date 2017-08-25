@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/task_traits.h"
@@ -28,6 +29,13 @@ class HidConnection;
 // system. Call HidService::GetInstance to get the singleton instance.
 class HidService {
  public:
+  // Clients of HidService should add themselves as observer in their
+  // GetDevicesCallback. Earlier might cause OnDeviceAdded() and
+  // OnDeviceRemoved() to be called before the GetDevicesCallback, while later
+  // might cause missing OnDeviceAdded() and OnDeviceRemoved() notifications.
+  // TODO(ke.he@intel.com): In the mojofication of HidService, clients should
+  // pass an mojom::ObserverPtr in the GetDevices() interface, HidService adds
+  // the observer immediately after calling the GetDevicesCallback.
   class Observer {
    public:
     virtual void OnDeviceAdded(scoped_refptr<HidDeviceInfo> info);
@@ -35,11 +43,6 @@ class HidService {
     // removing the device from HidService. Observers should not depend on the
     // order in which they are notified of the OnDeviceRemove event.
     virtual void OnDeviceRemoved(scoped_refptr<HidDeviceInfo> info);
-    // Notifies all observers again, after having first notified all observers
-    // with OnDeviceRemoved and removed the device from internal structures.
-    // Each observer must not depend on any other observers' awareness of the
-    // device as they could be cleaned up in any order.
-    virtual void OnDeviceRemovedCleanup(scoped_refptr<HidDeviceInfo> info);
   };
 
   using GetDevicesCallback =
@@ -58,7 +61,7 @@ class HidService {
 
   // Enumerates available devices. The provided callback will always be posted
   // to the calling thread's task runner.
-  virtual void GetDevices(const GetDevicesCallback& callback);
+  void GetDevices(const GetDevicesCallback& callback);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -78,6 +81,7 @@ class HidService {
 
   HidService();
 
+  virtual base::WeakPtr<HidService> GetWeakPtr() = 0;
   void AddDevice(scoped_refptr<HidDeviceInfo> info);
   void RemoveDevice(const HidPlatformDeviceId& platform_device_id);
   void FirstEnumerationComplete();
@@ -87,6 +91,7 @@ class HidService {
   base::ThreadChecker thread_checker_;
 
  private:
+  void RunPendingEnumerations();
   std::string FindDeviceIdByPlatformDeviceId(
       const HidPlatformDeviceId& platform_device_id);
 

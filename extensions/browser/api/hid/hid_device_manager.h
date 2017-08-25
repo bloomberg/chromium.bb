@@ -69,6 +69,11 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
                      scoped_refptr<device::HidDeviceInfo> device_info,
                      bool update_last_used);
 
+  // Wait to perform an initial enumeration and register a HidService::Observer
+  // until the first API customer makes a request or registers an event
+  // listener.
+  void LazyInitialize();
+
  private:
   friend class BrowserContextKeyedAPIFactory<HidDeviceManager>;
 
@@ -93,11 +98,6 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
   void OnDeviceRemoved(
       scoped_refptr<device::HidDeviceInfo> device_info) override;
 
-  // Wait to perform an initial enumeration and register a HidService::Observer
-  // until the first API customer makes a request or registers an event
-  // listener.
-  void LazyInitialize();
-
   // Builds a list of device info objects representing the currently enumerated
   // devices, taking into account the permissions held by the given extension
   // and the filters provided.
@@ -105,6 +105,7 @@ class HidDeviceManager : public BrowserContextKeyedAPI,
       const Extension* extension,
       const std::vector<device::HidDeviceFilter>& filters);
   void OnEnumerationComplete(
+      device::HidService* hid_service,
       const std::vector<scoped_refptr<device::HidDeviceInfo>>& devices);
 
   void DispatchEvent(events::HistogramValue histogram_value,

@@ -172,6 +172,10 @@ class DevicePermissionsManager : public KeyedService,
   void RemoveEntry(const std::string& extension_id,
                    scoped_refptr<DevicePermissionEntry> entry);
 
+  // Revokes permission for an ephemeral hid device.
+  void RemoveEntryForEphemeralHidDevice(
+      scoped_refptr<device::HidDeviceInfo> device);
+
   // Revokes permission for the extension to access all allowed devices.
   void Clear(const std::string& extension_id);
 
@@ -188,17 +192,11 @@ class DevicePermissionsManager : public KeyedService,
   // UsbService::Observer implementation
   void OnDeviceRemovedCleanup(scoped_refptr<device::UsbDevice> device) override;
 
-  // HidService::Observer implementation
-  void OnDeviceRemovedCleanup(
-      scoped_refptr<device::HidDeviceInfo> device) override;
-
   base::ThreadChecker thread_checker_;
   content::BrowserContext* context_;
   std::map<std::string, DevicePermissions*> extension_id_to_device_permissions_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>
       usb_service_observer_;
-  ScopedObserver<device::HidService, device::HidService::Observer>
-      hid_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePermissionsManager);
 };

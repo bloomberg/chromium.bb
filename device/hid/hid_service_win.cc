@@ -71,6 +71,10 @@ void HidServiceWin::Connect(const std::string& device_guid,
                                           device_info, std::move(file))));
 }
 
+base::WeakPtr<HidService> HidServiceWin::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 // static
 void HidServiceWin::EnumerateBlocking(
     base::WeakPtr<HidServiceWin> service,

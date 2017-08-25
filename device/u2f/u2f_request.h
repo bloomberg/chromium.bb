@@ -52,7 +52,8 @@ class U2fRequest : HidService::Observer {
   void AddDevice(std::unique_ptr<U2fDevice> device);
   void OnDeviceAdded(scoped_refptr<HidDeviceInfo> device_info) override;
   void OnDeviceRemoved(scoped_refptr<HidDeviceInfo> device_info) override;
-  void OnEnumerate(const std::vector<scoped_refptr<HidDeviceInfo>>& devices);
+  void OnEnumerate(HidService* hid_service,
+                   const std::vector<scoped_refptr<HidDeviceInfo>>& devices);
 
   std::list<std::unique_ptr<U2fDevice>> devices_;
   std::list<std::unique_ptr<U2fDevice>> attempted_devices_;

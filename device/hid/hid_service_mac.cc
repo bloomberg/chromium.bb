@@ -145,6 +145,10 @@ void HidServiceMac::Connect(const std::string& device_guid,
                  map_entry->second, callback));
 }
 
+base::WeakPtr<HidService> HidServiceMac::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 // static
 base::ScopedCFTypeRef<IOHIDDeviceRef> HidServiceMac::OpenOnBlockingThread(
     scoped_refptr<HidDeviceInfo> device_info) {
