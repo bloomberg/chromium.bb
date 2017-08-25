@@ -2123,7 +2123,7 @@ void SpdySession::SendInitialData() {
     const int32_t delta_window_size =
         session_max_recv_window_size_ - session_recv_window_size_;
     session_recv_window_size_ += delta_window_size;
-    net_log_.AddEvent(NetLogEventType::HTTP2_STREAM_UPDATE_RECV_WINDOW,
+    net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_UPDATE_RECV_WINDOW,
                       base::Bind(&NetLogSpdySessionWindowUpdateCallback,
                                  delta_window_size, session_recv_window_size_));
 
@@ -2651,18 +2651,23 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
     CloseActiveStreamIterator(it, ERR_SPDY_SERVER_REFUSED_STREAM);
   } else if (error_code == ERROR_CODE_HTTP_1_1_REQUIRED) {
     // TODO(bnc): Record histogram with number of open streams capped at 50.
-    it->second->LogStreamError(
-        ERR_HTTP_1_1_REQUIRED,
-        SpdyStringPrintf(
-            "SPDY session closed because of stream with error_code: %u",
-            error_code));
+    if (net_log().IsCapturing()) {
+      it->second->LogStreamError(
+          ERR_HTTP_1_1_REQUIRED,
+          SpdyStringPrintf(
+              "Closing session because server reset stream with error %s.",
+              ErrorCodeToString(error_code)));
+    }
     DoDrainSession(ERR_HTTP_1_1_REQUIRED, "HTTP_1_1_REQUIRED for stream.");
   } else {
     RecordProtocolErrorHistogram(
         PROTOCOL_ERROR_RST_STREAM_FOR_NON_ACTIVE_STREAM);
-    it->second->LogStreamError(
-        ERR_SPDY_PROTOCOL_ERROR,
-        SpdyStringPrintf("SPDY stream closed with error_code: %u", error_code));
+    if (net_log().IsCapturing()) {
+      it->second->LogStreamError(
+          ERR_SPDY_PROTOCOL_ERROR,
+          SpdyStringPrintf("Server reset stream with error %s.",
+                           ErrorCodeToString(error_code)));
+    }
     // TODO(mbelshe): Map from Spdy-protocol errors to something sensical.
     //                For now, it doesn't matter much - it is a protocol error.
     CloseActiveStreamIterator(it, ERR_SPDY_PROTOCOL_ERROR);
@@ -3137,7 +3142,7 @@ void SpdySession::IncreaseRecvWindowSize(int32_t delta_window_size) {
             std::numeric_limits<int32_t>::max() - session_recv_window_size_);
 
   session_recv_window_size_ += delta_window_size;
-  net_log_.AddEvent(NetLogEventType::HTTP2_STREAM_UPDATE_RECV_WINDOW,
+  net_log_.AddEvent(NetLogEventType::HTTP2_SESSION_UPDATE_RECV_WINDOW,
                     base::Bind(&NetLogSpdySessionWindowUpdateCallback,
                                delta_window_size, session_recv_window_size_));
 
