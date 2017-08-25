@@ -616,7 +616,7 @@ Response NetworkHandler::Enable(Maybe<int> max_total_size,
 Response NetworkHandler::Disable() {
   enabled_ = false;
   user_agent_ = std::string();
-  SetRequestInterceptionEnabled(false);
+  SetRequestInterceptionEnabled(false, Maybe<protocol::Array<String>>());
   return Response::FallThrough();
 }
 
@@ -940,30 +940,39 @@ std::string NetworkHandler::UserAgentOverride() const {
   return enabled_ ? user_agent_ : std::string();
 }
 
-DispatchResponse NetworkHandler::SetRequestInterceptionEnabled(bool enabled) {
-  if (interception_enabled_ == enabled)
-    return Response::OK();  // Nothing to do.
-
+DispatchResponse NetworkHandler::SetRequestInterceptionEnabled(
+    bool enabled,
+    Maybe<protocol::Array<std::string>> patterns) {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (!web_contents)
-    return Response::OK();
+    return Response::InternalError();
 
   DevToolsURLRequestInterceptor* devtools_url_request_interceptor =
       DevToolsURLRequestInterceptor::FromBrowserContext(
           web_contents->GetBrowserContext());
   if (!devtools_url_request_interceptor)
-    return Response::OK();
+    return Response::Error("Interception not supported");
 
+  std::vector<std::string> new_patterns;
   if (enabled) {
+    if (patterns.isJust()) {
+      for (size_t i = 0; i < patterns.fromJust()->length(); i++)
+        new_patterns.push_back(patterns.fromJust()->get(i));
+    } else {
+      new_patterns.push_back("*");
+    }
+  }
+  interception_enabled_ = new_patterns.size();
+
+  if (interception_enabled_) {
     devtools_url_request_interceptor->state()->StartInterceptingRequests(
-        web_contents, weak_factory_.GetWeakPtr());
+        web_contents, weak_factory_.GetWeakPtr(), new_patterns);
   } else {
     devtools_url_request_interceptor->state()->StopInterceptingRequests(
         web_contents);
     navigation_requests_.clear();
     canceled_navigation_requests_.clear();
   }
-  interception_enabled_ = enabled;
   return Response::OK();
 }
 

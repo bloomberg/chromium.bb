@@ -140,6 +140,7 @@ TestBrowserContext::GetBrowsingDataRemoverDelegate() {
 net::URLRequestContextGetter* TestBrowserContext::CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) {
+  request_interceptors_ = std::move(request_interceptors);
   return GetRequestContext();
 }
 
@@ -149,6 +150,7 @@ TestBrowserContext::CreateRequestContextForStoragePartition(
     bool in_memory,
     ProtocolHandlerMap* protocol_handlers,
     URLRequestInterceptorScopedVector request_interceptors) {
+  request_interceptors_ = std::move(request_interceptors);
   return nullptr;
 }
 

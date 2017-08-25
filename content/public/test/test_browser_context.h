@@ -72,6 +72,8 @@ class TestBrowserContext : public BrowserContext {
       bool in_memory) override;
 
  private:
+  // Hold a reference here because BrowserContext owns lifetime.
+  URLRequestInterceptorScopedVector request_interceptors_;
   base::ScopedTempDir browser_context_dir_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   std::unique_ptr<MockResourceContext> resource_context_;
