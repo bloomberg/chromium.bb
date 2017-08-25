@@ -361,7 +361,7 @@ ARC_BUCKET_ACLS = {
 ARC_USE_FLAG_TO_ARCH = {
     'arm': 'arm',
     'x86': 'x86',
-    'amd64': 'x86',
+    'amd64': 'x86_64',
 }
 ANDROID_SYMBOLS_URL_TEMPLATE = (
     ARC_BUCKET_URL +
