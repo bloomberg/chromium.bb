@@ -90,6 +90,10 @@ void OverviewWindowDragController::CompleteDrag() {
   }
 }
 
+void OverviewWindowDragController::ResetWindowSelector() {
+  window_selector_ = nullptr;
+}
+
 void OverviewWindowDragController::UpdatePhantomWindowAndWindowGrid(
     const gfx::Point& location_in_screen) {
   SplitViewController::SnapPosition last_snap_position = snap_position_;
@@ -174,12 +178,8 @@ void OverviewWindowDragController::SnapWindow(
   // |item_| will be deleted after RemoveWindowSelectorItem().
   aura::Window* window = item_->GetWindow();
   window_selector_->RemoveWindowSelectorItem(item_);
-  item_ = nullptr;
-
-  // Note: SplitViewController::SnapWindow() might end of overview mode if two
-  // windows are snapped to both side of the screen. In this case the deletion
-  // of WindowSelector will then delete OverviewWindowDragController.
   split_view_controller_->SnapWindow(window, snap_position);
+  item_ = nullptr;
 }
 
 }  // namespace ash

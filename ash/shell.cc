@@ -695,8 +695,6 @@ Shell::~Shell() {
   aura::client::GetFocusClient(GetPrimaryRootWindow())->FocusWindow(nullptr);
 
   // Please keep in reverse order as in Init() because it's easy to miss one.
-  split_view_controller_.reset();
-
   if (window_modality_controller_)
     window_modality_controller_.reset();
 
@@ -764,6 +762,10 @@ Shell::~Shell() {
   // Has to happen before ~MruWindowTracker.
   window_cycle_controller_.reset();
   window_selector_controller_.reset();
+
+  // |split_view_controller_| needs to be deleted after
+  // |window_selector_controller_|.
+  split_view_controller_.reset();
 
   CloseAllRootWindowChildWindows();
 

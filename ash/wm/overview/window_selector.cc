@@ -30,6 +30,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -252,7 +253,14 @@ WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
 }
 
 WindowSelector::~WindowSelector() {
-  RemoveAllObservers();
+  DCHECK(observed_windows_.empty());
+  // Don't delete |window_drag_controller_| yet since the stack might be still
+  // using it.
+  if (window_drag_controller_) {
+    window_drag_controller_->ResetWindowSelector();
+    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+        FROM_HERE, window_drag_controller_.release());
+  }
 }
 
 // NOTE: The work done in Init() is not done in the constructor because it may
@@ -400,6 +408,7 @@ void WindowSelector::Shutdown() {
 void WindowSelector::RemoveAllObservers() {
   for (auto* window : observed_windows_)
     window->RemoveObserver(this);
+  observed_windows_.clear();
 
   Shell::Get()->activation_client()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
@@ -498,6 +507,8 @@ void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item) {
   for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
     if (grid->Contains(item->GetWindow())) {
       grid->RemoveItem(item);
+      if (grid->empty())
+        OnGridEmpty(grid.get());
       break;
     }
   }
