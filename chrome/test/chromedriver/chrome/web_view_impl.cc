@@ -449,11 +449,23 @@ Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
 }
 
 Status WebViewImpl::DeleteCookie(const std::string& name,
-                                 const std::string& url) {
+                                 const std::string& url,
+                                 const std::string& domain,
+                                 const std::string& path) {
   base::DictionaryValue params;
-  params.SetString("cookieName", name);
   params.SetString("url", url);
-  return client_->SendCommand("Page.deleteCookie", params);
+  std::string command;
+  if (browser_info_->build_no >= 3189) {
+    params.SetString("name", name);
+    params.SetString("domain", domain);
+    params.SetString("path", path);
+    command = "Network.deleteCookies";
+  } else {
+    params.SetString("cookieName", name);
+    command = "Page.deleteCookie";
+  }
+
+  return client_->SendCommand(command, params);
 }
 
 Status WebViewImpl::AddCookie(const std::string& name,
