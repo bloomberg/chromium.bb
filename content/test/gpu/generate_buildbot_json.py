@@ -71,6 +71,11 @@ class Predicates(object):
     return Predicates.FYI_AND_OPTIONAL(x) or Types.V8_FYI in x
 
   @staticmethod
+  def FYI_OPTIONAL_V8_AND_WIN_ANGLE_AMD(x):
+    return Predicates.FYI_OPTIONAL_AND_V8(x) or \
+      Types.WIN_ANGLE_AMD_TRYSERVER in x
+
+  @staticmethod
   def DEFAULT_PLUS_V8(x):
     return Predicates.DEFAULT(x) or Types.V8_FYI in x
 
@@ -1978,7 +1983,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
          # The WebGL 2.0 conformance tests take over an hour to run on
          # the Debug bots, which is too long.
         'build_configs': ['Release', 'Release_x64'],
-        'predicate': Predicates.FYI_OPTIONAL_AND_V8,
+        'predicate': Predicates.FYI_OPTIONAL_V8_AND_WIN_ANGLE_AMD,
         'disabled_instrumentation_types': ['tsan'],
       },
     ],
