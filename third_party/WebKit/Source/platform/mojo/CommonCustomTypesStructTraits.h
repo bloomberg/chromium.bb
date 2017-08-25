@@ -5,6 +5,7 @@
 #ifndef CommonCustomTypesStructTraits_h
 #define CommonCustomTypesStructTraits_h
 
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
 #include "mojo/common/string16.mojom-blink.h"
 #include "platform/PlatformExport.h"
@@ -22,7 +23,8 @@ struct PLATFORM_EXPORT
     delete static_cast<base::string16*>(context);
   }
 
-  static ConstCArray<uint16_t> data(const WTF::String& input, void* context);
+  static base::span<const uint16_t> data(const WTF::String& input,
+                                         void* context);
   static bool Read(common::mojom::String16DataView, WTF::String* out);
 };
 

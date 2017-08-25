@@ -162,7 +162,7 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, cc::DrawQuad>::Read(
     return false;
   }
   quad->background_color = data.background_color();
-  CArray<float> vertex_opacity_array(quad->vertex_opacity);
+  base::span<float> vertex_opacity_array(quad->vertex_opacity);
   if (!data.ReadVertexOpacity(&vertex_opacity_array))
     return false;
 

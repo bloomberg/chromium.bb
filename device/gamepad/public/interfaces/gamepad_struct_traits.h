@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/containers/span.h"
 #include "device/gamepad/public/cpp/gamepad.h"
 #include "device/gamepad/public/interfaces/gamepad.mojom.h"
 #include "mojo/public/cpp/bindings/array_traits_span.h"
@@ -91,11 +92,12 @@ template <>
 struct StructTraits<device::mojom::GamepadDataView, device::Gamepad> {
   static bool connected(const device::Gamepad& r) { return r.connected; }
   static uint64_t timestamp(const device::Gamepad& r) { return r.timestamp; }
-  static ConstCArray<double> axes(const device::Gamepad& r) {
-    return ConstCArray<double>(r.axes, r.axes_length);
+  static base::span<const double> axes(const device::Gamepad& r) {
+    return base::make_span(r.axes, r.axes_length);
   }
-  static ConstCArray<device::GamepadButton> buttons(const device::Gamepad& r) {
-    return ConstCArray<device::GamepadButton>(r.buttons, r.buttons_length);
+  static base::span<const device::GamepadButton> buttons(
+      const device::Gamepad& r) {
+    return base::make_span(r.buttons, r.buttons_length);
   }
   static const device::GamepadPose& pose(const device::Gamepad& r) {
     return r.pose;
@@ -105,8 +107,8 @@ struct StructTraits<device::mojom::GamepadDataView, device::Gamepad> {
   }
   static uint32_t display_id(const device::Gamepad& r) { return r.display_id; }
 
-  static ConstCArray<uint16_t> id(const device::Gamepad& r);
-  static ConstCArray<uint16_t> mapping(const device::Gamepad& r);
+  static base::span<const uint16_t> id(const device::Gamepad& r);
+  static base::span<const uint16_t> mapping(const device::Gamepad& r);
   static bool Read(device::mojom::GamepadDataView data, device::Gamepad* out);
 };
 

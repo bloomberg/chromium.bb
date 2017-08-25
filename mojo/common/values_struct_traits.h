@@ -5,6 +5,7 @@
 #ifndef MOJO_COMMON_VALUES_STRUCT_TRAITS_H_
 #define MOJO_COMMON_VALUES_STRUCT_TRAITS_H_
 
+#include "base/containers/span.h"
 #include "base/values.h"
 #include "mojo/common/values.mojom-shared.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
@@ -179,10 +180,10 @@ struct UnionTraits<common::mojom::ValueDataView, base::Value> {
     return string_piece;
   }
 
-  static mojo::ConstCArray<uint8_t> binary_value(const base::Value& value) {
+  static base::span<const uint8_t> binary_value(const base::Value& value) {
     if (!value.is_blob())
       NOTREACHED();
-    return mojo::ConstCArray<uint8_t>(
+    return base::make_span(
         reinterpret_cast<const uint8_t*>(value.GetBlob().data()),
         value.GetBlob().size());
   }
@@ -237,7 +238,7 @@ struct UnionTraits<common::mojom::ValueDataView, std::unique_ptr<base::Value>> {
     return UnionTraits<common::mojom::ValueDataView, base::Value>::string_value(
         *value);
   }
-  static mojo::ConstCArray<uint8_t> binary_value(
+  static base::span<const uint8_t> binary_value(
       const std::unique_ptr<base::Value>& value) {
     return UnionTraits<common::mojom::ValueDataView, base::Value>::binary_value(
         *value);
