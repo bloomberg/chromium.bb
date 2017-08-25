@@ -9,8 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/common/media/media_stream_options.h"
 #include "content/common/video_capture.mojom.h"
@@ -204,7 +204,7 @@ class VideoCaptureImplManagerTest : public ::testing::Test,
                    base::Unretained(this)));
   }
 
-  const base::MessageLoop message_loop_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
   base::RunLoop cleanup_run_loop_;
   std::unique_ptr<MockVideoCaptureImplManager> manager_;
