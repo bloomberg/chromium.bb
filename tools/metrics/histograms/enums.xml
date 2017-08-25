@@ -36450,6 +36450,7 @@ from previous Chrome versions.
   <int value="12" label="Forced filtering toggled on via devtools"/>
   <int value="13"
       label="UI suppressed and resources blocked (Forced Activation)"/>
+  <int value="14" label="Blocked popup (Strong Popup Blocker)"/>
 </enum>
 
 <enum name="SubresourceFilterActivationDecision">

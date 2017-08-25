@@ -84,6 +84,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_TRUE(opened_window);
   EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                           kActionPopupBlocked, 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
@@ -105,6 +107,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_FALSE(opened_window);
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
                            0);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                           kActionPopupBlocked, 1);
   // Make sure the popup UI was shown.
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
@@ -188,6 +192,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest, BlockOpenURLFromTab) {
   EXPECT_TRUE(content::ExecuteScript(web_contents, "openWindow()"));
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
                            0);
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
+                           kActionPopupBlocked, 1);
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
