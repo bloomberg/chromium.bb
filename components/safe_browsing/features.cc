@@ -22,6 +22,9 @@ namespace safe_browsing {
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kGaiaPasswordReuseReporting{
+    "SyncPasswordReuseEvent", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kGoogleBrandedPhishingWarning{
     "PasswordProtectionGoogleBrandedPhishingWarning",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -48,9 +51,6 @@ const base::Feature kPasswordProtectionInterstitial{
 const base::Feature kProtectedPasswordEntryPinging{
     "ProtectedPasswordEntryPinging", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSyncPasswordReuseEvent{"SyncPasswordReuseEvent",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -67,13 +67,13 @@ constexpr struct {
   bool probabilistically_enabled;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
+    {&kGaiaPasswordReuseReporting, true},
     {&kGoogleBrandedPhishingWarning, false},
     {&kLocalDatabaseManagerEnabled, true},
     {&kParallelUrlCheck, true},
     {&kPasswordFieldOnFocusPinging, true},
     {&kPasswordProtectionInterstitial, false},
     {&kProtectedPasswordEntryPinging, true},
-    {&kSyncPasswordReuseEvent, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kV4OnlyEnabled, true},
 };

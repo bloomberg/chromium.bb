@@ -37,10 +37,10 @@
 
 using content::BrowserThread;
 using sync_pb::UserEventSpecifics;
-using SyncPasswordReuseEvent = UserEventSpecifics::SyncPasswordReuseEvent;
-using PasswordReuseLookup = SyncPasswordReuseEvent::PasswordReuseLookup;
+using GaiaPasswordReuse = UserEventSpecifics::GaiaPasswordReuse;
+using PasswordReuseLookup = GaiaPasswordReuse::PasswordReuseLookup;
 using SafeBrowsingStatus =
-    SyncPasswordReuseEvent::PasswordReuseDetected::SafeBrowsingStatus;
+    GaiaPasswordReuse::PasswordReuseDetected::SafeBrowsingStatus;
 
 namespace safe_browsing {
 
@@ -217,7 +217,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSyncPasswordReuseEvent))
+  if (!base::FeatureList::IsEnabled(kGaiaPasswordReuseReporting))
     return;
 
   syncer::UserEventService* user_event_service =
@@ -230,22 +230,21 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseDetectedEvent(
   if (!specifics)
     return;
 
-  auto* const status = specifics->mutable_sync_password_reuse_event()
+  auto* const status = specifics->mutable_gaia_password_reuse_event()
                            ->mutable_reuse_detected()
                            ->mutable_status();
   status->set_enabled(IsSafeBrowsingEnabled());
 
-  safe_browsing::ExtendedReportingLevel erl =
-      safe_browsing::GetExtendedReportingLevel(*GetPrefs());
+  ExtendedReportingLevel erl = GetExtendedReportingLevel(*GetPrefs());
   switch (erl) {
-    case safe_browsing::SBER_LEVEL_OFF:
+    case SBER_LEVEL_OFF:
       status->set_safe_browsing_reporting_population(SafeBrowsingStatus::NONE);
       break;
-    case safe_browsing::SBER_LEVEL_LEGACY:
+    case SBER_LEVEL_LEGACY:
       status->set_safe_browsing_reporting_population(
           SafeBrowsingStatus::EXTENDED_REPORTING);
       break;
-    case safe_browsing::SBER_LEVEL_SCOUT:
+    case SBER_LEVEL_SCOUT:
       status->set_safe_browsing_reporting_population(SafeBrowsingStatus::SCOUT);
       break;
   }
@@ -307,7 +306,7 @@ void ChromePasswordProtectionService::LogPasswordReuseLookupResult(
     return;
 
   auto* const reuse_lookup =
-      specifics->mutable_sync_password_reuse_event()->mutable_reuse_lookup();
+      specifics->mutable_gaia_password_reuse_event()->mutable_reuse_lookup();
   reuse_lookup->set_lookup_result(result);
   user_event_service->RecordUserEvent(std::move(specifics));
 }
@@ -330,7 +329,7 @@ void ChromePasswordProtectionService::LogPasswordReuseLookupResultWithVerdict(
     return;
 
   PasswordReuseLookup* const reuse_lookup =
-      specifics->mutable_sync_password_reuse_event()->mutable_reuse_lookup();
+      specifics->mutable_gaia_password_reuse_event()->mutable_reuse_lookup();
   reuse_lookup->set_lookup_result(result);
   reuse_lookup->set_verdict(verdict);
   reuse_lookup->set_verdict_token(verdict_token);
@@ -341,7 +340,7 @@ void ChromePasswordProtectionService::MaybeLogPasswordReuseLookupEvent(
     content::WebContents* web_contents,
     PasswordProtectionService::RequestOutcome outcome,
     const LoginReputationClientResponse* response) {
-  if (!base::FeatureList::IsEnabled(safe_browsing::kSyncPasswordReuseEvent))
+  if (!base::FeatureList::IsEnabled(kGaiaPasswordReuseReporting))
     return;
 
   switch (outcome) {
@@ -397,12 +396,11 @@ void ChromePasswordProtectionService::ShowPhishingInterstitial(
   resource.original_url = phishing_url;
   resource.is_subresource = false;
   resource.threat_type = SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING;
-  resource.threat_source =
-      safe_browsing::ThreatSource::PASSWORD_PROTECTION_SERVICE;
+  resource.threat_source = ThreatSource::PASSWORD_PROTECTION_SERVICE;
   resource.web_contents_getter =
-      safe_browsing::SafeBrowsingUIManager::UnsafeResource::
-          GetWebContentsGetter(web_contents->GetRenderProcessHost()->GetID(),
-                               web_contents->GetMainFrame()->GetRoutingID());
+      SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
+          web_contents->GetRenderProcessHost()->GetID(),
+          web_contents->GetMainFrame()->GetRoutingID());
   resource.token = token;
   if (!ui_manager_->IsWhitelisted(resource)) {
     web_contents->GetController().DiscardNonCommittedEntries();
@@ -411,7 +409,7 @@ void ChromePasswordProtectionService::ShowPhishingInterstitial(
 }
 
 void ChromePasswordProtectionService::UpdateSecurityState(
-    safe_browsing::SBThreatType threat_type,
+    SBThreatType threat_type,
     content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   content::NavigationEntry* entry =
@@ -435,7 +433,7 @@ void ChromePasswordProtectionService::UpdateSecurityState(
     return;
   }
 
-  safe_browsing::SBThreatType current_threat_type = SB_THREAT_TYPE_UNUSED;
+  SBThreatType current_threat_type = SB_THREAT_TYPE_UNUSED;
   // If user already click-through interstitial warning, or if there's already
   // a dangerous security state showing, we'll override it.
   if (ui_manager_->IsUrlWhitelistedOrPendingForWebContents(
