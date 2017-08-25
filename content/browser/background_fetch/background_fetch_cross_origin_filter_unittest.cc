@@ -4,6 +4,9 @@
 
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 
+#include <map>
+#include <string>
+
 #include "base/macros.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -37,10 +40,7 @@ class BackgroundFetchCrossOriginFilterTest : public ::testing::Test {
         make_scoped_refptr(new BackgroundFetchRequestInfo(
             0 /* request_info */, ServiceWorkerFetchRequest()));
 
-    request_info->download_state_populated_ = true;
     request_info->response_headers_ = response_headers;
-
-    request_info->response_data_populated_ = true;
     request_info->url_chain_ = {GURL(response_url)};
 
     return request_info;

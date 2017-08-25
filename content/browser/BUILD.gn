@@ -396,6 +396,8 @@ source_set("browser") {
     "background_fetch/background_fetch_registration_id.h",
     "background_fetch/background_fetch_request_info.cc",
     "background_fetch/background_fetch_request_info.h",
+    "background_fetch/background_fetch_response.cc",
+    "background_fetch/background_fetch_response.h",
     "background_fetch/background_fetch_service_impl.cc",
     "background_fetch/background_fetch_service_impl.h",
     "background_sync/background_sync_context.cc",

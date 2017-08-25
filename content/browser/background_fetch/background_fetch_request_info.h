@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BACKGROUND_FETCH_REQUEST_INFO_H_
-#define CONTENT_BROWSER_BACKGROUND_FETCH_REQUEST_INFO_H_
+#ifndef CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_REQUEST_INFO_H_
+#define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_REQUEST_INFO_H_
 
+#include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -14,15 +16,13 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "content/browser/background_fetch/background_fetch_constants.h"
+#include "content/browser/background_fetch/background_fetch_response.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "url/gurl.h"
 
 namespace content {
-
-class DownloadItem;
 
 // Simple class to encapsulate the components of a fetch request.
 // TODO(peter): This can likely change to have a single owner, and thus become
@@ -33,18 +33,11 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   BackgroundFetchRequestInfo(int request_index,
                              const ServiceWorkerFetchRequest& fetch_request);
 
-  // Populates the cached state for the in-progress |download_item|.
-  void PopulateDownloadStateOnUI(
-      DownloadItem* download_item,
-      DownloadInterruptReason download_interrupt_reason);
+  // Populates the cached state for the in-progress download.
+  void PopulateWithResponse(
+      std::unique_ptr<const BackgroundFetchResponse> response);
 
-  void SetDownloadStatePopulated();
-
-  // Populates the response portion of this object from the information made
-  // available in the |download_item|.
-  void PopulateResponseFromDownloadItemOnUI(DownloadItem* download_item);
-
-  void SetResponseDataPopulated();
+  void SetResult(std::unique_ptr<const BackgroundFetchResult> result);
 
   // Returns the index of this request within a Background Fetch registration.
   int request_index() const { return request_index_; }
@@ -91,26 +84,16 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
   ServiceWorkerFetchRequest fetch_request_;
 
   // ---- Data associated with the in-progress download ------------------------
-
-  // Indicates whether download progress data has been populated.
-  bool download_state_populated_ = false;
-
   std::string download_guid_;
   DownloadItem::DownloadState download_state_ = DownloadItem::IN_PROGRESS;
 
   int response_code_ = 0;
   std::string response_text_;
   std::map<std::string, std::string> response_headers_;
+  std::vector<GURL> url_chain_;
 
   // ---- Data associated with the response ------------------------------------
-
-  // Indicates whether response data has been populated.
-  bool response_data_populated_ = false;
-
-  std::vector<GURL> url_chain_;
-  base::FilePath file_path_;
-  int64_t file_size_ = 0;
-  base::Time response_time_;
+  std::unique_ptr<const BackgroundFetchResult> result_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -119,4 +102,4 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BACKGROUND_FETCH_REQUEST_INFO_H_
+#endif  // CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_REQUEST_INFO_H_
