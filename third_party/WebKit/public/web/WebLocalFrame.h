@@ -42,6 +42,7 @@ class WebFrameClient;
 class WebFrameWidget;
 class WebFrameScheduler;
 class WebInputMethodController;
+class WebPerformance;
 class WebRange;
 class WebSecurityOrigin;
 class WebScriptExecutionCallback;
@@ -787,6 +788,10 @@ class WebLocalFrame : public WebFrame {
   // Shift + TAB. (Will be extended to other form controls like select element,
   // checkbox, radio etc.)
   virtual void AdvanceFocusInForm(WebFocusType) = 0;
+
+  // Performance --------------------------------------------------------
+
+  virtual WebPerformance Performance() const = 0;
 
   // Testing ------------------------------------------------------------------
 

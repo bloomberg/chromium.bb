@@ -38,7 +38,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   void SetName(const WebString&) override;
   WebRect VisibleContentRect() const override;
   WebView* View() const override;
-  WebPerformance Performance() const override;
   void StopLoading() override;
 
   // WebRemoteFrame methods:
