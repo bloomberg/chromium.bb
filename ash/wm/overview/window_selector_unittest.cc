@@ -921,6 +921,8 @@ TEST_F(WindowSelectorTest, SkipOverviewWindow) {
 
   // Exit overview.
   ToggleOverview();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(window2->IsVisible());
 }
@@ -1238,15 +1240,15 @@ TEST_F(WindowSelectorTest, Shutdown) {
   gfx::Rect bounds(0, 0, 400, 400);
   // These windows will be deleted when the test exits and the Shell instance
   // is shut down.
-  aura::Window* window1(CreateWindow(bounds));
-  aura::Window* window2(CreateWindow(bounds));
-  aura::Window* window3(CreatePanelWindow(bounds));
-  aura::Window* window4(CreatePanelWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreatePanelWindow(bounds));
+  std::unique_ptr<aura::Window> window4(CreatePanelWindow(bounds));
 
-  wm::ActivateWindow(window4);
-  wm::ActivateWindow(window3);
-  wm::ActivateWindow(window2);
-  wm::ActivateWindow(window1);
+  wm::ActivateWindow(window4.get());
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
 
   ToggleOverview();
 }
@@ -2065,6 +2067,37 @@ TEST_F(WindowSelectorTest, WindowGridSizeWhileDraggingWithSplitView) {
   EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
 
   ToggleOverview();
+}
+
+// Tests that if there is only one window in the MRU window list in the overview
+// mode, snapping the window to one side of the screen will end the overview
+// mode since there is no more window left in the overview window grid.
+TEST_F(WindowSelectorTest, EmptyWindowsListExitOverview) {
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kAshEnableTabletSplitView);
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+
+  ToggleOverview();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Drag |window1| selector item to snap to left.
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  const gfx::Rect selector_item_bounds1 = selector_item1->target_bounds();
+  // Start drag in the middle of the seletor item.
+  const gfx::Point start_location1(selector_item_bounds1.CenterPoint());
+  window_selector()->InitiateDrag(selector_item1, start_location1);
+  const gfx::Point end_location1(0, 0);
+  window_selector()->Drag(selector_item1, end_location1);
+  window_selector()->CompleteDrag(selector_item1);
+
+  EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
 }
 
 }  // namespace ash
