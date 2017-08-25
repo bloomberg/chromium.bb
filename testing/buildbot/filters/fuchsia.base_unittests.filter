@@ -20,7 +20,6 @@
 -FileUtilTest.FileToFILE
 -NativeLibraryTest.LoadLibrary
 -NativeLibraryTest.LoadLibraryPreferOwnSymbols
--PathServiceTest.Get
 -PlatformThreadTest.ThreadPriorityCurrentThread
 -ProcessMemoryDumpTest.CountResidentBytes
 -ProcessMemoryDumpTest.CountResidentBytesInSharedMemory
