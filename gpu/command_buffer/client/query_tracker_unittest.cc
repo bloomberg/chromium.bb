@@ -20,6 +20,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+using testing::AnyNumber;
+
 namespace gpu {
 namespace gles2 {
 
@@ -39,13 +42,14 @@ class QuerySyncManagerTest : public testing::Test {
   }
 
   void TearDown() override {
+    EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_)).Times(AnyNumber());
     sync_manager_.reset();
     mapped_memory_.reset();
     helper_.reset();
     command_buffer_.reset();
   }
 
-  std::unique_ptr<CommandBuffer> command_buffer_;
+  std::unique_ptr<MockClientCommandBuffer> command_buffer_;
   std::unique_ptr<GLES2CmdHelper> helper_;
   std::unique_ptr<MappedMemoryManager> mapped_memory_;
   std::unique_ptr<QuerySyncManager> sync_manager_;
@@ -57,10 +61,10 @@ TEST_F(QuerySyncManagerTest, Basic) {
 
   for (size_t ii = 0; ii < arraysize(infos); ++ii) {
     EXPECT_TRUE(sync_manager_->Alloc(&infos[ii]));
-    EXPECT_NE(0, infos[ii].shm_id);
     ASSERT_TRUE(infos[ii].sync != NULL);
     EXPECT_EQ(0, infos[ii].sync->process_count);
     EXPECT_EQ(0u, infos[ii].sync->result);
+    EXPECT_EQ(0, infos[ii].submit_count);
   }
 
   for (size_t ii = 0; ii < arraysize(infos); ++ii) {
@@ -75,6 +79,126 @@ TEST_F(QuerySyncManagerTest, DontFree) {
   for (size_t ii = 0; ii < arraysize(infos); ++ii) {
     EXPECT_TRUE(sync_manager_->Alloc(&infos[ii]));
   }
+}
+
+TEST_F(QuerySyncManagerTest, FreePendingSyncs) {
+  QuerySyncManager::QueryInfo info;
+  EXPECT_TRUE(sync_manager_->Alloc(&info));
+  QuerySyncManager::Bucket* bucket = info.bucket;
+
+  // Mark the query as in-use.
+  ++info.submit_count;
+
+  // Freeing the QueryInfo should keep the QuerySync busy as it's still in-use,
+  // but should be tracked in pending_syncs.
+  sync_manager_->Free(info);
+  EXPECT_FALSE(bucket->pending_syncs.empty());
+  EXPECT_TRUE(bucket->in_use_query_syncs.any());
+
+  // FreePendingSyncs should not free in-use QuerySync.
+  bucket->FreePendingSyncs();
+  EXPECT_FALSE(bucket->pending_syncs.empty());
+  EXPECT_TRUE(bucket->in_use_query_syncs.any());
+
+  // Mark the query as completed.
+  info.sync->process_count = info.submit_count;
+
+  // FreePendingSyncs should free the QuerySync.
+  bucket->FreePendingSyncs();
+  EXPECT_TRUE(bucket->pending_syncs.empty());
+  EXPECT_FALSE(bucket->in_use_query_syncs.any());
+
+  // Allocate a new Query, mark it in-use
+  EXPECT_TRUE(sync_manager_->Alloc(&info));
+  bucket = info.bucket;
+  ++info.submit_count;
+
+  // Mark the query as completed
+  info.sync->process_count = info.submit_count;
+
+  // FreePendingSyncs should not free the QuerySync. Even though the query is
+  // completed, is has not been deleted yet.
+  bucket->FreePendingSyncs();
+  EXPECT_TRUE(bucket->in_use_query_syncs.any());
+
+  // Free the QueryInfo, it should be immediately freed.
+  sync_manager_->Free(info);
+  EXPECT_TRUE(bucket->pending_syncs.empty());
+  EXPECT_FALSE(bucket->in_use_query_syncs.any());
+}
+
+TEST_F(QuerySyncManagerTest, Shrink) {
+  QuerySyncManager::QueryInfo info;
+  EXPECT_TRUE(sync_manager_->Alloc(&info));
+  QuerySyncManager::Bucket* bucket = info.bucket;
+  QuerySync* syncs = bucket->syncs;
+
+  FencedAllocator::State state =
+      mapped_memory_->GetPointerStatusForTest(syncs, nullptr);
+  EXPECT_EQ(FencedAllocator::IN_USE, state);
+
+  // Shrink while a query is allocated - should not release anything.
+  sync_manager_->Shrink(helper_.get());
+  state = mapped_memory_->GetPointerStatusForTest(syncs, nullptr);
+  EXPECT_EQ(FencedAllocator::IN_USE, state);
+
+  // Free query that was never submitted.
+  sync_manager_->Free(info);
+  EXPECT_TRUE(bucket->pending_syncs.empty());
+  EXPECT_FALSE(bucket->in_use_query_syncs.any());
+
+  // Shrink should release the memory immediately.
+  sync_manager_->Shrink(helper_.get());
+  EXPECT_TRUE(sync_manager_->buckets_.empty());
+  state = mapped_memory_->GetPointerStatusForTest(syncs, nullptr);
+  EXPECT_EQ(FencedAllocator::FREE, state);
+
+  EXPECT_TRUE(sync_manager_->Alloc(&info));
+  bucket = info.bucket;
+  syncs = bucket->syncs;
+
+  state = mapped_memory_->GetPointerStatusForTest(syncs, nullptr);
+  EXPECT_EQ(FencedAllocator::IN_USE, state);
+
+  // Free a query that was submitted, but not completed.
+  ++info.submit_count;
+  sync_manager_->Free(info);
+  EXPECT_FALSE(bucket->pending_syncs.empty());
+  EXPECT_TRUE(bucket->in_use_query_syncs.any());
+
+  int32_t last_token = helper_->InsertToken();
+
+  // Shrink should release the memory, pending a new token.
+  sync_manager_->Shrink(helper_.get());
+  EXPECT_TRUE(sync_manager_->buckets_.empty());
+  int32_t token = 0;
+  state = mapped_memory_->GetPointerStatusForTest(syncs, &token);
+  EXPECT_EQ(FencedAllocator::FREE_PENDING_TOKEN, state);
+  EXPECT_EQ(last_token + 1, token);
+
+  EXPECT_TRUE(sync_manager_->Alloc(&info));
+  bucket = info.bucket;
+  syncs = bucket->syncs;
+
+  state = mapped_memory_->GetPointerStatusForTest(syncs, nullptr);
+  EXPECT_EQ(FencedAllocator::IN_USE, state);
+
+  // Free a query that was submitted, but not completed yet.
+  ++info.submit_count;
+  int32_t submit_count = info.submit_count;
+  QuerySync* sync = info.sync;
+  sync_manager_->Free(info);
+  EXPECT_FALSE(bucket->pending_syncs.empty());
+  EXPECT_TRUE(bucket->in_use_query_syncs.any());
+
+  // Complete the query after Free.
+  sync->process_count = submit_count;
+
+  // Shrink should free the memory immediately since the query is completed.
+  sync_manager_->Shrink(helper_.get());
+  EXPECT_TRUE(sync_manager_->buckets_.empty());
+  state = mapped_memory_->GetPointerStatusForTest(syncs, nullptr);
+  EXPECT_EQ(FencedAllocator::FREE, state);
 }
 
 class QueryTrackerTest : public testing::Test {
@@ -93,6 +217,8 @@ class QueryTrackerTest : public testing::Test {
   }
 
   void TearDown() override {
+    helper_->CommandBufferHelper::Flush();
+    EXPECT_CALL(*command_buffer_, DestroyTransferBuffer(_)).Times(AnyNumber());
     query_tracker_.reset();
     mapped_memory_.reset();
     helper_.reset();
@@ -108,12 +234,12 @@ class QueryTrackerTest : public testing::Test {
   }
 
   uint32_t GetBucketUsedCount(QuerySyncManager::Bucket* bucket) {
-    return bucket->in_use_queries.count();
+    return bucket->in_use_query_syncs.count();
   }
 
   uint32_t GetFlushGeneration() { return helper_->flush_generation(); }
 
-  std::unique_ptr<CommandBuffer> command_buffer_;
+  std::unique_ptr<MockClientCommandBuffer> command_buffer_;
   std::unique_ptr<GLES2CmdHelper> helper_;
   std::unique_ptr<MappedMemoryManager> mapped_memory_;
   std::unique_ptr<QueryTracker> query_tracker_;
@@ -156,10 +282,11 @@ TEST_F(QueryTrackerTest, Query) {
   EXPECT_FALSE(query->NeverUsed());
   EXPECT_FALSE(query->Pending());
   EXPECT_EQ(0, query->token());
-  EXPECT_EQ(1, query->submit_count());
+  EXPECT_EQ(0, query->submit_count());
+  EXPECT_EQ(1, query->NextSubmitCount());
 
   // Check MarkAsPending.
-  query->MarkAsPending(kToken);
+  query->MarkAsPending(kToken, query->NextSubmitCount());
   EXPECT_FALSE(query->NeverUsed());
   EXPECT_TRUE(query->Pending());
   EXPECT_EQ(kToken, query->token());
@@ -216,7 +343,9 @@ TEST_F(QueryTrackerTest, Remove) {
   EXPECT_EQ(1u, GetBucketUsedCount(bucket));
 
   query->MarkAsActive();
-  query->MarkAsPending(kToken);
+  int32_t submit_count = query->NextSubmitCount();
+  query->MarkAsPending(kToken, submit_count);
+  QuerySync* sync = GetSync(query);
 
   query_tracker_->RemoveQuery(kId1);
   // Check we get nothing for a non-existent query.
@@ -224,15 +353,37 @@ TEST_F(QueryTrackerTest, Remove) {
 
   // Check that memory was not freed.
   EXPECT_EQ(1u, GetBucketUsedCount(bucket));
+  EXPECT_EQ(1u, bucket->pending_syncs.size());
 
   // Simulate GPU process marking it as available.
-  QuerySync* sync = GetSync(query);
-  sync->process_count = query->submit_count();
   sync->result = kResult;
+  sync->process_count = submit_count;
 
-  // Check FreeCompletedQueries.
-  query_tracker_->FreeCompletedQueries();
+  // Check FreePendingSyncs.
+  bucket->FreePendingSyncs();
   EXPECT_EQ(0u, GetBucketUsedCount(bucket));
+}
+
+TEST_F(QueryTrackerTest, RemoveActive) {
+  const GLuint kId1 = 123;
+
+  // Create a Query.
+  QueryTracker::Query* query =
+      query_tracker_->CreateQuery(kId1, GL_ANY_SAMPLES_PASSED_EXT);
+  ASSERT_TRUE(query != NULL);
+
+  QuerySyncManager::Bucket* bucket = GetBucket(query);
+  EXPECT_EQ(1u, GetBucketUsedCount(bucket));
+
+  query->MarkAsActive();
+
+  query_tracker_->RemoveQuery(kId1);
+  // Check we get nothing for a non-existent query.
+  EXPECT_TRUE(query_tracker_->GetQuery(kId1) == NULL);
+
+  // Check that memory was freed.
+  EXPECT_EQ(0u, GetBucketUsedCount(bucket));
+  EXPECT_EQ(0u, bucket->pending_syncs.size());
 }
 
 TEST_F(QueryTrackerTest, ManyQueries) {
@@ -264,11 +415,13 @@ TEST_F(QueryTrackerTest, ManyQueries) {
     GLuint query_id = kId1 + queries.size();
     EXPECT_EQ(query_id, query->id());
     query->MarkAsActive();
-    query->MarkAsPending(kToken);
+    int32_t submit_count = query->NextSubmitCount();
+    query->MarkAsPending(kToken, submit_count);
+    QuerySync* sync = GetSync(query);
 
     QuerySyncManager::Bucket* bucket = GetBucket(query);
     uint32_t use_count_before_remove = GetBucketUsedCount(bucket);
-    query_tracker_->FreeCompletedQueries();
+    bucket->FreePendingSyncs();
     EXPECT_EQ(use_count_before_remove, GetBucketUsedCount(bucket));
     query_tracker_->RemoveQuery(query_id);
     // Check we get nothing for a non-existent query.
@@ -278,12 +431,11 @@ TEST_F(QueryTrackerTest, ManyQueries) {
     EXPECT_EQ(use_count_before_remove, GetBucketUsedCount(bucket));
 
     // Simulate GPU process marking it as available.
-    QuerySync* sync = GetSync(query);
-    sync->process_count = query->submit_count();
+    sync->process_count = submit_count;
     sync->result = kResult;
 
     // Check FreeCompletedQueries.
-    query_tracker_->FreeCompletedQueries();
+    bucket->FreePendingSyncs();
     EXPECT_EQ(use_count_before_remove - 1, GetBucketUsedCount(bucket));
   }
 }

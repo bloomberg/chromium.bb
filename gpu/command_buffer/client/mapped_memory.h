@@ -112,6 +112,11 @@ class GPU_EXPORT MemoryChunk {
     return allocator_.bytes_in_use();
   }
 
+  FencedAllocator::State GetPointerStatusForTest(void* pointer,
+                                                 int32_t* token_if_pending) {
+    return allocator_.GetPointerStatusForTest(pointer, token_if_pending);
+  }
+
  private:
   int32_t shm_id_;
   scoped_refptr<gpu::Buffer> shm_;
@@ -199,6 +204,11 @@ class GPU_EXPORT MappedMemoryManager {
   size_t allocated_memory() const {
     return allocated_memory_;
   }
+
+  // Gets the status of a previous allocation, as well as the corresponding
+  // token if FREE_PENDING_TOKEN (and token_if_pending is not null).
+  FencedAllocator::State GetPointerStatusForTest(void* pointer,
+                                                 int32_t* token_if_pending);
 
  private:
   typedef std::vector<std::unique_ptr<MemoryChunk>> MemoryChunkVector;

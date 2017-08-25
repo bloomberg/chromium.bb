@@ -205,6 +205,17 @@ bool MappedMemoryManager::OnMemoryDump(
   return true;
 }
 
+FencedAllocator::State MappedMemoryManager::GetPointerStatusForTest(
+    void* pointer,
+    int32_t* token_if_pending) {
+  for (auto& chunk : chunks_) {
+    if (chunk->IsInChunk(pointer)) {
+      return chunk->GetPointerStatusForTest(pointer, token_if_pending);
+    }
+  }
+  return FencedAllocator::FREE;
+}
+
 void ScopedMappedMemoryPtr::Release() {
   if (buffer_) {
     mapped_memory_manager_->FreePendingToken(buffer_, helper_->InsertToken());

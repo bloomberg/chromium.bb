@@ -13,9 +13,12 @@
 #include <bitset>
 #include <deque>
 #include <list>
+#include <memory>
 
 #include "base/atomicops.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/hash_tables.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "gles2_impl_export.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
@@ -34,29 +37,34 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
  public:
   static const size_t kSyncsPerBucket = 256;
 
-  struct Bucket {
+  struct GLES2_IMPL_EXPORT Bucket {
     Bucket(QuerySync* sync_mem, int32_t shm_id, uint32_t shm_offset);
     ~Bucket();
+
+    void FreePendingSyncs();
+
     QuerySync* syncs;
     int32_t shm_id;
     uint32_t base_shm_offset;
-    std::bitset<kSyncsPerBucket> in_use_queries;
+    std::bitset<kSyncsPerBucket> in_use_query_syncs;
+
+    struct PendingSync {
+      uint32_t index;
+      int32_t submit_count;
+    };
+    std::vector<PendingSync> pending_syncs;
   };
+
   struct QueryInfo {
-    QueryInfo(Bucket* bucket, int32_t id, uint32_t offset, QuerySync* sync_mem)
-        : bucket(bucket), shm_id(id), shm_offset(offset), sync(sync_mem) {}
+    QueryInfo(Bucket* bucket, uint32_t index)
+        : bucket(bucket), sync(bucket->syncs + index) {}
+    QueryInfo() {}
 
-    QueryInfo()
-        : bucket(NULL),
-          shm_id(0),
-          shm_offset(0),
-          sync(NULL) {
-    }
+    uint32_t index() const { return sync - bucket->syncs; }
 
-    Bucket* bucket;
-    int32_t shm_id;
-    uint32_t shm_offset;
-    QuerySync* sync;
+    Bucket* bucket = nullptr;
+    QuerySync* sync = nullptr;
+    int32_t submit_count = 0;
   };
 
   explicit QuerySyncManager(MappedMemoryManager* manager);
@@ -64,11 +72,13 @@ class GLES2_IMPL_EXPORT QuerySyncManager {
 
   bool Alloc(QueryInfo* info);
   void Free(const QueryInfo& sync);
-  void Shrink();
+  void Shrink(CommandBufferHelper* helper);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(QuerySyncManagerTest, Shrink);
+
   MappedMemoryManager* mapped_memory_;
-  std::deque<Bucket*> buckets_;
+  std::deque<std::unique_ptr<Bucket>> buckets_;
 
   DISALLOW_COPY_AND_ASSIGN(QuerySyncManager);
 };
@@ -95,23 +105,30 @@ class GLES2_IMPL_EXPORT QueryTracker {
       return id_;
     }
 
-    int32_t shm_id() const { return info_.shm_id; }
+    int32_t shm_id() const { return info_.bucket->shm_id; }
 
-    uint32_t shm_offset() const { return info_.shm_offset; }
+    uint32_t shm_offset() const {
+      return info_.bucket->base_shm_offset + sizeof(QuerySync) * info_.index();
+    }
 
     void MarkAsActive() {
       state_ = kActive;
-      ++submit_count_;
-      if (submit_count_ == INT_MAX)
-        submit_count_ = 1;
     }
 
-    void MarkAsPending(int32_t token) {
+    int32_t NextSubmitCount() const {
+      int32_t submit_count = info_.submit_count + 1;
+      if (submit_count == INT_MAX)
+        submit_count = 1;
+      return submit_count;
+    }
+
+    void MarkAsPending(int32_t token, int32_t submit_count) {
+      info_.submit_count = submit_count;
       token_ = token;
       state_ = kPending;
     }
 
-    base::subtle::Atomic32 submit_count() const { return submit_count_; }
+    base::subtle::Atomic32 submit_count() const { return info_.submit_count; }
 
     int32_t token() const { return token_; }
 
@@ -143,22 +160,20 @@ class GLES2_IMPL_EXPORT QueryTracker {
     GLenum target_;
     QuerySyncManager::QueryInfo info_;
     State state_;
-    base::subtle::Atomic32 submit_count_;
     int32_t token_;
     uint32_t flush_count_;
     uint64_t client_begin_time_us_;  // Only used for latency query target.
     uint64_t result_;
   };
 
-  QueryTracker(MappedMemoryManager* manager);
+  explicit QueryTracker(MappedMemoryManager* manager);
   ~QueryTracker();
 
   Query* CreateQuery(GLuint id, GLenum target);
   Query* GetQuery(GLuint id);
   Query* GetCurrentQuery(GLenum target);
   void RemoveQuery(GLuint id);
-  void Shrink();
-  void FreeCompletedQueries();
+  void Shrink(CommandBufferHelper* helper);
 
   bool BeginQuery(GLuint id, GLenum target, GLES2Implementation* gl);
   bool EndQuery(GLenum target, GLES2Implementation* gl);
@@ -175,13 +190,11 @@ class GLES2_IMPL_EXPORT QueryTracker {
   }
 
  private:
-  typedef base::hash_map<GLuint, Query*> QueryIdMap;
-  typedef base::hash_map<GLenum, Query*> QueryTargetMap;
-  typedef std::list<Query*> QueryList;
+  typedef base::hash_map<GLuint, std::unique_ptr<Query>> QueryIdMap;
+  typedef base::flat_map<GLenum, Query*> QueryTargetMap;
 
   QueryIdMap queries_;
   QueryTargetMap current_queries_;
-  QueryList removed_queries_;
   QuerySyncManager query_sync_manager_;
 
   // The shared memory used for synchronizing timer disjoint values.
