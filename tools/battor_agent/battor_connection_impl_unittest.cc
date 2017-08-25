@@ -4,11 +4,14 @@
 
 #include "tools/battor_agent/battor_connection_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/test/test_simple_task_runner.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/serial/test_serial_io_handler.h"
 #include "services/device/public/interfaces/serial.mojom.h"
@@ -27,8 +30,11 @@ namespace battor {
 // TestableBattOrConnection uses a fake serial connection be testable.
 class TestableBattOrConnection : public BattOrConnectionImpl {
  public:
-  TestableBattOrConnection(BattOrConnection::Listener* listener)
-      : BattOrConnectionImpl("/dev/test", listener, nullptr) {}
+  TestableBattOrConnection(BattOrConnection::Listener* listener,
+                           std::unique_ptr<base::TickClock> tick_clock)
+      : BattOrConnectionImpl("/dev/test", listener, nullptr) {
+    tick_clock_ = std::move(tick_clock);
+  }
   scoped_refptr<device::SerialIoHandler> CreateIoHandler() override {
     return device::TestSerialIoHandler::Create();
   }
@@ -44,7 +50,7 @@ class BattOrConnectionImplTest : public testing::Test,
                                  public BattOrConnection::Listener {
  public:
   BattOrConnectionImplTest()
-      : task_runner_(new base::TestSimpleTaskRunner()),
+      : task_runner_(new base::TestMockTimeTaskRunner()),
         thread_task_runner_handle_(task_runner_) {}
 
   void OnConnectionOpened(bool success) override { open_success_ = success; };
@@ -57,10 +63,15 @@ class BattOrConnectionImplTest : public testing::Test,
     read_type_ = type;
     read_bytes_ = std::move(bytes);
   }
+  void OnFlushComplete(bool success) override {
+    is_slow_flush_complete_ = true;
+    slow_flush_success_ = success;
+  }
 
  protected:
   void SetUp() override {
-    connection_.reset(new TestableBattOrConnection(this));
+    connection_.reset(
+        new TestableBattOrConnection(this, task_runner_->GetMockTickClock()));
     task_runner_->ClearPendingTasks();
   }
 
@@ -72,6 +83,12 @@ class BattOrConnectionImplTest : public testing::Test,
   void ReadMessage(BattOrMessageType type) {
     is_read_complete_ = false;
     connection_->ReadMessage(type);
+    task_runner_->RunUntilIdle();
+  }
+
+  void Flush() {
+    is_slow_flush_complete_ = false;
+    connection_->Flush();
     task_runner_->RunUntilIdle();
   }
 
@@ -96,9 +113,8 @@ class BattOrConnectionImplTest : public testing::Test,
     task_runner_->RunUntilIdle();
   }
 
-  void ForceReadTimeout() {
-    connection_->GetIoHandler()->ForceReceiveError(
-        device::mojom::SerialReceiveError::TIMEOUT);
+  void ForceReceiveError(device::mojom::SerialReceiveError error) {
+    connection_->GetIoHandler()->ForceReceiveError(error);
     task_runner_->RunUntilIdle();
   }
 
@@ -110,17 +126,23 @@ class BattOrConnectionImplTest : public testing::Test,
     task_runner_->RunUntilIdle();
   }
 
+  void AdvanceTickClock(base::TimeDelta delta) {
+    task_runner_->FastForwardBy(delta);
+  }
+
   bool GetOpenSuccess() { return open_success_; }
   bool GetSendSuccess() { return send_success_; }
   bool IsReadComplete() { return is_read_complete_; }
   bool GetReadSuccess() { return read_success_; }
   BattOrMessageType GetReadType() { return read_type_; }
   std::vector<char>* GetReadMessage() { return read_bytes_.get(); }
+  bool IsFlushComplete() { return is_slow_flush_complete_; }
+  bool GetFlushSuccess() { return slow_flush_success_; }
 
  private:
   std::unique_ptr<TestableBattOrConnection> connection_;
 
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
 
   // Result from the last connect command.
@@ -132,6 +154,9 @@ class BattOrConnectionImplTest : public testing::Test,
   bool read_success_;
   BattOrMessageType read_type_;
   std::unique_ptr<std::vector<char>> read_bytes_;
+  // Results from the last slow flush command.
+  bool is_slow_flush_complete_;
+  bool slow_flush_success_;
 };
 
 TEST_F(BattOrConnectionImplTest, InitSendsCorrectBytes) {
@@ -240,7 +265,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageEndsMidMessage) {
   // The first read should recognize that a second read is necessary.
   ASSERT_FALSE(IsReadComplete());
 
-  ForceReadTimeout();
+  ForceReceiveError(device::mojom::SerialReceiveError::TIMEOUT);
 
   // The second read should fail due to the time out.
   ASSERT_TRUE(IsReadComplete());
@@ -267,7 +292,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageMissingEndByte) {
   // The first read should recognize that a second read is necessary.
   ASSERT_FALSE(IsReadComplete());
 
-  ForceReadTimeout();
+  ForceReceiveError(device::mojom::SerialReceiveError::TIMEOUT);
 
   // The second read should fail due to the time out.
   ASSERT_TRUE(IsReadComplete());
@@ -340,10 +365,10 @@ TEST_F(BattOrConnectionImplTest, ReadMessageExtraBytesStoredBetweenReads) {
   SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_INIT, 5, 8);
 
   // When reading sample frames, we're forced to read lots because each frame
-  // could be up to 50kB long. By reading a really short sample frame (like the
-  // zero-length one above), the BattOrConnection is forced to store whatever
-  // extra data it finds in the serial stream - in this case, the init control
-  // message that we sent.
+  // could be up to 50kB long. By reading a really short sample frame (like
+  // the zero-length one above), the BattOrConnection is forced to store
+  // whatever extra data it finds in the serial stream - in this case, the
+  // init control message that we sent.
   ReadMessage(BATTOR_MESSAGE_TYPE_SAMPLES);
 
   ASSERT_TRUE(IsReadComplete());
@@ -412,6 +437,100 @@ TEST_F(BattOrConnectionImplTest, ReadMessageControlTypePrintFails) {
 
   ASSERT_TRUE(IsReadComplete());
   ASSERT_FALSE(GetReadSuccess());
+}
+
+TEST_F(BattOrConnectionImplTest, FlushSucceedsAfterTimeout) {
+  OpenConnection();
+
+  Flush();
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
+
+  ASSERT_TRUE(IsFlushComplete());
+  ASSERT_TRUE(GetFlushSuccess());
+}
+
+TEST_F(BattOrConnectionImplTest, FlushClearsOverreadBuffer) {
+  OpenConnection();
+
+  // Send two data frames and only read one of them. When reading data frames,
+  // we try to read a large chunk from the wire due to the large potential size
+  // of a data frame (~100kB). By sending two tiny data frames on the wire and
+  // reading back one of them, we know that we read past the end of the first
+  // message and all of the second message because the data frames were so
+  // small. These extra bytes that were unnecesssary for the first message were
+  // storied internally by BattOrConnectionImpl, and we want to ensure that
+  // Flush() clears this internal data.
+  const char data[] = {
+      BATTOR_CONTROL_BYTE_START,
+      BATTOR_MESSAGE_TYPE_SAMPLES,
+      0x02,
+      0x00,
+      0x02,
+      0x00,
+      0x02,
+      0x00,
+      BATTOR_CONTROL_BYTE_END,
+  };
+  SendBytesRaw(data, 9);
+  SendBytesRaw(data, 9);
+  ReadMessage(BATTOR_MESSAGE_TYPE_SAMPLES);
+  Flush();
+
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
+
+  ASSERT_TRUE(IsFlushComplete());
+  ASSERT_TRUE(GetFlushSuccess());
+
+  ReadMessage(BATTOR_MESSAGE_TYPE_SAMPLES);
+
+  // The read should be incomplete due to no data being on the wire - the second
+  // control message was cleared by the slow flush.
+  ASSERT_FALSE(IsReadComplete());
+}
+
+TEST_F(BattOrConnectionImplTest, FlushClearsMultipleReadsOfData) {
+  OpenConnection();
+
+  // Send 10 full flush buffers worth of data.
+  char data[50000];
+  for (size_t i = 0; i < 50000; i++)
+    data[i] = '0';
+  for (int i = 0; i < 10; i++)
+    SendBytesRaw(data, 50000);
+
+  Flush();
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(50));
+
+  ASSERT_TRUE(IsFlushComplete());
+  ASSERT_TRUE(GetFlushSuccess());
+
+  SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_RESET, 4, 7);
+  ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
+
+  // Even though 500kB of garbage data was sent before the valid control
+  // message on the serial connection, the slow flush should have cleared it
+  // all, resulting in a successful read.
+  ASSERT_TRUE(IsReadComplete());
+  ASSERT_TRUE(GetReadSuccess());
+}
+
+TEST_F(BattOrConnectionImplTest, FlushIncompleteBeforeTimeout) {
+  OpenConnection();
+
+  Flush();
+  AdvanceTickClock(base::TimeDelta::FromMilliseconds(49));
+
+  ASSERT_FALSE(IsFlushComplete());
+}
+
+TEST_F(BattOrConnectionImplTest, FlushFailsWithNonTimeoutError) {
+  OpenConnection();
+
+  Flush();
+  ForceReceiveError(device::mojom::SerialReceiveError::DISCONNECTED);
+
+  ASSERT_TRUE(IsFlushComplete());
+  ASSERT_FALSE(GetFlushSuccess());
 }
 
 }  // namespace battor
