@@ -105,10 +105,8 @@ class GPU_EXPORT MemoryChunk {
                reinterpret_cast<const int8_t*>(shm_->memory()) + shm_->size();
   }
 
-  // Returns true of any memory in this chunk is in use.
-  bool InUse() {
-    return allocator_.InUse();
-  }
+  // Returns true of any memory in this chunk is in use or free pending token.
+  bool InUseOrFreePending() { return allocator_.InUseOrFreePending(); }
 
   size_t bytes_in_use() const {
     return allocator_.bytes_in_use();

@@ -90,7 +90,7 @@ class GPU_EXPORT FencedAllocator {
   bool CheckConsistency();
 
   // True if any memory is allocated.
-  bool InUse();
+  bool InUseOrFreePending();
 
   // Return bytes of memory that is IN_USE
   size_t bytes_in_use() const { return bytes_in_use_; }
@@ -252,9 +252,7 @@ class FencedAllocatorWrapper {
   }
 
   // True if any memory is allocated.
-  bool InUse() {
-    return allocator_.InUse();
-  }
+  bool InUseOrFreePending() { return allocator_.InUseOrFreePending(); }
 
   FencedAllocator &allocator() { return allocator_; }
 
