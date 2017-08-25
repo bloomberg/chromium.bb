@@ -207,11 +207,6 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // Returns the duration of the animation for the progress bar.
   virtual double AnimationDurationForProgressBar() const;
 
-  // Media controls
-  String FormatMediaControlsTime(float time) const;
-  String FormatMediaControlsCurrentTime(float current_time,
-                                        float duration) const;
-
   // Returns size of one slider tick mark for a horizontal track.
   // For vertical tracks we rotate it and use it. i.e. Width is always length
   // along the track.

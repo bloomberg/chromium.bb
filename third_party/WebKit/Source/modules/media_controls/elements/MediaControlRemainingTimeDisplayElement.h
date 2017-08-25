@@ -15,6 +15,9 @@ class MediaControlRemainingTimeDisplayElement final
     : public MediaControlTimeDisplayElement {
  public:
   explicit MediaControlRemainingTimeDisplayElement(MediaControlsImpl&);
+
+ private:
+  String FormatTime() const override;
 };
 
 }  // namespace blink
