@@ -542,4 +542,36 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, POSTNavigation) {
   CHECK_EQ(2, post_counter);
 }
 
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       TerminationDisablersClearedOnRendererCrash) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), GetTestUrl("render_frame_host", "beforeunload.html")));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+
+  EXPECT_TRUE(main_frame->GetSuddenTerminationDisablerState(
+      blink::kBeforeUnloadHandler));
+
+  // Make the renderer crash.
+  RenderProcessHost* renderer_process = main_frame->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process->Shutdown(0, false);
+  crash_observer.Wait();
+
+  EXPECT_FALSE(main_frame->GetSuddenTerminationDisablerState(
+      blink::kBeforeUnloadHandler));
+
+  // This should not trigger a DCHECK once the renderer sends up the termination
+  // disabler flags.
+  shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  EXPECT_TRUE(main_frame->GetSuddenTerminationDisablerState(
+      blink::kBeforeUnloadHandler));
+}
+
 }  // namespace content
