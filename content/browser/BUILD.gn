@@ -1979,6 +1979,8 @@ source_set("browser") {
       "android/nfc_host.h",
       "android/overscroll_controller_android.cc",
       "android/overscroll_controller_android.h",
+      "android/popup_zoomer.cc",
+      "android/popup_zoomer.h",
       "android/render_widget_host_connector.cc",
       "android/render_widget_host_connector.h",
       "android/selection_popup_controller.cc",

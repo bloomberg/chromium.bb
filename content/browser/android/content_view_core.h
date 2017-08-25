@@ -250,12 +250,6 @@ class ContentViewCore : public WebContentsObserver {
                          InputEventAckState ack_result);
   bool FilterInputEvent(const blink::WebInputEvent& event);
 
-  // Shows the disambiguation popup
-  // |rect_pixels|   --> window coordinates which |zoomed_bitmap| represents
-  // |zoomed_bitmap| --> magnified image of potential touch targets
-  void ShowDisambiguationPopup(const gfx::Rect& rect_pixels,
-                               const SkBitmap& zoomed_bitmap);
-
   void DidStopFlinging();
 
   // Returns the context with which the ContentViewCore was created, typically
