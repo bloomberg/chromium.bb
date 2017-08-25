@@ -28,13 +28,13 @@
 enum ScrollRestoration {"auto", "manual"};
 
 interface History {
-    readonly attribute unsigned long length;
-    [Measure] attribute ScrollRestoration scrollRestoration;
+    [RaisesException] readonly attribute unsigned long length;
+    [Measure, RaisesException] attribute ScrollRestoration scrollRestoration;
     // TODO(foolip): The SerializedScriptValue type should be any.
-    [CachedAttribute=stateChanged] readonly attribute SerializedScriptValue state;
-    [CallWith=ScriptState] void go(optional long delta = 0);
-    [CallWith=ScriptState] void back();
-    [CallWith=ScriptState] void forward();
+    [CachedAttribute=stateChanged, RaisesException] readonly attribute SerializedScriptValue state;
+    [CallWith=ScriptState, RaisesException] void go(optional long delta = 0);
+    [CallWith=ScriptState, RaisesException] void back();
+    [CallWith=ScriptState, RaisesException] void forward();
     [RaisesException] void pushState(SerializedScriptValue data, DOMString title, optional DOMString? url = null);
     [RaisesException] void replaceState(SerializedScriptValue data, DOMString title, optional DOMString? url = null);
 };
