@@ -27988,6 +27988,92 @@ from previous Chrome versions.
   </int>
 </enum>
 
+<enum name="OfflinePrefetchArchiveActualSizeVsExpected">
+  <summary>
+    Percentage ranges for the ratios of actual downloaded size of a prefetched
+    offline page archive versus its expected size.
+  </summary>
+  <int value="0" label="archive_body_length = 0"/>
+  <int value="1" label="0% to 10%"/>
+  <int value="2" label="10% to 20%"/>
+  <int value="3" label="20% to 30%"/>
+  <int value="4" label="30% to 40%"/>
+  <int value="5" label="40% to 50%"/>
+  <int value="6" label="50% to 60%"/>
+  <int value="7" label="60% to 70%"/>
+  <int value="8" label="70% to 80%"/>
+  <int value="9" label="80% to 90%"/>
+  <int value="10" label="90% to 100%"/>
+  <int value="11" label="size matches (100%)"/>
+  <int value="12" label="100% to 110%"/>
+  <int value="13" label="110% to 120%"/>
+  <int value="14" label="120% to 130%"/>
+  <int value="15" label="130% to 140%"/>
+  <int value="16" label="140% to 150%"/>
+  <int value="17" label="150% to 160%"/>
+  <int value="18" label="160% to 170%"/>
+  <int value="19" label="170% to 180%"/>
+  <int value="20" label="180% to 190%"/>
+  <int value="21" label="190% to 200%"/>
+  <int value="22" label="above 200%"/>
+</enum>
+
+<enum name="OfflinePrefetchItemErrorCode">
+  <summary>
+    Error codes representing the reason why a prefetch item was finalized.
+  </summary>
+  <int value="0" label="SUCCESS">
+    The entry had gone through the pipeline and successfully completed
+    prefetching. Explicitly setting to 0 as that is the default value for the
+    respective SQLite column.
+  </int>
+  <int value="100" label="TOO_MANY_NEW_URLS">
+    Got too many URLs from suggestions, canceled this one. See kMaxUrlsToSend
+    defined in GeneratePageBundleTask.
+  </int>
+  <int value="200" label="DOWNLOAD_ERROR">
+    An error happened while attempting to download the archive file.
+  </int>
+  <int value="300" label="IMPORT_ERROR">
+    An error happened while importing the downloaded archive file int the
+    Offline Pages system.
+  </int>
+  <int value="400" label="ARCHIVING_FAILED">
+    Got a failure result from GetOperation (or the GeneratePageBundle metadata).
+  </int>
+  <int value="500" label="ARCHIVING_LIMIT_EXCEEDED">
+    Got a failure result from GetOperation or GeneratePageBundle that a
+    server-side limit on the page was exceeded.
+  </int>
+  <int value="600" label="STALE_AT_NEW_REQUEST">
+    Entry became stale while at the NEW_REQUEST state.
+  </int>
+  <int value="700" label="STALE_AT_AWAITING_GCM">
+    Entry became stale while at the AWAITING_GCM state.
+  </int>
+  <int value="800" label="STALE_AT_RECEIVED_GCM">
+    Entry became stale while at the RECEIVED_GCM state.
+  </int>
+  <int value="900" label="STALE_AT_RECEIVED_BUNDLE">
+    Entry became stale while at the RECEIVED_BUNDLE state.
+  </int>
+  <int value="1000" label="STALE_AT_DOWNLOADING">
+    Entry became stale while at the DOWNLOADING state.
+  </int>
+  <int value="1100" label="STALE_AT_UNKNOWN">
+    Entry became stale at an unknown state.
+  </int>
+  <int value="1200" label="GET_OPERATION_MAX_ATTEMPTS_REACHED">
+    Exceeding maximum retries for get operation request.
+  </int>
+  <int value="1300" label="GENERATE_PAGE_BUNDLE_REQUEST_MAX_ATTEMPTS_REACHED">
+    Exceeded maximum retries limit for generate page bundle request.
+  </int>
+  <int value="1400" label="DOWNLOAD_MAX_ATTEMPTS_REACHED">
+    Exceeded maximum retries for download.
+  </int>
+</enum>
+
 <enum name="OfflineStatus">
   <obsolete>
     Deprecated 4/2015.

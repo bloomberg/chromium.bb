@@ -57,7 +57,7 @@ static const char kTableCreationSql[] =
     " creation_time INTEGER NOT NULL,"
     " freshness_time INTEGER NOT NULL,"
     " error_code INTEGER NOT NULL DEFAULT 0,"
-    " file_size INTEGER NOT NULL DEFAULT 0,"
+    " file_size INTEGER NOT NULL DEFAULT -1,"
     // Variable length columns come later.
     " guid VARCHAR NOT NULL DEFAULT '',"
     " client_namespace VARCHAR NOT NULL DEFAULT '',"

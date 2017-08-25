@@ -113,7 +113,7 @@ struct PrefetchItem {
   base::FilePath file_path;
 
   // The size of the archive file.
-  int64_t file_size = 0;
+  int64_t file_size = -1;
 };
 
 std::ostream& operator<<(std::ostream& out, const PrefetchItem& pi);
