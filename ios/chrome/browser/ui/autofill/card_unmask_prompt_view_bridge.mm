@@ -182,7 +182,6 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
                                        style:UIBarButtonItemStylePlain
                                       target:self
                                       action:@selector(onVerify:)];
-  [_verifyButton setAccessibilityLabel:l10n_util::GetNSString(IDS_ACCNAME_OK)];
   [_verifyButton setTitleTextAttributes:@{
     NSForegroundColorAttributeName : [[MDCPalette cr_bluePalette] tint600]
   }
