@@ -369,7 +369,8 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
                                             nullptr, nullptr);
   match.fill_into_edit +=
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          navigation.url(), match.contents, client()->GetSchemeClassifier());
+          navigation.url(), url_formatter::FormatUrl(navigation.url()),
+          client()->GetSchemeClassifier());
 
   AutocompleteMatch::ClassifyLocationInString(base::string16::npos, 0,
       match.contents.length(), ACMatchClassification::URL,

@@ -68,8 +68,6 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
       titled_url_match.title_match_positions;
   CorrectTitleAndMatchPositions(&title, &new_title_match_positions);
   const base::string16& url_utf16 = base::UTF8ToUTF16(url.spec());
-  size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
-      input.text(), fixed_up_input_text, false, url_utf16);
   match.destination_url = url;
   const size_t match_start =
       titled_url_match.url_match_positions.empty()
@@ -80,25 +78,29 @@ AutocompleteMatch TitledUrlMatchToAutocompleteMatch(
       ((match_start == base::string16::npos) || (match_start != 0));
   std::vector<size_t> offsets = TitledUrlMatch::OffsetsFromMatchPositions(
       titled_url_match.url_match_positions);
-  // In addition to knowing how |offsets| is transformed, we need to know how
-  // |inline_autocomplete_offset| is transformed.  We add it to the end of
-  // |offsets|, compute how everything is transformed, then remove it from the
-  // end.
-  offsets.push_back(inline_autocomplete_offset);
-  auto format_types =
-      AutocompleteMatch::GetFormatTypes(!trim_http, false, false);
   match.contents = url_formatter::FormatUrlWithOffsets(
-      url, format_types, net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
-  inline_autocomplete_offset = offsets.back();
-  offsets.pop_back();
+      url, AutocompleteMatch::GetFormatTypes(!trim_http, false, false),
+      net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
   TitledUrlMatch::MatchPositions new_url_match_positions =
       TitledUrlMatch::ReplaceOffsetsInMatchPositions(
           titled_url_match.url_match_positions, offsets);
   match.contents_class = ClassificationsFromMatchPositions(
       new_url_match_positions, match.contents.size(), true);
+
+  // The inline_autocomplete_offset should be adjusted based on the formatting
+  // applied to |fill_into_edit|.
+  size_t inline_autocomplete_offset = URLPrefix::GetInlineAutocompleteOffset(
+      input.text(), fixed_up_input_text, false, url_utf16);
+  auto fill_into_edit_format_types = url_formatter::kFormatUrlOmitDefaults;
+  if (!trim_http)
+    fill_into_edit_format_types &= ~url_formatter::kFormatUrlOmitHTTP;
   match.fill_into_edit =
       AutocompleteInput::FormattedStringWithEquivalentMeaning(
-          url, match.contents, scheme_classifier);
+          url,
+          url_formatter::FormatUrl(url, fill_into_edit_format_types,
+                                   net::UnescapeRule::SPACES, nullptr, nullptr,
+                                   &inline_autocomplete_offset),
+          scheme_classifier);
   if (inline_autocomplete_offset != base::string16::npos) {
     // |inline_autocomplete_offset| may be beyond the end of the
     // |fill_into_edit| if the user has typed an URL with a scheme and the
