@@ -24,7 +24,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/http/http_response_info.h"
 #include "url/gurl.h"
 
@@ -74,8 +74,9 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
         base::WeakPtr<EmbeddedWorkerTestHelper> helper);
     ~MockEmbeddedWorkerInstanceClient() override;
 
-    static void Bind(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                     mojo::ScopedMessagePipeHandle request);
+    static void Bind(
+        const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
+        mojom::EmbeddedWorkerInstanceClientAssociatedRequest request);
 
    protected:
     // mojom::EmbeddedWorkerInstanceClient implementation.
@@ -93,7 +94,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
                              const std::string& message) override;
 
     base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
-    mojo::Binding<mojom::EmbeddedWorkerInstanceClient> binding_;
+    mojo::AssociatedBinding<mojom::EmbeddedWorkerInstanceClient> binding_;
 
     base::Optional<int> embedded_worker_id_;
 
@@ -274,6 +275,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
  private:
   class MockServiceWorkerEventDispatcher;
+  class MockRendererInterface;
 
   void OnStartWorkerStub(
       const EmbeddedWorkerStartParams& params,
@@ -360,6 +362,7 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
 
   IPC::TestSink sink_;
 
+  std::unique_ptr<MockRendererInterface> mock_renderer_interface_;
   std::vector<std::unique_ptr<MockEmbeddedWorkerInstanceClient>>
       mock_instance_clients_;
   size_t mock_instance_clients_next_index_;

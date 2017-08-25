@@ -431,6 +431,12 @@ void MockRenderProcessHost::OverrideBinderForTesting(
   binder_overrides_[interface_name] = binder;
 }
 
+void MockRenderProcessHost::OverrideRendererInterfaceForTesting(
+    std::unique_ptr<mojo::AssociatedInterfacePtr<mojom::Renderer>>
+        renderer_interface) {
+  renderer_interface_ = std::move(renderer_interface);
+}
+
 MockRenderProcessHostFactory::MockRenderProcessHostFactory() {}
 
 MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
