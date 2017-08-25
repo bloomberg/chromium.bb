@@ -25,6 +25,7 @@
 #include "modules/media_controls/MediaDownloadInProductHelpManager.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
+#include "modules/media_controls/elements/MediaControlRemainingTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlTimelineElement.h"
 #include "modules/media_controls/elements/MediaControlVolumeSliderElement.h"
 #include "modules/remoteplayback/HTMLMediaElementRemotePlayback.h"
@@ -217,6 +218,10 @@ class MediaControlsImplTest : public ::testing::Test {
   MediaControlCurrentTimeDisplayElement* GetCurrentTimeDisplayElement() const {
     return media_controls_->current_time_display_;
   }
+  MediaControlRemainingTimeDisplayElement* GetRemainingTimeDisplayElement()
+      const {
+    return media_controls_->duration_display_;
+  }
   MockWebMediaPlayerForImpl* WebMediaPlayer() {
     return static_cast<MockWebMediaPlayerForImpl*>(
         MediaControls().MediaElement().GetWebMediaPlayer());
@@ -249,6 +254,10 @@ class MediaControlsImplTest : public ::testing::Test {
   }
 
   virtual bool EnableDownloadInProductHelp() { return false; }
+
+  const String& GetDisplayedTime(MediaControlTimeDisplayElement* display) {
+    return ToText(display->firstChild())->data();
+  }
 
  private:
   std::unique_ptr<DummyPageHolder> page_holder_;
@@ -901,6 +910,42 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragBackAndForth) {
       "Media.Timeline.DragSumAbsTimeDelta." TIMELINE_W, 17 /* [8m, 15m) */, 1);
   GetHistogramTester().ExpectUniqueSample(
       "Media.Timeline.DragTimeDelta." TIMELINE_W, 9 /* (-4m, -2m] */, 1);
+}
+
+TEST_F(MediaControlsImplTest, TimeIsCorrectlyFormatted) {
+  struct {
+    double time;
+    String expected_result;
+  } tests[] = {
+      {-3661, "-1:01:01"},   {-1, "-0:01"},     {0, "0:00"},
+      {1, "0:01"},           {15, "0:15"},      {125, "2:05"},
+      {615, "10:15"},        {3666, "1:01:06"}, {75123, "20:52:03"},
+      {360600, "100:10:00"},
+  };
+
+  double duration = 360600;  // Long enough to check each of the tests.
+  LoadMediaWithDuration(duration);
+  EnsureSizing();
+  testing::RunPendingTasks();
+
+  MediaControlCurrentTimeDisplayElement* current_display =
+      GetCurrentTimeDisplayElement();
+  MediaControlRemainingTimeDisplayElement* duration_display =
+      GetRemainingTimeDisplayElement();
+
+  // The value and format of the duration display should be correct.
+  EXPECT_EQ(360600, duration_display->CurrentValue());
+  EXPECT_EQ("/ 100:10:00", GetDisplayedTime(duration_display));
+
+  for (const auto& testcase : tests) {
+    current_display->SetCurrentValue(testcase.time);
+
+    // Current value should be updated.
+    EXPECT_EQ(testcase.time, current_display->CurrentValue());
+
+    // Display text should be updated and correctly formatted.
+    EXPECT_EQ(testcase.expected_result, GetDisplayedTime(current_display));
+  }
 }
 
 namespace {

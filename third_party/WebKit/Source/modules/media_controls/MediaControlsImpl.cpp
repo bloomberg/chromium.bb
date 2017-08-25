@@ -44,7 +44,6 @@
 #include "core/html/track/TextTrackContainer.h"
 #include "core/html/track/TextTrackList.h"
 #include "core/layout/LayoutObject.h"
-#include "core/layout/LayoutTheme.h"
 #include "core/page/SpatialNavigation.h"
 #include "core/resize_observer/ResizeObserver.h"
 #include "core/resize_observer/ResizeObserverEntry.h"
@@ -526,8 +525,6 @@ void MediaControlsImpl::Reset() {
   BatchedControlUpdate batch(this);
 
   const double duration = MediaElement().duration();
-  duration_display_->setTextContent(
-      LayoutTheme::GetTheme().FormatMediaControlsTime(duration));
   duration_display_->SetCurrentValue(duration);
 
   // Show everything that we might hide.
@@ -684,14 +681,7 @@ void MediaControlsImpl::EndScrubbing() {
 }
 
 void MediaControlsImpl::UpdateCurrentTimeDisplay() {
-  double now = MediaElement().currentTime();
-  double duration = MediaElement().duration();
-
-  // Allow the theme to format the time.
-  current_time_display_->setInnerText(
-      LayoutTheme::GetTheme().FormatMediaControlsCurrentTime(now, duration),
-      IGNORE_EXCEPTION_FOR_TESTING);
-  current_time_display_->SetCurrentValue(now);
+  current_time_display_->SetCurrentValue(MediaElement().currentTime());
 }
 
 void MediaControlsImpl::ToggleTextTrackList() {
@@ -967,9 +957,9 @@ void MediaControlsImpl::OnDurationChange() {
   const double duration = MediaElement().duration();
 
   // Update the displayed current time/duration.
-  duration_display_->setTextContent(
-      LayoutTheme::GetTheme().FormatMediaControlsTime(duration));
   duration_display_->SetCurrentValue(duration);
+  // TODO(crbug.com/756698): Determine if this is still needed since the format
+  // of the current time no longer depends on the duration.
   UpdateCurrentTimeDisplay();
 
   // Update the timeline (the UI with the seek marker).
