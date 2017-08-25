@@ -28,6 +28,7 @@ const char kVendorName[] = "Test Vendor";
 const char kProductName[] = "Test Product";
 const uint64_t kDeviceSize = 1024 * 1024 * 1024;
 const bool kOnRemovableDevice = true;
+const char kDiskFileSystemType[] = "vfat";
 
 const char kUnknownSDDiskModel[] = "SD Card";
 const char kUnknownUSBDiskModel[] = "USB Drive";
@@ -75,17 +76,10 @@ class RemovableStorageProviderChromeOsUnitTest : public testing::Test {
         kMountPath,
         chromeos::MOUNT_TYPE_DEVICE,
         chromeos::disks::MOUNT_CONDITION_NONE);
-    disk_mount_manager_mock_->CreateDiskEntryForMountDevice(mount_info,
-                                                            kDeviceId,
-                                                            kDeviceName,
-                                                            vendor_name,
-                                                            product_name,
-                                                            device_type,
-                                                            kDeviceSize,
-                                                            is_parent,
-                                                            has_media,
-                                                            on_boot_device,
-                                                            kOnRemovableDevice);
+    disk_mount_manager_mock_->CreateDiskEntryForMountDevice(
+        mount_info, kDeviceId, kDeviceName, vendor_name, product_name,
+        device_type, kDeviceSize, is_parent, has_media, on_boot_device,
+        kOnRemovableDevice, kDiskFileSystemType);
   }
 
   // Checks if the DeviceList has a specific entry.

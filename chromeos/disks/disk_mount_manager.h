@@ -78,7 +78,8 @@ class CHROMEOS_EXPORT DiskMountManager {
          bool has_media,
          bool on_boot_device,
          bool on_removable_device,
-         bool is_hidden);
+         bool is_hidden,
+         const std::string& file_system_type);
     Disk(const Disk& other);
     ~Disk();
 
@@ -100,6 +101,10 @@ class CHROMEOS_EXPORT DiskMountManager {
 
     // Device's label.
     const std::string& device_label() const { return device_label_; }
+
+    void set_device_label(const std::string& device_label) {
+      device_label_ = device_label;
+    }
 
     // If disk is a parent, then its label, else parents label.
     // (e.g. "TransMemory")
@@ -167,6 +172,12 @@ class CHROMEOS_EXPORT DiskMountManager {
 
     bool is_mounted() const { return !mount_path_.empty(); }
 
+    const std::string& file_system_type() const { return file_system_type_; }
+
+    void set_file_system_type(const std::string& file_system_type) {
+      file_system_type_ = file_system_type;
+    }
+
    private:
     std::string device_path_;
     std::string mount_path_;
@@ -189,6 +200,7 @@ class CHROMEOS_EXPORT DiskMountManager {
     bool on_boot_device_;
     bool on_removable_device_;
     bool is_hidden_;
+    std::string file_system_type_;
   };
   typedef std::map<std::string, std::unique_ptr<Disk>> DiskMap;
 

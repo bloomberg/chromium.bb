@@ -183,6 +183,9 @@ class CHROMEOS_EXPORT DiskInfo {
   // Returns file system uuid.
   const std::string& uuid() const { return uuid_; }
 
+  // Returns file system type identifier.
+  const std::string& file_system_type() const { return file_system_type_; }
+
  private:
   void InitializeFromResponse(dbus::Response* response);
 
@@ -206,6 +209,7 @@ class CHROMEOS_EXPORT DiskInfo {
   bool is_read_only_;
   bool is_hidden_;
   std::string uuid_;
+  std::string file_system_type_;
 };
 
 // A struct to represent information about a mount point sent from cros-disks.

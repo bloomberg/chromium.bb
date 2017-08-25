@@ -62,6 +62,7 @@ TEST(CrosDisksClientTest, DiskInfo) {
   const std::string kProductName = "Product Name";
   const std::string kVendorId = "0000";
   const std::string kVendorName = "Vendor Name";
+  const std::string kFileSystemType = "exfat";
 
   // Construct a fake response of GetDeviceProperties().
   std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
@@ -121,6 +122,8 @@ TEST(CrosDisksClientTest, DiskInfo) {
                           kProductName);
     AppendStringDictEntry(&array_writer, cros_disks::kVendorId, kVendorId);
     AppendStringDictEntry(&array_writer, cros_disks::kVendorName, kVendorName);
+    AppendStringDictEntry(&array_writer, cros_disks::kFileSystemType,
+                          kFileSystemType);
 
     writer.CloseContainer(&array_writer);
   }
@@ -153,6 +156,7 @@ TEST(CrosDisksClientTest, DiskInfo) {
   EXPECT_EQ(kDeviceSize, result.total_size_in_bytes());
   EXPECT_EQ(DEVICE_TYPE_SD, result.device_type());
   EXPECT_EQ(kMountPath, result.mount_path());
+  EXPECT_EQ(kFileSystemType, result.file_system_type());
 }
 
 TEST(CrosDisksClientTest, ComposeMountOptions) {

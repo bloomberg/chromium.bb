@@ -5,7 +5,7 @@
 // These have to be sync'd with file_manager_private_apitest.cc
 var expectedVolume1 = {
   volumeId: 'removable:mount_path1',
-  volumeLabel: 'mount_path1',
+  volumeLabel: 'device_label1',
   sourcePath: 'device_path1',
   volumeType: 'removable',
   deviceType: 'usb',
@@ -18,11 +18,12 @@ var expectedVolume1 = {
   watchable: true,
   source: 'device',
   profile: {profileId: '', displayName: '', isCurrentProfile: true},
+  diskFileSystemType: 'exfat'
 };
 
 var expectedVolume2 = {
   volumeId: 'removable:mount_path2',
-  volumeLabel: 'mount_path2',
+  volumeLabel: 'device_label2',
   sourcePath: 'device_path2',
   volumeType: 'removable',
   deviceType: 'mobile',
@@ -36,12 +37,13 @@ var expectedVolume2 = {
   // TODO(mtomasz): Add a test for a real MTP device.
   watchable: true,
   source: 'device',
-  profile: {profileId: '', displayName: '', isCurrentProfile: true}
+  profile: {profileId: '', displayName: '', isCurrentProfile: true},
+  diskFileSystemType: 'exfat'
 };
 
 var expectedVolume3 = {
   volumeId: 'removable:mount_path3',
-  volumeLabel: 'mount_path3',
+  volumeLabel: 'device_label3',
   sourcePath: 'device_path3',
   volumeType: 'removable',
   deviceType: 'optical',
@@ -53,7 +55,8 @@ var expectedVolume3 = {
   configurable: false,
   watchable: true,
   source: 'device',
-  profile: {profileId: '', displayName: '', isCurrentProfile: true}
+  profile: {profileId: '', displayName: '', isCurrentProfile: true},
+  diskFileSystemType: 'exfat'
 };
 
 var expectedDownloadsVolume = {
@@ -66,7 +69,8 @@ var expectedDownloadsVolume = {
   configurable: false,
   watchable: true,
   source: 'system',
-  profile: {profileId: '', displayName: '', isCurrentProfile: true}
+  profile: {profileId: '', displayName: '', isCurrentProfile: true},
+  diskFileSystemType: ''
 };
 
 var expectedDriveVolume = {
@@ -80,7 +84,8 @@ var expectedDriveVolume = {
   configurable: false,
   watchable: true,
   source: 'network',
-  profile: {profileId: '', displayName: '', isCurrentProfile: true}
+  profile: {profileId: '', displayName: '', isCurrentProfile: true},
+  diskFileSystemType: ''
 };
 
 var expectedArchiveVolume = {
@@ -94,7 +99,8 @@ var expectedArchiveVolume = {
   configurable: false,
   watchable: true,
   source: 'file',
-  profile: {profileId: '', displayName: '', isCurrentProfile: true}
+  profile: {profileId: '', displayName: '', isCurrentProfile: true},
+  diskFileSystemType: ''
 };
 
 var expectedProvidedVolume = {
@@ -110,7 +116,8 @@ var expectedProvidedVolume = {
   source: 'network',
   mountContext: 'auto',
   fileSystemId: '',
-  profile: {profileId: '', displayName: '', isCurrentProfile: true}
+  profile: {profileId: '', displayName: '', isCurrentProfile: true},
+  diskFileSystemType: ''
 };
 
 // List of expected mount points.

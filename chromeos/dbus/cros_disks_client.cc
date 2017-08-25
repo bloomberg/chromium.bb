@@ -561,6 +561,10 @@ DiskInfo::~DiskInfo() {
 //     string "NativePath"
 //     variant       string "/sys/devices/pci0000:00/0000:00:1d.7/usb1/1-4/...
 //   }
+//   dict entry {
+//     string "FileSystemType"
+//     variant       string "vfat"
+//   }
 // ]
 void DiskInfo::InitializeFromResponse(dbus::Response* response) {
   dbus::MessageReader reader(response);
@@ -596,6 +600,8 @@ void DiskInfo::InitializeFromResponse(dbus::Response* response) {
       cros_disks::kDriveModel, &drive_model_);
   properties->GetStringWithoutPathExpansion(cros_disks::kIdLabel, &label_);
   properties->GetStringWithoutPathExpansion(cros_disks::kIdUuid, &uuid_);
+  properties->GetStringWithoutPathExpansion(cros_disks::kFileSystemType,
+                                            &file_system_type_);
 
   // dbus::PopDataAsValue() pops uint64_t as double.
   // The top 11 bits of uint64_t are dropped by the use of double. But, this

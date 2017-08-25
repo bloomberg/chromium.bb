@@ -36,6 +36,8 @@ const int kTestFileSize = 32 * 1024;
 const int kImagePattern = 0x55555555; // 01010101
 // Pattern to use in the device file.
 const int kDevicePattern = 0xAAAAAAAA; // 10101010
+// Disk file system type
+const char kTestFileSystemType[] = "vfat";
 
 // A mock around the operation manager for tracking callbacks.  Note that there
 // are non-virtual methods on this class that should not be called in tests.

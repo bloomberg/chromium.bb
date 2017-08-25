@@ -75,7 +75,8 @@ class MockDiskMountManager : public DiskMountManager {
       bool is_parent,
       bool has_media,
       bool on_boot_device,
-      bool on_removable_device);
+      bool on_removable_device,
+      const std::string& file_system_type);
 
   // Removes the fake disk entry associated with the mounted device. This
   // function is primarily for StorageMonitorTest.

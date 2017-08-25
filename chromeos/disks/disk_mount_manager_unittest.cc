@@ -31,6 +31,8 @@ const char kDevice1MountPath[] = "/device/mount_path";
 const char kDevice2SourcePath[] = "/device/source_path2";
 const char kReadOnlyDeviceMountPath[] = "/device/read_only_mount_path";
 const char kReadOnlyDeviceSourcePath[] = "/device/read_only_source_path";
+const char kFileSystemType1[] = "ntfs";
+const char kFileSystemType2[] = "exfat";
 
 // Holds information needed to create a DiskMountManager::Disk instance.
 struct TestDiskInfo {
@@ -55,6 +57,7 @@ struct TestDiskInfo {
   bool on_boot_device;
   bool on_removable_device;
   bool is_hidden;
+  const char* file_system_type;
 };
 
 // Holds information to create a DiskMOuntManager::MountPointInfo instance.
@@ -67,75 +70,72 @@ struct TestMountPointInfo {
 
 // List of disks held in DiskMountManager at the begining of the test.
 const TestDiskInfo kTestDisks[] = {
-  {
-    kDevice1SourcePath,
-    kDevice1MountPath,
-    false,  // write_disabled_by_policy
-    "/device/prefix/system_path",
-    "/device/file_path",
-    "/device/device_label",
-    "/device/drive_label",
-    "/device/vendor_id",
-    "/device/vendor_name",
-    "/device/product_id",
-    "/device/product_name",
-    "/device/fs_uuid",
-    "/device/prefix",
-    chromeos::DEVICE_TYPE_USB,
-    1073741824,  // size in bytes
-    false,       // is parent
-    false,       // is read only
-    true,        // has media
-    false,       // is on boot device
-    true,        // is on removable device
-    false        // is hidden
-  },
-  {
-    kDevice2SourcePath,
-    "",  // not mounted initially
-    false,  // write_disabled_by_policy
-    "/device/prefix/system_path2",
-    "/device/file_path2",
-    "/device/device_label2",
-    "/device/drive_label2",
-    "/device/vendor_id2",
-    "/device/vendor_name2",
-    "/device/product_id2",
-    "/device/product_name2",
-    "/device/fs_uuid2",
-    "/device/prefix2",
-    chromeos::DEVICE_TYPE_SD,
-    1073741824,  // size in bytes
-    false,       // is parent
-    false,       // is read only
-    true,        // has media
-    false,       // is on boot device
-    true,        // is on removable device
-    false        // is hidden
-  },
-  {
-    kReadOnlyDeviceSourcePath,
-    kReadOnlyDeviceMountPath,
-    false,  // write_disabled_by_policy
-    "/device/prefix/system_path_3",
-    "/device/file_path_3",
-    "/device/device_label_3",
-    "/device/drive_label_3",
-    "/device/vendor_id_3",
-    "/device/vendor_name_3",
-    "/device/product_id_3",
-    "/device/product_name_3",
-    "/device/fs_uuid_3",
-    "/device/prefix",
-    chromeos::DEVICE_TYPE_USB,
-    1073741824,  // size in bytes
-    false,       // is parent
-    true,        // is read only
-    true,        // has media
-    false,       // is on boot device
-    true,        // is on removable device
-    false        // is hidden
-  },
+    {kDevice1SourcePath,
+     kDevice1MountPath,
+     false,  // write_disabled_by_policy
+     "/device/prefix/system_path",
+     "/device/file_path",
+     "/device/device_label",
+     "/device/drive_label",
+     "/device/vendor_id",
+     "/device/vendor_name",
+     "/device/product_id",
+     "/device/product_name",
+     "/device/fs_uuid",
+     "/device/prefix",
+     chromeos::DEVICE_TYPE_USB,
+     1073741824,  // size in bytes
+     false,       // is parent
+     false,       // is read only
+     true,        // has media
+     false,       // is on boot device
+     true,        // is on removable device
+     false,       // is hidden
+     kFileSystemType1},
+    {kDevice2SourcePath,
+     "",     // not mounted initially
+     false,  // write_disabled_by_policy
+     "/device/prefix/system_path2",
+     "/device/file_path2",
+     "/device/device_label2",
+     "/device/drive_label2",
+     "/device/vendor_id2",
+     "/device/vendor_name2",
+     "/device/product_id2",
+     "/device/product_name2",
+     "/device/fs_uuid2",
+     "/device/prefix2",
+     chromeos::DEVICE_TYPE_SD,
+     1073741824,  // size in bytes
+     false,       // is parent
+     false,       // is read only
+     true,        // has media
+     false,       // is on boot device
+     true,        // is on removable device
+     false,       // is hidden
+     kFileSystemType2},
+    {kReadOnlyDeviceSourcePath,
+     kReadOnlyDeviceMountPath,
+     false,  // write_disabled_by_policy
+     "/device/prefix/system_path_3",
+     "/device/file_path_3",
+     "/device/device_label_3",
+     "/device/drive_label_3",
+     "/device/vendor_id_3",
+     "/device/vendor_name_3",
+     "/device/product_id_3",
+     "/device/product_name_3",
+     "/device/fs_uuid_3",
+     "/device/prefix",
+     chromeos::DEVICE_TYPE_USB,
+     1073741824,  // size in bytes
+     false,       // is parent
+     true,        // is read only
+     true,        // has media
+     false,       // is on boot device
+     true,        // is on removable device
+     false,       // is hidden
+     kFileSystemType2},
 };
 
 // List of mount points  held in DiskMountManager at the begining of the test.
@@ -454,7 +454,7 @@ class DiskMountManagerTest : public testing::Test {
             disk.product_name, disk.fs_uuid, disk.system_path_prefix,
             disk.device_type, disk.size_in_bytes, disk.is_parent,
             disk.is_read_only, disk.has_media, disk.on_boot_device,
-            disk.on_removable_device, disk.is_hidden)));
+            disk.on_removable_device, disk.is_hidden, disk.file_system_type)));
   }
 
   // Adds a new mount point to the disk mount manager.
@@ -706,6 +706,9 @@ TEST_F(DiskMountManagerTest, Format_FormatFails) {
 
 // Tests the case when formatting completes successfully.
 TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
+  DiskMountManager* manager = DiskMountManager::GetInstance();
+  const DiskMountManager::DiskMap& disks = manager->disks();
+
   // Set up cros disks client mocks.
   // Both unmount and format device cals are successful in this test.
 
@@ -743,6 +746,10 @@ TEST_F(DiskMountManagerTest, Format_FormatSuccess) {
   EXPECT_EQ(FormatEvent(DiskMountManager::FORMAT_COMPLETED,
                         chromeos::FORMAT_ERROR_NONE, kDevice1SourcePath),
             observer_->GetFormatEvent(2));
+
+  // Disk should have new values for file system type and device label name
+  EXPECT_EQ("vfat", disks.find(kDevice1SourcePath)->second->file_system_type());
+  EXPECT_EQ("UNTITLED", disks.find(kDevice1SourcePath)->second->device_label());
 }
 
 // Tests that it's possible to format the device twice in a row (this may not be
