@@ -394,8 +394,8 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ANDROID_SVELTE], 'crbug.com/593973')
+        self.DisableBenchmark([story.expectations.ANDROID_SVELTE],
+                              'crbug.com/593973')
         self.DisableStory('putImageData.html',
             [story.expectations.ANDROID_NEXUS6], 'crbug.com/738453')
     return StoryExpectations()
@@ -439,8 +439,8 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
   def GetExpectations(self):
     class Expectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ANDROID_SVELTE], 'crbug.com/551950')
+        self.DisableBenchmark([story.expectations.ANDROID_SVELTE],
+                              'crbug.com/551950')
     return Expectations()
 
 
@@ -464,8 +464,8 @@ class BlinkPerfPaint(_BlinkPerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ANDROID_SVELTE], 'crbug.com/574483')
+        self.DisableBenchmark([story.expectations.ANDROID_SVELTE],
+                              'crbug.com/574483')
     return StoryExpectations()
 
 
@@ -521,8 +521,8 @@ class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ANDROID_NEXUS5X], 'crbug.com/702319')
+        self.DisableBenchmark([story.expectations.ANDROID_NEXUS5X],
+                              'crbug.com/702319')
         self.DisableStory(
             'v1-large-deep-layout.html',
             [story.expectations.ANDROID_ONE],

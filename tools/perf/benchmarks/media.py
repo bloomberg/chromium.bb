@@ -203,8 +203,8 @@ class MediaNetworkSimulation(perf_benchmark.PerfBenchmark):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
-            [story.expectations.ALL], 'Code path is old. crbug.com/676345')
+        self.DisableBenchmark([story.expectations.ALL],
+                              'Code path is old. crbug.com/676345')
     return StoryExpectations()
 
 

@@ -638,7 +638,7 @@ class SmoothnessGpuRasterizationPolymer(_Smoothness):
   def GetExpectations(self):
     class StoryExpectations(story_module.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
+        self.DisableBenchmark(
             [story_module.expectations.ALL],
             'Mobile Benchmark that needs modernization. Crbug.com/750876')
     return StoryExpectations()

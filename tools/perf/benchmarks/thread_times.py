@@ -72,7 +72,7 @@ class ThreadTimesKeyHitTestCases(_ThreadTimes):
   def GetExpectations(self):
     class StoryExpectations(story.expectations.StoryExpectations):
       def SetExpectations(self):
-        self.PermanentlyDisableBenchmark(
+        self.DisableBenchmark(
             [story.expectations.ALL],
             'Disabled on all platforms due to use of deprecated web platform '
             'features. Crbug.com/750876.')
