@@ -56,6 +56,7 @@ TEST(MediaSourcesTest, IsValidPresentationUrl) {
 }
 
 TEST(MediaSourcesTest, CanConnectToMediaSource) {
+  EXPECT_TRUE(CanConnectToMediaSource(MediaSource(GURL("cast:233637DE"))));
   EXPECT_TRUE(CanConnectToMediaSource(
       MediaSource(GURL("https://google.com/cast#__castAppId__=233637DE"))));
   // false scheme
