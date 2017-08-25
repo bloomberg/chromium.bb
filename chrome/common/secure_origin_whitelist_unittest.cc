@@ -34,7 +34,6 @@ TEST_F(SecureOriginWhiteListTest, UnsafelyTreatInsecureOriginAsSecure) {
   command_line->AppendSwitchASCII(
       switches::kUnsafelyTreatInsecureOriginAsSecure,
       "http://example.com,http://127.example.com");
-  command_line->AppendSwitch(switches::kUserDataDir);
   content::ResetSchemesAndOriginsWhitelist();
 
   // They should be now white-listed.
