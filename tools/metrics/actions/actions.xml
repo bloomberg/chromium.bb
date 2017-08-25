@@ -18082,6 +18082,27 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Webapp.NotificationFocused">
+  <owner>piotrs@chromium.org</owner>
+  <description>
+    The user tapped on the main area of a Webapp actions notification.
+  </description>
+</action>
+
+<action name="Webapp.NotificationOpenInChrome">
+  <owner>piotrs@chromium.org</owner>
+  <description>
+    The user tapped on Open in Chrome action in a Webapp actions notification.
+  </description>
+</action>
+
+<action name="Webapp.NotificationShare">
+  <owner>piotrs@chromium.org</owner>
+  <description>
+    The user tapped on Share action in a Webapp actions notification.
+  </description>
+</action>
+
 <action name="WebappMenuOpenInChrome">
   <owner>piotrs@chromium.org</owner>
   <description>

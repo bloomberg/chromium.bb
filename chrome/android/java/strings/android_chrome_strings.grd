@@ -2980,6 +2980,9 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
       <message name="IDS_WEBAPK_RUNNING_IN_CHROME_DISCLOSURE" desc="Message on the notification that indicates a WebApk may use Chrome data.">
         This app is running in Chrome.
       </message>
+      <message name="IDS_WEBAPP_RUNS_IN_CHROME_DISCLOSURE" desc="Message on the notification that indicates a Web App is run by Chrome.">
+        <ph name="WEB_APP_NAME">%1$s<ex>Twitter</ex></ph> runs in Chrome
+      </message>
       <message name="IDS_WEBAPK_OFFLINE_DIALOG" desc="The message on the dialog shown when launching a WebAPK needs network connection.">
         To use <ph name="APP_NAME">%1$s<ex>PWA List</ex></ph> for the first time, please connect to the internet
       </message>
