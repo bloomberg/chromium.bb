@@ -75,7 +75,9 @@ public interface PaymentApp {
      * "com.alicepay"}.
      */
     @Nullable
-    Set<String> getPreferredRelatedApplicationIds();
+    default Set<String> getPreferredRelatedApplicationIds() {
+        return null;
+    }
 
     /**
      * Gets the app Id this application can dedupe. The return, for example, could be
@@ -99,5 +101,7 @@ public interface PaymentApp {
      * @return The resource identifier for the additional text that should be displayed to the user
      * when selecting a payment instrument from this payment app or 0 if not needed.
      */
-    int getAdditionalAppTextResourceId();
+    default int getAdditionalAppTextResourceId() {
+        return 0;
+    }
 }
