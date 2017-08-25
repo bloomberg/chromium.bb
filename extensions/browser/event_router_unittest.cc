@@ -20,7 +20,6 @@
 #include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
@@ -321,7 +320,7 @@ TEST_F(EventRouterTest, EventRouterObserverForURLs) {
 
 TEST_F(EventRouterTest, TestReportEvent) {
   EventRouter router(browser_context(), nullptr);
-  scoped_refptr<Extension> normal = test_util::CreateEmptyExtension("id1");
+  scoped_refptr<Extension> normal = ExtensionBuilder("Test").Build();
   router.ReportEvent(events::HistogramValue::FOR_TEST, normal.get(),
                      false /** did_enqueue */);
   ExpectHistogramCounts(1 /** Dispatch */, 0 /** DispatchToComponent */,

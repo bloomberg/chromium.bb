@@ -23,7 +23,7 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/browser/extension_registry.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #endif
 
 // Test data ------------------------------------------------------------------
@@ -102,8 +102,9 @@ void ToolbarModelTest::SetUp() {
   // valid. Invalid extension URLs may result in error pages (if blocked by
   // ExtensionNavigationThrottle), which this test doesn't wish to exercise.
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile())->AddEnabled(
-      extensions::test_util::CreateEmptyExtension(
-          "fooooooooooooooooooooooooooooooo")));
+      extensions::ExtensionBuilder("Test")
+          .SetID("fooooooooooooooooooooooooooooooo")
+          .Build()));
 #endif
 }
 

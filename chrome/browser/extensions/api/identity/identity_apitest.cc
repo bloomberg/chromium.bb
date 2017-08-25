@@ -494,7 +494,8 @@ class IdentityGetAccountsFunctionTest : public IdentityTestWithSignin {
       const std::vector<std::string>& accounts) {
     scoped_refptr<IdentityGetAccountsFunction> func(
         new IdentityGetAccountsFunction);
-    func->set_extension(test_util::CreateEmptyExtension(kExtensionId).get());
+    func->set_extension(
+        ExtensionBuilder("Test").SetID(kExtensionId).Build().get());
     if (!utils::RunFunction(
             func.get(), std::string("[]"), browser(), utils::NONE)) {
       return GenerateFailureResult(accounts, NULL)
@@ -626,7 +627,8 @@ class IdentityGetProfileUserInfoFunctionTest : public IdentityTestWithSignin {
   std::unique_ptr<api::identity::ProfileUserInfo> RunGetProfileUserInfo() {
     scoped_refptr<IdentityGetProfileUserInfoFunction> func(
         new IdentityGetProfileUserInfoFunction);
-    func->set_extension(test_util::CreateEmptyExtension(kExtensionId).get());
+    func->set_extension(
+        ExtensionBuilder("Test").SetID(kExtensionId).Build().get());
     std::unique_ptr<base::Value> value(
         utils::RunFunctionAndReturnSingleResult(func.get(), "[]", browser()));
     return api::identity::ProfileUserInfo::FromValue(*value);
@@ -1835,7 +1837,8 @@ class RemoveCachedAuthTokenFunctionTest : public ExtensionBrowserTest {
   bool InvalidateDefaultToken() {
     scoped_refptr<IdentityRemoveCachedAuthTokenFunction> func(
         new IdentityRemoveCachedAuthTokenFunction);
-    func->set_extension(test_util::CreateEmptyExtension(kExtensionId).get());
+    func->set_extension(
+        ExtensionBuilder("Test").SetID(kExtensionId).Build().get());
     return utils::RunFunction(
         func.get(),
         std::string("[{\"token\": \"") + kAccessToken + "\"}]",

@@ -29,7 +29,6 @@
 #include "content/public/test/test_web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -725,7 +724,7 @@ TEST_F(SiteSettingsHandlerInfobarTest, SettingPermissionsTriggersInfobar) {
   // Make sure |extension|'s extension ID exists before navigating to it. This
   // fixes a test timeout that occurs with --enable-browser-side-navigation on.
   ASSERT_TRUE(extensions::ExtensionRegistry::Get(profile())->AddEnabled(
-      extensions::test_util::CreateEmptyExtension("fooextension")));
+      extensions::ExtensionBuilder("Test").SetID("fooextension").Build()));
 
   //               __________  ______________  ___________________  _______
   //   Window 2:  / insecure '/ origin_query \' example_subdomain \' about \

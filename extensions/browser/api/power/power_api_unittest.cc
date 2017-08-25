@@ -14,7 +14,7 @@
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/test_util.h"
+#include "extensions/common/extension_builder.h"
 #include "services/device/public/interfaces/wake_lock.mojom.h"
 
 namespace extensions {
@@ -267,7 +267,7 @@ TEST_F(PowerAPITest, MultipleExtensions) {
   // Create a second extension that blocks system suspend.  No additional
   // wake lock is needed; the wake lock from the first extension
   // already covers the behavior requested by the second extension.
-  scoped_refptr<Extension> extension2(test_util::CreateEmptyExtension("id2"));
+  scoped_refptr<Extension> extension2(ExtensionBuilder("Test").Build());
   ASSERT_TRUE(CallFunction(REQUEST, kSystemArgs, extension2.get()));
   EXPECT_EQ(NONE, manager_->PopFirstRequest());
 
