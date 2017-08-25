@@ -10,7 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/cursor_proxy_mojo.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
@@ -308,7 +308,7 @@ void MusThreadProxy::GpuConfigureNativeDisplayCallback(int64_t display_id,
 
 // TODO(rjkroege): Remove the unnecessary conversion back into params.
 void MusThreadProxy::GpuRefreshNativeDisplaysCallback(
-    std::vector<std::unique_ptr<display::DisplaySnapshotMojo>> displays) const {
+    MovableDisplaySnapshots displays) const {
   DCHECK(on_window_server_thread_.CalledOnValidThread());
   display_manager_->GpuHasUpdatedNativeDisplays(
       CreateParamsFromSnapshot(displays));

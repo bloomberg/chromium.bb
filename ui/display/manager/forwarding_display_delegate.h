@@ -19,7 +19,7 @@
 
 namespace display {
 
-class DisplaySnapshotMojo;
+class DisplaySnapshot;
 
 // NativeDisplayDelegate implementation that forwards calls to a real
 // NativeDisplayDelegate in another process. Only forwards the methods
@@ -63,7 +63,7 @@ class DISPLAY_MANAGER_EXPORT ForwardingDisplayDelegate
   // Stores display snapshots and forwards pointers to |callback|.
   void StoreAndForwardDisplays(
       const GetDisplaysCallback& callback,
-      std::vector<std::unique_ptr<DisplaySnapshotMojo>> snapshots);
+      std::vector<std::unique_ptr<DisplaySnapshot>> snapshots);
 
   // Forwards display snapshot pointers to |callback|.
   void ForwardDisplays(const GetDisplaysCallback& callback);
@@ -77,7 +77,7 @@ class DISPLAY_MANAGER_EXPORT ForwardingDisplayDelegate
 
   // Display snapshots are owned here but accessed via raw pointers elsewhere.
   // Call OnDisplaySnapshotsInvalidated() on observers before invalidating them.
-  std::vector<std::unique_ptr<DisplaySnapshotMojo>> snapshots_;
+  std::vector<std::unique_ptr<DisplaySnapshot>> snapshots_;
 
   base::ObserverList<display::NativeDisplayObserver> observers_;
 

@@ -6,7 +6,7 @@ module display.mojom;
 
 import "ui/display/mojo/display_constants.mojom";
 import "ui/display/mojo/display_mode.mojom";
-import "ui/display/mojo/display_snapshot_mojo.mojom";
+import "ui/display/mojo/display_snapshot.mojom";
 import "ui/display/mojo/gamma_ramp_rgb_entry.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -21,7 +21,8 @@ interface NativeDisplayDelegate {
   // Initializes and registers the observer. This is synchronous so that ash
   // initialization has an initial set of displays to use.
   [Sync]
-  Initialize(NativeDisplayObserver observer) => (array<DisplaySnapshotMojo> snapshots);
+  Initialize(NativeDisplayObserver observer) =>
+      (array<DisplaySnapshot> snapshots);
 
   // Take control of the displays from any other controlling process.
   TakeDisplayControl() => (bool result);
@@ -30,7 +31,7 @@ interface NativeDisplayDelegate {
   RelinquishDisplayControl() => (bool result);
 
   // Queries for a list of fresh displays.
-  GetDisplays() => (array<DisplaySnapshotMojo> snapshots);
+  GetDisplays() => (array<DisplaySnapshot> snapshots);
 
   // Configures the display represented by |display_id| to use |mode| and
   // positions the display to |origin| in the framebuffer. |mode| can be null,

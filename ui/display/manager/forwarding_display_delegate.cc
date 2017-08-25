@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
-#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot.h"
 
 namespace display {
 
@@ -126,7 +126,7 @@ void ForwardingDisplayDelegate::OnConfigurationChanged() {
 
 void ForwardingDisplayDelegate::StoreAndForwardDisplays(
     const GetDisplaysCallback& callback,
-    std::vector<std::unique_ptr<DisplaySnapshotMojo>> snapshots) {
+    std::vector<std::unique_ptr<DisplaySnapshot>> snapshots) {
   for (auto& observer : observers_)
     observer.OnDisplaySnapshotsInvalidated();
   snapshots_ = std::move(snapshots);

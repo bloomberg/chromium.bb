@@ -8,7 +8,7 @@ import "mojo/common/file.mojom";
 import "mojo/common/file_path.mojom";
 import "ui/display/mojo/display_constants.mojom";
 import "ui/display/mojo/display_mode.mojom";
-import "ui/display/mojo/display_snapshot_mojo.mojom";
+import "ui/display/mojo/display_snapshot.mojom";
 import "ui/display/mojo/gamma_ramp_rgb_entry.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/accelerated_widget.mojom";
@@ -41,7 +41,7 @@ interface GpuAdapter {
 
   // Requests a callback providing a list of the available displays.
   RefreshNativeDisplays() =>
-      (array<display.mojom.DisplaySnapshotMojo> display_snapshots);
+      (array<display.mojom.DisplaySnapshot> display_snapshots);
 
   // Transfers ownership of a DRM device to the GPU process.
   AddGraphicsDevice(mojo.common.mojom.FilePath path,

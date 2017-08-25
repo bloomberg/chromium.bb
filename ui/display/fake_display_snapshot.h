@@ -60,6 +60,7 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     Builder& SetHasColorCorrectionMatrix(bool val);
     Builder& SetName(const std::string& name);
     Builder& SetProductId(int64_t product_id);
+    Builder& SetMaximumCursorSize(const gfx::Size& maximum_cursor_size);
     // Sets physical_size so that the screen has the specified DPI using the
     // native resolution.
     Builder& SetDPI(int dpi);
@@ -85,6 +86,7 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     bool has_color_correction_matrix_ = false;
     std::string name_;
     int64_t product_id_ = DisplaySnapshot::kInvalidProductID;
+    gfx::Size maximum_cursor_size_ = gfx::Size(64, 64);
     DisplayModeList modes_;
     const DisplayMode* current_mode_ = nullptr;
     const DisplayMode* native_mode_ = nullptr;
@@ -100,10 +102,11 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
                       bool has_overscan,
                       bool has_color_correction_matrix,
                       std::string display_name,
-                      int64_t product_id,
                       DisplayModeList modes,
                       const DisplayMode* current_mode,
-                      const DisplayMode* native_mode);
+                      const DisplayMode* native_mode,
+                      int64_t product_id,
+                      const gfx::Size& maximum_cursor_size);
   ~FakeDisplaySnapshot() override;
 
   // Creates a display snapshot from the provided |spec| string. Returns null if
@@ -112,9 +115,6 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
   static std::unique_ptr<DisplaySnapshot> CreateFromSpec(
       int64_t id,
       const std::string& spec);
-
-  // DisplaySnapshot:
-  std::string ToString() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeDisplaySnapshot);

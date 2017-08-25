@@ -7,6 +7,6 @@ typemaps = [
   "//ui/display/mojo/display_constants.typemap",
   "//ui/display/mojo/display_layout.typemap",
   "//ui/display/mojo/display_mode.typemap",
-  "//ui/display/mojo/display_snapshot_mojo.typemap",
+  "//ui/display/mojo/display_snapshot.typemap",
   "//ui/display/mojo/gamma_ramp_rgb_entry.typemap",
 ]

@@ -6,13 +6,13 @@
 #define UI_OZONE_COMMON_DISPLAY_SNAPSHOT_PROXY_H_
 
 #include "base/macros.h"
-#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/display/types/display_snapshot.h"
 
 namespace ui {
 
 struct DisplaySnapshot_Params;
 
-class DisplaySnapshotProxy : public display::DisplaySnapshotMojo {
+class DisplaySnapshotProxy : public display::DisplaySnapshot {
  public:
   DisplaySnapshotProxy(const DisplaySnapshot_Params& params);
   ~DisplaySnapshotProxy() override;
