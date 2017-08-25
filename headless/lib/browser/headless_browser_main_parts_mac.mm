@@ -13,6 +13,8 @@ namespace headless {
 void HeadlessBrowserMainParts::PreMainMessageLoopStart() {
   // Force the NSApplication subclass to be used.
   [HeadlessShellCrApplication sharedApplication];
+  // Force hide dock and menu bar.
+  [NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 }
 
 }  // namespace headless
