@@ -85,6 +85,9 @@ enum SubresourceFilterAction {
   // have been blocked. Note that in these cases the UI is suppressed.
   kActionForcedActivationNoUIResourceBlocked,
 
+  // Logged when a popup is blocked due to subresource filter logic.
+  kActionPopupBlocked,
+
   kActionLastEntry
 };
 

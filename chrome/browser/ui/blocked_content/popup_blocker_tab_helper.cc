@@ -9,6 +9,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -137,6 +138,7 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
         !driver_factory->ShouldDisallowNewWindow(open_url_params)) {
       return false;
     }
+    ChromeSubresourceFilterClient::LogAction(kActionPopupBlocked);
   }
 
   popup_blocker->AddBlockedPopup(params, window_features);
