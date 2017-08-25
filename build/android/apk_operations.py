@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -37,25 +38,27 @@ def _Colorize(color, text):
   return getattr(colorama.Fore, color) + text + colorama.Fore.RESET
 
 
-def _InstallApk(apk, install_dict, devices_obj):
+def _InstallApk(devices, apk, install_dict):
   def install(device):
     if install_dict:
       installer.Install(device, install_dict, apk=apk)
     else:
       device.Install(apk)
-  devices_obj.pMap(install)
+
+  logging.info('Installing %sincremental apk.', '' if install_dict else 'non-')
+  device_utils.DeviceUtils.parallel(devices).pMap(install)
 
 
-def _UninstallApk(install_dict, devices_obj, apk_package):
+def _UninstallApk(devices, install_dict, package_name):
   def uninstall(device):
     if install_dict:
-      installer.Uninstall(device, apk_package)
+      installer.Uninstall(device, package_name)
     else:
-      device.Uninstall(apk_package)
-  devices_obj.pMap(uninstall)
+      device.Uninstall(package_name)
+  device_utils.DeviceUtils.parallel(devices).pMap(uninstall)
 
 
-def _LaunchUrl(devices_obj, input_args, device_args_file, url, apk):
+def _LaunchUrl(devices, input_args, device_args_file, url, apk):
   if input_args and device_args_file is None:
     raise Exception('This apk does not support any flags.')
   if url:
@@ -81,17 +84,17 @@ def _LaunchUrl(devices_obj, input_args, device_args_file, url, apk):
                                     activity=view_activity, data=url,
                                     package=apk.GetPackageName())
       device.StartActivity(launch_intent)
-  devices_obj.pMap(launch)
+  device_utils.DeviceUtils.parallel(devices).pMap(launch)
 
 
-def _ChangeFlags(devices, devices_obj, input_args, device_args_file):
+def _ChangeFlags(devices, input_args, device_args_file):
   if input_args is None:
-    _DisplayArgs(devices, devices_obj, device_args_file)
+    _DisplayArgs(devices, device_args_file)
   else:
     flags = shlex.split(input_args)
     def update(device):
       flag_changer.FlagChanger(device, device_args_file).ReplaceFlags(flags)
-    devices_obj.pMap(update)
+    device_utils.DeviceUtils.parallel(devices).pMap(update)
 
 
 def _TargetCpuToTargetArch(target_cpu):
@@ -102,13 +105,13 @@ def _TargetCpuToTargetArch(target_cpu):
   return target_cpu
 
 
-def _RunGdb(apk_name, apk_package, device, target_cpu, extra_args, verbose):
+def _RunGdb(device, package_name, output_directory, target_cpu, extra_args,
+            verbose):
   gdb_script_path = os.path.dirname(__file__) + '/adb_gdb'
   cmd = [
       gdb_script_path,
-      '--program-name=%s' % os.path.splitext(apk_name)[0],
-      '--package-name=%s' % apk_package,
-      '--output-directory=%s' % constants.GetOutDirectory(),
+      '--package-name=%s' % package_name,
+      '--output-directory=%s' % output_directory,
       '--adb=%s' % adb_wrapper.AdbWrapper.GetAdbPath(),
       '--device=%s' % device.serial,
       # Use one lib dir per device so that changing between devices does require
@@ -136,16 +139,17 @@ def _PrintPerDeviceOutput(devices, results, single_line=False):
     yield result
 
 
-def _RunMemUsage(devices, devices_obj, apk_package):
+def _RunMemUsage(devices, package_name):
   def mem_usage_helper(d):
     ret = []
-    proc_map = d.GetPids(apk_package)
+    proc_map = d.GetPids(package_name)
     for name, pids in proc_map.iteritems():
       for pid in pids:
         ret.append((name, pid, d.GetMemoryUsageForPid(pid)))
     return ret
 
-  all_results = devices_obj.pMap(mem_usage_helper).pGet(None)
+  parallel_devices = device_utils.DeviceUtils.parallel(devices)
+  all_results = parallel_devices.pMap(mem_usage_helper).pGet(None)
   for result in _PrintPerDeviceOutput(devices, all_results):
     if not result:
       print 'No processes found.'
@@ -201,7 +205,7 @@ def _DuHelper(device, path_spec, run_as=None):
     logging.error('Failed to parse du output:\n%s', output)
 
 
-def _RunDiskUsage(devices, devices_obj, apk_package, verbose):
+def _RunDiskUsage(devices, package_name, verbose):
   # Measuring dex size is a bit complicated:
   # https://source.android.com/devices/tech/dalvik/jit-compiler
   #
@@ -250,7 +254,7 @@ def _RunDiskUsage(devices, devices_obj, apk_package, verbose):
   #     cmd package compile -m speed-profile org.chromium.chrome  # For others
   def disk_usage_helper(d):
     package_output = '\n'.join(d.RunShellCommand(
-        ['dumpsys', 'package', apk_package], check_return=True))
+        ['dumpsys', 'package', package_name], check_return=True))
     # Prints a message but does not return error when apk is not installed.
     if 'Unable to find package:' in package_output:
       return None
@@ -274,7 +278,7 @@ def _RunDiskUsage(devices, devices_obj, apk_package, verbose):
       compilation_filters.add(re.sub(r'\s+', '', m.group(1)))
     compilation_filter = ','.join(sorted(compilation_filters))
 
-    data_dir_sizes = _DuHelper(d, '%s/{*,.*}' % data_dir, run_as=apk_package)
+    data_dir_sizes = _DuHelper(d, '%s/{*,.*}' % data_dir, run_as=package_name)
     # Measure code_cache separately since it can be large.
     code_cache_sizes = {}
     code_cache_dir = next(
@@ -282,7 +286,7 @@ def _RunDiskUsage(devices, devices_obj, apk_package, verbose):
     if code_cache_dir:
       data_dir_sizes.pop(code_cache_dir)
       code_cache_sizes = _DuHelper(d, '%s/{*,.*}' % code_cache_dir,
-                                   run_as=apk_package)
+                                   run_as=package_name)
 
     apk_path_spec = code_path
     if not apk_path_spec.endswith('.apk'):
@@ -324,7 +328,8 @@ def _RunDiskUsage(devices, devices_obj, apk_package, verbose):
       for path, size in sorted(sizes.iteritems()):
         print '    %s: %skb' % (path, size)
 
-  all_results = devices_obj.pMap(disk_usage_helper).pGet(None)
+  parallel_devices = device_utils.DeviceUtils.parallel(devices)
+  all_results = parallel_devices.pMap(disk_usage_helper).pGet(None)
   for result in _PrintPerDeviceOutput(devices, all_results):
     if not result:
       print 'APK is not installed.'
@@ -347,8 +352,9 @@ def _RunDiskUsage(devices, devices_obj, apk_package, verbose):
     print 'Total: %skb (%.1fmb)' % (total, total / 1024.0)
 
 
-def _RunPs(devices, devices_obj, apk_package):
-  all_pids = devices_obj.GetPids(apk_package).pGet(None)
+def _RunPs(devices, package_name):
+  parallel_devices = device_utils.DeviceUtils.parallel(devices)
+  all_pids = parallel_devices.GetPids(package_name).pGet(None)
   for proc_map in _PrintPerDeviceOutput(devices, all_pids):
     if not proc_map:
       print 'No processes found.'
@@ -357,9 +363,11 @@ def _RunPs(devices, devices_obj, apk_package):
         print name, ','.join(pids)
 
 
-def _RunShell(devices, devices_obj, apk_package, cmd):
+def _RunShell(devices, package_name, cmd):
   if cmd:
-    outputs = devices_obj.RunShellCommand(cmd, run_as=apk_package).pGet(None)
+    parallel_devices = device_utils.DeviceUtils.parallel(devices)
+    outputs = parallel_devices.RunShellCommand(
+        cmd, run_as=package_name).pGet(None)
     for output in _PrintPerDeviceOutput(devices, outputs):
       for line in output:
         print line
@@ -368,25 +376,27 @@ def _RunShell(devices, devices_obj, apk_package, cmd):
     cmd = [adb_path, '-s', devices[0].serial, 'shell']
     # Pre-N devices do not support -t flag.
     if devices[0].build_version_sdk >= version_codes.NOUGAT:
-      cmd += ['-t', 'run-as', apk_package]
+      cmd += ['-t', 'run-as', package_name]
     else:
       print 'Upon entering the shell, run:'
-      print 'run-as', apk_package
+      print 'run-as', package_name
       print
     os.execv(adb_path, cmd)
 
 
-def _RunCompileDex(devices, devices_obj, apk_package, compilation_filter):
+def _RunCompileDex(devices, package_name, compilation_filter):
   cmd = ['cmd', 'package', 'compile', '-f', '-m', compilation_filter,
-         apk_package]
-  outputs = devices_obj.RunShellCommand(cmd).pGet(None)
+         package_name]
+  parallel_devices = device_utils.DeviceUtils.parallel(devices)
+  outputs = parallel_devices.RunShellCommand(cmd).pGet(None)
   for output in _PrintPerDeviceOutput(devices, outputs):
     for line in output:
       print line
 
 
-# TODO(Yipengw):add "--all" in the MultipleDevicesError message and use it here.
-def _GenerateMissingAllFlagMessage(devices, devices_obj):
+# TODO(agrieve):add "--all" in the MultipleDevicesError message and use it here.
+def _GenerateMissingAllFlagMessage(devices):
+  devices_obj = device_utils.DeviceUtils.parallel(devices)
   descriptions = devices_obj.pMap(lambda d: d.build_description).pGet(None)
   msg = ('More than one device available. Use --all to select all devices, '
          'or use --device to select a device by serial.\n\nAvailable '
@@ -396,102 +406,29 @@ def _GenerateMissingAllFlagMessage(devices, devices_obj):
   return msg
 
 
-def _DisplayArgs(devices, devices_obj, device_args_file):
+def _DisplayArgs(devices, device_args_file):
   def flags_helper(d):
     changer = flag_changer.FlagChanger(d, device_args_file)
     return changer.GetCurrentFlags()
 
-  outputs = devices_obj.pMap(flags_helper).pGet(None)
+  parallel_devices = device_utils.DeviceUtils.parallel(devices)
+  outputs = parallel_devices.pMap(flags_helper).pGet(None)
   print 'Existing flags per-device (via /data/local/tmp/%s):' % device_args_file
   for flags in _PrintPerDeviceOutput(devices, outputs, single_line=True):
     quoted_flags = ' '.join(pipes.quote(f) for f in flags)
     print quoted_flags or 'No flags set.'
 
 
-def _AddCommonOptions(parser):
-  parser.add_argument('--all',
-                      action='store_true',
-                      default=False,
-                      help='Operate on all connected devices.',)
-  parser.add_argument('-d',
-                      '--device',
-                      action='append',
-                      default=[],
-                      dest='devices',
-                      help='Target device for script to work on. Enter '
-                           'multiple times for multiple devices.')
-  parser.add_argument('-v',
-                      '--verbose',
-                      action='count',
-                      default=0,
-                      dest='verbose_count',
-                      help='Verbose level (multiple times for more)')
-
-
-def _AddInstallOptions(parser):
-  parser = parser.add_argument_group('install arguments')
-  parser.add_argument('--incremental',
-                      action='store_true',
-                      default=False,
-                      help='Always install an incremental apk.')
-  parser.add_argument('--non-incremental',
-                      action='store_true',
-                      default=False,
-                      help='Always install a non-incremental apk.')
-
-
-def _AddLaunchOptions(parser):
-  parser = parser.add_argument_group('launch arguments')
-  parser.add_argument('url',
-                      nargs='?',
-                      help='The URL this command launches.')
-
-
-def _AddArgsOptions(parser):
-  parser = parser.add_argument_group('argv arguments')
-  parser.add_argument('--args',
-                      help='The flags set by the user.')
-
-
-def _DeviceCachePath(device):
+def _DeviceCachePath(device, output_directory):
   file_name = 'device_cache_%s.json' % device.serial
-  return os.path.join(constants.GetOutDirectory(), file_name)
+  return os.path.join(output_directory, file_name)
 
 
-def _SelectApk(apk_path, incremental_install_json_path, parser, args):
-  if apk_path and not os.path.exists(apk_path):
-    apk_path = None
-  if (incremental_install_json_path and
-      not os.path.exists(incremental_install_json_path)):
-    incremental_install_json_path = None
-
-  if args.command in ('install', 'run'):
-    if args.incremental and args.non_incremental:
-      parser.error('--incremental and --non-incremental cannot both be used.')
-    elif args.non_incremental:
-      if not apk_path:
-        parser.error('Apk has not been built.')
-      incremental_install_json_path = None
-    elif args.incremental:
-      if not incremental_install_json_path:
-        parser.error('Incremental apk has not been built.')
-      apk_path = None
-
-    if apk_path and incremental_install_json_path:
-      parser.error('Both incremental and non-incremental apks exist, please '
-                   'use --incremental or --non-incremental to select one.')
-    elif apk_path:
-      logging.info('Using the non-incremental apk.')
-    elif incremental_install_json_path:
-      logging.info('Using the incremental apk.')
-    else:
-      parser.error('Neither incremental nor non-incremental apk is built.')
-  return apk_path, incremental_install_json_path
-
-
-def _LoadDeviceCaches(devices):
+def _LoadDeviceCaches(devices, output_directory):
+  if not output_directory:
+    return
   for d in devices:
-    cache_path = _DeviceCachePath(d)
+    cache_path = _DeviceCachePath(d, output_directory)
     if os.path.exists(cache_path):
       logging.debug('Using device cache: %s', cache_path)
       with open(cache_path) as f:
@@ -502,187 +439,416 @@ def _LoadDeviceCaches(devices):
       logging.debug('No cache present for device: %s', d)
 
 
-def _SaveDeviceCaches(devices):
+def _SaveDeviceCaches(devices, output_directory):
+  if not output_directory:
+    return
   for d in devices:
-    cache_path = _DeviceCachePath(d)
+    cache_path = _DeviceCachePath(d, output_directory)
     with open(cache_path, 'w') as f:
       f.write(d.DumpCacheData())
       logging.info('Wrote device cache: %s', cache_path)
 
 
-# target_cpu=None so that old wrapper scripts continue to work without
-# the need for a rebuild.
-def Run(output_directory, apk_path, incremental_install_json_path,
-        command_line_flags_file, target_cpu=None):
-  colorama.init()
-  constants.SetOutputDirectory(output_directory)
+class _Command(object):
+  name = None
+  description = None
+  needs_package_name = False
+  needs_output_directory = False
+  needs_apk_path = False
+  supports_incremental = False
+  accepts_command_line_flags = False
+  accepts_args = False
+  accepts_url = False
+  all_devices_by_default = False
+  calls_exec = False
 
-  parser = argparse.ArgumentParser()
-  command_parsers = parser.add_subparsers(title='Apk operations',
-                                          dest='command')
-  subp = command_parsers.add_parser('install', help='Install the apk.')
-  _AddCommonOptions(subp)
-  _AddInstallOptions(subp)
+  def __init__(self, from_wrapper_script):
+    self._parser = None
+    self._from_wrapper_script = from_wrapper_script
+    self.args = None
+    self.apk_helper = None
+    self.install_dict = None
+    self.devices = None
+    # Do not support incremental install outside the context of wrapper scripts.
+    if not from_wrapper_script:
+      self.supports_incremental = False
 
-  subp = command_parsers.add_parser('uninstall', help='Uninstall the apk.')
-  _AddCommonOptions(subp)
+  def _RegisterExtraArgs(self, subp):
+    pass
 
-  subp = command_parsers.add_parser('launch',
-                                    help='Launches the apk with the given '
-                                    'command-line flags, and optionally the '
-                                    'given URL')
-  _AddCommonOptions(subp)
-  _AddLaunchOptions(subp)
-  _AddArgsOptions(subp)
+  def RegisterArgs(self, parser):
+    subp = parser.add_parser(self.name, help=self.description)
+    self._parser = subp
+    subp.set_defaults(command=self)
+    subp.add_argument('--all',
+                      action='store_true',
+                      default=self.all_devices_by_default,
+                      help='Operate on all connected devices.',)
+    subp.add_argument('-d',
+                      '--device',
+                      action='append',
+                      default=[],
+                      dest='devices',
+                      help='Target device for script to work on. Enter '
+                           'multiple times for multiple devices.')
+    subp.add_argument('-v',
+                      '--verbose',
+                      action='count',
+                      default=0,
+                      dest='verbose_count',
+                      help='Verbose level (multiple times for more)')
+    group = subp.add_argument_group('%s arguments' % self.name)
 
-  subp = command_parsers.add_parser('run', help='Install and launch.')
-  _AddCommonOptions(subp)
-  _AddInstallOptions(subp)
-  _AddLaunchOptions(subp)
-  _AddArgsOptions(subp)
+    if self.needs_package_name:
+      # Always gleaned from apk when using wrapper scripts.
+      group.add_argument('--package-name',
+          help=argparse.SUPPRESS if self._from_wrapper_script else (
+              "App's package name."))
 
-  subp = command_parsers.add_parser('stop', help='Stop apks on all devices')
-  _AddCommonOptions(subp)
+    if self.needs_apk_path or self.needs_package_name:
+      # When passed by wrapper script, don't show in --help.
+      group.add_argument('--apk-path',
+          required=self.needs_apk_path and not self._from_wrapper_script,
+          help=argparse.SUPPRESS if self._from_wrapper_script else (
+              'Path to .apk'))
 
-  subp = command_parsers.add_parser('clear-data',
-                                    help='Clear states for the given package')
-  _AddCommonOptions(subp)
+    if self.supports_incremental:
+      group.add_argument('--incremental',
+                          action='store_true',
+                          default=False,
+                          help='Always install an incremental apk.')
+      group.add_argument('--non-incremental',
+                          action='store_true',
+                          default=False,
+                          help='Always install a non-incremental apk.')
 
-  subp = command_parsers.add_parser('argv',
-                                    help='Display and update flags on devices.')
-  _AddCommonOptions(subp)
-  _AddArgsOptions(subp)
+    # accepts_command_line_flags and accepts_args are mutually exclusive.
+    # argparse will throw if they are both set.
+    if self.accepts_command_line_flags:
+      group.add_argument('--args', help='Command-line flags.')
 
-  subp = command_parsers.add_parser('gdb',
-                                    help='Run build/android/adb_gdb script.')
-  _AddCommonOptions(subp)
-  _AddArgsOptions(subp)
+    if self.accepts_args:
+      group.add_argument('--args', help='Extra arguments.')
 
-  subp = command_parsers.add_parser('logcat',
-                                    help='Run the shell command "adb logcat".')
-  _AddCommonOptions(subp)
+    if self.accepts_url:
+      group.add_argument('url', nargs='?', help='A URL to launch with.')
 
-  subp = command_parsers.add_parser('disk-usage',
-      help='Display disk usage for the APK.')
-  _AddCommonOptions(subp)
+    if not self._from_wrapper_script and self.accepts_command_line_flags:
+      # Provided by wrapper scripts.
+      group.add_argument(
+          '--command-line-flags-file-name',
+          help='Name of the command-line flags file')
 
-  subp = command_parsers.add_parser('mem-usage',
-      help='Display memory usage of currently running APK processes.')
-  _AddCommonOptions(subp)
+    self._RegisterExtraArgs(group)
 
-  subp = command_parsers.add_parser('ps',
-      help='Shows PIDs of any APK processes currently running.')
-  _AddCommonOptions(subp)
+  def ProcessArgs(self, args):
+    devices = device_utils.DeviceUtils.HealthyDevices(
+        device_arg=args.devices,
+        enable_device_files_cache=bool(args.output_directory),
+        default_retries=0)
+    self.args = args
+    self.devices = devices
+    # TODO(agrieve): Device cache should not depend on output directory.
+    #     Maybe put int /tmp?
+    _LoadDeviceCaches(devices, args.output_directory)
 
-  subp = command_parsers.add_parser('shell',
-      help='Same as "adb shell <command>", but runs as the apk\'s uid (via '
-           'run-as). Useful for inspecting the app\'s data directory.')
-  _AddCommonOptions(subp)
-  group = subp.add_argument_group('shell arguments')
-  group.add_argument('cmd', nargs=argparse.REMAINDER, help='Command to run.')
+    try:
+      if len(devices) > 1:
+        if self.calls_exec:
+          self._parser.error(device_errors.MultipleDevicesError(devices))
+        if not args.all and not args.devices:
+          self._parser.error(_GenerateMissingAllFlagMessage(devices))
 
-  subp = command_parsers.add_parser('compile-dex',
-      help='Applicable only for Android N+. Forces .odex files to be compiled '
-           'with the given compilation filter. To see existing filter, use '
-           '"disk-usage" command.')
-  _AddCommonOptions(subp)
-  group = subp.add_argument_group('compile-dex arguments')
-  # Allow only the most useful subset of filters.
-  group.add_argument('compilation_filter',
-                     choices=['verify', 'quicken', 'space-profile', 'space',
-                              'speed-profile', 'speed'],
-                     help='For WebView/Monochrome, use "speed". '
-                          'For other apks, use "speed-profile".')
+      if self.supports_incremental:
+        if args.incremental and args.non_incremental:
+          self._parser.error('Must use only one of --incremental and '
+                             '--non-incremental')
+        elif args.non_incremental:
+          if not args.apk_path:
+            self._parser.error('Apk has not been built.')
+          args.incremental_json = None
+        elif args.incremental:
+          if not args.incremental_json:
+            self._parser.error('Incremental apk has not been built.')
+          args.apk_path = None
+
+        if args.apk_path and args.incremental_json:
+          self._parser.error('Both incremental and non-incremental apks exist. '
+                             'Select using --incremental or --non-incremental')
+        elif not args.apk_path and not args.incremental_json:
+          self._parser.error(
+              'Neither incremental nor non-incremental apk is built.')
+
+      if self.needs_apk_path or args.apk_path:
+        if args.incremental_json:
+          with open(args.incremental_json) as f:
+            self.install_dict = json.load(f)
+          self.apk_helper = apk_helper.ToHelper(
+              os.path.join(args.output_directory,
+                           self.install_dict['apk_path']))
+        else:
+          self.apk_helper = apk_helper.ToHelper(args.apk_path)
+
+      if self.needs_package_name and not args.package_name:
+        if self.apk_helper:
+          args.package_name = self.apk_helper.GetPackageName()
+        else:
+          self._parser.error('One of --package-name or --apk-path is required.')
+
+      # Save cache now if command will not get a chance to afterwards.
+      if self.calls_exec:
+        _SaveDeviceCaches(devices, args.output_directory)
+    except:
+      _SaveDeviceCaches(devices, args.output_directory)
+      raise
+
+
+class _InstallCommand(_Command):
+  name = 'install'
+  description = 'Installs the APK to one or more devices.'
+  needs_apk_path = True
+  supports_incremental = True
+
+  def Run(self):
+    _InstallApk(self.devices, self.apk_helper, self.install_dict)
+
+
+class _UninstallCommand(_Command):
+  name = 'uninstall'
+  description = 'Removes the APK to one or more devices.'
+  needs_package_name = True
+
+  def Run(self):
+    _UninstallApk(self.devices, self.install_dict, self.args.package_name)
+
+
+class _LaunchCommand(_Command):
+  name = 'launch'
+  description = ('Sends a launch intent for the APK after first writing the '
+                 'command-line flags file.')
+  # TODO(agrieve): Launch could be changed to require only package name by
+  #     parsing "dumpsys package" for launch & view activities.
+  needs_apk_path = True
+  accepts_command_line_flags = True
+  accepts_url = True
+  all_devices_by_default = True
+
+  def Run(self):
+    _LaunchUrl(self.devices, self.args.args, self.args.command_line_flags_file,
+               self.args.url, self.apk_helper)
+
+
+class _RunCommand(_Command):
+  name = 'run'
+  description = 'Install and then launch.'
+  needs_apk_path = True
+  supports_incremental = True
+  needs_package_name = True
+  accepts_command_line_flags = True
+  accepts_url = True
+
+  def Run(self):
+    logging.warning('Installing...')
+    _InstallApk(self.devices, self.apk_helper, self.install_dict)
+    logging.warning('Sending launch intent...')
+    _LaunchUrl(self.devices, self.args.args, self.args.command_line_flags_file,
+               self.args.url, self.apk_helper)
+
+
+class _StopCommand(_Command):
+  name = 'stop'
+  description = 'Force-stops the app.'
+  needs_package_name = True
+  all_devices_by_default = True
+
+  def Run(self):
+    device_utils.DeviceUtils.parallel(self.devices).ForceStop(
+        self.args.package_name)
+
+
+class _ClearDataCommand(_Command):
+  name = 'clear-data'
+  descriptions = 'Clears all app data.'
+  needs_package_name = True
+  all_devices_by_default = True
+
+  def Run(self):
+    device_utils.DeviceUtils.parallel(self.devices).ClearApplicationState(
+        self.args.package_name)
+
+
+class _ArgvCommand(_Command):
+  name = 'argv'
+  description = 'Display and optionally update command-line flags file.'
+  needs_package_name = True
+  accepts_command_line_flags = True
+  all_devices_by_default = True
+
+  def Run(self):
+    _ChangeFlags(self.devices, self.args.args,
+                 self.args.command_line_flags_file)
+
+
+class _GdbCommand(_Command):
+  name = 'gdb'
+  description = 'Runs //build/android/adb_gdb with apk-specific args.'
+  needs_package_name = True
+  needs_output_directory = True
+  accepts_args = True
+  calls_exec = True
+
+  def Run(self):
+    extra_args = shlex.split(self.args.args or '')
+    _RunGdb(self.devices[0], self.args.package_name, self.args.output_directory,
+            self.args.target_cpu, extra_args, bool(self.args.verbose_count))
+
+
+class _LogcatCommand(_Command):
+  name = 'logcat'
+  description = 'Runs "adb logcat"'
+  calls_exec = True
+
+  def Run(self):
+    adb_path = adb_wrapper.AdbWrapper.GetAdbPath()
+    cmd = [adb_path, '-s', self.devices[0].serial, 'logcat']
+    os.execv(adb_path, cmd)
+
+
+class _PsCommand(_Command):
+  name = 'ps'
+  description = 'Show PIDs of any APK processes currently running.'
+  needs_package_name = True
+  all_devices_by_default = True
+
+  def Run(self):
+    _RunPs(self.devices, self.args.package_name)
+
+
+class _DiskUsageCommand(_Command):
+  name = 'disk-usage'
+  description = 'Show how much device storage is being consumed by the app.'
+  needs_package_name = True
+  all_devices_by_default = True
+
+  def Run(self):
+    _RunDiskUsage(self.devices, self.args.package_name,
+                  bool(self.args.verbose_count))
+
+
+class _MemUsageCommand(_Command):
+  name = 'mem-usage'
+  description = 'Show memory usage of currently running APK processes.'
+  needs_package_name = True
+  all_devices_by_default = True
+
+  def Run(self):
+    _RunMemUsage(self.devices, self.args.package_name)
+
+
+class _ShellCommand(_Command):
+  name = 'shell'
+  description = ('Same as "adb shell <command>", but runs as the apk\'s uid '
+                 '(via run-as). Useful for inspecting the app\'s data '
+                 'directory.')
+  needs_package_name = True
+
+  @property
+  def calls_exec(self):
+    return not self.args.cmd
+
+  def _RegisterExtraArgs(self, group):
+    group.add_argument(
+        'cmd', nargs=argparse.REMAINDER, help='Command to run.')
+
+  def Run(self):
+    _RunShell(self.devices, self.args.package_name, self.args.cmd)
+
+
+class _CompileDexCommand(_Command):
+  name = 'compile-dex'
+  description = ('Applicable only for Android N+. Forces .odex files to be '
+                 'compiled with the given compilation filter. To see existing '
+                 'filter, use "disk-usage" command.')
+  needs_package_name = True
+  all_devices_by_default = True
+
+  def _RegisterExtraArgs(self, group):
+    group.add_argument(
+        'compilation_filter',
+        choices=['verify', 'quicken', 'space-profile', 'space',
+                 'speed-profile', 'speed'],
+        help='For WebView/Monochrome, use "speed". For other apks, use '
+             '"speed-profile".')
+
+  def Run(self):
+    _RunCompileDex(self.devices, self.args.package_name,
+                   self.args.compilation_filter)
+
+
+_COMMANDS = [
+    _InstallCommand,
+    _UninstallCommand,
+    _LaunchCommand,
+    _StopCommand,
+    _ClearDataCommand,
+    _ArgvCommand,
+    _GdbCommand,
+    _LogcatCommand,
+    _PsCommand,
+    _DiskUsageCommand,
+    _MemUsageCommand,
+    _ShellCommand,
+    _CompileDexCommand,
+]
+
+
+def _ParseArgs(parser, from_wrapper_script):
+  subparsers = parser.add_subparsers()
+  commands = [clazz(from_wrapper_script) for clazz in _COMMANDS]
+  for command in commands:
+    if from_wrapper_script or not command.needs_output_directory:
+      command.RegisterArgs(subparsers)
 
   # Show extended help when no command is passed.
   argv = sys.argv[1:]
   if not argv:
     argv = ['--help']
-  args = parser.parse_args(argv)
+
+  return parser.parse_args(argv)
+
+
+def _RunInternal(parser, output_directory=None):
+  colorama.init()
+  parser.set_defaults(output_directory=output_directory)
+  from_wrapper_script = bool(output_directory)
+  args = _ParseArgs(parser, from_wrapper_script)
   run_tests_helper.SetLogLevel(args.verbose_count)
-  command = args.command
+  args.command.ProcessArgs(args)
+  args.command.Run()
+  _SaveDeviceCaches(args.command.devices, output_directory)
 
+
+# TODO(agrieve): Remove =None from target_cpu on or after October 2017.
+#     It exists only so that stale wrapper scripts continue to work.
+def Run(output_directory, apk_path, incremental_json, command_line_flags_file,
+        target_cpu=None):
+  """Entry point for generated wrapper scripts."""
+  constants.SetOutputDirectory(output_directory)
+  devil_chromium.Initialize(output_directory=output_directory)
+  parser = argparse.ArgumentParser()
+  parser.set_defaults(
+      command_line_flags_file=command_line_flags_file,
+      target_cpu=target_cpu,
+      apk_path=apk_path if os.path.exists(apk_path) else None,
+      incremental_json=(
+          incremental_json if os.path.exists(incremental_json) else None))
+  _RunInternal(parser, output_directory=output_directory)
+
+
+def main():
   devil_chromium.Initialize()
+  _RunInternal(argparse.ArgumentParser(), output_directory=None)
 
-  devices = device_utils.DeviceUtils.HealthyDevices(
-      device_arg=args.devices,
-      enable_device_files_cache=True,
-      default_retries=0)
-  devices_obj = device_utils.DeviceUtils.parallel(devices)
-  _LoadDeviceCaches(devices)
 
-  try:
-    if len(devices) > 1:
-      if command in ('gdb', 'logcat') or command == 'shell' and not args.cmd:
-        raise device_errors.MultipleDevicesError(devices)
-    default_all = command in ('argv', 'stop', 'clear-data', 'disk-usage',
-                              'mem-usage', 'ps', 'compile-dex')
-    if default_all or args.devices:
-      args.all = True
-    if len(devices) > 1 and not args.all:
-      raise Exception(_GenerateMissingAllFlagMessage(devices, devices_obj))
-  except:
-    _SaveDeviceCaches(devices)
-    raise
-
-  apk_name = os.path.basename(apk_path)
-  apk_path, incremental_install_json_path = _SelectApk(
-      apk_path, incremental_install_json_path, parser, args)
-  install_dict = None
-
-  if incremental_install_json_path:
-    with open(incremental_install_json_path) as f:
-      install_dict = json.load(f)
-    apk = apk_helper.ToHelper(
-        os.path.join(output_directory, install_dict['apk_path']))
-  else:
-    apk = apk_helper.ToHelper(apk_path)
-
-  apk_package = apk.GetPackageName()
-
-  # These commands use os.exec(), so we won't get a chance to update the cache
-  # afterwards.
-  if command in ('gdb', 'logcat', 'shell'):
-    _SaveDeviceCaches(devices)
-
-  if command == 'install':
-    _InstallApk(apk, install_dict, devices_obj)
-  elif command == 'uninstall':
-    _UninstallApk(install_dict, devices_obj, apk_package)
-  elif command == 'launch':
-    _LaunchUrl(devices_obj, args.args, command_line_flags_file,
-               args.url, apk)
-  elif command == 'run':
-    logging.warning('Installing...')
-    _InstallApk(apk, install_dict, devices_obj)
-    logging.warning('Sending launch intent...')
-    _LaunchUrl(devices_obj, args.args, command_line_flags_file,
-               args.url, apk)
-  elif command == 'stop':
-    devices_obj.ForceStop(apk_package)
-  elif command == 'clear-data':
-    devices_obj.ClearApplicationState(apk_package)
-  elif command == 'argv':
-    _ChangeFlags(devices, devices_obj, args.args,
-                 command_line_flags_file)
-  elif command == 'gdb':
-    extra_args = shlex.split(args.args or '')
-    _RunGdb(apk_name, apk_package, devices[0], target_cpu, extra_args,
-            args.verbose_count)
-  elif command == 'logcat':
-    adb_path = adb_wrapper.AdbWrapper.GetAdbPath()
-    cmd = [adb_path, '-s', devices[0].serial, 'logcat']
-    os.execv(adb_path, cmd)
-  elif command == 'mem-usage':
-    _RunMemUsage(devices, devices_obj, apk_package)
-  elif command == 'disk-usage':
-    _RunDiskUsage(devices, devices_obj, apk_package, args.verbose_count)
-  elif command == 'ps':
-    _RunPs(devices, devices_obj, apk_package)
-  elif command == 'shell':
-    _RunShell(devices, devices_obj, apk_package, args.cmd)
-  elif command == 'compile-dex':
-    _RunCompileDex(devices, devices_obj, apk_package, args.compilation_filter)
-
-  # Save back to the cache.
-  _SaveDeviceCaches(devices)
+if __name__ == '__main__':
+  sys.exit(main())
