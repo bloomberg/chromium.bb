@@ -458,6 +458,8 @@ void PasswordFormManager::Update(
   form_saver_->Update(pending_credentials_, best_matches_,
                       &more_credentials_to_update,
                       old_primary_key ? &old_primary_key.value() : nullptr);
+
+  password_manager_->UpdateFormManagers();
 }
 
 void PasswordFormManager::UpdateUsername(const base::string16& new_username) {

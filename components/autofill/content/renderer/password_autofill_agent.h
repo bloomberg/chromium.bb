@@ -276,6 +276,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   WebInputToPasswordInfoMap web_input_to_password_info_;
   // A (sort-of) reverse map to |web_input_to_password_info_|.
   PasswordToLoginMap password_to_username_;
+  // The chronologically last insertion into |web_input_to_password_info_|.
+  WebInputToPasswordInfoMap::iterator last_supplied_password_info_iter_;
 
   // Set if the user might be submitting a password form on the current page,
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).

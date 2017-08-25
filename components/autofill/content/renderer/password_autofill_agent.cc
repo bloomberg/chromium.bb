@@ -694,6 +694,8 @@ PasswordAutofillAgent::PasswordAutofillAgent(
     content::RenderFrame* render_frame,
     service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
+      web_input_to_password_info_(),
+      last_supplied_password_info_iter_(web_input_to_password_info_.end()),
       logging_state_active_(false),
       was_username_autofilled_(false),
       was_password_autofilled_(false),
@@ -956,9 +958,7 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
       if (password_iter == password_to_username_.end()) {
         if (web_input_to_password_info_.empty())
           return false;
-        // Now all PasswordInfo items refer to the same set of credentials for
-        // fill, so it is ok to take any of them.
-        iter = web_input_to_password_info_.begin();
+        iter = last_supplied_password_info_iter_;
       } else {
         *username_element = password_iter->second;
       }
@@ -1624,17 +1624,13 @@ void PasswordAutofillAgent::GetFillableElementFromFormData(
     blink::WebInputElement main_element =
         username_element.IsNull() ? password_element : username_element;
 
-    // We might have already filled this form if there are two <form> elements
-    // with identical markup.
-    if (web_input_to_password_info_.find(main_element) !=
-        web_input_to_password_info_.end())
-      continue;
-
     PasswordInfo password_info;
     password_info.fill_data = form_data;
     password_info.key = key;
     password_info.password_field = password_element;
     web_input_to_password_info_[main_element] = password_info;
+    last_supplied_password_info_iter_ =
+        web_input_to_password_info_.find(main_element);
     if (!main_element.IsPasswordField())
       password_to_username_[password_element] = username_element;
     if (elements)
@@ -1652,6 +1648,7 @@ void PasswordAutofillAgent::GetFillableElementFromFormData(
     password_info.fill_data = form_data;
     password_info.key = key;
     web_input_to_password_info_[blink::WebInputElement()] = password_info;
+    last_supplied_password_info_iter_ = web_input_to_password_info_.begin();
   }
 }
 
