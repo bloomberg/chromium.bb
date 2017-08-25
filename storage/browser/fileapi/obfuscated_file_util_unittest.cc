@@ -1674,10 +1674,7 @@ TEST_F(ObfuscatedFileUtilTest, TestOriginEnumerator) {
   EXPECT_TRUE(diff.empty());
 }
 
-// Disabled as flaky on all platforms. Very frequently fails on an assertion in
-// GetUsageFromQuotaManager. (Quota status is 'unknown' rather than 'ok'.)
-// https://crbug.com/758232
-TEST_F(ObfuscatedFileUtilTest, DISABLED_TestRevokeUsageCache) {
+TEST_F(ObfuscatedFileUtilTest, TestRevokeUsageCache) {
   std::unique_ptr<FileSystemOperationContext> context(NewContext(NULL));
 
   int64_t expected_quota = 0;
