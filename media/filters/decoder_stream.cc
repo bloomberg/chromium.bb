@@ -654,8 +654,11 @@ void DecoderStream<StreamType>::OnBufferReady(
     //   lost frames if we were to fallback then).
     pending_buffers_.clear();
 
+    const DecoderConfig& config = StreamTraits::GetDecoderConfig(stream_);
+    traits_.OnConfigChanged(config);
+
     if (!config_change_observer_cb_.is_null())
-      config_change_observer_cb_.Run(StreamTraits::GetDecoderConfig(stream_));
+      config_change_observer_cb_.Run(config);
 
     state_ = STATE_FLUSHING_DECODER;
     if (!reset_cb_.is_null()) {

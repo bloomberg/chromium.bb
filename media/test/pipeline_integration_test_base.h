@@ -15,6 +15,7 @@
 #include "media/audio/clockless_audio_sink.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/demuxer.h"
+#include "media/base/mock_media_log.h"
 #include "media/base/null_video_sink.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/pipeline_status.h"
@@ -24,6 +25,8 @@
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
+
+using ::testing::NiceMock;
 
 namespace media {
 
@@ -150,7 +153,7 @@ class PipelineIntegrationTestBase : public Pipeline::Client {
       CreateAudioDecodersCB prepend_audio_decoders_cb);
 
  protected:
-  MediaLog media_log_;
+  NiceMock<MockMediaLog> media_log_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   base::MD5Context md5_context_;
   bool hashing_enabled_;
