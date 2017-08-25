@@ -78651,6 +78651,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.PageLoad.ActivationList"
+    enum="ActivationList">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The ActivationList or NONE that the main frame navigation matched with.
+    Recorded at NavigationThrottle destruction (i.e. the end of the navigation).
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.PageLoad.ActivationState"
     enum="SubresourceFilterActivationState">
   <owner>csharrison@chromium.org</owner>
@@ -78662,6 +78671,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="SubresourceFilter.PageLoad.FinalURLMatch"
     enum="BooleanMatched">
+  <obsolete>
+    Deprecated in favor of SubresourceFilter.PageLoad.ActivationList.
+  </obsolete>
   <owner>melandory@chromium.org</owner>
   <summary>
     Records, for each main frame navigation, whether the last URL in the

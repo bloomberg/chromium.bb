@@ -69,7 +69,7 @@ const char kSafeBrowsingNavigationDelayNoSpeculation[] =
 const char kSafeBrowsingCheckTime[] =
     "SubresourceFilter.SafeBrowsing.CheckTime";
 const char kMatchesPatternHistogramName[] =
-    "SubresourceFilter.PageLoad.FinalURLMatch.";
+    "SubresourceFilter.PageLoad.ActivationList";
 const char kNavigationChainSize[] =
     "SubresourceFilter.PageLoad.RedirectChainLength.";
 
@@ -147,13 +147,6 @@ const ActivationListTestData kActivationListTestData[] = {
      safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
      safe_browsing::ThreatPatternType::NONE},
 };
-
-void ExpectSampleForSuffix(const std::string& suffix,
-                           const std::string& match_suffix,
-                           const base::HistogramTester& tester) {
-  tester.ExpectUniqueSample(kMatchesPatternHistogramName + suffix,
-                            (suffix == match_suffix), 1);
-}
 
 }  //  namespace
 
@@ -860,19 +853,18 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
        ListNotMatched_NoActivation) {
   const ActivationListTestData& test_data = GetParam();
   const GURL url(kURL);
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   SimulateStartAndExpectProceed(url);
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             *observer()->GetPageActivationForLastCommittedLoad());
-  ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", std::string(),
-                        tester());
-  ExpectSampleForSuffix("PhishingInterstitial", std::string(), tester());
-  ExpectSampleForSuffix("SubresourceFilterOnly", std::string(), tester());
+  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+                              static_cast<int>(ActivationList::NONE), 1);
 
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelay, 1);
   tester().ExpectTotalCount(kSafeBrowsingNavigationDelayNoSpeculation, 1);
   tester().ExpectTotalCount(kSafeBrowsingCheckTime, 1);
+
+  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   tester().ExpectTotalCount(kNavigationChainSize + suffix, 0);
 }
 
@@ -885,10 +877,10 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
+  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+                              static_cast<int>(test_data.activation_list_type),
+                              1);
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
-  ExpectSampleForSuffix("PhishingInterstitial", suffix, tester());
-  ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester());
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 1, 1);
 }
 
@@ -896,16 +888,15 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
        ListNotMatchedAfterRedirect_NoActivation) {
   const ActivationListTestData& test_data = GetParam();
   const GURL url(kURL);
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   SimulateStartAndExpectProceed(url);
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
             *observer()->GetPageActivationForLastCommittedLoad());
-  ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", std::string(),
-                        tester());
-  ExpectSampleForSuffix("PhishingInterstitial", std::string(), tester());
-  ExpectSampleForSuffix("SubresourceFilterOnly", std::string(), tester());
+  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+                              static_cast<int>(ActivationList::NONE), 1);
+
+  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   tester().ExpectTotalCount(kNavigationChainSize + suffix, 0);
 }
 
@@ -913,17 +904,18 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
        ListMatchedAfterRedirect_Activation) {
   const ActivationListTestData& test_data = GetParam();
   const GURL url(kURL);
-  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   ConfigureForMatchParam(GURL(kRedirectURL));
   SimulateStartAndExpectProceed(url);
   SimulateRedirectAndExpectProceed(GURL(kRedirectURL));
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
+  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+                              static_cast<int>(test_data.activation_list_type),
+                              1);
+
+  const std::string suffix(GetSuffixForList(test_data.activation_list_type));
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 2, 1);
-  ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
-  ExpectSampleForSuffix("PhishingInterstitial", suffix, tester());
-  ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester());
 }
 
 TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
@@ -968,10 +960,11 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
+  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+                              static_cast<int>(test_data.activation_list_type),
+                              1);
+
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
-  ExpectSampleForSuffix("PhishingInterstitial", suffix, tester());
-  ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester());
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 1, 1);
 
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
@@ -996,10 +989,11 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
   SimulateCommitAndExpectProceed();
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
+  tester().ExpectUniqueSample(kMatchesPatternHistogramName,
+                              static_cast<int>(test_data.activation_list_type),
+                              1);
+
   const std::string suffix(GetSuffixForList(test_data.activation_list_type));
-  ExpectSampleForSuffix("SocialEngineeringAdsInterstitial", suffix, tester());
-  ExpectSampleForSuffix("PhishingInterstitial", suffix, tester());
-  ExpectSampleForSuffix("SubresourceFilterOnly", suffix, tester());
   tester().ExpectUniqueSample(kNavigationChainSize + suffix, 2, 1);
 
   tester().ExpectTimeBucketCount(kSafeBrowsingNavigationDelay,
@@ -1077,10 +1071,10 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleParamTest,
     auto check_histogram = [&](std::string suffix) {
       bool matches =
           suffix == suffix_param && test_data.blacklisted_urls.back();
-      histogram_tester.ExpectBucketCount(kMatchesPatternHistogramName + suffix,
-                                         matches, 1);
-
       if (matches) {
+        histogram_tester.ExpectUniqueSample(
+            kMatchesPatternHistogramName,
+            static_cast<int>(GetParam().activation_list_type), 1);
         histogram_tester.ExpectBucketCount(kNavigationChainSize + suffix,
                                            test_data.navigation_chain.size(),
                                            1);

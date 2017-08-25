@@ -388,6 +388,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Use resource from cache"/>
 </enum>
 
+<enum name="ActivationList">
+  <int value="0" label="No match"/>
+  <int value="1" label="Social Eng Ads Interstitial"/>
+  <int value="2" label="Phishing Interstitial"/>
+  <int value="3" label="Subresource Filter"/>
+</enum>
+
 <enum name="ActiveWindowShowType">
   <int value="0" label="No Active Window"/>
   <int value="1" label="Other"/>

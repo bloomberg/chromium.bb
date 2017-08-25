@@ -75,8 +75,6 @@ class SubresourceFilterSafeBrowsingActivationThrottle
       const Configuration::ActivationConditions& conditions,
       ActivationList matched_list) const;
 
-  void RecordRedirectChainMatchPatternForList(ActivationList activation_list);
-
   std::vector<SubresourceFilterSafeBrowsingClient::CheckResult> check_results_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
