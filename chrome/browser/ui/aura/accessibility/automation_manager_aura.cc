@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_event_router.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/extensions/api/automation_api_constants.h"
 #include "chrome/common/extensions/chrome_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -29,10 +30,48 @@
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"           // nogncheck
 #include "ash/wm/window_util.h"  // nogncheck
+#include "components/session_manager/core/session_manager.h"
 #endif
 
 using content::BrowserContext;
 using extensions::AutomationEventRouter;
+
+namespace {
+
+// Returns default browser context for sending events in case it was not
+// provided.
+BrowserContext* GetDefaultEventContext() {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  if (!profile_manager)
+    return nullptr;
+
+#if defined(OS_CHROMEOS)
+  session_manager::SessionManager* session_manager =
+      session_manager::SessionManager::Get();
+  // It is not guaranteed that user profile creation is completed for
+  // some session states. In this case use default profile.
+  const session_manager::SessionState session_state =
+      session_manager ? session_manager->session_state()
+                      : session_manager::SessionState::UNKNOWN;
+  switch (session_state) {
+    case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
+    case session_manager::SessionState::ACTIVE:
+    case session_manager::SessionState::LOCKED:
+      break;
+    case session_manager::SessionState::UNKNOWN:
+    case session_manager::SessionState::OOBE:
+    case session_manager::SessionState::LOGIN_PRIMARY:
+    case session_manager::SessionState::LOGIN_SECONDARY:
+      const base::FilePath defult_profile_dir =
+          profiles::GetDefaultProfileDir(profile_manager->user_data_dir());
+      return profile_manager->GetProfileByPath(defult_profile_dir);
+  }
+#endif
+
+  return ProfileManager::GetLastUsedProfile();
+}
+
+}  // namespace
 
 // static
 AutomationManagerAura* AutomationManagerAura::GetInstance() {
@@ -135,9 +174,8 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   if (!current_tree_serializer_)
     return;
 
-  if (!context && g_browser_process->profile_manager()) {
-    context = g_browser_process->profile_manager()->GetLastUsedProfile();
-  }
+  if (!context)
+    context = GetDefaultEventContext();
 
   if (!context) {
     LOG(WARNING) << "Accessibility notification but no browser context";
