@@ -1100,10 +1100,13 @@ TEST(AutofillProfileTest, ValidityStates) {
   // Make sure setting the validity state works.
   profile.SetValidityState(ADDRESS_HOME_COUNTRY, AutofillProfile::VALID);
   profile.SetValidityState(ADDRESS_HOME_CITY, AutofillProfile::INVALID);
+  profile.SetValidityState(ADDRESS_HOME_STATE, AutofillProfile::EMPTY);
   EXPECT_EQ(AutofillProfile::VALID,
             profile.GetValidityState(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(AutofillProfile::INVALID,
             profile.GetValidityState(ADDRESS_HOME_CITY));
+  EXPECT_EQ(AutofillProfile::EMPTY,
+            profile.GetValidityState(ADDRESS_HOME_STATE));
 }
 
 TEST(AutofillProfileTest, ValidityStates_UnsupportedTypes) {

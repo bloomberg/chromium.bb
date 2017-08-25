@@ -44,11 +44,14 @@ class AutofillProfile : public AutofillDataModel {
     // The field has not been validated.
     UNVALIDATED,
 
-    // The field is invalid.
-    INVALID,
+    // The field is empty.
+    EMPTY,
 
     // The field is valid.
     VALID,
+
+    // The field is invalid.
+    INVALID,
 
     // The validation for the field is unsupported.
     UNSUPPORTED,
