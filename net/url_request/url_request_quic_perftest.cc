@@ -241,10 +241,9 @@ TEST_F(URLRequestQuicPerfTest, TestGetRequest) {
   auto on_memory_dump_done =
       [](base::Closure quit_closure, const URLRequestContext* context,
          bool success, uint64_t dump_guid,
-         const base::trace_event::ProcessMemoryDumpsMap& dumps) {
+         std::unique_ptr<base::trace_event::ProcessMemoryDump> pmd) {
         ASSERT_TRUE(success);
-        ASSERT_EQ(1u, dumps.size());
-        const auto& allocator_dumps = dumps.begin()->second->allocator_dumps();
+        const auto& allocator_dumps = pmd->allocator_dumps();
 
         auto it = allocator_dumps.find(
             base::StringPrintf("net/url_request_context/unknown/0x%" PRIxPTR,

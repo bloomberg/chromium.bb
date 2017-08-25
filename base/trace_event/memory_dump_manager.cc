@@ -474,8 +474,7 @@ void MemoryDumpManager::CreateProcessDump(
   if (!is_initialized()) {
     VLOG(1) << "CreateProcessDump() FAIL: MemoryDumpManager is not initialized";
     if (!callback.is_null()) {
-      callback.Run(false /* success */, args.dump_guid,
-                   ProcessMemoryDumpsMap());
+      callback.Run(false /* success */, args.dump_guid, nullptr);
     }
     return;
   }
@@ -507,8 +506,7 @@ void MemoryDumpManager::CreateProcessDump(
     if (args.dump_type != MemoryDumpType::SUMMARY_ONLY &&
         heap_profiling_state_ == HeapProfilingState::ENABLED &&
         !heap_profiler_serialization_state_) {
-      callback.Run(false /* success */, args.dump_guid,
-                   ProcessMemoryDumpsMap());
+      callback.Run(false /* success */, args.dump_guid, nullptr);
       return;
     }
 
@@ -668,15 +666,9 @@ void MemoryDumpManager::InvokeOnMemoryDump(
     provider_name_for_debugging[sizeof(provider_name_for_debugging) - 1] = '\0';
     base::debug::Alias(provider_name_for_debugging);
 
-    // Pid of the target process being dumped. Often kNullProcessId (= current
-    // process), non-zero when the coordinator process creates dumps on behalf
-    // of child processes (see crbug.com/461788).
-    ProcessId target_pid = mdpinfo->options.target_pid;
-    MemoryDumpArgs args = {pmd_async_state->req_args.level_of_detail};
-    ProcessMemoryDump* pmd =
-        pmd_async_state->GetOrCreateMemoryDumpContainerForProcess(target_pid,
-                                                                  args);
-    bool dump_successful = mdpinfo->dump_provider->OnMemoryDump(args, pmd);
+    ProcessMemoryDump* pmd = pmd_async_state->process_memory_dump.get();
+    bool dump_successful =
+        mdpinfo->dump_provider->OnMemoryDump(pmd->dump_args(), pmd);
     mdpinfo->consecutive_failures =
         dump_successful ? 0 : mdpinfo->consecutive_failures + 1;
   }
@@ -702,8 +694,9 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
   TRACE_EVENT0(kTraceCategory, "MemoryDumpManager::FinalizeDumpAndAddToTrace");
 
   if (!pmd_async_state->callback.is_null()) {
-    pmd_async_state->callback.Run(pmd_async_state->dump_successful, dump_guid,
-                                  std::move(pmd_async_state->process_dumps));
+    pmd_async_state->callback.Run(
+        pmd_async_state->dump_successful, dump_guid,
+        std::move(pmd_async_state->process_memory_dump));
     pmd_async_state->callback.Reset();
   }
 
@@ -813,33 +806,24 @@ MemoryDumpManager::ProcessMemoryDumpAsyncState::ProcessMemoryDumpAsyncState(
     MemoryDumpRequestArgs req_args,
     const MemoryDumpProviderInfo::OrderedSet& dump_providers,
     scoped_refptr<HeapProfilerSerializationState>
-        heap_profiler_serialization_state,
+        heap_profiler_serialization_state_in,
     ProcessMemoryDumpCallback callback,
     scoped_refptr<SequencedTaskRunner> dump_thread_task_runner)
     : req_args(req_args),
       heap_profiler_serialization_state(
-          std::move(heap_profiler_serialization_state)),
+          std::move(heap_profiler_serialization_state_in)),
       callback(callback),
       dump_successful(true),
       callback_task_runner(ThreadTaskRunnerHandle::Get()),
       dump_thread_task_runner(std::move(dump_thread_task_runner)) {
   pending_dump_providers.reserve(dump_providers.size());
   pending_dump_providers.assign(dump_providers.rbegin(), dump_providers.rend());
+  MemoryDumpArgs args = {req_args.level_of_detail};
+  process_memory_dump =
+      MakeUnique<ProcessMemoryDump>(heap_profiler_serialization_state, args);
 }
 
 MemoryDumpManager::ProcessMemoryDumpAsyncState::~ProcessMemoryDumpAsyncState() {
-}
-
-ProcessMemoryDump* MemoryDumpManager::ProcessMemoryDumpAsyncState::
-    GetOrCreateMemoryDumpContainerForProcess(ProcessId pid,
-                                             const MemoryDumpArgs& dump_args) {
-  auto iter = process_dumps.find(pid);
-  if (iter == process_dumps.end()) {
-    std::unique_ptr<ProcessMemoryDump> new_pmd(
-        new ProcessMemoryDump(heap_profiler_serialization_state, dump_args));
-    iter = process_dumps.insert(std::make_pair(pid, std::move(new_pmd))).first;
-  }
-  return iter->second.get();
 }
 
 }  // namespace trace_event

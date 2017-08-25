@@ -598,48 +598,6 @@ TEST_F(MemoryTracingIntegrationTest, TestSummaryComputation) {
   EXPECT_EQ(4u, (*result)->partition_alloc_total_kb);
 };
 
-TEST_F(MemoryTracingIntegrationTest, DumpOnBehalfOfOtherProcess) {
-  InitializeClientProcess(mojom::ProcessType::RENDERER);
-  using trace_analyzer::Query;
-
-  // Standard provider with default options (create dump for current process).
-  MemoryDumpProvider::Options options;
-  MockMemoryDumpProvider mdp1;
-  RegisterDumpProvider(&mdp1, nullptr, options);
-
-  // Provider with out-of-process dumping.
-  MockMemoryDumpProvider mdp2;
-  options.target_pid = 123;
-  RegisterDumpProvider(&mdp2, nullptr, options);
-
-  // Another provider with out-of-process dumping.
-  MockMemoryDumpProvider mdp3;
-  options.target_pid = 456;
-  RegisterDumpProvider(&mdp3, nullptr, options);
-
-  EnableMemoryInfraTracing();
-  EXPECT_CALL(mdp1, OnMemoryDump(_, _)).Times(1);
-  EXPECT_CALL(mdp2, OnMemoryDump(_, _)).Times(1);
-  EXPECT_CALL(mdp3, OnMemoryDump(_, _)).Times(1);
-  EXPECT_TRUE(RequestChromeDumpAndWait(MemoryDumpType::EXPLICITLY_TRIGGERED,
-                                       MemoryDumpLevelOfDetail::DETAILED));
-  DisableTracing();
-
-  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
-      GetDeserializedTrace();
-  trace_analyzer::TraceEventVector events;
-  analyzer->FindEvents(Query::EventPhaseIs(TRACE_EVENT_PHASE_MEMORY_DUMP),
-                       &events);
-
-  ASSERT_EQ(3u, events.size());
-  ASSERT_EQ(1u, trace_analyzer::CountMatches(events, Query::EventPidIs(123)));
-  ASSERT_EQ(1u, trace_analyzer::CountMatches(events, Query::EventPidIs(456)));
-  ASSERT_EQ(1u, trace_analyzer::CountMatches(
-                    events, Query::EventPidIs(base::GetCurrentProcId())));
-  ASSERT_EQ(events[0]->id, events[1]->id);
-  ASSERT_EQ(events[0]->id, events[2]->id);
-}
-
 TEST_F(MemoryTracingIntegrationTest, TestPollingOnDumpThread) {
   InitializeClientProcess(mojom::ProcessType::RENDERER);
   std::unique_ptr<MockMemoryDumpProvider> mdp1(new MockMemoryDumpProvider());

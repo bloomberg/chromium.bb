@@ -74,9 +74,10 @@ class MemoryTracingTest : public ContentBrowserTest {
       const MemoryDumpLevelOfDetail& level_of_detail,
       const base::Closure& closure) {
     uint32_t request_index = next_request_index_++;
-    base::trace_event::GlobalMemoryDumpCallback callback = base::Bind(
-        &MemoryTracingTest::OnGlobalMemoryDumpDone, base::Unretained(this),
-        base::ThreadTaskRunnerHandle::Get(), closure, request_index);
+    memory_instrumentation::MemoryInstrumentation::
+        RequestGlobalDumpAndAppendToTraceCallback callback = base::Bind(
+            &MemoryTracingTest::OnGlobalMemoryDumpDone, base::Unretained(this),
+            base::ThreadTaskRunnerHandle::Get(), closure, request_index);
     if (from_renderer_thread) {
       PostTaskToInProcessRendererAndWait(base::Bind(
           &memory_instrumentation::MemoryInstrumentation::
