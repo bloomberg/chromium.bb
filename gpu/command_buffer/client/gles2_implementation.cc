@@ -343,7 +343,7 @@ void GLES2Implementation::FreeUnusedSharedMemory() {
 
 void GLES2Implementation::FreeEverything() {
   WaitForCmd();
-  query_tracker_->Shrink();
+  query_tracker_->Shrink(helper_);
   FreeUnusedSharedMemory();
   transfer_buffer_->Free();
   helper_->FreeRingBuffer();

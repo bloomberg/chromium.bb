@@ -3389,11 +3389,11 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   struct EndCmds {
     cmds::EndQueryEXT end_query;
   };
+  commands = GetPut();
+  gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
   EndCmds expected_end_cmds;
   expected_end_cmds.end_query.Init(
       GL_ANY_SAMPLES_PASSED_EXT, query->submit_count());
-  commands = GetPut();
-  gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
   EXPECT_EQ(0, memcmp(
       &expected_end_cmds, commands, sizeof(expected_end_cmds)));
 
@@ -3406,11 +3406,12 @@ TEST_F(GLES2ImplementationTest, BeginEndQueryEXT) {
   // Test 2nd Begin/End increments count.
   base::subtle::Atomic32 old_submit_count = query->submit_count();
   gl_->BeginQueryEXT(GL_ANY_SAMPLES_PASSED_EXT, id1);
+  EXPECT_EQ(old_submit_count, query->submit_count());
+  commands = GetPut();
+  gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
   EXPECT_NE(old_submit_count, query->submit_count());
   expected_end_cmds.end_query.Init(
       GL_ANY_SAMPLES_PASSED_EXT, query->submit_count());
-  commands = GetPut();
-  gl_->EndQueryEXT(GL_ANY_SAMPLES_PASSED_EXT);
   EXPECT_EQ(0, memcmp(
       &expected_end_cmds, commands, sizeof(expected_end_cmds)));
 
@@ -3619,13 +3620,13 @@ TEST_F(GLES2ImplementationTest, ErrorQuery) {
     cmds::BeginQueryEXT begin_query;
     cmds::EndQueryEXT end_query;
   };
+  const void* commands = GetPut();
+  gl_->EndQueryEXT(GL_GET_ERROR_QUERY_CHROMIUM);
   EndCmds expected_end_cmds;
   expected_end_cmds.begin_query.Init(
       GL_GET_ERROR_QUERY_CHROMIUM, id, query->shm_id(), query->shm_offset());
   expected_end_cmds.end_query.Init(
       GL_GET_ERROR_QUERY_CHROMIUM, query->submit_count());
-  const void* commands = GetPut();
-  gl_->EndQueryEXT(GL_GET_ERROR_QUERY_CHROMIUM);
   EXPECT_EQ(0, memcmp(
       &expected_end_cmds, commands, sizeof(expected_end_cmds)));
   ClearCommands();

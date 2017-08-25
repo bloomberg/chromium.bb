@@ -81,8 +81,9 @@ FencedAllocator::Offset FencedAllocator::Alloc(unsigned int size) {
 // necessary.
 void FencedAllocator::Free(FencedAllocator::Offset offset) {
   BlockIndex index = GetBlockByOffset(offset);
-  DCHECK_NE(blocks_[index].state, FREE);
   Block &block = blocks_[index];
+  DCHECK_NE(block.state, FREE);
+  DCHECK_EQ(block.offset, offset);
 
   if (block.state == IN_USE)
     bytes_in_use_ -= block.size;
@@ -96,6 +97,7 @@ void FencedAllocator::FreePendingToken(FencedAllocator::Offset offset,
                                        int32_t token) {
   BlockIndex index = GetBlockByOffset(offset);
   Block &block = blocks_[index];
+  DCHECK_EQ(block.offset, offset);
   if (block.state == IN_USE)
     bytes_in_use_ -= block.size;
   block.state = FREE_PENDING_TOKEN;
@@ -170,6 +172,16 @@ bool FencedAllocator::InUseOrFreePending() {
   return blocks_.size() != 1 || blocks_[0].state != FREE;
 }
 
+FencedAllocator::State FencedAllocator::GetBlockStatusForTest(
+    Offset offset,
+    int32_t* token_if_pending) {
+  BlockIndex index = GetBlockByOffset(offset);
+  Block& block = blocks_[index];
+  if ((block.state == FREE_PENDING_TOKEN) && token_if_pending)
+    *token_if_pending = block.token;
+  return block.state;
+}
+
 // Collapse the block to the next one, then to the previous one. Provided the
 // structure is consistent, those are the only blocks eligible for collapse.
 FencedAllocator::BlockIndex FencedAllocator::CollapseFreeBlock(
@@ -242,7 +254,7 @@ FencedAllocator::BlockIndex FencedAllocator::GetBlockByOffset(Offset offset) {
   Block templ = { IN_USE, offset, 0, kUnusedToken };
   Container::iterator it = std::lower_bound(blocks_.begin(), blocks_.end(),
                                             templ, OffsetCmp());
-  DCHECK(it != blocks_.end() && it->offset == offset);
+  DCHECK(it != blocks_.end());
   return it-blocks_.begin();
 }
 
