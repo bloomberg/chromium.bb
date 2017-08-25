@@ -2236,7 +2236,7 @@ void GLES2DecoderPassthroughTestBase::SetUp() {
   context_creation_attribs_.bind_generates_resource = true;
 
   gl::init::InitializeGLOneOffImplementation(gl::kGLImplementationEGLGLES2,
-                                             false, false, false);
+                                             false, false, false, true);
   surface_ = gl::init::CreateOffscreenGLSurface(
       context_creation_attribs_.offscreen_framebuffer_size);
   context_ = gl::init::CreateGLContext(

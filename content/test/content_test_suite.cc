@@ -15,8 +15,10 @@
 #include "content/public/test/test_content_client_initializer.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_util.h"
+#include "gpu/ipc/in_process_command_buffer.h"
 #include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 #if defined(OS_WIN)
@@ -83,14 +85,19 @@ void ContentTestSuite::Initialize() {
   media::InitializeMediaLibrary();
   // When running in a child process for Mac sandbox tests, the sandbox exists
   // to initialize GL, so don't do it here.
-  bool is_child_process = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kTestChildProcess);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  bool is_child_process = command_line->HasSwitch(switches::kTestChildProcess);
   if (!is_child_process) {
     gpu::GPUInfo gpu_info;
     gpu::CollectBasicGraphicsInfo(&gpu_info);
-    gpu::ApplyGpuDriverBugWorkarounds(gpu_info,
-                                      base::CommandLine::ForCurrentProcess());
-    gl::GLSurfaceTestSupport::InitializeOneOff();
+    gpu::GpuFeatureInfo gpu_feature_info =
+        gpu::GetGpuFeatureInfo(gpu_info, *command_line);
+    gpu::InProcessCommandBuffer::InitializeDefaultServiceForTesting(
+        gpu_feature_info);
+    gl::GLSurfaceTestSupport::InitializeNoExtensionsOneOff();
+    gl::init::SetDisabledExtensionsPlatform(
+        gpu_feature_info.disabled_extensions);
+    gl::init::InitializeExtensionSettingsOneOffPlatform();
   }
   testing::TestEventListeners& listeners =
       testing::UnitTest::GetInstance()->listeners();

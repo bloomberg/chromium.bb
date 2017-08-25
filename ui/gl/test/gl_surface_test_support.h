@@ -12,6 +12,7 @@ namespace gl {
 class GLSurfaceTestSupport {
  public:
   static void InitializeOneOff();
+  static void InitializeNoExtensionsOneOff();
   static void InitializeOneOffImplementation(GLImplementation impl,
                                              bool fallback_to_osmesa);
   static void InitializeOneOffWithMockBindings();

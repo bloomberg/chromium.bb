@@ -13,8 +13,11 @@ GpuInProcessThreadService::GpuInProcessThreadService(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     gpu::SyncPointManager* sync_point_manager,
     gpu::gles2::MailboxManager* mailbox_manager,
-    scoped_refptr<gl::GLShareGroup> share_group)
-    : gpu::InProcessCommandBuffer::Service(mailbox_manager, share_group),
+    scoped_refptr<gl::GLShareGroup> share_group,
+    const GpuFeatureInfo& gpu_feature_info)
+    : gpu::InProcessCommandBuffer::Service(mailbox_manager,
+                                           share_group,
+                                           gpu_feature_info),
       task_runner_(task_runner),
       sync_point_manager_(sync_point_manager) {}
 
