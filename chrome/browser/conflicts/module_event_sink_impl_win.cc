@@ -5,9 +5,11 @@
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
 
 #include <windows.h>
+
 #include <psapi.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -100,18 +102,7 @@ ModuleEventSinkImpl::ModuleEventSinkImpl(base::ProcessHandle process,
                                          ModuleDatabase* module_database)
     : process_(process),
       module_database_(module_database),
-      process_id_(0),
-      creation_time_(0),
-      in_error_(false) {
-  // Failing to get basic process information means this channel should not
-  // continue to forward data, thus it is marked as being in error.
-  process_id_ = ::GetProcessId(process_);
-  if (!GetProcessCreationTime(process_, &creation_time_)) {
-    in_error_ = true;
-    return;
-  }
-  module_database->OnProcessStarted(process_id_, creation_time_, process_type);
-}
+      process_type_(process_type) {}
 
 ModuleEventSinkImpl::~ModuleEventSinkImpl() = default;
 
@@ -125,61 +116,21 @@ void ModuleEventSinkImpl::Create(
   base::ProcessHandle process = get_process_handle.Run();
   auto module_event_sink_impl = base::MakeUnique<ModuleEventSinkImpl>(
       process, process_type, module_database);
-  base::Closure error_handler = base::Bind(
-      &ModuleDatabase::OnProcessEnded, base::Unretained(module_database),
-      module_event_sink_impl->process_id_,
-      module_event_sink_impl->creation_time_);
-  auto binding = mojo::MakeStrongBinding(std::move(module_event_sink_impl),
-                                         std::move(request));
-  binding->set_connection_error_handler(error_handler);
+  mojo::MakeStrongBinding(std::move(module_event_sink_impl),
+                          std::move(request));
 }
 
 void ModuleEventSinkImpl::OnModuleEvent(mojom::ModuleEventType event_type,
                                         uint64_t load_address) {
-  if (in_error_)
-    return;
-
   // Mojo takes care of validating |event_type|, so only |load_address| needs to
   // be checked. Load addresses must be aligned with the allocation granularity
   // which is at least 64KB on any supported Windows OS.
   if (load_address == 0 || load_address % (64 * 1024) != 0)
     return;
 
-  switch (event_type) {
-    case mojom::ModuleEventType::MODULE_ALREADY_LOADED:
-    case mojom::ModuleEventType::MODULE_LOADED:
-      return OnModuleLoad(load_address);
-
-    case mojom::ModuleEventType::MODULE_UNLOADED:
-      return OnModuleUnload(load_address);
-  }
-}
-
-// static
-bool ModuleEventSinkImpl::GetProcessCreationTime(base::ProcessHandle process,
-                                                 uint64_t* creation_time) {
-  FILETIME creation_ft = {};
-  FILETIME exit_ft = {};
-  FILETIME kernel_ft = {};
-  FILETIME user_ft = {};
-  if (!::GetProcessTimes(process, &creation_ft, &exit_ft, &kernel_ft,
-                         &user_ft)) {
-    return false;
-  }
-  *creation_time = (static_cast<uint64_t>(creation_ft.dwHighDateTime) << 32) |
-                   static_cast<uint64_t>(creation_ft.dwLowDateTime);
-  return true;
-}
-
-void ModuleEventSinkImpl::OnModuleLoad(uint64_t load_address) {
-  if (in_error_)
-    return;
-
   // The |load_address| is a unique key to a module in a remote process. If
   // there is a valid module there then the following queries should all pass.
-  // If any of them fail then the load event is silently swallowed. The entire
-  // channel is not marked as being in an error mode, as later events may be
-  // well formed.
+  // If any of them fail then the load event is silently swallowed.
 
   // Convert the |load_address| to a module handle.
   HMODULE module =
@@ -200,13 +151,6 @@ void ModuleEventSinkImpl::OnModuleLoad(uint64_t load_address) {
     return;
 
   // Forward this to the module database.
-  module_database_->OnModuleLoad(process_id_, creation_time_, module_path,
-                                 module_size, module_time_date_stamp,
-                                 load_address);
-}
-
-void ModuleEventSinkImpl::OnModuleUnload(uint64_t load_address) {
-  // Forward this directly to the module database.
-  module_database_->OnModuleUnload(process_id_, creation_time_,
-                                   static_cast<uintptr_t>(load_address));
+  module_database_->OnModuleLoad(process_type_, module_path, module_size,
+                                 module_time_date_stamp, load_address);
 }

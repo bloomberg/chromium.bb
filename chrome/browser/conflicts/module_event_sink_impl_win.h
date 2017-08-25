@@ -44,19 +44,8 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
   void OnModuleEvent(mojom::ModuleEventType event_type,
                      uint64_t load_address) override;
 
-  bool in_error() const { return in_error_; }
-
-  // Gets the process creation time associated with the given process.
-  static bool GetProcessCreationTime(base::ProcessHandle process,
-                                     uint64_t* creation_time);
-
  private:
   friend class ModuleEventSinkImplTest;
-
-  // OnModuleEvent disptaches to these two functions depending on the event
-  // type.
-  void OnModuleLoad(uint64_t load_address);
-  void OnModuleUnload(uint64_t load_address);
 
   // A handle to the process on the other side of the pipe.
   base::ProcessHandle process_;
@@ -67,15 +56,7 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
 
   // The process ID of the remote process on the other end of the pipe. This is
   // forwarded along to the ModuleDatabase for each call.
-  uint32_t process_id_;
-
-  // The creation time of the process. Combined with process_id_ this uniquely
-  // identifies a process.
-  uint64_t creation_time_;
-
-  // Indicates whether or not this connection is in an error mode. If true then
-  // all communication from the remote client is silently dropped.
-  bool in_error_;
+  content::ProcessType process_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleEventSinkImpl);
 };

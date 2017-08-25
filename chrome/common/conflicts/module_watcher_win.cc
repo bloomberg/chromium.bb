@@ -209,8 +209,7 @@ void __stdcall ModuleWatcher::LoaderNotificationCallback(
       break;
 
     case LDR_DLL_NOTIFICATION_REASON_UNLOADED:
-      OnModuleEvent(mojom::ModuleEventType::MODULE_UNLOADED,
-                    notification_data->Unloaded, callback);
+      // Intentionally ignored.
       break;
 
     default:
