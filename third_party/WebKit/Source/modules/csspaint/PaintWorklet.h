@@ -20,12 +20,15 @@ class CSSPaintImageGeneratorImpl;
 
 // Manages a paint worklet:
 // https://drafts.css-houdini.org/css-paint-api/#dom-css-paintworklet
-class MODULES_EXPORT PaintWorklet final : public Worklet {
+class MODULES_EXPORT PaintWorklet final : public Worklet,
+                                          public Supplement<LocalDOMWindow> {
+  USING_GARBAGE_COLLECTED_MIXIN(PaintWorklet);
   WTF_MAKE_NONCOPYABLE(PaintWorklet);
 
  public:
   // At this moment, paint worklet allows at most two global scopes at any time.
   static const size_t kNumGlobalScopes;
+  static PaintWorklet* From(LocalDOMWindow&);
   static PaintWorklet* Create(LocalFrame*);
   ~PaintWorklet() override;
 
@@ -56,6 +59,8 @@ class MODULES_EXPORT PaintWorklet final : public Worklet {
   size_t SelectGlobalScope() const final;
   Member<PaintWorkletPendingGeneratorRegistry> pending_generator_registry_;
   DocumentDefinitionMap document_definition_map_;
+
+  static const char* SupplementName();
 };
 
 }  // namespace blink

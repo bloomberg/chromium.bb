@@ -6,6 +6,6 @@
 
 [
     RuntimeEnabled=CSSPaintAPI
-] partial interface Window {
-    readonly attribute Worklet paintWorklet;
+] partial interface CSS {
+    [CallWith=ScriptState] static readonly attribute Worklet paintWorklet;
 };

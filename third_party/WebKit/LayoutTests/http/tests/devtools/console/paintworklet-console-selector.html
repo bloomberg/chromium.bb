@@ -10,7 +10,7 @@
 <script>
 function setup() {
   var blob = new Blob([code.textContent], {type: 'text/javascript'});
-  return paintWorklet.addModule(URL.createObjectURL(blob));
+  return CSS.paintWorklet.addModule(URL.createObjectURL(blob));
 }
 
 async function test() {

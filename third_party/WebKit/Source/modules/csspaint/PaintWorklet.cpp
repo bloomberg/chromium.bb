@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "modules/csspaint/CSSPaintDefinition.h"
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
@@ -19,12 +20,24 @@ DocumentPaintDefinition* const kInvalidDocumentDefinition = nullptr;
 const size_t kFrameCountToSwitch = 120u;
 
 // static
+PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
+  PaintWorklet* supplement = static_cast<PaintWorklet*>(
+      Supplement<LocalDOMWindow>::From(window, SupplementName()));
+  if (!supplement && window.GetFrame()) {
+    supplement = Create(window.GetFrame());
+    ProvideTo(window, SupplementName(), supplement);
+  }
+  return supplement;
+}
+
+// static
 PaintWorklet* PaintWorklet::Create(LocalFrame* frame) {
   return new PaintWorklet(frame);
 }
 
 PaintWorklet::PaintWorklet(LocalFrame* frame)
     : Worklet(frame),
+      Supplement<LocalDOMWindow>(*frame->DomWindow()),
       pending_generator_registry_(new PaintWorkletPendingGeneratorRegistry) {}
 
 PaintWorklet::~PaintWorklet() = default;
@@ -62,10 +75,15 @@ RefPtr<Image> PaintWorklet::Paint(const String& name,
   return paint_definition->Paint(observer, size, data);
 }
 
+const char* PaintWorklet::SupplementName() {
+  return "PaintWorklet";
+}
+
 DEFINE_TRACE(PaintWorklet) {
   visitor->Trace(pending_generator_registry_);
   visitor->Trace(document_definition_map_);
   Worklet::Trace(visitor);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 bool PaintWorklet::NeedsToCreateGlobalScope() {

@@ -611,6 +611,7 @@ interface CDATASection : Text
     attribute @@toStringTag
     method constructor
 interface CSS
+    static getter paintWorklet
     static method Hz
     static method ch
     static method cm
@@ -9125,7 +9126,6 @@ interface webkitURL
     getter outerWidth
     getter pageXOffset
     getter pageYOffset
-    getter paintWorklet
     getter performance
     getter personalbar
     getter screen

@@ -10,7 +10,7 @@
 <script>
     promise_test(function() {
 
-        return paintWorklet.addModule('/resources/worklet.js').then(
+        return CSS.paintWorklet.addModule('/resources/worklet.js').then(
             function(undefined_arg) {
                 assert_unreached('addModule should fail.')
             },
