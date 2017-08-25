@@ -5,6 +5,7 @@
 #ifndef NGInlineItem_h
 #define NGInlineItem_h
 
+#include "core/CoreExport.h"
 #include "platform/LayoutUnit.h"
 #include "platform/fonts/FontFallbackPriority.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -24,7 +25,7 @@ class LayoutObject;
 // priority (text, symbol, emoji, etc), and script (but not by font).
 // In this representation TextNodes are merged up into their parent inline
 // element where possible.
-class NGInlineItem {
+class CORE_EXPORT NGInlineItem {
  public:
   enum NGInlineItemType {
     kText,
@@ -46,23 +47,14 @@ class NGInlineItem {
     kPostContext = 2
   };
 
+  // The constructor and destructor can't be implicit or inlined, because they
+  // require full definition of ComputedStyle.
   NGInlineItem(NGInlineItemType type,
                unsigned start,
                unsigned end,
                const ComputedStyle* style = nullptr,
-               LayoutObject* layout_object = nullptr)
-      : start_offset_(start),
-        end_offset_(end),
-        script_(USCRIPT_INVALID_CODE),
-        style_(style),
-        layout_object_(layout_object),
-        type_(type),
-        bidi_level_(UBIDI_LTR),
-        shape_options_(kPreContext | kPostContext),
-        rotate_sideways_(false),
-        fallback_priority_(FontFallbackPriority::kInvalid) {
-    DCHECK_GE(end, start);
-  }
+               LayoutObject* layout_object = nullptr);
+  ~NGInlineItem();
 
   NGInlineItemType Type() const { return static_cast<NGInlineItemType>(type_); }
   const char* NGInlineItemTypeToString(int val) const;

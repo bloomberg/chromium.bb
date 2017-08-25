@@ -6,6 +6,7 @@
 
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutObject.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/fonts/shaping/ShapeResultBuffer.h"
 
@@ -17,6 +18,26 @@ const char* kNGInlineItemTypeStrings[] = {
     "CloseTag", "Floating", "OutOfFlowPositioned", "BidiControl"};
 
 }  // namespace
+
+NGInlineItem::NGInlineItem(NGInlineItemType type,
+                           unsigned start,
+                           unsigned end,
+                           const ComputedStyle* style,
+                           LayoutObject* layout_object)
+    : start_offset_(start),
+      end_offset_(end),
+      script_(USCRIPT_INVALID_CODE),
+      style_(style),
+      layout_object_(layout_object),
+      type_(type),
+      bidi_level_(UBIDI_LTR),
+      shape_options_(kPreContext | kPostContext),
+      rotate_sideways_(false),
+      fallback_priority_(FontFallbackPriority::kInvalid) {
+  DCHECK_GE(end, start);
+}
+
+NGInlineItem::~NGInlineItem() = default;
 
 const char* NGInlineItem::NGInlineItemTypeToString(int val) const {
   return kNGInlineItemTypeStrings[val];
