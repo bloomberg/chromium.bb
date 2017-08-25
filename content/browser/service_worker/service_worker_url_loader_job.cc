@@ -283,6 +283,8 @@ void ServiceWorkerURLLoaderJob::StartResponse(
     CommitResponseHeaders();
     url_loader_client_->OnStartLoadingResponseBody(
         std::move(body_as_stream->stream));
+    // TODO(falken): Call CommitCompleted() when stream finished.
+    // See https://crbug.com/758455
     CommitCompleted(net::OK);
     return;
   }

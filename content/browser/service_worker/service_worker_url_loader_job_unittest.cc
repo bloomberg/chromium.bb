@@ -376,6 +376,42 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
   EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
   stream_callback->OnCompleted();
   data_pipe.producer_handle.reset();
+  EXPECT_EQ(net::OK, client_.completion_status().error_code);
+
+  // Test the body.
+  std::string response;
+  EXPECT_TRUE(client_.response_body().is_valid());
+  EXPECT_TRUE(mojo::common::BlockingCopyToString(
+      client_.response_body_release(), &response));
+  EXPECT_EQ(kResponseBody, response);
+}
+
+// Test when a stream response body is aborted.
+TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse_Abort) {
+  // Construct the Stream to respond with.
+  const char kResponseBody[] = "Here is sample text for the Stream.";
+  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::DataPipe data_pipe;
+  helper_->RespondWithStream(mojo::MakeRequest(&stream_callback),
+                             std::move(data_pipe.consumer_handle));
+
+  // Perform the request.
+  JobResult result = TestRequest();
+  EXPECT_EQ(JobResult::kHandledRequest, result);
+  const ResourceResponseHead& info = client_.response_head();
+  EXPECT_EQ(200, info.headers->response_code());
+  ExpectFetchedViaServiceWorker(info);
+
+  // Start writing the body stream, then abort before finishing.
+  uint32_t written_bytes = sizeof(kResponseBody) - 1;
+  MojoResult mojo_result = data_pipe.producer_handle->WriteData(
+      kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
+  EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
+  stream_callback->OnAborted();
+  data_pipe.producer_handle.reset();
+  // TODO(falken): This should be an error, see https://crbug.com/758455
+  EXPECT_EQ(net::OK, client_.completion_status().error_code);
 
   // Test the body.
   std::string response;
