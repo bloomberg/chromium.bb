@@ -76,7 +76,7 @@ source_set("tab_switcher") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/authentication:authentication_arc",
+    "//ios/chrome/browser/ui/authentication",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
