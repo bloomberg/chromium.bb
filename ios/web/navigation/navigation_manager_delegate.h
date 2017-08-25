@@ -7,9 +7,9 @@
 
 #include <stddef.h>
 
-#import "ios/web/public/navigation_manager.h"
 
 @protocol CRWWebViewNavigationProxy;
+class GURL;
 
 namespace web {
 
@@ -40,9 +40,7 @@ class NavigationManagerDelegate {
 
   // Instructs the delegate to notify its delegates that the current navigation
   // item will be loaded.
-  virtual void WillLoadCurrentItemWithParams(
-      const NavigationManager::WebLoadParams&,
-      bool is_initial_navigation) = 0;
+  virtual void WillLoadCurrentItemWithUrl(const GURL&) = 0;
 
   // Instructs the delegate to load the current navigation item.
   virtual void LoadCurrentItem() = 0;

@@ -749,11 +749,8 @@ void WebStateImpl::WillChangeUserAgentType() {
   [web_controller_ requirePageReconstruction];
 }
 
-void WebStateImpl::WillLoadCurrentItemWithParams(
-    const NavigationManager::WebLoadParams& params,
-    bool is_initial_navigation) {
-  [web_controller_ willLoadCurrentItemWithParams:params
-                             isInitialNavigation:is_initial_navigation];
+void WebStateImpl::WillLoadCurrentItemWithUrl(const GURL& url) {
+  [web_controller_ willLoadCurrentItemWithURL:url];
 }
 
 void WebStateImpl::LoadCurrentItem() {

@@ -264,8 +264,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void RecordPageStateInNavigationItem() override;
   void UpdateHtml5HistoryState() override;
   void WillChangeUserAgentType() override;
-  void WillLoadCurrentItemWithParams(const NavigationManager::WebLoadParams&,
-                                     bool is_initial_navigation) override;
+  void WillLoadCurrentItemWithUrl(const GURL&) override;
   void LoadCurrentItem() override;
   void LoadIfNecessary() override;
   void Reload() override;
