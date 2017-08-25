@@ -46723,6 +46723,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="NewTabPage.ActioniOS" enum="NewTabPageActioniOS">
+  <owner>justincohen@chromium.org</owner>
+  <summary>
+    Actions taken by users from the new tab page on iOS. These actions may
+    navigate away from the NTP (e.g. searching in the omnibox or opening a
+    bookmark), but can also happen without navigating away from the NTP (e.g.
+    opening a bookmark in a new tab).
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.AnimatedLogoDownloadTime" units="ms">
   <owner>ianwen@chromium.org</owner>
   <summary>

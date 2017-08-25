@@ -243,6 +243,8 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
                  referrer:referrer
                transition:ui::PAGE_TRANSITION_AUTO_BOOKMARK
         rendererInitiated:NO];
+  new_tab_page_uma::RecordAction(self.browserState,
+                                 new_tab_page_uma::ACTION_OPENED_SUGGESTION);
 }
 
 - (void)openMostVisitedItem:(CollectionViewItem*)item
@@ -295,6 +297,8 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
       [self.contentSuggestionsMediator notificationPromo];
   DCHECK(notificationPromo);
   notificationPromo->HandleClosed();
+  new_tab_page_uma::RecordAction(self.browserState,
+                                 new_tab_page_uma::ACTION_OPENED_PROMO);
 
   if (notificationPromo->IsURLPromo()) {
     [self.URLLoader webPageOrderedOpen:notificationPromo->url()
@@ -314,17 +318,20 @@ const char kNTPHelpURL[] = "https://support.google.com/chrome/?p=ios_new_tab";
 }
 
 - (void)handleLearnMoreTapped {
-  // TODO(crbug.com/691979): Add metrics.
   [self.URLLoader loadURL:GURL(kNTPHelpURL)
                  referrer:web::Referrer()
                transition:ui::PAGE_TRANSITION_LINK
         rendererInitiated:NO];
+  new_tab_page_uma::RecordAction(self.browserState,
+                                 new_tab_page_uma::ACTION_OPENED_LEARN_MORE);
 }
 
 #pragma mark - ContentSuggestionsGestureCommands
 
 - (void)openNewTabWithSuggestionsItem:(ContentSuggestionsItem*)item
                             incognito:(BOOL)incognito {
+  new_tab_page_uma::RecordAction(self.browserState,
+                                 new_tab_page_uma::ACTION_OPENED_SUGGESTION);
   [self openNewTabWithURL:item.URL incognito:incognito];
 }
 
