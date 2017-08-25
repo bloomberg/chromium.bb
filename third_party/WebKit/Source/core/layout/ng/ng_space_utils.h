@@ -12,7 +12,7 @@
 namespace blink {
 
 class ComputedStyle;
-struct NGLogicalOffset;
+struct NGBfcOffset;
 
 // Whether child's constraint space should shrink to its intrinsic width.
 // This is needed for buttons, select, input, floats and orthogonal children.
@@ -23,7 +23,7 @@ bool ShouldShrinkToFit(const ComputedStyle& parent_style,
 // Adjusts {@code offset} to the clearance line.
 CORE_EXPORT bool AdjustToClearance(
     const WTF::Optional<LayoutUnit>& clearance_offset,
-    NGLogicalOffset* offset);
+    NGBfcOffset* offset);
 
 }  // namespace blink
 

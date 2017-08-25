@@ -6,12 +6,14 @@
 #define NGLayoutOpportunityIterator_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/geometry/ng_bfc_offset.h"
+#include "core/layout/ng/geometry/ng_bfc_rect.h"
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
 
-typedef NGLogicalRect NGLayoutOpportunity;
+typedef NGBfcRect NGLayoutOpportunity;
 typedef Vector<NGLayoutOpportunity> NGLayoutOpportunities;
 class NGExclusionSpace;
 
@@ -29,7 +31,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
   //               opportunities.
   NGLayoutOpportunityIterator(const NGExclusionSpace& exclusion_space,
                               const NGLogicalSize& available_size,
-                              const NGLogicalOffset& offset);
+                              const NGBfcOffset& offset);
 
   // @return If there is no more opportunities to iterate.
   //         This also means that the last returned opportunity does not have
@@ -44,7 +46,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
 
   // Offset that specifies the starting point to search layout opportunities.
   // It's either {@code opt_offset} or space->BfcOffset().
-  NGLogicalOffset Offset() const { return offset_; }
+  NGBfcOffset Offset() const { return offset_; }
 
 #ifndef NDEBUG
   // Prints Layout Opportunity tree for debug purposes.
@@ -54,7 +56,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
  private:
   NGLayoutOpportunities opportunities_;
   NGLayoutOpportunities::const_iterator opportunity_iter_;
-  NGLogicalOffset offset_;
+  NGBfcOffset offset_;
 };
 
 }  // namespace blink

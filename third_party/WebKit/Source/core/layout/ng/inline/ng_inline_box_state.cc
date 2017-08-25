@@ -4,7 +4,8 @@
 
 #include "core/layout/ng/inline/ng_inline_box_state.h"
 
-#include "core/layout/ng/geometry/ng_logical_rect.h"
+#include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "core/layout/ng/inline/ng_text_fragment_builder.h"
@@ -193,11 +194,11 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
 
   // Extend the block direction of the box by borders and paddings. Inline
   // direction is already included into positions in NGLineBreaker.
-  NGLogicalRect bounds(
-      box->line_left_position,
-      -metrics.ascent - box->borders_paddings_block_start, inline_size,
-      metrics.LineHeight() + box->borders_paddings_block_start +
-          box->borders_paddings_block_end);
+  NGLogicalOffset offset(box->line_left_position,
+                         -metrics.ascent - box->borders_paddings_block_start);
+  NGLogicalSize size(inline_size, metrics.LineHeight() +
+                                      box->borders_paddings_block_start +
+                                      box->borders_paddings_block_end);
 
   // The start is marked only in BoxFragmentPlaceholder, while end is marked
   // in both BoxFragmentPlaceholder and the list itself.
@@ -210,10 +211,9 @@ void NGInlineLayoutStateStack::AddBoxFragmentPlaceholder(
   // The "null" is added to the list to compute baseline shift of the box
   // separately from text fragments.
   unsigned fragment_end = line_box->Children().size();
-  box_placeholders_.push_back(
-      BoxFragmentPlaceholder{box->fragment_start, fragment_end, box->item,
-                             bounds.size, box->border_edges});
-  line_box->AddChild(nullptr, bounds.offset);
+  box_placeholders_.push_back(BoxFragmentPlaceholder{
+      box->fragment_start, fragment_end, box->item, size, box->border_edges});
+  line_box->AddChild(nullptr, offset);
 }
 
 // Create box fragments and construct a tree from the placeholders.

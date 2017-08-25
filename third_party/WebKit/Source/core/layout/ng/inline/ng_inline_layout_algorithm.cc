@@ -34,10 +34,9 @@ inline bool ShouldCreateBoxFragment(const NGInlineItem& item,
   return style.HasBoxDecorationBackground() || item_result.needs_box_when_empty;
 }
 
-NGLogicalOffset GetOriginPointForFloats(
-    const NGLogicalOffset& container_bfc_offset,
-    LayoutUnit content_size) {
-  NGLogicalOffset origin_point = container_bfc_offset;
+NGBfcOffset GetOriginPointForFloats(const NGBfcOffset& container_bfc_offset,
+                                    LayoutUnit content_size) {
+  NGBfcOffset origin_point = container_bfc_offset;
   origin_point.block_offset += content_size;
   return origin_point;
 }
@@ -78,7 +77,7 @@ bool NGInlineLayoutAlgorithm::CreateLine(
   // If something has resolved our BFC offset we can place all of the
   // unpositioned floats below the current line.
   if (container_builder_.BfcOffset()) {
-    NGLogicalOffset origin_point =
+    NGBfcOffset origin_point =
         GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
     PositionPendingFloats(ConstraintSpace(), origin_point.block_offset,
                           &container_builder_, &unpositioned_floats_,
@@ -395,8 +394,8 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
 
   // layout_object may be null in certain cases, e.g. if it's a kBidiControl.
   if (layout_object && layout_object->IsBR()) {
-    NGLogicalOffset bfc_offset =
-        ContainerBfcOffset() + NGLogicalOffset(LayoutUnit(), content_size);
+    NGBfcOffset bfc_offset = {ContainerBfcOffset().line_offset,
+                              ContainerBfcOffset().block_offset + content_size};
     AdjustToClearance(exclusion_space.ClearanceOffset(item.Style()->Clear()),
                       &bfc_offset);
     content_size = bfc_offset.block_offset - ContainerBfcOffset().block_offset;
@@ -489,7 +488,7 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // floats if we didn't create a line-box. Refactor this such that this isn't
   // needed.
   if (container_builder_.BfcOffset()) {
-    NGLogicalOffset origin_point =
+    NGBfcOffset origin_point =
         GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
     PositionPendingFloats(ConstraintSpace(), origin_point.block_offset,
                           &container_builder_, &unpositioned_floats_,

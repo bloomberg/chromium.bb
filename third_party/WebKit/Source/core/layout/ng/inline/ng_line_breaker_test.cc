@@ -40,7 +40,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
 
     NGFragmentBuilder container_builder(
         node, &node.Style(), space->WritingMode(), space->Direction());
-    container_builder.SetBfcOffset(NGLogicalOffset{LayoutUnit(), LayoutUnit()});
+    container_builder.SetBfcOffset(NGBfcOffset{LayoutUnit(), LayoutUnit()});
 
     Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats;
     NGLineBreaker line_breaker(node, *space, &container_builder,

@@ -1,40 +1,40 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/layout/ng/geometry/ng_logical_rect.h"
+#include "core/layout/ng/geometry/ng_bfc_rect.h"
 
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-bool NGLogicalRect::IsEmpty() const {
-  return size.IsEmpty() && offset.inline_offset == LayoutUnit() &&
+bool NGBfcRect::IsEmpty() const {
+  return size.IsEmpty() && offset.line_offset == LayoutUnit() &&
          offset.block_offset == LayoutUnit();
 }
 
-bool NGLogicalRect::IsContained(const NGLogicalRect& other) const {
-  return !(InlineEndOffset() <= other.InlineStartOffset() ||
+bool NGBfcRect::IsContained(const NGBfcRect& other) const {
+  return !(LineEndOffset() <= other.LineStartOffset() ||
            BlockEndOffset() <= other.BlockStartOffset() ||
-           InlineStartOffset() >= other.InlineEndOffset() ||
+           LineStartOffset() >= other.LineEndOffset() ||
            BlockStartOffset() >= other.BlockEndOffset());
 }
 
-bool NGLogicalRect::operator==(const NGLogicalRect& other) const {
+bool NGBfcRect::operator==(const NGBfcRect& other) const {
   return std::tie(other.offset, other.size) == std::tie(offset, size);
 }
 
-String NGLogicalRect::ToString() const {
+String NGBfcRect::ToString() const {
   return IsEmpty()
              ? "(empty)"
              : String::Format("%sx%s at (%s,%s)",
                               size.inline_size.ToString().Ascii().data(),
                               size.block_size.ToString().Ascii().data(),
-                              offset.inline_offset.ToString().Ascii().data(),
+                              offset.line_offset.ToString().Ascii().data(),
                               offset.block_offset.ToString().Ascii().data());
 }
 
-std::ostream& operator<<(std::ostream& os, const NGLogicalRect& value) {
+std::ostream& operator<<(std::ostream& os, const NGBfcRect& value) {
   return os << value.ToString();
 }
 

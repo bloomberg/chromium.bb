@@ -282,9 +282,6 @@ crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/overhanging-tall-blo
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/basic/015.html [ Failure ]
 
 ### virtual/layout_ng/external/wpt/css/CSS2/floats
-crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001a.xht [ Failure ]
-crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001b.xht [ Failure ]
-crbug.com/719620 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-placement-vertical-001c.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-left-002.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule3-outside-right-002.xht [ Failure ]
 crbug.com/711704 virtual/layout_ng/external/wpt/css/CSS2/floats/floats-rule7-outside-left-001.xht [ Failure ]
@@ -330,8 +327,6 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-col
 crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/margin-collapse-clear-008.xht [ Failure ]
 
 # Regressions while changing zero-block-size float behaviour.
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-009.xht [ Failure ]
-crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/floats-clear/floats-147.xht [ Failure ] # Bad RTL
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/001.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/005.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/block-inside-inline/001.html [ Failure ]
@@ -524,7 +519,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling4.html [ Crash ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-from-next-sibling5.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-empty-line.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-line-obeys-container-padding.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-on-zero-height-line.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-overflow-hidden-containing-block-width.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach-crash.html [ Crash ]

@@ -5,6 +5,7 @@
 #ifndef NGFragmentBuilder_h
 #define NGFragmentBuilder_h
 
+#include "core/layout/ng/geometry/ng_bfc_offset.h"
 #include "core/layout/ng/geometry/ng_border_edges.h"
 #include "core/layout/ng/inline/ng_baseline.h"
 #include "core/layout/ng/ng_base_fragment_builder.h"
@@ -51,7 +52,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);
 
-  NGFragmentBuilder& SetBfcOffset(const NGLogicalOffset& offset);
+  NGFragmentBuilder& SetBfcOffset(const NGBfcOffset& offset);
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
@@ -122,9 +123,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   NGFragmentBuilder& SetExclusionSpace(
       std::unique_ptr<const NGExclusionSpace> exclusion_space);
 
-  const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
-    return bfc_offset_;
-  }
+  const WTF::Optional<NGBfcOffset>& BfcOffset() const { return bfc_offset_; }
 
   const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
     return children_;
@@ -192,7 +191,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGBaseFragmentBuilder {
   // determine its block position in space.
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
 
-  WTF::Optional<NGLogicalOffset> bfc_offset_;
+  WTF::Optional<NGBfcOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;
 
   Vector<NGBaseline> baselines_;

@@ -6,7 +6,7 @@
 #define NGLayoutResult_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/geometry/ng_bfc_offset.h"
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/ng_out_of_flow_positioned_descendant.h"
 #include "core/layout/ng/ng_physical_fragment.h"
@@ -68,9 +68,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return static_cast<NGLayoutResultStatus>(status_);
   }
 
-  const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
-    return bfc_offset_;
-  }
+  const WTF::Optional<NGBfcOffset>& BfcOffset() const { return bfc_offset_; }
 
   const NGMarginStrut EndMarginStrut() const { return end_margin_strut_; }
 
@@ -84,7 +82,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
                      out_of_flow_positioned_descendants,
                  Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
                  std::unique_ptr<const NGExclusionSpace> exclusion_space,
-                 const WTF::Optional<NGLogicalOffset> bfc_offset,
+                 const WTF::Optional<NGBfcOffset> bfc_offset,
                  const NGMarginStrut end_margin_strut,
                  NGLayoutResultStatus status);
 
@@ -93,7 +91,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
-  const WTF::Optional<NGLogicalOffset> bfc_offset_;
+  const WTF::Optional<NGBfcOffset> bfc_offset_;
   const NGMarginStrut end_margin_strut_;
 
   unsigned status_ : 1;

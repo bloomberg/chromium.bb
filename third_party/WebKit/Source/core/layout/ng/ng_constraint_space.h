@@ -6,7 +6,7 @@
 #define NGConstraintSpace_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/geometry/ng_bfc_offset.h"
 #include "core/layout/ng/geometry/ng_logical_size.h"
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
@@ -142,7 +142,7 @@ class CORE_EXPORT NGConstraintSpace final
   //   - block_start border or padding in the current layout.
   //   - Text content, atomic inlines, (see NGLineBreaker).
   //   - The current layout having a block_size.
-  NGLogicalOffset BfcOffset() const { return bfc_offset_; }
+  NGBfcOffset BfcOffset() const { return bfc_offset_; }
 
   // If present, and the current layout hasn't resolved its BFC offset yet (see
   // BfcOffset), the layout should position all of its unpositioned floats at
@@ -153,7 +153,7 @@ class CORE_EXPORT NGConstraintSpace final
   //
   // This value is calculated *after* an initial pass of the tree, this value
   // should only be present during the second pass.
-  WTF::Optional<NGLogicalOffset> FloatsBfcOffset() const {
+  WTF::Optional<NGBfcOffset> FloatsBfcOffset() const {
     return floats_bfc_offset_;
   }
 
@@ -194,8 +194,8 @@ class CORE_EXPORT NGConstraintSpace final
       bool is_new_fc,
       bool is_anonymous,
       const NGMarginStrut& margin_strut,
-      const NGLogicalOffset& bfc_offset,
-      const WTF::Optional<NGLogicalOffset>& floats_bfc_offset,
+      const NGBfcOffset& bfc_offset,
+      const WTF::Optional<NGBfcOffset>& floats_bfc_offset,
       const NGExclusionSpace& exclusion_space,
       Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
       const WTF::Optional<LayoutUnit>& clearance_offset,
@@ -228,8 +228,8 @@ class CORE_EXPORT NGConstraintSpace final
   unsigned direction_ : 1;
 
   NGMarginStrut margin_strut_;
-  NGLogicalOffset bfc_offset_;
-  WTF::Optional<NGLogicalOffset> floats_bfc_offset_;
+  NGBfcOffset bfc_offset_;
+  WTF::Optional<NGBfcOffset> floats_bfc_offset_;
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   WTF::Optional<LayoutUnit> clearance_offset_;

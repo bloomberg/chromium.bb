@@ -14,7 +14,7 @@ NGLayoutResult::NGLayoutResult(
     Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants,
     Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
     std::unique_ptr<const NGExclusionSpace> exclusion_space,
-    const WTF::Optional<NGLogicalOffset> bfc_offset,
+    const WTF::Optional<NGBfcOffset> bfc_offset,
     const NGMarginStrut end_margin_strut,
     NGLayoutResultStatus status)
     : physical_fragment_(std::move(physical_fragment)),

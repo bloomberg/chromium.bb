@@ -78,7 +78,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   FontBaseline baseline_type_ = FontBaseline::kAlphabeticBaseline;
 
   NGLogicalOffset bfc_offset_;
-  NGLogicalRect current_opportunity_;
+  NGBfcRect current_opportunity_;
 
   unsigned is_horizontal_writing_mode_ : 1;
 

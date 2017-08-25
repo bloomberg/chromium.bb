@@ -6,7 +6,8 @@
 #define NGExclusionSpace_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/geometry/ng_logical_rect.h"
+#include "core/layout/ng/geometry/ng_bfc_offset.h"
+#include "core/layout/ng/geometry/ng_bfc_rect.h"
 #include "core/layout/ng/ng_exclusion.h"
 #include "core/style/ComputedStyleConstants.h"
 #include "platform/LayoutUnit.h"
@@ -14,7 +15,7 @@
 
 namespace blink {
 
-typedef NGLogicalRect NGLayoutOpportunity;
+typedef NGBfcRect NGLayoutOpportunity;
 
 // The exclusion space represents all of the exclusions within a block
 // formatting context.
@@ -31,7 +32,7 @@ class CORE_EXPORT NGExclusionSpace {
   // Returns a layout opportunity, within the BFC, starting at the given offset,
   // with a size greater than {@code minimum_size}.
   NGLayoutOpportunity FindLayoutOpportunity(
-      const NGLogicalOffset& offset,
+      const NGBfcOffset& offset,
       const NGLogicalSize& available_size,
       const NGLogicalSize& minimum_size) const;
 

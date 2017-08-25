@@ -33,7 +33,7 @@ void NGExclusionSpace::Add(const NGExclusion& exclusion) {
 }
 
 NGLayoutOpportunity NGExclusionSpace::FindLayoutOpportunity(
-    const NGLogicalOffset& offset,
+    const NGBfcOffset& offset,
     const NGLogicalSize& available_size,
     const NGLogicalSize& minimum_size) const {
   NGLayoutOpportunityIterator opportunity_iter(*this, available_size, offset);
