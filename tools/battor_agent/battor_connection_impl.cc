@@ -4,13 +4,15 @@
 
 #include "tools/battor_agent/battor_connection_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
+#include "base/time/default_tick_clock.h"
 #include "device/serial/buffer.h"
 #include "device/serial/serial_io_handler.h"
 #include "net/base/io_buffer.h"
@@ -39,6 +41,10 @@ const bool kBattOrCtsFlowControl = true;
 const bool kBattOrHasCtsFlowControl = true;
 // The maximum BattOr message is 50kB long.
 const size_t kMaxMessageSizeBytes = 50000;
+const size_t kFlushBufferSize = 50000;
+// The length of time that must pass without receiving any bytes in order for a
+// flush to be considered complete.
+const uint16_t kFlushQuietPeriodThresholdMs = 50;
 
 // Returns the maximum number of bytes that could be required to read a message
 // of the specified type.
@@ -74,14 +80,13 @@ BattOrConnectionImpl::BattOrConnectionImpl(
     serial_log_.open(serial_log_path.c_str(),
                      std::fstream::out | std::fstream::trunc);
   }
+  tick_clock_ = std::make_unique<base::DefaultTickClock>();
 }
 
 BattOrConnectionImpl::~BattOrConnectionImpl() {}
 
 void BattOrConnectionImpl::Open() {
   if (io_handler_) {
-    // Opening new connection so flush serial data from old connection.
-    Flush();
     OnOpened(true);
     return;
   }
@@ -190,8 +195,9 @@ void BattOrConnectionImpl::CancelReadMessage() {
 }
 
 void BattOrConnectionImpl::Flush() {
-  io_handler_->Flush();
   already_read_buffer_.clear();
+  flush_quiet_period_start_ = tick_clock_->NowTicks();
+  BeginReadBytesForFlush();
 }
 
 scoped_refptr<device::SerialIoHandler> BattOrConnectionImpl::CreateIoHandler() {
@@ -199,8 +205,8 @@ scoped_refptr<device::SerialIoHandler> BattOrConnectionImpl::CreateIoHandler() {
 }
 
 void BattOrConnectionImpl::BeginReadBytesForMessage(size_t max_bytes_to_read) {
-  LogSerial(
-      StringPrintf("Starting read of up to %zu bytes.", max_bytes_to_read));
+  LogSerial(StringPrintf("(message) Starting read of up to %zu bytes.",
+                         max_bytes_to_read));
 
   pending_read_buffer_ =
       make_scoped_refptr(new net::IOBuffer(max_bytes_to_read));
@@ -216,7 +222,7 @@ void BattOrConnectionImpl::OnBytesReadForMessage(
     device::mojom::SerialReceiveError error) {
   if (error != device::mojom::SerialReceiveError::NONE) {
     LogSerial(StringPrintf(
-        "Read failed due to serial read failure with error code: %d.",
+        "(message) Read failed due to serial read failure with error code: %d.",
         static_cast<int>(error)));
     EndReadBytesForMessage(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
     return;
@@ -229,10 +235,10 @@ void BattOrConnectionImpl::OnBytesReadForMessage(
     // exacerbates a problem on Mac wherein we can't process sample frames
     // quickly enough to prevent the serial buffer from overflowing, causing us
     // to drop frames.
-    LogSerial(StringPrintf("%d more bytes read.", bytes_read));
+    LogSerial(StringPrintf("(message) %d more bytes read.", bytes_read));
   } else {
     LogSerial(StringPrintf(
-        "%d more bytes read: %s.", bytes_read,
+        "(message) %d more bytes read: %s.", bytes_read,
         CharArrayToString(pending_read_buffer_->data(), bytes_read).c_str()));
   }
 
@@ -250,26 +256,29 @@ void BattOrConnectionImpl::OnBytesReadForMessage(
   if (parse_message_error == ParseMessageError::NOT_ENOUGH_BYTES) {
     if (already_read_buffer_.size() >= message_max_bytes) {
       LogSerial(
-          "Read failed due to no complete message after max read length.");
+          "(message) Read failed due to no complete message after max read "
+          "length.");
       EndReadBytesForMessage(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
       return;
     }
 
-    LogSerial("(Message still incomplete: reading more bytes.)");
+    LogSerial("(message) Still incomplete: reading more bytes.)");
     BeginReadBytesForMessage(message_max_bytes - already_read_buffer_.size());
     return;
   }
 
   if (parse_message_error != ParseMessageError::NONE) {
-    LogSerial(StringPrintf(
-        "Read failed due to the message containing an irrecoverable error: %d.",
-        parse_message_error));
+    LogSerial(
+        StringPrintf("(message) Read failed due to the message containing an "
+                     "irrecoverable error: %d.",
+                     parse_message_error));
     EndReadBytesForMessage(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
     return;
   }
 
   if (type != pending_read_message_type_) {
-    LogSerial("Read failed due to receiving a message of the wrong type.");
+    LogSerial(
+        "(message) Read failed due to receiving a message of the wrong type.");
     EndReadBytesForMessage(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
     return;
   }
@@ -281,13 +290,88 @@ void BattOrConnectionImpl::EndReadBytesForMessage(
     bool success,
     BattOrMessageType type,
     std::unique_ptr<vector<char>> bytes) {
-  LogSerial(StringPrintf("Read finished with success: %d.", success));
+  LogSerial(StringPrintf("(message) Read finished with success: %d.", success));
 
   pending_read_buffer_ = nullptr;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&Listener::OnMessageRead, base::Unretained(listener_), success,
                  type, base::Passed(std::move(bytes))));
+}
+
+void BattOrConnectionImpl::BeginReadBytesForFlush() {
+  base::TimeDelta quiet_period_duration =
+      tick_clock_->NowTicks() - flush_quiet_period_start_;
+  LogSerial(
+      StringPrintf("(flush) Starting read (quiet period has lasted %f ms).",
+                   quiet_period_duration.InMillisecondsF()));
+
+  pending_read_buffer_ =
+      make_scoped_refptr(new net::IOBuffer(kFlushBufferSize));
+
+  io_handler_->Read(base::MakeUnique<device::ReceiveBuffer>(
+      pending_read_buffer_, static_cast<uint32_t>(kFlushBufferSize),
+      base::BindOnce(&BattOrConnectionImpl::OnBytesReadForFlush,
+                     base::Unretained(this))));
+  SetFlushReadTimeout();
+}
+
+void BattOrConnectionImpl::SetFlushReadTimeout() {
+  flush_timeout_callback_.Reset(
+      base::Bind(&BattOrConnectionImpl::CancelReadMessage, AsWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, flush_timeout_callback_.callback(),
+      base::TimeDelta::FromMilliseconds(kFlushQuietPeriodThresholdMs));
+}
+
+void BattOrConnectionImpl::OnBytesReadForFlush(
+    int bytes_read,
+    device::mojom::SerialReceiveError error) {
+  flush_timeout_callback_.Cancel();
+
+  if (error != device::mojom::SerialReceiveError::NONE &&
+      error != device::mojom::SerialReceiveError::TIMEOUT) {
+    LogSerial(StringPrintf(
+        "(flush) Read failed due to serial read failure with error code: %d.",
+        static_cast<int>(error)));
+    pending_read_buffer_ = nullptr;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&Listener::OnFlushComplete,
+                              base::Unretained(listener_), false));
+    return;
+  }
+
+  LogSerial(StringPrintf("(flush) %i additional bytes read.", bytes_read));
+  if (bytes_read == 0 || error == device::mojom::SerialReceiveError::TIMEOUT) {
+    // Reading zero bytes or a serial read timeout both indicate that the
+    // connection was quiet.
+    base::TimeDelta quiet_period_duration =
+        tick_clock_->NowTicks() - flush_quiet_period_start_;
+    if (quiet_period_duration >=
+        base::TimeDelta::FromMilliseconds(kFlushQuietPeriodThresholdMs)) {
+      LogSerial("(flush) Quiet period has finished.");
+      pending_read_buffer_ = nullptr;
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(&Listener::OnFlushComplete,
+                                base::Unretained(listener_), true));
+      return;
+    }
+
+    // If we didn't receive bytes but the quiet period hasn't elapsed, try to
+    // read again after a delay.
+    LogSerial(StringPrintf("(flush) Reading more bytes after %u ms delay.",
+                           kFlushQuietPeriodThresholdMs));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&BattOrConnectionImpl::BeginReadBytesForFlush,
+                       AsWeakPtr()),
+        base::TimeDelta::FromMilliseconds(kFlushQuietPeriodThresholdMs));
+    return;
+  }
+
+  // We received additional bytes: restart the quiet period and read more bytes.
+  flush_quiet_period_start_ = tick_clock_->NowTicks();
+  BeginReadBytesForFlush();
 }
 
 BattOrConnectionImpl::ParseMessageError BattOrConnectionImpl::ParseMessage(
