@@ -5,7 +5,6 @@
 #include "chrome/browser/ssl/ssl_error_handler.h"
 
 #include <stdint.h>
-#include <regex>
 #include <unordered_set>
 #include <utility>
 
@@ -57,6 +56,7 @@
 #endif  // #if defined(OS_WIN)
 
 #include "chrome/browser/ssl/mitm_software_blocking_page.h"
+#include "third_party/re2/src/re2/re2.h"
 #endif  // if !defined(OS_IOS)
 
 namespace {
@@ -210,15 +210,14 @@ bool IsMITMSoftwareInterstitialEnabled() {
   return base::FeatureList::IsEnabled(kMITMSoftwareInterstitial);
 }
 
-std::unique_ptr<std::vector<std::pair<std::regex, std::string>>>
+std::unique_ptr<std::vector<std::pair<std::unique_ptr<re2::RE2>, std::string>>>
 LoadMITMSoftwareList(const chrome_browser_ssl::SSLErrorAssistantConfig& proto) {
-  auto list =
-      base::MakeUnique<std::vector<std::pair<std::regex, std::string>>>();
-  for (const chrome_browser_ssl::MITMSoftware& filter : proto.mitm_software()) {
-    // There isn't a regex type in proto buffer world, so convert the string
-    // literals returned from our proto to regexes.
+  auto list = base::MakeUnique<
+      std::vector<std::pair<std::unique_ptr<re2::RE2>, std::string>>>();
+  for (const chrome_browser_ssl::MITMSoftware& entry : proto.mitm_software()) {
+    std::unique_ptr<re2::RE2> compiled_regex(new re2::RE2(entry.regex()));
     list.get()->push_back(
-        std::make_pair(std::regex(filter.regex()), filter.name()));
+        std::make_pair(std::move(compiled_regex), entry.name()));
   }
   return list;
 }
@@ -299,7 +298,8 @@ class ConfigSingleton {
   std::unique_ptr<chrome_browser_ssl::SSLErrorAssistantConfig>
       error_assistant_proto_;
 
-  std::unique_ptr<std::vector<std::pair<std::regex, std::string>>>
+  std::unique_ptr<
+      std::vector<std::pair<std::unique_ptr<re2::RE2>, std::string>>>
       mitm_software_list_;
 
   enum EnterpriseManaged {
@@ -483,8 +483,9 @@ const std::string ConfigSingleton::MatchKnownMITMSoftware(
 
   // Compares the common name of the issuer of the certificate to our
   // MITM software regexes.
-  for (const std::pair<std::regex, std::string> pair : *mitm_software_list_) {
-    if (std::regex_match(cert->issuer().common_name, pair.first)) {
+  for (const std::pair<std::unique_ptr<re2::RE2>, std::string>& pair :
+       *mitm_software_list_) {
+    if (re2::RE2::FullMatch(cert->issuer().common_name, *pair.first)) {
       return pair.second;
     }
   }
