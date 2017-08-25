@@ -10,12 +10,14 @@
 #include <unistd.h>
 
 #include "base/command_line.h"
+#include "base/fuchsia/default_job.h"
 #include "base/logging.h"
 
 namespace base {
 
 namespace {
 
+// TODO(758683): Replace this with a call to LaunchProcess().
 bool GetAppOutputInternal(const std::vector<std::string>& argv,
                           bool include_stderr,
                           std::string* output,
@@ -28,8 +30,8 @@ bool GetAppOutputInternal(const std::vector<std::string>& argv,
     argv_cstr.push_back(arg.c_str());
   argv_cstr.push_back(nullptr);
 
-  launchpad_t* lp;
-  launchpad_create(MX_HANDLE_INVALID, argv_cstr[0], &lp);
+  launchpad_t* lp = nullptr;
+  launchpad_create(GetDefaultJob(), argv_cstr[0], &lp);
   launchpad_load_from_file(lp, argv_cstr[0]);
   launchpad_set_args(lp, argv.size(), argv_cstr.data());
   launchpad_clone(lp, LP_CLONE_MXIO_NAMESPACE | LP_CLONE_MXIO_CWD |
@@ -38,7 +40,7 @@ bool GetAppOutputInternal(const std::vector<std::string>& argv,
   int pipe_fd;
   mx_status_t status = launchpad_add_pipe(lp, &pipe_fd, STDOUT_FILENO);
   if (status != MX_OK) {
-    LOG(ERROR) << "launchpad_add_pipe failed: " << status;
+    LOG(ERROR) << "launchpad_add_pipe failed: " << mx_status_get_string(status);
     launchpad_destroy(lp);
     return false;
   }
@@ -52,7 +54,8 @@ bool GetAppOutputInternal(const std::vector<std::string>& argv,
   const char* errmsg;
   status = launchpad_go(lp, &proc, &errmsg);
   if (status != MX_OK) {
-    LOG(ERROR) << "launchpad_go failed: " << errmsg << ", status=" << status;
+    LOG(ERROR) << "launchpad_go failed: " << errmsg
+               << ", status=" << mx_status_get_string(status);
     return false;
   }
 
@@ -89,8 +92,12 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   // used in a "builder" style. From launchpad_create() to launchpad_go() the
   // status is tracked in the launchpad_t object, and launchpad_go() reports on
   // the final status, and cleans up |lp| (assuming it was even created).
-  launchpad_t* lp;
-  launchpad_create(options.job_handle, argv_cstr[0], &lp);
+  launchpad_t* lp = nullptr;
+  mx_handle_t job = options.job_handle != MX_HANDLE_INVALID ? options.job_handle
+                                                            : GetDefaultJob();
+  DCHECK_NE(MX_HANDLE_INVALID, job);
+
+  launchpad_create(job, argv_cstr[0], &lp);
   launchpad_load_from_file(lp, argv_cstr[0]);
   launchpad_set_args(lp, argv.size(), argv_cstr.data());
 
@@ -107,6 +114,22 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     environ_modifications["PWD"] = options.current_directory.value();
   } else {
     to_clone |= LP_CLONE_MXIO_CWD;
+  }
+
+  if (to_clone & LP_CLONE_DEFAULT_JOB) {
+    // Override Fuchsia's built in default job cloning behavior with our own
+    // logic which uses |job| instead of mx_job_default().
+    // This logic is based on the launchpad implementation.
+    mx_handle_t job_duplicate = MX_HANDLE_INVALID;
+    mx_status_t status =
+        mx_handle_duplicate(job, MX_RIGHT_SAME_RIGHTS, &job_duplicate);
+    if (status != MX_OK) {
+      LOG(ERROR) << "mx_handle_duplicate(job): "
+                 << mx_status_get_string(status);
+      return Process();
+    }
+    launchpad_add_handle(lp, job_duplicate, PA_HND(PA_JOB_DEFAULT, 0));
+    to_clone &= ~LP_CLONE_DEFAULT_JOB;
   }
 
   if (!environ_modifications.empty())
@@ -141,7 +164,8 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   const char* errmsg;
   mx_status_t status = launchpad_go(lp, &proc, &errmsg);
   if (status != MX_OK) {
-    LOG(ERROR) << "launchpad_go failed: " << errmsg << ", status=" << status;
+    LOG(ERROR) << "launchpad_go failed: " << errmsg
+               << ", status=" << mx_status_get_string(status);
     return Process();
   }
 
