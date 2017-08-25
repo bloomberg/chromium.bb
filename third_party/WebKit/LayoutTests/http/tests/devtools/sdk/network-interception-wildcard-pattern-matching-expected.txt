@@ -1,0 +1,99 @@
+Tests that wild card pattern matching works.
+
+Checking Pattern: *a*a*
+Input: asdfasdf
+Result: true
+
+Checking Pattern: a*a*
+Input: asdfasdf
+Result: true
+
+Checking Pattern: a*a
+Input: asdfasdf
+Result: false
+
+Checking Pattern: a*a*f
+Input: asdfasdf
+Result: true
+
+Checking Pattern: af
+Input: asdfasdf
+Result: false
+
+Checking Pattern: *df
+Input: asdfasdf
+Result: true
+
+Checking Pattern: *
+Input: asdfasdf
+Result: true
+
+Checking Pattern: *
+Input: 
+Result: true
+
+Checking Pattern: 
+Input: 
+Result: false
+
+Checking Pattern: 
+Input: asdfasdf
+Result: false
+
+Checking Pattern: a*c
+Input: ac
+Result: true
+
+Checking Pattern: a**c
+Input: ac
+Result: true
+
+Checking Pattern: a**c
+Input: abc
+Result: true
+
+Checking Pattern: a*c
+Input: abc
+Result: true
+
+Checking Pattern: *ac*
+Input: ac
+Result: true
+
+Checking Pattern: ac
+Input: abc
+Result: false
+
+Checking Pattern: a\*c
+Input: a*c
+Result: true
+
+Checking Pattern: a\\*c
+Input: a\c
+Result: true
+
+Checking Pattern: a\*c
+Input: ac
+Result: false
+
+Checking Pattern: a\*c
+Input: a**c
+Result: false
+
+Checking Pattern: a\*\\*c
+Input: a*\*c
+Result: true
+
+Checking Pattern: a\*\\\*c
+Input: a*\*c
+Result: true
+
+Checking Pattern: a?c
+Input: a?c
+Result: true
+
+Checking Pattern: a?c
+Input: acc
+Result: false
+
+
