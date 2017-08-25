@@ -126,6 +126,10 @@ class PaymentRequest : public PaymentOptionsProvider,
 
   void set_state(State state) { state_ = state; }
 
+  bool updating() const { return updating_; }
+
+  void set_updating(bool updating) { updating_ = updating; }
+
   // Returns the web::PaymentRequest that was used to build this PaymentRequest.
   const web::PaymentRequest& web_payment_request() const {
     return web_payment_request_;
@@ -319,6 +323,9 @@ class PaymentRequest : public PaymentOptionsProvider,
 
   // The current state of the payment request.
   State state_;
+
+  // Whether there is a pending updateWith() call to update the payment request.
+  bool updating_;
 
   // The web::PaymentRequest object as provided by the page invoking the Payment
   // Request API, owned by this object.

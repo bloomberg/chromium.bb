@@ -63,6 +63,7 @@ PaymentRequest::PaymentRequest(
     autofill::PersonalDataManager* personal_data_manager,
     id<PaymentRequestUIDelegate> payment_request_ui_delegate)
     : state_(State::CREATED),
+      updating_(false),
       web_payment_request_(web_payment_request),
       browser_state_(browser_state),
       web_state_(web_state),
