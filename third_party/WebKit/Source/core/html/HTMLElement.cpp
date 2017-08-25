@@ -79,6 +79,16 @@ using namespace WTF;
 
 using namespace std;
 
+using AttributeChangedFunction =
+    void (HTMLElement::*)(const Element::AttributeModificationParams& params);
+
+struct AttributeTriggers {
+  const QualifiedName& attribute;
+  WebFeature web_feature;
+  const AtomicString& event;
+  AttributeChangedFunction function;
+};
+
 namespace {
 
 // https://w3c.github.io/editing/execCommand.html#editing-host
@@ -309,209 +319,237 @@ void HTMLElement::CollectStyleForPresentationAttribute(
   }
 }
 
-const AtomicString& HTMLElement::EventNameForAttributeName(
+// static
+AttributeTriggers* HTMLElement::TriggersForAttributeName(
     const QualifiedName& attr_name) {
-  if (!attr_name.NamespaceURI().IsNull())
-    return g_null_atom;
+  const AtomicString& kNoEvent = g_null_atom;
+  static AttributeTriggers attribute_triggers[] = {
+      {dirAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnDirAttrChanged},
+      {inertAttr, WebFeature::kInertAttribute, kNoEvent,
+       &HTMLElement::OnInertAttrChanged},
+      {langAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnLangAttrChanged},
+      {nonceAttr, kNoWebFeature, kNoEvent, &HTMLElement::OnNonceAttrChanged},
+      {tabindexAttr, kNoWebFeature, kNoEvent,
+       &HTMLElement::OnTabIndexAttrChanged},
+      {XMLNames::langAttr, kNoWebFeature, kNoEvent,
+       &HTMLElement::OnXMLLangAttrChanged},
 
-  if (!attr_name.LocalName().StartsWithIgnoringASCIICase("on"))
-    return g_null_atom;
+      {onabortAttr, kNoWebFeature, EventTypeNames::abort, nullptr},
+      {onanimationendAttr, kNoWebFeature, EventTypeNames::animationend,
+       nullptr},
+      {onanimationiterationAttr, kNoWebFeature,
+       EventTypeNames::animationiteration, nullptr},
+      {onanimationstartAttr, kNoWebFeature, EventTypeNames::animationstart,
+       nullptr},
+      {onauxclickAttr, kNoWebFeature, EventTypeNames::auxclick, nullptr},
+      {onbeforecopyAttr, kNoWebFeature, EventTypeNames::beforecopy, nullptr},
+      {onbeforecutAttr, kNoWebFeature, EventTypeNames::beforecut, nullptr},
+      {onbeforepasteAttr, kNoWebFeature, EventTypeNames::beforepaste, nullptr},
+      {onblurAttr, kNoWebFeature, EventTypeNames::blur, nullptr},
+      {oncancelAttr, kNoWebFeature, EventTypeNames::cancel, nullptr},
+      {oncanplayAttr, kNoWebFeature, EventTypeNames::canplay, nullptr},
+      {oncanplaythroughAttr, kNoWebFeature, EventTypeNames::canplaythrough,
+       nullptr},
+      {onchangeAttr, kNoWebFeature, EventTypeNames::change, nullptr},
+      {onclickAttr, kNoWebFeature, EventTypeNames::click, nullptr},
+      {oncloseAttr, kNoWebFeature, EventTypeNames::close, nullptr},
+      {oncontextmenuAttr, kNoWebFeature, EventTypeNames::contextmenu, nullptr},
+      {oncopyAttr, kNoWebFeature, EventTypeNames::copy, nullptr},
+      {oncuechangeAttr, kNoWebFeature, EventTypeNames::cuechange, nullptr},
+      {oncutAttr, kNoWebFeature, EventTypeNames::cut, nullptr},
+      {ondblclickAttr, kNoWebFeature, EventTypeNames::dblclick, nullptr},
+      {ondragAttr, kNoWebFeature, EventTypeNames::drag, nullptr},
+      {ondragendAttr, kNoWebFeature, EventTypeNames::dragend, nullptr},
+      {ondragenterAttr, kNoWebFeature, EventTypeNames::dragenter, nullptr},
+      {ondragleaveAttr, kNoWebFeature, EventTypeNames::dragleave, nullptr},
+      {ondragoverAttr, kNoWebFeature, EventTypeNames::dragover, nullptr},
+      {ondragstartAttr, kNoWebFeature, EventTypeNames::dragstart, nullptr},
+      {ondropAttr, kNoWebFeature, EventTypeNames::drop, nullptr},
+      {ondurationchangeAttr, kNoWebFeature, EventTypeNames::durationchange,
+       nullptr},
+      {onemptiedAttr, kNoWebFeature, EventTypeNames::emptied, nullptr},
+      {onendedAttr, kNoWebFeature, EventTypeNames::ended, nullptr},
+      {onerrorAttr, kNoWebFeature, EventTypeNames::error, nullptr},
+      {onfocusAttr, kNoWebFeature, EventTypeNames::focus, nullptr},
+      {onfocusinAttr, kNoWebFeature, EventTypeNames::focusin, nullptr},
+      {onfocusoutAttr, kNoWebFeature, EventTypeNames::focusout, nullptr},
+      {ongotpointercaptureAttr, kNoWebFeature,
+       EventTypeNames::gotpointercapture, nullptr},
+      {oninputAttr, kNoWebFeature, EventTypeNames::input, nullptr},
+      {oninvalidAttr, kNoWebFeature, EventTypeNames::invalid, nullptr},
+      {onkeydownAttr, kNoWebFeature, EventTypeNames::keydown, nullptr},
+      {onkeypressAttr, kNoWebFeature, EventTypeNames::keypress, nullptr},
+      {onkeyupAttr, kNoWebFeature, EventTypeNames::keyup, nullptr},
+      {onloadAttr, kNoWebFeature, EventTypeNames::load, nullptr},
+      {onloadeddataAttr, kNoWebFeature, EventTypeNames::loadeddata, nullptr},
+      {onloadedmetadataAttr, kNoWebFeature, EventTypeNames::loadedmetadata,
+       nullptr},
+      {onloadstartAttr, kNoWebFeature, EventTypeNames::loadstart, nullptr},
+      {onlostpointercaptureAttr, kNoWebFeature,
+       EventTypeNames::lostpointercapture, nullptr},
+      {onmousedownAttr, kNoWebFeature, EventTypeNames::mousedown, nullptr},
+      {onmouseenterAttr, kNoWebFeature, EventTypeNames::mouseenter, nullptr},
+      {onmouseleaveAttr, kNoWebFeature, EventTypeNames::mouseleave, nullptr},
+      {onmousemoveAttr, kNoWebFeature, EventTypeNames::mousemove, nullptr},
+      {onmouseoutAttr, kNoWebFeature, EventTypeNames::mouseout, nullptr},
+      {onmouseoverAttr, kNoWebFeature, EventTypeNames::mouseover, nullptr},
+      {onmouseupAttr, kNoWebFeature, EventTypeNames::mouseup, nullptr},
+      {onmousewheelAttr, kNoWebFeature, EventTypeNames::mousewheel, nullptr},
+      {onpasteAttr, kNoWebFeature, EventTypeNames::paste, nullptr},
+      {onpauseAttr, kNoWebFeature, EventTypeNames::pause, nullptr},
+      {onplayAttr, kNoWebFeature, EventTypeNames::play, nullptr},
+      {onplayingAttr, kNoWebFeature, EventTypeNames::playing, nullptr},
+      {onpointercancelAttr, kNoWebFeature, EventTypeNames::pointercancel,
+       nullptr},
+      {onpointerdownAttr, kNoWebFeature, EventTypeNames::pointerdown, nullptr},
+      {onpointerenterAttr, kNoWebFeature, EventTypeNames::pointerenter,
+       nullptr},
+      {onpointerleaveAttr, kNoWebFeature, EventTypeNames::pointerleave,
+       nullptr},
+      {onpointermoveAttr, kNoWebFeature, EventTypeNames::pointermove, nullptr},
+      {onpointeroutAttr, kNoWebFeature, EventTypeNames::pointerout, nullptr},
+      {onpointeroverAttr, kNoWebFeature, EventTypeNames::pointerover, nullptr},
+      {onpointerupAttr, kNoWebFeature, EventTypeNames::pointerup, nullptr},
+      {onprogressAttr, kNoWebFeature, EventTypeNames::progress, nullptr},
+      {onratechangeAttr, kNoWebFeature, EventTypeNames::ratechange, nullptr},
+      {onresetAttr, kNoWebFeature, EventTypeNames::reset, nullptr},
+      {onresizeAttr, kNoWebFeature, EventTypeNames::resize, nullptr},
+      {onscrollAttr, kNoWebFeature, EventTypeNames::scroll, nullptr},
+      {onseekedAttr, kNoWebFeature, EventTypeNames::seeked, nullptr},
+      {onseekingAttr, kNoWebFeature, EventTypeNames::seeking, nullptr},
+      {onselectAttr, kNoWebFeature, EventTypeNames::select, nullptr},
+      {onselectstartAttr, kNoWebFeature, EventTypeNames::selectstart, nullptr},
+      {onstalledAttr, kNoWebFeature, EventTypeNames::stalled, nullptr},
+      {onsubmitAttr, kNoWebFeature, EventTypeNames::submit, nullptr},
+      {onsuspendAttr, kNoWebFeature, EventTypeNames::suspend, nullptr},
+      {ontimeupdateAttr, kNoWebFeature, EventTypeNames::timeupdate, nullptr},
+      {ontoggleAttr, kNoWebFeature, EventTypeNames::toggle, nullptr},
+      {ontouchcancelAttr, kNoWebFeature, EventTypeNames::touchcancel, nullptr},
+      {ontouchendAttr, kNoWebFeature, EventTypeNames::touchend, nullptr},
+      {ontouchmoveAttr, kNoWebFeature, EventTypeNames::touchmove, nullptr},
+      {ontouchstartAttr, kNoWebFeature, EventTypeNames::touchstart, nullptr},
+      {ontransitionendAttr, kNoWebFeature, EventTypeNames::webkitTransitionEnd,
+       nullptr},
+      {onvolumechangeAttr, kNoWebFeature, EventTypeNames::volumechange,
+       nullptr},
+      {onwaitingAttr, kNoWebFeature, EventTypeNames::waiting, nullptr},
+      {onwebkitanimationendAttr, kNoWebFeature,
+       EventTypeNames::webkitAnimationEnd, nullptr},
+      {onwebkitanimationiterationAttr, kNoWebFeature,
+       EventTypeNames::webkitAnimationIteration, nullptr},
+      {onwebkitanimationstartAttr, kNoWebFeature,
+       EventTypeNames::webkitAnimationStart, nullptr},
+      {onwebkitfullscreenchangeAttr, kNoWebFeature,
+       EventTypeNames::webkitfullscreenchange, nullptr},
+      {onwebkitfullscreenerrorAttr, kNoWebFeature,
+       EventTypeNames::webkitfullscreenerror, nullptr},
+      {onwebkittransitionendAttr, kNoWebFeature,
+       EventTypeNames::webkitTransitionEnd, nullptr},
+      {onwheelAttr, kNoWebFeature, EventTypeNames::wheel, nullptr},
 
-  typedef HashMap<AtomicString, AtomicString> StringToStringMap;
-  DEFINE_STATIC_LOCAL(StringToStringMap, attribute_name_to_event_name_map, ());
-  if (!attribute_name_to_event_name_map.size()) {
-    struct AttrToEventName {
-      const QualifiedName& attr;
-      const AtomicString& event;
-    };
-    AttrToEventName attr_to_event_names[] = {
-        {onabortAttr, EventTypeNames::abort},
-        {onanimationendAttr, EventTypeNames::animationend},
-        {onanimationiterationAttr, EventTypeNames::animationiteration},
-        {onanimationstartAttr, EventTypeNames::animationstart},
-        {onauxclickAttr, EventTypeNames::auxclick},
-        {onbeforecopyAttr, EventTypeNames::beforecopy},
-        {onbeforecutAttr, EventTypeNames::beforecut},
-        {onbeforepasteAttr, EventTypeNames::beforepaste},
-        {onblurAttr, EventTypeNames::blur},
-        {oncancelAttr, EventTypeNames::cancel},
-        {oncanplayAttr, EventTypeNames::canplay},
-        {oncanplaythroughAttr, EventTypeNames::canplaythrough},
-        {onchangeAttr, EventTypeNames::change},
-        {onclickAttr, EventTypeNames::click},
-        {oncloseAttr, EventTypeNames::close},
-        {oncontextmenuAttr, EventTypeNames::contextmenu},
-        {oncopyAttr, EventTypeNames::copy},
-        {oncuechangeAttr, EventTypeNames::cuechange},
-        {oncutAttr, EventTypeNames::cut},
-        {ondblclickAttr, EventTypeNames::dblclick},
-        {ondragAttr, EventTypeNames::drag},
-        {ondragendAttr, EventTypeNames::dragend},
-        {ondragenterAttr, EventTypeNames::dragenter},
-        {ondragleaveAttr, EventTypeNames::dragleave},
-        {ondragoverAttr, EventTypeNames::dragover},
-        {ondragstartAttr, EventTypeNames::dragstart},
-        {ondropAttr, EventTypeNames::drop},
-        {ondurationchangeAttr, EventTypeNames::durationchange},
-        {onemptiedAttr, EventTypeNames::emptied},
-        {onendedAttr, EventTypeNames::ended},
-        {onerrorAttr, EventTypeNames::error},
-        {onfocusAttr, EventTypeNames::focus},
-        {onfocusinAttr, EventTypeNames::focusin},
-        {onfocusoutAttr, EventTypeNames::focusout},
-        {ongotpointercaptureAttr, EventTypeNames::gotpointercapture},
-        {oninputAttr, EventTypeNames::input},
-        {oninvalidAttr, EventTypeNames::invalid},
-        {onkeydownAttr, EventTypeNames::keydown},
-        {onkeypressAttr, EventTypeNames::keypress},
-        {onkeyupAttr, EventTypeNames::keyup},
-        {onloadAttr, EventTypeNames::load},
-        {onloadeddataAttr, EventTypeNames::loadeddata},
-        {onloadedmetadataAttr, EventTypeNames::loadedmetadata},
-        {onloadstartAttr, EventTypeNames::loadstart},
-        {onlostpointercaptureAttr, EventTypeNames::lostpointercapture},
-        {onmousedownAttr, EventTypeNames::mousedown},
-        {onmouseenterAttr, EventTypeNames::mouseenter},
-        {onmouseleaveAttr, EventTypeNames::mouseleave},
-        {onmousemoveAttr, EventTypeNames::mousemove},
-        {onmouseoutAttr, EventTypeNames::mouseout},
-        {onmouseoverAttr, EventTypeNames::mouseover},
-        {onmouseupAttr, EventTypeNames::mouseup},
-        {onmousewheelAttr, EventTypeNames::mousewheel},
-        {onpasteAttr, EventTypeNames::paste},
-        {onpauseAttr, EventTypeNames::pause},
-        {onplayAttr, EventTypeNames::play},
-        {onplayingAttr, EventTypeNames::playing},
-        {onpointercancelAttr, EventTypeNames::pointercancel},
-        {onpointerdownAttr, EventTypeNames::pointerdown},
-        {onpointerenterAttr, EventTypeNames::pointerenter},
-        {onpointerleaveAttr, EventTypeNames::pointerleave},
-        {onpointermoveAttr, EventTypeNames::pointermove},
-        {onpointeroutAttr, EventTypeNames::pointerout},
-        {onpointeroverAttr, EventTypeNames::pointerover},
-        {onpointerupAttr, EventTypeNames::pointerup},
-        {onprogressAttr, EventTypeNames::progress},
-        {onratechangeAttr, EventTypeNames::ratechange},
-        {onresetAttr, EventTypeNames::reset},
-        {onresizeAttr, EventTypeNames::resize},
-        {onscrollAttr, EventTypeNames::scroll},
-        {onseekedAttr, EventTypeNames::seeked},
-        {onseekingAttr, EventTypeNames::seeking},
-        {onselectAttr, EventTypeNames::select},
-        {onselectstartAttr, EventTypeNames::selectstart},
-        {onstalledAttr, EventTypeNames::stalled},
-        {onsubmitAttr, EventTypeNames::submit},
-        {onsuspendAttr, EventTypeNames::suspend},
-        {ontimeupdateAttr, EventTypeNames::timeupdate},
-        {ontoggleAttr, EventTypeNames::toggle},
-        {ontouchcancelAttr, EventTypeNames::touchcancel},
-        {ontouchendAttr, EventTypeNames::touchend},
-        {ontouchmoveAttr, EventTypeNames::touchmove},
-        {ontouchstartAttr, EventTypeNames::touchstart},
-        {ontransitionendAttr, EventTypeNames::webkitTransitionEnd},
-        {onvolumechangeAttr, EventTypeNames::volumechange},
-        {onwaitingAttr, EventTypeNames::waiting},
-        {onwebkitanimationendAttr, EventTypeNames::webkitAnimationEnd},
-        {onwebkitanimationiterationAttr,
-         EventTypeNames::webkitAnimationIteration},
-        {onwebkitanimationstartAttr, EventTypeNames::webkitAnimationStart},
-        {onwebkitfullscreenchangeAttr, EventTypeNames::webkitfullscreenchange},
-        {onwebkitfullscreenerrorAttr, EventTypeNames::webkitfullscreenerror},
-        {onwebkittransitionendAttr, EventTypeNames::webkitTransitionEnd},
-        {onwheelAttr, EventTypeNames::wheel},
-    };
+      {aria_activedescendantAttr, WebFeature::kARIAActiveDescendantAttribute,
+       kNoEvent, nullptr},
+      {aria_atomicAttr, WebFeature::kARIAAtomicAttribute, kNoEvent, nullptr},
+      {aria_autocompleteAttr, WebFeature::kARIAAutocompleteAttribute, kNoEvent,
+       nullptr},
+      {aria_busyAttr, WebFeature::kARIABusyAttribute, kNoEvent, nullptr},
+      {aria_checkedAttr, WebFeature::kARIACheckedAttribute, kNoEvent, nullptr},
+      {aria_colcountAttr, WebFeature::kARIAColCountAttribute, kNoEvent,
+       nullptr},
+      {aria_colindexAttr, WebFeature::kARIAColIndexAttribute, kNoEvent,
+       nullptr},
+      {aria_colspanAttr, WebFeature::kARIAColSpanAttribute, kNoEvent, nullptr},
+      {aria_controlsAttr, WebFeature::kARIAControlsAttribute, kNoEvent,
+       nullptr},
+      {aria_currentAttr, WebFeature::kARIACurrentAttribute, kNoEvent, nullptr},
+      {aria_describedbyAttr, WebFeature::kARIADescribedByAttribute, kNoEvent,
+       nullptr},
+      {aria_detailsAttr, WebFeature::kARIADetailsAttribute, kNoEvent, nullptr},
+      {aria_disabledAttr, WebFeature::kARIADisabledAttribute, kNoEvent,
+       nullptr},
+      {aria_dropeffectAttr, WebFeature::kARIADropEffectAttribute, kNoEvent,
+       nullptr},
+      {aria_errormessageAttr, WebFeature::kARIAErrorMessageAttribute, kNoEvent,
+       nullptr},
+      {aria_expandedAttr, WebFeature::kARIAExpandedAttribute, kNoEvent,
+       nullptr},
+      {aria_flowtoAttr, WebFeature::kARIAFlowToAttribute, kNoEvent, nullptr},
+      {aria_grabbedAttr, WebFeature::kARIAGrabbedAttribute, kNoEvent, nullptr},
+      {aria_haspopupAttr, WebFeature::kARIAHasPopupAttribute, kNoEvent,
+       nullptr},
+      {aria_helpAttr, WebFeature::kARIAHelpAttribute, kNoEvent, nullptr},
+      {aria_hiddenAttr, WebFeature::kARIAHiddenAttribute, kNoEvent, nullptr},
+      {aria_invalidAttr, WebFeature::kARIAInvalidAttribute, kNoEvent, nullptr},
+      {aria_keyshortcutsAttr, WebFeature::kARIAKeyShortcutsAttribute, kNoEvent,
+       nullptr},
+      {aria_labelAttr, WebFeature::kARIALabelAttribute, kNoEvent, nullptr},
+      {aria_labeledbyAttr, WebFeature::kARIALabeledByAttribute, kNoEvent,
+       nullptr},
+      {aria_labelledbyAttr, WebFeature::kARIALabelledByAttribute, kNoEvent,
+       nullptr},
+      {aria_levelAttr, WebFeature::kARIALevelAttribute, kNoEvent, nullptr},
+      {aria_liveAttr, WebFeature::kARIALiveAttribute, kNoEvent, nullptr},
+      {aria_modalAttr, WebFeature::kARIAModalAttribute, kNoEvent, nullptr},
+      {aria_multilineAttr, WebFeature::kARIAMultilineAttribute, kNoEvent,
+       nullptr},
+      {aria_multiselectableAttr, WebFeature::kARIAMultiselectableAttribute,
+       kNoEvent, nullptr},
+      {aria_orientationAttr, WebFeature::kARIAOrientationAttribute, kNoEvent,
+       nullptr},
+      {aria_ownsAttr, WebFeature::kARIAOwnsAttribute, kNoEvent, nullptr},
+      {aria_placeholderAttr, WebFeature::kARIAPlaceholderAttribute, kNoEvent,
+       nullptr},
+      {aria_posinsetAttr, WebFeature::kARIAPosInSetAttribute, kNoEvent,
+       nullptr},
+      {aria_pressedAttr, WebFeature::kARIAPressedAttribute, kNoEvent, nullptr},
+      {aria_readonlyAttr, WebFeature::kARIAReadOnlyAttribute, kNoEvent,
+       nullptr},
+      {aria_relevantAttr, WebFeature::kARIARelevantAttribute, kNoEvent,
+       nullptr},
+      {aria_requiredAttr, WebFeature::kARIARequiredAttribute, kNoEvent,
+       nullptr},
+      {aria_roledescriptionAttr, WebFeature::kARIARoleDescriptionAttribute,
+       kNoEvent, nullptr},
+      {aria_rowcountAttr, WebFeature::kARIARowCountAttribute, kNoEvent,
+       nullptr},
+      {aria_rowindexAttr, WebFeature::kARIARowIndexAttribute, kNoEvent,
+       nullptr},
+      {aria_rowspanAttr, WebFeature::kARIARowSpanAttribute, kNoEvent, nullptr},
+      {aria_selectedAttr, WebFeature::kARIASelectedAttribute, kNoEvent,
+       nullptr},
+      {aria_setsizeAttr, WebFeature::kARIASetSizeAttribute, kNoEvent, nullptr},
+      {aria_sortAttr, WebFeature::kARIASortAttribute, kNoEvent, nullptr},
+      {aria_valuemaxAttr, WebFeature::kARIAValueMaxAttribute, kNoEvent,
+       nullptr},
+      {aria_valueminAttr, WebFeature::kARIAValueMinAttribute, kNoEvent,
+       nullptr},
+      {aria_valuenowAttr, WebFeature::kARIAValueNowAttribute, kNoEvent,
+       nullptr},
+      {aria_valuetextAttr, WebFeature::kARIAValueTextAttribute, kNoEvent,
+       nullptr},
+  };
 
-    for (const auto& name : attr_to_event_names)
-      attribute_name_to_event_name_map.Set(name.attr.LocalName(), name.event);
+  using AttributeToTriggerIndexMap = HashMap<QualifiedName, int>;
+  DEFINE_STATIC_LOCAL(AttributeToTriggerIndexMap,
+                      attribute_to_trigger_index_map, ());
+  if (!attribute_to_trigger_index_map.size()) {
+    for (size_t i = 0; i < arraysize(attribute_triggers); ++i)
+      attribute_to_trigger_index_map.insert(attribute_triggers[i].attribute, i);
   }
 
-  return attribute_name_to_event_name_map.at(attr_name.LocalName());
+  auto iter = attribute_to_trigger_index_map.find(attr_name);
+  if (iter != attribute_to_trigger_index_map.end())
+    return &attribute_triggers[iter->value];
+  return nullptr;
 }
 
-WebFeature HTMLElement::WebFeatureForAttributeName(
+// static
+const AtomicString& HTMLElement::EventNameForAttributeName(
     const QualifiedName& attr_name) {
-  if (!attr_name.NamespaceURI().IsNull())
-    return kNoWebFeature;
-
-  // Don't count usage of attributes in user agent shadow DOM.
-  if (ShadowRoot* shadow = ContainingShadowRoot()) {
-    if (shadow->GetType() == ShadowRootType::kUserAgent)
-      return kNoWebFeature;
-  }
-
-  typedef HashMap<AtomicString, WebFeature> StringToWebFeatureMap;
-  DEFINE_STATIC_LOCAL(StringToWebFeatureMap, attribute_name_to_web_feature_map,
-                      ());
-  if (!attribute_name_to_web_feature_map.size()) {
-    struct AttrToWebFeature {
-      const QualifiedName& attr;
-      WebFeature web_feature;
-    };
-    AttrToWebFeature attr_to_web_feature[] = {
-        {aria_activedescendantAttr, WebFeature::kARIAActiveDescendantAttribute},
-        {aria_atomicAttr, WebFeature::kARIAAtomicAttribute},
-        {aria_autocompleteAttr, WebFeature::kARIAAutocompleteAttribute},
-        {aria_busyAttr, WebFeature::kARIABusyAttribute},
-        {aria_checkedAttr, WebFeature::kARIACheckedAttribute},
-        {aria_colcountAttr, WebFeature::kARIAColCountAttribute},
-        {aria_colindexAttr, WebFeature::kARIAColIndexAttribute},
-        {aria_colspanAttr, WebFeature::kARIAColSpanAttribute},
-        {aria_controlsAttr, WebFeature::kARIAControlsAttribute},
-        {aria_currentAttr, WebFeature::kARIACurrentAttribute},
-        {aria_describedbyAttr, WebFeature::kARIADescribedByAttribute},
-        {aria_detailsAttr, WebFeature::kARIADetailsAttribute},
-        {aria_disabledAttr, WebFeature::kARIADisabledAttribute},
-        {aria_dropeffectAttr, WebFeature::kARIADropEffectAttribute},
-        {aria_errormessageAttr, WebFeature::kARIAErrorMessageAttribute},
-        {aria_expandedAttr, WebFeature::kARIAExpandedAttribute},
-        {aria_flowtoAttr, WebFeature::kARIAFlowToAttribute},
-        {aria_grabbedAttr, WebFeature::kARIAGrabbedAttribute},
-        {aria_haspopupAttr, WebFeature::kARIAHasPopupAttribute},
-        {aria_helpAttr, WebFeature::kARIAHelpAttribute},
-        {aria_hiddenAttr, WebFeature::kARIAHiddenAttribute},
-        {aria_invalidAttr, WebFeature::kARIAInvalidAttribute},
-        {aria_keyshortcutsAttr, WebFeature::kARIAKeyShortcutsAttribute},
-        {aria_labelAttr, WebFeature::kARIALabelAttribute},
-        {aria_labeledbyAttr, WebFeature::kARIALabeledByAttribute},
-        {aria_labelledbyAttr, WebFeature::kARIALabelledByAttribute},
-        {aria_levelAttr, WebFeature::kARIALevelAttribute},
-        {aria_liveAttr, WebFeature::kARIALiveAttribute},
-        {aria_modalAttr, WebFeature::kARIAModalAttribute},
-        {aria_multilineAttr, WebFeature::kARIAMultilineAttribute},
-        {aria_multiselectableAttr, WebFeature::kARIAMultiselectableAttribute},
-        {aria_orientationAttr, WebFeature::kARIAOrientationAttribute},
-        {aria_ownsAttr, WebFeature::kARIAOwnsAttribute},
-        {aria_placeholderAttr, WebFeature::kARIAPlaceholderAttribute},
-        {aria_posinsetAttr, WebFeature::kARIAPosInSetAttribute},
-        {aria_pressedAttr, WebFeature::kARIAPressedAttribute},
-        {aria_readonlyAttr, WebFeature::kARIAReadOnlyAttribute},
-        {aria_relevantAttr, WebFeature::kARIARelevantAttribute},
-        {aria_requiredAttr, WebFeature::kARIARequiredAttribute},
-        {aria_roledescriptionAttr, WebFeature::kARIARoleDescriptionAttribute},
-        {aria_rowcountAttr, WebFeature::kARIARowCountAttribute},
-        {aria_rowindexAttr, WebFeature::kARIARowIndexAttribute},
-        {aria_rowspanAttr, WebFeature::kARIARowSpanAttribute},
-        {aria_selectedAttr, WebFeature::kARIASelectedAttribute},
-        {aria_setsizeAttr, WebFeature::kARIASetSizeAttribute},
-        {aria_sortAttr, WebFeature::kARIASortAttribute},
-        {aria_valuemaxAttr, WebFeature::kARIAValueMaxAttribute},
-        {aria_valueminAttr, WebFeature::kARIAValueMinAttribute},
-        {aria_valuenowAttr, WebFeature::kARIAValueNowAttribute},
-        {aria_valuetextAttr, WebFeature::kARIAValueTextAttribute},
-        {inertAttr, WebFeature::kInertAttribute},
-    };
-
-    for (const auto& item : attr_to_web_feature) {
-      attribute_name_to_web_feature_map.Set(item.attr.LocalName(),
-                                            item.web_feature);
-    }
-  }
-
-  const auto& iter =
-      attribute_name_to_web_feature_map.find(attr_name.LocalName());
-  if (iter != attribute_name_to_web_feature_map.end())
-    return iter->value;
-  return kNoWebFeature;
+  AttributeTriggers* triggers = TriggersForAttributeName(attr_name);
+  if (triggers)
+    return triggers->event;
+  return g_null_atom;
 }
 
 void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
@@ -545,35 +583,27 @@ void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
 }
 
 void HTMLElement::ParseAttribute(const AttributeModificationParams& params) {
-  if (params.name == tabindexAttr || params.name == XMLNames::langAttr)
-    return Element::ParseAttribute(params);
+  AttributeTriggers* triggers = TriggersForAttributeName(params.name);
+  if (!triggers)
+    return;
 
-  if (params.name == dirAttr) {
-    DirAttributeChanged(params.new_value);
-  } else if (params.name == langAttr) {
-    PseudoStateChanged(CSSSelector::kPseudoLang);
-  } else if (params.name == inertAttr) {
-    UpdateDistribution();
-    if (GetDocument().GetFrame()) {
-      GetDocument().GetFrame()->SetIsInert(
-          GetDocument().LocalOwner() && GetDocument().LocalOwner()->IsInert());
-    }
-  } else if (params.name == nonceAttr) {
-    if (params.new_value != g_empty_atom)
-      setNonce(params.new_value);
-  } else {
-    const AtomicString& event_name = EventNameForAttributeName(params.name);
-    if (!event_name.IsNull()) {
-      SetAttributeEventListener(
-          event_name,
-          CreateAttributeEventListener(this, params.name, params.new_value,
-                                       EventParameterName()));
+  if (triggers->event != g_null_atom) {
+    SetAttributeEventListener(
+        triggers->event,
+        CreateAttributeEventListener(this, params.name, params.new_value,
+                                     EventParameterName()));
+  }
+
+  if (triggers->web_feature != kNoWebFeature) {
+    // Count usage of attributes but ignore attributes in user agent shadow DOM.
+    if (ShadowRoot* shadow = ContainingShadowRoot()) {
+      if (shadow->GetType() != ShadowRootType::kUserAgent)
+        UseCounter::Count(GetDocument(), triggers->web_feature);
     }
   }
 
-  WebFeature web_feature = WebFeatureForAttributeName(params.name);
-  if (web_feature != kNoWebFeature)
-    UseCounter::Count(GetDocument(), web_feature);
+  if (triggers->function)
+    ((*this).*(triggers->function))(params);
 }
 
 DocumentFragment* HTMLElement::TextToFragment(const String& text,
@@ -953,22 +983,6 @@ bool HTMLElement::SelfOrAncestorHasDirAutoAttribute() const {
   return false;
 }
 
-void HTMLElement::DirAttributeChanged(const AtomicString& value) {
-  // If an ancestor has dir=auto, and this node has the first character,
-  // changes to dir attribute may affect the ancestor.
-  if (!CanParticipateInFlatTree())
-    return;
-  UpdateDistribution();
-  Element* parent = FlatTreeTraversal::ParentElement(*this);
-  if (parent && parent->IsHTMLElement() &&
-      ToHTMLElement(parent)->SelfOrAncestorHasDirAutoAttribute())
-    ToHTMLElement(parent)
-        ->AdjustDirectionalityIfNeededAfterChildAttributeChanged(this);
-
-  if (DeprecatedEqualIgnoringCase(value, "auto"))
-    CalculateAndAdjustDirectionality();
-}
-
 void HTMLElement::AdjustDirectionalityIfNeededAfterChildAttributeChanged(
     Element* child) {
   DCHECK(SelfOrAncestorHasDirAutoAttribute());
@@ -1271,6 +1285,52 @@ Element* HTMLElement::unclosedOffsetParent() {
     return nullptr;
 
   return layout_object->OffsetParent(this);
+}
+
+void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
+  // If an ancestor has dir=auto, and this node has the first character,
+  // changes to dir attribute may affect the ancestor.
+  if (!CanParticipateInFlatTree())
+    return;
+  UpdateDistribution();
+  Element* parent = FlatTreeTraversal::ParentElement(*this);
+  if (parent && parent->IsHTMLElement() &&
+      ToHTMLElement(parent)->SelfOrAncestorHasDirAutoAttribute()) {
+    ToHTMLElement(parent)
+        ->AdjustDirectionalityIfNeededAfterChildAttributeChanged(this);
+  }
+
+  if (DeprecatedEqualIgnoringCase(params.new_value, "auto"))
+    CalculateAndAdjustDirectionality();
+}
+
+void HTMLElement::OnInertAttrChanged(
+    const AttributeModificationParams& params) {
+  UpdateDistribution();
+  if (GetDocument().GetFrame()) {
+    GetDocument().GetFrame()->SetIsInert(GetDocument().LocalOwner() &&
+                                         GetDocument().LocalOwner()->IsInert());
+  }
+}
+
+void HTMLElement::OnLangAttrChanged(const AttributeModificationParams& params) {
+  PseudoStateChanged(CSSSelector::kPseudoLang);
+}
+
+void HTMLElement::OnNonceAttrChanged(
+    const AttributeModificationParams& params) {
+  if (params.new_value != g_empty_atom)
+    setNonce(params.new_value);
+}
+
+void HTMLElement::OnTabIndexAttrChanged(
+    const AttributeModificationParams& params) {
+  Element::ParseAttribute(params);
+}
+
+void HTMLElement::OnXMLLangAttrChanged(
+    const AttributeModificationParams& params) {
+  Element::ParseAttribute(params);
 }
 
 }  // namespace blink
