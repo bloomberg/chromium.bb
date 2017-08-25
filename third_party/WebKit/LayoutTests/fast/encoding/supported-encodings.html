@@ -9,7 +9,7 @@
 // use of the "internals" API for testing and therefore can not be
 // upstreamed to web-platform-tests.
 
-let supported_labels = internals.supportedTextEncodingLabels();
+let supported_labels = internals.supportedTextEncodingLabels().sort();
 
 // Specified labels from: https://encoding.spec.whatwg.org/
 

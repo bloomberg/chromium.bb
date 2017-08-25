@@ -56,6 +56,23 @@ std::unique_ptr<TextCodec> TextCodecICU::Create(const TextEncoding& encoding,
   return WTF::WrapUnique(new TextCodecICU(encoding));
 }
 
+namespace {
+bool IncludeAlias(const char* alias) {
+#if !defined(USING_SYSTEM_ICU)
+  // Chromium's build of ICU includes *-html aliases to manage the encoding
+  // labels defined in the Encoding Standard, but these must not be
+  // web-exposed.
+  const char* kSuffix = "-html";
+  const size_t kSuffixLength = 5;
+  size_t alias_length = strlen(alias);
+  if ((alias_length >= kSuffixLength) &&
+      !strcmp(alias + alias_length - kSuffixLength, kSuffix))
+    return false;
+#endif
+  return true;
+}
+}  // namespace
+
 void TextCodecICU::RegisterEncodingNames(EncodingNameRegistrar registrar) {
   // We register Hebrew with logical ordering using a separate name.
   // Otherwise, this would share the same canonical name as the
@@ -131,7 +148,7 @@ void TextCodecICU::RegisterEncodingNames(EncodingNameRegistrar registrar) {
         error = U_ZERO_ERROR;
         const char* alias = ucnv_getAlias(name, j, &error);
         DCHECK(U_SUCCESS(error));
-        if (U_SUCCESS(error) && alias != standard_name)
+        if (U_SUCCESS(error) && alias != standard_name && IncludeAlias(alias))
           registrar(alias, standard_name);
       }
   }
