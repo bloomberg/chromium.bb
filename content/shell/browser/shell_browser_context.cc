@@ -77,6 +77,12 @@ ShellBrowserContext::~ShellBrowserContext() {
       BrowserThread::IO, FROM_HERE, resource_context_.release());
   }
   ShutdownStoragePartitions();
+  if (url_request_getter_) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&ShellURLRequestContextGetter::NotifyContextShuttingDown,
+                       url_request_getter_));
+  }
 }
 
 void ShellBrowserContext::InitWhileIOAllowed() {

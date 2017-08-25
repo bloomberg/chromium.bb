@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory.h"
@@ -47,6 +48,8 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
 
   net::HostResolver* host_resolver();
 
+  void NotifyContextShuttingDown();
+
  protected:
   ~ShellURLRequestContextGetter() override;
 
@@ -66,6 +69,7 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
  private:
   bool ignore_certificate_errors_;
   bool off_the_record_;
+  bool shut_down_;
   base::FilePath base_path_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   net::NetLog* net_log_;

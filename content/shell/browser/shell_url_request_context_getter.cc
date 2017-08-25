@@ -70,6 +70,7 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     net::NetLog* net_log)
     : ignore_certificate_errors_(ignore_certificate_errors),
       off_the_record_(off_the_record),
+      shut_down_(false),
       base_path_(base_path),
       io_task_runner_(std::move(io_task_runner)),
       net_log_(net_log),
@@ -85,7 +86,13 @@ ShellURLRequestContextGetter::ShellURLRequestContextGetter(
   proxy_config_service_ = GetProxyConfigService();
 }
 
-ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {
+ShellURLRequestContextGetter::~ShellURLRequestContextGetter() {}
+
+void ShellURLRequestContextGetter::NotifyContextShuttingDown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  shut_down_ = true;
+  URLRequestContextGetter::NotifyContextShuttingDown();
+  url_request_context_ = nullptr;  // deletes it
 }
 
 std::unique_ptr<net::NetworkDelegate>
@@ -111,6 +118,9 @@ ShellURLRequestContextGetter::GetProxyService() {
 
 net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (shut_down_)
+    return nullptr;
 
   if (!url_request_context_) {
     const base::CommandLine& command_line =
