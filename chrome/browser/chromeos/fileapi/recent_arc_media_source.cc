@@ -296,6 +296,19 @@ void RecentArcMediaSource::GetRecentFiles(Params params) {
   DCHECK_EQ(0, num_inflight_roots_);
   DCHECK(files_.empty());
 
+  // If ARC file system operations will be deferred, return immediately without
+  // recording UMA metrics.
+  //
+  // TODO(nya): Return files progressively rather than simply giving up.
+  // Also, it is wrong to assume all following operations will not be deferred
+  // just because this function returned true. However, in practice, it is rare
+  // ArcFileSystemOperationRunner's deferring state switches from disabled to
+  // enabled (one such case is when ARC container crashes).
+  if (!WillArcFileSystemOperationsRunImmediately()) {
+    std::move(params.callback()).Run({});
+    return;
+  }
+
   params_.emplace(std::move(params));
 
   build_start_time_ = base::TimeTicks::Now();
@@ -343,6 +356,19 @@ void RecentArcMediaSource::OnComplete() {
   std::vector<RecentFile> files = std::move(files_);
   files_.clear();
   std::move(params.callback()).Run(std::move(files));
+}
+
+bool RecentArcMediaSource::WillArcFileSystemOperationsRunImmediately() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  auto* runner =
+      arc::ArcFileSystemOperationRunner::GetForBrowserContext(profile_);
+
+  // If ARC is not allowed the user, |runner| is nullptr.
+  if (!runner)
+    return false;
+
+  return !runner->WillDefer();
 }
 
 }  // namespace chromeos

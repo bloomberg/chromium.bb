@@ -63,8 +63,10 @@ class RecentArcMediaSourceTest : public testing::Test {
     arc_service_manager_ = base::MakeUnique<arc::ArcServiceManager>();
     profile_ = base::MakeUnique<TestingProfile>();
     arc_service_manager_->set_browser_context(profile_.get());
-    arc::ArcFileSystemOperationRunner::GetFactory()->SetTestingFactoryAndUse(
-        profile_.get(), &CreateFileSystemOperationRunnerForTesting);
+    runner_ = static_cast<arc::ArcFileSystemOperationRunner*>(
+        arc::ArcFileSystemOperationRunner::GetFactory()
+            ->SetTestingFactoryAndUse(
+                profile_.get(), &CreateFileSystemOperationRunnerForTesting));
 
     // Mount ARC file systems.
     arc::ArcFileSystemMounter::GetForBrowserContext(profile_.get());
@@ -125,6 +127,8 @@ class RecentArcMediaSourceTest : public testing::Test {
     return files;
   }
 
+  void EnableDefer() { runner_->SetShouldDefer(true); }
+
   content::TestBrowserThreadBundle thread_bundle_;
   arc::FakeFileSystemInstance fake_file_system_;
 
@@ -132,10 +136,13 @@ class RecentArcMediaSourceTest : public testing::Test {
   // ChromeBrowserMainPartsChromeos.
   std::unique_ptr<arc::ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
+
+  arc::ArcFileSystemOperationRunner* runner_;
+
   std::unique_ptr<RecentArcMediaSource> source_;
 };
 
-TEST_F(RecentArcMediaSourceTest, GetRecentFiles) {
+TEST_F(RecentArcMediaSourceTest, Normal) {
   EnableFakeFileSystemInstance();
 
   std::vector<RecentFile> files = GetRecentFiles();
@@ -153,19 +160,42 @@ TEST_F(RecentArcMediaSourceTest, GetRecentFiles) {
   EXPECT_EQ(base::Time::FromJavaTime(3), files[1].last_modified());
 }
 
-TEST_F(RecentArcMediaSourceTest, GetRecentFiles_ArcNotAvailable) {
+TEST_F(RecentArcMediaSourceTest, ArcNotAvailable) {
   std::vector<RecentFile> files = GetRecentFiles();
 
   EXPECT_EQ(0u, files.size());
 }
 
-TEST_F(RecentArcMediaSourceTest, GetRecentFiles_UmaStats) {
+TEST_F(RecentArcMediaSourceTest, Deferred) {
+  EnableFakeFileSystemInstance();
+  EnableDefer();
+
+  std::vector<RecentFile> files = GetRecentFiles();
+
+  EXPECT_EQ(0u, files.size());
+}
+
+TEST_F(RecentArcMediaSourceTest, UmaStats) {
+  EnableFakeFileSystemInstance();
+
   base::HistogramTester histogram_tester;
 
   GetRecentFiles();
 
   histogram_tester.ExpectTotalCount(RecentArcMediaSource::kLoadHistogramName,
                                     1);
+}
+
+TEST_F(RecentArcMediaSourceTest, UmaStats_Deferred) {
+  EnableFakeFileSystemInstance();
+  EnableDefer();
+
+  base::HistogramTester histogram_tester;
+
+  GetRecentFiles();
+
+  histogram_tester.ExpectTotalCount(RecentArcMediaSource::kLoadHistogramName,
+                                    0);
 }
 
 }  // namespace chromeos
