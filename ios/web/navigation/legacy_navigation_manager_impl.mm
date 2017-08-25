@@ -328,21 +328,6 @@ bool LegacyNavigationManagerImpl::IsRedirectItemAtIndex(int index) const {
   return transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK;
 }
 
-NavigationItem*
-LegacyNavigationManagerImpl::GetLastCommittedNonAppSpecificItem() const {
-  int index = GetLastCommittedItemIndex();
-  if (index == -1)
-    return nullptr;
-  WebClient* client = GetWebClient();
-  const ScopedNavigationItemImplList& items = [session_controller_ items];
-  while (index >= 0) {
-    NavigationItem* item = items[index--].get();
-    if (!client->IsAppSpecificURL(item->GetVirtualURL()))
-      return item;
-  }
-  return nullptr;
-}
-
 int LegacyNavigationManagerImpl::GetPreviousItemIndex() const {
   return base::checked_cast<int>([session_controller_ previousItemIndex]);
 }
