@@ -4,11 +4,13 @@
 
 #include "components/cryptauth/connection.h"
 
+#include <sstream>
 #include <utility>
 
 #include "base/logging.h"
 #include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/wire_message.h"
+#include "components/proximity_auth/logging/logging.h"
 
 namespace cryptauth {
 
@@ -25,12 +27,14 @@ bool Connection::IsConnected() const {
 
 void Connection::SendMessage(std::unique_ptr<WireMessage> message) {
   if (!IsConnected()) {
-    VLOG(1) << "Cannot send message when disconnected.";
+    PA_LOG(ERROR) << "Not yet connected; cannot send message to "
+                  << GetDeviceInfoLogString();
     return;
   }
 
   if (is_sending_message_) {
-    VLOG(1) << "Another message is currently in progress.";
+    PA_LOG(ERROR) << "Cannot send message because another message is currently "
+                  << "being sent to " << GetDeviceInfoLogString();
     return;
   }
 
@@ -64,7 +68,8 @@ void Connection::SetStatus(Status status) {
 
 void Connection::OnDidSendMessage(const WireMessage& message, bool success) {
   if (!is_sending_message_) {
-    VLOG(1) << "Send completed, but no message in progress.";
+    PA_LOG(ERROR) << "OnDidSendMessage(), but a send was not expected to be in "
+                  << "progress to " << GetDeviceInfoLogString();
     return;
   }
 
@@ -75,7 +80,8 @@ void Connection::OnDidSendMessage(const WireMessage& message, bool success) {
 
 void Connection::OnBytesReceived(const std::string& bytes) {
   if (!IsConnected()) {
-    VLOG(1) << "Received bytes, but not connected.";
+    PA_LOG(ERROR) << "OnBytesReceived(), but not connected to "
+                  << GetDeviceInfoLogString();
     return;
   }
 
@@ -100,6 +106,13 @@ void Connection::OnBytesReceived(const std::string& bytes) {
 std::unique_ptr<WireMessage> Connection::DeserializeWireMessage(
     bool* is_incomplete_message) {
   return WireMessage::Deserialize(received_bytes_, is_incomplete_message);
+}
+
+std::string Connection::GetDeviceInfoLogString() {
+  std::stringstream ss;
+  ss << "{id: \"" << remote_device().GetTruncatedDeviceIdForLogs()
+     << "\", addr: \"" << GetDeviceAddress() << "\"}";
+  return ss.str();
 }
 
 }  // namespace cryptauth

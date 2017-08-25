@@ -191,4 +191,10 @@ WireMessage::WireMessage(const std::string& payload, const std::string& feature)
 
 WireMessage::WireMessage(const std::string& body) : body_(body) {}
 
+WireMessage::WireMessage(const WireMessage& other)
+    : payload_(other.payload_),
+      feature_(other.feature_),
+      body_(other.body_),
+      sequence_number_(other.sequence_number_) {}
+
 }  // namespace cryptauth

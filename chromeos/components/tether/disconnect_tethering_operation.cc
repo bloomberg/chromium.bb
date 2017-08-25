@@ -94,13 +94,14 @@ void DisconnectTetheringOperation::OnMessageSent(int sequence_number) {
     return;
 
   has_sent_message_ = true;
-  UnregisterDevice(remote_device_);
 
   DCHECK(!disconnect_start_time_.is_null());
   UMA_HISTOGRAM_TIMES(
       "InstantTethering.Performance.DisconnectTetheringRequestDuration",
       clock_->Now() - disconnect_start_time_);
   disconnect_start_time_ = base::Time();
+
+  UnregisterDevice(remote_device_);
 }
 
 void DisconnectTetheringOperation::SetClockForTest(

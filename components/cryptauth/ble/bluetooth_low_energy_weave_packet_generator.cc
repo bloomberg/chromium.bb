@@ -4,49 +4,24 @@
 
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_packet_generator.h"
 
+#include <string.h>
+#include <algorithm>
 #ifdef OS_WIN
 #include <winsock2.h>
 #else
 #include <netinet/in.h>
 #endif
 
-#include <string.h>
-
-#include <algorithm>
-
 #include "base/logging.h"
 
 namespace cryptauth {
 namespace weave {
 
-// static.
-BluetoothLowEnergyWeavePacketGenerator::Factory*
-    BluetoothLowEnergyWeavePacketGenerator::Factory::factory_instance_ =
-        nullptr;
-
-// static.
-std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator>
-BluetoothLowEnergyWeavePacketGenerator::Factory::NewInstance() {
-  if (!factory_instance_) {
-    factory_instance_ = new Factory();
-  }
-  return factory_instance_->BuildInstance();
-}
-
-// static.
-void BluetoothLowEnergyWeavePacketGenerator::Factory::SetInstanceForTesting(
-    Factory* factory) {
-  factory_instance_ = factory;
-}
-
-std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator>
-BluetoothLowEnergyWeavePacketGenerator::Factory::BuildInstance() {
-  return std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator>(
-      new BluetoothLowEnergyWeavePacketGenerator());
-}
-
 BluetoothLowEnergyWeavePacketGenerator::BluetoothLowEnergyWeavePacketGenerator()
     : max_packet_size_(kDefaultMaxPacketSize), next_packet_counter_(0) {}
+
+BluetoothLowEnergyWeavePacketGenerator::
+    ~BluetoothLowEnergyWeavePacketGenerator() {}
 
 Packet BluetoothLowEnergyWeavePacketGenerator::CreateConnectionRequest() {
   Packet packet(kMinConnectionRequestSize, 0);

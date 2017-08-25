@@ -21,22 +21,8 @@ namespace weave {
 // Generates the messages sent using the uWeave protocol.
 class BluetoothLowEnergyWeavePacketGenerator {
  public:
-  class Factory {
-   public:
-    static std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator>
-    NewInstance();
-
-    // Exposed for testing.
-    static void SetInstanceForTesting(Factory* factory);
-
-   protected:
-    // Exposed for testing.
-    virtual std::unique_ptr<BluetoothLowEnergyWeavePacketGenerator>
-    BuildInstance();
-
-   private:
-    static Factory* factory_instance_;
-  };
+  BluetoothLowEnergyWeavePacketGenerator();
+  virtual ~BluetoothLowEnergyWeavePacketGenerator();
 
   virtual Packet CreateConnectionRequest();
   virtual Packet CreateConnectionResponse();
@@ -47,9 +33,6 @@ class BluetoothLowEnergyWeavePacketGenerator {
 
   // Will crash if message is empty.
   virtual std::vector<Packet> EncodeDataMessage(std::string message);
-
- protected:
-  BluetoothLowEnergyWeavePacketGenerator();
 
  private:
   void SetShortField(uint32_t byte_offset, uint16_t val, Packet* packet);
