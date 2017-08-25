@@ -222,7 +222,9 @@ def _ExtractSharedLibsFromRuntimeDeps(runtime_deps_files):
         line = line.rstrip()
         if not line.endswith('.so'):
           continue
-        ret.append(os.path.normpath(line))
+        # Only unstripped .so files are listed in runtime deps.
+        # Convert to the stripped .so by going up one directory.
+        ret.append(os.path.normpath(line.replace('lib.unstripped/', '')))
   ret.reverse()
   return ret
 
