@@ -30,6 +30,12 @@ mojom("common_custom_types") {
   js_bindings_mode = "both"
 }
 
+mojom("read_only_buffer") {
+  sources = [
+    "read_only_buffer.mojom",
+  ]
+}
+
 component("common_base") {
   output_name = "mojo_common_lib"
 

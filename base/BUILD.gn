@@ -239,6 +239,7 @@ component("base") {
     "containers/linked_list.h",
     "containers/mru_cache.h",
     "containers/small_map.h",
+    "containers/span.h",
     "containers/stack_container.h",
     "containers/vector_buffer.h",
     "cpu.cc",

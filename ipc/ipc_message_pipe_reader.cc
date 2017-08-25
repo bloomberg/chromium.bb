@@ -60,15 +60,12 @@ bool MessagePipeReader::Send(std::unique_ptr<Message> message) {
   if (result != MOJO_RESULT_OK)
     return false;
 
-  std::vector<uint8_t> data(message->size());
-  std::copy(reinterpret_cast<const uint8_t*>(message->data()),
-            reinterpret_cast<const uint8_t*>(message->data()) + message->size(),
-            data.data());
-
   if (!sender_)
     return false;
 
-  sender_->Receive(data, std::move(handles));
+  sender_->Receive(base::make_span(static_cast<const uint8_t*>(message->data()),
+                                   message->size()),
+                   std::move(handles));
 
   DVLOG(4) << "Send " << message->type() << ": " << message->size();
   return true;
@@ -88,7 +85,7 @@ void MessagePipeReader::SetPeerPid(int32_t peer_pid) {
 }
 
 void MessagePipeReader::Receive(
-    const std::vector<uint8_t>& data,
+    base::span<const uint8_t> data,
     base::Optional<std::vector<mojom::SerializedHandlePtr>> handles) {
   Message message(
       data.empty() ? "" : reinterpret_cast<const char*>(data.data()),
