@@ -276,12 +276,14 @@ class TabAndroid : public CoreTabHelperDelegate,
   // Register the Tab's native methods through JNI.
   static bool RegisterTabAndroid(JNIEnv* env);
 
-  // content::WebContents implementation.
+  // content::WebContentsObserver implementation.
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
       mojo::ScopedMessagePipeHandle* interface_pipe) override;
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void NavigationEntryChanged(
+      const content::EntryChangedDetails& change_details) override;
 
  private:
   class MediaDownloadInProductHelp;

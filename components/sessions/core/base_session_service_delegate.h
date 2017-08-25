@@ -20,9 +20,6 @@ class BaseSessionServiceDelegate {
   // Called when commands are about to be written to disc.
   virtual void OnWillSaveCommands() {}
 
-  // Called when commands were saved to disc.
-  virtual void OnSavedCommands() {}
-
  protected:
   virtual ~BaseSessionServiceDelegate() {}
 };

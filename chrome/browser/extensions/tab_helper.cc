@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/bookmark_manager_private/bookmark_manager_private_api.h"
 #include "chrome/browser/extensions/api/declarative_content/chrome_content_rules_registry.h"
@@ -40,7 +39,6 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -237,10 +235,10 @@ void TabHelper::SetExtensionApp(const Extension* extension) {
 
   UpdateExtensionAppIcon(extension_app_);
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-      content::Source<TabHelper>(this),
-      content::NotificationService::NoDetails());
+  if (extension_app_) {
+    SessionTabHelper::FromWebContents(web_contents())
+        ->SetTabExtensionAppID(extension_app_->id());
+  }
 }
 
 void TabHelper::SetExtensionAppById(const ExtensionId& extension_app_id) {

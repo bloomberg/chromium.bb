@@ -4507,6 +4507,18 @@ void WebContentsImpl::NotifyNavigationEntryCommitted(
     observer.NavigationEntryCommitted(load_details);
 }
 
+void WebContentsImpl::NotifyNavigationEntryChanged(
+    const EntryChangedDetails& change_details) {
+  for (auto& observer : observers_)
+    observer.NavigationEntryChanged(change_details);
+}
+
+void WebContentsImpl::NotifyNavigationListPruned(
+    const PrunedDetails& pruned_details) {
+  for (auto& observer : observers_)
+    observer.NavigationListPruned(pruned_details);
+}
+
 void WebContentsImpl::OnAssociatedInterfaceRequest(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,

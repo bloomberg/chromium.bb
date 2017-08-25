@@ -7,9 +7,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
-#include "chrome/common/features.h"
+#include "components/sessions/content/content_serialized_navigation_builder.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/features/features.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "extensions/common/extension_messages.h"
@@ -50,12 +50,74 @@ SessionID::id_type SessionTabHelper::IdForWindowContainingTab(
   return session_tab_helper ? session_tab_helper->window_id().id() : -1;
 }
 
-void SessionTabHelper::UserAgentOverrideSet(const std::string& user_agent) {
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
+void SessionTabHelper::UserAgentOverrideSet(const std::string& user_agent) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   SessionService* session = SessionServiceFactory::GetForProfile(profile);
   if (session)
     session->SetTabUserAgentOverride(window_id(), session_id(), user_agent);
+}
+
+void SessionTabHelper::NavigationEntryCommitted(
+    const content::LoadCommittedDetails& load_details) {
+  SessionService* session_service = SessionServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (!session_service)
+    return;
+
+  int current_entry_index =
+      web_contents()->GetController().GetCurrentEntryIndex();
+  session_service->SetSelectedNavigationIndex(window_id(), session_id(),
+                                              current_entry_index);
+  const sessions::SerializedNavigationEntry navigation =
+      sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
+          current_entry_index, *web_contents()->GetController().GetEntryAtIndex(
+                                   current_entry_index));
+  session_service->UpdateTabNavigation(window_id(), session_id(), navigation);
+}
+
+void SessionTabHelper::NavigationListPruned(
+    const content::PrunedDetails& pruned_details) {
+  SessionService* session_service = SessionServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (!session_service)
+    return;
+
+  if (pruned_details.from_front) {
+    session_service->TabNavigationPathPrunedFromFront(window_id(), session_id(),
+                                                      pruned_details.count);
+  } else {
+    session_service->TabNavigationPathPrunedFromBack(
+        window_id(), session_id(),
+        web_contents()->GetController().GetEntryCount());
+  }
+}
+
+void SessionTabHelper::NavigationEntryChanged(
+    const content::EntryChangedDetails& change_details) {
+  SessionService* session_service = SessionServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (!session_service)
+    return;
+
+  const sessions::SerializedNavigationEntry navigation =
+      sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
+          change_details.index, *change_details.changed_entry);
+  session_service->UpdateTabNavigation(window_id(), session_id(), navigation);
+}
+#endif
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+void SessionTabHelper::SetTabExtensionAppID(
+    const std::string& extension_app_id) {
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
+  SessionService* session_service = SessionServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (!session_service)
+    return;
+
+  session_service->SetTabExtensionAppID(window_id(), session_id(),
+                                        extension_app_id);
 #endif
 }
+#endif

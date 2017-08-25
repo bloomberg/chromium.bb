@@ -94,10 +94,7 @@ void NotifyPrunedEntries(NavigationControllerImpl* nav_controller,
   PrunedDetails details;
   details.from_front = from_front;
   details.count = count;
-  NotificationService::current()->Notify(
-      NOTIFICATION_NAV_LIST_PRUNED,
-      Source<NavigationController>(nav_controller),
-      Details<PrunedDetails>(&details));
+  nav_controller->delegate()->NotifyNavigationListPruned(details);
 }
 
 // Ensure the given NavigationEntry has a valid state, so that WebKit does not
@@ -2223,10 +2220,7 @@ void NavigationControllerImpl::NotifyEntryChanged(
   det.changed_entry = entry;
   det.index = GetIndexOfEntry(
       NavigationEntryImpl::FromNavigationEntry(entry));
-  NotificationService::current()->Notify(
-      NOTIFICATION_NAV_ENTRY_CHANGED,
-      Source<NavigationController>(this),
-      Details<EntryChangedDetails>(&det));
+  delegate_->NotifyNavigationEntryChanged(det);
 }
 
 void NavigationControllerImpl::FinishRestore(int selected_index,

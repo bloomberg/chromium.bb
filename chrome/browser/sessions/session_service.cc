@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
@@ -47,8 +46,6 @@
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
@@ -512,25 +509,7 @@ bool SessionService::ShouldUseDelayedSave() {
   return should_use_delayed_save_;
 }
 
-void SessionService::OnSavedCommands() {
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
-      content::Source<Profile>(profile()),
-      content::NotificationService::NoDetails());
-}
-
 void SessionService::Init() {
-  // Register for the notifications we're interested in.
-  registrar_.Add(this, content::NOTIFICATION_NAV_LIST_PRUNED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_CHANGED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(
-      this, chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-      content::NotificationService::AllSources());
-
   BrowserList::AddObserver(this);
 }
 
@@ -586,102 +565,6 @@ bool SessionService::RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
     }
   }
   return false;
-}
-
-void SessionService::Observe(int type,
-                             const content::NotificationSource& source,
-                             const content::NotificationDetails& details) {
-  // All of our messages have the NavigationController as the source.
-  switch (type) {
-    case content::NOTIFICATION_NAV_LIST_PRUNED: {
-      WebContents* web_contents =
-          content::Source<content::NavigationController>(source).ptr()->
-              GetWebContents();
-      SessionTabHelper* session_tab_helper =
-          SessionTabHelper::FromWebContents(web_contents);
-      if (!session_tab_helper || web_contents->GetBrowserContext() != profile())
-        return;
-      content::Details<content::PrunedDetails> pruned_details(details);
-      if (pruned_details->from_front) {
-        TabNavigationPathPrunedFromFront(
-            session_tab_helper->window_id(),
-            session_tab_helper->session_id(),
-            pruned_details->count);
-      } else {
-        TabNavigationPathPrunedFromBack(
-            session_tab_helper->window_id(),
-            session_tab_helper->session_id(),
-            web_contents->GetController().GetEntryCount());
-      }
-      break;
-    }
-
-    case content::NOTIFICATION_NAV_ENTRY_CHANGED: {
-      WebContents* web_contents =
-          content::Source<content::NavigationController>(source).ptr()->
-              GetWebContents();
-      SessionTabHelper* session_tab_helper =
-          SessionTabHelper::FromWebContents(web_contents);
-      if (!session_tab_helper || web_contents->GetBrowserContext() != profile())
-        return;
-      content::Details<content::EntryChangedDetails> changed(details);
-      const SerializedNavigationEntry navigation =
-          ContentSerializedNavigationBuilder::FromNavigationEntry(
-              changed->index, *changed->changed_entry);
-      UpdateTabNavigation(session_tab_helper->window_id(),
-                          session_tab_helper->session_id(),
-                          navigation);
-      break;
-    }
-
-    case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
-      WebContents* web_contents =
-          content::Source<content::NavigationController>(source).ptr()->
-              GetWebContents();
-      SessionTabHelper* session_tab_helper =
-          SessionTabHelper::FromWebContents(web_contents);
-      if (!session_tab_helper || web_contents->GetBrowserContext() != profile())
-        return;
-      int current_entry_index =
-          web_contents->GetController().GetCurrentEntryIndex();
-      SetSelectedNavigationIndex(
-          session_tab_helper->window_id(),
-          session_tab_helper->session_id(),
-          current_entry_index);
-      const SerializedNavigationEntry navigation =
-          ContentSerializedNavigationBuilder::FromNavigationEntry(
-              current_entry_index,
-              *web_contents->GetController().GetEntryAtIndex(
-                  current_entry_index));
-      UpdateTabNavigation(
-          session_tab_helper->window_id(),
-          session_tab_helper->session_id(),
-          navigation);
-      content::Details<content::LoadCommittedDetails> changed(details);
-      break;
-    }
-
-    case chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
-      extensions::TabHelper* extension_tab_helper =
-          content::Source<extensions::TabHelper>(source).ptr();
-      if (extension_tab_helper->web_contents()->GetBrowserContext() !=
-              profile()) {
-        return;
-      }
-      if (extension_tab_helper->extension_app()) {
-        SessionTabHelper* session_tab_helper =
-            SessionTabHelper::FromWebContents(
-                extension_tab_helper->web_contents());
-        SetTabExtensionAppID(session_tab_helper->window_id(),
-                             session_tab_helper->session_id(),
-                             extension_tab_helper->extension_app()->id());
-      }
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
 }
 
 void SessionService::OnBrowserSetLastActive(Browser* browser) {

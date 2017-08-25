@@ -316,7 +316,6 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
 void TabAndroid::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
-  JNIEnv* env = base::android::AttachCurrentThread();
   switch (type) {
     case chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED: {
       TabSpecificContentSettings* settings =
@@ -338,9 +337,6 @@ void TabAndroid::Observe(int type,
       }
       break;
     }
-    case content::NOTIFICATION_NAV_ENTRY_CHANGED:
-      Java_Tab_onNavEntryChanged(env, weak_java_tab_.get(env));
-      break;
     default:
       NOTREACHED() << "Unexpected notification " << type;
       break;
@@ -408,11 +404,6 @@ void TabAndroid::InitWebContents(
       this,
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<content::WebContents>(web_contents()));
-  notification_registrar_.Add(
-      this,
-      content::NOTIFICATION_NAV_ENTRY_CHANGED,
-      content::Source<content::NavigationController>(
-           &web_contents()->GetController()));
 
   favicon::FaviconDriver* favicon_driver =
       favicon::ContentFaviconDriver::FromWebContents(web_contents_.get());
@@ -458,11 +449,6 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
       this,
       chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
       content::Source<content::WebContents>(web_contents()));
-  notification_registrar_.Remove(
-      this,
-      content::NOTIFICATION_NAV_ENTRY_CHANGED,
-      content::Source<content::NavigationController>(
-           &web_contents()->GetController()));
   WebContentsObserver::Observe(nullptr);
 
   favicon::FaviconDriver* favicon_driver =
@@ -895,6 +881,12 @@ void TabAndroid::RenderFrameDeleted(
       media_in_product_help_->render_frame_host() == render_frame_host) {
     DismissMediaDownloadInProductHelp();
   }
+}
+
+void TabAndroid::NavigationEntryChanged(
+    const content::EntryChangedDetails& change_details) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Tab_onNavEntryChanged(env, weak_java_tab_.get(env));
 }
 
 void TabAndroid::ShowMediaDownloadInProductHelp(
