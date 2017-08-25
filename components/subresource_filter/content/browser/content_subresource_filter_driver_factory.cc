@@ -117,9 +117,6 @@ bool ContentSubresourceFilterDriverFactory::ShouldDisallowNewWindow(
                    blink::WebTriggeringEventInfo::kFromUntrustedEvent;
   }
   if (should_block) {
-    // TODO(csharrison): This is logged erroneously if the user has whitelisted
-    // the site to make popups. We should refactor this so it is never logged
-    // incorrectly.
     web_contents()->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR, kDisallowNewWindowMessage);
   }
