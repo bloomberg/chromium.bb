@@ -4,26 +4,18 @@
 
 package org.chromium.chrome.browser.suggestions;
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.os.Build;
 
 import org.chromium.base.Callback;
-import org.chromium.base.CommandLine;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.mojom.WindowOpenDisposition;
@@ -38,7 +30,6 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
 
     private final Context mContext;
     private final SnackbarManager mSnackbarManager;
-    private final TabModelSelector mTabModelSelector;
     private final SuggestionsNavigationDelegate mNavigationDelegate;
     private final MostVisitedSites mMostVisitedSites;
 
@@ -46,11 +37,9 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     private SnackbarController mTileRemovedSnackbarController;
 
     public TileGroupDelegateImpl(ChromeActivity activity, Profile profile,
-            TabModelSelector tabModelSelector, SuggestionsNavigationDelegate navigationDelegate,
-            SnackbarManager snackbarManager) {
+            SuggestionsNavigationDelegate navigationDelegate, SnackbarManager snackbarManager) {
         mContext = activity;
         mSnackbarManager = snackbarManager;
-        mTabModelSelector = tabModelSelector;
         mNavigationDelegate = navigationDelegate;
         mMostVisitedSites =
                 SuggestionsDependencyFactory.getInstance().createMostVisitedSites(profile);
@@ -73,10 +62,6 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
         // TODO(treib): Should we call recordOpenedMostVisitedItem here?
         if (windowDisposition != WindowOpenDisposition.NEW_WINDOW) {
             recordOpenedTile(item);
-        }
-
-        if (windowDisposition == WindowOpenDisposition.CURRENT_TAB && switchToExistingTab(url)) {
-            return;
         }
 
         mNavigationDelegate.openUrl(
@@ -153,33 +138,5 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
                 tile.getUrl(), NewTabPageUma.RAPPOR_ACTION_VISITED_SUGGESTED_TILE);
         mMostVisitedSites.recordOpenedMostVisitedItem(
                 tile.getIndex(), tile.getType(), tile.getSource());
-    }
-
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    private boolean switchToExistingTab(String url) {
-        String matchPattern =
-                CommandLine.getInstance().getSwitchValue(ChromeSwitches.NTP_SWITCH_TO_EXISTING_TAB);
-        boolean matchByHost;
-        if ("url".equals(matchPattern)) {
-            matchByHost = false;
-        } else if ("host".equals(matchPattern)) {
-            matchByHost = true;
-        } else {
-            return false;
-        }
-
-        TabModel tabModel = mTabModelSelector.getModel(false);
-        for (int i = tabModel.getCount() - 1; i >= 0; --i) {
-            if (matchURLs(tabModel.getTabAt(i).getUrl(), url, matchByHost)) {
-                TabModelUtils.setIndex(tabModel, i);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean matchURLs(String url1, String url2, boolean matchByHost) {
-        if (url1 == null || url2 == null) return false;
-        return matchByHost ? UrlUtilities.sameHost(url1, url2) : url1.equals(url2);
     }
 }

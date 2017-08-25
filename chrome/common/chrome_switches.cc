@@ -814,9 +814,6 @@ const char kForceShowUpdateMenuItemCustomSummary[] = "custom_summary";
 // Sets the market URL for Chrome for use in testing.
 const char kMarketUrlForTesting[] = "market-url-for-testing";
 
-// Switch to an existing tab for a suggestion opened from the New Tab Page.
-const char kNtpSwitchToExistingTab[] = "ntp-switch-to-existing-tab";
-
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";
 

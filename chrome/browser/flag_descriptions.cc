@@ -1808,15 +1808,6 @@ const char kNtpPopularSitesName[] = "Show popular sites on the New Tab page";
 const char kNtpPopularSitesDescription[] =
     "Pre-populate the New Tab page with popular sites.";
 
-const char kNtpSwitchToExistingTabName[] =
-    "Switch to an existing tab for New Tab Page suggestions.";
-const char kNtpSwitchToExistingTabDescription[] =
-    "When opening a suggested webpage from the New Tab Page, if a tab is "
-    "already open for the suggestion, switch to that one instead of loading "
-    "the suggestion in the new tab.";
-const char kNtpSwitchToExistingTabMatchUrl[] = "Match by URL";
-const char kNtpSwitchToExistingTabMatchHost[] = "Match by Hostname";
-
 const char kOfflineBookmarksName[] = "Enable offline bookmarks";
 const char kOfflineBookmarksDescription[] =
     "Enable saving bookmarked pages for offline viewing.";

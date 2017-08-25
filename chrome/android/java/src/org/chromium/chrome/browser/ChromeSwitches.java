@@ -113,14 +113,6 @@ public abstract class ChromeSwitches {
     public static final String PROGRESS_BAR_ANIMATION = "progress-bar-animation";
 
     /**
-     * Specifies Android NTP behaviour on clicking a Most{Visited/Likely} tile.
-     * Specifically whether to refocus an existing tab with the same url or host or to load the url
-     * in the current tab.
-     * Native switch - switches::kNtpSwitchToExistingTab
-     */
-    public static final String NTP_SWITCH_TO_EXISTING_TAB = "ntp-switch-to-existing-tab";
-
-    /**
      * Enables overscroll of the on screen keyboard. With this flag on, the OSK will only resize the
      * visual viewport.
      * Native switch - switches::kEnableOSKOverscroll

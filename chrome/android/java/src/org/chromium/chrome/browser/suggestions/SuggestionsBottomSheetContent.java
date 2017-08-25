@@ -83,8 +83,8 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         SuggestionsNavigationDelegate navigationDelegate =
                 new SuggestionsNavigationDelegateImpl(activity, profile, sheet, tabModelSelector);
         mSheet = sheet;
-        mTileGroupDelegate = new TileGroupDelegateImpl(
-                activity, profile, tabModelSelector, navigationDelegate, snackbarManager);
+        mTileGroupDelegate =
+                new TileGroupDelegateImpl(activity, profile, navigationDelegate, snackbarManager);
         mSuggestionsUiDelegate = new SuggestionsUiDelegateImpl(
                 depsFactory.createSuggestionSource(profile), depsFactory.createEventReporter(),
                 navigationDelegate, profile, sheet, activity.getReferencePool());
