@@ -1160,5 +1160,47 @@ class RelativeIncludesTest(unittest.TestCase):
         mock_input_api, mock_output_api)
     self.assertEqual(1, len(errors))
 
+
+class MojoManifestOwnerTest(unittest.TestCase):
+  def testMojoManifestChangeNeedsSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('services/goat/manifest.json',
+                       [
+                         '{',
+                         '  "name": "teleporter",',
+                         '  "display_name": "Goat Teleporter",'
+                         '  "interface_provider_specs": {',
+                         '  }',
+                         '}',
+                       ])
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckIpcOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(errors))
+    self.assertEqual(
+        'Found OWNERS files that need to be updated for IPC security review ' +
+        'coverage.\nPlease update the OWNERS files below:', errors[0].message)
+
+    # No warning if already covered by an OWNERS rule.
+
+  def testNonManifestChangesDoNotRequireSecurityOwner(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('services/goat/species.json',
+                       [
+                         '[',
+                         '  "anglo-nubian",',
+                         '  "angora"',
+                         ']',
+                       ])
+    ]
+    mock_output_api = MockOutputApi()
+    errors = PRESUBMIT._CheckIpcOwners(
+        mock_input_api, mock_output_api)
+    self.assertEqual([], errors)
+
+
 if __name__ == '__main__':
   unittest.main()

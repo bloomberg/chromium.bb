@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import fnmatch
 import json
 import os
 import re
@@ -17,6 +18,7 @@ class MockInputApi(object):
   """
 
   def __init__(self):
+    self.fnmatch = fnmatch
     self.json = json
     self.re = re
     self.os_path = os.path
