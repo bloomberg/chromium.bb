@@ -123,7 +123,7 @@ const {{field.type_name}}&
   {# Otherwise, we would have to recursively generate comparison operations
      on fields in the subgroup. #}
   {% elif subgroup.all_fields|selectattr("is_inherited")|list|length > 0 -%}
-    {{fieldwise_pointer_compare_inherited(fields_to_compare, boolean_and)}}
+    {{fieldwise_pointer_compare_inherited(subgroup, boolean_and)}}
   {% endif %}
 {% endfor %}
 {% for field in group.fields if field.is_inherited -%}
