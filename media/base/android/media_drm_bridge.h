@@ -75,8 +75,6 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // There is no need to check IsAvailable() explicitly before calling them.
   static bool IsAvailable();
 
-  static bool RegisterMediaDrmBridge(JNIEnv* env);
-
   // Checks whether |key_system| is supported.
   static bool IsKeySystemSupported(const std::string& key_system);
 

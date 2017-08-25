@@ -27,8 +27,6 @@ namespace media {
 // to talk to the concrete implementation for persistent data management.
 class MediaDrmStorageBridge {
  public:
-  static bool RegisterMediaDrmStorageBridge(JNIEnv* env);
-
   MediaDrmStorageBridge();
   ~MediaDrmStorageBridge();
 

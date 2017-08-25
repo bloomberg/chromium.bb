@@ -14,9 +14,7 @@
 #include "mojo/edk/embedder/embedder.h"
 
 #if defined(OS_ANDROID)
-#include "base/android/jni_android.h"
 #include "media/base/android/media_codec_util.h"
-#include "media/base/android/media_jni_registrar.h"
 #endif
 
 class TestSuiteNoAtExit : public base::TestSuite {
@@ -39,11 +37,6 @@ void TestSuiteNoAtExit::Initialize() {
   command_line->AppendSwitch(switches::kEnableInbandTextTracks);
 
 #if defined(OS_ANDROID)
-  // Register JNI bindings for android.
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  media::RegisterJni(env);
-
   if (media::MediaCodecUtil::IsMediaCodecAvailable())
     media::EnablePlatformDecoderSupport();
 #endif

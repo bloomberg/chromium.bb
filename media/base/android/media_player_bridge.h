@@ -36,8 +36,6 @@ class MediaPlayerManager;
 // the Android MediaPlayer instance.
 class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
  public:
-  static bool RegisterMediaPlayerBridge(JNIEnv* env);
-
   // Construct a MediaPlayerBridge object. This object needs to call |manager|'s
   // RequestMediaResources() before decoding the media stream. This allows
   // |manager| to track unused resources and free them when needed.

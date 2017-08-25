@@ -29,11 +29,6 @@ using base::android::ToJavaByteArray;
 
 namespace media {
 
-// static
-bool MediaDrmStorageBridge::RegisterMediaDrmStorageBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 MediaDrmStorageBridge::MediaDrmStorageBridge()
     : task_runner_(base::ThreadTaskRunnerHandle::Get()), weak_factory_(this) {}
 

@@ -12,8 +12,6 @@ assert(is_android)
 
 source_set("android") {
   sources = [
-    "capture_jni_registrar.cc",
-    "capture_jni_registrar.h",
     "photo_capabilities.cc",
     "photo_capabilities.h",
     "video_capture_device_android.cc",

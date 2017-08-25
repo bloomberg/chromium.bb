@@ -86,8 +86,4 @@ void UsbMidiDeviceFactoryAndroid::OnUsbMidiDeviceDetached(
   delegate_->OnDeviceDetached(index);
 }
 
-bool UsbMidiDeviceFactoryAndroid::RegisterUsbMidiDeviceFactory(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace midi

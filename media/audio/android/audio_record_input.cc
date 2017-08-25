@@ -48,11 +48,6 @@ void AudioRecordInputStream::CacheDirectBufferAddress(
       static_cast<uint8_t*>(env->GetDirectBufferAddress(byte_buffer));
 }
 
-// static
-bool AudioRecordInputStream::RegisterAudioRecordInput(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void AudioRecordInputStream::OnData(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj,
                                     jint size,

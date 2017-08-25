@@ -284,9 +284,6 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
 
   void SetUp() override {
 #if defined(OS_ANDROID)
-    VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(
-        base::android::AttachCurrentThread());
-
     static_cast<VideoCaptureDeviceFactoryAndroid*>(
         video_capture_device_factory_.get())
         ->ConfigureForTesting();

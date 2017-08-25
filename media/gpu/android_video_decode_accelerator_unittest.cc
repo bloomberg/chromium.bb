@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -20,7 +19,6 @@
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "media/base/android/media_codec_util.h"
-#include "media/base/android/media_jni_registrar.h"
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/fake_codec_allocator.h"
@@ -89,9 +87,6 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
       : gl_decoder_(&command_buffer_service_), config_(H264PROFILE_BASELINE) {}
 
   void SetUp() override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    RegisterJni(env);
-
     ASSERT_TRUE(gl::init::InitializeGLOneOff());
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(16, 16));
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),

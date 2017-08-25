@@ -62,8 +62,6 @@ class MidiManagerAndroid final : public MidiManager,
                   const base::android::JavaParamRef<jobject>& caller,
                   const base::android::JavaParamRef<jobject>& device);
 
-  static bool Register(JNIEnv* env);
-
  private:
   void AddDevice(std::unique_ptr<MidiDeviceAndroid> device);
   void AddInputPortAndroid(MidiInputPortAndroid* port,

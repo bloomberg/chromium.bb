@@ -210,8 +210,4 @@ void MidiManagerAndroid::AddDevice(std::unique_ptr<MidiDeviceAndroid> device) {
   devices_.push_back(std::move(device));
 }
 
-bool MidiManagerAndroid::Register(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace midi

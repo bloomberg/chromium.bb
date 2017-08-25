@@ -20,7 +20,6 @@ class CAPTURE_EXPORT ScreenCaptureMachineAndroid : public VideoCaptureMachine {
   ScreenCaptureMachineAndroid();
   ~ScreenCaptureMachineAndroid() override;
 
-  static bool RegisterScreenCaptureMachine(JNIEnv* env);
   static base::android::ScopedJavaLocalRef<jobject>
   createScreenCaptureMachineAndroid(jlong nativeScreenCaptureMachineAndroid);
 

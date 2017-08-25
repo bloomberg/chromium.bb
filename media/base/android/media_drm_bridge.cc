@@ -299,11 +299,6 @@ bool MediaDrmBridge::IsAvailable() {
 }
 
 // static
-bool MediaDrmBridge::RegisterMediaDrmBridge(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
-// static
 bool MediaDrmBridge::IsKeySystemSupported(const std::string& key_system) {
   if (!MediaDrmBridge::IsAvailable())
     return false;

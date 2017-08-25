@@ -96,11 +96,6 @@ PhotoCapabilities::AndroidFillLightMode ToAndroidFillLightMode(
 
 }  // anonymous namespace
 
-// static
-bool VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 VideoCaptureDeviceAndroid::VideoCaptureDeviceAndroid(
     const VideoCaptureDeviceDescriptor& device_descriptor)
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),

@@ -99,8 +99,4 @@ void MediaPlayerListener::OnMediaInterrupted(
       &MediaPlayerAndroid::OnMediaInterrupted, media_player_));
 }
 
-bool MediaPlayerListener::RegisterMediaPlayerListener(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 }  // namespace media
