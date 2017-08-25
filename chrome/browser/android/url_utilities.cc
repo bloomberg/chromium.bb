@@ -71,15 +71,6 @@ static jboolean SameDomainOrHost(JNIEnv* env,
                                                             filter);
 }
 
-static jboolean SameHost(JNIEnv* env,
-                         const JavaParamRef<jclass>& clazz,
-                         const JavaParamRef<jstring>& url_1_str,
-                         const JavaParamRef<jstring>& url_2_str) {
-  GURL url_1 = ConvertJavaStringToGURL(env, url_1_str);
-  GURL url_2 = ConvertJavaStringToGURL(env, url_2_str);
-  return url_1.host_piece() == url_2.host_piece();
-}
-
 static ScopedJavaLocalRef<jstring> GetDomainAndRegistry(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,

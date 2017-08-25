@@ -1098,11 +1098,6 @@ extern const char kNtpOfflinePagesDescription[];
 extern const char kNtpPopularSitesName[];
 extern const char kNtpPopularSitesDescription[];
 
-extern const char kNtpSwitchToExistingTabName[];
-extern const char kNtpSwitchToExistingTabDescription[];
-extern const char kNtpSwitchToExistingTabMatchUrl[];
-extern const char kNtpSwitchToExistingTabMatchHost[];
-
 extern const char kOfflineBookmarksName[];
 extern const char kOfflineBookmarksDescription[];
 
