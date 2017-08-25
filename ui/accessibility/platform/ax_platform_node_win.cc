@@ -2476,9 +2476,8 @@ int AXPlatformNodeWin::MSAARole() {
   // If this is a web area for a presentational iframe, give it a role of
   // something other than DOCUMENT so that the fact that it's a separate doc
   // is not exposed to AT.
-  if (IsWebAreaForPresentationalIframe()) {
+  if (IsWebAreaForPresentationalIframe())
     return ROLE_SYSTEM_GROUPING;
-  }
 
   switch (GetData().role) {
     case AX_ROLE_ALERT:
@@ -2646,10 +2645,14 @@ int AXPlatformNodeWin::MSAARole() {
     case AX_ROLE_MENU_ITEM_RADIO:
       return ROLE_SYSTEM_MENUITEM;
 
-    case AX_ROLE_MENU_LIST_POPUP:
+    case ui::AX_ROLE_MENU_LIST_POPUP:
+      if (IsAncestorComboBox())
+        return ROLE_SYSTEM_LIST;
       return ROLE_SYSTEM_MENUPOPUP;
 
-    case AX_ROLE_MENU_LIST_OPTION:
+    case ui::AX_ROLE_MENU_LIST_OPTION:
+      if (IsAncestorComboBox())
+        return ROLE_SYSTEM_LISTITEM;
       return ROLE_SYSTEM_MENUITEM;
 
     case AX_ROLE_METER:
@@ -3638,6 +3641,17 @@ HRESULT AXPlatformNodeWin::AllocateComArrayFromVector(
   for (LONG i = 0; i < count; i++)
     (*selected)[i] = results[i];
   return S_OK;
+}
+
+// TODO(dmazzoni): Remove this function once combo box refactoring is complete.
+bool AXPlatformNodeWin::IsAncestorComboBox() {
+  auto* parent =
+      static_cast<AXPlatformNodeWin*>(FromNativeViewAccessible(GetParent()));
+  if (!parent)
+    return false;
+  if (parent->MSAARole() == ROLE_SYSTEM_COMBOBOX)
+    return true;
+  return parent->IsAncestorComboBox();
 }
 
 }  // namespace ui
