@@ -13,9 +13,9 @@
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/payments/content/payment_request_spec.h"
-#include "components/payments/content/payments_validators.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payment_request_delegate.h"
+#include "components/payments/core/payments_validators.h"
 
 namespace payments {
 

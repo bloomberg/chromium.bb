@@ -38,6 +38,8 @@ static_library("core") {
     "payment_request_delegate.h",
     "payments_profile_comparator.cc",
     "payments_profile_comparator.h",
+    "payments_validators.cc",
+    "payments_validators.h",
     "strings_util.cc",
     "strings_util.h",
     "subkey_requester.cc",
@@ -55,6 +57,7 @@ static_library("core") {
     "//components/ukm",
     "//net",
     "//third_party/libphonenumber",
+    "//third_party/re2",
     "//ui/base",
     "//url",
   ]
@@ -101,6 +104,7 @@ source_set("unit_tests") {
     "payment_method_data_unittest.cc",
     "payment_request_data_util_unittest.cc",
     "payments_profile_comparator_unittest.cc",
+    "payments_validators_unittest.cc",
     "strings_util_unittest.cc",
     "subkey_requester_unittest.cc",
   ]

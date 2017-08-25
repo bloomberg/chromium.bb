@@ -7,7 +7,7 @@
 #include <set>
 #include <vector>
 
-#include "components/payments/content/payments_validators.h"
+#include "components/payments/core/payments_validators.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace payments {

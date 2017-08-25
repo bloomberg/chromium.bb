@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/content/payments_validators.h"
+#include "components/payments/core/payments_validators.h"
 
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
@@ -114,31 +114,6 @@ void PaymentsValidators::SplitLanguageTag(const std::string& tag,
                                           std::string* script_code) {
   RE2::FullMatch(tag, "^([a-z]{2})(-([A-Z][a-z]{3}))?(-[A-Za-z]+)*$",
                  language_code, (void*)nullptr, script_code);
-}
-
-// static
-bool PaymentsValidators::IsValidShippingAddress(
-    const mojom::PaymentAddressPtr& address,
-    std::string* optional_error_message) {
-  if (!IsValidCountryCodeFormat(address->country, optional_error_message))
-    return false;
-
-  if (!IsValidLanguageCodeFormat(address->language_code,
-                                 optional_error_message))
-    return false;
-
-  if (!IsValidScriptCodeFormat(address->script_code, optional_error_message))
-    return false;
-
-  if (address->language_code.empty() && !address->script_code.empty()) {
-    if (optional_error_message)
-      *optional_error_message =
-          "If language code is empty, then script code should also be empty";
-
-    return false;
-  }
-
-  return true;
 }
 
 // static
