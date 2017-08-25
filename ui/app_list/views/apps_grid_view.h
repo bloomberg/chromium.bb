@@ -240,6 +240,10 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     page_flip_delay_in_ms_ = page_flip_delay_in_ms;
   }
 
+  ExpandArrowView* expand_arrow_view_for_test() const {
+    return expand_arrow_view_;
+  }
+
  private:
   class FadeoutLayerDelegate;
   friend class test::AppsGridViewTestApi;
@@ -314,6 +318,12 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns true if the given moving operation should be handled by
   // |suggestions_container_|, otherwise false.
   bool HandleSuggestionsMove(int page_delta,
+                             int slot_x_delta,
+                             int slot_y_delta);
+
+  // Returns true if the given moving operation should be handled by
+  // |expand_arrow_view_|, otherwise false.
+  bool HandleExpandArrowMove(int page_delta,
                              int slot_x_delta,
                              int slot_y_delta);
 
