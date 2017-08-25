@@ -152,43 +152,29 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
           .Build();
 
   const struct {
-    bool is_in_trusted_spdy_proxy_field_trial;
     net::ProxyServer::Scheme first_proxy_scheme;
     net::ProxyServer::Scheme second_proxy_scheme;
     bool expect_proxy_is_trusted;
   } test_cases[] = {
-      {false, net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_INVALID,
-       false},
-      {true, net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_INVALID,
-       false},
-      {true, net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_INVALID,
-       false},
-      {true, net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_HTTP,
-       false},
-      {true, net::ProxyServer::SCHEME_INVALID, net::ProxyServer::SCHEME_INVALID,
+      {net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_INVALID, false},
+      {net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_INVALID, false},
+      {net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_HTTP, false},
+      {net::ProxyServer::SCHEME_INVALID, net::ProxyServer::SCHEME_INVALID,
        false},
       // First proxy is HTTPS, and second is invalid.
-      {true, net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_INVALID,
-       true},
+      {net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_INVALID, true},
       // First proxy is invalid, and second proxy is HTTPS.
-      {true, net::ProxyServer::SCHEME_INVALID, net::ProxyServer::SCHEME_HTTPS,
-       true},
+      {net::ProxyServer::SCHEME_INVALID, net::ProxyServer::SCHEME_HTTPS, true},
       // First proxy is HTTPS, and second is HTTP.
-      {true, net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_HTTPS,
-       true},
+      {net::ProxyServer::SCHEME_HTTPS, net::ProxyServer::SCHEME_HTTPS, true},
       // Second proxy is HTTPS, and first is HTTP.
-      {true, net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_HTTPS,
-       true},
-      {true, net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_INVALID,
-       false},
-      {true, net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_HTTP,
-       false},
-      {true, net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_HTTPS,
-       true},
+      {net::ProxyServer::SCHEME_HTTP, net::ProxyServer::SCHEME_HTTPS, true},
+      {net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_INVALID, false},
+      {net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_HTTP, false},
+      {net::ProxyServer::SCHEME_QUIC, net::ProxyServer::SCHEME_HTTPS, true},
   };
   for (const auto& test : test_cases) {
     ASSERT_EQ(test.expect_proxy_is_trusted,
-              test.is_in_trusted_spdy_proxy_field_trial &&
                   (test.first_proxy_scheme == net::ProxyServer::SCHEME_HTTPS ||
                    test.second_proxy_scheme == net::ProxyServer::SCHEME_HTTPS))
         << (&test - test_cases);
@@ -224,15 +210,6 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
         test_context->io_data()->net_log());
 
     base::FieldTrialList field_trial_list(nullptr);
-    EXPECT_TRUE(params::IsIncludedInTrustedSpdyProxyFieldTrial());
-    if (!test.is_in_trusted_spdy_proxy_field_trial) {
-      // Trusted Spdy proxy field trial experiment is enabled by default.
-      base::FieldTrialList::CreateFieldTrial(
-          params::GetTrustedSpdyProxyFieldTrialName(), "Control");
-    }
-    EXPECT_EQ(test.is_in_trusted_spdy_proxy_field_trial,
-              params::IsIncludedInTrustedSpdyProxyFieldTrial());
-
     EXPECT_EQ(test.expect_proxy_is_trusted,
               delegate.IsTrustedSpdyProxy(first_proxy) ||
                   delegate.IsTrustedSpdyProxy(second_proxy))
