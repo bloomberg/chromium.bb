@@ -116,13 +116,6 @@ enum NotificationType {
   // Details<InfoBar::RemovedDetails>.
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // This notification is sent when extensions::TabHelper::SetExtensionApp is
-  // invoked. The source is the extensions::TabHelper SetExtensionApp was
-  // invoked on.
-  NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
-#endif
-
   // Tabs --------------------------------------------------------------------
 
   // Sent when a tab is added to a WebContentsDelegate. The source is the
@@ -274,13 +267,6 @@ enum NotificationType {
   // Sent when content settings change for a tab. The source is a
   // content::WebContents object, the details are None.
   NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-
-  // Sync --------------------------------------------------------------------
-
-  // The session service has been saved.  This notification type is only sent
-  // if there were new SessionService commands to save, and not for no-op save
-  // operations.
-  NOTIFICATION_SESSION_SERVICE_SAVED,
 
   // Cookies -----------------------------------------------------------------
 

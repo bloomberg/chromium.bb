@@ -796,6 +796,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   WebContents* GetWebContents() override;
   void NotifyNavigationEntryCommitted(
       const LoadCommittedDetails& load_details) override;
+  void NotifyNavigationEntryChanged(
+      const EntryChangedDetails& change_details) override;
+  void NotifyNavigationListPruned(const PrunedDetails& pruned_details) override;
 
   // Invoked before a form repost warning is shown.
   void NotifyBeforeFormRepostWarningShow() override;

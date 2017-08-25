@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_SESSIONS_SESSION_TAB_HELPER_H_
 
 #include "base/macros.h"
+#include "chrome/common/features.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "extensions/features/features.h"
 
 // This class keeps the extension API's windowID up to date with the current
-// window of the tab.
+// window of the tab and observes navigation events.
 class SessionTabHelper : public content::WebContentsObserver,
                          public content::WebContentsUserData<SessionTabHelper> {
  public:
@@ -43,7 +45,19 @@ class SessionTabHelper : public content::WebContentsObserver,
       const content::WebContents* tab);
 
   // content::WebContentsObserver:
+#if BUILDFLAG(ENABLE_SESSION_SERVICE)
   void UserAgentOverrideSet(const std::string& user_agent) override;
+  void NavigationEntryCommitted(
+      const content::LoadCommittedDetails& load_details) override;
+  void NavigationListPruned(
+      const content::PrunedDetails& pruned_details) override;
+  void NavigationEntryChanged(
+      const content::EntryChangedDetails& change_details) override;
+#endif
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  void SetTabExtensionAppID(const std::string& extension_app_id);
+#endif
 
  private:
   explicit SessionTabHelper(content::WebContents* contents);

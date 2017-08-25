@@ -147,8 +147,6 @@ void BaseSessionService::Save() {
     commands_since_reset_ = 0;
     pending_reset_ = false;
   }
-
-  delegate_->OnSavedCommands();
 }
 
 base::CancelableTaskTracker::TaskId

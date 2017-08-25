@@ -25,7 +25,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -41,9 +40,6 @@
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/common/page_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -51,10 +47,9 @@ using content::NavigationEntry;
 using sessions::SerializedNavigationEntry;
 using sessions::SerializedNavigationEntryTestHelper;
 
-class SessionServiceTest : public BrowserWithTestWindowTest,
-                           public content::NotificationObserver {
+class SessionServiceTest : public BrowserWithTestWindowTest {
  public:
-  SessionServiceTest() : window_bounds(0, 1, 2, 3), sync_save_count_(0) {}
+  SessionServiceTest() : window_bounds(0, 1, 2, 3) {}
 
  protected:
   void SetUp() override {
@@ -78,14 +73,6 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
                                window_bounds,
                                ui::SHOW_STATE_NORMAL);
     service()->SetWindowWorkspace(window_id, window_workspace);
-  }
-
-  // Upon notification, increment the sync_save_count variable
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    ASSERT_EQ(type, chrome::NOTIFICATION_SESSION_SERVICE_SAVED);
-    sync_save_count_++;
   }
 
   void TearDown() override {
@@ -185,8 +172,6 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   const std::string window_workspace = "abc";
 
   SessionID window_id;
-
-  int sync_save_count_;
 
   // Path used in testing.
   base::ScopedTempDir temp_dir_;
@@ -742,15 +727,6 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
   EXPECT_TRUE(user_agent_override == tab->user_agent_override);
-}
-
-// Test that the notification for SESSION_SERVICE_SAVED is working properly.
-TEST_F(SessionServiceTest, SavedSessionNotification) {
-  content::NotificationRegistrar registrar_;
-  registrar_.Add(this, chrome::NOTIFICATION_SESSION_SERVICE_SAVED,
-                 content::NotificationService::AllSources());
-  service()->GetBaseSessionServiceForTest()->Save();
-  EXPECT_EQ(sync_save_count_, 1);
 }
 
 // Makes sure a tab closed by a user gesture is not restored.

@@ -24,8 +24,6 @@
 #include "components/sessions/core/base_session_service_delegate.h"
 #include "components/sessions/core/session_service_commands.h"
 #include "components/sessions/core/tab_restore_service_client.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
 
 class Profile;
@@ -62,7 +60,6 @@ struct SessionWindow;
 // browser.
 class SessionService : public sessions::BaseSessionServiceDelegate,
                        public KeyedService,
-                       public content::NotificationObserver,
                        public chrome::BrowserListObserver {
   friend class SessionServiceTestHelper;
  public:
@@ -220,7 +217,6 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
 
   // BaseSessionServiceDelegate:
   bool ShouldUseDelayedSave() override;
-  void OnSavedCommands() override;
 
  private:
   // Allow tests to access our innards for testing purposes.
@@ -247,10 +243,6 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // to restore, the tabs are added to it, otherwise a new browser is created.
   bool RestoreIfNecessary(const std::vector<GURL>& urls_to_open,
                           Browser* browser);
-
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // chrome::BrowserListObserver
   void OnBrowserAdded(Browser* browser) override {}
@@ -339,8 +331,6 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
 
   // The owned BaseSessionService.
   std::unique_ptr<sessions::BaseSessionService> base_session_service_;
-
-  content::NotificationRegistrar registrar_;
 
   // Maps from session tab id to the range of navigation entries that has
   // been written to disk.

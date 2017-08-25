@@ -45,30 +45,6 @@ enum NotificationType {
   // DEPRECATED: Use WebContentsObserver::NavigationEntryCommitted()
   NOTIFICATION_NAV_ENTRY_COMMITTED,
 
-  // Indicates that the NavigationController given in the Source has
-  // decreased its back/forward list count by removing entries from either
-  // the front or back of its list. This is usually the result of going back
-  // and then doing a new navigation, meaning all the "forward" items are
-  // deleted.
-  //
-  // This normally happens as a result of a new navigation. It will be
-  // followed by a NAV_ENTRY_COMMITTED message for the new page that
-  // caused the pruning. It could also be a result of removing an item from
-  // the list to fix up after interstitials.
-  //
-  // The details are NavigationController::PrunedDetails.
-  NOTIFICATION_NAV_LIST_PRUNED,
-
-  // Indicates that a NavigationEntry has changed. The source will be the
-  // NavigationController that owns the NavigationEntry. The details will be
-  // a NavigationController::EntryChangedDetails struct.
-  //
-  // This will NOT be sent on navigation, interested parties should also
-  // listen for NAV_ENTRY_COMMITTED to handle that case. This will be
-  // sent when the entry is updated outside of navigation (like when a new
-  // title comes).
-  NOTIFICATION_NAV_ENTRY_CHANGED,
-
   // Other load-related (not from NavigationController) ----------------------
 
   // Corresponds to ViewHostMsg_DocumentOnLoadCompletedInMainFrame. The source

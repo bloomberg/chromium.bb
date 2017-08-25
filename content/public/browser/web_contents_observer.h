@@ -40,8 +40,10 @@ class WebContents;
 class WebContentsImpl;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
+struct EntryChangedDetails;
 struct FaviconURL;
 struct LoadCommittedDetails;
+struct PrunedDetails;
 struct Referrer;
 struct ResourceRedirectDetails;
 struct ResourceRequestDetails;
@@ -269,6 +271,26 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // navigations).
   virtual void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) {}
+
+  // Invoked when the NavigationController decreased its back/forward list count
+  // by removing entries from either the front or back of its list. This is
+  // usually the result of going back and then doing a new navigation, meaning
+  // all the "forward" items are deleted.
+  //
+  // This normally happens as a result of a new navigation. It will be
+  // followed by a NavigationEntryCommitted() call for the new page that
+  // caused the pruning. It could also be a result of removing an item from
+  // the list to fix up after interstitials.
+  virtual void NavigationListPruned(const PrunedDetails& pruned_details) {}
+
+  // Invoked when a NavigationEntry has changed.
+  //
+  // This will NOT be sent on navigation, interested parties should also
+  // implement NavigationEntryCommitted() to handle that case. This will be
+  // sent when the entry is updated outside of navigation (like when a new
+  // title comes).
+  virtual void NavigationEntryChanged(
+      const EntryChangedDetails& change_details) {}
 
   // This method is invoked when a new WebContents was created in response to
   // an action in the observed WebContents, e.g. a link with target=_blank was
