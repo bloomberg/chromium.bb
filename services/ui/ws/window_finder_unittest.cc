@@ -209,6 +209,18 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
                          &root, EventSource::MOUSE, gfx::Point(9, 9))
                          .window);
 
+  ServerWindow child_child(&window_delegate, WindowId(1, 4));
+  child.Add(&child_child);
+  child_child.SetVisible(true);
+  child_child.SetBounds(gfx::Rect(12, 12, 4, 4), base::nullopt);
+
+  EXPECT_EQ(&child, FindDeepestVisibleWindowForLocation(
+                        &root, EventSource::MOUSE, gfx::Point(30, 30))
+                        .window);
+  EXPECT_EQ(&child_child, FindDeepestVisibleWindowForLocation(
+                              &root, EventSource::MOUSE, gfx::Point(35, 35))
+                              .window);
+
   // Verify extended hit test with transform is picked up.
   root.set_extended_hit_test_regions_for_children(gfx::Insets(-2, -2, -2, -2),
                                                   gfx::Insets(-2, -2, -2, -2));
@@ -217,6 +229,32 @@ TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransform) {
                         .window);
   EXPECT_EQ(nullptr, FindDeepestVisibleWindowForLocation(
                          &root, EventSource::MOUSE, gfx::Point(4, 4))
+                         .window);
+}
+
+TEST(WindowFinderTest, FindDeepestVisibleWindowWithTransformOnParent) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  root.set_event_targeting_policy(
+      mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+  root.SetVisible(true);
+  root.SetBounds(gfx::Rect(0, 0, 100, 100), base::nullopt);
+  ServerWindow child(&window_delegate, WindowId(1, 3));
+  root.Add(&child);
+  child.SetVisible(true);
+  child.SetBounds(gfx::Rect(10, 10, 10, 10), base::nullopt);
+  // Make the root child, but the transform is set on the parent. This mirrors
+  // how WindowManagerState and EventDispatcher work together.
+  window_delegate.set_root_window(&child);
+  gfx::Transform transform;
+  transform.Scale(SkIntToMScalar(2), SkIntToMScalar(2));
+  root.SetTransform(transform);
+
+  EXPECT_EQ(&child, FindDeepestVisibleWindowForLocation(
+                        &root, EventSource::MOUSE, gfx::Point(25, 25))
+                        .window);
+  EXPECT_EQ(nullptr, FindDeepestVisibleWindowForLocation(
+                         &root, EventSource::MOUSE, gfx::Point(52, 52))
                          .window);
 }
 

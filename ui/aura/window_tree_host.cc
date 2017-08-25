@@ -97,6 +97,20 @@ gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
   return invert;
 }
 
+gfx::Transform WindowTreeHost::GetRootTransformForLocalEventCoordinates()
+    const {
+  return GetRootTransform();
+}
+
+gfx::Transform WindowTreeHost::GetInverseRootTransformForLocalEventCoordinates()
+    const {
+  gfx::Transform invert;
+  gfx::Transform transform = GetRootTransformForLocalEventCoordinates();
+  if (!transform.GetInverse(&invert))
+    return transform;
+  return invert;
+}
+
 void WindowTreeHost::SetOutputSurfacePaddingInPixels(
     const gfx::Insets& padding_in_pixels) {
   if (output_surface_padding_in_pixels_ == padding_in_pixels)

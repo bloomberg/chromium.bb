@@ -26,7 +26,9 @@ class ServerWindowDelegate {
 
   // Returns the root of the window tree to which this |window| is attached.
   // Returns null if this window is not attached up through to a root window.
-  virtual ServerWindow* GetRootWindow(const ServerWindow* window) = 0;
+  // The returned root is used for drawn checks and may differ from that used
+  // for event dispatch purposes.
+  virtual ServerWindow* GetRootWindowForDrawn(const ServerWindow* window) = 0;
 
   // Called when a CompositorFrame with a new SurfaceId activates for the first
   // time for |window|.

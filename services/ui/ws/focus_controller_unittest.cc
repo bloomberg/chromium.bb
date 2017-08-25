@@ -365,7 +365,7 @@ class TestServerWindowDelegate2 : public ServerWindowDelegate {
   viz::HostFrameSinkManager* GetHostFrameSinkManager() override {
     return nullptr;
   }
-  ServerWindow* GetRootWindow(const ServerWindow* window) override {
+  ServerWindow* GetRootWindowForDrawn(const ServerWindow* window) override {
     const ServerWindow* root = window;
     while (root && root->parent())
       root = root->parent();

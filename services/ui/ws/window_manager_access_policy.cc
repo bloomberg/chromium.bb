@@ -83,7 +83,7 @@ bool WindowManagerAccessPolicy::CanChangeWindowVisibility(
   if (WasCreatedByThisClient(window))
     return true;
   // The WindowManager can change the visibility of the WindowManager root.
-  const ServerWindow* root = window->GetRoot();
+  const ServerWindow* root = window->GetRootForDrawn();
   return root && window->parent() == root;
 }
 

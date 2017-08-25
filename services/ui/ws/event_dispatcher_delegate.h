@@ -96,6 +96,10 @@ class EventDispatcherDelegate {
   virtual ServerWindow* GetRootWindowContaining(gfx::Point* location_in_display,
                                                 int64_t* display_id) = 0;
 
+  // Returns the root of |window| that is used for event dispatch. The returned
+  // value is used for coordinate conversion.
+  virtual ServerWindow* GetRootWindowForEventDispatch(ServerWindow* window) = 0;
+
   // Called when event dispatch could not find a target. OnAccelerator may still
   // be called.
   virtual void OnEventTargetNotFound(const ui::Event& event,

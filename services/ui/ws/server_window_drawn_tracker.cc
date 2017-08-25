@@ -125,8 +125,8 @@ void ServerWindowDrawnTracker::OnWillChangeWindowVisibility(
     if (window->visible()) {
       will_change = false;
     } else {
-      bool is_drawn = (window->GetRoot() == window) ||
-          (window->parent() && window->parent()->IsDrawn());
+      bool is_drawn = (window->GetRootForDrawn() == window) ||
+                      (window->parent() && window->parent()->IsDrawn());
       if (is_drawn) {
         for (ServerWindow* w = window_; is_drawn && w != window;
              w = w->parent())

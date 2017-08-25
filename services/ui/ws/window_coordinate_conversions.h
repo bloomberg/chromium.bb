@@ -15,8 +15,9 @@ namespace ws {
 class ServerWindow;
 
 // Converts |point|, in the coordinates of the root, to that of |window|.
-gfx::Point ConvertPointFromRoot(const ServerWindow* window,
-                                const gfx::Point& point);
+gfx::Point ConvertPointFromRootForEventDispatch(const ServerWindow* root,
+                                                const ServerWindow* window,
+                                                const gfx::Point& point);
 
 }  // namespace ws
 }  // namespace ui

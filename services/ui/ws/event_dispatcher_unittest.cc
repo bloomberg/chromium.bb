@@ -202,6 +202,9 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     }
     return nullptr;
   }
+  ServerWindow* GetRootWindowForEventDispatch(ServerWindow* window) override {
+    return window->GetRootForDrawn();
+  }
 
   Delegate* delegate_;
   ServerWindow* focused_window_;

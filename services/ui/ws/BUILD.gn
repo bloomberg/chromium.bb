@@ -256,6 +256,7 @@ source_set("tests") {
     "transient_windows_unittest.cc",
     "user_activity_monitor_unittest.cc",
     "user_display_manager_unittest.cc",
+    "window_coordinate_conversions_unittest.cc",
     "window_finder_unittest.cc",
     "window_manager_state_unittest.cc",
     "window_tree_client_unittest.cc",

@@ -104,8 +104,10 @@ ui::EventTarget* WindowTargeter::FindTargetForEvent(ui::EventTarget* root,
       // applying the host's transform.
       ui::LocatedEvent* located_event = static_cast<ui::LocatedEvent*>(event);
       located_event->ConvertLocationToTarget(target, new_root);
+      WindowTreeHost* window_tree_host = new_root->GetHost();
       located_event->UpdateForRootTransform(
-          new_root->GetHost()->GetRootTransform());
+          window_tree_host->GetRootTransform(),
+          window_tree_host->GetRootTransformForLocalEventCoordinates());
     }
     ignore_result(new_root->GetHost()->event_sink()->OnEventFromSource(event));
 

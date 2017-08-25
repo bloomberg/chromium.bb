@@ -62,6 +62,9 @@ class AURA_EXPORT WindowMus {
   virtual ~WindowMus() {}
 
   // Returns the WindowMus associated with |window|.
+  static const WindowMus* Get(const Window* window) {
+    return const_cast<const WindowMus*>(Get(const_cast<Window*>(window)));
+  }
   static WindowMus* Get(Window* window);
 
   Id server_id() const { return server_id_; }

@@ -21,7 +21,7 @@ class TestServerWindowDelegate : public ServerWindowDelegate {
  private:
   // ServerWindowDelegate:
   viz::HostFrameSinkManager* GetHostFrameSinkManager() override;
-  ServerWindow* GetRootWindow(const ServerWindow* window) override;
+  ServerWindow* GetRootWindowForDrawn(const ServerWindow* window) override;
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info,
                                 ServerWindow* window) override;
 

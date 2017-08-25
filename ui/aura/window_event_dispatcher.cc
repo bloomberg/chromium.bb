@@ -257,7 +257,9 @@ const Window* WindowEventDispatcher::window() const {
 
 void WindowEventDispatcher::TransformEventForDeviceScaleFactor(
     ui::LocatedEvent* event) {
-  event->UpdateForRootTransform(host_->GetInverseRootTransform());
+  event->UpdateForRootTransform(
+      host_->GetInverseRootTransform(),
+      host_->GetInverseRootTransformForLocalEventCoordinates());
 }
 
 void WindowEventDispatcher::DispatchMouseExitToHidingWindow(Window* window) {
@@ -581,7 +583,9 @@ void WindowEventDispatcher::DispatchSyntheticTouchEvent(ui::TouchEvent* event) {
   // the pointer, in dips. OnEventFromSource expects events with co-ordinates
   // in raw pixels, so we convert back to raw pixels here.
   DCHECK(event->type() == ui::ET_TOUCH_CANCELLED);
-  event->UpdateForRootTransform(host_->GetRootTransform());
+  event->UpdateForRootTransform(
+      host_->GetRootTransform(),
+      host_->GetRootTransformForLocalEventCoordinates());
   DispatchDetails details = OnEventFromSource(event);
   if (details.dispatcher_destroyed)
     return;
