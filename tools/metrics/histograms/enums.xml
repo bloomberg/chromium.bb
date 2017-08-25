@@ -29313,6 +29313,26 @@ from previous Chrome versions.
   <int value="2" label="Clicked do not collect URL"/>
 </enum>
 
+<enum name="PasswordManagerAndroidPasswordActions">
+  <int value="0" label="Copied"/>
+  <int value="1" label="Displayed"/>
+  <int value="2" label="Hidden"/>
+</enum>
+
+<enum name="PasswordManagerAndroidPasswordEntryActions">
+  <int value="0" label="Viewed"/>
+  <int value="1" label="Deleted"/>
+  <int value="2" label="Cancelled"/>
+</enum>
+
+<enum name="PasswordManagerAndroidUsernameActions">
+  <int value="0" label="Copied"/>
+</enum>
+
+<enum name="PasswordManagerAndroidWebsiteActions">
+  <int value="0" label="Copied"/>
+</enum>
+
 <enum name="PasswordManagerEmptyUsernameField">
   <int value="0" label="Has username field"/>
   <int value="1" label="No username field"/>

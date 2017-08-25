@@ -54194,6 +54194,64 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Why was &quot;Allow to collect URL?&quot; bubble closed?</summary>
 </histogram>
 
+<histogram name="PasswordManager.Android.PasswordCredentialEntry"
+    enum="PasswordManagerAndroidPasswordEntryActions">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Records the action taken with a password credential entry on Android.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.Android.PasswordCredentialEntry.Password"
+    enum="PasswordManagerAndroidWebsiteActions">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Records the action taken with a password of a password credential entry on
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.Android.PasswordCredentialEntry.Username"
+    enum="PasswordManagerAndroidWebsiteActions">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Records the action taken with a username of a password credential entry on
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.Android.PasswordCredentialEntry.Website"
+    enum="PasswordManagerAndroidWebsiteActions">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Records the action taken with a website of a password credential entry on
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.Android.PasswordExceptionEntry"
+    enum="PasswordManagerAndroidPasswordEntryActions">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Records the action taken with a password exception entry on Android.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.Android.PasswordExceptionEntry.Website"
+    enum="PasswordManagerAndroidWebsiteActions">
+  <owner>jdoerrie@chromium.org</owner>
+  <owner>melandory@chromium.org</owner>
+  <summary>
+    Records the action taken with a website of a password exception entry on
+    Android.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.AutocompletePopupSuppressedByGeneration"
     enum="BooleanSuppressed">
   <owner>gcasto@chromium.org</owner>

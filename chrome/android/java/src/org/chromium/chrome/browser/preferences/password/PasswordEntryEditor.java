@@ -26,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
@@ -36,6 +37,33 @@ import org.chromium.ui.widget.Toast;
  * Password entry editor that allows to view and delete passwords stored in Chrome.
  */
 public class PasswordEntryEditor extends Fragment {
+    // Constants used to log UMA enum histogram, must stay in sync with
+    // PasswordManagerAndroidPasswordEntryActions. Further actions can only be appended, existing
+    // entries must not be overwritten.
+    private static final int PASSWORD_ENTRY_ACTION_VIEWED = 0;
+    private static final int PASSWORD_ENTRY_ACTION_DELETED = 1;
+    private static final int PASSWORD_ENTRY_ACTION_CANCELLED = 2;
+    private static final int PASSWORD_ENTRY_ACTION_BOUNDARY = 3;
+
+    // Constants used to log UMA enum histogram, must stay in sync with
+    // PasswordManagerAndroidWebsiteActions. Further actions can only be appended, existing
+    // entries must not be overwritten.
+    private static final int WEBSITE_ACTION_COPIED = 0;
+    private static final int WEBSITE_ACTION_BOUNDARY = 1;
+
+    // Constants used to log UMA enum histogram, must stay in sync with
+    // PasswordManagerAndroidUsernameActions. Further actions can only be appended, existing
+    // entries must not be overwritten.
+    private static final int USERNAME_ACTION_COPIED = 0;
+    private static final int USERNAME_ACTION_BOUNDARY = 1;
+
+    // Constants used to log UMA enum histogram, must stay in sync with
+    // PasswordManagerAndroidPasswordActions. Further actions can only be appended, existing
+    // entries must not be overwritten.
+    private static final int PASSWORD_ACTION_COPIED = 0;
+    private static final int PASSWORD_ACTION_DISPLAYED = 1;
+    private static final int PASSWORD_ACTION_HIDDEN = 2;
+    private static final int PASSWORD_ACTION_BOUNDARY = 3;
 
     // ID of this name/password or exception.
     private int mID;
@@ -121,6 +149,17 @@ public class PasswordEntryEditor extends Fragment {
             urlView.setText(url);
             hookupCancelDeleteButtons();
         }
+        // NOTE: This is deliberately not simplified so that the histogram strings can be found via
+        // code search and pre-submit scripts can catch errors. Also applies to similar spots below.
+        if (mException) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "PasswordManager.Android.PasswordExceptionEntry", PASSWORD_ENTRY_ACTION_VIEWED,
+                    PASSWORD_ENTRY_ACTION_BOUNDARY);
+        } else {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "PasswordManager.Android.PasswordCredentialEntry", PASSWORD_ENTRY_ACTION_VIEWED,
+                    PASSWORD_ENTRY_ACTION_BOUNDARY);
+        }
         return mView;
     }
 
@@ -204,6 +243,15 @@ public class PasswordEntryEditor extends Fragment {
                 removeItem();
                 deleteButton.setEnabled(false);
                 cancelButton.setEnabled(false);
+                if (mException) {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "PasswordManager.Android.PasswordExceptionEntry",
+                            PASSWORD_ENTRY_ACTION_DELETED, PASSWORD_ENTRY_ACTION_BOUNDARY);
+                } else {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "PasswordManager.Android.PasswordCredentialEntry",
+                            PASSWORD_ENTRY_ACTION_DELETED, PASSWORD_ENTRY_ACTION_BOUNDARY);
+                }
             }
         });
 
@@ -211,6 +259,15 @@ public class PasswordEntryEditor extends Fragment {
             @Override
             public void onClick(View v) {
                 getActivity().finish();
+                if (mException) {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "PasswordManager.Android.PasswordExceptionEntry",
+                            PASSWORD_ENTRY_ACTION_CANCELLED, PASSWORD_ENTRY_ACTION_BOUNDARY);
+                } else {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "PasswordManager.Android.PasswordCredentialEntry",
+                            PASSWORD_ENTRY_ACTION_CANCELLED, PASSWORD_ENTRY_ACTION_BOUNDARY);
+                }
             }
         });
     }
@@ -230,6 +287,9 @@ public class PasswordEntryEditor extends Fragment {
                              R.string.password_entry_editor_username_copied_into_clipboard,
                              Toast.LENGTH_SHORT)
                         .show();
+                RecordHistogram.recordEnumeratedHistogram(
+                        "PasswordManager.Android.PasswordCredentialEntry.Username",
+                        USERNAME_ACTION_COPIED, USERNAME_ACTION_BOUNDARY);
             }
         });
     }
@@ -249,6 +309,15 @@ public class PasswordEntryEditor extends Fragment {
                              R.string.password_entry_editor_site_copied_into_clipboard,
                              Toast.LENGTH_SHORT)
                         .show();
+                if (mException) {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "PasswordManager.Android.PasswordExceptionEntry.Website",
+                            WEBSITE_ACTION_COPIED, WEBSITE_ACTION_BOUNDARY);
+                } else {
+                    RecordHistogram.recordEnumeratedHistogram(
+                            "PasswordManager.Android.PasswordCredentialEntry.Website",
+                            WEBSITE_ACTION_COPIED, WEBSITE_ACTION_BOUNDARY);
+                }
             }
         });
     }
@@ -267,11 +336,17 @@ public class PasswordEntryEditor extends Fragment {
 
         changeHowPasswordIsDisplayed(
                 R.drawable.ic_visibility_off, InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+        RecordHistogram.recordEnumeratedHistogram(
+                "PasswordManager.Android.PasswordCredentialEntry.Password",
+                PASSWORD_ACTION_DISPLAYED, PASSWORD_ACTION_BOUNDARY);
     }
 
     private void hidePassword() {
         changeHowPasswordIsDisplayed(R.drawable.ic_visibility,
                 InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        RecordHistogram.recordEnumeratedHistogram(
+                "PasswordManager.Android.PasswordCredentialEntry.Password", PASSWORD_ACTION_HIDDEN,
+                PASSWORD_ACTION_BOUNDARY);
     }
 
     private void copyPassword() {
@@ -282,6 +357,9 @@ public class PasswordEntryEditor extends Fragment {
                      R.string.password_entry_editor_password_copied_into_clipboard,
                      Toast.LENGTH_SHORT)
                 .show();
+        RecordHistogram.recordEnumeratedHistogram(
+                "PasswordManager.Android.PasswordCredentialEntry.Password", PASSWORD_ACTION_COPIED,
+                PASSWORD_ACTION_BOUNDARY);
     }
 
     private void displayReauthenticationFragment() {
