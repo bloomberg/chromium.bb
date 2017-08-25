@@ -3007,8 +3007,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
         base::Bind(&AuthenticatorImpl::Create, base::Unretained(this)));
   }
 
-  if (base::FeatureList::IsEnabled(features::kGenericSensor) &&
-      permission_manager) {
+  if (permission_manager) {
     sensor_provider_proxy_.reset(
         new SensorProviderProxyImpl(permission_manager, this));
     registry_->AddInterface(
