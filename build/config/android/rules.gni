@@ -1672,11 +1672,18 @@ if (enable_java_templates) {
       _srcjar_deps += invoker.srcjar_deps
     }
 
+    _use_build_hooks =
+        !defined(invoker.no_build_hooks) || !invoker.no_build_hooks
     if (defined(invoker.build_hooks_android_impl_deps)) {
+      assert(_use_build_hooks,
+             "Cannot set no_build_hooks and build_hooks_android_impl_deps at " +
+                 "the same time")
       _build_hooks_android_impl_deps = invoker.build_hooks_android_impl_deps
-    } else {
+    } else if (_use_build_hooks) {
       _build_hooks_android_impl_deps =
           [ "//build/android/buildhooks:build_hooks_android_impl_java" ]
+    } else {
+      _build_hooks_android_impl_deps = []
     }
 
     _use_chromium_linker =
@@ -2022,6 +2029,7 @@ if (enable_java_templates) {
                                "chromium_code",
                                "java_files",
                                "run_findbugs_override",
+                               "no_build_hooks",
                              ])
       supports_android = true
       requires_android = true
