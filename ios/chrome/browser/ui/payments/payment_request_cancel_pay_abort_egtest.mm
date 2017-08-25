@@ -195,7 +195,8 @@ const char kNoShippingPage[] =
 
   // Tap the Confirm button.
   [[EarlGrey
-      selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_ACCNAME_OK)]
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   IDS_AUTOFILL_CARD_UNMASK_CONFIRM_BUTTON)]
       performAction:grey_tap()];
 
   // Confirm that the Payment Request UI is not showing.
