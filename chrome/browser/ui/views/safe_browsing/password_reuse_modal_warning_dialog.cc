@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
@@ -36,8 +37,11 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
     : show_softer_warning_(
           PasswordProtectionService::ShouldShowSofterWarning()),
       done_callback_(std::move(done_callback)) {
+  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
+      views::INSETS_DIALOG_CONTENTS));
+
   // TODO(jialiul): Dialog message should align with title.
-  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
                         views::GridLayout::FIXED, 400, 0);

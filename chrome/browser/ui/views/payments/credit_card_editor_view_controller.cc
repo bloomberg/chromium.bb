@@ -293,8 +293,8 @@ CreditCardEditorViewController::CreateCustomFieldView(
     view = std::move(exp_label);
   } else {
     // Two comboboxes, one for month and the other for year.
-    std::unique_ptr<views::GridLayout> combobox_layout =
-        base::MakeUnique<views::GridLayout>(view.get());
+    views::GridLayout* combobox_layout =
+        views::GridLayout::CreateAndInstall(view.get());
     views::ColumnSet* columns = combobox_layout->AddColumnSet(0);
     columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
                        views::GridLayout::USE_PREF, 0, 0);
@@ -328,7 +328,6 @@ CreditCardEditorViewController::CreateCustomFieldView(
     combobox_layout->AddView(year_combobox.release(), 1, 1,
                              views::GridLayout::FILL, views::GridLayout::FILL,
                              0, kInputFieldHeight);
-    view->SetLayoutManager(combobox_layout.release());
   }
 
   // Set the initial validity of the custom view.

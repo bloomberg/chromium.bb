@@ -326,14 +326,14 @@ DialogClientView::GetButtonRowViews() {
 
 void DialogClientView::SetupLayout() {
   base::AutoReset<bool> auto_reset(&adding_or_removing_views_, true);
-  GridLayout* layout = new GridLayout(button_row_container_);
-  layout->set_minimum_size(minimum_size_);
   FocusManager* focus_manager = GetFocusManager();
   ViewTracker view_tracker(focus_manager->GetFocusedView());
 
   // Clobber any existing LayoutManager since it has weak references to child
   // Views which may be removed by SetupViews().
-  button_row_container_->SetLayoutManager(layout);
+  GridLayout* layout = GridLayout::CreateAndInstall(button_row_container_);
+  layout->set_minimum_size(minimum_size_);
+
   SetupViews();
   const std::array<View*, kNumButtons> views = GetButtonRowViews();
 

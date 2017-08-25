@@ -90,8 +90,7 @@ class RevokeButton : public views::ImageButton, public views::ButtonListener {
 class BulletedPermissionsList : public views::View {
  public:
   BulletedPermissionsList() {
-    layout_ = new views::GridLayout(this);
-    SetLayoutManager(layout_);
+    layout_ = views::GridLayout::CreateAndInstall(this);
 
     // Create 3 columns: the bullet, the bullet text, and the revoke button.
     views::ColumnSet* column_set = layout_->AddColumnSet(kBulletColumnSetId);

@@ -284,7 +284,7 @@ ManagePasswordItemsView::~ManagePasswordItemsView() = default;
 void ManagePasswordItemsView::AddRows() {
   const int vertical_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
-  views::GridLayout* layout = new views::GridLayout(this);
+  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   SetLayoutManager(layout);
   for (const std::unique_ptr<PasswordFormRow>& row : password_forms_rows_) {
     if (row != password_forms_rows_[0])
