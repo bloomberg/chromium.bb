@@ -1,7 +1,5 @@
 # Being ported, https://crbug.com/754861.
 
--AsyncResourceHandlerTest.OneChunkLengths
--AsyncResourceHandlerTest.TwoChunksLengths
 -AudioRendererMixerManagerTest.MixerParamsLatencyRtc
 -AudioRendererSinkCacheTest.SmokeTest
 -BackgroundSyncManagerTest.DeleteAndStartOverServiceWorkerContext
@@ -30,6 +28,7 @@
 -GpuDataManagerImplPrivateTest.GpuSideBlacklistingWebGL
 -GpuDataManagerImplPrivateTest.GpuSideExceptions
 -GpuDataManagerImplPrivateTest.UpdateActiveGpu
+-LegacyInputRouterImplTest.AckedTouchEventState
 -MediaStreamManagerTest.MakeAndCancelMultipleRequests
 -MediaStreamManagerTest.MakeMediaAccessRequest
 -MediaStreamManagerTest.MakeMultipleRequests
@@ -60,13 +59,6 @@
 -PageStateSerializationTest.BackwardsCompat_v22
 -PageStateSerializationTest.BackwardsCompat_v23
 -PageStateSerializationTest.BackwardsCompat_v24
--PresentationConnectionProxyTest.TestControllerConnectionCallsClose
--PresentationConnectionProxyTest.TestSendArrayBuffer
--PresentationConnectionProxyTest.TestSendString
--QuotaPolicyCookieStoreTest.ForceKeepSessionState
--QuotaPolicyCookieStoreTest.TestDestroyOnBackgroundThread
--QuotaPolicyCookieStoreTest.TestPersistence
--QuotaPolicyCookieStoreTest.TestPolicy
 -RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
 -RenderWidgetHostViewAuraCopyRequestTest.DestroyedAfterCopyRequest
 -RenderWidgetHostViewAuraCopyRequestTest.PresentTime
@@ -102,6 +94,7 @@
 -AppCacheStorageImplTest.Reinitialize1
 -AppCacheStorageImplTest.Reinitialize2
 -AppCacheStorageImplTest.Reinitialize3
+-AppCacheUpdateJobTest.AlreadyChecking/1
 -ChromeAppCacheServiceTest.KeepOnDestruction
 -ChromeAppCacheServiceTest.SaveSessionState
 -DOMStorageAreaTest.DeleteOrigin
@@ -128,3 +121,7 @@
 -IndexedDBFactoryTest.DataFormatVersion
 -IndexedDBFactoryTest.MemoryBackingStoreLifetime
 -LocalStorageContextMojoTest.Migration
+-QuotaPolicyCookieStoreTest.ForceKeepSessionState
+-QuotaPolicyCookieStoreTest.TestDestroyOnBackgroundThread
+-QuotaPolicyCookieStoreTest.TestPersistence
+-QuotaPolicyCookieStoreTest.TestPolicy
