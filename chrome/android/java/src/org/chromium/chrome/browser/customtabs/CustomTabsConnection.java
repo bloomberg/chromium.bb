@@ -603,7 +603,7 @@ public class CustomTabsConnection {
                 Uri verifiedOrigin = verifyOriginForSession(session, uid, postMessageOrigin);
                 if (verifiedOrigin == null) {
                     mClientManager.verifyAndInitializeWithPostMessageOriginForSession(
-                            session, postMessageOrigin, CustomTabsService.RELATION_USE_AS_ORIGIN);
+                            session, postMessageOrigin);
                 } else {
                     mClientManager.initializeWithPostMessageOriginForSession(
                             session, verifiedOrigin);

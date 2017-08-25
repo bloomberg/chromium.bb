@@ -15,7 +15,6 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.CustomTabsService.Relation;
 import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
@@ -345,13 +344,13 @@ class ClientManager {
     }
 
     /**
-     * See {@link PostMessageHandler#verifyAndInitializeWithOrigin(Uri, int)}.
+     * See {@link PostMessageHandler#verifyAndInitializeWithOrigin(Uri)}.
      */
     public synchronized void verifyAndInitializeWithPostMessageOriginForSession(
-            CustomTabsSessionToken session, Uri origin, @Relation int relation) {
+            CustomTabsSessionToken session, Uri origin) {
         SessionParams params = mSessionParams.get(session);
         if (params == null) return;
-        params.postMessageHandler.verifyAndInitializeWithOrigin(origin, relation);
+        params.postMessageHandler.verifyAndInitializeWithOrigin(origin);
     }
 
     /**
@@ -524,9 +523,7 @@ class ClientManager {
     public synchronized boolean isFirstPartyOriginForSession(
             CustomTabsSessionToken session, Uri origin) {
         SessionParams params = mSessionParams.get(session);
-        return params == null ? false
-                              : OriginVerifier.isValidOrigin(params.packageName, origin,
-                                        CustomTabsService.RELATION_USE_AS_ORIGIN);
+        return params == null ? false : OriginVerifier.isValidOrigin(params.packageName, origin);
     }
 
     /** Tries to bind to a client to keep it alive, and returns true for success. */
