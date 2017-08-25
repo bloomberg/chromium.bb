@@ -306,6 +306,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
       LayoutObject* inserted_before_in_flow_thread);
   void DestroySpannerPlaceholder(LayoutMultiColumnSpannerPlaceholder*);
   virtual bool DescendantIsValidColumnSpanner(LayoutObject* descendant) const;
+  bool IsNearestAncestorFlowThreadOf(LayoutObject* descendant) const;
 
   void AddColumnSetToThread(LayoutMultiColumnSet*) override;
   void WillBeRemovedFromTree() override;

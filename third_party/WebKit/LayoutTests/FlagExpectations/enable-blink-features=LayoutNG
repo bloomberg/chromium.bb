@@ -9639,6 +9639,7 @@ crbug.com/591099 fast/multicol/out-of-flow/abspos-auto-position-small-on-line-at
 crbug.com/591099 fast/multicol/out-of-flow/abspos-auto-position.html [ Failure ]
 crbug.com/591099 fast/multicol/out-of-flow/abspos-auto-top-bottom.html [ Failure ]
 crbug.com/757767 fast/multicol/out-of-flow/nested-multicol.html [ Crash ]
+crbug.com/591099 fast/multicol/out-of-flow/nested-with-abspos-inside-relpos.html [ Failure ]
 crbug.com/591099 fast/multicol/out-of-flow/offset-properties.html [ Failure ]
 crbug.com/757767 fast/multicol/outlines-at-column-boundaries.html [ Crash ]
 crbug.com/591099 fast/multicol/overflow-across-columns.html [ Failure ]
