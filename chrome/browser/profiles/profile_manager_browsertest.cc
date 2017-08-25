@@ -446,8 +446,9 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   }
 }
 
+// Flakes on ChromiumOS: http://crbug.com/758930
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
-                       SwitchToProfile) {
+                       DISABLE_SwitchToProfile) {
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
@@ -502,12 +503,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 }
 
 // Flakes on Windows: http://crbug.com/314905
-#if defined(OS_WIN)
-#define MAYBE_EphemeralProfile DISABLED_EphemeralProfile
-#else
-#define MAYBE_EphemeralProfile EphemeralProfile
-#endif
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
+// Flakes on ChromiumOS: http://crbug.com/758930
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLE_EphemeralProfile) {
   // If multiprofile mode is not enabled, you can't switch between profiles.
   if (!profiles::IsMultipleProfilesEnabled())
     return;
