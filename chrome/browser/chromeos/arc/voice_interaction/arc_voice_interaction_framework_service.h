@@ -66,8 +66,7 @@ class ArcVoiceInteractionFrameworkService
   void SetVoiceInteractionRunning(bool running) override;
   void SetVoiceInteractionState(ash::VoiceInteractionState state) override;
 
-  bool IsMetalayerSupported();
-  void ShowMetalayer(const base::Closure& closed);
+  void ShowMetalayer();
   void HideMetalayer();
 
   // ArcSessionManager::Observer overrides.
@@ -114,8 +113,6 @@ class ArcVoiceInteractionFrameworkService
   static const char kArcServiceName[];
 
  private:
-  void CallAndResetMetalayerCallback();
-
   void NotifyMetalayerStatusChanged(bool visible);
 
   bool InitiateUserInteraction();
@@ -123,8 +120,6 @@ class ArcVoiceInteractionFrameworkService
   content::BrowserContext* context_;
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager
   mojo::Binding<mojom::VoiceInteractionFrameworkHost> binding_;
-  base::Closure metalayer_closed_callback_;
-  bool metalayer_enabled_ = false;
 
   // Whether there is a pending request to start voice interaction.
   bool is_request_pending_ = false;

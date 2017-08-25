@@ -61,8 +61,9 @@ const char kArcVoiceInteractionValuePropAccepted[] =
     "arc.voice_interaction_value_prop.accepted";
 // A preference that indicates the user has enabled voice interaction services.
 const char kVoiceInteractionEnabled[] = "settings.voice_interaction.enabled";
-// A preference that indicates the user has enabled providing context to
-// voice interaction services.
+// A preference that indicates the user has allowed voice interaction services
+// to access the "context" (text and graphic content that is currently on
+// screen).
 const char kVoiceInteractionContextEnabled[] =
     "settings.voice_interaction.context.enabled";
 // A preference indicating whether voice interaction settings have been read
