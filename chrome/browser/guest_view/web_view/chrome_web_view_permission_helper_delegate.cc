@@ -306,35 +306,4 @@ void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedAsyncResponse(
       render_frame_id, request_id, allowed));
 }
 
-void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedSync(
-    int render_process_id,
-    int render_frame_id,
-    const GURL& url,
-    bool blocked_by_policy,
-    IPC::Message* reply_msg) {
-  RequestFileSystemPermission(
-      url,
-      !blocked_by_policy,
-      base::Bind(&ChromeWebViewPermissionHelperDelegate::
-                     FileSystemAccessedSyncResponse,
-                 weak_factory_.GetWeakPtr(),
-                 render_process_id,
-                 render_frame_id,
-                 url,
-                 reply_msg));
-}
-
-void ChromeWebViewPermissionHelperDelegate::FileSystemAccessedSyncResponse(
-    int render_process_id,
-    int render_frame_id,
-    const GURL& url,
-    IPC::Message* reply_msg,
-    bool allowed) {
-  TabSpecificContentSettings::FileSystemAccessed(
-      render_process_id, render_frame_id, url, !allowed);
-  ChromeViewHostMsg_RequestFileSystemAccessSync::WriteReplyParams(reply_msg,
-                                                                  allowed);
-  Send(reply_msg);
-}
-
 }  // namespace extensions

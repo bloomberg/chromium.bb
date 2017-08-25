@@ -191,26 +191,6 @@ void ChromeRenderMessageFilter::OnRequestFileSystemAccessSyncResponse(
   Send(reply_msg);
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-void ChromeRenderMessageFilter::FileSystemAccessedSyncOnUIThread(
-    int render_process_id,
-    int render_frame_id,
-    const GURL& url,
-    bool blocked_by_policy,
-    IPC::Message* reply_msg) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  extensions::WebViewPermissionHelper* web_view_permission_helper =
-      extensions::WebViewPermissionHelper::FromFrameID(
-          render_process_id, render_frame_id);
-  // Between the time the permission request is made and the time it is handled
-  // by the UI thread, the extensions::WebViewPermissionHelper might be gone.
-  if (!web_view_permission_helper)
-    return;
-  web_view_permission_helper->FileSystemAccessedSync(
-      render_process_id, render_frame_id, url, blocked_by_policy, reply_msg);
-}
-#endif
-
 void ChromeRenderMessageFilter::OnRequestFileSystemAccessAsync(
     int render_frame_id,
     int request_id,

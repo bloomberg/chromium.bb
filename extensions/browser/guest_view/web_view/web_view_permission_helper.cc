@@ -301,15 +301,6 @@ void WebViewPermissionHelper::FileSystemAccessedAsync(int render_process_id,
       render_process_id, render_frame_id, request_id, url, blocked_by_policy);
 }
 
-void WebViewPermissionHelper::FileSystemAccessedSync(int render_process_id,
-                                                     int render_frame_id,
-                                                     const GURL& url,
-                                                     bool blocked_by_policy,
-                                                     IPC::Message* reply_msg) {
-  web_view_permission_helper_delegate_->FileSystemAccessedSync(
-      render_process_id, render_frame_id, url, blocked_by_policy, reply_msg);
-}
-
 int WebViewPermissionHelper::RequestPermission(
     WebViewPermissionType permission_type,
     const base::DictionaryValue& request_info,
