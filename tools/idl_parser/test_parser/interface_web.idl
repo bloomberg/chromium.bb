@@ -113,7 +113,7 @@ interface MyIFaceBig {
  *          Sequence()
  *            Type()
  *              StringType(DOMString)
- *        Default()
+ *        Default() = "[]"
  *    Type()
  *      PrimitiveType(void)
  */
@@ -253,10 +253,10 @@ interface MyIFaceStringifiers {
  *      PrimitiveType(void)
  *    ExtAttributes()
  *      ExtAttribute(Attr)
- *      ExtAttribute(MethodIdentList)
+ *      ExtAttribute(MethodIdentList) = "['Foo', 'Bar']"
  *  ExtAttributes()
  *    ExtAttribute(MyExtendedAttribute)
- *    ExtAttribute(MyExtendedIdentListAttribute)
+ *    ExtAttribute(MyExtendedIdentListAttribute) = "['Foo', 'Bar', 'Baz']"
  */
 [MyExtendedAttribute,
  MyExtendedIdentListAttribute=(Foo, Bar, Baz)]
