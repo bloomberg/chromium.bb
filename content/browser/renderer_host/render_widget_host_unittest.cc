@@ -133,6 +133,7 @@ class MockInputRouter : public InputRouter {
   void SetDeviceScaleFactor(float device_scale_factor) override {}
   void SetFrameTreeNodeId(int frameTreeNodeId) override {}
   cc::TouchAction AllowedTouchAction() override { return cc::kTouchActionAuto; }
+  void SetForceEnableZoom(bool enabled) override {}
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override {

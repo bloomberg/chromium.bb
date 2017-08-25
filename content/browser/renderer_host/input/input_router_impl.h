@@ -72,6 +72,8 @@ class CONTENT_EXPORT InputRouterImpl
 
   void SetFrameTreeNodeId(int frame_tree_node_id) override;
 
+  void SetForceEnableZoom(bool enabled) override;
+
   cc::TouchAction AllowedTouchAction() override;
 
  private:

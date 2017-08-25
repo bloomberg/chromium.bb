@@ -508,6 +508,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   InputRouter* input_router() { return input_router_.get(); }
 
+  void SetForceEnableZoom(bool);
+
   // Get the BrowserAccessibilityManager for the root of the frame tree,
   BrowserAccessibilityManager* GetRootBrowserAccessibilityManager();
 

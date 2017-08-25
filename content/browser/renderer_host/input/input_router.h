@@ -59,6 +59,8 @@ class InputRouter : public IPC::Listener {
 
   // Return the currently allowed touch-action.
   virtual cc::TouchAction AllowedTouchAction() = 0;
+
+  virtual void SetForceEnableZoom(bool enabled) = 0;
 };
 
 }  // namespace content
