@@ -2858,20 +2858,34 @@ TEST_F(WebContentsImplTest, CapturerPreventsOcclusion) {
   contents()->WasOccluded();
   EXPECT_TRUE(view->is_occluded());
 
-  // Add a capturer. This should cause the view to be un-occluded.
+  // Adding a capturer on an occluded WebContents should cause the view to be
+  // unoccluded. Removing the capturer should cause the view to be occluded
+  // again.
   contents()->IncrementCapturerCount(gfx::Size());
   EXPECT_FALSE(view->is_occluded());
 
-  // Try to occlude the view. This will fail to propagate because of the
-  // active capturer.
+  contents()->DecrementCapturerCount();
+  EXPECT_TRUE(view->is_occluded());
+
+  // Adding a capturer on an unoccluded WebContents should not change the
+  // occlusion state of the view. Calling WasOccluded() on an unoccluded
+  // WebContents() that has a capturer should not change the occlusion state of
+  // the view. Removing the capturer should cause the view to become occluded.
+  contents()->WasUnOccluded();
+  EXPECT_FALSE(view->is_occluded());
+  contents()->IncrementCapturerCount(gfx::Size());
+  EXPECT_FALSE(view->is_occluded());
+
   contents()->WasOccluded();
   EXPECT_FALSE(view->is_occluded());
 
-  // Remove the capturer and try again.
   contents()->DecrementCapturerCount();
-  EXPECT_FALSE(view->is_occluded());
-  contents()->WasOccluded();
   EXPECT_TRUE(view->is_occluded());
+
+  // Calling WasUnoccluded() on a WebContents with no capturers should cause the
+  // view to become unoccluded.
+  contents()->WasUnOccluded();
+  EXPECT_FALSE(view->is_occluded());
 }
 
 // Tests that GetLastActiveTime starts with a real, non-zero time and updates
