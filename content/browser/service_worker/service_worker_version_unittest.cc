@@ -1217,42 +1217,6 @@ TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestart) {
   EXPECT_EQ(SERVICE_WORKER_OK, start_status);
 }
 
-TEST_F(ServiceWorkerStallInStoppingTest, DetachThenRestartNoCrash) {
-  // Start a worker.
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&status));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
-
-  // Try to stop the worker.
-  status = SERVICE_WORKER_ERROR_FAILED;
-  version_->StopWorker(CreateReceiverOnCurrentThread(&status));
-  EXPECT_EQ(EmbeddedWorkerStatus::STOPPING, version_->running_status());
-
-  // Worker is now stalled in stopping. Add a start worker request.
-  ServiceWorkerStatusCode start_status = SERVICE_WORKER_ERROR_FAILED;
-  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
-                        CreateReceiverOnCurrentThread(&start_status));
-
-  // Simulate timeout. The worker should stop and get restarted.
-  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
-  version_->stop_time_ = base::TimeTicks::Now() -
-                         ServiceWorkerVersion::kStopWorkerTimeout -
-                         base::TimeDelta::FromSeconds(1);
-  ServiceWorkerVersion* version = version_.get();
-  // Don't crash even if no one externally holds a reference to version.
-  // The provider host for the version holds a reference, but it
-  // could be destroyed during detach of the embedded worker instance.
-  version_ = nullptr;
-  version->timeout_timer_.user_task().Run();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_NE(SERVICE_WORKER_OK, start_status);
-  // No crash.
-}
-
 TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   // Start a worker.
