@@ -50,8 +50,9 @@ class GitCL(object):
             command += ['--auth-refresh-token-json', self._auth_refresh_token_json]
         return self._host.executive.run_command(command, cwd=self._cwd)
 
-    def trigger_try_jobs(self, builders=None):
-        builders = builders or self._host.builders.all_try_builder_names()
+    def trigger_try_jobs(self, builders):
+        # This method assumes the bots to be triggered are Blink try bots,
+        # which are all on the master tryserver.blink except android_blink_rel.
         if 'android_blink_rel' in builders:
             self.run(['try', '-b', 'android_blink_rel'])
             builders.remove('android_blink_rel')

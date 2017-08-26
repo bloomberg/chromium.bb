@@ -146,7 +146,7 @@ class TestImporter(object):
         Returns True if everything is OK to continue, or False on failure.
         """
         _log.info('Triggering try jobs for updating expectations.')
-        self.git_cl.trigger_try_jobs()
+        self.git_cl.trigger_try_jobs(self.blink_try_bots())
         try_results = self.git_cl.wait_for_try_jobs(
             poll_delay_seconds=POLL_DELAY_SECONDS,
             timeout_seconds=TIMEOUT_SECONDS)
@@ -174,6 +174,15 @@ class TestImporter(object):
             timeout_seconds=TIMEOUT_SECONDS)
         try_results = self.git_cl.filter_latest(try_results)
 
+        # We only want to check the status of CQ bots. The set of CQ bots is
+        # determined by //infra/config/cq.cfg, but since in import jobs we only
+        # trigger CQ bots and Blink try bots, we just ignore the
+        # Blink try bots to get the set of CQ try bots.
+        # Important: if any CQ bots are added to the builder list
+        # (self.host.builders), then this logic will need to be updated.
+        try_results = {build: status for build, status in try_results.items()
+                       if build.builder_name not in self.blink_try_bots()}
+
         if not try_results:
             self.git_cl.run(['set-close'])
             _log.error('No CQ try job results, aborting.')
@@ -189,6 +198,10 @@ class TestImporter(object):
         self.git_cl.run(['set-close'])
         _log.error('CQ appears to have failed; aborting.')
         return False
+
+    def blink_try_bots(self):
+        """Returns the collection of builders used for updating expectations."""
+        return self.host.builders.all_try_builder_names()
 
     def parse_args(self, argv):
         parser = argparse.ArgumentParser()
