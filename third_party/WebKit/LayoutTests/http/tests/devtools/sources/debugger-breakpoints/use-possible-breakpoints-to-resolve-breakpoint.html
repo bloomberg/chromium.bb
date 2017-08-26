@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+function foo() {
+  var p = Promise.resolve()
+    .then(() => 239);
+  console.log(42);
+  // comments 1
+  // comments 2
+  // comments 3
+  // comments 4
+  // comments 5
+  fetch("url").then(response => response.data()).then(data => data.json());
+  // comment 6
+  // super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment, super long comment,
+  // comment 7
+  Promise.resolve();
+  return p;
+}
+//# sourceURL=foo.js
+</script>
+<script>
+
+function test() {
+  SourcesTestRunner.startDebuggerTestPromise().then(
+      () => SourcesTestRunner.showScriptSource('foo.js', didShowScriptSource));
+
+  function didShowScriptSource(sourceFrame) {
+    var uiSourceCode = sourceFrame._uiSourceCode;
+    var breakpointManager = Bindings.breakpointManager;
+    setBreakpoint(breakpointManager, sourceFrame, 3, false)
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 4, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 5, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 6, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 11, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 12, false))
+        .then(() => setBreakpoint(breakpointManager, sourceFrame, 13, false))
+        .then(() => SourcesTestRunner.completeDebuggerTest());
+  }
+
+  function setBreakpoint(breakpointManager, sourceFrame, lineNumberClicked, shiftKey) {
+    var resolveCallback;
+    var promise = new Promise(resolve => resolveCallback = resolve);
+    TestRunner.addSniffer(sourceFrame.__proto__, '_breakpointWasSetForTest', dumpLocation, false);
+    sourceFrame._handleGutterClick(
+        {data: {lineNumber: lineNumberClicked, event: {button: 0, shiftKey: shiftKey, consume: () => true}}});
+    return promise;
+
+    function dumpLocation(lineNumber, columnNumber, condition, enabled) {
+      TestRunner.addResult(`${lineNumberClicked}: breakpointAdded(${lineNumber}, ${columnNumber})`);
+      resolveCallback();
+    }
+  }
+};
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Checks that locations are correctly resolved for gutter click.</p>
+</body>
+</html>

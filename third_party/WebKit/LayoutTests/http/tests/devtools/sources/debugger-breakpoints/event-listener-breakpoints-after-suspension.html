@@ -1,0 +1,70 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function testElementClicked()
+{
+    return 0;
+}
+
+function addListenerAndClick()
+{
+    var element = document.getElementById("test");
+    element.addEventListener("click", testElementClicked, true);
+    element.click();
+}
+
+function test() {
+  SourcesTestRunner.startDebuggerTest(start);
+
+  function start() {
+    SourcesTestRunner.setEventListenerBreakpoint('listener:click', true);
+    SourcesTestRunner.waitUntilPaused(paused);
+    TestRunner.evaluateInPageWithTimeout('addListenerAndClick()');
+  }
+
+  function paused(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+    printEventTargetName(auxData);
+    SourcesTestRunner.resumeExecution(suspendAll);
+  }
+
+  function suspendAll() {
+    TestRunner.addResult('Suspend all targets');
+    SDK.targetManager.suspendAllTargets();
+    TestRunner.deprecatedRunAfterPendingDispatches(resumeAll);
+  }
+
+  function resumeAll() {
+    TestRunner.addResult('Resume all targets');
+    SDK.targetManager.resumeAllTargets();
+    SourcesTestRunner.waitUntilPaused(finish);
+    TestRunner.evaluateInPageWithTimeout('addListenerAndClick()');
+  }
+
+  function finish() {
+    TestRunner.addResult('Successfully paused after suspension and resuming all targets');
+    SourcesTestRunner.completeDebuggerTest();
+  }
+
+  function printEventTargetName(auxData) {
+    var targetName = auxData && auxData.targetName;
+    if (targetName)
+      TestRunner.addResult('Event target: ' + targetName);
+    else
+      TestRunner.addResult('FAIL: No event target name received!');
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests event listener breakpoints.
+</p>
+
+<input type=button id="test"></input>
+</body>
+</html>

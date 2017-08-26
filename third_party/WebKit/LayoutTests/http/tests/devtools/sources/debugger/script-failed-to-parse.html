@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+function addScript(url)
+{
+    var head = document.getElementsByTagName('head')[0];
+    var script = document.createElement('script');
+    script.setAttribute('src', url);
+    head.appendChild(script);
+}
+
+function test() {
+  SourcesTestRunner.runDebuggerTestSuite([
+    function testScriptParsedEvent(next) {
+      TestRunner.debuggerModel.addEventListener(
+          SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+      TestRunner.evaluateInPage('addScript(\'resources/script-failed-to-parse.js\')');
+
+      function scriptFailedToParse(event) {
+        var script = event.data;
+        if (script.sourceURL.indexOf('script-failed-to-parse.js') !== -1) {
+          TestRunner.addResult('Event with script-failed-to-parse.js received');
+          TestRunner.debuggerModel.removeEventListener(
+              SDK.DebuggerModel.Events.FailedToParseScriptSource, scriptFailedToParse);
+          next();
+        }
+      }
+    },
+  ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests that FailedToParseScriptSource event is raised after compile script with syntax error.
+</p>
+</body>
+</html>

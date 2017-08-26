@@ -809,6 +809,7 @@ InspectorTest.textContentWithoutStyles = function(node)
 InspectorTest.clearSpecificInfoFromStackFrames = function(text)
 {
     var buffer = text.replace(/\(file:\/\/\/(?:[^)]+\)|[\w\/:-]+)/g, "(...)");
+    buffer = buffer.replace(/\(http:\/\/(?:[^)]+\)|[\w\/:-]+)/g, "(...)");
     buffer = buffer.replace(/\(<anonymous>:[^)]+\)/g, "(...)");
     buffer = buffer.replace(/VM\d+/g, "VM");
     return buffer.replace(/\s*at[^()]+\(native\)/g, "");

@@ -1,0 +1,34 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function test() {
+  TestRunner.evaluateInPage('frontendReopeningCount', function(result) {
+    if (result._description === '0')
+      TestRunner.evaluateInPage('reopenFrontend()');
+    else {
+      SourcesTestRunner.runDebuggerTestSuite([function testSourceFrameContent(next) {
+        SourcesTestRunner.showScriptSource('open-close-open.html', didShowScriptSource);
+
+        function didShowScriptSource(sourceFrame) {
+          SourcesTestRunner.dumpSourceFrameContents(sourceFrame);
+          next();
+        }
+      }]);
+    }
+  });
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that scripts panel displays resource content correctly after the open - close - open sequence.
+<a href="https://bugs.webkit.org/show_bug.cgi?id=56747">Bug 56747</a>
+</p>
+</body>
+</html>

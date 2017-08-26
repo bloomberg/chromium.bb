@@ -1,0 +1,50 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    foo();
+}
+
+function foo()
+{
+}
+
+function test() {
+  SourcesTestRunner.runDebuggerTestSuite([
+    async function testSetNoneOfURLAndRegex(next) {
+      var response = await TestRunner.DebuggerAgent.invoke_setBreakpointByUrl({lineNumber: 1});
+      TestRunner.addResult(response[Protocol.Error]);
+      next();
+    },
+
+    async function testSetBothURLAndRegex(next) {
+      var url = 'debugger-set-breakpoint.js';
+      var urlRegex = 'debugger-set-breakpoint.*';
+      var response = await TestRunner.DebuggerAgent.invoke_setBreakpointByUrl({lineNumber: 1, url, urlRegex});
+      TestRunner.addResult(response[Protocol.Error]);
+      next();
+    },
+
+    async function testSetByRegex(next) {
+      await TestRunner.DebuggerAgent.invoke_setBreakpointByUrl({urlRegex: 'debugger-set-breakpoint.*', lineNumber: 8});
+      SourcesTestRunner.runTestFunctionAndWaitUntilPaused(callFrames => {
+        SourcesTestRunner.captureStackTrace(callFrames);
+        next();
+      });
+    }
+  ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests Debugger.setBreakpointByUrl with isRegex set to true.
+</p>
+</body>
+</html>

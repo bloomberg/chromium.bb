@@ -1,0 +1,49 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script src="../debugger/resources/script1.js"></script>
+<script src="../debugger/resources/script2.js"></script>
+<script>
+function test() {
+  SourcesTestRunner.runDebuggerTestSuite([function testSourceFramesCount(next) {
+    var panel = UI.panels.sources;
+    var sourceFrameCount = 0;
+
+    SourcesTestRunner.showScriptSource('script1.js', didShowScriptSources);
+
+    function didShowScriptSources() {
+      TestRunner.reloadPage(didReload);
+    }
+
+    function didReload() {
+      SourcesTestRunner.showScriptSource('script2.js', didShowScriptSourceAgain);
+    }
+
+    function didShowScriptSourceAgain() {
+      var listeners = Bindings.breakpointManager._listeners.get(Bindings.BreakpointManager.Events.BreakpointAdded);
+      // There should be 3 breakpoint-added event listeners:
+      //  - BreakpointsSidebarPane
+      //  - 2 shown tabs
+      TestRunner.addResult('Number of breakpoint-added event listeners is ' + listeners.length);
+
+      function dumpListener(listener) {
+        if (!(listener.thisObject instanceof SourceFrame.SourceFrame))
+          return;
+        var sourceFrame = listener.thisObject;
+        TestRunner.addResult('    ' + sourceFrame._uiSourceCode.name());
+      }
+
+      TestRunner.addResult('Dumping SourceFrames listening for breakpoint-added event:');
+      listeners.map(dumpListener);
+
+      next();
+    }
+  }]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that scripts panel does not create too many source frames.</p>
+</body>
+</html>
