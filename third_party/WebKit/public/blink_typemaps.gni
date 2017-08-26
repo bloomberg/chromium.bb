@@ -5,12 +5,12 @@
 typemaps = [
   "//cc/ipc/frame_sink_id.typemap",
   "//cc/ipc/local_surface_id.typemap",
+  "//cc/ipc/surface_id.typemap",
   "//gpu/ipc/common/mailbox_holder_for_blink.typemap",
   "//gpu/ipc/common/sync_token.typemap",
   "//services/viz/public/cpp/compositing/begin_frame_args_for_blink.typemap",
   "//services/viz/public/cpp/compositing/compositor_frame_for_blink.typemap",
   "//services/viz/public/cpp/compositing/returned_resource.typemap",
-  "//services/viz/public/cpp/compositing/surface_id.typemap",
   "//services/viz/public/cpp/compositing/surface_info.typemap",
   "//services/viz/public/cpp/compositing/surface_sequence.typemap",
 ]

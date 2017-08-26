@@ -39,7 +39,7 @@ viz_component("host") {
     "//gpu/command_buffer/client",
     "//gpu/ipc/host",
     "//services/viz/privileged/interfaces/compositing",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/interfaces/hit_test",
     "//ui/gfx/geometry",
   ]
 }
@@ -61,7 +61,7 @@ viz_source_set("unit_tests") {
     "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",
     "//services/ui/gpu/interfaces",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/interfaces/compositing",
     "//testing/gmock",
     "//testing/gtest",
 
