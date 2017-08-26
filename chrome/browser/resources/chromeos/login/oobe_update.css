@@ -2,11 +2,14 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#estimated-time-left,
-#progress-message,
-#cancel-hint {
+:host .text {
+  color: #333;
   font: 13px Roboto, sans-serif;
-  margin: 0 20px;
+  line-height: 18px;
+}
+
+:host .subtitle {
+  line-height: 18px;
 }
 
 #estimated-time-left,
@@ -21,7 +24,7 @@
 }
 
 .update-illustration {
-  padding-bottom: 10px;
+  padding-bottom: 82px;
 }
 
 paper-progress {
