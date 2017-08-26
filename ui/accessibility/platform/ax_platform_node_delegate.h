@@ -38,7 +38,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   virtual const AXNodeData& GetData() const = 0;
 
   // Get the accessibility tree data for this node.
-  virtual const ui::AXTreeData& GetTreeData() const = 0;
+  virtual const AXTreeData& GetTreeData() const = 0;
 
   // Get the window the node is contained in.
   virtual gfx::NativeWindow GetTopLevelWidget() = 0;
@@ -73,7 +73,7 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // has focus.
   virtual gfx::NativeViewAccessible GetFocus() = 0;
 
-  virtual ui::AXPlatformNode* GetFromNodeID(int32_t id) = 0;
+  virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
 
   //
   // Events.
@@ -87,9 +87,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Actions.
   //
 
-  // Perform an accessibility action, switching on the ui::AXAction
+  // Perform an accessibility action, switching on the AXAction
   // provided in |data|.
-  virtual bool AccessibilityPerformAction(const ui::AXActionData& data) = 0;
+  virtual bool AccessibilityPerformAction(const AXActionData& data) = 0;
 
   //
   // Testing.

@@ -14,7 +14,7 @@ namespace ui {
 
 // static
 base::LazyInstance<base::ObserverList<AXModeObserver>>::Leaky
-    ui::AXPlatformNode::ax_mode_observers_ = LAZY_INSTANCE_INITIALIZER;
+    AXPlatformNode::ax_mode_observers_ = LAZY_INSTANCE_INITIALIZER;
 
 AXPlatformNode::AXPlatformNode() {}
 
@@ -35,7 +35,7 @@ void AXPlatformNode::RemoveAXModeObserver(AXModeObserver* observer) {
 }
 
 // static
-void AXPlatformNode::NotifyAddAXModeFlags(ui::AXMode mode_flags) {
+void AXPlatformNode::NotifyAddAXModeFlags(AXMode mode_flags) {
   for (auto& observer : ax_mode_observers_.Get())
     observer.OnAXModeAdded(mode_flags);
 }

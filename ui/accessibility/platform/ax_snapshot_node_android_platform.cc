@@ -23,7 +23,7 @@ namespace {
 
 bool HasFocusableChild(const AXNode* node) {
   for (auto* child : node->children()) {
-    if (child->data().HasState(ui::AX_STATE_FOCUSABLE) ||
+    if (child->data().HasState(AX_STATE_FOCUSABLE) ||
         HasFocusableChild(child)) {
       return true;
     }
@@ -42,11 +42,11 @@ bool HasOnlyTextChildren(const AXNode* node) {
 // TODO(muyuanli): share with BrowserAccessibility.
 bool IsSimpleTextControl(const AXNode* node, uint32_t state) {
   switch (node->data().role) {
-    case ui::AX_ROLE_COMBO_BOX:
-    case ui::AX_ROLE_SEARCH_BOX:
+    case AX_ROLE_COMBO_BOX:
+    case AX_ROLE_SEARCH_BOX:
       return true;
-    case ui::AX_ROLE_TEXT_FIELD:
-      return !node->data().HasState(ui::AX_STATE_RICHLY_EDITABLE);
+    case AX_ROLE_TEXT_FIELD:
+      return !node->data().HasState(AX_STATE_RICHLY_EDITABLE);
     default:
       return false;
   }
@@ -54,13 +54,13 @@ bool IsSimpleTextControl(const AXNode* node, uint32_t state) {
 
 bool IsRichTextEditable(const AXNode* node) {
   const AXNode* parent = node->parent();
-  return node->data().HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
-         (!parent || !parent->data().HasState(ui::AX_STATE_RICHLY_EDITABLE));
+  return node->data().HasState(AX_STATE_RICHLY_EDITABLE) &&
+         (!parent || !parent->data().HasState(AX_STATE_RICHLY_EDITABLE));
 }
 
 bool IsNativeTextControl(const AXNode* node) {
   const std::string& html_tag =
-      node->data().GetStringAttribute(ui::AX_ATTR_HTML_TAG);
+      node->data().GetStringAttribute(AX_ATTR_HTML_TAG);
   if (html_tag == "input") {
     std::string input_type;
     if (!node->data().GetHtmlAttribute("type", &input_type))
@@ -82,15 +82,15 @@ bool IsLeaf(const AXNode* node) {
   }
 
   switch (node->data().role) {
-    case ui::AX_ROLE_IMAGE:
-    case ui::AX_ROLE_METER:
-    case ui::AX_ROLE_SCROLL_BAR:
-    case ui::AX_ROLE_SLIDER:
-    case ui::AX_ROLE_SPLITTER:
-    case ui::AX_ROLE_PROGRESS_INDICATOR:
-    case ui::AX_ROLE_DATE:
-    case ui::AX_ROLE_DATE_TIME:
-    case ui::AX_ROLE_INPUT_TIME:
+    case AX_ROLE_IMAGE:
+    case AX_ROLE_METER:
+    case AX_ROLE_SCROLL_BAR:
+    case AX_ROLE_SLIDER:
+    case AX_ROLE_SPLITTER:
+    case AX_ROLE_PROGRESS_INDICATOR:
+    case AX_ROLE_DATE:
+    case AX_ROLE_DATE_TIME:
+    case AX_ROLE_INPUT_TIME:
       return true;
     default:
       return false;
@@ -99,7 +99,7 @@ bool IsLeaf(const AXNode* node) {
 
 base::string16 GetInnerText(const AXNode* node) {
   if (node->IsTextNode()) {
-    return node->data().GetString16Attribute(ui::AX_ATTR_NAME);
+    return node->data().GetString16Attribute(AX_ATTR_NAME);
   }
   base::string16 text;
   for (auto* child : node->children()) {
@@ -109,7 +109,7 @@ base::string16 GetInnerText(const AXNode* node) {
 }
 
 base::string16 GetValue(const AXNode* node, bool show_password) {
-  base::string16 value = node->data().GetString16Attribute(ui::AX_ATTR_VALUE);
+  base::string16 value = node->data().GetString16Attribute(AX_ATTR_VALUE);
 
   if (value.empty() &&
       (IsSimpleTextControl(node, node->data().state) ||
@@ -118,7 +118,7 @@ base::string16 GetValue(const AXNode* node, bool show_password) {
     value = GetInnerText(node);
   }
 
-  if (node->data().HasState(ui::AX_STATE_PROTECTED)) {
+  if (node->data().HasState(AX_STATE_PROTECTED)) {
     if (!show_password) {
       value = base::string16(value.size(), kSecurePasswordBullet);
     }
@@ -129,8 +129,8 @@ base::string16 GetValue(const AXNode* node, bool show_password) {
 
 bool HasOnlyTextAndImageChildren(const AXNode* node) {
   for (auto* child : node->children()) {
-    if (child->data().role != ui::AX_ROLE_STATIC_TEXT &&
-        child->data().role != ui::AX_ROLE_IMAGE) {
+    if (child->data().role != AX_ROLE_STATIC_TEXT &&
+        child->data().role != AX_ROLE_IMAGE) {
       return false;
     }
   }
@@ -138,24 +138,24 @@ bool HasOnlyTextAndImageChildren(const AXNode* node) {
 }
 
 bool IsFocusable(const AXNode* node) {
-  if (node->data().role == ui::AX_ROLE_IFRAME ||
-      node->data().role == ui::AX_ROLE_IFRAME_PRESENTATIONAL ||
-      (node->data().role == ui::AX_ROLE_ROOT_WEB_AREA && node->parent())) {
-    return node->data().HasStringAttribute(ui::AX_ATTR_NAME);
+  if (node->data().role == AX_ROLE_IFRAME ||
+      node->data().role == AX_ROLE_IFRAME_PRESENTATIONAL ||
+      (node->data().role == AX_ROLE_ROOT_WEB_AREA && node->parent())) {
+    return node->data().HasStringAttribute(AX_ATTR_NAME);
   }
-  return node->data().HasState(ui::AX_STATE_FOCUSABLE);
+  return node->data().HasState(AX_STATE_FOCUSABLE);
 }
 
 base::string16 GetText(const AXNode* node, bool show_password) {
-  if (node->data().role == ui::AX_ROLE_WEB_AREA ||
-      node->data().role == ui::AX_ROLE_IFRAME ||
-      node->data().role == ui::AX_ROLE_IFRAME_PRESENTATIONAL) {
+  if (node->data().role == AX_ROLE_WEB_AREA ||
+      node->data().role == AX_ROLE_IFRAME ||
+      node->data().role == AX_ROLE_IFRAME_PRESENTATIONAL) {
     return base::string16();
   }
 
-  if (node->data().role == ui::AX_ROLE_LIST_ITEM &&
-      node->data().GetIntAttribute(ui::AX_ATTR_NAME_FROM) ==
-          ui::AX_NAME_FROM_CONTENTS) {
+  if (node->data().role == AX_ROLE_LIST_ITEM &&
+      node->data().GetIntAttribute(AX_ATTR_NAME_FROM) ==
+          AX_NAME_FROM_CONTENTS) {
     if (node->child_count() > 0 && !HasOnlyTextChildren(node))
       return base::string16();
   }
@@ -163,22 +163,22 @@ base::string16 GetText(const AXNode* node, bool show_password) {
   base::string16 value = GetValue(node, show_password);
 
   if (!value.empty()) {
-    if (node->data().HasState(ui::AX_STATE_EDITABLE))
+    if (node->data().HasState(AX_STATE_EDITABLE))
       return value;
 
     switch (node->data().role) {
-      case ui::AX_ROLE_COMBO_BOX:
-      case ui::AX_ROLE_POP_UP_BUTTON:
-      case ui::AX_ROLE_TEXT_FIELD:
+      case AX_ROLE_COMBO_BOX:
+      case AX_ROLE_POP_UP_BUTTON:
+      case AX_ROLE_TEXT_FIELD:
         return value;
       default:
         break;
     }
   }
 
-  if (node->data().role == ui::AX_ROLE_COLOR_WELL) {
+  if (node->data().role == AX_ROLE_COLOR_WELL) {
     unsigned int color = static_cast<unsigned int>(
-        node->data().GetIntAttribute(ui::AX_ATTR_COLOR_VALUE));
+        node->data().GetIntAttribute(AX_ATTR_COLOR_VALUE));
     unsigned int red = color >> 16 & 0xFF;
     unsigned int green = color >> 8 & 0xFF;
     unsigned int blue = color >> 0 & 0xFF;
@@ -186,9 +186,9 @@ base::string16 GetText(const AXNode* node, bool show_password) {
         base::StringPrintf("#%02X%02X%02X", red, green, blue));
   }
 
-  base::string16 text = node->data().GetString16Attribute(ui::AX_ATTR_NAME);
+  base::string16 text = node->data().GetString16Attribute(AX_ATTR_NAME);
   base::string16 description =
-      node->data().GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
+      node->data().GetString16Attribute(AX_ATTR_DESCRIPTION);
   if (!description.empty()) {
     if (!text.empty())
       text += base::ASCIIToUTF16(" ");
@@ -198,7 +198,7 @@ base::string16 GetText(const AXNode* node, bool show_password) {
   if (text.empty())
     text = value;
 
-  if (node->data().role == ui::AX_ROLE_ROOT_WEB_AREA)
+  if (node->data().role == AX_ROLE_ROOT_WEB_AREA)
     return text;
 
   if (text.empty() &&
@@ -210,8 +210,8 @@ base::string16 GetText(const AXNode* node, bool show_password) {
   }
 
   if (text.empty() && (AXSnapshotNodeAndroid::AXRoleIsLink(node->data().role) ||
-                       node->data().role == ui::AX_ROLE_IMAGE)) {
-    base::string16 url = node->data().GetString16Attribute(ui::AX_ATTR_URL);
+                       node->data().role == AX_ROLE_IMAGE)) {
+    base::string16 url = node->data().GetString16Attribute(AX_ATTR_URL);
     text = AXSnapshotNodeAndroid::AXUrlBaseText(url);
   }
   return text;
@@ -270,7 +270,7 @@ AX_EXPORT AXSnapshotNodeAndroid::~AXSnapshotNodeAndroid() = default;
 AX_EXPORT std::unique_ptr<AXSnapshotNodeAndroid> AXSnapshotNodeAndroid::Create(
     const AXTreeUpdate& update,
     bool show_password) {
-  auto tree = base::MakeUnique<ui::AXSerializableTree>();
+  auto tree = base::MakeUnique<AXSerializableTree>();
   if (!tree->Unserialize(update)) {
     LOG(FATAL) << tree->error();
   }
@@ -285,7 +285,7 @@ AX_EXPORT std::unique_ptr<AXSnapshotNodeAndroid> AXSnapshotNodeAndroid::Create(
 
 // static
 AX_EXPORT bool AXSnapshotNodeAndroid::AXRoleIsLink(AXRole role) {
-  return role == ui::AX_ROLE_LINK;
+  return role == AX_ROLE_LINK;
 }
 
 // static
@@ -314,55 +314,55 @@ AX_EXPORT const char* AXSnapshotNodeAndroid::AXRoleToAndroidClassName(
     AXRole role,
     bool has_parent) {
   switch (role) {
-    case ui::AX_ROLE_SEARCH_BOX:
-    case ui::AX_ROLE_SPIN_BUTTON:
-    case ui::AX_ROLE_TEXT_FIELD:
-      return ui::kAXEditTextClassname;
-    case ui::AX_ROLE_SLIDER:
-      return ui::kAXSeekBarClassname;
-    case ui::AX_ROLE_COLOR_WELL:
-    case ui::AX_ROLE_COMBO_BOX:
-    case ui::AX_ROLE_DATE:
-    case ui::AX_ROLE_POP_UP_BUTTON:
-    case ui::AX_ROLE_INPUT_TIME:
-      return ui::kAXSpinnerClassname;
-    case ui::AX_ROLE_BUTTON:
-    case ui::AX_ROLE_MENU_BUTTON:
-      return ui::kAXButtonClassname;
-    case ui::AX_ROLE_CHECK_BOX:
-    case ui::AX_ROLE_SWITCH:
-      return ui::kAXCheckBoxClassname;
-    case ui::AX_ROLE_RADIO_BUTTON:
-      return ui::kAXRadioButtonClassname;
-    case ui::AX_ROLE_TOGGLE_BUTTON:
-      return ui::kAXToggleButtonClassname;
-    case ui::AX_ROLE_CANVAS:
-    case ui::AX_ROLE_IMAGE:
-    case ui::AX_ROLE_SVG_ROOT:
-      return ui::kAXImageClassname;
-    case ui::AX_ROLE_METER:
-    case ui::AX_ROLE_PROGRESS_INDICATOR:
-      return ui::kAXProgressBarClassname;
-    case ui::AX_ROLE_TAB_LIST:
-      return ui::kAXTabWidgetClassname;
-    case ui::AX_ROLE_GRID:
-    case ui::AX_ROLE_TREE_GRID:
-    case ui::AX_ROLE_TABLE:
-      return ui::kAXGridViewClassname;
-    case ui::AX_ROLE_LIST:
-    case ui::AX_ROLE_LIST_BOX:
-    case ui::AX_ROLE_DESCRIPTION_LIST:
-      return ui::kAXListViewClassname;
-    case ui::AX_ROLE_DIALOG:
-      return ui::kAXDialogClassname;
-    case ui::AX_ROLE_ROOT_WEB_AREA:
-      return has_parent ? ui::kAXViewClassname : ui::kAXWebViewClassname;
-    case ui::AX_ROLE_MENU_ITEM:
-    case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
-    case ui::AX_ROLE_MENU_ITEM_RADIO:
-      return ui::kAXMenuItemClassname;
+    case AX_ROLE_SEARCH_BOX:
+    case AX_ROLE_SPIN_BUTTON:
+    case AX_ROLE_TEXT_FIELD:
+      return kAXEditTextClassname;
+    case AX_ROLE_SLIDER:
+      return kAXSeekBarClassname;
+    case AX_ROLE_COLOR_WELL:
+    case AX_ROLE_COMBO_BOX:
+    case AX_ROLE_DATE:
+    case AX_ROLE_POP_UP_BUTTON:
+    case AX_ROLE_INPUT_TIME:
+      return kAXSpinnerClassname;
+    case AX_ROLE_BUTTON:
+    case AX_ROLE_MENU_BUTTON:
+      return kAXButtonClassname;
+    case AX_ROLE_CHECK_BOX:
+    case AX_ROLE_SWITCH:
+      return kAXCheckBoxClassname;
+    case AX_ROLE_RADIO_BUTTON:
+      return kAXRadioButtonClassname;
+    case AX_ROLE_TOGGLE_BUTTON:
+      return kAXToggleButtonClassname;
+    case AX_ROLE_CANVAS:
+    case AX_ROLE_IMAGE:
+    case AX_ROLE_SVG_ROOT:
+      return kAXImageClassname;
+    case AX_ROLE_METER:
+    case AX_ROLE_PROGRESS_INDICATOR:
+      return kAXProgressBarClassname;
+    case AX_ROLE_TAB_LIST:
+      return kAXTabWidgetClassname;
+    case AX_ROLE_GRID:
+    case AX_ROLE_TREE_GRID:
+    case AX_ROLE_TABLE:
+      return kAXGridViewClassname;
+    case AX_ROLE_LIST:
+    case AX_ROLE_LIST_BOX:
+    case AX_ROLE_DESCRIPTION_LIST:
+      return kAXListViewClassname;
+    case AX_ROLE_DIALOG:
+      return kAXDialogClassname;
+    case AX_ROLE_ROOT_WEB_AREA:
+      return has_parent ? kAXViewClassname : kAXWebViewClassname;
+    case AX_ROLE_MENU_ITEM:
+    case AX_ROLE_MENU_ITEM_CHECK_BOX:
+    case AX_ROLE_MENU_ITEM_RADIO:
+      return kAXMenuItemClassname;
     default:
-      return ui::kAXViewClassname;
+      return kAXViewClassname;
   }
 }
 
@@ -371,7 +371,7 @@ std::unique_ptr<AXSnapshotNodeAndroid>
 AXSnapshotNodeAndroid::WalkAXTreeDepthFirst(
     const AXNode* node,
     gfx::Rect rect,
-    const ui::AXTreeUpdate& update,
+    const AXTreeUpdate& update,
     const AXTree* tree,
     AXSnapshotNodeAndroid::WalkAXTreeConfig& config) {
   auto result =
@@ -389,21 +389,20 @@ AXSnapshotNodeAndroid::WalkAXTreeDepthFirst(
   result->line_through = 0;
   result->underline = 0;
 
-  if (node->data().HasFloatAttribute(ui::AX_ATTR_FONT_SIZE)) {
+  if (node->data().HasFloatAttribute(AX_ATTR_FONT_SIZE)) {
     gfx::RectF text_size_rect(
-        0, 0, 1, node->data().GetFloatAttribute(ui::AX_ATTR_FONT_SIZE));
+        0, 0, 1, node->data().GetFloatAttribute(AX_ATTR_FONT_SIZE));
     gfx::Rect scaled_text_size_rect =
         gfx::ToEnclosingRect(tree->RelativeToTreeBounds(node, text_size_rect));
     result->text_size = scaled_text_size_rect.height();
 
-    const int text_style = node->data().GetIntAttribute(ui::AX_ATTR_TEXT_STYLE);
-    result->color = node->data().GetIntAttribute(ui::AX_ATTR_COLOR);
-    result->bgcolor =
-        node->data().GetIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR);
-    result->bold = (text_style & ui::AX_TEXT_STYLE_BOLD) != 0;
-    result->italic = (text_style & ui::AX_TEXT_STYLE_ITALIC) != 0;
-    result->line_through = (text_style & ui::AX_TEXT_STYLE_LINE_THROUGH) != 0;
-    result->underline = (text_style & ui::AX_TEXT_STYLE_UNDERLINE) != 0;
+    const int text_style = node->data().GetIntAttribute(AX_ATTR_TEXT_STYLE);
+    result->color = node->data().GetIntAttribute(AX_ATTR_COLOR);
+    result->bgcolor = node->data().GetIntAttribute(AX_ATTR_BACKGROUND_COLOR);
+    result->bold = (text_style & AX_TEXT_STYLE_BOLD) != 0;
+    result->italic = (text_style & AX_TEXT_STYLE_ITALIC) != 0;
+    result->line_through = (text_style & AX_TEXT_STYLE_LINE_THROUGH) != 0;
+    result->underline = (text_style & AX_TEXT_STYLE_UNDERLINE) != 0;
   }
 
   const gfx::Rect& absolute_rect =

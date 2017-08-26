@@ -170,7 +170,7 @@ class AXPlatformNodeWinTest : public testing::Test {
 
     AXNodeData table;
     table.id = 0;
-    table.role = ui::AX_ROLE_TABLE;
+    table.role = AX_ROLE_TABLE;
 
     table.AddIntAttribute(AX_ATTR_TABLE_ROW_COUNT, 3);
     table.AddIntAttribute(AX_ATTR_TABLE_COLUMN_COUNT, 3);
@@ -190,23 +190,23 @@ class AXPlatformNodeWinTest : public testing::Test {
     // Table column header
     AXNodeData table_row_header;
     table_row_header.id = 50;
-    table_row_header.role = ui::AX_ROLE_ROW;
+    table_row_header.role = AX_ROLE_ROW;
     table_row_header.child_ids.push_back(51);
     table_row_header.child_ids.push_back(52);
     table_row_header.child_ids.push_back(53);
 
     AXNodeData table_column_header_1;
     table_column_header_1.id = 51;
-    table_column_header_1.role = ui::AX_ROLE_COLUMN_HEADER;
+    table_column_header_1.role = AX_ROLE_COLUMN_HEADER;
 
     AXNodeData table_column_header_2;
     table_column_header_2.id = 52;
-    table_column_header_2.role = ui::AX_ROLE_COLUMN_HEADER;
+    table_column_header_2.role = AX_ROLE_COLUMN_HEADER;
     table_column_header_2.AddStringAttribute(AX_ATTR_NAME, "column header 1");
 
     AXNodeData table_column_header_3;
     table_column_header_3.id = 53;
-    table_column_header_3.role = ui::AX_ROLE_COLUMN_HEADER;
+    table_column_header_3.role = AX_ROLE_COLUMN_HEADER;
     // Either AX_ATTR_NAME -or- AX_ATTR_DESCRIPTION is acceptable for a
     // description
     table_column_header_3.AddStringAttribute(AX_ATTR_DESCRIPTION,
@@ -215,49 +215,49 @@ class AXPlatformNodeWinTest : public testing::Test {
     // Row 1
     AXNodeData table_row_1;
     table_row_1.id = 1;
-    table_row_1.role = ui::AX_ROLE_ROW;
+    table_row_1.role = AX_ROLE_ROW;
     table_row_1.child_ids.push_back(2);
     table_row_1.child_ids.push_back(3);
     table_row_1.child_ids.push_back(4);
 
     AXNodeData table_row_header_1;
     table_row_header_1.id = 2;
-    table_row_header_1.role = ui::AX_ROLE_ROW_HEADER;
+    table_row_header_1.role = AX_ROLE_ROW_HEADER;
     table_row_header_1.AddStringAttribute(AX_ATTR_NAME, "row header 1");
 
     AXNodeData table_cell_1;
     table_cell_1.id = 3;
-    table_cell_1.role = ui::AX_ROLE_CELL;
+    table_cell_1.role = AX_ROLE_CELL;
     table_cell_1.AddStringAttribute(AX_ATTR_NAME, "1");
 
     AXNodeData table_cell_2;
     table_cell_2.id = 4;
-    table_cell_2.role = ui::AX_ROLE_CELL;
+    table_cell_2.role = AX_ROLE_CELL;
     table_cell_2.AddStringAttribute(AX_ATTR_NAME, "2");
 
     // Row 2
     AXNodeData table_row_2;
     table_row_2.id = 10;
-    table_row_2.role = ui::AX_ROLE_ROW;
+    table_row_2.role = AX_ROLE_ROW;
     table_row_2.child_ids.push_back(11);
     table_row_2.child_ids.push_back(12);
     table_row_2.child_ids.push_back(13);
 
     AXNodeData table_row_header_2;
     table_row_header_2.id = 11;
-    table_row_header_2.role = ui::AX_ROLE_ROW_HEADER;
+    table_row_header_2.role = AX_ROLE_ROW_HEADER;
     // Either AX_ATTR_NAME -or- AX_ATTR_DESCRIPTION is acceptable for a
     // description
     table_row_header_2.AddStringAttribute(AX_ATTR_DESCRIPTION, "row header 2");
 
     AXNodeData table_cell_3;
     table_cell_3.id = 12;
-    table_cell_3.role = ui::AX_ROLE_CELL;
+    table_cell_3.role = AX_ROLE_CELL;
     table_cell_3.AddStringAttribute(AX_ATTR_NAME, "3");
 
     AXNodeData table_cell_4;
     table_cell_4.id = 13;
-    table_cell_4.role = ui::AX_ROLE_CELL;
+    table_cell_4.role = AX_ROLE_CELL;
     table_cell_4.AddStringAttribute(AX_ATTR_NAME, "4");
 
     AXTreeUpdate update;
@@ -486,7 +486,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionOneSelected) {
   AXNodeData list_item_2;
   list_item_2.id = 2;
   list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_2.state = 1 << ui::AX_STATE_SELECTED;
+  list_item_2.state = 1 << AX_STATE_SELECTED;
   list_item_2.AddStringAttribute(AX_ATTR_NAME, "Name2");
 
   AXNodeData list_item_3;
@@ -519,13 +519,13 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleSelectionMultipleSelected) {
   AXNodeData list_item_2;
   list_item_2.id = 2;
   list_item_2.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_2.state = 1 << ui::AX_STATE_SELECTED;
+  list_item_2.state = 1 << AX_STATE_SELECTED;
   list_item_2.AddStringAttribute(AX_ATTR_NAME, "Name2");
 
   AXNodeData list_item_3;
   list_item_3.id = 3;
   list_item_3.role = AX_ROLE_LIST_BOX_OPTION;
-  list_item_3.state = 1 << ui::AX_STATE_SELECTED;
+  list_item_3.state = 1 << AX_STATE_SELECTED;
   list_item_3.AddStringAttribute(AX_ATTR_NAME, "Name3");
 
   AXNodeData list_item_4;
@@ -890,8 +890,8 @@ TEST_F(AXPlatformNodeWinTest, TestAccNavigate) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessible2SetSelection) {
   AXNodeData text_field_node;
   text_field_node.id = 1;
-  text_field_node.role = ui::AX_ROLE_TEXT_FIELD;
-  text_field_node.state = 1 << ui::AX_STATE_EDITABLE;
+  text_field_node.role = AX_ROLE_TEXT_FIELD;
+  text_field_node.state = 1 << AX_STATE_EDITABLE;
   text_field_node.SetValue("Hi");
 
   Init(text_field_node);
@@ -1307,22 +1307,22 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetNRelations) {
   // This is is a duplicated of
   // BrowserAccessibilityTest::TestIAccessible2Relations but without the
   // specific COM/BrowserAccessibility knowledge.
-  ui::AXNodeData root;
+  AXNodeData root;
   root.id = 1;
-  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.role = AX_ROLE_ROOT_WEB_AREA;
 
   std::vector<int32_t> describedby_ids = {1, 2, 3};
-  root.AddIntListAttribute(ui::AX_ATTR_DESCRIBEDBY_IDS, describedby_ids);
+  root.AddIntListAttribute(AX_ATTR_DESCRIBEDBY_IDS, describedby_ids);
 
-  ui::AXNodeData child1;
+  AXNodeData child1;
   child1.id = 2;
-  child1.role = ui::AX_ROLE_STATIC_TEXT;
+  child1.role = AX_ROLE_STATIC_TEXT;
 
   root.child_ids.push_back(2);
 
-  ui::AXNodeData child2;
+  AXNodeData child2;
   child2.id = 3;
-  child2.role = ui::AX_ROLE_STATIC_TEXT;
+  child2.role = AX_ROLE_STATIC_TEXT;
 
   root.child_ids.push_back(3);
 
@@ -1438,7 +1438,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedChildrenOne) {
   AXTreeUpdate update = Build3X3Table();
 
   // 7 == table_cell_1
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
   Init(update);
 
   ScopedComPtr<IAccessibleTableCell> cell = GetCellInTable();
@@ -1463,10 +1463,10 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedChildrenMany) {
   // 8 == table_cell_2
   // 11 == table_cell_3
   // 12 == table_cell_4
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1509,9 +1509,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedColumnsOne) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[3].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1536,16 +1536,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedColumnsMany) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[3].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
 
   // 4 == table_column_header_3
   // 8 == table_cell_2
   // 12 == table_cell_4
-  update.nodes[4].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[4].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1588,9 +1588,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedRowsOne) {
   // 6 == table_row_header_1
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[6].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1615,16 +1615,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetNSelectedRowsMany) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[6].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
 
   // 10 == table_row_header_3
   // 11 == table_cell_1
   // 12 == table_cell_2
-  update.nodes[10].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[10].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1648,8 +1648,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedChildren) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1677,8 +1677,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedChildrenZeroMax) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1702,8 +1702,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsZero) {
 
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1731,9 +1731,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsOne) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[3].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1762,16 +1762,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedColumnsMany) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[3].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
 
   // 4 == table_column_header_3
   // 8 == table_cell_2
   // 12 == table_cell_4
-  update.nodes[4].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[4].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1821,9 +1821,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedRowsOne) {
   // 6 == table_row_header_1
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[6].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1851,16 +1851,16 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableGetSelectedRowsMany) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[6].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
 
   // 10 == table_row_header_3
   // 11 == table_cell_1
   // 12 == table_cell_2
-  update.nodes[10].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[10].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1889,9 +1889,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsColumnSelected) {
   // 3 == table_column_header_2
   // 7 == table_cell_1
   // 11 == table_cell_3
-  update.nodes[3].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[11].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[3].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[11].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1925,9 +1925,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsRowSelected) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[6].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -1961,9 +1961,9 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTableIsSelected) {
   // 6 == table_row_header_3
   // 7 == table_cell_1
   // 8 == table_cell_2
-  update.nodes[6].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[8].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[6].state = 1 << AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[8].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 
@@ -2026,8 +2026,8 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTable2GetSelectedChildren) {
 
   // 7 == table_cell_1
   // 12 == table_cell_4
-  update.nodes[7].state = 1 << ui::AX_STATE_SELECTED;
-  update.nodes[12].state = 1 << ui::AX_STATE_SELECTED;
+  update.nodes[7].state = 1 << AX_STATE_SELECTED;
+  update.nodes[12].state = 1 << AX_STATE_SELECTED;
 
   Init(update);
 

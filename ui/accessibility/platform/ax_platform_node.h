@@ -35,12 +35,12 @@ class AX_EXPORT AXPlatformNode {
 
   // Register and unregister to receive notifications about AXMode changes
   // for this node.
-  static void AddAXModeObserver(ui::AXModeObserver* observer);
-  static void RemoveAXModeObserver(ui::AXModeObserver* observer);
+  static void AddAXModeObserver(AXModeObserver* observer);
+  static void RemoveAXModeObserver(AXModeObserver* observer);
 
   // Helper static function to notify all global observers about
   // the addition of an AXMode flag.
-  static void NotifyAddAXModeFlags(ui::AXMode mode_flags);
+  static void NotifyAddAXModeFlags(AXMode mode_flags);
 
   // Call Destroy rather than deleting this, because the subclass may
   // use reference counting.
@@ -53,7 +53,7 @@ class AX_EXPORT AXPlatformNode {
 
   // Fire a platform-specific notification that an event has occurred on
   // this object.
-  virtual void NotifyAccessibilityEvent(ui::AXEvent event_type) = 0;
+  virtual void NotifyAccessibilityEvent(AXEvent event_type) = 0;
 
   // Return this object's delegate.
   virtual AXPlatformNodeDelegate* GetDelegate() const = 0;

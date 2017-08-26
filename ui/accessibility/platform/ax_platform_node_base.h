@@ -40,33 +40,31 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   AXPlatformNodeBase* GetNextSibling();
   bool IsDescendant(AXPlatformNodeBase* descendant);
 
-  bool HasBoolAttribute(ui::AXBoolAttribute attr) const;
-  bool GetBoolAttribute(ui::AXBoolAttribute attr) const;
-  bool GetBoolAttribute(ui::AXBoolAttribute attr, bool* value) const;
+  bool HasBoolAttribute(AXBoolAttribute attr) const;
+  bool GetBoolAttribute(AXBoolAttribute attr) const;
+  bool GetBoolAttribute(AXBoolAttribute attr, bool* value) const;
 
-  bool HasFloatAttribute(ui::AXFloatAttribute attr) const;
-  float GetFloatAttribute(ui::AXFloatAttribute attr) const;
-  bool GetFloatAttribute(ui::AXFloatAttribute attr, float* value) const;
+  bool HasFloatAttribute(AXFloatAttribute attr) const;
+  float GetFloatAttribute(AXFloatAttribute attr) const;
+  bool GetFloatAttribute(AXFloatAttribute attr, float* value) const;
 
-  bool HasIntAttribute(ui::AXIntAttribute attribute) const;
-  int GetIntAttribute(ui::AXIntAttribute attribute) const;
-  bool GetIntAttribute(ui::AXIntAttribute attribute, int* value) const;
+  bool HasIntAttribute(AXIntAttribute attribute) const;
+  int GetIntAttribute(AXIntAttribute attribute) const;
+  bool GetIntAttribute(AXIntAttribute attribute, int* value) const;
 
-  bool HasStringAttribute(
-      ui::AXStringAttribute attribute) const;
-  const std::string& GetStringAttribute(ui::AXStringAttribute attribute) const;
-  bool GetStringAttribute(ui::AXStringAttribute attribute,
+  bool HasStringAttribute(AXStringAttribute attribute) const;
+  const std::string& GetStringAttribute(AXStringAttribute attribute) const;
+  bool GetStringAttribute(AXStringAttribute attribute,
                           std::string* value) const;
-  bool GetString16Attribute(ui::AXStringAttribute attribute,
+  bool GetString16Attribute(AXStringAttribute attribute,
                             base::string16* value) const;
-  base::string16 GetString16Attribute(
-      ui::AXStringAttribute attribute) const;
+  base::string16 GetString16Attribute(AXStringAttribute attribute) const;
 
-  bool HasIntListAttribute(ui::AXIntListAttribute attribute) const;
+  bool HasIntListAttribute(AXIntListAttribute attribute) const;
   const std::vector<int32_t>& GetIntListAttribute(
-      ui::AXIntListAttribute attribute) const;
+      AXIntListAttribute attribute) const;
 
-  bool GetIntListAttribute(ui::AXIntListAttribute attribute,
+  bool GetIntListAttribute(AXIntListAttribute attribute,
                            std::vector<int32_t>* value) const;
 
   // Returns the table or ARIA grid if inside one.

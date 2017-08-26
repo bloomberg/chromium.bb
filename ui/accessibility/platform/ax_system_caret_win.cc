@@ -55,8 +55,8 @@ const AXNodeData& AXSystemCaretWin::GetData() const {
   return data_;
 }
 
-const ui::AXTreeData& AXSystemCaretWin::GetTreeData() const {
-  CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
+const AXTreeData& AXSystemCaretWin::GetTreeData() const {
+  CR_DEFINE_STATIC_LOCAL(AXTreeData, empty_data, ());
   return empty_data;
 }
 
@@ -103,8 +103,7 @@ AXSystemCaretWin::GetTargetForNativeAccessibilityEvent() {
   return event_target_;
 }
 
-bool AXSystemCaretWin::AccessibilityPerformAction(
-    const ui::AXActionData& data) {
+bool AXSystemCaretWin::AccessibilityPerformAction(const AXActionData& data) {
   return false;
 }
 
