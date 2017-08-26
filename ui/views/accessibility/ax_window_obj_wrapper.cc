@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/widget/widget.h"
@@ -19,15 +20,17 @@ AXWindowObjWrapper::AXWindowObjWrapper(aura::Window* window)
     : window_(window),
       is_alert_(false),
       is_root_window_(window->IsRootWindow()) {
-  // Root windows get observed by AXAuraObjCache, so skip observing them here.
-  if (!is_root_window_)
-    window->AddObserver(this);
+  window->AddObserver(this);
+
+  if (is_root_window_)
+    AXAuraObjCache::GetInstance()->OnRootWindowObjCreated(window);
 }
 
 AXWindowObjWrapper::~AXWindowObjWrapper() {
-  // Root windows get observed by AXAuraObjCache, so skip them here.
-  if (!is_root_window_)
-    window_->RemoveObserver(this);
+  if (is_root_window_)
+    AXAuraObjCache::GetInstance()->OnRootWindowObjDestroyed(window_);
+
+  window_->RemoveObserver(this);
   window_ = NULL;
 }
 
