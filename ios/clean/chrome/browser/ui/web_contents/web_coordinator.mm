@@ -12,6 +12,7 @@
 #import "ios/clean/chrome/browser/ui/commands/context_menu_commands.h"
 #import "ios/clean/chrome/browser/ui/context_menu/context_menu_context_impl.h"
 #import "ios/clean/chrome/browser/ui/context_menu/web_context_menu_coordinator.h"
+#import "ios/clean/chrome/browser/ui/dialogs/java_script_dialogs/java_script_dialog_overlay_presenter.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service.h"
 #import "ios/clean/chrome/browser/ui/overlays/overlay_service_factory.h"
 #import "ios/clean/chrome/browser/ui/web_contents/web_contents_mediator.h"
@@ -114,6 +115,17 @@
 }
 
 #pragma mark - CRWWebStateDelegate
+
+- (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
+    (web::WebState*)webState {
+  DCHECK_EQ(self.webState, webState);
+  OverlayService* overlayService =
+      OverlayServiceFactory::GetInstance()->GetForBrowserState(
+          self.browser->browser_state());
+  JavaScriptDialogOverlayPresenter::CreateForWebState(self.webState,
+                                                      overlayService);
+  return JavaScriptDialogOverlayPresenter::FromWebState(self.webState);
+}
 
 - (void)webState:(web::WebState*)webState
     handleContextMenu:(const web::ContextMenuParams&)params {
