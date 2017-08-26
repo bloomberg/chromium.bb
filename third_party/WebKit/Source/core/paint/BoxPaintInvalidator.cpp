@@ -197,47 +197,41 @@ bool BoxPaintInvalidator::ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
   return false;
 }
 
-void BoxPaintInvalidator::InvalidateScrollingContentsBackgroundIfNeeded() {
-  bool paints_onto_scrolling_contents_layer =
-      BackgroundPaintsOntoScrollingContentsLayer();
-  if (!paints_onto_scrolling_contents_layer &&
-      !BackgroundGeometryDependsOnLayoutOverflowRect())
-    return;
+BoxPaintInvalidator::BackgroundInvalidationType
+BoxPaintInvalidator::ComputeBackgroundInvalidation() {
+  if (box_.BackgroundChangedSinceLastPaintInvalidation())
+    return BackgroundInvalidationType::kFull;
+
+  if (!BackgroundGeometryDependsOnLayoutOverflowRect())
+    return BackgroundInvalidationType::kNone;
 
   const LayoutRect& old_layout_overflow = box_.PreviousLayoutOverflowRect();
   LayoutRect new_layout_overflow = box_.LayoutOverflowRect();
 
-  bool should_fully_invalidate_on_scrolling_contents_layer = false;
-  if (box_.BackgroundChangedSinceLastPaintInvalidation()) {
-    if (!paints_onto_scrolling_contents_layer) {
-      // The box should have been set needing full invalidation on style change.
-      DCHECK(box_.ShouldDoFullPaintInvalidation());
-      return;
-    }
-    should_fully_invalidate_on_scrolling_contents_layer = true;
-  } else {
-    // Check change of layout overflow for full or incremental invalidation.
-    if (new_layout_overflow == old_layout_overflow)
-      return;
-    bool should_fully_invalidate =
-        ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
-            old_layout_overflow, new_layout_overflow);
-    if (!paints_onto_scrolling_contents_layer) {
-      if (should_fully_invalidate) {
-        box_.GetMutableForPainting()
-            .SetShouldDoFullPaintInvalidationWithoutGeometryChange(
-                PaintInvalidationReason::kBackground);
-      }
-      return;
-    }
-    should_fully_invalidate_on_scrolling_contents_layer =
-        should_fully_invalidate;
+  if (new_layout_overflow == old_layout_overflow)
+    return BackgroundInvalidationType::kNone;
+
+  // Layout overflow changed; decide full vs. incremental invalidation.
+  if (ShouldFullyInvalidateBackgroundOnLayoutOverflowChange(
+          old_layout_overflow, new_layout_overflow)) {
+    return BackgroundInvalidationType::kFull;
   }
+  return BackgroundInvalidationType::kIncremental;
+}
+
+void BoxPaintInvalidator::InvalidateScrollingContentsBackground(
+    BackgroundInvalidationType backgroundInvalidationType) {
+  if (!BackgroundPaintsOntoScrollingContentsLayer())
+    return;
+  if (backgroundInvalidationType == BackgroundInvalidationType::kNone)
+    return;
 
   // TODO(crbug.com/732611): Implement raster invalidation of background on
   // scrolling contents layer for SPv2.
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    if (should_fully_invalidate_on_scrolling_contents_layer) {
+    const LayoutRect& old_layout_overflow = box_.PreviousLayoutOverflowRect();
+    LayoutRect new_layout_overflow = box_.LayoutOverflowRect();
+    if (backgroundInvalidationType == BackgroundInvalidationType::kFull) {
       ObjectPaintInvalidatorWithContext(box_, context_)
           .FullyInvalidatePaint(
               PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
@@ -258,7 +252,15 @@ void BoxPaintInvalidator::InvalidateScrollingContentsBackgroundIfNeeded() {
 }
 
 PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
-  InvalidateScrollingContentsBackgroundIfNeeded();
+  BackgroundInvalidationType backgroundInvalidationType =
+      ComputeBackgroundInvalidation();
+  if (backgroundInvalidationType == BackgroundInvalidationType::kFull &&
+      !BackgroundPaintsOntoScrollingContentsLayer()) {
+    box_.GetMutableForPainting()
+        .SetShouldDoFullPaintInvalidationWithoutGeometryChange(
+            PaintInvalidationReason::kBackground);
+  }
+  InvalidateScrollingContentsBackground(backgroundInvalidationType);
 
   PaintInvalidationReason reason = ComputePaintInvalidationReason();
   if (reason == PaintInvalidationReason::kIncremental) {
