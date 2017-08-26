@@ -127,6 +127,7 @@ class AudioOutputDeviceTest
   void CreateStream();
   void ExpectRenderCallback();
   void WaitUntilRenderCallback();
+  void WaitForAudioThreadCallbackProcessCompletion();
   void StopAudioDevice();
   void CreateDevice(const std::string& device_id);
   void SetDevice(const std::string& device_id);
@@ -284,6 +285,14 @@ void AudioOutputDeviceTest::WaitUntilRenderCallback() {
   base::RunLoop().Run();
 }
 
+void AudioOutputDeviceTest::WaitForAudioThreadCallbackProcessCompletion() {
+  uint32_t buffer_index;
+  size_t bytes_read = browser_socket_.ReceiveWithTimeout(
+      &buffer_index, sizeof(buffer_index),
+      base::TimeDelta::FromMilliseconds(900));
+  EXPECT_EQ(bytes_read, sizeof(buffer_index));
+}
+
 void AudioOutputDeviceTest::StopAudioDevice() {
   if (device_status_ == OUTPUT_DEVICE_STATUS_OK)
     EXPECT_CALL(*audio_output_ipc_, CloseStream());
@@ -417,6 +426,7 @@ TEST_P(AudioOutputDeviceTest, BitstreamFormatTest) {
   ExpectRenderCallback();
   CreateStream();
   WaitUntilRenderCallback();
+  WaitForAudioThreadCallbackProcessCompletion();
   VerifyBitstreamFields();
   StopAudioDevice();
 }
