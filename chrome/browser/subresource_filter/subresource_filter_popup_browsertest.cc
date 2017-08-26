@@ -86,6 +86,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
   tester.ExpectBucketCount(kSubresourceFilterActionsHistogram,
                            kActionPopupBlocked, 0);
+
+  // Navigate again to trigger histogram logging. Make sure the navigation
+  // happens in the original WebContents.
+  browser()->tab_strip_model()->ToggleSelectionAt(
+      browser()->tab_strip_model()->GetIndexOfWebContents(web_contents));
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/title1.html"));
+  tester.ExpectUniqueSample("SubresourceFilter.PageLoad.BlockedPopups", 0, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
@@ -113,8 +121,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 
+  // Block again.
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
+                                                   &opened_window));
+  EXPECT_FALSE(opened_window);
+
   // Navigate to |b_url|, which should successfully open the popup.
   ui_test_utils::NavigateToURL(browser(), b_url);
+  tester.ExpectUniqueSample("SubresourceFilter.PageLoad.BlockedPopups", 2, 1);
   opened_window = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
                                                    &opened_window));

@@ -78679,6 +78679,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.PageLoad.BlockedPopups" units="popups">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records the number of popups blocked per page load due to subresource filter
+    logic. Recorded when a new main frame navigation commits. Note that this
+    histogram is recorded for all pages which are activated by the subresource
+    filter, including ones which do not trigger the stronger popup blocker.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.PageLoad.FinalURLMatch"
     enum="BooleanMatched">
   <obsolete>
