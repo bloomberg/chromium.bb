@@ -337,6 +337,8 @@ void WindowPortMus::SetFallbackSurfaceInfo(
 
   fallback_surface_info_ = surface_info;
   UpdateClientSurfaceEmbedder();
+  if (window_->delegate())
+    window_->delegate()->OnFirstSurfaceActivation(fallback_surface_info_);
 }
 
 void WindowPortMus::DestroyFromServer() {
@@ -591,8 +593,6 @@ void WindowPortMus::UpdatePrimarySurfaceInfo() {
       viz::SurfaceId(frame_sink_id_, local_surface_id_),
       ScaleFactorForDisplay(window_), last_surface_size_in_pixels_);
   UpdateClientSurfaceEmbedder();
-  if (window_->delegate())
-    window_->delegate()->OnWindowSurfaceChanged(primary_surface_info_);
 }
 
 void WindowPortMus::UpdateClientSurfaceEmbedder() {

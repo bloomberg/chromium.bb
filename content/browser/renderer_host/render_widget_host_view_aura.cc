@@ -1596,11 +1596,11 @@ bool RenderWidgetHostViewAura::HasHitTestMask() const {
 void RenderWidgetHostViewAura::GetHitTestMask(gfx::Path* mask) const {
 }
 
-void RenderWidgetHostViewAura::OnWindowSurfaceChanged(
+void RenderWidgetHostViewAura::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (!is_guest_view_hack_)
     return;
-  host_->GetView()->OnSurfaceChanged(surface_info);
+  host_->GetView()->OnFirstSurfaceActivation(surface_info);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

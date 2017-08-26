@@ -212,11 +212,35 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         WindowTreeClientWmTestSurfaceSync,
                         ::testing::Bool());
 
+namespace {
+
+class FirstSurfaceActivationWindowDelegate : public test::TestWindowDelegate {
+ public:
+  FirstSurfaceActivationWindowDelegate() = default;
+  ~FirstSurfaceActivationWindowDelegate() override = default;
+
+  const viz::SurfaceInfo& last_surface_info() const {
+    return last_surface_info_;
+  }
+
+  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
+    last_surface_info_ = surface_info;
+  }
+
+ private:
+  viz::SurfaceInfo last_surface_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(FirstSurfaceActivationWindowDelegate);
+};
+
+}  // namespace
+
 // Verifies that a ClientSurfaceEmbedder is created for a window once it has
 // a bounds, and a valid FrameSinkId.
 TEST_P(WindowTreeClientWmTestSurfaceSync,
        ClientSurfaceEmbedderOnValidEmbedding) {
-  Window window(nullptr);
+  FirstSurfaceActivationWindowDelegate delegate;
+  Window window(&delegate);
   // TOP_LEVEL_IN_WM and EMBED_IN_OWNER windows allocate viz::LocalSurfaceIds
   // when their sizes change.
   window.SetProperty(aura::client::kEmbedType,
@@ -246,6 +270,7 @@ TEST_P(WindowTreeClientWmTestSurfaceSync,
   ClientSurfaceEmbedder* client_surface_embedder =
       window_port_mus->client_surface_embedder();
   ASSERT_NE(nullptr, client_surface_embedder);
+  EXPECT_FALSE(delegate.last_surface_info().is_valid());
 
   // Until the fallback surface fills the window, we will have gutter.
   {
@@ -262,6 +287,9 @@ TEST_P(WindowTreeClientWmTestSurfaceSync,
   // client lib. This should cause the gutter to go away, eliminating overdraw.
   window_tree_client()->OnWindowSurfaceChanged(
       server_id(&window), window_port_mus->PrimarySurfaceInfoForTesting());
+  EXPECT_TRUE(delegate.last_surface_info().is_valid());
+  EXPECT_EQ(delegate.last_surface_info(),
+            window_port_mus->PrimarySurfaceInfoForTesting());
 
   // The gutter is gone.
   ASSERT_EQ(nullptr, client_surface_embedder->BottomGutterForTesting());
