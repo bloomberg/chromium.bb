@@ -15,27 +15,12 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// The key for NSUserDefaults to store the Mail client selected to handle
-// mailto: URL scheme. If this key is not set, user has not made an explicit
-// choice for default mailto: handler and system-provided Mail client app will
-// be used.
-NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
-}  // namespace
-
 @interface LegacyMailtoURLRewriter ()
 
 // Dictionary keyed by the App Store ID of the Mail client and the value is
 // the MailtoHandler object that can rewrite a mailto: URL.
 @property(nonatomic, strong)
     NSMutableDictionary<NSString*, MailtoHandler*>* handlers;
-
-// Private method for testing to clear the default state.
-+ (void)resetDefaultHandlerIDForTesting;
-
-// Private method to add one or more |handlerApp| objects to the list of known
-// Mail client apps.
-- (void)addMailtoApps:(NSArray<MailtoHandler*>*)handlerApps;
 
 // Custom logic to handle the migration from Google Native App Launcher options
 // to this simplified mailto: URL only system. This must be called after
@@ -54,20 +39,26 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
 @implementation LegacyMailtoURLRewriter
 @synthesize handlers = _handlers;
 
++ (NSString*)userDefaultsKey {
+  // The key for NSUserDefaults to store the Mail client selected to handle
+  // mailto: URL scheme. If this key is not set, user has not made an explicit
+  // choice for default mailto: handler and system-provided Mail client app will
+  // be used.
+  return @"MailtoHandlerDefault";
+}
+
++ (instancetype)mailtoURLRewriterWithStandardHandlers {
+  id result = [[LegacyMailtoURLRewriter alloc] init];
+  [result setDefaultHandlers:@[
+    [[MailtoHandlerSystemMail alloc] init], [[MailtoHandlerGmail alloc] init]
+  ]];
+  return result;
+}
+
 - (instancetype)init {
   self = [super init];
   if (self) {
     _handlers = [NSMutableDictionary dictionary];
-  }
-  return self;
-}
-
-- (instancetype)initWithStandardHandlers {
-  self = [self init];
-  if (self) {
-    [self addMailtoApps:@[
-      [[MailtoHandlerSystemMail alloc] init], [[MailtoHandlerGmail alloc] init]
-    ]];
   }
   return self;
 }
@@ -80,20 +71,33 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
       }];
 }
 
+- (void)setDefaultHandlers:(NSArray<MailtoHandler*>*)handlerApps {
+  for (MailtoHandler* app in handlerApps) {
+    [_handlers setObject:app forKey:[app appStoreID]];
+  }
+  [self migrateLegacyOptions];
+  [self autoDefaultToGmailIfInstalled];
+}
+
 - (NSString*)defaultHandlerID {
   NSString* value = [[NSUserDefaults standardUserDefaults]
-      stringForKey:kMailtoDefaultHandlerKey];
+      stringForKey:[[self class] userDefaultsKey]];
+  // This implementation of MailtoURLRewriter always returns a non-nil mailto:
+  // URL handler ID.
   if ([_handlers[value] isAvailable])
     return value;
   return [[self class] systemMailApp];
 }
 
 - (void)setDefaultHandlerID:(NSString*)appStoreID {
+  // This implementation of MailtoURLRewriter does not allow the unsetting of
+  // a mailto: URL handler.
   DCHECK([appStoreID length]);
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  if ([appStoreID isEqual:[defaults objectForKey:kMailtoDefaultHandlerKey]])
+  NSString* defaultsKey = [[self class] userDefaultsKey];
+  if ([appStoreID isEqual:[defaults objectForKey:defaultsKey]])
     return;
-  [defaults setObject:appStoreID forKey:kMailtoDefaultHandlerKey];
+  [defaults setObject:appStoreID forKey:defaultsKey];
   [self.observer rewriterDidChange:self];
 }
 
@@ -115,19 +119,6 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
 }
 
 #pragma mark - Private
-
-+ (void)resetDefaultHandlerIDForTesting {
-  [[NSUserDefaults standardUserDefaults]
-      removeObjectForKey:kMailtoDefaultHandlerKey];
-}
-
-- (void)addMailtoApps:(NSArray<MailtoHandler*>*)handlerApps {
-  for (MailtoHandler* app in handlerApps) {
-    [_handlers setObject:app forKey:[app appStoreID]];
-  }
-  [self migrateLegacyOptions];
-  [self autoDefaultToGmailIfInstalled];
-}
 
 //
 // Implements the migration logic for users of previous versions of Google
@@ -157,6 +148,7 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
 //
 - (void)migrateLegacyOptions {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSString* defaultsKey = [[self class] userDefaultsKey];
 
   // User previously had a selection made for opening mailto: links with Gmail,
   // upgrade will set Gmail app to be the default mailto: handler. If user had
@@ -178,17 +170,16 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
         // Gmail app.
         MailtoHandler* gmailHandler = _handlers[kGmailAppStoreID];
         if ([gmailHandler isAvailable])
-          [defaults setObject:kGmailAppStoreID forKey:kMailtoDefaultHandlerKey];
+          [defaults setObject:kGmailAppStoreID forKey:defaultsKey];
         else
-          [defaults removeObjectForKey:kMailtoDefaultHandlerKey];
+          [defaults removeObjectForKey:defaultsKey];
         break;
       }
       case 1:
         // If legacy user was not using Gmail to handle mailto: links
         // (kAutoOpenLinksNo), consider this an explicit user choice and
         // migrate to use system-provided Mail app.
-        [defaults setObject:[[self class] systemMailApp]
-                     forKey:kMailtoDefaultHandlerKey];
+        [defaults setObject:[[self class] systemMailApp] forKey:defaultsKey];
         break;
       default:
         NOTREACHED();
@@ -200,15 +191,16 @@ NSString* const kMailtoDefaultHandlerKey = @"MailtoHandlerDefault";
 
 - (void)autoDefaultToGmailIfInstalled {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  NSString* defaultsKey = [[self class] userDefaultsKey];
   // If a default handler for mailto: has already been set, user had made an
   // explicit choice and no further changes should be done.
-  if ([defaults objectForKey:kMailtoDefaultHandlerKey])
+  if ([defaults objectForKey:defaultsKey])
     return;
 
   NSString* const kGmailAppStoreID = @"422689480";
   MailtoHandler* gmailHandler = _handlers[kGmailAppStoreID];
   if ([gmailHandler isAvailable])
-    [defaults setObject:kGmailAppStoreID forKey:kMailtoDefaultHandlerKey];
+    [defaults setObject:kGmailAppStoreID forKey:defaultsKey];
 }
 
 @end

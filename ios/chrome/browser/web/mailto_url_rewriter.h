@@ -24,30 +24,33 @@ class GURL;
 @interface MailtoURLRewriter : NSObject
 
 // The unique ID of the Mail client app that handles mailto: URL scheme.
+// This has a value of nil if default has not been set.
 @property(nonatomic, copy) NSString* defaultHandlerID;
+
+// Array of all the currently supported Mail client apps that claim to handle
+// mailto: URL scheme through their own custom defined URL schemes.
+@property(nonatomic, strong) NSArray<MailtoHandler*>* defaultHandlers;
 
 // Observer object that will be called when |defaultHandlerID| is changed.
 @property(nonatomic, weak) id<MailtoURLRewriterObserver> observer;
 
+// Returns the NSString* key to store state in NSUserDefaults.
++ (NSString*)userDefaultsKey;
+
 // Returns the ID as a string for the system-provided Mail client app.
 + (NSString*)systemMailApp;
 
-// An initializer returning an instance that has the standard set of
-// MailtoHandlers initialized. Unit tests can use -init and then set up the
-// different handlers.
-- (instancetype)initWithStandardHandlers;
+// Convenience method to return a new instance of this class initialized with
+// a standard set of MailtoHandlers.
++ (instancetype)mailtoURLRewriterWithStandardHandlers;
 
-// Returns a sorted array of all the currently supported Mail client apps that
-// claim to handle mailto: URL scheme through their own custom defined URL
-// schemes.
-- (NSArray<MailtoHandler*>*)defaultHandlers;
-
-// Returns the name of the application that handles mailto: URLs.
+// Returns the name of the application that handles mailto: URLs. Returns nil
+// if a default has not been set.
 - (NSString*)defaultHandlerName;
 
 // Rewrites |URL| into a new URL that can be "opened" to launch the Mail
-// client app. May return nil if |URL| is not a mailto: URL or there are no
-// Mail client app available.
+// client app. May return nil if |URL| is not a mailto: URL, a mail client
+// app has not been selected, or there are no Mail client app available.
 - (NSString*)rewriteMailtoURL:(const GURL&)URL;
 
 @end
