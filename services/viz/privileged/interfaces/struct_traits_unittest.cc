@@ -43,6 +43,7 @@ TEST_F(StructTraitsTest, RendererSettings) {
   input.enable_color_correct_rendering = true;
   input.highp_threshold_min = -1;
   input.disallow_non_exact_resource_reuse = true;
+  input.use_skia_renderer = true;
 
   RendererSettings output;
   mojom::RendererSettings::Deserialize(
@@ -72,6 +73,7 @@ TEST_F(StructTraitsTest, RendererSettings) {
   EXPECT_EQ(input.highp_threshold_min, output.highp_threshold_min);
   EXPECT_EQ(input.disallow_non_exact_resource_reuse,
             output.disallow_non_exact_resource_reuse);
+  EXPECT_EQ(input.use_skia_renderer, output.use_skia_renderer);
 }
 
 }  // namespace

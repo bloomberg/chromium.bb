@@ -28,6 +28,7 @@ bool StructTraits<viz::mojom::RendererSettingsDataView, viz::RendererSettings>::
       data.disallow_non_exact_resource_reuse();
   out->slow_down_compositing_scale_factor =
       data.slow_down_compositing_scale_factor();
+  out->use_skia_renderer = data.use_skia_renderer();
   return data.ReadResourceSettings(&out->resource_settings);
 }
 
