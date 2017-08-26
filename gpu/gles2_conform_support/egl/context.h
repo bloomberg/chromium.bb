@@ -87,6 +87,9 @@ class Context : public base::RefCountedThreadSafe<Context>,
   void ApplyCurrentContext(gl::GLSurface* current_surface);
   static void ApplyContextReleased();
 
+  static void SetPlatformGpuFeatureInfo(
+      const gpu::GpuFeatureInfo& gpu_feature_info);
+
  private:
   friend class base::RefCountedThreadSafe<Context>;
   ~Context() override;
@@ -99,6 +102,8 @@ class Context : public base::RefCountedThreadSafe<Context>,
   bool WasServiceContextLost() const;
   bool IsCompatibleSurface(Surface* surface) const;
   bool Flush(gl::GLSurface* gl_surface);
+
+  static gpu::GpuFeatureInfo platform_gpu_feature_info_;
 
   Display* display_;
   const Config* config_;

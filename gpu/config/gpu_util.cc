@@ -92,45 +92,6 @@ std::string IntSetToString(const std::set<int>& list, char divider) {
   return rt;
 }
 
-void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
-                                  base::CommandLine* command_line) {
-  std::unique_ptr<GpuDriverBugList> list(GpuDriverBugList::Create());
-  std::set<int> workarounds = list->MakeDecision(
-      GpuControlList::kOsAny, std::string(), gpu_info);
-  GpuDriverBugList::AppendWorkaroundsFromCommandLine(
-      &workarounds, *command_line);
-  if (!workarounds.empty()) {
-    command_line->AppendSwitchASCII(switches::kGpuDriverBugWorkarounds,
-                                    IntSetToString(workarounds, ','));
-  }
-
-  std::vector<std::string> buglist_disabled_extensions =
-      list->GetDisabledExtensions();
-  std::set<base::StringPiece> disabled_extensions(
-      buglist_disabled_extensions.begin(), buglist_disabled_extensions.end());
-
-  // Must be outside if statement to remain in scope (referenced by
-  // |disabled_extensions|).
-  std::string command_line_disable_gl_extensions;
-  if (command_line->HasSwitch(switches::kDisableGLExtensions)) {
-    command_line_disable_gl_extensions =
-        command_line->GetSwitchValueASCII(switches::kDisableGLExtensions);
-    std::vector<base::StringPiece> existing_disabled_extensions =
-        base::SplitStringPiece(command_line_disable_gl_extensions, " ",
-                               base::TRIM_WHITESPACE,
-                               base::SPLIT_WANT_NONEMPTY);
-    disabled_extensions.insert(existing_disabled_extensions.begin(),
-                               existing_disabled_extensions.end());
-  }
-
-  if (!disabled_extensions.empty()) {
-    std::vector<base::StringPiece> v(disabled_extensions.begin(),
-                                     disabled_extensions.end());
-    command_line->AppendSwitchASCII(switches::kDisableGLExtensions,
-                                    base::JoinString(v, " "));
-  }
-}
-
 void StringToFeatureSet(
     const std::string& str, std::set<int>* feature_set) {
   StringToIntSet(str, feature_set);
