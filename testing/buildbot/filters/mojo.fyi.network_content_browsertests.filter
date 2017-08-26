@@ -108,7 +108,6 @@
 -ResourceDispatcherHostBrowserTest.PageTransitionClientRedirect
 -ResourceDispatcherHostBrowserTest.SniffHTMLWithNoContentType
 -ResourceDispatcherHostBrowserTest.SniffNoContentTypeNoData
--ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest
 -SessionHistoryTest.HistoryLength
 -SitePerProcessBrowserTest.CrossProcessFocusChangeFiresBlurEvents
 -SitePerProcessBrowserTest.CrossSiteIframeBlockedByCSPInheritedBySrcDocParent
@@ -137,6 +136,12 @@
 # sometimes.
 -SRC_ClearKey/EncryptedMediaTest.FrameSizeChangeVideo/0
 
-# https://crbug.com/754827
--ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_Cancelled
+# Cross-origin request to file:// URL should be blocked. crbug.com/759230
 -BrowserSideNavigationBrowserDisableWebSecurityTest.ValidateBaseUrlForDataUrl
+
+# This test validates that the renderer does not hang indefinitely in a sync
+# XMLHttpRequest when ResourceDispatcherHostImpl::CancelRequestsForProcess is
+# called to tear down the browser-side request state without signaling
+# completion. With the network service this will be equivalent to a network
+# service process crash.
+-ResourceDispatcherHostBrowserTest.SyncXMLHttpRequest_Cancelled
