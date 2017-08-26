@@ -538,12 +538,6 @@ void RenderWidgetHostViewChildFrame::OnDidNotProduceFrame(
   support_->DidNotProduceFrame(ack);
 }
 
-void RenderWidgetHostViewChildFrame::OnSurfaceChanged(
-    const viz::SurfaceInfo& surface_info) {
-  viz::SurfaceSequence sequence(frame_sink_id_, next_surface_sequence_++);
-  SendSurfaceInfoToEmbedderImpl(surface_info, sequence);
-}
-
 void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {
   // We only use callbacks once, therefore we make a new list for registration
   // before we start, and discard the old list entries when we are done.
@@ -786,8 +780,8 @@ void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {
 
 void RenderWidgetHostViewChildFrame::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
-  // surface should be set here.
+  viz::SurfaceSequence sequence(frame_sink_id_, next_surface_sequence_++);
+  SendSurfaceInfoToEmbedderImpl(surface_info, sequence);
 }
 
 void RenderWidgetHostViewChildFrame::SetNeedsBeginFrames(
