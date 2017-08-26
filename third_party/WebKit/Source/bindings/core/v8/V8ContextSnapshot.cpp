@@ -21,10 +21,6 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "v8/include/v8.h"
 
-#if defined(MEMORY_SANITIZER)
-#include <sanitizer/msan_interface.h>  // NOLINT
-#endif
-
 namespace blink {
 
 namespace {
@@ -326,12 +322,6 @@ v8::StartupData V8ContextSnapshot::TakeSnapshot() {
 
   v8::StartupData blob =
       creator->CreateBlob(v8::SnapshotCreator::FunctionCodeHandling::kClear);
-
-#if defined(MEMORY_SANITIZER)
-  // Tell MSan to ignore uninitialized padding in the blob.
-  // TODO(crbug.com/v8/3645): Remove this hack when the issue is resolved.
-  __msan_unpoison(blob.data, blob.raw_size);
-#endif
 
   return blob;
 }
