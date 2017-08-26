@@ -70,6 +70,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
   void StartSync(
       std::unique_ptr<ResourceRequest> request,
       int routing_id,
+      const url::Origin& frame_origin,
       SyncLoadResponse* response,
       blink::WebURLRequest::LoadingIPCType ipc_type,
       mojom::URLLoaderFactory* url_loader_factory,
