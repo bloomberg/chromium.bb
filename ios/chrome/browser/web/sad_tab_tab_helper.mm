@@ -4,14 +4,16 @@
 
 #import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
+#import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/navigation_context.h"
-#import "ios/web/public/web_state/ui/crw_generic_content_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,13 +31,16 @@ bool IsApplicationStateActive() {
 }
 }  // namespace
 
-SadTabTabHelper::SadTabTabHelper(web::WebState* web_state)
-    : SadTabTabHelper(web_state, kDefaultRepeatFailureInterval) {}
+SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
+                                 id<SadTabTabHelperDelegate> delegate)
+    : SadTabTabHelper(web_state, kDefaultRepeatFailureInterval, delegate) {}
 
 SadTabTabHelper::SadTabTabHelper(web::WebState* web_state,
-                                 double repeat_failure_interval)
+                                 double repeat_failure_interval,
+                                 id<SadTabTabHelperDelegate> delegate)
     : web::WebStateObserver(web_state),
-      repeat_failure_interval_(repeat_failure_interval) {
+      repeat_failure_interval_(repeat_failure_interval),
+      delegate_(delegate) {
   AddApplicationDidBecomeActiveObserver();
 }
 
@@ -43,21 +48,23 @@ SadTabTabHelper::~SadTabTabHelper() {
   DCHECK(!application_did_become_active_observer_);
 }
 
-void SadTabTabHelper::CreateForWebState(web::WebState* web_state) {
+void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
+                                        id<SadTabTabHelperDelegate> delegate) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
-    web_state->SetUserData(UserDataKey(),
-                           base::WrapUnique(new SadTabTabHelper(web_state)));
+    web_state->SetUserData(UserDataKey(), base::WrapUnique(new SadTabTabHelper(
+                                              web_state, delegate)));
   }
 }
 
 void SadTabTabHelper::CreateForWebState(web::WebState* web_state,
-                                        double repeat_failure_interval) {
+                                        double repeat_failure_interval,
+                                        id<SadTabTabHelperDelegate> delegate) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
     web_state->SetUserData(UserDataKey(),
                            base::WrapUnique(new SadTabTabHelper(
-                               web_state, repeat_failure_interval)));
+                               web_state, repeat_failure_interval, delegate)));
   }
 }
 
@@ -113,15 +120,8 @@ void SadTabTabHelper::PresentSadTab(const GURL& url_causing_failure) {
       (url_causing_failure.EqualsIgnoringRef(last_failed_url_) &&
        seconds_since_last_failure < repeat_failure_interval_);
 
-  SadTabView* sad_tab_view = [[SadTabView alloc]
-           initWithMode:repeated_failure ? SadTabViewMode::FEEDBACK
-                                         : SadTabViewMode::RELOAD
-      navigationManager:web_state()->GetNavigationManager()];
-
-  CRWContentView* content_view =
-      [[CRWGenericContentView alloc] initWithView:sad_tab_view];
-
-  web_state()->ShowTransientContentView(content_view);
+  [delegate_ sadTabHelper:this
+      presentSadTabForRepeatedFailure:repeated_failure];
 
   last_failed_url_ = url_causing_failure;
   last_failed_timer_ = base::MakeUnique<base::ElapsedTimer>();

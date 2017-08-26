@@ -94,12 +94,14 @@
 #import "ios/chrome/browser/ui/open_in_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/prerender_delegate.h"
+#import "ios/chrome/browser/ui/sad_tab/sad_tab_view.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
 #import "ios/chrome/browser/web/navigation_manager_util.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_observer.h"
+#import "ios/chrome/browser/web/sad_tab_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
@@ -1716,6 +1718,20 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       completion:^(BOOL finished) {
         [weakPagePlaceholder removeFromSuperview];
       }];
+}
+
+#pragma mark - SadTabTabHelperDelegate
+
+- (void)sadTabHelper:(SadTabTabHelper*)tabHelper
+    presentSadTabForRepeatedFailure:(BOOL)repeatedFailure {
+  // Create a SadTabView so |webstate| presents it.
+  SadTabView* sadTabview = [[SadTabView alloc]
+           initWithMode:repeatedFailure ? SadTabViewMode::FEEDBACK
+                                        : SadTabViewMode::RELOAD
+      navigationManager:tabHelper->web_state()->GetNavigationManager()];
+  CRWContentView* contentView =
+      [[CRWGenericContentView alloc] initWithView:sadTabview];
+  tabHelper->web_state()->ShowTransientContentView(contentView);
 }
 
 @end
