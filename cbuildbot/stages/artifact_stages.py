@@ -239,7 +239,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
                                                 self._current_board,
                                                 self.archive_path)
       if tarpath is not None:
-        self._release_upload_queue.put([tarpath])
+        self._upload_queue.put([tarpath])
 
     def ArchiveZipFiles():
       """Build and archive zip files.
