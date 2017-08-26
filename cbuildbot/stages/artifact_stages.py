@@ -377,6 +377,11 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       with self.ArtifactUploader(self._upload_queue, archive=False):
         parallel.RunParallelSteps(steps)
 
+      # Make sure no stage posted to the release queue when it should have used
+      # the normal upload queue.  The release queue is processed in parallel and
+      # then ignored, so there shouldn't be any items left in here.
+      assert self._release_upload_queue.empty()
+
     if not self._run.config.afdo_generate_min:
       BuildAndArchiveArtifacts()
 
