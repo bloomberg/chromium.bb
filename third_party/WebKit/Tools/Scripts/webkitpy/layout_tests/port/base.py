@@ -171,18 +171,38 @@ class Port(object):
         return 'Port{name=%s, version=%s, architecture=%s, test_configuration=%s}' % (
             self._name, self._version, self._architecture, self._test_configuration)
 
-    def additional_driver_flag(self):
+    def primary_driver_flag(self):
+        """Returns the driver flag that is used for flag-specific expectations
+           and baselines.  This is the flag in LayoutTests/rwt.flag if present,
+           otherwise the first flag passed by --additional-driver-flag.
+        """
+        flag_file = self._filesystem.join(self.layout_tests_dir(), 'rwt.flag')
+        if self._filesystem.exists(flag_file):
+            flag = self._filesystem.read_text_file(flag_file).strip()
+            if flag:
+                return flag
+        flags = self.get_option('additional_driver_flag', [])
+        if flags:
+            return flags[0]
+
+    def additional_driver_flags(self):
+        flags = self.get_option('additional_driver_flag', [])
+        if flags and flags[0] == self.primary_driver_flag():
+            flags = flags[1:]
         if self.driver_name() == self.CONTENT_SHELL_NAME:
-            # This is the fingerprint of wpt's certificate found in thirdparty/wpt/certs. Use
+            # This is the fingerprint of wpt's certificate found in
+            # thirdparty/wpt/certs.  To regenerate, use:
             #
             #   openssl x509 -noout -pubkey -in 127.0.0.1.pem |
             #   openssl pkey -pubin -outform der |
             #   openssl dgst -sha256 -binary |
             #   base64
             #
-            # to regenerate.
-            return ['--run-layout-test', '--ignore-certificate-errors-spki-list=Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY=']
-        return []
+            fingerprint = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
+            flags += [
+                '--run-layout-test',
+                '--ignore-certificate-errors-spki-list=' + fingerprint]
+        return flags
 
     def supports_per_test_timeout(self):
         return False
@@ -1259,16 +1279,22 @@ class Port(object):
                 test_configurations.append(TestConfiguration(version, architecture, build_type))
         return test_configurations
 
-    def _flag_specific_expectations_files(self):
-        return [self._filesystem.join(self.layout_tests_dir(), 'FlagExpectations', flag.lstrip('-'))
-                for flag in self.get_option('additional_driver_flag', [])]
+    def _flag_specific_expectations_path(self):
+        flag = self.primary_driver_flag()
+        if flag:
+            return self._filesystem.join(
+                self.layout_tests_dir(), 'FlagExpectations', flag.lstrip('-'))
 
     def _flag_specific_baseline_search_path(self):
-        flag_dirs = [self._filesystem.join(self.layout_tests_dir(), 'flag-specific', flag.lstrip('-'))
-                     for flag in self.get_option('additional_driver_flag', [])]
-        return [self._filesystem.join(flag_dir, 'platform', platform_dir)
-                for platform_dir in self.FALLBACK_PATHS[self.version()]
-                for flag_dir in flag_dirs] + flag_dirs
+        flag = self.primary_driver_flag()
+        if not flag:
+            return []
+        flag_dir = self._filesystem.join(
+            self.layout_tests_dir(), 'flag-specific', flag.lstrip('-'))
+        platform_dirs = [
+            self._filesystem.join(flag_dir, 'platform', platform_dir)
+            for platform_dir in self.FALLBACK_PATHS[self.version()]]
+        return platform_dirs + [flag_dir]
 
     def expectations_dict(self):
         """Returns an OrderedDict of name -> expectations strings.
@@ -1346,12 +1372,13 @@ class Port(object):
         the --additional-expectations flag is passed; those aren't included
         here.
         """
-        return [
+        return filter(None, [
             self.path_to_generic_test_expectations_file(),
             self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests'),
             self._filesystem.join(self.layout_tests_dir(), 'StaleTestExpectations'),
             self._filesystem.join(self.layout_tests_dir(), 'SlowTests'),
-        ] + self._flag_specific_expectations_files()
+            self._flag_specific_expectations_path()
+        ])
 
     def extra_expectations_files(self):
         """Returns a list of paths to test expectations not loaded by default.

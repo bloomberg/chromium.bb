@@ -339,8 +339,8 @@ class AndroidPort(base.Port):
     def default_smoke_test_only(self):
         return True
 
-    def additional_driver_flag(self):
-        return super(AndroidPort, self).additional_driver_flag() + \
+    def additional_driver_flags(self):
+        return super(AndroidPort, self).additional_driver_flags() + \
             self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
 
     def default_timeout_ms(self):
