@@ -21,12 +21,24 @@ struct MEDIA_EXPORT AndroidOverlayConfig {
   using ReadyCB = base::OnceCallback<void(AndroidOverlay*)>;
 
   // Called when overlay has failed before |ReadyCB| is called.  Will not be
-  // called after ReadyCB.  It will be the last callback for the overlay.
+  // called after ReadyCB.  It will be the last callback for the overlay, except
+  // for any DeletedCB.
   using FailedCB = base::OnceCallback<void(AndroidOverlay*)>;
 
-  // Called when the overlay has been destroyed.  This will not be called unless
-  // ReadyCB has been called.  It will be the last callback for the overlay.
+  // Called when the surface has been destroyed.  This will not be called unless
+  // ReadyCB has been called.  It will be the last callback for the overlay,
+  // except for any DeletedCB.  In response, the client is expected to quit
+  // using the surface and delete the overlay object.
   using DestroyedCB = base::OnceCallback<void(AndroidOverlay*)>;
+
+  // Called when the overlay object has been deleted.  This is unrelated to
+  // any DestroyedCB, which informs us when the surface is no longer usable and
+  // that we should delete the AndroidOverlay object.  DeletedCB is called when
+  // the AndroidOverlay object is deleted for any reason.  It is guaranteed that
+  // the overlay pointer will still be a valid pointer, but it is not safe to
+  // access it.  It's provided just to make it easier to tell which overlay is
+  // being deleted.
+  using DeletedCB = base::OnceCallback<void(AndroidOverlay*)>;
 
   // Configuration used to create an overlay.
   AndroidOverlayConfig();

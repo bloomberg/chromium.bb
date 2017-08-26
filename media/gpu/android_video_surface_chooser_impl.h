@@ -52,6 +52,7 @@ class MEDIA_GPU_EXPORT AndroidVideoSurfaceChooserImpl
   // AndroidOverlay callbacks.
   void OnOverlayReady(AndroidOverlay*);
   void OnOverlayFailed(AndroidOverlay*);
+  void OnOverlayDeleted(AndroidOverlay*);
 
   // Client callbacks.
   UseOverlayCB use_overlay_cb_;

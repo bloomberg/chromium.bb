@@ -154,6 +154,13 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
 }
 
 void AndroidVideoSurfaceChooserImpl::SwitchToSurfaceTexture() {
+  // Invalidate any outstanding deletion callbacks for any overlays that we've
+  // provided to the client already.  We assume that it will eventually drop
+  // them in response to the callback.  Ready / failed callbacks aren't affected
+  // by this, since we own the overlay until those occur.  We're about to
+  // drop |overlay_|, if we have one, which cancels them.
+  weak_factory_.InvalidateWeakPtrs();
+
   // Cancel any outstanding overlay request, in case we're switching to overlay.
   if (overlay_)
     overlay_ = nullptr;
@@ -181,6 +188,11 @@ void AndroidVideoSurfaceChooserImpl::SwitchToOverlay() {
   // We don't modify |client_overlay_state_| yet, since we don't call the client
   // back yet.
 
+  // Invalidate any outstanding callbacks.  This is needed only for the deletion
+  // callback, since for ready/failed callbacks, we still have ownership of the
+  // object.  If we delete the object, then callbacks are cancelled anyway.
+  weak_factory_.InvalidateWeakPtrs();
+
   AndroidOverlayConfig config;
   // We bind all of our callbacks with weak ptrs, since we don't know how long
   // the client will hold on to overlays.  They could, in principle, show up
@@ -206,6 +218,12 @@ void AndroidVideoSurfaceChooserImpl::OnOverlayReady(AndroidOverlay* overlay) {
   // back yet.
   DCHECK_EQ(overlay, overlay_.get());
 
+  // Notify the overlay that we'd like to know if it's destroyed, so that we can
+  // update our internal state if the client drops it without being told.
+  overlay_->AddOverlayDeletedCallback(
+      base::Bind(&AndroidVideoSurfaceChooserImpl::OnOverlayDeleted,
+                 weak_factory_.GetWeakPtr()));
+
   client_overlay_state_ = kUsingOverlay;
   use_overlay_cb_.Run(std::move(overlay_));
 }
@@ -223,6 +241,12 @@ void AndroidVideoSurfaceChooserImpl::OnOverlayFailed(AndroidOverlay* overlay) {
   // overlay request still results in some callback to the client to know what
   // surface to start with.
   SwitchToSurfaceTexture();
+}
+
+void AndroidVideoSurfaceChooserImpl::OnOverlayDeleted(AndroidOverlay* overlay) {
+  client_overlay_state_ = kUsingSurfaceTexture;
+  // We don't call SwitchToSurfaceTexture since the client dropped the overlay.
+  // It's already using SurfaceTexture.
 }
 
 }  // namespace media

@@ -60,12 +60,16 @@ class MEDIA_EXPORT AndroidOverlay {
   // These will be called in the same order that they're added.
   void AddSurfaceDestroyedCallback(AndroidOverlayConfig::DestroyedCB cb);
 
+  // Add a callback to notify when |this| has been deleted.
+  void AddOverlayDeletedCallback(AndroidOverlayConfig::DeletedCB cb);
+
  protected:
   AndroidOverlay();
 
   void RunSurfaceDestroyedCallbacks();
 
   std::list<AndroidOverlayConfig::DestroyedCB> destruction_cbs_;
+  std::list<AndroidOverlayConfig::DeletedCB> deletion_cbs_;
 
   base::WeakPtrFactory<AndroidOverlay> weak_factory_;
 
