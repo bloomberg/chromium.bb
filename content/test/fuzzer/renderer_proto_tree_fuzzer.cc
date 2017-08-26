@@ -121,7 +121,7 @@ extern "C" size_t LLVMFuzzerCustomCrossOver(const uint8_t* data1,
   size_t new_size =
       protobuf_mutator::libfuzzer::CrossOverBinaryMessages<Document>(
           data1, size1, data2, size2, out, max_out_size, seed);
-  fprintf(stderr, "AFTER     %s\n", str(data1, new_size).c_str());
+  fprintf(stderr, "AFTER     %s\n", str(out, new_size).c_str());
   return new_size;
 }
 
