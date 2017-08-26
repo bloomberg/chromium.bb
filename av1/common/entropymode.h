@@ -573,7 +573,7 @@ typedef struct FRAME_COUNTS {
 #if CONFIG_LPF_SB
   unsigned int lpf_reuse[LPF_REUSE_CONTEXT][2];
   unsigned int lpf_delta[LPF_DELTA_CONTEXT][DELTA_RANGE];
-  unsigned int lpf_sign[LPF_SIGN_CONTEXT][2];
+  unsigned int lpf_sign[LPF_REUSE_CONTEXT][LPF_SIGN_CONTEXT][2];
 #endif  // CONFIG_LPF_SB
 } FRAME_COUNTS;
 

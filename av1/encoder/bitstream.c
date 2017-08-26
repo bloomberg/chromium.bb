@@ -3197,6 +3197,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       curr_mbmi->reuse_sb_lvl = reuse_prev_lvl;
       aom_write_symbol(w, reuse_prev_lvl,
                        xd->tile_ctx->lpf_reuse_cdf[reuse_ctx], 2);
+      cpi->td.counts->lpf_reuse[reuse_ctx][reuse_prev_lvl]++;
 
       if (reuse_prev_lvl) {
         curr_mbmi->delta = 0;
@@ -3207,6 +3208,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
         curr_mbmi->delta = delta;
         aom_write_symbol(w, delta, xd->tile_ctx->lpf_delta_cdf[delta_ctx],
                          DELTA_RANGE);
+        cpi->td.counts->lpf_delta[delta_ctx][delta]++;
 
         if (delta) {
           const int sign = curr_lvl > prev_lvl;
@@ -3214,6 +3216,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
           curr_mbmi->sign = sign;
           aom_write_symbol(w, sign,
                            xd->tile_ctx->lpf_sign_cdf[reuse_ctx][sign_ctx], 2);
+          cpi->td.counts->lpf_sign[reuse_ctx][sign_ctx][sign]++;
         } else {
           curr_mbmi->sign = 0;
         }

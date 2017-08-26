@@ -702,6 +702,10 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
 #else
 static uint8_t get_filter_level(const loop_filter_info_n *lfi_n,
                                 const MB_MODE_INFO *mbmi) {
+#if CONFIG_LPF_SB
+  return mbmi->filt_lvl;
+#endif
+
 #if CONFIG_SUPERTX
   const int segment_id = AOMMIN(mbmi->segment_id, mbmi->segment_id_supertx);
   assert(
