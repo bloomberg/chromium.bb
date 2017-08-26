@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module cc.mojom;
+module viz.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
@@ -15,6 +15,6 @@ import "cc/ipc/local_surface_id.mojom";
 // The LocalSurfaceId are allocated by the client using any scheme
 // that avoids duplicates and makes IDs unguessable respectively.
 struct SurfaceId {
-  FrameSinkId frame_sink_id;
-  LocalSurfaceId local_surface_id;
+  cc.mojom.FrameSinkId frame_sink_id;
+  cc.mojom.LocalSurfaceId local_surface_id;
 };

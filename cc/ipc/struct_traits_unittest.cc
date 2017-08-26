@@ -61,11 +61,6 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     std::move(callback).Run(f);
   }
 
-  void EchoSurfaceId(const viz::SurfaceId& s,
-                     EchoSurfaceIdCallback callback) override {
-    std::move(callback).Run(s);
-  }
-
   void EchoTextureMailbox(const viz::TextureMailbox& t,
                           EchoTextureMailboxCallback callback) override {
     std::move(callback).Run(t);
@@ -320,18 +315,6 @@ TEST_F(StructTraitsTest, FilterOperations) {
   for (size_t i = 0; i < input.size(); ++i) {
     EXPECT_EQ(input.at(i), output.at(i));
   }
-}
-
-TEST_F(StructTraitsTest, SurfaceId) {
-  static constexpr viz::FrameSinkId frame_sink_id(1337, 1234);
-  static viz::LocalSurfaceId local_surface_id(0xfbadbeef,
-                                              base::UnguessableToken::Create());
-  viz::SurfaceId input(frame_sink_id, local_surface_id);
-  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
-  viz::SurfaceId output;
-  proxy->EchoSurfaceId(input, &output);
-  EXPECT_EQ(frame_sink_id, output.frame_sink_id());
-  EXPECT_EQ(local_surface_id, output.local_surface_id());
 }
 
 TEST_F(StructTraitsTest, TextureMailbox) {

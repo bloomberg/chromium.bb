@@ -288,7 +288,7 @@ static_library("test_support") {
     "//net:test_support",
     "//services/network/public/interfaces:interfaces",
     "//services/service_manager/public/cpp",
-    "//services/viz/public/interfaces/compositing",
+    "//services/viz/public/interfaces",
     "//skia",
     "//storage/browser",
     "//storage/browser:test_support",
