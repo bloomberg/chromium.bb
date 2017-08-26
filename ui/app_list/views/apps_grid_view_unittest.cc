@@ -1108,5 +1108,58 @@ TEST_P(AppsGridViewTest, ItemLabelNoShortName) {
   EXPECT_EQ(title, base::UTF16ToUTF8(title_label->text()));
 }
 
+TEST_P(AppsGridViewTest, ScrollSequenceHandledByAppListView) {
+  if (!test_with_fullscreen_)
+    return;
+
+  model_->PopulateApps(GetTilesPerPage(0) + 1);
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  gfx::Point apps_grid_view_origin =
+      apps_grid_view_->GetBoundsInScreen().origin();
+  ui::GestureEvent scroll_begin(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
+  ui::GestureEvent scroll_update(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, 10));
+
+  // Drag down on the app grid when on page 1, this should move the AppListView
+  // and not move the AppsGridView.
+  apps_grid_view_->OnGestureEvent(&scroll_begin);
+  apps_grid_view_->OnGestureEvent(&scroll_update);
+  ASSERT_TRUE(app_list_view_->is_in_drag());
+  ASSERT_EQ(0, GetPaginationModel()->transition().progress);
+}
+
+TEST_P(AppsGridViewTest,
+       OnGestureEventScrollSequenceHandleByPaginationController) {
+  if (!test_with_fullscreen_)
+    return;
+
+  model_->PopulateApps(GetTilesPerPage(0) + 1);
+  EXPECT_EQ(2, GetPaginationModel()->total_pages());
+
+  gfx::Point apps_grid_view_origin =
+      apps_grid_view_->GetBoundsInScreen().origin();
+  ui::GestureEvent scroll_begin(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0));
+  ui::GestureEvent scroll_update(
+      apps_grid_view_origin.x(), apps_grid_view_origin.y(), 0,
+      base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, -10));
+
+  // Drag up on the app grid when on page 1, this should move the AppsGridView
+  // but not the AppListView.
+  apps_grid_view_->OnGestureEvent(&scroll_begin);
+  apps_grid_view_->OnGestureEvent(&scroll_update);
+  ASSERT_FALSE(app_list_view_->is_in_drag());
+  ASSERT_NE(0, GetPaginationModel()->transition().progress);
+}
+
 }  // namespace test
 }  // namespace app_list

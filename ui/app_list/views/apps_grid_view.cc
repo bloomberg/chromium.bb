@@ -1035,8 +1035,12 @@ void AppsGridView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  if (pagination_controller_->OnGestureEvent(*event, GetContentsBounds()))
+  if (!contents_view_->app_list_view()->is_in_drag() &&
+      pagination_controller_->OnGestureEvent(*event, GetContentsBounds())) {
     event->SetHandled();
+  } else {
+    contents_view_->app_list_view()->OnGestureEvent(event);
+  }
 }
 
 void AppsGridView::OnScrollEvent(ui::ScrollEvent* event) {

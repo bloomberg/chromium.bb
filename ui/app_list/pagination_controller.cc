@@ -64,6 +64,9 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
   const ui::GestureEventDetails& details = event.details();
   switch (event.type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
+      // Reset |drag_moved_app_grid_| to give the AppListView a chance to
+      // consume this scroll sequence.
+      drag_moved_app_grid_ = false;
       pagination_model_->StartScroll();
       return true;
     case ui::ET_GESTURE_SCROLL_UPDATE: {
@@ -74,7 +77,19 @@ bool PaginationController::OnGestureEvent(const ui::GestureEvent& event,
                                                          : bounds.height();
       // scroll > 0 means moving contents right or down. That is, transitioning
       // to the previous page.
+      const int delta = scroll < 0 ? 1 : -1;
+      // If the scroll is not going to animate the app grid, return false early
+      // and let the AppsGridView redirect the scroll sequence to the
+      // AppListView.
+      // TODO(759179): find a better way to handle this interaction.
+      if (!pagination_model_->IsValidPageRelative(delta) && delta < 0 &&
+          !drag_moved_app_grid_ && !pagination_model_->transition().progress) {
+        return false;
+      }
       pagination_model_->UpdateScroll(scroll / width);
+      // If a scroll sequence animates the app grid, we do not want the
+      // AppListView to be able to consume the scroll sequence.
+      drag_moved_app_grid_ = true;
       return true;
     }
     case ui::ET_GESTURE_SCROLL_END: {
