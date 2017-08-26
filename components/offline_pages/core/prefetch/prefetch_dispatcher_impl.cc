@@ -59,6 +59,8 @@ void PrefetchDispatcherImpl::SetService(PrefetchService* service) {
 
 void PrefetchDispatcherImpl::SchedulePipelineProcessing() {
   needs_pipeline_processing_ = true;
+  service_->GetLogger()->RecordActivity(
+      "Dispatcher: Scheduled more pipeline processing.");
 }
 
 void PrefetchDispatcherImpl::EnsureTaskScheduled() {
@@ -75,6 +77,10 @@ void PrefetchDispatcherImpl::AddCandidatePrefetchURLs(
     const std::vector<PrefetchURL>& prefetch_urls) {
   if (!service_->GetPrefetchConfiguration()->IsPrefetchingEnabled())
     return;
+
+  service_->GetLogger()->RecordActivity("Dispatcher: Received " +
+                                        std::to_string(prefetch_urls.size()) +
+                                        " suggested URLs.");
 
   PrefetchStore* prefetch_store = service_->GetPrefetchStore();
   std::unique_ptr<Task> add_task = base::MakeUnique<AddUniqueUrlsTask>(
@@ -105,7 +111,8 @@ void PrefetchDispatcherImpl::BeginBackgroundTask(
     std::unique_ptr<ScopedBackgroundTask> background_task) {
   if (!service_->GetPrefetchConfiguration()->IsPrefetchingEnabled())
     return;
-  service_->GetLogger()->RecordActivity("Beginning Background Task.");
+  service_->GetLogger()->RecordActivity(
+      "Dispatcher: Beginning background task.");
 
   background_task_ = std::move(background_task);
 
@@ -114,6 +121,7 @@ void PrefetchDispatcherImpl::BeginBackgroundTask(
 }
 
 void PrefetchDispatcherImpl::QueueReconcileTasks() {
+  service_->GetLogger()->RecordActivity("Dispatcher: Adding reconcile tasks.");
   // Note: For optimal results StaleEntryFinalizerTask should be executed before
   // other reconciler tasks that deal with external systems so that entries
   // finalized by it will promptly effect any external processing they relate
@@ -138,6 +146,7 @@ void PrefetchDispatcherImpl::QueueReconcileTasks() {
 }
 
 void PrefetchDispatcherImpl::QueueActionTasks() {
+  service_->GetLogger()->RecordActivity("Dispatcher: Adding action tasks.");
   std::unique_ptr<Task> download_archives_task =
       base::MakeUnique<DownloadArchivesTask>(service_->GetPrefetchStore(),
                                              service_->GetPrefetchDownloader());
@@ -167,6 +176,9 @@ void PrefetchDispatcherImpl::QueueActionTasks() {
 void PrefetchDispatcherImpl::StopBackgroundTask() {
   if (!service_->GetPrefetchConfiguration()->IsPrefetchingEnabled())
     return;
+
+  service_->GetLogger()->RecordActivity(
+      "Dispatcher: Stopping background task.");
 
   DisposeTask();
 }
@@ -204,6 +216,8 @@ void PrefetchDispatcherImpl::GCMOperationCompletedMessageReceived(
     const std::string& operation_name) {
   if (!service_->GetPrefetchConfiguration()->IsPrefetchingEnabled())
     return;
+
+  service_->GetLogger()->RecordActivity("Dispatcher: Received GCM message.");
 
   PrefetchStore* prefetch_store = service_->GetPrefetchStore();
   task_queue_.AddTask(base::MakeUnique<MarkOperationDoneTask>(
