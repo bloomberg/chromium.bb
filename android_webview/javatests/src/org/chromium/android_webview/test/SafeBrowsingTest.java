@@ -1047,10 +1047,12 @@ public class SafeBrowsingTest {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testGetSafeBrowsingPrivacyPolicyUrl() throws Throwable {
-        final Uri privacyPolicyUrl = Uri.parse("https://www.google.com/chrome/browser/privacy/")
-                                             .buildUpon()
-                                             .fragment("safe-browsing-policies")
-                                             .build();
+        final Uri privacyPolicyUrl =
+                Uri.parse("https://www.google.com/chrome/browser/privacy/")
+                        .buildUpon()
+                        .appendQueryParameter("hl", LocaleUtils.getDefaultLocaleString())
+                        .fragment("safe-browsing-policies")
+                        .build();
         Assert.assertEquals(privacyPolicyUrl, AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl());
         Assert.assertNotNull(AwContentsStatics.getSafeBrowsingPrivacyPolicyUrl());
     }
