@@ -557,9 +557,10 @@ void PaintArtifactCompositor::CollectPendingLayers(
 class SynthesizedClip : private cc::ContentLayerClient {
  public:
   SynthesizedClip() : layer_(cc::PictureLayer::Create(this)) {
-    static SyntheticEffectId serial;
-    mask_isolation_id_ = CompositorElementIdFromSyntheticEffectId(++serial);
-    mask_effect_id_ = CompositorElementIdFromSyntheticEffectId(++serial);
+    mask_isolation_id_ =
+        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
+    mask_effect_id_ =
+        CompositorElementIdFromUniqueObjectId(NewUniqueObjectId());
     layer_->SetIsDrawable(true);
   }
 

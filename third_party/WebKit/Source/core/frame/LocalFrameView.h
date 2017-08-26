@@ -1241,6 +1241,8 @@ class CORE_EXPORT LocalFrameView final
   // From the beginning of the document, how many frames have painted.
   size_t paint_frame_count_;
 
+  UniqueObjectId unique_id_;
+
   FRIEND_TEST_ALL_PREFIXES(WebViewTest, DeviceEmulationResetScrollbars);
 };
 

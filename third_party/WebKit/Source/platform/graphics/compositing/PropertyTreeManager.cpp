@@ -121,9 +121,11 @@ void PropertyTreeManager::SetupRootEffectNode() {
   cc::EffectNode& effect_node =
       *effect_tree.Node(effect_tree.Insert(cc::EffectNode(), kInvalidNodeId));
   DCHECK_EQ(effect_node.id, kSecondaryRootNodeId);
+
+  static UniqueObjectId unique_id = NewUniqueObjectId();
+
   effect_node.stable_id =
-      CompositorElementIdFromRootEffectId(kSecondaryRootNodeId)
-          .ToInternalValue();
+      CompositorElementIdFromUniqueObjectId(unique_id).ToInternalValue();
   effect_node.transform_id = kRealRootNodeId;
   effect_node.clip_id = kSecondaryRootNodeId;
   effect_node.has_render_surface = true;

@@ -90,7 +90,7 @@ static bool UpdateScroll(
     MainThreadScrollingReasons main_thread_scrolling_reasons,
     WebLayerScrollClient* scroll_client) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
-  auto element_id = CompositorElementIdFromLayoutObjectId(
+  auto element_id = CompositorElementIdFromUniqueObjectId(
       frame_view.GetLayoutView()->UniqueId(),
       CompositorElementIdNamespace::kScroll);
   if (auto* existing_scroll = frame_view.ScrollNode()) {
@@ -450,7 +450,7 @@ void PaintPropertyTreeBuilder::UpdateTransform(
           context.current.transform, matrix, TransformOrigin(box),
           context.current.should_flatten_inherited_transform,
           rendering_context_id, compositing_reasons,
-          CompositorElementIdFromLayoutObjectId(
+          CompositorElementIdFromUniqueObjectId(
               object.UniqueId(), CompositorElementIdNamespace::kPrimary));
       force_subtree_update |= result.NewNodeCreated();
     } else {
@@ -618,7 +618,7 @@ void PaintPropertyTreeBuilder::UpdateEffect(
           context.current_effect, context.current.transform, output_clip,
           kColorFilterNone, CompositorFilterOperations(), style.Opacity(),
           blend_mode, compositing_reasons,
-          CompositorElementIdFromLayoutObjectId(
+          CompositorElementIdFromUniqueObjectId(
               object.UniqueId(), CompositorElementIdNamespace::kPrimary));
       force_subtree_update |= result.NewNodeCreated();
       if (has_mask) {
@@ -626,7 +626,7 @@ void PaintPropertyTreeBuilder::UpdateEffect(
             properties.Effect(), context.current.transform, output_clip,
             mask_color_filter, CompositorFilterOperations(), 1.f,
             SkBlendMode::kDstIn, kCompositingReasonNone,
-            CompositorElementIdFromLayoutObjectId(
+            CompositorElementIdFromUniqueObjectId(
                 object.UniqueId(), CompositorElementIdNamespace::kEffectMask));
         force_subtree_update |= result.NewNodeCreated();
       } else {
@@ -709,7 +709,7 @@ void PaintPropertyTreeBuilder::UpdateFilter(
           context.current_effect, context.current.transform, output_clip,
           kColorFilterNone, std::move(filter), 1.f, SkBlendMode::kSrcOver,
           compositing_reasons,
-          CompositorElementIdFromLayoutObjectId(
+          CompositorElementIdFromUniqueObjectId(
               object.UniqueId(), CompositorElementIdNamespace::kEffectFilter));
       force_subtree_update |= result.NewNodeCreated();
     } else {

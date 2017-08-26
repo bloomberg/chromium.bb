@@ -26,7 +26,6 @@
 #include "core/paint/LinkHighlightImpl.h"
 
 #include <memory>
-#include "core/dom/DOMNodeIds.h"
 #include "core/dom/LayoutTreeBuilderTraversal.h"
 #include "core/dom/Node.h"
 #include "core/exported/WebSettingsImpl.h"
@@ -46,7 +45,6 @@
 #include "platform/animation/CompositorTargetProperty.h"
 #include "platform/animation/TimingFunction.h"
 #include "platform/graphics/Color.h"
-#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -82,7 +80,8 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
       is_scrolling_graphics_layer_(false),
       geometry_needs_update_(false),
       is_animating_(false),
-      start_time_(MonotonicallyIncreasingTime()) {
+      start_time_(MonotonicallyIncreasingTime()),
+      unique_id_(NewUniqueObjectId()) {
   DCHECK(node_);
   DCHECK(owning_web_view);
   WebCompositorSupport* compositor_support =
@@ -99,9 +98,8 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
   if (owning_web_view_->LinkHighlightsTimeline())
     owning_web_view_->LinkHighlightsTimeline()->PlayerAttached(*this);
 
-  CompositorElementId element_id = CompositorElementIdFromDOMNodeId(
-      DOMNodeIds::IdForNode(node),
-      CompositorElementIdNamespace::kLinkHighlight);
+  CompositorElementId element_id =
+      CompositorElementIdFromUniqueObjectId(unique_id_);
   compositor_player_->AttachElement(element_id);
   content_layer_->Layer()->SetDrawsContent(true);
   content_layer_->Layer()->SetOpacity(1);

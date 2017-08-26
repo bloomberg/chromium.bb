@@ -396,7 +396,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Sets the parent of this object but doesn't add it as a child of the parent.
   void SetDangerousOneWayParent(LayoutObject*);
 
-  LayoutObjectId UniqueId() const {
+  UniqueObjectId UniqueId() const {
     DCHECK(rare_paint_data_);
     return rare_paint_data_ ? rare_paint_data_->UniqueId() : 0;
   }

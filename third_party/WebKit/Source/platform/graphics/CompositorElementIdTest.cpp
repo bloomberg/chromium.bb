@@ -15,23 +15,12 @@ uint64_t IdFromCompositorElementId(CompositorElementId element_id) {
 }
 
 TEST_F(CompositorElementIdTest, EncodeDecode) {
-  CompositorElementId element_id = CompositorElementIdFromLayoutObjectId(
+  CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(1);
+  EXPECT_EQ(1u, IdFromCompositorElementId(element_id));
+
+  element_id = CompositorElementIdFromUniqueObjectId(
       1, CompositorElementIdNamespace::kPrimary);
   EXPECT_EQ(1u, IdFromCompositorElementId(element_id));
-  EXPECT_EQ(CompositorElementIdNamespace::kPrimary,
-            NamespaceFromCompositorElementId(element_id));
-
-  element_id = CompositorElementIdFromDOMNodeId(
-      1, CompositorElementIdNamespace::kLinkHighlight);
-  EXPECT_EQ(1u, IdFromCompositorElementId(element_id));
-  EXPECT_EQ(CompositorElementIdNamespace::kLinkHighlight,
-            NamespaceFromCompositorElementId(element_id));
-
-  element_id = CompositorElementIdFromScrollbarId(
-      23, CompositorElementIdNamespace::kScrollbar);
-  EXPECT_EQ(23u, IdFromCompositorElementId(element_id));
-  EXPECT_EQ(CompositorElementIdNamespace::kScrollbar,
-            NamespaceFromCompositorElementId(element_id));
 }
 
 }  // namespace blink
