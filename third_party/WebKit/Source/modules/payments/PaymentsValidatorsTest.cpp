@@ -76,7 +76,7 @@ INSTANTIATE_TEST_CASE_P(
         CurrencyCodeTestCase("USDO", "http://www.example.com", true),
         CurrencyCodeTestCase("USDO", "urn:iso:std:iso:4217", false),
         CurrencyCodeTestCase("usd", "http://www.example.com", true),
-        CurrencyCodeTestCase("usd", "urn:iso:std:iso:4217", false),
+        CurrencyCodeTestCase("usd", "urn:iso:std:iso:4217", true),
         CurrencyCodeTestCase("ANYSTRING", "http://www.example.com", true),
         CurrencyCodeTestCase("ANYSTRING", "urn:iso:std:iso:4217", false),
         CurrencyCodeTestCase("", "http://www.example.com", true),

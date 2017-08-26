@@ -74,7 +74,7 @@ struct TypeConverter<PaymentCurrencyAmountPtr, blink::PaymentCurrencyAmount> {
   static PaymentCurrencyAmountPtr Convert(
       const blink::PaymentCurrencyAmount& input) {
     PaymentCurrencyAmountPtr output = PaymentCurrencyAmount::New();
-    output->currency = input.currency();
+    output->currency = input.currency().UpperASCII();
     output->value = input.value();
     output->currency_system = input.currencySystem();
     return output;
@@ -206,7 +206,7 @@ void ValidateShippingOptionOrPaymentItem(const T& item,
   if (!PaymentsValidators::IsValidCurrencyCodeFormat(
           item.amount().currency(), item.amount().currencySystem(),
           &error_message)) {
-    exception_state.ThrowTypeError(error_message);
+    exception_state.ThrowRangeError(error_message);
     return;
   }
 }
