@@ -181,6 +181,7 @@ void BrowserAccessibilityManagerAndroid::SendLocationChangeEvents(
     if (!wcax)
       return;
     wcax->SendDelayedWindowContentChangedEvent();
+    return;
   }
   BrowserAccessibilityManager::SendLocationChangeEvents(params);
 }
