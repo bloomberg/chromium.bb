@@ -1,0 +1,45 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var workerScript = `
+    eval("function foo() {}");
+    postMessage("ready")`;
+    var blob = new Blob([workerScript], { type: "text/javascript" });
+    worker = new Worker(URL.createObjectURL(blob));
+    worker.onmessage = () => {
+        eval("debugger;" + "\n".repeat(10) + "function foo() { }");
+    }
+}
+
+async function test() {
+  await SourcesTestRunner.startDebuggerTestPromise();
+  TestRunner.evaluateInPageWithTimeout('testFunction()');
+  var sourceFrame = await waitForPausedUISourceCode();
+  SourcesTestRunner.createNewBreakpoint(sourceFrame, 10, '', true);
+  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
+  await SourcesTestRunner.dumpJavaScriptSourceFrameBreakpoints(sourceFrame);
+  SourcesTestRunner.completeDebuggerTest();
+
+  function waitForPausedUISourceCode() {
+    return new Promise(resolve => {
+      TestRunner.addSniffer(Sources.JavaScriptSourceFrame.prototype, 'setExecutionLocation', function() {
+        SourcesTestRunner.showUISourceCodePromise(this.uiSourceCode()).then(() => {
+          resolve(this);
+        });
+      });
+    });
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Tests that breakpoints work in anonymous scripts with >1 targets.</p>
+</body>
+</html>

@@ -652,7 +652,8 @@ crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker
 
 crbug.com/749251 [ Mac ] http/tests/inspector/application-panel/resources-panel-websql.html [ Failure Pass ]
 
-crbug.com/233303 [ Win7 Debug ] inspector/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Failure Timeout ]
+crbug.com/233303 [ Win7 Debug ] http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Failure Timeout ]
+crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/dom-breakpoints.html [ Pass Failure Timeout ]
 
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
@@ -717,7 +718,8 @@ crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ Fail
 crbug.com/498539 [ Win ] inspector/tracing/decode-resize.html [ Failure Timeout ]
 crbug.com/498539 inspector/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
 crbug.com/498539 virtual/threaded/inspector/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
-crbug.com/498539 [ Mac ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
+crbug.com/498539 [ Mac ] http/tests/devtools/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
+crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
 
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
@@ -1444,7 +1446,8 @@ crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-clipped
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Skip ]
 crbug.com/591500 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
 
-crbug.com/750287 inspector/sources/debugger/live-edit.html [ NeedsManualRebaseline ]
+crbug.com/750287 http/tests/devtools/sources/debugger/live-edit.html [ NeedsManualRebaseline ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger/live-edit.html [ NeedsManualRebaseline ]
 
 crbug.com/618082 [ Win10 ] printing/thead-repeats-at-top-of-each-page.html [ Failure ]
 crbug.com/618082 [ Win10 ] virtual/threaded/printing/thead-repeats-at-top-of-each-page.html [ Failure ]
@@ -1495,7 +1498,8 @@ crbug.com/564109 [ Win ]  virtual/mojo-loading/http/tests/webfont/font-display-i
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
-crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
+crbug.com/572723 http/tests/devtools/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
@@ -1573,7 +1577,8 @@ crbug.com/620432 accessibility/aria-activedescendant.html [ Failure ]
 
 crbug.com/399507 virtual/threaded/inspector/tracing/timeline-paint/layer-tree.html [ Skip ]
 
-crbug.com/635909 inspector/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ NeedsManualRebaseline Timeout ]
+crbug.com/635909 http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ NeedsManualRebaseline Timeout ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ NeedsManualRebaseline Timeout ]
 
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
 crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
@@ -1596,7 +1601,8 @@ crbug.com/705125 virtual/mojo-loading/http/tests/security/suborigins/crossorigin
 crbug.com/626703 external/wpt/resource-timing/resource_TAO_space.htm [ Pass Failure ]
 crbug.com/626703 [ Mac ] external/wpt/web-animations/interfaces/AnimationTimeline/document-timeline.html [ Failure ]
 
-crbug.com/698077 inspector/sources/debugger/debug-inlined-scripts.html [ NeedsManualRebaseline ]
+crbug.com/698077 http/tests/devtools/sources/debugger/debug-inlined-scripts.html [ NeedsManualRebaseline ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger/debug-inlined-scripts.html [ NeedsManualRebaseline ]
 
 # Working on getting the CSP tests going:
 crbug.com/694525 external/wpt/content-security-policy/blink-contrib [ Skip ]

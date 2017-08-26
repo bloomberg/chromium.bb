@@ -1,0 +1,53 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/console-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    debugger;
+}
+
+var test = function() {
+  TestRunner.addSniffer(SDK.RuntimeModel.prototype, '_inspectRequested', inspect);
+  TestRunner.addSniffer(Common.Revealer, 'revealPromise', oneRevealPromise, true);
+
+  function oneRevealPromise(node, revealPromise) {
+    if (!(node instanceof SDK.RemoteObject))
+      return;
+    revealPromise.then(updateFocusedNode);
+  }
+
+  function updateFocusedNode() {
+    TestRunner.addResult('Selected node id: \'' + UI.panels.elements.selectedDOMNode().getAttribute('id') + '\'.');
+    SourcesTestRunner.completeDebuggerTest();
+  }
+
+  function inspect(objectId, hints) {
+    TestRunner.addResult('WebInspector.inspect called with: ' + objectId.description);
+    TestRunner.addResult('WebInspector.inspect\'s hints are: ' + JSON.stringify(Object.keys(hints)));
+  }
+
+  SourcesTestRunner.startDebuggerTest(step1);
+
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
+
+  function step2(callFrames) {
+    ConsoleTestRunner.evaluateInConsoleAndDump('inspect($(\'#p1\'))');
+  }
+};
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p id="p1">
+Tests that inspect() command line api works while on breakpoint.
+</p>
+
+</body>
+</html>

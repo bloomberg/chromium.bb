@@ -1,0 +1,47 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    return 0;
+}
+
+var test = function() {
+  var testName = TestRunner.mainTarget.inspectedURL();
+  testName = testName.substring(testName.lastIndexOf('/') + 1);
+
+  SourcesTestRunner.startDebuggerTest(step1);
+
+  function step1() {
+    SourcesTestRunner.showScriptSource(testName, step2);
+  }
+
+  function step2(sourceFrame) {
+    TestRunner.addResult('Main resource was shown.');
+    SourcesTestRunner.setBreakpoint(sourceFrame, 8, '', true);
+    UI.panels.sources._toggleBreakpointsActive();
+    TestRunner.reloadPage(step3);
+  }
+
+  function step3() {
+    TestRunner.addResult('Main resource was shown.');
+    if (!Bindings.breakpointManager.breakpointsActive())
+      TestRunner.addResult('Breakpoints are deactivated.');
+    else
+      TestRunner.addResult('Error: breakpoints are activated.');
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that breakpoints are not activated on page reload.<a href="https://bugs.webkit.org/show_bug.cgi?id=41461">Bug 41461</a>
+</p>
+</body>
+</html>

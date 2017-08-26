@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    setTimeout(timeout, 0);
+}
+
+function timeout()
+{
+    window.addEventListener("paste", onPaste, false);
+
+    var input = document.getElementById("input");
+    input.value = "value";
+    input.focus();
+    input.select();
+    document.execCommand("Copy");
+
+    input.value = "";
+    input.focus();
+    document.execCommand("Paste");
+}
+
+function onPaste(e)
+{
+    debugger;
+    window.removeEventListener("paste", onPaste, false);
+    var items = (e.originalEvent || e).clipboardData.items;
+    var item = items[0];
+    item.getAsString(onGetAsString);
+}
+
+function onGetAsString()
+{
+    debugger;
+}
+
+function test() {
+  var totalDebuggerStatements = 2;
+  SourcesTestRunner.runAsyncCallStacksTest(totalDebuggerStatements);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<input type="text" id="input"></input>
+<p>
+Tests asynchronous call stacks for DataTransferItem.getAsString.
+</p>
+
+</body>
+</html>

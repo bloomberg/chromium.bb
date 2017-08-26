@@ -1,0 +1,49 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+function foo() {
+  Promise.resolve().then(() => 239).then(() => 42);
+  Promise.resolve();
+  return;
+}
+//# sourceURL=foo.js
+</script>
+<script>
+
+function test() {
+  SourcesTestRunner.startDebuggerTestPromise().then(
+      () => SourcesTestRunner.showScriptSource('foo.js', didShowScriptSource));
+
+  function didShowScriptSource(sourceFrame) {
+    var uiSourceCode = sourceFrame._uiSourceCode;
+    var breakpointManager = Bindings.breakpointManager;
+
+    TestRunner.addResult('Locations for first line');
+    breakpointManager.possibleBreakpoints(uiSourceCode, new TextUtils.TextRange(0, 0, 1, 0))
+        .then(dumpLocations)
+        .then(() => TestRunner.addResult('All locations'))
+        .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new TextUtils.TextRange(0, 0, 6, 0)))
+        .then(dumpLocations)
+        .then(() => TestRunner.addResult('Existing location by position'))
+        .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new TextUtils.TextRange(2, 31, 2, 32)))
+        .then(dumpLocations)
+        .then(() => TestRunner.addResult('Not existing location by position'))
+        .then(() => breakpointManager.possibleBreakpoints(uiSourceCode, new TextUtils.TextRange(2, 32, 2, 33)))
+        .then(dumpLocations)
+        .then(() => SourcesTestRunner.completeDebuggerTest());
+  }
+
+  function dumpLocations(locations) {
+    for (var location of locations)
+      TestRunner.addResult(`location(${location.lineNumber}, ${location.columnNumber})`);
+  }
+};
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Checks that BreakpointManager.possibleBreakpoints returns correct locations</p>
+</body>
+</html>

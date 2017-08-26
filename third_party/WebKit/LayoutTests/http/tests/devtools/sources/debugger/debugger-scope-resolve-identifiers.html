@@ -1,0 +1,35 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script src="resources/resolve-identifiers.js"></script>
+<script>
+function test() {
+  Runtime.experiments.enableForTest('resolveVariableNames');
+  SourcesTestRunner.waitForScriptSource('resolve-identifiers.ts', onSourceMapLoaded);
+
+  function onSourceMapLoaded() {
+    SourcesTestRunner.startDebuggerTest(() => SourcesTestRunner.runTestFunctionAndWaitUntilPaused());
+    TestRunner.addSniffer(Sources.SourceMapNamesResolver, '_scopeResolvedForTest', onAllScopesResolved, true);
+  }
+
+  function onAllScopesResolved() {
+    SourcesTestRunner.expandScopeVariablesSidebarPane(onSidebarsExpanded);
+  }
+
+  function onSidebarsExpanded() {
+    TestRunner.addResult('');
+    SourcesTestRunner.dumpScopeVariablesSidebarPane();
+    SourcesTestRunner.completeDebuggerTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests resolving variable names via source maps.
+</p>
+</body>
+</html>

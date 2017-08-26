@@ -1,0 +1,59 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script src="../../../inspector/resources/compiled.js"></script>
+<script>
+
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
+
+  function step1() {
+    SourcesTestRunner.showScriptSource('source1.js', step2);
+  }
+
+  function step2(sourceFrame) {
+    SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady).then(onBreakpointsReady);
+    SourcesTestRunner.setBreakpoint(sourceFrame, 14, '', true);
+
+    function onBreakpointsReady() {
+      SourcesTestRunner.dumpBreakpointSidebarPane('before reload:');
+      Promise
+          .all([
+            SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady),
+            new Promise(resolve => TestRunner.reloadPage(resolve))
+          ])
+          .then(finishIfReady);
+    }
+
+    function finishIfReady() {
+      SourcesTestRunner.dumpBreakpointSidebarPane('after reload:');
+      SourcesTestRunner.completeDebuggerTest();
+    }
+  }
+
+  function waitUntilReady() {
+    var expectedBreakpointLocations = [[16, 4]];
+    var paneElement = self.runtime.sharedInstance(Sources.JavaScriptBreakpointsSidebarPane).contentElement;
+    var entries = Array.from(paneElement.querySelectorAll('.breakpoint-entry'));
+    for (var entry of entries) {
+      var uiLocation = entry[Sources.JavaScriptBreakpointsSidebarPane._locationSymbol];
+      if (Bindings.CompilerScriptMapping.StubProjectID === uiLocation.uiSourceCode.project().id())
+        return SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady);
+      if (!uiLocation.uiSourceCode.url().endsWith('source1.js'))
+        return SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady);
+      expectedBreakpointLocations = expectedBreakpointLocations.filter(
+          (location) => (location[0] != uiLocation.lineNumber && location[1] != uiLocation.columnNumber));
+    }
+    if (expectedBreakpointLocations.length)
+      return SourcesTestRunner.waitBreakpointSidebarPane().then(waitUntilReady);
+    return Promise.resolve();
+  }
+};
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests "reload" from within inspector window while on pause.</p>
+</body>
+</html>
