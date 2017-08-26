@@ -8,6 +8,7 @@ import "cc/ipc/copy_output_request.mojom";
 import "cc/ipc/copy_output_result.mojom";
 import "cc/ipc/filter_operation.mojom";
 import "cc/ipc/filter_operations.mojom";
+import "cc/ipc/surface_id.mojom";
 import "cc/ipc/texture_mailbox.mojom";
 
 // All functions on this interface echo their arguments to test StructTraits
@@ -24,6 +25,9 @@ interface TraitsTestService {
 
   [Sync]
   EchoFilterOperations(FilterOperations f) => (FilterOperations pass);
+
+  [Sync]
+  EchoSurfaceId(SurfaceId s) => (SurfaceId pass);
 
   [Sync]
   EchoTextureMailbox(TextureMailbox t) =>
