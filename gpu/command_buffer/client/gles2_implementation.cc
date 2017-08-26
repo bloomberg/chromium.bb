@@ -357,12 +357,8 @@ void GLES2Implementation::RunIfContextNotLost(const base::Closure& callback) {
     callback.Run();
 }
 
-int32_t GLES2Implementation::GetStreamId() const {
-  return gpu_control_->GetStreamId();
-}
-
-void GLES2Implementation::FlushOrderingBarrierOnStream(int32_t stream_id) {
-  gpu_control_->FlushOrderingBarrierOnStream(stream_id);
+void GLES2Implementation::FlushPendingWork() {
+  gpu_control_->FlushPendingWork();
 }
 
 void GLES2Implementation::SignalSyncToken(const gpu::SyncToken& sync_token,
@@ -6139,8 +6135,7 @@ void GLES2Implementation::GenSyncTokenCHROMIUM(GLuint64 fence_sync,
   }
 
   // Copy the data over after setting the data to ensure alignment.
-  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetStreamId(),
+  SyncToken sync_token_data(gpu_control_->GetNamespaceID(), 0,
                             gpu_control_->GetCommandBufferID(), fence_sync);
   sync_token_data.SetVerifyFlush();
   memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
@@ -6163,8 +6158,7 @@ void GLES2Implementation::GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,
   }
 
   // Copy the data over after setting the data to ensure alignment.
-  SyncToken sync_token_data(gpu_control_->GetNamespaceID(),
-                            gpu_control_->GetStreamId(),
+  SyncToken sync_token_data(gpu_control_->GetNamespaceID(), 0,
                             gpu_control_->GetCommandBufferID(), fence_sync);
   memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
 }
@@ -6194,15 +6188,9 @@ void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte **sync_tokens,
     }
   }
 
-  // This step must be done after all unverified tokens have finished processing
-  // CanWaitUnverifiedSyncToken(), command buffers use that to do any necessary
-  // flushes.
-  if (requires_synchronization) {
-    // Make sure we have no pending ordering barriers by flushing now.
-    FlushHelper();
-    // Ensure all the fence syncs are visible on GPU service.
+  // Ensure all the fence syncs are visible on GPU service.
+  if (requires_synchronization)
     gpu_control_->EnsureWorkVisible();
-  }
 }
 
 void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token_data) {

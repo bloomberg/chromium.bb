@@ -281,7 +281,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
 
       GlobalStateThatImpactsTilePriority global_state(GlobalStateForTest());
       tile_manager()->PrepareTiles(global_state);
-      tile_manager()->Flush();
+      tile_manager()->CheckForCompletedTasks();
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

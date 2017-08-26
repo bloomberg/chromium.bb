@@ -117,8 +117,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   void EnsureWorkVisible() override;
   gpu::CommandBufferNamespace GetNamespaceID() const override;
   gpu::CommandBufferId GetCommandBufferID() const override;
-  int32_t GetStreamId() const override;
-  void FlushOrderingBarrierOnStream(int32_t stream_id) override;
+  void FlushPendingWork() override;
   uint64_t GenerateFenceSyncRelease() override;
   bool IsFenceSyncRelease(uint64_t release) override;
   bool IsFenceSyncFlushed(uint64_t release) override;
@@ -181,6 +180,8 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
     }
   }
 
+  void OrderingBarrierHelper(int32_t put_offset);
+
   // Send an IPC message over the GPU channel. This is private to fully
   // encapsulate the channel; all callers of this function must explicitly
   // verify that the context has not been lost.
@@ -195,10 +196,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
       const GpuCommandBufferMsg_SwapBuffersCompleted_Params& params);
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval);
-
-  // Updates the highest verified release fence sync.
-  void UpdateVerifiedReleases(uint32_t verified_flush);
-  void CleanupFlushedReleases(uint32_t highest_verified_flush_id);
 
   // Try to read an updated copy of the state from shared memory, and calls
   // OnGpuStateError() if the new state has an error.
@@ -262,18 +259,15 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   const int channel_id_;
   const int32_t route_id_;
   const int32_t stream_id_;
-  uint32_t flush_count_ = 0;
+  uint32_t last_flush_id_ = 0;
   int32_t last_put_offset_ = -1;
-  int32_t last_barrier_put_offset_ = -1;
   bool has_buffer_ = false;
 
   // Next generated fence sync.
   uint64_t next_fence_sync_release_ = 1;
 
+  // Sync token waits that haven't been flushed yet.
   std::vector<SyncToken> pending_sync_token_fences_;
-
-  // Unverified flushed fence syncs with their corresponding flush id.
-  std::queue<std::pair<uint64_t, uint32_t>> flushed_release_flush_id_;
 
   // Last flushed fence sync release, same as last item in queue if not empty.
   uint64_t flushed_fence_sync_release_ = 0;

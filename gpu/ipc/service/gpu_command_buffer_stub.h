@@ -177,9 +177,8 @@ class GPU_EXPORT GpuCommandBufferStub
                                  int32_t end,
                                  IPC::Message* reply_message);
   void OnAsyncFlush(int32_t put_offset,
-                    uint32_t flush_count,
-                    const std::vector<ui::LatencyInfo>& latency_info,
-                    const std::vector<SyncToken>& sync_token_fences);
+                    uint32_t flush_id,
+                    const std::vector<ui::LatencyInfo>& latency_info);
   void OnRegisterTransferBuffer(int32_t id,
                                 base::SharedMemoryHandle transfer_buffer,
                                 uint32_t size);
@@ -234,7 +233,7 @@ class GPU_EXPORT GpuCommandBufferStub
   const SequenceId sequence_id_;
   const int32_t stream_id_;
   const int32_t route_id_;
-  uint32_t last_flush_count_;
+  uint32_t last_flush_id_;
 
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<gles2::GLES2Decoder> decoder_;

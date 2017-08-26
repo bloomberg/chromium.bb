@@ -29,21 +29,6 @@ base::AtomicSequenceNumber g_next_transfer_buffer_id;
 
 }  // namespace
 
-GpuChannelHost::StreamFlushInfo::StreamFlushInfo()
-    : next_stream_flush_id(1),
-      flushed_stream_flush_id(0),
-      verified_stream_flush_id(0),
-      flush_pending(false),
-      route_id(MSG_ROUTING_NONE),
-      put_offset(0),
-      flush_count(0),
-      flush_id(0) {}
-
-GpuChannelHost::StreamFlushInfo::StreamFlushInfo(const StreamFlushInfo& other) =
-    default;
-
-GpuChannelHost::StreamFlushInfo::~StreamFlushInfo() {}
-
 // static
 scoped_refptr<GpuChannelHost> GpuChannelHost::Create(
     GpuChannelHostFactory* factory,
@@ -129,66 +114,56 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
 
 uint32_t GpuChannelHost::OrderingBarrier(
     int32_t route_id,
-    int32_t stream_id,
     int32_t put_offset,
-    uint32_t flush_count,
-    const std::vector<ui::LatencyInfo>& latency_info,
-    const std::vector<SyncToken>& sync_token_fences,
-    bool put_offset_changed,
-    bool do_flush,
-    uint32_t* highest_verified_flush_id) {
+    std::vector<ui::LatencyInfo> latency_info,
+    std::vector<SyncToken> sync_token_fences) {
   AutoLock lock(context_lock_);
-  StreamFlushInfo& flush_info = stream_flush_info_[stream_id];
-  if (flush_info.flush_pending && flush_info.route_id != route_id)
-    InternalFlush(&flush_info);
 
-  *highest_verified_flush_id = flush_info.verified_stream_flush_id;
+  if (flush_list_.empty() || flush_list_.back().route_id != route_id)
+    flush_list_.push_back(FlushParams());
 
-  if (put_offset_changed) {
-    const uint32_t flush_id = flush_info.next_stream_flush_id++;
-    flush_info.flush_pending = true;
-    flush_info.route_id = route_id;
-    flush_info.put_offset = put_offset;
-    flush_info.flush_count = flush_count;
-    flush_info.flush_id = flush_id;
-    flush_info.latency_info.insert(flush_info.latency_info.end(),
-                                   latency_info.begin(), latency_info.end());
-    flush_info.sync_token_fences.insert(flush_info.sync_token_fences.end(),
-                                        sync_token_fences.begin(),
-                                        sync_token_fences.end());
+  FlushParams& flush_params = flush_list_.back();
+  flush_params.flush_id = next_flush_id_++;
+  flush_params.route_id = route_id;
+  flush_params.put_offset = put_offset;
+  flush_params.latency_info.insert(
+      flush_params.latency_info.end(),
+      std::make_move_iterator(latency_info.begin()),
+      std::make_move_iterator(latency_info.end()));
+  flush_params.sync_token_fences.insert(
+      flush_params.sync_token_fences.end(),
+      std::make_move_iterator(sync_token_fences.begin()),
+      std::make_move_iterator(sync_token_fences.end()));
+  return flush_params.flush_id;
+}
 
-    if (do_flush)
-      InternalFlush(&flush_info);
+void GpuChannelHost::EnsureFlush(uint32_t flush_id) {
+  AutoLock lock(context_lock_);
+  InternalFlush(flush_id);
+}
 
-    return flush_id;
+void GpuChannelHost::VerifyFlush(uint32_t flush_id) {
+  AutoLock lock(context_lock_);
+
+  InternalFlush(flush_id);
+
+  if (flush_id > verified_flush_id_) {
+    Send(new GpuChannelMsg_Nop());
+    verified_flush_id_ = next_flush_id_ - 1;
   }
-  return 0;
 }
 
-void GpuChannelHost::FlushPendingStream(int32_t stream_id) {
-  AutoLock lock(context_lock_);
-  auto flush_info_iter = stream_flush_info_.find(stream_id);
-  if (flush_info_iter == stream_flush_info_.end())
-    return;
-
-  StreamFlushInfo& flush_info = flush_info_iter->second;
-  if (flush_info.flush_pending)
-    InternalFlush(&flush_info);
-}
-
-void GpuChannelHost::InternalFlush(StreamFlushInfo* flush_info) {
+void GpuChannelHost::InternalFlush(uint32_t flush_id) {
   context_lock_.AssertAcquired();
-  DCHECK(flush_info);
-  DCHECK(flush_info->flush_pending);
-  DCHECK_LT(flush_info->flushed_stream_flush_id, flush_info->flush_id);
-  Send(new GpuCommandBufferMsg_AsyncFlush(
-      flush_info->route_id, flush_info->put_offset, flush_info->flush_count,
-      flush_info->latency_info, flush_info->sync_token_fences));
-  flush_info->latency_info.clear();
-  flush_info->sync_token_fences.clear();
-  flush_info->flush_pending = false;
 
-  flush_info->flushed_stream_flush_id = flush_info->flush_id;
+  if (!flush_list_.empty() && flush_id > flushed_flush_id_) {
+    DCHECK_EQ(flush_list_.back().flush_id, next_flush_id_ - 1);
+
+    Send(new GpuChannelMsg_FlushCommandBuffers(std::move(flush_list_)));
+
+    flush_list_.clear();
+    flushed_flush_id_ = next_flush_id_ - 1;
+  }
 }
 
 void GpuChannelHost::DestroyChannel() {
@@ -210,9 +185,8 @@ void GpuChannelHost::AddRouteWithTaskRunner(
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
       factory_->GetIOThreadTaskRunner();
   io_task_runner->PostTask(
-      FROM_HERE,
-      base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
-                 channel_filter_, route_id, listener, task_runner));
+      FROM_HERE, base::Bind(&GpuChannelHost::MessageFilter::AddRoute,
+                            channel_filter_, route_id, listener, task_runner));
 }
 
 void GpuChannelHost::RemoveRoute(int route_id) {
@@ -242,63 +216,6 @@ int32_t GpuChannelHost::ReserveImageId() {
 
 int32_t GpuChannelHost::GenerateRouteID() {
   return next_route_id_.GetNext();
-}
-
-uint32_t GpuChannelHost::ValidateFlushIDReachedServer(int32_t stream_id,
-                                                      bool force_validate) {
-  // Store what flush ids we will be validating for all streams.
-  base::hash_map<int32_t, uint32_t> validate_flushes;
-  uint32_t flushed_stream_flush_id = 0;
-  uint32_t verified_stream_flush_id = 0;
-  {
-    AutoLock lock(context_lock_);
-    for (const auto& iter : stream_flush_info_) {
-      const int32_t iter_stream_id = iter.first;
-      const StreamFlushInfo& flush_info = iter.second;
-      if (iter_stream_id == stream_id) {
-        flushed_stream_flush_id = flush_info.flushed_stream_flush_id;
-        verified_stream_flush_id = flush_info.verified_stream_flush_id;
-      }
-
-      if (flush_info.flushed_stream_flush_id >
-          flush_info.verified_stream_flush_id) {
-        validate_flushes.insert(
-            std::make_pair(iter_stream_id, flush_info.flushed_stream_flush_id));
-      }
-    }
-  }
-
-  if (!force_validate && flushed_stream_flush_id == verified_stream_flush_id) {
-    // Current stream has no unverified flushes.
-    return verified_stream_flush_id;
-  }
-
-  if (Send(new GpuChannelMsg_Nop())) {
-    // Update verified flush id for all streams.
-    uint32_t highest_flush_id = 0;
-    AutoLock lock(context_lock_);
-    for (const auto& iter : validate_flushes) {
-      const int32_t validated_stream_id = iter.first;
-      const uint32_t validated_flush_id = iter.second;
-      StreamFlushInfo& flush_info = stream_flush_info_[validated_stream_id];
-      if (flush_info.verified_stream_flush_id < validated_flush_id) {
-        flush_info.verified_stream_flush_id = validated_flush_id;
-      }
-
-      if (validated_stream_id == stream_id)
-        highest_flush_id = flush_info.verified_stream_flush_id;
-    }
-
-    return highest_flush_id;
-  }
-
-  return 0;
-}
-
-uint32_t GpuChannelHost::GetHighestValidatedFlushID(int32_t stream_id) {
-  AutoLock lock(context_lock_);
-  StreamFlushInfo& flush_info = stream_flush_info_[stream_id];
-  return flush_info.verified_stream_flush_id;
 }
 
 GpuChannelHost::~GpuChannelHost() {
