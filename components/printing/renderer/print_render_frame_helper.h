@@ -434,10 +434,10 @@ class PrintRenderFrameHelper
     void OnPrintPreview();
 
     // Create the print preview document. |pages| is empty to print all pages.
-    // Takes ownership of |prepared_frame|.
-    bool CreatePreviewDocument(PrepareFrameAndViewForPrint* prepared_frame,
-                               const std::vector<int>& pages,
-                               SkiaDocumentType doc_type);
+    bool CreatePreviewDocument(
+        std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
+        const std::vector<int>& pages,
+        SkiaDocumentType doc_type);
 
     // Called after a page gets rendered. |page_time| is how long the
     // rendering took.
