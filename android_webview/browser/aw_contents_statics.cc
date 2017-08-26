@@ -4,6 +4,7 @@
 
 #include "android_webview/browser/address_parser.h"
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_contents.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/aw_safe_browsing_whitelist_manager.h"
@@ -13,6 +14,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/security_interstitials/core/urls.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -56,9 +58,11 @@ void SafeBrowsingWhitelistAssigned(const JavaRef<jobject>& callback,
 ScopedJavaLocalRef<jstring> GetSafeBrowsingPrivacyPolicyUrl(
     JNIEnv* env,
     const JavaParamRef<jclass>&) {
-  // TODO(ntfschr): append the locale to this URL
-  return base::android::ConvertUTF8ToJavaString(
-      env, security_interstitials::kSafeBrowsingPrivacyPolicyUrl);
+  GURL privacy_policy_url(
+      security_interstitials::kSafeBrowsingPrivacyPolicyUrl);
+  privacy_policy_url = google_util::AppendGoogleLocaleParam(
+      privacy_policy_url, AwContents::GetLocale());
+  return base::android::ConvertUTF8ToJavaString(env, privacy_policy_url.spec());
 }
 
 // static
