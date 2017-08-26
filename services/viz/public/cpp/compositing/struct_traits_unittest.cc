@@ -11,7 +11,6 @@
 #include "cc/ipc/filter_operations_struct_traits.h"
 #include "cc/ipc/frame_sink_id_struct_traits.h"
 #include "cc/ipc/local_surface_id_struct_traits.h"
-#include "cc/ipc/surface_id_struct_traits.h"
 #include "cc/ipc/texture_mailbox_struct_traits.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/debug_border_draw_quad.h"
@@ -38,6 +37,7 @@
 #include "services/viz/public/cpp/compositing/returned_resource_struct_traits.h"
 #include "services/viz/public/cpp/compositing/selection_struct_traits.h"
 #include "services/viz/public/cpp/compositing/shared_quad_state_struct_traits.h"
+#include "services/viz/public/cpp/compositing/surface_id_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_info_struct_traits.h"
 #include "services/viz/public/cpp/compositing/surface_sequence_struct_traits.h"
 #include "services/viz/public/cpp/compositing/transferable_resource_struct_traits.h"
@@ -802,6 +802,17 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(resource_size_in_pixels,
             out_stream_video_draw_quad->resource_size_in_pixels());
   EXPECT_EQ(matrix, out_stream_video_draw_quad->matrix);
+}
+
+TEST_F(StructTraitsTest, SurfaceId) {
+  static constexpr FrameSinkId frame_sink_id(1337, 1234);
+  static LocalSurfaceId local_surface_id(0xfbadbeef,
+                                         base::UnguessableToken::Create());
+  SurfaceId input(frame_sink_id, local_surface_id);
+  SurfaceId output;
+  SerializeAndDeserialize<mojom::SurfaceId>(input, &output);
+  EXPECT_EQ(frame_sink_id, output.frame_sink_id());
+  EXPECT_EQ(local_surface_id, output.local_surface_id());
 }
 
 TEST_F(StructTraitsTest, TransferableResource) {

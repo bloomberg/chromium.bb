@@ -890,7 +890,7 @@ mojom("offscreen_canvas_mojo_bindings") {
   ]
   deps = [
     "//cc/ipc:interfaces",
-    "//services/viz/public/interfaces/compositing",
+    "//services/viz/public/interfaces",
   ]
 
   component_output_prefix = "blink_offscreen_canvas_mojo_bindings"
