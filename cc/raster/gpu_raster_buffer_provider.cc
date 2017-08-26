@@ -180,13 +180,8 @@ void GpuRasterBufferProvider::OrderingBarrier() {
 }
 
 void GpuRasterBufferProvider::Flush() {
-  if (async_worker_context_enabled_) {
-    int32_t worker_stream_id =
-        worker_context_provider_->ContextSupport()->GetStreamId();
-
-    compositor_context_provider_->ContextSupport()
-        ->FlushOrderingBarrierOnStream(worker_stream_id);
-  }
+  if (async_worker_context_enabled_)
+    compositor_context_provider_->ContextSupport()->FlushPendingWork();
 }
 
 viz::ResourceFormat GpuRasterBufferProvider::GetResourceFormat(

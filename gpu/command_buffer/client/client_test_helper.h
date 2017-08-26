@@ -117,8 +117,7 @@ class MockClientGpuControl : public GpuControl {
   MOCK_METHOD0(EnsureWorkVisible, void());
   MOCK_CONST_METHOD0(GetNamespaceID, CommandBufferNamespace());
   MOCK_CONST_METHOD0(GetCommandBufferID, CommandBufferId());
-  MOCK_CONST_METHOD0(GetStreamId, int32_t());
-  MOCK_METHOD1(FlushOrderingBarrierOnStream, void(int32_t));
+  MOCK_METHOD0(FlushPendingWork, void());
   MOCK_METHOD0(GenerateFenceSyncRelease, uint64_t());
   MOCK_METHOD1(IsFenceSyncRelease, bool(uint64_t release));
   MOCK_METHOD1(IsFenceSyncFlushed, bool(uint64_t release));

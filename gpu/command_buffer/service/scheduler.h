@@ -31,6 +31,19 @@ class SyncPointManager;
 
 class GPU_EXPORT Scheduler {
  public:
+  struct GPU_EXPORT Task {
+    Task(SequenceId sequence_id,
+         base::OnceClosure closure,
+         std::vector<SyncToken> sync_token_fences);
+    Task(Task&& other);
+    ~Task();
+    Task& operator=(Task&& other);
+
+    SequenceId sequence_id;
+    base::OnceClosure closure;
+    std::vector<SyncToken> sync_token_fences;
+  };
+
   Scheduler(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
             SyncPointManager* sync_point_manager);
 
@@ -53,9 +66,9 @@ class GPU_EXPORT Scheduler {
   // Schedules task (closure) to run on the sequence. The task is blocked until
   // the sync token fences are released or determined to be invalid. Tasks are
   // run in the order in which they are submitted.
-  void ScheduleTask(SequenceId sequence_id,
-                    base::OnceClosure closure,
-                    const std::vector<SyncToken>& sync_token_fences);
+  void ScheduleTask(Task task);
+
+  void ScheduleTasks(std::vector<Task> tasks);
 
   // Continue running task on the sequence with the closure. This must be called
   // while running a previously scheduled task.
@@ -94,6 +107,8 @@ class GPU_EXPORT Scheduler {
                               uint32_t order_num,
                               SequenceId release_sequence_id,
                               SequenceId waiting_sequence_id);
+
+  void ScheduleTaskHelper(Task task);
 
   void TryScheduleSequence(Sequence* sequence);
 

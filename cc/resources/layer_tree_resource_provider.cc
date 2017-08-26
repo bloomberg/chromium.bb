@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 
@@ -83,6 +84,9 @@ void LayerTreeResourceProvider::PrepareSendToParent(
     gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
     unverified_sync_tokens.push_back(new_sync_token.GetData());
   }
+
+  if (compositor_context_provider_)
+    compositor_context_provider_->ContextSupport()->FlushPendingWork();
 
   if (!unverified_sync_tokens.empty()) {
     DCHECK(settings_.delegated_sync_points_required);

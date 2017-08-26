@@ -65,6 +65,8 @@ source_set("ipc_common_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
+    "flush_params.cc",
+    "flush_params.h",
     "gpu_memory_buffer_support.cc",
     "gpu_memory_buffer_support.h",
     "gpu_message_generator.cc",

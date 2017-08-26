@@ -534,25 +534,25 @@ bool TileManager::PrepareTiles(
   return true;
 }
 
-void TileManager::Flush() {
-  TRACE_EVENT0("cc", "TileManager::Flush");
+void TileManager::CheckForCompletedTasks() {
+  TRACE_EVENT0("cc", "TileManager::CheckForCompletedTasks");
 
   if (!tile_task_manager_) {
-    TRACE_EVENT_INSTANT0("cc", "Flush aborted", TRACE_EVENT_SCOPE_THREAD);
+    TRACE_EVENT_INSTANT0("cc", "TileManager::CheckForCompletedTasksAborted",
+                         TRACE_EVENT_SCOPE_THREAD);
     return;
   }
 
   tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
-  // Actually flush.
-  raster_buffer_provider_->Flush();
-
   CheckPendingGpuWorkTiles(true /* issue_signals */);
 
-  TRACE_EVENT_INSTANT1("cc", "DidFlush", TRACE_EVENT_SCOPE_THREAD, "stats",
-                       RasterTaskCompletionStatsAsValue(flush_stats_));
-  flush_stats_ = RasterTaskCompletionStats();
+  TRACE_EVENT_INSTANT1(
+      "cc", "TileManager::CheckForCompletedTasksFinished",
+      TRACE_EVENT_SCOPE_THREAD, "stats",
+      RasterTaskCompletionStatsAsValue(raster_task_completion_stats_));
+  raster_task_completion_stats_ = RasterTaskCompletionStats();
 }
 
 void TileManager::DidModifyTilePriorities() {
@@ -1213,13 +1213,13 @@ void TileManager::OnRasterTaskCompleted(
   scheduled_draw_images_.erase(images_it);
 
   if (was_canceled) {
-    ++flush_stats_.canceled_count;
+    ++raster_task_completion_stats_.canceled_count;
     resource_pool_->ReleaseResource(resource);
     return;
   }
 
   resource_pool_->OnContentReplaced(resource->id(), tile_id);
-  ++flush_stats_.completed_count;
+  ++raster_task_completion_stats_.completed_count;
 
   if (!tile) {
     resource_pool_->ReleaseResource(resource);

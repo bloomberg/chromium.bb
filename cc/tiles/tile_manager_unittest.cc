@@ -1719,7 +1719,7 @@ TEST_F(TileManagerTest, LowResHasNoImage) {
         .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
     tile_manager->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();
-    tile_manager->Flush();
+    tile_manager->CheckForCompletedTasks();
 
     Tile* tile = tiling->TileAt(0, 0);
     // The tile in the tiling was rastered.

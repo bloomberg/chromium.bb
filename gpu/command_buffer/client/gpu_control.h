@@ -78,12 +78,8 @@ class GPU_EXPORT GpuControl {
   virtual CommandBufferNamespace GetNamespaceID() const = 0;
   virtual CommandBufferId GetCommandBufferID() const = 0;
 
-  // Returns the stream id for this context. Only relevant for IPC command
-  // buffer proxy. Used as extra command buffer data in sync tokens.
-  virtual int32_t GetStreamId() const = 0;
-
-  // Flush any outstanding ordering barriers on given stream.
-  virtual void FlushOrderingBarrierOnStream(int32_t stream_id) = 0;
+  // Flush any outstanding ordering barriers on all contexts.
+  virtual void FlushPendingWork() = 0;
 
   // Generates a fence sync which should be inserted into the GL command stream.
   // When the service executes the fence sync it is released. Fence syncs are

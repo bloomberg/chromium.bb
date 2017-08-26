@@ -688,31 +688,64 @@ bool GpuChannelMessageFilter::OnMessageReceived(const IPC::Message& message) {
   if (!gpu_channel_)
     return MessageErrorHandler(message, "Channel destroyed");
 
-  if (message.routing_id() == MSG_ROUTING_CONTROL ||
-      message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
-      message.type() == GpuCommandBufferMsg_WaitForGetOffsetInRange::ID) {
+  // TODO(sunnyps): Remove the async flush message once the non-scheduler code
+  // path is removed.
+  if (message.type() == GpuCommandBufferMsg_AsyncFlush::ID)
+    return MessageErrorHandler(message, "Invalid flush message");
+
+  std::vector<Scheduler::Task> tasks;
+
+  if (message.type() == GpuChannelMsg_FlushCommandBuffers::ID) {
+    GpuChannelMsg_FlushCommandBuffers::Param params;
+
+    if (!GpuChannelMsg_FlushCommandBuffers::Read(&message, &params))
+      return MessageErrorHandler(message, "Invalid flush message");
+
+    std::vector<FlushParams> flush_list = std::get<0>(std::move(params));
+
+    for (auto& flush_info : flush_list) {
+      GpuCommandBufferMsg_AsyncFlush flush_message(
+          flush_info.route_id, flush_info.put_offset, flush_info.flush_id,
+          std::move(flush_info.latency_info));
+
+      if (scheduler_) {
+        auto it = route_sequences_.find(flush_info.route_id);
+        if (it == route_sequences_.end()) {
+          DLOG(ERROR) << "Invalid route id in flush list";
+          continue;
+        }
+        tasks.emplace_back(
+            it->second /* sequence_id */,
+            base::BindOnce(&GpuChannel::HandleMessage,
+                           gpu_channel_->AsWeakPtr(), flush_message),
+            std::move(flush_info.sync_token_fences));
+      } else {
+        message_queue_->PushBackMessage(flush_message);
+      }
+    }
+
+    if (scheduler_)
+      scheduler_->ScheduleTasks(std::move(tasks));
+
+  } else if (message.routing_id() == MSG_ROUTING_CONTROL ||
+             message.type() == GpuCommandBufferMsg_WaitForTokenInRange::ID ||
+             message.type() ==
+                 GpuCommandBufferMsg_WaitForGetOffsetInRange::ID) {
     // It's OK to post task that may never run even for sync messages, because
     // if the channel is destroyed, the client Send will fail.
     main_task_runner_->PostTask(FROM_HERE,
                                 base::Bind(&GpuChannel::HandleOutOfOrderMessage,
                                            gpu_channel_->AsWeakPtr(), message));
   } else if (scheduler_) {
-    SequenceId sequence_id = route_sequences_[message.routing_id()];
-    if (sequence_id.is_null())
-      return MessageErrorHandler(message, "Invalid route");
+    auto it = route_sequences_.find(message.routing_id());
+    if (it == route_sequences_.end())
+      return MessageErrorHandler(message, "Invalid route id");
 
-    std::vector<SyncToken> sync_token_fences;
-    if (message.type() == GpuCommandBufferMsg_AsyncFlush::ID) {
-      GpuCommandBufferMsg_AsyncFlush::Param params;
-      if (!GpuCommandBufferMsg_AsyncFlush::Read(&message, &params))
-        return MessageErrorHandler(message, "Invalid flush message");
-      sync_token_fences = std::get<3>(params);
-    }
-
-    scheduler_->ScheduleTask(sequence_id,
-                             base::BindOnce(&GpuChannel::HandleMessage,
-                                            gpu_channel_->AsWeakPtr(), message),
-                             sync_token_fences);
+    scheduler_->ScheduleTask(
+        Scheduler::Task(it->second /* sequence_id */,
+                        base::BindOnce(&GpuChannel::HandleMessage,
+                                       gpu_channel_->AsWeakPtr(), message),
+                        std::vector<SyncToken>()));
   } else {
     // Message queue takes care of PostTask.
     message_queue_->PushBackMessage(message);

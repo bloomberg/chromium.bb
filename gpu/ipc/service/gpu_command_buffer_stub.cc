@@ -252,7 +252,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       sequence_id_(sequence_id),
       stream_id_(stream_id),
       route_id_(route_id),
-      last_flush_count_(0),
+      last_flush_id_(0),
       waiting_for_sync_point_(false),
       previous_processed_num_(0),
       active_url_(init_params.active_url),
@@ -974,26 +974,25 @@ void GpuCommandBufferStub::CheckCompleteWaits() {
 
 void GpuCommandBufferStub::OnAsyncFlush(
     int32_t put_offset,
-    uint32_t flush_count,
-    const std::vector<ui::LatencyInfo>& latency_info,
-    const std::vector<SyncToken>& sync_token_fences) {
+    uint32_t flush_id,
+    const std::vector<ui::LatencyInfo>& latency_info) {
   TRACE_EVENT1(
       "gpu", "GpuCommandBufferStub::OnAsyncFlush", "put_offset", put_offset);
   DCHECK(command_buffer_);
 
   // We received this message out-of-order. This should not happen but is here
   // to catch regressions. Ignore the message.
-  DVLOG_IF(0, flush_count - last_flush_count_ >= 0x8000000U)
+  DVLOG_IF(0, flush_id - last_flush_id_ >= 0x8000000U)
       << "Received a Flush message out-of-order";
 
-  if (flush_count > last_flush_count_ &&
+  if (flush_id > last_flush_id_ &&
       ui::LatencyInfo::Verify(latency_info,
                               "GpuCommandBufferStub::OnAsyncFlush") &&
       !latency_info_callback_.is_null()) {
     latency_info_callback_.Run(latency_info);
   }
 
-  last_flush_count_ = flush_count;
+  last_flush_id_ = flush_id;
   CommandBuffer::State pre_state = command_buffer_->GetState();
   FastSetActiveURL(active_url_, active_url_hash_, channel_);
   command_buffer_->Flush(put_offset, decoder_.get());

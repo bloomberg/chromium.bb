@@ -157,7 +157,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   // This causes any completed raster work to finalize, so that tiles get up to
   // date draw information.
-  void Flush();
+  void CheckForCompletedTasks();
 
   // Called when the required-for-activation/required-for-draw state of tiles
   // may have changed.
@@ -396,7 +396,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   ImageController image_controller_;
   CheckerImageTracker checker_image_tracker_;
 
-  RasterTaskCompletionStats flush_stats_;
+  RasterTaskCompletionStats raster_task_completion_stats_;
 
   TaskGraph graph_;
 

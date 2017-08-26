@@ -52,12 +52,12 @@ TEST_F(SchedulerTest, ScheduledTasksRunInOrder) {
       scheduler()->CreateSequence(SchedulingPriority::kNormal);
 
   bool ran1 = false;
-  scheduler()->ScheduleTask(sequence_id, GetClosure([&] { ran1 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id, GetClosure([&] { ran1 = true; }), std::vector<SyncToken>()));
 
   bool ran2 = false;
-  scheduler()->ScheduleTask(sequence_id, GetClosure([&] { ran2 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id, GetClosure([&] { ran2 = true; }), std::vector<SyncToken>()));
 
   task_runner()->RunPendingTasks();
   EXPECT_TRUE(ran1);
@@ -72,17 +72,17 @@ TEST_F(SchedulerTest, ContinuedTasksRunFirst) {
 
   bool ran1 = false;
   bool continued1 = false;
-  scheduler()->ScheduleTask(sequence_id, GetClosure([&] {
-                              scheduler()->ContinueTask(
-                                  sequence_id,
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id, GetClosure([&] {
+        scheduler()->ContinueTask(sequence_id,
                                   GetClosure([&] { continued1 = true; }));
-                              ran1 = true;
-                            }),
-                            std::vector<SyncToken>());
+        ran1 = true;
+      }),
+      std::vector<SyncToken>()));
 
   bool ran2 = false;
-  scheduler()->ScheduleTask(sequence_id, GetClosure([&] { ran2 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id, GetClosure([&] { ran2 = true; }), std::vector<SyncToken>()));
 
   task_runner()->RunPendingTasks();
   EXPECT_TRUE(ran1);
@@ -101,20 +101,23 @@ TEST_F(SchedulerTest, SequencesRunInPriorityOrder) {
   SequenceId sequence_id1 =
       scheduler()->CreateSequence(SchedulingPriority::kLowest);
   bool ran1 = false;
-  scheduler()->ScheduleTask(sequence_id1, GetClosure([&] { ran1 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
+                                            GetClosure([&] { ran1 = true; }),
+                                            std::vector<SyncToken>()));
 
   SequenceId sequence_id2 =
       scheduler()->CreateSequence(SchedulingPriority::kNormal);
   bool ran2 = false;
-  scheduler()->ScheduleTask(sequence_id2, GetClosure([&] { ran2 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2,
+                                            GetClosure([&] { ran2 = true; }),
+                                            std::vector<SyncToken>()));
 
   SequenceId sequence_id3 =
       scheduler()->CreateSequence(SchedulingPriority::kHighest);
   bool ran3 = false;
-  scheduler()->ScheduleTask(sequence_id3, GetClosure([&] { ran3 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id3,
+                                            GetClosure([&] { ran3 = true; }),
+                                            std::vector<SyncToken>()));
 
   task_runner()->RunPendingTasks();
   EXPECT_TRUE(ran3);
@@ -130,26 +133,30 @@ TEST_F(SchedulerTest, SequencesOfSamePriorityRunInOrder) {
   SequenceId sequence_id1 =
       scheduler()->CreateSequence(SchedulingPriority::kNormal);
   bool ran1 = false;
-  scheduler()->ScheduleTask(sequence_id1, GetClosure([&] { ran1 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
+                                            GetClosure([&] { ran1 = true; }),
+                                            std::vector<SyncToken>()));
 
   SequenceId sequence_id2 =
       scheduler()->CreateSequence(SchedulingPriority::kNormal);
   bool ran2 = false;
-  scheduler()->ScheduleTask(sequence_id2, GetClosure([&] { ran2 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2,
+                                            GetClosure([&] { ran2 = true; }),
+                                            std::vector<SyncToken>()));
 
   SequenceId sequence_id3 =
       scheduler()->CreateSequence(SchedulingPriority::kNormal);
   bool ran3 = false;
-  scheduler()->ScheduleTask(sequence_id3, GetClosure([&] { ran3 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id3,
+                                            GetClosure([&] { ran3 = true; }),
+                                            std::vector<SyncToken>()));
 
   SequenceId sequence_id4 =
       scheduler()->CreateSequence(SchedulingPriority::kNormal);
   bool ran4 = false;
-  scheduler()->ScheduleTask(sequence_id4, GetClosure([&] { ran4 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id4,
+                                            GetClosure([&] { ran4 = true; }),
+                                            std::vector<SyncToken>()));
 
   task_runner()->RunPendingTasks();
   EXPECT_TRUE(ran1);
@@ -179,18 +186,18 @@ TEST_F(SchedulerTest, SequenceWaitsForFence) {
 
   uint64_t release = 1;
   bool ran2 = false;
-  scheduler()->ScheduleTask(sequence_id2, GetClosure([&] {
-                              release_state->ReleaseFenceSync(release);
-                              ran2 = true;
-                            }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2, GetClosure([&] {
+                                              release_state->ReleaseFenceSync(
+                                                  release);
+                                              ran2 = true;
+                                            }),
+                                            std::vector<SyncToken>()));
 
-  SyncToken sync_token(namespace_id, 0 /* extra_data_field */,
-                       command_buffer_id, release);
+  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
 
   bool ran1 = false;
-  scheduler()->ScheduleTask(sequence_id1, GetClosure([&] { ran1 = true; }),
-                            {sync_token});
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id1, GetClosure([&] { ran1 = true; }), {sync_token}));
 
   task_runner()->RunPendingTasks();
   EXPECT_FALSE(ran1);
@@ -216,21 +223,21 @@ TEST_F(SchedulerTest, SequenceDoesNotWaitForInvalidFence) {
           namespace_id, command_buffer_id, sequence_id2);
 
   uint64_t release = 1;
-  SyncToken sync_token(namespace_id, 0 /* extra_data_field */,
-                       command_buffer_id, release);
+  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
 
   bool ran1 = false;
-  scheduler()->ScheduleTask(sequence_id1, GetClosure([&] { ran1 = true; }),
-                            {sync_token});
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id1, GetClosure([&] { ran1 = true; }), {sync_token}));
 
   // Release task is scheduled after wait task so release is treated as non-
   // existent.
   bool ran2 = false;
-  scheduler()->ScheduleTask(sequence_id2, GetClosure([&] {
-                              release_state->ReleaseFenceSync(release);
-                              ran2 = true;
-                            }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2, GetClosure([&] {
+                                              release_state->ReleaseFenceSync(
+                                                  release);
+                                              ran2 = true;
+                                            }),
+                                            std::vector<SyncToken>()));
 
   task_runner()->RunPendingTasks();
   EXPECT_TRUE(ran1);
@@ -249,8 +256,9 @@ TEST_F(SchedulerTest, ReleaseSequenceIsPrioritized) {
       scheduler()->CreateSequence(SchedulingPriority::kNormal);
 
   bool ran1 = false;
-  scheduler()->ScheduleTask(sequence_id1, GetClosure([&] { ran1 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id1,
+                                            GetClosure([&] { ran1 = true; }),
+                                            std::vector<SyncToken>()));
 
   SequenceId sequence_id2 =
       scheduler()->CreateSequence(SchedulingPriority::kLowest);
@@ -262,19 +270,19 @@ TEST_F(SchedulerTest, ReleaseSequenceIsPrioritized) {
 
   uint64_t release = 1;
   bool ran2 = false;
-  scheduler()->ScheduleTask(sequence_id2, GetClosure([&] {
-                              release_state->ReleaseFenceSync(release);
-                              ran2 = true;
-                            }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2, GetClosure([&] {
+                                              release_state->ReleaseFenceSync(
+                                                  release);
+                                              ran2 = true;
+                                            }),
+                                            std::vector<SyncToken>()));
 
   bool ran3 = false;
-  SyncToken sync_token(namespace_id, 0 /* extra_data_field */,
-                       command_buffer_id, release);
+  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
   SequenceId sequence_id3 =
       scheduler()->CreateSequence(SchedulingPriority::kHighest);
-  scheduler()->ScheduleTask(sequence_id3, GetClosure([&] { ran3 = true; }),
-                            {sync_token});
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id3, GetClosure([&] { ran3 = true; }), {sync_token}));
 
   task_runner()->RunPendingTasks();
   EXPECT_FALSE(ran1);
@@ -304,21 +312,20 @@ TEST_F(SchedulerTest, ReleaseSequenceShouldYield) {
   uint64_t release = 1;
   bool ran1 = false;
   scheduler()->ScheduleTask(
-      sequence_id1, GetClosure([&] {
-        EXPECT_FALSE(scheduler()->ShouldYield(sequence_id1));
-        release_state->ReleaseFenceSync(release);
-        EXPECT_TRUE(scheduler()->ShouldYield(sequence_id1));
-        ran1 = true;
-      }),
-      std::vector<SyncToken>());
+      Scheduler::Task(sequence_id1, GetClosure([&] {
+                        EXPECT_FALSE(scheduler()->ShouldYield(sequence_id1));
+                        release_state->ReleaseFenceSync(release);
+                        EXPECT_TRUE(scheduler()->ShouldYield(sequence_id1));
+                        ran1 = true;
+                      }),
+                      std::vector<SyncToken>()));
 
   bool ran2 = false;
-  SyncToken sync_token(namespace_id, 0 /* extra_data_field */,
-                       command_buffer_id, release);
+  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
   SequenceId sequence_id2 =
       scheduler()->CreateSequence(SchedulingPriority::kHighest);
-  scheduler()->ScheduleTask(sequence_id2, GetClosure([&] { ran2 = true; }),
-                            {sync_token});
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id2, GetClosure([&] { ran2 = true; }), {sync_token}));
 
   task_runner()->RunPendingTasks();
   EXPECT_TRUE(ran1);
@@ -348,20 +355,20 @@ TEST_F(SchedulerTest, ReentrantEnableSequenceShouldNotDeadlock) {
           namespace_id, command_buffer_id2, sequence_id2);
 
   uint64_t release = 1;
-  SyncToken sync_token(namespace_id, 0 /* extra_data_field */,
-                       command_buffer_id2, release);
+  SyncToken sync_token(namespace_id, 0, command_buffer_id2, release);
 
   bool ran1, ran2 = false;
 
   // Schedule task on sequence 2 first so that the sync token wait isn't a nop.
   // BeginProcessingOrderNumber for this task will run the EnableSequence
   // callback. This should not deadlock.
-  scheduler()->ScheduleTask(sequence_id2, GetClosure([&] { ran2 = true; }),
-                            std::vector<SyncToken>());
+  scheduler()->ScheduleTask(Scheduler::Task(sequence_id2,
+                                            GetClosure([&] { ran2 = true; }),
+                                            std::vector<SyncToken>()));
 
   // This will run first because of the higher priority and no scheduling sync
   // token dependencies.
-  scheduler()->ScheduleTask(
+  scheduler()->ScheduleTask(Scheduler::Task(
       sequence_id1, GetClosure([&] {
         ran1 = true;
         release_state1->Wait(
@@ -370,7 +377,7 @@ TEST_F(SchedulerTest, ReentrantEnableSequenceShouldNotDeadlock) {
                        base::Unretained(scheduler()), sequence_id1));
         scheduler()->DisableSequence(sequence_id1);
       }),
-      std::vector<SyncToken>());
+      std::vector<SyncToken>()));
 
   task_runner()->RunPendingTasks();
   EXPECT_TRUE(ran1);
@@ -400,11 +407,10 @@ TEST_F(SchedulerTest, WaitOnSelfShouldNotBlockSequence) {
   sync_point_manager()->GenerateOrderNumber();
 
   uint64_t release = 1;
-  SyncToken sync_token(namespace_id, 0 /* extra_data_field */,
-                       command_buffer_id, release);
+  SyncToken sync_token(namespace_id, 0, command_buffer_id, release);
   bool ran = false;
-  scheduler()->ScheduleTask(sequence_id, GetClosure([&]() { ran = true; }),
-                            {sync_token});
+  scheduler()->ScheduleTask(Scheduler::Task(
+      sequence_id, GetClosure([&]() { ran = true; }), {sync_token}));
   task_runner()->RunPendingTasks();
   EXPECT_TRUE(ran);
   EXPECT_FALSE(sync_point_manager()->IsSyncTokenReleased(sync_token));
