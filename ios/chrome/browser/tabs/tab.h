@@ -12,6 +12,7 @@
 
 #import "components/signin/ios/browser/manage_accounts_delegate.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper_delegate.h"
+#import "ios/chrome/browser/web/sad_tab_tab_helper_delegate.h"
 #include "ios/net/request_tracker.h"
 #include "ios/web/public/user_agent.h"
 #include "ui/base/page_transition_types.h"
@@ -85,8 +86,9 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Chrome's WebContents in that it encapsulates rendering. Acts as the
 // delegate for the WebState in order to process info about pages having
 // loaded.
-@interface Tab
-    : NSObject<ManageAccountsDelegate, PagePlaceholderTabHelperDelegate>
+@interface Tab : NSObject<ManageAccountsDelegate,
+                          PagePlaceholderTabHelperDelegate,
+                          SadTabTabHelperDelegate>
 
 // Browser state associated with this Tab.
 @property(nonatomic, readonly) ios::ChromeBrowserState* browserState;

@@ -37,7 +37,7 @@ source_set("web") {
     "tab_id_tab_helper.mm",
   ]
   deps = [
-    ":placeholder_overlay_tab_helper_delegate",
+    ":tab_helper_delegates",
     "//base",
     "//components/strings",
     "//ios/chrome/app/strings:ios_strings_grit",
@@ -45,7 +45,6 @@ source_set("web") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/alert_coordinator:alert_coordinator",
     "//ios/chrome/browser/ui/commands:commands",
-    "//ios/chrome/browser/ui/sad_tab:sad_tab",
     "//ios/chrome/browser/ui/util:util",
     "//ios/web",
     "//ui/base",
@@ -53,10 +52,11 @@ source_set("web") {
   ]
 }
 
-source_set("placeholder_overlay_tab_helper_delegate") {
+source_set("tab_helper_delegates") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "page_placeholder_tab_helper_delegate.h",
+    "sad_tab_tab_helper_delegate.h",
   ]
 }
 
@@ -77,14 +77,13 @@ source_set("unit_tests") {
     "tab_id_tab_helper_unittest.mm",
   ]
   deps = [
-    ":placeholder_overlay_tab_helper_delegate",
+    ":tab_helper_delegates",
     ":test_support",
     ":web",
     "//base:base",
     "//base/test:test_support",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser/ui:ui",
-    "//ios/chrome/browser/ui/sad_tab",
     "//ios/chrome/test:test_support",
     "//ios/web:web",
     "//ios/web/public/test",

@@ -9,34 +9,43 @@
 #import "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
+@protocol SadTabTabHelperDelegate;
+
 // SadTabTabHelper listens to RenderProcessGone events and presents a
 // SadTabView view appropriately.
 class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
                         public web::WebStateObserver {
  public:
   // Creates a SadTabTabHelper and attaches it to a specific web_state object.
-  // Uses the default |repeat_failure_interval|.
-  static void CreateForWebState(web::WebState* web_state);
+  // Uses the default |repeat_failure_interval|. |delegate| is not retained by
+  // TabHelper and must not be null.
+  static void CreateForWebState(web::WebState* web_state,
+                                id<SadTabTabHelperDelegate> delegate);
 
   // Creates a SadTabTabHelper and attaches it to a specific web)state object,
   // |repeat_failure_interval| sets the corresponding instance variable used for
-  // determining repeat failures.
+  // determining repeat failures. |delegate| is not retained by TabHelper and
+  // must not be null.
   static void CreateForWebState(web::WebState* web_state,
-                                double repeat_failure_interval);
+                                double repeat_failure_interval,
+                                id<SadTabTabHelperDelegate> delegate);
 
   ~SadTabTabHelper() override;
 
  private:
   // Constructs a SadTabTabHelper, assigning the helper to a web_state. A
-  // default repeat_failure_interval will be used.
-  SadTabTabHelper(web::WebState* web_state);
+  // default repeat_failure_interval will be used. |delegate| will be in charge
+  // of presenting the SadTabView.
+  SadTabTabHelper(web::WebState* web_state,
+                  id<SadTabTabHelperDelegate> delegate);
 
   // Constructs a SadTabTabHelper allowing an optional |repeat_failure_interval|
   // value to be passed in, representing a timeout period in seconds during
   // which a second failure will be considered a 'repeated' crash rather than an
-  // initial event.
+  // initial event. |delegate| will be in charge of presenting the SadTabView.
   SadTabTabHelper(web::WebState* web_state,
-                  double repeat_failure_interval);
+                  double repeat_failure_interval,
+                  id<SadTabTabHelperDelegate> delegate);
 
   // Presents a new SadTabView via the web_state object.
   void PresentSadTab(const GURL& url_causing_failure);
@@ -86,6 +95,9 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
 
   // true if the WebState needs to be reloaded after the app becomes active.
   bool requires_reload_on_becoming_active_ = false;
+
+  // Delegate which displays the SadTabView.
+  __weak id<SadTabTabHelperDelegate> delegate_ = nil;
 
   // Observer for UIApplicationDidBecomeActiveNotification.
   __strong id<NSObject> application_did_become_active_observer_ = nil;
