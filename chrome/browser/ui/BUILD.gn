@@ -2857,6 +2857,8 @@ split_static_library("ui") {
         "cocoa/multi_key_equivalent_button.mm",
         "cocoa/new_tab_button.h",
         "cocoa/new_tab_button.mm",
+        "cocoa/nsview_additions.h",
+        "cocoa/nsview_additions.mm",
         "cocoa/omnibox/omnibox_popup_cell.h",
         "cocoa/omnibox/omnibox_popup_cell.mm",
         "cocoa/omnibox/omnibox_popup_matrix.h",

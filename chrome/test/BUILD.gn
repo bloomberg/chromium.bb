@@ -4717,6 +4717,7 @@ test("unit_tests") {
         "../browser/ui/cocoa/notifications/notification_builder_mac_unittest.mm",
         "../browser/ui/cocoa/notifications/notification_response_builder_mac_unittest.mm",
         "../browser/ui/cocoa/nsmenuitem_additions_unittest.mm",
+        "../browser/ui/cocoa/nsview_additions_unittest.mm",
         "../browser/ui/cocoa/omnibox/omnibox_popup_cell_unittest.mm",
         "../browser/ui/cocoa/omnibox/omnibox_popup_matrix_unittest.mm",
         "../browser/ui/cocoa/omnibox/omnibox_popup_separator_view_unittest.mm",
