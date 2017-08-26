@@ -113,6 +113,16 @@ public class PostMessageHandler
         };
     }
 
+    /**
+     * See
+     * {@link PostMessageServiceConnection#bindSessionToPostMessageService(Context, String)}.
+     * Attempts to bind with the package name set during initialization.
+     */
+    public boolean bindSessionToPostMessageService() {
+        return super.bindSessionToPostMessageService(
+                ContextUtils.getApplicationContext(), mPackageName);
+    }
+
     private void initializeWithWebContents(final WebContents webContents) {
         mChannel = (AppWebMessagePort[]) webContents.createMessageChannel();
         mChannel[0].setMessageCallback(mMessageCallback, null);

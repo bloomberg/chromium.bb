@@ -31,6 +31,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -45,6 +46,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.content_public.common.Referrer;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.concurrent.Callable;
@@ -63,11 +65,13 @@ public class TabsOpenedFromExternalAppTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    static final String HTTP_REFERRER = "http://chromium.org/";
+
     private static final String EXTERNAL_APP_1_ID = "app1";
     private static final String EXTERNAL_APP_2_ID = "app2";
     private static final String ANDROID_APP_REFERRER = "android-app://com.my.great.great.app";
-    private static final String HTTP_REFERRER = "http://chromium.org/";
     private static final String HTTPS_REFERRER = "https://chromium.org/";
+    private static final String HTTPS_REFERRER_WITH_PATH = "https://chromium.org/path1/path2";
 
     static class ElementFocusedCriteria extends Criteria {
         private final Tab mTab;
@@ -193,8 +197,9 @@ public class TabsOpenedFromExternalAppTest {
      * Returns when the URL has been navigated to.
      * @throws InterruptedException
      */
-    private void launchUrlFromExternalApp(String url, String expectedUrl, String appId,
-            boolean createNewTab, Bundle extras, boolean firstParty) throws InterruptedException {
+    private static void launchUrlFromExternalApp(ChromeTabbedActivityTestRule testRule, String url,
+            String expectedUrl, String appId, boolean createNewTab, Bundle extras,
+            boolean firstParty) throws InterruptedException {
         final Intent intent = new Intent(Intent.ACTION_VIEW);
         if (appId != null) {
             intent.putExtra(Browser.EXTRA_APPLICATION_ID, appId);
@@ -211,29 +216,28 @@ public class TabsOpenedFromExternalAppTest {
             IntentHandler.addTrustedIntentExtras(intent);
         }
 
-        final Tab originalTab = mActivityTestRule.getActivity().getActivityTab();
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().onNewIntent(intent));
+        final Tab originalTab = testRule.getActivity().getActivityTab();
+        ThreadUtils.runOnUiThreadBlocking(() -> testRule.getActivity().onNewIntent(intent));
         if (createNewTab) {
             CriteriaHelper.pollUiThread(new Criteria("Failed to select different tab") {
                 @Override
                 public boolean isSatisfied() {
-                    return mActivityTestRule.getActivity().getActivityTab() != originalTab;
+                    return testRule.getActivity().getActivityTab() != originalTab;
                 }
             });
         }
-        ChromeTabUtils.waitForTabPageLoaded(
-                mActivityTestRule.getActivity().getActivityTab(), expectedUrl);
+        ChromeTabUtils.waitForTabPageLoaded(testRule.getActivity().getActivityTab(), expectedUrl);
     }
 
     private void launchUrlFromExternalApp(String url, String expectedUrl, String appId,
             boolean createNewTab, Bundle extras) throws InterruptedException {
-        launchUrlFromExternalApp(url, expectedUrl, appId, createNewTab, extras, false);
+        launchUrlFromExternalApp(
+                mActivityTestRule, url, expectedUrl, appId, createNewTab, extras, false);
     }
 
     private void launchUrlFromExternalApp(String url, String appId, boolean createNewTab)
             throws InterruptedException {
-        launchUrlFromExternalApp(url, url, appId, createNewTab, null, false);
+        launchUrlFromExternalApp(mActivityTestRule, url, url, appId, createNewTab, null, false);
     }
 
     /**
@@ -306,7 +310,8 @@ public class TabsOpenedFromExternalAppTest {
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTP_REFERRER));
 
-        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, false);
+        launchUrlFromExternalApp(
+                mActivityTestRule, url, url, EXTERNAL_APP_1_ID, true, extras, false);
         CriteriaHelper.pollInstrumentationThread(
                 new ReferrerCriteria(mActivityTestRule.getActivity().getActivityTab(), ""), 2000,
                 200);
@@ -325,10 +330,71 @@ public class TabsOpenedFromExternalAppTest {
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTP_REFERRER));
 
-        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, true);
+        launchUrlFromExternalApp(
+                mActivityTestRule, url, url, EXTERNAL_APP_1_ID, true, extras, true);
         CriteriaHelper.pollInstrumentationThread(
                 new ReferrerCriteria(
                         mActivityTestRule.getActivity().getActivityTab(), HTTP_REFERRER),
+                2000, 200);
+    }
+
+    /**
+     * Tests that an https:// referrer is not stripped in case of downgrade with Origin Policy.
+     * @throws InterruptedException
+     */
+    @Test
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testReferrerPolicyHttpsReferrerPolicyOrigin() throws InterruptedException {
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        launchAndVerifyReferrerWithPolicy(url, mActivityTestRule,
+                WebReferrerPolicy.WEB_REFERRER_POLICY_ORIGIN, HTTPS_REFERRER_WITH_PATH,
+                HTTPS_REFERRER);
+    }
+
+    /**
+     * Tests that an https:// referrer is not stripped in case of downgrade
+     * with Origin When Cross Origin Policy.
+     * @throws InterruptedException
+     */
+    @Test
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testReferrerPolicyHttpsReferrerPolicyOriginWhenCrossOrigin()
+            throws InterruptedException {
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        launchAndVerifyReferrerWithPolicy(url, mActivityTestRule,
+                WebReferrerPolicy.WEB_REFERRER_POLICY_ORIGIN_WHEN_CROSS_ORIGIN,
+                HTTPS_REFERRER_WITH_PATH, HTTPS_REFERRER);
+    }
+
+    /**
+     * Tests that an https:// referrer is stripped in case of downgrade with Strict Origin Policy.
+     * @throws InterruptedException
+     */
+    @Test
+    @LargeTest
+    @Feature({"Navigation"})
+    public void testReferrerPolicyHttpsReferrerPolicyStrictOrigin() throws InterruptedException {
+        String url = mTestServer.getURL("/chrome/test/data/android/about.html");
+        launchAndVerifyReferrerWithPolicy(url, mActivityTestRule,
+                WebReferrerPolicy.WEB_REFERRER_POLICY_STRICT_ORIGIN, HTTPS_REFERRER, "");
+    }
+
+    /**
+     * Launches a tab with the given url using the given {@link ChromeTabbedActivityTestRule},
+     * adds a {@link Referrer} with given policy and checks whether it matches the expected
+     * referrer after loaded.
+     */
+    static void launchAndVerifyReferrerWithPolicy(String url, ChromeTabbedActivityTestRule testRule,
+            int policy, String referrer, String expectedReferrer) throws InterruptedException {
+        testRule.startMainActivityFromLauncher();
+        Bundle extras = new Bundle();
+        extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(referrer));
+        extras.putInt(IntentHandler.EXTRA_REFERRER_POLICY, policy);
+        launchUrlFromExternalApp(testRule, url, url, EXTERNAL_APP_1_ID, true, extras, true);
+        CriteriaHelper.pollInstrumentationThread(
+                new ReferrerCriteria(testRule.getActivity().getActivityTab(), expectedReferrer),
                 2000, 200);
     }
 
@@ -344,8 +410,8 @@ public class TabsOpenedFromExternalAppTest {
         mActivityTestRule.startMainActivityFromLauncher();
         Bundle extras = new Bundle();
         extras.putParcelable(Intent.EXTRA_REFERRER, Uri.parse(HTTPS_REFERRER));
-
-        launchUrlFromExternalApp(url, url, EXTERNAL_APP_1_ID, true, extras, true);
+        launchUrlFromExternalApp(
+                mActivityTestRule, url, url, EXTERNAL_APP_1_ID, true, extras, true);
         CriteriaHelper.pollInstrumentationThread(
                 new ReferrerCriteria(mActivityTestRule.getActivity().getActivityTab(), ""), 2000,
                 200);

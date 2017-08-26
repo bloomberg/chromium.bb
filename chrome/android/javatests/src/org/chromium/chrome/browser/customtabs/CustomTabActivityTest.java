@@ -1064,6 +1064,58 @@ public class CustomTabActivityTest {
         }
     }
 
+    @Test
+    @SmallTest
+    @RetryOnFailure
+    public void testVerifiedReferrer() throws InterruptedException {
+        final Context context = InstrumentationRegistry.getInstrumentation()
+                                        .getTargetContext()
+                                        .getApplicationContext();
+        final Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(context, mTestPage2);
+        String referrer = "https://example.com";
+        intent.putExtra(Intent.EXTRA_REFERRER_NAME, referrer);
+        CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+        CustomTabsConnection connection = CustomTabsConnection.getInstance();
+        connection.newSession(token);
+        connection.overridePackageNameForSessionForTesting(token, "app1");
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                OriginVerifier.addVerifiedOriginForPackage(
+                        "app1", Uri.parse(referrer), CustomTabsService.RELATION_USE_AS_ORIGIN);
+            }
+        });
+
+        final CustomTabsSessionToken session = warmUpAndLaunchUrlWithSession(intent);
+        Assert.assertEquals(getActivity().getIntentDataProvider().getSession(), session);
+
+        final Tab tab = getActivity().getActivityTab();
+        final CallbackHelper pageLoadFinishedHelper = new CallbackHelper();
+        tab.addObserver(new EmptyTabObserver() {
+            @Override
+            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                Assert.assertEquals(referrer, params.getReferrer().getUrl());
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab) {
+                pageLoadFinishedHelper.notifyCalled();
+            }
+        });
+        Assert.assertTrue("CustomTabContentHandler can't handle intent with same session",
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        return CustomTabActivity.handleInActiveContentIfNeeded(intent);
+                    }
+                }));
+        try {
+            pageLoadFinishedHelper.waitForCallback(0);
+        } catch (TimeoutException e) {
+            Assert.fail();
+        }
+    }
+
     /**
      * Tests that the navigation callbacks are sent.
      */

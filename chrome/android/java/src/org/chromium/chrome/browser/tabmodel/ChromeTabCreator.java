@@ -240,7 +240,8 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             loadUrlParams.setIntentReceivedTimestamp(intentTimestamp);
             loadUrlParams.setVerbatimHeaders(headers);
             if (referer != null) {
-                loadUrlParams.setReferrer(new Referrer(referer, Referrer.REFERRER_POLICY_DEFAULT));
+                loadUrlParams.setReferrer(
+                        new Referrer(referer, IntentHandler.getReferrerPolicyFromIntent(intent)));
             }
             return createNewTab(loadUrlParams, TabLaunchType.FROM_EXTERNAL_APP, null, intent);
         }

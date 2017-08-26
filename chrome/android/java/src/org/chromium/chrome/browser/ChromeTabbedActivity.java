@@ -1202,8 +1202,8 @@ public class ChromeTabbedActivity
                         loadUrlParams.setTransitionType(IntentHandler.getTransitionTypeFromIntent(
                                 intent, transitionType));
                         if (referer != null) {
-                            loadUrlParams.setReferrer(
-                                    new Referrer(referer, Referrer.REFERRER_POLICY_DEFAULT));
+                            loadUrlParams.setReferrer(new Referrer(
+                                    referer, IntentHandler.getReferrerPolicyFromIntent(intent)));
                         }
                         currentTab.loadUrl(loadUrlParams);
                         RecordUserAction.record("MobileTabClobbered");
