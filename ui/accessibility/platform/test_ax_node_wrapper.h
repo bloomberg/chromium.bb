@@ -32,7 +32,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
 
   // AXPlatformNodeDelegate.
   const AXNodeData& GetData() const override;
-  const ui::AXTreeData& GetTreeData() const override;
+  const AXTreeData& GetTreeData() const override;
   gfx::NativeWindow GetTopLevelWidget() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
@@ -40,9 +40,9 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
   gfx::Rect GetScreenBoundsRect() const override;
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
-  ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
+  AXPlatformNode* GetFromNodeID(int32_t id) override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
-  bool AccessibilityPerformAction(const ui::AXActionData& data) override;
+  bool AccessibilityPerformAction(const AXActionData& data) override;
   bool ShouldIgnoreHoveredStateForTesting() override;
 
  private:

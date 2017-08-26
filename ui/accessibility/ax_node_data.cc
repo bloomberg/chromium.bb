@@ -35,7 +35,7 @@ std::string StateBitfieldToString(uint32_t state) {
   std::string str;
   for (uint32_t i = AX_STATE_NONE + 1; i <= AX_STATE_LAST; ++i) {
     if (IsFlagSet(state, i))
-      str += " " + base::ToUpperASCII(ToString(static_cast<AXState>(i)));
+      str += " " + base::ToUpperASCII(ui::ToString(static_cast<AXState>(i)));
   }
   return str;
 }
@@ -44,7 +44,7 @@ std::string ActionsBitfieldToString(uint32_t actions) {
   std::string str;
   for (uint32_t i = AX_ACTION_NONE + 1; i <= AX_ACTION_LAST; ++i) {
     if (IsFlagSet(actions, i)) {
-      str += ToString(static_cast<AXAction>(i));
+      str += ui::ToString(static_cast<AXAction>(i));
       actions = ModifyFlag(actions, i, false);
       str += actions ? "," : "";
     }

@@ -24,8 +24,8 @@ class TestAXTreeDelegate : public AXTreeDelegate {
                             const AXNodeData& old_node_data,
                             const AXNodeData& new_node_data) override {}
   void OnTreeDataChanged(AXTree* tree,
-                         const ui::AXTreeData& old_data,
-                         const ui::AXTreeData& new_data) override {}
+                         const AXTreeData& old_data,
+                         const AXTreeData& new_data) override {}
   void OnNodeWillBeDeleted(AXTree* tree, AXNode* node) override {
     auto iter = g_node_to_wrapper_map.find(node);
     if (iter != g_node_to_wrapper_map.end()) {
@@ -76,7 +76,7 @@ const AXNodeData& TestAXNodeWrapper::GetData() const {
   return node_->data();
 }
 
-const ui::AXTreeData& TestAXNodeWrapper::GetTreeData() const {
+const AXTreeData& TestAXNodeWrapper::GetTreeData() const {
   return tree_->data();
 }
 
@@ -171,8 +171,7 @@ TestAXNodeWrapper::GetTargetForNativeAccessibilityEvent() {
   return gfx::kNullAcceleratedWidget;
 }
 
-bool TestAXNodeWrapper::AccessibilityPerformAction(
-    const ui::AXActionData& data) {
+bool TestAXNodeWrapper::AccessibilityPerformAction(const AXActionData& data) {
   return true;
 }
 
