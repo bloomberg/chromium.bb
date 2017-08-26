@@ -657,6 +657,7 @@ static void update_supertx_probs(AV1_COMMON *cm, int probwt, aom_writer *w) {
 }
 #endif  // CONFIG_SUPERTX
 
+#if !CONFIG_LV_MAP
 #if CONFIG_NEW_MULTISYMBOL
 static INLINE void write_coeff_extra(const aom_cdf_prob *const *cdf, int val,
                                      int n, aom_writer *w) {
@@ -683,9 +684,8 @@ static INLINE void write_coeff_extra(const aom_prob *pb, int value,
     aom_write_record(w, bb, pb[index], token_stats);
   }
 }
-#endif
+#endif  // CONFIG_NEW_MULTISYMBOL
 
-#if !CONFIG_LV_MAP
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
                            aom_bit_depth_t bit_depth, const TX_SIZE tx_size,
