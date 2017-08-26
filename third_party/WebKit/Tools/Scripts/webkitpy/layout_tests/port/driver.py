@@ -374,8 +374,10 @@ class Driver(object):
         cmd.append(self._port._path_to_driver())
         if self._no_timeout:
             cmd.append('--no-timeout')
-        cmd.extend(self._port.get_option('additional_driver_flag', []))
-        cmd.extend(self._port.additional_driver_flag())
+        primary_driver_flag = self._port.primary_driver_flag()
+        if primary_driver_flag:
+            cmd.append(primary_driver_flag)
+        cmd.extend(self._port.additional_driver_flags())
         if self._port.get_option('enable_leak_detection'):
             cmd.append('--enable-leak-detection')
         cmd.extend(per_test_args)

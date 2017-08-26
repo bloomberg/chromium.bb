@@ -84,8 +84,8 @@ class WinPort(base.Port):
         self._crash_service = None
         self._crash_service_available = None
 
-    def additional_driver_flag(self):
-        flags = super(WinPort, self).additional_driver_flag()
+    def additional_driver_flags(self):
+        flags = super(WinPort, self).additional_driver_flags()
         flags += ['--enable-direct-write']
         if not self.get_option('disable_breakpad'):
             flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
