@@ -20,12 +20,6 @@ namespace gpu {
 
 struct GPUInfo;
 
-// With provided GPUInfo, compute the driver bug workarounds and disabled
-// extensions for the current system, and append the |command_line|.
-GPU_EXPORT void ApplyGpuDriverBugWorkarounds(
-    const GPUInfo& gpu_info,
-    base::CommandLine* command_line);
-
 // |str| is in the format of "feature1,feature2,...,featureN".
 GPU_EXPORT void StringToFeatureSet(
     const std::string& str, std::set<int>* feature_set);

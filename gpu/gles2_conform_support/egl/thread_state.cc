@@ -78,13 +78,18 @@ egl::ThreadState* ThreadState::Get() {
       // Need to call both Init and InitFromArgv, since Windows does not use
       // argc, argv in CommandLine::Init(argc, argv).
       command_line->InitFromArgv(argv);
+      gpu::GpuFeatureInfo gpu_feature_info;
       if (!command_line->HasSwitch(switches::kDisableGpuDriverBugWorkarounds)) {
         gpu::GPUInfo gpu_info;
         gpu::CollectBasicGraphicsInfo(&gpu_info);
-        gpu::ApplyGpuDriverBugWorkarounds(gpu_info, command_line);
+        gpu_feature_info = gpu::GetGpuFeatureInfo(gpu_info, *command_line);
+        Context::SetPlatformGpuFeatureInfo(gpu_feature_info);
       }
 
-      gl::init::InitializeGLOneOff();
+      gl::init::InitializeGLNoExtensionsOneOff();
+      gl::init::SetDisabledExtensionsPlatform(
+          gpu_feature_info.disabled_extensions);
+      gl::init::InitializeExtensionSettingsOneOffPlatform();
     }
 
     g_egl_default_display = new egl::Display();
