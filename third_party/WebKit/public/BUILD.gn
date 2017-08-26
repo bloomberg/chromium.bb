@@ -768,6 +768,7 @@ mojom("mojo_bindings") {
     "//content/common:mojo_bindings_blink",
     "//chrome/common:mojo_bindings_blink",
     "//third_party/WebKit/Source/platform",
+    "//third_party/WebKit/Source/platform/loader",
   ]
   sources = [
     "platform/display_mode.mojom",
