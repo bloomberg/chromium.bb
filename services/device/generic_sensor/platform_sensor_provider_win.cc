@@ -48,9 +48,9 @@ void PlatformSensorProviderWin::CreateSensorInternal(
           LinearAccelerationFusionAlgorithmUsingAccelerometer>();
       // If this PlatformSensorFusion object is successfully initialized,
       // |callback| will be run with a reference to this object.
-      base::MakeRefCounted<PlatformSensorFusion>(
-          std::move(mapping), this, callback,
-          std::move(linear_acceleration_fusion_algorithm));
+      PlatformSensorFusion::Create(
+          std::move(mapping), this,
+          std::move(linear_acceleration_fusion_algorithm), callback);
       break;
     }
 

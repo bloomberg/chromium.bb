@@ -34,11 +34,14 @@ class PlatformSensorFusion : public PlatformSensor,
   // Construct a platform fusion sensor of type |fusion_sensor_type| using
   // one or more sensors whose sensor types are |source_sensor_types|, given
   // a buffer |mapping| where readings will be written.
-  PlatformSensorFusion(
+  // The result of this method is passed asynchronously through the given
+  // |callback| call: it can be either newly created object on success or
+  // nullptr on failure.
+  static void Create(
       mojo::ScopedSharedBufferMapping mapping,
       PlatformSensorProvider* provider,
-      const PlatformSensorProviderBase::CreateSensorCallback& callback,
-      std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm);
+      std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm,
+      const PlatformSensorProviderBase::CreateSensorCallback& callback);
 
   // PlatformSensor:
   mojom::ReportingMode GetReportingMode() override;
@@ -57,6 +60,11 @@ class PlatformSensorFusion : public PlatformSensor,
   virtual bool GetSourceReading(mojom::SensorType type, SensorReading* result);
 
  protected:
+  PlatformSensorFusion(
+      mojo::ScopedSharedBufferMapping mapping,
+      PlatformSensorProvider* provider,
+      const PlatformSensorProviderBase::CreateSensorCallback& callback,
+      std::unique_ptr<PlatformSensorFusionAlgorithm> fusion_algorithm);
   ~PlatformSensorFusion() override;
 
  private:

@@ -91,16 +91,9 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider,
   void OnDeviceRemoved(mojom::SensorType type,
                        const std::string& device_node) override;
 
-  void CreateLinearAccelerationSensor(mojo::ScopedSharedBufferMapping mapping,
-                                      const CreateSensorCallback& callback);
-
-  void CreateRelativeOrientationEulerAnglesSensor(
-      mojo::ScopedSharedBufferMapping mapping,
-      const CreateSensorCallback& callback);
-
-  void CreateRelativeOrientationQuaternionSensor(
-      mojo::ScopedSharedBufferMapping mapping,
-      const CreateSensorCallback& callback);
+  void CreateFusionSensor(mojom::SensorType type,
+                          mojo::ScopedSharedBufferMapping mapping,
+                          const CreateSensorCallback& callback);
 
   // Set to true when enumeration is ready.
   bool sensor_nodes_enumerated_;
