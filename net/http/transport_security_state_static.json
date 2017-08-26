@@ -31958,7 +31958,6 @@
     { "name": "pluto.life", "include_subdomains": true, "mode": "force-https" },
     { "name": "piratte.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "plzdontpwn.me", "include_subdomains": true, "mode": "force-https" },
-    { "name": "photistic.org", "include_subdomains": true, "mode": "force-https" },
     { "name": "outpostinfo.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "plataformadeinformacion.es", "include_subdomains": true, "mode": "force-https" },
     { "name": "pollingplace.uk", "include_subdomains": true, "mode": "force-https" },
@@ -33391,6 +33390,12 @@
       "expect_ct": true,
       "expect_ct_report_uri": "https://log.ncsccs.com/report/expectct"
     },
+    {
+      "name": "photistic.org",
+      "mode": "force-https", "include_subdomains": true,
+      "expect_staple": true, "include_subdomains_for_expect_staple": true,
+      "expect_staple_report_uri": "https://photistic.report-uri.io/r/default/staple/reportOnly"
+    },
     // END OF MANUAL ENTRIES
 
     // TODO(lgarron): hstspreload.org can't scan IPv6-only sites due to Google
@@ -33410,6 +33415,11 @@
     { "name": "myfdic.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "innovation.gov", "include_subdomains": true, "mode": "force-https" },
     { "name": "trainingproviderresults.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "campusdrugprevention.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "e-verify.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "earthsystemprediction.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "militaryconsumer.gov", "include_subdomains": true, "mode": "force-https" },
+    { "name": "osdls.gov", "include_subdomains": true, "mode": "force-https" },
     // END OF ETLD-OWNER REQUESTED ENTRIES
 
     // To avoid trailing comma changes from showing up in diffs, we place a
