@@ -17,6 +17,7 @@
 
 @implementation MailtoURLRewriter
 @synthesize observer = _observer;
+@dynamic defaultHandlers;
 
 - (NSString*)defaultHandlerID {
   NOTREACHED();
@@ -27,15 +28,23 @@
   NOTREACHED();
 }
 
++ (NSString*)userDefaultsKey {
+  return nil;
+}
+
 + (NSString*)systemMailApp {
   // This is the App Store ID for Apple Mail app.
   // See https://itunes.apple.com/us/app/mail/id1108187098?mt=8
   return @"1108187098";
 }
 
-- (instancetype)initWithStandardHandlers {
++ (instancetype)mailtoURLRewriterWithStandardHandlers {
   NOTREACHED();
-  return self;
+  return nil;
+}
+
+- (void)setDefaultHandlers:(NSArray<MailtoHandler*>*)defaultHandlers {
+  NOTREACHED();
 }
 
 - (NSArray<MailtoHandler*>*)defaultHandlers {
