@@ -132,6 +132,16 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                                fc->palette_uv_color_index_cdf[i][j], NULL);
     }
   }
+#if CONFIG_MRC_TX
+  for (i = 0; i < PALETTE_SIZES; ++i) {
+    for (j = 0; j < PALETTE_COLOR_INDEX_CONTEXTS; ++j) {
+      av1_cost_tokens_from_cdf(x->mrc_mask_inter_cost[i][j],
+                               fc->mrc_mask_inter_cdf[i][j], NULL);
+      av1_cost_tokens_from_cdf(x->mrc_mask_intra_cost[i][j],
+                               fc->mrc_mask_intra_cdf[i][j], NULL);
+    }
+  }
+#endif  // CONFIG_MRC_TX
 
 #if CONFIG_CFL
   int sign_cost[CFL_JOINT_SIGNS];

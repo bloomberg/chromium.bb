@@ -3715,6 +3715,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
       td->xd.plane[0].color_index_map = td->color_index_map[0];
       td->xd.plane[1].color_index_map = td->color_index_map[1];
+#if CONFIG_MRC_TX
+      td->xd.mrc_mask = td->mrc_mask;
+#endif  // CONFIG_MRC_TX
     }
   }
 

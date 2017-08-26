@@ -651,6 +651,9 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_LV_MAP
   }
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
+#if CONFIG_MRC_TX
+  xd->mrc_mask = ctx->mrc_mask;
+#endif  // CONFIG_MRC_TX
   // Restore the coding context of the MB to that that was in place
   // when the mode was picked for it
   for (y = 0; y < mi_height; y++)
@@ -1407,6 +1410,9 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   }
 
   for (i = 0; i < 2; ++i) pd[i].color_index_map = ctx->color_index_map[i];
+#if CONFIG_MRC_TX
+  xd->mrc_mask = ctx->mrc_mask;
+#endif  // CONFIG_MRC_TX
 
   ctx->skippable = 0;
 

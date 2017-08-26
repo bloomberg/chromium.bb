@@ -776,6 +776,10 @@ typedef struct macroblockd {
   DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SEGMENT
 
+#if CONFIG_MRC_TX
+  uint8_t *mrc_mask;
+#endif  // CONFIG_MRC_TX
+
 #if CONFIG_CFL
   CFL_CTX *cfl;
 #endif

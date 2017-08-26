@@ -69,6 +69,10 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
         cm, ctx->color_index_map[i],
         aom_memalign(32, num_pix * sizeof(*ctx->color_index_map[i])));
   }
+#if CONFIG_MRC_TX
+  CHECK_MEM_ERROR(cm, ctx->mrc_mask,
+                  aom_memalign(32, num_pix * sizeof(*ctx->mrc_mask)));
+#endif  // CONFIG_MRC_TX
 }
 
 static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
@@ -100,6 +104,10 @@ static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
     aom_free(ctx->color_index_map[i]);
     ctx->color_index_map[i] = 0;
   }
+#if CONFIG_MRC_TX
+  aom_free(ctx->mrc_mask);
+  ctx->mrc_mask[i] = 0;
+#endif  // CONFIG_MRC_TX
 }
 
 static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree,
