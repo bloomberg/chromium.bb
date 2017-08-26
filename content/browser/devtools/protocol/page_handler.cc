@@ -458,10 +458,16 @@ void PageHandler::CaptureScreenshot(
     // When emulating, emulate again and scale to make resulting image match
     // physical DP resolution. If view_size is not overriden, use actual view
     // size.
-    if (!modified_params.view_size.width)
-      emulated_view_size.set_width(original_view_size.width());
-    if (!modified_params.view_size.height)
-      emulated_view_size.set_height(original_view_size.height());
+    float original_scale =
+        original_params.scale > 0 ? original_params.scale : 1;
+    if (!modified_params.view_size.width) {
+      emulated_view_size.set_width(
+          ceil(original_view_size.width() / original_scale));
+    }
+    if (!modified_params.view_size.height) {
+      emulated_view_size.set_height(
+          ceil(original_view_size.height() / original_scale));
+    }
 
     dpfactor = modified_params.device_scale_factor
                    ? modified_params.device_scale_factor /
