@@ -133,7 +133,7 @@ SuggestionPicker.prototype._measureMaxContentWidth = function() {
   var maxContentWidth = 0;
   var contentElements = this._containerElement.getElementsByClassName('content');
   for (var i = 0; i < contentElements.length; ++i) {
-    maxContentWidth = Math.max(maxContentWidth, contentElements[i].offsetWidth);
+    maxContentWidth = Math.max(maxContentWidth, contentElements[i].getBoundingClientRect().width);
   }
   this._containerElement.classList.remove('measuring-width');
   return maxContentWidth;
