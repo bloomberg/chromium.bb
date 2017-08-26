@@ -13,6 +13,7 @@
 #include "chrome/profiling/json_exporter.h"
 #include "chrome/profiling/memlog_receiver_pipe.h"
 #include "chrome/profiling/memlog_stream_parser.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "third_party/zlib/zlib.h"
 
 #if defined(OS_WIN)
@@ -110,7 +111,7 @@ bool MemlogConnectionManager::DumpProcess(
 
   auto it = connections_.find(pid);
   if (it == connections_.end()) {
-    LOG(ERROR) << "No connections found for memory dump for pid:" << pid;
+    DLOG(ERROR) << "No connections found for memory dump for pid:" << pid;
     return false;
   }
 
@@ -131,7 +132,7 @@ bool MemlogConnectionManager::DumpProcess(
 #endif
   gzFile gz_file = gzdopen(fd, "w");
   if (!gz_file) {
-    LOG(ERROR) << "Cannot compress trace file";
+    DLOG(ERROR) << "Cannot compress trace file";
     return false;
   }
 
@@ -139,6 +140,55 @@ bool MemlogConnectionManager::DumpProcess(
   gzclose(gz_file);
 
   return written_bytes == reply.size();
+}
+
+void MemlogConnectionManager::DumpProcessForTracing(
+    base::ProcessId pid,
+    mojom::Memlog::DumpProcessForTracingCallback callback,
+    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps) {
+  base::AutoLock lock(connections_lock_);
+
+  // Lock all connections to prevent deallocations of atoms from
+  // BacktraceStorage. This only works if no new connections are made, which
+  // connections_lock_ guarantees.
+  std::vector<std::unique_ptr<base::AutoLock>> locks;
+  for (auto& it : connections_) {
+    Connection* connection = it.second.get();
+    locks.push_back(
+        base::MakeUnique<base::AutoLock>(*connection->parser->GetLock()));
+  }
+
+  auto it = connections_.find(pid);
+  if (it == connections_.end()) {
+    DLOG(ERROR) << "No connections found for memory dump for pid:" << pid;
+    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
+    return;
+  }
+
+  Connection* connection = it->second.get();
+  std::ostringstream oss;
+  ExportMemoryMapsAndV2StackTraceToJSON(connection->tracker.live_allocs(), maps,
+                                        oss);
+  std::string reply = oss.str();
+
+  mojo::ScopedSharedBufferHandle buffer =
+      mojo::SharedBufferHandle::Create(reply.size());
+  if (!buffer.is_valid()) {
+    DLOG(ERROR) << "Could not create Mojo shared buffer";
+    std::move(callback).Run(std::move(buffer), 0);
+    return;
+  }
+
+  mojo::ScopedSharedBufferMapping mapping = buffer->Map(reply.size());
+  if (!mapping) {
+    DLOG(ERROR) << "Could not map Mojo shared buffer";
+    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
+    return;
+  }
+
+  memcpy(mapping.get(), reply.c_str(), reply.size());
+
+  std::move(callback).Run(std::move(buffer), reply.size());
 }
 
 }  // namespace profiling

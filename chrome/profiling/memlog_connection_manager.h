@@ -17,6 +17,7 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/common/profiling/memlog.mojom.h"
 #include "chrome/profiling/backtrace_storage.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
 
@@ -49,6 +50,10 @@ class MemlogConnectionManager {
       std::unique_ptr<base::DictionaryValue> metadata,
       const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
       base::File output_file);
+  void DumpProcessForTracing(
+      base::ProcessId pid,
+      mojom::Memlog::DumpProcessForTracingCallback callback,
+      const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps);
 
   void OnNewConnection(base::ScopedPlatformFile file, base::ProcessId pid);
 

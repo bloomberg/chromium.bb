@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/profiling/memlog.mojom.h"
@@ -43,7 +44,8 @@ namespace profiling {
 // TODO(ajwong): This host class seems over kill at this point. Can this be
 // fully subsumed by the ProfilingService class?
 class ProfilingProcessHost : public content::BrowserChildProcessObserver,
-                             content::NotificationObserver {
+                             content::NotificationObserver,
+                             base::trace_event::MemoryDumpProvider {
  public:
   enum class Mode {
     // No profiling enabled.
@@ -93,6 +95,13 @@ class ProfilingProcessHost : public content::BrowserChildProcessObserver,
   void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
+
+  // base::trace_event::MemoryDumpProvider
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
+  void OnDumpProcessForTracingCallback(mojo::ScopedSharedBufferHandle buffer,
+                                       uint32_t size);
 
   // Starts the profiling process.
   void LaunchAsService();
