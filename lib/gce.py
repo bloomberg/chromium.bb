@@ -244,7 +244,7 @@ class GceContext(object):
         zone=zone or self.zone).execute()
     return zone_resource['region'].split('/')[-1]
 
-  def CreateInstance(self, name, image, zone=None, network=None,
+  def CreateInstance(self, name, image, zone=None, network=None, subnet=None,
                      machine_type=None, default_scopes=True,
                      static_address=None, **kwargs):
     """Creates an instance with the given image and waits until it's ready.
@@ -261,6 +261,7 @@ class GceContext(object):
           omitted.
       network: An existing network to create the instance in. Default network
           will be used if omitted.
+      subnet: The subnet to create the instance in.
       machine_type: The machine type to use. Default machine type will be used
           if omitted.
       default_scopes: If true, the default scopes are added to the instances.
@@ -315,6 +316,11 @@ class GceContext(object):
     if static_address is not None:
       config['networkInterfaces'][0]['accessConfigs'][0]['natIP'] = (
           static_address)
+    if subnet is not None:
+      region = self.GetZoneRegion(zone)
+      config['networkInterfaces'][0]['subnetwork'] = (
+          'regions/%s/subnetworks/%s' % (region, subnet)
+      )
     operation = self.gce_client.instances().insert(
         project=self.project,
         zone=zone or self.zone,
@@ -477,6 +483,14 @@ class GceContext(object):
       return result['networkInterfaces'][0]['accessConfigs'][0]['natIP']
     except (KeyError, IndexError):
       raise Error('Failed to get IP address for instance %s' % instance)
+
+  def GetInstanceInternalIP(self, instance, zone=None):
+    """Gets the internal IP of an instance."""
+    result = self.GetInstance(instance, zone)
+    try:
+      return result['networkInterfaces'][0]['networkIP']
+    except (KeyError, IndexError):
+      raise Error('Failed to get internal IP for instance %s' % instance)
 
   def GetImage(self, image):
     """Gets an Image Resource by name.
