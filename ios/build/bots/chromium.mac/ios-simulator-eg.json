@@ -1,8 +1,8 @@
 {
   "comments": [
-    "EarlGrey Tests for 64-bit iOS 10.0 simulators."
+    "EarlGrey Tests for 64-bit iOS 11.0 simulators."
   ],
-  "xcode version": "8.0",
+  "xcode version": "9.0",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",
@@ -12,13 +12,13 @@
     "use_goma=true"
   ],
   "configuration": "Debug",
-  "sdk": "iphonesimulator10.0",
+  "sdk": "iphonesimulator11.0",
   "tests": [
     {
       "app": "ios_chrome_integration_egtests",
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
@@ -27,8 +27,8 @@
         "--enable-features=WebPayments"
       ],
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
@@ -37,57 +37,57 @@
         "--enable-reading-list"
       ],
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_settings_egtests",
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_smoke_egtests",
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_ui_egtests",
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_web_egtests",
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_showcase_egtests",
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_web_shell_egtests",
       "device type": "iPhone 6s",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_integration_egtests",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
@@ -96,8 +96,8 @@
         "--enable-features=WebPayments"
       ],
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
@@ -106,50 +106,50 @@
         "--enable-reading-list"
       ],
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_settings_egtests",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_smoke_egtests",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_ui_egtests",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_chrome_web_egtests",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_showcase_egtests",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     },
     {
       "app": "ios_web_shell_egtests",
       "device type": "iPad Air 2",
-      "os": "10.0",
-      "xcode version": "8.0",
+      "os": "11.0",
+      "xcode version": "9.0",
       "xctest": true
     }
   ]
