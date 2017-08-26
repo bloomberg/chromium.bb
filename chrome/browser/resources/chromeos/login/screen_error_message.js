@@ -482,6 +482,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     updateMdMode_: function() {
       if (loadTimeData.getString('errorScreenMDMode') === 'on') {
+        $('error-message').setAttribute('md-mode', true);
         $('error-message-md-header').appendChild($('error-header-id'));
         $('error-message-md-footer')
             .insertBefore(
