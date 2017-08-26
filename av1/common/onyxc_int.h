@@ -520,6 +520,9 @@ typedef struct AV1Common {
 #if CONFIG_LV_MAP
   LV_MAP_CTX_TABLE coeff_ctx_table;
 #endif
+#if CONFIG_LPF_SB
+  int final_lpf_encode;
+#endif
 } AV1_COMMON;
 
 #if CONFIG_REFERENCE_BUFFER

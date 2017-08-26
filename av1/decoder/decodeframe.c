@@ -2530,6 +2530,22 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     update_partition_context(xd, mi_row, mi_col, subsize, bsize);
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
+#if CONFIG_LPF_SB
+  if (bsize == cm->sb_size) {
+    int filt_lvl = aom_read_literal(r, 6, ACCT_STR);
+    int row, col;
+    // set filter level for each mbmi
+    for (row = mi_row; row < mi_row + MAX_MIB_SIZE && row < cm->mi_rows;
+         ++row) {
+      for (col = mi_col; col < mi_col + MAX_MIB_SIZE && col < cm->mi_cols;
+           ++col) {
+        cm->mi_grid_visible[row * cm->mi_stride + col]->mbmi.filt_lvl =
+            filt_lvl;
+      }
+    }
+  }
+#endif
+
 #if CONFIG_CDEF
   if (bsize == cm->sb_size) {
     int width_step = mi_size_wide[BLOCK_64X64];
@@ -2806,6 +2822,7 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   struct loopfilter *lf = &cm->lf;
+#if !CONFIG_LPF_SB
 #if CONFIG_LOOPFILTER_LEVEL
   lf->filter_level[0] = aom_rb_read_literal(rb, 6);
   lf->filter_level[1] = aom_rb_read_literal(rb, 6);
@@ -2816,6 +2833,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #else
   lf->filter_level = aom_rb_read_literal(rb, 6);
 #endif
+#endif  // CONFIG_LPF_SB
   lf->sharpness_level = aom_rb_read_literal(rb, 3);
 
   // Read in loop filter deltas applied at the MB level based on mode or ref
@@ -3899,6 +3917,10 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
 #if CONFIG_VAR_TX || CONFIG_CB4X4
 // Loopfilter the whole frame.
+#if CONFIG_LPF_SB
+  av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
+                        cm->lf.filter_level, 0, 0, 0, 0);
+#else
 #if CONFIG_LOOPFILTER_LEVEL
   if (cm->lf.filter_level[0] || cm->lf.filter_level[1]) {
     av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
@@ -3915,6 +3937,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     av1_loop_filter_frame(get_frame_new_buffer(cm), cm, &pbi->mb,
                           cm->lf.filter_level, 0, 0);
 #endif  // CONFIG_LOOPFILTER_LEVEL
+#endif  // CONFIG_LPF_SB
 #else
 #if CONFIG_PARALLEL_DEBLOCKING
   // Loopfilter all rows in the frame in the frame.

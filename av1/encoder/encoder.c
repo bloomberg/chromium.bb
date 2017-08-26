@@ -4425,13 +4425,19 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     cpi->time_pick_lpf += aom_usec_timer_elapsed(&timer);
   }
 
+#if !CONFIG_LPF_SB
 #if CONFIG_LOOPFILTER_LEVEL
   if (lf->filter_level[0] || lf->filter_level[1])
 #else
   if (lf->filter_level > 0)
 #endif
+#endif  // CONFIG_LPF_SB
   {
 #if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_CB4X4
+#if CONFIG_LPF_SB
+    av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0, 0,
+                          0);
+#else
 #if CONFIG_LOOPFILTER_LEVEL
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level[0],
                           lf->filter_level[1], 0, 0);
@@ -4443,6 +4449,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #else
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
 #endif  // CONFIG_LOOPFILTER_LEVEL
+#endif  // CONFIG_LPF_SB
 #else
     if (cpi->num_workers > 1)
       av1_loop_filter_frame_mt(cm->frame_to_show, cm, xd->plane,

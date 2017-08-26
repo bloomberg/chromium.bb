@@ -349,6 +349,7 @@ EXPERIMENT_LIST="
     jnt_comp
     obu
     amvr
+    lpf_sb
 "
 CONFIG_LIST="
     dependency_tracking

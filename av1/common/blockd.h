@@ -494,6 +494,9 @@ typedef struct MB_MODE_INFO {
 #endif
 
   BOUNDARY_TYPE boundary_info;
+#if CONFIG_LPF_SB
+  uint8_t filt_lvl;
+#endif
 } MB_MODE_INFO;
 
 typedef struct MODE_INFO {
