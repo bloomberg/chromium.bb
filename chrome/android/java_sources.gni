@@ -1354,6 +1354,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/ExampleUiCaptureTest.java",
   "javatests/src/org/chromium/chrome/browser/FocusedEditableTextFieldZoomTest.java",
   "javatests/src/org/chromium/chrome/browser/FullscreenActivityTest.java",
+  "javatests/src/org/chromium/chrome/browser/HTTPSTabsOpenedFromExternalAppTest.java",
   "javatests/src/org/chromium/chrome/browser/InstalledAppTest.java",
   "javatests/src/org/chromium/chrome/browser/IntentHandlerTest.java",
   "javatests/src/org/chromium/chrome/browser/ItemChooserDialogTest.java",

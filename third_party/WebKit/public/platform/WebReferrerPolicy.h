@@ -35,6 +35,9 @@ namespace blink {
 
 // These values are serialized and persisted, so do not remove values and add
 // new ones at the end.
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.web
+// GENERATED_JAVA_CLASS_NAME_OVERRIDE: WebReferrerPolicy
 enum WebReferrerPolicy {
   kWebReferrerPolicyAlways,
   kWebReferrerPolicyDefault,

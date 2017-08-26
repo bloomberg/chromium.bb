@@ -76,6 +76,7 @@ if (is_android) {
       "./platform/WebDisplayMode.h",
       "./platform/WebFocusType.h",
       "./platform/WebInputEvent.h",
+      "./platform/WebReferrerPolicy.h",
       "./platform/WebTextInputMode.h",
       "./platform/WebTextInputType.h",
       "./platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.suggestions;
 import android.support.annotation.Nullable;
 
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.blink_public.web.WebReferrerPolicy;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.NativePageHost;
@@ -136,8 +137,8 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         // to filter out these history entries for NTP tiles.
         // TODO(mastiz): Extend this with support for other categories.
         if (article.mCategory == KnownCategories.ARTICLES) {
-            loadUrlParams.setReferrer(new Referrer(
-                    CHROME_CONTENT_SUGGESTIONS_REFERRER, Referrer.REFERRER_POLICY_ALWAYS));
+            loadUrlParams.setReferrer(new Referrer(CHROME_CONTENT_SUGGESTIONS_REFERRER,
+                    WebReferrerPolicy.WEB_REFERRER_POLICY_ALWAYS));
         }
 
         Tab loadingTab = openUrl(windowOpenDisposition, loadUrlParams);
