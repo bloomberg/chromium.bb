@@ -38,7 +38,7 @@ void MemlogImpl::DumpProcess(base::ProcessId pid,
   MojoResult result =
       UnwrapPlatformFile(std::move(output_file), &platform_file);
   if (result != MOJO_RESULT_OK) {
-    LOG(ERROR) << "Failed to unwrap output file " << result;
+    DLOG(ERROR) << "Failed to unwrap output file " << result;
     std::move(callback).Run(false);
     return;
   }
@@ -48,13 +48,24 @@ void MemlogImpl::DumpProcess(base::ProcessId pid,
   // in the memory map global dump callback.
   // TODO(brettw) this should be a OnceCallback to avoid base::Passed.
   memory_instrumentation::MemoryInstrumentation::GetInstance()
-      ->GetVmRegionsForHeapProfiler(base::Bind(
-          &MemlogImpl::OnGetVmRegionsComplete, weak_factory_.GetWeakPtr(), pid,
-          base::Passed(std::move(metadata)), base::Passed(std::move(file)),
-          base::Passed(std::move(callback))));
+      ->GetVmRegionsForHeapProfiler(
+          base::Bind(&MemlogImpl::OnGetVmRegionsCompleteForDumpProcess,
+                     weak_factory_.GetWeakPtr(), pid, base::Passed(&metadata),
+                     base::Passed(&file), base::Passed(&callback)));
 }
 
-void MemlogImpl::OnGetVmRegionsComplete(
+void MemlogImpl::DumpProcessForTracing(base::ProcessId pid,
+                                       DumpProcessForTracingCallback callback) {
+  // Need a memory map to make sense of the dump. The dump will be triggered
+  // in the memory map global dump callback.
+  // TODO(brettw) this should be a OnceCallback to avoid base::Passed.
+  memory_instrumentation::MemoryInstrumentation::GetInstance()
+      ->GetVmRegionsForHeapProfiler(base::Bind(
+          &MemlogImpl::OnGetVmRegionsCompleteForDumpProcessForTracing,
+          weak_factory_.GetWeakPtr(), pid, base::Passed(&callback)));
+}
+
+void MemlogImpl::OnGetVmRegionsCompleteForDumpProcess(
     base::ProcessId pid,
     std::unique_ptr<base::DictionaryValue> metadata,
     base::File file,
@@ -62,7 +73,7 @@ void MemlogImpl::OnGetVmRegionsComplete(
     bool success,
     memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
   if (!success) {
-    LOG(ERROR) << "Global dump failed";
+    DLOG(ERROR) << "Global dump failed";
     std::move(callback).Run(false);
     return;
   }
@@ -78,7 +89,7 @@ void MemlogImpl::OnGetVmRegionsComplete(
     }
   }
   if (!process_dump) {
-    LOG(ERROR) << "Don't have a memory dump for PID " << pid;
+    DLOG(ERROR) << "Don't have a memory dump for PID " << pid;
     std::move(callback).Run(false);
     return;
   }
@@ -87,13 +98,43 @@ void MemlogImpl::OnGetVmRegionsComplete(
           pid, std::move(metadata),
           std::move(process_dump->os_dump->memory_maps_for_heap_profiler),
           std::move(file))) {
-    LOG(ERROR) << "Can't dump process to file";
+    DLOG(ERROR) << "Can't dump process to file";
     std::move(callback).Run(false);
     return;
   }
 
   // Signal that the process dump was successful.
   std::move(callback).Run(true);
+}
+
+void MemlogImpl::OnGetVmRegionsCompleteForDumpProcessForTracing(
+    base::ProcessId pid,
+    mojom::Memlog::DumpProcessForTracingCallback callback,
+    bool success,
+    memory_instrumentation::mojom::GlobalMemoryDumpPtr dump) {
+  if (!success) {
+    DLOG(ERROR) << "GetVMRegions failed";
+    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
+    return;
+  }
+  // Find the process's memory dump we want.
+  // TODO(bug 752621) we should be asking and getting the memory map of only
+  // the process we want rather than querying all processes and filtering.
+  memory_instrumentation::mojom::ProcessMemoryDump* process_dump = nullptr;
+  for (const auto& proc : dump->process_dumps) {
+    if (proc->pid == pid) {
+      process_dump = &*proc;
+      break;
+    }
+  }
+  if (!process_dump) {
+    DLOG(ERROR) << "Don't have a memory dump for PID " << pid;
+    std::move(callback).Run(mojo::ScopedSharedBufferHandle(), 0);
+    return;
+  }
+  connection_manager_->DumpProcessForTracing(
+      pid, std::move(callback),
+      std::move(process_dump->os_dump->memory_maps_for_heap_profiler));
 }
 
 }  // namespace profiling

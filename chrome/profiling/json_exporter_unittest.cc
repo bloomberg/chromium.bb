@@ -114,49 +114,67 @@ TEST(ProfilingJsonExporterTest, DISABLED_Simple) {
   events.insert(AllocationEvent(Address(0x2), 32, bt2));
   events.insert(AllocationEvent(Address(0x3), 16, bt1));
 
-  std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr);
-  std::string json = stream.str();
+  {
+    std::ostringstream stream;
+    ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr);
+    std::string json = stream.str();
 
-  // JSON should parse.
-  base::JSONReader reader(base::JSON_PARSE_RFC);
-  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
-  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
-      << reader.GetErrorMessage();
-  ASSERT_TRUE(root);
+    // JSON should parse.
+    base::JSONReader reader(base::JSON_PARSE_RFC);
+    std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+    ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+        << reader.GetErrorMessage();
+    ASSERT_TRUE(root);
 
-  // The trace array contains two items, a process_name one and a
-  // periodic_interval one. Find the latter.
-  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
-  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
+    // The trace array contains two items, a process_name one and a
+    // periodic_interval one. Find the latter.
+    const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
+    ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
 
-  const base::Value* heaps_v2 =
-      periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
-  ASSERT_TRUE(heaps_v2);
+    const base::Value* heaps_v2 =
+        periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
+    ASSERT_TRUE(heaps_v2);
 
-  // Counts should be a list of two items, a 1 and a 2 (in either order). The
-  // two matching 16-byte allocations should be coalesced to produce the 2.
-  const base::Value* counts =
-      heaps_v2->FindPath({"allocators", "malloc", "counts"});
-  ASSERT_TRUE(counts);
-  EXPECT_EQ(2u, counts->GetList().size());
-  EXPECT_TRUE((counts->GetList()[0].GetInt() == 1 &&
-               counts->GetList()[1].GetInt() == 2) ||
-              (counts->GetList()[0].GetInt() == 2 &&
-               counts->GetList()[1].GetInt() == 1));
+    // Counts should be a list of two items, a 1 and a 2 (in either order). The
+    // two matching 16-byte allocations should be coalesced to produce the 2.
+    const base::Value* counts =
+        heaps_v2->FindPath({"allocators", "malloc", "counts"});
+    ASSERT_TRUE(counts);
+    EXPECT_EQ(2u, counts->GetList().size());
+    EXPECT_TRUE((counts->GetList()[0].GetInt() == 1 &&
+                 counts->GetList()[1].GetInt() == 2) ||
+                (counts->GetList()[0].GetInt() == 2 &&
+                 counts->GetList()[1].GetInt() == 1));
 
-  // Nodes should be a list with 4 items.
-  //   [0] => address: 1234  parent: none
-  //   [1] => address: 5678  parent: 0
-  //   [2] => address: 9012  parent: 0
-  //   [3] => address: 9013  parent: 2
-  const base::Value* nodes = heaps_v2->FindPath({"maps", "nodes"});
-  ASSERT_TRUE(nodes);
-  EXPECT_EQ(4u, nodes->GetList().size());
-  EXPECT_TRUE(IsBacktraceInList(nodes, 0, kNoParent));
-  EXPECT_TRUE(IsBacktraceInList(nodes, 1, 0));
-  EXPECT_TRUE(IsBacktraceInList(nodes, 2, 0));
-  EXPECT_TRUE(IsBacktraceInList(nodes, 3, 2));
+    // Nodes should be a list with 4 items.
+    //   [0] => address: 1234  parent: none
+    //   [1] => address: 5678  parent: 0
+    //   [2] => address: 9012  parent: 0
+    //   [3] => address: 9013  parent: 2
+    const base::Value* nodes = heaps_v2->FindPath({"maps", "nodes"});
+    ASSERT_TRUE(nodes);
+    EXPECT_EQ(4u, nodes->GetList().size());
+    EXPECT_TRUE(IsBacktraceInList(nodes, 0, kNoParent));
+    EXPECT_TRUE(IsBacktraceInList(nodes, 1, 0));
+    EXPECT_TRUE(IsBacktraceInList(nodes, 2, 0));
+    EXPECT_TRUE(IsBacktraceInList(nodes, 3, 2));
+  }
+
+  // Check that ExportMemoryMapsAndV2StackTraceToJSON parses. Assume the
+  // contents is reasonable, given that it's nested in
+  // ExportAllocationEventSetToJSON.
+  {
+    std::ostringstream stream;
+    ExportMemoryMapsAndV2StackTraceToJSON(events, MemoryMap(), stream);
+    std::string json = stream.str();
+
+    // JSON should parse.
+    base::JSONReader reader(base::JSON_PARSE_RFC);
+    std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+    ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+        << reader.GetErrorMessage();
+    ASSERT_TRUE(root);
+  }
 }
 
 TEST(ProfilingJsonExporterTest, MemoryMaps) {

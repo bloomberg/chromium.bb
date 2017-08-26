@@ -36,13 +36,20 @@ class MemlogImpl : public mojom::Memlog {
                    mojo::ScopedHandle output_file,
                    std::unique_ptr<base::DictionaryValue> metadata,
                    DumpProcessCallback callback) override;
+  void DumpProcessForTracing(base::ProcessId pid,
+                             DumpProcessForTracingCallback callback) override;
 
  private:
-  void OnGetVmRegionsComplete(
+  void OnGetVmRegionsCompleteForDumpProcess(
       base::ProcessId pid,
       std::unique_ptr<base::DictionaryValue> metadata,
       base::File file,
       DumpProcessCallback callback,
+      bool success,
+      memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
+  void OnGetVmRegionsCompleteForDumpProcessForTracing(
+      base::ProcessId pid,
+      DumpProcessForTracingCallback callback,
       bool success,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr dump);
 

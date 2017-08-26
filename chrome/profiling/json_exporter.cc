@@ -74,11 +74,11 @@ void WriteDumpsHeader(int pid, std::ostream& out) {
   out << "\"ph\":\"v\",";
   out << "\"name\":\"periodic_interval\",";
   out << "\"args\":{";
-  out << "\"dumps\":{\n";
+  out << "\"dumps\":";
 }
 
 void WriteDumpsFooter(std::ostream& out) {
-  out << "}}}";  // dumps, args, event
+  out << "}}";  // args, event
 }
 
 // Writes the dictionary keys to preceed a "heaps_v2" trace argument inside a
@@ -260,9 +260,56 @@ void ExportAllocationEventSetToJSON(
   WriteProcessName(pid, out);
   out << ",\n";
   WriteDumpsHeader(pid, out);
+  ExportMemoryMapsAndV2StackTraceToJSON(event_set, maps, out);
+  WriteDumpsFooter(out);
+  out << "]";
+
+  // Append metadata.
+  if (metadata_dict) {
+    std::string metadata;
+    base::JSONWriter::Write(*metadata_dict, &metadata);
+    out << ",\"metadata\": " << metadata;
+  }
+
+  out << "}\n";
+}
+
+void ExportMemoryMapsAndV2StackTraceToJSON(
+    const AllocationEventSet& event_set,
+    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
+    std::ostream& out) {
+  // Start dictionary.
+  out << "{\n";
 
   WriteMemoryMaps(maps, out);
   out << ",\n";
+
+  // Write level of detail.
+  out << R"("level_of_detail": "detailed")"
+      << ",\n";
+
+  // Write the top-level allocators section. This section is used by the tracing
+  // UI to show a small summary for each allocator. It's necessary as a
+  // placeholder to allow the stack-viewing UI to be shown.
+  // TODO: Fill in placeholders for "value". https://crbug.com/758434.
+  out << R"(
+  "allocators": {
+    "malloc": {
+      "attrs": {
+        "virtual_size": {
+          "type": "scalar",
+          "units": "bytes",
+          "value": "1234"
+        },
+        "size": {
+          "type": "scalar",
+          "units": "bytes",
+          "value": "1234"
+        }
+      }
+    }
+  },
+  )";
 
   WriteHeapsV2Header(out);
 
@@ -319,16 +366,8 @@ void ExportAllocationEventSetToJSON(
   out << "}}\n";  // End of allocators section.
 
   WriteHeapsV2Footer(out);
-  WriteDumpsFooter(out);
-  out << "]";
 
-  // Append metadata.
-  if (metadata_dict) {
-    std::string metadata;
-    base::JSONWriter::Write(*metadata_dict, &metadata);
-    out << ",\"metadata\": " << metadata;
-  }
-
+  // End dictionary.
   out << "}\n";
 }
 

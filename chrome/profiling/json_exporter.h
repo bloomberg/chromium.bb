@@ -14,12 +14,21 @@
 
 namespace profiling {
 
+// Creates a JSON-encoded string that is similar in form to traces created by
+// TracingControllerImpl.
 void ExportAllocationEventSetToJSON(
     int pid,
     const AllocationEventSet& set,
     const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
     std::ostream& out,
     std::unique_ptr<base::DictionaryValue> metadata);
+
+// Creates a JSON string representing a JSON dictionary that contains memory
+// maps and v2 format stack traces.
+void ExportMemoryMapsAndV2StackTraceToJSON(
+    const AllocationEventSet& set,
+    const std::vector<memory_instrumentation::mojom::VmRegionPtr>& maps,
+    std::ostream& out);
 
 }  // namespace profiling
 
