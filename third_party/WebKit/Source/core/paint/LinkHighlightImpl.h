@@ -31,6 +31,7 @@
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/LinkHighlight.h"
 #include "platform/graphics/Path.h"
 #include "platform/heap/Handle.h"
@@ -109,6 +110,7 @@ class CORE_EXPORT LinkHighlightImpl final
   bool geometry_needs_update_;
   bool is_animating_;
   double start_time_;
+  UniqueObjectId unique_id_;
 };
 
 }  // namespace blink

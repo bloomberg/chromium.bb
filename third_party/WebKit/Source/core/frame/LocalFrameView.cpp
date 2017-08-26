@@ -33,7 +33,6 @@
 #include "core/animation/DocumentAnimations.h"
 #include "core/css/FontFaceSetDocument.h"
 #include "core/dom/AXObjectCache.h"
-#include "core/dom/DOMNodeIds.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -218,7 +217,8 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       forcing_layout_parent_view_(false),
       needs_intersection_observation_(false),
       main_thread_scrolling_reasons_(0),
-      paint_frame_count_(0) {
+      paint_frame_count_(0),
+      unique_id_(NewUniqueObjectId()) {
   Init();
 }
 
@@ -2823,9 +2823,7 @@ void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {
 
 CompositorElementId LocalFrameView::GetCompositorElementId() const {
   if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    return CompositorElementIdFromDOMNodeId(
-        DOMNodeIds::IdForNode(&GetLayoutView()->GetDocument()),
-        CompositorElementIdNamespace::kRootScroll);
+    return CompositorElementIdFromUniqueObjectId(unique_id_);
   } else {
     return PaintInvalidationCapableScrollableArea::GetCompositorElementId();
   }

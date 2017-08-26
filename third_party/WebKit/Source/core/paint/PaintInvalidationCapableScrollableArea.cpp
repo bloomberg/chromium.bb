@@ -274,7 +274,7 @@ void PaintInvalidationCapableScrollableArea::DidScrollWithScrollbar(
 
 CompositorElementId
 PaintInvalidationCapableScrollableArea::GetCompositorElementId() const {
-  return CompositorElementIdFromLayoutObjectId(
+  return CompositorElementIdFromUniqueObjectId(
       GetLayoutBox()->UniqueId(), CompositorElementIdNamespace::kScroll);
 }
 

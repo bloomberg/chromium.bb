@@ -37,6 +37,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/graphics/CompositorElementId.h"
 #include "platform/graphics/GraphicsLayerClient.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "public/platform/WebScrollbar.h"
@@ -295,6 +296,7 @@ class CORE_EXPORT VisualViewport final
   float browser_controls_adjustment_;
   float max_page_scale_;
   bool track_pinch_zoom_stats_for_page_;
+  UniqueObjectId unique_id_;
 };
 
 }  // namespace blink

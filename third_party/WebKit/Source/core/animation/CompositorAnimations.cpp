@@ -526,7 +526,7 @@ void CompositorAnimations::AttachCompositedLayers(Element& element,
   }
 
   CompositorAnimationPlayer* compositor_player = animation.CompositorPlayer();
-  compositor_player->AttachElement(CompositorElementIdFromLayoutObjectId(
+  compositor_player->AttachElement(CompositorElementIdFromUniqueObjectId(
       element.GetLayoutObject()->UniqueId(),
       CompositorElementIdNamespace::kPrimary));
 }

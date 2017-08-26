@@ -827,7 +827,7 @@ Animation::CheckCanStartAnimationOnCompositorInternal(
         target_element->GetLayoutObject()->IsBoxModelObject() &&
         target_element->GetLayoutObject()->HasLayer()) {
       CompositorElementId target_element_id =
-          CompositorElementIdFromLayoutObjectId(
+          CompositorElementIdFromUniqueObjectId(
               target_element->GetLayoutObject()->UniqueId(),
               CompositorElementIdNamespace::kPrimary);
       if (composited_element_ids->Contains(target_element_id)) {

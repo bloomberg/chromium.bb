@@ -2301,7 +2301,7 @@ struct AnimatingData {
 // since this is unconditional. However, the element id for the primary layer
 // may change according to the rules above so we update those values here.
 void CompositedLayerMapping::UpdateElementId() {
-  CompositorElementId element_id = CompositorElementIdFromLayoutObjectId(
+  CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
       owning_layer_.GetLayoutObject().UniqueId(),
       CompositorElementIdNamespace::kPrimary);
 
@@ -2427,7 +2427,7 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
           CreateGraphicsLayer(kCompositingReasonLayerForScrollingContents);
       scrolling_contents_layer_->SetShouldHitTest(true);
 
-      CompositorElementId element_id = CompositorElementIdFromLayoutObjectId(
+      CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
           owning_layer_.GetLayoutObject().UniqueId(),
           CompositorElementIdNamespace::kScroll);
       scrolling_contents_layer_->SetElementId(element_id);

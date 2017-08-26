@@ -32,7 +32,7 @@ class CORE_EXPORT RarePaintData {
   FragmentData& EnsureFragment();
 
   // An id for this object that is unique for the lifetime of the WebView.
-  LayoutObjectId UniqueId() const { return unique_id_; }
+  UniqueObjectId UniqueId() const { return unique_id_; }
 
  private:
   // The PaintLayer associated with this LayoutBoxModelObject. This can be null
@@ -41,7 +41,7 @@ class CORE_EXPORT RarePaintData {
 
   std::unique_ptr<FragmentData> fragment_data_;
 
-  LayoutObjectId unique_id_;
+  UniqueObjectId unique_id_;
 };
 
 }  // namespace blink
