@@ -7,7 +7,12 @@
 namespace media {
 
 AndroidOverlay::AndroidOverlay() : weak_factory_(this) {}
-AndroidOverlay::~AndroidOverlay() {}
+AndroidOverlay::~AndroidOverlay() {
+  // Don't permit any other callbacks once we start sending deletion cbs.
+  weak_factory_.InvalidateWeakPtrs();
+  for (auto& cb : deletion_cbs_)
+    std::move(cb).Run(this);
+}
 
 void AndroidOverlay::AddSurfaceDestroyedCallback(
     AndroidOverlayConfig::DestroyedCB cb) {
@@ -31,6 +36,11 @@ void AndroidOverlay::RunSurfaceDestroyedCallbacks() {
     if (!wp)
       return;
   }
+}
+
+void AndroidOverlay::AddOverlayDeletedCallback(
+    AndroidOverlayConfig::DeletedCB cb) {
+  deletion_cbs_.push_back(std::move(cb));
 }
 
 }  // namespace media

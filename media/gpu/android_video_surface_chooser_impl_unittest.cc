@@ -43,6 +43,11 @@ class MockClient {
   // Note that this won't clear |overlay_|, which is helpful.
   MOCK_METHOD0(UseSurfaceTexture, void(void));
 
+  // Let the test have the overlay.
+  std::unique_ptr<AndroidOverlay> ReleaseOverlay() {
+    return std::move(overlay_);
+  }
+
  private:
   std::unique_ptr<AndroidOverlay> overlay_;
 };
@@ -297,6 +302,34 @@ TEST_F(AndroidVideoSurfaceChooserImplTest,
   // Notify |chooser_| that the overlay is ready.
   EXPECT_CALL(client_, UseOverlay(NotNull()));
   overlay_callbacks_.OverlayReady.Run();
+}
+
+TEST_F(AndroidVideoSurfaceChooserImplTest,
+       UpdateStateAfterDeleteRetriesOverlay) {
+  // Make sure that SurfaceChooser notices that we delete the overlay, and have
+  // switched back to SurfaceTexture mode.
+
+  chooser_state_.is_fullscreen = true;
+  EXPECT_CALL(*this, MockOnOverlayCreated());
+  StartChooser(FactoryFor(std::move(overlay_)));
+  EXPECT_CALL(client_, UseOverlay(NotNull()));
+  overlay_callbacks_.OverlayReady.Run();
+
+  // Delete the overlay.
+  destruction_observer_ = nullptr;
+  client_.ReleaseOverlay();
+
+  // Force chooser to choose again.  We expect that it will retry the overlay,
+  // since the delete should have informed it that we've switched back to
+  // SurfaceTexture without a callback from SurfaceChooser.  If it didn't know
+  // this, then it would think that the client is still using an overlay, and
+  // take no action.
+
+  // Note that if it enforces a delay here before retrying, that might be okay
+  // too.  For now, we assume that it doesn't.
+  EXPECT_CALL(*this, MockOnOverlayCreated());
+  chooser_->UpdateState(base::Optional<AndroidOverlayFactoryCB>(),
+                        chooser_state_);
 }
 
 TEST_P(AndroidVideoSurfaceChooserImplTest, OverlayIsUsedOrNotBasedOnState) {
