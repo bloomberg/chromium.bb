@@ -8,6 +8,7 @@ source_set("commands") {
     "dialog_commands.h",
     "find_in_page_search_commands.h",
     "find_in_page_visibility_commands.h",
+    "java_script_dialog_commands.h",
     "navigation_commands.h",
     "ntp_commands.h",
     "settings_commands.h",
