@@ -362,7 +362,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void set_property_tree_sequence_number(int sequence_number) {
     property_tree_sequence_number_ = sequence_number;
   }
-  int property_tree_sequence_number() { return property_tree_sequence_number_; }
+  int property_tree_sequence_number() const {
+    return property_tree_sequence_number_;
+  }
 
   void SetTransformTreeIndex(int index);
   int transform_tree_index() const;

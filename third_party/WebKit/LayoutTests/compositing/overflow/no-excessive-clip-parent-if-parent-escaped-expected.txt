@@ -1,0 +1,31 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutBlockFlow DIV",
+      "position": [8, 8],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#FF0000"
+    },
+    {
+      "name": "Child Containment Layer",
+      "bounds": [100, 100]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV",
+      "bounds": [50, 50],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "backgroundColor": "#008000",
+      "hasClipParent": true
+    }
+  ]
+}
+
