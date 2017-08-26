@@ -314,7 +314,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
       def GetExpectations(self):
         class Expectations(story.expectations.StoryExpectations):
           def SetExpectations(self):
-            self.PermanentlyDisableBenchmark([story.expectations.ALL], 'reason')
+            self.DisableBenchmark([story.expectations.ALL], 'reason')
         return Expectations()
 
     valid_os_list = ['mac', 'android', 'windows', 'linux']
