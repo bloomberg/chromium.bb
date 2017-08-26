@@ -16,7 +16,10 @@ constexpr TaskService::InstanceId kInvalidInstanceId = -1;
 }  // namespace
 
 TaskService::TaskService()
-    : next_instance_id_(0), bound_instance_id_(kInvalidInstanceId) {}
+    : no_tasks_in_flight_cv_(&tasks_in_flight_lock_),
+      tasks_in_flight_(0),
+      next_instance_id_(0),
+      bound_instance_id_(kInvalidInstanceId) {}
 
 TaskService::~TaskService() {
   std::vector<std::unique_ptr<base::Thread>> threads;
@@ -51,10 +54,14 @@ bool TaskService::UnbindInstance() {
     DCHECK(default_task_runner_);
     default_task_runner_ = nullptr;
   }
+
   // From now on RunTask will never run any task bound to the instance id.
-  // But invoked tasks might be still running here. To ensure no task run on
-  // quitting this method, take writer lock of |task_lock_|.
-  base::subtle::AutoWriteLock task_lock(task_lock_);
+  // But invoked tasks might be still running here. To ensure no task runs on
+  // quitting this method, wait for all tasks to complete.
+  base::AutoLock tasks_in_flight_auto_lock(tasks_in_flight_lock_);
+  while (tasks_in_flight_ > 0)
+    no_tasks_in_flight_cv_.Wait();
+
   return true;
 }
 
@@ -139,14 +146,26 @@ scoped_refptr<base::SingleThreadTaskRunner> TaskService::GetTaskRunner(
 void TaskService::RunTask(InstanceId instance_id,
                           RunnerId runner_id,
                           base::OnceClosure task) {
-  base::subtle::AutoReadLock task_lock(task_lock_);
   {
-    base::AutoLock lock(lock_);
-    // If UnbindInstance() is already called, do nothing.
-    if (instance_id != bound_instance_id_)
-      return;
+    base::AutoLock tasks_in_flight_auto_lock(tasks_in_flight_lock_);
+    ++tasks_in_flight_;
   }
-  std::move(task).Run();
+
+  if (IsInstanceIdStillBound(instance_id))
+    std::move(task).Run();
+
+  {
+    base::AutoLock tasks_in_flight_auto_lock(tasks_in_flight_lock_);
+    --tasks_in_flight_;
+    DCHECK_GE(tasks_in_flight_, 0);
+    if (tasks_in_flight_ == 0)
+      no_tasks_in_flight_cv_.Signal();
+  }
+}
+
+bool TaskService::IsInstanceIdStillBound(InstanceId instance_id) {
+  base::AutoLock lock(lock_);
+  return instance_id == bound_instance_id_;
 }
 
 }  // namespace midi
