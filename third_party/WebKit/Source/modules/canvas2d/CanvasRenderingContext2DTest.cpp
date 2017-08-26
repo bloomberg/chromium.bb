@@ -1092,6 +1092,7 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
   return options;
 }
 
+constexpr int kSRGBColorCorrectionTolerance = 1;
 constexpr float kWideGamutColorCorrectionTolerance = 0.01;
 
 TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
@@ -1298,8 +1299,7 @@ enum class CanvasColorSpaceSettings : uint8_t {
 // color managed mode.
 void TestPutImageDataOnCanvasWithColorSpaceSettings(
     HTMLCanvasElement& canvas_element,
-    CanvasColorSpaceSettings canvas_colorspace_setting,
-    float color_tolerance) {
+    CanvasColorSpaceSettings canvas_colorspace_setting) {
   // enable color canvas extensions for this test
   ScopedEnableColorCanvasExtensions color_canvas_extensions_enabler;
 
@@ -1336,7 +1336,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   uint8_t u8_pixels[] = {255, 0,   0,   255,  // Red
                          0,   0,   0,   0,    // Transparent
                          255, 192, 128, 64,   // Decreasing values
-                         93,  117, 205, 11};  // Random values
+                         93,  117, 205, 41};  // Random values
   unsigned data_length = 16;
 
   uint16_t* u16_pixels = new uint16_t[data_length];
@@ -1420,7 +1420,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
         ColorCorrectionTestUtils::CompareColorCorrectedPixels(
             static_cast<uint8_t*>((void*)(pixels_converted_manually.get())),
             static_cast<uint8_t*>(pixels_from_get_image_data), data_length,
-            color_tolerance);
+            kSRGBColorCorrectionTolerance);
       } else {
         pixels_from_get_image_data =
             context->getImageData(0, 0, 2, 2, exception_state)
@@ -1431,7 +1431,7 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
         ColorCorrectionTestUtils::CompareColorCorrectedPixels(
             static_cast<float*>((void*)(pixels_converted_manually.get())),
             static_cast<float*>(pixels_from_get_image_data), data_length,
-            color_tolerance);
+            kWideGamutColorCorrectionTolerance);
       }
     }
   }
@@ -1439,31 +1439,25 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   delete[] f32_pixels;
 }
 
-constexpr int kSRGBColorCorrectionTolerance = 5;
-
 TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnSRGBCanvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_SRGB,
-      kSRGBColorCorrectionTolerance);
+      CanvasElement(), CanvasColorSpaceSettings::CANVAS_SRGB);
 }
 
 TEST_F(CanvasRenderingContext2DTest,
        ColorManagedPutImageDataOnLinearSRGBCanvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_LINEARSRGB,
-      kWideGamutColorCorrectionTolerance);
+      CanvasElement(), CanvasColorSpaceSettings::CANVAS_LINEARSRGB);
 }
 
 TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnRec2020Canvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_REC2020,
-      kWideGamutColorCorrectionTolerance);
+      CanvasElement(), CanvasColorSpaceSettings::CANVAS_REC2020);
 }
 
 TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnP3Canvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_P3,
-      kWideGamutColorCorrectionTolerance);
+      CanvasElement(), CanvasColorSpaceSettings::CANVAS_P3);
 }
 
 void OverrideScriptEnabled(Settings& settings) {
