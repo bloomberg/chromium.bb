@@ -4071,7 +4071,7 @@ void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
 }
 
 IntSize LocalFrameView::MinimumScrollOffsetInt() const {
-  return IntSize(-ScrollOrigin().X(), -ScrollOrigin().Y());
+  return ToIntSize(-ScrollOrigin());
 }
 
 void LocalFrameView::AdjustScrollbarOpacity() {
