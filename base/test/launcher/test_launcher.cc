@@ -752,6 +752,51 @@ void TestLauncher::OnTestFinished(const TestResult& original_result) {
   test_started_count_ += retry_started_count;
 }
 
+// Helper used to parse test filter files. Syntax is documented in
+// //testing/buildbot/filters/README.md .
+bool LoadFilterFile(const FilePath& file_path,
+                    std::vector<std::string>* positive_filter,
+                    std::vector<std::string>* negative_filter) {
+  std::string file_content;
+  if (!ReadFileToString(file_path, &file_content)) {
+    LOG(ERROR) << "Failed to read the filter file.";
+    return false;
+  }
+
+  std::vector<std::string> filter_lines = SplitString(
+      file_content, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  int line_num = 0;
+  for (const std::string& filter_line : filter_lines) {
+    line_num++;
+
+    size_t hash_pos = filter_line.find('#');
+
+    // In case when # symbol is not in the beginning of the line and is not
+    // proceeded with a space then it's likely that the comment was
+    // unintentional.
+    if (hash_pos != std::string::npos && hash_pos > 0 &&
+        filter_line[hash_pos - 1] != ' ') {
+      LOG(WARNING) << "Content of line " << line_num << " in " << file_path
+                   << " after # is treated as a comment, " << filter_line;
+    }
+
+    // Strip comments and whitespace from each line.
+    std::string trimmed_line =
+        TrimWhitespaceASCII(filter_line.substr(0, hash_pos), TRIM_ALL)
+            .as_string();
+
+    if (trimmed_line.empty())
+      continue;
+
+    if (trimmed_line[0] == '-')
+      negative_filter->push_back(trimmed_line.substr(1));
+    else
+      positive_filter->push_back(trimmed_line);
+  }
+
+  return true;
+}
+
 bool TestLauncher::Init() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
@@ -849,26 +894,11 @@ bool TestLauncher::Init() {
   if (command_line->HasSwitch(switches::kTestLauncherFilterFile)) {
     base::FilePath filter_file_path = base::MakeAbsoluteFilePath(
         command_line->GetSwitchValuePath(switches::kTestLauncherFilterFile));
-    std::string filter;
-    if (!ReadFileToString(filter_file_path, &filter)) {
-      LOG(ERROR) << "Failed to read the filter file.";
+    if (!LoadFilterFile(filter_file_path, &positive_file_filter,
+                        &negative_test_filter_))
       return false;
-    }
-
-    // Parse the file contents (see //testing/buildbot/filters/README.md
-    // for file syntax and other info).
-    std::vector<std::string> filter_lines = SplitString(
-        filter, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    for (const std::string& filter_line : filter_lines) {
-      if (filter_line.empty() || filter_line[0] == '#')
-        continue;
-
-      if (filter_line[0] == '-')
-        negative_test_filter_.push_back(filter_line.substr(1));
-      else
-        positive_file_filter.push_back(filter_line);
-    }
   }
+
   // Split --gtest_filter at '-', if there is one, to separate into
   // positive filter and negative filter portions.
   std::string filter = command_line->GetSwitchValueASCII(kGTestFilterFlag);

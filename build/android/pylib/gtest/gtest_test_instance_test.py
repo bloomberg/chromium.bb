@@ -181,7 +181,7 @@ class GtestTestInstanceTests(unittest.TestCase):
     input_lines = [
       'positive1',
       '# comment',
-      'positive2',
+      'positive2  # Another comment',
       ''
       'positive3'
     ]
