@@ -7,10 +7,12 @@
 #include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/presenter/app_list_view_delegate_factory.h"
 #include "ui/app_list/views/app_list_view.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
+#include "ui/wm/core/window_util.h"
 
 namespace {
 
@@ -115,11 +117,28 @@ void AppListPresenterDelegateMus::OnPointerEventObserved(
     const ui::PointerEvent& event,
     const gfx::Point& location_in_screen,
     gfx::NativeView target) {
+  // Looks for touch pressed and pointer down events outside the app list.
+  if (event.type() != ui::ET_TOUCH_PRESSED &&
+      event.type() != ui::ET_POINTER_DOWN) {
+    return;
+  }
+
+  // Bail if there is no app list, or if the event targets the app list.
   views::Widget* target_widget =
       views::Widget::GetTopLevelWidgetForNativeView(target);
-  // Dismiss app list on a mouse click or touch outside of the app list window.
-  if ((event.type() == ui::ET_TOUCH_PRESSED ||
-       event.type() == ui::ET_POINTER_DOWN) &&
-      (!target || (view_ && target_widget != view_->GetWidget())))
-    presenter_->Dismiss();
+  views::Widget* app_list_widget = view_ ? view_->GetWidget() : nullptr;
+  if (!app_list_widget || target_widget == app_list_widget)
+    return;
+
+  // Bail if the event targets a context menu in the app list window. In mash,
+  // app list context menus are configured such that the parent of the app list
+  // window is the transient parent of the context menu window's parent. Yikes!
+  aura::Window* app_list = app_list_widget->GetNativeWindow();
+  if (app_list && app_list->parent() && target && target->parent() &&
+      wm::HasTransientAncestor(target->parent(), app_list->parent())) {
+    return;
+  }
+
+  // Dismiss the app list for all other event targets, including null.
+  presenter_->Dismiss();
 }
