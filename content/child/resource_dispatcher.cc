@@ -21,11 +21,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
+#include "base/synchronization/waitable_event.h"
+#include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/resource_scheduling_filter.h"
 #include "content/child/shared_memory_received_data_factory.h"
 #include "content/child/site_isolation_stats_gatherer.h"
+#include "content/child/sync_load_context.h"
 #include "content/child/sync_load_response.h"
 #include "content/child/url_loader_client_impl.h"
 #include "content/common/inter_process_time_ticks_converter.h"
@@ -577,38 +580,60 @@ void ResourceDispatcher::FlushDeferredMessages(int request_id) {
 void ResourceDispatcher::StartSync(
     std::unique_ptr<ResourceRequest> request,
     int routing_id,
+    const url::Origin& frame_origin,
     SyncLoadResponse* response,
     blink::WebURLRequest::LoadingIPCType ipc_type,
     mojom::URLLoaderFactory* url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
   CheckSchemeForReferrerPolicy(*request);
 
-  SyncLoadResult result;
+  if (ipc_type == blink::WebURLRequest::LoadingIPCType::kMojo) {
+    mojom::URLLoaderFactoryPtrInfo url_loader_factory_copy;
+    url_loader_factory->Clone(mojo::MakeRequest(&url_loader_factory_copy));
+    base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
+                              base::WaitableEvent::InitialState::NOT_SIGNALED);
 
-  DCHECK_NE(ipc_type, blink::WebURLRequest::LoadingIPCType::kMojo);
-  IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
-      routing_id, MakeRequestID(), *request, &result);
+    // TODO(reillyg): Support passing URLLoaderThrottles to this task.
+    DCHECK_EQ(0u, throttles.size());
 
-  // NOTE: This may pump events (see RenderThread::Send).
-  if (!message_sender_->Send(msg)) {
-    response->error_code = net::ERR_FAILED;
-    return;
+    // A task is posted to a separate thread to execute the request so that
+    // this thread may block on a waitable event. It is safe to pass raw
+    // pointers to |sync_load_response| and |event| as this stack frame will
+    // survive until the request is complete.
+    base::CreateSingleThreadTaskRunnerWithTraits({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
+                       std::move(request), routing_id, frame_origin,
+                       std::move(url_loader_factory_copy),
+                       base::Unretained(response), base::Unretained(&event)));
+
+    event.Wait();
+  } else {
+    SyncLoadResult result;
+    IPC::SyncMessage* msg = new ResourceHostMsg_SyncLoad(
+        routing_id, MakeRequestID(), *request, &result);
+
+    // NOTE: This may pump events (see RenderThread::Send).
+    if (!message_sender_->Send(msg)) {
+      response->error_code = net::ERR_FAILED;
+      return;
+    }
+
+    response->error_code = result.error_code;
+    response->url = result.final_url;
+    response->headers = result.headers;
+    response->mime_type = result.mime_type;
+    response->charset = result.charset;
+    response->request_time = result.request_time;
+    response->response_time = result.response_time;
+    response->load_timing = result.load_timing;
+    response->devtools_info = result.devtools_info;
+    response->data.swap(result.data);
+    response->download_file_path = result.download_file_path;
+    response->socket_address = result.socket_address;
+    response->encoded_data_length = result.encoded_data_length;
+    response->encoded_body_length = result.encoded_body_length;
   }
-
-  response->error_code = result.error_code;
-  response->url = result.final_url;
-  response->headers = result.headers;
-  response->mime_type = result.mime_type;
-  response->charset = result.charset;
-  response->request_time = result.request_time;
-  response->response_time = result.response_time;
-  response->load_timing = result.load_timing;
-  response->devtools_info = result.devtools_info;
-  response->data.swap(result.data);
-  response->download_file_path = result.download_file_path;
-  response->socket_address = result.socket_address;
-  response->encoded_data_length = result.encoded_data_length;
-  response->encoded_body_length = result.encoded_body_length;
 }
 
 int ResourceDispatcher::StartAsync(
