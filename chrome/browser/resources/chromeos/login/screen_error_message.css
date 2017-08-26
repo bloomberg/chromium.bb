@@ -6,6 +6,10 @@
   width: 650px;
 }
 
+#error-message[md-mode] {
+  width: 768px;
+}
+
 .show-with-ui-state-update,
 .show-with-ui-state-signin,
 .show-with-ui-state-supervised,
