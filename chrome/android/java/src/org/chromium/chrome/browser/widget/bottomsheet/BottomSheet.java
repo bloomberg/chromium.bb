@@ -447,8 +447,8 @@ public class BottomSheet
         String logicType = FeatureUtilities.getChromeHomeSwipeLogicType();
 
         // By default, the entire toolbar is swipable.
-        float startX = 0;
-        float endX = mDefaultToolbarView.getWidth();
+        float startX = mVisibleViewportRect.left;
+        float endX = mDefaultToolbarView.getWidth() + mVisibleViewportRect.left;
 
         if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_RESTRICT_AREA.equals(logicType)
                 && !FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
