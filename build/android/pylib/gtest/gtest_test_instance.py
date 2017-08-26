@@ -225,9 +225,9 @@ def ConvertTestFilterFileIntoGTestFilterArgument(input_lines):
   Returns:
     a string suitable for feeding as an argument of --gtest_filter parameter.
   """
-  # Strip whitespace + skip empty lines and lines beginning with '#'.
-  stripped_lines = (l.strip() for l in input_lines)
-  filter_lines = list(l for l in stripped_lines if l and l[0] != '#')
+  # Strip comments and whitespace from each line and filter non-empty lines.
+  stripped_lines = (l.split('#', 1)[0].strip() for l in input_lines)
+  filter_lines = list(l for l in stripped_lines if l)
 
   # Split the tests into positive and negative patterns (gtest treats
   # every pattern after the first '-' sign as an exclusion).
