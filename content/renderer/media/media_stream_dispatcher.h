@@ -92,9 +92,6 @@ class CONTENT_EXPORT MediaStreamDispatcher
   // Returns an audio session_id given a label and an index.
   virtual int audio_session_id(const std::string& label, int index);
 
- protected:
-  int GetNextIpcIdForTest() { return next_ipc_id_; }
-
  private:
   friend class MediaStreamDispatcherTest;
   friend class UserMediaClientImplTest;

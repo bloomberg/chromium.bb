@@ -13,35 +13,27 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/mock_video_capture_provider.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/media/media_stream_options.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/test/test_content_browser_client.h"
-#include "content/test/test_content_client.h"
-#include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "media/base/media_switches.h"
-#include "media/capture/video/fake_video_capture_device_factory.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -52,11 +44,9 @@
 #endif
 
 using ::testing::_;
-using ::testing::DeleteArg;
-using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
-using ::testing::Return;
+using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
 
 namespace content {
@@ -87,7 +77,6 @@ void AudioInputDevicesEnumerated(base::Closure quit_closure,
 }  // anonymous namespace
 
 class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
-                                      public TestContentBrowserClient,
                                       public mojom::MediaStreamDispatcher {
  public:
   MockMediaStreamDispatcherHost(
@@ -206,7 +195,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure));
     }
 
-    label_ = "";
+    label_.clear();
   }
 
   void OnDeviceStoppedInternal(const std::string& label,
@@ -250,7 +239,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
  public:
   MediaStreamDispatcherHostTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        old_browser_client_(NULL),
         origin_(GURL("https://test.com")) {
     audio_manager_.reset(new media::MockAudioManager(
         base::MakeUnique<media::TestAudioThread>()));
@@ -271,11 +259,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
     mojom::MediaStreamDispatcherPtr dispatcher =
         host_->CreateInterfacePtrAndBind();
     host_->SetMediaStreamDispatcherForTesting(kRenderId, std::move(dispatcher));
-
-    // Use the fake content client and browser.
-    content_client_.reset(new TestContentClient());
-    SetContentClient(content_client_.get());
-    old_browser_client_ = SetBrowserClientForTesting(host_.get());
 
 #if defined(OS_CHROMEOS)
     chromeos::CrasAudioHandler::InitializeForTesting();
@@ -349,9 +332,9 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                                                                           : 0;
     int expected_video_array_size =
         (controls.video.requested && !stub_video_device_ids_.empty()) ? 1 : 0;
-    EXPECT_CALL(*host_.get(), OnStreamGenerationSuccess(
-                                  page_request_id, expected_audio_array_size,
-                                  expected_video_array_size));
+    EXPECT_CALL(*host_, OnStreamGenerationSuccess(page_request_id,
+                                                  expected_audio_array_size,
+                                                  expected_video_array_size));
     host_->OnGenerateStream(render_frame_id, page_request_id, controls, origin_,
                             run_loop.QuitClosure());
     run_loop.Run();
@@ -367,7 +350,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
       const StreamControls& controls,
       MediaStreamRequestResult expected_result) {
       base::RunLoop run_loop;
-      EXPECT_CALL(*host_.get(),
+      EXPECT_CALL(*host_,
                   OnStreamGenerationFailure(page_request_id, expected_result));
       host_->OnGenerateStream(render_frame_id, page_request_id, controls,
                               origin_, run_loop.QuitClosure());
@@ -457,8 +440,6 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   std::unique_ptr<media::AudioManager> audio_manager_;
   std::unique_ptr<media::AudioSystem> audio_system_;
   MockMediaStreamUIProxy* stream_ui_;
-  ContentBrowserClient* old_browser_client_;
-  std::unique_ptr<ContentClient> content_client_;
   TestBrowserContext browser_context_;
   media::AudioDeviceDescriptions audio_device_descriptions_;
   std::vector<std::string> stub_video_device_ids_;
@@ -639,11 +620,10 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithoutWaiting) {
   SetupFakeUI(true);
   {
     InSequence s;
-    EXPECT_CALL(*host_.get(), OnStreamGenerationSuccess(kPageRequestId, 0, 1));
+    EXPECT_CALL(*host_, OnStreamGenerationSuccess(kPageRequestId, 0, 1));
 
     // Generate second stream.
-    EXPECT_CALL(*host_.get(),
-                OnStreamGenerationSuccess(kPageRequestId + 1, 0, 1));
+    EXPECT_CALL(*host_, OnStreamGenerationSuccess(kPageRequestId + 1, 0, 1));
   }
   base::RunLoop run_loop1;
   base::RunLoop run_loop2;
@@ -787,8 +767,7 @@ TEST_F(MediaStreamDispatcherHostTest,
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 
   // Generate a second stream.
-  EXPECT_CALL(*host_.get(),
-              OnStreamGenerationSuccess(kPageRequestId + 1, 0, 1));
+  EXPECT_CALL(*host_, OnStreamGenerationSuccess(kPageRequestId + 1, 0, 1));
 
   base::RunLoop run_loop1;
   host_->OnGenerateStream(kRenderId, kPageRequestId + 1, controls, origin_,
@@ -847,7 +826,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   EXPECT_EQ(host_->video_devices_.size(), 1u);
 
   ASSERT_FALSE(close_callback.is_null());
-  EXPECT_CALL(*host_.get(), OnDeviceStopSuccess());
+  EXPECT_CALL(*host_, OnDeviceStopSuccess());
   close_callback.Run();
   base::RunLoop().RunUntilIdle();
 }
@@ -864,8 +843,8 @@ TEST_F(MediaStreamDispatcherHostTest, VideoDeviceUnplugged) {
   stub_video_device_ids_.clear();
 
   base::RunLoop run_loop;
-  EXPECT_CALL(*host_.get(), OnDeviceStopSuccess())
-      .WillOnce(testing::InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
+  EXPECT_CALL(*host_, OnDeviceStopSuccess())
+      .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
   media_stream_manager_->media_devices_manager()->OnDevicesChanged(
       base::SystemMonitor::DEVTYPE_VIDEO_CAPTURE);
 

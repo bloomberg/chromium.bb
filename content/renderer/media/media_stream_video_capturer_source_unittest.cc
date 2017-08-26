@@ -8,10 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/location.h"
 #include "base/run_loop.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/public/renderer/media_stream_video_sink.h"
@@ -25,8 +22,6 @@
 
 using ::testing::_;
 using ::testing::InSequence;
-using ::testing::Invoke;
-using ::testing::WithArgs;
 
 namespace content {
 
@@ -86,18 +81,10 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         child_process_(new ChildProcess()),
-        source_(nullptr),
-        delegate_(nullptr),
-        source_stopped_(false) {}
-
-  void TearDown() override {
-    webkit_source_.Reset();
-    blink::WebHeap::CollectAllGarbageForTesting();
-  }
-
-  void InitWithDeviceInfo(const StreamDeviceInfo& device_info) {
+        source_stopped_(false) {
     auto delegate = base::MakeUnique<MockVideoCapturerSource>();
     delegate_ = delegate.get();
+    EXPECT_CALL(*delegate_, GetPreferredFormats());
     source_ = new MediaStreamVideoCapturerSource(
         base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
                    base::Unretained(this)),
@@ -105,14 +92,17 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
     mojom::MediaStreamDispatcherHostPtr dispatcher_host =
         mock_dispatcher_host_.CreateInterfacePtrAndBind();
     source_->dispatcher_host_ = std::move(dispatcher_host);
-    source_->SetDeviceInfo(device_info);
-
     webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
                               blink::WebMediaStreamSource::kTypeVideo,
                               blink::WebString::FromASCII("dummy_source_name"),
                               false /* remote */);
     webkit_source_.SetExtraData(source_);
     webkit_source_id_ = webkit_source_.Id();
+  }
+
+  void TearDown() override {
+    webkit_source_.Reset();
+    blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   blink::WebMediaStreamTrack StartSource(
@@ -157,23 +147,6 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
 };
 
 TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
-  auto delegate = base::MakeUnique<MockVideoCapturerSource>();
-  delegate_ = delegate.get();
-  EXPECT_CALL(*delegate_, GetPreferredFormats());
-  source_ = new MediaStreamVideoCapturerSource(
-      base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
-                 base::Unretained(this)),
-      std::move(delegate));
-  mojom::MediaStreamDispatcherHostPtr dispatcher_host =
-      mock_dispatcher_host_.CreateInterfacePtrAndBind();
-  source_->dispatcher_host_ = std::move(dispatcher_host);
-  webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
-                            blink::WebMediaStreamSource::kTypeVideo,
-                            blink::WebString::FromASCII("dummy_source_name"),
-                            false /* remote */);
-  webkit_source_.SetExtraData(source_);
-  webkit_source_id_ = webkit_source_.Id();
-
   InSequence s;
   EXPECT_CALL(mock_delegate(), StartCapture(_, _, _));
   blink::WebMediaStreamTrack track = StartSource(
@@ -197,28 +170,10 @@ TEST_F(MediaStreamVideoCapturerSourceTest, StartAndStop) {
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
-  auto delegate = base::MakeUnique<MockVideoCapturerSource>();
-  delegate_ = delegate.get();
-  EXPECT_CALL(*delegate_, GetPreferredFormats());
-  source_ = new MediaStreamVideoCapturerSource(
-      base::Bind(&MediaStreamVideoCapturerSourceTest::OnSourceStopped,
-                 base::Unretained(this)),
-      std::move(delegate));
-  mojom::MediaStreamDispatcherHostPtr dispatcher_host =
-      mock_dispatcher_host_.CreateInterfacePtrAndBind();
-  source_->dispatcher_host_ = std::move(dispatcher_host);
-  webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
-                            blink::WebMediaStreamSource::kTypeVideo,
-                            blink::WebString::FromASCII("dummy_source_name"),
-                            false /* remote */);
-  webkit_source_.SetExtraData(source_);
-  webkit_source_id_ = webkit_source_.Id();
-
   VideoCaptureDeliverFrameCB deliver_frame_cb;
   media::VideoCapturerSource::RunningCallback running_cb;
 
   InSequence s;
-  //  EXPECT_CALL(mock_delegate(), GetCurrentSupportedFormats(_, _, _, _));
   EXPECT_CALL(mock_delegate(), StartCapture(_, _, _))
       .WillOnce(testing::DoAll(testing::SaveArg<1>(&deliver_frame_cb),
                                testing::SaveArg<2>(&running_cb)));
