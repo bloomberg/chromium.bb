@@ -75,6 +75,10 @@ struct StructTraits<viz::mojom::RendererSettingsDataView,
     return input.slow_down_compositing_scale_factor;
   }
 
+  static bool use_skia_renderer(const viz::RendererSettings& input) {
+    return input.use_skia_renderer;
+  }
+
   static bool Read(viz::mojom::RendererSettingsDataView data,
                    viz::RendererSettings* out);
 };

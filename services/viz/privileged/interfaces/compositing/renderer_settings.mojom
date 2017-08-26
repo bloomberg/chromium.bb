@@ -21,4 +21,5 @@ struct RendererSettings {
   bool should_clear_root_render_pass;
   bool show_overdraw_feedback;
   int32 slow_down_compositing_scale_factor;
+  bool use_skia_renderer;
 };
