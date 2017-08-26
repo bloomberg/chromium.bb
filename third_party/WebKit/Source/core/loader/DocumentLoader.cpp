@@ -155,6 +155,7 @@ DEFINE_TRACE(DocumentLoader) {
   visitor->Trace(fetcher_);
   visitor->Trace(main_resource_);
   visitor->Trace(history_item_);
+  visitor->Trace(parser_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(document_load_timing_);
   visitor->Trace(application_cache_host_);
@@ -452,8 +453,10 @@ void DocumentLoader::FinishedLoading(double finish_time) {
     return;
 
   application_cache_host_->FinishedLoadingMainResource();
-  if (frame_->GetDocument()->Parser())
-    frame_->GetDocument()->Parser()->Finish();
+  if (parser_) {
+    parser_->Finish();
+    parser_.Clear();
+  }
   ClearMainResourceHandle();
 }
 
@@ -680,7 +683,7 @@ void DocumentLoader::CommitNavigation(const AtomicString& mime_type,
   InstallNewDocument(Url(), owner_document, should_reuse_default_view,
                      mime_type, encoding, InstallNewDocumentReason::kNavigation,
                      parsing_policy, overriding_url);
-  frame_->GetDocument()->Parser()->SetDocumentWasLoadedAsPartOfNavigation();
+  parser_->SetDocumentWasLoadedAsPartOfNavigation();
   frame_->GetDocument()->MaybeHandleHttpRefresh(
       response_.HttpHeaderField(HTTPNames::Refresh),
       Document::kHttpRefreshFromHeader);
@@ -697,7 +700,7 @@ void DocumentLoader::CommitData(const char* bytes, size_t length) {
 
   if (length)
     data_received_ = true;
-  frame_->GetDocument()->Parser()->AppendBytes(bytes, length);
+  parser_->AppendBytes(bytes, length);
 }
 
 void DocumentLoader::DataReceived(Resource* resource,
@@ -1119,7 +1122,7 @@ void DocumentLoader::InstallNewDocument(
   if (reason == InstallNewDocumentReason::kNavigation)
     DidCommitNavigation();
 
-  document->OpenForNavigation(parsing_policy, mime_type, encoding);
+  parser_ = document->OpenForNavigation(parsing_policy, mime_type, encoding);
 
   // FeaturePolicy is reset in the browser process on commit, so this needs to
   // be initialized and replicated to the browser process after commit messages
@@ -1156,12 +1159,12 @@ void DocumentLoader::ReplaceDocumentWhileExecutingJavaScriptURL(
 
   if (!source.IsNull()) {
     frame_->GetDocument()->SetCompatibilityMode(Document::kNoQuirksMode);
-    frame_->GetDocument()->Parser()->Append(source);
+    parser_->Append(source);
   }
 
   // Append() might lead to a detach.
-  if (frame_->GetDocument()->Parser())
-    frame_->GetDocument()->Parser()->Finish();
+  if (parser_)
+    parser_->Finish();
 }
 
 DEFINE_WEAK_IDENTIFIER_MAP(DocumentLoader);

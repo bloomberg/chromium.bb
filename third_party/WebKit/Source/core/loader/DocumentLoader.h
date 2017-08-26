@@ -61,6 +61,7 @@ class ApplicationCacheHost;
 class SubresourceFilter;
 class ResourceFetcher;
 class Document;
+class DocumentParser;
 class HistoryItem;
 class LocalFrame;
 class LocalFrameClient;
@@ -297,6 +298,11 @@ class CORE_EXPORT DocumentLoader
 
   Member<RawResource> main_resource_;
   Member<HistoryItem> history_item_;
+
+  // The parser that was created when the current Document was installed.
+  // document.open() may create a new parser at a later point, but this
+  // will not be updated.
+  Member<DocumentParser> parser_;
 
   Member<SubresourceFilter> subresource_filter_;
 
