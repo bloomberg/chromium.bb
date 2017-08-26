@@ -11,6 +11,7 @@
 #include "cc/raster/playback_image_provider.h"
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
+#include "cc/test/test_skcanvas.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
@@ -19,6 +20,10 @@
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
+
+using ::testing::_;
+using ::testing::StrictMock;
+using ::testing::Sequence;
 
 namespace cc {
 namespace {
@@ -600,6 +605,35 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
     EXPECT_EQ(SK_ColorRED, bitmap.getColor(x, 12));
   for (int y = 0; y < 24; ++y)
     EXPECT_EQ(SK_ColorRED, bitmap.getColor(24, y));
+}
+
+TEST(RasterSourceTest, RasterTransformWithoutRecordingScale) {
+  gfx::Size size(100, 100);
+  float recording_scale = 2.f;
+  std::unique_ptr<FakeRecordingSource> recording_source =
+      FakeRecordingSource::CreateFilledRecordingSource(size);
+  recording_source->Rerecord();
+  recording_source->SetRecordingScaleFactor(recording_scale);
+  scoped_refptr<RasterSource> raster_source =
+      recording_source->CreateRasterSource();
+
+  StrictMock<MockCanvas> mock_canvas;
+  Sequence s;
+  RasterSource::PlaybackSettings settings;
+  settings.playback_to_shared_canvas = true;
+
+  SkMatrix m;
+  m.setScale(1.f / recording_scale, 1.f / recording_scale);
+
+  EXPECT_CALL(mock_canvas, willSave()).InSequence(s);
+  // The call to raster_canvas->scale() should have values with the recording
+  // scale removed.
+  EXPECT_CALL(mock_canvas, didConcat(m)).InSequence(s);
+  EXPECT_CALL(mock_canvas, willRestore()).InSequence(s);
+
+  raster_source->PlaybackToCanvas(&mock_canvas, ColorSpaceForTesting(),
+                                  gfx::Rect(size), gfx::Rect(size),
+                                  gfx::AxisTransform2d(), settings);
 }
 
 }  // namespace
