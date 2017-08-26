@@ -81,6 +81,8 @@ class ContentSubresourceFilterThrottleManager
       content::NavigationHandle* navigation_handle,
       std::vector<std::unique_ptr<content::NavigationThrottle>>* throttles);
 
+  PageLoadStatistics* page_load_statistics() const { return statistics_.get(); }
+
   VerifiedRuleset::Handle* ruleset_handle_for_testing() {
     return ruleset_handle_.get();
   }

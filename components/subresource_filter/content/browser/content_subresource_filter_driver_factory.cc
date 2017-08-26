@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
+#include "components/subresource_filter/content/browser/page_load_statistics.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
@@ -119,6 +120,10 @@ bool ContentSubresourceFilterDriverFactory::ShouldDisallowNewWindow(
   if (should_block) {
     web_contents()->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR, kDisallowNewWindowMessage);
+    if (PageLoadStatistics* statistics =
+            throttle_manager_->page_load_statistics()) {
+      statistics->OnBlockedPopup();
+    }
   }
   return should_block;
 }
