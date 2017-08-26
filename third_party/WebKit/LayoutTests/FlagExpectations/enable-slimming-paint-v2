@@ -1542,6 +1542,7 @@ Bug(none) css3/blending/effect-background-blend-mode-stacking.html [ Failure Cra
 Bug(none) svg/custom/marker-zero-length-linecaps.svg [ Failure ]
 
 # Text failures due to layerization differences
+Bug(none) compositing/overflow/no-excessive-clip-parent-if-parent-escaped.html [ Failure ]
 Bug(none) compositing/overflow/scroller-with-border-radius.html [ Failure ]
 Bug(none) compositing/will-change/will-change-contents-suppresses-compositing.html [ Failure Crash ]
 Bug(none) css3/blending/mix-blend-mode-2nd-stacking-context-composited.html [ Failure ]

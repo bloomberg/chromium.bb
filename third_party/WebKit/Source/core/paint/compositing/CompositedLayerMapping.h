@@ -494,35 +494,37 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const GraphicsLayerPaintInfo&,
       const Vector<GraphicsLayerPaintInfo>& layers);
 
-  // Conservatively check that a sequence of border-radius clips do not clip
-  // this layer. The rectangle to check for clipping is the child's layer
-  // bound in the nearest clipping ancestor's space. The
-  // nearest_clipping_ancestor is the place where we need to start the search
-  // for border radius clips. The compositing_ancestor is the nearest
-  // compositing ancestor layer and we can stop checking clips at that layer
-  // because higher layer clips will be applied elsewhere.
-  // This is a fast approximate test. Depending on the shape of the child and
-  // the size of the clips, this method may return true when in fact
-  // the child is not clipped. We accept the approximation because most border
-  // radii are small and the outcome is used to reduce the number of layers,
-  // not influence correctness.
+  // Conservatively check whether there exists any border-radius clip that
+  // must be applied by an ancestor clipping mask layer. There are two inputs
+  // to this function: the bounds of contents that are going to be clipped
+  // by ancestor clipping layer, and the compositing ancestor which we are
+  // going to inherit clip state from.
+  // The function works by collecting all border-radius clips between the
+  // current layer and the inherited clip, i.e. those are the clips that are
+  // going to be applied by the ancestor clipping mask layer. A fast
+  // approximation test is used to determine whether the contents exceed
+  // the bounds of any of the clips. The function may return false positive
+  // (apply mask layer when not strictly needed), but never false negative,
+  // as its purpose is only for optimization.
   bool AncestorRoundedCornersWillClip(
-      const FloatRect& child_rect_in_nearest_clipping_space,
-      const PaintLayer* nearest_clipping_ancestor,
-      const PaintLayer* compositing_ancestor);
+      const FloatRect& bounds_in_ancestor_space,
+      const PaintLayer* clip_inheritance_ancestor);
 
-  // Return true in |owningLayerIsClipped| iff |m_owningLayer|'s compositing
-  // ancestor is not a descendant (inclusive) of the clipping container for
-  // |m_owningLayer|. Return true in |owningLayerIsMasked| iff
-  // |owningLayerIsClipped| is true and |m_owningLayer|'s compositing ancestor
-  // is not a descendant (inclusive) of a container that applies a mask for
-  // |m_owningLayer|.
+  // Return true in |owningLayerIsClipped| iff there is any clip in between
+  // the current layer and the inherited clip state. The inherited clip state
+  // is determined by the interoperation between compositing container, clip
+  // parent, and scroll parent.
+  // Return true in |owningLayerIsMasked| iff |owningLayerIsClipped| is true
+  // and any of the clip needs to be applied as a painted mask.
   void OwningLayerClippedOrMaskedByLayerNotAboveCompositedAncestor(
       const PaintLayer* scroll_parent,
       bool& owning_layer_is_clipped,
       bool& owning_layer_is_masked);
 
-  const PaintLayer* ScrollParent();
+  const PaintLayer* ScrollParent() const;
+  const PaintLayer* CompositedClipParent() const;
+  const PaintLayer* ClipInheritanceAncestor(
+      const PaintLayer* compositing_container) const;
 
   // Clear the groupedMapping entry on the layer at the given index, only if
   // that layer does not appear earlier in the set of layers for this object.
