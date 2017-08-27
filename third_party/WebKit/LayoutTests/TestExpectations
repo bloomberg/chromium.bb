@@ -1719,7 +1719,6 @@ crbug.com/626703 virtual/mojo-loading/http/tests/inspector/indexeddb/database-re
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/network/network-columns-visible.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/inspector/persistence/persistence-tabbed-editor-opens-filesystem-uisourcecode.html [ Pass Failure ]
-crbug.com/626703 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure ]
 crbug.com/626703 virtual/threaded/transitions/transition-end-event-multiple-03.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
@@ -2782,7 +2781,6 @@ crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/inspector/workers-on-na
 crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-21
-crbug.com/703503 inspector/tracing/timeline-js/timeline-runtime-stats.html [ Failure Pass ]
 crbug.com/703518 inspector/tracing/worker-js-frames.html [ Failure Pass ]
 crbug.com/703518 virtual/threaded/inspector/tracing/worker-js-frames.html [ Failure Pass ]
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
@@ -3591,3 +3589,7 @@ crbug.com/758109 [ Linux Debug ] fast/workers/worker-multi-startup.html [ Pass T
 
 # This test has a fixed number of time which can depend on performance.
 crbug.com/v8/6448 [ Debug ] external/wpt/hr-time/window-worker-time-origin.html [ Pass Failure ]
+
+crbug.com/669329 inspector/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
+crbug.com/669329 virtual/threaded/inspector/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
+
