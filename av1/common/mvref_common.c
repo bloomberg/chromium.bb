@@ -909,13 +909,13 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
        zero, so sets the ALL_ZERO flag.
      * This leads to an encode/decode mismatch.
   */
-  if (*ref_mv_count >= 2) {
-    for (idx = 0; idx < AOMMIN(3, *ref_mv_count); ++idx) {
-      if (ref_mv_stack[idx].this_mv.as_int != zeromv[0].as_int) all_zero = 0;
-      if (ref_frame > ALTREF_FRAME)
-        if (ref_mv_stack[idx].comp_mv.as_int != zeromv[1].as_int) all_zero = 0;
-    }
-  } else if (ref_frame <= ALTREF_FRAME) {
+
+  for (idx = 0; idx < AOMMIN(3, *ref_mv_count); ++idx) {
+    if (ref_mv_stack[idx].this_mv.as_int != zeromv[0].as_int) all_zero = 0;
+    if (ref_frame > ALTREF_FRAME)
+      if (ref_mv_stack[idx].comp_mv.as_int != zeromv[1].as_int) all_zero = 0;
+  }
+  if (*ref_mv_count < 2 && ref_frame <= ALTREF_FRAME) {
     for (idx = 0; idx < MAX_MV_REF_CANDIDATES; ++idx)
       if (mv_ref_list[idx].as_int != zeromv[0].as_int) all_zero = 0;
   }
