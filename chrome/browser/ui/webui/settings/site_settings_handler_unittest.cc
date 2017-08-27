@@ -271,7 +271,7 @@ class SiteSettingsHandlerTest : public testing::Test {
     incognito_profile_ = nullptr;
   }
 
-  // Content setting group name for |CONTENT_SETTING_TYPE_NOTIFICATIONS|.
+  // Content setting group name for |CONTENT_SETTINGS_TYPE_NOTIFICATIONS|.
   const std::string kNotifications;
 
  private:
@@ -483,10 +483,11 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetForInvalidURLs) {
     get_args.Append(std::move(category_list));
   }
   handler()->HandleGetOriginPermissions(&get_args);
-  // Verify that it'll just return defaults. Note the display string will be
-  // blank since it's an invalid url.
-  ValidateOrigin(origin, origin, "", CONTENT_SETTING_ASK,
-                 site_settings::SiteSettingSource::kDefault, 1U);
+  // Verify that it'll return CONTENT_SETTING_BLOCK as |origin| is not a secure
+  // context, a requirement for notifications. Note that the display string
+  // will be blank since it's an invalid URL.
+  ValidateOrigin(origin, origin, "", CONTENT_SETTING_BLOCK,
+                 site_settings::SiteSettingSource::kInsecureOrigin, 1U);
 
   // Make sure setting a permission on an invalid origin doesn't crash.
   base::ListValue set_args;
@@ -497,13 +498,13 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetForInvalidURLs) {
     set_args.Append(std::move(category_list));
   }
   set_args.AppendString(
-      content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+      content_settings::ContentSettingToString(CONTENT_SETTING_ALLOW));
   handler()->HandleSetOriginPermissions(&set_args);
 
   // Also make sure the content setting for |origin| wasn't actually changed.
   handler()->HandleGetOriginPermissions(&get_args);
-  ValidateOrigin(origin, origin, "", CONTENT_SETTING_ASK,
-                 site_settings::SiteSettingSource::kDefault, 2U);
+  ValidateOrigin(origin, origin, "", CONTENT_SETTING_BLOCK,
+                 site_settings::SiteSettingSource::kInsecureOrigin, 2U);
 }
 
 TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {

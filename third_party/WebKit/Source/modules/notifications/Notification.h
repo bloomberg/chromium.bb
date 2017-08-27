@@ -113,7 +113,7 @@ class MODULES_EXPORT Notification final
   Vector<v8::Local<v8::Value>> actions(ScriptState*) const;
 
   static String PermissionString(mojom::blink::PermissionStatus);
-  static String permission(ScriptState*);
+  static String permission(ExecutionContext*);
   static ScriptPromise requestPermission(ScriptState*,
                                          NotificationPermissionCallback*);
 
