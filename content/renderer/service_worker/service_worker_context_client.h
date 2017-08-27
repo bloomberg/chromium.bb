@@ -351,7 +351,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void OnDidSkipWaiting(int request_id);
   void OnDidClaimClients(int request_id);
   void OnClaimClientsError(int request_id,
-                           blink::WebServiceWorkerError::ErrorType error_type,
+                           blink::mojom::ServiceWorkerErrorType error_type,
                            const base::string16& message);
   // Called to resolve the FetchEvent.preloadResponse promise.
   void OnNavigationPreloadResponse(
