@@ -5,16 +5,26 @@
 #ifndef COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_TYPE_CONTROLLER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "components/sync/driver/data_type_controller.h"
+#include "components/sync/engine/activation_context.h"
+
+namespace syncer {
+class SyncClient;
+}  // namespace syncer
 
 namespace sync_bookmarks {
+
+class BookmarkModelTypeProcessor;
 
 // A class that manages the startup and shutdown of bookmark sync implemented
 // through USS APIs.
 class BookmarkModelTypeController : public syncer::DataTypeController {
  public:
-  BookmarkModelTypeController();
+  explicit BookmarkModelTypeController(syncer::SyncClient* sync_client);
+  ~BookmarkModelTypeController() override;
 
   // syncer::DataTypeController implementation.
   bool ShouldLoadModelBeforeConfigure() const override;
@@ -32,6 +42,25 @@ class BookmarkModelTypeController : public syncer::DataTypeController {
   void RecordMemoryUsageHistogram() override;
 
  private:
+  friend class BookmarkModelTypeControllerTest;
+
+  // Returns true if both BookmarkModel and HistoryService are loaded.
+  bool DependenciesLoaded();
+
+  // Reads ModelTypeState from storage and creates BookmarkModelTypeProcessor.
+  std::unique_ptr<syncer::ActivationContext> PrepareActivationContext();
+
+  // SyncClient provides access to BookmarkModel, HistoryService and
+  // SyncService.
+  syncer::SyncClient* sync_client_;
+
+  // State of this datatype controller.
+  State state_;
+
+  // BookmarkModelTypeProcessor handles communications between sync engine and
+  // BookmarkModel/HistoryService.
+  std::unique_ptr<BookmarkModelTypeProcessor> model_type_processor_;
+
   DISALLOW_COPY_AND_ASSIGN(BookmarkModelTypeController);
 };
 
