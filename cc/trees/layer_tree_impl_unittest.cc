@@ -1066,7 +1066,7 @@ TEST_F(LayerTreeImplTest, HitTestingRespectsScrollParents) {
     // |child|'s clip.
     scroll_child->test_properties()->scroll_parent = child.get();
     child->test_properties()->scroll_children =
-        base::MakeUnique<std::set<LayerImpl*>>();
+        std::make_unique<std::set<LayerImpl*>>();
     child->test_properties()->scroll_children->insert(scroll_child.get());
 
     grand_child->SetBounds(gfx::Size(200, 200));
@@ -2311,7 +2311,7 @@ TEST_F(LayerTreeImplTest, PersistentSwapPromisesAreKeptAlive) {
       persistent_promises_to_pass;
   for (size_t i = 0; i < promises_count; ++i) {
     persistent_promises_to_pass.push_back(
-        base::MakeUnique<PersistentSwapPromise>());
+        std::make_unique<PersistentSwapPromise>());
   }
 
   for (auto& promise : persistent_promises_to_pass) {
@@ -2341,7 +2341,7 @@ TEST_F(LayerTreeImplTest, NotPersistentSwapPromisesAreDroppedWhenSwapFails) {
       not_persistent_promises_to_pass;
   for (size_t i = 0; i < promises_count; ++i) {
     not_persistent_promises_to_pass.push_back(
-        base::MakeUnique<NotPersistentSwapPromise>());
+        std::make_unique<NotPersistentSwapPromise>());
   }
 
   for (auto& promise : not_persistent_promises_to_pass) {

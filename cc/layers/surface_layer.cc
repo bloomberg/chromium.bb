@@ -131,7 +131,7 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
 void SurfaceLayer::RemoveReference(base::Closure reference_returner) {
   if (!reference_returner)
     return;
-  auto swap_promise = base::MakeUnique<SatisfySwapPromise>(
+  auto swap_promise = std::make_unique<SatisfySwapPromise>(
       std::move(reference_returner),
       layer_tree_host()->GetTaskRunnerProvider()->MainThreadTaskRunner());
   layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(

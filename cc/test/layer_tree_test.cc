@@ -419,7 +419,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
         break;
       case CompositorMode::THREADED:
         DCHECK(impl_task_runner.get());
-        proxy = base::MakeUnique<ProxyMain>(layer_tree_host.get(),
+        proxy = std::make_unique<ProxyMain>(layer_tree_host.get(),
                                             task_runner_provider.get());
         break;
     }
@@ -820,7 +820,7 @@ void LayerTreeTest::RunTest(CompositorMode mode) {
     ASSERT_TRUE(impl_thread_->Start());
   }
 
-  image_worker_ = base::MakeUnique<base::Thread>("ImageWorker");
+  image_worker_ = std::make_unique<base::Thread>("ImageWorker");
   ASSERT_TRUE(image_worker_->Start());
 
   shared_bitmap_manager_.reset(new TestSharedBitmapManager);
@@ -887,7 +887,7 @@ LayerTreeTest::CreateLayerTreeFrameSink(
   bool synchronous_composite =
       !HasImplThread() &&
       !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-  return base::MakeUnique<viz::TestLayerTreeFrameSink>(
+  return std::make_unique<viz::TestLayerTreeFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
       impl_task_runner_, synchronous_composite, disable_display_vsync,

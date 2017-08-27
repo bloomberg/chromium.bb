@@ -243,7 +243,7 @@ class RasterBufferProviderPerfTestBase {
 
     for (unsigned i = 0; i < num_raster_tasks; ++i) {
       auto resource =
-          base::MakeUnique<ScopedResource>(resource_provider_.get());
+          std::make_unique<ScopedResource>(resource_provider_.get());
       resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                          viz::RGBA_8888, gfx::ColorSpace());
 
@@ -330,7 +330,7 @@ class RasterBufferProviderPerfTest
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dResourceProvider();
-        raster_buffer_provider_ = base::MakeUnique<OneCopyRasterBufferProvider>(
+        raster_buffer_provider_ = std::make_unique<OneCopyRasterBufferProvider>(
             task_runner_.get(), compositor_context_provider_.get(),
             worker_context_provider_.get(), resource_provider_.get(),
             std::numeric_limits<int>::max(), false,
@@ -339,7 +339,7 @@ class RasterBufferProviderPerfTest
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
-        raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
+        raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0,
             viz::PlatformColor::BestTextureFormat(), false);

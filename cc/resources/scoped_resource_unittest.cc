@@ -24,7 +24,7 @@ TEST(ScopedResourceTest, NewScopedResource) {
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(context_provider.get(),
                                    shared_bitmap_manager.get());
-  auto texture = base::MakeUnique<ScopedResource>(resource_provider.get());
+  auto texture = std::make_unique<ScopedResource>(resource_provider.get());
 
   // New scoped textures do not hold a texture yet.
   EXPECT_EQ(0u, texture->id());
@@ -45,7 +45,7 @@ TEST(ScopedResourceTest, CreateScopedResource) {
   std::unique_ptr<ResourceProvider> resource_provider =
       FakeResourceProvider::Create(context_provider.get(),
                                    shared_bitmap_manager.get());
-  auto texture = base::MakeUnique<ScopedResource>(resource_provider.get());
+  auto texture = std::make_unique<ScopedResource>(resource_provider.get());
   texture->Allocate(gfx::Size(30, 30), ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                     viz::RGBA_8888, gfx::ColorSpace());
 
@@ -70,7 +70,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
       FakeResourceProvider::Create(context_provider.get(),
                                    shared_bitmap_manager.get());
   {
-    auto texture = base::MakeUnique<ScopedResource>(resource_provider.get());
+    auto texture = std::make_unique<ScopedResource>(resource_provider.get());
 
     EXPECT_EQ(0u, resource_provider->num_resources());
     texture->Allocate(gfx::Size(30, 30),
@@ -82,7 +82,7 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
 
   EXPECT_EQ(0u, resource_provider->num_resources());
   {
-    auto texture = base::MakeUnique<ScopedResource>(resource_provider.get());
+    auto texture = std::make_unique<ScopedResource>(resource_provider.get());
     EXPECT_EQ(0u, resource_provider->num_resources());
     texture->Allocate(gfx::Size(30, 30),
                       ResourceProvider::TEXTURE_HINT_IMMUTABLE, viz::RGBA_8888,

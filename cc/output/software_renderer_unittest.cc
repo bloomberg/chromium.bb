@@ -44,7 +44,7 @@ class SoftwareRendererTest : public testing::Test {
     shared_bitmap_manager_.reset(new TestSharedBitmapManager());
     resource_provider_ = FakeResourceProvider::Create<DisplayResourceProvider>(
         nullptr, shared_bitmap_manager_.get());
-    renderer_ = base::MakeUnique<SoftwareRenderer>(
+    renderer_ = std::make_unique<SoftwareRenderer>(
         &settings_, output_surface_.get(), resource_provider());
     renderer_->Initialize();
     renderer_->SetVisible(true);
@@ -429,7 +429,7 @@ TEST_F(SoftwareRendererTest, PartialSwap) {
 
   settings_.partial_swap_enabled = true;
 
-  auto device_owned = base::MakeUnique<PartialSwapSoftwareOutputDevice>();
+  auto device_owned = std::make_unique<PartialSwapSoftwareOutputDevice>();
   auto* device = device_owned.get();
   InitializeRenderer(std::move(device_owned));
 

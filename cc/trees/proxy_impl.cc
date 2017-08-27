@@ -241,7 +241,7 @@ NOINLINE void ProxyImpl::DumpForBeginMainFrameHang() {
   DCHECK(IsImplThread());
   DCHECK(scheduler_);
 
-  auto state = base::MakeUnique<base::trace_event::TracedValue>();
+  auto state = std::make_unique<base::trace_event::TracedValue>();
 
   state->SetBoolean("commit_completion_waits_for_activation",
                     commit_completion_waits_for_activation_);

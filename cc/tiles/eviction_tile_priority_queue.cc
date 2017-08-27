@@ -79,7 +79,7 @@ void CreateTilingSetEvictionQueues(
 
   for (auto* layer : layers) {
     std::unique_ptr<TilingSetEvictionQueue> tiling_set_queue =
-        base::MakeUnique<TilingSetEvictionQueue>(
+        std::make_unique<TilingSetEvictionQueue>(
             layer->picture_layer_tiling_set(),
             layer->contributes_to_drawn_render_surface());
     // Queues will only contain non empty tiling sets.

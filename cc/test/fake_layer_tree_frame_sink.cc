@@ -34,8 +34,8 @@ FakeLayerTreeFrameSink::~FakeLayerTreeFrameSink() = default;
 bool FakeLayerTreeFrameSink::BindToClient(LayerTreeFrameSinkClient* client) {
   if (!LayerTreeFrameSink::BindToClient(client))
     return false;
-  begin_frame_source_ = base::MakeUnique<viz::BackToBackBeginFrameSource>(
-      base::MakeUnique<viz::DelayBasedTimeSource>(
+  begin_frame_source_ = std::make_unique<viz::BackToBackBeginFrameSource>(
+      std::make_unique<viz::DelayBasedTimeSource>(
           base::ThreadTaskRunnerHandle::Get().get()));
   client_->SetBeginFrameSource(begin_frame_source_.get());
   return true;

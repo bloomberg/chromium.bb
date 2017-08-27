@@ -705,7 +705,7 @@ void Scheduler::ProcessScheduledActions() {
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
 Scheduler::AsValue() const {
-  auto state = base::MakeUnique<base::trace_event::TracedValue>();
+  auto state = std::make_unique<base::trace_event::TracedValue>();
   AsValueInto(state.get());
   return std::move(state);
 }

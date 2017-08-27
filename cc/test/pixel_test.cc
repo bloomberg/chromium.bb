@@ -167,17 +167,17 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
       std::make_unique<viz::TestGpuMemoryBufferManager>();
   // Not relevant for display compositor since it's not delegated.
   constexpr bool delegated_sync_points_required = false;
-  resource_provider_ = base::MakeUnique<DisplayResourceProvider>(
+  resource_provider_ = std::make_unique<DisplayResourceProvider>(
       output_surface_->context_provider(), shared_bitmap_manager_.get(),
       gpu_memory_buffer_manager_.get(), main_thread_task_runner_.get(),
       delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
 
-  texture_mailbox_deleter_ = base::MakeUnique<TextureMailboxDeleter>(
+  texture_mailbox_deleter_ = std::make_unique<TextureMailboxDeleter>(
       base::ThreadTaskRunnerHandle::Get());
 
-  renderer_ = base::MakeUnique<viz::GLRenderer>(
+  renderer_ = std::make_unique<viz::GLRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get(),
       texture_mailbox_deleter_.get());
   renderer_->Initialize();
@@ -191,17 +191,17 @@ void PixelTest::EnableExternalStencilTest() {
 
 void PixelTest::SetUpSoftwareRenderer() {
   output_surface_.reset(
-      new PixelTestOutputSurface(base::MakeUnique<SoftwareOutputDevice>()));
+      new PixelTestOutputSurface(std::make_unique<SoftwareOutputDevice>()));
   output_surface_->BindToClient(output_surface_client_.get());
   shared_bitmap_manager_.reset(new TestSharedBitmapManager());
   constexpr bool delegated_sync_points_required =
       false;  // Meaningless for software.
-  resource_provider_ = base::MakeUnique<DisplayResourceProvider>(
+  resource_provider_ = std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get(), gpu_memory_buffer_manager_.get(),
       main_thread_task_runner_.get(), delegated_sync_points_required,
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
-  auto renderer = base::MakeUnique<SoftwareRenderer>(
+  auto renderer = std::make_unique<SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());
   software_renderer_ = renderer.get();
   renderer_ = std::move(renderer);

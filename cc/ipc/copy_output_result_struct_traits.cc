@@ -69,7 +69,7 @@ StructTraits<cc::mojom::CopyOutputResultDataView,
   if (!result->release_callback_)
     return {};
   cc::mojom::TextureMailboxReleaserPtr releaser;
-  auto impl = base::MakeUnique<TextureMailboxReleaserImpl>(
+  auto impl = std::make_unique<TextureMailboxReleaserImpl>(
       std::move(result->release_callback_));
   MakeStrongBinding(std::move(impl), MakeRequest(&releaser));
   return releaser;
@@ -83,7 +83,7 @@ bool StructTraits<cc::mojom::CopyOutputResultDataView,
   // We first read into local variables and then call the appropriate
   // constructor of viz::CopyOutputResult.
   gfx::Size size;
-  auto bitmap = base::MakeUnique<SkBitmap>();
+  auto bitmap = std::make_unique<SkBitmap>();
   viz::TextureMailbox texture_mailbox;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
 

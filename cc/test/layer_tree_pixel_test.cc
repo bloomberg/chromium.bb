@@ -56,7 +56,7 @@ LayerTreePixelTest::CreateLayerTreeFrameSink(
       !HasImplThread() &&
       !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
   auto delegating_output_surface =
-      base::MakeUnique<viz::TestLayerTreeFrameSink>(
+      std::make_unique<viz::TestLayerTreeFrameSink>(
           compositor_context_provider, std::move(worker_context_provider),
           shared_bitmap_manager(), gpu_memory_buffer_manager(),
           viz::RendererSettings(), ImplThreadTaskRunner(),
@@ -79,11 +79,11 @@ LayerTreePixelTest::CreateDisplayOutputSurfaceOnThread(
     display_context_provider->BindToCurrentThread();
 
     bool flipped_output_surface = false;
-    display_output_surface = base::MakeUnique<PixelTestOutputSurface>(
+    display_output_surface = std::make_unique<PixelTestOutputSurface>(
         std::move(display_context_provider), flipped_output_surface);
   } else {
-    display_output_surface = base::MakeUnique<PixelTestOutputSurface>(
-        base::MakeUnique<SoftwareOutputDevice>());
+    display_output_surface = std::make_unique<PixelTestOutputSurface>(
+        std::make_unique<SoftwareOutputDevice>());
   }
   return std::move(display_output_surface);
 }

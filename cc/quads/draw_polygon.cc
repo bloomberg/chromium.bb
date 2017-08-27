@@ -295,7 +295,7 @@ void DrawPolygon::SplitPolygon(std::unique_ptr<DrawPolygon> polygon,
     out_points.push_back(pre_neg_intersection);
   }
   *front =
-      base::MakeUnique<DrawPolygon>(polygon->original_ref_, out_points,
+      std::make_unique<DrawPolygon>(polygon->original_ref_, out_points,
                                     polygon->normal_, polygon->order_index_);
 
   out_points.clear();
@@ -308,7 +308,7 @@ void DrawPolygon::SplitPolygon(std::unique_ptr<DrawPolygon> polygon,
     out_points.push_back(pre_pos_intersection);
   }
   *back =
-      base::MakeUnique<DrawPolygon>(polygon->original_ref_, out_points,
+      std::make_unique<DrawPolygon>(polygon->original_ref_, out_points,
                                     polygon->normal_, polygon->order_index_);
 
   DCHECK_GE((*front)->points().size(), 3u);

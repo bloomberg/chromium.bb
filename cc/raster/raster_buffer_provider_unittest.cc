@@ -163,7 +163,7 @@ class RasterBufferProviderTest
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dResourceProvider();
-        raster_buffer_provider_ = base::MakeUnique<OneCopyRasterBufferProvider>(
+        raster_buffer_provider_ = std::make_unique<OneCopyRasterBufferProvider>(
             base::ThreadTaskRunnerHandle::Get().get(), context_provider_.get(),
             worker_context_provider_.get(), resource_provider_.get(),
             kMaxBytesPerCopyOperation, false, kMaxStagingBuffers,
@@ -171,7 +171,7 @@ class RasterBufferProviderTest
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ASYNC_ONE_COPY:
         Create3dResourceProvider();
-        raster_buffer_provider_ = base::MakeUnique<OneCopyRasterBufferProvider>(
+        raster_buffer_provider_ = std::make_unique<OneCopyRasterBufferProvider>(
             base::ThreadTaskRunnerHandle::Get().get(), context_provider_.get(),
             worker_context_provider_.get(), resource_provider_.get(),
             kMaxBytesPerCopyOperation, false, kMaxStagingBuffers,
@@ -179,14 +179,14 @@ class RasterBufferProviderTest
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
-        raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
+        raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0,
             viz::PlatformColor::BestTextureFormat(), false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ASYNC_GPU:
         Create3dResourceProvider();
-        raster_buffer_provider_ = base::MakeUnique<GpuRasterBufferProvider>(
+        raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(),
             resource_provider_.get(), false, 0,
             viz::PlatformColor::BestTextureFormat(), true);
@@ -237,7 +237,7 @@ class RasterBufferProviderTest
   }
 
   void AppendTask(unsigned id, const gfx::Size& size) {
-    auto resource = base::MakeUnique<ScopedResource>(resource_provider_.get());
+    auto resource = std::make_unique<ScopedResource>(resource_provider_.get());
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                        viz::RGBA_8888, gfx::ColorSpace());
 
@@ -256,7 +256,7 @@ class RasterBufferProviderTest
   void AppendBlockingTask(unsigned id, base::Lock* lock) {
     const gfx::Size size(1, 1);
 
-    auto resource = base::MakeUnique<ScopedResource>(resource_provider_.get());
+    auto resource = std::make_unique<ScopedResource>(resource_provider_.get());
     resource->Allocate(size, ResourceProvider::TEXTURE_HINT_IMMUTABLE,
                        viz::RGBA_8888, gfx::ColorSpace());
 

@@ -259,7 +259,7 @@ std::unique_ptr<TextureLayer::TextureMailboxHolder::MainThreadReference>
 TextureLayer::TextureMailboxHolder::Create(
     const viz::TextureMailbox& mailbox,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
-  return base::MakeUnique<MainThreadReference>(
+  return std::make_unique<MainThreadReference>(
       new TextureMailboxHolder(mailbox, std::move(release_callback)));
 }
 

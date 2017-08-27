@@ -106,7 +106,7 @@ bool TextureLayerImpl::WillDraw(DrawMode draw_mode,
     // Have to upload a copy to a texture for it to be used in a
     // hardware draw.
     if (!texture_copy_)
-      texture_copy_ = base::MakeUnique<ScopedResource>(resource_provider);
+      texture_copy_ = std::make_unique<ScopedResource>(resource_provider);
     if (texture_copy_->size() != texture_mailbox_.size_in_pixels() ||
         resource_provider->InUseByConsumer(texture_copy_->id()))
       texture_copy_->Free();

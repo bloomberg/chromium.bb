@@ -57,7 +57,7 @@ TestSharedBitmapManager::AllocateSharedBitmap(const gfx::Size& size) {
   memory->CreateAndMapAnonymous(size.GetArea() * 4);
   viz::SharedBitmapId id = viz::SharedBitmap::GenerateId();
   bitmap_map_[id] = memory.get();
-  return base::MakeUnique<OwnedSharedBitmap>(std::move(memory), id);
+  return std::make_unique<OwnedSharedBitmap>(std::move(memory), id);
 }
 
 std::unique_ptr<viz::SharedBitmap>
@@ -67,7 +67,7 @@ TestSharedBitmapManager::GetSharedBitmapFromId(const gfx::Size&,
   if (bitmap_map_.find(id) == bitmap_map_.end())
     return nullptr;
   uint8_t* pixels = static_cast<uint8_t*>(bitmap_map_[id]->memory());
-  return base::MakeUnique<UnownedSharedBitmap>(pixels, id);
+  return std::make_unique<UnownedSharedBitmap>(pixels, id);
 }
 
 }  // namespace cc

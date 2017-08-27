@@ -115,7 +115,7 @@ void DisplayItemList::EmitTraceSnapshot() const {
 
 std::unique_ptr<base::trace_event::TracedValue>
 DisplayItemList::CreateTracedValue(bool include_items) const {
-  auto state = base::MakeUnique<base::trace_event::TracedValue>();
+  auto state = std::make_unique<base::trace_event::TracedValue>();
   state->BeginDictionary("params");
 
   if (include_items) {

@@ -50,7 +50,7 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
     host_impl()->SetVisible(true);
     host_impl()->InitializeRenderer(layer_tree_frame_sink());
     tile_manager()->SetTileTaskManagerForTesting(
-        base::MakeUnique<FakeTileTaskManagerImpl>());
+        std::make_unique<FakeTileTaskManagerImpl>());
   }
 
   void SetupDefaultTreesWithFixedTileSize(const gfx::Size& layer_bounds,

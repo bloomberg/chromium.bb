@@ -112,7 +112,7 @@ TEST_F(StructTraitsTest, CopyOutputRequest_BitmapRequest) {
   const auto source =
       base::UnguessableToken::Deserialize(0xdeadbeef, 0xdeadf00d);
   gfx::Size size(9, 8);
-  auto bitmap = base::MakeUnique<SkBitmap>();
+  auto bitmap = std::make_unique<SkBitmap>();
   bitmap->allocN32Pixels(size.width(), size.height());
   base::RunLoop run_loop;
   std::unique_ptr<viz::CopyOutputRequest> input =
@@ -191,10 +191,10 @@ TEST_F(StructTraitsTest, CopyOutputRequest_MessagePipeBroken) {
 }
 
 TEST_F(StructTraitsTest, CopyOutputResult_Bitmap) {
-  auto bitmap = base::MakeUnique<SkBitmap>();
+  auto bitmap = std::make_unique<SkBitmap>();
   bitmap->allocN32Pixels(7, 8);
   bitmap->eraseARGB(123, 213, 77, 33);
-  auto in_bitmap = base::MakeUnique<SkBitmap>();
+  auto in_bitmap = std::make_unique<SkBitmap>();
   in_bitmap->allocN32Pixels(7, 8);
   in_bitmap->eraseARGB(123, 213, 77, 33);
   auto input = viz::CopyOutputResult::CreateBitmapResult(std::move(bitmap));

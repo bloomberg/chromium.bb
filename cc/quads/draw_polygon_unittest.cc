@@ -72,7 +72,7 @@ namespace {
   DrawPolygon name(NULL, points_vector, normal, polygon_id)
 
 #define CREATE_NEW_DRAW_POLYGON_PTR(name, points_vector, normal, polygon_id) \
-  std::unique_ptr<DrawPolygon> name(base::MakeUnique<DrawPolygon>(           \
+  std::unique_ptr<DrawPolygon> name(std::make_unique<DrawPolygon>(           \
       nullptr, points_vector, normal, polygon_id))
 
 #define CREATE_TEST_DRAW_FORWARD_POLYGON(name, points_vector, id)        \

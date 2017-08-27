@@ -255,7 +255,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   SetDebugState(settings.initial_debug_state);
 
   // LTHI always has an active tree.
-  active_tree_ = base::MakeUnique<LayerTreeImpl>(
+  active_tree_ = std::make_unique<LayerTreeImpl>(
       this, new SyncedProperty<ScaleGroup>, new SyncedBrowserControls,
       new SyncedElasticOverscroll);
   active_tree_->property_trees()->is_active = true;
@@ -398,7 +398,7 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   } else if (!CommitToActiveTree()) {
     DCHECK(!pending_tree_raster_duration_timer_);
     pending_tree_raster_duration_timer_ =
-        base::MakeUnique<PendingTreeRasterDurationHistogramTimer>();
+        std::make_unique<PendingTreeRasterDurationHistogramTimer>();
   }
 }
 
@@ -1255,7 +1255,7 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
   if (active_tree_)
     active_tree_->DetachLayers();
   active_tree_ =
-      base::MakeUnique<LayerTreeImpl>(this, active_tree()->page_scale_factor(),
+      std::make_unique<LayerTreeImpl>(this, active_tree()->page_scale_factor(),
                                       active_tree()->top_controls_shown_ratio(),
                                       active_tree()->elastic_overscroll());
   active_tree_->property_trees()->is_active = true;
@@ -2105,7 +2105,7 @@ void LayerTreeHostImpl::CreatePendingTree() {
   if (recycle_tree_) {
     recycle_tree_.swap(pending_tree_);
   } else {
-    pending_tree_ = base::MakeUnique<LayerTreeImpl>(
+    pending_tree_ = std::make_unique<LayerTreeImpl>(
         this, active_tree()->page_scale_factor(),
         active_tree()->top_controls_shown_ratio(),
         active_tree()->elastic_overscroll());
@@ -2319,14 +2319,14 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
                                         &resource_pool_);
 
   if (use_gpu_rasterization_) {
-    image_decode_cache_ = base::MakeUnique<GpuImageDecodeCache>(
+    image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
         layer_tree_frame_sink_->worker_context_provider(),
         viz::ResourceFormatToClosestSkColorType(
             settings_.preferred_tile_format),
         settings_.decoded_image_working_set_budget_bytes,
         settings_.decoded_image_cache_budget_bytes);
   } else {
-    image_decode_cache_ = base::MakeUnique<SoftwareImageDecodeCache>(
+    image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
         viz::ResourceFormatToClosestSkColorType(
             settings_.preferred_tile_format),
         settings_.decoded_image_working_set_budget_bytes);
@@ -2389,7 +2389,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
 
     int msaa_sample_count = use_msaa_ ? RequestedMSAASampleCount() : 0;
 
-    *raster_buffer_provider = base::MakeUnique<GpuRasterBufferProvider>(
+    *raster_buffer_provider = std::make_unique<GpuRasterBufferProvider>(
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
         msaa_sample_count, settings_.preferred_tile_format,
@@ -2428,7 +2428,7 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
       compositor_context_provider->ContextCapabilities()
           .max_copy_texture_chromium_size;
 
-  *raster_buffer_provider = base::MakeUnique<OneCopyRasterBufferProvider>(
+  *raster_buffer_provider = std::make_unique<OneCopyRasterBufferProvider>(
       GetTaskRunner(), compositor_context_provider, worker_context_provider,
       resource_provider_.get(), max_copy_texture_chromium_size,
       settings_.use_partial_raster, settings_.max_staging_buffer_usage_in_bytes,
@@ -2559,7 +2559,7 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   layer_tree_frame_sink_ = layer_tree_frame_sink;
   has_valid_layer_tree_frame_sink_ = true;
-  resource_provider_ = base::MakeUnique<LayerTreeResourceProvider>(
+  resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
       layer_tree_frame_sink_->context_provider(),
       layer_tree_frame_sink_->shared_bitmap_manager(),
       layer_tree_frame_sink_->gpu_memory_buffer_manager(),

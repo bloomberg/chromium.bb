@@ -219,7 +219,7 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   for (auto& pass : render_passes_in_draw_order) {
     auto& resource = render_pass_textures_[pass->id];
     if (!resource) {
-      resource = base::MakeUnique<ScopedResource>(resource_provider_);
+      resource = std::make_unique<ScopedResource>(resource_provider_);
 
       // |has_damage_from_contributing_content| is used to determine if previous
       // contents can be reused when caching render pass and as a result needs

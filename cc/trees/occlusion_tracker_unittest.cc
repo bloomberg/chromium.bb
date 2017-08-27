@@ -223,7 +223,7 @@ class OcclusionTrackerTest : public testing::Test {
     inputs.can_adjust_raster_scales = true;
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
 
-    layer_iterator_ = base::MakeUnique<EffectTreeLayerListIterator>(
+    layer_iterator_ = std::make_unique<EffectTreeLayerListIterator>(
         host_->host_impl()->active_tree());
   }
 

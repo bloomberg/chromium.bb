@@ -44,11 +44,11 @@ TEST(DrawQuadTest, CopySharedQuadState) {
   SkBlendMode blend_mode = SkBlendMode::kMultiply;
   int sorting_context_id = 65536;
 
-  auto state = base::MakeUnique<viz::SharedQuadState>();
+  auto state = std::make_unique<viz::SharedQuadState>();
   state->SetAll(quad_transform, layer_rect, visible_layer_rect, clip_rect,
                 is_clipped, opacity, blend_mode, sorting_context_id);
 
-  auto copy = base::MakeUnique<viz::SharedQuadState>(*state);
+  auto copy = std::make_unique<viz::SharedQuadState>(*state);
   EXPECT_EQ(quad_transform, copy->quad_to_target_transform);
   EXPECT_EQ(visible_layer_rect, copy->visible_quad_layer_rect);
   EXPECT_EQ(opacity, copy->opacity);

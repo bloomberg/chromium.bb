@@ -26,7 +26,7 @@ ClipNode::ClipNode(const ClipNode& other)
       transform_id(other.transform_id) {
   if (other.clip_expander) {
     DCHECK_EQ(clip_type, ClipType::EXPANDS_CLIP);
-    clip_expander = base::MakeUnique<ClipExpander>(*other.clip_expander);
+    clip_expander = std::make_unique<ClipExpander>(*other.clip_expander);
   }
   cached_clip_rects = other.cached_clip_rects;
   cached_accumulated_rect_in_screen_space =
@@ -42,7 +42,7 @@ ClipNode& ClipNode::operator=(const ClipNode& other) {
 
   if (other.clip_expander) {
     DCHECK_EQ(clip_type, ClipType::EXPANDS_CLIP);
-    clip_expander = base::MakeUnique<ClipExpander>(*other.clip_expander);
+    clip_expander = std::make_unique<ClipExpander>(*other.clip_expander);
   } else {
     clip_expander.reset();
   }
