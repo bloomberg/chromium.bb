@@ -1043,5 +1043,118 @@ TEST(TaskSchedulerWorkerPoolOverWorkerCapacityTest, VerifyCleanup) {
   worker_pool.JoinForTesting();
 }
 
+// Verify that the maximum number of workers is 256 and that hitting the max
+// leaves the pool in a valid state with regards to worker capacity.
+TEST_F(TaskSchedulerWorkerPoolBlockingEnterExitTest, MaximumWorkersTest) {
+  constexpr size_t kMaxNumberOfWorkers = 256;
+  constexpr size_t kNumExtraTasks = 10;
+
+  WaitableEvent early_blocking_thread_running(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+  RepeatingClosure early_threads_barrier_closure =
+      BarrierClosure(kMaxNumberOfWorkers,
+                     BindOnce(&WaitableEvent::Signal,
+                              Unretained(&early_blocking_thread_running)));
+
+  WaitableEvent early_threads_finished(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+  RepeatingClosure early_threads_finished_barrier = BarrierClosure(
+      kMaxNumberOfWorkers,
+      BindOnce(&WaitableEvent::Signal, Unretained(&early_threads_finished)));
+
+  WaitableEvent early_release_thread_continue(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+
+  // Post ScopedBlockingCall tasks to hit the worker cap.
+  for (size_t i = 0; i < kMaxNumberOfWorkers; ++i) {
+    task_runner_->PostTask(FROM_HERE,
+                           BindOnce(
+                               [](Closure* early_threads_barrier_closure,
+                                  WaitableEvent* early_release_thread_continue,
+                                  Closure* early_threads_finished) {
+                                 {
+                                   ScopedBlockingCall scoped_blocking_call(
+                                       BlockingType::WILL_BLOCK);
+                                   early_threads_barrier_closure->Run();
+                                   early_release_thread_continue->Wait();
+                                 }
+                                 early_threads_finished->Run();
+                               },
+                               Unretained(&early_threads_barrier_closure),
+                               Unretained(&early_release_thread_continue),
+                               Unretained(&early_threads_finished_barrier)));
+  }
+
+  early_blocking_thread_running.Wait();
+  EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
+            kNumWorkersInWorkerPool + kMaxNumberOfWorkers);
+
+  WaitableEvent late_release_thread_contine(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+
+  WaitableEvent late_blocking_thread_running(
+      WaitableEvent::ResetPolicy::MANUAL,
+      WaitableEvent::InitialState::NOT_SIGNALED);
+  RepeatingClosure late_threads_barrier_closure = BarrierClosure(
+      kNumExtraTasks, BindOnce(&WaitableEvent::Signal,
+                               Unretained(&late_blocking_thread_running)));
+
+  // Posts additional tasks. Note: we should already have |kMaxNumberOfWorkers|
+  // tasks running. These tasks should not be able to get executed yet as
+  // the pool is already at its max worker cap.
+  for (size_t i = 0; i < kNumExtraTasks; ++i) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        BindOnce(
+            [](Closure* late_threads_barrier_closure,
+               WaitableEvent* late_release_thread_contine) {
+              ScopedBlockingCall scoped_blocking_call(BlockingType::WILL_BLOCK);
+              late_threads_barrier_closure->Run();
+              late_release_thread_contine->Wait();
+            },
+            Unretained(&late_threads_barrier_closure),
+            Unretained(&late_release_thread_contine)));
+  }
+
+  // Give time to see if we exceed the max number of workers.
+  PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+  EXPECT_LE(worker_pool_->NumberOfWorkersForTesting(), kMaxNumberOfWorkers);
+
+  early_release_thread_continue.Signal();
+  early_threads_finished.Wait();
+  late_blocking_thread_running.Wait();
+
+  WaitableEvent final_tasks_running(WaitableEvent::ResetPolicy::MANUAL,
+                                    WaitableEvent::InitialState::NOT_SIGNALED);
+  WaitableEvent final_tasks_continue(WaitableEvent::ResetPolicy::MANUAL,
+                                     WaitableEvent::InitialState::NOT_SIGNALED);
+  RepeatingClosure final_tasks_running_barrier = BarrierClosure(
+      kNumWorkersInWorkerPool,
+      BindOnce(&WaitableEvent::Signal, Unretained(&final_tasks_running)));
+
+  // Verify that we are still able to saturate the pool.
+  for (size_t i = 0; i < kNumWorkersInWorkerPool; ++i) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        BindOnce(
+            [](Closure* closure, WaitableEvent* final_tasks_continue) {
+              closure->Run();
+              final_tasks_continue->Wait();
+            },
+            Unretained(&final_tasks_running_barrier),
+            Unretained(&final_tasks_continue)));
+  }
+  final_tasks_running.Wait();
+  EXPECT_EQ(worker_pool_->GetWorkerCapacityForTesting(),
+            kNumWorkersInWorkerPool + kNumExtraTasks);
+  late_release_thread_contine.Signal();
+  final_tasks_continue.Signal();
+  task_tracker_.Flush();
+}
+
 }  // namespace internal
 }  // namespace base
