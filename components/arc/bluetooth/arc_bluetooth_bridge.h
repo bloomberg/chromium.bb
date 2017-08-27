@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_ARC_BLUETOOTH_BRIDGE_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_ARC_BLUETOOTH_BRIDGE_H_
+#ifndef COMPONENTS_ARC_BLUETOOTH_ARC_BLUETOOTH_BRIDGE_H_
+#define COMPONENTS_ARC_BLUETOOTH_ARC_BLUETOOTH_BRIDGE_H_
 
 #include <stdint.h>
 
@@ -438,9 +438,6 @@ class ArcBluetoothBridge
   void OnSetAdapterProperty(mojom::BluetoothStatus success,
                             mojom::BluetoothPropertyPtr property);
 
-  // Convenience function to set primary user's bluetooth pref.
-  void SetPrimaryUserBluetoothPowerSetting(bool enabled) const;
-
   // Callbacks for managing advertisements registered from the instance.
 
   // Called when we have an open slot in the advertisement map and want to
@@ -551,4 +548,4 @@ class ArcBluetoothBridge
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_ARC_BLUETOOTH_BRIDGE_H_
+#endif  // COMPONENTS_ARC_BLUETOOTH_ARC_BLUETOOTH_BRIDGE_H_

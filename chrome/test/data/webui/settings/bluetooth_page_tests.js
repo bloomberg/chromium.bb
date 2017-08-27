@@ -2,22 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function getFakePrefs() {
-  return {
-    ash: {
-      user: {
-        bluetooth: {
-          adapter_enabled: {
-            key: 'ash.user.bluetooth.adapter_enabled',
-            type: chrome.settingsPrivate.PrefType.BOOLEAN,
-            value: false,
-          }
-        }
-      }
-    }
-  };
-}
-
 suite('Bluetooth', function() {
   var bluetoothPage = null;
 
@@ -76,7 +60,6 @@ suite('Bluetooth', function() {
   setup(function() {
     PolymerTest.clearBody();
     bluetoothPage = document.createElement('settings-bluetooth-page');
-    bluetoothPage.prefs = getFakePrefs();
     assertTrue(!!bluetoothPage);
 
     bluetoothApi_.setDevicesForTest([]);
@@ -90,51 +73,43 @@ suite('Bluetooth', function() {
 
   test('MainPage', function() {
     assertFalse(bluetoothApi_.getAdapterStateForTest().powered);
-    assertFalse(bluetoothPage.prefs.ash.user.bluetooth.adapter_enabled.value);
+    assertFalse(bluetoothPage.bluetoothToggleState_);
     // Test that tapping the single settings-box div enables bluetooth.
     var div = bluetoothPage.$$('div.settings-box');
     assertTrue(!!div);
     MockInteractions.tap(div);
-    assertTrue(bluetoothPage.prefs.ash.user.bluetooth.adapter_enabled.value);
+    assertTrue(bluetoothPage.bluetoothToggleState_);
+    assertTrue(bluetoothApi_.getAdapterStateForTest().powered);
   });
 
   suite('SubPage', function() {
     var subpage;
 
     setup(function() {
-      assertFalse(bluetoothApi_.getAdapterStateForTest().powered);
-      assertFalse(bluetoothPage.prefs.ash.user.bluetooth.adapter_enabled.value);
-      var div = bluetoothPage.$$('div.settings-box');
-
-      // First tap will turn on bluetooth.
-      MockInteractions.tap(div);
-      assertTrue(bluetoothPage.prefs.ash.user.bluetooth.adapter_enabled.value);
-      bluetoothPage.adapterState_.powered = true;
-      // Second tap will open bluetooth subpage.
-      MockInteractions.tap(div);
-
+      bluetoothApi_.setEnabled(true);
       Polymer.dom.flush();
+      var div = bluetoothPage.$$('div.settings-box');
+      MockInteractions.tap(div);
       subpage = bluetoothPage.$$('settings-bluetooth-subpage');
       assertTrue(!!subpage);
+      assertTrue(subpage.bluetoothToggleState);
+      assertFalse(subpage.bluetoothToggleDisabled);
     });
 
     test('toggle', function() {
-      assertTrue(bluetoothPage.prefs.ash.user.bluetooth.adapter_enabled.value);
+      assertTrue(subpage.bluetoothToggleState);
 
       var enableButton = subpage.$.enableBluetooth;
       assertTrue(!!enableButton);
       assertTrue(enableButton.checked);
 
-      bluetoothPage.setPrefValue('ash.user.bluetooth.adapter_enabled', false);
-
+      subpage.bluetoothToggleState = false;
       assertFalse(enableButton.checked);
       assertFalse(bluetoothApi_.getAdapterStateForTest().powered);
-      assertFalse(bluetoothPage.prefs.ash.user.bluetooth.adapter_enabled.value);
+      assertFalse(bluetoothPage.bluetoothToggleState_);
     });
 
     test('paired device list', function() {
-      assertTrue(subpage.adapterState.powered);
-
       var pairedContainer = subpage.$.pairedContainer;
       assertTrue(!!pairedContainer);
       assertTrue(pairedContainer.hidden);
@@ -157,8 +132,6 @@ suite('Bluetooth', function() {
     });
 
     test('unpaired device list', function() {
-      assertTrue(subpage.adapterState.powered);
-
       var unpairedContainer = subpage.$.unpairedContainer;
       assertTrue(!!unpairedContainer);
       assertTrue(unpairedContainer.hidden);
@@ -181,8 +154,6 @@ suite('Bluetooth', function() {
     });
 
     test('pair device', function(done) {
-      assertTrue(subpage.adapterState.powered);
-
       bluetoothApi_.setDevicesForTest(fakeDevices_);
       Polymer.dom.flush();
       assertEquals(4, subpage.deviceList_.length);
@@ -199,8 +170,6 @@ suite('Bluetooth', function() {
     });
 
     test('pair dialog', function() {
-      assertTrue(subpage.adapterState.powered);
-
       bluetoothApi_.setDevicesForTest(fakeDevices_);
       Polymer.dom.flush();
       var dialog = subpage.$.deviceDialog;

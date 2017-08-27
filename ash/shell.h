@@ -91,7 +91,6 @@ class NativeCursorManagerAsh;
 class AshTouchTransformController;
 class AutoclickController;
 class BluetoothNotificationController;
-class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
 class DisplayColorManager;
@@ -480,10 +479,6 @@ class ASH_EXPORT Shell : public SessionObserver,
     return tray_bluetooth_helper_.get();
   }
 
-  BluetoothPowerController* bluetooth_power_controller() {
-    return bluetooth_power_controller_.get();
-  }
-
   VirtualKeyboardController* virtual_keyboard_controller() {
     return virtual_keyboard_controller_.get();
   }
@@ -783,7 +778,6 @@ class ASH_EXPORT Shell : public SessionObserver,
       resolution_notification_controller_;
   std::unique_ptr<BluetoothNotificationController>
       bluetooth_notification_controller_;
-  std::unique_ptr<BluetoothPowerController> bluetooth_power_controller_;
   std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   std::unique_ptr<chromeos::AudioA11yController> audio_a11y_controller_;
