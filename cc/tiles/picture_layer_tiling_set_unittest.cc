@@ -47,7 +47,7 @@ class TestablePictureLayerTilingSet : public PictureLayerTilingSet {
 std::unique_ptr<TestablePictureLayerTilingSet> CreateTilingSetWithSettings(
     PictureLayerTilingClient* client,
     const LayerTreeSettings& settings) {
-  return base::MakeUnique<TestablePictureLayerTilingSet>(
+  return std::make_unique<TestablePictureLayerTilingSet>(
       ACTIVE_TREE, client, settings.tiling_interest_area_padding,
       settings.skewport_target_time_in_seconds,
       settings.skewport_extrapolation_limit_in_screen_pixels,
@@ -248,7 +248,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     scoped_refptr<TestContextProvider> context_provider =
         TestContextProvider::Create();
     ASSERT_TRUE(context_provider->BindToCurrentThread());
-    auto shared_bitmap_manager = base::MakeUnique<TestSharedBitmapManager>();
+    auto shared_bitmap_manager = std::make_unique<TestSharedBitmapManager>();
     std::unique_ptr<ResourceProvider> resource_provider =
         FakeResourceProvider::Create<LayerTreeResourceProvider>(
             context_provider.get(), shared_bitmap_manager.get());

@@ -58,23 +58,23 @@ TEST(TransformOperationTest, TransformTypesAreUnique) {
   std::vector<std::unique_ptr<TransformOperations>> transforms;
 
   std::unique_ptr<TransformOperations> to_add(
-      base::MakeUnique<TransformOperations>());
+      std::make_unique<TransformOperations>());
   to_add->AppendTranslate(1, 0, 0);
   transforms.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendRotate(0, 0, 1, 2);
   transforms.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendScale(2, 2, 2);
   transforms.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendSkew(1, 0);
   transforms.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendPerspective(800);
   transforms.push_back(std::move(to_add));
 
@@ -130,50 +130,50 @@ TEST(TransformOperationTest, MatchTypesDifferentLength) {
 std::vector<std::unique_ptr<TransformOperations>> GetIdentityOperations() {
   std::vector<std::unique_ptr<TransformOperations>> operations;
   std::unique_ptr<TransformOperations> to_add(
-      base::MakeUnique<TransformOperations>());
+      std::make_unique<TransformOperations>());
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendTranslate(0, 0, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendTranslate(0, 0, 0);
   to_add->AppendTranslate(0, 0, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendScale(1, 1, 1);
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendScale(1, 1, 1);
   to_add->AppendScale(1, 1, 1);
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendSkew(0, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendSkew(0, 0);
   to_add->AppendSkew(0, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendRotate(0, 0, 1, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendRotate(0, 0, 1, 0);
   to_add->AppendRotate(0, 0, 1, 0);
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendMatrix(gfx::Transform());
   operations.push_back(std::move(to_add));
 
-  to_add = base::MakeUnique<TransformOperations>();
+  to_add = std::make_unique<TransformOperations>();
   to_add->AppendMatrix(gfx::Transform());
   to_add->AppendMatrix(gfx::Transform());
   operations.push_back(std::move(to_add));

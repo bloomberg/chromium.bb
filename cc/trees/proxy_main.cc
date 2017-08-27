@@ -51,7 +51,7 @@ ProxyMain::~ProxyMain() {
 void ProxyMain::InitializeOnImplThread(CompletionEvent* completion_event) {
   DCHECK(task_runner_provider_->IsImplThread());
   DCHECK(!proxy_impl_);
-  proxy_impl_ = base::MakeUnique<ProxyImpl>(
+  proxy_impl_ = std::make_unique<ProxyImpl>(
       weak_factory_.GetWeakPtr(), layer_tree_host_, task_runner_provider_);
   completion_event->Signal();
 }

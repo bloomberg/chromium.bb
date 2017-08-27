@@ -1001,7 +1001,7 @@ void EffectTree::UpdateRenderSurfaces(LayerTreeImpl* layer_tree_impl) {
       continue;
 
     if (needs_render_surface) {
-      render_surfaces_[id] = base::MakeUnique<RenderSurfaceImpl>(
+      render_surfaces_[id] = std::make_unique<RenderSurfaceImpl>(
           layer_tree_impl, effect_node->stable_id);
       render_surfaces_[id]->set_effect_tree_index(id);
     } else {
@@ -1077,7 +1077,7 @@ bool EffectTree::CreateOrReuseRenderSurfaces(
 
     if ((*surfaces_list_it)->id() > id_list_it->first) {
       int new_node_id = id_list_it->second;
-      render_surfaces_[new_node_id] = base::MakeUnique<RenderSurfaceImpl>(
+      render_surfaces_[new_node_id] = std::make_unique<RenderSurfaceImpl>(
           layer_tree_impl, id_list_it->first);
       render_surfaces_[new_node_id]->set_effect_tree_index(new_node_id);
       id_list_it++;
@@ -1094,7 +1094,7 @@ bool EffectTree::CreateOrReuseRenderSurfaces(
   while (id_list_it != stable_id_node_id_list.end()) {
     int new_node_id = id_list_it->second;
     render_surfaces_[new_node_id] =
-        base::MakeUnique<RenderSurfaceImpl>(layer_tree_impl, id_list_it->first);
+        std::make_unique<RenderSurfaceImpl>(layer_tree_impl, id_list_it->first);
     render_surfaces_[new_node_id]->set_effect_tree_index(new_node_id);
     id_list_it++;
   }

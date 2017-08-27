@@ -108,7 +108,7 @@ OneCopyRasterBufferProvider::AcquireBufferForRaster(
     uint64_t previous_content_id) {
   // TODO(danakj): If resource_content_id != 0, we only need to copy/upload
   // the dirty rect.
-  return base::MakeUnique<RasterBufferImpl>(this, resource_provider_, resource,
+  return std::make_unique<RasterBufferImpl>(this, resource_provider_, resource,
                                             previous_content_id);
 }
 

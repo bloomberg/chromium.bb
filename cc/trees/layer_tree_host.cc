@@ -97,7 +97,7 @@ LayerTreeHost::LayerTreeHost(InitParams* params, CompositorMode mode)
     : micro_benchmark_controller_(this),
       image_worker_task_runner_(params->image_worker_task_runner),
       compositor_mode_(mode),
-      ui_resource_manager_(base::MakeUnique<UIResourceManager>()),
+      ui_resource_manager_(std::make_unique<UIResourceManager>()),
       client_(params->client),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
       settings_(*params->settings),
@@ -122,7 +122,7 @@ void LayerTreeHost::InitializeThreaded(
   task_runner_provider_ =
       TaskRunnerProvider::Create(main_task_runner, impl_task_runner);
   std::unique_ptr<ProxyMain> proxy_main =
-      base::MakeUnique<ProxyMain>(this, task_runner_provider_.get());
+      std::make_unique<ProxyMain>(this, task_runner_provider_.get());
   InitializeProxy(std::move(proxy_main));
 }
 

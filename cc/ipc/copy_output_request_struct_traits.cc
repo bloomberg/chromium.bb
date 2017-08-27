@@ -55,7 +55,7 @@ StructTraits<cc::mojom::CopyOutputRequestDataView,
              std::unique_ptr<viz::CopyOutputRequest>>::
     result_sender(const std::unique_ptr<viz::CopyOutputRequest>& request) {
   cc::mojom::CopyOutputResultSenderPtr result_sender;
-  auto impl = base::MakeUnique<CopyOutputResultSenderImpl>(
+  auto impl = std::make_unique<CopyOutputResultSenderImpl>(
       std::move(request->result_callback_));
   MakeStrongBinding(std::move(impl), MakeRequest(&result_sender));
   return result_sender;

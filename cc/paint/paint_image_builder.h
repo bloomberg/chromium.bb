@@ -70,7 +70,7 @@ class CC_PAINT_EXPORT PaintImageBuilder {
     paint_image_.paint_image_generator_ = std::move(generator);
 
     paint_image_.cached_sk_image_ =
-        SkImage::MakeFromGenerator(base::MakeUnique<SkiaPaintImageGenerator>(
+        SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
             paint_image_.paint_image_generator_, unique_id));
     if (allocated_unique_id)
       *allocated_unique_id = paint_image_.cached_sk_image_->uniqueID();

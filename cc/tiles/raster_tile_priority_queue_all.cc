@@ -70,7 +70,7 @@ void CreateTilingSetRasterQueues(
     PictureLayerTilingSet* tiling_set = layer->picture_layer_tiling_set();
     bool prioritize_low_res = tree_priority == SMOOTHNESS_TAKES_PRIORITY;
     std::unique_ptr<TilingSetRasterQueueAll> tiling_set_queue =
-        base::MakeUnique<TilingSetRasterQueueAll>(
+        std::make_unique<TilingSetRasterQueueAll>(
             tiling_set, prioritize_low_res,
             layer->contributes_to_drawn_render_surface());
     // Queues will only contain non empty tiling sets.

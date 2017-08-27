@@ -49,7 +49,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                GetGlobalRasterBufferProvider(),
                std::numeric_limits<size_t>::max(),
                false /* use_gpu_rasterization */);
-  SetTileTaskManagerForTesting(base::MakeUnique<FakeTileTaskManagerImpl>());
+  SetTileTaskManagerForTesting(std::make_unique<FakeTileTaskManagerImpl>());
 }
 
 FakeTileManager::~FakeTileManager() {}

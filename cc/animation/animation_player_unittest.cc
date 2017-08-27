@@ -419,7 +419,7 @@ TEST_F(AnimationPlayerTest, ToString) {
       player_->ToString());
 
   player_->AddAnimation(
-      Animation::Create(base::MakeUnique<FakeFloatAnimationCurve>(15), 42, 73,
+      Animation::Create(std::make_unique<FakeFloatAnimationCurve>(15), 42, 73,
                         TargetProperty::OPACITY));
   EXPECT_EQ(base::StringPrintf("AnimationPlayer{id=%d, element_id=%s, "
                                "animations=[Animation{id=42, "
@@ -429,7 +429,7 @@ TEST_F(AnimationPlayerTest, ToString) {
             player_->ToString());
 
   player_->AddAnimation(
-      Animation::Create(base::MakeUnique<FakeFloatAnimationCurve>(18), 45, 76,
+      Animation::Create(std::make_unique<FakeFloatAnimationCurve>(18), 45, 76,
                         TargetProperty::BOUNDS));
   EXPECT_EQ(
       base::StringPrintf(

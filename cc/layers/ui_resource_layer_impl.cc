@@ -146,7 +146,7 @@ std::unique_ptr<base::DictionaryValue> UIResourceLayerImpl::LayerTreeAsJson() {
 
   result->Set("ImageBounds", MathUtil::AsValue(image_bounds_));
 
-  auto list = base::MakeUnique<base::ListValue>();
+  auto list = std::make_unique<base::ListValue>();
   list->AppendDouble(vertex_opacity_[0]);
   list->AppendDouble(vertex_opacity_[1]);
   list->AppendDouble(vertex_opacity_[2]);

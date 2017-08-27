@@ -27,7 +27,7 @@ class MicroBenchmarkControllerTest : public testing::Test {
   void SetUp() override {
     impl_task_runner_provider_ =
         base::WrapUnique(new FakeImplTaskRunnerProvider);
-    layer_tree_host_impl_ = base::MakeUnique<FakeLayerTreeHostImpl>(
+    layer_tree_host_impl_ = std::make_unique<FakeLayerTreeHostImpl>(
         impl_task_runner_provider_.get(), &task_graph_runner_);
 
     animation_host_ = AnimationHost::CreateForTesting(ThreadInstance::MAIN);

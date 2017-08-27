@@ -156,7 +156,7 @@ std::unique_ptr<RasterBuffer> GpuRasterBufferProvider::AcquireBufferForRaster(
     uint64_t previous_content_id) {
   bool resource_has_previous_content =
       resource_content_id && resource_content_id == previous_content_id;
-  return base::MakeUnique<RasterBufferImpl>(
+  return std::make_unique<RasterBufferImpl>(
       this, resource_provider_, resource->id(), resource_has_previous_content);
 }
 

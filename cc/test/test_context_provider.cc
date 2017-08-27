@@ -90,8 +90,8 @@ class TestGLES2InterfaceForContextProvider : public TestGLES2Interface {
 // static
 scoped_refptr<TestContextProvider> TestContextProvider::Create() {
   return new TestContextProvider(
-      base::MakeUnique<TestContextSupport>(),
-      base::MakeUnique<TestGLES2InterfaceForContextProvider>(),
+      std::make_unique<TestContextSupport>(),
+      std::make_unique<TestGLES2InterfaceForContextProvider>(),
       TestWebGraphicsContext3D::Create());
 }
 
@@ -99,8 +99,8 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create() {
 scoped_refptr<TestContextProvider> TestContextProvider::CreateWorker() {
   scoped_refptr<TestContextProvider> worker_context_provider(
       new TestContextProvider(
-          base::MakeUnique<TestContextSupport>(),
-          base::MakeUnique<TestGLES2InterfaceForContextProvider>(),
+          std::make_unique<TestContextSupport>(),
+          std::make_unique<TestGLES2InterfaceForContextProvider>(),
           TestWebGraphicsContext3D::Create()));
   // Worker contexts are bound to the thread they are created on.
   if (!worker_context_provider->BindToCurrentThread())
@@ -113,8 +113,8 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
     std::unique_ptr<TestWebGraphicsContext3D> context) {
   DCHECK(context);
   return new TestContextProvider(
-      base::MakeUnique<TestContextSupport>(),
-      base::MakeUnique<TestGLES2InterfaceForContextProvider>(),
+      std::make_unique<TestContextSupport>(),
+      std::make_unique<TestGLES2InterfaceForContextProvider>(),
       std::move(context));
 }
 
@@ -122,7 +122,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
 scoped_refptr<TestContextProvider> TestContextProvider::Create(
     std::unique_ptr<TestGLES2Interface> gl) {
   DCHECK(gl);
-  return new TestContextProvider(base::MakeUnique<TestContextSupport>(),
+  return new TestContextProvider(std::make_unique<TestContextSupport>(),
                                  std::move(gl),
                                  TestWebGraphicsContext3D::Create());
 }
@@ -135,7 +135,7 @@ scoped_refptr<TestContextProvider> TestContextProvider::Create(
   DCHECK(support);
   return new TestContextProvider(
       std::move(support),
-      base::MakeUnique<TestGLES2InterfaceForContextProvider>(),
+      std::make_unique<TestGLES2InterfaceForContextProvider>(),
       std::move(context));
 }
 
@@ -213,7 +213,7 @@ class GrContext* TestContextProvider::GrContext() {
   if (gr_context_)
     return gr_context_->get();
 
-  gr_context_ = base::MakeUnique<skia_bindings::GrContextForGLES2Interface>(
+  gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
       context_gl_.get(), context3d_->test_capabilities());
   cache_controller_->SetGrContext(gr_context_->get());
 

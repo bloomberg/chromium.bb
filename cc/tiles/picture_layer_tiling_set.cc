@@ -280,7 +280,7 @@ PictureLayerTiling* PictureLayerTilingSet::AddTiling(
   }
 #endif  // DCHECK_IS_ON()
 
-  tilings_.push_back(base::MakeUnique<PictureLayerTiling>(
+  tilings_.push_back(std::make_unique<PictureLayerTiling>(
       tree_, raster_transform, raster_source, client_,
       kMaxSoonBorderDistanceInScreenPixels, max_preraster_distance_));
   PictureLayerTiling* appended = tilings_.back().get();

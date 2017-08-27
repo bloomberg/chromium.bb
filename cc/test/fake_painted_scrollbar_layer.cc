@@ -59,7 +59,7 @@ void FakePaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
 
 std::unique_ptr<base::AutoReset<bool>>
 FakePaintedScrollbarLayer::IgnoreSetNeedsCommit() {
-  return base::MakeUnique<base::AutoReset<bool>>(&ignore_set_needs_commit_,
+  return std::make_unique<base::AutoReset<bool>>(&ignore_set_needs_commit_,
                                                  true);
 }
 

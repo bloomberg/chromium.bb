@@ -447,13 +447,13 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::ContextProvider> worker_context_provider) override {
     // Create the main viz::ContextProvider with a MockContextSupport.
-    auto main_support = base::MakeUnique<MockContextSupport>();
+    auto main_support = std::make_unique<MockContextSupport>();
     mock_main_context_support_ = main_support.get();
     auto test_main_context_provider = TestContextProvider::Create(
         TestWebGraphicsContext3D::Create(), std::move(main_support));
 
     // Create the main viz::ContextProvider with a MockContextSupport.
-    auto worker_support = base::MakeUnique<MockContextSupport>();
+    auto worker_support = std::make_unique<MockContextSupport>();
     mock_worker_context_support_ = worker_support.get();
     auto test_worker_context_provider = TestContextProvider::Create(
         TestWebGraphicsContext3D::Create(), std::move(worker_support));
@@ -3445,7 +3445,7 @@ class LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor
         &LayerTreeHostTestAbortedCommitDoesntStallSynchronousCompositor::
             CallOnDraw,
         base::Unretained(this));
-    auto frame_sink = base::MakeUnique<OnDrawLayerTreeFrameSink>(
+    auto frame_sink = std::make_unique<OnDrawLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
         ImplThreadTaskRunner(), false /* synchronous_composite */, refresh_rate,
@@ -4949,12 +4949,12 @@ class PinnedLayerTreeSwapPromise : public LayerTreeHostTest {
     int frame = host_impl->active_tree()->source_frame_number();
     if (frame == -1) {
       host_impl->active_tree()->QueuePinnedSwapPromise(
-          base::MakeUnique<TestSwapPromise>(
+          std::make_unique<TestSwapPromise>(
               &pinned_active_swap_promise_result_));
       host_impl->pending_tree()->QueueSwapPromise(
-          base::MakeUnique<TestSwapPromise>(&pending_swap_promise_result_));
+          std::make_unique<TestSwapPromise>(&pending_swap_promise_result_));
       host_impl->active_tree()->QueueSwapPromise(
-          base::MakeUnique<TestSwapPromise>(&active_swap_promise_result_));
+          std::make_unique<TestSwapPromise>(&active_swap_promise_result_));
     }
   }
 
@@ -5107,7 +5107,7 @@ class LayerTreeHostTestKeepSwapPromise : public LayerTreeHostTest {
       case 1:
         layer_->SetBounds(gfx::Size(10, 11));
         layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
-            base::MakeUnique<TestSwapPromise>(&swap_promise_result_));
+            std::make_unique<TestSwapPromise>(&swap_promise_result_));
         break;
       case 2:
         break;
@@ -5222,7 +5222,7 @@ class LayerTreeHostTestKeepSwapPromiseMFBA : public LayerTreeHostTest {
         // Make no changes so that we abort the next commit caused by queuing
         // the swap promise.
         layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
-            base::MakeUnique<TestSwapPromise>(&swap_promise_result_));
+            std::make_unique<TestSwapPromise>(&swap_promise_result_));
         layer_tree_host()->SetNeedsUpdateLayers();
         break;
       case 2:
@@ -6106,7 +6106,7 @@ class LayerTreeHostTestSynchronousCompositeSwapPromise
     bool synchronous_composite =
         !HasImplThread() &&
         !layer_tree_host()->GetSettings().single_thread_proxy_scheduler;
-    return base::MakeUnique<viz::TestLayerTreeFrameSink>(
+    return std::make_unique<viz::TestLayerTreeFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
         ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,

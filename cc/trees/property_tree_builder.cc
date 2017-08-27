@@ -288,7 +288,7 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
       DCHECK(Filters(layer).HasFilterThatMovesPixels());
       node.clip_type = ClipNode::ClipType::EXPANDS_CLIP;
       node.clip_expander =
-          base::MakeUnique<ClipExpander>(layer->effect_tree_index());
+          std::make_unique<ClipExpander>(layer->effect_tree_index());
     }
     data_for_children->clip_tree_parent =
         data_for_children->property_trees->clip_tree.Insert(node, parent_id);

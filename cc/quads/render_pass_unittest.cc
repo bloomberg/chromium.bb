@@ -290,7 +290,7 @@ TEST(RenderPassTest, CopyAllWithCulledQuads) {
 
 TEST(RenderPassTest, ReplacedQuadsShouldntMove) {
   std::unique_ptr<viz::SharedQuadState> quad_state =
-      base::MakeUnique<viz::SharedQuadState>();
+      std::make_unique<viz::SharedQuadState>();
   QuadList quad_list;
   SolidColorDrawQuad* quad =
       quad_list.AllocateAndConstruct<SolidColorDrawQuad>();

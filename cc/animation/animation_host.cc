@@ -49,9 +49,9 @@ AnimationHost::AnimationHost(ThreadInstance thread_instance)
       mutator_(nullptr) {
   if (thread_instance_ == ThreadInstance::IMPL) {
     scroll_offset_animations_impl_ =
-        base::MakeUnique<ScrollOffsetAnimationsImpl>(this);
+        std::make_unique<ScrollOffsetAnimationsImpl>(this);
   } else {
-    scroll_offset_animations_ = base::MakeUnique<ScrollOffsetAnimations>(this);
+    scroll_offset_animations_ = std::make_unique<ScrollOffsetAnimations>(this);
   }
 }
 
@@ -355,7 +355,7 @@ base::Closure AnimationHost::TakeMutations() {
 }
 
 std::unique_ptr<MutatorEvents> AnimationHost::CreateEvents() {
-  return base::MakeUnique<AnimationEvents>();
+  return std::make_unique<AnimationEvents>();
 }
 
 void AnimationHost::SetAnimationEvents(

@@ -39,12 +39,12 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     bool is_overlay)
     : layer_(is_overlay
                  ? new WebLayerImpl(PaintedOverlayScrollbarLayer::Create(
-                       base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
+                       std::make_unique<ScrollbarImpl>(std::move(scrollbar),
                                                        painter,
                                                        std::move(geometry)),
                        cc::ElementId()))
                  : new WebLayerImpl(PaintedScrollbarLayer::Create(
-                       base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
+                       std::make_unique<ScrollbarImpl>(std::move(scrollbar),
                                                        painter,
                                                        std::move(geometry)),
                        cc::ElementId()))) {}

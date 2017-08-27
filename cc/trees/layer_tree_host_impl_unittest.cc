@@ -646,7 +646,7 @@ class LayerTreeHostImplTest : public testing::Test,
 
   void InitializeImageWorker(const LayerTreeSettings& settings) {
     if (settings.enable_checker_imaging) {
-      image_worker_ = base::MakeUnique<base::Thread>("ImageWorker");
+      image_worker_ = std::make_unique<base::Thread>("ImageWorker");
       ASSERT_TRUE(image_worker_->Start());
     } else {
       image_worker_.reset();
@@ -9192,7 +9192,7 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
   constexpr bool synchronous_composite = true;
   constexpr bool disable_display_vsync = false;
   constexpr double refresh_rate = 60.0;
-  auto layer_tree_frame_sink = base::MakeUnique<viz::TestLayerTreeFrameSink>(
+  auto layer_tree_frame_sink = std::make_unique<viz::TestLayerTreeFrameSink>(
       context_provider, TestContextProvider::CreateWorker(), nullptr, nullptr,
       viz::RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
       synchronous_composite, disable_display_vsync, refresh_rate);
