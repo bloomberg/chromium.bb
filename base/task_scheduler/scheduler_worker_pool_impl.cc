@@ -33,7 +33,7 @@ constexpr char kNumTasksBeforeDetachHistogramPrefix[] =
     "TaskScheduler.NumTasksBeforeDetach.";
 constexpr char kNumTasksBetweenWaitsHistogramPrefix[] =
     "TaskScheduler.NumTasksBetweenWaits.";
-constexpr size_t kMaxWorkerCapacity = 256;
+constexpr size_t kMaxNumberOfWorkers = 256;
 
 // Only used in DCHECKs.
 bool ContainsWorker(const std::vector<scoped_refptr<SchedulerWorker>>& workers,
@@ -111,11 +111,6 @@ class SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl
   // stack. This should only be accessed under the protection of
   // |outer_->lock_|.
   bool is_on_idle_workers_stack_ = true;
-
-  // Indicates whether |worker_capacity_| was incremented due to a
-  // ScopedBlockingCall on the thread. This should only be accessed under the
-  // protection of |outer_->lock_|.
-  bool increased_worker_capacity_since_blocked_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerWorkerDelegateImpl);
 };
@@ -491,13 +486,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingScopeEntered(
       outer_->shared_priority_queue_.BeginTransaction());
   AutoSchedulerLock auto_lock(outer_->lock_);
 
-  if (outer_->worker_capacity_ == kMaxWorkerCapacity)
-    return;
-  DCHECK_LE(outer_->worker_capacity_, kMaxWorkerCapacity);
-
-  DCHECK(!increased_worker_capacity_since_blocked_);
   ++outer_->worker_capacity_;
-  increased_worker_capacity_since_blocked_ = true;
 
   // If the number of workers was less than the old worker capacity, PostTask
   // would've handled creating extra workers during WakeUpOneWorker. Therefore,
@@ -521,9 +510,7 @@ void SchedulerWorkerPoolImpl::SchedulerWorkerDelegateImpl::BlockingScopeExited(
   if (blocking_type != BlockingType::WILL_BLOCK)
     return;
   AutoSchedulerLock auto_lock(outer_->lock_);
-  if (increased_worker_capacity_since_blocked_)
-    --outer_->worker_capacity_;
-  increased_worker_capacity_since_blocked_ = false;
+  --outer_->worker_capacity_;
 }
 
 void SchedulerWorkerPoolImpl::WaitForWorkersIdleLockRequiredForTesting(
@@ -569,6 +556,10 @@ void SchedulerWorkerPoolImpl::WakeUpOneWorker() {
 void SchedulerWorkerPoolImpl::MaintainAtLeastOneIdleWorkerLockRequired() {
   lock_.AssertAcquired();
 
+  if (workers_.size() == kMaxNumberOfWorkers)
+    return;
+  DCHECK_LT(workers_.size(), kMaxNumberOfWorkers);
+
   if (idle_workers_stack_.IsEmpty() && workers_.size() < worker_capacity_) {
     SchedulerWorker* new_worker =
         CreateRegisterAndStartSchedulerWorkerLockRequired();
@@ -610,7 +601,7 @@ SchedulerWorkerPoolImpl::CreateRegisterAndStartSchedulerWorkerLockRequired() {
   lock_.AssertAcquired();
 
   DCHECK_LT(workers_.size(), worker_capacity_);
-
+  DCHECK_LT(workers_.size(), kMaxNumberOfWorkers);
   // SchedulerWorker needs |lock_| as a predecessor for its thread lock
   // because in WakeUpOneWorker, |lock_| is first acquired and then
   // the thread lock is acquired when WakeUp is called on the worker.
