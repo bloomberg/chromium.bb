@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/bluetooth/arc_bluetooth_bridge.h"
+#include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_bridge.h"
 
 #include <string>
 #include <utility>
@@ -12,8 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/arc/bluetooth/bluetooth_type_converters.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/bluetooth/bluetooth_type_converters.h"
 #include "components/arc/common/bluetooth.mojom.h"
 #include "components/arc/test/fake_bluetooth_instance.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
@@ -28,7 +28,7 @@
 namespace {
 constexpr int16_t kTestRssi = -50;
 constexpr int16_t kTestRssi2 = -70;
-}
+}  // namespace
 
 namespace arc {
 

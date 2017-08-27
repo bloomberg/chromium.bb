@@ -50,6 +50,9 @@ ASH_PUBLIC_EXPORT extern const char kLogoutDialogDurationMs[];
 
 ASH_PUBLIC_EXPORT extern const char kWallpaperColors[];
 
+ASH_PUBLIC_EXPORT extern const char kUserBluetoothAdapterEnabled[];
+ASH_PUBLIC_EXPORT extern const char kSystemBluetoothAdapterEnabled[];
+
 }  // namespace prefs
 
 }  // namespace ash

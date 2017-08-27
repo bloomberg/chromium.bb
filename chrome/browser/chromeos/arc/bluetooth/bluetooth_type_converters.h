@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_TYPE_CONVERTERS_H_
-#define COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_TYPE_CONVERTERS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_BLUETOOTH_TYPE_CONVERTERS_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_BLUETOOTH_TYPE_CONVERTERS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -87,4 +87,4 @@ struct TypeConverter<bluez::BluetoothServiceRecordBlueZ,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_TYPE_CONVERTERS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_BLUETOOTH_TYPE_CONVERTERS_H_

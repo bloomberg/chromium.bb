@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/bluetooth/bluetooth_struct_traits.h"
+#include "chrome/browser/chromeos/arc/bluetooth/bluetooth_struct_traits.h"
 
 #include <string>
 #include <utility>

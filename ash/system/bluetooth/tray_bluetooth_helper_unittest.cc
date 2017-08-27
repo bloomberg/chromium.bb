@@ -18,7 +18,7 @@ namespace {
 
 using TrayBluetoothHelperTest = AshTestBase;
 
-// Tests basic functionality like turning Bluetooth on and off.
+// Tests basic functionality.
 TEST_F(TrayBluetoothHelperTest, Basics) {
   // Set Bluetooth discovery simulation delay to 0 so the test doesn't have to
   // wait or use timers.
@@ -38,11 +38,6 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   // The devices are fake in tests, so don't assume any particular number.
   EXPECT_FALSE(devices.empty());
 
-  // Turn Bluetooth on.
-  helper.ToggleBluetoothEnabled();
-  RunAllPendingInMessageLoop();
-  EXPECT_TRUE(helper.GetBluetoothEnabled());
-
   helper.StartBluetoothDiscovering();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(helper.HasBluetoothDiscoverySession());
@@ -50,11 +45,6 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   helper.StopBluetoothDiscovering();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
-
-  // Turn Bluetooth off.
-  helper.ToggleBluetoothEnabled();
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(helper.GetBluetoothEnabled());
 }
 
 }  // namespace

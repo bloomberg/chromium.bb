@@ -178,6 +178,27 @@ bool SessionController::IsUserChild() const {
   return active_user_type == user_manager::USER_TYPE_CHILD;
 }
 
+base::Optional<user_manager::UserType> SessionController::GetUserType() const {
+  if (!IsActiveUserSessionStarted())
+    return base::nullopt;
+
+  return base::make_optional(GetUserSession(0)->user_info->type);
+}
+
+bool SessionController::IsUserPrimary() const {
+  if (!IsActiveUserSessionStarted())
+    return false;
+
+  return GetUserSession(0)->session_id == primary_session_id_;
+}
+
+bool SessionController::IsUserFirstLogin() const {
+  if (!IsActiveUserSessionStarted())
+    return false;
+
+  return GetUserSession(0)->user_info->is_new_profile;
+}
+
 bool SessionController::IsKioskSession() const {
   if (!IsActiveUserSessionStarted())
     return false;

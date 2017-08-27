@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
-#define COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
 
 #include <memory>
 #include <vector>
@@ -17,8 +17,7 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<arc::mojom::BluetoothDeviceType,
-    device::BluetoothTransport> {
+struct EnumTraits<arc::mojom::BluetoothDeviceType, device::BluetoothTransport> {
   static arc::mojom::BluetoothDeviceType ToMojom(
       device::BluetoothTransport type) {
     switch (type) {
@@ -134,4 +133,4 @@ struct StructTraits<arc::mojom::BluetoothAdvertisementDataView,
 
 }  // namespace mojo
 
-#endif  // COMPONENTS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_BLUETOOTH_BLUETOOTH_STRUCT_TRAITS_H_

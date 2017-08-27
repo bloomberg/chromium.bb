@@ -25,34 +25,13 @@ var bluetoothApis = bluetoothApis || {
 Polymer({
   is: 'settings-bluetooth-page',
 
+  behaviors: [I18nBehavior, PrefsBehavior],
+
   properties: {
     /** Preferences state. */
     prefs: {
       type: Object,
       notify: true,
-    },
-
-    /**
-     * Reflects the current state of the toggle buttons (in this page and the
-     * subpage). This will be set when the adapter state change or when the user
-     * changes the toggle.
-     * @private
-     */
-    bluetoothToggleState_: {
-      type: Boolean,
-      observer: 'bluetoothToggleStateChanged_',
-    },
-
-    /**
-     * Set to true before the adapter state is received, when the adapter is
-     * unavailable, and while an adapter state change is requested. This
-     * prevents user changes while a change is in progress or when the adapter
-     * is not available.
-     * @private
-     */
-    bluetoothToggleDisabled_: {
-      type: Boolean,
-      value: true,
     },
 
     /**
@@ -98,6 +77,30 @@ Polymer({
       type: Object,
       value: chrome.bluetoothPrivate,
     },
+
+    /**
+     * Whether the user is a secondary user.
+     * @private
+     */
+    isSecondaryUser_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isSecondaryUser');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * Email address for the primary user.
+     * @private
+     */
+    primaryUserEmail_: {
+      type: String,
+      value: function() {
+        return loadTimeData.getString('primaryUserEmail');
+      },
+      readOnly: true,
+    },
   },
 
   observers: ['deviceListChanged_(deviceList_.*)'],
@@ -140,8 +143,8 @@ Polymer({
    * @return {string}
    * @private
    */
-  getIcon_: function() {
-    if (!this.bluetoothToggleState_)
+  getIcon_: function(enabled) {
+    if (!enabled)
       return 'settings:bluetooth-disabled';
     return 'settings:bluetooth';
   },
@@ -164,16 +167,14 @@ Polymer({
    */
   onBluetoothAdapterStateChanged_: function(state) {
     this.adapterState_ = state;
-    this.bluetoothToggleState_ = state.powered;
-    this.bluetoothToggleDisabled_ = !state.available;
   },
 
   /** @private */
   onTap_: function() {
     if (this.adapterState_.available === false)
       return;
-    if (!this.bluetoothToggleState_)
-      this.bluetoothToggleState_ = true;
+    if (!this.adapterState_.powered)
+      this.setPrefValue('ash.user.bluetooth.adapter_enabled', true);
     else
       this.openSubpage_();
   },
@@ -193,23 +194,6 @@ Polymer({
   onSubpageArrowTap_: function(e) {
     this.openSubpage_();
     e.stopPropagation();
-  },
-
-  /** @private */
-  bluetoothToggleStateChanged_: function() {
-    if (!this.adapterState_ || this.bluetoothToggleDisabled_ ||
-        this.bluetoothToggleState_ == this.adapterState_.powered) {
-      return;
-    }
-    this.bluetoothToggleDisabled_ = true;
-    this.bluetoothPrivate.setAdapterState(
-        {powered: this.bluetoothToggleState_}, function() {
-          if (chrome.runtime.lastError) {
-            console.error(
-                'Error enabling bluetooth: ' +
-                chrome.runtime.lastError.message);
-          }
-        });
   },
 
   /** @private */
