@@ -14,7 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/arc/bluetooth/bluetooth_type_converters.h"
+#include "chrome/browser/chromeos/arc/bluetooth/bluetooth_type_converters.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -48,7 +48,6 @@ namespace mojo {
 arc::mojom::BluetoothAddressPtr
 TypeConverter<arc::mojom::BluetoothAddressPtr, std::string>::Convert(
     const std::string& address) {
-
   arc::mojom::BluetoothAddressPtr mojo_addr =
       arc::mojom::BluetoothAddress::New();
   base::HexStringToBytes(StripNonHex(address), &mojo_addr->address);

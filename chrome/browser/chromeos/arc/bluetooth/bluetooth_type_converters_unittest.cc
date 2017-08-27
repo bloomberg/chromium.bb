@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/bluetooth/bluetooth_type_converters.h"
+#include "chrome/browser/chromeos/arc/bluetooth/bluetooth_type_converters.h"
 
 #include <algorithm>
 #include <memory>
@@ -106,7 +106,6 @@ TEST(BluetoothTypeConvertorTest, ConvertMojoBluetoothAddressToString) {
 
   EXPECT_EQ(std::string(kInvalidAddressStr), addressMojo->To<std::string>());
 }
-
 
 TEST(BluetoothTypeConvertorTest, ConvertMojoValueAttributeToBlueZAttribute) {
   // Construct Mojo attribute with NULLTYPE value.

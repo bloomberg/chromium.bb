@@ -5,7 +5,8 @@ public_headers = [
   "//device/bluetooth/bluetooth_uuid.h",
   "//device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h",
 ]
-traits_headers = [ "//components/arc/bluetooth/bluetooth_struct_traits.h" ]
+traits_headers =
+    [ "//chrome/browser/chromeos/arc/bluetooth/bluetooth_struct_traits.h" ]
 deps = [
   "//device/bluetooth",
 ]

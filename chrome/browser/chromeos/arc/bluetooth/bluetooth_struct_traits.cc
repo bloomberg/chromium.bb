@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/bluetooth/bluetooth_struct_traits.h"
+#include "chrome/browser/chromeos/arc/bluetooth/bluetooth_struct_traits.h"
 
 #include <map>
 #include <string>
@@ -103,9 +103,9 @@ StructTraits<arc::mojom::BluetoothUUIDDataView, device::BluetoothUUID>::uuid(
 
 // static
 bool StructTraits<arc::mojom::BluetoothUUIDDataView,
-                  device::BluetoothUUID>::Read(
-    arc::mojom::BluetoothUUIDDataView data,
-    device::BluetoothUUID* output) {
+                  device::BluetoothUUID>::Read(arc::mojom::BluetoothUUIDDataView
+                                                   data,
+                                               device::BluetoothUUID* output) {
   std::vector<uint8_t> address_bytes;
   if (!data.ReadUuid(&address_bytes))
     return false;

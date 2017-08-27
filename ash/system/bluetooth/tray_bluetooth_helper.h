@@ -67,9 +67,6 @@ class ASH_EXPORT TrayBluetoothHelper
   // Connect to a specific bluetooth device.
   void ConnectToBluetoothDevice(const std::string& address);
 
-  // Toggles whether bluetooth is enabled.
-  void ToggleBluetoothEnabled();
-
   // Returns whether bluetooth capability is available (e.g. the device has
   // hardware support).
   bool GetBluetoothAvailable();
