@@ -49,6 +49,7 @@
 #include "modules/notifications/NotificationData.h"
 #include "modules/notifications/NotificationManager.h"
 #include "modules/notifications/NotificationOptions.h"
+#include "modules/notifications/NotificationPermissionCallback.h"
 #include "modules/notifications/NotificationResourcesLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/bindings/ScriptState.h"
@@ -168,6 +169,11 @@ void Notification::SchedulePrepareShow() {
 
 void Notification::PrepareShow() {
   DCHECK_EQ(state_, State::kLoading);
+  if (!GetExecutionContext()->IsSecureContext()) {
+    DispatchErrorEvent();
+    return;
+  }
+
   if (NotificationManager::From(GetExecutionContext())
           ->GetPermissionStatus(GetExecutionContext()) !=
       mojom::blink::PermissionStatus::GRANTED) {
@@ -369,36 +375,56 @@ String Notification::PermissionString(
   return "denied";
 }
 
-String Notification::permission(ScriptState* script_state) {
-  ExecutionContext* context = ExecutionContext::From(script_state);
-  return PermissionString(
-      NotificationManager::From(context)->GetPermissionStatus(context));
+String Notification::permission(ExecutionContext* context) {
+  // Permission is always denied for insecure contexts. Skip the sync IPC call.
+  if (!context->IsSecureContext())
+    return PermissionString(mojom::blink::PermissionStatus::DENIED);
+
+  mojom::blink::PermissionStatus status =
+      NotificationManager::From(context)->GetPermissionStatus(context);
+
+  // Permission can only be requested from top-level frames and same-origin
+  // iframes. This should be reflected in calls getting permission status.
+  //
+  // TODO(crbug.com/758603): Move this check to the browser process when the
+  // NotificationService connection becomes frame-bound.
+  if (status == mojom::blink::PermissionStatus::ASK && context->IsDocument()) {
+    LocalFrame* frame = ToDocument(context)->GetFrame();
+    if (!frame || frame->IsCrossOriginSubframe())
+      status = mojom::blink::PermissionStatus::DENIED;
+  }
+
+  return PermissionString(status);
 }
 
 ScriptPromise Notification::requestPermission(
     ScriptState* script_state,
     NotificationPermissionCallback* deprecated_callback) {
   ExecutionContext* context = ExecutionContext::From(script_state);
-  if (!context->IsSecureContext()) {
-    Deprecation::CountDeprecation(
-        context, WebFeature::kNotificationPermissionRequestedInsecureOrigin);
-  }
 
-  if (context->IsDocument()) {
-    LocalFrame* frame = ToDocument(context)->GetFrame();
-    if (frame && !frame->IsMainFrame()) {
-      Deprecation::CountDeprecation(
-          context, WebFeature::kNotificationPermissionRequestedIframe);
-    }
-  }
-
+  probe::breakableLocation(context, "Notification.requestPermission");
   if (!UserGestureIndicator::ProcessingUserGesture()) {
     PerformanceMonitor::ReportGenericViolation(
         context, PerformanceMonitor::kDiscouragedAPIUse,
         "Only request notification permission in response to a user gesture.",
         0, nullptr);
   }
-  probe::breakableLocation(context, "Notification.requestPermission");
+
+  // Sites cannot request notification permission from insecure contexts.
+  if (!context->IsSecureContext()) {
+    Deprecation::CountDeprecation(
+        context, WebFeature::kNotificationPermissionRequestedInsecureOrigin);
+  }
+
+  // Sites cannot request notification permission from cross-origin iframes,
+  // but they can use notifications if permission had already been granted.
+  if (context->IsDocument()) {
+    LocalFrame* frame = ToDocument(context)->GetFrame();
+    if (!frame || frame->IsCrossOriginSubframe()) {
+      Deprecation::CountDeprecation(
+          context, WebFeature::kNotificationPermissionRequestedIframe);
+    }
+  }
 
   return NotificationManager::From(context)->RequestPermission(
       script_state, deprecated_callback);

@@ -63,8 +63,8 @@ void BudgetServiceImpl::GetBudget(const url::Origin& origin,
   // something the impact of which has to be reconsidered when the feature is
   // ready to ship for real. See https://crbug.com/710809 for context.
   if (permission_manager->GetPermissionStatus(
-          content::PermissionType::NOTIFICATIONS, origin.GetURL(), GURL()) !=
-      blink::mojom::PermissionStatus::GRANTED) {
+          content::PermissionType::NOTIFICATIONS, origin.GetURL(),
+          origin.GetURL()) != blink::mojom::PermissionStatus::GRANTED) {
     blink::mojom::BudgetStatePtr empty_state(blink::mojom::BudgetState::New());
     empty_state->budget_at = 0;
     empty_state->time =

@@ -423,20 +423,17 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
     case WebFeature::kNotificationAPIInsecureOriginIframe:
     case WebFeature::kNotificationPermissionRequestedInsecureOrigin:
       return String::Format(
-          "Using the Notification API on insecure origins is "
-          "deprecated and will be removed in %s. You should consider "
-          "switching your application to a secure origin, such as HTTPS. See "
-          "https://goo.gl/rStTGz for more details.",
-          milestoneString(M61));
+          "The Notification API may no longer be used from insecure origins. "
+          "You should consider switching your application to a secure origin, "
+          "such as HTTPS. See https://goo.gl/rStTGz for more details.");
 
     case WebFeature::kNotificationPermissionRequestedIframe:
       return String::Format(
-          "Using the Notification API from an iframe is deprecated and will "
-          "be removed in %s. You should consider requesting permission from "
-          "the top-level frame or opening a new window instead. See "
+          "Permission for the Notification API may no longer be requested from "
+          "a cross-origin iframe. You should consider requesting permission "
+          "from a top-level frame or opening a new window instead. See "
           "https://www.chromestatus.com/feature/6451284559265792 for more "
-          "details.",
-          milestoneString(M61));
+          "details.");
 
     case WebFeature::kElementCreateShadowRootMultiple:
       return "Calling Element.createShadowRoot() for an element which already "

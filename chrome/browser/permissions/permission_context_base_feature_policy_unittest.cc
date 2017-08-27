@@ -125,12 +125,12 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, DefaultPolicy) {
   EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, parent));
   EXPECT_EQ(CONTENT_SETTING_BLOCK, GetPermissionForFrame(&geolocation, child));
 
-  // Notifications doesn't have an associated feature policy so it should be ask
-  // by default in top level and subframes.
+  // Notifications is ask by default in top level frames but not in subframes.
   NotificationPermissionContext notifications(
       profile(), CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&notifications, parent));
-  EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&notifications, child));
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionForFrame(&notifications, child));
 }
 
 TEST_F(PermissionContextBaseFeaturePolicyTest, DisabledTopLevelFrame) {

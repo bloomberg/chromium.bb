@@ -28,6 +28,8 @@ class NotificationPermissionContext : public PermissionContextBase {
                                const PermissionRequestID& id) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(NotificationPermissionContextTest,
+                           PushTopLevelOriginOnly);
   friend class NotificationPermissionContextTest;
 
   // PermissionContextBase implementation.
