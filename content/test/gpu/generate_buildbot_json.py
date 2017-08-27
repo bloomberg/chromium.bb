@@ -83,22 +83,9 @@ class Predicates(object):
   def DEFAULT_AND_OPTIONAL(x):
     return Predicates.DEFAULT(x) or Types.OPTIONAL in x
 
-  # TODO(kbr): we're only temporarily running the dEQP tests on both
-  # the new dEQP bots as well as the regular bots. As soon as separate
-  # tryservers for the dEQP tests have been set up, these type testers
-  # will be removed, and replaced with ones that are specific to the
-  # dEQP.
   @staticmethod
-  def FYI_AND_OPTIONAL_AND_DEQP(x):
-    return Types.DEQP in x or Predicates.FYI_AND_OPTIONAL(x)
-
-  @staticmethod
-  def FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD_AND_DEQP(x):
-    return Types.DEQP in x or Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD(x)
-
-  @staticmethod
-  def FYI_ONLY_AND_DEQP(x):
-    return Types.DEQP in x or Predicates.FYI_ONLY(x)
+  def DEQP(x):
+    return Types.DEQP in x
 
 WATERFALL = {
   'name': 'chromium.gpu',
@@ -977,8 +964,7 @@ COMMON_GTESTS = {
   'angle_deqp_egl_tests': {
     'tester_configs': [
       {
-        # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run only on the Win7 Release NVIDIA 32- and 64-bit bots
         # (and trybots) for the time being, at least until more capacity is
         # added.
@@ -1007,9 +993,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles2_d3d11_tests': {
     'tester_configs': [
       {
-        # Run this on the FYI waterfall, optional tryservers, and Win
-        # ANGLE AMD tryserver.
-        'predicate': Predicates.FYI_AND_OPTIONAL_AND_WIN_ANGLE_AMD_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run only on the Win7 NVIDIA/AMD R7 240 32- and 64-bit bots (and
         # trybots) for the time being, at least until more capacity is
         # added.
@@ -1048,8 +1032,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles2_gl_tests': {
     'tester_configs': [
       {
-        # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run only on the Linux Release NVIDIA 32- and 64-bit bots (and
         # trybots) for the time being, at least until more capacity is added.
         'build_configs': ['Release', 'Release_x64'],
@@ -1082,8 +1065,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles2_gles_tests': {
     'tester_configs': [
       {
-        # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run on Nexus 5X swarmed bots.
         'build_configs': ['android-chromium'],
         'swarming_dimension_sets': [
@@ -1121,8 +1103,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles3_gles_tests': {
     'tester_configs': [
       {
-        # Run this on the FYI waterfall and optional tryservers.
-        'predicate': Predicates.FYI_AND_OPTIONAL_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run on Nexus 5X swarmed bots.
         'build_configs': ['android-chromium'],
         'swarming_dimension_sets': [
@@ -1164,7 +1145,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         # TODO(jmadill): Run this on ANGLE roll tryservers.
-        'predicate': Predicates.FYI_ONLY_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run only on the NVIDIA and AMD Win7 bots (and trybots) for the time
         # being, at least until more capacity is added.
         'build_configs': ['Release'],
@@ -1206,7 +1187,7 @@ COMMON_GTESTS = {
     'tester_configs': [
       {
         # TODO(jmadill): Run this on ANGLE roll tryservers.
-        'predicate': Predicates.FYI_ONLY_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run only on the Linux Release NVIDIA 32-bit bots (and trybots) for
         # the time being, at least until more capacity is added.
         'build_configs': ['Release'],
@@ -1239,7 +1220,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles31_d3d11_tests': {
     'tester_configs': [
       {
-        'predicate': Predicates.FYI_ONLY_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run on the Win Release NVIDIA bots.
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
@@ -1272,7 +1253,7 @@ COMMON_GTESTS = {
   'angle_deqp_gles31_gl_tests': {
     'tester_configs': [
       {
-        'predicate': Predicates.FYI_ONLY_AND_DEQP,
+        'predicate': Predicates.DEQP,
         # Run on the Win Release NVIDIA bots.
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
