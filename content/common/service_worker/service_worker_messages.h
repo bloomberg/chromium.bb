@@ -30,8 +30,8 @@
 
 #define IPC_MESSAGE_START ServiceWorkerMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerError::ErrorType,
-                          blink::WebServiceWorkerError::kErrorTypeLast)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ServiceWorkerErrorType,
+                          blink::mojom::ServiceWorkerErrorType::kLast)
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebServiceWorkerEventResult,
                           blink::kWebServiceWorkerEventResultLast)
@@ -367,7 +367,7 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_DidGetRegistrationForReady,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      base::string16 /* message */)
 
 // Sent when any kind of update error occurs during a
@@ -375,7 +375,7 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUpdateError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      base::string16 /* message */)
 
 // Sent when any kind of registration error occurs during a
@@ -383,7 +383,7 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUpdateError,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      base::string16 /* message */)
 
 // Sent when any kind of registration error occurs during a
@@ -391,7 +391,7 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerGetRegistrationError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      base::string16 /* message */)
 
 // Sent when any kind of registration error occurs during a
@@ -399,7 +399,7 @@ IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerGetRegistrationError,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerGetRegistrationsError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      base::string16 /* message */)
 
 // Informs the child process that the ServiceWorker's state has changed.
@@ -432,7 +432,7 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidEnableNavigationPreload,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_EnableNavigationPreloadError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      std::string /* message */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_DidGetNavigationPreloadState,
                      int /* thread_id */,
@@ -441,7 +441,7 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_DidGetNavigationPreloadState,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_GetNavigationPreloadStateError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      std::string /* message */)
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidSetNavigationPreloadHeader,
                      int /* thread_id */,
@@ -449,7 +449,7 @@ IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_DidSetNavigationPreloadHeader,
 IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_SetNavigationPreloadHeaderError,
                      int /* thread_id */,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      std::string /* message */)
 
 // Sends MessageEvent to a client document (browser->renderer).
@@ -471,7 +471,7 @@ IPC_MESSAGE_CONTROL1(ServiceWorkerMsg_DidClaimClients,
                      int /* request_id */)
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ClaimClientsError,
                      int /* request_id */,
-                     blink::WebServiceWorkerError::ErrorType /* code */,
+                     blink::mojom::ServiceWorkerErrorType,
                      base::string16 /* message */)
 
 // Sent via EmbeddedWorker as a response of GetClient.

@@ -241,40 +241,38 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   void OnDidSetNavigationPreloadHeader(int thread_id, int request_id);
   void OnRegistrationError(int thread_id,
                            int request_id,
-                           blink::WebServiceWorkerError::ErrorType error_type,
+                           blink::mojom::ServiceWorkerErrorType error_type,
                            const base::string16& message);
   void OnUpdateError(int thread_id,
                      int request_id,
-                     blink::WebServiceWorkerError::ErrorType error_type,
+                     blink::mojom::ServiceWorkerErrorType error_type,
                      const base::string16& message);
   void OnUnregistrationError(int thread_id,
                              int request_id,
-                             blink::WebServiceWorkerError::ErrorType error_type,
+                             blink::mojom::ServiceWorkerErrorType error_type,
                              const base::string16& message);
-  void OnGetRegistrationError(
-      int thread_id,
-      int request_id,
-      blink::WebServiceWorkerError::ErrorType error_type,
-      const base::string16& message);
-  void OnGetRegistrationsError(
-      int thread_id,
-      int request_id,
-      blink::WebServiceWorkerError::ErrorType error_type,
-      const base::string16& message);
+  void OnGetRegistrationError(int thread_id,
+                              int request_id,
+                              blink::mojom::ServiceWorkerErrorType error_type,
+                              const base::string16& message);
+  void OnGetRegistrationsError(int thread_id,
+                               int request_id,
+                               blink::mojom::ServiceWorkerErrorType error_type,
+                               const base::string16& message);
   void OnEnableNavigationPreloadError(
       int thread_id,
       int request_id,
-      blink::WebServiceWorkerError::ErrorType error_type,
+      blink::mojom::ServiceWorkerErrorType error_type,
       const std::string& message);
   void OnGetNavigationPreloadStateError(
       int thread_id,
       int request_id,
-      blink::WebServiceWorkerError::ErrorType error_type,
+      blink::mojom::ServiceWorkerErrorType error_type,
       const std::string& message);
   void OnSetNavigationPreloadHeaderError(
       int thread_id,
       int request_id,
-      blink::WebServiceWorkerError::ErrorType error_type,
+      blink::mojom::ServiceWorkerErrorType error_type,
       const std::string& message);
   void OnServiceWorkerStateChanged(int thread_id,
                                    int handle_id,

@@ -28,6 +28,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 #include "url/url_constants.h"
 
 using blink::WebServiceWorkerError;
@@ -128,7 +129,7 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     std::string error_message(kServiceWorkerRegisterErrorPrefix);
     error_message += "The provided scriptURL or scope is too long.";
     callbacks->OnError(
-        WebServiceWorkerError(WebServiceWorkerError::kErrorTypeSecurity,
+        WebServiceWorkerError(blink::mojom::ServiceWorkerErrorType::kSecurity,
                               blink::WebString::FromASCII(error_message)));
     return;
   }
@@ -178,7 +179,7 @@ void ServiceWorkerDispatcher::GetRegistration(
     std::string error_message(kServiceWorkerGetRegistrationErrorPrefix);
     error_message += "The provided documentURL is too long.";
     callbacks->OnError(
-        WebServiceWorkerError(WebServiceWorkerError::kErrorTypeSecurity,
+        WebServiceWorkerError(blink::mojom::ServiceWorkerErrorType::kSecurity,
                               blink::WebString::FromASCII(error_message)));
     return;
   }
@@ -572,7 +573,7 @@ void ServiceWorkerDispatcher::OnDidSetNavigationPreloadHeader(int thread_id,
 void ServiceWorkerDispatcher::OnRegistrationError(
     int thread_id,
     int request_id,
-    WebServiceWorkerError::ErrorType error_type,
+    blink::mojom::ServiceWorkerErrorType error_type,
     const base::string16& message) {
   TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
                                "ServiceWorkerDispatcher::RegisterServiceWorker",
@@ -595,7 +596,7 @@ void ServiceWorkerDispatcher::OnRegistrationError(
 void ServiceWorkerDispatcher::OnUpdateError(
     int thread_id,
     int request_id,
-    WebServiceWorkerError::ErrorType error_type,
+    blink::mojom::ServiceWorkerErrorType error_type,
     const base::string16& message) {
   TRACE_EVENT_ASYNC_STEP_INTO0("ServiceWorker",
                                "ServiceWorkerDispatcher::UpdateServiceWorker",
@@ -617,7 +618,7 @@ void ServiceWorkerDispatcher::OnUpdateError(
 void ServiceWorkerDispatcher::OnUnregistrationError(
     int thread_id,
     int request_id,
-    WebServiceWorkerError::ErrorType error_type,
+    blink::mojom::ServiceWorkerErrorType error_type,
     const base::string16& message) {
   TRACE_EVENT_ASYNC_STEP_INTO0(
       "ServiceWorker",
@@ -641,7 +642,7 @@ void ServiceWorkerDispatcher::OnUnregistrationError(
 void ServiceWorkerDispatcher::OnGetRegistrationError(
     int thread_id,
     int request_id,
-    WebServiceWorkerError::ErrorType error_type,
+    blink::mojom::ServiceWorkerErrorType error_type,
     const base::string16& message) {
   TRACE_EVENT_ASYNC_STEP_INTO0(
       "ServiceWorker",
@@ -665,7 +666,7 @@ void ServiceWorkerDispatcher::OnGetRegistrationError(
 void ServiceWorkerDispatcher::OnGetRegistrationsError(
     int thread_id,
     int request_id,
-    WebServiceWorkerError::ErrorType error_type,
+    blink::mojom::ServiceWorkerErrorType error_type,
     const base::string16& message) {
   TRACE_EVENT_ASYNC_STEP_INTO0(
       "ServiceWorker",
@@ -689,7 +690,7 @@ void ServiceWorkerDispatcher::OnGetRegistrationsError(
 void ServiceWorkerDispatcher::OnEnableNavigationPreloadError(
     int thread_id,
     int request_id,
-    WebServiceWorkerError::ErrorType error_type,
+    blink::mojom::ServiceWorkerErrorType error_type,
     const std::string& message) {
   WebEnableNavigationPreloadCallbacks* callbacks =
       enable_navigation_preload_callbacks_.Lookup(request_id);
@@ -704,7 +705,7 @@ void ServiceWorkerDispatcher::OnEnableNavigationPreloadError(
 void ServiceWorkerDispatcher::OnGetNavigationPreloadStateError(
     int thread_id,
     int request_id,
-    WebServiceWorkerError::ErrorType error_type,
+    blink::mojom::ServiceWorkerErrorType error_type,
     const std::string& message) {
   WebGetNavigationPreloadStateCallbacks* callbacks =
       get_navigation_preload_state_callbacks_.Lookup(request_id);
@@ -719,7 +720,7 @@ void ServiceWorkerDispatcher::OnGetNavigationPreloadStateError(
 void ServiceWorkerDispatcher::OnSetNavigationPreloadHeaderError(
     int thread_id,
     int request_id,
-    WebServiceWorkerError::ErrorType error_type,
+    blink::mojom::ServiceWorkerErrorType error_type,
     const std::string& message) {
   WebSetNavigationPreloadHeaderCallbacks* callbacks =
       set_navigation_preload_header_callbacks_.Lookup(request_id);

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
 
 namespace content {
 
@@ -16,9 +17,9 @@ using blink::WebServiceWorkerError;
 void GetServiceWorkerRegistrationStatusResponse(
     ServiceWorkerStatusCode status,
     const std::string& status_message,
-    blink::WebServiceWorkerError::ErrorType* error_type,
+    blink::mojom::ServiceWorkerErrorType* error_type,
     base::string16* message) {
-  *error_type = WebServiceWorkerError::kErrorTypeUnknown;
+  *error_type = blink::mojom::ServiceWorkerErrorType::kUnknown;
   if (!status_message.empty())
     *message = base::UTF8ToUTF16(status_message);
   else
@@ -33,31 +34,31 @@ void GetServiceWorkerRegistrationStatusResponse(
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
     case SERVICE_WORKER_ERROR_REDUNDANT:
     case SERVICE_WORKER_ERROR_DISALLOWED:
-      *error_type = WebServiceWorkerError::kErrorTypeInstall;
+      *error_type = blink::mojom::ServiceWorkerErrorType::kInstall;
       return;
 
     case SERVICE_WORKER_ERROR_NOT_FOUND:
-      *error_type = WebServiceWorkerError::kErrorTypeNotFound;
+      *error_type = blink::mojom::ServiceWorkerErrorType::kNotFound;
       return;
 
     case SERVICE_WORKER_ERROR_NETWORK:
-      *error_type = WebServiceWorkerError::kErrorTypeNetwork;
+      *error_type = blink::mojom::ServiceWorkerErrorType::kNetwork;
       return;
 
     case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
-      *error_type = WebServiceWorkerError::kErrorTypeScriptEvaluateFailed;
+      *error_type = blink::mojom::ServiceWorkerErrorType::kScriptEvaluateFailed;
       return;
 
     case SERVICE_WORKER_ERROR_SECURITY:
-      *error_type = WebServiceWorkerError::kErrorTypeSecurity;
+      *error_type = blink::mojom::ServiceWorkerErrorType::kSecurity;
       return;
 
     case SERVICE_WORKER_ERROR_TIMEOUT:
-      *error_type = WebServiceWorkerError::kErrorTypeTimeout;
+      *error_type = blink::mojom::ServiceWorkerErrorType::kTimeout;
       return;
 
     case SERVICE_WORKER_ERROR_ABORT:
-      *error_type = WebServiceWorkerError::kErrorTypeAbort;
+      *error_type = blink::mojom::ServiceWorkerErrorType::kAbort;
       return;
 
     case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:

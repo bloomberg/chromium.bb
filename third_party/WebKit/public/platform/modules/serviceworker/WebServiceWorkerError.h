@@ -32,38 +32,23 @@
 #define WebServiceWorkerError_h
 
 #include "public/platform/WebString.h"
+#include "public/platform/modules/serviceworker/service_worker_error_type.mojom-shared.h"
 
 namespace blink {
 
 struct WebServiceWorkerError {
-  enum ErrorType {
-    kErrorTypeAbort = 0,
-    kErrorTypeActivate,
-    kErrorTypeDisabled,
-    kErrorTypeInstall,
-    kErrorTypeNavigation,
-    kErrorTypeNetwork,
-    kErrorTypeNotFound,
-    kErrorTypeScriptEvaluateFailed,
-    kErrorTypeSecurity,
-    kErrorTypeState,
-    kErrorTypeTimeout,
-    kErrorTypeUnknown,
-    kErrorTypeType,
-    kErrorTypeLast = kErrorTypeUnknown
-  };
-
-  WebServiceWorkerError(ErrorType error_type, const WebString& message)
+  WebServiceWorkerError(mojom::ServiceWorkerErrorType error_type,
+                        const WebString& message)
       : WebServiceWorkerError(error_type, message, WebString()) {}
 
-  WebServiceWorkerError(ErrorType error_type,
+  WebServiceWorkerError(mojom::ServiceWorkerErrorType error_type,
                         const WebString& message,
                         const WebString& unsanitized_message)
       : error_type(error_type),
         message(message),
         unsanitized_message(unsanitized_message) {}
 
-  ErrorType error_type;
+  mojom::ServiceWorkerErrorType error_type;
   // |message| can be used to populate an error that's exposed to JavaScript.
   // For service worker APIs, typically a promise will reject with this error.
   WebString message;
