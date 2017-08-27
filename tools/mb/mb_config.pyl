@@ -249,26 +249,26 @@
 
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
-      'Android dEQP Release (Nexus 5X)': 'gpu_tests_deqp_android_release_trybot_arm64',
+      'Android dEQP Release (Nexus 5X)': 'deqp_android_release_trybot_arm64',
       'Android Release (Nexus 5)': 'android_release_trybot',
-      'Android Release (Nexus 5X)': 'gpu_tests_deqp_android_release_trybot_arm64',
+      'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'Android Release (Nexus 6)': 'android_release_trybot',
       'Android Release (Nexus 6P)': 'android_release_trybot_arm64',
       'Android Release (Nexus 9)': 'android_release_trybot_arm64',
       'Android Release (NVIDIA Shield TV)': 'android_release_trybot_arm64',
       'GPU Linux Builder': 'gpu_fyi_tests_release_trybot',
       'GPU Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
-      'GPU Linux dEQP Builder': 'gpu_fyi_tests_release_trybot',
+      'GPU Linux dEQP Builder': 'deqp_release_trybot',
       'GPU Mac Builder': 'gpu_fyi_tests_release_trybot',
       'GPU Mac Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
-      'GPU Mac dEQP Builder': 'gpu_fyi_tests_release_trybot',
-      'GPU Win Builder': 'gpu_tests_deqp_gles_release_trybot_x86',
-      'GPU Win Builder (dbg)': 'gpu_tests_deqp_gles_debug_trybot_x86',
-      'GPU Win dEQP Builder': 'gpu_tests_deqp_gles_release_trybot_x86',
+      'GPU Mac dEQP Builder': 'deqp_release_trybot',
+      'GPU Win Builder': 'gpu_fyi_tests_release_trybot_x86',
+      'GPU Win Builder (dbg)': 'gpu_fyi_tests_debug_trybot_x86',
+      'GPU Win dEQP Builder': 'deqp_release_no_clang_trybot_x86',
       'GPU Win Clang Builder (dbg)': 'gpu_fyi_tests_win_clang_debug_bot',
-      'GPU Win x64 Builder': 'gpu_tests_deqp_gles_release_trybot',
-      'GPU Win x64 Builder (dbg)': 'gpu_tests_deqp_gles_debug_trybot',
-      'GPU Win x64 dEQP Builder': 'gpu_tests_deqp_gles_release_trybot',
+      'GPU Win x64 Builder': 'gpu_fyi_tests_release_trybot',
+      'GPU Win x64 Builder (dbg)': 'gpu_fyi_tests_debug_trybot',
+      'GPU Win x64 dEQP Builder': 'deqp_release_no_clang_trybot',
       'Linux ChromiumOS Builder': 'gpu_fyi_tests_chromeos_cros_release_trybot',
       # This is, confusingly, apparently not actually building ChromiumOS.
       'Linux ChromiumOS Ozone Builder': 'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot',
@@ -397,7 +397,7 @@
 
     'client.v8.fyi': {
       'Android Builder': 'official_goma_minimal_symbols_android',
-      'Android Release (Nexus 5X)': 'gpu_tests_deqp_android_release_trybot_arm64',
+      'Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'Linux ASAN Builder': 'asan_lsan_release_bot',
       'Linux Debug Builder': 'debug_bot',
       'Linux Release (NVIDIA)': 'gpu_tests_release_trybot',
@@ -510,7 +510,7 @@
 
       'android_n5x_swarming_dbg': 'android_debug_trybot_arm64',
       'android_n5x_swarming_rel': 'android_release_trybot_arm64',
-      'android_optional_gpu_tests_rel': 'gpu_tests_deqp_android_release_trybot_arm64',
+      'android_optional_gpu_tests_rel': 'gpu_tests_android_release_trybot_arm64',
       'android_unswarmed_n5_rel': 'android_release_trybot',
       'android_unswarmed_n5x_rel': 'android_release_trybot_arm64',
       'cast_shell_android': 'android_cast_debug_static_bot',
@@ -519,20 +519,20 @@
     },
 
     'tryserver.chromium.angle': {
-      'android_angle_rel_ng': 'gpu_tests_deqp_android_release_trybot_arm64',
-      'android_angle_deqp_rel_ng': 'gpu_tests_deqp_android_release_trybot_arm64',
+      'android_angle_rel_ng': 'gpu_tests_android_release_trybot_arm64',
+      'android_angle_deqp_rel_ng': 'deqp_android_release_trybot_arm64',
       'linux_angle_chromeos_rel_ng': 'gpu_fyi_tests_chromeos_cros_release_trybot',
       'linux_angle_dbg_ng': 'gpu_fyi_tests_debug_trybot',
-      'linux_angle_deqp_rel_ng': 'gpu_fyi_tests_release_trybot',
+      'linux_angle_deqp_rel_ng': 'deqp_release_trybot',
       'linux_angle_rel_ng': 'gpu_fyi_tests_release_trybot',
       'mac_angle_dbg_ng': 'gpu_fyi_tests_debug_trybot',
       'mac_angle_rel_ng': 'gpu_fyi_tests_release_trybot',
-      'win_angle_dbg_ng': 'gpu_tests_deqp_gles_debug_trybot_x86',
-      'win_angle_deqp_rel_ng': 'gpu_tests_deqp_gles_release_trybot_x86',
-      'win_angle_rel_ng': 'gpu_tests_deqp_gles_release_trybot_x86',
-      'win_angle_x64_dbg_ng': 'gpu_tests_deqp_gles_debug_trybot',
-      'win_angle_x64_deqp_rel_ng': 'gpu_tests_deqp_gles_release_trybot',
-      'win_angle_x64_rel_ng': 'gpu_tests_deqp_gles_release_trybot',
+      'win_angle_dbg_ng': 'gpu_fyi_tests_debug_trybot_x86',
+      'win_angle_deqp_rel_ng': 'deqp_release_no_clang_trybot_x86',
+      'win_angle_rel_ng': 'gpu_fyi_tests_release_trybot_x86',
+      'win_angle_x64_dbg_ng': 'gpu_fyi_tests_debug_trybot',
+      'win_angle_x64_deqp_rel_ng': 'deqp_release_no_clang_trybot',
+      'win_angle_x64_rel_ng': 'gpu_fyi_tests_release_trybot',
     },
 
     'tryserver.chromium.linux': {
@@ -682,7 +682,7 @@
       'win_mojo': 'release_trybot_x86',
       'win_nacl_sdk': 'release_bot_x86_minimal_symbols',
       'win_nacl_sdk_build': 'release_bot_x86_minimal_symbols',
-      'win_optional_gpu_tests_rel': 'gpu_tests_deqp_gles_release_trybot_x86',
+      'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot_x86',
       'win_pgo': {
         '1': 'official_optimize_chrome_pgo_phase_1_x86',
         '2': 'official_optimize_chrome_pgo_phase_2_x86',
@@ -1242,12 +1242,38 @@
       'debug_trybot', 'x86',
     ],
 
+    'deqp_android_release_trybot_arm64': [
+      'angle_deqp_tests', 'android', 'release_trybot', 'arm64',
+    ],
+
+    'deqp_release_no_clang_trybot': [
+      # TODO(thakis): Remove no_clang once https://crbug.com/727437 is fixed.
+      # Still need conditional entries in .gclient so that clang and compiler
+      # options can be pinned based on the presence of a GN flag.
+      'angle_deqp_tests', 'release_trybot', 'no_clang',
+    ],
+
+    'deqp_release_no_clang_trybot_x86': [
+      # TODO(thakis): Remove no_clang once https://crbug.com/727437 is fixed.
+      # Still need conditional entries in .gclient so that clang and compiler
+      # options can be pinned based on the presence of a GN flag.
+      'angle_deqp_tests', 'release_trybot', 'x86', 'no_clang',
+    ],
+
+    'deqp_release_trybot': [
+      'angle_deqp_tests', 'release_trybot',
+    ],
+
     'gpu_fyi_tests_chromeos_cros_release_trybot': [
       'gpu_fyi_tests', 'chromeos', 'release_trybot',
     ],
 
     'gpu_fyi_tests_debug_trybot': [
       'gpu_fyi_tests', 'debug_trybot',
+    ],
+
+    'gpu_fyi_tests_debug_trybot_x86': [
+      'gpu_fyi_tests', 'debug_trybot', 'x86',
     ],
 
     'gpu_fyi_tests_ozone_linux_system_gbm_libdrm_release_trybot': [
@@ -1266,30 +1292,16 @@
       'gpu_fyi_tests', 'release_trybot', 'tsan', 'full_symbols', 'disable_nacl',
     ],
 
+    'gpu_fyi_tests_release_trybot_x86': [
+      'gpu_fyi_tests', 'release_trybot', 'x86',
+    ],
+
     'gpu_fyi_tests_win_clang_debug_bot': [
       'gpu_tests', 'internal_gles2_conform_tests', 'clang', 'debug_bot', 'minimal_symbols',
     ],
 
-    'gpu_tests_deqp_android_release_trybot_arm64': [
-      'gpu_tests', 'angle_deqp_tests', 'android', 'release_trybot', 'arm64',
-    ],
-
-    'gpu_tests_deqp_gles_debug_trybot': [
-      'gpu_fyi_tests', 'debug_trybot',
-    ],
-
-    'gpu_tests_deqp_gles_debug_trybot_x86': [
-      'gpu_fyi_tests', 'debug_trybot', 'x86',
-    ],
-
-    'gpu_tests_deqp_gles_release_trybot': [
-      # TODO(thakis): Remove no_clang once https://crbug.com/727437 is fixed.
-      'gpu_fyi_tests', 'release_trybot', 'no_clang',
-    ],
-
-    'gpu_tests_deqp_gles_release_trybot_x86': [
-      # TODO(thakis): Remove no_clang once https://crbug.com/727437 is fixed.
-      'gpu_fyi_tests', 'release_trybot', 'x86', 'no_clang',
+    'gpu_tests_android_release_trybot_arm64': [
+      'gpu_tests', 'android', 'release_trybot', 'arm64',
     ],
 
     'gpu_tests_debug_trybot': [
@@ -1780,7 +1792,7 @@
     },
 
     'gpu_fyi_tests': {
-      'mixins': ['gpu_tests', 'internal_gles2_conform_tests', 'angle_deqp_tests'],
+      'mixins': ['gpu_tests', 'internal_gles2_conform_tests'],
     },
 
     'gpu_tests': {
