@@ -133,7 +133,6 @@ component("media") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "device_monitors/system_message_window_win_unittest.cc",
     "filters/audio_clock_unittest.cc",
     "filters/audio_decoder_selector_unittest.cc",
     "filters/audio_renderer_algorithm_unittest.cc",
@@ -330,6 +329,7 @@ test("media_unittests") {
     "//media/audio:unit_tests",
     "//media/base:unit_tests",
     "//media/cdm:unit_tests",
+    "//media/device_monitors:unit_tests",
     "//media/gpu:unit_tests",
     "//media/mojo:unit_tests",
     "//media/renderers:unit_tests",
