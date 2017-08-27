@@ -34,3 +34,18 @@ source_set("device_monitors") {
     libs = [ "Foundation.framework" ]
   }
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "system_message_window_win_unittest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//media:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
