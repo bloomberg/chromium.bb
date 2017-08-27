@@ -292,10 +292,6 @@ class TabManager : public TabStripModelObserver,
   // min time to purge times this value.
   const int kDefaultMinMaxTimeToPurgeRatio = 2;
 
-  // This is needed so WebContentsData can call OnDiscardedStateChange, and
-  // can use PurgeState.
-  friend class WebContentsData;
-
   // Finds TabStripModel which has a WebContents whose id is the given
   // web_contents_id, and returns the WebContents index and the TabStripModel.
   int FindTabStripModelById(int64_t target_web_contents_id,
@@ -480,6 +476,8 @@ class TabManager : public TabStripModelObserver,
     memory_pressure_listener_.reset();
   }
 
+  TabManagerStatsCollector* stats_collector() { return stats_collector_.get(); }
+
   // Timer to periodically update the stats of the renderers.
   base::RepeatingTimer update_timer_;
 
@@ -569,7 +567,7 @@ class TabManager : public TabStripModelObserver,
 
   // Records UMAs for tab and system-related events and properties during
   // session restore.
-  std::unique_ptr<TabManagerStatsCollector> tab_manager_stats_collector_;
+  std::unique_ptr<TabManagerStatsCollector> stats_collector_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;

@@ -185,6 +185,11 @@ void TabManagerStatsCollector::OnSessionRestoreUpdateMetricsFailed() {
   session_restore_swap_metrics_driver_.reset();
 }
 
+void TabManagerStatsCollector::OnDidStartMainFrameNavigation(
+    content::WebContents* contents) {
+  foreground_contents_switched_to_times_.erase(contents);
+}
+
 void TabManagerStatsCollector::OnDidStopLoading(
     content::WebContents* contents) {
   if (!base::ContainsKey(foreground_contents_switched_to_times_, contents))

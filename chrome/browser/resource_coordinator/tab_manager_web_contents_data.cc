@@ -10,6 +10,7 @@
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "chrome/browser/resource_coordinator/tab_manager_stats_collector.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -40,8 +41,8 @@ void TabManager::WebContentsData::DidStopLoading() {
   // We may already be in the stopped state if this is being invoked due to an
   // iframe loading new content.
   //
-  // TODO(shaseley): switch to the new done signal (network and cpu quiescence)
-  // when available.
+  // TODO(lpy): switch to the new done signal (network and cpu quiescence) when
+  // available.
   if (tab_data_.tab_loading_state != TAB_IS_LOADED) {
     SetTabLoadingState(TAB_IS_LOADED);
     g_browser_process->GetTabManager()->OnDidStopLoading(web_contents());
@@ -53,12 +54,15 @@ void TabManager::WebContentsData::DidStartNavigation(
   // Only change to the loading state if there is a navigation in the main
   // frame. DidStartLoading() happens before this, but at that point we don't
   // know if the load is happening in the main frame or an iframe.
-  //
-  // TODO(shaseley): Consider NavigationThrottle signal when available.
-  if (!navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
 
   SetTabLoadingState(TAB_IS_LOADING);
+  g_browser_process->GetTabManager()
+      ->stats_collector()
+      ->OnDidStartMainFrameNavigation(web_contents());
 }
 
 void TabManager::WebContentsData::DidFinishNavigation(

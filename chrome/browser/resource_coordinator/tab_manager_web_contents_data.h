@@ -31,8 +31,8 @@ namespace resource_coordinator {
 //
 // These values are used in the TabManager.SessionRestore.SwitchToTab UMA.
 //
-// TODO(shaseley): *switch to the new done signal (network and cpu quiescence)
-// when available.
+// TODO(lpy): *switch to the new done signal (network and cpu quiescence) when
+// available.
 //
 // These values are written to logs.  New enum values can be added, but existing
 // enums must never be renumbered or deleted and reused.
