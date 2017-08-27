@@ -206,7 +206,8 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::BOOKMARKS)) {
     if (FeatureList::IsEnabled(switches::kSyncUSSBookmarks)) {
       sync_service->RegisterDataTypeController(
-          std::make_unique<sync_bookmarks::BookmarkModelTypeController>());
+          std::make_unique<sync_bookmarks::BookmarkModelTypeController>(
+              sync_client_));
     } else {
       sync_service->RegisterDataTypeController(
           std::make_unique<BookmarkDataTypeController>(error_callback,

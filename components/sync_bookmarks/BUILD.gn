@@ -34,6 +34,7 @@ source_set("unit_tests") {
 
   sources = [
     "bookmark_data_type_controller_unittest.cc",
+    "bookmark_model_type_controller_unittest.cc",
     "bookmark_model_type_processor_unittest.cc",
   ]
 
@@ -46,6 +47,7 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//components/sync",
     "//components/sync:test_support_driver",
+    "//components/sync:test_support_engine",
     "//components/sync:test_support_model",
     "//testing/gmock",
     "//testing/gtest",
