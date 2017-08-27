@@ -77,7 +77,8 @@ void TabManager::GRCTabSignalObserver::OnPropertyChanged(
     if (web_contents_iter == cu_id_web_contents_map_.end())
       return;
     g_browser_process->GetTabManager()
-        ->tab_manager_stats_collector_->RecordExpectedTaskQueueingDuration(
+        ->stats_collector()
+        ->RecordExpectedTaskQueueingDuration(
             web_contents_iter->second,
             base::TimeDelta::FromMilliseconds(value));
   }

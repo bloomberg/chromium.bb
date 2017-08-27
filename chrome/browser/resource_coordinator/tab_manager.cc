@@ -228,7 +228,7 @@ TabManager::TabManager()
 #endif
   browser_tab_strip_tracker_.Init();
   session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
-  tab_manager_stats_collector_.reset(new TabManagerStatsCollector());
+  stats_collector_.reset(new TabManagerStatsCollector());
 }
 
 TabManager::~TabManager() {
@@ -967,7 +967,7 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
                                   int reason) {
   // An active tab is not purged.
   // Calling GetWebContentsData() early ensures that the WebContentsData is
-  // created for |new_contents|, which |tab_manager_stats_collector_| expects.
+  // created for |new_contents|, which |stats_collector_| expects.
   GetWebContentsData(new_contents)->set_is_purged(false);
 
   // If |old_contents| is set, that tab has switched from being active to
@@ -980,7 +980,7 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
             GetTimeToPurge(min_time_to_purge_, max_time_to_purge_));
     // Only record switch-to-tab metrics when a switch happens, i.e.
     // |old_contents| is set.
-    tab_manager_stats_collector_->RecordSwitchToTab(old_contents, new_contents);
+    stats_collector_->RecordSwitchToTab(old_contents, new_contents);
   }
 
   // Reload |web_contents| if it is in an active browser and discarded.
@@ -1175,14 +1175,14 @@ void TabManager::OnDidFinishNavigation(
 void TabManager::OnDidStopLoading(content::WebContents* contents) {
   DCHECK_EQ(TAB_IS_LOADED, GetWebContentsData(contents)->tab_loading_state());
   loading_contents_.erase(contents);
-  tab_manager_stats_collector_->OnDidStopLoading(contents);
+  stats_collector_->OnDidStopLoading(contents);
   LoadNextBackgroundTabIfNeeded();
 }
 
 void TabManager::OnWebContentsDestroyed(content::WebContents* contents) {
   RemovePendingNavigationIfNeeded(contents);
   loading_contents_.erase(contents);
-  tab_manager_stats_collector_->OnWebContentsDestroyed(contents);
+  stats_collector_->OnWebContentsDestroyed(contents);
   LoadNextBackgroundTabIfNeeded();
 }
 

@@ -31,7 +31,7 @@ class TabManagerStatsCollectorTest
   ~TabManagerStatsCollectorTest() override = default;
 
   TabManagerStatsCollector* tab_manager_stats_collector() {
-    return tab_manager_.tab_manager_stats_collector_.get();
+    return tab_manager_.stats_collector();
   }
 
   void StartSessionRestore() {

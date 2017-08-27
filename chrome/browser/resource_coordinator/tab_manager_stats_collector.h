@@ -60,6 +60,12 @@ class TabManagerStatsCollector : public SessionRestoreObserver {
                                            base::TimeDelta interval);
   void OnSessionRestoreUpdateMetricsFailed();
 
+  // Called by WebContentsData when a tab starts loading. Used to clean up
+  // |foreground_contents_switched_to_times_| if we were tracking this tab and
+  // OnDidStopLoading has not yet been called for it, which will happen if the
+  // user navigates to a new page and |contents| is resused.
+  void OnDidStartMainFrameNavigation(content::WebContents* contents);
+
   // Called by TabManager when a tab finishes loading. Used as the signal to
   // record tab switch load time metrics for |contents|.
   void OnDidStopLoading(content::WebContents* contents);
