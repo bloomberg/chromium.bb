@@ -44,6 +44,12 @@ def add_bindings_scripts_dir_to_sys_path():
         sys.path.append(path_to_bindings_scripts)
 
 
+def add_webkitpy_thirdparty_dir_to_sys_path():
+    path_to_bindings_scripts = get_webkitpy_thirdparty_dir()
+    if path_to_bindings_scripts not in sys.path:
+        sys.path.append(path_to_bindings_scripts)
+
+
 def get_bindings_scripts_dir():
     return os.path.join(get_source_dir(), 'bindings', 'scripts')
 
