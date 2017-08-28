@@ -22,8 +22,8 @@ sys.path.insert(0, os.path.join(chrome_src, 'tools', 'gyp', 'pylib'))
 json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 
 
-# Use MSVS2017 as the default toolchain.
-CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2017'
+# Use MSVS2015 as the default toolchain.
+CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2015'
 
 
 def SetEnvironmentAndGetRuntimeDllDirs():
