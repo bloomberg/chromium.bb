@@ -167,6 +167,7 @@ class Internals final : public GarbageCollected<Internals>,
   void clearHitTestCache(Document*, ExceptionState&) const;
 
   String visiblePlaceholder(Element*);
+  bool isValidationMessageVisible(Element*);
   void selectColorInColorChooser(Element*, const String& color_value);
   void endColorChooser(Element*);
   bool hasAutofocusRequest(Document*);

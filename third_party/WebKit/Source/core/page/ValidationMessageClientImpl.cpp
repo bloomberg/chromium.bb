@@ -119,7 +119,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
 }
 
 void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
-  if (!RuntimeEnabledFeatures::ValidationBubbleInRendererEnabled()) {
+  if (!RuntimeEnabledFeatures::ValidationBubbleInRendererEnabled() ||
+      LayoutTestSupport::IsRunningLayoutTest()) {
     HideValidationMessageImmediately(anchor);
     return;
   }

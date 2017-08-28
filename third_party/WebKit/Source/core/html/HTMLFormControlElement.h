@@ -107,6 +107,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool reportValidity();
   // This must be called only after the caller check the element is focusable.
   void ShowValidationMessage();
+  bool IsValidationMessageVisible() const;
   // This must be called when a validation constraint or control value is
   // changed.
   void SetNeedsValidityCheck();
@@ -182,7 +183,6 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool MatchesValidityPseudoClasses() const override;
   void UpdateAncestorDisabledState() const;
 
-  bool IsValidationMessageVisible() const;
   ValidationMessageClient* GetValidationMessageClient() const;
 
   // Requests validity recalc for the form owner, if one exists.
