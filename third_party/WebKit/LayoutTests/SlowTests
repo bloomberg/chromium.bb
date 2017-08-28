@@ -128,7 +128,6 @@ crbug.com/679833 http/tests/inspector/network/network-datareceived.html [ Slow ]
 crbug.com/679833 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Slow ]
 
 # Debugger and profiler tests are slow in Release as well.
-crbug.com/450493 inspector/sources/ [ Slow ]
 crbug.com/450493 inspector-enabled/sources/ [ Slow ]
 crbug.com/450493 http/tests/inspector/sources/ [ Slow ]
 crbug.com/450493 virtual/mojo-loading/http/tests/inspector/sources/ [ Slow ]
@@ -149,7 +148,8 @@ crbug.com/243492 http/tests/inspector-enabled/injected-script-discard.html [ Slo
 crbug.com/243492 virtual/mojo-loading/http/tests/inspector-enabled/injected-script-discard.html [ Slow ]
 crbug.com/327078 http/tests/inspector/network/long-script-content.html [ Slow ]
 crbug.com/327078 virtual/mojo-loading/http/tests/inspector/network/long-script-content.html [ Slow ]
-crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
+crbug.com/420008 [ Release ] http/tests/devtools/editor/text-editor-word-jumps.html [ Slow ]
+crbug.com/667560 [ Release ] virtual/mojo-loading/http/tests/devtools/editor/text-editor-word-jumps.html [ Slow ]
 crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
 crbug.com/420008 [ Release ] virtual/mojo-loading/http/tests/inspector/console-xhr-logging.html [ Slow ]
 crbug.com/596486 [ Linux ] inspector/elements/insert-node.html [ Slow ]

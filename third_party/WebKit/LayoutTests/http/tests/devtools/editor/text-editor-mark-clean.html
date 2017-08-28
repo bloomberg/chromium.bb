@@ -1,0 +1,73 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../resources/editor-test.js"></script>
+<script>
+
+function test() {
+  var textEditor = SourcesTestRunner.createTestEditor();
+  textEditor.setText('1\n2\n3\n4');
+
+  TestRunner.runTestSuite([
+    function testMarkiningInitialStateAsClean(next) {
+      TestRunner.addResult('Initial state: clean=' + textEditor.isClean());
+      textEditor.markClean();
+      TestRunner.addResult('After marking clean: clean=' + textEditor.isClean());
+      textEditor.editRange(TextUtils.TextRange.createFromLocation(0, 0), 'newText');
+      TestRunner.addResult('EDIT; clean=' + textEditor.isClean());
+      textEditor.undo();
+      TestRunner.addResult('UNDO; clean=' + textEditor.isClean());
+      textEditor.redo();
+      TestRunner.addResult('REDO; clean=' + textEditor.isClean());
+      textEditor.undo();
+      TestRunner.addResult('UNDO; clean=' + textEditor.isClean());
+      textEditor.editRange(TextUtils.TextRange.createFromLocation(1, 0), 'newText2');
+      TestRunner.addResult('EDIT; clean=' + textEditor.isClean());
+      textEditor.undo();
+      TestRunner.addResult('UNDO; clean=' + textEditor.isClean());
+      next();
+    },
+
+    function testMiddleStateAsClean(next) {
+      TestRunner.addResult('Initial state: clean=' + textEditor.isClean());
+      for (var i = 0; i < 3; ++i) {
+        textEditor.editRange(TextUtils.TextRange.createFromLocation(i, 0), 'newText' + i);
+        TestRunner.addResult('EDIT; clean=' + textEditor.isClean());
+      }
+      textEditor.markClean();
+      TestRunner.addResult('After marking clean: clean=' + textEditor.isClean());
+      textEditor.editRange(TextUtils.TextRange.createFromLocation(3, 0), 'newText' + 3);
+      TestRunner.addResult('EDIT; clean=' + textEditor.isClean());
+      for (var i = 0; i < 4; ++i) {
+        textEditor.undo();
+        TestRunner.addResult('UNDO; clean=' + textEditor.isClean());
+      }
+      for (var i = 0; i < 4; ++i) {
+        textEditor.redo();
+        TestRunner.addResult('REDO; clean=' + textEditor.isClean());
+      }
+      for (var i = 0; i < 2; ++i) {
+        textEditor.undo();
+        TestRunner.addResult('UNDO; clean=' + textEditor.isClean());
+      }
+      textEditor.editRange(TextUtils.TextRange.createFromLocation(1, 0), 'foo');
+      TestRunner.addResult('EDIT; clean=' + textEditor.isClean());
+      textEditor.undo();
+      TestRunner.addResult('UNDO; clean=' + textEditor.isClean());
+      textEditor.undo();
+      TestRunner.addResult('UNDO; clean=' + textEditor.isClean());
+      next();
+    },
+  ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This test checks TextEditorModel.markClean/isClean methods
+</p>
+
+</body>
+</html>

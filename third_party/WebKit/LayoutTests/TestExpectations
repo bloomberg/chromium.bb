@@ -720,7 +720,8 @@ crbug.com/498539 inspector/tracing/timeline-misc/timeline-bound-function.html [ 
 crbug.com/498539 virtual/threaded/inspector/tracing/timeline-misc/timeline-bound-function.html [ Pass Failure ]
 crbug.com/498539 [ Mac ] http/tests/devtools/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
 crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
-crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
+crbug.com/498539 [ Win7 ] http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
+crbug.com/667560 [ Win7 ] virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
 
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
@@ -1581,7 +1582,8 @@ crbug.com/635909 http/tests/devtools/sources/debugger-frameworks/frameworks-dom-
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-frameworks/frameworks-dom-xhr-event-breakpoints.html [ NeedsManualRebaseline Timeout ]
 
 crbug.com/636424 [ Win7 Debug ] editing/selection/modify_move/move-by-word-visually-crash-test-5.html [ Pass Timeout ]
-crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
+crbug.com/638618 http/tests/devtools/editor/text-editor-search-switch-editor.html [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/editor/text-editor-search-switch-editor.html [ Skip ]
 
 # These tests have test harness errors and PASS lines that have a
 # non-deterministic order.
@@ -2726,7 +2728,8 @@ crbug.com/678493 virtual/mojo-loading/http/tests/permissions/chromium/test-reque
 crbug.com/678499 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-preload-allowed.php [ Failure Pass ]
 
-crbug.com/680050 inspector/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
+crbug.com/680050 http/tests/devtools/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
 
 crbug.com/747751 http/tests/inspector/application-panel/resources-panel-resource-preview.html [ Failure Pass ]
 
@@ -3071,7 +3074,8 @@ crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-applyConstraints.html [
 crbug.com/747163 [ Linux ] imagecapture/MediaStreamTrack-getSettings.html [ Pass Crash ]
 
 crbug.com/749738 [ Win7 Debug ] http/tests/devtools/console/console-format-es6.js [ Timeout ]
-crbug.com/749738 [ Win7 Debug ] inspector/editor/text-editor-word-jumps.html [ Timeout ]
+crbug.com/749738 [ Win7 Debug ] http/tests/devtools/editor/text-editor-word-jumps.html [ Timeout ]
+crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/editor/text-editor-word-jumps.html [ Timeout ]
 crbug.com/749738 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/console/console-format-es6.js [ Timeout ]
 
 # Sheriff failures 2017-07-28
@@ -3589,7 +3593,8 @@ crbug.com/757698 external/wpt/WebCryptoAPI/generateKey/test_successes_RSASSA-PKC
 
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] animations/interpolation/svg-d-interpolation.html [ Pass Timeout ]
-crbug.com/757955 [ Win7 Debug ] inspector/sources/debugger-pause/pause-on-elements-panel.html [ Pass Timeout ]
+crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.html [ Pass Timeout ]
+crbug.com/667560 [ Win7 Debug ] virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] virtual/threaded/animations/composited-animations-rotate-zero-degrees.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] external/wpt/encoding/legacy-mb-japanese/shift_jis/sjis-encode-form-errors-han.html [ Pass Timeout ]

@@ -1,0 +1,40 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/console-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline'">
+<script>
+function testFunction()
+{
+    var foo = 2012;
+    debugger;
+}
+
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
+
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
+
+  function step2() {
+    ConsoleTestRunner.evaluateInConsole('foo', step3);
+  }
+
+  function step3(result) {
+    TestRunner.addResult('Evaluated in console in the top frame context: foo = ' + result);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Test that evaluation in the context of top frame will not be blocked by Content-Security-Policy.
+<a href="https://bugs.webkit.org/show_bug.cgi?id=77203">Bug 77203.</a>
+</p>
+
+</body>
+</html>
