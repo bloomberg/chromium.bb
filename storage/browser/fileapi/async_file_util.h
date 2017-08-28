@@ -67,10 +67,9 @@ class AsyncFileUtil {
            const base::File::Info& file_info)> GetFileInfoCallback;
 
   typedef std::vector<DirectoryEntry> EntryList;
-  typedef base::Callback<
-      void(base::File::Error result,
-           const EntryList& file_list,
-           bool has_more)> ReadDirectoryCallback;
+  typedef base::RepeatingCallback<
+      void(base::File::Error result, EntryList file_list, bool has_more)>
+      ReadDirectoryCallback;
 
   typedef base::Callback<void(
       base::File::Error result,

@@ -1225,7 +1225,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectoryToCreateDirectory(
     const bool exclusive,
     const CreateDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    const storage::AsyncFileUtil::EntryList& /* entries */,
+    storage::AsyncFileUtil::EntryList /* entries */,
     const bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -1647,7 +1647,7 @@ void MTPDeviceDelegateImplLinux::OnDidReadBytes(
 
 void MTPDeviceDelegateImplLinux::OnDidFillFileCache(
     const base::FilePath& path,
-    const storage::AsyncFileUtil::EntryList& /* entries */,
+    storage::AsyncFileUtil::EntryList /* entries */,
     bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(path.IsParent(pending_tasks_.front().path));

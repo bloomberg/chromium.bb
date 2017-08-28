@@ -142,12 +142,13 @@ class TestFolder {
 void ReadDirectoryTestHelperCallback(
     base::RunLoop* run_loop,
     FileSystemOperation::FileEntryList* contents,
-    bool* completed, base::File::Error error,
-    const FileSystemOperation::FileEntryList& file_list,
+    bool* completed,
+    base::File::Error error,
+    FileSystemOperation::FileEntryList file_list,
     bool has_more) {
   DCHECK(!*completed);
   *completed = !has_more && error == base::File::FILE_OK;
-  *contents = file_list;
+  *contents = std::move(file_list);
   run_loop->Quit();
 }
 
@@ -159,8 +160,8 @@ void ReadDirectoryTestHelper(storage::FileSystemOperationRunner* runner,
   DCHECK(completed);
   base::RunLoop run_loop;
   runner->ReadDirectory(
-      url, base::Bind(&ReadDirectoryTestHelperCallback, &run_loop, contents,
-                      completed));
+      url, base::BindRepeating(&ReadDirectoryTestHelperCallback, &run_loop,
+                               contents, completed));
   run_loop.Run();
 }
 

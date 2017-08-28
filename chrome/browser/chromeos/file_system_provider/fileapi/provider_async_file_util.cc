@@ -103,11 +103,11 @@ void ReadDirectoryOnUIThread(
 void OnReadDirectory(
     const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
     base::File::Error result,
-    const storage::AsyncFileUtil::EntryList& entry_list,
+    storage::AsyncFileUtil::EntryList entry_list,
     bool has_more) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(callback, result, entry_list, has_more));
+      base::BindOnce(callback, result, std::move(entry_list), has_more));
 }
 
 // Executes CreateDirectory on the UI thread.
@@ -340,8 +340,8 @@ void ProviderAsyncFileUtil::ReadDirectory(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&ReadDirectoryOnUIThread, base::Passed(&context), url,
-                     base::Bind(&OnReadDirectory, callback)));
+      base::BindOnce(&ReadDirectoryOnUIThread, std::move(context), url,
+                     base::BindRepeating(&OnReadDirectory, callback)));
 }
 
 void ProviderAsyncFileUtil::Touch(

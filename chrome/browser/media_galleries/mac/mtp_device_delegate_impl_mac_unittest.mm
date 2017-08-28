@@ -199,20 +199,20 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
   }
 
   void OnReadDir(base::WaitableEvent* event,
-                 const storage::AsyncFileUtil::EntryList& files,
+                 storage::AsyncFileUtil::EntryList files,
                  bool has_more) {
     error_ = base::File::FILE_OK;
     ASSERT_FALSE(has_more);
-    file_list_ = files;
+    file_list_ = std::move(files);
     event->Signal();
   }
 
   void OverlappedOnReadDir(base::WaitableEvent* event,
-                           const storage::AsyncFileUtil::EntryList& files,
+                           storage::AsyncFileUtil::EntryList files,
                            bool has_more) {
     overlapped_error_ = base::File::FILE_OK;
     ASSERT_FALSE(has_more);
-    overlapped_file_list_ = files;
+    overlapped_file_list_ = std::move(files);
     event->Signal();
   }
 
@@ -246,12 +246,10 @@ class MTPDeviceDelegateImplMacTest : public testing::Test {
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     delegate_->ReadDirectory(
         path,
-        base::Bind(&MTPDeviceDelegateImplMacTest::OnReadDir,
-                   base::Unretained(this),
-                   &wait),
+        base::BindRepeating(&MTPDeviceDelegateImplMacTest::OnReadDir,
+                            base::Unretained(this), &wait),
         base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
-                   base::Unretained(this),
-                   &wait));
+                   base::Unretained(this), &wait));
     scoped_task_environment_.RunUntilIdle();
     wait.Wait();
     return error_;
@@ -330,22 +328,17 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestOverlappedReadDir) {
 
   delegate_->ReadDirectory(
       base::FilePath(kDevicePath),
-      base::Bind(&MTPDeviceDelegateImplMacTest::OnReadDir,
-                 base::Unretained(this),
-                 &wait),
-      base::Bind(&MTPDeviceDelegateImplMacTest::OnError,
-                 base::Unretained(this),
+      base::BindRepeating(&MTPDeviceDelegateImplMacTest::OnReadDir,
+                          base::Unretained(this), &wait),
+      base::Bind(&MTPDeviceDelegateImplMacTest::OnError, base::Unretained(this),
                  &wait));
 
   delegate_->ReadDirectory(
       base::FilePath(kDevicePath),
-      base::Bind(&MTPDeviceDelegateImplMacTest::OverlappedOnReadDir,
-                 base::Unretained(this),
-                 &wait),
+      base::BindRepeating(&MTPDeviceDelegateImplMacTest::OverlappedOnReadDir,
+                          base::Unretained(this), &wait),
       base::Bind(&MTPDeviceDelegateImplMacTest::OverlappedOnError,
-                 base::Unretained(this),
-                 &wait));
-
+                 base::Unretained(this), &wait));
 
   // Signal the delegate that no files are coming.
   delegate_->NoMoreItems();

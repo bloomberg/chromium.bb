@@ -182,12 +182,11 @@ class FileSystemOperationImplTest
   }
 
   FileSystemOperation::ReadDirectoryCallback RecordReadDirectoryCallback(
-      const base::Closure& closure,
+      base::RepeatingClosure closure,
       base::File::Error* status) {
-    return base::Bind(&FileSystemOperationImplTest::DidReadDirectory,
-                      weak_factory_.GetWeakPtr(),
-                      closure,
-                      status);
+    return base::BindRepeating(&FileSystemOperationImplTest::DidReadDirectory,
+                               weak_factory_.GetWeakPtr(), std::move(closure),
+                               status);
   }
 
   FileSystemOperation::GetMetadataCallback RecordMetadataCallback(
@@ -215,12 +214,12 @@ class FileSystemOperationImplTest
     closure.Run();
   }
 
-  void DidReadDirectory(const base::Closure& closure,
+  void DidReadDirectory(base::RepeatingClosure closure,
                         base::File::Error* status,
                         base::File::Error actual,
-                        const std::vector<storage::DirectoryEntry>& entries,
+                        std::vector<storage::DirectoryEntry> entries,
                         bool /* has_more */) {
-    entries_ = entries;
+    entries_ = std::move(entries);
     *status = actual;
     closure.Run();
   }

@@ -90,7 +90,7 @@ void ExpectMetadataEqHelper(const std::string& test_name,
 void DidReadDirectory(std::set<base::FilePath::StringType>* content,
                       bool* completed,
                       base::File::Error error,
-                      const FileEntryList& file_list,
+                      FileEntryList file_list,
                       bool has_more) {
   EXPECT_TRUE(!*completed);
   *completed = !has_more;
@@ -237,7 +237,7 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
   FileSystemURL url = CreateURL(FPL(""));
   bool completed = false;
   operation_runner()->ReadDirectory(
-      url, base::Bind(&DidReadDirectory, &content, &completed));
+      url, base::BindRepeating(&DidReadDirectory, &content, &completed));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(completed);
   EXPECT_EQ(6u, content.size());

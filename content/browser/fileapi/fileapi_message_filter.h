@@ -128,7 +128,7 @@ class CONTENT_EXPORT FileAPIMessageFilter : public BrowserMessageFilter {
                                   const base::File::Info& info);
   void DidReadDirectory(int request_id,
                         base::File::Error result,
-                        const std::vector<storage::DirectoryEntry>& entries,
+                        std::vector<storage::DirectoryEntry> entries,
                         bool has_more);
   void DidWrite(int request_id,
                 base::File::Error result,

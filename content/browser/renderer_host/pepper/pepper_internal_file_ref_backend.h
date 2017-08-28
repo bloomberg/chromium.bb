@@ -68,7 +68,7 @@ class PepperInternalFileRefBackend : public PepperFileRefBackend {
       ppapi::host::ReplyMessageContext context,
       storage::FileSystemOperation::FileEntryList* accumulated_file_list,
       base::File::Error error,
-      const storage::FileSystemOperation::FileEntryList& file_list,
+      storage::FileSystemOperation::FileEntryList file_list,
       bool has_more);
 
   scoped_refptr<storage::FileSystemContext> GetFileSystemContext() const;

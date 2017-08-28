@@ -88,10 +88,9 @@ class FileSystemOperation {
   // Used for ReadDirectory(). |result| is the return code of the operation,
   // |file_list| is the list of files read, and |has_more| is true if some files
   // are yet to be read.
-  typedef base::Callback<
-      void(base::File::Error result,
-           const FileEntryList& file_list,
-           bool has_more)> ReadDirectoryCallback;
+  typedef base::RepeatingCallback<
+      void(base::File::Error result, FileEntryList file_list, bool has_more)>
+      ReadDirectoryCallback;
 
   // Used for CreateSnapshotFile(). (Please see the comment at
   // CreateSnapshotFile() below for how the method is called)

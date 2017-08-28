@@ -43,11 +43,10 @@ class RecentDownloadSource : public RecentSource {
   static const char kLoadHistogramName[];
 
   void ScanDirectory(const base::FilePath& path);
-  void OnReadDirectory(
-      const base::FilePath& path,
-      base::File::Error result,
-      const storage::FileSystemOperation::FileEntryList& entries,
-      bool has_more);
+  void OnReadDirectory(const base::FilePath& path,
+                       base::File::Error result,
+                       storage::FileSystemOperation::FileEntryList entries,
+                       bool has_more);
   void OnGetMetadata(const storage::FileSystemURL& url,
                      base::File::Error result,
                      const base::File::Info& info);

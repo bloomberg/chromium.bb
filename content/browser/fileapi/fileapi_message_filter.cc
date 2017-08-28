@@ -333,8 +333,8 @@ void FileAPIMessageFilter::OnReadDirectory(
   }
 
   operations_[request_id] = operation_runner()->ReadDirectory(
-      url, base::Bind(&FileAPIMessageFilter::DidReadDirectory,
-                      this, request_id));
+      url, base::BindRepeating(&FileAPIMessageFilter::DidReadDirectory, this,
+                               request_id));
 }
 
 void FileAPIMessageFilter::OnWrite(int request_id,
@@ -501,11 +501,12 @@ void FileAPIMessageFilter::DidGetMetadataForStreaming(
 void FileAPIMessageFilter::DidReadDirectory(
     int request_id,
     base::File::Error result,
-    const std::vector<storage::DirectoryEntry>& entries,
+    std::vector<storage::DirectoryEntry> entries,
     bool has_more) {
   if (result == base::File::FILE_OK) {
     if (!entries.empty() || !has_more)
-      Send(new FileSystemMsg_DidReadDirectory(request_id, entries, has_more));
+      Send(new FileSystemMsg_DidReadDirectory(request_id, std::move(entries),
+                                              has_more));
   } else {
     DCHECK(!has_more);
     Send(new FileSystemMsg_DidFail(request_id, result));

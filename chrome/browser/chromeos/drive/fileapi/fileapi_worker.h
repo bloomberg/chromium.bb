@@ -50,10 +50,11 @@ typedef base::Callback<
 typedef base::Callback<
     void(base::File::Error result,
          const base::File::Info& file_info)> GetFileInfoCallback;
-typedef base::Callback<
-    void(base::File::Error result,
-         const std::vector<storage::DirectoryEntry>& file_list,
-         bool has_more)> ReadDirectoryCallback;
+typedef base::RepeatingCallback<void(
+    base::File::Error result,
+    std::vector<storage::DirectoryEntry> file_list,
+    bool has_more)>
+    ReadDirectoryCallback;
 typedef base::Callback<void(base::File::Error result,
                             const base::File::Info& file_info,
                             const base::FilePath& snapshot_file_path,

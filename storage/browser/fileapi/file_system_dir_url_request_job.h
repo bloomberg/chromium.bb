@@ -51,7 +51,7 @@ class STORAGE_EXPORT FileSystemDirURLRequestJob : public net::URLRequestJob {
   void StartAsync();
   void DidAttemptAutoMount(base::File::Error result);
   void DidReadDirectory(base::File::Error result,
-                        const std::vector<DirectoryEntry>& entries,
+                        std::vector<DirectoryEntry> entries,
                         bool has_more);
 
   // Reads metadata for the |index|-th entry in the directory. Must be called

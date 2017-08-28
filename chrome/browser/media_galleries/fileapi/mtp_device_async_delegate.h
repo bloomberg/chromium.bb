@@ -37,8 +37,8 @@ class MTPDeviceAsyncDelegate {
   typedef base::Closure CreateDirectorySuccessCallback;
 
   // A callback to be called when ReadDirectory method call succeeds.
-  typedef base::Callback<
-      void(const storage::AsyncFileUtil::EntryList& file_list, bool has_more)>
+  typedef base::RepeatingCallback<
+      void(storage::AsyncFileUtil::EntryList file_list, bool has_more)>
       ReadDirectorySuccessCallback;
 
   // A callback to be called when GetFileInfo/ReadDirectory/CreateSnapshot
