@@ -25,12 +25,9 @@
 
 namespace base {
 
-template <typename Signature,
-          internal::CopyMode copy_mode,
-          internal::RepeatMode repeat_mode>
-Callback<Signature, copy_mode, repeat_mode> ResetAndReturn(
-    Callback<Signature, copy_mode, repeat_mode>* cb) {
-  Callback<Signature, copy_mode, repeat_mode> ret(std::move(*cb));
+template <typename CallbackType>
+CallbackType ResetAndReturn(CallbackType* cb) {
+  CallbackType ret(std::move(*cb));
   DCHECK(!*cb);
   return ret;
 }
