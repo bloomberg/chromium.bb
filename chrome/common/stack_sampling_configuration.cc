@@ -36,11 +36,9 @@ bool IsProfilerSupported() {
 #elif defined(OS_MACOSX)
   // Only run on canary for now.
   #if defined(GOOGLE_CHROME_BUILD)
-    // TODO(lgrey): Reenable for 10.13 when crbug.com/748254 is fixed.
-    return base::mac::IsAtMostOS10_12() &&
-         chrome::GetChannel() == version_info::Channel::CANARY;
+  return chrome::GetChannel() == version_info::Channel::CANARY;
   #else
-    return base::mac::IsAtMostOS10_12();
+  return true;
   #endif
 #else
   return false;
