@@ -2657,7 +2657,7 @@ static_library("test_support") {
     public_deps += [ "//crypto:platform" ]
   }
 
-  if (is_android) {
+  if (is_android || is_fuchsia) {
     sources += [
       "test/spawned_test_server/remote_test_server.cc",
       "test/spawned_test_server/remote_test_server.h",
@@ -5356,6 +5356,10 @@ test("net_unittests") {
       "ntlm/ntlm_test_data.h",
       "ntlm/ntlm_unittest.cc",
     ]
+  }
+
+  if (is_fuchsia) {
+    use_test_server = true
   }
 
   if (!use_nss_certs) {
