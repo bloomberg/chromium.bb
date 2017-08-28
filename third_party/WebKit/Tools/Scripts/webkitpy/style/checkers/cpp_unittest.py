@@ -265,9 +265,7 @@ class CppStyleTestBase(unittest.TestCase):
     def perform_language_rules_check(self, filename, code, lines_to_check=None):
         basic_error_rules = ('-',
                              '+build/include',
-                             '+build/include_order',
-                             '+build/namespaces',
-                             '+runtime/rtti')
+                             '+build/include_order')
         return self.perform_lint(code, filename, basic_error_rules, lines_to_check=lines_to_check)
 
     # Only keep function length errors.
@@ -351,7 +349,6 @@ class FunctionDetectionTest(CppStyleTestBase):
             return
         self.assertEqual(function_state.in_a_function, True)
         self.assertEqual(function_state.current_function, function_information['name'] + '()')
-        self.assertEqual(function_state.modifiers_and_return_type(), function_information['modifiers_and_return_type'])
         self.assertEqual(function_state.is_pure, function_information['is_pure'])
         self.assertEqual(function_state.is_declaration, function_information['is_declaration'])
         self.assert_positions_equal(function_state.function_name_start_position,
@@ -376,7 +373,6 @@ class FunctionDetectionTest(CppStyleTestBase):
             ['void theTestFunctionName(int) {',
              '}'],
             {'name': 'theTestFunctionName',
-             'modifiers_and_return_type': 'void',
              'function_name_start_position': (0, 5),
              'parameter_start_position': (0, 24),
              'parameter_end_position': (0, 29),
@@ -389,7 +385,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['void aFunctionName(int);'],
             {'name': 'aFunctionName',
-             'modifiers_and_return_type': 'void',
              'function_name_start_position': (0, 5),
              'parameter_start_position': (0, 18),
              'parameter_end_position': (0, 23),
@@ -401,7 +396,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['CheckedInt<T> operator /(const CheckedInt<T> &lhs, const CheckedInt<T> &rhs);'],
             {'name': 'operator /',
-             'modifiers_and_return_type': 'CheckedInt<T>',
              'function_name_start_position': (0, 14),
              'parameter_start_position': (0, 24),
              'parameter_end_position': (0, 76),
@@ -413,7 +407,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['CheckedInt<T> operator -(const CheckedInt<T> &lhs, const CheckedInt<T> &rhs);'],
             {'name': 'operator -',
-             'modifiers_and_return_type': 'CheckedInt<T>',
              'function_name_start_position': (0, 14),
              'parameter_start_position': (0, 24),
              'parameter_end_position': (0, 76),
@@ -425,7 +418,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['CheckedInt<T> operator !=(const CheckedInt<T> &lhs, const CheckedInt<T> &rhs);'],
             {'name': 'operator !=',
-             'modifiers_and_return_type': 'CheckedInt<T>',
              'function_name_start_position': (0, 14),
              'parameter_start_position': (0, 25),
              'parameter_end_position': (0, 77),
@@ -437,7 +429,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['CheckedInt<T> operator +(const CheckedInt<T> &lhs, const CheckedInt<T> &rhs);'],
             {'name': 'operator +',
-             'modifiers_and_return_type': 'CheckedInt<T>',
              'function_name_start_position': (0, 14),
              'parameter_start_position': (0, 24),
              'parameter_end_position': (0, 76),
@@ -450,7 +441,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['virtual void theTestFunctionName(int = 0);'],
             {'name': 'theTestFunctionName',
-             'modifiers_and_return_type': 'virtual void',
              'function_name_start_position': (0, 13),
              'parameter_start_position': (0, 32),
              'parameter_end_position': (0, 41),
@@ -462,7 +452,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['virtual void theTestFunctionName(int) = 0;'],
             {'name': 'theTestFunctionName',
-             'modifiers_and_return_type': 'virtual void',
              'function_name_start_position': (0, 13),
              'parameter_start_position': (0, 32),
              'parameter_end_position': (0, 37),
@@ -477,7 +466,6 @@ class FunctionDetectionTest(CppStyleTestBase):
              ' = ',
              ' 0 ;'],
             {'name': 'theTestFunctionName',
-             'modifiers_and_return_type': 'virtual void',
              'function_name_start_position': (0, 13),
              'parameter_start_position': (0, 32),
              'parameter_end_position': (0, 37),
@@ -498,7 +486,6 @@ class FunctionDetectionTest(CppStyleTestBase):
             # This isn't a function but it looks like one to our simple
             # algorithm and that is ok.
             {'name': 'asm',
-             'modifiers_and_return_type': '',
              'function_name_start_position': (0, 0),
              'parameter_start_position': (0, 3),
              'parameter_end_position': (2, 1),
@@ -515,7 +502,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['void functionName();'],
             {'name': 'functionName',
-             'modifiers_and_return_type': 'void',
              'function_name_start_position': (0, 5),
              'parameter_start_position': (0, 17),
              'parameter_end_position': (0, 19),
@@ -529,7 +515,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['void functionName(int);'],
             {'name': 'functionName',
-             'modifiers_and_return_type': 'void',
              'function_name_start_position': (0, 5),
              'parameter_start_position': (0, 17),
              'parameter_end_position': (0, 22),
@@ -544,7 +529,6 @@ class FunctionDetectionTest(CppStyleTestBase):
         self.perform_function_detection(
             ['void functionName(unsigned a, short b, long c, long long short unsigned int);'],
             {'name': 'functionName',
-             'modifiers_and_return_type': 'void',
              'function_name_start_position': (0, 5),
              'parameter_start_position': (0, 17),
              'parameter_end_position': (0, 76),
@@ -566,7 +550,6 @@ class FunctionDetectionTest(CppStyleTestBase):
                 'Other<Other2, Other3<P1, P2> >, int);'
             ],
             {'name': 'determineARIADropEffects',
-             'modifiers_and_return_type': 'virtual void',
              'parameter_start_position': (0, 37),
              'function_name_start_position': (0, 13),
              'parameter_end_position': (0, 147),
@@ -591,7 +574,6 @@ class FunctionDetectionTest(CppStyleTestBase):
               'new ComplexTemplate<Class1, NestedTemplate<P1, P2> >(34, 42),'),
              'int* myCount = 0);'],
             {'name': 'aFunctionName',
-             'modifiers_and_return_type': 'virtual AnotherTemplate<Class1, Class2>',
              'function_name_start_position': (2, 32),
              'parameter_start_position': (2, 45),
              'parameter_end_position': (5, 17),
@@ -687,59 +669,6 @@ class CppStyleTest(CppStyleTestBase):
             'uint64 a = (uint64)1.0;',
             'Using C-style cast.  Use static_cast<uint64>(...) instead'
             '  [readability/casting] [4]')
-
-    # Test taking address of casts (runtime/casting)
-    def test_runtime_casting(self):
-        self.assert_lint(
-            'int* x = &static_cast<int*>(foo);',
-            'Are you taking an address of a cast?  '
-            'This is dangerous: could be a temp var.  '
-            'Take the address before doing the cast, rather than after'
-            '  [runtime/casting] [4]')
-
-        self.assert_lint(
-            'int* x = &dynamic_cast<int *>(foo);',
-            ['Are you taking an address of a cast?  '
-             'This is dangerous: could be a temp var.  '
-             'Take the address before doing the cast, rather than after'
-             '  [runtime/casting] [4]',
-             'Do not use dynamic_cast<>.  If you need to cast within a class '
-             'hierarchy, use static_cast<> to upcast.  Google doesn\'t support '
-             'RTTI.  [runtime/rtti] [5]'])
-
-        self.assert_lint(
-            'int* x = &reinterpret_cast<int *>(foo);',
-            'Are you taking an address of a cast?  '
-            'This is dangerous: could be a temp var.  '
-            'Take the address before doing the cast, rather than after'
-            '  [runtime/casting] [4]')
-
-        # It's OK to cast an address.
-        self.assert_lint(
-            'int* x = reinterpret_cast<int *>(&foo);',
-            '')
-
-    def test_runtime_selfinit(self):
-        self.assert_lint(
-            'Foo::Foo(Bar r, Bel l) : r_(r_), l_(l_) { }',
-            'You seem to be initializing a member variable with itself.'
-            '  [runtime/init] [4]')
-        self.assert_lint(
-            'Foo::Foo(Bar r, Bel l) : r_(r), l_(l) { }',
-            '')
-        self.assert_lint(
-            'Foo::Foo(Bar r) : r_(r), l_(r_), ll_(l_) { }',
-            '')
-
-    def test_runtime_rtti(self):
-        statement = 'int* x = dynamic_cast<int*>(&foo);'
-        error_message = (
-            'Do not use dynamic_cast<>.  If you need to cast within a class '
-            'hierarchy, use static_cast<> to upcast.  Google doesn\'t support '
-            'RTTI.  [runtime/rtti] [5]')
-        # dynamic_cast is disallowed in most files.
-        self.assert_language_rules_check('foo.cpp', statement, error_message)
-        self.assert_language_rules_check('foo.h', statement, error_message)
 
     # Tests for static_cast readability.
     def test_static_cast_on_objects_with_toFoo(self):
@@ -1147,43 +1076,6 @@ class CppStyleTest(CppStyleTestBase):
                 }
             */ ''',
             '')
-        self.assert_multi_line_lint(
-            '''\
-            /* int a = 0; multi-liner
-            static const int b = 0;''',
-            ['Could not find end of multi-line comment'
-             '  [readability/multiline_comment] [5]',
-             'Complex multi-line /*...*/-style comment found. '
-             'Lint may give bogus warnings.  Consider replacing these with '
-             '//-style comments, with #if 0...#endif, or with more clearly '
-             'structured multi-line comments.  [readability/multiline_comment] [5]'])
-        self.assert_multi_line_lint(r'''    /* multi-line comment''',
-                                    ['Could not find end of multi-line comment'
-                                     '  [readability/multiline_comment] [5]',
-                                     'Complex multi-line /*...*/-style comment found. '
-                                     'Lint may give bogus warnings.  Consider replacing these with '
-                                     '//-style comments, with #if 0...#endif, or with more clearly '
-                                     'structured multi-line comments.  [readability/multiline_comment] [5]'])
-        self.assert_multi_line_lint(r'''    // /* comment, but not multi-line''', '')
-
-    def test_multiline_strings(self):
-        multiline_string_error_message = (
-            'Multi-line string ("...") found.  This lint script doesn\'t '
-            'do well with such strings, and may give bogus warnings.  They\'re '
-            'ugly and unnecessary, and you should use concatenation instead".'
-            '  [readability/multiline_string] [5]')
-
-        file_path = 'mydir/foo.cpp'
-
-        error_collector = ErrorCollector(self.assertTrue)
-        self.process_file_data(file_path, 'cpp',
-                               ['const char* str = "This is a\\',
-                                ' multiline string.";'],
-                               error_collector)
-        self.assertEqual(
-            2,  # One per line.
-            error_collector.result_list().count(multiline_string_error_message))
-
     # Test non-explicit single-argument constructors
     def test_explicit_single_argument_constructors(self):
         # missing explicit is bad
@@ -1318,29 +1210,6 @@ class CppStyleTest(CppStyleTestBase):
         self.assert_multi_line_lint(
             '''/*/ static */  Foo(int f);''',
             '')
-        self.assert_multi_line_lint(
-            '''/*/ static Foo(int f);''',
-            'Could not find end of multi-line comment'
-            '  [readability/multiline_comment] [5]')
-        self.assert_multi_line_lint(
-            '''    /*/ static Foo(int f);''',
-            'Could not find end of multi-line comment'
-            '  [readability/multiline_comment] [5]')
-
-    # Test suspicious usage of "if" like this:
-    # if (a == b) {
-    #   DoSomething();
-    # } if (a == c) {   // Should be "else if".
-    #   DoSomething();  // This gets called twice if a == b && a == c.
-    # }
-    def test_suspicious_usage_of_if(self):
-        self.assert_lint(
-            '  if (a == b) {',
-            '')
-        self.assert_lint(
-            '  } if (a == b) {',
-            'Did you mean "else if"? If not, start a new line for "if".'
-            '  [readability/braces] [4]')
 
     # Test suspicious usage of memset. Specifically, a 0
     # as the final argument is almost certainly an error.
@@ -1599,83 +1468,6 @@ class CppStyleTest(CppStyleTestBase):
 
         self.assert_lint('CHECK_EQ("foo", "foo")', '')
 
-    def test_check_deprecated_macros(self):
-        self.assert_lint('ASSERT(foo)', 'ASSERT is deprecated. Use DCHECK or '
-                         'its variants instead.  [build/deprecated] [5]')
-        self.assert_lint('  ASSERT_UNUSED(foo, foo)', 'ASSERT_UNUSED is '
-                         'deprecated. Use DCHECK or its variants instead.  '
-                         '[build/deprecated] [5]')
-        self.assert_lint('ASSERT_NOT_REACHED()', 'ASSERT_NOT_REACHED is '
-                         'deprecated. Use NOTREACHED instead.  '
-                         '[build/deprecated] [5]')
-        self.assert_lint('WTF_LOG(foo)', 'WTF_LOG is deprecated. Use DVLOG '
-                         'instead.  [build/deprecated] [5]')
-
-        self.assert_lint('FOO_BAR_ASSERT()', '')
-        self.assert_lint('ASSERT_NO_EXCEPTIONS', '')
-
-    def test_spacing_before_last_semicolon(self):
-        self.assert_lint('default:;',
-                         'Semicolon defining empty statement. Use { } instead.'
-                         '  [whitespace/semicolon] [5]')
-        self.assert_lint('        ;',
-                         'Line contains only semicolon. If this should be an empty '
-                         'statement, use { } instead.'
-                         '  [whitespace/semicolon] [5]')
-        self.assert_lint('for (int i = 0; ;', '')
-
-    # Static or global STL strings.
-    def test_static_or_global_stlstrings(self):
-        self.assert_lint('string foo;',
-                         'For a static/global string constant, use a C style '
-                         'string instead: "char foo[]".'
-                         '  [runtime/string] [4]')
-        self.assert_lint('string kFoo = "hello"; // English',
-                         'For a static/global string constant, use a C style '
-                         'string instead: "char kFoo[]".'
-                         '  [runtime/string] [4]')
-        self.assert_lint('static string foo;',
-                         'For a static/global string constant, use a C style '
-                         'string instead: "static char foo[]".'
-                         '  [runtime/string] [4]')
-        self.assert_lint('static const string foo;',
-                         'For a static/global string constant, use a C style '
-                         'string instead: "static const char foo[]".'
-                         '  [runtime/string] [4]')
-        self.assert_lint('string Foo::bar;',
-                         'For a static/global string constant, use a C style '
-                         'string instead: "char Foo::bar[]".'
-                         '  [runtime/string] [4]')
-        # Rare case.
-        self.assert_lint('string foo("foobar");',
-                         'For a static/global string constant, use a C style '
-                         'string instead: "char foo[]".'
-                         '  [runtime/string] [4]')
-        # Should not catch local or member variables.
-        self.assert_lint('  string foo', '')
-        # Should not catch functions.
-        self.assert_lint('string EmptyString() { return ""; }', '')
-        self.assert_lint('string EmptyString () { return ""; }', '')
-        self.assert_lint('string VeryLongNameFunctionSometimesEndsWith(\n'
-                         '    VeryLongNameType veryLongNameVariable) { }', '')
-        self.assert_lint('template<>\n'
-                         'string FunctionTemplateSpecialization<SomeType>(\n'
-                         '    int x) { return ""; }', '')
-        self.assert_lint('template<>\n'
-                         'string FunctionTemplateSpecialization<vector<A::B>* >(\n'
-                         '    int x) { return ""; }', '')
-
-        # should not catch methods of template classes.
-        self.assert_lint('string Class<Type>::Method() const\n'
-                         '{\n'
-                         '  return "";\n'
-                         '}\n', '')
-        self.assert_lint('string Class<Type>::Method(\n'
-                         '    int arg) const\n'
-                         '{\n'
-                         '  return "";\n'
-                         '}\n', '')
-
     def test_no_spaces_in_function_calls(self):
         self.assert_lint('TellStory(1, 3);',
                          '')
@@ -1714,66 +1506,6 @@ class CppStyleTest(CppStyleTestBase):
 
     def test_not_alabel(self):
         self.assert_lint('MyVeryLongNamespace::MyVeryLongClassName::', '')
-
-    def test_unnamed_namespaces_in_headers(self):
-        self.assert_language_rules_check(
-            'foo.h', 'namespace {',
-            'Do not use unnamed namespaces in header files.  See'
-            ' https://google.github.io/styleguide/cppguide.html#Unnamed_Namespaces_and_Static_Variables'
-            ' for more information.  [build/namespaces] [4]')
-        # namespace registration macros are OK.
-        self.assert_language_rules_check('foo.h', 'namespace {  \\', '')
-        # named namespaces are OK.
-        self.assert_language_rules_check('foo.h', 'namespace foo {', '')
-        self.assert_language_rules_check('foo.h', 'namespace foonamespace {', '')
-        self.assert_language_rules_check('foo.cpp', 'namespace {', '')
-        self.assert_language_rules_check('foo.cpp', 'namespace foo {', '')
-
-    def test_build_class(self):
-        # Test that the linter can parse to the end of class definitions,
-        # and that it will report when it can't.
-        # Use multi-line linter because it performs the ClassState check.
-        self.assert_multi_line_lint(
-            'class Foo {',
-            'Failed to find complete declaration of class Foo'
-            '  [build/class] [5]')
-        # Don't warn on forward declarations of various types.
-        self.assert_multi_line_lint(
-            'class Foo;',
-            '')
-        self.assert_multi_line_lint(
-            '''\
-            struct Foo*
-                foo = NewFoo();''',
-            '')
-        # Here is an example where the linter gets confused, even though
-        # the code doesn't violate the style guide.
-        self.assert_multi_line_lint(
-            'class Foo\n'
-            '#ifdef DERIVE_FROM_GOO\n'
-            '  : public Goo {\n'
-            '#else\n'
-            '  : public Hoo {\n'
-            '#endif\n'
-            '};',
-            'Failed to find complete declaration of class Foo'
-            '  [build/class] [5]')
-
-    def test_build_end_comment(self):
-        # The crosstool compiler we currently use will fail to compile the
-        # code in this test, so we might consider removing the lint check.
-        self.assert_lint('#endif Not a comment',
-                         'Uncommented text after #endif is non-standard.'
-                         '  Use a comment.'
-                         '  [build/endif_comment] [5]')
-
-    def test_build_forward_decl(self):
-        # The crosstool compiler we currently use will fail to compile the
-        # code in this test, so we might consider removing the lint check.
-        self.assert_lint('class Foo::Goo;',
-                         'Inner-style forward declarations are invalid.'
-                         '  Remove this line.'
-                         '  [build/forward_decl] [5]')
 
     def test_build_header_guard(self):
         file_path = 'mydir/Foo.h'
@@ -1917,127 +1649,12 @@ class CppStyleTest(CppStyleTestBase):
         self.assertEqual(0, len(error_collector.result_list()),
                          error_collector.result_list())
 
-    def test_build_printf_format(self):
-        self.assert_lint(
-            r'printf("\%%d", value);',
-            '%, [, (, and { are undefined character escapes.  Unescape them.'
-            '  [build/printf_format] [3]')
-
-        self.assert_lint(
-            r'snprintf(buffer, sizeof(buffer), "\[%d", value);',
-            '%, [, (, and { are undefined character escapes.  Unescape them.'
-            '  [build/printf_format] [3]')
-
-        self.assert_lint(
-            r'fprintf(file, "\(%d", value);',
-            '%, [, (, and { are undefined character escapes.  Unescape them.'
-            '  [build/printf_format] [3]')
-
-        self.assert_lint(
-            r'vsnprintf(buffer, sizeof(buffer), "\\\{%d", ap);',
-            '%, [, (, and { are undefined character escapes.  Unescape them.'
-            '  [build/printf_format] [3]')
-
-        # Don't warn if double-slash precedes the symbol
-        self.assert_lint(r'printf("\\%%%d", value);',
-                         '')
-
-    def test_runtime_printf_format(self):
-        self.assert_lint(
-            r'fprintf(file, "%q", value);',
-            '%q in format strings is deprecated.  Use %ll instead.'
-            '  [runtime/printf_format] [3]')
-
-        self.assert_lint(
-            r'aprintf(file, "The number is %12q", value);',
-            '%q in format strings is deprecated.  Use %ll instead.'
-            '  [runtime/printf_format] [3]')
-
-        self.assert_lint(
-            r'printf(file, "The number is" "%-12q", value);',
-            '%q in format strings is deprecated.  Use %ll instead.'
-            '  [runtime/printf_format] [3]')
-
-        self.assert_lint(
-            r'printf(file, "The number is" "%+12q", value);',
-            '%q in format strings is deprecated.  Use %ll instead.'
-            '  [runtime/printf_format] [3]')
-
-        self.assert_lint(
-            r'printf(file, "The number is" "% 12q", value);',
-            '%q in format strings is deprecated.  Use %ll instead.'
-            '  [runtime/printf_format] [3]')
-
-        self.assert_lint(
-            r'snprintf(file, "Never mix %d and %1$d parameters!", value);',
-            '%N$ formats are unconventional.  Try rewriting to avoid them.'
-            '  [runtime/printf_format] [2]')
-
     def assert_lintLogCodeOnError(self, code, expected_message):
         # Special assert_lint which logs the input code on error.
         result = self.perform_single_line_lint(code, 'foo.cpp')
         if result != expected_message:
             self.fail('For code: "%s"\nGot: "%s"\nExpected: "%s"'
                       % (code, result, expected_message))
-
-    def test_build_storage_class(self):
-        qualifiers = [None, 'const', 'volatile']
-        signs = [None, 'signed', 'unsigned']
-        types = ['void', 'char', 'int', 'float', 'double',
-                 'schar', 'int8', 'uint8', 'int16', 'uint16',
-                 'int32', 'uint32', 'int64', 'uint64']
-        storage_classes = ['auto', 'extern', 'register', 'static', 'typedef']
-
-        build_storage_class_error_message = (
-            'Storage class (static, extern, typedef, etc) should be first.'
-            '  [build/storage_class] [5]')
-
-        # Some explicit cases. Legal in C++, deprecated in C99.
-        self.assert_lint('const int static foo = 5;',
-                         build_storage_class_error_message)
-
-        self.assert_lint('char static foo;',
-                         build_storage_class_error_message)
-
-        self.assert_lint('double const static foo = 2.0;',
-                         build_storage_class_error_message)
-
-        self.assert_lint('uint64 typedef unsignedLongLong;',
-                         build_storage_class_error_message)
-
-        self.assert_lint('int register foo = 0;',
-                         build_storage_class_error_message)
-
-        # Since there are a very large number of possibilities, randomly
-        # construct declarations.
-        # Make sure that the declaration is logged if there's an error.
-        # Seed generator with an integer for absolute reproducibility.
-        random.seed(25)
-        for _ in range(10):
-            # Build up random list of non-storage-class declaration specs.
-            other_decl_specs = [random.choice(qualifiers), random.choice(signs),
-                                random.choice(types)]
-            # remove None
-            other_decl_specs = filter(lambda x: x is not None, other_decl_specs)
-
-            # shuffle
-            random.shuffle(other_decl_specs)
-
-            # insert storage class after the first
-            storage_class = random.choice(storage_classes)
-            insertion_point = random.randint(1, len(other_decl_specs))
-            decl_specs = (other_decl_specs[0:insertion_point]
-                          + [storage_class]
-                          + other_decl_specs[insertion_point:])
-
-            self.assert_lintLogCodeOnError(
-                ' '.join(decl_specs) + ';',
-                build_storage_class_error_message)
-
-            # but no error if storage class is first
-            self.assert_lintLogCodeOnError(
-                storage_class + ' ' + ' '.join(other_decl_specs),
-                '')
 
     def test_legal_copyright(self):
         legal_copyright_message = (
@@ -2133,11 +1750,6 @@ class CppStyleTest(CppStyleTestBase):
                         'MyClass', False)
         build_test_case([('unsigned', 'm_unsignedMember', 4), ('unsigned', 'm_anotherUnsigned', 3)],
                         'MyClass', False)
-
-        build_test_case([('bool', 'm_boolMember', 4), ('bool', 'm_anotherbool', 3),
-                         ('bool', 'm_moreBool', 1), ('bool', 'm_lastBool', 1),
-                         ('unsigned int', 'm_tokenUnsigned', 4)],
-                        'MyClass', True, ['Omit int when using unsigned  [runtime/unsigned] [1]'])
 
         self.assert_multi_line_lint('class NoProblemsHere {\n'
                                     '  bool m_boolMember;\n'
@@ -2272,47 +1884,6 @@ class OrderOfIncludesTest(CppStyleTestBase):
     def tearDown(self):
         os.path.abspath = self.os_path_abspath_orig
         os.path.isfile = self.os_path_isfile_orig
-
-    def test_check_preprocessor_in_include_section(self):
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "foo.h"\n'
-                                         '\n'
-                                         '#ifdef BAZ\n'
-                                         '#include "baz.h"\n'
-                                         '#else\n'
-                                         '#include "foobar.h"\n'
-                                         '#endif"\n'
-                                         '#include "bar.h"\n',  # No flag because previous is in preprocessor section
-                                         '')
-
-        # Check that after an already included error, the sorting rules still work.
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "foo.h"\n'
-                                         '\n'
-                                         '#include "foo.h"\n'
-                                         '#include "g.h"\n',
-                                         '"foo.h" already included at foo.cpp:1  [build/include] [4]')
-
-    def test_check_wtf_includes(self):
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "foo.h"\n'
-                                         '\n'
-                                         '#include <wtf/Assertions.h>\n',
-                                         'wtf includes should be "wtf/file.h" instead of <wtf/file.h>.'
-                                         '  [build/include] [4]')
-        self.assert_language_rules_check('foo.cpp',
-                                         '#include "foo.h"\n'
-                                         '\n'
-                                         '#include "wtf/Assertions.h"\n',
-                                         '')
-
-    def test_check_cc_includes(self):
-        self.assert_language_rules_check('bar/chromium/foo.cpp',
-                                         '#include "foo.h"\n'
-                                         '\n'
-                                         '#include "cc/CCProxy.h"\n',
-                                         'cc includes should be "CCFoo.h" instead of "cc/CCFoo.h".'
-                                         '  [build/include] [4]')
 
 
 class CheckForFunctionLengthsTest(CppStyleTestBase):
@@ -2696,44 +2267,6 @@ class NoNonVirtualDestructorsTest(CppStyleTestBase):
                 };''',
             'The class Foo probably needs a virtual destructor')
 
-    def test_enum_casing(self):
-        self.assert_multi_line_lint(
-            '''\
-                enum Foo {
-                    FOO_ONE = 1,
-                    FOO_TWO
-                };
-                enum { FOO_ONE };
-                enum {FooOne, fooTwo};
-                enum {
-                    FOO_ONE
-                };''',
-            ['enum members should use InterCaps with an initial capital letter.  [readability/enum_casing] [4]'] * 5)
-
-        self.assert_multi_line_lint(
-            '''\
-                enum Foo {
-                    fooOne = 1,
-                    FooTwo = 2
-                };''',
-            'enum members should use InterCaps with an initial capital letter.  [readability/enum_casing] [4]')
-
-        self.assert_multi_line_lint(
-            '''\
-                enum Foo {
-                    FooOne = 1,
-                    FooTwo,
-                    kFooConst,
-                } fooVar = FooOne;
-                enum { FooOne, FooTwo };
-                enum { FooOne, FooTwo } fooVar = FooTwo;
-                enum { FooOne= FooTwo } foo;
-                enum Enum123 {
-                    FooOne,
-                    FooTwo = FooOne,
-                };''',
-            '')
-
     def test_destructor_non_virtual_when_virtual_needed(self):
         self.assert_multi_line_lint_re(
             '''\
@@ -2923,55 +2456,6 @@ class PassPtrTest(CppStyleTestBase):
             'class Foo {'
             '  RefPtr<Type1> m_other;\n'
             '};\n',
-            '')
-
-
-class LeakyPatternTest(CppStyleTestBase):
-
-    def assert_leaky_pattern_check(self, code, expected_message):
-        """Check warnings for leaky patterns are as expected.
-
-        Args:
-          code: C++ source code expected to generate a warning message.
-          expected_message: Message expected to be generated by the C++ code.
-        """
-        self.assertEqual(expected_message,
-                         self.perform_leaky_pattern_check(code))
-
-    def test_get_dc(self):
-        self.assert_leaky_pattern_check(
-            'HDC hdc = GetDC(hwnd);',
-            'Use the class HWndDC instead of calling GetDC to avoid potential '
-            'memory leaks.  [runtime/leaky_pattern] [5]')
-
-    def test_get_dc(self):
-        self.assert_leaky_pattern_check(
-            'HDC hdc = GetDCEx(hwnd, 0, 0);',
-            'Use the class HWndDC instead of calling GetDCEx to avoid potential '
-            'memory leaks.  [runtime/leaky_pattern] [5]')
-
-    def test_own_get_dc(self):
-        self.assert_leaky_pattern_check(
-            'HWndDC hdc(hwnd);',
-            '')
-
-    def test_create_dc(self):
-        self.assert_leaky_pattern_check(
-            'HDC dc2 = ::CreateDC();',
-            'Use adoptPtr and OwnPtr<HDC> when calling CreateDC to avoid potential '
-            'memory leaks.  [runtime/leaky_pattern] [5]')
-
-        self.assert_leaky_pattern_check(
-            'adoptPtr(CreateDC());',
-            '')
-
-    def test_create_compatible_dc(self):
-        self.assert_leaky_pattern_check(
-            'HDC dc2 = CreateCompatibleDC(dc);',
-            'Use adoptPtr and OwnPtr<HDC> when calling CreateCompatibleDC to avoid potential '
-            'memory leaks.  [runtime/leaky_pattern] [5]')
-        self.assert_leaky_pattern_check(
-            'adoptPtr(CreateCompatibleDC(dc));',
             '')
 
 
@@ -3378,160 +2862,13 @@ class WebKitStyleTest(CppStyleTestBase):
             '}\n',
             'If one part of an if-else statement uses curly braces, the other part must too.  [whitespace/braces] [4]')
 
-        # 5. Control clauses without a body should use empty braces.
-        self.assert_multi_line_lint(
-            'for ( ; current; current = current->next) { }\n',
-            '')
-        self.assert_multi_line_lint(
-            'for ( ; current; current = current->next);\n',
-            'Semicolon defining empty statement for this loop. Use { } instead.  [whitespace/semicolon] [5]')
-        self.assert_multi_line_lint(
-            'while (true);\n',
-            'Semicolon defining empty statement for this loop. Use { } instead.  [whitespace/semicolon] [5]')
-        self.assert_multi_line_lint(
-            '} while (true);\n',
-            '')
-
     def test_null_false_zero(self):
-        # 1. In C++, the null pointer value should be written as 0. In C,
-        #    it should be written as NULL. In Objective-C and Objective-C++,
-        #    follow the guideline for C or C++, respectively, but use nil to
-        #    represent a null Objective-C object.
+        # Tests for true/false and null/non-null should be done without
+        # equality comparisons.
         self.assert_lint(
-            'functionCall(NULL)',
-            'Use 0 instead of NULL.'
-            '  [readability/null] [5]',
-            'foo.cpp')
-        self.assert_lint(
-            "// Don't use NULL in comments since it isn't in code.",
-            'Use 0 or null instead of NULL (even in *comments*).'
-            '  [readability/null] [4]',
-            'foo.cpp')
-        self.assert_lint(
-            '"A string with NULL" // and a comment with NULL is tricky to flag correctly in cpp_style.',
-            'Use 0 or null instead of NULL (even in *comments*).'
-            '  [readability/null] [4]',
-            'foo.cpp')
-        self.assert_lint(
-            '"A string containing NULL is ok"',
-            '',
-            'foo.cpp')
-        self.assert_lint(
-            'if (aboutNULL)',
-            '',
-            'foo.cpp')
-        self.assert_lint(
-            'myVariable = NULLify',
-            '',
-            'foo.cpp')
-        # Make sure that the NULL check does not apply to C and Objective-C files.
-        self.assert_lint(
-            'functionCall(NULL)',
-            '',
-            'foo.c')
-        self.assert_lint(
-            'functionCall(NULL)',
-            '',
-            'foo.m')
-
-        # Make sure that the NULL check does not apply to g_object_{set,get} and
-        # g_str{join,concat}
-        self.assert_lint(
-            'g_object_get(foo, "prop", &bar, NULL);',
-            '')
-        self.assert_lint(
-            'g_object_set(foo, "prop", bar, NULL);',
-            '')
-        self.assert_lint(
-            'g_build_filename(foo, bar, NULL);',
-            '')
-        self.assert_lint(
-            'gst_bin_add_many(foo, bar, boo, NULL);',
-            '')
-        self.assert_lint(
-            'gst_bin_remove_many(foo, bar, boo, NULL);',
-            '')
-        self.assert_lint(
-            'gst_element_link_many(foo, bar, boo, NULL);',
-            '')
-        self.assert_lint(
-            'gst_element_unlink_many(foo, bar, boo, NULL);',
-            '')
-        self.assert_lint(
-            'gst_structure_get(foo, "value", G_TYPE_INT, &value, NULL);',
-            '')
-        self.assert_lint(
-            'gst_structure_set(foo, "value", G_TYPE_INT, value, NULL);',
-            '')
-        self.assert_lint(
-            'gst_structure_remove_fields(foo, "value", "bar", NULL);',
-            '')
-        self.assert_lint(
-            'gst_structure_new("foo", "value", G_TYPE_INT, value, NULL);',
-            '')
-        self.assert_lint(
-            'gst_structure_id_new(FOO, VALUE, G_TYPE_INT, value, NULL);',
-            '')
-        self.assert_lint(
-            'gst_structure_id_set(FOO, VALUE, G_TYPE_INT, value, NULL);',
-            '')
-        self.assert_lint(
-            'gst_structure_id_get(FOO, VALUE, G_TYPE_INT, &value, NULL);',
-            '')
-        self.assert_lint(
-            'gst_caps_new_simple(mime, "value", G_TYPE_INT, &value, NULL);',
-            '')
-        self.assert_lint(
-            'gst_caps_new_full(structure1, structure2, NULL);',
-            '')
-        self.assert_lint(
-            'gchar* result = g_strconcat("part1", "part2", "part3", NULL);',
-            '')
-        self.assert_lint(
-            'gchar* result = g_strconcat("part1", NULL);',
-            '')
-        self.assert_lint(
-            'gchar* result = g_strjoin(",", "part1", "part2", "part3", NULL);',
-            '')
-        self.assert_lint(
-            'gchar* result = g_strjoin(",", "part1", NULL);',
-            '')
-        self.assert_lint(
-            'gchar* result = gdk_pixbuf_save_to_callback(pixbuf, function, data, type, error, NULL);',
-            '')
-        self.assert_lint(
-            'gchar* result = gdk_pixbuf_save_to_buffer(pixbuf, function, data, type, error, NULL);',
-            '')
-        self.assert_lint(
-            'gchar* result = gdk_pixbuf_save_to_stream(pixbuf, function, data, type, error, NULL);',
-            '')
-        self.assert_lint(
-            'gtk_widget_style_get(style, "propertyName", &value, "otherName", &otherValue, NULL);',
-            '')
-        self.assert_lint(
-            'gtk_style_context_get_style(context, "propertyName", &value, "otherName", &otherValue, NULL);',
-            '')
-        self.assert_lint(
-            'gtk_style_context_get(context, static_cast<GtkStateFlags>(0), "property", &value, NULL);',
-            '')
-        self.assert_lint(
-            'gtk_widget_style_get_property(style, NULL, NULL);',
-            'Use 0 instead of NULL.  [readability/null] [5]',
-            'foo.cpp')
-        self.assert_lint(
-            'gtk_widget_style_get_valist(style, NULL, NULL);',
-            'Use 0 instead of NULL.  [readability/null] [5]',
-            'foo.cpp')
-
-        # 2. C++ and C bool values should be written as true and
-        #    false. Objective-C BOOL values should be written as YES and NO.
-        # FIXME: Implement this.
-
-        # 3. Tests for true/false and null/non-null should be done without
-        #    equality comparisons.
-        self.assert_lint_one_of_many_errors_re(
             'if (string != NULL)',
-            r'Tests for true/false and null/non-null should be done without equality comparisons\.')
+            'Tests for true/false and null/non-null should be done without equality comparisons.'
+            '  [readability/comparison_to_boolean] [5]')
         self.assert_lint(
             'if (p == nullptr)',
             'Tests for true/false and null/non-null should be done without equality comparisons.'
@@ -3545,9 +2882,10 @@ class WebKitStyleTest(CppStyleTestBase):
             'Tests for true/false and null/non-null should be done without equality comparisons.'
             '  [readability/comparison_to_boolean] [5]')
 
-        self.assert_lint_one_of_many_errors_re(
+        self.assert_lint(
             'if (NULL == thisMayBeNull)',
-            r'Tests for true/false and null/non-null should be done without equality comparisons\.')
+            'Tests for true/false and null/non-null should be done without equality comparisons.'
+            '  [readability/comparison_to_boolean] [5]')
         self.assert_lint(
             'if (nullptr /* funny place for a comment */ == p)',
             'Tests for true/false and null/non-null should be done without equality comparisons.'
@@ -3579,19 +2917,6 @@ class WebKitStyleTest(CppStyleTestBase):
         self.assert_lint(
             'if (0.5 == (a - b))',
             '')
-        self.assert_lint(
-            'if (LIKELY(foo == NULL))',
-            'Use 0 instead of NULL.  [readability/null] [5]')
-        self.assert_lint(
-            'if (UNLIKELY(foo == NULL))',
-            'Use 0 instead of NULL.  [readability/null] [5]')
-
-    def test_using_std(self):
-        self.assert_lint(
-            'using std::min;',
-            "Use 'using namespace std;' instead of 'using std::min;'."
-            '  [build/using_std] [4]',
-            'foo.cpp')
 
     def test_using_std_swap_ignored(self):
         self.assert_lint(
@@ -3599,143 +2924,12 @@ class WebKitStyleTest(CppStyleTestBase):
             '',
             'foo.cpp')
 
-    def test_max_macro(self):
-        self.assert_lint(
-            'int i = MAX(0, 1);',
-            '',
-            'foo.c')
-
-        self.assert_lint(
-            'int i = MAX(0, 1);',
-            'Use std::max() or std::max<type>() instead of the MAX() macro.'
-            '  [runtime/max_min_macros] [4]',
-            'foo.cpp')
-
-        self.assert_lint(
-            'inline int foo() { return MAX(0, 1); }',
-            'Use std::max() or std::max<type>() instead of the MAX() macro.'
-            '  [runtime/max_min_macros] [4]',
-            'foo.h')
-
-    def test_min_macro(self):
-        self.assert_lint(
-            'int i = MIN(0, 1);',
-            '',
-            'foo.c')
-
-        self.assert_lint(
-            'int i = MIN(0, 1);',
-            'Use std::min() or std::min<type>() instead of the MIN() macro.'
-            '  [runtime/max_min_macros] [4]',
-            'foo.cpp')
-
-        self.assert_lint(
-            'inline int foo() { return MIN(0, 1); }',
-            'Use std::min() or std::min<type>() instead of the MIN() macro.'
-            '  [runtime/max_min_macros] [4]',
-            'foo.h')
-
     def test_ctype_fucntion(self):
         self.assert_lint(
             'int i = isascii(8);',
             'Use equivalent function in <wtf/ASCIICType.h> instead of the '
             'isascii() function.  [runtime/ctype_function] [4]',
             'foo.cpp')
-
-    def test_names(self):
-        name_tooshort_error_message = (" is incorrectly named. Don't use the single letter 'l' as an identifier name."
-                                       '  [readability/naming] [4]')
-
-        # Basic cases from WebKit style guide.
-        self.assert_lint('struct Data;', '')
-        self.assert_lint('size_t bufferSize;', '')
-        self.assert_lint('class HTMLDocument;', '')
-        self.assert_lint('String mimeType();', '')
-        self.assert_lint('short m_length;', '')
-
-        # Allow underscores in Objective C files.
-        self.assert_lint('unsigned long long _length;',
-                         '',
-                         'foo.m')
-        self.assert_lint('unsigned long long _length;',
-                         '',
-                         'foo.mm')
-        self.assert_lint('#import "header_file.h"\n'
-                         'unsigned long long _length;',
-                         '',
-                         'foo.h')
-        self.assert_lint('unsigned long long _length;\n'
-                         '@interface WebFullscreenWindow;',
-                         '',
-                         'foo.h')
-        self.assert_lint('unsigned long long _length;\n'
-                         '@implementation WebFullscreenWindow;',
-                         '',
-                         'foo.h')
-        self.assert_lint('unsigned long long _length;\n'
-                         '@class WebWindowFadeAnimation;',
-                         '',
-                         'foo.h')
-
-        # Variable name 'l' is easy to confuse with '1'
-        self.assert_lint('int l;', 'l' + name_tooshort_error_message)
-        self.assert_lint('size_t l;', 'l' + name_tooshort_error_message)
-        self.assert_lint('long long l;', 'l' + name_tooshort_error_message)
-
-        # Declarations in control statement.
-        self.assert_lint('while (foo & value_in_thirdparty_library) {', '')
-        self.assert_lint('while (foo * value_in_thirdparty_library) {', '')
-        self.assert_lint('if (mli && S_OK == mli->foo()) {', '')
-
-        # More member variables and functions.
-        self.assert_lint('int SomeClass::s_validName', '')
-
-        # Other statements.
-        self.assert_lint('return INT_MAX;', '')
-        self.assert_lint('delete static_cast<Foo*>(p);', '')
-
-        # GObject requires certain magical names in class declarations.
-        self.assert_lint('void webkit_dom_object_init();', '')
-        self.assert_lint('void webkit_dom_object_class_init();', '')
-
-        # There is an exception for some unit tests that begin with "tst_".
-        self.assert_lint('void tst_QWebFrame::arrayObjectEnumerable(int var1, int var2)', '')
-
-        # The Qt API uses names that begin with "qt_" or "_q_".
-        self.assert_lint('void QTFrame::qt_drt_is_awesome(int var1, int var2)', '')
-        self.assert_lint('void QTFrame::_q_drt_is_awesome(int var1, int var2)', '')
-        self.assert_lint('void qt_drt_is_awesome(int var1, int var2);', '')
-        self.assert_lint('void _q_drt_is_awesome(int var1, int var2);', '')
-
-        # Cairo forward-declarations should not be a failure.
-        self.assert_lint('typedef struct _cairo cairo_t;', '')
-        self.assert_lint('typedef struct _cairo_surface cairo_surface_t;', '')
-        self.assert_lint('typedef struct _cairo_scaled_font cairo_scaled_font_t;', '')
-
-        # EFL forward-declarations should not be a failure.
-        self.assert_lint('typedef struct _Ecore_Evas Ecore_Evas;', '')
-        self.assert_lint('typedef struct _Ecore_Pipe Ecore_Pipe;', '')
-        self.assert_lint('typedef struct _Eina_Rectangle Eina_Rectangle;', '')
-        self.assert_lint('typedef struct _Evas_Object Evas_Object;', '')
-        self.assert_lint('typedef struct _Ewk_History_Item Ewk_History_Item;', '')
-
-        # NPAPI functions that start with NPN_, NPP_ or NP_ are allowed.
-        self.assert_lint('void NPN_Status(NPP, const char*)', '')
-        self.assert_lint('NPError NPP_SetWindow(NPP instance, NPWindow *window)', '')
-        self.assert_lint('NPObject* NP_Allocate(NPP, NPClass*)', '')
-
-        # const_iterator is allowed as well.
-        self.assert_lint('typedef VectorType::const_iterator const_iterator;', '')
-
-        # vm_throw is allowed as well.
-        self.assert_lint('int vm_throw;', '')
-
-        # new operators in initialization.
-        self.assert_lint('OwnPtr<uint32_t> variable(new uint32_t);', '')
-        self.assert_lint('OwnPtr<uint32_t> variable(new (expr) uint32_t);', '')
-
-        # Conversion operator declaration.
-        self.assert_lint('operator int64_t();', '')
 
     def test_parameter_names(self):
         # Leave meaningless variable names out of function declarations.
@@ -3818,57 +3012,6 @@ class WebKitStyleTest(CppStyleTestBase):
                          '"override" is redundant since function is already declared as "final"  [readability/inheritance] [4]')
         self.assert_lint('void fooMethod(\n) final override {}',
                          '"override" is redundant since function is already declared as "final"  [readability/inheritance] [4]')
-
-    def test_webkit_export_check(self):
-        webkit_export_error_rules = ('-',
-                                     '+readability/webkit_export')
-        self.assertEqual('',
-                         self.perform_lint('WEBKIT_EXPORT int foo();\n',
-                                           'WebKit/chromium/public/test.h',
-                                           webkit_export_error_rules))
-        self.assertEqual('',
-                         self.perform_lint('WEBKIT_EXPORT int foo();\n',
-                                           'WebKit/chromium/tests/test.h',
-                                           webkit_export_error_rules))
-        self.assertEqual('WEBKIT_EXPORT should only be used in header files.  [readability/webkit_export] [5]',
-                         self.perform_lint('WEBKIT_EXPORT int foo();\n',
-                                           'WebKit/chromium/public/test.cpp',
-                                           webkit_export_error_rules))
-        self.assertEqual('WEBKIT_EXPORT should only appear in the chromium public (or tests) directory.  '
-                         '[readability/webkit_export] [5]',
-                         self.perform_lint('WEBKIT_EXPORT int foo();\n',
-                                           'WebKit/chromium/src/test.h',
-                                           webkit_export_error_rules))
-        self.assertEqual('WEBKIT_EXPORT should not be used on a function with a body.  [readability/webkit_export] [5]',
-                         self.perform_lint('WEBKIT_EXPORT int foo() { }\n',
-                                           'WebKit/chromium/public/test.h',
-                                           webkit_export_error_rules))
-        self.assertEqual('WEBKIT_EXPORT should not be used on a function with a body.  [readability/webkit_export] [5]',
-                         self.perform_lint('WEBKIT_EXPORT inline int foo()\n'
-                                           '{\n'
-                                           '}\n',
-                                           'WebKit/chromium/public/test.h',
-                                           webkit_export_error_rules))
-        self.assertEqual('WEBKIT_EXPORT should not be used with a pure virtual function.  [readability/webkit_export] [5]',
-                         self.perform_lint('{}\n'
-                                           'WEBKIT_EXPORT\n'
-                                           'virtual\n'
-                                           'int\n'
-                                           'foo() = 0;\n',
-                                           'WebKit/chromium/public/test.h',
-                                           webkit_export_error_rules))
-        self.assertEqual('',
-                         self.perform_lint('{}\n'
-                                           'WEBKIT_EXPORT\n'
-                                           'virtual\n'
-                                           'int\n'
-                                           'foo() = 0;\n',
-                                           'test.h',
-                                           webkit_export_error_rules))
-
-    def test_other(self):
-        # FIXME: Implement this.
-        pass
 
 
 class CppCheckerTest(unittest.TestCase):
