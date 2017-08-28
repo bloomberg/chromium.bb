@@ -993,7 +993,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
         var location = root && fileManager.volumeManager.getLocationInfo(root);
         var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
         var writable = location && !location.isReadOnly;
-        var removable = writable &&
+        var removable =
             location.rootType === VolumeManagerCommon.RootType.REMOVABLE;
         var canExecute = removable && writable && volumeInfo &&
             CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_.indexOf(
