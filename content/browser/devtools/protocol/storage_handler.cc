@@ -225,7 +225,7 @@ class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&StorageHandler::NotifyCacheStorageListChanged, owner_,
-                       origin.GetURL().spec()));
+                       origin.Serialize()));
   }
 
   void OnCacheContentChanged(const url::Origin& origin,
@@ -236,7 +236,7 @@ class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&StorageHandler::NotifyCacheStorageContentChanged,
-                       owner_, origin.GetURL().spec(), cache_name));
+                       owner_, origin.Serialize(), cache_name));
   }
 
   // Maintained on the IO thread to avoid mutex contention.

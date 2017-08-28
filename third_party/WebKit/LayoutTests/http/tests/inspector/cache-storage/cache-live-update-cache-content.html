@@ -8,33 +8,27 @@ async function test() {
   var cacheStorageModel = InspectorTest.mainTarget.model(SDK.ServiceWorkerCacheModel);
   cacheStorageModel.enable();
 
-  function isMarkedDirty() {
-    var view = UI.panels.resources._sidebar.cacheStorageListTreeElement.childAt(0)._view;
-    InspectorTest.addResult('Cache marked dirty = ' + view._needsRefresh.visible());
-  }
-
   await new Promise(resolve => InspectorTest.waitForCacheRefresh(resolve));
   await InspectorTest.clearAllCaches();
   await InspectorTest.dumpCacheTree();
   await InspectorTest.createCache('testCache1');
   await InspectorTest.dumpCacheTree();
-  isMarkedDirty();
+  var promise = InspectorTest.addSnifferPromise(Resources.ServiceWorkerCacheView.prototype, '_updatedForTest');
   await InspectorTest.addCacheEntry('testCache1', 'http://fake.request.com/1', 'OK');
-  InspectorTest.addResult('Added entry');
-  isMarkedDirty();
-  await InspectorTest.dumpCacheTree();
-  isMarkedDirty();
+  await promise;
+  InspectorTest.addResult('Added entry')
+  await InspectorTest.dumpCacheTreeNoRefresh();
+  promise = InspectorTest.addSnifferPromise(Resources.ServiceWorkerCacheView.prototype, '_updatedForTest');
   await InspectorTest.deleteCacheEntry('testCache1', 'http://fake.request.com/1');
+  await promise;
   InspectorTest.addResult('Deleted entry');
-  isMarkedDirty();
-  await InspectorTest.dumpCacheTree();
-  isMarkedDirty();
+  await InspectorTest.dumpCacheTreeNoRefresh();
   await InspectorTest.clearAllCaches();
   InspectorTest.completeTest();
 }
 </script>
 </head>
 <body onload="runTest()">
-<p>Tests that cache content is marked dirty if it is modified.</p>
+<p>Tests that cache view updates when the cache is changed.</p>
 </body>
 </html>
