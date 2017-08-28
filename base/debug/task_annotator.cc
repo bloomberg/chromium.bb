@@ -49,11 +49,17 @@ void TaskAnnotator::RunTask(const char* queue_function,
   // variable itself will have the expected value when displayed by the
   // optimizer in an optimized build. Look at a memory dump of the stack.
   static constexpr int kStackTaskTraceSnapshotSize =
-      std::tuple_size<decltype(pending_task->task_backtrace)>::value + 1;
+      std::tuple_size<decltype(pending_task->task_backtrace)>::value + 3;
   std::array<const void*, kStackTaskTraceSnapshotSize> task_backtrace;
-  task_backtrace[0] = pending_task->posted_from.program_counter();
+
+  // Store a marker to locate |task_backtrace| content easily on a memory
+  // dump.
+  task_backtrace.front() = reinterpret_cast<void*>(0xefefefefefefefef);
+  task_backtrace.back() = reinterpret_cast<void*>(0xfefefefefefefefe);
+
+  task_backtrace[1] = pending_task->posted_from.program_counter();
   std::copy(pending_task->task_backtrace.begin(),
-            pending_task->task_backtrace.end(), task_backtrace.begin() + 1);
+            pending_task->task_backtrace.end(), task_backtrace.begin() + 2);
   debug::Alias(&task_backtrace);
 
   std::move(pending_task->task).Run();
