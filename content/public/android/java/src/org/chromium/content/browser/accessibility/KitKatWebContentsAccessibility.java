@@ -33,10 +33,11 @@ public class KitKatWebContentsAccessibility extends WebContentsAccessibility {
 
     @Override
     protected void setAccessibilityNodeInfoKitKatAttributes(AccessibilityNodeInfo node,
-            boolean isRoot, boolean isEditableText, String roleDescription, int selectionStartIndex,
-            int selectionEndIndex) {
+            boolean isRoot, boolean isEditableText, String roleDescription, String hint,
+            int selectionStartIndex, int selectionEndIndex) {
         Bundle bundle = node.getExtras();
         bundle.putCharSequence("AccessibilityNodeInfo.roleDescription", roleDescription);
+        bundle.putCharSequence("AccessibilityNodeInfo.hint", hint);
         if (isRoot) {
             bundle.putCharSequence(
                     "ACTION_ARGUMENT_HTML_ELEMENT_STRING_VALUES", mSupportedHtmlElementTypes);
