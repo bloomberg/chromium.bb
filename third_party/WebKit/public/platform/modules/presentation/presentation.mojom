@@ -51,9 +51,6 @@ union PresentationConnectionMessage {
 };
 
 interface PresentationConnection {
-   // TODO(zhaobin): migrate SendConnectionMessage from PresentationService =>
-   // PresentationConnection.Send(). http://crbug.com/658474
-
    // Called when a message is sent by the target connection.
    OnMessage(PresentationConnectionMessage message) => (bool success);
 
