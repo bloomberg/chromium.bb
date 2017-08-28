@@ -391,7 +391,8 @@ void BrowsingHistoryHandler::OnQueryComplete(
   // HistoryQuery. Please update it whenever you add or remove any keys in
   // results_info_value_.
   results_info.SetString("term", query_results_info.search_text);
-  results_info.SetBoolean("finished", query_results_info.reached_beginning);
+  results_info.SetBoolean("finished",
+                          query_results_info.reached_beginning_of_local);
   results_info.SetBoolean("hasSyncedResults",
                           query_results_info.has_synced_results);
 
