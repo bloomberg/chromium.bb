@@ -23,6 +23,7 @@ async_test(function(t) {
                 break;
             case 1:
             case 3:
+            case 5:
                 assert_unreached("'error' event did not fire, stage = " + stage);
                 break;
             case 2:
@@ -41,7 +42,10 @@ async_test(function(t) {
                 assert_equals(testTrack.readyState, HTMLTrackElement.LOADED, "readyState after loading of the second track");
                 assert_equals(cues.length, 4, "Number of cues after loading of the second track");
                 assert_equals(cues[cues.length-1].text, 'I said Bear is coming now!!!! Tab separators.', "Last cue content check");
-                t.done();
+                ++stage;
+                testTrack.removeAttribute('src');
+                // This should raise onError event, so we'll wait for it for some time
+                timer = t.step_timeout(t.unreached_func("'error' event is not fired when an empty URL is set"), 100);
                 break;
             default:
                 assert_unreached("unexpected stage number = " + stage);
@@ -70,6 +74,12 @@ async_test(function(t) {
                 assert_equals(cues.length, 0, "Number of cues with an empty URL set");
                 ++stage;
                 testTrack.src = "captions-webvtt/tc013-settings.vtt";
+                break;
+            case 5:
+                clearTimeout(timer);
+                assert_equals(testTrack.readyState, HTMLTrackElement.ERROR, "readyState after removing 'src' attr");
+                assert_equals(cues.length, 0, "Number of cues after removing 'src' attr");
+                t.done();
                 break;
             default:
                 assert_unreached("unexpected stage number = " + stage);
