@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">Ieslēdziet Bluetooth, lai atklātu tuvumā esošas ierīces</translation>
 <translation id="2352467521400612932">Skārienekrāna pildspalvas iestatījumi</translation>
 <translation id="2354174487190027830">Notiek <ph name="NAME" /> aktivizēšana.</translation>
+<translation id="2365393535144473978">Iespējojot mobilos datus, tiks iespējots Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth ierīce “<ph name="DEVICE_NAME" />” vēlas saņemt atļauju, lai izveidotu savienojumu pārī. Pirms piekrītat, lūdzu, pārliecinieties, vai ierīcē tiek parādīta šī ieejas atslēga: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Radās kļūda</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">Apraide uz nezināmu saņēmēju</translation>
 <translation id="5947494881799873997">Atjaunot</translation>
 <translation id="595202126637698455">Veiktspējas izsekošana ir iespējota</translation>
+<translation id="5957083217255311415">Mobilie dati ir izslēgti.</translation>
 <translation id="5958529069007801266">Uzraudzīts lietotājs</translation>
 <translation id="5977415296283489383">Austiņas</translation>
 <translation id="5978382165065462689">Ekrāna pārvaldības koplietošana, izmantojot attālo palīdzību.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME izvēlnes poga</translation>
 <translation id="6713285437468012787">Bluetooth ierīce “<ph name="DEVICE_NAME" />” ir savienota pārī un ir pieejama visiem lietotājiem. Lai pārtrauktu šo savienojumus, atveriet iestatījumus.</translation>
+<translation id="6715542151869432661">Netika atrasta neviena mobilā ierīce.</translation>
 <translation id="6785414152754474415">Akumulatora uzlādes līmenis: <ph name="PERCENTAGE" />%; uzlāde tiek turpināta.</translation>
 <translation id="6803622936009808957">Nevarēja spoguļot displejus, jo netika atrasta atbalstīta izšķirtspēja. Tā vietā tika aktivizēts paplašinātās darbvirsmas režīms.</translation>
 <translation id="683971173229319003">Search+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">Notiek ekrāna izvēršana</translation>
+<translation id="8921624153894383499">Google asistents nav pieejams šajā valodā.</translation>
 <translation id="8938800817013097409">USB-C ierīce (pieslēgvieta aizmugurē pa labi)</translation>
 <translation id="8940956008527784070">Akumulators gandrīz tukšs (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

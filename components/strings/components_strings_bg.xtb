@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">Изчаква се връзка…</translation>
 <translation id="153384715582417236">Това е всичко засега</translation>
 <translation id="1549470594296187301">Трябва да активирате JavaScript, за да използвате тази функция.</translation>
-<translation id="1555130319947370107">синьо</translation>
 <translation id="1559528461873125649">Няма такъв файл или директория</translation>
 <translation id="1583429793053364125">Възникна проблем при показването на тази уеб страница.</translation>
 <translation id="1592005682883173041">Достъп до локални данни</translation>
 <translation id="1594030484168838125">Избор</translation>
-<translation id="161042844686301425">синьозелено</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1629803312968146339">Искате ли Chrome да запази тази карта?</translation>
 <translation id="1639239467298939599">Зарежда се</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">Автоматично попълване</translation>
 <translation id="2710942282213947212">Софтуер на компютъра ви пречи на Chromium да се свърже безопасно с мрежата</translation>
 <translation id="2712173769900027643">Искане на разрешение</translation>
-<translation id="2713444072780614174">бяло</translation>
 <translation id="2720342946869265578">В близост</translation>
 <translation id="2721148159707890343">Заявката е успешна</translation>
 <translation id="2728127805433021124">Сертификатът на сървъра е подписан със слаб алгоритъм.</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">Няма намерени резултати от търсенето</translation>
 <translation id="3305707030755673451">На <ph name="TIME" /> данните ви бяха шифровани с пропуска ви за синхронизиране. Въведете го, за да стартирате синхронизирането.</translation>
 <translation id="3320021301628644560">Добавяне на адреса за фактуриране</translation>
-<translation id="3329013043687509092">Насищане</translation>
 <translation id="333371639341676808">Да не се показват допълнителни диалогови прозорци от тази страница.</translation>
 <translation id="3338095232262050444">Има защита</translation>
 <translation id="3340978935015468852">настройки</translation>
@@ -413,7 +409,6 @@
 <translation id="4103249731201008433">Серийният номер на устройството е невалиден</translation>
 <translation id="410351446219883937">Автоматично възпроизвеждане</translation>
 <translation id="4103763322291513355">Посетете &lt;strong&gt;chrome://policy&lt;/strong&gt;, за да видите изброени URL адресите в черния списък и другите правила, наложени от системния ви администратор.</translation>
-<translation id="4115378294792113321">пурпурно</translation>
 <translation id="4116663294526079822">Разрешаване винаги на този сайт</translation>
 <translation id="4117700440116928470">Обхватът на правилата не се поддържа.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{още 1 елемент}other{още # елемента}}</translation>
@@ -624,7 +619,6 @@
 <translation id="5869522115854928033">Запазени пароли</translation>
 <translation id="5872918882028971132">Основни предложения</translation>
 <translation id="5893752035575986141">Приемат се кредитни карти.</translation>
-<translation id="5901630391730855834">жълто</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (синхронизирано)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{Използва се 1}other{Използват се #}}</translation>
 <translation id="5959728338436674663">Автоматично изпращане до Google на <ph name="BEGIN_WHITEPAPER_LINK" />системна информация и част от съдържанието на страниците<ph name="END_WHITEPAPER_LINK" /> с цел по-лесно откриване на опасни приложения и сайтове. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -635,12 +629,10 @@
 <translation id="5990559369517809815">Заявките към сървъра са блокирани от разширение.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Страница 1}other{Страница #}}</translation>
-<translation id="6017514345406065928">зелено</translation>
 <translation id="6017850046339264347">Извършители на атака срещу <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> могат да инсталират измамни приложения, които се представят за нещо друго или събират данни, които може да се използват за проследяването ви. <ph name="BEGIN_LEARN_MORE_LINK" />Научете повече<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (синхронизирани)</translation>
 <translation id="6027201098523975773">Въведете име</translation>
 <translation id="6040143037577758943">Затваряне</translation>
-<translation id="6042308850641462728">Още</translation>
 <translation id="6047233362582046994">Ако разбирате рисковете за сигурността си, може <ph name="BEGIN_LINK" />да посетите този сайт<ph name="END_LINK" /> преди премахването на опасните приложения.</translation>
 <translation id="6047927260846328439">Въпросното съдържание може да се опита да ви подведе да инсталирате софтуер или да разкриете лична информация. <ph name="BEGIN_LINK" />Показване въпреки това<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">В момента не можете да посетите <ph name="SITE" />, защото уебсайтът използва метод за допълнително потвърждаване на сертификатите. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
@@ -717,7 +709,6 @@
 <translation id="6710213216561001401">Предишна</translation>
 <translation id="6710594484020273272">&lt;Въведете дума за търсене&gt;</translation>
 <translation id="6711464428925977395">Нещо не е наред с прокси сървъра или адресът е неправилен.</translation>
-<translation id="6727102863431372879">Задаване</translation>
 <translation id="674375294223700098">Неизвестна грешка в сертификата на сървъра.</translation>
 <translation id="6753269504797312559">Стойност за правилото</translation>
 <translation id="6757797048963528358">Устройството ви премина в спящ режим.</translation>
@@ -801,7 +792,6 @@
 <translation id="7518003948725431193">Не е намерена уеб страница за уеб адреса: <ph name="URL" /></translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7526934274050461096">Връзката ви с този сайт не е частна</translation>
-<translation id="7535087603100972091">Стойност</translation>
 <translation id="7537536606612762813">Задължително</translation>
 <translation id="7542403920425041731">След като потвърдите картата си, данните за нея ще бъдат споделени с този сайт.</translation>
 <translation id="7542995811387359312">Автоматичното попълване на кредитната карта е деактивирано, защото този формуляр не използва защитена връзка.</translation>
@@ -812,7 +802,6 @@
 <translation id="7567204685887185387">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; възможно е сертификатът му за сигурност да е издаден измамнически. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="7568593326407688803">Тази страница е на<ph name="ORIGINAL_LANGUAGE" />Искате ли да я преведете?</translation>
 <translation id="7569952961197462199">Кредитната карта да се премахне ли от Chrome?</translation>
-<translation id="7569983096843329377">черно</translation>
 <translation id="7578104083680115302">Извършвайте бързи плащания в сайтове и приложения от всякакви устройства посредством картите, които сте запазили в Google.</translation>
 <translation id="7588950540487816470">Физическа мрежа</translation>
 <translation id="7592362899630581445">Сертификатът на сървъра нарушава ограниченията за име.</translation>
@@ -864,7 +853,6 @@
 <translation id="79338296614623784">Въведете валиден телефонен номер</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Сертификатът на сървъра още не е валиден.</translation>
-<translation id="7942349550061667556">червено</translation>
 <translation id="7947285636476623132">Проверете годината на валидност и опитайте отново</translation>
 <translation id="7951415247503192394">(32 бита)</translation>
 <translation id="7956713633345437162">Мобилни отметки</translation>
@@ -957,7 +945,6 @@
 <translation id="8870413625673593573">Наскоро затворени</translation>
 <translation id="8874824191258364635">Въведете валиден номер на карта</translation>
 <translation id="8876793034577346603">Синтактичният анализ на конфигурацията на мрежата не бе успешен.</translation>
-<translation id="8889402386540077796">Цветови тон</translation>
 <translation id="8891727572606052622">Невалиден режим на прокси сървъра.</translation>
 <translation id="889901481107108152">За съжаление този експеримент не се предлага за платформата ви.</translation>
 <translation id="8903921497873541725">Увеличаване на мащаба</translation>
@@ -966,7 +953,6 @@
 <translation id="8938939909778640821">Приемани кредитни и предплатени карти</translation>
 <translation id="8957210676456822347">Упълномощаване в портал за удостоверяване</translation>
 <translation id="8971063699422889582">Сертификатът на сървъра е с изтекла валидност.</translation>
-<translation id="8986494364107987395">Автоматично изпращане до Google на статистически данни за използването на Chrome и сигнали за сривове</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">На хоризонта се задава сайт с опасни програми</translation>
 <translation id="8997023839087525404">Сървърът предостави сертификат, който не е разкрит публично чрез правило в Прозрачност на сертификатите. Това се изисква за някои сертификати с цел защита срещу хакери и за да е сигурно, че може да им се има доверие.</translation>
@@ -982,7 +968,6 @@
 <translation id="9049981332609050619">Опитахте да отворите <ph name="DOMAIN" />, но сървърът предостави невалиден сертификат.</translation>
 <translation id="9050666287014529139">Парола</translation>
 <translation id="9065203028668620118">Редактиране</translation>
-<translation id="9068849894565669697">Избор на цвят</translation>
 <translation id="9069693763241529744">Блокирано от разширение</translation>
 <translation id="9076283476770535406">Възможно е да има съдържание за пълнолетни</translation>
 <translation id="9078964945751709336">Изисква се още информация</translation>

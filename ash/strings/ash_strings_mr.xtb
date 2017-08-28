@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">जवळपासचे डीव्हाइस शोधण्यासाठी ब्लुटूथ चालू करा</translation>
 <translation id="2352467521400612932">लेखणी सेटिंग्ज</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय करत आहे</translation>
+<translation id="2365393535144473978">मोबाइल डेटा चालू केल्याने ब्लूटूथ चालू होईल.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth डीव्हाइस जोडण्यासाठी परवानगी घेऊ इच्छिते. स्वीकार करण्यापूर्वी, कृपया त्या डीव्हाइसवर ही पासकी दर्शविली असल्याची पुष्टी करा: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">एक त्रुटी आली आहे</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">एका अज्ञात प्राप्तकर्त्यावर कास्ट करीत आहे</translation>
 <translation id="5947494881799873997">परत करा</translation>
 <translation id="595202126637698455">कार्यप्रदर्शन ट्रेसिंग सक्षम केले</translation>
+<translation id="5957083217255311415">मोबाइल डेटा बंद केला आहे.</translation>
 <translation id="5958529069007801266">पर्यवेक्षी वापरकर्ता</translation>
 <translation id="5977415296283489383">हेडफोन</translation>
 <translation id="5978382165065462689">दूरस्थ सहाय्याद्वारे आपल्या स्क्रीनचे नियंत्रण सामायिक करत आहे.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME मेनू बटण</translation>
 <translation id="6713285437468012787">"<ph name="DEVICE_NAME" />" Bluetooth डीव्हाइस जोडले गेले आहे आणि सर्व वापरकर्त्यांसाठी आता उपलब्ध आहे. आपण सेटिंग्ज वापरून ही जोडणी काढू शकता.</translation>
+<translation id="6715542151869432661">कोणतेही मोबाइल डीव्हाइस आढळले नाहीत.</translation>
 <translation id="6785414152754474415">बॅटरी <ph name="PERCENTAGE" />% भरली आहे आणि चार्ज होत आहे.</translation>
 <translation id="6803622936009808957">समर्थित रिजोल्यूशन न आढळल्यामुळे प्रदर्शने मिरर करू शकली नाहीत. त्याऐवजी विस्तारित डेस्कटॉप प्रविष्ट केला.</translation>
 <translation id="683971173229319003">Search+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>
+<translation id="8921624153894383499">Google साहाय्यक ही भाषा बोलत नाही.</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
 <translation id="8940956008527784070">बॅटरी कमी झाली (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

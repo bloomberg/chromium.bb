@@ -18,6 +18,7 @@
 <translation id="1209206284964581585">Hide for now</translation>
 <translation id="1219674500290482172">Unable to connect to the Internet.</translation>
 <translation id="1254117744268754948">Choose Folder</translation>
+<translation id="1265739287306757398">Learn How</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="129553762522093515">Recently closed</translation>
 <translation id="1323735185997015385">Delete</translation>
@@ -60,6 +61,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="1952728750904661634">Sign in with managed account</translation>
 <translation id="1974060860693918893">Advanced</translation>
 <translation id="1989112275319619282">Browse</translation>
+<translation id="2015722694326466240">To see passwords, you must first set a passcode on your device.</translation>
 <translation id="2068952045031577364">Past Week</translation>
 <translation id="2079545284768500474">Undo</translation>
 <translation id="209018056901015185">Request Desktop Site</translation>
@@ -147,7 +149,6 @@ For example, some websites may respond to this request by showing you ads that a
 
 To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.</translation>
 <translation id="3607167657931203000">Autofill Data</translation>
-<translation id="3608436266458100337">Reader mode</translation>
 <translation id="3628119975092896051">Your reading list is available offline. To add a page to your reading list, tap <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Pre-load Web Pages</translation>
 <translation id="3691593122358196899">Bookmarked to <ph name="FOLDER_TITLE" /></translation>
@@ -183,6 +184,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="4508750114462689118">Close sign-in promo</translation>
 <translation id="4526249700380860531">View and manage saved passwords at <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
+<translation id="461440297010471931">Searching with Google</translation>
 <translation id="4620246317052452550">Pages That You've Read</translation>
 <translation id="4636930964841734540">Info</translation>
 <translation id="4659667755519643272">Enter Tab Switcher</translation>
@@ -191,6 +193,7 @@ To adjust your search term, long press to select. To refine your search, slide t
 Your data is encrypted with your sync passphrase. Enter it to start sync.</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
+<translation id="4854345657858711387">Set A Passcode</translation>
 <translation id="4860895144060829044">Call</translation>
 <translation id="4875622588773761625">Do you want <ph name="PASSWORD_MANAGER_BRAND" /> to update your password for this site?</translation>
 <translation id="4881695831933465202">Open</translation>

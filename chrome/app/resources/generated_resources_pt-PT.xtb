@@ -87,7 +87,7 @@
 <translation id="1128591060186966949">Editar motor de pesquisa</translation>
 <translation id="1128987120443782698">O dispositivo de armazenamento tem uma capacidade de <ph name="DEVICE_CAPACITY" />. Insira um cartão SD ou memory stick USB com uma capacidade mínima de 4 GB.</translation>
 <translation id="1131167343343087859">Cartões de crédito e endereços com o Google Payments.</translation>
-<translation id="1134009406053225289">Abrir na janela sem registo</translation>
+<translation id="1134009406053225289">Abrir na janela de navegação anónima</translation>
 <translation id="1140351953533677694">Aceder aos dispositivos Bluetooth e de série</translation>
 <translation id="114140604515785785">Diretório raiz da extensão:</translation>
 <translation id="1143142264369994168">Signatário do certificado</translation>
@@ -1647,7 +1647,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3479552764303398839">Agora não</translation>
 <translation id="3480892288821151001">Colocar janela à esquerda</translation>
 <translation id="3481915276125965083">Os seguintes pop-ups foram bloqueados nesta página:</translation>
-<translation id="3482214069979148937">Premir sem soltar |<ph name="ACCELERATOR" />| para sair do ecrã inteiro</translation>
 <translation id="3484273680291419129">A remover software prejudicial…</translation>
 <translation id="3484869148456018791">Obter novo certificado</translation>
 <translation id="3487007233252413104">função anónima</translation>

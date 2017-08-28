@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">Schakel Bluetooth in om apparaten in de buurt te vinden</translation>
 <translation id="2352467521400612932">Stylusinstellingen</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> activeren</translation>
+<translation id="2365393535144473978">Als je mobiele data inschakelt, wordt Bluetooth ingeschakeld.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' wil toestemming om te koppelen. Bevestig vóór het accepteren dat de volgende toegangscode op dat apparaat wordt weergegeven: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Er is een fout opgetreden</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">Casten naar een onbekende ontvanger</translation>
 <translation id="5947494881799873997">Terugzetten</translation>
 <translation id="595202126637698455">Bijhouden van prestaties ingeschakeld</translation>
+<translation id="5957083217255311415">Mobiele data zijn uitgeschakeld.</translation>
 <translation id="5958529069007801266">Gebruiker met beperkte rechten</translation>
 <translation id="5977415296283489383">Hoofdtelefoon</translation>
 <translation id="5978382165065462689">De controle over je scherm delen via externe ondersteuning.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Zoeken+Shift+H</translation>
 <translation id="6700713906295497288">IME-menuknop</translation>
 <translation id="6713285437468012787">Bluetooth-apparaat '<ph name="DEVICE_NAME" />' is gekoppeld en is nu beschikbaar voor alle gebruikers. Je kunt deze koppeling verwijderen via 'Instellingen'.</translation>
+<translation id="6715542151869432661">Geen mobiele apparaten gevonden.</translation>
 <translation id="6785414152754474415">De batterij is <ph name="PERCENTAGE" />% vol en wordt opgeladen.</translation>
 <translation id="6803622936009808957">Kan schermen niet spiegelen, omdat er geen ondersteunde resoluties zijn gevonden. Het uitgebreide bureaublad is geactiveerd.</translation>
 <translation id="683971173229319003">Zoeken+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Zoeken+Esc</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
+<translation id="8921624153894383499">De Google Assistent spreekt deze taal niet.</translation>
 <translation id="8938800817013097409">USB-C-apparaat (poort rechts aan de achterkant)</translation>
 <translation id="8940956008527784070">Batterij is bijna leeg (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

@@ -897,7 +897,7 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Aquesta política permet que els administradors tornin a activar funcions obsoletes de la plataforma web durant un temps limitat. Les funcions s'identifiquen amb una etiqueta de cadena i les funcions que corresponen a les etiquetes incloses a la llista especificada per aquesta política es tornen a activar.
 
-      Si aquesta política no s'estableix o si la llista està buida o no coincideix amb cap de les etiquetes de cadena admeses, totes les funcions obsoletes de la plataforma web continuaran desactivades.
+      Si aquesta política no s'estableix o si la llista és buida o no coincideix amb cap de les etiquetes de cadena admeses, totes les funcions obsoletes de la plataforma web continuaran desactivades.
 
       Tot i que la política s'admet en les plataformes anteriors, pot ser que la funció que activi no estigui disponible en totes les plataformes. No totes les funcions obsoletes de la plataforma web es poden tornar a activar; només les que s'indiquin explícitament a continuació durant un període de temps limitat, que varia segons la funció. El format general de l'etiqueta de cadena és el següent: [FuncióObsoleta]_EffectiveUntil[aaaammdd]. Com a referència, podeu consultar la finalitat dels canvis de la funció de la plataforma web a la pàgina https://bit.ly/blinkintents.
       </translation>
@@ -1288,7 +1288,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6074963268421707432">No permetis que cap lloc mostri notificacions d'escriptori</translation>
 <translation id="6076099373507468537">Defineix la llista de dispositius USB que està permès separar del controlador de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells formats per l'identificador del producte i l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
 
-      Si aquesta política no està configurada, la llista de dispositius USB que es poden separar està buida.</translation>
+      Si aquesta política no està configurada, la llista de dispositius USB que es poden separar és buida.</translation>
 <translation id="6093156968240188330">Permet que els usuaris remots interaccionin amb les finestres amb privilegis restringits en sessions d'assistència remota</translation>
 <translation id="6095999036251797924">Especifica la quantitat de temps que ha de passar sense cap interacció de l'usuari abans que la pantalla no es bloquegi quan s'utilitza amb connexió a la corrent CA o amb una bateria.
 
@@ -1426,7 +1426,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
       Els URL amb esquemes d'aquesta llista no es carregaran i no s'hi podrà navegar.
 
-      Si no s'estableix aquesta política o la llista està buida, es podrà accedir a tots els esquemes a <ph name="PRODUCT_NAME" />.</translation>
+      Si no s'estableix aquesta política o la llista és buida, es podrà accedir a tots els esquemes a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuració dels usuaris gestionats localment</translation>
 <translation id="6654559957643809067">Activa la predicció de xarxa a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció de configuració.
 

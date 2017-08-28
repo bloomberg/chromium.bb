@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">আশেপাশের ডিভাইস খুঁজে পেতে ব্লুটুথ চালু করুন</translation>
 <translation id="2352467521400612932">স্টাইলাস সেটিংস</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> সক্রিয় করা হচ্ছে</translation>
+<translation id="2365393535144473978">মোবাইল ডেটা সক্ষম করলে ব্লুটুথও সক্ষম হয়ে যাবে।</translation>
 <translation id="2391579633712104609">১৮০°</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করার অনুমতি চাইছে। স্বীকার করার আগে, দয়া করে এই পাস কীটি যে ডিভাইসে প্রদর্শিত হয়েছে তা নিশ্চিত করুন: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">একটি ত্রুটি ঘটেছে</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">একটি অজানা রিসিভারে কাস্টিং করা হচ্ছে</translation>
 <translation id="5947494881799873997">ফেরান</translation>
 <translation id="595202126637698455">কার্য-সম্পাদনা ট্রেস করা সক্ষম রয়েছে</translation>
+<translation id="5957083217255311415">মোবাইল ডেটা বন্ধ করা আছে।</translation>
 <translation id="5958529069007801266">তত্ত্বাবধানে থাকা ব্যবহারকারী</translation>
 <translation id="5977415296283489383">হেডফোন</translation>
 <translation id="5978382165065462689">রিমোট সহায়কের মাধ্যমে আপনার স্ক্রীন নিয়ন্ত্রণ ভাগ করুন৷</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME মেনু বোতাম</translation>
 <translation id="6713285437468012787">ব্লুটুথ ডিভাইস "<ph name="DEVICE_NAME" />" যুক্ত করা হয়েছে এবং এখন সমস্ত ব্যবহারকারীর কাছে উপলব্ধ। আপনি সেটিংস ব্যবহার করে এই সংযুক্তি সরিয়ে দিতে পারেন।</translation>
+<translation id="6715542151869432661">কোনও মোবাইল ডিভাইস খুঁজে পাওয়া যায়নি।</translation>
 <translation id="6785414152754474415">ব্যাটারি <ph name="PERCENTAGE" />% পূর্ণ এবং চার্জ হচ্ছে৷</translation>
 <translation id="6803622936009808957">সমর্থিত রেসুলিউশানগুলি খুঁজে না পাওয়ায় প্রদর্শনগুলি মিরর মানে প্রতিবিম্বিত করতে পারেনি। এর পরিবর্তে প্রসারিত ডেস্কটপে প্রবেশ করেছে।</translation>
 <translation id="683971173229319003">Search+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">৯০°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">স্ক্রীন সম্প্রসারণ করা হচ্ছে</translation>
+<translation id="8921624153894383499">Google সহায়ক এই ভাষায় কথা বলে না।</translation>
 <translation id="8938800817013097409">USB-C ডিভাইস (পিছনের ডান পোর্ট)</translation>
 <translation id="8940956008527784070">(<ph name="PERCENTAGE" />%) কম ব্যাটারি</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>

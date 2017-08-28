@@ -1641,7 +1641,6 @@ von <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3479552764303398839">Jetzt nicht</translation>
 <translation id="3480892288821151001">Fenster links verankern</translation>
 <translation id="3481915276125965083">Die folgenden Pop-ups wurden auf dieser Seite blockiert:</translation>
-<translation id="3482214069979148937">Halten Sie |<ph name="ACCELERATOR" />| gedrückt, um den Vollbildmodus zu beenden</translation>
 <translation id="3484273680291419129">Schädliche Software wird entfernt...</translation>
 <translation id="3484869148456018791">Neues Zertifikat anfordern</translation>
 <translation id="3487007233252413104">Anonyme Funktion</translation>
@@ -3012,7 +3011,7 @@ Drücken Sie eine beliebige Taste, um fortzufahren.</translation>
 <translation id="5639549361331209298">Seite aktualisieren, für weitere Optionen gedrückt halten</translation>
 <translation id="5641461229021317093">Sie erhalten Benachrichtigungen über neue SMS auf Ihrem Chromebook</translation>
 <translation id="5642508497713047">CRL-Signaturgeber</translation>
-<translation id="5646376287012673985">Speicherort</translation>
+<translation id="5646376287012673985">Standort</translation>
 <translation id="5646558797914161501">Geschäftsmann</translation>
 <translation id="5649053991847567735">Auto-Downloads</translation>
 <translation id="5649768706273821470">Anhören</translation>

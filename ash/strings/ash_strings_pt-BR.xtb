@@ -55,7 +55,7 @@
 <translation id="2338501278241028356">Ativar o Bluetooth para descobrir dispositivos nas proximidades</translation>
 <translation id="2352467521400612932">Configurações da stylus</translation>
 <translation id="2354174487190027830">Ativando <ph name="NAME" /></translation>
-<translation id="2365393535144473978">A ativação dos dados móveis ativará o Bluetooth.</translation>
+<translation id="2365393535144473978">A ativação dos dados móveis também ativará o Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" deseja permissão para realizar o pareamento. Antes de aceitar, verifique se esta senha aparece no dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
@@ -272,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
 <translation id="8878886163241303700">Tela ampla</translation>
+<translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira da direita)</translation>
 <translation id="8940956008527784070">Nível de bateria baixo (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

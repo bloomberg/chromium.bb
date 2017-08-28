@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">Venter på tilkobling …</translation>
 <translation id="153384715582417236">Det var alt for denne gangen</translation>
 <translation id="1549470594296187301">Denne funksjonen kan ikke brukes når JavaScript er slått av.</translation>
-<translation id="1555130319947370107">Blå</translation>
 <translation id="1559528461873125649">Finner ingen slik fil eller katalog</translation>
 <translation id="1583429793053364125">Noe gikk galt under åpningen av denne nettsiden.</translation>
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
 <translation id="1594030484168838125">Velg</translation>
-<translation id="161042844686301425">Cyan</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1629803312968146339">Vil du at Chrome skal lagre dette kortet?</translation>
 <translation id="1639239467298939599">Laster inn</translation>
@@ -218,8 +216,8 @@
 <translation id="2704951214193499422">Chromium kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
 <translation id="2705137772291741111">Den lagrede (bufrede) kopien av dette nettstedet kunne ikke leses.</translation>
 <translation id="2709516037105925701">Autofyll</translation>
+<translation id="2710942282213947212">Det er programvare på datamaskinen din som hindrer Chromium i å koble trygt til nettet</translation>
 <translation id="2712173769900027643">Be om tillatelse</translation>
-<translation id="2713444072780614174">Hvit</translation>
 <translation id="2720342946869265578">Like ved</translation>
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
@@ -301,7 +299,6 @@
 <translation id="3303855915957856445">Søket ga ingen treff</translation>
 <translation id="3305707030755673451">Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME" />. Skriv den inn for å starte synkroniseringen.</translation>
 <translation id="3320021301628644560">Legg til faktureringsadresse</translation>
-<translation id="3329013043687509092">Metning</translation>
 <translation id="333371639341676808">Hindre denne siden i å opprette flere dialogbokser.</translation>
 <translation id="3338095232262050444">Sikker</translation>
 <translation id="3340978935015468852">innstillinger</translation>
@@ -412,7 +409,6 @@
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
 <translation id="410351446219883937">Autoavspilling</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for å se listen over sperrede nettadresser og andre innstillinger aktivert av systemadministratoren din.</translation>
-<translation id="4115378294792113321">Magenta</translation>
 <translation id="4116663294526079822">Tillat alltid på dette nettstedet</translation>
 <translation id="4117700440116928470">Omfanget for innstillingen støttes ikke.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 til}other{# til}}</translation>
@@ -623,7 +619,6 @@
 <translation id="5869522115854928033">Lagrede passord</translation>
 <translation id="5872918882028971132">Overordnede forslag</translation>
 <translation id="5893752035575986141">Kredittkort godtas.</translation>
-<translation id="5901630391730855834">Gul</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synkronisert)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 er i bruk}other{# er i bruk}}</translation>
 <translation id="5959728338436674663">Send automatisk noe <ph name="BEGIN_WHITEPAPER_LINK" />systeminformasjon og sideinnhold<ph name="END_WHITEPAPER_LINK" /> til Google for å bidra til å oppdage farlige apper og nettsteder. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -634,12 +629,10 @@
 <translation id="5990559369517809815">Forespørsler til tjeneren har blitt blokkert av en utvidelse.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Side 1}other{Side #}}</translation>
-<translation id="6017514345406065928">Grønn</translation>
 <translation id="6017850046339264347">Angripere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kan installere villedende apper som ser ut til å være noe annet, eller samle inn data som kan brukes til å spore deg. <ph name="BEGIN_LEARN_MORE_LINK" />Finn ut mer<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" /> og <ph name="TYPE_3" /> (synkronisert)</translation>
 <translation id="6027201098523975773">Skriv inn et navn</translation>
 <translation id="6040143037577758943">Lukk</translation>
-<translation id="6042308850641462728">Mer</translation>
 <translation id="6047233362582046994">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til dette nettstedet<ph name="END_LINK" /> før de skadelige appene er fjernet.</translation>
 <translation id="6047927260846328439">Dette innholdet kan prøve å lure deg til å installere programvare eller oppgi personopplysninger. <ph name="BEGIN_LINK" />Vis det likevel<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Du kan ikke gå til <ph name="SITE" /> akkurat nå, siden nettstedet bruker sertifikatfesting. Nettverksfeil og -angrep er vanligvis midlertidige, så denne siden fungerer sannsynligvis senere.</translation>
@@ -716,7 +709,6 @@
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="6710594484020273272">&lt;Skriv inn en søketerm&gt;</translation>
 <translation id="6711464428925977395">Det er noe galt med proxy-tjeneren, eller adressen er feil.</translation>
-<translation id="6727102863431372879">Angi</translation>
 <translation id="674375294223700098">Ukjent feil med tjenersertifikat.</translation>
 <translation id="6753269504797312559">Retningslinjeverdi</translation>
 <translation id="6757797048963528358">Enheten din gikk inn i hvilemodus.</translation>
@@ -800,7 +792,6 @@
 <translation id="7518003948725431193">Finner ingen nettside for denne nettadressen: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">Tilkoblingen til dette nettstedet er ikke privat</translation>
-<translation id="7535087603100972091">Verdi</translation>
 <translation id="7537536606612762813">Obligatorisk</translation>
 <translation id="7542403920425041731">Når du bekrefter, deles kortinformasjonen din med dette nettstedet.</translation>
 <translation id="7542995811387359312">Automatisk utfylling av kredittkort er deaktivert fordi dette skjemaet ikke bruker en sikker tilkobling.</translation>
@@ -811,7 +802,6 @@
 <translation id="7567204685887185387">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat kan ha blitt utstedt på uredelig vis. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="7568593326407688803">Denne siden er på<ph name="ORIGINAL_LANGUAGE" />Vil du ha den oversatt?</translation>
 <translation id="7569952961197462199">Vil du fjerne kredittkortet fra Chrome?</translation>
-<translation id="7569983096843329377">Svart</translation>
 <translation id="7578104083680115302">Når du lagrer kort med Google, kan du bruke dem til å betale raskt på nettsteder og i apper – uansett hvilken enhet du bruker.</translation>
 <translation id="7588950540487816470">Fysisk nett</translation>
 <translation id="7592362899630581445">Tjenerens sertifikat bryter navnereglene.</translation>
@@ -863,7 +853,6 @@
 <translation id="79338296614623784">Angi et gyldig telefonnummer</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Tjenerens sertifikat er ikke gyldig ennå.</translation>
-<translation id="7942349550061667556">Rød</translation>
 <translation id="7947285636476623132">Kontrollér utløpsdatoen, og prøv igjen</translation>
 <translation id="7951415247503192394">(32-bit)</translation>
 <translation id="7956713633345437162">Bokmerker for mobil</translation>
@@ -956,7 +945,6 @@
 <translation id="8870413625673593573">Nylig lukket</translation>
 <translation id="8874824191258364635">Angi et gyldig kortnummer</translation>
 <translation id="8876793034577346603">Nettverkskonfigurasjon kunne ikke analyseres.</translation>
-<translation id="8889402386540077796">Fargetone</translation>
 <translation id="8891727572606052622">Ugyldig modus for mellomtjener.</translation>
 <translation id="889901481107108152">Beklager, dette eksperimentet er ikke er tilgjengelig på plattformen din.</translation>
 <translation id="8903921497873541725">Zoom inn</translation>
@@ -965,7 +953,6 @@
 <translation id="8938939909778640821">Godkjente kredittkort og forhåndsbetalte kort</translation>
 <translation id="8957210676456822347">Captive Portal-autorisasjon</translation>
 <translation id="8971063699422889582">Tjenerens sertifikat er utløpt.</translation>
-<translation id="8986494364107987395">Send bruksstatistikk og programstopprapporter automatisk til Google</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Nettstedet du er i ferd med å åpne, inneholder skadelige programmer</translation>
 <translation id="8997023839087525404">Tjeneren har presentert et sertifikat som ikke er offentlig vist i henhold til regelen om sertifikatåpenhet. Dette er et krav for enkelte sertifikater for å sikre at de er pålitelige, og bidrar til å beskytte mot angrep.</translation>
@@ -981,7 +968,6 @@
 <translation id="9049981332609050619">Du forsøkte å nå <ph name="DOMAIN" />, men tjeneren oppga et ugyldig sertifikat.</translation>
 <translation id="9050666287014529139">Passordfrase</translation>
 <translation id="9065203028668620118">Endre</translation>
-<translation id="9068849894565669697">Velg farge</translation>
 <translation id="9069693763241529744">Blokkert av en utvidelse</translation>
 <translation id="9076283476770535406">Det kan ha voksent innhold</translation>
 <translation id="9078964945751709336">Mer informasjon er nødvendig</translation>

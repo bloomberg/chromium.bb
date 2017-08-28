@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">Vklopite Bluetooth, če želite odkriti naprave v bližini</translation>
 <translation id="2352467521400612932">Nastavitve pisala</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME" /></translation>
+<translation id="2365393535144473978">Če omogočite prenos podatkov v mobilnem omrežju, bo omogočen Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi dovoljenje za seznanjanje. Preden sprejmete, se prepričajte, da je na napravi prikazano to geslo: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Prišlo je do napake</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">Predvajanje na neznanem sprejemniku</translation>
 <translation id="5947494881799873997">Razveljavi</translation>
 <translation id="595202126637698455">Sledenje učinkovitosti delovanja je omogočeno</translation>
+<translation id="5957083217255311415">Prenos podatkov v mobilnem omrežju je izklopljen.</translation>
 <translation id="5958529069007801266">Zaščiteni uporabnik</translation>
 <translation id="5977415296283489383">Slušalke</translation>
 <translation id="5978382165065462689">Deljenje nadzora nad zaslonom prek pomoči na daljavo.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Tipka za iskanje + Shift + H</translation>
 <translation id="6700713906295497288">Menijski gumb UNV-ja</translation>
 <translation id="6713285437468012787">Naprava Bluetooth »<ph name="DEVICE_NAME" />« je seznanjena in je zdaj na voljo vsem uporabnikom. To seznanitev lahko odstranite v nastavitvah.</translation>
+<translation id="6715542151869432661">Ni mobilnih naprav.</translation>
 <translation id="6785414152754474415">Napolnjenost akumulatorja: <ph name="PERCENTAGE" /> % – polnjenje še poteka.</translation>
 <translation id="6803622936009808957">Zaslonov ni bilo mogoče zrcaliti, ker ni bilo najdene nobene podprte ločljivosti. Uporabljeno je razširjeno namizje.</translation>
 <translation id="683971173229319003">Iskanje + L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Iskanje + Esc</translation>
 <translation id="8878886163241303700">Razširjanje zaslona</translation>
+<translation id="8921624153894383499">Pomočnik Google ne podpira tega jezika.</translation>
 <translation id="8938800817013097409">Naprava USB-C (vrata desno zadaj)</translation>
 <translation id="8940956008527784070">Akumulator je skoraj prazen (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

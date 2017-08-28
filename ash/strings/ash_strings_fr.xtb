@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">Activer le Bluetooth pour découvrir les appareils à proximité</translation>
 <translation id="2352467521400612932">Paramètres du stylet</translation>
 <translation id="2354174487190027830">Activation du réseau <ph name="NAME" /> en cours…</translation>
+<translation id="2365393535144473978">L'activation des données mobiles active également le Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">Une erreur s'est produite.</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">Destinataire de la diffusion inconnu</translation>
 <translation id="5947494881799873997">Rétablir</translation>
 <translation id="595202126637698455">Suivi des performances activé</translation>
+<translation id="5957083217255311415">Les données mobiles sont désactivées.</translation>
 <translation id="5958529069007801266">Utilisateur supervisé</translation>
 <translation id="5977415296283489383">Casque</translation>
 <translation id="5978382165065462689">Partager le contrôle de votre écran via l'assistance à distance</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Recherche+Maj+H</translation>
 <translation id="6700713906295497288">Bouton de menu IME</translation>
 <translation id="6713285437468012787">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" a été associé et tous les utilisateurs peuvent désormais y accéder. Vous pouvez supprimer cette association dans les paramètres.</translation>
+<translation id="6715542151869432661">Aucun appareil mobile détecté.</translation>
 <translation id="6785414152754474415">La batterie est chargée à <ph name="PERCENTAGE" /> % et en charge.</translation>
 <translation id="6803622936009808957">Impossible de dupliquer les écrans, car aucune résolution compatible n'a été détectée. Le bureau étendu a été activé à la place.</translation>
 <translation id="683971173229319003">Recherche+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Recherche+Échap</translation>
 <translation id="8878886163241303700">Extension de l'écran</translation>
+<translation id="8921624153894383499">L'Assistant Google ne parle pas cette langue.</translation>
 <translation id="8938800817013097409">Appareil USB de type C (port situé sur l'arrière de l'appareil, à droite)</translation>
 <translation id="8940956008527784070">Batterie faible (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

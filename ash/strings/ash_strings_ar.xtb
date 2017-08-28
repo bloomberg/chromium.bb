@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">تشغيل البلوتوث لاكتشاف الأجهزة القريبة</translation>
 <translation id="2352467521400612932">إعدادات قلم الشاشة</translation>
 <translation id="2354174487190027830">تنشيط <ph name="NAME" /></translation>
+<translation id="2365393535144473978">سيؤدي تمكين ميزة بيانات الجوّال إلى تمكين البلوتوث.</translation>
 <translation id="2391579633712104609">180 درجة</translation>
 <translation id="2429753432712299108">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. قبل القبول، يُرجى التأكد أن مفتاح المرور هذا يظهر في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">حدث خطأ</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">إرسال إلى مستلم غير معروف</translation>
 <translation id="5947494881799873997">التراجع عن الإجراء</translation>
 <translation id="595202126637698455">تم تمكين تتبع مستوى الأداء</translation>
+<translation id="5957083217255311415">تم إيقاف ميزة بيانات الجوّال.</translation>
 <translation id="5958529069007801266">مستخدم يخضع للإدارة</translation>
 <translation id="5977415296283489383">سماعة رأس</translation>
 <translation id="5978382165065462689">مشاركة التحكم في شاشتك عن طريق المساعدة عن بُعد.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">‏زر قائمة أداة تحرير أسلوب الإدخال (IME)</translation>
 <translation id="6713285437468012787">تم إقران جهاز بلوتوث "<ph name="DEVICE_NAME" />" وهو الآن متاح لجميع المستخدمين. يمكنك إزالة هذا الإقران باستخدام الإعدادات.</translation>
+<translation id="6715542151869432661">لم يتم العثور على أي أجهزة جوّال.</translation>
 <translation id="6785414152754474415">اكتمل شحن <ph name="PERCENTAGE" />% من البطارية ويجري شحنها.</translation>
 <translation id="6803622936009808957">تعذر إجراء النسخ المطابق للعروض نظرًا لعدم العثور على درجات دقة متوافقة. تم الدخول إلى سطح المكتب الممتد بدلاً من ذلك.</translation>
 <translation id="683971173229319003">Search+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90 درجة</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">توسيع الشاشة</translation>
+<translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
 <translation id="8940956008527784070">طاقة البطارية منخفضة (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">بلوتوث</translation>

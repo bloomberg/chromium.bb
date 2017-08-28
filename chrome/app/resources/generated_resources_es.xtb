@@ -1646,7 +1646,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="3480892288821151001">Acoplar ventana a la izquierda</translation>
 <translation id="3481915276125965083">Se han bloqueado los siguientes pop-ups en esta página:</translation>
-<translation id="3482214069979148937">Mantén pulsada la tecla |<ph name="ACCELERATOR" />| para salir del modo de pantalla completa</translation>
 <translation id="3484273680291419129">Eliminando software dañino...</translation>
 <translation id="3484869148456018791">Obtener nuevo certificado</translation>
 <translation id="3487007233252413104">función anónima</translation>
@@ -3701,7 +3700,7 @@ Solo debes usar esta función con las cuentas de confianza.</translation>
 <translation id="6716704051134091292">Conversor de PDF</translation>
 <translation id="6718273304615422081">Comprimiendo...</translation>
 <translation id="671928215901716392">Bloquear pantalla</translation>
-<translation id="67211069045302358">¿Seguro que quiere recuperar la configuración de este sitio web?</translation>
+<translation id="67211069045302358">¿Seguro que quieres recuperar la configuración de este sitio web?</translation>
 <translation id="6721972322305477112">&amp;Archivo</translation>
 <translation id="672213144943476270">Desbloquea tu perfil antes de navegar como invitado.</translation>
 <translation id="6723354935081862304">Imprimir en Google Docs y en otros destinos de la nube. <ph name="BEGIN_LINK" />Inicia sesión<ph name="END_LINK" /> para imprimir en Google Cloud Print.</translation>

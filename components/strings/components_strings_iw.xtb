@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">ממתין לחיבור...</translation>
 <translation id="153384715582417236">זה הכול בינתיים</translation>
 <translation id="1549470594296187301">‏JavaScript צריך להיות מופעל כדי להשתמש בתכונה זו.</translation>
-<translation id="1555130319947370107">כחול</translation>
 <translation id="1559528461873125649">אין קובץ או ספרייה בשם זה</translation>
 <translation id="1583429793053364125">משהו השתבש בעת הצגת דף אינטרנט זה.</translation>
 <translation id="1592005682883173041">גישה לנתונים מקומיים</translation>
 <translation id="1594030484168838125">בחר</translation>
-<translation id="161042844686301425">ציאן</translation>
 <translation id="1620510694547887537">מצלמה</translation>
 <translation id="1629803312968146339">‏האם תרצה ש-Chrome ישמור את הכרטיס הזה?</translation>
 <translation id="1639239467298939599">טוען</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2710942282213947212">‏תוכנה במחשב שלך מונעת מ-Chromium להתחבר באופן מאובטח לאינטרנט</translation>
 <translation id="2712173769900027643">בקש רשות</translation>
-<translation id="2713444072780614174">לבן</translation>
 <translation id="2720342946869265578">קרוב</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2728127805433021124">האישור של השרת נחתם באמצעות אלגוריתם של חתימה חלשה.</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">לא נמצאו תוצאות חיפוש</translation>
 <translation id="3305707030755673451">הנתונים שלך הוצפנו ב-<ph name="TIME" /> באמצעות ביטוי הסיסמה לסינכרון. הזן אותו כדי להתחיל בסינכרון.</translation>
 <translation id="3320021301628644560">הוספה של כתובת לחיוב</translation>
-<translation id="3329013043687509092">רווייה</translation>
 <translation id="333371639341676808">מנע מדף זה ליצור דיאלוגים נוספים.</translation>
 <translation id="3338095232262050444">מאובטח</translation>
 <translation id="3340978935015468852">הגדרות</translation>
@@ -413,7 +409,6 @@
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
 <translation id="410351446219883937">הפעלה אוטומטית</translation>
 <translation id="4103763322291513355">‏היכנס לכתובת &lt;strong&gt;chrome://policy&lt;/strong&gt; כדי לראות רשימה של כתובות אתרים שנמנעה אליהם הגישה, כמו גם תקנונים אחרים שנאכפו על ידי מנהל המערכת שלך.</translation>
-<translation id="4115378294792113321">מגנטה</translation>
 <translation id="4116663294526079822">אפשר תמיד באתר זה</translation>
 <translation id="4117700440116928470">היקף המדיניות אינו נתמך.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{אחד נוסף}two{שניים נוספים}many{# נוספים}other{# נוספים}}</translation>
@@ -629,7 +624,6 @@ Del</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
 <translation id="5872918882028971132">הצעות להורים</translation>
 <translation id="5893752035575986141">אפשר לשלם באמצעות כרטיסי אשראי.</translation>
-<translation id="5901630391730855834">צהוב</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (מסונכרנים)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{אחד נמצא בשימוש}two{שניים נמצאים בשימוש}many{# נמצאים בשימוש}other{# נמצאים בשימוש}}</translation>
 <translation id="5959728338436674663">‏שלח באופן אוטומטי <ph name="BEGIN_WHITEPAPER_LINK" />חלק מפרטי המערכת ותוכן הדף<ph name="END_WHITEPAPER_LINK" /> אל Google כדי לעזור בזיהוי של אפליקציות ואתרים מסוכנים. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -640,12 +634,10 @@ Del</translation>
 <translation id="5990559369517809815">בקשות שנשלחו לשרת נחסמו על ידי תוסף.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{דף 1}two{דף #}many{דף #}other{דף #}}</translation>
-<translation id="6017514345406065928">ירוק</translation>
 <translation id="6017850046339264347">תוקפים שמשתמשים ב-<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> עלולים להתקין יישומים מטעים שמתחזים לאחרים או לאסוף נתונים שאפשר להשתמש בהם כדי לעקוב אחריך. <ph name="BEGIN_LEARN_MORE_LINK" />מידע נוסף<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (מסונכרנים)</translation>
 <translation id="6027201098523975773">עליך להזין שם</translation>
 <translation id="6040143037577758943">סגור</translation>
-<translation id="6042308850641462728">עוד</translation>
 <translation id="6047233362582046994">אם אתה מבין את סיכוני האבטחה, תוכל <ph name="BEGIN_LINK" />להיכנס לאתר הזה<ph name="END_LINK" /> לפני הסרת היישומים המזיקים.</translation>
 <translation id="6047927260846328439">ייתכן שבתוכן הזה יש מידע מטעה שנועד לגרום לך להתקין תוכנות או לחשוף מידע אישי. <ph name="BEGIN_LINK" />הצג בכל זאת<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">נכון לעכשיו אי אפשר לבקר באתר <ph name="SITE" />, מאחר שבאתר הזה נעשה שימוש בנעיצת אישורים. שגיאות רשת ומתקפות הן בדרך כלל זמניות, כך שהדף הזה יחזור כנראה לפעול מאוחר יותר.</translation>
@@ -722,7 +714,6 @@ Del</translation>
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6710594484020273272">&lt;הקלד מונח חיפוש&gt;</translation>
 <translation id="6711464428925977395">‏משהו אינו תקין בשרת ה-proxy, או שהכתובת שגויה.</translation>
-<translation id="6727102863431372879">הגדר</translation>
 <translation id="674375294223700098">שגיאת אישור שרת לא ידוע.</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
 <translation id="6757797048963528358">המכשיר עבר למצב שינה.</translation>
@@ -806,7 +797,6 @@ Del</translation>
 <translation id="7518003948725431193">לא נמצא דף אינטרנט עבור כתובת האינטרנט: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">החיבור שלך לאתר זה אינו פרטי</translation>
-<translation id="7535087603100972091">ערך</translation>
 <translation id="7537536606612762813">הכרחי</translation>
 <translation id="7542403920425041731">ברגע שתאשר, פרטי הכרטיס שלך ישותפו עם האתר הזה.</translation>
 <translation id="7542995811387359312">מילוי אוטומטי של פרטי כרטיס אשראי מושבת כיוון שטופס זה אינו משתמש בחיבור מאובטח.</translation>
@@ -817,7 +807,6 @@ Del</translation>
 <translation id="7567204685887185387">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. ייתכן שאישור האבטחה שלו נופק כהונאה. הסיבה לכך עשויה להיות הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="7568593326407688803">זהו דף ב<ph name="ORIGINAL_LANGUAGE" />האם ברצונך לתרגם אותו?</translation>
 <translation id="7569952961197462199">‏האם להסיר את כרטיס האשראי מ-Chrome?</translation>
-<translation id="7569983096843329377">שחור</translation>
 <translation id="7578104083680115302">‏שלם במהירות באתרים ובאפליקציות בכל המכשירים באמצעות כרטיסים ששמרת ב-Google.</translation>
 <translation id="7588950540487816470">האינטרנט הווירטופיזי</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
@@ -869,7 +858,6 @@ Del</translation>
 <translation id="79338296614623784">עליך להזין מספר טלפון חוקי</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">אישור השרת עדיין לא בתוקף.</translation>
-<translation id="7942349550061667556">אדום</translation>
 <translation id="7947285636476623132">בדוק את שנת התפוגה ונסה שוב</translation>
 <translation id="7951415247503192394">(32 סיביות)</translation>
 <translation id="7956713633345437162">סימניות לנייד</translation>
@@ -963,7 +951,6 @@ Del</translation>
 <translation id="8870413625673593573">נסגרו לאחרונה</translation>
 <translation id="8874824191258364635">עליך להזין מספר כרטיס חוקי</translation>
 <translation id="8876793034577346603">ניתוח תצורת הרשת נכשל.</translation>
-<translation id="8889402386540077796">גוון</translation>
 <translation id="8891727572606052622">‏מצב שרת Proxy לא חוקי.</translation>
 <translation id="889901481107108152">מצטערים, ניסוי זה אינו זמין בפלטפורמה שלך.</translation>
 <translation id="8903921497873541725">התקרב</translation>
@@ -972,7 +959,6 @@ Del</translation>
 <translation id="8938939909778640821">כרטיסי אשראי וכרטיסים משולמים מראש שהסוחר מקבל</translation>
 <translation id="8957210676456822347">הרשאת פורטל חובה</translation>
 <translation id="8971063699422889582">פג תוקפו של אישור השרת.</translation>
-<translation id="8986494364107987395">‏שלח ל-Google דוחות קריסה וסטטיסטיקת שימוש באופן אוטומטי</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">האתר שאתה עומד לעבור אליו מכיל תוכניות מזיקות</translation>
 <translation id="8997023839087525404">השרת הציג אישור שלא נחשף באופן ציבורי בעזרת מדיניות 'שקיפות אישורים'. זוהי דרישה עבור חלק מהאישורים, ומטרתה לוודא שהם מהימנים וכדי להגן מפני תוקפים.</translation>
@@ -988,7 +974,6 @@ Del</translation>
 <translation id="9049981332609050619">ניסית להגיע ל-<ph name="DOMAIN" />, אך השרת הציג אישור לא חוקי.</translation>
 <translation id="9050666287014529139">משפט-סיסמה</translation>
 <translation id="9065203028668620118">ערוך</translation>
-<translation id="9068849894565669697">בחירת צבע</translation>
 <translation id="9069693763241529744">נחסמה על-ידי תוסף</translation>
 <translation id="9076283476770535406">ייתכן שהאתר מכיל תוכן למבוגרים בלבד</translation>
 <translation id="9078964945751709336">נדרש מידע נוסף</translation>
