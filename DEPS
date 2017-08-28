@@ -51,7 +51,7 @@ deps = {
   # GYP project generator.
   "src/src/tools/gyp":
     "https://chromium.googlesource.com/external/gyp/" +
-      "@e8ab0833a42691cd2184bd4c45d779e43821d3e0",
+      "@324dd166b7c0b39d513026fa52d6280ac6d56770",
 
   # Linux syscall support.
   "src/src/third_party/lss":
