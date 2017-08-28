@@ -101,7 +101,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   for (c = 0; c < seg_eob; ++c) {
     int is_nz;
     int coeff_ctx = get_nz_map_ctx(tcoeffs, scan[c], bwl, height, tx_type);
-    int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx);
+    int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx, tx_type);
 
     if (c < seg_eob - 1) {
 #if LV_MAP_PROB

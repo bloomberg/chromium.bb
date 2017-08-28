@@ -138,7 +138,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   for (c = 0; c < eob; ++c) {
     int coeff_ctx = get_nz_map_ctx(tcoeff, scan[c], bwl, height, tx_type);
-    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txs_ctx);
+    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txs_ctx, tx_type);
 
     tran_low_t v = tcoeff[scan[c]];
     is_nz = (v != 0);
@@ -498,7 +498,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       }
 
       if (c < seg_eob) {
-        int eob_ctx = get_eob_ctx(qcoeff, scan[c], txs_ctx);
+        int eob_ctx = get_eob_ctx(qcoeff, scan[c], txs_ctx, tx_type);
         cost += coeff_costs->eob_cost[eob_ctx][c == (eob - 1)];
       }
     }
@@ -810,8 +810,8 @@ static int try_self_level_down(tran_low_t *low_coeff, int coeff_idx,
     }
 
     if (scan_idx < txb_info->seg_eob) {
-      const int eob_ctx =
-          get_eob_ctx(txb_info->qcoeff, coeff_idx, txb_info->txs_ctx);
+      const int eob_ctx = get_eob_ctx(txb_info->qcoeff, coeff_idx,
+                                      txb_info->txs_ctx, txb_info->tx_type);
       cost_diff -=
           txb_costs->eob_cost[eob_ctx][scan_idx == (txb_info->eob - 1)];
     }
@@ -1013,8 +1013,8 @@ static int get_low_coeff_cost(int coeff_idx, const TxbCache *txb_cache,
     cost += get_base_cost(abs_qc, ctx, txb_costs->base_cost[base_idx][ctx],
                           base_idx);
     if (scan_idx < txb_info->seg_eob) {
-      const int eob_ctx =
-          get_eob_ctx(txb_info->qcoeff, coeff_idx, txb_info->txs_ctx);
+      const int eob_ctx = get_eob_ctx(txb_info->qcoeff, coeff_idx,
+                                      txb_info->txs_ctx, txb_info->tx_type);
       cost += txb_costs->eob_cost[eob_ctx][scan_idx == (txb_info->eob - 1)];
     }
     cost += get_sign_bit_cost(qc, coeff_idx, txb_costs->dc_sign_cost,
@@ -1069,8 +1069,8 @@ int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
   if (*new_eob > 0) {
     // Note that get_eob_ctx does NOT actually account for qcoeff, so we don't
     // need to lower down the qcoeff here
-    const int eob_ctx =
-        get_eob_ctx(txb_info->qcoeff, scan[*new_eob - 1], txb_info->txs_ctx);
+    const int eob_ctx = get_eob_ctx(txb_info->qcoeff, scan[*new_eob - 1],
+                                    txb_info->txs_ctx, txb_info->tx_type);
     cost_diff -= txb_costs->eob_cost[eob_ctx][0];
     cost_diff += txb_costs->eob_cost[eob_ctx][1];
   } else {
@@ -1241,8 +1241,8 @@ static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
     }
 
     if (scan_idx < txb_info->seg_eob) {
-      int eob_ctx =
-          get_eob_ctx(txb_info->qcoeff, scan[scan_idx], txb_info->txs_ctx);
+      int eob_ctx = get_eob_ctx(txb_info->qcoeff, scan[scan_idx],
+                                txb_info->txs_ctx, txb_info->tx_type);
       cost += txb_costs->eob_cost[eob_ctx][scan_idx == (txb_info->eob - 1)];
     }
   }
@@ -1693,7 +1693,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     tran_low_t v = qcoeff[scan[c]];
     int is_nz = (v != 0);
     int coeff_ctx = get_nz_map_ctx(tcoeff, scan[c], bwl, height, tx_type);
-    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txsize_ctx);
+    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txsize_ctx, tx_type);
 
     if (c == seg_eob - 1) break;
 
