@@ -197,8 +197,6 @@ static void free_tree_contexts(PC_TREE *tree) {
 // represents the state of our search.
 void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   int i, j;
-// TODO(jingning): The pc_tree allocation is redundant. We can take out all
-// the leaf nodes after cb4x4 mode is enabled.
 #if CONFIG_CB4X4
 #if CONFIG_EXT_PARTITION
   const int tree_nodes_inc = 1024;
@@ -219,20 +217,21 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
 #endif  // CONFIG_EXT_PARTITION
   int pc_tree_index = 0;
   PC_TREE *this_pc;
-  PICK_MODE_CONTEXT *this_leaf;
   int square_index = 1;
   int nodes;
 
+#if !CONFIG_CB4X4
   aom_free(td->leaf_tree);
   CHECK_MEM_ERROR(cm, td->leaf_tree,
                   aom_calloc(leaf_nodes, sizeof(*td->leaf_tree)));
+  PICK_MODE_CONTEXT *this_leaf = &td->leaf_tree[0];
+#endif
   aom_free(td->pc_tree);
   CHECK_MEM_ERROR(cm, td->pc_tree,
                   aom_calloc(tree_nodes, sizeof(*td->pc_tree)));
-
   this_pc = &td->pc_tree[0];
-  this_leaf = &td->leaf_tree[0];
 
+#if !CONFIG_CB4X4
   // 4x4 blocks smaller than 8x8 but in the same 8x8 block share the same
   // context so we only need to allocate 1 for each 8x8 block.
   for (i = 0; i < leaf_nodes; ++i) {
@@ -242,6 +241,7 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
     alloc_mode_context(cm, 16, &td->leaf_tree[i]);
 #endif
   }
+#endif
 
   // Sets up all the leaf nodes in the tree.
   for (pc_tree_index = 0; pc_tree_index < leaf_nodes; ++pc_tree_index) {
@@ -252,8 +252,10 @@ void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
 #else
     alloc_tree_contexts(cm, tree, 4);
 #endif
+#if !CONFIG_CB4X4
     tree->leaf_split[0] = this_leaf++;
     for (j = 1; j < 4; j++) tree->leaf_split[j] = tree->leaf_split[0];
+#endif
   }
 
   // Each node has 4 leaf nodes, fill each block_size level of the tree
@@ -291,29 +293,28 @@ void av1_free_pc_tree(ThreadData *td) {
 #else
   const int tree_nodes_inc = 256;
 #endif  // CONFIG_EXT_PARTITION
-  const int leaf_factor = 4;
 #else
   const int tree_nodes_inc = 0;
-  const int leaf_factor = 1;
 #endif
 
 #if CONFIG_EXT_PARTITION
-  const int leaf_nodes = 256 * leaf_factor;
   const int tree_nodes = tree_nodes_inc + 256 + 64 + 16 + 4 + 1;
 #else
-  const int leaf_nodes = 64 * leaf_factor;
   const int tree_nodes = tree_nodes_inc + 64 + 16 + 4 + 1;
 #endif  // CONFIG_EXT_PARTITION
   int i;
-
-  // Set up all 4x4 mode contexts
-  for (i = 0; i < leaf_nodes; ++i) free_mode_context(&td->leaf_tree[i]);
-
-  // Sets up all the leaf nodes in the tree.
   for (i = 0; i < tree_nodes; ++i) free_tree_contexts(&td->pc_tree[i]);
-
   aom_free(td->pc_tree);
   td->pc_tree = NULL;
+#if !CONFIG_CB4X4
+  const int leaf_factor = 1;
+#if CONFIG_EXT_PARTITION
+  const int leaf_nodes = 256 * leaf_factor;
+#else
+  const int leaf_nodes = 64 * leaf_factor;
+#endif  // CONFIG_EXT_PARTITION
+  for (i = 0; i < leaf_nodes; ++i) free_mode_context(&td->leaf_tree[i]);
   aom_free(td->leaf_tree);
   td->leaf_tree = NULL;
+#endif
 }

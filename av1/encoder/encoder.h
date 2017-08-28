@@ -339,8 +339,9 @@ typedef struct ThreadData {
   MACROBLOCK mb;
   RD_COUNTS rd_counts;
   FRAME_COUNTS *counts;
-
+#if !CONFIG_CB4X4
   PICK_MODE_CONTEXT *leaf_tree;
+#endif
   PC_TREE *pc_tree;
   PC_TREE *pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2 + 1];
 #if CONFIG_MOTION_VAR

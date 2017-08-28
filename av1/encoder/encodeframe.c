@@ -4524,8 +4524,10 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
 #endif
 
     if (sf->adaptive_pred_interp_filter) {
+#if !CONFIG_CB4X4
       for (i = 0; i < leaf_nodes; ++i)
         td->leaf_tree[i].pred_interp_filter = SWITCHABLE;
+#endif
 
       for (i = 0; i < leaf_nodes; ++i) {
         td->pc_tree[i].vertical[0].pred_interp_filter = SWITCHABLE;
