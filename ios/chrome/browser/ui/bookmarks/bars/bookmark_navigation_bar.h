@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-// TODO(crbug.com/753599) : Delete this file after new bookmarks ui is launched.
-
 // The navigation bar on the bookmark home page.
 @interface BookmarkNavigationBar : UIView
 

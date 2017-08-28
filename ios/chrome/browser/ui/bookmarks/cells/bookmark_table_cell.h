@@ -21,7 +21,8 @@ class BookmarkNode;
 //
 @interface BookmarkTableCell : UITableViewCell
 
-- (instancetype)initWithReuseIdentifier:(NSString*)bookmarkCellIdentifier
+- (instancetype)initWithNode:(const bookmarks::BookmarkNode*)node
+             reuseIdentifier:(NSString*)bookmarkCellIdentifier
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
@@ -32,9 +33,6 @@ class BookmarkNode;
 // Returns the preferred image size for favicons.
 + (CGFloat)preferredImageSize;
 
-// Identifier for -[UITableView registerClass:forCellWithReuseIdentifier:].
-+ (NSString*)reuseIdentifier;
-
 // Sets the favicon image.
 - (void)setImage:(UIImage*)image;
 
@@ -42,9 +40,6 @@ class BookmarkNode;
 - (void)setPlaceholderText:(NSString*)text
                  textColor:(UIColor*)textColor
            backgroundColor:(UIColor*)backgroundColor;
-
-// Set the bookmark node this cell shows.
-- (void)setNode:(const bookmarks::BookmarkNode*)node;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BOOKMARKS_CELLS_BOOKMARK_TABLE_CELL_H_

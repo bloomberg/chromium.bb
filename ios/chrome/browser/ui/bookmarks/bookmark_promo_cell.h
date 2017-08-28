@@ -7,8 +7,6 @@
 
 #import <UIKit/UIKit.h>
 
-// TODO(crbug.com/753599) : Delete this file after new bookmarks ui is launched.
-
 @class BookmarkPromoCell;
 
 @protocol BookmarkPromoCellDelegate

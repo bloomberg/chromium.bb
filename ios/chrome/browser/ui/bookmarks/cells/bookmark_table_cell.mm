@@ -28,40 +28,34 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 
 #pragma mark - Initializer
 
-- (instancetype)initWithReuseIdentifier:(NSString*)bookmarkCellIdentifier {
+- (instancetype)initWithNode:(const bookmarks::BookmarkNode*)node
+             reuseIdentifier:(NSString*)bookmarkCellIdentifier {
   self = [super initWithStyle:UITableViewCellStyleDefault
               reuseIdentifier:bookmarkCellIdentifier];
   if (self) {
+    self.textLabel.text = bookmark_utils_ios::TitleForBookmarkNode(node);
+    self.textLabel.accessibilityIdentifier = self.textLabel.text;
     self.textLabel.font = [MDCTypography subheadFont];
 
     self.imageView.clipsToBounds = YES;
+    self.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder"];
     [self.imageView setHidden:NO];
 
     _placeholderLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _placeholderLabel.textAlignment = NSTextAlignmentCenter;
     [_placeholderLabel setHidden:YES];
     [self.contentView addSubview:_placeholderLabel];
+
+    if (node->is_folder()) {
+      [self setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
+    } else {
+      [self setAccessoryType:UITableViewCellAccessoryNone];
+    }
   }
   return self;
 }
 
 #pragma mark - Public
-
-- (void)setNode:(const bookmarks::BookmarkNode*)node {
-  self.textLabel.text = bookmark_utils_ios::TitleForBookmarkNode(node);
-  self.textLabel.accessibilityIdentifier = self.textLabel.text;
-
-  self.imageView.image = [UIImage imageNamed:@"bookmark_gray_folder"];
-  if (node->is_folder()) {
-    [self setAccessoryType:UITableViewCellAccessoryDisclosureIndicator];
-  } else {
-    [self setAccessoryType:UITableViewCellAccessoryNone];
-  }
-}
-
-+ (NSString*)reuseIdentifier {
-  return @"BookmarkTableCellIdentifier";
-}
 
 + (CGFloat)preferredImageSize {
   return kBookmarkTableCellDefaultImageSize;
@@ -89,15 +83,6 @@ const CGFloat kBookmarkTableCellImagePadding = 16.0;
 }
 
 #pragma mark - Layout
-
-- (void)prepareForReuse {
-  self.imageView.image = nil;
-  self.placeholderLabel.hidden = YES;
-  self.imageView.hidden = NO;
-  self.textLabel.text = nil;
-  self.textLabel.accessibilityIdentifier = nil;
-  [super prepareForReuse];
-}
 
 - (void)layoutSubviews {
   [super layoutSubviews];

@@ -180,7 +180,6 @@ source_set("eg_tests") {
   testonly = true
   sources = [
     "bookmarks_egtest.mm",
-    "bookmarks_new_generation_egtest.mm",
   ]
   deps = [
     "//base",
