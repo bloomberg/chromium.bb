@@ -1030,14 +1030,16 @@ class FrameRectChangedMessageFilter : public content::BrowserMessageFilter {
  private:
   ~FrameRectChangedMessageFilter() override {}
 
-  void OnFrameRectChanged(const gfx::Rect& rect) {
+  void OnFrameRectChanged(const gfx::Rect& rect,
+                          const viz::LocalSurfaceId& local_surface_id) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&FrameRectChangedMessageFilter::OnFrameRectChangedOnUI, this,
-                   rect));
+                   rect, local_surface_id));
   }
 
-  void OnFrameRectChangedOnUI(const gfx::Rect& rect) {
+  void OnFrameRectChangedOnUI(const gfx::Rect& rect,
+                              const viz::LocalSurfaceId& local_surface_id) {
     last_rect_ = rect;
     if (!frame_rect_received_) {
       frame_rect_received_ = true;

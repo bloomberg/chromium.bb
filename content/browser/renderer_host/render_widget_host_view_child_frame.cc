@@ -126,7 +126,7 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
           parent_frame_sink_id_, frame_sink_id_);
     }
     parent_frame_sink_id_ = viz::FrameSinkId();
-    local_surface_id_ = viz::LocalSurfaceId();
+    last_received_local_surface_id_ = viz::LocalSurfaceId();
 
     // Unlocks the mouse if this RenderWidgetHostView holds the lock.
     UnlockMouse();
@@ -485,8 +485,9 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
   DCHECK(result);
   has_frame_ = true;
 
-  if (local_surface_id_ != local_surface_id || HasEmbedderChanged()) {
-    local_surface_id_ = local_surface_id;
+  if (last_received_local_surface_id_ != local_surface_id ||
+      HasEmbedderChanged()) {
+    last_received_local_surface_id_ = local_surface_id;
     SendSurfaceInfoToEmbedder();
   }
 
@@ -506,7 +507,7 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
   viz::SurfaceSequence sequence =
       viz::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
   viz::SurfaceManager* manager = GetFrameSinkManager()->surface_manager();
-  viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
+  viz::SurfaceId surface_id(frame_sink_id_, last_received_local_surface_id_);
   // The renderer process will satisfy this dependency when it creates a
   // SurfaceLayer.
   if (!manager->using_surface_references())
@@ -592,6 +593,12 @@ viz::FrameSinkId RenderWidgetHostViewChildFrame::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
+viz::LocalSurfaceId RenderWidgetHostViewChildFrame::GetLocalSurfaceId() const {
+  if (frame_connector_)
+    return frame_connector_->local_surface_id();
+  return viz::LocalSurfaceId();
+}
+
 void RenderWidgetHostViewChildFrame::ProcessKeyboardEvent(
     const NativeWebKeyboardEvent& event,
     const ui::LatencyInfo& latency) {
@@ -634,11 +641,11 @@ void RenderWidgetHostViewChildFrame::ProcessGestureEvent(
 
 gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
     const gfx::Point& point) {
-  if (!frame_connector_ || !local_surface_id_.is_valid())
+  if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
     return point;
 
   return frame_connector_->TransformPointToRootCoordSpace(
-      point, viz::SurfaceId(frame_sink_id_, local_surface_id_));
+      point, viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_));
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
@@ -646,19 +653,20 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
     const viz::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   *transformed_point = point;
-  if (!frame_connector_ || !local_surface_id_.is_valid())
+  if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
     return false;
 
   return frame_connector_->TransformPointToLocalCoordSpace(
       point, original_surface,
-      viz::SurfaceId(frame_sink_id_, local_surface_id_), transformed_point);
+      viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
+      transformed_point);
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
     RenderWidgetHostViewBase* target_view,
     gfx::Point* transformed_point) {
-  if (!frame_connector_ || !local_surface_id_.is_valid())
+  if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
     return false;
 
   if (target_view == this) {
@@ -667,7 +675,8 @@ bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
   }
 
   return frame_connector_->TransformPointToCoordSpaceForView(
-      point, target_view, viz::SurfaceId(frame_sink_id_, local_surface_id_),
+      point, target_view,
+      viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
       transformed_point);
 }
 
@@ -864,7 +873,7 @@ bool RenderWidgetHostViewChildFrame::IsChildFrameForTesting() const {
 }
 
 viz::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
-  return viz::SurfaceId(frame_sink_id_, local_surface_id_);
+  return viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_);
 }
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {

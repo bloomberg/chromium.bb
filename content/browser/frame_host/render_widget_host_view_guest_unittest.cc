@@ -196,9 +196,10 @@ class RenderWidgetHostViewGuestSurfaceTest
     DCHECK(view_);
     RenderWidgetHostViewChildFrame* rwhvcf =
         static_cast<RenderWidgetHostViewChildFrame*>(view_);
-    if (!rwhvcf->local_surface_id_.is_valid())
+    if (!rwhvcf->last_received_local_surface_id_.is_valid())
       return viz::SurfaceId();
-    return viz::SurfaceId(rwhvcf->frame_sink_id_, rwhvcf->local_surface_id_);
+    return viz::SurfaceId(rwhvcf->frame_sink_id_,
+                          rwhvcf->last_received_local_surface_id_);
   }
 
  protected:
