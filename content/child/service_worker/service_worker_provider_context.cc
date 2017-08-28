@@ -19,6 +19,7 @@
 #include "content/child/service_worker/service_worker_subresource_loader.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/worker_thread_registry.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/url_loader_factory.mojom.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -152,6 +153,7 @@ void ServiceWorkerProviderContext::SetController(
   state->controller = std::move(controller);
   state->used_features = used_features;
   if (event_dispatcher_ptr_info.is_valid()) {
+    CHECK(ServiceWorkerUtils::IsServicificationEnabled());
     state->event_dispatcher =
         base::MakeRefCounted<ServiceWorkerEventDispatcherHolder>(
             std::move(event_dispatcher_ptr_info));
