@@ -5,6 +5,7 @@
 #include "ash/system/power/battery_notification.h"
 
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/power/power_status.h"
 #include "ash/system/system_notifier.h"
@@ -44,6 +45,34 @@ gfx::Image& GetBatteryImage(TrayPower::NotificationState notification_state) {
   return ui::ResourceBundle::GetSharedInstance().GetImageNamed(resource_id);
 }
 
+const gfx::VectorIcon& GetBatteryImageMD(
+    TrayPower::NotificationState notification_state) {
+  if (PowerStatus::Get()->IsUsbChargerConnected()) {
+    return kNotificationBatteryFluctuatingIcon;
+  } else if (notification_state == TrayPower::NOTIFICATION_LOW_POWER) {
+    return kNotificationBatteryLowIcon;
+  } else if (notification_state == TrayPower::NOTIFICATION_CRITICAL) {
+    return kNotificationBatteryCriticalIcon;
+  } else {
+    NOTREACHED();
+    return gfx::kNoneIcon;
+  }
+}
+
+message_center::SystemNotificationWarningLevel GetWarningLevelMD(
+    TrayPower::NotificationState notification_state) {
+  if (PowerStatus::Get()->IsUsbChargerConnected()) {
+    return message_center::SystemNotificationWarningLevel::WARNING;
+  } else if (notification_state == TrayPower::NOTIFICATION_LOW_POWER) {
+    return message_center::SystemNotificationWarningLevel::WARNING;
+  } else if (notification_state == TrayPower::NOTIFICATION_CRITICAL) {
+    return message_center::SystemNotificationWarningLevel::CRITICAL_WARNING;
+  } else {
+    NOTREACHED();
+    return message_center::SystemNotificationWarningLevel::NORMAL;
+  }
+}
+
 std::unique_ptr<Notification> CreateNotification(
     TrayPower::NotificationState notification_state) {
   const PowerStatus& status = *PowerStatus::Get();
@@ -77,13 +106,20 @@ std::unique_ptr<Notification> CreateNotification(
   if (!time_message.empty())
     message = message + base::ASCIIToUTF16("\n") + time_message;
 
-  std::unique_ptr<Notification> notification(new Notification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, kBatteryNotificationId,
-      base::string16(), message, GetBatteryImage(notification_state),
-      base::string16(), GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 system_notifier::kNotifierBattery),
-      message_center::RichNotificationData(), NULL));
+  std::unique_ptr<Notification> notification =
+      system_notifier::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kBatteryNotificationId,
+          base::string16(), message, GetBatteryImage(notification_state),
+          base::string16(), GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              system_notifier::kNotifierBattery),
+          message_center::RichNotificationData(), nullptr,
+          GetBatteryImageMD(notification_state),
+          GetWarningLevelMD(notification_state));
+  // TODO(tetsui): Workaround of https://crbug.com/757724. Remove after the
+  // bug is fixed.
+  notification->set_vector_small_image(gfx::kNoneIcon);
   notification->SetSystemPriority();
   return notification;
 }
