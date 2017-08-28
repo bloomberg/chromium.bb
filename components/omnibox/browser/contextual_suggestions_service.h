@@ -59,6 +59,9 @@ class ContextualSuggestionsService : public KeyedService {
       net::URLFetcherDelegate* fetcher_delegate,
       ContextualSuggestionsCallback callback);
 
+  // Advises the service to stop any process that creates a suggestion request.
+  void StopCreatingContextualSuggestionsRequest();
+
   // Returns a URL representing the address of the server where the zero suggest
   // request is being sent. Does not take into account whether sending this
   // request is prohibited (e.g. in an incognito window).
