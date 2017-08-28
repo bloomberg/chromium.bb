@@ -816,6 +816,12 @@ String Internals::visiblePlaceholder(Element* element) {
   return String();
 }
 
+bool Internals::isValidationMessageVisible(Element* element) {
+  DCHECK(element);
+  return IsHTMLFormControlElement(element) &&
+         ToHTMLFormControlElement(element)->IsValidationMessageVisible();
+}
+
 void Internals::selectColorInColorChooser(Element* element,
                                           const String& color_value) {
   DCHECK(element);

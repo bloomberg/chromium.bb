@@ -97,7 +97,7 @@ enum EffectiveConnectionType {
     [RaisesException] Node previousInFlatTree(Node node);
 
     DOMString visiblePlaceholder(Element element);
-
+    boolean isValidationMessageVisible(Element element);
     void selectColorInColorChooser(Element element, DOMString colorValue);
     void endColorChooser(Element element);
 
