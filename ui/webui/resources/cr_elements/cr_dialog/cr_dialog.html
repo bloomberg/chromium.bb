@@ -55,6 +55,7 @@
         font-size: calc(15 / 13 * 100%);
         line-height: 1;
         padding: 16px 16px;
+        @apply(--cr-dialog-title);
       }
 
       :host ::slotted([slot=button-container]) {
@@ -95,7 +96,7 @@
       .top-container {
         align-items: flex-start;
         display: flex;
-        min-height: 47px;
+        min-height: var(--cr-dialog-top-container-min-height, 47px);
       }
 
       .title-container {
@@ -127,6 +128,7 @@
             on-keypress="onCloseKeypress_">
         </button>
       </div>
+      <slot name="header"></slot>
       <div class="body-container">
         <span id="bodyTopMarker"></span>
         <slot name="body"></slot>
