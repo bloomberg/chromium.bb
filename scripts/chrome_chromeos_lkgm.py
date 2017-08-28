@@ -14,6 +14,7 @@ from __future__ import print_function
 import distutils.version
 import os
 
+from chromite.cbuildbot import manifest_version
 from chromite.lib import tree_status
 from chromite.lib import constants
 from chromite.lib import commandline
@@ -43,7 +44,8 @@ class ChromeLGTMCommitter(object):
 
   def __init__(self, checkout_dir, lkgm, dryrun):
     self._checkout_dir = checkout_dir
-    self._lkgm = lkgm
+    # Strip any chrome branch from the lkgm version.
+    self._lkgm = manifest_version.VersionInfo(lkgm).VersionString()
     self._dryrun = dryrun
     self._commit_msg = ''
     self._old_lkgm = None

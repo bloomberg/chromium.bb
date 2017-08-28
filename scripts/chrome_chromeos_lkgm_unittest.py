@@ -25,9 +25,8 @@ class BaseChromeLGTMCommitterTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
     """Common set up method for all tests."""
-    self.lkgm = '5678'
     self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
-        self.tempdir, self.lkgm, False)
+        self.tempdir, '1001.0.0', False)
     self.lkgm_file = os.path.join(self.tempdir, constants.PATH_TO_CHROME_LKGM)
     self.pass_status = builder_status_lib.BuilderStatus(
         constants.BUILDER_STATUS_PASSED, None)
@@ -53,7 +52,8 @@ class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
   def testCommitNewLKGM(self):
     """Tests that we can commit a new LKGM file."""
     osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
-    self.committer._lkgm = '5678.0.0'
+    self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
+        self.tempdir, '1002.0.0', False)
 
     self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
     self.committer.CommitNewLKGM()
@@ -81,3 +81,36 @@ class ChromeLGTMCommitterTester(cros_build_lib_unittest.RunCommandTestCase,
     self.assertCommandContains(['git', 'cl', 'land'])
     self.assertCommandContains(['git', 'fetch', 'origin', 'master'])
     self.assertCommandContains(['git', 'rebase'])
+
+  def testOlderLKGMFails(self):
+    """Tests that trying to update to an older lkgm version fails."""
+    old_lkgm = '1002.0.0'
+    osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
+    osutils.WriteFile(self.lkgm_file, old_lkgm)
+
+    self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
+        self.tempdir, '1001.0.0', False)
+    self.committer.CheckoutChromeLKGM()
+    self.assertTrue(self.committer._old_lkgm, old_lkgm)
+
+    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
+    self.assertRaises(chrome_chromeos_lkgm.LKGMNotValid,
+                      self.committer.CommitNewLKGM)
+
+  def testVersionWithChromeBranch(self):
+    """Tests passing a version with a chrome branch strips the branch."""
+    old_lkgm = '1002.0.0'
+    osutils.SafeMakedirs(os.path.dirname(self.lkgm_file))
+    osutils.WriteFile(self.lkgm_file, old_lkgm)
+    self.committer.CheckoutChromeLKGM()
+    self.assertTrue(self.committer._old_lkgm, old_lkgm)
+
+    self.committer = chrome_chromeos_lkgm.ChromeLGTMCommitter(
+        self.tempdir, '1003.0.0-rc2', False)
+
+    self.PatchObject(tree_status, 'IsTreeOpen', return_value=True)
+    self.committer.CommitNewLKGM()
+
+    # Check the file was actually written out correctly.
+    stripped_lkgm = '1003.0.0'
+    self.assertEqual(osutils.ReadFile(self.lkgm_file), stripped_lkgm)
