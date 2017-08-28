@@ -202,11 +202,13 @@ void AudioRendererHost::AuthorizationCompleted(
     const std::string& raw_device_id,
     const std::string& device_id_for_renderer) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  UMALogDeviceAuthorizationTime(auth_start_time);
+
   auto auth_data = authorizations_.find(stream_id);
   if (auth_data == authorizations_.end())
     return;  // Stream was closed before finishing authorization
 
-  UMALogDeviceAuthorizationTime(auth_start_time);
   if (status == media::OUTPUT_DEVICE_STATUS_OK) {
     auth_data->second.first = true;
     auth_data->second.second = raw_device_id;
