@@ -64,16 +64,23 @@ TEST_F(FileLocationsTest, TestFileNameLocaleWithExtension) {
 // Tests that locale/languages available on iOS are mapped to either a
 // translated Chrome Terms of Service or to English.
 TEST_F(FileLocationsTest, TestTermsOfServiceForSupportedLanguages) {
-  // List of available localized terms_*.html files. Note that this list is
-  // hardcoded and needs to be manually maintained as new locales are added
-  // to Chrome. See http://crbug/522638
-  NSSet* localizedTermsHtml =
-      [NSSet setWithObjects:@"ar", @"bg", @"ca", @"cs", @"da", @"de", @"el",
-                            @"en-GB", @"en", @"es-419", @"es", @"fa", @"fi",
-                            @"fr", @"he", @"hi", @"hr", @"hu", @"id", @"it",
-                            @"ja", @"ko", @"lt", @"nb", @"nl", @"pl", @"pt-BR",
-                            @"pt-PT", @"ro", @"ru", @"sk", @"sr", @"sv", @"th",
-                            @"tr", @"uk", @"vi", @"zh-CN", @"zh-TW", nil];
+  // TODO(crbug.com/522638): List of available localized terms_*.html files.
+  // This list is manually maintained as new locales are added to
+  // components/resources/terms/.
+  NSSet* localizedTermsHtml = [NSSet
+      setWithObjects:@"am", @"ar", @"bg", @"bn", @"ca", @"cs", @"da", @"de",
+                     @"el", @"en-GB", @"en", @"es-419", @"es", @"et", @"fa",
+                     @"fi", @"fil", @"fr", @"gu", @"he", @"hi", @"hr", @"hu",
+                     @"id", @"it", @"ja", @"kn", @"ko", @"lt", @"lv", @"ml",
+                     @"mr", @"nb", @"nl", @"pl", @"pt-BR", @"pt-PT", @"ro",
+                     @"ru", @"sk", @"sl", @"sr", @"sv", @"sw", @"ta", @"te",
+                     @"th", @"tr", @"uk", @"vi", @"zh-CN", @"zh-TW", nil];
+  // Languages supported by iOS is returned by -availableLocaleIdentifiers.
+  // This unit test fails when a language available in iOS falls back to
+  // English (en) even though the terms_*.html file is available (listed in
+  // |localizedTermsHtml|). Fix this by adding the missing terms_*.html
+  // to ios/chrome/browser/ui/BUILD.gn
+  NSMutableSet<NSString*>* incorrectFallback = [NSMutableSet set];
   for (NSString* locale in [NSLocale availableLocaleIdentifiers]) {
     NSString* normalizedLocale =
         [locale stringByReplacingOccurrencesOfString:@"_" withString:@"-"];
@@ -83,11 +90,18 @@ TEST_F(FileLocationsTest, TestTermsOfServiceForSupportedLanguages) {
         termsBaseName_,
         GetIOSLocaleMapping(base::SysNSStringToUTF8(normalizedLocale)),
         extension_);
-    if (filename == enFile_ && ![language isEqualToString:@"en"]) {
-      NSLog(@"OK: Locale %@ using language %@ falls back to use English ToS",
-            locale, language);
-      EXPECT_FALSE([localizedTermsHtml containsObject:language]);
+    if (filename == enFile_ && ![language isEqualToString:@"en"] &&
+        [localizedTermsHtml containsObject:language]) {
+      [incorrectFallback addObject:language];
     }
+  }
+  NSUInteger numberOfMissingFiles = [incorrectFallback count];
+  EXPECT_EQ(numberOfMissingFiles, 0U);
+  if (numberOfMissingFiles) {
+    NSLog(@"Add the following file%@ to ios/chrome/browser/ui/BUILD.gn",
+          numberOfMissingFiles > 1 ? @"s" : @"");
+    for (NSString* language in incorrectFallback)
+      NSLog(@"  terms_%@.html", language);
   }
 }
 
