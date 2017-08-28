@@ -129,7 +129,8 @@ mojo::ScopedSharedBufferMapping
 PlatformSensorProviderBase::MapSharedBufferForType(mojom::SensorType type) {
   mojo::ScopedSharedBufferMapping mapping = shared_buffer_handle_->MapAtOffset(
       kReadingBufferSize, SensorReadingSharedBuffer::GetOffset(type));
-  memset(mapping.get(), 0, kReadingBufferSize);
+  if (mapping)
+    memset(mapping.get(), 0, kReadingBufferSize);
   return mapping;
 }
 
