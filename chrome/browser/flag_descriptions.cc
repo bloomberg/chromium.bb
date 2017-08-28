@@ -1190,6 +1190,10 @@ const char kSoftwareRasterizerName[] = "3D software rasterizer";
 const char kSoftwareRasterizerDescription[] =
     "Fall back to a 3D software rasterizer when the GPU cannot be used.";
 
+const char kSoundContentSettingName[] = "Sound content setting";
+const char kSoundContentSettingDescription[] =
+    "Enable site-wide muting in content settings and tab strip context menu.";
+
 const char kSpeculativePrefetchName[] = "Speculative Prefetch";
 const char kSpeculativePrefetchDescription[] =
     R"*("Speculative Prefetch" fetches likely resources early to improve )*"

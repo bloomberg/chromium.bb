@@ -50,6 +50,14 @@ Polymer({
       },
     },
 
+    /** @private */
+    enableSoundContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableSoundContentSetting');
+      },
+    },
+
     /**
      * The type of storage for the origin.
      * @private
