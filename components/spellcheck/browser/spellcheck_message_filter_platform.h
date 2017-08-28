@@ -26,12 +26,14 @@ class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
                                 content::BrowserThread::ID* thread) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
+#if defined(OS_MACOSX)
   // Adjusts remote_results by examining local_results. Any result that's both
   // local and remote stays type SPELLING, all others are flagged GRAMMAR.
   // (This is needed to force gray underline for remote-only results.)
   static void CombineResults(
       std::vector<SpellCheckResult>* remote_results,
       const std::vector<SpellCheckResult>& local_results);
+#endif
 
  private:
   friend class TestingSpellCheckMessageFilter;
@@ -39,16 +41,9 @@ class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
 
   ~SpellCheckMessageFilterPlatform() override;
 
-  void OnCheckSpelling(const base::string16& word, int route_id, bool* correct);
-  void OnFillSuggestionList(const base::string16& word,
-                            std::vector<base::string16>* suggestions);
   void OnRequestTextCheck(int route_id,
                           int identifier,
                           const base::string16& text);
-
-  int ToDocumentTag(int route_id);
-  void RetireDocumentTag(int route_id);
-  std::map<int,int> tag_map_;
 
   int render_process_id_;
 
@@ -62,7 +57,17 @@ class SpellCheckMessageFilterPlatform : public content::BrowserMessageFilter {
 
   // Android-specific object used to query the Android spellchecker.
   std::unique_ptr<SpellCheckerSessionBridge> impl_;
-#else
+#endif
+
+#if defined(OS_MACOSX)
+  void OnCheckSpelling(const base::string16& word, int route_id, bool* correct);
+  void OnFillSuggestionList(const base::string16& word,
+                            std::vector<base::string16>* suggestions);
+
+  int ToDocumentTag(int route_id);
+  void RetireDocumentTag(int route_id);
+  std::map<int, int> tag_map_;
+
   // A JSON-RPC client that calls the Spelling service in the background.
   std::unique_ptr<SpellingServiceClient> client_;
 #endif

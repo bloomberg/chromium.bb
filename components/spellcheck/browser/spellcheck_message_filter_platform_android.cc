@@ -40,27 +40,7 @@ bool SpellCheckMessageFilterPlatform::OnMessageReceived(
   return handled;
 }
 
-// static
-void SpellCheckMessageFilterPlatform::CombineResults(
-    std::vector<SpellCheckResult>* remote_results,
-    const std::vector<SpellCheckResult>& local_results) {
-  NOTREACHED();
-}
-
 SpellCheckMessageFilterPlatform::~SpellCheckMessageFilterPlatform() {}
-
-void SpellCheckMessageFilterPlatform::OnCheckSpelling(
-    const base::string16& word,
-    int route_id,
-    bool* correct) {
-  NOTREACHED();
-}
-
-void SpellCheckMessageFilterPlatform::OnFillSuggestionList(
-    const base::string16& word,
-    std::vector<base::string16>* suggestions) {
-  NOTREACHED();
-}
 
 void SpellCheckMessageFilterPlatform::OnRequestTextCheck(
     int route_id,
@@ -70,15 +50,6 @@ void SpellCheckMessageFilterPlatform::OnRequestTextCheck(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   impl_->RequestTextCheck(route_id, identifier, text);
-}
-
-int SpellCheckMessageFilterPlatform::ToDocumentTag(int route_id) {
-  NOTREACHED();
-  return -1;
-}
-
-void SpellCheckMessageFilterPlatform::RetireDocumentTag(int route_id) {
-  NOTREACHED();
 }
 
 void SpellCheckMessageFilterPlatform::OnToggleSpellCheck(
