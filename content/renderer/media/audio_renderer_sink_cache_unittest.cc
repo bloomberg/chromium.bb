@@ -226,14 +226,7 @@ TEST_F(AudioRendererSinkCacheTest, GarbageCollection) {
 
 // Verify that the sink created with GetSinkInfo() is not deleted if used within
 // the timeout.
-// Flaky on Linux TSan Tests. https://crbug.com/754196
-#if defined(OS_LINUX)
-#define MAYBE_NoGarbageCollectionForUsedSink \
-  DISABLED_NoGarbageCollectionForUsedSink
-#else
-#define MAYBE_NoGarbageCollectionForUsedSink NoGarbageCollectionForUsedSink
-#endif
-TEST_F(AudioRendererSinkCacheTest, MAYBE_NoGarbageCollectionForUsedSink) {
+TEST_F(AudioRendererSinkCacheTest, NoGarbageCollectionForUsedSink) {
   EXPECT_EQ(0, sink_count());
 
   base::Thread thread("timeout_thread");
