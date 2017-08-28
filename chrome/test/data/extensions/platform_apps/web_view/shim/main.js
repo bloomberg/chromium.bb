@@ -1897,6 +1897,11 @@ function testDeclarativeWebRequestAPISendMessage() {
   document.body.appendChild(webview);
 }
 
+function testDeclarativeWebRequestAPISendMessageSecondWebView() {
+  var tempWebview = new WebView();
+  testDeclarativeWebRequestAPISendMessage();
+}
+
 // This test verifies that setting a <webview>'s style.display = 'block' does
 // not throw and attach error.
 function testDisplayBlock() {
@@ -3174,6 +3179,8 @@ embedder.test.testList = {
   'testDeclarativeWebRequestAPI': testDeclarativeWebRequestAPI,
   'testDeclarativeWebRequestAPISendMessage':
       testDeclarativeWebRequestAPISendMessage,
+  'testDeclarativeWebRequestAPISendMessageSecondWebView':
+      testDeclarativeWebRequestAPISendMessageSecondWebView,
   'testDisplayBlock': testDisplayBlock,
   'testWebRequestAPI': testWebRequestAPI,
   'testWebRequestAPIErrorOccurred': testWebRequestAPIErrorOccurred,
