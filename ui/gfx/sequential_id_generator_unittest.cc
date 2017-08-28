@@ -61,4 +61,14 @@ TEST(SequentialIDGeneratorTest, RemoveMultipleNumbers) {
   EXPECT_EQ(4U, generator.GetGeneratedID(0));
 }
 
+TEST(SequentialIDGeneratorTest, MaybeRemoveNumbers) {
+  const uint32_t kMinID = 0;
+  SequentialIDGenerator generator(kMinID);
+
+  EXPECT_EQ(0U, generator.GetGeneratedID(42));
+
+  generator.MaybeReleaseNumber(42);
+  EXPECT_FALSE(generator.HasGeneratedIDFor(42));
+  generator.MaybeReleaseNumber(42);
+}
 }  // namespace ui
