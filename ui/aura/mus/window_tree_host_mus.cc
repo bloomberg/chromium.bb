@@ -204,13 +204,9 @@ void WindowTreeHostMus::OnCloseRequest() {
 
 void WindowTreeHostMus::MoveCursorToScreenLocationInPixels(
     const gfx::Point& location_in_pixels) {
-  gfx::Point screen_location_in_pixels = location_in_pixels;
-  gfx::Point location = GetLocationOnScreenInPixels();
-  screen_location_in_pixels.Offset(-location.x(), -location.y());
-  delegate_->OnWindowTreeHostMoveCursorToDisplayLocation(
-      screen_location_in_pixels, display_id_);
-
-  Env::GetInstance()->set_last_mouse_location(location_in_pixels);
+  // |location_in_pixels| is relative to the display.
+  delegate_->OnWindowTreeHostMoveCursorToDisplayLocation(location_in_pixels,
+                                                         display_id_);
 }
 
 gfx::Transform WindowTreeHostMus::GetRootTransformForLocalEventCoordinates()
