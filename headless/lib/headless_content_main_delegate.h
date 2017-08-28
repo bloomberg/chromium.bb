@@ -41,6 +41,7 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
       const std::string& process_type,
       const content::MainFunctionParams& main_function_params) override;
   content::ContentBrowserClient* CreateContentBrowserClient() override;
+  content::ContentUtilityClient* CreateContentUtilityClient() override;
   content::ContentRendererClient* CreateContentRendererClient() override;
 
   HeadlessBrowserImpl* browser() const { return browser_.get(); }
@@ -60,6 +61,7 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
 
   std::unique_ptr<content::ContentRendererClient> renderer_client_;
   std::unique_ptr<content::ContentBrowserClient> browser_client_;
+  std::unique_ptr<content::ContentUtilityClient> utility_client_;
   HeadlessContentClient content_client_;
   HeadlessPlatformEventSource platform_event_source_;
 
