@@ -12,7 +12,7 @@ ScrollPaintPropertyNode* ScrollPaintPropertyNode::Root() {
   DEFINE_STATIC_REF(ScrollPaintPropertyNode, root,
                     (ScrollPaintPropertyNode::Create(
                         nullptr, IntPoint(), IntSize(), IntSize(), false, false,
-                        0, CompositorElementId(), nullptr)));
+                        0, CompositorElementId())));
   return root;
 }
 
@@ -45,8 +45,6 @@ String ScrollPaintPropertyNode::ToString() const {
   }
   text.Append(String::Format(" compositorElementId=%s",
                              compositor_element_id_.ToString().c_str()));
-  if (scroll_client_)
-    text.Append(String::Format(" scrollClient=%p", scroll_client_));
   return text.ToString();
 }
 

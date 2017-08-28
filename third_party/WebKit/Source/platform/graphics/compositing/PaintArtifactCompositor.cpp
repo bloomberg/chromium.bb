@@ -36,8 +36,8 @@ namespace blink {
 // http://crbug.com/692842#c4.
 static int g_s_property_tree_sequence_number = 1;
 
-PaintArtifactCompositor::PaintArtifactCompositor()
-    : tracks_raster_invalidations_(false) {
+PaintArtifactCompositor::PaintArtifactCompositor(WebLayerScrollClient& client)
+    : scroll_client_(client), tracks_raster_invalidations_(false) {
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   root_layer_ = cc::Layer::Create();
@@ -188,11 +188,9 @@ PaintArtifactCompositor::ScrollHitTestLayerForPendingLayer(
   // Set the layer's bounds equal to the container because the scroll layer
   // does not scroll.
   scroll_layer->SetBounds(bounds);
-  if (auto* scroll_client = scroll_node.ScrollClient()) {
-    scroll_layer->set_did_scroll_callback(
-        base::Bind(&blink::WebLayerScrollClient::DidScroll,
-                   base::Unretained(scroll_client)));
-  }
+  scroll_layer->set_did_scroll_callback(
+      base::Bind(&blink::WebLayerScrollClient::DidScroll,
+                 base::Unretained(&scroll_client_)));
   return scroll_layer;
 }
 

@@ -70,6 +70,20 @@ class WebLayerTreeViewWithLayerTreeFrameSink
   }
 };
 
+class FakeScrollClient : public WebLayerScrollClient {
+ public:
+  FakeScrollClient() : did_scroll_count(0) {}
+
+  void DidScroll(const gfx::ScrollOffset& offset,
+                 const CompositorElementId&) final {
+    did_scroll_count++;
+    last_scroll_offset = offset;
+  };
+
+  gfx::ScrollOffset last_scroll_offset;
+  unsigned did_scroll_count;
+};
+
 class PaintArtifactCompositorTestWithPropertyTrees
     : public ::testing::Test,
       private ScopedSlimmingPaintV2ForTest {
@@ -81,7 +95,8 @@ class PaintArtifactCompositorTestWithPropertyTrees
 
   void SetUp() override {
     // Delay constructing the compositor until after the feature is set.
-    paint_artifact_compositor_ = PaintArtifactCompositor::Create();
+    paint_artifact_compositor_ =
+        PaintArtifactCompositor::Create(scroll_client_);
     paint_artifact_compositor_->EnableExtraDataForTesting();
 
     cc::LayerTreeSettings settings =
@@ -220,7 +235,10 @@ class PaintArtifactCompositorTestWithPropertyTrees
     return PaintArtifactCompositor::MightOverlap(a, b);
   }
 
+  FakeScrollClient& ScrollClient() { return scroll_client_; }
+
  private:
+  FakeScrollClient scroll_client_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -765,28 +783,12 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
   EXPECT_EQ(converted_effect3.id, ContentLayerAt(2)->effect_tree_index());
 }
 
-class FakeScrollClient : public WebLayerScrollClient {
- public:
-  FakeScrollClient() : did_scroll_count(0) {}
-
-  void DidScroll(const gfx::ScrollOffset& offset,
-                 const CompositorElementId&) final {
-    did_scroll_count++;
-    last_scroll_offset = offset;
-  };
-
-  gfx::ScrollOffset last_scroll_offset;
-  unsigned did_scroll_count;
-};
-
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
-  FakeScrollClient scroll_client;
-
   CompositorElementId scroll_element_id = ScrollElementId(2);
   RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::Create(
       ScrollPaintPropertyNode::Root(), IntPoint(3, 5), IntSize(11, 13),
       IntSize(27, 31), true, false, 0 /* mainThreadScrollingReasons */,
-      scroll_element_id, &scroll_client);
+      scroll_element_id);
   RefPtr<TransformPaintPropertyNode> scroll_translation =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
@@ -839,17 +841,17 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   EXPECT_EQ(scroll_layer->scroll_tree_index(), scroll_node.id);
   EXPECT_EQ(scroll_layer->transform_tree_index(), transform_node.parent_id);
 
-  EXPECT_EQ(0u, scroll_client.did_scroll_count);
+  EXPECT_EQ(0u, ScrollClient().did_scroll_count);
   scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(1, 2));
-  EXPECT_EQ(1u, scroll_client.did_scroll_count);
-  EXPECT_EQ(gfx::ScrollOffset(1, 2), scroll_client.last_scroll_offset);
+  EXPECT_EQ(1u, ScrollClient().did_scroll_count);
+  EXPECT_EQ(gfx::ScrollOffset(1, 2), ScrollClient().last_scroll_offset);
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TransformUnderScrollNode) {
   RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::Create(
       ScrollPaintPropertyNode::Root(), IntPoint(), IntSize(11, 13),
       IntSize(27, 31), true, false, 0 /* mainThreadScrollingReasons */,
-      CompositorElementId(), nullptr);
+      CompositorElementId());
   RefPtr<TransformPaintPropertyNode> scroll_translation =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
@@ -899,7 +901,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
       ScrollPaintPropertyNode::Root(), IntPoint(), IntSize(2, 3), IntSize(5, 7),
       false, true,
       MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
-      scroll_element_id_a, nullptr);
+      scroll_element_id_a);
   RefPtr<TransformPaintPropertyNode> scroll_translation_a =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
@@ -911,7 +913,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
   RefPtr<ScrollPaintPropertyNode> scroll_b = ScrollPaintPropertyNode::Create(
       scroll_translation_a->ScrollNode(), IntPoint(), IntSize(19, 23),
       IntSize(29, 31), true, false, 0 /* mainThreadScrollingReasons */,
-      scroll_element_id_b, nullptr);
+      scroll_element_id_b);
   RefPtr<TransformPaintPropertyNode> scroll_translation_b =
       TransformPaintPropertyNode::Create(
           scroll_translation_a, TransformationMatrix().Translate(37, 41),
@@ -976,7 +978,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ScrollHitTestLayerOrder) {
   RefPtr<ScrollPaintPropertyNode> scroll = ScrollPaintPropertyNode::Create(
       ScrollPaintPropertyNode::Root(), IntPoint(), IntSize(100, 100),
       IntSize(100, 100), true, false, 0 /* mainThreadScrollingReasons */,
-      scroll_element_id, nullptr);
+      scroll_element_id);
   RefPtr<TransformPaintPropertyNode> scroll_translation =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
@@ -1026,7 +1028,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   RefPtr<ScrollPaintPropertyNode> scroll_1 = ScrollPaintPropertyNode::Create(
       ScrollPaintPropertyNode::Root(), IntPoint(), IntSize(100, 100),
       IntSize(100, 100), true, false, 0 /* mainThreadScrollingReasons */,
-      scroll_1_element_id, nullptr);
+      scroll_1_element_id);
   RefPtr<TransformPaintPropertyNode> scroll_translation_1 =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
@@ -1040,7 +1042,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   RefPtr<ScrollPaintPropertyNode> scroll_2 = ScrollPaintPropertyNode::Create(
       ScrollPaintPropertyNode::Root(), IntPoint(), IntSize(50, 50),
       IntSize(50, 50), true, false, 0 /* mainThreadScrollingReasons */,
-      scroll_2_element_id, nullptr);
+      scroll_2_element_id);
   RefPtr<TransformPaintPropertyNode> scroll_translation_2 =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
@@ -1094,8 +1096,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, AncestorScrollNodes) {
   CompositorElementId scroll_element_id_a = ScrollElementId(2);
   RefPtr<ScrollPaintPropertyNode> scroll_a = ScrollPaintPropertyNode::Create(
       ScrollPaintPropertyNode::Root(), IntPoint(), IntSize(2, 3), IntSize(5, 7),
-      false, true, 0 /* mainThreadScrollingReasons */, scroll_element_id_a,
-      nullptr);
+      false, true, 0 /* mainThreadScrollingReasons */, scroll_element_id_a);
   RefPtr<TransformPaintPropertyNode> scroll_translation_a =
       TransformPaintPropertyNode::Create(
           TransformPaintPropertyNode::Root(),
@@ -1107,7 +1108,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, AncestorScrollNodes) {
   RefPtr<ScrollPaintPropertyNode> scroll_b = ScrollPaintPropertyNode::Create(
       scroll_translation_a->ScrollNode(), IntPoint(), IntSize(19, 23),
       IntSize(29, 31), true, false, 0 /* mainThreadScrollingReasons */,
-      scroll_element_id_b, nullptr);
+      scroll_element_id_b);
   RefPtr<TransformPaintPropertyNode> scroll_translation_b =
       TransformPaintPropertyNode::Create(
           scroll_translation_a, TransformationMatrix().Translate(37, 41),
