@@ -8,42 +8,35 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/common/cloud_print.mojom.h"
 #include "chrome/service/cloud_print/cloud_print_proxy.h"
-#include "chrome/service/service_ipc_server.h"
 
 namespace base {
 class DictionaryValue;
 }
 
-namespace IPC {
-class Message;
-class Sender;
-}
-
 namespace cloud_print {
 
 // Handles IPC messages for Cloud Print. Lives on the main thread.
-class CloudPrintMessageHandler : public ServiceIPCServer::MessageHandler {
+class CloudPrintMessageHandler : public cloud_print::mojom::CloudPrint {
  public:
-  CloudPrintMessageHandler(IPC::Sender* ipc_sender,
-                           CloudPrintProxy::Provider* proxy_provider);
+  explicit CloudPrintMessageHandler(CloudPrintProxy::Provider* proxy_provider);
   ~CloudPrintMessageHandler() override;
 
-  // ServiceIPCServer::MessageHandler implementation.
-  bool HandleMessage(const IPC::Message& message) override;
+  static void Create(CloudPrintProxy::Provider* proxy_provider,
+                     cloud_print::mojom::CloudPrintRequest request);
 
  private:
-  // IPC message handlers.
-  void OnEnableCloudPrintProxyWithRobot(
+  // cloud_print::mojom::CloudPrintProxy.
+  void EnableCloudPrintProxyWithRobot(
       const std::string& robot_auth_code,
       const std::string& robot_email,
       const std::string& user_email,
-      const base::DictionaryValue& user_settings);
-  void OnGetCloudPrintProxyInfo();
-  void OnGetPrinters();
-  void OnDisableCloudPrintProxy();
+      std::unique_ptr<base::DictionaryValue> user_settings) override;
+  void GetCloudPrintProxyInfo(GetCloudPrintProxyInfoCallback callback) override;
+  void GetPrinters(GetPrintersCallback callback) override;
+  void DisableCloudPrintProxy() override;
 
-  IPC::Sender* ipc_sender_;  // Owned by our owner.
   CloudPrintProxy::Provider* proxy_provider_;  // Owned by our owner.
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintMessageHandler);

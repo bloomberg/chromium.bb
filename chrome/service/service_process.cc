@@ -243,9 +243,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
 
   ipc_server_.reset(new ServiceIPCServer(this /* client */, io_task_runner(),
                                          &shutdown_event_));
-  ipc_server_->AddMessageHandler(
-      base::MakeUnique<cloud_print::CloudPrintMessageHandler>(ipc_server_.get(),
-                                                              this));
+  ipc_server_->binder_registry().AddInterface(
+      base::Bind(&cloud_print::CloudPrintMessageHandler::Create, this));
   ipc_server_->Init();
 
   // After the IPC server has started we signal that the service process is

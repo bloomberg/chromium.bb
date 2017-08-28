@@ -26,10 +26,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/upgrade_detector.h"
-#include "chrome/common/service_messages.h"
 #include "chrome/common/service_process_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "ipc/ipc_channel_mojo.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/named_platform_handle.h"
 #include "mojo/edk/embedder/named_platform_handle_utils.h"
@@ -48,7 +46,7 @@ constexpr base::TimeDelta kInitialConnectionRetryDelay =
     base::TimeDelta::FromMilliseconds(20);
 
 void ConnectAsyncWithBackoff(
-    mojo::ScopedMessagePipeHandle handle,
+    service_manager::mojom::InterfaceProviderRequest interface_provider_request,
     mojo::edk::NamedPlatformHandle os_pipe,
     size_t num_retries_left,
     base::TimeDelta retry_delay,
@@ -64,10 +62,10 @@ void ConnectAsyncWithBackoff(
     } else {
       base::PostDelayedTaskWithTraits(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-          base::BindOnce(&ConnectAsyncWithBackoff, std::move(handle),
-                         std::move(os_pipe), num_retries_left - 1,
-                         retry_delay * 2, std::move(response_task_runner),
-                         std::move(response_callback)),
+          base::BindOnce(
+              &ConnectAsyncWithBackoff, std::move(interface_provider_request),
+              std::move(os_pipe), num_retries_left - 1, retry_delay * 2,
+              std::move(response_task_runner), std::move(response_callback)),
           retry_delay);
     }
   } else {
@@ -75,7 +73,7 @@ void ConnectAsyncWithBackoff(
     mojo::FuseMessagePipes(
         peer_connection->Connect(mojo::edk::ConnectionParams(
             mojo::edk::TransportProtocol::kLegacy, std::move(os_pipe_handle))),
-        std::move(handle));
+        interface_provider_request.PassMessagePipe());
     response_task_runner->PostTask(FROM_HERE,
                                    base::BindOnce(std::move(response_callback),
                                                   std::move(peer_connection)));
@@ -97,7 +95,7 @@ ServiceProcessControl::~ServiceProcessControl() {
 void ServiceProcessControl::ConnectInternal() {
   // If the channel has already been established then we run the task
   // and return.
-  if (channel_.get()) {
+  if (service_process_) {
     RunConnectDoneTasks();
     return;
   }
@@ -105,22 +103,17 @@ void ServiceProcessControl::ConnectInternal() {
   // Actually going to connect.
   DVLOG(1) << "Connecting to Service Process IPC Server";
 
-  mojo::MessagePipe pipe;
+  service_manager::mojom::InterfaceProviderPtr remote_interfaces;
+  auto interface_provider_request = mojo::MakeRequest(&remote_interfaces);
+  SetMojoHandle(std::move(remote_interfaces));
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
       base::BindOnce(
-          &ConnectAsyncWithBackoff, std::move(pipe.handle1),
+          &ConnectAsyncWithBackoff, std::move(interface_provider_request),
           GetServiceProcessChannel(), kMaxConnectionAttempts,
           kInitialConnectionRetryDelay, base::ThreadTaskRunnerHandle::Get(),
           base::BindOnce(&ServiceProcessControl::OnPeerConnectionComplete,
                          weak_factory_.GetWeakPtr())));
-  // TODO(hclam): Handle error connecting to channel.
-  auto io_task_runner =
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  SetChannel(
-      IPC::ChannelProxy::Create(IPC::ChannelMojo::CreateClientFactory(
-                                    std::move(pipe.handle0), io_task_runner),
-                                this, io_task_runner));
 }
 
 void ServiceProcessControl::OnPeerConnectionComplete(
@@ -129,9 +122,17 @@ void ServiceProcessControl::OnPeerConnectionComplete(
   peer_connection_ = std::move(peer_connection);
 }
 
-void ServiceProcessControl::SetChannel(
-    std::unique_ptr<IPC::ChannelProxy> channel) {
-  channel_ = std::move(channel);
+void ServiceProcessControl::SetMojoHandle(
+    service_manager::mojom::InterfaceProviderPtr handle) {
+  remote_interfaces_.Close();
+  remote_interfaces_.Bind(std::move(handle));
+  remote_interfaces_.SetConnectionLostClosure(base::Bind(
+      &ServiceProcessControl::OnChannelError, base::Unretained(this)));
+
+  // TODO(hclam): Handle error connecting to channel.
+  remote_interfaces_.GetInterface(&service_process_);
+  service_process_->Hello(base::BindOnce(
+      &ServiceProcessControl::OnChannelConnected, base::Unretained(this)));
 }
 
 void ServiceProcessControl::RunConnectDoneTasks() {
@@ -163,7 +164,7 @@ void ServiceProcessControl::RunAllTasksHelper(TaskList* task_list) {
 }
 
 bool ServiceProcessControl::IsConnected() const {
-  return channel_ != NULL;
+  return !!service_process_;
 }
 
 void ServiceProcessControl::Launch(const base::Closure& success_task,
@@ -200,8 +201,9 @@ void ServiceProcessControl::Launch(const base::Closure& success_task,
 
 void ServiceProcessControl::Disconnect() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  channel_.reset();
   peer_connection_.reset();
+  remote_interfaces_.Close();
+  service_process_.reset();
 }
 
 void ServiceProcessControl::OnProcessLaunched() {
@@ -224,19 +226,12 @@ void ServiceProcessControl::OnProcessLaunched() {
   launcher_ = NULL;
 }
 
-bool ServiceProcessControl::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ServiceProcessControl, message)
-    IPC_MESSAGE_HANDLER(ServiceHostMsg_CloudPrintProxy_Info,
-                        OnCloudPrintProxyInfo)
-    IPC_MESSAGE_HANDLER(ServiceHostMsg_Histograms, OnHistograms)
-    IPC_MESSAGE_HANDLER(ServiceHostMsg_Printers, OnPrinters)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
+void ServiceProcessControl::OnUpgradeRecommended() {
+  if (apply_changes_from_upgrade_observer_)
+    service_process_->UpdateAvailable();
 }
 
-void ServiceProcessControl::OnChannelConnected(int32_t peer_pid) {
+void ServiceProcessControl::OnChannelConnected() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
@@ -245,7 +240,7 @@ void ServiceProcessControl::OnChannelConnected(int32_t peer_pid) {
   // We just established a channel with the service process. Notify it if an
   // upgrade is available.
   if (UpgradeDetector::GetInstance()->notify_upgrade())
-    Send(new ServiceMsg_UpdateAvailable);
+    service_process_->UpdateAvailable();
   else
     apply_changes_from_upgrade_observer_ = true;
 
@@ -258,32 +253,8 @@ void ServiceProcessControl::OnChannelError() {
   UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
                             SERVICE_EVENT_CHANNEL_ERROR, SERVICE_EVENT_MAX);
 
-  channel_.reset();
-  peer_connection_.reset();
+  Disconnect();
   RunConnectDoneTasks();
-}
-
-bool ServiceProcessControl::Send(IPC::Message* message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!channel_.get())
-    return false;
-  return channel_->Send(message);
-}
-
-void ServiceProcessControl::OnUpgradeRecommended() {
-  if (apply_changes_from_upgrade_observer_)
-    Send(new ServiceMsg_UpdateAvailable);
-}
-
-void ServiceProcessControl::OnCloudPrintProxyInfo(
-    const cloud_print::CloudPrintProxyInfo& proxy_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
-                            SERVICE_EVENT_INFO_REPLY, SERVICE_EVENT_MAX);
-  if (!cloud_print_info_callback_.is_null()) {
-    cloud_print_info_callback_.Run(proxy_info);
-    cloud_print_info_callback_.Reset();
-  }
 }
 
 void ServiceProcessControl::OnHistograms(
@@ -303,31 +274,6 @@ void ServiceProcessControl::RunHistogramsCallback() {
     histograms_callback_.Reset();
   }
   histograms_timeout_callback_.Cancel();
-}
-
-void ServiceProcessControl::OnPrinters(
-    const std::vector<std::string>& printers) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  UMA_HISTOGRAM_ENUMERATION(
-      "CloudPrint.ServiceEvents", SERVICE_PRINTERS_REPLY, SERVICE_EVENT_MAX);
-  UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrinters", printers.size());
-  if (!printers_callback_.is_null()) {
-    printers_callback_.Run(printers);
-    printers_callback_.Reset();
-  }
-}
-
-bool ServiceProcessControl::GetCloudPrintProxyInfo(
-    const CloudPrintProxyInfoCallback& cloud_print_info_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!cloud_print_info_callback.is_null());
-  cloud_print_info_callback_.Reset();
-  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
-                            SERVICE_EVENT_INFO_REQUEST, SERVICE_EVENT_MAX);
-  if (!Send(new ServiceMsg_GetCloudPrintProxyInfo()))
-    return false;
-  cloud_print_info_callback_ = cloud_print_info_callback;
-  return true;
 }
 
 bool ServiceProcessControl::GetHistograms(
@@ -351,13 +297,15 @@ bool ServiceProcessControl::GetHistograms(
                             SERVICE_EVENT_HISTOGRAMS_REQUEST,
                             SERVICE_EVENT_MAX);
 
-  if (!Send(new ServiceMsg_GetHistograms()))
+  if (!service_process_)
     return false;
 
+  service_process_->GetHistograms(base::BindOnce(
+      &ServiceProcessControl::OnHistograms, base::Unretained(this)));
+
   // Run timeout task to make sure |histograms_callback| is called.
-  histograms_timeout_callback_.Reset(
-      base::Bind(&ServiceProcessControl::RunHistogramsCallback,
-                 base::Unretained(this)));
+  histograms_timeout_callback_.Reset(base::Bind(
+      &ServiceProcessControl::RunHistogramsCallback, base::Unretained(this)));
   BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE,
                                  histograms_timeout_callback_.callback(),
                                  timeout);
@@ -366,25 +314,13 @@ bool ServiceProcessControl::GetHistograms(
   return true;
 }
 
-bool ServiceProcessControl::GetPrinters(
-    const PrintersCallback& printers_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!printers_callback.is_null());
-  printers_callback_.Reset();
-  UMA_HISTOGRAM_ENUMERATION(
-      "CloudPrint.ServiceEvents", SERVICE_PRINTERS_REQUEST, SERVICE_EVENT_MAX);
-  if (!Send(new ServiceMsg_GetPrinters()))
-    return false;
-  printers_callback_ = printers_callback;
-  return true;
-}
-
 bool ServiceProcessControl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool ret = Send(new ServiceMsg_Shutdown());
-  channel_.reset();
-  peer_connection_.reset();
-  return ret;
+  if (!service_process_)
+    return false;
+  service_process_->ShutDown();
+  Disconnect();
+  return true;
 }
 
 // static
