@@ -742,7 +742,6 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertTrue('File is stale' in str(results[0]))
     self.assertTrue('File is stale' in str(results[1]))
 
-
 class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
   def testCheckAndroidTestAnnotationUsage(self):
     mock_input_api = MockInputApi()
@@ -788,7 +787,95 @@ class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
     self.assertTrue('UsedDeprecatedSmokeAnnotation.java:1' in msgs[0].items,
                     'UsedDeprecatedSmokeAnnotation not found in errors')
 
+class AndroidDeprecatedJUnitFrameworkTest(unittest.TestCase):
+  def testCheckAndroidTestAnnotationUsage(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
 
+    mock_input_api.files = [
+        MockAffectedFile('LalaLand.java', [
+          'random stuff'
+        ]),
+        MockAffectedFile('CorrectUsage.java', [
+          'import org.junit.ABC',
+          'import org.junit.XYZ;',
+        ]),
+        MockAffectedFile('UsedDeprecatedJUnit.java', [
+          'import junit.framework.*;',
+        ]),
+        MockAffectedFile('UsedDeprecatedJUnitAssert.java', [
+          'import junit.framework.Assert;',
+        ]),
+    ]
+    msgs = PRESUBMIT._CheckAndroidTestJUnitFrameworkImport(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(msgs),
+                     'Expected %d items, found %d: %s'
+                     % (1, len(msgs), msgs))
+    self.assertEqual(2, len(msgs[0].items),
+                     'Expected %d items, found %d: %s'
+                     % (2, len(msgs[0].items), msgs[0].items))
+    self.assertTrue('UsedDeprecatedJUnit.java:1' in msgs[0].items,
+                    'UsedDeprecatedJUnit.java not found in errors')
+    self.assertTrue('UsedDeprecatedJUnitAssert.java:1'
+                    in msgs[0].items,
+                    'UsedDeprecatedJUnitAssert not found in errors')
+
+class AndroidJUnitBaseClass(unittest.TestCase):
+  def testCheckAndroidTestAnnotationUsage(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+        MockAffectedFile('LalaLand.java', [
+          'random stuff'
+        ]),
+        MockAffectedFile('CorrectTest.java', [
+          '@RunWith(ABC.class);'
+          'public class CorrectTest {',
+          '}',
+        ]),
+        MockAffectedFile('HistoricallyIncorrectTest.java', [
+          'public class Test extends BaseCaseA {',
+          '}',
+          ], old_contents=[
+          'public class Test extends BaseCaseB {',
+          '}',
+        ]),
+        MockAffectedFile('CorrectTestWithInterface.java', [
+          '@RunWith(ABC.class);'
+          'public class CorrectTest implement Interface {',
+          '}',
+        ]),
+        MockAffectedFile('IncorrectTest.java', [
+          'public class IncorrectTest extends TestCase {',
+          '}',
+        ]),
+        MockAffectedFile('IncorrectTestWithInterface.java', [
+          'public class Test implements X extends BaseClass {',
+          '}',
+        ]),
+        MockAffectedFile('IncorrectTestMultiLine.java', [
+          'public class Test implements X, Y, Z',
+          '        extends TestBase {',
+          '}',
+        ]),
+    ]
+    msgs = PRESUBMIT._CheckAndroidTestJUnitInheritance(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(msgs),
+                     'Expected %d items, found %d: %s'
+                     % (1, len(msgs), msgs))
+    self.assertEqual(3, len(msgs[0].items),
+                     'Expected %d items, found %d: %s'
+                     % (3, len(msgs[0].items), msgs[0].items))
+    self.assertTrue('IncorrectTest.java:1' in msgs[0].items,
+                    'IncorrectTest not found in errors')
+    self.assertTrue('IncorrectTestWithInterface.java:1'
+                    in msgs[0].items,
+                    'IncorrectTestWithInterface not found in errors')
+    self.assertTrue('IncorrectTestMultiLine.java:2' in msgs[0].items,
+                    'IncorrectTestMultiLine not found in errors')
 
 class LogUsageTest(unittest.TestCase):
 

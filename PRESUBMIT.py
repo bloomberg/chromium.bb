@@ -1802,6 +1802,58 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   return results
 
 
+def _CheckAndroidTestJUnitFrameworkImport(input_api, output_api):
+  """Checks that junit.framework.* is no longer used."""
+  deprecated_junit_framework_pattern = input_api.re.compile(
+      r'^import junit\.framework\..*;',
+      input_api.re.MULTILINE)
+  sources = lambda x: input_api.FilterSourceFile(
+      x, white_list=(r'.*\.java$',), black_list=None)
+  errors = []
+  for f in input_api.AffectedFiles(sources):
+    for line_num, line in f.ChangedContents():
+      if deprecated_junit_framework_pattern.search(line):
+        errors.append("%s:%d" % (f.LocalPath(), line_num))
+
+  results = []
+  if errors:
+    results.append(output_api.PresubmitError(
+      'APIs from junit.framework.* are deprecated, please use JUnit4 framework'
+      '(org.junit.*) from //third_party/junit. Contact yolandyan@chromium.org'
+      ' if you have any question.', errors))
+  return results
+
+
+def _CheckAndroidTestJUnitInheritance(input_api, output_api):
+  """Checks that if new Java test classes have inheritance.
+     Either the new test class is JUnit3 test or it is a JUnit4 test class
+     with a base class, either case is undesirable.
+  """
+  class_declaration_pattern = input_api.re.compile(r'^public class \w*Test ')
+
+  sources = lambda x: input_api.FilterSourceFile(
+      x, white_list=(r'.*Test\.java$',), black_list=None)
+  errors = []
+  for f in input_api.AffectedFiles(sources):
+    if not f.OldContents():
+      class_declaration_start_flag = False
+      for line_num, line in f.ChangedContents():
+        if class_declaration_pattern.search(line):
+          class_declaration_start_flag = True
+        if class_declaration_start_flag and ' extends ' in line:
+          errors.append('%s:%d' % (f.LocalPath(), line_num))
+        if '{' in line:
+          class_declaration_start_flag = False
+
+  results = []
+  if errors:
+    results.append(output_api.PresubmitPromptWarning(
+      'The newly created files include Test classes that inherits from base'
+      ' class. Please do not use inheritance in JUnit4 tests or add new'
+      ' JUnit3 tests. Contact yolandyan@chromium.org if you have any'
+      ' questions.', errors))
+  return results
+
 def _CheckAndroidTestAnnotationUsage(input_api, output_api):
   """Checks that android.test.suitebuilder.annotation.* is no longer used."""
   deprecated_annotation_import_pattern = input_api.re.compile(
@@ -2292,6 +2344,8 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
   results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
   results.extend(_CheckAndroidToastUsage(input_api, output_api))
+  results.extend(_CheckAndroidTestJUnitInheritance(input_api, output_api))
+  results.extend(_CheckAndroidTestJUnitFrameworkImport(input_api, output_api))
   results.extend(_CheckAndroidTestAnnotationUsage(input_api, output_api))
   return results
 
