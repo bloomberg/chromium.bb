@@ -26,7 +26,7 @@ Make sure you have all the necessary fonts installed.
 
 ```shell
 sudo apt-get install apache2 wdiff php5-cgi ttf-indic-fonts \
-   msttcorefonts ttf-dejavu-core ttf-kochi-gothic ttf-kochi-mincho \
+   msttcorefonts ttf-dejavu-core fonts-ipafont \
    ttf-thai-tlwg
 ```
 

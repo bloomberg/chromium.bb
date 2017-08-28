@@ -17,23 +17,23 @@ layer at (0,0) size 800x274
             LayoutInline {A} at (0,0) size 54x20
               LayoutText {#text} at (12,5) size 54x20
                 text run at (12,5) width 54: "\x{8521}\x{4F9D}\x{6797}"
-          LayoutBlockFlow (floating) {LI} at (174,0) size 76x31 [border: none (1px solid #FF0000) none]
-            LayoutInline {A} at (0,0) size 54x27
-              LayoutText {#text} at (12,1) size 54x27
-                text run at (12,1) width 54: "\x{9648}\x{7EEE}\x{8D1E}"
-          LayoutBlockFlow (floating) {LI} at (250,0) size 72x31 [border: none (1px solid #FF0000) none]
-            LayoutInline {A} at (0,0) size 50x20
-              LayoutText {#text} at (12,5) size 50x20
-                text run at (12,5) width 50: "\x{9648}\x{5955}\x{8FC5}"
-          LayoutBlockFlow (floating) {LI} at (322,0) size 52x31 [border: none (1px solid #FF0000) none]
-            LayoutInline {A} at (0,0) size 30x15
-              LayoutText {#text} at (12,7) size 30x15
-                text run at (12,7) width 30: "\x{9ED1}\x{9E2D}\x{5B50}"
-          LayoutBlockFlow (floating) {LI} at (374,0) size 64x31 [border: none (1px solid #FF0000) none]
+          LayoutBlockFlow (floating) {LI} at (174,0) size 64x31 [border: none (1px solid #FF0000) none]
+            LayoutInline {A} at (0,0) size 42x27
+              LayoutText {#text} at (12,1) size 42x27
+                text run at (12,1) width 42: "\x{9648}\x{7EEE}\x{8D1E}"
+          LayoutBlockFlow (floating) {LI} at (238,0) size 69x31 [border: none (1px solid #FF0000) none]
+            LayoutInline {A} at (0,0) size 47x20
+              LayoutText {#text} at (12,5) size 47x20
+                text run at (12,5) width 47: "\x{9648}\x{5955}\x{8FC5}"
+          LayoutBlockFlow (floating) {LI} at (307,0) size 53x31 [border: none (1px solid #FF0000) none]
+            LayoutInline {A} at (0,0) size 31x15
+              LayoutText {#text} at (12,7) size 31x15
+                text run at (12,7) width 31: "\x{9ED1}\x{9E2D}\x{5B50}"
+          LayoutBlockFlow (floating) {LI} at (360,0) size 64x31 [border: none (1px solid #FF0000) none]
             LayoutInline {A} at (0,0) size 42x16
               LayoutText {#text} at (12,7) size 42x16
                 text run at (12,7) width 42: "\x{674E}\x{5B87}\x{6625}"
-          LayoutBlockFlow (floating) {LI} at (438,0) size 64x31 [border: none (1px solid #FF0000) none]
+          LayoutBlockFlow (floating) {LI} at (424,0) size 64x31 [border: none (1px solid #FF0000) none]
             LayoutInline {A} at (0,0) size 42x16
               LayoutText {#text} at (12,7) size 42x16
                 text run at (12,7) width 42: "\x{6881}\x{9759}\x{8339}"
@@ -45,18 +45,18 @@ layer at (0,0) size 800x274
           LayoutBlockFlow (floating) {LI} at (98,0) size 76x31 [border: none (1px solid #FF0000) none]
             LayoutText {#text} at (12,5) size 54x20
               text run at (12,5) width 54: "\x{8521}\x{4F9D}\x{6797}"
-          LayoutBlockFlow (floating) {LI} at (174,0) size 76x31 [border: none (1px solid #FF0000) none]
-            LayoutText {#text} at (12,1) size 54x27
-              text run at (12,1) width 54: "\x{9648}\x{7EEE}\x{8D1E}"
-          LayoutBlockFlow (floating) {LI} at (250,0) size 72x31 [border: none (1px solid #FF0000) none]
-            LayoutText {#text} at (12,5) size 50x20
-              text run at (12,5) width 50: "\x{9648}\x{5955}\x{8FC5}"
-          LayoutBlockFlow (floating) {LI} at (322,0) size 52x31 [border: none (1px solid #FF0000) none]
-            LayoutText {#text} at (12,7) size 30x15
-              text run at (12,7) width 30: "\x{9ED1}\x{9E2D}\x{5B50}"
-          LayoutBlockFlow (floating) {LI} at (374,0) size 64x31 [border: none (1px solid #FF0000) none]
+          LayoutBlockFlow (floating) {LI} at (174,0) size 64x31 [border: none (1px solid #FF0000) none]
+            LayoutText {#text} at (12,1) size 42x27
+              text run at (12,1) width 42: "\x{9648}\x{7EEE}\x{8D1E}"
+          LayoutBlockFlow (floating) {LI} at (238,0) size 69x31 [border: none (1px solid #FF0000) none]
+            LayoutText {#text} at (12,5) size 47x20
+              text run at (12,5) width 47: "\x{9648}\x{5955}\x{8FC5}"
+          LayoutBlockFlow (floating) {LI} at (307,0) size 53x31 [border: none (1px solid #FF0000) none]
+            LayoutText {#text} at (12,7) size 31x15
+              text run at (12,7) width 31: "\x{9ED1}\x{9E2D}\x{5B50}"
+          LayoutBlockFlow (floating) {LI} at (360,0) size 64x31 [border: none (1px solid #FF0000) none]
             LayoutText {#text} at (12,7) size 42x16
               text run at (12,7) width 42: "\x{674E}\x{5B87}\x{6625}"
-          LayoutBlockFlow (floating) {LI} at (438,0) size 64x31 [border: none (1px solid #FF0000) none]
+          LayoutBlockFlow (floating) {LI} at (424,0) size 64x31 [border: none (1px solid #FF0000) none]
             LayoutText {#text} at (12,7) size 42x16
               text run at (12,7) width 42: "\x{6881}\x{9759}\x{8339}"
