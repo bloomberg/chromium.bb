@@ -76,7 +76,7 @@ bool IsSendingTopLanguagesEnabled() {
 bool IsSendingUserClassEnabled() {
   return variations::GetVariationParamByFeatureAsBool(
       ntp_snippets::kArticleSuggestionsFeature, kSendUserClassName,
-      /*default_value=*/false);
+      /*default_value=*/true);
 }
 
 // Translate the BCP 47 |language_code| into a posix locale string.
