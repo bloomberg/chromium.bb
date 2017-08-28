@@ -141,6 +141,45 @@ public class VrTransitionUtils {
     }
 
     /**
+     * @return Whether the VR forward button is enabled.
+     */
+    public static Boolean isForwardButtonEnabled() {
+        final AtomicBoolean isForwardButtonEnabled = new AtomicBoolean();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                isForwardButtonEnabled.set(
+                        VrShellDelegate.getVrShellForTesting().isForwardButtonEnabled());
+            }
+        });
+        return isForwardButtonEnabled.get();
+    }
+
+    /**
+     * Navigates VrShell back.
+     */
+    public static void navigateBack() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                VrShellDelegate.getVrShellForTesting().navigateBack();
+            }
+        });
+    }
+
+    /**
+     * Navigates VrShell forward.
+     */
+    public static void navigateForward() {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                VrShellDelegate.getVrShellForTesting().navigateForward();
+            }
+        });
+    }
+
+    /**
      * Sends an intent to Chrome telling it to autopresent the given URL. This
      * is expected to fail unless the trusted intent check is disabled in VrShellDelegate.
      *
