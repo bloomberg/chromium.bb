@@ -338,7 +338,11 @@ void RenderFrameProxy::OnSetChildFrameSurface(
     compositing_helper_ =
         ChildFrameCompositingHelper::CreateForRenderFrameProxy(this);
   }
-  compositing_helper_->OnSetSurface(surface_info, sequence);
+  // TODO(fsamuel): When surface synchronization is enabled, only set the
+  // fallback here. The primary should be updated on resize/device scale factor
+  // change.
+  compositing_helper_->SetPrimarySurfaceInfo(surface_info);
+  compositing_helper_->SetFallbackSurfaceInfo(surface_info, sequence);
 }
 
 void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
