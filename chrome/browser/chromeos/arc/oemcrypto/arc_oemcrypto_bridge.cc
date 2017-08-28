@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/oemcrypto/arc_oemcrypto_bridge.h"
+#include "chrome/browser/chromeos/arc/oemcrypto/arc_oemcrypto_bridge.h"
 
 #include "base/bind.h"
 #include "base/memory/singleton.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
@@ -84,6 +85,24 @@ void ArcOemCryptoBridge::OnBootstrapMojoConnection(
 
 void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
   DVLOG(1) << "ArcOemCryptoBridge::Connect called";
+
+  // Check that the user has Attestation for Content Protection enabled in
+  // their Chrome settings and if they do not then block this connection since
+  // OEMCrypto utilizes Attestation as the root of trust for its DRM
+  // implementation.
+  bool attestation_enabled = false;
+  if (!chromeos::CrosSettings::Get()->GetBoolean(
+          chromeos::kAttestationForContentProtectionEnabled,
+          &attestation_enabled)) {
+    LOG(ERROR) << "Failed to get attestation device setting";
+    return;
+  }
+  if (!attestation_enabled) {
+    DVLOG(1) << "OEMCrypto L1 DRM denied because Verified Access is disabled "
+                "for this device.";
+    return;
+  }
+
   if (oemcrypto_host_ptr_.is_bound()) {
     DVLOG(1) << "Re-using bootstrap connection for OemCryptoService Connect";
     oemcrypto_host_ptr_->Connect(std::move(request));

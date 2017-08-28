@@ -385,6 +385,8 @@ source_set("chromeos") {
     "arc/notification/arc_boot_error_notification.h",
     "arc/notification/arc_provision_notification_service.cc",
     "arc/notification/arc_provision_notification_service.h",
+    "arc/oemcrypto/arc_oemcrypto_bridge.cc",
+    "arc/oemcrypto/arc_oemcrypto_bridge.h",
     "arc/optin/arc_optin_preference_handler.cc",
     "arc/optin/arc_optin_preference_handler.h",
     "arc/optin/arc_optin_preference_handler_observer.h",
