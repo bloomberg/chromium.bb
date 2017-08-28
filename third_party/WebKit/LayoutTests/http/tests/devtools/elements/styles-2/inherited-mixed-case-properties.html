@@ -1,0 +1,33 @@
+<html>
+<head>
+<style>
+#container {
+  -webkit-FONT-smoothing: antialiased;
+}
+</style>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('nested', step1);
+
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles();
+    TestRunner.completeTest();
+  }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that non-standard mixed-cased properties are displayed in the Styles pane.
+</p>
+
+<div id="container" style="CoLoR: blAck">
+    <div id="nested"></div>
+</div>
+
+</body>
+</html>

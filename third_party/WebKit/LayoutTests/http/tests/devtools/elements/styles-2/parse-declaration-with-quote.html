@@ -1,0 +1,24 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', dumpStyles);
+
+  function dumpStyles() {
+    ElementsTestRunner.dumpSelectedElementStyles(true);
+    TestRunner.completeTest();
+  }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that CSSParser correctly parses declarations with unterminated strings. <a href="https://code.google.com/p/chromium/issues/detail?id=231127">Blink bug 231127</a>
+
+<div id="inspected" style="color: red'foo"></div>
+</body>
+</html>

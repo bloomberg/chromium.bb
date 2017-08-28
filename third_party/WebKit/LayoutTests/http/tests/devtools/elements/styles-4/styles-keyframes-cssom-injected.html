@@ -1,0 +1,28 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<style>
+</style>
+<script>
+function injectAnimation()
+{
+    var styleSheet = document.styleSheets[0];
+    styleSheet.insertRule("@keyframes injected { 0% {opacity:0} 100% {opacity:1} }", 0);
+}
+
+function test() {
+  TestRunner.evaluateInPage('injectAnimation()');
+  ElementsTestRunner.selectNodeAndWaitForStyles('element', TestRunner.completeTest.bind(InspectorTest));
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<div id="element" style="animation: injected 1s infinite"></div>
+<p>
+Tests that inspecting keyframes injected via CSSOM doesn't crash.
+</p>
+
+</body>
+</html>

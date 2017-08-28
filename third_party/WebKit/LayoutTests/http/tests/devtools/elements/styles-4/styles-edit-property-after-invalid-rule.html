@@ -1,0 +1,49 @@
+<html>
+<head>
+
+<style type="text/css" media="screen">
+/* Invalid selector */
+.navbar-search .search-query:-moz-placeholder {
+  color: #cccccc;
+}
+
+#container {
+  padding: 15px;
+}
+</style>
+
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('container', step1);
+
+  function step1() {
+    TestRunner.addResult('Initial value');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+
+    var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('padding');
+    treeItem.applyStyleText('padding: 20px', false);
+    ElementsTestRunner.waitForStyles('container', step2);
+  }
+
+  function step2() {
+    TestRunner.addResult('After changing property');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that proper source lines are reported for the styles after unrecognizer / invalid selector.
+</p>
+
+<div id="container"></div>
+
+</body>
+</html>

@@ -1,0 +1,50 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/timeline-test.js"></script>
+
+<style id="testSheet">
+.test-0 { font-family: 'Arial'; }
+.test-1 { font-family: 'Arial'; }
+.test-2 { font-family: 'Arial'; }
+.test-3 { font-family: 'Arial'; }
+.test-4 { font-family: 'Arial'; }
+.test-5 { font-family: 'Arial'; }
+.test-6 { font-family: 'Arial'; }
+.test-7 { font-family: 'Arial'; }
+.test-8 { font-family: 'Arial'; }
+.test-9 { font-family: 'Arial'; }
+</style>
+
+<script>
+
+function performActions()
+{
+    var styleElement = document.querySelector("#testSheet");
+    for (var i = 0; i < 10; ++i)
+        styleElement.sheet.deleteRule(0);
+}
+
+function test() {
+  UI.context.setFlavor(Timeline.TimelinePanel, UI.panels.timeline);
+  PerformanceTestRunner.evaluateWithTimeline('performActions()', callback);
+
+  function callback() {
+    PerformanceTestRunner.timelineModel().mainThreadEvents().forEach(event => {
+      if (event.name === TimelineModel.TimelineModel.RecordType.UpdateLayoutTree)
+        TestRunner.addResult(event.name);
+    });
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that inspector doesn't force sync layout on operations with CSSOM.<a href="https://code.google.com/p/chromium/issues/detail?id=315885">Bug 315885</a>.
+</p>
+
+</body>
+</html>

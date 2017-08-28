@@ -1,0 +1,43 @@
+<html>
+<head>
+
+<style type="text/css" media="screen">
+@media not print {
+#main {
+    background: blue;
+}
+}
+</style>
+
+<style type="text/css" media="screen">
+@media not print {
+#main {
+    color: white;
+}
+}
+</style>
+
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('main', step1);
+
+  function step1() {
+    TestRunner.addResult('Main style:');
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that media query stack is computed correctly when several stylesheets share the same URL.
+</p>
+
+<div id="main"></div>
+</body>
+</html>

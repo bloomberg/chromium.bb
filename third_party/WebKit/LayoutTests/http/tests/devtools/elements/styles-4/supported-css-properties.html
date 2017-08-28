@@ -1,0 +1,16 @@
+<html>
+<head>
+<script type="text/javascript" src="../../../inspector/inspector-test.js"></script>
+<script>
+function test() {
+  var marginLonghands = SDK.cssMetadata().longhands('margin');
+  marginLonghands.sort();
+  TestRunner.addResult('Margin longhands: ' + marginLonghands.join(', '));
+  TestRunner.completeTest();
+}
+</script>
+</head>
+<body onLoad="runTest();">
+
+</body>
+</html>

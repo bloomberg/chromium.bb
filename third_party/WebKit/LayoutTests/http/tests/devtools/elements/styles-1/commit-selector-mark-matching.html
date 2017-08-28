@@ -1,0 +1,58 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  var nodeId;
+  var stylesPane;
+
+  TestRunner.runTestSuite([
+    function setUp(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
+    },
+
+    function addRule(next) {
+      ElementsTestRunner.nodeWithId('inspected', nodeCallback);
+
+      function nodeCallback(node) {
+        nodeId = node.id;
+        stylesPane = UI.panels.elements._stylesWidget;
+        ElementsTestRunner.addNewRule('foo, #inspected, .bar, #inspected', callback);
+      }
+
+      function callback() {
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
+        next();
+      }
+    },
+
+    function changeSelector(next) {
+      var section = ElementsTestRunner.firstMatchedStyleSection();
+      section.startEditingSelector();
+      var selectorElement = section._selectorElement;
+      selectorElement.textContent = '#inspected, a, hr';
+      ElementsTestRunner.waitForSelectorCommitted(callback);
+      selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
+
+      function callback() {
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
+        next();
+      }
+    }
+  ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that matching selectors are marked properly after new rule creation and selector change.
+</p>
+
+<div id="inspected"></div>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function createShadowRoot()
+{
+    var template = document.querySelector('#tmpl');
+    var root = document.querySelector('#host').createShadowRoot();
+    root.appendChild(template.content.cloneNode(true));
+}
+
+function test() {
+  TestRunner.runTestSuite([
+    function testInit(next) {
+      TestRunner.evaluateInPage('createShadowRoot()', callback);
+      function callback() {
+        ElementsTestRunner.selectNodeAndWaitForStyles('inner', next);
+      }
+    },
+
+    function testDumpStyles(next) {
+      ElementsTestRunner.dumpSelectedElementStyles(true);
+      next();
+    }
+  ]);
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+This test checks that style sheets hosted inside shadow roots
+could be inspected.
+</p>
+<div id="host"></div>
+<template id="tmpl">
+    <style> .red { color: red; } </style>
+    <div id="inner" class="red">hi!</div>
+</template>
+</body>
+</html>

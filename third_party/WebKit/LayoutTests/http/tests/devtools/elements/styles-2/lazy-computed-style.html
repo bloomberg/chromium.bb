@@ -1,0 +1,51 @@
+<html>
+<head>
+<style>
+
+#inspected {
+    background-color: green;
+    font-family: Times;
+}
+
+#inspected {
+    background-color: black;
+    font-family: Courier;
+}
+
+#inspected {
+    background: gray;
+}
+
+</style>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
+
+  function step1() {
+    TestRunner.addResult('==== All styles (should be no computed) ====');
+    ElementsTestRunner.dumpSelectedElementStyles(false, false);
+    ElementsTestRunner.computedStyleWidget().doUpdate().then(step2);
+  }
+
+  function step2() {
+    TestRunner.addResult('==== All styles (computed should be there) ====');
+    ElementsTestRunner.dumpSelectedElementStyles(false, false);
+    TestRunner.completeTest();
+  }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that computed styles expand and allow tracing to style rules.
+</p>
+
+<div id="inspected">
+</div>
+
+</body>
+</html>

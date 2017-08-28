@@ -1,0 +1,35 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  TestRunner.runTestSuite([
+    function init(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
+    },
+
+    function keyframesRuleSelector(next) {
+      ElementsTestRunner.addNewRule('@-webkit-keyframes shake', callback);
+
+      function callback() {
+        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        next();
+      }
+    }
+  ]);
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that adding a new rule with invalid selector works as expected.
+</p>
+
+<div id="inspected">Text</div>
+
+</body>
+</html>

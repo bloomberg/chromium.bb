@@ -1,0 +1,55 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<div id="parent">
+    <div id=foo><div id="child"></div></div>
+    <div id="sibling"><div id="child-of-sibling"></div></div>
+</div>
+<script>
+
+function modify(id)
+{
+    document.getElementById(id).setAttribute("fake", "modified");
+}
+
+function test() {
+  TestRunner.runTestSuite([
+    function setupTest(next) {
+      ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('foo', didSelectElement);
+
+      function didSelectElement() {
+        TestRunner.addSniffer(
+            Elements.StylesSidebarPane.prototype, 'update',
+            TestRunner.addResult.bind(InspectorTest, 'Requested StyleSidebarPane update'), true);
+        next();
+      }
+    },
+
+    function testModifySibling(next) {
+      TestRunner.evaluateInPage('modify("sibling")', next);
+    },
+
+    function testModifySiblingChild(next) {
+      TestRunner.evaluateInPage('modify("child-of-sibling")', next);
+    },
+
+    function testModifyParent(next) {
+      TestRunner.evaluateInPage('modify("parent")', next);
+    },
+
+    function testModifyChild(next) {
+      TestRunner.evaluateInPage('modify("child")', next);
+    }
+  ]);
+};
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests show that ssp isn't rebuild on every dom mutation</p>
+
+</body>
+</html>

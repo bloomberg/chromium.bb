@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<style>
+.mydiv {
+    border: 1px solid black;
+    padding: 10px 10px 10px 10px;
+}
+
+#inspected {
+    border-size: 2px;
+}
+
+</style>
+<script>
+function test() {
+  TestRunner.runTestSuite([
+    function selectInitialNode(next) {
+      ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
+    },
+
+    function testSimpleFiltering(next) {
+      ElementsTestRunner.filterMatchedStyles('padding');
+      ElementsTestRunner.dumpRenderedMatchedStyles();
+      next();
+    },
+
+    function testLonghandsAreAutoExpanded(next) {
+      ElementsTestRunner.filterMatchedStyles('-top');
+      ElementsTestRunner.dumpRenderedMatchedStyles();
+      next();
+    },
+
+    function testAutoExpandedLonghandsAreCollapsed(next) {
+      ElementsTestRunner.filterMatchedStyles(null);
+      ElementsTestRunner.dumpRenderedMatchedStyles();
+      next();
+    }
+  ]);
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Verifies that filtering in StylesSidebarPane works as expected.</p>
+<div style="margin: 1px;" class="mydiv" id="inspected"></div>
+</body>
+</html>
