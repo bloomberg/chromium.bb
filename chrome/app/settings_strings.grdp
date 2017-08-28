@@ -36,6 +36,9 @@
     <message name="IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_BETA" desc="The beta label in the message about current channel.">
       beta
     </message>
+    <message name="IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_CANARY" desc="The canary label in the message about current channel.">
+      canary
+    </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_CURRENT_CHANNEL_DEV" desc="The dev label in the message about current channel.">
       dev
     </message>
