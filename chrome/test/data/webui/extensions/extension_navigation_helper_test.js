@@ -39,7 +39,9 @@ cr.define('extension_navigation_helper_tests', function() {
       var navigationHelper = new extensions.NavigationHelper(changePage);
 
       expectEquals('chrome://extensions/navigation_helper.html', location.href);
-      expectDeepEquals({page: Page.LIST}, navigationHelper.getCurrentPage());
+      expectDeepEquals(
+          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
+          navigationHelper.getCurrentPage());
 
       var currentLength = history.length;
       navigationHelper.updateHistory({page: Page.DETAILS, extensionId: id});
@@ -55,7 +57,8 @@ cr.define('extension_navigation_helper_tests', function() {
           .then(() => {
             mock.verifyMock();
 
-            mock.addExpectation({page: Page.LIST});
+            mock.addExpectation(
+                {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS});
             var waitForNextPop = getOnPopState();
             history.back();
             return waitForNextPop;
@@ -68,9 +71,13 @@ cr.define('extension_navigation_helper_tests', function() {
     test(assert(TestNames.Conversions), function() {
       var id = 'a'.repeat(32);
       var stateUrlPairs = {
-        list: {
+        extensions: {
           url: 'chrome://extensions/',
-          state: {page: Page.LIST},
+          state: {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
+        },
+        apps: {
+          url: 'chrome://extensions/apps',
+          state: {page: Page.LIST, type: extensions.ShowingType.APPS},
         },
         details: {
           url: 'chrome://extensions/?id=' + id,
@@ -117,7 +124,9 @@ cr.define('extension_navigation_helper_tests', function() {
       var navigationHelper = new extensions.NavigationHelper(function() {});
 
       history.pushState({}, '', 'chrome://extensions/');
-      expectDeepEquals({page: Page.LIST}, navigationHelper.getCurrentPage());
+      expectDeepEquals(
+          {page: Page.LIST, type: extensions.ShowingType.EXTENSIONS},
+          navigationHelper.getCurrentPage());
 
       var expectedLength = history.length;
 

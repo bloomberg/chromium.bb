@@ -67,7 +67,8 @@
         </div>
       </dialog>
       <extensions-view-manager id="viewManager">
-        <extensions-item-list id="items-list" items="[[extensions]]"
+        <extensions-item-list id="items-list"
+            items="[[itemsList_]]"
             delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
             filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view">
         </extensions-item-list>

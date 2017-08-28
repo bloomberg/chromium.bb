@@ -107,6 +107,19 @@ cr.define('extensions', function() {
 
       return Promise.all(promises);
     },
+
+    /**
+     * Helper function to only animate the current view.
+     * @param {string} animation
+     * @return {!Promise}
+     */
+    animateCurrentView: function(animation) {
+      const currentView = assert(this.querySelector('.active'));
+      const animationFunction = extensions.viewAnimations.get(animation);
+      assert(animationFunction);
+
+      return animationFunction(currentView);
+    },
   });
 
   return {viewAnimations: viewAnimations, ViewManager: ViewManager};

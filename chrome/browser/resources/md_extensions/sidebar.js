@@ -1,16 +1,6 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-
-cr.exportPath('extensions');
-
-// Declare this here to make closure compiler happy, and us sad.
-/** @enum {number} */
-extensions.ShowingType = {
-  EXTENSIONS: 0,
-  APPS: 1,
-};
-
 cr.define('extensions', function() {
   /** @interface */
   const SidebarListDelegate = function() {};
