@@ -132,7 +132,8 @@ void BrowserPlugin::OnSetChildFrameSurface(
 
   EnableCompositing(true);
   DCHECK(compositing_helper_.get());
-  compositing_helper_->OnSetSurface(surface_info, sequence);
+  compositing_helper_->SetPrimarySurfaceInfo(surface_info);
+  compositing_helper_->SetFallbackSurfaceInfo(surface_info, sequence);
 }
 
 void BrowserPlugin::SendSatisfySequence(const viz::SurfaceSequence& sequence) {

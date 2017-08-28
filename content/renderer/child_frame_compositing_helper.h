@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/layers/surface_layer.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_reference_factory.h"
 #include "content/common/content_export.h"
@@ -54,12 +55,13 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
       RenderFrameProxy* render_frame_proxy);
 
   void OnContainerDestroy();
-  void OnSetSurface(const viz::SurfaceInfo& surface_info,
-                    const viz::SurfaceSequence& sequence);
+  void SetPrimarySurfaceInfo(const viz::SurfaceInfo& surface_info);
+  void SetFallbackSurfaceInfo(const viz::SurfaceInfo& surface_info,
+                              const viz::SurfaceSequence& sequence);
   void UpdateVisibility(bool);
   void ChildFrameGone();
 
-  viz::SurfaceId surface_id() const { return surface_id_; }
+  const viz::SurfaceId& surface_id() const { return last_primary_surface_id_; }
 
  protected:
   // Friend RefCounted so that the dtor can be non-public.
@@ -76,14 +78,14 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
 
   blink::WebPluginContainer* GetContainer();
 
-  void CheckSizeAndAdjustLayerProperties(const gfx::Size& new_size,
-                                         float device_scale_factor,
+  void CheckSizeAndAdjustLayerProperties(const viz::SurfaceInfo& surface_info,
                                          cc::Layer* layer);
   void UpdateWebLayer(std::unique_ptr<blink::WebLayer> layer);
 
   const int host_routing_id_;
 
-  gfx::Size buffer_size_;
+  viz::SurfaceId last_primary_surface_id_;
+  gfx::Size last_surface_size_in_pixels_;
 
   // The lifetime of this weak pointer should be greater than the lifetime of
   // other member objects, as they may access this pointer during their
@@ -91,8 +93,8 @@ class CONTENT_EXPORT ChildFrameCompositingHelper
   const base::WeakPtr<BrowserPlugin> browser_plugin_;
   RenderFrameProxy* const render_frame_proxy_;
 
+  scoped_refptr<cc::SurfaceLayer> surface_layer_;
   std::unique_ptr<blink::WebLayer> web_layer_;
-  viz::SurfaceId surface_id_;
   blink::WebRemoteFrame* frame_;
 
   // If surface references are enabled use a stub reference factory.
