@@ -444,10 +444,14 @@ libvpx_srcs_x86_ssse3 = [
 libvpx_srcs_x86_sse4_1 = [
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct16x16_add_sse4.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct32x32_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct4x4_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct8x8_add_sse4.c",
 ]
-libvpx_srcs_x86_avx = [ "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c" ]
+libvpx_srcs_x86_avx = [
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/quantize_avx.c",
+]
 libvpx_srcs_x86_avx2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
@@ -906,10 +910,14 @@ libvpx_srcs_x86_64_ssse3 = [
 libvpx_srcs_x86_64_sse4_1 = [
   "//third_party/libvpx/source/libvpx/vp8/encoder/x86/quantize_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct16x16_add_sse4.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct32x32_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct4x4_add_sse4.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/highbd_idct8x8_add_sse4.c",
 ]
-libvpx_srcs_x86_64_avx = [ "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c" ]
+libvpx_srcs_x86_64_avx = [
+  "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_diamond_search_sad_avx.c",
+  "//third_party/libvpx/source/libvpx/vpx_dsp/x86/quantize_avx.c",
+]
 libvpx_srcs_x86_64_avx2 = [
   "//third_party/libvpx/source/libvpx/vp9/encoder/x86/vp9_error_avx2.c",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/fwd_txfm_avx2.c",
@@ -2789,6 +2797,7 @@ libvpx_srcs_mips = [
   "//third_party/libvpx/source/libvpx/vpx_mem/include/vpx_mem_intrnl.h",
   "//third_party/libvpx/source/libvpx/vpx_mem/vpx_mem.c",
   "//third_party/libvpx/source/libvpx/vpx_mem/vpx_mem.h",
+  "//third_party/libvpx/source/libvpx/vpx_ports/asmdefs_mmi.h",
   "//third_party/libvpx/source/libvpx/vpx_ports/bitops.h",
   "//third_party/libvpx/source/libvpx/vpx_ports/emmintrin_compat.h",
   "//third_party/libvpx/source/libvpx/vpx_ports/mem.h",

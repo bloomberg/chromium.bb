@@ -237,7 +237,28 @@ void vp9_quantize_fp_32x32_c(const tran_low_t* coeff_ptr,
                              uint16_t* eob_ptr,
                              const int16_t* scan,
                              const int16_t* iscan);
-#define vp9_quantize_fp_32x32 vp9_quantize_fp_32x32_c
+void vp9_quantize_fp_32x32_neon(const tran_low_t* coeff_ptr,
+                                intptr_t n_coeffs,
+                                int skip_block,
+                                const int16_t* round_ptr,
+                                const int16_t* quant_ptr,
+                                tran_low_t* qcoeff_ptr,
+                                tran_low_t* dqcoeff_ptr,
+                                const int16_t* dequant_ptr,
+                                uint16_t* eob_ptr,
+                                const int16_t* scan,
+                                const int16_t* iscan);
+RTCD_EXTERN void (*vp9_quantize_fp_32x32)(const tran_low_t* coeff_ptr,
+                                          intptr_t n_coeffs,
+                                          int skip_block,
+                                          const int16_t* round_ptr,
+                                          const int16_t* quant_ptr,
+                                          tran_low_t* qcoeff_ptr,
+                                          tran_low_t* dqcoeff_ptr,
+                                          const int16_t* dequant_ptr,
+                                          uint16_t* eob_ptr,
+                                          const int16_t* scan,
+                                          const int16_t* iscan);
 
 void vp9_scale_and_extend_frame_c(const struct yv12_buffer_config* src,
                                   struct yv12_buffer_config* dst,
@@ -274,6 +295,9 @@ static void setup_rtcd_internal(void) {
   vp9_quantize_fp = vp9_quantize_fp_c;
   if (flags & HAS_NEON)
     vp9_quantize_fp = vp9_quantize_fp_neon;
+  vp9_quantize_fp_32x32 = vp9_quantize_fp_32x32_c;
+  if (flags & HAS_NEON)
+    vp9_quantize_fp_32x32 = vp9_quantize_fp_32x32_neon;
 }
 #endif
 
