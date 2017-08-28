@@ -217,7 +217,7 @@ TEST_F(TrafficAnnotationAuditorTest, AnnotationDeserialization) {
       {"good_partial_annotation.txt", AuditorResult::Type::RESULT_OK,
        AnnotationInstance::Type::ANNOTATION_PARTIAL},
       {"good_test_annotation.txt", AuditorResult::Type::RESULT_IGNORE},
-      {"missing_annotation.txt", AuditorResult::Type::ERROR_MISSING},
+      {"missing_annotation.txt", AuditorResult::Type::ERROR_MISSING_TAG_USED},
       {"no_annotation.txt", AuditorResult::Type::ERROR_NO_ANNOTATION},
       {"fatal_annotation1.txt", AuditorResult::Type::ERROR_FATAL},
       {"fatal_annotation2.txt", AuditorResult::Type::ERROR_FATAL},
@@ -282,6 +282,29 @@ TEST_F(TrafficAnnotationAuditorTest, CallDeserialization) {
               "headless::HttpURLFetcher::Delegate::Delegate");
     EXPECT_EQ(call.function_name, "net::URLRequestContext::CreateRequest");
     EXPECT_EQ(call.is_annotated, true);
+  }
+}
+
+// Tests if call instances are corrrectly deserialized.
+TEST_F(TrafficAnnotationAuditorTest, AssignmentDeserialization) {
+  struct Assignmentample {
+    std::string file_name;
+    AuditorResult::Type result_type;
+  };
+
+  Assignmentample test_cases[] = {
+      {"good_assignment.txt", AuditorResult::Type::RESULT_OK},
+      {"bad_assignment1.txt", AuditorResult::Type::ERROR_FATAL},
+      {"bad_assignment2.txt", AuditorResult::Type::ERROR_FATAL},
+  };
+
+  for (const auto& test_case : test_cases) {
+    // Check if deserialization result is as expected.
+    AssignmentInstance assignment;
+    AuditorResult::Type result_type =
+        Deserialize(test_case.file_name, &assignment);
+    SCOPED_TRACE(test_case.file_name);
+    EXPECT_EQ(result_type, test_case.result_type);
   }
 }
 

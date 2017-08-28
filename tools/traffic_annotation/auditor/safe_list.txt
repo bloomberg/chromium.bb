@@ -5,3 +5,4 @@
 all,tools
 missing,net/url_request/url_fetcher.cc
 missing,net/url_request/url_request_context.cc
+direct_assignment,download::ProtoConversions::EntryFromProto@components/download/internal/proto_conversions.cc

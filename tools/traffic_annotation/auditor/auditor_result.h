@@ -11,12 +11,13 @@
 class AuditorResult {
  public:
   enum class Type {
-    RESULT_OK,            // No error
-    RESULT_IGNORE,        // The item does not require furthure processing.
-    ERROR_FATAL,          // A fatal error that should stop process.
-    ERROR_MISSING,        // A function is called without annotation.
-    ERROR_NO_ANNOTATION,  // A function is called with NO_ANNOTATION tag.
-    ERROR_SYNTAX,         // Annotation syntax is not right.
+    RESULT_OK,               // No error
+    RESULT_IGNORE,           // The item does not require furthure processing.
+    ERROR_FATAL,             // A fatal error that should stop process.
+    ERROR_MISSING_TAG_USED,  // A function is called with
+                             // MISSING_TRAFFIC_ANNOTATION tag.
+    ERROR_NO_ANNOTATION,     // A function is called with NO_ANNOTATION tag.
+    ERROR_SYNTAX,            // Annotation syntax is not right.
     ERROR_RESERVED_UNIQUE_ID_HASH_CODE,   // A unique id has a hash code similar
                                           // to a reserved word.
     ERROR_DUPLICATE_UNIQUE_ID_HASH_CODE,  // Two unique ids have similar hash
@@ -34,6 +35,9 @@ class AuditorResult {
     ERROR_INCOMPLETED_ANNOTATION,  // A partial or [branched_] completing
                                    // annotation is not paired with any other
                                    // annotation to be completed.
+    ERROR_DIRECT_ASSIGNMENT        // A value is directly assigned to a mutable
+                                   // annotation or annotation instialized with
+                                   // list expresssion.
   };
 
   static const int kNoCodeLineSpecified;

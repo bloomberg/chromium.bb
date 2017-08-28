@@ -59,8 +59,8 @@ Refer to README.md for content description and update process.
  <item id="dom_distiller" hash_code="3989826" content_hash_code="106153970"/>
  <item id="domain_reliability_report_upload" hash_code="108804096" content_hash_code="35902036"/>
  <item id="domain_security_policy" hash_code="77597059" content_hash_code="30916983"/>
- <item id="doodle_fetcher" hash_code="97199008" content_hash_code="87981692"/>
- <item id="doodle_service" hash_code="41154842" content_hash_code="28273962"/>
+ <item id="doodle_fetcher" hash_code="97199008" deprecated="2017-08-28" content_hash_code="87981692"/>
+ <item id="doodle_service" hash_code="41154842" deprecated="2017-08-28" content_hash_code="28273962"/>
  <item id="download_manager_resume" hash_code="35380758" content_hash_code="41227674"/>
  <item id="download_web_contents_frame" hash_code="56351037" content_hash_code="3657889"/>
  <item id="downloads_api_run_async" hash_code="121068967" content_hash_code="87443585"/>
@@ -134,6 +134,7 @@ Refer to README.md for content description and update process.
  <item id="plugins_resource_service" hash_code="49601082" content_hash_code="6877335"/>
  <item id="popular_sites_fetch" hash_code="50755044" content_hash_code="6910083"/>
  <item id="ppapi_download_request" hash_code="135967426" content_hash_code="110461402"/>
+ <item id="prefetch_download" hash_code="44583172" content_hash_code="100587691"/>
  <item id="printer_job_handler" hash_code="67638271" content_hash_code="52577454"/>
  <item id="privet_http_impl" hash_code="71251498" content_hash_code="107348604"/>
  <item id="profile_avatar" hash_code="51164680" content_hash_code="113550845"/>
