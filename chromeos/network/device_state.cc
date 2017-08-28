@@ -70,6 +70,7 @@ bool DeviceState::PropertyChanged(const std::string& key,
     // Set default values for SIM properties.
     sim_lock_type_.erase();
     sim_retries_left_ = 0;
+    sim_lock_enabled_ = false;
 
     const base::Value* out_value = nullptr;
     if (dict->GetWithoutPathExpansion(shill::kSIMLockTypeProperty,
@@ -80,6 +81,11 @@ bool DeviceState::PropertyChanged(const std::string& key,
                                       &out_value)) {
       GetIntegerValue(shill::kSIMLockRetriesLeftProperty, *out_value,
                       &sim_retries_left_);
+    }
+    if (dict->GetWithoutPathExpansion(shill::kSIMLockEnabledProperty,
+                                      &out_value)) {
+      GetBooleanValue(shill::kSIMLockEnabledProperty, *out_value,
+                      &sim_lock_enabled_);
     }
     return true;
   } else if (key == shill::kMeidProperty) {
