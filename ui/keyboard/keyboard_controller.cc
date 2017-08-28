@@ -30,6 +30,7 @@
 #include "ui/keyboard/keyboard_layout_manager.h"
 #include "ui/keyboard/keyboard_ui.h"
 #include "ui/keyboard/keyboard_util.h"
+#include "ui/wm/core/window_animations.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/process/launch.h"
@@ -64,7 +65,7 @@ bool isAllowedStateStansition(keyboard::KeyboardControllerState from,
                                   keyboard::KeyboardControllerState>>
       kAllowedStateTransition = {
           // The initial ShowKeyboard scenario
-          // INITIAL -> LOADING_EXTENSION -> HIDDEN -> SHOWING -> SHOWN.
+          // INITIAL -> LOADING_EXTENSION -> HIDDEN -> SHOWN.
           {keyboard::KeyboardControllerState::UNKNOWN,
            keyboard::KeyboardControllerState::INITIAL},
           {keyboard::KeyboardControllerState::INITIAL,
@@ -72,17 +73,13 @@ bool isAllowedStateStansition(keyboard::KeyboardControllerState from,
           {keyboard::KeyboardControllerState::LOADING_EXTENSION,
            keyboard::KeyboardControllerState::HIDDEN},
           {keyboard::KeyboardControllerState::HIDDEN,
-           keyboard::KeyboardControllerState::SHOWING},
-          {keyboard::KeyboardControllerState::SHOWING,
            keyboard::KeyboardControllerState::SHOWN},
 
           // Hide scenario
-          // SHOWN -> WILL_HIDE -> HIDING -> HIDDEN.
+          // SHOWN -> WILL_HIDE -> HIDDEN.
           {keyboard::KeyboardControllerState::SHOWN,
            keyboard::KeyboardControllerState::WILL_HIDE},
           {keyboard::KeyboardControllerState::WILL_HIDE,
-           keyboard::KeyboardControllerState::HIDING},
-          {keyboard::KeyboardControllerState::HIDING,
            keyboard::KeyboardControllerState::HIDDEN},
 
           // Focus transition scenario
@@ -92,20 +89,7 @@ bool isAllowedStateStansition(keyboard::KeyboardControllerState from,
 
           // HideKeyboard can be called at anytime for example on shutdown.
           {keyboard::KeyboardControllerState::SHOWN,
-           keyboard::KeyboardControllerState::HIDING},
-          {keyboard::KeyboardControllerState::SHOWING,
-           keyboard::KeyboardControllerState::HIDING},
-
-          // HIDING -> SHOWING is possible when ShowKeyboard is called during
-          // hide animation.
-          // KeyboardControllerAnimationTest.ContainerShowWhileHide.
-          {keyboard::KeyboardControllerState::HIDING,
-           keyboard::KeyboardControllerState::SHOWING},
-
-          // SHOWING -> WILL_HIDE is possible when focus is removed while
-          // keyboard being shown.
-          {keyboard::KeyboardControllerState::SHOWING,
-           keyboard::KeyboardControllerState::WILL_HIDE},
+           keyboard::KeyboardControllerState::HIDDEN},
       };
   return kAllowedStateTransition.count(std::make_pair(from, to)) == 1;
 };
@@ -183,14 +167,10 @@ std::string StateToStr(keyboard::KeyboardControllerState state) {
       return "UNKNOWN";
     case keyboard::KeyboardControllerState::SHOWN:
       return "SHOWN";
-    case keyboard::KeyboardControllerState::SHOWING:
-      return "SHOWING";
     case keyboard::KeyboardControllerState::LOADING_EXTENSION:
       return "LOADING_EXTENSION";
     case keyboard::KeyboardControllerState::WILL_HIDE:
       return "WILL_HIDE";
-    case keyboard::KeyboardControllerState::HIDING:
-      return "HIDING";
     case keyboard::KeyboardControllerState::HIDDEN:
       return "HIDDEN";
     case keyboard::KeyboardControllerState::INITIAL:
@@ -293,8 +273,7 @@ KeyboardController* KeyboardController::GetInstance() {
 }
 
 bool KeyboardController::keyboard_visible() const {
-  return state_ == KeyboardControllerState::SHOWING ||
-         state_ == KeyboardControllerState::SHOWN;
+  return state_ == KeyboardControllerState::SHOWN;
 }
 
 aura::Window* KeyboardController::GetContainerWindow() {
@@ -385,7 +364,6 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
   switch (state_) {
     case KeyboardControllerState::INITIAL:
-    case KeyboardControllerState::HIDING:
     case KeyboardControllerState::HIDDEN:
       return;
     case KeyboardControllerState::LOADING_EXTENSION:
@@ -393,7 +371,6 @@ void KeyboardController::HideKeyboard(HideReason reason) {
       return;
 
     case KeyboardControllerState::WILL_HIDE:
-    case KeyboardControllerState::SHOWING:
     case KeyboardControllerState::SHOWN: {
       ToggleTouchEventLogging(true);
 
@@ -406,28 +383,27 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
       set_keyboard_locked(false);
 
-      ui::LayerAnimator* container_animator =
-          container_->layer()->GetAnimator();
+      aura::Window* window = container_.get();
 
-      animation_observer_.reset(new CallbackAnimationObserver(
-          container_animator,
-          base::BindOnce(&KeyboardController::HideAnimationFinished,
-                         base::Unretained(this))));
-      container_animator->AddObserver(animation_observer_.get());
+      // Scoped settings go into effect when scope ends.
+      {
+        ::wm::ScopedHidingAnimationSettings hiding_settings(window);
 
-      ui::ScopedLayerAnimationSettings settings(container_animator);
-      settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
-      settings.SetTransitionDuration(
-          base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
-      gfx::Transform transform;
-      transform.Translate(0, kAnimationDistance);
+        hiding_settings.layer_animation_settings()->SetTransitionDuration(
+            base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+        gfx::Transform transform;
+        transform.Translate(0, kAnimationDistance);
+        window->SetTransform(transform);
+        window->layer()->SetOpacity(0.f);
+      }
 
-      // Change the state here instead of at the end of the function because
-      // the animation immediately starts in test.
-      ChangeState(KeyboardControllerState::HIDING);
+      ui_->HideKeyboardContainer(container_.get());
+      ChangeState(KeyboardControllerState::HIDDEN);
 
-      container_->SetTransform(transform);
-      container_->layer()->SetOpacity(kAnimationStartOrAfterHideOpacity);
+      for (KeyboardControllerObserver& observer : observer_list_)
+        observer.OnKeyboardHidden();
+      ui_->EnsureCaretInWorkArea();
+
       break;
     }
     default:
@@ -512,7 +488,6 @@ void KeyboardController::OnTextInputStateChanged(
       case KeyboardControllerState::LOADING_EXTENSION:
         show_on_resize_ = false;
         return;
-      case KeyboardControllerState::SHOWING:
       case KeyboardControllerState::SHOWN:
         ChangeState(KeyboardControllerState::WILL_HIDE);
 
@@ -586,7 +561,6 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   }
 
   switch (state_) {
-    case KeyboardControllerState::SHOWING:
     case KeyboardControllerState::SHOWN:
       return;
     case KeyboardControllerState::LOADING_EXTENSION:
@@ -612,8 +586,6 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
     // This should not happen in the real code. Fix the test and change this to
     // NOTREACHED.
     DCHECK(state_ == KeyboardControllerState::HIDDEN);
-    // Move to SHOWING first to satisfy state transition restriction.
-    ChangeState(KeyboardControllerState::SHOWING);
     ChangeState(KeyboardControllerState::SHOWN);
     return;
   }
@@ -629,11 +601,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
     case KeyboardControllerState::WILL_HIDE:
       ChangeState(KeyboardControllerState::SHOWN);
       return;
-    case KeyboardControllerState::HIDING:
-      DCHECK(container_animator->is_animating());
-      break;
     case KeyboardControllerState::HIDDEN: {
-      DCHECK(!container_animator->is_animating());
       // If the container is not animating, makes sure the position and opacity
       // are at begin states for animation.
       gfx::Transform transform;
@@ -646,8 +614,7 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
       NOTREACHED();
   }
 
-  DCHECK(state_ == KeyboardControllerState::HIDING ||
-         state_ == KeyboardControllerState::HIDDEN);
+  DCHECK_EQ(state_, KeyboardControllerState::HIDDEN);
 
   keyboard::LogKeyboardControlEvent(keyboard::KEYBOARD_CONTROL_SHOW);
 
@@ -667,12 +634,11 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
 
-  // Change the state here instead of at the end of the function because
-  // the animation immediately starts in test.
-  ChangeState(KeyboardControllerState::SHOWING);
-
   container_->SetTransform(gfx::Transform());
   container_->layer()->SetOpacity(1.0);
+
+  ChangeState(KeyboardControllerState::SHOWN);
+  NotifyKeyboardBoundsChangingAndEnsrueCaretInWorkArea();
 }
 
 bool KeyboardController::WillHideKeyboard() const {
@@ -683,13 +649,6 @@ bool KeyboardController::WillHideKeyboard() const {
 
 void KeyboardController::ShowAnimationFinished() {
   MarkKeyboardLoadFinished();
-
-  if (state_ != KeyboardControllerState::SHOWING) {
-    return;
-  }
-
-  ChangeState(KeyboardControllerState::SHOWN);
-  NotifyKeyboardBoundsChangingAndEnsrueCaretInWorkArea();
 }
 
 void KeyboardController::
@@ -697,18 +656,6 @@ void KeyboardController::
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
   NotifyContentsBoundsChanging(container_->bounds());
-  ui_->EnsureCaretInWorkArea();
-}
-
-void KeyboardController::HideAnimationFinished() {
-  if (state_ != KeyboardControllerState::HIDING)
-    return;
-
-  ui_->HideKeyboardContainer(container_.get());
-  ChangeState(KeyboardControllerState::HIDDEN);
-
-  for (KeyboardControllerObserver& observer : observer_list_)
-    observer.OnKeyboardHidden();
   ui_->EnsureCaretInWorkArea();
 }
 
@@ -750,11 +697,6 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
 
   state_ = state;
 
-  if (state != KeyboardControllerState::HIDING &&
-      state != KeyboardControllerState::SHOWING) {
-    // Stop ongoing animation.
-    animation_observer_.reset();
-  }
   if (state != KeyboardControllerState::WILL_HIDE)
     weak_factory_will_hide_.InvalidateWeakPtrs();
   if (state != KeyboardControllerState::LOADING_EXTENSION)
@@ -766,8 +708,6 @@ void KeyboardController::ChangeState(KeyboardControllerState state) {
   switch (state_) {
     case KeyboardControllerState::LOADING_EXTENSION:
     case KeyboardControllerState::WILL_HIDE:
-    case KeyboardControllerState::HIDING:
-    case KeyboardControllerState::SHOWING:
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&KeyboardController::ReportLingeringState,

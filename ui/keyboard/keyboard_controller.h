@@ -44,17 +44,13 @@ enum class KeyboardControllerState {
   // Keyboard has never been shown.
   INITIAL = 1,
   // Waiting for an extension to be loaded. Will move to HIDDEN if this is
-  // loading pre-emptively, otherwise will move to SHOWING.
+  // loading pre-emptively, otherwise will move to SHOWN.
   LOADING_EXTENSION = 2,
-  // Keyboard is being shown via animation.
-  SHOWING = 3,
   // Keyboard is shown.
   SHOWN = 4,
   // Keyboard is still shown, but will move to HIDING in a short period, or if
   // an input element gets focused again, will move to SHOWN.
   WILL_HIDE = 5,
-  // Keyboard is being hidden via animation.
-  HIDING = 6,
   // Keyboard is hidden, but has shown at least once.
   HIDDEN = 7,
   COUNT,
@@ -187,7 +183,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Called when show and hide animation finished successfully. If the animation
   // is aborted, it won't be called.
   void ShowAnimationFinished();
-  void HideAnimationFinished();
 
   void NotifyKeyboardBoundsChangingAndEnsrueCaretInWorkArea();
 
