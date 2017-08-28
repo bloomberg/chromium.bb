@@ -681,7 +681,7 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
   const std::unique_ptr<cc::RenderPass>& render_pass =
       frame->render_pass_list.back();
   gfx::Rect output_rect(origin, content_size_);
-  gfx::Rect quad_rect(origin, current_resource_.size);
+  gfx::Rect quad_rect(current_resource_.size);
   gfx::Rect damage_rect;
 
   if (needs_full_damage) {
@@ -722,6 +722,7 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
         output_rect.width() / transformed_buffer_size.width(),
         output_rect.height() / transformed_buffer_size.height());
   }
+  buffer_to_target_matrix.postTranslate(origin.x(), origin.y());
 
   viz::SharedQuadState* quad_state =
       render_pass->CreateAndAppendSharedQuadState();
