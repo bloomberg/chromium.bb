@@ -48,15 +48,6 @@ namespace {
 crashpad::SimpleStringDictionary* g_simple_string_dictionary;
 crashpad::CrashReportDatabase* g_database;
 
-void SetCrashKeyValue(const base::StringPiece& key,
-                      const base::StringPiece& value) {
-  g_simple_string_dictionary->SetKeyValue(key.data(), value.data());
-}
-
-void ClearCrashKey(const base::StringPiece& key) {
-  g_simple_string_dictionary->RemoveKey(key.data());
-}
-
 bool LogMessageHandler(int severity,
                        const char* file,
                        int line,
@@ -194,6 +185,15 @@ void InitializeCrashpadImpl(bool initial_client,
 }
 
 }  // namespace
+
+void SetCrashKeyValue(const base::StringPiece& key,
+                      const base::StringPiece& value) {
+  g_simple_string_dictionary->SetKeyValue(key.data(), value.data());
+}
+
+void ClearCrashKey(const base::StringPiece& key) {
+  g_simple_string_dictionary->RemoveKey(key.data());
+}
 
 void InitializeCrashpad(bool initial_client, const std::string& process_type) {
   InitializeCrashpadImpl(initial_client, process_type, std::string(), false);
@@ -358,43 +358,3 @@ void RequestSingleCrashUploadImpl(const std::string& local_id) {
 }
 
 }  // namespace crash_reporter
-
-#if defined(OS_WIN)
-
-extern "C" {
-
-// This function is used in chrome_metrics_services_manager_client.cc to trigger
-// changes to the upload-enabled state. This is done when the metrics services
-// are initialized, and when the user changes their consent for uploads. See
-// crash_reporter::SetUploadConsent for effects. The given consent value should
-// be consistent with
-// crash_reporter::GetCrashReporterClient()->GetCollectStatsConsent(), but it's
-// not enforced to avoid blocking startup code on synchronizing them.
-void SetUploadConsentImpl(bool consent) {
-  crash_reporter::SetUploadConsent(consent);
-}
-
-// NOTE: This function is used by SyzyASAN to annotate crash reports. If you
-// change the name or signature of this function you will break SyzyASAN
-// instrumented releases of Chrome. Please contact syzygy-team@chromium.org
-// before doing so! See also http://crbug.com/567781.
-void SetCrashKeyValueImpl(const wchar_t* key, const wchar_t* value) {
-  crash_reporter::SetCrashKeyValue(base::UTF16ToUTF8(key),
-                                   base::UTF16ToUTF8(value));
-}
-
-void ClearCrashKeyValueImpl(const wchar_t* key) {
-  crash_reporter::ClearCrashKey(base::UTF16ToUTF8(key));
-}
-
-void SetCrashKeyValueImplEx(const char* key, const char* value) {
-  crash_reporter::SetCrashKeyValue(key, value);
-}
-
-void ClearCrashKeyValueImplEx(const char* key) {
-  crash_reporter::ClearCrashKey(key);
-}
-
-}  // extern "C"
-
-#endif  // OS_WIN
