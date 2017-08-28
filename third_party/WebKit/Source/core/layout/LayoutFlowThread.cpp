@@ -49,18 +49,27 @@ LayoutFlowThread* LayoutFlowThread::LocateFlowThreadContainingBlockOf(
       return nullptr;
     if (curr->IsLayoutFlowThread())
       return ToLayoutFlowThread(curr);
-    curr = curr->Container();
-    // Bail when we fall out of the outermost flow thread.
-    if (!curr || !curr->IsInsideFlowThread())
-      return nullptr;
+    LayoutObject* container = curr->Container();
     // If we're inside something strictly unbreakable (due to having scrollbars
     // or being writing mode roots, for instance), it's also strictly
     // unbreakable in any outer fragmentation context. As such, what goes on
     // inside any fragmentation context on the inside of this is completely
     // opaque to ancestor fragmentation contexts.
-    if (constraint == kIsolateUnbreakableContainers && curr->IsBox() &&
-        ToLayoutBox(curr)->GetPaginationBreakability() == kForbidBreaks)
+    if (constraint == kIsolateUnbreakableContainers && container &&
+        container->IsBox() &&
+        ToLayoutBox(container)->GetPaginationBreakability() == kForbidBreaks)
       return nullptr;
+    curr = curr->Parent();
+    while (curr != container) {
+      if (curr->IsLayoutFlowThread()) {
+        // The nearest ancestor flow thread isn't in our containing block chain.
+        // Then we aren't really part of any flow thread, and we should stop
+        // looking. This happens when there are out-of-flow objects or column
+        // spanners.
+        return nullptr;
+      }
+      curr = curr->Parent();
+    }
   }
   return nullptr;
 }

@@ -744,7 +744,6 @@ Bug(none) fast/multicol/out-of-flow/abspos-auto-position-on-line.html [ Failure 
 Bug(none) fast/multicol/out-of-flow/abspos-auto-position-small-on-line-at-boundary.html [ Failure ]
 Bug(none) fast/multicol/out-of-flow/abspos-auto-position.html [ Failure ]
 Bug(none) fast/multicol/out-of-flow/nested-multicol.html [ Failure ]
-Bug(none) fast/multicol/out-of-flow/nested-with-abspos-inside-relpos.html [ Failure ]
 Bug(none) fast/multicol/outlines-at-column-boundaries.html [ Failure ]
 Bug(none) fast/multicol/overflow-across-columns.html [ Failure ]
 Bug(none) fast/multicol/overflow-into-columngap.html [ Failure ]

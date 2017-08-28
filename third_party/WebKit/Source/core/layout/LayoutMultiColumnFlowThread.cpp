@@ -895,19 +895,6 @@ bool LayoutMultiColumnFlowThread::DescendantIsValidColumnSpanner(
   return false;
 }
 
-bool LayoutMultiColumnFlowThread::IsNearestAncestorFlowThreadOf(
-    LayoutObject* descendant) const {
-  while (descendant != this) {
-    if (descendant->IsLayoutFlowThread()) {
-      // The nearest ancestor flow thread may not be in our containing block
-      // chain when there are out-of-flow objects or column spanners involved.
-      return false;
-    }
-    descendant = descendant->Parent();
-  }
-  return true;
-}
-
 void LayoutMultiColumnFlowThread::AddColumnSetToThread(
     LayoutMultiColumnSet* column_set) {
   if (LayoutMultiColumnSet* next_set =
@@ -1019,8 +1006,6 @@ void LayoutMultiColumnFlowThread::FlowThreadDescendantWasInserted(
   // spanner) where needed.
   if (ShouldSkipInsertedOrRemovedChild(this, *descendant))
     return;
-  if (!IsNearestAncestorFlowThreadOf(descendant))
-    return;
   LayoutObject* object_after_subtree =
       NextInPreOrderAfterChildrenSkippingOutOfFlow(this, descendant);
   LayoutObject* next;
@@ -1079,8 +1064,6 @@ void LayoutMultiColumnFlowThread::FlowThreadDescendantWillBeRemoved(
   if (is_being_evacuated_)
     return;
   if (ShouldSkipInsertedOrRemovedChild(this, *descendant))
-    return;
-  if (!IsNearestAncestorFlowThreadOf(descendant))
     return;
   bool had_containing_placeholder =
       ContainingColumnSpannerPlaceholder(descendant);
