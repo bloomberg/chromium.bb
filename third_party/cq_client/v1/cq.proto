@@ -57,6 +57,7 @@ message Config {
   // time is >= this time.
   //
   // This is an UTC RFC3339 (stiptime(tm)) string representing the time.
+  // For example, "2017-12-23T15:47:58Z" and Z is required.
   optional string draining_start_time = 13;
 }
 
@@ -71,6 +72,7 @@ message Rietveld {
 // Unlike Rietveld, Gerrit doesn't need a separate url.
 // Instead, the git_repo_url must be specified on the Gerrit instance,
 // and CQ will deduce Gerrit url from it.
+// Also, gerrit_cq_ability verifier must be defined in case of Gerrit.
 //
 // For example, if https://chromium.googlesource.com/infra/infra.git is your
 // repo url provided in `git_repo_url` above, then
@@ -115,6 +117,7 @@ message Verifiers {
   //  * membership of the user in committers & dryrunners group,
   //  * the state of CL/patchset on which CQ is triggered,
   //  * relationship of the user to the CL.
+  // This verifier must be specified for Gerrit.
   optional GerritCQAbilityVerifier gerrit_cq_ability = 5;
 
   // This verifier is used to check tree status before committing a CL. If the
@@ -165,6 +168,19 @@ message Verifiers {
     // hasn't been approved.
     // This is usually the same group as tryjob-access.
     optional string dry_run_access_list = 4;
+
+    // Optional. allow_submit_with_open_deps controls how CQ full run behaves
+    // when current Gerrit CL has open dependencies (not yet submitted CLs on
+    // which *this* CL depends).
+    //
+    // If set to false (default), CQ will abort full run attempt immediately if
+    // open dependencies are detected.
+    //
+    // If set to true, then CQ will not abort full run and upon passing all
+    // other verifiers, CQ will attempt to submit the CL regardless of open
+    // dependencies. In turn, if Gerrit project config allows this, Gerrit will
+    // execute submit all dependent CLs first and then this CL.
+    optional bool allow_submit_with_open_deps = 5;
   }
 
   message TreeStatusLgtmVerifier {
@@ -173,6 +189,34 @@ message Verifiers {
   }
 
   message TryJobVerifier {
+    message EquivalentBuilder {
+      // Required. Bucket name of this builder.
+      optional string bucket = 1;
+      // Required. Name of this builder.
+      optional string builder = 2;
+      // Percentage expressing probability of CQ requiring this builder
+      // instead of the builder to which this builder is equilvanet to.
+      //
+      // If not specified, defaults to 50.
+      //
+      // A choice itself is made deterministicly based on CL alone, hereby
+      // all CQ attempts on all patchsets of a given CL will require the same
+      // builder, assuming CQ config doesn't change in the mean time.
+      //
+      // Note that if `owner_whitelist_group` is also specified, the choice over
+      // two builders will be made only for CLs owned by whitelisted group.
+      //
+      // To illustrate, suppose percentage=10. Then,
+      //   Without owner_whitelist_group,
+      //      ~10% of all CQ attempts will choose this builder.
+      //   With owner_whitelist_group set and, suppose, 1/5 of CQ attempts are
+      //      ran on CLs owned by this group, then only ~(1/10)*(1/5) or
+      //      ~2% of all CQ attempts will choose this builder.
+      optional int32 percentage = 3;
+      // If not specified, limits the builder to CL owners in this group.
+      optional string owner_whitelist_group = 4;
+    }
+
     message Builder {
       // Name of the builder.
       optional string name = 1;
@@ -187,6 +231,15 @@ message Verifiers {
       // not affect the decicion whether a CL can land or not. This is typically
       // used to test new builders and estimate their capacity requirements.
       optional float experiment_percentage = 4;
+
+      // Optionally specified alternative builder for CQ to choose instead.
+      // If provided, CQ will choose only one of the equivalent builders as
+      // required based purely on given CL and CL's owner and **regardless** of
+      // the possibly already completed try jobs.
+      //
+      // Note: none of the equivalent builders should be part of triggered_by
+      //  chain, although CQ may eventually relax this requirement somewhat.
+      optional EquivalentBuilder equivalent_to = 5;
     }
 
     message Bucket {

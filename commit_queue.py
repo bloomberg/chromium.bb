@@ -23,7 +23,7 @@ import rietveld
 THIRD_PARTY_DIR = os.path.join(os.path.dirname(__file__), 'third_party')
 sys.path.insert(0, THIRD_PARTY_DIR)
 
-from cq_client import cq_pb2
+from cq_client.v1 import cq_pb2
 from protobuf26 import text_format
 
 def usage(more):
