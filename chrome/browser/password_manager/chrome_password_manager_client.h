@@ -51,6 +51,7 @@ class ChromePasswordManagerClient
   // PasswordManagerClient implementation.
   bool IsSavingAndFillingEnabledForCurrentPage() const override;
   bool IsFillingEnabledForCurrentPage() const override;
+  bool IsFillingFallbackEnabledForCurrentPage() const override;
   void PostHSTSQueryForHost(const GURL& origin,
                             const HSTSCallback& callback) const override;
   bool OnCredentialManagerUsed() override;

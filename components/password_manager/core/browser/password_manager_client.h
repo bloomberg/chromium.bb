@@ -62,6 +62,9 @@ class PasswordManagerClient {
   // password manager is disabled, or in the presence of SSL errors on a page.
   virtual bool IsFillingEnabledForCurrentPage() const;
 
+  // Checks if manual filling fallback is enabled for the current page.
+  virtual bool IsFillingFallbackEnabledForCurrentPage() const;
+
   // Checks asynchronously whether HTTP Strict Transport Security (HSTS) is
   // active for the host of the given origin. Notifies |callback| with the
   // result on the calling thread.

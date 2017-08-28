@@ -246,6 +246,12 @@ bool ChromePasswordManagerClient::IsFillingEnabledForCurrentPage() const {
          IsPasswordManagementEnabledForCurrentPage();
 }
 
+bool ChromePasswordManagerClient::IsFillingFallbackEnabledForCurrentPage()
+    const {
+  return !Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+              ->IsGuestSession();
+}
+
 void ChromePasswordManagerClient::PostHSTSQueryForHost(
     const GURL& origin,
     const HSTSCallback& callback) const {
