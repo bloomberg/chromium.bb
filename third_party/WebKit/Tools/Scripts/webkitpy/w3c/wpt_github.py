@@ -273,23 +273,32 @@ class WPTGitHub(object):
 
     def pr_with_change_id(self, target_change_id):
         for pull_request in self.all_pull_requests():
-            change_id = self.extract_metadata('Change-Id: ', pull_request.body)
-            if change_id == target_change_id:
+            # Note: Search all 'Change-Id's so that we can manually put multiple
+            # CLs in one PR. (The exporter always creates one PR for each CL.)
+            change_ids = self.extract_metadata('Change-Id: ', pull_request.body, all_matches=True)
+            if target_change_id in change_ids:
                 return pull_request
         return None
 
     def pr_with_position(self, position):
         for pull_request in self.all_pull_requests():
-            pr_commit_position = self.extract_metadata('Cr-Commit-Position: ', pull_request.body)
-            if position == pr_commit_position:
+            # Same as above, search all 'Cr-Commit-Position's.
+            pr_commit_positions = self.extract_metadata('Cr-Commit-Position: ', pull_request.body, all_matches=True)
+            if position in pr_commit_positions:
                 return pull_request
         return None
 
-    def extract_metadata(self, tag, commit_body):
+    def extract_metadata(self, tag, commit_body, all_matches=False):
+        values = []
         for line in commit_body.splitlines():
-            if line.startswith(tag):
-                return line[len(tag):]
-        return None
+            if not line.startswith(tag):
+                continue
+            value = line[len(tag):]
+            if all_matches:
+                values.append(value)
+            else:
+                return value
+        return values if all_matches else None
 
 
 class JSONResponse(object):
