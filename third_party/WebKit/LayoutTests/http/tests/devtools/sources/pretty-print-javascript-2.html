@@ -1,0 +1,48 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../../inspector/sources-test.js"></script>
+<script src="debugger/resources/obfuscated.js"></script>
+
+<script>
+
+function test() {
+  var testJSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, 'text/javascript');
+
+  TestRunner.runTestSuite([
+    function forLoopWithIfStatementWithoutBlockStatements(next) {
+      var mappingQueries = ['length', 'console', 'of'];
+      testJSFormatter('for(var value of map)if (value.length%3===0)console.log(value);', mappingQueries, next);
+    },
+
+    function objectExpressionProperties(next) {
+      var mappingQueries = ['mapping', 'original', 'formatted'];
+      testJSFormatter('var mapping={original:[1,2,3],formatted:[],count:0}', mappingQueries, next);
+    },
+
+    function blockFormatting(next) {
+      var mappingQueries = ['(1)', '(2)'];
+      testJSFormatter('{ print(1); print(2); }', mappingQueries, next);
+    },
+
+    function assignmentFormatting(next) {
+      var mappingQueries = ['string'];
+      testJSFormatter('var exp=\'a string\';c=+a+(0>a?b:0);c=(1);var a=(1);', mappingQueries, next);
+    },
+
+    function objectLiteralFormatting(next) {
+      var mappingQueries = ['dog', '1989', 'foo'];
+      testJSFormatter('var obj={\'foo\':1,bar:"2",cat:{dog:\'1989\'}}', mappingQueries, next);
+    },
+  ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies JavaScript pretty-printing functionality.</p>
+</body>
+</html>

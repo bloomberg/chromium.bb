@@ -1,0 +1,136 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../resources/editor-test.js"></script>
+<script>
+function codeSnippet() {
+    return document.getElementById("codeSnippet").textContent;
+}
+
+function test() {
+  var textEditor = SourcesTestRunner.createTestEditor();
+  textEditor.setMimeType('text/javascript');
+  textEditor.setReadOnly(false);
+  textEditor.element.focus();
+  TestRunner.evaluateInPage('codeSnippet();', onCodeSnippet);
+
+  function onCodeSnippet(result) {
+    var codeLines = result.value;
+    textEditor.setText(codeLines);
+    TestRunner.runTestSuite(testSuite);
+  }
+
+  function nextOccurrence(times) {
+    for (var i = 0; i < times; ++i)
+      textEditor._selectNextOccurrenceController.selectNextOccurrence();
+  }
+
+  function undoLastSelection() {
+    textEditor._selectNextOccurrenceController.undoLastSelection();
+  }
+
+  function lineSelection(line, from, to) {
+    if (typeof to !== 'number')
+      to = from;
+    SourcesTestRunner.setLineSelections(textEditor, [{line: line, from: from, to: to}]);
+  }
+
+  var testSuite = [
+    function testNextFullWord(next) {
+      lineSelection(0, 3);
+      nextOccurrence(3);
+      SourcesTestRunner.dumpSelectionStats(textEditor);
+      next();
+    },
+
+    function testCaseSensitive(next) {
+      lineSelection(0, 9, 13);
+      nextOccurrence(3);
+      SourcesTestRunner.dumpSelectionStats(textEditor);
+      next();
+    },
+
+    function testOccurrencesOnTheSameLine(next) {
+      lineSelection(2, 13);
+      nextOccurrence(3);
+      SourcesTestRunner.dumpSelectionStats(textEditor);
+      next();
+    },
+
+    function testUndoLastAddedSelection(next) {
+      lineSelection(2, 13);
+      nextOccurrence(3);
+      undoLastSelection();
+      SourcesTestRunner.dumpSelectionStats(textEditor);
+      next();
+    },
+
+    function testUndoSelectionPreservesFullWordState(next) {
+      lineSelection(2, 51);
+      nextOccurrence(3);
+      undoLastSelection();
+      nextOccurrence(1);
+      SourcesTestRunner.dumpSelectionStats(textEditor);
+      var lastSelection = textEditor.selections().pop();
+      TestRunner.addResult('Last selection: ' + lastSelection.toString());
+      next();
+    },
+
+    function testUndoSelectionPreservesPartialSelection(next) {
+      lineSelection(2, 48, 52);
+      nextOccurrence(2);
+      undoLastSelection();
+      nextOccurrence(1);
+      SourcesTestRunner.dumpSelectionStats(textEditor);
+      var lastSelection = textEditor.selections().pop();
+      TestRunner.addResult('Last selection: ' + lastSelection.toString());
+      next();
+    },
+
+    function testTwoCloseWords(next) {
+      lineSelection(17, 45);
+      nextOccurrence(5);
+      SourcesTestRunner.dumpSelectionStats(textEditor);
+      next();
+    },
+  ];
+}
+
+</script>
+</head>
+
+<body onload="runTest();">
+<p>
+This test verifies Ctrl-D functionality, which selects next occurrence of word.
+</p>
+
+<pre id="codeSnippet">
+function wordData() {
+    return {
+        original: $(".entry.original > .input").text(),
+        translation: $(".entry.translation > .input").text(),
+        tags: $(".active-tags > .tagcloud > .tag").toArray().map(function(value) { return value.textContent; })
+    };
+}
+
+function submitWord(url) {
+    var stub = new App.Stub($(".content"));
+    $.post(url, wordData())
+    .done(function() {
+        var callback = $("meta[data-callback]").attr("data-callback");
+        if (callback) {
+            window.location = callback;
+        } else {
+            stub.success();
+            $(".entry.original > .input").text("").focus();
+            $(".entry.translation > .input").text("");
+        }
+    })
+    .fail(function(obj, err, errDescr) {
+        stub.failure("Error: " + errDescr);
+    })
+}
+</pre>
+
+</body>
+</html>

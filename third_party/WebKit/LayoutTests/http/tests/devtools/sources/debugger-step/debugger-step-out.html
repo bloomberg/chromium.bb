@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function d()
+{
+    debugger;
+}
+
+function testFunction()
+{
+    d();
+}
+
+var test = function() {
+  SourcesTestRunner.startDebuggerTest(step1);
+
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
+
+  function step2(callFrames) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    TestRunner.addResult('Stepping out...');
+    SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(InspectorTest, step3));
+    SourcesTestRunner.stepOut();
+  }
+
+  function step3(callFrames) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+};
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests "step out" functionality in debugger.
+</p>
+
+</body>
+</html>

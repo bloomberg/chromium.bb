@@ -1,0 +1,44 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script src="../../../inspector/network-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function testFunction()
+{
+    var x = Math.sqrt(16);
+    debugger;
+    return x;
+}
+
+function test() {
+  SourcesTestRunner.setQuiet(true);
+  SourcesTestRunner.startDebuggerTest(step1);
+  var updateCount = 8;
+
+  Common.settings.createLocalSetting('watchExpressions', []).set(['x', 'y.foo']);
+
+  function step1() {
+    watchExpressionsPane = self.runtime.sharedInstance(Sources.WatchExpressionsSidebarPane);
+    UI.panels.sources._sidebarPaneStack.showView(UI.panels.sources._watchSidebarPane).then(() => {
+      TestRunner.addSniffer(Sources.WatchExpression.prototype, '_createWatchExpression', watchExpressionsUpdated, true);
+      TestRunner.evaluateInPage('testFunction()');
+    });
+  }
+
+  function watchExpressionsUpdated(result, wasThrown) {
+    TestRunner.addResult(this._element.deepTextContent());
+    if (--updateCount === 0)
+      SourcesTestRunner.completeDebuggerTest();
+  }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests debugger does not fail when stopped while a panel other than scripts was opened. Both valid and invalid expressions are added to watch expressions.</p>
+<a href="https://bugs.webkit.org/show_bug.cgi?id=70718">Bug 70718</a>
+</body>
+</html>

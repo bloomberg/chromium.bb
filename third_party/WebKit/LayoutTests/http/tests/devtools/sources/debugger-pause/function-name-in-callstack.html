@@ -1,0 +1,56 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+var foo = function ()
+{
+    debugger;
+}
+
+foo.displayName = 'foo.displayName';
+Object.defineProperty(foo, 'name', { value: 'foo.function.name' } );
+
+var bar = function()
+{
+    foo();
+}
+
+bar.displayName = 'bar.displayName';
+
+var baz = function()
+{
+    bar();
+}
+
+Object.defineProperty(baz, 'name', { value: 'baz.function.name' } );
+
+function testFunction()
+{
+    baz();
+}
+
+function test() {
+  SourcesTestRunner.startDebuggerTest(step1);
+
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
+
+  function step2(callFrames) {
+    TestRunner.addResult('callFrames.length = ' + callFrames.length);
+    for (var i = 0; i < callFrames.length; ++i)
+      TestRunner.addResult('functionName: ' + callFrames[i].functionName);
+    SourcesTestRunner.completeDebuggerTest();
+  }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that callFrames on pause contains function name taking into account displayName and Function.name.
+</p>
+
+</body>
+</html>

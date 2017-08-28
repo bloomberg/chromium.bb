@@ -1,0 +1,53 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../../inspector/sources-test.js"></script>
+<script src="debugger/resources/obfuscated.js"></script>
+
+<script>
+
+function test() {
+  var testJSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, 'text/javascript');
+
+  TestRunner.runTestSuite([
+    function simpleLiteral(next) {
+      var mappingQueries = ['foo', 'bar'];
+      testJSFormatter('var foo = `bar`;', mappingQueries, next);
+    },
+
+    function multilineLiteral(next) {
+      var mappingQueries = ['foo', 'bar'];
+      testJSFormatter('var foo = `this\nbar`;', mappingQueries, next);
+    },
+
+    function stringSubstitution(next) {
+      var mappingQueries = ['credit', 'cash'];
+      testJSFormatter('var a=`I have ${credit+cash}$`;', mappingQueries, next);
+    },
+
+    function multipleStringSubstitution(next) {
+      var mappingQueries = ['credit', 'cash'];
+      testJSFormatter('var a=`${name} has ${credit+cash}${currency?currency:"$"}`;', mappingQueries, next);
+    },
+
+    function taggedTemplate(next) {
+      var mappingQueries = ['escapeHtml', 'width'];
+      testJSFormatter('escapeHtml`<div class=${classnName} width=${a+b}/>`;', mappingQueries, next);
+    },
+
+    function escapedApostrophe(next) {
+      var mappingQueries = ['That', 'great'];
+      testJSFormatter('var a=`That\`s great!`;', mappingQueries, next);
+    }
+  ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies JavaScript pretty-printing functionality.</p>
+</body>
+</html>

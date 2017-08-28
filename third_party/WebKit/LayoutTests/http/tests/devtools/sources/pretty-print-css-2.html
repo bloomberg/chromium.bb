@@ -1,0 +1,55 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../../inspector/sources-test.js"></script>
+<link rel="stylesheet" href="resources/style-formatter-obfuscated.css">
+
+<script>
+
+function test() {
+  var testCSSFormatter = SourcesTestRunner.testPrettyPrint.bind(InspectorTest, 'text/css');
+
+  TestRunner.runTestSuite([
+    function testFontFace(next) {
+      var css =
+          '@font-face{font-family:MyHelvetica;src:local(\'Helvetica Neue Bold\'),local(\'HelveticaNeue-Bold\'),url(MgOpenModernaBold.ttf);font-weight:bold;}div{color:red}';
+      var mappingQueries = ['font-face', 'red'];
+      testCSSFormatter(css, mappingQueries, next);
+    },
+
+    function testCharsetRule(next) {
+      var css = '@charset \'iso-8859-15\';p{margin:0}';
+      var mappingQueries = ['charset', 'iso', 'margin'];
+      testCSSFormatter(css, mappingQueries, next);
+    },
+
+    function testImportRule(next) {
+      var css = '@import url(\'bluish.css\') projection,tv;span{border:1px solid black}';
+      var mappingQueries = ['import', 'bluish', 'projection', 'span', 'border', 'black'];
+      testCSSFormatter(css, mappingQueries, next);
+    },
+
+    function testImportWithMediaQueryRule(next) {
+      var css = '@import url(\'landscape.css\') screen and (orientation:landscape);article{background:yellow}';
+      var mappingQueries = ['import', 'url', 'orientation', 'article', 'background', 'yellow'];
+      testCSSFormatter(css, mappingQueries, next);
+    },
+
+    function testKeyframesRule(next) {
+      var css =
+          'p{animation-duration:3s;}@keyframes slidein{from{margin-left:100%;width:300%;}to{margin-left:0%;width:100%;}}p{animation-name:slidein}';
+      var mappingQueries = ['animation-duration', '3s', 'keyframes', 'from', '300%', 'animation-name'];
+      testCSSFormatter(css, mappingQueries, next);
+    },
+  ]);
+}
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Verifies CSS pretty-printing functionality.</p>
+</body>
+</html>

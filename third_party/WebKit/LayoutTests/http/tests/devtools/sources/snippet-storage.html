@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script>
+function test() {
+  var settingPrefix = 'test';
+  var namePrefix = 'Test snippet #';
+  var snippetStorage = new Snippets.SnippetStorage(settingPrefix, namePrefix);
+
+  function dumpSnippets(snippets) {
+    for (var i = 0; i < snippets.length; ++i) {
+      var snippet = snippets[i];
+      TestRunner.addResult(
+          '    Snippet: id = ' + snippet.id + ', name = \'' + snippet.name + '\', content = \'' + snippet.content +
+          '\'.');
+    }
+  }
+
+  function dumpSavedSnippets() {
+    TestRunner.addResult('Dumping saved snippets:');
+    dumpSnippets(snippetStorage._snippetsSetting.get());
+  }
+
+  function dumpStorageSnippets() {
+    TestRunner.addResult('Dumping storage snippets:');
+    dumpSnippets(snippetStorage.snippets);
+  }
+
+  dumpSavedSnippets();
+  dumpStorageSnippets();
+  var snippet = snippetStorage.createSnippet();
+  TestRunner.addResult('Snippet created.');
+  dumpSavedSnippets();
+  dumpStorageSnippets();
+  snippet.name = 'New snippet name';
+  TestRunner.addResult('Snippet renamed.');
+  dumpSavedSnippets();
+  dumpStorageSnippets();
+  snippet.content = 'New snippet content';
+  TestRunner.addResult('Snippet content changed.');
+  dumpSavedSnippets();
+  dumpStorageSnippets();
+  var anotherSnippet = snippetStorage.createSnippet();
+  TestRunner.addResult('Another snippet created.');
+  dumpSavedSnippets();
+  dumpStorageSnippets();
+  snippetStorage.deleteSnippet(snippet);
+  TestRunner.addResult('Snippet deleted.');
+  dumpSavedSnippets();
+  dumpStorageSnippets();
+  snippetStorage.deleteSnippet(anotherSnippet);
+  TestRunner.addResult('Another snippet deleted.');
+  dumpSavedSnippets();
+  dumpStorageSnippets();
+
+  TestRunner.completeTest();
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests snippet storage.</p>
+</body>
+</html>

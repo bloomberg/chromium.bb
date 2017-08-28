@@ -1,0 +1,95 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/console-test.js"></script>
+<script src="../../../inspector/debugger-test.js"></script>
+<script>
+
+function dirxml() { return "overridden dirxml() in top frame"; }
+
+function onload()
+{
+    var iframe = document.getElementById("iframe");
+    var doc = iframe.contentWindow.document;
+
+    var html = "<html><head><script>\n" +
+        "function dir() { return 'overridden dir() in iframe'; }\n" +
+        "function pauseInsideIframe()\n" +
+        "{\n" +
+        "    var table = 'local in iframe';\n" +
+        "    debugger;\n" +
+        "    dir;\n" +
+        "}\n" +
+        "</" + "script></" + "head><" + "body></" + "body></" + "html>";
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    runTest();
+}
+
+function testFunction()
+{
+    var clear = "local in top frame";
+    var iframe = document.getElementById("iframe");
+    iframe.contentWindow.pauseInsideIframe.call({foo: 42});
+}
+
+function test() {
+  var expressions = [
+    'dir()', 'dirxml()', 'table', 'clear',
+    'x:',  // print correct syntax error: crbug.com/110163
+  ];
+
+  function evaluateInConsoleAndDump(callback) {
+    var copy = expressions.slice();
+    inner();
+
+    function inner() {
+      var expression = copy.shift();
+      if (expression)
+        ConsoleTestRunner.evaluateInConsoleAndDump(expression, inner, true);
+      else
+        callback();
+    }
+  }
+
+  SourcesTestRunner.startDebuggerTest(step1, true);
+
+  function step1() {
+    SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
+  }
+
+  function step2(callFrames) {
+    SourcesTestRunner.captureStackTrace(callFrames);
+    TestRunner.addResult('\n=== Evaluating on iframe ===');
+    evaluateInConsoleAndDump(step3);
+  }
+
+  function step3() {
+    var pane = self.runtime.sharedInstance(Sources.CallStackSidebarPane);
+    pane._list.selectItem(pane._list._model.at(1));
+    TestRunner.deprecatedRunAfterPendingDispatches(step4);
+  }
+
+  function step4() {
+    TestRunner.addResult('\n=== Evaluating on top frame ===');
+    evaluateInConsoleAndDump(step5);
+  }
+
+  function step5() {
+    SourcesTestRunner.completeDebuggerTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="onload()">
+<iframe id="iframe"></iframe>
+<p>
+Test that evaluation on call frame works across all inspected windows in the call stack.
+</p>
+
+</body>
+</html>
