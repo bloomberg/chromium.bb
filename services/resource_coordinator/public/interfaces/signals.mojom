@@ -8,6 +8,8 @@ enum Event {
   kTestEvent,
   kAlertFired,
   kFaviconUpdated,
+  // This event signal is received when main frame navigation is committed.
+  kNavigationCommitted,
   // Only care about non-persistent notifications, notifications launched from
   // ServiceWorker are persistent and compatible with LifeCycle.
   kNonPersistentNotificationCreated,
