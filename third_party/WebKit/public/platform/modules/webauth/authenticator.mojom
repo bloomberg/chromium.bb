@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[JavaPackage="org.chromium.webauth.mojom"]
 module webauth.mojom;
 
 import "mojo/common/time.mojom";
@@ -79,20 +78,20 @@ struct PublicKeyCredentialEntity {
 // Parameters that are used to generate an appropriate public key credential.
 struct PublicKeyCredentialParameters {
   PublicKeyCredentialType type;
-  // TODO(kpaulhamus): add AlgorithmIdentifier algorithm;
+  int32 algorithm_identifier;
 };
 
 // Parameters passed into calls to MakeCredential.
 struct MakeCredentialOptions {
-  // Relying party information. 
+  // Relying party information.
   // Corresponds to |rp| in MakeCredentialOptions.idl.
   PublicKeyCredentialEntity relying_party;
 
   // Information about the user.
   PublicKeyCredentialEntity user;
-  
+
   // A blob passed from the the relying party server.
-  array<uint8> challenge; 
+  array<uint8> challenge;
 
   array<PublicKeyCredentialParameters> crypto_parameters;
 
@@ -100,7 +99,7 @@ struct MakeCredentialOptions {
 
   array<PublicKeyCredentialDescriptor> exclude_credentials;
 
-  // TODO(kpaulhamus): add AuthenticatorSelectionCriteria  
+  // TODO(kpaulhamus): add AuthenticatorSelectionCriteria
 };
 
 enum PublicKeyCredentialType {

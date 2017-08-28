@@ -149,7 +149,11 @@ PublicKeyCredentialParametersPtr ConvertPublicKeyCredentialParameters(
   auto mojo_parameter =
       webauth::mojom::blink::PublicKeyCredentialParameters::New();
   mojo_parameter->type = ConvertPublicKeyCredentialType(parameter.type());
-  // TODO(kpaulhamus): add AlgorithmIdentifier
+
+  // A COSEAlgorithmIdentifier's value is a number identifying a cryptographic
+  // algorithm. Values are registered in the IANA COSE Algorithms registry.
+  // https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+  mojo_parameter->algorithm_identifier = parameter.algorithm();
   return mojo_parameter;
 }
 

@@ -34,9 +34,11 @@ interface AuthenticatorAssertionResponse : AuthenticatorResponse {
     readonly attribute ArrayBuffer      signature;
 };
 
+typedef long COSEAlgorithmIdentifier;
+
 dictionary PublicKeyCredentialParameters {
-    required PublicKeyCredentialType  type;
-    required AlgorithmIdentifier   algorithm;
+    required PublicKeyCredentialType type;
+    required COSEAlgorithmIdentifier algorithm;
 };
 
 dictionary MakeCredentialOptions {

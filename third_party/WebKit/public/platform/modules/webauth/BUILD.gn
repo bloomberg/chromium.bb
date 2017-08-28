@@ -1,9 +1,0 @@
-mojom("webauth") {
-  sources = [
-    "authenticator.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/common:common_custom_types",
-  ]
-}
