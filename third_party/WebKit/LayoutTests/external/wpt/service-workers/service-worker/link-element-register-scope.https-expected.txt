@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+FAIL Scope including URL-encoded slash Test bug: need to pass exception to assert_throws()
+FAIL Scope including URL-encoded backslash Test bug: need to pass exception to assert_throws()
+PASS Scope including URL-encoded multibyte characters 
+PASS Scope including non-escaped multibyte characters 
+PASS Scope including self-reference 
+PASS Scope including parent-reference 
+PASS Scope including consecutive slashes 
+FAIL Scope URL is same-origin filesystem: URL Test bug: need to pass exception to assert_throws()
+Harness: the test ran to completion.
+

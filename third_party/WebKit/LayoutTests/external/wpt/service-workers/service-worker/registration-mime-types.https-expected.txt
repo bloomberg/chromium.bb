@@ -1,0 +1,39 @@
+This is a testharness.js-based test.
+PASS Registering script with no MIME type 
+PASS Registering script with bad MIME type 
+FAIL Registering script that imports script with no MIME type assert_unreached: Should have rejected: Registration of no MIME type imported script should fail. Reached unreachable code
+FAIL Registering script that imports script with bad MIME type assert_unreached: Should have rejected: Registration of plain text imported script should fail. Reached unreachable code
+FAIL Registering script with good MIME type application/ecmascript promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('application/ecmascript')."
+PASS Registering script that imports script with good MIME type application/ecmascript 
+PASS Registering script with good MIME type application/javascript 
+PASS Registering script that imports script with good MIME type application/javascript 
+FAIL Registering script with good MIME type application/x-ecmascript promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('application/x-ecmascript')."
+PASS Registering script that imports script with good MIME type application/x-ecmascript 
+PASS Registering script with good MIME type application/x-javascript 
+PASS Registering script that imports script with good MIME type application/x-javascript 
+FAIL Registering script with good MIME type text/ecmascript promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/ecmascript')."
+PASS Registering script that imports script with good MIME type text/ecmascript 
+PASS Registering script with good MIME type text/javascript 
+PASS Registering script that imports script with good MIME type text/javascript 
+FAIL Registering script with good MIME type text/javascript1.0 promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/javascript1.0')."
+PASS Registering script that imports script with good MIME type text/javascript1.0 
+FAIL Registering script with good MIME type text/javascript1.1 promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/javascript1.1')."
+PASS Registering script that imports script with good MIME type text/javascript1.1 
+FAIL Registering script with good MIME type text/javascript1.2 promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/javascript1.2')."
+PASS Registering script that imports script with good MIME type text/javascript1.2 
+FAIL Registering script with good MIME type text/javascript1.3 promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/javascript1.3')."
+PASS Registering script that imports script with good MIME type text/javascript1.3 
+FAIL Registering script with good MIME type text/javascript1.4 promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/javascript1.4')."
+PASS Registering script that imports script with good MIME type text/javascript1.4 
+FAIL Registering script with good MIME type text/javascript1.5 promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/javascript1.5')."
+PASS Registering script that imports script with good MIME type text/javascript1.5 
+FAIL Registering script with good MIME type text/jscript promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/jscript')."
+PASS Registering script that imports script with good MIME type text/jscript 
+FAIL Registering script with good MIME type text/livescript promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/livescript')."
+PASS Registering script that imports script with good MIME type text/livescript 
+FAIL Registering script with good MIME type text/x-ecmascript promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/x-ecmascript')."
+PASS Registering script that imports script with good MIME type text/x-ecmascript 
+FAIL Registering script with good MIME type text/x-javascript promise_test: Unhandled rejection with value: object "SecurityError: Failed to register a ServiceWorker: The script has an unsupported MIME type ('text/x-javascript')."
+PASS Registering script that imports script with good MIME type text/x-javascript 
+Harness: the test ran to completion.
+
