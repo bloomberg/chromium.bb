@@ -25,7 +25,7 @@ constexpr base::TimeDelta kDelayDefault = base::TimeDelta::FromSeconds(5);
 
 // The amount of time the promo should stay onscreen after the
 // user stops hovering over it.
-constexpr base::TimeDelta kDelayShort = base::TimeDelta::FromSecondsD(2.5);
+constexpr base::TimeDelta kDelayShort = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
