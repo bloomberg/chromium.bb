@@ -348,7 +348,7 @@ void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
 void UiSceneManager::CreateSplashScreen() {
   // Add "Powered by Chrome" text.
   auto text = base::MakeUnique<Text>(
-      256, kSplashScreenTextFontHeightM, kSplashScreenTextWidthM,
+      512, kSplashScreenTextFontHeightM, kSplashScreenTextWidthM,
       base::Bind([](ColorScheme color_scheme) {
         return color_scheme.splash_screen_text_color;
       }),
