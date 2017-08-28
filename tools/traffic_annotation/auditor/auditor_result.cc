@@ -23,10 +23,11 @@ AuditorResult::AuditorResult(Type type,
          type == AuditorResult::Type::ERROR_MERGE_FAILED);
   DCHECK(!message.empty() || type == AuditorResult::Type::RESULT_OK ||
          type == AuditorResult::Type::RESULT_IGNORE ||
-         type == AuditorResult::Type::ERROR_MISSING ||
+         type == AuditorResult::Type::ERROR_MISSING_TAG_USED ||
          type == AuditorResult::Type::ERROR_NO_ANNOTATION ||
          type == AuditorResult::Type::ERROR_MISSING_EXTRA_ID ||
-         type == AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION);
+         type == AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION ||
+         type == AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT);
   if (!message.empty())
     details_.push_back(message);
 };
@@ -61,9 +62,10 @@ std::string AuditorResult::ToText() const {
       DCHECK(details_.size());
       return details_[0];
 
-    case AuditorResult::Type::ERROR_MISSING:
-      return base::StringPrintf("Missing annotation in '%s', line %i.",
-                                file_path_.c_str(), line_);
+    case AuditorResult::Type::ERROR_MISSING_TAG_USED:
+      return base::StringPrintf(
+          "MISSING_TRAFFIC_ANNOTATION tag used in '%s', line %i.",
+          file_path_.c_str(), line_);
 
     case AuditorResult::Type::ERROR_NO_ANNOTATION:
       return base::StringPrintf("Empty annotation in '%s', line %i.",
@@ -130,6 +132,12 @@ std::string AuditorResult::ToText() const {
     case AuditorResult::Type::ERROR_INCOMPLETED_ANNOTATION:
       return base::StringPrintf("Annotation at '%s:%i' is never completed.",
                                 file_path_.c_str(), line_);
+
+    case AuditorResult::Type::ERROR_DIRECT_ASSIGNMENT:
+      return base::StringPrintf(
+          "Annotation at '%s:%i' is assigned without annotations API "
+          "functions.",
+          file_path_.c_str(), line_);
 
     default:
       return std::string();

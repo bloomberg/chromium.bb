@@ -125,8 +125,8 @@ AuditorResult AnnotationInstance::Deserialize(
 
   // Process missing tag.
   if (unique_id_hash_code == MISSING_TRAFFIC_ANNOTATION.unique_id_hash_code)
-    return AuditorResult(AuditorResult::Type::ERROR_MISSING, "", file_path,
-                         line_number);
+    return AuditorResult(AuditorResult::Type::ERROR_MISSING_TAG_USED, "",
+                         file_path, line_number);
 
   // Decode serialized proto.
   std::string annotation_text = "";
@@ -379,5 +379,28 @@ AuditorResult CallInstance::Deserialize(
   int is_annotated_int;
   base::StringToInt(serialized_lines[start_line++], &is_annotated_int);
   is_annotated = is_annotated_int != 0;
+  return AuditorResult(AuditorResult::Type::RESULT_OK);
+}
+
+AssignmentInstance::AssignmentInstance() : line_number(0) {}
+
+AssignmentInstance::AssignmentInstance(const AssignmentInstance& other)
+    : file_path(other.file_path),
+      line_number(other.line_number),
+      function_context(other.function_context){};
+
+AuditorResult AssignmentInstance::Deserialize(
+    const std::vector<std::string>& serialized_lines,
+    int start_line,
+    int end_line) {
+  if (end_line - start_line != 3) {
+    return AuditorResult(AuditorResult::Type::ERROR_FATAL,
+                         "Not enough lines to deserialize assignment.");
+  }
+  file_path = serialized_lines[start_line++];
+  function_context = serialized_lines[start_line++];
+  int line_number_int;
+  base::StringToInt(serialized_lines[start_line++], &line_number_int);
+  line_number = static_cast<uint32_t>(line_number_int);
   return AuditorResult(AuditorResult::Type::RESULT_OK);
 }
