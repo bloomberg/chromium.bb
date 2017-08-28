@@ -188,15 +188,21 @@ TEST_F(FirstMeaningfulPaintDetectorTest, FirstMeaningfulPaintCandidate) {
   MarkFirstContentfulPaintAndClearSwapPromise();
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
   SimulateLayoutAndPaint(1);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+  ClearProvisionalFirstMeaningfulPaintSwapPromise();
   double after_paint = AdvanceClockAndGetTime();
   // The first candidate gets ignored.
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
   SimulateLayoutAndPaint(10);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+  ClearProvisionalFirstMeaningfulPaintSwapPromise();
   // The second candidate gets reported.
   EXPECT_GT(GetPaintTiming().FirstMeaningfulPaintCandidate(), after_paint);
   double candidate = GetPaintTiming().FirstMeaningfulPaintCandidate();
   // The third candidate gets ignored since we already saw the first candidate.
-  SimulateLayoutAndPaint(10);
+  SimulateLayoutAndPaint(20);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+  ClearProvisionalFirstMeaningfulPaintSwapPromise();
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), candidate);
 }
 
@@ -206,6 +212,8 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
   double before_paint = AdvanceClockAndGetTime();
   SimulateLayoutAndPaint(1);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 1U);
+  ClearProvisionalFirstMeaningfulPaintSwapPromise();
   // The first candidate is initially ignored.
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), 0.0);
   SimulateNetworkStable();
@@ -214,6 +222,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   double candidate = GetPaintTiming().FirstMeaningfulPaintCandidate();
   // The second candidate is then ignored.
   SimulateLayoutAndPaint(10);
+  EXPECT_EQ(OutstandingDetectorSwapPromiseCount(), 0U);
   EXPECT_EQ(GetPaintTiming().FirstMeaningfulPaintCandidate(), candidate);
 }
 
