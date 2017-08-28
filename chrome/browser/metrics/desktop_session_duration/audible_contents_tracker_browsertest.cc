@@ -5,6 +5,7 @@
 #include "chrome/browser/metrics/desktop_session_duration/audible_contents_tracker.h"
 
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_base.h"

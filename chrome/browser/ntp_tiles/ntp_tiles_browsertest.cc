@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"

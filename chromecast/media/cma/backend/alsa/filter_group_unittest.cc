@@ -5,6 +5,7 @@
 #include "chromecast/media/cma/backend/alsa/filter_group.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"

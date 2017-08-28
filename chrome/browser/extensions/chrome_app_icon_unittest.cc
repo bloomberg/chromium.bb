@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/browser/extensions/chrome_app_icon_delegate.h"
 #include "chrome/browser/extensions/chrome_app_icon_loader.h"

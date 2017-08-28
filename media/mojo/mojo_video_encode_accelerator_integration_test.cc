@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/limits.h"

@@ -5,6 +5,7 @@
 #include "net/nqe/socket_watcher.h"
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/test/base/testing_profile.h"

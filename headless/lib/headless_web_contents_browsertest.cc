@@ -8,6 +8,8 @@
 
 #include "base/base64.h"
 #include "base/json/json_writer.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"

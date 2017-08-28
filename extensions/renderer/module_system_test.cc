@@ -18,6 +18,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_paths.h"

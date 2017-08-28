@@ -7,6 +7,7 @@
 #include <limits>
 #include "base/files/scoped_temp_dir.h"
 #include "base/rand_util.h"
+#include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_restrictions.h"

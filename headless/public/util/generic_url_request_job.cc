@@ -8,6 +8,8 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"

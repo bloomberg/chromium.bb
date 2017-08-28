@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
@@ -18,7 +19,6 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
-
 
 namespace {
 // Command line argument to specify unpacked extension location.

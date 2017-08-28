@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/service_test.h"

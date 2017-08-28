@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"

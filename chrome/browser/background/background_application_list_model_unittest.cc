@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
