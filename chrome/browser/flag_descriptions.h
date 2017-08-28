@@ -729,6 +729,9 @@ extern const char kSmoothScrollingDescription[];
 extern const char kSoftwareRasterizerName[];
 extern const char kSoftwareRasterizerDescription[];
 
+extern const char kSoundContentSettingName[];
+extern const char kSoundContentSettingDescription[];
+
 extern const char kSpeculativePrefetchName[];
 extern const char kSpeculativePrefetchDescription[];
 
