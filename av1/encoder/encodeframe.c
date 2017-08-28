@@ -4877,7 +4877,9 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   td->mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
 #endif  // CONFIG_PVQ
 
+#if CONFIG_LOOPFILTERING_ACROSS_TILES
   av1_setup_across_tile_boundary_info(cm, tile_info);
+#endif
 
 #if CONFIG_LV_MAP
   av1_fill_coeff_costs(&td->mb, cm->fc);
