@@ -481,7 +481,7 @@ void NGInlineNode::ShapeText(const String& text_content,
         &font, item.Direction(), item.StartOffset(), item.EndOffset());
 
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription())))
-      shape_result->ApplySpacing(spacing, item.Direction());
+      shape_result->ApplySpacing(spacing);
 
     item.shape_result_ = std::move(shape_result);
   }

@@ -307,8 +307,7 @@ void ShapeResult::FallbackFonts(
 
 template <typename TextContainerType>
 void ShapeResult::ApplySpacing(ShapeResultSpacing<TextContainerType>& spacing,
-                               const TextContainerType& text,
-                               bool is_rtl) {
+                               const TextContainerType& text) {
   float offset_x, offset_y;
   float& offset = spacing.IsVerticalOffset() ? offset_y : offset_x;
   float total_space = 0;
@@ -323,22 +322,12 @@ void ShapeResult::ApplySpacing(ShapeResultSpacing<TextContainerType>& spacing,
       if (i + 1 < run->glyph_data_.size() &&
           glyph_data.character_index ==
               run->glyph_data_[i + 1].character_index) {
-        // In RTL, marks need the same letter-spacing offset as the base.
-        if (is_rtl && spacing.LetterSpacing()) {
-          offset_x = offset_y = 0;
-          offset = spacing.LetterSpacing();
-          glyph_data.offset.Expand(offset_x, offset_y);
-        }
       } else {
         offset_x = offset_y = 0;
         float space = spacing.ComputeSpacing(
             text, run->start_index_ + glyph_data.character_index, offset);
         glyph_data.advance += space;
         total_space_for_run += space;
-        if (is_rtl) {
-          // In RTL, spacing should be added to left side of glyphs.
-          offset += space;
-        }
         glyph_data.offset.Expand(offset_x, offset_y);
       }
       has_vertical_offsets_ |= (glyph_data.offset.Height() != 0);
@@ -351,16 +340,15 @@ void ShapeResult::ApplySpacing(ShapeResultSpacing<TextContainerType>& spacing,
   glyph_bounding_box_.SetWidth(glyph_bounding_box_.Width() + total_space);
 }
 
-void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing,
-                               TextDirection direction) {
-  ApplySpacing(spacing, spacing.Text(), IsRtl(direction));
+void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing) {
+  ApplySpacing(spacing, spacing.Text());
 }
 
 PassRefPtr<ShapeResult> ShapeResult::ApplySpacingToCopy(
     ShapeResultSpacing<TextRun>& spacing,
     const TextRun& run) const {
   RefPtr<ShapeResult> result = ShapeResult::Create(*this);
-  result->ApplySpacing(spacing, run, run.Rtl());
+  result->ApplySpacing(spacing, run);
   return result;
 }
 
