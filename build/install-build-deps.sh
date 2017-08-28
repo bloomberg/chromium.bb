@@ -489,14 +489,6 @@ if package_exists ttf-mscorefonts-installer; then
 elif package_exists msttcorefonts; then
   dev_list="${dev_list} msttcorefonts"
 fi
-# Ubuntu 16.04 has this package deleted.
-if package_exists ttf-kochi-gothic; then
-  dev_list="${dev_list} ttf-kochi-gothic"
-fi
-# Ubuntu 16.04 has this package deleted.
-if package_exists ttf-kochi-mincho; then
-  dev_list="${dev_list} ttf-kochi-mincho"
-fi
 
 # Some packages are only needed if the distribution actually supports
 # installing them.

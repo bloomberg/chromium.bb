@@ -128,9 +128,9 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (749,0) width 0 RTL: "\x{202A}"
             text run at (749,0) width 20 RTL: "\x{683}\x{684}\x{202C}"
         LayoutBlockFlow {DIV} at (0,804) size 769x20
-          LayoutText {#text} at (757,0) size 12x19
-            text run at (757,0) width 0 RTL: "\x{202A}"
-            text run at (757,0) width 12 RTL: "\x{1}\x{202C}"
+          LayoutText {#text} at (759,0) size 10x19
+            text run at (759,0) width 0 RTL: "\x{202A}"
+            text run at (759,0) width 10 RTL: "\x{1}\x{202C}"
         LayoutBlockFlow {DIV} at (0,824) size 769x20
           LayoutText {#text} at (747,0) size 22x19
             text run at (747,0) width 22: "abc\x{202C}"
@@ -251,9 +251,9 @@ layer at (0,0) size 785x1812 backgroundClip at (0,0) size 785x600 clip at (0,0) 
             text run at (20,0) width 0: "\x{202C}"
             text run at (20,0) width 0: "\x{202A}"
         LayoutBlockFlow {DIV} at (0,804) size 769x20
-          LayoutText {#text} at (0,0) size 12x19
-            text run at (0,0) width 12: "\x{1}\x{202C}"
-            text run at (12,0) width 0: "\x{202A}"
+          LayoutText {#text} at (0,0) size 10x19
+            text run at (0,0) width 10: "\x{1}\x{202C}"
+            text run at (10,0) width 0: "\x{202A}"
         LayoutBlockFlow {DIV} at (0,824) size 769x20
           LayoutText {#text} at (0,0) size 22x19
             text run at (0,0) width 22: "abc\x{202C}"

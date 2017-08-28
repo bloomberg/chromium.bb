@@ -27,10 +27,10 @@ layer at (0,0) size 480x360
             chunk 1 text run 1 at (10.00,215.00) startOffset 0 endOffset 9 width 64.06: "Yiddish: "
             chunk 1 text run 1 at (74.06,215.00) startOffset 0 endOffset 21 width 123.00 RTL: "\x{5D0}\x{5D9}\x{5DA} \x{5E7}\x{5E2}\x{5DF} \x{5E2}\x{5E1}\x{5DF} \x{5D2}\x{5DC}\x{5D0}\x{5B8}\x{5D6} \x{5D0}\x{5D5}\x{5DF}"
             chunk 1 text run 1 at (197.06,215.00) startOffset 0 endOffset 4 width 16.00: " ..."
-      LayoutSVGContainer {g} at (10,235) size 258x19
-        LayoutSVGText {text} at (10,235) size 258x19 contains 1 chunk(s)
-          LayoutSVGInlineText {#text} at (10,235) size 258x19
-            chunk 1 text run 1 at (10.00,250.00) startOffset 0 endOffset 20 width 258.00: "Chinese:\x{6211}\x{80FD}\x{541E}\x{4E0B}\x{73BB}\x{7483}\x{800C}\x{4E0D}\x{4F24}\x{8EAB}\x{4F53}\x{3002}"
+      LayoutSVGContainer {g} at (10,235) size 259x19
+        LayoutSVGText {text} at (10,235) size 259x19 contains 1 chunk(s)
+          LayoutSVGInlineText {#text} at (10,235) size 259x19
+            chunk 1 text run 1 at (10.00,250.00) startOffset 0 endOffset 20 width 259.00: "Chinese:\x{6211}\x{80FD}\x{541E}\x{4E0B}\x{73BB}\x{7483}\x{800C}\x{4E0D}\x{4F24}\x{8EAB}\x{4F53}\x{3002}"
       LayoutSVGContainer {g} at (10,270) size 260x19
         LayoutSVGText {text} at (10,270) size 260x19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,270) size 260x19
