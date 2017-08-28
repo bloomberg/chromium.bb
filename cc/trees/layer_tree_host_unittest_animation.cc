@@ -1188,12 +1188,13 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
   }
 
   void WillPrepareTilesOnThread(LayerTreeHostImpl* host_impl) override {
-    if (host_impl->sync_tree()->source_frame_number() != 0)
+    // After activating the sync tree PrepareTiles will be called
+    // again (which races with the test exiting).
+    LayerTreeImpl* sync_tree = host_impl->sync_tree();
+    if (!sync_tree || TestEnded())
       return;
 
-    // After checking this on the sync tree, we will activate, which will cause
-    // PrepareTiles to happen again (which races with the test exiting).
-    if (TestEnded())
+    if (sync_tree->source_frame_number() != 0)
       return;
 
     scoped_refptr<AnimationTimeline> timeline_impl =
@@ -1201,7 +1202,7 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     scoped_refptr<AnimationPlayer> player_impl =
         timeline_impl->GetPlayerById(player_id_);
 
-    LayerImpl* child = host_impl->sync_tree()->LayerById(layer_->id());
+    LayerImpl* child = sync_tree->LayerById(layer_->id());
     Animation* animation = player_impl->GetAnimation(TargetProperty::TRANSFORM);
 
     // The animation should be starting for the first frame.
@@ -1225,13 +1226,8 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
   scoped_refptr<Layer> layer_;
 };
 
-SINGLE_THREAD_TEST_F(LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
-
-// The multi-thread test is flaky. See http://crbug.com/755965.
-using DISABLED_LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit =
-    LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit;
-MULTI_THREAD_TEST_F(
-    DISABLED_LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
+SINGLE_AND_MULTI_THREAD_TEST_F(
+    LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit);
 
 // When a layer with an animation is removed from the tree and later re-added,
 // the animation should resume.
