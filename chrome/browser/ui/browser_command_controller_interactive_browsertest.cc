@@ -552,8 +552,9 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerInteractiveTest,
 // the page to exit fullscreen mode. So we need to maintain a list of exiting /
 // non-exiting commands, which is not the goal of this test.
 
-#if defined(OS_CHROMEOS)
-// This test is flaky on ChromeOS, see bug http://crbug.com/754878.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+// This test is flaky on ChromeOS and Linux, see bugs http://crbug.com/754878
+// and http://crbug.com/759704.
 #define MAYBE_ShortcutsShouldTakeEffectInJsFullscreen \
         DISABLED_ShortcutsShouldTakeEffectInJsFullscreen
 #else
