@@ -159,8 +159,10 @@ def GenerateTestResults(
     if 'stack' in bundle:
       if symbolizer and device_abi:
         current_result.SetLog(
-            '\n'.join(symbolizer.ExtractAndResolveNativeStackTraces(
-                bundle['stack'], device_abi)))
+            '%s\n%s' % (
+              bundle['stack'],
+              '\n'.join(symbolizer.ExtractAndResolveNativeStackTraces(
+                  bundle['stack'], device_abi))))
       else:
         current_result.SetLog(bundle['stack'])
 
