@@ -1,0 +1,53 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+
+<script>
+
+function click()
+{
+    var target = document.getElementById("host");
+    var rect = target.getBoundingClientRect();
+    // Simulate the mouse click over the target to trigger an event dispatch.
+    if (window.eventSender) {
+        window.eventSender.mouseMoveTo(rect.left + 10, rect.top + 10);
+        window.eventSender.mouseDown();
+        window.eventSender.mouseUp();
+    }
+}
+
+function test() {
+  TestRunner.overlayModel.setInspectMode(Protocol.Overlay.InspectMode.SearchForNode).then(step2);
+
+  function step2() {
+    ElementsTestRunner.firstElementsTreeOutline().addEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+    TestRunner.evaluateInPage('click()');
+  }
+
+  function step3() {
+    ElementsTestRunner.firstElementsTreeOutline().removeEventListener(
+        Elements.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+    var selectedElement = ElementsTestRunner.firstElementsTreeOutline().selectedTreeElement;
+    TestRunner.addResult('Node selected: ' + selectedElement.node().getAttribute('id'));
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+
+<p>Test that devtools can inspect text element under shadow root.</p>
+
+<div><div><div id="host"></div></div></div>
+<script>
+  var host = document.querySelector('#host');
+  var sr = host.createShadowRoot();
+  sr.innerHTML = "Text Text Text<br>Text Text Text";
+</script>
+
+</body>
+</html>

@@ -1,0 +1,30 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script type="text/javascript">
+
+var test = function() {
+
+  // make sure the tree is loaded
+  ElementsTestRunner.selectNodeAndWaitForStyles('node-to-copy', nodeSelected);
+  var input = document.body.createChild('input');
+
+  function nodeSelected() {
+    eventSender.keyDown('Copy');
+    input.focus();
+    setTimeout(next, 0);
+  }
+  function next() {
+    eventSender.keyDown('Paste');
+    TestRunner.addResult(input.value);
+    TestRunner.completeTest();
+  }
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests that nodes can be copied in ElementsTreeOutline.</p>
+<span id="node-to-copy">This should be <b>copied</b>.</span>
+</body>
+</html>

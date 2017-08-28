@@ -1,0 +1,31 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  ElementsTestRunner.expandElementsTree(step1);
+
+  function step1() {
+    TestRunner.reloadPage(step2);
+  }
+
+  function step2() {
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that the inspected page does not crash in a debug build when reloading a page containing shadow DOM with open inspector. <a href="https://bugs.webkit.org/show_bug.cgi?id=84154">Bug 84154</a>.
+</p>
+
+<input type="radio">
+
+</body>
+</html>

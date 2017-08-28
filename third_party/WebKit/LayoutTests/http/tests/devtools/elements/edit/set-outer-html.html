@@ -1,0 +1,57 @@
+<html>
+<head>
+
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script src="../../resources/set-outer-html-test.js"></script>
+<script>
+
+function onload()
+{
+    document.getElementById("identity").wrapperIdentity = "identity";
+    runTest();
+}
+
+function test() {
+  TestRunner.runTestSuite([
+    function testSetUp(next) {
+      ElementsTestRunner.setUpTestSuite(next);
+    },
+
+    function testChangeCharacterData(next) {
+      ElementsTestRunner.patchOuterHTML('Getting involved', 'Getting not involved', next);
+    },
+
+    function testChangeAttributes(next) {
+      ElementsTestRunner.patchOuterHTML('<a href', '<a foo="bar" href', next);
+    },
+
+    function testRemoveLastChild(next) {
+      ElementsTestRunner.patchOuterHTML('Getting involved', '', next);
+    },
+
+    function testSplitNode(next) {
+      ElementsTestRunner.patchOuterHTML('Getting involved', 'Getting</h2><h2>involved', next);
+    },
+
+    function testChangeNodeName(next) {
+      ElementsTestRunner.patchOuterHTML('<h2>Getting involved</h2>', '<h3>Getting involved</h3>', next);
+    }
+  ]);
+}
+</script>
+</head>
+
+<body onload="onload()">
+<p>
+Tests DOMAgent.setOuterHTML protocol method.
+</p>
+
+<div id="container" style="display:none">
+<p>WebKit is used by <a href="http://www.apple.com/safari/">Safari</a>, Dashboard, etc.</a>.</p>
+<h2>Getting involved</h2>
+<p id="identity">There are many ways to get involved. You can:</p>
+</div>
+
+</body>
+</html>
