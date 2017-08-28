@@ -4,7 +4,7 @@
 
 #include "core/editing/markers/SpellCheckMarkerListImpl.h"
 
-#include "core/editing/markers/DocumentMarkerListEditor.h"
+#include "core/editing/markers/SortedDocumentMarkerListEditor.h"
 
 namespace blink {
 
@@ -69,33 +69,34 @@ const HeapVector<Member<DocumentMarker>>& SpellCheckMarkerListImpl::GetMarkers()
 DocumentMarker* SpellCheckMarkerListImpl::FirstMarkerIntersectingRange(
     unsigned start_offset,
     unsigned end_offset) const {
-  return DocumentMarkerListEditor::FirstMarkerIntersectingRange(
+  return SortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(
       markers_, start_offset, end_offset);
 }
 
 HeapVector<Member<DocumentMarker>>
 SpellCheckMarkerListImpl::MarkersIntersectingRange(unsigned start_offset,
                                                    unsigned end_offset) const {
-  return DocumentMarkerListEditor::MarkersIntersectingRange(
+  return SortedDocumentMarkerListEditor::MarkersIntersectingRange(
       markers_, start_offset, end_offset);
 }
 
 bool SpellCheckMarkerListImpl::MoveMarkers(int length,
                                            DocumentMarkerList* dst_list) {
-  return DocumentMarkerListEditor::MoveMarkers(&markers_, length, dst_list);
+  return SortedDocumentMarkerListEditor::MoveMarkers(&markers_, length,
+                                                     dst_list);
 }
 
 bool SpellCheckMarkerListImpl::RemoveMarkers(unsigned start_offset,
                                              int length) {
-  return DocumentMarkerListEditor::RemoveMarkers(&markers_, start_offset,
-                                                 length);
+  return SortedDocumentMarkerListEditor::RemoveMarkers(&markers_, start_offset,
+                                                       length);
 }
 
 bool SpellCheckMarkerListImpl::ShiftMarkers(const String&,
                                             unsigned offset,
                                             unsigned old_length,
                                             unsigned new_length) {
-  return DocumentMarkerListEditor::ShiftMarkersContentDependent(
+  return SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(
       &markers_, offset, old_length, new_length);
 }
 

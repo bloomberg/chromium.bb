@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/DocumentMarkerListEditor.h"
+#include "core/editing/markers/SortedDocumentMarkerListEditor.h"
 
 #include "core/editing/markers/SpellCheckMarkerListImpl.h"
 
 namespace blink {
 
-void DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(
+void SortedDocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(
     MarkerList* list,
     DocumentMarker* marker) {
   if (list->IsEmpty() || list->back()->EndOffset() <= marker->StartOffset()) {
@@ -34,9 +34,9 @@ void DocumentMarkerListEditor::AddMarkerWithoutMergingOverlapping(
   list->insert(pos - list->begin(), marker);
 }
 
-bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
-                                           int length,
-                                           DocumentMarkerList* dst_list) {
+bool SortedDocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
+                                                 int length,
+                                                 DocumentMarkerList* dst_list) {
   DCHECK_GT(length, 0);
   bool didMoveMarker = false;
   unsigned end_offset = length - 1;
@@ -61,9 +61,9 @@ bool DocumentMarkerListEditor::MoveMarkers(MarkerList* src_list,
   return didMoveMarker;
 }
 
-bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
-                                             unsigned start_offset,
-                                             int length) {
+bool SortedDocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
+                                                   unsigned start_offset,
+                                                   int length) {
   const unsigned end_offset = start_offset + length;
   MarkerList::iterator start_pos = std::upper_bound(
       list->begin(), list->end(), start_offset,
@@ -81,7 +81,7 @@ bool DocumentMarkerListEditor::RemoveMarkers(MarkerList* list,
   return start_pos != end_pos;
 }
 
-bool DocumentMarkerListEditor::ShiftMarkersContentDependent(
+bool SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(
     MarkerList* list,
     unsigned offset,
     unsigned old_length,
@@ -122,7 +122,7 @@ bool DocumentMarkerListEditor::ShiftMarkersContentDependent(
   return did_shift_marker;
 }
 
-bool DocumentMarkerListEditor::ShiftMarkersContentIndependent(
+bool SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(
     MarkerList* list,
     unsigned offset,
     unsigned old_length,
@@ -166,7 +166,7 @@ bool DocumentMarkerListEditor::ShiftMarkersContentIndependent(
   return did_shift_marker;
 }
 
-DocumentMarker* DocumentMarkerListEditor::FirstMarkerIntersectingRange(
+DocumentMarker* SortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(
     const MarkerList& list,
     unsigned start_offset,
     unsigned end_offset) {
@@ -187,9 +187,9 @@ DocumentMarker* DocumentMarkerListEditor::FirstMarkerIntersectingRange(
 }
 
 HeapVector<Member<DocumentMarker>>
-DocumentMarkerListEditor::MarkersIntersectingRange(const MarkerList& list,
-                                                   unsigned start_offset,
-                                                   unsigned end_offset) {
+SortedDocumentMarkerListEditor::MarkersIntersectingRange(const MarkerList& list,
+                                                         unsigned start_offset,
+                                                         unsigned end_offset) {
   DCHECK_LE(start_offset, end_offset);
 
   const auto& start_it =
