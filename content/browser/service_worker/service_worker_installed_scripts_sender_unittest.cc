@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/histogram_tester.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -329,6 +330,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, SendScripts) {
   sender->Start();
 
   while (kExpectedScriptInfoMap.size() > 0) {
+    EXPECT_FALSE(sender->IsFinished());
+    EXPECT_EQ(SenderFinishedReason::kNotFinished, sender->finished_reason());
     auto script_info = renderer_manager->WaitUntilTransferInstalledScript();
     EXPECT_TRUE(
         base::ContainsKey(kExpectedScriptInfoMap, script_info->script_url));
@@ -385,6 +388,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendBody) {
   ASSERT_TRUE(renderer_manager);
 
   sender->Start();
+  EXPECT_FALSE(sender->IsFinished());
+  EXPECT_EQ(SenderFinishedReason::kNotFinished, sender->finished_reason());
 
   {
     // Reset a data pipe during sending the body.
@@ -445,6 +450,8 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
   ASSERT_TRUE(renderer_manager);
 
   sender->Start();
+  EXPECT_FALSE(sender->IsFinished());
+  EXPECT_EQ(SenderFinishedReason::kNotFinished, sender->finished_reason());
 
   {
     // Reset a data pipe during sending the meta data.
@@ -460,6 +467,100 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, FailedToSendMetaData) {
   EXPECT_TRUE(sender->IsFinished());
   EXPECT_EQ(SenderFinishedReason::kMetaDataSenderError,
             sender->finished_reason());
+}
+
+TEST_F(ServiceWorkerInstalledScriptsSenderTest, Histograms) {
+  const GURL kMainScriptURL = version()->script_url();
+  // Use script bodies small enough to be read by one
+  // ServiceWorkerResponseReader::ReadData(). The number of
+  // ServiceWorker.DiskCache.ReadResponseResult will be two per script (one is
+  // reading the body and the other is saying EOD).
+  std::map<GURL, ExpectedScriptInfo> kExpectedScriptInfoMap = {
+      {kMainScriptURL,
+       {1,
+        kMainScriptURL,
+        {{"Content-Length", "17"},
+         {"Content-Type", "text/javascript; charset=utf-8"},
+         {"TestHeader", "BlahBlah"}},
+        "utf-8",
+        "Small script body",
+        "I'm the meta data!"}},
+      {GURL("https://example.com/imported1"),
+       {2,
+        GURL("https://example.com/imported1"),
+        {{"Content-Length", "21"},
+         {"Content-Type", "text/javascript; charset=euc-jp"},
+         {"TestHeader", "BlahBlah"}},
+        "euc-jp",
+        "Small imported script",
+        "I'm the meta data for imported script 1!"}},
+  };
+
+  {
+    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    for (const auto& info : kExpectedScriptInfoMap)
+      records.push_back(info.second.WriteToDiskCache(context()->storage()));
+    version()->script_cache_map()->SetResources(records);
+  }
+
+  auto sender = base::MakeUnique<ServiceWorkerInstalledScriptsSender>(
+      version(), kMainScriptURL, context()->AsWeakPtr());
+
+  std::unique_ptr<MockServiceWorkerInstalledScriptsManager> renderer_manager;
+  {
+    mojom::ServiceWorkerInstalledScriptsInfoPtr scripts_info =
+        sender->CreateInfoAndBind();
+    ASSERT_TRUE(scripts_info);
+    ASSERT_EQ(kExpectedScriptInfoMap.size(),
+              scripts_info->installed_urls.size());
+    for (const auto& url : scripts_info->installed_urls)
+      EXPECT_TRUE(base::ContainsKey(kExpectedScriptInfoMap, url));
+    EXPECT_TRUE(scripts_info->manager_request.is_pending());
+    renderer_manager =
+        base::MakeUnique<MockServiceWorkerInstalledScriptsManager>(
+            std::move(scripts_info->installed_urls),
+            std::move(scripts_info->manager_request));
+  }
+  ASSERT_TRUE(renderer_manager);
+
+  base::HistogramTester histogram_tester;
+  sender->Start();
+
+  while (kExpectedScriptInfoMap.size() > 0) {
+    EXPECT_FALSE(sender->IsFinished());
+    EXPECT_EQ(SenderFinishedReason::kNotFinished, sender->finished_reason());
+    auto script_info = renderer_manager->WaitUntilTransferInstalledScript();
+    EXPECT_TRUE(
+        base::ContainsKey(kExpectedScriptInfoMap, script_info->script_url));
+    const auto& info = kExpectedScriptInfoMap.at(script_info->script_url);
+    info.CheckIfIdentical(script_info);
+    kExpectedScriptInfoMap.erase(script_info->script_url);
+  }
+
+  EXPECT_TRUE(sender->IsFinished());
+  EXPECT_EQ(SenderFinishedReason::kSuccess, sender->finished_reason());
+
+  // The histogram should be recorded when reading the script.
+  // The count should be four: reading the response body of a main script and an
+  // imported script, and the end of reading bodies for the two scripts.
+  histogram_tester.ExpectBucketCount(
+      "ServiceWorker.DiskCache.ReadResponseResult",
+      ServiceWorkerMetrics::ReadResponseResult::READ_OK, 4);
+}
+
+TEST_F(ServiceWorkerInstalledScriptsSenderTest, NoInstalledScript) {
+  // Create a scripts sender for a version that has no installed scripts.
+  const GURL kMainScriptURL = version()->script_url();
+  auto sender = base::MakeUnique<ServiceWorkerInstalledScriptsSender>(
+      version(), kMainScriptURL, context()->AsWeakPtr());
+  EXPECT_FALSE(sender->CreateInfoAndBind());
+  EXPECT_FALSE(sender->IsFinished());
+  EXPECT_EQ(SenderFinishedReason::kNotFinished, sender->finished_reason());
+
+  sender->Start();
+  // Finish immediately because there are no installed scripts.
+  EXPECT_TRUE(sender->IsFinished());
+  EXPECT_EQ(SenderFinishedReason::kSuccess, sender->finished_reason());
 }
 
 }  // namespace content
