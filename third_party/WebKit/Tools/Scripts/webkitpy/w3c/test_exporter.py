@@ -7,6 +7,7 @@
 import argparse
 import logging
 
+from webkitpy.common.system.log_utils import configure_logging
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.chromium_exportable_commits import exportable_commits_over_last_n_commits
 from webkitpy.w3c.common import (
@@ -39,8 +40,10 @@ class TestExporter(object):
         """
         args = self.parse_args(argv)
         self.dry_run = args.dry_run
-        credentials = read_credentials(self.host, args.credentials_json)
 
+        configure_logging(logging_level=logging.INFO, include_time=True)
+
+        credentials = read_credentials(self.host, args.credentials_json)
         if not (credentials['GH_USER'] and credentials['GH_TOKEN']):
             _log.error('Must provide both user and token for GitHub.')
             return False
@@ -49,8 +52,6 @@ class TestExporter(object):
         self.gerrit = self.gerrit or GerritAPI(self.host, credentials['GERRIT_USER'], credentials['GERRIT_TOKEN'])
         self.local_wpt = self.local_wpt or LocalWPT(self.host, credentials['GH_TOKEN'])
         self.local_wpt.fetch()
-
-        logging.basicConfig(level=logging.INFO, format='%(message)s')
 
         open_gerrit_cls = self.gerrit.query_exportable_open_cls()
         self.process_gerrit_cls(open_gerrit_cls)
