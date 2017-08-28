@@ -1,28 +1,28 @@
 This is a testharness.js-based test.
-PASS If details.id is missing, assign an identifier 
-PASS If details.id is missing, assign a unique identifier 
-PASS If the same id is provided, then use it 
-PASS Use ids even if they are strange 
-PASS Use provided request ID 
-PASS If the length of the methodData sequence is zero, then throw a TypeError 
-PASS Modifier method data must be JSON-serializable object 
-PASS Rethrow any exceptions of JSON-serializing paymentMethod.data into a string 
-PASS If details.total.amount.value is not a valid decimal monetary value, then throw a TypeError 
-PASS PaymentDetailsBase members can be 0 length 
-PASS If the first character of details.total.amount.value is U+002D HYPHEN-MINUS, then throw a TypeError 
-PASS For each item in details.displayItems: if item.amount.value is not a valid decimal monetary value, then throw a TypeError 
-PASS Negative values are allowed for displayItems.amount.value, irrespective of total amount 
-PASS it handles high precision currency values without throwing 
-PASS For each option in details.shippingOptions: if option.amount.value is not a valid decimal monetary value, then throw a TypeError 
-PASS If there is no selected shipping option, then PaymentRequest.shippingOption remains null 
-PASS If there is a selected shipping option, then it becomes synchronously selected 
-PASS If there is a multiple selected shipping options, only the last is selected 
-PASS If there are any duplicate shipping option ids, then there are no shipping options 
-PASS Throw TypeError if modifier.total.amount.value is not a valid decimal monetary value 
-PASS If amount.value of additionalDisplayItems is not a valid decimal monetary value, then throw a TypeError 
-PASS Modifier data must be JSON-serializable object (an Array in this case) 
-PASS Modifier data must be JSON-serializable object (an Object in this case) 
-FAIL Rethrow any exceptions of JSON-serializing modifier.data assert_throws: function "() => {
+PASS If details.id is missing, assign an identifier
+PASS If details.id is missing, assign a unique identifier
+PASS If the same id is provided, then use it
+PASS Use ids even if they are strange
+PASS Use provided request ID
+PASS If the length of the methodData sequence is zero, then throw a TypeError
+PASS Modifier method data must be JSON-serializable object
+PASS Rethrow any exceptions of JSON-serializing paymentMethod.data into a string
+PASS If details.total.amount.value is not a valid decimal monetary value, then throw a TypeError
+PASS PaymentDetailsBase members can be 0 length
+PASS If the first character of details.total.amount.value is U+002D HYPHEN-MINUS, then throw a TypeError
+PASS For each item in details.displayItems: if item.amount.value is not a valid decimal monetary value, then throw a TypeError
+PASS Negative values are allowed for displayItems.amount.value, irrespective of total amount
+PASS it handles high precision currency values without throwing
+PASS For each option in details.shippingOptions: if option.amount.value is not a valid decimal monetary value, then throw a TypeError
+PASS If there is no selected shipping option, then PaymentRequest.shippingOption remains null
+PASS If there is a selected shipping option, then it becomes synchronously selected
+PASS If there is a multiple selected shipping options, only the last is selected
+PASS If there are any duplicate shipping option ids, then there are no shipping options
+PASS Throw TypeError if modifier.total.amount.value is not a valid decimal monetary value
+PASS If amount.value of additionalDisplayItems is not a valid decimal monetary value, then throw a TypeError
+PASS Modifier data must be JSON-serializable object (an Array in this case)
+PASS Modifier data must be JSON-serializable object (an Object in this case)
+FAIL Rethrow any exceptions of JSON-serializing modifier.dataassert_throws: function "() => {
     const modifiedDetails = Object.assign({}, defaultDetails, {
       modifiers: [
         {
@@ -33,9 +33,9 @@ FAIL Rethrow any exceptions of JSON-serializing modifier.data assert_throws: fun
     });
     new PaymentRequest(defaultMethods, modifiedDetails);
   }" did not throw
-PASS Shipping type should be valid 
-PASS PaymentRequest.shippingAddress must initially be null 
-PASS If options.requestShipping is not set, then request.shippingType attribute is null. 
-PASS If options.requestShipping is true, request.shippingType will be options.shippingType. 
+PASS Shipping type should be valid
+PASS PaymentRequest.shippingAddress must initially be null
+PASS If options.requestShipping is not set, then request.shippingType attribute is null.
+PASS If options.requestShipping is true, request.shippingType will be options.shippingType.
 Harness: the test ran to completion.
 

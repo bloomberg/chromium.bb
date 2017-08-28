@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
-PASS ForeignFetch related interfaces in SW - no origin trial. 
-PASS ForeignFetch related interfaces in SW - origin trial enabled. 
-FAIL ForeignFetch related properties on interfaces in service worker, without trial. assert_equals: Property registerForeignFetch exists on InstallEvent expected false but got true
-FAIL ForeignFetch related interfaces in service worker, without trial. assert_equals: Interface ForeignFetchEvent exists on provided object expected false but got true
-PASS ForeignFetch related properties on interfaces in service worker, with trial enabled. 
-PASS ForeignFetch related interfaces in service worker, with trial enabled. 
+PASS ForeignFetch related interfaces in SW - no origin trial.
+PASS ForeignFetch related interfaces in SW - origin trial enabled.
+FAIL ForeignFetch related properties on interfaces in service worker, without trial.assert_equals: Property registerForeignFetch exists on InstallEvent expected false but got true
+FAIL ForeignFetch related interfaces in service worker, without trial.assert_equals: Interface ForeignFetchEvent exists on provided object expected false but got true
+PASS ForeignFetch related properties on interfaces in service worker, with trial enabled.
+PASS ForeignFetch related interfaces in service worker, with trial enabled.
 Harness: the test ran to completion.
 

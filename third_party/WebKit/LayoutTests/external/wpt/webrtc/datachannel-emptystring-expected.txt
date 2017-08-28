@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Can send empty strings across a WebRTC data channel. assert_unreached: Error OperationError: TEST_ERROR Reached unreachable code
+FAIL Can send empty strings across a WebRTC data channel.assert_unreached: Error OperationError: TEST_ERROR Reached unreachable code
 Harness: the test ran to completion.
 

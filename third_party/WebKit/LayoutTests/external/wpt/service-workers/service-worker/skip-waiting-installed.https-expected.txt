@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Test skipWaiting when a installed worker is waiting assert_equals: skipWaiting promise should be resolved with undefined expected "PASS" but got "FAIL: Promise should be resolved before worker is activated"
+FAIL Test skipWaiting when a installed worker is waitingassert_equals: skipWaiting promise should be resolved with undefined expected "PASS" but got "FAIL: Promise should be resolved before worker is activated"
 Harness: the test ran to completion.
 

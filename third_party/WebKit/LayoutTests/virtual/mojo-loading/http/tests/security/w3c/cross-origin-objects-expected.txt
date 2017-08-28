@@ -3,20 +3,20 @@ FAIL Basic sanity-checking Test bug: need to pass exception to assert_throws()
 FAIL Only whitelisted properties are accessible cross-origin Test bug: need to pass exception to assert_throws()
 FAIL [[GetPrototypeOf]] should return null Test bug: need to pass exception to assert_throws()
 FAIL [[SetPrototypeOf]] should throw Test bug: need to pass exception to assert_throws()
-PASS [[IsExtensible]] should return true for cross-origin objects 
+PASS [[IsExtensible]] should return true for cross-origin objects
 FAIL [[PreventExtensions]] should throw for cross-origin objects Test bug: need to pass exception to assert_throws()
 FAIL [[GetOwnProperty]] - Properties on cross-origin objects should be reported |own| Blocked a frame with origin "http://web-platform.test:8000" from accessing a cross-origin frame.
 FAIL [[GetOwnProperty]] - Property descriptors for cross-origin properties should be set up correctly assert_equals: property descriptor for postMessage should have writable: false expected false but got true
 FAIL [[Delete]] Should throw on cross-origin objects Test bug: need to pass exception to assert_throws()
 FAIL [[DefineOwnProperty]] Should throw for cross-origin objects Test bug: need to pass exception to assert_throws()
-PASS [[Enumerate]] should return an empty iterator 
+PASS [[Enumerate]] should return an empty iterator
 FAIL [[OwnPropertyKeys]] should return all properties from cross-origin objects assert_array_equals: Object.getOwnPropertyNames() gives the right answer for cross-origin Location lengths differ, expected 2 got 3
-PASS A and B jointly observe the same identity for cross-origin Window and Location 
-PASS Cross-origin functions get local Function.prototype 
+PASS A and B jointly observe the same identity for cross-origin Window and Location
+PASS Cross-origin functions get local Function.prototype
 FAIL Cross-origin Window accessors get local Function.prototype Cannot read property 'name' of undefined
 FAIL Same-origin observers get different functions for cross-origin objects assert_true: same-origin Window functions get their own object expected true got false
 FAIL Same-origin obsevers get different accessors for cross-origin Window assert_true: different Window accessors per-incumbent script settings object expected true got false
 FAIL Same-origin observers get different accessors for cross-origin Location Blocked a frame with origin "http://web-platform.test:8000" from accessing a cross-origin frame.
-PASS Cross-origin object identity preserved across document.domain 
+PASS Cross-origin object identity preserved across document.domain
 Harness: the test ran to completion.
 

@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
-FAIL insertDTMF() should succeed if tones contains valid DTMF characters promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
-FAIL insertDTMF() should throw InvalidCharacterError if tones contains invalid DTMF characters promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
-FAIL insertDTMF() should throw InvalidStateError if transceiver is stopped pc.addTransceiver is not a function
-FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is recvonly pc.addTransceiver is not a function
-FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is inactive pc.addTransceiver is not a function
-FAIL insertDTMF() should set toneBuffer to provided tones normalized, with old tones overridden promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL insertDTMF() should succeed if tones contains valid DTMF characterspromise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL insertDTMF() should throw InvalidCharacterError if tones contains invalid DTMF characterspromise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL insertDTMF() should throw InvalidStateError if transceiver is stoppedpc.addTransceiver is not a function
+FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is recvonlypc.addTransceiver is not a function
+FAIL insertDTMF() should throw InvalidStateError if transceiver.currentDirection is inactivepc.addTransceiver is not a function
+FAIL insertDTMF() should set toneBuffer to provided tones normalized, with old tones overriddenpromise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
 Harness: the test ran to completion.
 

@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL settings, line assert_equals: Failed with cue 9 expected 1e+34 but got 9.999999790214768e+33
+FAIL settings, lineassert_equals: Failed with cue 9 expected 1e+34 but got 9.999999790214768e+33
 Harness: the test ran to completion.
 

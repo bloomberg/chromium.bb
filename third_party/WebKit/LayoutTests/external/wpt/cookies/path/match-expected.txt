@@ -1,19 +1,19 @@
 This is a testharness.js-based test.
-PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: / 
-PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: match.html 
-PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: cookies 
-PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies 
-PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies/ 
-PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies/path/echo-cookie.html 
-PASS `document.cookie` on /cookies/path/echo-cookie.html DOES NOT set cookie for path: /cook 
-PASS `document.cookie` on /cookies/path/echo-cookie.html DOES NOT set cookie for path: /w/ 
-FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: / assert_not_equals: got disallowed value null
-FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: match.html assert_not_equals: got disallowed value null
-FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: cookies assert_not_equals: got disallowed value null
-FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies assert_not_equals: got disallowed value null
-FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies/ assert_not_equals: got disallowed value null
-FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies/path/echo-cookie.html assert_not_equals: got disallowed value null
-PASS `Set-Cookie` on /cookies/path/echo-cookie.html DOES NOT set cookie for path: /cook 
-PASS `Set-Cookie` on /cookies/path/echo-cookie.html DOES NOT set cookie for path: /w/ 
+PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: /
+PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: match.html
+PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: cookies
+PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies
+PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies/
+PASS `document.cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies/path/echo-cookie.html
+PASS `document.cookie` on /cookies/path/echo-cookie.html DOES NOT set cookie for path: /cook
+PASS `document.cookie` on /cookies/path/echo-cookie.html DOES NOT set cookie for path: /w/
+FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: /assert_not_equals: got disallowed value null
+FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: match.htmlassert_not_equals: got disallowed value null
+FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: cookiesassert_not_equals: got disallowed value null
+FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookiesassert_not_equals: got disallowed value null
+FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies/assert_not_equals: got disallowed value null
+FAIL `Set-Cookie` on /cookies/path/echo-cookie.html sets cookie with path: /cookies/path/echo-cookie.htmlassert_not_equals: got disallowed value null
+PASS `Set-Cookie` on /cookies/path/echo-cookie.html DOES NOT set cookie for path: /cook
+PASS `Set-Cookie` on /cookies/path/echo-cookie.html DOES NOT set cookie for path: /w/
 Harness: the test ran to completion.
 

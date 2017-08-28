@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL If there is a div and applet with same id, the applet should be returned assert_true: expected true got false
-PASS If there is a div and object with same id, the object should be returned 
-PASS If there is a div and img with same id, the img should be returned 
+FAIL If there is a div and applet with same id, the applet should be returnedassert_true: expected true got false
+PASS If there is a div and object with same id, the object should be returned
+PASS If there is a div and img with same id, the img should be returned
 Harness: the test ran to completion.
 

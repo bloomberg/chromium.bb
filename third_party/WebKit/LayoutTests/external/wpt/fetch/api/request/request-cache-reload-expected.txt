@@ -3,10 +3,10 @@ FAIL RequestCache "reload" mode does not check the cache for previously cached c
 FAIL RequestCache "reload" mode does not check the cache for previously cached content and goes to the network regardless with Last-Modified and stale response assert_equals: expected (undefined) undefined but got (string) "Mon, 27 Mar 2017 11:24:51 GMT"
 FAIL RequestCache "reload" mode does not check the cache for previously cached content and goes to the network regardless with Etag and fresh response assert_equals: expected 2 but got 1
 FAIL RequestCache "reload" mode does not check the cache for previously cached content and goes to the network regardless with Last-Modified and fresh response assert_equals: expected 2 but got 1
-PASS RequestCache "reload" mode does store the response in the cache with Etag and stale response 
-PASS RequestCache "reload" mode does store the response in the cache with Last-Modified and stale response 
-PASS RequestCache "reload" mode does store the response in the cache with Etag and fresh response 
-PASS RequestCache "reload" mode does store the response in the cache with Last-Modified and fresh response 
+PASS RequestCache "reload" mode does store the response in the cache with Etag and stale response
+PASS RequestCache "reload" mode does store the response in the cache with Last-Modified and stale response
+PASS RequestCache "reload" mode does store the response in the cache with Etag and fresh response
+PASS RequestCache "reload" mode does store the response in the cache with Last-Modified and fresh response
 FAIL RequestCache "reload" mode does store the response in the cache even if a previous response is already stored with Etag and stale response assert_equals: expected (undefined) undefined but got (string) "\"0.8205498946141332\""
 FAIL RequestCache "reload" mode does store the response in the cache even if a previous response is already stored with Last-Modified and stale response assert_equals: expected (undefined) undefined but got (string) "Mon, 27 Mar 2017 11:24:51 GMT"
 FAIL RequestCache "reload" mode does store the response in the cache even if a previous response is already stored with Etag and fresh response assert_equals: expected 2 but got 1

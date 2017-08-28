@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Series of tests to ensure correct behaviour of canvas.currentTransform Test bug: need to pass exception to assert_throws()
+FAIL Series of tests to ensure correct behaviour of canvas.currentTransformTest bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

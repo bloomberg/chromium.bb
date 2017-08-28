@@ -1,6 +1,6 @@
 CONSOLE ERROR: Refused to send form data to 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/form-action-resubmission-main-page-callee.html' because it violates the following Content Security Policy directive: "form-action 'none'".
 
 This is a testharness.js-based test.
-PASS A form resubmission in the main frame should be blocked 
+PASS A form resubmission in the main frame should be blocked
 Harness: the test ran to completion.
 

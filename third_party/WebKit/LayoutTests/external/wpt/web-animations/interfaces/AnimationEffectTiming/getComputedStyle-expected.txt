@@ -1,13 +1,13 @@
 This is a testharness.js-based test.
-PASS changed duration immediately updates its computed styles 
-PASS changed iterations immediately updates its computed styles 
-PASS change currentTime when fill is none and endDelay is positive 
-PASS change currentTime when fill forwards and endDelay is positive 
-PASS change currentTime when fill none and endDelay is negative 
-FAIL change currentTime when fill forwards and endDelay is negative assert_equals: set currentTime after endTime expected "0" but got "0.5"
-PASS change direction from "normal" to "reverse" 
-PASS change direction from "normal" to "alternate" 
-PASS change direction from "normal" to "alternate-reverse" 
-PASS change direction from "normal" to "reverse" when currentTime is 0 
+PASS changed duration immediately updates its computed styles
+PASS changed iterations immediately updates its computed styles
+PASS change currentTime when fill is none and endDelay is positive
+PASS change currentTime when fill forwards and endDelay is positive
+PASS change currentTime when fill none and endDelay is negative
+FAIL change currentTime when fill forwards and endDelay is negativeassert_equals: set currentTime after endTime expected "0" but got "0.5"
+PASS change direction from "normal" to "reverse"
+PASS change direction from "normal" to "alternate"
+PASS change direction from "normal" to "alternate-reverse"
+PASS change direction from "normal" to "reverse" when currentTime is 0
 Harness: the test ran to completion.
 

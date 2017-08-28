@@ -7,17 +7,17 @@
     function checkValue() {
         if (!window.accessibilityController)
             return;
-        
+       
         var aria = document.getElementById("slider");
         aria.focus();
         var focusedElement = accessibilityController.focusedElement;
         var value = focusedElement.intValue;
         var minValue = focusedElement.minValue;
         var maxValue = focusedElement.maxValue;
-       
+      
         var result = document.getElementById("result");
         if (value == 5 && minValue == 0 && maxValue == 10)
-            result.innerText = "This test PASSES in DumpRenderTree. The value is " + value + ", the minValue is " 
+            result.innerText = "This test PASSES in DumpRenderTree. The value is " + value + ", the minValue is "
                 + minValue + ", and the max value is " + maxValue + ".";
         else
             result.innerText = "This test FAILS in DumpRenderTree. The value, minValue, and/or maxValue of the range must be incorrect.";
@@ -32,6 +32,6 @@
         checkValue();
     </script>
   </div>
-  
+ 
  </body>
 </html>

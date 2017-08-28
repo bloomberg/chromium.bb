@@ -8,7 +8,7 @@ if (window.testRunner)
     testRunner.waitUntilDone();
 
 document.addEventListener("DOMCharacterDataModified", function() {
-    document.body.innerHTML = "PASS. WebKit didn't crash."; 
+    document.body.innerHTML = "PASS. WebKit didn't crash.";
     gc();
     finishJSTest();
 }, true);

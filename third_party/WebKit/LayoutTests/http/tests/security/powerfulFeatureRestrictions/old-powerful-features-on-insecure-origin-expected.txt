@@ -4,13 +4,13 @@ CONSOLE WARNING: line 31: The deviceorientation event is deprecated on insecure 
 CONSOLE WARNING: line 36: getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
 CONSOLE WARNING: line 55: getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
 This is a testharness.js-based test.
-PASS device motion 
-PASS device orientation 
-PASS getCurrentPosition 
-PASS watchPosition 
-PASS navigator.webkitGetUserMedia 
-PASS navigator.mediaDevices.getUserMedia 
-PASS appcache 
-PASS requestMediaKeySystemAccess 
+PASS device motion
+PASS device orientation
+PASS getCurrentPosition
+PASS watchPosition
+PASS navigator.webkitGetUserMedia
+PASS navigator.mediaDevices.getUserMedia
+PASS appcache
+PASS requestMediaKeySystemAccess
 Harness: the test ran to completion.
 

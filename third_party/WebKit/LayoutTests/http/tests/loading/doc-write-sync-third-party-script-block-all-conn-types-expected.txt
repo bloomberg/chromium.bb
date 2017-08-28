@@ -9,7 +9,7 @@ main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
 This is a testharness.js-based test.
-PASS Document.written scripts are not blocked by default. 
-PASS Document.written scripts are blocked on all connections when disallowFetchForDocWrittenScriptsInMainFrame is specified. 
+PASS Document.written scripts are not blocked by default.
+PASS Document.written scripts are blocked on all connections when disallowFetchForDocWrittenScriptsInMainFrame is specified.
 Harness: the test ran to completion.
 

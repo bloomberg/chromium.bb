@@ -104,17 +104,17 @@ PASS td.accessKey: 32 tests
 PASS td.tabIndex: 24 tests
 PASS td.colSpan: 65 tests
 PASS td.rowSpan: 6 tests
-FAIL td.rowSpan: setAttribute() to 0 assert_equals: IDL get expected 0 but got 1
+NOTRUN test
 PASS td.rowSpan: 7 tests
-FAIL td.rowSpan: setAttribute() to "-0" assert_equals: IDL get expected 0 but got 1
-FAIL td.rowSpan: setAttribute() to "0" assert_equals: IDL get expected 0 but got 1
+NOTRUN test
+NOTRUN test
 PASS td.rowSpan: 40 tests
-FAIL td.rowSpan: IDL set to 0 assert_equals: IDL get expected 0 but got 1
+NOTRUN test
 PASS td.rowSpan: 3 tests
-FAIL td.rowSpan: IDL set to "-0" assert_equals: IDL get expected 0 but got 1
+NOTRUN test
 PASS td.rowSpan: 4 tests
 PASS td.headers: 29 tests
-FAIL td.headers: IDL set to null assert_equals: getAttribute() expected (string) "null" but got (object) null
+NOTRUN test
 PASS td.headers: 2 tests
 PASS td.scope: 72 tests
 PASS td.abbr: 32 tests
@@ -136,17 +136,17 @@ PASS th.accessKey: 32 tests
 PASS th.tabIndex: 24 tests
 PASS th.colSpan: 65 tests
 PASS th.rowSpan: 6 tests
-FAIL th.rowSpan: setAttribute() to 0 assert_equals: IDL get expected 0 but got 1
+NOTRUN test
 PASS th.rowSpan: 7 tests
-FAIL th.rowSpan: setAttribute() to "-0" assert_equals: IDL get expected 0 but got 1
-FAIL th.rowSpan: setAttribute() to "0" assert_equals: IDL get expected 0 but got 1
+NOTRUN test
+NOTRUN test
 PASS th.rowSpan: 40 tests
-FAIL th.rowSpan: IDL set to 0 assert_equals: IDL get expected 0 but got 1
+NOTRUN test
 PASS th.rowSpan: 3 tests
-FAIL th.rowSpan: IDL set to "-0" assert_equals: IDL get expected 0 but got 1
+NOTRUN test
 PASS th.rowSpan: 4 tests
 PASS th.headers: 29 tests
-FAIL th.headers: IDL set to null assert_equals: getAttribute() expected (string) "null" but got (object) null
+NOTRUN test
 PASS th.headers: 2 tests
 PASS th.scope: 72 tests
 PASS th.abbr: 32 tests

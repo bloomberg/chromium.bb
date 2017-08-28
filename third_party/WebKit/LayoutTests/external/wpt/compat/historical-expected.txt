@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL getMatchedCSSRules() should not exist assert_false: expected false got true
-PASS webkitHidden should not exist 
-PASS webkitVisibilityState should not exist 
+FAIL getMatchedCSSRules() should not existassert_false: expected false got true
+PASS webkitHidden should not exist
+PASS webkitVisibilityState should not exist
 Harness: the test ran to completion.
 

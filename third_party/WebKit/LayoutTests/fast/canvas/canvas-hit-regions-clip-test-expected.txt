@@ -1,23 +1,23 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 2 duplicate test names: "null", "clip"
-PASS null 
-PASS clip 
-PASS null 
-PASS null 
-PASS null 
-PASS null 
-PASS clip 
-PASS null 
-PASS clip 
-PASS null 
-PASS null 
-PASS null 
-PASS null 
-PASS null 
-PASS null 
-PASS clip 
-PASS clip 
-PASS no pixel test1 
-PASS no pixel test2 
+PASS null
+PASS clip
+PASS null
+PASS null
+PASS null
+PASS null
+PASS clip
+PASS null
+PASS clip
+PASS null
+PASS null
+PASS null
+PASS null
+PASS null
+PASS null
+PASS clip
+PASS clip
+PASS no pixel test1
+PASS no pixel test2
 Harness: the test ran to completion.
 

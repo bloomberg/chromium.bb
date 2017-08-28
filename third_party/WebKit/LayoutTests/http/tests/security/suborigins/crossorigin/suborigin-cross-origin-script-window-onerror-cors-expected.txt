@@ -1,5 +1,5 @@
 CONSOLE ERROR: line 1: Uncaught SomeError
 This is a testharness.js-based test.
-PASS Verify that thrown exception is unsanitized when crossorigin script loaded with crossorigin attribute 
+PASS Verify that thrown exception is unsanitized when crossorigin script loaded with crossorigin attribute
 Harness: the test ran to completion.
 

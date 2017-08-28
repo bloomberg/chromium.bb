@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Scheme outside white list and isProtocolHandlerRegistered Failed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'http' doesn't belong to the scheme whitelist. Please prefix non-whitelisted schemes with the string 'web+'.
+FAIL Scheme outside white list and isProtocolHandlerRegisteredFailed to execute 'registerProtocolHandler' on 'Navigator': The scheme 'http' doesn't belong to the scheme whitelist. Please prefix non-whitelisted schemes with the string 'web+'.
 Harness: the test ran to completion.
 

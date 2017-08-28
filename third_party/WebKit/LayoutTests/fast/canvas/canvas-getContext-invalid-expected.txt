@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Test that invalid canvas getContext() requests return null. Test bug: need to pass exception to assert_throws()
+FAIL Test that invalid canvas getContext() requests return null.Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

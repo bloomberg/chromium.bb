@@ -291,9 +291,7 @@
                     }
                 }
             }
-            testResults.push(
-                `${convertResult(tests[i].status)} ` +
-                `${sanitize(tests[i].name)} ${sanitize(tests[i].message)}\n`);
+            testResults.push(resultLine(test));
         }
         return testResults.join('');
     }
@@ -302,10 +300,17 @@
         let testResults = '';
         window.tests = tests;
         for (let test of tests) {
-            testResults += `${convertResult(test.status)} ` +
-                `${sanitize(test.name)} ${sanitize(test.message)}\n`;
+            testResults += resultLine(test);
         }
         return testResults;
+    }
+
+    function resultLine(test) {
+        let result = `${convertResult(test.status)} ${sanitize(test.name)}`;
+        if (test.message) {
+            result += sanitize(test.message).trim();
+        }
+        return result + '\n';
     }
 
     /** Prepares the given text for display in test results. */

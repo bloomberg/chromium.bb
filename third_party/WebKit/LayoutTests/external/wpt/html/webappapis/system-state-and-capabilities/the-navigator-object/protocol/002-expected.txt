@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL isProtocolHandlerRegistered for protocol that is not yet accepted assert_equals: expected "declined" but got "new"
+FAIL isProtocolHandlerRegistered for protocol that is not yet acceptedassert_equals: expected "declined" but got "new"
 Harness: the test ran to completion.
 

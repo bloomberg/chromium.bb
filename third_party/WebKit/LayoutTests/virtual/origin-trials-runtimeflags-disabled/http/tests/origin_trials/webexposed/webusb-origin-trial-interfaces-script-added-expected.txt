@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-PASS WebUSB related properties on interfaces before adding trial token via script. 
-PASS WebUSB related interfaces before adding trial token via script. 
-PASS WebUSB related properties on interfaces after adding trial token via script. 
-PASS WebUSB related interfaces after adding trial token via script. 
+PASS WebUSB related properties on interfaces before adding trial token via script.
+PASS WebUSB related interfaces before adding trial token via script.
+PASS WebUSB related properties on interfaces after adding trial token via script.
+PASS WebUSB related interfaces after adding trial token via script.
 Harness: the test ran to completion.
 

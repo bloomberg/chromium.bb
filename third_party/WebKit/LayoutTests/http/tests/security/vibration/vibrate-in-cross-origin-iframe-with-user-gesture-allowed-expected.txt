@@ -9,6 +9,6 @@ This tests that a cross-origin iframe with user gesture can vibrate.
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
 This is a testharness.js-based test.
-PASS Testing vibrate 3 times in an iframe 
+PASS Testing vibrate 3 times in an iframe
 Harness: the test ran to completion.
 

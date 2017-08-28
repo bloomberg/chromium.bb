@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-FAIL Tests vw unit Test bug: need to pass exception to assert_throws()
-FAIL Tests vh unit Test bug: need to pass exception to assert_throws()
-FAIL Tests vmin unit Test bug: need to pass exception to assert_throws()
-FAIL Tests vmax unit Test bug: need to pass exception to assert_throws()
+FAIL Tests vw unitTest bug: need to pass exception to assert_throws()
+FAIL Tests vh unitTest bug: need to pass exception to assert_throws()
+FAIL Tests vmin unitTest bug: need to pass exception to assert_throws()
+FAIL Tests vmax unitTest bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

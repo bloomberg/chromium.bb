@@ -1,54 +1,54 @@
 This is a testharness.js-based test.
 Found 50 tests; 35 PASS, 15 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS non-animatable property 'animation' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animationDelay' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animationDirection' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animationDuration' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animationFillMode' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animationIterationCount' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animationName' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animationPlayState' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animationTimingFunction' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'transition' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'transitionDelay' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'transitionDuration' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'transitionProperty' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'transitionTimingFunction' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'display' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'unsupportedProperty' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'font-size' is not accessed when using a property-indexed keyframe object 
-PASS non-animatable property 'animation' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'animationDelay' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'animationDirection' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'animationDuration' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'animationFillMode' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'animationIterationCount' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'animationName' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'animationPlayState' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'animationTimingFunction' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'transition' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'transitionDelay' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'transitionDuration' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'transitionProperty' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'transitionTimingFunction' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'display' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'unsupportedProperty' is not accessed when using a keyframe sequence 
-PASS non-animatable property 'font-size' is not accessed when using a keyframe sequence 
-FAIL Equivalent property indexed and sequenced keyframes: two properties with one value (intermediate value).getKeyframes is not a function
-FAIL Equivalent property indexed and sequenced keyframes: two properties with three values (intermediate value).getKeyframes is not a function
-FAIL Equivalent property indexed and sequenced keyframes: two properties with different numbers of values (intermediate value).getKeyframes is not a function
-FAIL Equivalent property indexed and sequenced keyframes: same offset applied to all keyframes (intermediate value).getKeyframes is not a function
-FAIL Equivalent property indexed and sequenced keyframes: same easing applied to all keyframes (intermediate value).getKeyframes is not a function
-FAIL Equivalent property indexed and sequenced keyframes: same composite applied to all keyframes (intermediate value).getKeyframes is not a function
-FAIL Custom iterator with basic keyframes. effect.getKeyframes is not a function
-FAIL easing and offset are ignored on iterable objects. effect.getKeyframes is not a function
-FAIL Custom iterator with multiple properties specified. effect.getKeyframes is not a function
-FAIL Custom iterator with offset specified. effect.getKeyframes is not a function
-PASS Custom iterator with non object keyframe should throw. 
-FAIL Custom iterator with value list in keyframe should not contain invalid property value pair of list. effect.getKeyframes is not a function
-FAIL Only enumerable properties on keyframes are considered anim.effect.getKeyframes is not a function
-FAIL Only properties defined directly on keyframes are considered anim.effect.getKeyframes is not a function
-FAIL Only enumerable properties on property indexed keyframes are considered anim.effect.getKeyframes is not a function
-FAIL Only properties defined directly on property indexed keyframes are considered anim.effect.getKeyframes is not a function
+PASS non-animatable property 'animation' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationDelay' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationDirection' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationDuration' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationFillMode' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationIterationCount' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationName' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationPlayState' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animationTimingFunction' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transition' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transitionDelay' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transitionDuration' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transitionProperty' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'transitionTimingFunction' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'display' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'unsupportedProperty' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'font-size' is not accessed when using a property-indexed keyframe object
+PASS non-animatable property 'animation' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationDelay' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationDirection' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationDuration' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationFillMode' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationIterationCount' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationName' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationPlayState' is not accessed when using a keyframe sequence
+PASS non-animatable property 'animationTimingFunction' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transition' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transitionDelay' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transitionDuration' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transitionProperty' is not accessed when using a keyframe sequence
+PASS non-animatable property 'transitionTimingFunction' is not accessed when using a keyframe sequence
+PASS non-animatable property 'display' is not accessed when using a keyframe sequence
+PASS non-animatable property 'unsupportedProperty' is not accessed when using a keyframe sequence
+PASS non-animatable property 'font-size' is not accessed when using a keyframe sequence
+FAIL Equivalent property indexed and sequenced keyframes: two properties with one value(intermediate value).getKeyframes is not a function
+FAIL Equivalent property indexed and sequenced keyframes: two properties with three values(intermediate value).getKeyframes is not a function
+FAIL Equivalent property indexed and sequenced keyframes: two properties with different numbers of values(intermediate value).getKeyframes is not a function
+FAIL Equivalent property indexed and sequenced keyframes: same offset applied to all keyframes(intermediate value).getKeyframes is not a function
+FAIL Equivalent property indexed and sequenced keyframes: same easing applied to all keyframes(intermediate value).getKeyframes is not a function
+FAIL Equivalent property indexed and sequenced keyframes: same composite applied to all keyframes(intermediate value).getKeyframes is not a function
+FAIL Custom iterator with basic keyframes.effect.getKeyframes is not a function
+FAIL easing and offset are ignored on iterable objects.effect.getKeyframes is not a function
+FAIL Custom iterator with multiple properties specified.effect.getKeyframes is not a function
+FAIL Custom iterator with offset specified.effect.getKeyframes is not a function
+PASS Custom iterator with non object keyframe should throw.
+FAIL Custom iterator with value list in keyframe should not contain invalid property value pair of list.effect.getKeyframes is not a function
+FAIL Only enumerable properties on keyframes are consideredanim.effect.getKeyframes is not a function
+FAIL Only properties defined directly on keyframes are consideredanim.effect.getKeyframes is not a function
+FAIL Only enumerable properties on property indexed keyframes are consideredanim.effect.getKeyframes is not a function
+FAIL Only properties defined directly on property indexed keyframes are consideredanim.effect.getKeyframes is not a function
 Harness: the test ran to completion.
 

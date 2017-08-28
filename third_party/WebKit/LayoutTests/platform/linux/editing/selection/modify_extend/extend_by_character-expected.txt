@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS extend forward character on characters 
-PASS extend forward character through image 
-PASS extend forward character through multiple spaces 
-PASS extend backward character through image 
-PASS extend backward character through multiple spaces 
-PASS extend forward character over element 
-Harness: the test ran to completion.
-

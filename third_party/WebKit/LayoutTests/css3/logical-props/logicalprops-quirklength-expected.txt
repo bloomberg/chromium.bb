@@ -1,10 +1,10 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "Check that unitless lengths are not valid for logical properties in quirks mode"
-PASS Check that unitless lengths are not valid for logical properties in quirks mode 
-PASS Check that unitless lengths are not valid for logical properties in quirks mode 
-PASS Check that unitless lengths are not valid for logical properties in quirks mode 
-PASS Check that unitless lengths are not valid for logical properties in quirks mode 
-PASS Check that unitless lengths are not valid for logical properties in quirks mode 
-PASS Check that unitless lengths are not valid for logical properties in quirks mode 
+PASS Check that unitless lengths are not valid for logical properties in quirks mode
+PASS Check that unitless lengths are not valid for logical properties in quirks mode
+PASS Check that unitless lengths are not valid for logical properties in quirks mode
+PASS Check that unitless lengths are not valid for logical properties in quirks mode
+PASS Check that unitless lengths are not valid for logical properties in quirks mode
+PASS Check that unitless lengths are not valid for logical properties in quirks mode
 Harness: the test ran to completion.
 

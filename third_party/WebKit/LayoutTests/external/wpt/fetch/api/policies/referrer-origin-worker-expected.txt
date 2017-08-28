@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Request's referrer is origin 
-FAIL Cross-origin referrer is overridden by client origin promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'fetch' on 'WorkerGlobalScope': The origin of 'https://www.web-platform.test:8444/' should be same as 'http://web-platform.test:8001'"
+PASS Request's referrer is origin
+FAIL Cross-origin referrer is overridden by client originpromise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'fetch' on 'WorkerGlobalScope': The origin of 'https://www.web-platform.test:8444/' should be same as 'http://web-platform.test:8001'"
 Harness: the test ran to completion.
 

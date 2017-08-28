@@ -1,49 +1,49 @@
 This is a testharness.js-based test.
-PASS Test zero iterations: iterations:0 iterationStart:0 duration:0 delay:1 fill:both 
-PASS Test zero iterations: iterations:0 iterationStart:0 duration:100 delay:1 fill:both 
-PASS Test zero iterations: iterations:0 iterationStart:0 duration:Infinity delay:1 fill:both 
-PASS Test zero iterations: iterations:0 iterationStart:2.5 duration:0 delay:1 fill:both 
-FAIL Test zero iterations: iterations:0 iterationStart:2.5 duration:100 delay:1 fill:both assert_equals: expected 0.5 but got 0.4999999999999999
-PASS Test zero iterations: iterations:0 iterationStart:2.5 duration:Infinity delay:1 fill:both 
-PASS Test zero iterations: iterations:0 iterationStart:3 duration:0 delay:1 fill:both 
-FAIL Test zero iterations: iterations:0 iterationStart:3 duration:100 delay:1 fill:both assert_equals: expected 0 but got 2.7755575615628914e-16
-PASS Test zero iterations: iterations:0 iterationStart:3 duration:Infinity delay:1 fill:both 
-PASS Test integer iterations: iterations:3 iterationStart:0 duration:0 delay:1 fill:both 
-PASS Test integer iterations: iterations:3 iterationStart:0 duration:100 delay:1 fill:both 
-PASS Test integer iterations: iterations:3 iterationStart:0 duration:Infinity delay:1 fill:both 
-PASS Test integer iterations: iterations:3 iterationStart:2.5 duration:0 delay:1 fill:both 
-FAIL Test integer iterations: iterations:3 iterationStart:2.5 duration:100 delay:1 fill:both assert_equals: expected 0.5 but got 0.4999999999999999
-PASS Test integer iterations: iterations:3 iterationStart:2.5 duration:Infinity delay:1 fill:both 
-PASS Test integer iterations: iterations:3 iterationStart:3 duration:0 delay:1 fill:both 
-FAIL Test integer iterations: iterations:3 iterationStart:3 duration:100 delay:1 fill:both assert_equals: expected 0 but got 2.7755575615628914e-16
-PASS Test integer iterations: iterations:3 iterationStart:3 duration:Infinity delay:1 fill:both 
-PASS Test fractional iterations: iterations:3.5 iterationStart:0 duration:0 delay:1 fill:both 
-FAIL Test fractional iterations: iterations:3.5 iterationStart:0 duration:100 delay:1 fill:both assert_equals: expected 0.5 but got 0.5000000000000001
-PASS Test fractional iterations: iterations:3.5 iterationStart:0 duration:Infinity delay:1 fill:both 
-PASS Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:0 delay:1 fill:both 
-FAIL Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:100 delay:1 fill:both assert_equals: expected 0.5 but got 0.4999999999999999
-PASS Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:Infinity delay:1 fill:both 
-PASS Test fractional iterations: iterations:3.5 iterationStart:3 duration:0 delay:1 fill:both 
-FAIL Test fractional iterations: iterations:3.5 iterationStart:3 duration:100 delay:1 fill:both assert_equals: expected 0 but got 2.7755575615628914e-16
-PASS Test fractional iterations: iterations:3.5 iterationStart:3 duration:Infinity delay:1 fill:both 
-PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:0 delay:1 fill:both 
-PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:100 delay:1 fill:both 
-PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:Infinity delay:1 fill:both 
-FAIL Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:0 delay:1 fill:both assert_equals: expected 0.5 but got 1
-FAIL Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:100 delay:1 fill:both assert_equals: expected 0.5 but got 0.4999999999999999
-PASS Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:Infinity delay:1 fill:both 
-PASS Test infinity iterations: iterations:Infinity iterationStart:3 duration:0 delay:1 fill:both 
-FAIL Test infinity iterations: iterations:Infinity iterationStart:3 duration:100 delay:1 fill:both assert_equals: expected 0 but got 2.7755575615628914e-16
-PASS Test infinity iterations: iterations:Infinity iterationStart:3 duration:Infinity delay:1 fill:both 
-PASS Test end delay: duration:100 delay:1 fill:both endDelay:50 
-PASS Test end delay: duration:100 delay:1 fill:both endDelay:-50 
-PASS Test end delay: duration:100 delay:1 fill:both endDelay:-100 
-PASS Test end delay: duration:100 delay:1 fill:both endDelay:-200 
-FAIL Test end delay: iterationStart:0.5 duration:100 delay:1 fill:both endDelay:50 assert_equals: expected 0.5 but got 0.5000000000000001
-PASS Test end delay: iterationStart:0.5 duration:100 delay:1 fill:both endDelay:-50 
-PASS Test end delay: iterationStart:0.5 duration:100 delay:1 fill:both endDelay:-100 
-PASS Test end delay: iterations:2 duration:100 delay:1 fill:both endDelay:-100 
-FAIL Test end delay: iterations:1 iterationStart:2 duration:100 delay:1 fill:both endDelay:-50 assert_equals: expected 0.5 but got 0.4999999999999999
-FAIL Test end delay: iterations:1 iterationStart:2 duration:100 delay:1 fill:both endDelay:-100 assert_equals: expected 0 but got 1
+PASS Test zero iterations: iterations:0 iterationStart:0 duration:0 delay:1 fill:both
+PASS Test zero iterations: iterations:0 iterationStart:0 duration:100 delay:1 fill:both
+PASS Test zero iterations: iterations:0 iterationStart:0 duration:Infinity delay:1 fill:both
+PASS Test zero iterations: iterations:0 iterationStart:2.5 duration:0 delay:1 fill:both
+FAIL Test zero iterations: iterations:0 iterationStart:2.5 duration:100 delay:1 fill:bothassert_equals: expected 0.5 but got 0.4999999999999999
+PASS Test zero iterations: iterations:0 iterationStart:2.5 duration:Infinity delay:1 fill:both
+PASS Test zero iterations: iterations:0 iterationStart:3 duration:0 delay:1 fill:both
+FAIL Test zero iterations: iterations:0 iterationStart:3 duration:100 delay:1 fill:bothassert_equals: expected 0 but got 2.7755575615628914e-16
+PASS Test zero iterations: iterations:0 iterationStart:3 duration:Infinity delay:1 fill:both
+PASS Test integer iterations: iterations:3 iterationStart:0 duration:0 delay:1 fill:both
+PASS Test integer iterations: iterations:3 iterationStart:0 duration:100 delay:1 fill:both
+PASS Test integer iterations: iterations:3 iterationStart:0 duration:Infinity delay:1 fill:both
+PASS Test integer iterations: iterations:3 iterationStart:2.5 duration:0 delay:1 fill:both
+FAIL Test integer iterations: iterations:3 iterationStart:2.5 duration:100 delay:1 fill:bothassert_equals: expected 0.5 but got 0.4999999999999999
+PASS Test integer iterations: iterations:3 iterationStart:2.5 duration:Infinity delay:1 fill:both
+PASS Test integer iterations: iterations:3 iterationStart:3 duration:0 delay:1 fill:both
+FAIL Test integer iterations: iterations:3 iterationStart:3 duration:100 delay:1 fill:bothassert_equals: expected 0 but got 2.7755575615628914e-16
+PASS Test integer iterations: iterations:3 iterationStart:3 duration:Infinity delay:1 fill:both
+PASS Test fractional iterations: iterations:3.5 iterationStart:0 duration:0 delay:1 fill:both
+FAIL Test fractional iterations: iterations:3.5 iterationStart:0 duration:100 delay:1 fill:bothassert_equals: expected 0.5 but got 0.5000000000000001
+PASS Test fractional iterations: iterations:3.5 iterationStart:0 duration:Infinity delay:1 fill:both
+PASS Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:0 delay:1 fill:both
+FAIL Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:100 delay:1 fill:bothassert_equals: expected 0.5 but got 0.4999999999999999
+PASS Test fractional iterations: iterations:3.5 iterationStart:2.5 duration:Infinity delay:1 fill:both
+PASS Test fractional iterations: iterations:3.5 iterationStart:3 duration:0 delay:1 fill:both
+FAIL Test fractional iterations: iterations:3.5 iterationStart:3 duration:100 delay:1 fill:bothassert_equals: expected 0 but got 2.7755575615628914e-16
+PASS Test fractional iterations: iterations:3.5 iterationStart:3 duration:Infinity delay:1 fill:both
+PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:0 delay:1 fill:both
+PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:100 delay:1 fill:both
+PASS Test infinity iterations: iterations:Infinity iterationStart:0 duration:Infinity delay:1 fill:both
+FAIL Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:0 delay:1 fill:bothassert_equals: expected 0.5 but got 1
+FAIL Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:100 delay:1 fill:bothassert_equals: expected 0.5 but got 0.4999999999999999
+PASS Test infinity iterations: iterations:Infinity iterationStart:2.5 duration:Infinity delay:1 fill:both
+PASS Test infinity iterations: iterations:Infinity iterationStart:3 duration:0 delay:1 fill:both
+FAIL Test infinity iterations: iterations:Infinity iterationStart:3 duration:100 delay:1 fill:bothassert_equals: expected 0 but got 2.7755575615628914e-16
+PASS Test infinity iterations: iterations:Infinity iterationStart:3 duration:Infinity delay:1 fill:both
+PASS Test end delay: duration:100 delay:1 fill:both endDelay:50
+PASS Test end delay: duration:100 delay:1 fill:both endDelay:-50
+PASS Test end delay: duration:100 delay:1 fill:both endDelay:-100
+PASS Test end delay: duration:100 delay:1 fill:both endDelay:-200
+FAIL Test end delay: iterationStart:0.5 duration:100 delay:1 fill:both endDelay:50assert_equals: expected 0.5 but got 0.5000000000000001
+PASS Test end delay: iterationStart:0.5 duration:100 delay:1 fill:both endDelay:-50
+PASS Test end delay: iterationStart:0.5 duration:100 delay:1 fill:both endDelay:-100
+PASS Test end delay: iterations:2 duration:100 delay:1 fill:both endDelay:-100
+FAIL Test end delay: iterations:1 iterationStart:2 duration:100 delay:1 fill:both endDelay:-50assert_equals: expected 0.5 but got 0.4999999999999999
+FAIL Test end delay: iterations:1 iterationStart:2 duration:100 delay:1 fill:both endDelay:-100assert_equals: expected 0 but got 1
 Harness: the test ran to completion.
 

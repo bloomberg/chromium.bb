@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-FAIL cubic-bezier easing with input progress greater than 1 Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
-FAIL cubic-bezier easing with input progress greater than 1 and where the tangent on the upper boundary is infinity Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
-FAIL cubic-bezier easing with input progress less than 0 Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
-FAIL cubic-bezier easing with input progress less than 0 and where the tangent on the lower boundary is infinity Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
+FAIL cubic-bezier easing with input progress greater than 1Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
+FAIL cubic-bezier easing with input progress greater than 1 and where the tangent on the upper boundary is infinityFailed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
+FAIL cubic-bezier easing with input progress less than 0Failed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
+FAIL cubic-bezier easing with input progress less than 0 and where the tangent on the lower boundary is infinityFailed to execute 'getComputedStyle' on 'Window': parameter 1 is not of type 'Element'.
 Harness: the test ran to completion.
 

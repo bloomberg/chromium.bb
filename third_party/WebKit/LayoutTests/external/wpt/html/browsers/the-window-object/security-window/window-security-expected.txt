@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Window Security testing 
+PASS Window Security testing
 FAIL A SecurityError exception must be thrown when window.applicationCache is accessed from a different origin. assert_throws: A SecurityError exception should be thrown. function "function () {
           if (item.isMethod)
             if (item.args)
@@ -993,18 +993,18 @@ FAIL A SecurityError exception must be thrown when window.stop is accessed from 
           else
             fr.contentWindow[item.name];
         }" did not throw
-PASS A SecurityError exception should not be thrown when window.closed is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.frames is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.length is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.location is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.opener is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.parent is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.self is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.top is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.window is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.blur is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.close is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.focus is accessed from a different origin. 
-PASS A SecurityError exception should not be thrown when window.postMessage is accessed from a different origin. 
+PASS A SecurityError exception should not be thrown when window.closed is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.frames is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.length is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.location is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.opener is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.parent is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.self is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.top is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.window is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.blur is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.close is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.focus is accessed from a different origin.
+PASS A SecurityError exception should not be thrown when window.postMessage is accessed from a different origin.
 Harness: the test ran to completion.
 

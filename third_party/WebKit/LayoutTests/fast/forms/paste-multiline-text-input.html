@@ -1,6 +1,6 @@
-<html> 
-  <head> 
-    <script> 
+<html>
+  <head>
+    <script>
         if (window.testRunner)
             window.testRunner.dumpAsText();
 
@@ -33,7 +33,7 @@
           log(TEST_NAME_3 + ":");
           testInputField(DEFAULT_LINE_3, EXPECTED_LINE_3);
         }
- 
+
         function testInputField(input_value, expected)
         {
             var input = getInput();
@@ -64,7 +64,7 @@
                 ["\t", "\\t"],
                 ["\0", "\\0"]
             ];
- 
+
             for (var i = 0; i < replacements.length; ++i) {
                 var r = replacements[i];
                 s = s.replace(r[0], r[1]);
@@ -73,14 +73,14 @@
         }
     </script>
     <style>
-        .pass { color: green; } 
+        .pass { color: green; }
         .fail { color: red; }
         .code { font-family: monospace; }
-    </style> 
-  </head> 
-  <body onload="testMultiline()"> 
-    <h2>Test: This test verifies that text inputs will accept multiple lines of pasted text.  You should see three tests "PASS" below.</h2> 
+    </style>
+  </head>
+  <body onload="testMultiline()">
+    <h2>Test: This test verifies that text inputs will accept multiple lines of pasted text.  You should see three tests "PASS" below.</h2>
     <input id=inputId size=60 /><br>
     <span class=code id=console></span>
-  </body> 
-</html> 
+  </body>
+</html>

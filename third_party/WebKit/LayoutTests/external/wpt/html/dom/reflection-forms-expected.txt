@@ -8,8 +8,8 @@ PASS form.hidden: 33 tests
 PASS form.accessKey: 32 tests
 PASS form.tabIndex: 24 tests
 PASS form.acceptCharset (<form accept-charset>): 32 tests
-PASS form.action: typeof IDL attribute 
-FAIL form.action: IDL get with DOM attribute unset assert_equals: expected "http://web-platform.test:8001/html/dom/reflection-forms.html" but got ""
+NOTRUN test
+NOTRUN test
 PASS form.action: 36 tests
 PASS form.autocomplete: 52 tests
 PASS form.enctype: 62 tests
@@ -64,161 +64,161 @@ PASS input.formNoValidate: 33 tests
 PASS input.formTarget: 32 tests
 PASS input.height: 9 tests
 PASS input.inputMode: 3 tests
-FAIL input.inputMode: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
-FAIL input.inputMode: setAttribute() to undefined assert_equals: IDL get expected "" but got "undefined"
-FAIL input.inputMode: setAttribute() to 7 assert_equals: IDL get expected "" but got "7"
-FAIL input.inputMode: setAttribute() to 1.5 assert_equals: IDL get expected "" but got "1.5"
-FAIL input.inputMode: setAttribute() to true assert_equals: IDL get expected "" but got "true"
-FAIL input.inputMode: setAttribute() to false assert_equals: IDL get expected "" but got "false"
-FAIL input.inputMode: setAttribute() to object "[object Object]" assert_equals: IDL get expected "" but got "[object Object]"
-FAIL input.inputMode: setAttribute() to NaN assert_equals: IDL get expected "" but got "NaN"
-FAIL input.inputMode: setAttribute() to Infinity assert_equals: IDL get expected "" but got "Infinity"
-FAIL input.inputMode: setAttribute() to -Infinity assert_equals: IDL get expected "" but got "-Infinity"
-FAIL input.inputMode: setAttribute() to "\0" assert_equals: IDL get expected "" but got "\0"
-FAIL input.inputMode: setAttribute() to null assert_equals: IDL get expected "" but got "null"
-FAIL input.inputMode: setAttribute() to object "test-toString" assert_equals: IDL get expected "" but got "test-toString"
-FAIL input.inputMode: setAttribute() to object "test-valueOf" assert_equals: IDL get expected "" but got "test-valueOf"
-PASS input.inputMode: setAttribute() to "verbatim" 
-FAIL input.inputMode: setAttribute() to "xverbatim" assert_equals: IDL get expected "" but got "xverbatim"
-FAIL input.inputMode: setAttribute() to "verbatim\0" assert_equals: IDL get expected "" but got "verbatim\0"
-FAIL input.inputMode: setAttribute() to "erbatim" assert_equals: IDL get expected "" but got "erbatim"
-FAIL input.inputMode: setAttribute() to "VERBATIM" assert_equals: IDL get expected "verbatim" but got "VERBATIM"
-PASS input.inputMode: setAttribute() to "latin" 
-FAIL input.inputMode: setAttribute() to "xlatin" assert_equals: IDL get expected "" but got "xlatin"
-FAIL input.inputMode: setAttribute() to "latin\0" assert_equals: IDL get expected "" but got "latin\0"
-FAIL input.inputMode: setAttribute() to "atin" assert_equals: IDL get expected "" but got "atin"
-FAIL input.inputMode: setAttribute() to "LATIN" assert_equals: IDL get expected "latin" but got "LATIN"
-PASS input.inputMode: setAttribute() to "latin-name" 
-FAIL input.inputMode: setAttribute() to "xlatin-name" assert_equals: IDL get expected "" but got "xlatin-name"
-FAIL input.inputMode: setAttribute() to "latin-name\0" assert_equals: IDL get expected "" but got "latin-name\0"
-FAIL input.inputMode: setAttribute() to "atin-name" assert_equals: IDL get expected "" but got "atin-name"
-FAIL input.inputMode: setAttribute() to "LATIN-NAME" assert_equals: IDL get expected "latin-name" but got "LATIN-NAME"
-PASS input.inputMode: setAttribute() to "latin-prose" 
-FAIL input.inputMode: setAttribute() to "xlatin-prose" assert_equals: IDL get expected "" but got "xlatin-prose"
-FAIL input.inputMode: setAttribute() to "latin-prose\0" assert_equals: IDL get expected "" but got "latin-prose\0"
-FAIL input.inputMode: setAttribute() to "atin-prose" assert_equals: IDL get expected "" but got "atin-prose"
-FAIL input.inputMode: setAttribute() to "LATIN-PROSE" assert_equals: IDL get expected "latin-prose" but got "LATIN-PROSE"
-PASS input.inputMode: setAttribute() to "full-width-latin" 
-FAIL input.inputMode: setAttribute() to "xfull-width-latin" assert_equals: IDL get expected "" but got "xfull-width-latin"
-FAIL input.inputMode: setAttribute() to "full-width-latin\0" assert_equals: IDL get expected "" but got "full-width-latin\0"
-FAIL input.inputMode: setAttribute() to "ull-width-latin" assert_equals: IDL get expected "" but got "ull-width-latin"
-FAIL input.inputMode: setAttribute() to "FULL-WIDTH-LATIN" assert_equals: IDL get expected "full-width-latin" but got "FULL-WIDTH-LATIN"
-PASS input.inputMode: setAttribute() to "kana" 
-FAIL input.inputMode: setAttribute() to "xkana" assert_equals: IDL get expected "" but got "xkana"
-FAIL input.inputMode: setAttribute() to "kana\0" assert_equals: IDL get expected "" but got "kana\0"
-FAIL input.inputMode: setAttribute() to "ana" assert_equals: IDL get expected "" but got "ana"
-FAIL input.inputMode: setAttribute() to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
-FAIL input.inputMode: setAttribute() to "Kana" assert_equals: IDL get expected "" but got "Kana"
-PASS input.inputMode: setAttribute() to "kana-name" 
-FAIL input.inputMode: setAttribute() to "xkana-name" assert_equals: IDL get expected "" but got "xkana-name"
-FAIL input.inputMode: setAttribute() to "kana-name\0" assert_equals: IDL get expected "" but got "kana-name\0"
-FAIL input.inputMode: setAttribute() to "ana-name" assert_equals: IDL get expected "" but got "ana-name"
-FAIL input.inputMode: setAttribute() to "KANA-NAME" assert_equals: IDL get expected "kana-name" but got "KANA-NAME"
-FAIL input.inputMode: setAttribute() to "Kana-name" assert_equals: IDL get expected "" but got "Kana-name"
-PASS input.inputMode: setAttribute() to "katakana" 
-FAIL input.inputMode: setAttribute() to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
-FAIL input.inputMode: setAttribute() to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
-FAIL input.inputMode: setAttribute() to "atakana" assert_equals: IDL get expected "" but got "atakana"
-FAIL input.inputMode: setAttribute() to "KATAKANA" assert_equals: IDL get expected "katakana" but got "KATAKANA"
-FAIL input.inputMode: setAttribute() to "KataKana" assert_equals: IDL get expected "" but got "KataKana"
-PASS input.inputMode: setAttribute() to "numeric" 
-FAIL input.inputMode: setAttribute() to "xnumeric" assert_equals: IDL get expected "" but got "xnumeric"
-FAIL input.inputMode: setAttribute() to "numeric\0" assert_equals: IDL get expected "" but got "numeric\0"
-FAIL input.inputMode: setAttribute() to "umeric" assert_equals: IDL get expected "" but got "umeric"
-FAIL input.inputMode: setAttribute() to "NUMERIC" assert_equals: IDL get expected "numeric" but got "NUMERIC"
-PASS input.inputMode: setAttribute() to "tel" 
-FAIL input.inputMode: setAttribute() to "xtel" assert_equals: IDL get expected "" but got "xtel"
-FAIL input.inputMode: setAttribute() to "tel\0" assert_equals: IDL get expected "" but got "tel\0"
-FAIL input.inputMode: setAttribute() to "el" assert_equals: IDL get expected "" but got "el"
-FAIL input.inputMode: setAttribute() to "TEL" assert_equals: IDL get expected "tel" but got "TEL"
-PASS input.inputMode: setAttribute() to "email" 
-FAIL input.inputMode: setAttribute() to "xemail" assert_equals: IDL get expected "" but got "xemail"
-FAIL input.inputMode: setAttribute() to "email\0" assert_equals: IDL get expected "" but got "email\0"
-FAIL input.inputMode: setAttribute() to "mail" assert_equals: IDL get expected "" but got "mail"
-FAIL input.inputMode: setAttribute() to "EMAIL" assert_equals: IDL get expected "email" but got "EMAIL"
-PASS input.inputMode: setAttribute() to "url" 
-FAIL input.inputMode: setAttribute() to "xurl" assert_equals: IDL get expected "" but got "xurl"
-FAIL input.inputMode: setAttribute() to "url\0" assert_equals: IDL get expected "" but got "url\0"
-FAIL input.inputMode: setAttribute() to "rl" assert_equals: IDL get expected "" but got "rl"
-FAIL input.inputMode: setAttribute() to "URL" assert_equals: IDL get expected "url" but got "URL"
-PASS input.inputMode: IDL set to "" 
-FAIL input.inputMode: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
-FAIL input.inputMode: IDL set to undefined assert_equals: IDL get expected "" but got "undefined"
-FAIL input.inputMode: IDL set to 7 assert_equals: IDL get expected "" but got "7"
-FAIL input.inputMode: IDL set to 1.5 assert_equals: IDL get expected "" but got "1.5"
-FAIL input.inputMode: IDL set to true assert_equals: IDL get expected "" but got "true"
-FAIL input.inputMode: IDL set to false assert_equals: IDL get expected "" but got "false"
-FAIL input.inputMode: IDL set to object "[object Object]" assert_equals: IDL get expected "" but got "[object Object]"
-FAIL input.inputMode: IDL set to NaN assert_equals: IDL get expected "" but got "NaN"
-FAIL input.inputMode: IDL set to Infinity assert_equals: IDL get expected "" but got "Infinity"
-FAIL input.inputMode: IDL set to -Infinity assert_equals: IDL get expected "" but got "-Infinity"
-FAIL input.inputMode: IDL set to "\0" assert_equals: IDL get expected "" but got "\0"
-FAIL input.inputMode: IDL set to null assert_equals: IDL get expected "" but got "null"
-FAIL input.inputMode: IDL set to object "test-toString" assert_equals: IDL get expected "" but got "test-toString"
-FAIL input.inputMode: IDL set to object "test-valueOf" assert_equals: IDL get expected "" but got "test-valueOf"
-PASS input.inputMode: IDL set to "verbatim" 
-FAIL input.inputMode: IDL set to "xverbatim" assert_equals: IDL get expected "" but got "xverbatim"
-FAIL input.inputMode: IDL set to "verbatim\0" assert_equals: IDL get expected "" but got "verbatim\0"
-FAIL input.inputMode: IDL set to "erbatim" assert_equals: IDL get expected "" but got "erbatim"
-FAIL input.inputMode: IDL set to "VERBATIM" assert_equals: IDL get expected "verbatim" but got "VERBATIM"
-PASS input.inputMode: IDL set to "latin" 
-FAIL input.inputMode: IDL set to "xlatin" assert_equals: IDL get expected "" but got "xlatin"
-FAIL input.inputMode: IDL set to "latin\0" assert_equals: IDL get expected "" but got "latin\0"
-FAIL input.inputMode: IDL set to "atin" assert_equals: IDL get expected "" but got "atin"
-FAIL input.inputMode: IDL set to "LATIN" assert_equals: IDL get expected "latin" but got "LATIN"
-PASS input.inputMode: IDL set to "latin-name" 
-FAIL input.inputMode: IDL set to "xlatin-name" assert_equals: IDL get expected "" but got "xlatin-name"
-FAIL input.inputMode: IDL set to "latin-name\0" assert_equals: IDL get expected "" but got "latin-name\0"
-FAIL input.inputMode: IDL set to "atin-name" assert_equals: IDL get expected "" but got "atin-name"
-FAIL input.inputMode: IDL set to "LATIN-NAME" assert_equals: IDL get expected "latin-name" but got "LATIN-NAME"
-PASS input.inputMode: IDL set to "latin-prose" 
-FAIL input.inputMode: IDL set to "xlatin-prose" assert_equals: IDL get expected "" but got "xlatin-prose"
-FAIL input.inputMode: IDL set to "latin-prose\0" assert_equals: IDL get expected "" but got "latin-prose\0"
-FAIL input.inputMode: IDL set to "atin-prose" assert_equals: IDL get expected "" but got "atin-prose"
-FAIL input.inputMode: IDL set to "LATIN-PROSE" assert_equals: IDL get expected "latin-prose" but got "LATIN-PROSE"
-PASS input.inputMode: IDL set to "full-width-latin" 
-FAIL input.inputMode: IDL set to "xfull-width-latin" assert_equals: IDL get expected "" but got "xfull-width-latin"
-FAIL input.inputMode: IDL set to "full-width-latin\0" assert_equals: IDL get expected "" but got "full-width-latin\0"
-FAIL input.inputMode: IDL set to "ull-width-latin" assert_equals: IDL get expected "" but got "ull-width-latin"
-FAIL input.inputMode: IDL set to "FULL-WIDTH-LATIN" assert_equals: IDL get expected "full-width-latin" but got "FULL-WIDTH-LATIN"
-PASS input.inputMode: IDL set to "kana" 
-FAIL input.inputMode: IDL set to "xkana" assert_equals: IDL get expected "" but got "xkana"
-FAIL input.inputMode: IDL set to "kana\0" assert_equals: IDL get expected "" but got "kana\0"
-FAIL input.inputMode: IDL set to "ana" assert_equals: IDL get expected "" but got "ana"
-FAIL input.inputMode: IDL set to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
-FAIL input.inputMode: IDL set to "Kana" assert_equals: IDL get expected "" but got "Kana"
-PASS input.inputMode: IDL set to "kana-name" 
-FAIL input.inputMode: IDL set to "xkana-name" assert_equals: IDL get expected "" but got "xkana-name"
-FAIL input.inputMode: IDL set to "kana-name\0" assert_equals: IDL get expected "" but got "kana-name\0"
-FAIL input.inputMode: IDL set to "ana-name" assert_equals: IDL get expected "" but got "ana-name"
-FAIL input.inputMode: IDL set to "KANA-NAME" assert_equals: IDL get expected "kana-name" but got "KANA-NAME"
-FAIL input.inputMode: IDL set to "Kana-name" assert_equals: IDL get expected "" but got "Kana-name"
-PASS input.inputMode: IDL set to "katakana" 
-FAIL input.inputMode: IDL set to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
-FAIL input.inputMode: IDL set to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
-FAIL input.inputMode: IDL set to "atakana" assert_equals: IDL get expected "" but got "atakana"
-FAIL input.inputMode: IDL set to "KATAKANA" assert_equals: IDL get expected "katakana" but got "KATAKANA"
-FAIL input.inputMode: IDL set to "KataKana" assert_equals: IDL get expected "" but got "KataKana"
-PASS input.inputMode: IDL set to "numeric" 
-FAIL input.inputMode: IDL set to "xnumeric" assert_equals: IDL get expected "" but got "xnumeric"
-FAIL input.inputMode: IDL set to "numeric\0" assert_equals: IDL get expected "" but got "numeric\0"
-FAIL input.inputMode: IDL set to "umeric" assert_equals: IDL get expected "" but got "umeric"
-FAIL input.inputMode: IDL set to "NUMERIC" assert_equals: IDL get expected "numeric" but got "NUMERIC"
-PASS input.inputMode: IDL set to "tel" 
-FAIL input.inputMode: IDL set to "xtel" assert_equals: IDL get expected "" but got "xtel"
-FAIL input.inputMode: IDL set to "tel\0" assert_equals: IDL get expected "" but got "tel\0"
-FAIL input.inputMode: IDL set to "el" assert_equals: IDL get expected "" but got "el"
-FAIL input.inputMode: IDL set to "TEL" assert_equals: IDL get expected "tel" but got "TEL"
-PASS input.inputMode: IDL set to "email" 
-FAIL input.inputMode: IDL set to "xemail" assert_equals: IDL get expected "" but got "xemail"
-FAIL input.inputMode: IDL set to "email\0" assert_equals: IDL get expected "" but got "email\0"
-FAIL input.inputMode: IDL set to "mail" assert_equals: IDL get expected "" but got "mail"
-FAIL input.inputMode: IDL set to "EMAIL" assert_equals: IDL get expected "email" but got "EMAIL"
-PASS input.inputMode: IDL set to "url" 
-FAIL input.inputMode: IDL set to "xurl" assert_equals: IDL get expected "" but got "xurl"
-FAIL input.inputMode: IDL set to "url\0" assert_equals: IDL get expected "" but got "url\0"
-FAIL input.inputMode: IDL set to "rl" assert_equals: IDL get expected "" but got "rl"
-FAIL input.inputMode: IDL set to "URL" assert_equals: IDL get expected "url" but got "URL"
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS input.max: 32 tests
 PASS input.maxLength: 61 tests
 PASS input.min: 32 tests
@@ -230,8 +230,8 @@ PASS input.placeholder: 32 tests
 PASS input.readOnly: 33 tests
 PASS input.required: 33 tests
 PASS input.size: 57 tests
-FAIL input.size: IDL set to 2147483648 assert_equals: getAttribute() expected "20" but got "0"
-FAIL input.size: IDL set to 4294967295 assert_equals: getAttribute() expected "20" but got "0"
+NOTRUN test
+NOTRUN test
 PASS input.src: 38 tests
 PASS input.step: 32 tests
 PASS input.type: 256 tests
@@ -263,23 +263,23 @@ PASS select.className (<select class>): 32 tests
 PASS select.hidden: 33 tests
 PASS select.accessKey: 32 tests
 PASS select.tabIndex: 24 tests
-FAIL select.autocomplete: typeof IDL attribute assert_equals: expected "string" but got "undefined"
-FAIL select.autocomplete: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL select.autocomplete: IDL set to "" assert_equals: getAttribute() expected (string) "" but got (object) null
-FAIL select.autocomplete: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (object) null
-FAIL select.autocomplete: IDL set to undefined assert_equals: getAttribute() expected (string) "undefined" but got (object) null
-FAIL select.autocomplete: IDL set to 7 assert_equals: getAttribute() expected (string) "7" but got (object) null
-FAIL select.autocomplete: IDL set to 1.5 assert_equals: getAttribute() expected (string) "1.5" but got (object) null
-FAIL select.autocomplete: IDL set to true assert_equals: getAttribute() expected (string) "true" but got (object) null
-FAIL select.autocomplete: IDL set to false assert_equals: getAttribute() expected (string) "false" but got (object) null
-FAIL select.autocomplete: IDL set to object "[object Object]" assert_equals: getAttribute() expected (string) "[object Object]" but got (object) null
-FAIL select.autocomplete: IDL set to NaN assert_equals: getAttribute() expected (string) "NaN" but got (object) null
-FAIL select.autocomplete: IDL set to Infinity assert_equals: getAttribute() expected (string) "Infinity" but got (object) null
-FAIL select.autocomplete: IDL set to -Infinity assert_equals: getAttribute() expected (string) "-Infinity" but got (object) null
-FAIL select.autocomplete: IDL set to "\0" assert_equals: getAttribute() expected (string) "\0" but got (object) null
-FAIL select.autocomplete: IDL set to null assert_equals: getAttribute() expected (string) "null" but got (object) null
-FAIL select.autocomplete: IDL set to object "test-toString" assert_equals: getAttribute() expected (string) "test-toString" but got (object) null
-FAIL select.autocomplete: IDL set to object "test-valueOf" assert_equals: getAttribute() expected (string) "test-valueOf" but got (object) null
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS select.autofocus: 33 tests
 PASS select.disabled: 33 tests
 PASS select.multiple: 33 tests
@@ -320,188 +320,188 @@ PASS textarea.className (<textarea class>): 32 tests
 PASS textarea.hidden: 33 tests
 PASS textarea.accessKey: 32 tests
 PASS textarea.tabIndex: 24 tests
-FAIL textarea.autocomplete: typeof IDL attribute assert_equals: expected "string" but got "undefined"
-FAIL textarea.autocomplete: IDL get with DOM attribute unset assert_equals: expected (string) "" but got (undefined) undefined
-FAIL textarea.autocomplete: IDL set to "" assert_equals: getAttribute() expected (string) "" but got (object) null
-FAIL textarea.autocomplete: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: getAttribute() expected (string) " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " but got (object) null
-FAIL textarea.autocomplete: IDL set to undefined assert_equals: getAttribute() expected (string) "undefined" but got (object) null
-FAIL textarea.autocomplete: IDL set to 7 assert_equals: getAttribute() expected (string) "7" but got (object) null
-FAIL textarea.autocomplete: IDL set to 1.5 assert_equals: getAttribute() expected (string) "1.5" but got (object) null
-FAIL textarea.autocomplete: IDL set to true assert_equals: getAttribute() expected (string) "true" but got (object) null
-FAIL textarea.autocomplete: IDL set to false assert_equals: getAttribute() expected (string) "false" but got (object) null
-FAIL textarea.autocomplete: IDL set to object "[object Object]" assert_equals: getAttribute() expected (string) "[object Object]" but got (object) null
-FAIL textarea.autocomplete: IDL set to NaN assert_equals: getAttribute() expected (string) "NaN" but got (object) null
-FAIL textarea.autocomplete: IDL set to Infinity assert_equals: getAttribute() expected (string) "Infinity" but got (object) null
-FAIL textarea.autocomplete: IDL set to -Infinity assert_equals: getAttribute() expected (string) "-Infinity" but got (object) null
-FAIL textarea.autocomplete: IDL set to "\0" assert_equals: getAttribute() expected (string) "\0" but got (object) null
-FAIL textarea.autocomplete: IDL set to null assert_equals: getAttribute() expected (string) "null" but got (object) null
-FAIL textarea.autocomplete: IDL set to object "test-toString" assert_equals: getAttribute() expected (string) "test-toString" but got (object) null
-FAIL textarea.autocomplete: IDL set to object "test-valueOf" assert_equals: getAttribute() expected (string) "test-valueOf" but got (object) null
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS textarea.autofocus: 33 tests
 PASS textarea.cols: 9 tests
-FAIL textarea.cols: setAttribute() to 2147483648 assert_equals: IDL get expected 20 but got 2147483648
-FAIL textarea.cols: setAttribute() to 4294967295 assert_equals: IDL get expected 20 but got 4294967295
+NOTRUN test
+NOTRUN test
 PASS textarea.cols: 46 tests
-FAIL textarea.cols: IDL set to 2147483648 assert_equals: getAttribute() expected "20" but got "0"
-FAIL textarea.cols: IDL set to 4294967295 assert_equals: getAttribute() expected "20" but got "0"
+NOTRUN test
+NOTRUN test
 PASS textarea.dirName: 32 tests
 PASS textarea.disabled: 33 tests
 PASS textarea.inputMode: 3 tests
-FAIL textarea.inputMode: setAttribute() to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
-FAIL textarea.inputMode: setAttribute() to undefined assert_equals: IDL get expected "" but got "undefined"
-FAIL textarea.inputMode: setAttribute() to 7 assert_equals: IDL get expected "" but got "7"
-FAIL textarea.inputMode: setAttribute() to 1.5 assert_equals: IDL get expected "" but got "1.5"
-FAIL textarea.inputMode: setAttribute() to true assert_equals: IDL get expected "" but got "true"
-FAIL textarea.inputMode: setAttribute() to false assert_equals: IDL get expected "" but got "false"
-FAIL textarea.inputMode: setAttribute() to object "[object Object]" assert_equals: IDL get expected "" but got "[object Object]"
-FAIL textarea.inputMode: setAttribute() to NaN assert_equals: IDL get expected "" but got "NaN"
-FAIL textarea.inputMode: setAttribute() to Infinity assert_equals: IDL get expected "" but got "Infinity"
-FAIL textarea.inputMode: setAttribute() to -Infinity assert_equals: IDL get expected "" but got "-Infinity"
-FAIL textarea.inputMode: setAttribute() to "\0" assert_equals: IDL get expected "" but got "\0"
-FAIL textarea.inputMode: setAttribute() to null assert_equals: IDL get expected "" but got "null"
-FAIL textarea.inputMode: setAttribute() to object "test-toString" assert_equals: IDL get expected "" but got "test-toString"
-FAIL textarea.inputMode: setAttribute() to object "test-valueOf" assert_equals: IDL get expected "" but got "test-valueOf"
-PASS textarea.inputMode: setAttribute() to "verbatim" 
-FAIL textarea.inputMode: setAttribute() to "xverbatim" assert_equals: IDL get expected "" but got "xverbatim"
-FAIL textarea.inputMode: setAttribute() to "verbatim\0" assert_equals: IDL get expected "" but got "verbatim\0"
-FAIL textarea.inputMode: setAttribute() to "erbatim" assert_equals: IDL get expected "" but got "erbatim"
-FAIL textarea.inputMode: setAttribute() to "VERBATIM" assert_equals: IDL get expected "verbatim" but got "VERBATIM"
-PASS textarea.inputMode: setAttribute() to "latin" 
-FAIL textarea.inputMode: setAttribute() to "xlatin" assert_equals: IDL get expected "" but got "xlatin"
-FAIL textarea.inputMode: setAttribute() to "latin\0" assert_equals: IDL get expected "" but got "latin\0"
-FAIL textarea.inputMode: setAttribute() to "atin" assert_equals: IDL get expected "" but got "atin"
-FAIL textarea.inputMode: setAttribute() to "LATIN" assert_equals: IDL get expected "latin" but got "LATIN"
-PASS textarea.inputMode: setAttribute() to "latin-name" 
-FAIL textarea.inputMode: setAttribute() to "xlatin-name" assert_equals: IDL get expected "" but got "xlatin-name"
-FAIL textarea.inputMode: setAttribute() to "latin-name\0" assert_equals: IDL get expected "" but got "latin-name\0"
-FAIL textarea.inputMode: setAttribute() to "atin-name" assert_equals: IDL get expected "" but got "atin-name"
-FAIL textarea.inputMode: setAttribute() to "LATIN-NAME" assert_equals: IDL get expected "latin-name" but got "LATIN-NAME"
-PASS textarea.inputMode: setAttribute() to "latin-prose" 
-FAIL textarea.inputMode: setAttribute() to "xlatin-prose" assert_equals: IDL get expected "" but got "xlatin-prose"
-FAIL textarea.inputMode: setAttribute() to "latin-prose\0" assert_equals: IDL get expected "" but got "latin-prose\0"
-FAIL textarea.inputMode: setAttribute() to "atin-prose" assert_equals: IDL get expected "" but got "atin-prose"
-FAIL textarea.inputMode: setAttribute() to "LATIN-PROSE" assert_equals: IDL get expected "latin-prose" but got "LATIN-PROSE"
-PASS textarea.inputMode: setAttribute() to "full-width-latin" 
-FAIL textarea.inputMode: setAttribute() to "xfull-width-latin" assert_equals: IDL get expected "" but got "xfull-width-latin"
-FAIL textarea.inputMode: setAttribute() to "full-width-latin\0" assert_equals: IDL get expected "" but got "full-width-latin\0"
-FAIL textarea.inputMode: setAttribute() to "ull-width-latin" assert_equals: IDL get expected "" but got "ull-width-latin"
-FAIL textarea.inputMode: setAttribute() to "FULL-WIDTH-LATIN" assert_equals: IDL get expected "full-width-latin" but got "FULL-WIDTH-LATIN"
-PASS textarea.inputMode: setAttribute() to "kana" 
-FAIL textarea.inputMode: setAttribute() to "xkana" assert_equals: IDL get expected "" but got "xkana"
-FAIL textarea.inputMode: setAttribute() to "kana\0" assert_equals: IDL get expected "" but got "kana\0"
-FAIL textarea.inputMode: setAttribute() to "ana" assert_equals: IDL get expected "" but got "ana"
-FAIL textarea.inputMode: setAttribute() to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
-FAIL textarea.inputMode: setAttribute() to "Kana" assert_equals: IDL get expected "" but got "Kana"
-PASS textarea.inputMode: setAttribute() to "kana-name" 
-FAIL textarea.inputMode: setAttribute() to "xkana-name" assert_equals: IDL get expected "" but got "xkana-name"
-FAIL textarea.inputMode: setAttribute() to "kana-name\0" assert_equals: IDL get expected "" but got "kana-name\0"
-FAIL textarea.inputMode: setAttribute() to "ana-name" assert_equals: IDL get expected "" but got "ana-name"
-FAIL textarea.inputMode: setAttribute() to "KANA-NAME" assert_equals: IDL get expected "kana-name" but got "KANA-NAME"
-FAIL textarea.inputMode: setAttribute() to "Kana-name" assert_equals: IDL get expected "" but got "Kana-name"
-PASS textarea.inputMode: setAttribute() to "katakana" 
-FAIL textarea.inputMode: setAttribute() to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
-FAIL textarea.inputMode: setAttribute() to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
-FAIL textarea.inputMode: setAttribute() to "atakana" assert_equals: IDL get expected "" but got "atakana"
-FAIL textarea.inputMode: setAttribute() to "KATAKANA" assert_equals: IDL get expected "katakana" but got "KATAKANA"
-FAIL textarea.inputMode: setAttribute() to "KataKana" assert_equals: IDL get expected "" but got "KataKana"
-PASS textarea.inputMode: setAttribute() to "numeric" 
-FAIL textarea.inputMode: setAttribute() to "xnumeric" assert_equals: IDL get expected "" but got "xnumeric"
-FAIL textarea.inputMode: setAttribute() to "numeric\0" assert_equals: IDL get expected "" but got "numeric\0"
-FAIL textarea.inputMode: setAttribute() to "umeric" assert_equals: IDL get expected "" but got "umeric"
-FAIL textarea.inputMode: setAttribute() to "NUMERIC" assert_equals: IDL get expected "numeric" but got "NUMERIC"
-PASS textarea.inputMode: setAttribute() to "tel" 
-FAIL textarea.inputMode: setAttribute() to "xtel" assert_equals: IDL get expected "" but got "xtel"
-FAIL textarea.inputMode: setAttribute() to "tel\0" assert_equals: IDL get expected "" but got "tel\0"
-FAIL textarea.inputMode: setAttribute() to "el" assert_equals: IDL get expected "" but got "el"
-FAIL textarea.inputMode: setAttribute() to "TEL" assert_equals: IDL get expected "tel" but got "TEL"
-PASS textarea.inputMode: setAttribute() to "email" 
-FAIL textarea.inputMode: setAttribute() to "xemail" assert_equals: IDL get expected "" but got "xemail"
-FAIL textarea.inputMode: setAttribute() to "email\0" assert_equals: IDL get expected "" but got "email\0"
-FAIL textarea.inputMode: setAttribute() to "mail" assert_equals: IDL get expected "" but got "mail"
-FAIL textarea.inputMode: setAttribute() to "EMAIL" assert_equals: IDL get expected "email" but got "EMAIL"
-PASS textarea.inputMode: setAttribute() to "url" 
-FAIL textarea.inputMode: setAttribute() to "xurl" assert_equals: IDL get expected "" but got "xurl"
-FAIL textarea.inputMode: setAttribute() to "url\0" assert_equals: IDL get expected "" but got "url\0"
-FAIL textarea.inputMode: setAttribute() to "rl" assert_equals: IDL get expected "" but got "rl"
-FAIL textarea.inputMode: setAttribute() to "URL" assert_equals: IDL get expected "url" but got "URL"
-PASS textarea.inputMode: IDL set to "" 
-FAIL textarea.inputMode: IDL set to " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo " assert_equals: IDL get expected "" but got " \0\x01\x02\x03\x04\x05\x06\x07 \b\t\n\v\f\r\x0e\x0f \x10\x11\x12\x13\x14\x15\x16\x17 \x18\x19\x1a\x1b\x1c\x1d\x1e\x1f  foo "
-FAIL textarea.inputMode: IDL set to undefined assert_equals: IDL get expected "" but got "undefined"
-FAIL textarea.inputMode: IDL set to 7 assert_equals: IDL get expected "" but got "7"
-FAIL textarea.inputMode: IDL set to 1.5 assert_equals: IDL get expected "" but got "1.5"
-FAIL textarea.inputMode: IDL set to true assert_equals: IDL get expected "" but got "true"
-FAIL textarea.inputMode: IDL set to false assert_equals: IDL get expected "" but got "false"
-FAIL textarea.inputMode: IDL set to object "[object Object]" assert_equals: IDL get expected "" but got "[object Object]"
-FAIL textarea.inputMode: IDL set to NaN assert_equals: IDL get expected "" but got "NaN"
-FAIL textarea.inputMode: IDL set to Infinity assert_equals: IDL get expected "" but got "Infinity"
-FAIL textarea.inputMode: IDL set to -Infinity assert_equals: IDL get expected "" but got "-Infinity"
-FAIL textarea.inputMode: IDL set to "\0" assert_equals: IDL get expected "" but got "\0"
-FAIL textarea.inputMode: IDL set to null assert_equals: IDL get expected "" but got "null"
-FAIL textarea.inputMode: IDL set to object "test-toString" assert_equals: IDL get expected "" but got "test-toString"
-FAIL textarea.inputMode: IDL set to object "test-valueOf" assert_equals: IDL get expected "" but got "test-valueOf"
-PASS textarea.inputMode: IDL set to "verbatim" 
-FAIL textarea.inputMode: IDL set to "xverbatim" assert_equals: IDL get expected "" but got "xverbatim"
-FAIL textarea.inputMode: IDL set to "verbatim\0" assert_equals: IDL get expected "" but got "verbatim\0"
-FAIL textarea.inputMode: IDL set to "erbatim" assert_equals: IDL get expected "" but got "erbatim"
-FAIL textarea.inputMode: IDL set to "VERBATIM" assert_equals: IDL get expected "verbatim" but got "VERBATIM"
-PASS textarea.inputMode: IDL set to "latin" 
-FAIL textarea.inputMode: IDL set to "xlatin" assert_equals: IDL get expected "" but got "xlatin"
-FAIL textarea.inputMode: IDL set to "latin\0" assert_equals: IDL get expected "" but got "latin\0"
-FAIL textarea.inputMode: IDL set to "atin" assert_equals: IDL get expected "" but got "atin"
-FAIL textarea.inputMode: IDL set to "LATIN" assert_equals: IDL get expected "latin" but got "LATIN"
-PASS textarea.inputMode: IDL set to "latin-name" 
-FAIL textarea.inputMode: IDL set to "xlatin-name" assert_equals: IDL get expected "" but got "xlatin-name"
-FAIL textarea.inputMode: IDL set to "latin-name\0" assert_equals: IDL get expected "" but got "latin-name\0"
-FAIL textarea.inputMode: IDL set to "atin-name" assert_equals: IDL get expected "" but got "atin-name"
-FAIL textarea.inputMode: IDL set to "LATIN-NAME" assert_equals: IDL get expected "latin-name" but got "LATIN-NAME"
-PASS textarea.inputMode: IDL set to "latin-prose" 
-FAIL textarea.inputMode: IDL set to "xlatin-prose" assert_equals: IDL get expected "" but got "xlatin-prose"
-FAIL textarea.inputMode: IDL set to "latin-prose\0" assert_equals: IDL get expected "" but got "latin-prose\0"
-FAIL textarea.inputMode: IDL set to "atin-prose" assert_equals: IDL get expected "" but got "atin-prose"
-FAIL textarea.inputMode: IDL set to "LATIN-PROSE" assert_equals: IDL get expected "latin-prose" but got "LATIN-PROSE"
-PASS textarea.inputMode: IDL set to "full-width-latin" 
-FAIL textarea.inputMode: IDL set to "xfull-width-latin" assert_equals: IDL get expected "" but got "xfull-width-latin"
-FAIL textarea.inputMode: IDL set to "full-width-latin\0" assert_equals: IDL get expected "" but got "full-width-latin\0"
-FAIL textarea.inputMode: IDL set to "ull-width-latin" assert_equals: IDL get expected "" but got "ull-width-latin"
-FAIL textarea.inputMode: IDL set to "FULL-WIDTH-LATIN" assert_equals: IDL get expected "full-width-latin" but got "FULL-WIDTH-LATIN"
-PASS textarea.inputMode: IDL set to "kana" 
-FAIL textarea.inputMode: IDL set to "xkana" assert_equals: IDL get expected "" but got "xkana"
-FAIL textarea.inputMode: IDL set to "kana\0" assert_equals: IDL get expected "" but got "kana\0"
-FAIL textarea.inputMode: IDL set to "ana" assert_equals: IDL get expected "" but got "ana"
-FAIL textarea.inputMode: IDL set to "KANA" assert_equals: IDL get expected "kana" but got "KANA"
-FAIL textarea.inputMode: IDL set to "Kana" assert_equals: IDL get expected "" but got "Kana"
-PASS textarea.inputMode: IDL set to "kana-name" 
-FAIL textarea.inputMode: IDL set to "xkana-name" assert_equals: IDL get expected "" but got "xkana-name"
-FAIL textarea.inputMode: IDL set to "kana-name\0" assert_equals: IDL get expected "" but got "kana-name\0"
-FAIL textarea.inputMode: IDL set to "ana-name" assert_equals: IDL get expected "" but got "ana-name"
-FAIL textarea.inputMode: IDL set to "KANA-NAME" assert_equals: IDL get expected "kana-name" but got "KANA-NAME"
-FAIL textarea.inputMode: IDL set to "Kana-name" assert_equals: IDL get expected "" but got "Kana-name"
-PASS textarea.inputMode: IDL set to "katakana" 
-FAIL textarea.inputMode: IDL set to "xkatakana" assert_equals: IDL get expected "" but got "xkatakana"
-FAIL textarea.inputMode: IDL set to "katakana\0" assert_equals: IDL get expected "" but got "katakana\0"
-FAIL textarea.inputMode: IDL set to "atakana" assert_equals: IDL get expected "" but got "atakana"
-FAIL textarea.inputMode: IDL set to "KATAKANA" assert_equals: IDL get expected "katakana" but got "KATAKANA"
-FAIL textarea.inputMode: IDL set to "KataKana" assert_equals: IDL get expected "" but got "KataKana"
-PASS textarea.inputMode: IDL set to "numeric" 
-FAIL textarea.inputMode: IDL set to "xnumeric" assert_equals: IDL get expected "" but got "xnumeric"
-FAIL textarea.inputMode: IDL set to "numeric\0" assert_equals: IDL get expected "" but got "numeric\0"
-FAIL textarea.inputMode: IDL set to "umeric" assert_equals: IDL get expected "" but got "umeric"
-FAIL textarea.inputMode: IDL set to "NUMERIC" assert_equals: IDL get expected "numeric" but got "NUMERIC"
-PASS textarea.inputMode: IDL set to "tel" 
-FAIL textarea.inputMode: IDL set to "xtel" assert_equals: IDL get expected "" but got "xtel"
-FAIL textarea.inputMode: IDL set to "tel\0" assert_equals: IDL get expected "" but got "tel\0"
-FAIL textarea.inputMode: IDL set to "el" assert_equals: IDL get expected "" but got "el"
-FAIL textarea.inputMode: IDL set to "TEL" assert_equals: IDL get expected "tel" but got "TEL"
-PASS textarea.inputMode: IDL set to "email" 
-FAIL textarea.inputMode: IDL set to "xemail" assert_equals: IDL get expected "" but got "xemail"
-FAIL textarea.inputMode: IDL set to "email\0" assert_equals: IDL get expected "" but got "email\0"
-FAIL textarea.inputMode: IDL set to "mail" assert_equals: IDL get expected "" but got "mail"
-FAIL textarea.inputMode: IDL set to "EMAIL" assert_equals: IDL get expected "email" but got "EMAIL"
-PASS textarea.inputMode: IDL set to "url" 
-FAIL textarea.inputMode: IDL set to "xurl" assert_equals: IDL get expected "" but got "xurl"
-FAIL textarea.inputMode: IDL set to "url\0" assert_equals: IDL get expected "" but got "url\0"
-FAIL textarea.inputMode: IDL set to "rl" assert_equals: IDL get expected "" but got "rl"
-FAIL textarea.inputMode: IDL set to "URL" assert_equals: IDL get expected "url" but got "URL"
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS textarea.maxLength: 61 tests
 PASS textarea.minLength: 61 tests
 PASS textarea.name: 32 tests
@@ -509,11 +509,11 @@ PASS textarea.placeholder: 32 tests
 PASS textarea.readOnly: 33 tests
 PASS textarea.required: 33 tests
 PASS textarea.rows: 9 tests
-FAIL textarea.rows: setAttribute() to 2147483648 assert_equals: IDL get expected 2 but got 2147483648
-FAIL textarea.rows: setAttribute() to 4294967295 assert_equals: IDL get expected 2 but got 4294967295
+NOTRUN test
+NOTRUN test
 PASS textarea.rows: 46 tests
-FAIL textarea.rows: IDL set to 2147483648 assert_equals: getAttribute() expected "2" but got "0"
-FAIL textarea.rows: IDL set to 4294967295 assert_equals: getAttribute() expected "2" but got "0"
+NOTRUN test
+NOTRUN test
 PASS textarea.wrap: 32 tests
 PASS output.title: 32 tests
 PASS output.lang: 32 tests
@@ -538,31 +538,31 @@ PASS meter.hidden: 33 tests
 PASS meter.accessKey: 32 tests
 PASS meter.tabIndex: 24 tests
 PASS meter.value: 2 tests
-FAIL meter.value: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+NOTRUN test
 PASS meter.value: 4 tests
-FAIL meter.value: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+NOTRUN test
 PASS meter.min: 2 tests
-FAIL meter.min: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+NOTRUN test
 PASS meter.min: 4 tests
-FAIL meter.min: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
-PASS meter.max: typeof IDL attribute 
-FAIL meter.max: IDL get with DOM attribute unset assert_equals: expected 0 but got 1
-FAIL meter.max: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS meter.max: 4 tests
-FAIL meter.max: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+NOTRUN test
 PASS meter.low: 2 tests
-FAIL meter.low: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+NOTRUN test
 PASS meter.low: 4 tests
-FAIL meter.low: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
-PASS meter.high: typeof IDL attribute 
-FAIL meter.high: IDL get with DOM attribute unset assert_equals: expected 0 but got 1
-FAIL meter.high: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS meter.high: 4 tests
-FAIL meter.high: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
-PASS meter.optimum: typeof IDL attribute 
-FAIL meter.optimum: IDL get with DOM attribute unset assert_equals: expected 0 but got 0.5
-FAIL meter.optimum: IDL set to -10000000000 assert_equals: getAttribute() expected "-10000000000" but got "-1.00000e+10"
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS meter.optimum: 4 tests
-FAIL meter.optimum: IDL set to 10000000000 assert_equals: getAttribute() expected "10000000000" but got "1.00000e+10"
+NOTRUN test
 Harness: the test ran to completion.
 

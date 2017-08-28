@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
-PASS Longhand with variable preserves original serialization: with withespace 
-FAIL Shorthand with variable preserves original serialization: with withespace assert_equals: expected "font: var(--a);" but got "font-style: ; font-variant: var(--a); font-weight: ; font-stretch: ; font-size: ; line-height: ; font-family: ;"
-FAIL Longhand with variable preserves original serialization: without withespace assert_equals: expected "font-size:var(--a);" but got "font-size: var(--a);"
-FAIL Shorthand with variable preserves original serialization: without withespace assert_equals: expected "font:var(--a);" but got "font-style: ; font-variant: var(--a); font-weight: ; font-stretch: ; font-size: ; line-height: ; font-family: ;"
+PASS Longhand with variable preserves original serialization: with withespace
+FAIL Shorthand with variable preserves original serialization: with withespaceassert_equals: expected "font: var(--a);" but got "font-style: ; font-variant: var(--a); font-weight: ; font-stretch: ; font-size: ; line-height: ; font-family: ;"
+FAIL Longhand with variable preserves original serialization: without withespaceassert_equals: expected "font-size:var(--a);" but got "font-size: var(--a);"
+FAIL Shorthand with variable preserves original serialization: without withespaceassert_equals: expected "font:var(--a);" but got "font-style: ; font-variant: var(--a); font-weight: ; font-stretch: ; font-size: ; line-height: ; font-family: ;"
 Harness: the test ran to completion.
 

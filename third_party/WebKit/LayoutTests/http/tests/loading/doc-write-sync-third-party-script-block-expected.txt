@@ -14,9 +14,9 @@ main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame
 This is a testharness.js-based test.
-PASS Blocking of scripts doesn't come into effect since feature is disabled 
-PASS Same domain doc.written scripts are not blocked 
-PASS cross-origin script not blocked since it is cached 
-PASS cross origin doc.written scripts are blocked 
+PASS Blocking of scripts doesn't come into effect since feature is disabled
+PASS Same domain doc.written scripts are not blocked
+PASS cross-origin script not blocked since it is cached
+PASS cross origin doc.written scripts are blocked
 Harness: the test ran to completion.
 

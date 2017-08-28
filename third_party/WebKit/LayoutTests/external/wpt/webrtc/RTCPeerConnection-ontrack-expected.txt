@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-FAIL setRemoteDescription should trigger ontrack event when the MSID of the stream is is parsed. assert_unreached: Error OperationError: TEST_ERROR Reached unreachable code
-FAIL setRemoteDescription() with m= line of recvonly direction should not trigger track event assert_unreached: Error OperationError: TEST_ERROR Reached unreachable code
-FAIL addTrack() should cause remote connection to fire ontrack when setRemoteDescription() assert_unreached: Error NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV). Reached unreachable code
-FAIL addTransceiver('video') should cause remote connection to fire ontrack when setRemoteDescription() pc1.addTransceiver is not a function
-FAIL addTransceiver() with inactive direction should not cause remote connection to fire ontrack when setRemoteDescription() pc1.addTransceiver is not a function
+FAIL setRemoteDescription should trigger ontrack event when the MSID of the stream is is parsed.assert_unreached: Error OperationError: TEST_ERROR Reached unreachable code
+FAIL setRemoteDescription() with m= line of recvonly direction should not trigger track eventassert_unreached: Error OperationError: TEST_ERROR Reached unreachable code
+FAIL addTrack() should cause remote connection to fire ontrack when setRemoteDescription()assert_unreached: Error NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV). Reached unreachable code
+FAIL addTransceiver('video') should cause remote connection to fire ontrack when setRemoteDescription()pc1.addTransceiver is not a function
+FAIL addTransceiver() with inactive direction should not cause remote connection to fire ontrack when setRemoteDescription()pc1.addTransceiver is not a function
 Harness: the test ran to completion.
 

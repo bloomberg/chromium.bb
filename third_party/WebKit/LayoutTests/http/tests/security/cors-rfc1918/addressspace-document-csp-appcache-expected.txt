@@ -1,11 +1,11 @@
 CONSOLE WARNING: Use of the Application Cache is deprecated on insecure origins. Support will be removed in the future. You should consider switching your application to a secure origin, such as HTTPS. See https://goo.gl/rStTGz for more details.
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 3 duplicate test names: "http://localhost:8000 = 'public'", "http://127.0.0.1:8000 = 'public'", "http://example.test:8000 = 'public'"
-PASS http://localhost:8000 = 'public' 
-PASS http://127.0.0.1:8000 = 'public' 
-PASS http://example.test:8000 = 'public' 
-PASS http://localhost:8000 = 'public' 
-PASS http://127.0.0.1:8000 = 'public' 
-PASS http://example.test:8000 = 'public' 
+PASS http://localhost:8000 = 'public'
+PASS http://127.0.0.1:8000 = 'public'
+PASS http://example.test:8000 = 'public'
+PASS http://localhost:8000 = 'public'
+PASS http://127.0.0.1:8000 = 'public'
+PASS http://example.test:8000 = 'public'
 Harness: the test ran to completion.
 

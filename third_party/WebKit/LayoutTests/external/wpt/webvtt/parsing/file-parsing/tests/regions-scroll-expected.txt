@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL regions, scroll Cannot read property 'scroll' of null
+FAIL regions, scrollCannot read property 'scroll' of null
 Harness: the test ran to completion.
 

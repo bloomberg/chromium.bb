@@ -20,7 +20,7 @@ function scroll() {
 
         eventSender.mouseMoveTo(startX - 100, startY - 100);
         var scrollAfterReturnToSubframe = scrollbar.scrollTop;
-        var result = scrollAfterMoveToMainFrame == scrollAfterReturnToSubframe ? "PASS" 
+        var result = scrollAfterMoveToMainFrame == scrollAfterReturnToSubframe ? "PASS"
             : "FAIL: scrollAfterMoveToMainFrame = " + scrollAfterMoveToMainFrame + ", scrollAfterReturnToSubframe = " + scrollAfterReturnToSubframe;
         document.getElementById("console").appendChild(document.createTextNode(result));
         testRunner.notifyDone();

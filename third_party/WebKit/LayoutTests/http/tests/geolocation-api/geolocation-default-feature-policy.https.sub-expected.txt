@@ -1,8 +1,8 @@
 CONSOLE WARNING: line 14: getCurrentPosition and watchPosition usage in cross-origin iframes is deprecated and will be disabled in M63, around December 2017. To continue to use this feature, it must be enabled by the embedding document using Feature Policy, e.g. <iframe allow="geolocation" ...>. See https://goo.gl/EuHzyv for more details.
 This is a testharness.js-based test.
-PASS Default "geolocation" feature policy ["self"] allows the top-level document. 
-PASS Default "geolocation" feature policy ["self"] allows same-origin iframes. 
-FAIL Default "geolocation" feature policy ["self"] disallows cross-origin iframes. assert_equals: expected "#PositionError" but got "#OK"
-PASS Feature policy "geolocation" can be enabled in cross-origin iframes using "allow" attribute. 
+PASS Default "geolocation" feature policy ["self"] allows the top-level document.
+PASS Default "geolocation" feature policy ["self"] allows same-origin iframes.
+FAIL Default "geolocation" feature policy ["self"] disallows cross-origin iframes.assert_equals: expected "#PositionError" but got "#OK"
+PASS Feature policy "geolocation" can be enabled in cross-origin iframes using "allow" attribute.
 Harness: the test ran to completion.
 

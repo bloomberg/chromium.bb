@@ -5,6 +5,6 @@ FAIL opt_in_method: http-csp
                                  context_nesting: top-level
                                  redirection: no-redirect
                                  subresource: audio-tag
-                                 expectation: allowed assert_equals: The triggered event should match 'allowed'. expected "allowed" but got "blocked"
+                                 expectation: allowedassert_equals: The triggered event should match 'allowed'. expected "allowed" but got "blocked"
 Harness: the test ran to completion.
 

@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-PASS DOMRectList [NoInterfaceObject] 
-FAIL DOMRectList [LegacyArrayClass] assert_true: expected true got false
-PASS DOMRectList length 
-PASS DOMRectList indexed getter 
-PASS DOMRectList item() 
+PASS DOMRectList [NoInterfaceObject]
+FAIL DOMRectList [LegacyArrayClass]assert_true: expected true got false
+PASS DOMRectList length
+PASS DOMRectList indexed getter
+PASS DOMRectList item()
 Harness: the test ran to completion.
 

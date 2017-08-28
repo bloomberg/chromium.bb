@@ -1,15 +1,15 @@
 This is a testharness.js-based test.
-PASS Standard array of numbers. 
-PASS Standard set of numbers. 
-PASS Standard empty array. 
-PASS Standard empty set. 
-PASS Custom list of numbers. 
-PASS Truthy done signal. 
-PASS Custom list of numbers with missing "done: false" signal. 
-PASS Terminates when done is true. 
-PASS Empty list. 
-PASS Non-iterable object. 
-FAIL Iterator object without next() function should throw. Test bug: need to pass exception to assert_throws()
-FAIL Non-object iterator.next() result should throw. Test bug: need to pass exception to assert_throws()
+PASS Standard array of numbers.
+PASS Standard set of numbers.
+PASS Standard empty array.
+PASS Standard empty set.
+PASS Custom list of numbers.
+PASS Truthy done signal.
+PASS Custom list of numbers with missing "done: false" signal.
+PASS Terminates when done is true.
+PASS Empty list.
+PASS Non-iterable object.
+FAIL Iterator object without next() function should throw.Test bug: need to pass exception to assert_throws()
+FAIL Non-object iterator.next() result should throw.Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

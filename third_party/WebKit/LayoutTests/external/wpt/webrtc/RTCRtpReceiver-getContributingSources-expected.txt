@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL getContributingSources() should return list of CSRC after connection is established promise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
+FAIL getContributingSources() should return list of CSRC after connection is establishedpromise_test: Unhandled rejection with value: object "NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV)."
 Harness: the test ran to completion.
 

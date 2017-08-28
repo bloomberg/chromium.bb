@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Script src with an invalid URL assert_true: event should not be dispatched synchronously expected true got false
+FAIL Script src with an invalid URLassert_true: event should not be dispatched synchronously expected true got false
 Harness: the test ran to completion.
 

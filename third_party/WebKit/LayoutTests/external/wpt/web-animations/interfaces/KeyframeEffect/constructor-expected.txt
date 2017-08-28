@@ -1,138 +1,138 @@
 This is a testharness.js-based test.
 Found 131 tests; 40 PASS, 91 FAIL, 0 TIMEOUT, 0 NOTRUN.
-FAIL a KeyframeEffectReadOnly can be constructed with no frames (intermediate value).getKeyframes is not a function
-FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in a property-indexed keyframe effect.getKeyframes is not a function
-FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes effect.getKeyframes is not a function
-PASS easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions 
-PASS invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in regular keyframes 
-PASS invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions 
-FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in property-indexed keyframes effect.getKeyframes is not a function
-FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes effect.getKeyframes is not a function
-FAIL composite value is absent if the composite operation specified on the keyframe effect is being used effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one shorthand property two value property-indexed keyframes specification effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one shorthand property two value property-indexed keyframes specification roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property two value property-indexed keyframes specification effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property two value property-indexed keyframes specification roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property property-indexed keyframes specification with different numbers of values effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property property-indexed keyframes specification with different numbers of values roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a property-indexed keyframes specification with an invalid value effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a property-indexed keyframes specification with an invalid value roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification that needs to stringify its values effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification that needs to stringify its values roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a property-indexed keyframes specification with a CSS variable reference effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a property-indexed keyframes specification with a CSS variable reference roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a property-indexed keyframes specification with a CSS variable reference in a shorthand property effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a property-indexed keyframes specification with a CSS variable reference in a shorthand property roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property one value property-indexed keyframes specification effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property one value property-indexed keyframes specification roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property one non-array value property-indexed keyframes specification effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property one non-array value property-indexed keyframes specification roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification where the first value is invalid effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification where the first value is invalid roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification where the second value is invalid effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification where the second value is invalid roundtrips effect.getKeyframes is not a function
-FAIL the KeyframeEffectReadOnly constructor reads keyframe properties in the expected order assert_array_equals: property access order lengths differ, expected 5 got 8
-FAIL a KeyframeEffectReadOnly can be constructed with a one property one keyframe sequence effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property one keyframe sequence roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property two keyframe sequence effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property two keyframe sequence roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property two keyframe sequence effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property two keyframe sequence roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one shorthand property two keyframe sequence effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one shorthand property two keyframe sequence roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property (a shorthand and one of its component longhands) two keyframe sequence effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property (a shorthand and one of its component longhands) two keyframe sequence roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with duplicate values for a given interior offset effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with duplicate values for a given interior offset roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with duplicate values for offsets 0 and 1 effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with duplicate values for offsets 0 and 1 roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property four keyframe sequence effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property four keyframe sequence roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with omitted offset effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with omitted offset roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with null offset effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with null offset roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with string offset effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with string offset roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some omitted offsets effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with some omitted offsets roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some null offsets effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with some null offsets roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property keyframe sequence with some omitted offsets effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property keyframe sequence with some omitted offsets roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with all omitted offsets effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with all omitted offsets roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with different easing values, but the same easing value for a given offset effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with different easing values, but the same easing value for a given offset roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with different composite values, but the same composite value for a given offset effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with different composite values, but the same composite value for a given offset roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a one property two keyframe sequence that needs to stringify its values effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a one property two keyframe sequence that needs to stringify its values roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with a CSS variable reference effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with a CSS variable reference roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with a CSS variable reference in a shorthand property effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with a CSS variable reference in a shorthand property roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence where shorthand precedes longhand effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence where shorthand precedes longhand roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence where longhand precedes shorthand effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence where longhand precedes shorthand roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence where lesser shorthand precedes greater shorthand effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence where lesser shorthand precedes greater shorthand roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence where greater shorthand precedes lesser shorthand effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence where greater shorthand precedes lesser shorthand roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property keyframe sequence where one property is missing from the first keyframe effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property keyframe sequence where one property is missing from the first keyframe roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a two property keyframe sequence where one property is missing from the last keyframe effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a two property keyframe sequence where one property is missing from the last keyframe roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with repeated values at offset 1 with different easings effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with repeated values at offset 1 with different easings roundtrips effect.getKeyframes is not a function
-PASS KeyframeEffectReadOnly constructor throws with keyframes with an out-of-bounded positive offset 
-PASS KeyframeEffectReadOnly constructor throws with keyframes with an out-of-bounded negative offset 
-PASS KeyframeEffectReadOnly constructor throws with keyframes not loosely sorted by offset 
-PASS KeyframeEffectReadOnly constructor throws with property-indexed keyframes with an invalid easing value 
-PASS KeyframeEffectReadOnly constructor throws with a keyframe sequence with an invalid easing value 
-FAIL KeyframeEffectReadOnly constructor throws with keyframes with an invalid composite value assert_throws: function "function () {
+FAIL a KeyframeEffectReadOnly can be constructed with no frames(intermediate value).getKeyframes is not a function
+FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in a property-indexed keyframeeffect.getKeyframes is not a function
+FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframeseffect.getKeyframes is not a function
+PASS easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
+PASS invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in regular keyframes
+PASS invalid easing values are correctly rejected when passed to the KeyframeEffectReadOnly constructor in KeyframeEffectOptions
+FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in property-indexed keyframeseffect.getKeyframes is not a function
+FAIL composite values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframeseffect.getKeyframes is not a function
+FAIL composite value is absent if the composite operation specified on the keyframe effect is being usedeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specificationeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one shorthand property two value property-indexed keyframes specificationeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one shorthand property two value property-indexed keyframes specification roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specificationeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property two value property-indexed keyframes specificationeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property two value property-indexed keyframes specification roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property property-indexed keyframes specification with different numbers of valueseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property property-indexed keyframes specification with different numbers of values roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a property-indexed keyframes specification with an invalid valueeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a property-indexed keyframes specification with an invalid value roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification that needs to stringify its valueseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification that needs to stringify its values roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a property-indexed keyframes specification with a CSS variable referenceeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a property-indexed keyframes specification with a CSS variable reference roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a property-indexed keyframes specification with a CSS variable reference in a shorthand propertyeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a property-indexed keyframes specification with a CSS variable reference in a shorthand property roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property one value property-indexed keyframes specificationeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property one value property-indexed keyframes specification roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property one non-array value property-indexed keyframes specificationeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property one non-array value property-indexed keyframes specification roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification where the first value is invalideffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification where the first value is invalid roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two value property-indexed keyframes specification where the second value is invalideffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property two value property-indexed keyframes specification where the second value is invalid roundtripseffect.getKeyframes is not a function
+FAIL the KeyframeEffectReadOnly constructor reads keyframe properties in the expected orderassert_array_equals: property access order lengths differ, expected 5 got 8
+FAIL a KeyframeEffectReadOnly can be constructed with a one property one keyframe sequenceeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property one keyframe sequence roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two keyframe sequenceeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property two keyframe sequence roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property two keyframe sequenceeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property two keyframe sequence roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one shorthand property two keyframe sequenceeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one shorthand property two keyframe sequence roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property (a shorthand and one of its component longhands) two keyframe sequenceeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property (a shorthand and one of its component longhands) two keyframe sequence roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with duplicate values for a given interior offseteffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with duplicate values for a given interior offset roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with duplicate values for offsets 0 and 1effect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with duplicate values for offsets 0 and 1 roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property four keyframe sequenceeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property four keyframe sequence roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with omitted offseteffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with omitted offset roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with null offseteffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with null offset roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with string offseteffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with string offset roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some omitted offsetseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with some omitted offsets roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some null offsetseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with some null offsets roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property keyframe sequence with some omitted offsetseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property keyframe sequence with some omitted offsets roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with all omitted offsetseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with all omitted offsets roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with different easing values, but the same easing value for a given offseteffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with different easing values, but the same easing value for a given offset roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with different composite values, but the same composite value for a given offseteffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with different composite values, but the same composite value for a given offset roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property two keyframe sequence that needs to stringify its valueseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property two keyframe sequence that needs to stringify its values roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with a CSS variable referenceeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with a CSS variable reference roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with a CSS variable reference in a shorthand propertyeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with a CSS variable reference in a shorthand property roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence where shorthand precedes longhandeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence where shorthand precedes longhand roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence where longhand precedes shorthandeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence where longhand precedes shorthand roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence where lesser shorthand precedes greater shorthandeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence where lesser shorthand precedes greater shorthand roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence where greater shorthand precedes lesser shorthandeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence where greater shorthand precedes lesser shorthand roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property keyframe sequence where one property is missing from the first keyframeeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property keyframe sequence where one property is missing from the first keyframe roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a two property keyframe sequence where one property is missing from the last keyframeeffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a two property keyframe sequence where one property is missing from the last keyframe roundtripseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with repeated values at offset 1 with different easingseffect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with repeated values at offset 1 with different easings roundtripseffect.getKeyframes is not a function
+PASS KeyframeEffectReadOnly constructor throws with keyframes with an out-of-bounded positive offset
+PASS KeyframeEffectReadOnly constructor throws with keyframes with an out-of-bounded negative offset
+PASS KeyframeEffectReadOnly constructor throws with keyframes not loosely sorted by offset
+PASS KeyframeEffectReadOnly constructor throws with property-indexed keyframes with an invalid easing value
+PASS KeyframeEffectReadOnly constructor throws with a keyframe sequence with an invalid easing value
+FAIL KeyframeEffectReadOnly constructor throws with keyframes with an invalid composite valueassert_throws: function "function () {
       new KeyframeEffectReadOnly(target, subtest.input);
     }" did not throw
-PASS Invalid easing [a blank easing] in keyframe sequence should be thrown 
-PASS Invalid easing [an unrecognized easing] in keyframe sequence should be thrown 
-PASS Invalid easing [an 'initial' easing] in keyframe sequence should be thrown 
-PASS Invalid easing [an 'inherit' easing] in keyframe sequence should be thrown 
-PASS Invalid easing [a variable easing] in keyframe sequence should be thrown 
-PASS Invalid easing [a multi-value easing] in keyframe sequence should be thrown 
-FAIL a KeyframeEffectReadOnly constructed without any KeyframeEffectOptions object assert_equals: default composite expected (string) "replace" but got (undefined) undefined
-PASS a KeyframeEffectReadOnly constructed by an empty KeyframeEffectOptions object 
-PASS a KeyframeEffectReadOnly constructed by a normal KeyframeEffectOptions object 
-PASS a KeyframeEffectReadOnly constructed by a double value 
-PASS a KeyframeEffectReadOnly constructed by +Infinity 
-PASS a KeyframeEffectReadOnly constructed by an Infinity duration 
-PASS a KeyframeEffectReadOnly constructed by an auto duration 
-PASS a KeyframeEffectReadOnly constructed by an Infinity iterations 
-PASS a KeyframeEffectReadOnly constructed by an auto fill 
-PASS a KeyframeEffectReadOnly constructed by a forwards fill 
-PASS Invalid KeyframeEffectReadOnly option by -Infinity 
-PASS Invalid KeyframeEffectReadOnly option by NaN 
-PASS Invalid KeyframeEffectReadOnly option by a negative value 
-PASS Invalid KeyframeEffectReadOnly option by a negative Infinity duration 
-PASS Invalid KeyframeEffectReadOnly option by a NaN duration 
-PASS Invalid KeyframeEffectReadOnly option by a negative duration 
-PASS Invalid KeyframeEffectReadOnly option by a string duration 
-PASS Invalid KeyframeEffectReadOnly option by a negative Infinity iterations 
-PASS Invalid KeyframeEffectReadOnly option by a NaN iterations 
-PASS Invalid KeyframeEffectReadOnly option by a negative iterations 
-PASS Invalid KeyframeEffectReadOnly option by a blank easing 
-PASS Invalid KeyframeEffectReadOnly option by an unrecognized easing 
-PASS Invalid KeyframeEffectReadOnly option by an 'initial' easing 
-PASS Invalid KeyframeEffectReadOnly option by an 'inherit' easing 
-PASS Invalid KeyframeEffectReadOnly option by a variable easing 
-PASS Invalid KeyframeEffectReadOnly option by a multi-value easing 
-FAIL a KeyframeEffectReadOnly constructed with null target assert_equals: Effect created with null target has correct target expected (object) null but got (undefined) undefined
-PASS KeyframeEffect constructor creates an AnimationEffectTiming timing object 
-FAIL KeyframeEffect constructor propagates exceptions generated by accessing the options object assert_throws: function "function () {
+PASS Invalid easing [a blank easing] in keyframe sequence should be thrown
+PASS Invalid easing [an unrecognized easing] in keyframe sequence should be thrown
+PASS Invalid easing [an 'initial' easing] in keyframe sequence should be thrown
+PASS Invalid easing [an 'inherit' easing] in keyframe sequence should be thrown
+PASS Invalid easing [a variable easing] in keyframe sequence should be thrown
+PASS Invalid easing [a multi-value easing] in keyframe sequence should be thrown
+FAIL a KeyframeEffectReadOnly constructed without any KeyframeEffectOptions objectassert_equals: default composite expected (string) "replace" but got (undefined) undefined
+PASS a KeyframeEffectReadOnly constructed by an empty KeyframeEffectOptions object
+PASS a KeyframeEffectReadOnly constructed by a normal KeyframeEffectOptions object
+PASS a KeyframeEffectReadOnly constructed by a double value
+PASS a KeyframeEffectReadOnly constructed by +Infinity
+PASS a KeyframeEffectReadOnly constructed by an Infinity duration
+PASS a KeyframeEffectReadOnly constructed by an auto duration
+PASS a KeyframeEffectReadOnly constructed by an Infinity iterations
+PASS a KeyframeEffectReadOnly constructed by an auto fill
+PASS a KeyframeEffectReadOnly constructed by a forwards fill
+PASS Invalid KeyframeEffectReadOnly option by -Infinity
+PASS Invalid KeyframeEffectReadOnly option by NaN
+PASS Invalid KeyframeEffectReadOnly option by a negative value
+PASS Invalid KeyframeEffectReadOnly option by a negative Infinity duration
+PASS Invalid KeyframeEffectReadOnly option by a NaN duration
+PASS Invalid KeyframeEffectReadOnly option by a negative duration
+PASS Invalid KeyframeEffectReadOnly option by a string duration
+PASS Invalid KeyframeEffectReadOnly option by a negative Infinity iterations
+PASS Invalid KeyframeEffectReadOnly option by a NaN iterations
+PASS Invalid KeyframeEffectReadOnly option by a negative iterations
+PASS Invalid KeyframeEffectReadOnly option by a blank easing
+PASS Invalid KeyframeEffectReadOnly option by an unrecognized easing
+PASS Invalid KeyframeEffectReadOnly option by an 'initial' easing
+PASS Invalid KeyframeEffectReadOnly option by an 'inherit' easing
+PASS Invalid KeyframeEffectReadOnly option by a variable easing
+PASS Invalid KeyframeEffectReadOnly option by a multi-value easing
+FAIL a KeyframeEffectReadOnly constructed with null targetassert_equals: Effect created with null target has correct target expected (object) null but got (undefined) undefined
+PASS KeyframeEffect constructor creates an AnimationEffectTiming timing object
+FAIL KeyframeEffect constructor propagates exceptions generated by accessing the options objectassert_throws: function "function () {
     new KeyframeEffect(target, { get left() { throw test_error }})
   }" did not throw
 Harness: the test ran to completion.

@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL styleMap objects provide an 'update' function element.styleMap.update is not a function
+FAIL styleMap objects provide an 'update' functionelement.styleMap.update is not a function
 Harness: the test ran to completion.
 
