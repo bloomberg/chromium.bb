@@ -60,7 +60,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   virtual size_t size() const = 0;
   virtual AtomicString status() const = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  DEFINE_INLINE_VIRTUAL_TRACE() { EventTargetWithInlineData::Trace(visitor); }
 
  protected:
   // Iterable overrides.
