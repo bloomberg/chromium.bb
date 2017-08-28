@@ -334,7 +334,7 @@ InspectorSession* WebDevToolsAgentImpl::InitializeSession(int session_id,
   session->Append(new InspectorAnimationAgent(inspected_frames_.Get(),
                                               css_agent, session->V8Session()));
 
-  session->Append(InspectorMemoryAgent::Create());
+  session->Append(InspectorMemoryAgent::Create(inspected_frames_.Get()));
 
   session->Append(InspectorPerformanceAgent::Create(inspected_frames_.Get()));
 

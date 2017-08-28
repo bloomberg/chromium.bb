@@ -67,8 +67,8 @@ LeakDetector::~LeakDetector() {
 
 void LeakDetector::TryLeakDetection(blink::WebFrame* frame) {
   blink::WebLeakDetector* web_leak_detector =
-      blink::WebLeakDetector::Create(this, frame);
-  web_leak_detector->PrepareForLeakDetection();
+      blink::WebLeakDetector::Create(this);
+  web_leak_detector->PrepareForLeakDetection(frame);
   web_leak_detector->CollectGarbageAndReport();
 }
 
