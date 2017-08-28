@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 #include "components/exo/surface.h"
+
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "components/exo/buffer.h"
 #include "components/exo/shell_surface.h"
-#include "components/exo/surface.h"
+#include "components/exo/sub_surface.h"
 #include "components/exo/test/exo_test_base.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -228,17 +229,66 @@ TEST_F(SurfaceTest, SetBufferTransform) {
   surface->Attach(buffer.get());
   surface->SetBufferTransform(Transform::ROTATE_90);
   surface->Commit();
-  EXPECT_EQ(gfx::Size(buffer_size.height(), buffer_size.width()).ToString(),
-            surface->window()->bounds().size().ToString());
-  EXPECT_EQ(gfx::Size(buffer_size.height(), buffer_size.width()).ToString(),
-            surface->content_size().ToString());
+  EXPECT_EQ(gfx::Size(buffer_size.height(), buffer_size.width()),
+            surface->window()->bounds().size());
+  EXPECT_EQ(gfx::Size(buffer_size.height(), buffer_size.width()),
+            surface->content_size());
 
   RunAllPendingInMessageLoop();
 
-  const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
-  ASSERT_EQ(1u, frame.render_pass_list.size());
-  EXPECT_EQ(gfx::Rect(0, 0, buffer_size.height(), buffer_size.width()),
-            frame.render_pass_list.back()->damage_rect);
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    EXPECT_EQ(gfx::Rect(0, 0, buffer_size.height(), buffer_size.width()),
+              frame.render_pass_list.back()->damage_rect);
+    const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(1u, quad_list.size());
+    EXPECT_EQ(
+        gfx::Rect(0, 0, 512, 256),
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad_list.front()->shared_quad_state->quad_to_target_transform,
+            quad_list.front()->rect));
+  }
+
+  gfx::Size child_buffer_size(64, 128);
+  auto child_buffer = base::MakeUnique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_surface = base::MakeUnique<Surface>();
+  auto sub_surface =
+      base::MakeUnique<SubSurface>(child_surface.get(), surface.get());
+
+  // Set position to 20, 10.
+  gfx::Point child_position(20, 10);
+  sub_surface->SetPosition(child_position);
+
+  child_surface->Attach(child_buffer.get());
+  child_surface->SetBufferTransform(Transform::ROTATE_180);
+  const int kChildBufferScale = 2;
+  child_surface->SetBufferScale(kChildBufferScale);
+  child_surface->Commit();
+  surface->Commit();
+  EXPECT_EQ(
+      gfx::ScaleToRoundedSize(child_buffer_size, 1.0f / kChildBufferScale),
+      child_surface->window()->bounds().size());
+  EXPECT_EQ(
+      gfx::ScaleToRoundedSize(child_buffer_size, 1.0f / kChildBufferScale),
+      child_surface->content_size());
+
+  RunAllPendingInMessageLoop();
+
+  {
+    const cc::CompositorFrame& frame = GetFrameFromSurface(shell_surface.get());
+    ASSERT_EQ(1u, frame.render_pass_list.size());
+    const cc::QuadList& quad_list = frame.render_pass_list[0]->quad_list;
+    ASSERT_EQ(2u, quad_list.size());
+    EXPECT_EQ(
+        gfx::Rect(child_position,
+                  gfx::ScaleToRoundedSize(child_buffer_size,
+                                          1.0f / kChildBufferScale)),
+        cc::MathUtil::MapEnclosingClippedRect(
+            quad_list.front()->shared_quad_state->quad_to_target_transform,
+            quad_list.front()->rect));
+  }
 }
 
 TEST_F(SurfaceTest, MirrorLayers) {
