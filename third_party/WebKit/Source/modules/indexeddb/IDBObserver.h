@@ -8,6 +8,7 @@
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBTypes.h"
@@ -37,11 +38,12 @@ class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
   void unobserve(IDBDatabase*, ExceptionState&);
 
   DECLARE_TRACE();
+  DECLARE_TRACE_WRAPPERS();
 
  private:
   explicit IDBObserver(IDBObserverCallback*);
 
-  Member<IDBObserverCallback> callback_;
+  TraceWrapperMember<IDBObserverCallback> callback_;
   HeapHashMap<int32_t, WeakMember<IDBDatabase>> observer_ids_;
 };
 
