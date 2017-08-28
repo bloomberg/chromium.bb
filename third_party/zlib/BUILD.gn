@@ -2,10 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (current_cpu == "arm" || current_cpu == "arm64") {
-  import("//build/config/arm.gni")
-}
-
 config("zlib_config") {
   include_dirs = [ "." ]
 }
@@ -74,20 +70,6 @@ static_library("zlib") {
     "zutil.c",
     "zutil.h",
   ]
-
-  if (current_cpu == "arm" || current_cpu == "arm64") {
-    if (arm_use_neon) {
-      sources -= [
-        "inflate.c",
-        "inffast.c",
-      ]
-      sources += [
-        "contrib/arm/inflate.c",
-        "contrib/arm/inffast.c",
-        "contrib/arm/chunkcopy.h",
-      ]
-    }
-  }
 
   if (!is_ios && (current_cpu == "x86" || current_cpu == "x64")) {
     sources += [ "x86.c" ]
