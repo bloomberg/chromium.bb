@@ -59,7 +59,6 @@ class OmniboxPopupContentsView : public views::View,
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
-  void OnMouseCaptureLost() override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
   bool IsSelectedIndex(size_t index) const;
@@ -127,14 +126,6 @@ class OmniboxPopupContentsView : public views::View,
 
   // The font list used for result rows, based on the omnibox font list.
   gfx::FontList font_list_;
-
-  // If the user cancels a dragging action (i.e. by pressing ESC), we don't have
-  // a convenient way to release mouse capture. Instead we use this flag to
-  // simply ignore all remaining drag events, and the eventual mouse release
-  // event. Since OnDragCanceled() can be called when we're not dragging, this
-  // flag is reset to false on a mouse pressed event, to make sure we don't
-  // erroneously ignore the next drag.
-  bool ignore_mouse_drag_;
 
   // The popup sizes vertically using an animation when the popup is getting
   // shorter (not larger, that makes it look "slow").
