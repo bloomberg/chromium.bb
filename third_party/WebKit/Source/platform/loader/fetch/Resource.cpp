@@ -1079,7 +1079,7 @@ void Resource::MarkAsPreload() {
   is_unused_preload_ = true;
 }
 
-void Resource::MatchPreload() {
+bool Resource::MatchPreload(const FetchParameters& params) {
   DCHECK(is_unused_preload_);
   is_unused_preload_ = false;
 
@@ -1090,6 +1090,7 @@ void Resource::MatchPreload() {
                         ("PreloadScanner.ReferenceTime", 0, 10000, 50));
     preload_discovery_histogram.Count(time_since_discovery);
   }
+  return true;
 }
 
 bool Resource::CanReuseRedirectChain() const {

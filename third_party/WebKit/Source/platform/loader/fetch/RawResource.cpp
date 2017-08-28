@@ -26,12 +26,16 @@
 #include "platform/loader/fetch/RawResource.h"
 
 #include <memory>
+#include "mojo/public/cpp/system/data_pipe.h"
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoader.h"
+#include "platform/scheduler/child/web_scheduler.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 
 namespace blink {
 
@@ -123,9 +127,13 @@ RawResource::RawResource(const ResourceRequest& resource_request,
 void RawResource::AppendData(const char* data, size_t length) {
   Resource::AppendData(data, length);
 
-  ResourceClientWalker<RawResourceClient> w(Clients());
-  while (RawResourceClient* c = w.Next())
-    c->DataReceived(this, data, length);
+  if (data_pipe_writer_) {
+    data_pipe_writer_->Write(data, length);
+  } else {
+    ResourceClientWalker<RawResourceClient> w(Clients());
+    while (RawResourceClient* c = w.Next())
+      c->DataReceived(this, data, length);
+  }
 }
 
 void RawResource::DidAddClient(ResourceClient* c) {
@@ -144,8 +152,10 @@ void RawResource::DidAddClient(ResourceClient* c) {
       return;
   }
 
-  if (!GetResponse().IsNull())
-    client->ResponseReceived(this, GetResponse(), nullptr);
+  if (!GetResponse().IsNull()) {
+    client->ResponseReceived(this, GetResponse(),
+                             std::move(data_consumer_handle_));
+  }
   if (!HasClient(c))
     return;
   if (RefPtr<SharedBuffer> data = Data()) {
@@ -203,6 +213,9 @@ void RawResource::ResponseReceived(
       IsCacheValidator() && response.HttpStatusCode() == 304;
   Resource::ResponseReceived(response, nullptr);
 
+  DCHECK(!handle || !data_consumer_handle_);
+  if (!handle && Clients().size() > 0)
+    handle = std::move(data_consumer_handle_);
   ResourceClientWalker<RawResourceClient> w(Clients());
   DCHECK(Clients().size() <= 1 || !handle);
   while (RawResourceClient* c = w.Next()) {
@@ -246,6 +259,71 @@ void RawResource::ReportResourceTimingToClients(
   ResourceClientWalker<RawResourceClient> w(Clients());
   while (RawResourceClient* c = w.Next())
     c->DidReceiveResourceTiming(this, info);
+}
+
+bool RawResource::MatchPreload(const FetchParameters& params) {
+  if (!Resource::MatchPreload(params))
+    return false;
+
+  // This is needed to call Platform::Current() below. Remove this branch
+  // when the calls are removed.
+  if (!IsMainThread())
+    return false;
+
+  if (!params.GetResourceRequest().UseStreamOnResponse())
+    return true;
+
+  if (ErrorOccurred())
+    return true;
+
+  // A preloaded resource is not for streaming.
+  DCHECK(!GetResourceRequest().UseStreamOnResponse());
+  DCHECK_EQ(GetDataBufferingPolicy(), kBufferData);
+
+  // Preloading for raw resources are not cached.
+  DCHECK(!GetMemoryCache()->Contains(this));
+
+  constexpr auto kCapacity = 32 * 1024;
+  mojo::ScopedDataPipeProducerHandle producer;
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = kCapacity;
+
+  MojoResult result = mojo::CreateDataPipe(&options, &producer, &consumer);
+  if (result != MOJO_RESULT_OK)
+    return false;
+
+  data_consumer_handle_ =
+      Platform::Current()->CreateDataConsumerHandle(std::move(consumer));
+  // We use the global loading task runner here because it's difficult to get
+  // the frame-local loading task runner. It is not so harmful because the
+  // task runner is used for just copying chunks.
+  // TODO(yhirano): Use the correct task runner.
+  WebTaskRunner* task_runner =
+      Platform::Current()->CurrentThread()->Scheduler()->LoadingTaskRunner();
+  data_pipe_writer_ = WTF::MakeUnique<BufferingDataPipeWriter>(
+      std::move(producer), task_runner);
+
+  if (Data()) {
+    Data()->ForEachSegment(
+        [this](const char* segment, size_t size, size_t offset) -> bool {
+          return data_pipe_writer_->Write(segment, size);
+        });
+  }
+  SetDataBufferingPolicy(kDoNotBufferData);
+
+  if (IsLoaded())
+    data_pipe_writer_->Finish();
+  return true;
+}
+
+void RawResource::NotifyFinished() {
+  if (data_pipe_writer_)
+    data_pipe_writer_->Finish();
+  Resource::NotifyFinished();
 }
 
 void RawResource::SetDefersLoading(bool defers) {

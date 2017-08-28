@@ -926,14 +926,15 @@ Resource* ResourceFetcher::MatchPreload(const FetchParameters& params,
   }
 
   const ResourceRequest& request = params.GetResourceRequest();
-  if (IsDownloadOrStreamRequest(request))
+  if (request.DownloadToFile())
     return nullptr;
 
   if (IsImageResourceDisallowedToBeReused(*resource) ||
       !resource->CanReuse(params))
     return nullptr;
 
-  resource->MatchPreload();
+  if (!resource->MatchPreload(params))
+    return nullptr;
   preloads_.erase(it);
   matched_preloads_.push_back(resource);
   return resource;

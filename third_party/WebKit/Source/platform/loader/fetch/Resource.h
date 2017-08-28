@@ -234,7 +234,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void SetDataBufferingPolicy(DataBufferingPolicy);
 
   void MarkAsPreload();
-  void MatchPreload();
+  // Returns true if |this| resource is matched with the given parameters.
+  virtual bool MatchPreload(const FetchParameters&);
 
   bool CanReuseRedirectChain() const;
   bool MustRevalidateDueToCacheHeaders() const;

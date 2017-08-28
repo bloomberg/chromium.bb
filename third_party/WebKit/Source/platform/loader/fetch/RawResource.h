@@ -25,6 +25,7 @@
 
 #include <memory>
 #include "platform/PlatformExport.h"
+#include "platform/loader/fetch/BufferingDataPipeWriter.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
@@ -32,6 +33,7 @@
 #include "public/platform/WebDataConsumerHandle.h"
 
 namespace blink {
+class WebDataConsumerHandle;
 class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
@@ -103,6 +105,12 @@ class PLATFORM_EXPORT RawResource final : public Resource {
                    unsigned long long total_bytes_to_be_sent) override;
   void DidDownloadData(int) override;
   void ReportResourceTimingToClients(const ResourceTimingInfo&) override;
+  bool MatchPreload(const FetchParameters&) override;
+  void NotifyFinished() override;
+
+  // Used for preload matching.
+  std::unique_ptr<BufferingDataPipeWriter> data_pipe_writer_;
+  std::unique_ptr<WebDataConsumerHandle> data_consumer_handle_;
 };
 
 // TODO(yhirano): Recover #if ENABLE_SECURITY_ASSERT when we stop adding
