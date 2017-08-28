@@ -754,19 +754,6 @@ void PaintArtifactCompositor::Update(
   }
 }
 
-std::unique_ptr<WebLayer>
-PaintArtifactCompositor::ExtraDataForTesting::ContentWebLayerAt(
-    unsigned index) {
-  return Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-      content_layers[index].get());
-}
-std::unique_ptr<WebLayer>
-PaintArtifactCompositor::ExtraDataForTesting::ScrollHitTestWebLayerAt(
-    unsigned index) {
-  return Platform::Current()->CompositorSupport()->CreateLayerFromCCLayer(
-      scroll_hit_test_layers[index].get());
-}
-
 #ifndef NDEBUG
 void PaintArtifactCompositor::ShowDebugData() {
   LOG(ERROR) << LayersAsJSON(kLayerTreeIncludesDebugInfo)

@@ -853,11 +853,6 @@ class CORE_EXPORT LocalFrameView final
   // LocalFrameView (or possibly the LocalFrameView itself).
   ScrollableArea* ScrollableAreaWithElementId(const CompositorElementId&);
 
-  PaintArtifactCompositor* GetPaintArtifactCompositorForTesting() {
-    DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-    return paint_artifact_compositor_.get();
-  }
-
  protected:
   // Scroll the content via the compositor.
   bool ScrollContentsFastPath(const IntSize& scroll_delta);
