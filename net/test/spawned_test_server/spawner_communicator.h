@@ -14,6 +14,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
+#include "net/test/spawned_test_server/remote_test_server_config.h"
 #include "net/url_request/url_request.h"
 
 namespace base {
@@ -66,7 +67,7 @@ class ScopedPortException;
 // fetched from spawner server or timed-out.
 class SpawnerCommunicator : public URLRequest::Delegate {
  public:
-  explicit SpawnerCommunicator(uint16_t port);
+  explicit SpawnerCommunicator(const RemoteTestServerConfig& config);
   ~SpawnerCommunicator() override;
 
   // Starts an instance of the Python test server on the host/ machine.If
@@ -113,19 +114,16 @@ class SpawnerCommunicator : public URLRequest::Delegate {
   // Timeout timer task. Runs on IO thread.
   void OnTimeout();
 
+  const RemoteTestServerConfig config_;
+
   // A thread to communicate with test_spawner server.
   base::Thread io_thread_;
 
   // WaitableEvent to notify whether the communication is done.
   base::WaitableEvent event_;
 
-  // The local port used to communicate with the TestServer spawner. This is
-  // used to control the startup and shutdown of the Python TestServer running
-  // on the remote machine. On Android, this port will be redirected to the
-  // same port on the host machine.
-  const uint16_t port_;
-
-  // Helper to add |port_| to the list of the globally explicitly allowed ports.
+  // Helper to add spawner port to the list of the globally explicitly allowed
+  // ports.
   std::unique_ptr<ScopedPortException> allowed_port_;
 
   // Request context used by |cur_request_|.

@@ -32,12 +32,6 @@ namespace net {
 
 namespace {
 
-GURL GenerateSpawnerCommandURL(const std::string& command, uint16_t port) {
-  // Always performs HTTP request for sending command to the spawner server.
-  return GURL(base::StringPrintf("%s:%u/%s", "http://127.0.0.1", port,
-                                 command.c_str()));
-}
-
 int kBufferSize = 2048;
 
 // A class to hold all data needed to send a command to spawner server.
@@ -98,11 +92,11 @@ class SpawnerRequestData : public base::SupportsUserData::Data {
 
 }  // namespace
 
-SpawnerCommunicator::SpawnerCommunicator(uint16_t port)
-    : io_thread_("spawner_communicator"),
+SpawnerCommunicator::SpawnerCommunicator(const RemoteTestServerConfig& config)
+    : config_(config),
+      io_thread_("spawner_communicator"),
       event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-             base::WaitableEvent::InitialState::NOT_SIGNALED),
-      port_(port) {}
+             base::WaitableEvent::InitialState::NOT_SIGNALED) {}
 
 SpawnerCommunicator::~SpawnerCommunicator() {
   DCHECK(!io_thread_.IsRunning());
@@ -118,8 +112,6 @@ void SpawnerCommunicator::StartIOThread() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (io_thread_.IsRunning())
     return;
-
-  allowed_port_.reset(new ScopedPortException(port_));
 
   bool thread_started = io_thread_.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
@@ -171,8 +163,10 @@ void SpawnerCommunicator::SendCommandAndWaitForResultOnIOThread(
   // Prepare the URLRequest for sending the command.
   DCHECK(!cur_request_.get());
   context_.reset(new TestURLRequestContext);
-  cur_request_ = context_->CreateRequest(
-      GenerateSpawnerCommandURL(command, port_), DEFAULT_PRIORITY, this);
+  GURL url = config_.GetSpawnerUrl(command);
+  allowed_port_ = std::make_unique<ScopedPortException>(url.EffectiveIntPort());
+  cur_request_ = context_->CreateRequest(url, DEFAULT_PRIORITY, this);
+
   DCHECK(cur_request_);
   cur_request_->SetUserData(
       this, std::make_unique<SpawnerRequestData>(result_code, data_received));

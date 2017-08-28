@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import time
 
 from devil.android import forwarder
@@ -70,9 +71,15 @@ class LocalTestServerSpawner(test_server.TestServer):
 
   #override
   def SetUp(self):
+    # See net/test/spawned_test_server/test_server_config.h for description of
+    # the fields in the config file.
+    test_server_config = json.dumps({
+      'address': '127.0.0.1',
+      'spawner_url_base': 'http://localhost:%d' % self.port
+    })
     self._device.WriteFile(
-        '%s/net-test-server-ports' % self._device.GetExternalStoragePath(),
-        '%s:0' % str(self.port))
+        '%s/net-test-server-config' % self._device.GetExternalStoragePath(),
+        test_server_config)
     forwarder.Forwarder.Map(
         [(self.port, self.port)], self._device, self._tool)
     self._spawning_server.Start()

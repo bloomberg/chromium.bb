@@ -230,6 +230,8 @@ _BANNED_CPP_FUNCTIONS = (
         r"^net[\\\/]test[\\\/]embedded_test_server[\\\/]" +
             r"embedded_test_server\.cc$",
         r"^net[\\\/]test[\\\/]spawned_test_server[\\\/]local_test_server\.cc$",
+        r"^net[\\\/]test[\\\/]spawned_test_server[\\\/]" +
+            r"remote_test_server_config\.cc$",
         r"^net[\\\/]test[\\\/]test_data_directory\.cc$",
         r"^net[\\\/]url_request[\\\/]test_url_fetcher_factory\.cc$",
         r"^remoting[\\\/]protocol[\\\/]webrtc_transport\.cc$",
