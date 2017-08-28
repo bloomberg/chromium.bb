@@ -38,10 +38,13 @@ namespace {
 
 // When kPrioritySupportedRequestsDelayable is enabled, requests for
 // H2/QUIC/SPDY resources can be delayed by the ResourceScheduler just as
-// HTTP/1.1 resources are. Disabling this appears to have negative performance
-// impact, see https://crbug.com/655585.
+// HTTP/1.1 resources are. It has good impact on performance, but breaks
+// expected behavior of H2. See intent-to-unship:
+// https://groups.google.com/a/chromium.org/forum/#!topic/blink-
+// dev/ChqGX8UyHz8. We're keeping it around for finch trials to compare
+// alternatives to.
 const base::Feature kPrioritySupportedRequestsDelayable{
-    "PrioritySupportedRequestsDelayable", base::FEATURE_ENABLED_BY_DEFAULT};
+    "PrioritySupportedRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, low-priority H2 and QUIC requests are throttled, but only
 // when the parser is in head.
