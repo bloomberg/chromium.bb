@@ -11,7 +11,6 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
-#include "build/build_config.h"
 #include "content/renderer/media/audio_renderer_sink_cache_impl.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
@@ -306,14 +305,7 @@ TEST_F(AudioRendererSinkCacheTest, ReleaseSinkBeforeScheduledDeletion) {
 
 // Check that a sink created on one thread in response to GetSinkInfo can be
 // used on another thread.
-// Flaky on Linux TSan Tests. https://crbug.com/753228
-#if defined(OS_LINUX)
-#define MAYBE_MultithreadedAccess DISABLED_MultithreadedAccess
-#else
-#define MAYBE_MultithreadedAccess MultithreadedAccess
-#endif
-
-TEST_F(AudioRendererSinkCacheTest, MAYBE_MultithreadedAccess) {
+TEST_F(AudioRendererSinkCacheTest, MultithreadedAccess) {
   EXPECT_EQ(0, sink_count());
 
   base::Thread thread1("thread1");
