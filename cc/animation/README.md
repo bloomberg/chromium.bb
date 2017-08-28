@@ -140,3 +140,22 @@ details on the Blink-side of animations.
 ### Interaction between cc/animation and ui/
 
 `TODO(smcgruer): Write this.`
+
+## Additional References
+
+The Compositor Property Trees talk [slides](https://goo.gl/U4wXpW)
+includes discussion on compositor animations.
+
+The Project Heaviside [design document](https://goo.gl/pWaWyv)
+and [slides](https://goo.gl/iFpk4R) provide history on the Chromium
+and Blink animation system. The slides in particular include helpful
+software architecture diagrams.
+
+Smooth scrolling is implemented via animations. See also references to
+"scroll offset" animations in the cc code
+base. [Smooth Scrolling in Chromium](https://goo.gl/XXwAwk) provides
+an overview of smooth scrolling. There is further class header
+documentation in
+Blink's
+[platform/scroll](https://codesearch.chromium.org/chromium/src/third_party/WebKit/Source/platform/scroll/)
+directory.
