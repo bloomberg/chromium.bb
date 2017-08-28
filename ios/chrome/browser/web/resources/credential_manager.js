@@ -159,18 +159,25 @@ function FederatedCredential(init) {
   if (!init.provider) {
     throw new TypeError('provider must be a non-empty string');
   }
+  if (!init.provider.startsWith('https://') &&
+      !init.provider.startsWith('http://')) {
+    throw new SyntaxError('invalid provider URL');
+  }
+  if (init.iconURL && !init.iconURL.startsWith('https://')) {
+    throw new SyntaxError('invalid iconURL');
+  }
   /** @type {string} */
-  this.id = init.id;
+  this._id = init.id;
   /** @type {string} */
-  this.type = 'FederatedCredential';
+  this._type = 'federated';
   /** @type {string} */
-  this.name = init.name;
+  this._name = (init.name ? init.name : '');
   /** @type {string} */
-  this.iconURL = init.iconURL;
+  this._iconURL = (init.iconURL ? init.iconURL : '');
   /** @type {string} */
-  this.provider = init.provider;
+  this._provider = init.provider.replace(/\/$/, ''); // strip trailing slash
   /** @type {?string} */
-  this.protocol = init.protocol;
+  this._protocol = (init.protocol ? init.protocol : '');
 }
 
 FederatedCredential.prototype = {
@@ -185,17 +192,41 @@ Object.defineProperties(
     'constructor': {
       enumerable: false
     },
+    'id' : {
+      get: /** @this {FederatedCredential} */ function() {
+        return this._id;
+      }
+    },
+    'type' : {
+      get: /** @this {FederatedCredential} */ function() {
+        return this._type;
+      }
+    },
     'provider': {
-      value: '' // Required for IDL tests to recognize the type as string.
+      get: /** @this {FederatedCredential} */ function() {
+        return this._provider;
+      }
       // TODO(crbug.com/435046): IDL tests require that getting property
-      // |provider| on FederatedCredential.prototype throws TypeError. Implement
+      // |provider| on PasswordCredential.prototype throws TypeError. Implement
       // getter conforming to those tests.
     },
     'protocol': {
-      value: '' // Required for IDL tests to recognize the type as string.
+      get: /** @this {FederatedCredential} */ function() {
+        return this._protocol;
+      }
       // TODO(crbug.com/435046): IDL tests require that getting property
-      // |protocol| on FederatedCredential.prototype throws TypeError. Implement
+      // |provider| on PasswordCredential.prototype throws TypeError. Implement
       // getter conforming to those tests.
+    },
+    'iconURL' : {
+      get: /** @this {FederatedCredential} */ function() {
+        return this._iconURL;
+      }
+    },
+    'name' : {
+      get: /** @this {FederatedCredential} */ function() {
+        return this._name;
+      }
     }
   }
 );
