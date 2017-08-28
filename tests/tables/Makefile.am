@@ -32,5 +32,5 @@ EXTRA_DIST =					\
 	squash_space_with_context_2.utb		\
 	squash_space_with_correct.utb		\
 	squash_space_with_repeated.utb		\
-	table-dev-nocross.ctb		\
+	suggestChunks.ctb		\
 	uplow_with_unicode.ctb

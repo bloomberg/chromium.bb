@@ -22,10 +22,6 @@ liblouis_la_LDFLAGS =	\
 	-version-info $(LIBLOUIS_CURRENT):$(LIBLOUIS_REVISION):$(LIBLOUIS_AGE) -no-undefined \
 	$(LTLIBINTL)
 
-if OSX
-liblouis_la_LDFLAGS += -Wl,-install_name,@rpath/liblouis.dylib
-endif
-
 if HAVE_LD_OUTPUT_DEF
 liblouis_la_LDFLAGS += -Wl,--output-def,liblouis-$(DLL_VERSION).def
 defexecdir = $(bindir)
@@ -44,7 +40,7 @@ liblouis_la_SOURCES =				\
 	pattern.c				\
 	logging.c				\
 	utils.c				\
-	table-dev.c
+	maketable.c
 
 # Don't include liblouis.h in dist, this will break subdir builds
 # when dist is configured with a different ucs-option than the build,
