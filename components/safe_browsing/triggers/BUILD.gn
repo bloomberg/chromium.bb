@@ -31,6 +31,7 @@ source_set("trigger_throttler") {
   ]
   deps = [
     "//base:base",
+    "//components/safe_browsing:features",
   ]
 }
 

@@ -5,13 +5,18 @@
 #ifndef COMPONENTS_SAFE_BROWSING_TRIGGERS_TRIGGER_THROTTLER_H_
 #define COMPONENTS_SAFE_BROWSING_TRIGGERS_TRIGGER_THROTTLER_H_
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/time/time.h"
+#include "base/time/clock.h"
 
 namespace safe_browsing {
+
+// Param name of the finch param containing the comma-separated list of trigger
+// types and daily quotas.
+extern const char kTriggerTypeAndQuotaParam[];
 
 enum class TriggerType {
   SECURITY_INTERSTITIAL = 1,
@@ -28,6 +33,9 @@ struct TriggerTypeHash {
 using TriggerTimestampMap =
     std::unordered_map<TriggerType, std::vector<time_t>, TriggerTypeHash>;
 
+// A pair containing a TriggerType and its associated daily report quota.
+using TriggerTypeAndQuotaItem = std::pair<TriggerType, int>;
+
 // TriggerThrottler keeps track of how often each type of trigger gets fired
 // and throttles them if they fire too often.
 class TriggerThrottler {
@@ -43,13 +51,25 @@ class TriggerThrottler {
   // should be updated.
   void TriggerFired(TriggerType trigger_type);
 
+ protected:
+  void SetClockForTesting(std::unique_ptr<base::Clock> test_clock);
+
  private:
+  friend class TriggerThrottlerTest;
+
   // Called to periodically clean-up the list of event timestamps.
   void CleanupOldEvents();
+
+  // Can be set for testing.
+  std::unique_ptr<base::Clock> clock_;
 
   // Stores each trigger type that fired along with the timestamps of when it
   // fired.
   TriggerTimestampMap trigger_events_;
+
+  // List of trigger types and their quotas, controlled by Finch feature
+  // |kTriggerThrottlerDailyQuotaFeature|.
+  std::vector<TriggerTypeAndQuotaItem> trigger_type_and_quota_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TriggerThrottler);
 };

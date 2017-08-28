@@ -28,6 +28,7 @@ extern const base::Feature kParallelUrlCheck;
 extern const base::Feature kPasswordFieldOnFocusPinging;
 extern const base::Feature kPasswordProtectionInterstitial;
 extern const base::Feature kProtectedPasswordEntryPinging;
+
 // Specifies which non-resource HTML Elements to collect based on their tag and
 // attributes. It's a single param containing a comma-separated list of pairs.
 // For example: "tag1,id,tag1,height,tag2,foo" - this will collect elements with
@@ -35,6 +36,13 @@ extern const base::Feature kProtectedPasswordEntryPinging;
 // "tag2" if they have attribute "foo" set. All tag names and attributes should
 // be lower case.
 extern const base::Feature kThreatDomDetailsTagAndAttributeFeature;
+
+// Controls the daily quota for data collection triggers. It's a single param
+// containing a comma-separated list of pairs. The format of the param is
+// "T1,Q1,T2,Q2,...Tn,Qn", where Tx is a TriggerType and Qx is how many reports
+// that trigger is allowed to send per day.
+extern const base::Feature kTriggerThrottlerDailyQuotaFeature;
+
 extern const base::Feature kV4OnlyEnabled;
 
 base::ListValue GetFeatureStatusList();

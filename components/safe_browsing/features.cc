@@ -54,6 +54,10 @@ const base::Feature kProtectedPasswordEntryPinging{
 const base::Feature kThreatDomDetailsTagAndAttributeFeature{
     "ThreatDomDetailsTagAttributes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kTriggerThrottlerDailyQuotaFeature{
+    "SafeBrowsingTriggerThrottlerDailyQuota",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kV4OnlyEnabled{"SafeBrowsingV4OnlyEnabled",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -75,6 +79,7 @@ constexpr struct {
     {&kPasswordProtectionInterstitial, false},
     {&kProtectedPasswordEntryPinging, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
+    {&kTriggerThrottlerDailyQuotaFeature, false},
     {&kV4OnlyEnabled, true},
 };
 
