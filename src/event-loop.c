@@ -29,6 +29,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/socket.h>
@@ -559,19 +560,26 @@ wl_event_loop_destroy(struct wl_event_loop *loop)
 	free(loop);
 }
 
-static int
+static bool
 post_dispatch_check(struct wl_event_loop *loop)
 {
 	struct epoll_event ep;
 	struct wl_event_source *source, *next;
-	int n;
+	bool needs_recheck = false;
 
 	ep.events = 0;
-	n = 0;
-	wl_list_for_each_safe(source, next, &loop->check_list, link)
-		n += source->interface->dispatch(source, &ep);
+	wl_list_for_each_safe(source, next, &loop->check_list, link) {
+		int dispatch_result;
 
-	return n;
+		dispatch_result = source->interface->dispatch(source, &ep);
+		if (dispatch_result < 0) {
+			wl_log("Source dispatch function returned negative value!");
+			wl_log("This would previously accidentally suppress a follow-up dispatch");
+		}
+		needs_recheck |= dispatch_result != 0;
+	}
+
+	return needs_recheck;
 }
 
 /** Dispatch the idle sources
@@ -619,7 +627,7 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 {
 	struct epoll_event ep[32];
 	struct wl_event_source *source;
-	int i, count, n;
+	int i, count;
 
 	wl_event_loop_dispatch_idle(loop);
 
@@ -637,9 +645,7 @@ wl_event_loop_dispatch(struct wl_event_loop *loop, int timeout)
 
 	wl_event_loop_dispatch_idle(loop);
 
-	do {
-		n = post_dispatch_check(loop);
-	} while (n > 0);
+	while (post_dispatch_check(loop));
 
 	return 0;
 }
