@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.support.design.internal;
+package org.chromium.chrome.browser.widget.bottomsheet.base;
 
 import android.content.Context;
 import android.os.Parcelable;
@@ -29,6 +29,8 @@ import android.view.ViewGroup;
 import static android.support.annotation.RestrictTo.Scope.GROUP_ID;
 
 /**
+ * Forked from android.support.design.internal.BottomNavigationPresenter.
+ *
  * @hide
  */
 @RestrictTo(GROUP_ID)

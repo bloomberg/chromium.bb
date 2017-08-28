@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.support.design.widget;
+package org.chromium.chrome.browser.widget.bottomsheet.base;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
@@ -43,6 +43,8 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 /**
+ * Forked from android.support.design.internal.BottomNavigationView.
+ *
  * <p>
  * Represents a standard bottom navigation bar for application. It is an implementation of
  * <a href="https://material.google.com/components/bottom-navigation.html">material design bottom

@@ -14,15 +14,17 @@
  * limitations under the License.
  */
 
-package android.support.design.internal;
+package org.chromium.chrome.browser.widget.bottomsheet.base;
 
+import android.support.design.internal.TextScale;
 import android.support.transition.AutoTransition;
 import android.support.transition.TransitionManager;
 import android.support.transition.TransitionSet;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.view.ViewGroup;
 
-class BottomNavigationAnimationHelperIcs extends BottomNavigationAnimationHelperBase {
+/** Forked from android.support.design.internal.BottomNavigationAnimationHelperIcs */
+public class BottomNavigationAnimationHelperIcs extends BottomNavigationAnimationHelperBase {
     private static final long ACTIVE_ANIMATION_DURATION_MS = 115L;
 
     private final TransitionSet mSet;

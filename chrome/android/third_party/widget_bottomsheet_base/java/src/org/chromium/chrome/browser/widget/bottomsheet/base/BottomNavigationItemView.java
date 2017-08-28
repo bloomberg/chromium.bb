@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.support.design.internal;
+package org.chromium.chrome.browser.widget.bottomsheet.base;
 
 import static android.support.annotation.RestrictTo.Scope.GROUP_ID;
 
@@ -38,6 +38,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
+ * Forked from android.support.design.internal.BottomNavigationItemView.
+ *
  * @hide
  */
 @RestrictTo(GROUP_ID)
@@ -130,9 +132,9 @@ public class BottomNavigationItemView extends FrameLayout implements MenuView.It
 
     @Override
     public void setChecked(boolean checked) {
-        ViewCompat.setPivotX(mLargeLabel, mLargeLabel.getWidth() / 2);
+        ViewCompat.setPivotX(mLargeLabel, mLargeLabel.getWidth() / 2f);
         ViewCompat.setPivotY(mLargeLabel, mLargeLabel.getBaseline());
-        ViewCompat.setPivotX(mSmallLabel, mSmallLabel.getWidth() / 2);
+        ViewCompat.setPivotX(mSmallLabel, mSmallLabel.getWidth() / 2f);
         ViewCompat.setPivotY(mSmallLabel, mSmallLabel.getBaseline());
         if (mShiftingMode) {
             if (checked) {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.support.design.internal;
+package org.chromium.chrome.browser.widget.bottomsheet.base;
 
 import static android.support.annotation.RestrictTo.Scope.GROUP_ID;
 
@@ -26,6 +26,8 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 
 /**
+ * Forked from android.support.design.internal.BottomNavigationMenu.
+ *
  * @hide
  */
 @RestrictTo(GROUP_ID)

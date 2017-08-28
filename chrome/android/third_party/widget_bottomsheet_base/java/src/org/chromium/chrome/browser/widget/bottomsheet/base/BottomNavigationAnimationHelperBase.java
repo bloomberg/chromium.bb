@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
-package android.support.design.internal;
+package org.chromium.chrome.browser.widget.bottomsheet.base;
 
 import android.view.ViewGroup;
 
+/**
+ * Forked from android.support.design.internal.BottomNavigationAnimationHelperBase.
+ */
 class BottomNavigationAnimationHelperBase {
     void beginDelayedTransition(ViewGroup view) {
         // Do nothing.
