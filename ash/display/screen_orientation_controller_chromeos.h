@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "ash/ash_export.h"
+#include "ash/display/display_configuration_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"
@@ -141,8 +142,11 @@ class ASH_EXPORT ScreenOrientationController
   // Sets the display rotation for the given |source|. The new |rotation| will
   // also become active. Display changed notifications are suppressed for this
   // change.
-  void SetDisplayRotation(display::Display::Rotation rotation,
-                          display::Display::RotationSource source);
+  void SetDisplayRotation(
+      display::Display::Rotation rotation,
+      display::Display::RotationSource source,
+      DisplayConfigurationController::RotationAnimation mode =
+          DisplayConfigurationController::ANIMATION_ASYNC);
 
   void SetRotationLockedInternal(bool rotation_locked);
 
