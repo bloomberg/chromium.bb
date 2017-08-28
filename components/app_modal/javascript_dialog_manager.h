@@ -39,11 +39,11 @@ class JavaScriptDialogManager : public content::JavaScriptDialogManager {
 
   // Gets the title for a dialog.
   base::string16 GetTitle(content::WebContents* web_contents,
-                          const GURL& origin_url);
+                          const GURL& alerting_frame_url);
 
   // JavaScriptDialogManager:
   void RunJavaScriptDialog(content::WebContents* web_contents,
-                           const GURL& origin_url,
+                           const GURL& alerting_frame_url,
                            content::JavaScriptDialogType dialog_type,
                            const base::string16& message_text,
                            const base::string16& default_prompt_text,

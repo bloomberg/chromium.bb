@@ -43,7 +43,7 @@ class DefaultExtensionsClient : public JavaScriptDialogExtensionsClient {
   void OnDialogOpened(content::WebContents* web_contents) override {}
   void OnDialogClosed(content::WebContents* web_contents) override {}
   bool GetExtensionName(content::WebContents* web_contents,
-                        const GURL& origin_url,
+                        const GURL& alerting_frame_url,
                         std::string* name_out) override {
     return false;
   }
@@ -93,25 +93,26 @@ JavaScriptDialogManager::~JavaScriptDialogManager() {
 
 base::string16 JavaScriptDialogManager::GetTitle(
     content::WebContents* web_contents,
-    const GURL& origin_url) {
+    const GURL& alerting_frame_url) {
   // For extensions, show the extension name, but only if the origin of
   // the alert matches the top-level WebContents.
   std::string name;
-  if (extensions_client_->GetExtensionName(web_contents, origin_url, &name))
+  if (extensions_client_->GetExtensionName(web_contents, alerting_frame_url,
+                                           &name))
     return base::UTF8ToUTF16(name);
 
   // Otherwise, return the formatted URL. For non-standard URLs such as |data:|,
   // just say "This page".
   bool is_same_origin_as_main_frame =
-      (web_contents->GetURL().GetOrigin() == origin_url.GetOrigin());
-  if (origin_url.IsStandard() && !origin_url.SchemeIsFile() &&
-      !origin_url.SchemeIsFileSystem()) {
+      (web_contents->GetURL().GetOrigin() == alerting_frame_url.GetOrigin());
+  if (alerting_frame_url.IsStandard() && !alerting_frame_url.SchemeIsFile() &&
+      !alerting_frame_url.SchemeIsFileSystem()) {
 #if defined(OS_ANDROID)
     base::string16 url_string = url_formatter::FormatUrlForSecurityDisplay(
-        origin_url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+        alerting_frame_url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 #else
-    base::string16 url_string =
-        url_formatter::ElideHost(origin_url, gfx::FontList(), kUrlElideWidth);
+    base::string16 url_string = url_formatter::ElideHost(
+        alerting_frame_url, gfx::FontList(), kUrlElideWidth);
 #endif
     return l10n_util::GetStringFUTF16(
         is_same_origin_as_main_frame ? IDS_JAVASCRIPT_MESSAGEBOX_TITLE
@@ -126,7 +127,7 @@ base::string16 JavaScriptDialogManager::GetTitle(
 
 void JavaScriptDialogManager::RunJavaScriptDialog(
     content::WebContents* web_contents,
-    const GURL& origin_url,
+    const GURL& alerting_frame_url,
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
@@ -176,7 +177,7 @@ void JavaScriptDialogManager::RunJavaScriptDialog(
     last_close_time_ = base::TimeTicks();
   }
 
-  base::string16 dialog_title = GetTitle(web_contents, origin_url);
+  base::string16 dialog_title = GetTitle(web_contents, alerting_frame_url);
 
   extensions_client_->OnDialogOpened(web_contents);
 

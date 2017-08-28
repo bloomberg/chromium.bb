@@ -89,7 +89,7 @@ bool JavaScriptDialogTabHelper::IsShowingDialogForTesting() const {
 
 void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     content::WebContents* alerting_web_contents,
-    const GURL& origin_url,
+    const GURL& alerting_frame_url,
     content::JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
@@ -97,7 +97,8 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
     bool* did_suppress_message) {
   SiteEngagementService* site_engagement_service = SiteEngagementService::Get(
       Profile::FromBrowserContext(alerting_web_contents->GetBrowserContext()));
-  double engagement_score = site_engagement_service->GetScore(origin_url);
+  double engagement_score =
+      site_engagement_service->GetScore(alerting_frame_url);
   int32_t message_length = static_cast<int32_t>(message_text.length());
   if (engagement_score == 0) {
     UMA_HISTOGRAM_COUNTS("JSDialogs.CharacterCount.EngagementNone",
@@ -165,8 +166,8 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
   gfx::ElideString(default_prompt_text, kDefaultPromptMaxSize,
                    &truncated_default_prompt_text);
 
-  base::string16 title =
-      AppModalDialogManager()->GetTitle(alerting_web_contents, origin_url);
+  base::string16 title = AppModalDialogManager()->GetTitle(
+      alerting_web_contents, alerting_frame_url);
   dialog_callback_ = callback;
   dialog_type_ = dialog_type;
   dialog_ = JavaScriptDialog::Create(
