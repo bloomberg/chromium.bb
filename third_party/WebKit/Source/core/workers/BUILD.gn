@@ -26,6 +26,8 @@ blink_core_sources("workers") {
     "InstalledScriptsManager.h",
     "MainThreadWorkletGlobalScope.cpp",
     "MainThreadWorkletGlobalScope.h",
+    "MainThreadWorkletReportingProxy.cpp",
+    "MainThreadWorkletReportingProxy.h",
     "ParentFrameTaskRunners.cpp",
     "ParentFrameTaskRunners.h",
     "SharedWorker.cpp",

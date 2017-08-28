@@ -18,29 +18,17 @@ MainThreadWorkletGlobalScope::MainThreadWorkletGlobalScope(
     const KURL& url,
     const String& user_agent,
     RefPtr<SecurityOrigin> security_origin,
-    v8::Isolate* isolate)
+    v8::Isolate* isolate,
+    WorkerReportingProxy& reporting_proxy)
     : WorkletGlobalScope(url,
                          user_agent,
                          std::move(security_origin),
                          isolate,
-                         nullptr /* worker_clients */),
+                         nullptr /* worker_clients */,
+                         reporting_proxy),
       ContextClient(frame) {}
 
 MainThreadWorkletGlobalScope::~MainThreadWorkletGlobalScope() {}
-
-void MainThreadWorkletGlobalScope::ReportFeature(WebFeature feature) {
-  DCHECK(IsMainThread());
-  // A parent document is on the same thread, so just record API use in the
-  // document's UseCounter.
-  UseCounter::Count(GetFrame(), feature);
-}
-
-void MainThreadWorkletGlobalScope::ReportDeprecation(WebFeature feature) {
-  DCHECK(IsMainThread());
-  // A parent document is on the same thread, so just record API use in the
-  // document's UseCounter.
-  Deprecation::CountDeprecation(GetFrame(), feature);
-}
 
 WorkerThread* MainThreadWorkletGlobalScope::GetThread() const {
   NOTREACHED();

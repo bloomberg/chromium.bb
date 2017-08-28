@@ -17,6 +17,7 @@ namespace blink {
 
 class CSSPaintDefinition;
 class ExceptionState;
+class WorkerReportingProxy;
 
 class MODULES_EXPORT PaintWorkletGlobalScope final
     : public MainThreadWorkletGlobalScope {
@@ -29,6 +30,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
                                          const String& user_agent,
                                          PassRefPtr<SecurityOrigin>,
                                          v8::Isolate*,
+                                         WorkerReportingProxy&,
                                          PaintWorkletPendingGeneratorRegistry*,
                                          size_t global_scope_number);
   ~PaintWorkletGlobalScope() override;
@@ -51,6 +53,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
                           const String& user_agent,
                           PassRefPtr<SecurityOrigin>,
                           v8::Isolate*,
+                          WorkerReportingProxy&,
                           PaintWorkletPendingGeneratorRegistry*);
 
   // The implementation of the "paint definition" concept:

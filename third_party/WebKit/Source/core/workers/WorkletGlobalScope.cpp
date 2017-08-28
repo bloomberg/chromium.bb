@@ -24,8 +24,9 @@ WorkletGlobalScope::WorkletGlobalScope(const KURL& url,
                                        const String& user_agent,
                                        RefPtr<SecurityOrigin> security_origin,
                                        v8::Isolate* isolate,
-                                       WorkerClients* worker_clients)
-    : WorkerOrWorkletGlobalScope(isolate, worker_clients),
+                                       WorkerClients* worker_clients,
+                                       WorkerReportingProxy& reporting_proxy)
+    : WorkerOrWorkletGlobalScope(isolate, worker_clients, reporting_proxy),
       url_(url),
       user_agent_(user_agent) {
   SetSecurityOrigin(std::move(security_origin));
@@ -46,9 +47,13 @@ void WorkletGlobalScope::EvaluateClassicScript(
     return;
   }
   DCHECK(!cached_meta_data);
+  // TODO(nhiroki): Call WorkerReportingProxy::WillEvaluateWorkerScript() or
+  // something like that (e.g., WillEvaluateModuleScript()).
   ScriptController()->Evaluate(ScriptSourceCode(source_code, script_url),
                                nullptr /* error_event */,
                                nullptr /* cache_handler */, v8_cache_options);
+  // TODO(nhiroki): Call WorkerReportingProxy::DidEvaluateWorkerScript() or
+  // something like that (e.g., DidEvaluateModuleScript()).
 }
 
 v8::Local<v8::Object> WorkletGlobalScope::Wrap(

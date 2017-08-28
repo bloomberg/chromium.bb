@@ -34,8 +34,12 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
     return;
   }
 
+  // TODO(nhiroki): Call WorkerReportingProxy::WillEvaluateWorkerScript() or
+  // something like that (e.g., WillEvaluateModuleScript()).
   // Step 4: "Run a module script given script."
   modulator_->ExecuteModule(module_script);
+  // TODO(nhiroki): Call WorkerReportingProxy::DidEvaluateWorkerScript() or
+  // something like that (e.g., DidEvaluateModuleScript()).
 
   // Step 5: "Queue a task on outsideSettings's responsible event loop to run
   // these steps:"
