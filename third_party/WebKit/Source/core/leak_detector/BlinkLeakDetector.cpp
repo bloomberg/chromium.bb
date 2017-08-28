@@ -20,25 +20,17 @@
 
 namespace blink {
 
-BlinkLeakDetector::BlinkLeakDetector(BlinkLeakDetectorClient* client,
-                                     WebFrame* frame)
+BlinkLeakDetector::BlinkLeakDetector(BlinkLeakDetectorClient* client)
     : delayed_gc_timer_(
-          TaskRunnerHelper::Get(
-              TaskType::kUnspecedTimer,
-              WebLocalFrameImpl::ToCoreFrame(*frame)->IsLocalFrame()
-                  ? ToLocalFrame(WebLocalFrameImpl::ToCoreFrame(*frame))
-                  : nullptr),
+          Platform::Current()->CurrentThread()->GetWebTaskRunner(),
           this,
           &BlinkLeakDetector::TimerFiredGC),
       number_of_gc_needed_(0),
-      client_(client),
-      frame_(WebLocalFrameImpl::ToCoreFrame(*frame)->IsLocalFrame()
-                 ? ToLocalFrame(WebLocalFrameImpl::ToCoreFrame(*frame))
-                 : nullptr) {}
+      client_(client) {}
 
 BlinkLeakDetector::~BlinkLeakDetector() {}
 
-void BlinkLeakDetector::PrepareForLeakDetection() {
+void BlinkLeakDetector::PrepareForLeakDetection(WebFrame* frame) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::HandleScope handle_scope(isolate);
 
@@ -57,8 +49,14 @@ void BlinkLeakDetector::PrepareForLeakDetection() {
   // their associated element (and document) alive.
   //
   // Stop the spellchecker to prevent this.
-  if (frame_)
-    frame_->GetSpellChecker().PrepareForLeakDetection();
+  // Currently PrepareForLeakDetection takes frame to get the spellchecker,
+  // but in the future when leak detection runs with multiple frames,
+  // this code must be refactored so that it iterates thru all the frames.
+  if (WebLocalFrameImpl::ToCoreFrame(*frame)->IsLocalFrame()) {
+    ToLocalFrame(WebLocalFrameImpl::ToCoreFrame(*frame))
+        ->GetSpellChecker()
+        .PrepareForLeakDetection();
+  }
 
   // FIXME: HTML5 Notification should be closed because notification affects
   // the result of number of DOM objects.
