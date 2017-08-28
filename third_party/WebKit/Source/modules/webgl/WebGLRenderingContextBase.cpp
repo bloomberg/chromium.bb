@@ -5100,7 +5100,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
       TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                    zoffset, format, type,
                    canvas
-                       ->CopiedImage(kFrontBuffer, kPreferAcceleration,
+                       ->CopiedImage(kBackBuffer, kPreferAcceleration,
                                      FunctionIDToSnapshotReason(function_id))
                        .Get(),
                    WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
@@ -5134,7 +5134,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLCanvasElement(
     TexImageImpl(function_id, target, level, internalformat, xoffset, yoffset,
                  zoffset, format, type,
                  canvas
-                     ->CopiedImage(kFrontBuffer, kPreferAcceleration,
+                     ->CopiedImage(kBackBuffer, kPreferAcceleration,
                                    FunctionIDToSnapshotReason(function_id))
                      .Get(),
                  WebGLImageConversion::kHtmlDomCanvas, unpack_flip_y_,
