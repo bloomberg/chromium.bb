@@ -44,11 +44,10 @@ class MockAutocompleteProviderClient : public AutocompleteProviderClient {
   const TemplateURLService* GetTemplateURLService() const override {
     return template_url_service_.get();
   }
-  ContextualSuggestionsService* GetContextualSuggestionsService()
-      const override {
+  ContextualSuggestionsService* GetContextualSuggestionsService(
+      bool create_if_necessary) const override {
     return contextual_suggestions_service_.get();
   }
-
   std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
       KeywordProvider* keyword_provider) override {
     return nullptr;

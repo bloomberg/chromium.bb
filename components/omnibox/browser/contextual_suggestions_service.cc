@@ -33,7 +33,8 @@ ContextualSuggestionsService::ContextualSuggestionsService(
     net::URLRequestContextGetter* request_context)
     : request_context_(request_context),
       signin_manager_(signin_manager),
-      token_service_(token_service) {}
+      token_service_(token_service),
+      token_fetcher_(nullptr) {}
 
 ContextualSuggestionsService::~ContextualSuggestionsService() {}
 
@@ -72,6 +73,11 @@ void ContextualSuggestionsService::CreateContextualSuggestionsRequest(
       base::BindOnce(&ContextualSuggestionsService::AccessTokenAvailable,
                      base::Unretained(this), std::move(fetcher),
                      std::move(callback)));
+}
+
+void ContextualSuggestionsService::StopCreatingContextualSuggestionsRequest() {
+  std::unique_ptr<AccessTokenFetcher> token_fetcher_deleter(
+      std::move(token_fetcher_));
 }
 
 // static
@@ -251,7 +257,8 @@ void ContextualSuggestionsService::AccessTokenAvailable(
     const GoogleServiceAuthError& error,
     const std::string& access_token) {
   DCHECK(token_fetcher_);
-  token_fetcher_.reset();
+  std::unique_ptr<AccessTokenFetcher> token_fetcher_deleter(
+      std::move(token_fetcher_));
 
   // If there were no errors obtaining the access token, append it to the
   // request as a header.

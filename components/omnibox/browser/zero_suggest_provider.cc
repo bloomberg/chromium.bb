@@ -180,7 +180,7 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   // Create a request for suggestions with |this| as the fetcher delegate.
   client()
-      ->GetContextualSuggestionsService()
+      ->GetContextualSuggestionsService(/*create_if_necessary=*/true)
       ->CreateContextualSuggestionsRequest(
           can_attach_current_url ? current_query_ : std::string(),
           client()->GetTemplateURLService(),
@@ -196,6 +196,12 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
     LogOmniboxZeroSuggestRequest(ZERO_SUGGEST_REQUEST_INVALIDATED);
   fetcher_.reset();
   waiting_for_most_visited_urls_request_ = false;
+  auto* contextual_suggestions_service =
+      client()->GetContextualSuggestionsService(/*create_if_necessary=*/false);
+  // contextual_suggestions_service can be null if in incognito mode.
+  if (contextual_suggestions_service != nullptr) {
+    contextual_suggestions_service->StopCreatingContextualSuggestionsRequest();
+  }
   done_ = true;
 
   if (clear_cached_results) {
