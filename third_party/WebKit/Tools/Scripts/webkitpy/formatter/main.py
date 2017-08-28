@@ -5,6 +5,10 @@
 import argparse
 import lib2to3.refactor
 
+# Put webkitpy/thirdparty/ in the import path for autopep8 to import pep8.
+from webkitpy.common.path_finder import add_webkitpy_thirdparty_dir_to_sys_path
+add_webkitpy_thirdparty_dir_to_sys_path()
+
 from webkitpy.common.system.system_host import SystemHost
 from webkitpy.thirdparty import autopep8
 
