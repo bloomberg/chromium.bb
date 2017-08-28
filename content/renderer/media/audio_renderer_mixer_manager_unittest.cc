@@ -740,7 +740,7 @@ TEST_F(AudioRendererMixerManagerTest, MixerParamsLatencyRtc) {
   EXPECT_EQ(output_sample_rate,
             mixer->GetOutputParamsForTesting().sample_rate());
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_FUCHSIA)
   // Use 10 ms buffer (441 frames per buffer).
   EXPECT_EQ(output_sample_rate / 100,
             mixer->GetOutputParamsForTesting().frames_per_buffer());
