@@ -997,6 +997,8 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       pinch_guess_start_(-1.0),
       pinch_locked_(false),
       pinch_status_(GESTURES_ZOOM_START),
+      pinch_prev_direction_(0),
+      pinch_prev_time_(-1.0),
       finger_seen_shortly_after_button_down_(false),
       scroll_manager_(prop_reg),
       tap_enable_(prop_reg, "Tap Enable", true),
@@ -1115,14 +1117,22 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       inward_pinch_min_angle_(prop_reg, "Inward Pinch Minimum Angle", 0.3),
       pinch_zoom_max_angle_(prop_reg, "Pinch Zoom Maximum Angle", -0.4),
       scroll_min_angle_(prop_reg, "Scroll Minimum Angle", -0.2),
-      pinch_guess_min_consistent_movement_(prop_reg,
-          "Pinch Guess Minimum Consistent Movement", 0.7),
       pinch_guess_consistent_mov_ratio_(prop_reg,
           "Pinch Guess Consistent Movement Ratio", 0.4),
       pinch_zoom_min_events_(prop_reg, "Pinch Zoom Minimum Events", 3),
       pinch_initial_scale_time_inv_(prop_reg,
                                     "Pinch Initial Scale Time Inverse",
                                     3.33),
+      pinch_res_(prop_reg, "Minimum Pinch Scale Resolution Squared", 1.005),
+      pinch_stationary_res_(prop_reg,
+                            "Stationary Pinch Scale Resolution Squared",
+                            1.05),
+      pinch_stationary_time_(prop_reg,
+                             "Stationary Pinch Time",
+                             0.10),
+      pinch_hysteresis_res_(prop_reg,
+                            "Hysteresis Pinch Scale Resolution Squared",
+                            1.05),
       pinch_enable_(prop_reg, "Pinch Enable", 0),
       right_click_start_time_diff_(prop_reg,
                                    "Right Click Start Time Diff Thresh",
@@ -2060,16 +2070,11 @@ bool ImmediateInterpreter::UpdatePinchState(
                                  pinch_guess_consistent_mov_ratio_.val_ *
                                  pinch_guess_consistent_mov_ratio_.val_;
 
-  float consistent_min_mov_sq = pinch_guess_min_consistent_movement_.val_;
-  consistent_min_mov_sq *= consistent_min_mov_sq;
-
   if (!bad_mov_ratio &&
       !in_dampened_zone &&
-      d1sq > consistent_min_mov_sq &&
-      d2sq > consistent_min_mov_sq &&
+      guess_yes &&
+      !guess_no &&
       ZoomFingersAreConsistent(state_buffer_)) {
-    guess_yes = true;
-    guess_no = false;
     pinch_certain = true;
   }
 
@@ -3253,17 +3258,42 @@ void ImmediateInterpreter::FillResultGesture(
            prev_gesture_type_ == kGestureTypePinch)) {
         result_ = Gesture(kGesturePinch, changed_time_, hwstate.timestamp,
                           1.0, pinch_status_);
-        if (pinch_status_ == GESTURES_ZOOM_END)
+        pinch_prev_time_ = hwstate.timestamp;
+        if (pinch_status_ == GESTURES_ZOOM_END) {
           current_gesture_type_ = kGestureTypeNull;
+          pinch_prev_direction_ = 0;
+        }
       } else {
         float current_dist_sq = TwoSpecificFingerDistanceSq(hwstate, fingers);
         if (current_dist_sq < 0) {
           current_dist_sq = pinch_prev_distance_sq_;
         }
-        result_ = Gesture(kGesturePinch, changed_time_, hwstate.timestamp,
-                          sqrt(current_dist_sq / pinch_prev_distance_sq_),
-                          GESTURES_ZOOM_UPDATE);
-        pinch_prev_distance_sq_ = current_dist_sq;
+
+        // Check if pinch scale has changed enough since last update to send a
+        // new update.  To prevent stationary jitter, we always require the
+        // scale to change by at least a small amount.  We require more change
+        // if the pinch has been stationary or changed direction recently.
+        float jitter_threshold = pinch_res_.val_;
+        if (hwstate.timestamp - pinch_prev_time_ > pinch_stationary_time_.val_)
+          jitter_threshold = pinch_stationary_res_.val_;
+        if ((current_dist_sq - pinch_prev_distance_sq_) *
+            pinch_prev_direction_ < 0)
+          jitter_threshold = jitter_threshold > pinch_hysteresis_res_.val_ ?
+                             jitter_threshold :
+                             pinch_hysteresis_res_.val_;
+        bool above_jitter_threshold =
+            (pinch_prev_distance_sq_ > jitter_threshold * current_dist_sq ||
+             current_dist_sq > jitter_threshold * pinch_prev_distance_sq_);
+
+        if (above_jitter_threshold) {
+          result_ = Gesture(kGesturePinch, changed_time_, hwstate.timestamp,
+                            sqrt(current_dist_sq / pinch_prev_distance_sq_),
+                            GESTURES_ZOOM_UPDATE);
+          pinch_prev_direction_ =
+              current_dist_sq > pinch_prev_distance_sq_ ? 1 : -1;
+          pinch_prev_distance_sq_ = current_dist_sq;
+          pinch_prev_time_ = hwstate.timestamp;
+        }
       }
       if (pinch_status_ == GESTURES_ZOOM_START) {
         pinch_status_ = GESTURES_ZOOM_UPDATE;

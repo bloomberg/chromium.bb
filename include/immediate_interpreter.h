@@ -716,6 +716,13 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   bool pinch_locked_;
   // Pinch status: GESTURES_ZOOM_START, _UPDATE, or _END
   unsigned pinch_status_;
+  // Direction of previous pinch update:
+  //   0: No previous update
+  //   1: Outward
+  //  -1: Inward
+  int pinch_prev_direction_;
+  // Timestamp of previous pinch update
+  float pinch_prev_time_;
 
   // Keeps track of if there was a finger seen during a physical click
   bool finger_seen_shortly_after_button_down_;
@@ -912,9 +919,6 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Minimum Cos(A) to perform a scroll gesture when pinch is enabled,
   // where A is the angle between two fingers.
   DoubleProperty scroll_min_angle_;
-  // Minimum movement in opposite directions that two fingers must have
-  // before we call it a consistent move for pinch.
-  DoubleProperty pinch_guess_min_consistent_movement_;
   // Minimum movement ratio between fingers before we call it a consistent move
   // for a pinch.
   DoubleProperty pinch_guess_consistent_mov_ratio_;
@@ -924,6 +928,17 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // determing original pinch width. But if they landed too long ago we use the
   // pinch width at detection. Inverse of time in seconds.
   DoubleProperty pinch_initial_scale_time_inv_;
+  // Resolution of pinch events: minimum change in squared pinch scale required
+  // to send a pinch update.
+  DoubleProperty pinch_res_;
+  // Change in squared pinch scale required to send a pinch update after fingers
+  // stay stationary.
+  DoubleProperty pinch_stationary_res_;
+  // Time fingers should remain motionless before being treated as stationary.
+  DoubleProperty pinch_stationary_time_;
+  // Change in squared pinch scale required to send a pinch update after fingers
+  // change direction.
+  DoubleProperty pinch_hysteresis_res_;
   // Temporary flag to turn pinch on/off while we tune it.
   BoolProperty pinch_enable_;
 
