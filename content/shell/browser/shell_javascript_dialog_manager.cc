@@ -23,7 +23,7 @@ ShellJavaScriptDialogManager::~ShellJavaScriptDialogManager() {
 
 void ShellJavaScriptDialogManager::RunJavaScriptDialog(
     WebContents* web_contents,
-    const GURL& origin_url,
+    const GURL& alerting_frame_url,
     JavaScriptDialogType dialog_type,
     const base::string16& message_text,
     const base::string16& default_prompt_text,
@@ -46,7 +46,7 @@ void ShellJavaScriptDialogManager::RunJavaScriptDialog(
   }
 
   base::string16 new_message_text =
-      url_formatter::FormatUrl(origin_url) +
+      url_formatter::FormatUrl(alerting_frame_url) +
       base::ASCIIToUTF16("\n\n") + message_text;
   gfx::NativeWindow parent_window = web_contents->GetTopLevelNativeWindow();
 

@@ -61,11 +61,12 @@ class JavaScriptDialogExtensionsClientImpl
       pm->DecrementLazyKeepaliveCount(extension);
   }
   bool GetExtensionName(content::WebContents* web_contents,
-                        const GURL& origin_url,
+                        const GURL& alerting_frame_url,
                         std::string* name_out) override {
     const Extension* extension = GetExtensionForWebContents(web_contents);
-    if (extension && url::IsSameOriginWith(
-                         origin_url, web_contents->GetLastCommittedURL())) {
+    if (extension &&
+        url::IsSameOriginWith(alerting_frame_url,
+                              web_contents->GetLastCommittedURL())) {
       *name_out = extension->name();
       return true;
     }
