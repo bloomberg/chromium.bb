@@ -6,10 +6,10 @@ module viz.mojom;
 
 import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
-import "cc/ipc/surface_id.mojom";
 import "gpu/ipc/common/surface_handle.mojom";
 import "mojo/common/time.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
+import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
@@ -82,12 +82,12 @@ interface FrameSinkManager {
   // Assigns the temporary reference for |surface_id| to FrameSinkId |owner|.
   // If |owner| is invalidated before it converts the temporary reference to a
   // surface reference then the temporary reference will be dropped.
-  AssignTemporaryReference(cc.mojom.SurfaceId surface_id,
+  AssignTemporaryReference(SurfaceId surface_id,
                            cc.mojom.FrameSinkId owner);
 
   // Drops the temporary reference for |surface_id|. This will get called when
   // the FrameSinkManagerClient doesn't think |surface_id| will be embedded.
-  DropTemporaryReference(cc.mojom.SurfaceId surface_id);
+  DropTemporaryReference(SurfaceId surface_id);
 };
 
 // The FrameSinkManagerClient interface is implemented by the Display

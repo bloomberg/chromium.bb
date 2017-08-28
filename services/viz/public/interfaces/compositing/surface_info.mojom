@@ -4,13 +4,13 @@
 
 module viz.mojom;
 
-import "cc/ipc/surface_id.mojom";
+import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Holds information about an embeddable surface. This data can be passed
 // across clients to embed the associated surface in another client.
 struct SurfaceInfo {
-  cc.mojom.SurfaceId surface_id;
+  SurfaceId surface_id;
   float device_scale_factor;
   gfx.mojom.Size size_in_pixels;
 };

@@ -4,9 +4,9 @@
 
 module viz.mojom;
 
-import "cc/ipc/surface_id.mojom";
 import "services/viz/public/interfaces/compositing/begin_frame_args.mojom";
 import "services/viz/public/interfaces/compositing/selection.mojom";
+import "services/viz/public/interfaces/compositing/surface_id.mojom";
 import "ui/latency/mojo/latency_info.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -30,8 +30,8 @@ struct CompositorFrameMetadata {
   uint32 root_background_color;
   Selection selection;
   array<ui.mojom.LatencyInfo> latency_info;
-  array<cc.mojom.SurfaceId> referenced_surfaces;
-  array<cc.mojom.SurfaceId> activation_dependencies;
+  array<SurfaceId> referenced_surfaces;
+  array<SurfaceId> activation_dependencies;
   bool can_activate_before_dependencies;
   uint32 content_source_id;
   BeginFrameAck begin_frame_ack;

@@ -17,13 +17,11 @@
 #include "components/viz/common/viz_common_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
-namespace cc {
+namespace viz {
+
 namespace mojom {
 class SurfaceIdDataView;
 }
-}  // namespace cc
-
-namespace viz {
 
 class VIZ_COMMON_EXPORT SurfaceId {
  public:
@@ -70,7 +68,7 @@ class VIZ_COMMON_EXPORT SurfaceId {
   }
 
  private:
-  friend struct mojo::StructTraits<cc::mojom::SurfaceIdDataView, SurfaceId>;
+  friend struct mojo::StructTraits<mojom::SurfaceIdDataView, SurfaceId>;
 
   FrameSinkId frame_sink_id_;
   LocalSurfaceId local_surface_id_;
