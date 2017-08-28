@@ -23,6 +23,10 @@ set(AOM_FAILED_CXX_FLAGS)
 # the compile test passes. Caches $c_flag in $AOM_FAILED_C_FLAGS when the test
 # fails.
 function (add_c_flag_if_supported c_flag)
+  if (DEBUG_CMAKE_DISABLE_COMPILER_TESTS)
+    return()
+  endif ()
+
   unset(C_FLAG_FOUND CACHE)
   string(FIND "${CMAKE_C_FLAGS}" "${c_flag}" C_FLAG_FOUND)
   unset(C_FLAG_FAILED CACHE)
@@ -45,6 +49,10 @@ endfunction ()
 # $CMAKE_CXX_FLAGS when the compile test passes. Caches $c_flag in
 # $AOM_FAILED_CXX_FLAGS when the test fails.
 function (add_cxx_flag_if_supported cxx_flag)
+  if (DEBUG_CMAKE_DISABLE_COMPILER_TESTS)
+    return()
+  endif ()
+
   unset(CXX_FLAG_FOUND CACHE)
   string(FIND "${CMAKE_CXX_FLAGS}" "${cxx_flag}" CXX_FLAG_FOUND)
   unset(CXX_FLAG_FAILED CACHE)
@@ -74,6 +82,10 @@ endfunction ()
 # Checks C compiler for support of $c_flag and terminates generation when
 # support is not present.
 function (require_c_flag c_flag update_c_flags)
+  if (DEBUG_CMAKE_DISABLE_COMPILER_TESTS)
+    return()
+  endif ()
+
   unset(C_FLAG_FOUND CACHE)
   string(FIND "${CMAKE_C_FLAGS}" "${c_flag}" C_FLAG_FOUND)
 
@@ -94,6 +106,10 @@ endfunction ()
 # Checks CXX compiler for support of $cxx_flag and terminates generation when
 # support is not present.
 function (require_cxx_flag cxx_flag update_cxx_flags)
+  if (DEBUG_CMAKE_DISABLE_COMPILER_TESTS)
+    return()
+  endif ()
+
   unset(CXX_FLAG_FOUND CACHE)
   string(FIND "${CMAKE_CXX_FLAGS}" "${cxx_flag}" CXX_FLAG_FOUND)
 
@@ -244,6 +260,10 @@ endfunction ()
 
 # Adds $flag to executable linker flags, and makes sure C/CXX builds still work.
 function (require_linker_flag flag)
+  if (DEBUG_CMAKE_DISABLE_COMPILER_TESTS)
+    return()
+  endif ()
+
   append_exe_linker_flag(${flag})
 
   unset(c_passed)

@@ -40,6 +40,10 @@ endfunction ()
 # The test is not run if the test name is found in either of the passed or
 # failed test variables.
 function(aom_check_c_compiles test_name test_source result_var)
+  if (DEBUG_CMAKE_DISABLE_COMPILER_TESTS)
+    return()
+  endif ()
+
   unset(C_TEST_PASSED CACHE)
   unset(C_TEST_FAILED CACHE)
   string(FIND "${AOM_C_PASSED_TESTS}" "${test_name}" C_TEST_PASSED)
@@ -71,6 +75,10 @@ endfunction ()
 # The test is not run if the test name is found in either of the passed or
 # failed test variables.
 function(aom_check_cxx_compiles test_name test_source result_var)
+  if (DEBUG_CMAKE_DISABLE_COMPILER_TESTS)
+    return()
+  endif ()
+
   unset(CXX_TEST_PASSED CACHE)
   unset(CXX_TEST_FAILED CACHE)
   string(FIND "${AOM_CXX_PASSED_TESTS}" "${test_name}" CXX_TEST_PASSED)
