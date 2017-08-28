@@ -61,9 +61,7 @@ def get_log_url(upstream_url, head, master):
 def should_show_log(upstream_url):
   """Returns True if a short log should be included in the tree."""
   # Skip logs for very active projects.
-  if upstream_url.endswith((
-      '/angle/angle.git',
-      '/v8/v8.git')):
+  if upstream_url.endswith('/v8/v8.git'):
     return False
   if 'webrtc' in upstream_url:
     return False
