@@ -41,7 +41,6 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_handler.mojom.h"
-#include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/render_widget_surface_properties.h"
 #include "content/common/view_message_enums.h"
 #include "content/common/widget.mojom.h"
@@ -404,7 +403,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // callback when the gesture is finished running.
   void QueueSyntheticGesture(
       std::unique_ptr<SyntheticGesture> synthetic_gesture,
-      const base::Callback<void(SyntheticGesture::Result)>& on_complete);
+      base::OnceCallback<void(SyntheticGesture::Result)> on_complete);
 
   void CancelUpdateTextDirection();
 
@@ -671,7 +670,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnSetTooltipText(const base::string16& tooltip_text,
                         blink::WebTextDirection text_direction_hint);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
-  void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   void OnSetCursor(const WebCursor& cursor);
   void OnAutoscrollStart(const gfx::PointF& position);
   void OnAutoscrollFling(const gfx::Vector2dF& velocity);
@@ -741,8 +739,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
                          InputEventAckState ack_result) override;
   void OnUnexpectedEventAck(UnexpectedEventAckType type) override;
-
-  void OnSyntheticGestureCompleted(SyntheticGesture::Result result);
 
   // Called when there is a new auto resize (using a post to avoid a stack
   // which may get in recursive loops).

@@ -27,8 +27,8 @@ class ActionsParser {
   ~ActionsParser();
   bool ParsePointerActionSequence();
   std::string error_message() { return error_message_; }
-  std::unique_ptr<SyntheticPointerActionListParams> gesture_params() {
-    return std::move(gesture_params_);
+  const SyntheticPointerActionListParams& gesture_params() const {
+    return gesture_params_;
   }
 
  private:
@@ -37,7 +37,7 @@ class ActionsParser {
   bool ParseAction(const base::DictionaryValue& action,
                    SyntheticPointerActionListParams::ParamList& param_list);
 
-  std::unique_ptr<SyntheticPointerActionListParams> gesture_params_;
+  SyntheticPointerActionListParams gesture_params_;
   std::vector<SyntheticPointerActionListParams::ParamList>
       pointer_actions_list_;
   size_t longest_action_sequence_;

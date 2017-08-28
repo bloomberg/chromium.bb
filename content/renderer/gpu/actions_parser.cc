@@ -81,10 +81,7 @@ bool ActionsParser::ParsePointerActionSequence() {
     action_index_++;
   }
 
-  if (!gesture_params_)
-    gesture_params_ = base::MakeUnique<SyntheticPointerActionListParams>();
-
-  gesture_params_->gesture_source_type =
+  gesture_params_.gesture_source_type =
       ToSyntheticGestureSourceType(source_type_);
   // Group a list of actions from all pointers into a
   // SyntheticPointerActionListParams object, which is a list of actions, which
@@ -96,7 +93,7 @@ bool ActionsParser::ParsePointerActionSequence() {
       if (action_index < pointer_list.size())
         param_list.push_back(pointer_list[action_index]);
     }
-    gesture_params_->PushPointerActionParamsList(param_list);
+    gesture_params_.PushPointerActionParamsList(param_list);
   }
 
   return true;
