@@ -4,7 +4,7 @@
 
 #include "core/editing/markers/SuggestionMarkerListImpl.h"
 
-#include "core/editing/markers/DocumentMarkerListEditor.h"
+#include "core/editing/markers/SortedDocumentMarkerListEditor.h"
 #include "core/editing/markers/SuggestionMarker.h"
 #include "core/editing/markers/SuggestionMarkerReplacementScope.h"
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DocumentMarkerListEditor_h
-#define DocumentMarkerListEditor_h
+#ifndef SortedDocumentMarkerListEditor_h
+#define SortedDocumentMarkerListEditor_h
 
 #include "core/editing/markers/DocumentMarkerList.h"
 #include "platform/heap/Handle.h"
@@ -12,7 +12,7 @@ namespace blink {
 
 class DocumentMarker;
 
-class CORE_EXPORT DocumentMarkerListEditor final {
+class CORE_EXPORT SortedDocumentMarkerListEditor final {
  public:
   using MarkerList = HeapVector<Member<DocumentMarker>>;
 
@@ -61,4 +61,4 @@ class CORE_EXPORT DocumentMarkerListEditor final {
 
 }  // namespace blink
 
-#endif  // DocumentMarkerListEditor_h
+#endif  // SortedDocumentMarkerListEditor_h

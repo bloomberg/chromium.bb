@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/editing/markers/DocumentMarkerListEditor.h"
+#include "core/editing/markers/SortedDocumentMarkerListEditor.h"
 
 #include "core/editing/markers/TextMatchMarker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class DocumentMarkerListEditorTest : public ::testing::Test {
+class SortedDocumentMarkerListEditorTest : public ::testing::Test {
  protected:
   DocumentMarker* CreateMarker(unsigned startOffset, unsigned endOffset) {
     return new TextMatchMarker(startOffset, endOffset,
@@ -17,19 +17,19 @@ class DocumentMarkerListEditorTest : public ::testing::Test {
   }
 };
 
-TEST_F(DocumentMarkerListEditorTest, RemoveMarkersEmptyList) {
-  DocumentMarkerListEditor::MarkerList markers;
-  DocumentMarkerListEditor::RemoveMarkers(&markers, 0, 10);
+TEST_F(SortedDocumentMarkerListEditorTest, RemoveMarkersEmptyList) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::RemoveMarkers(&markers, 0, 10);
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest, RemoveMarkersTouchingEndpoints) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest, RemoveMarkersTouchingEndpoints) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
   markers.push_back(CreateMarker(10, 20));
   markers.push_back(CreateMarker(20, 30));
 
-  DocumentMarkerListEditor::RemoveMarkers(&markers, 10, 10);
+  SortedDocumentMarkerListEditor::RemoveMarkers(&markers, 10, 10);
 
   EXPECT_EQ(2u, markers.size());
 
@@ -40,214 +40,235 @@ TEST_F(DocumentMarkerListEditorTest, RemoveMarkersTouchingEndpoints) {
   EXPECT_EQ(30u, markers[1]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest, RemoveMarkersOneCharacterIntoInterior) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest,
+       RemoveMarkersOneCharacterIntoInterior) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
   markers.push_back(CreateMarker(10, 20));
   markers.push_back(CreateMarker(20, 30));
 
-  DocumentMarkerListEditor::RemoveMarkers(&markers, 9, 12);
+  SortedDocumentMarkerListEditor::RemoveMarkers(&markers, 9, 12);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_ReplaceStartOfMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 5, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 5,
+                                                               5);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_ReplaceStartOfMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
   // Replace with shorter text
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 5, 4);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 5,
+                                                                 4);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(9u, markers[0]->EndOffset());
 
   // Replace with longer text
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 4, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 4,
+                                                                 5);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(10u, markers[0]->EndOffset());
 
   // Replace with text of same length
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 5, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 5,
+                                                                 5);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(10u, markers[0]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_ReplaceContainsStartOfMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 15));
 
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 10, 10);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 10,
+                                                               10);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_ReplaceContainsStartOfMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 15));
 
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 10, 10);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                 10, 10);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(10u, markers[0]->StartOffset());
   EXPECT_EQ(15u, markers[0]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_ReplaceEndOfMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 5, 5, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 5, 5,
+                                                               5);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_ReplaceEndOfMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
   // Replace with shorter text
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 5, 4);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 5,
+                                                                 4);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(9u, markers[0]->EndOffset());
 
   // Replace with longer text
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 4, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 4,
+                                                                 5);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(10u, markers[0]->EndOffset());
 
   // Replace with text of same length
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 5, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 5,
+                                                                 5);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(10u, markers[0]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_ReplaceContainsEndOfMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 5, 10, 10);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 5, 10,
+                                                               10);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_ReplaceContainsEndOfMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 10, 10);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5,
+                                                                 10, 10);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(5u, markers[0]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_ReplaceEntireMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 10, 10);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 10,
+                                                               10);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_ReplaceEntireMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
   // Replace with shorter text
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 10, 9);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                 10, 9);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(9u, markers[0]->EndOffset());
 
   // Replace with longer text
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 9, 10);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 9,
+                                                                 10);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(10u, markers[0]->EndOffset());
 
   // Replace with text of same length
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 10, 10);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                 10, 10);
 
   EXPECT_EQ(1u, markers.size());
   EXPECT_EQ(0u, markers[0]->StartOffset());
   EXPECT_EQ(10u, markers[0]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_ReplaceTextWithMarkerAtBeginning) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 15, 15);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 15,
+                                                               15);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_ReplaceTextWithMarkerAtBeginning) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 15, 15);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                 15, 15);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_ReplaceTextWithMarkerAtEnd) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 15));
 
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 15, 15);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 15,
+                                                               15);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_ReplaceTextWithMarkerAtEnd) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 15));
 
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 15, 15);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                 15, 15);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest, ContentDependentMarker_Deletions) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest, ContentDependentMarker_Deletions) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
   markers.push_back(CreateMarker(5, 10));
   markers.push_back(CreateMarker(10, 15));
@@ -256,7 +277,8 @@ TEST_F(DocumentMarkerListEditorTest, ContentDependentMarker_Deletions) {
 
   // Delete range containing the end of the second marker, the entire third
   // marker, and the start of the fourth marker
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 8, 9, 0);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 8, 9,
+                                                               0);
 
   EXPECT_EQ(2u, markers.size());
 
@@ -267,8 +289,8 @@ TEST_F(DocumentMarkerListEditorTest, ContentDependentMarker_Deletions) {
   EXPECT_EQ(16u, markers[1]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest, ContentIndependentMarker_Deletions) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest, ContentIndependentMarker_Deletions) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
   markers.push_back(CreateMarker(5, 10));
   markers.push_back(CreateMarker(10, 15));
@@ -277,7 +299,8 @@ TEST_F(DocumentMarkerListEditorTest, ContentIndependentMarker_Deletions) {
 
   // Delete range containing the end of the second marker, the entire third
   // marker, and the start of the fourth marker
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 8, 9, 0);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 8, 9,
+                                                                 0);
 
   EXPECT_EQ(4u, markers.size());
 
@@ -294,35 +317,38 @@ TEST_F(DocumentMarkerListEditorTest, ContentIndependentMarker_Deletions) {
   EXPECT_EQ(16u, markers[3]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_DeleteExactlyOnMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 10, 0);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 0, 10,
+                                                               0);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_DeleteExactlyOnMarker) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 10));
 
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0, 10, 0);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 0,
+                                                                 10, 0);
 
   EXPECT_EQ(0u, markers.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_InsertInMarkerInterior) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
   markers.push_back(CreateMarker(5, 10));
   markers.push_back(CreateMarker(10, 15));
 
   // insert in middle of second marker
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 7, 0, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 7, 0,
+                                                               5);
 
   EXPECT_EQ(2u, markers.size());
 
@@ -333,15 +359,16 @@ TEST_F(DocumentMarkerListEditorTest,
   EXPECT_EQ(20u, markers[1]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_InsertInMarkerInterior) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
   markers.push_back(CreateMarker(5, 10));
   markers.push_back(CreateMarker(10, 15));
 
   // insert in middle of second marker
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 7, 0, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 7, 0,
+                                                                 5);
 
   EXPECT_EQ(3u, markers.size());
 
@@ -355,15 +382,16 @@ TEST_F(DocumentMarkerListEditorTest,
   EXPECT_EQ(20u, markers[2]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentDependentMarker_InsertBetweenMarkers) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
   markers.push_back(CreateMarker(5, 10));
   markers.push_back(CreateMarker(10, 15));
 
   // insert before second marker
-  DocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 5, 0, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentDependent(&markers, 5, 0,
+                                                               5);
 
   EXPECT_EQ(3u, markers.size());
 
@@ -377,15 +405,16 @@ TEST_F(DocumentMarkerListEditorTest,
   EXPECT_EQ(20u, markers[2]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        ContentIndependentMarker_InsertBetweenMarkers) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
   markers.push_back(CreateMarker(5, 10));
   markers.push_back(CreateMarker(10, 15));
 
   // insert before second marker
-  DocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 0, 5);
+  SortedDocumentMarkerListEditor::ShiftMarkersContentIndependent(&markers, 5, 0,
+                                                                 5);
 
   EXPECT_EQ(3u, markers.size());
 
@@ -399,64 +428,69 @@ TEST_F(DocumentMarkerListEditorTest,
   EXPECT_EQ(20u, markers[2]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest, FirstMarkerIntersectingRange_Empty) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest, FirstMarkerIntersectingRange_Empty) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
 
   DocumentMarker* marker =
-      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 10, 15);
+      SortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 10,
+                                                                   15);
   EXPECT_EQ(nullptr, marker);
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        FirstMarkerIntersectingRange_TouchingAfter) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
 
   DocumentMarker* marker =
-      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 5, 10);
+      SortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 5,
+                                                                   10);
   EXPECT_EQ(nullptr, marker);
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        FirstMarkerIntersectingRange_TouchingBefore) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 10));
 
   DocumentMarker* marker =
-      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 0, 5);
+      SortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 0,
+                                                                   5);
   EXPECT_EQ(nullptr, marker);
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        FirstMarkerIntersectingRange_IntersectingAfter) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 10));
 
   DocumentMarker* marker =
-      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 0, 6);
+      SortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 0,
+                                                                   6);
   EXPECT_NE(nullptr, marker);
 
   EXPECT_EQ(5u, marker->StartOffset());
   EXPECT_EQ(10u, marker->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        FirstMarkerIntersectingRange_IntersectingBefore) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 10));
 
   DocumentMarker* marker =
-      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 9, 15);
+      SortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 9,
+                                                                   15);
   EXPECT_NE(nullptr, marker);
 
   EXPECT_EQ(5u, marker->StartOffset());
   EXPECT_EQ(10u, marker->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        FirstMarkerIntersectingRange_MultipleMarkers) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
   markers.push_back(CreateMarker(5, 10));
   markers.push_back(CreateMarker(10, 15));
@@ -464,88 +498,93 @@ TEST_F(DocumentMarkerListEditorTest,
   markers.push_back(CreateMarker(20, 25));
 
   DocumentMarker* marker =
-      DocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 7, 17);
+      SortedDocumentMarkerListEditor::FirstMarkerIntersectingRange(markers, 7,
+                                                                   17);
   EXPECT_NE(nullptr, marker);
 
   EXPECT_EQ(5u, marker->StartOffset());
   EXPECT_EQ(10u, marker->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_Empty) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest, MarkersIntersectingRange_Empty) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
 
-  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
-      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 10, 15);
+  SortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      SortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 10, 15);
   EXPECT_EQ(0u, markers_intersecting_range.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_TouchingAfter) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest,
+       MarkersIntersectingRange_TouchingAfter) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
 
-  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
-      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 5, 10);
+  SortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      SortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 5, 10);
   EXPECT_EQ(0u, markers_intersecting_range.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_TouchingBefore) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest,
+       MarkersIntersectingRange_TouchingBefore) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 10));
 
-  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
-      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 0, 5);
+  SortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      SortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 0, 5);
   EXPECT_EQ(0u, markers_intersecting_range.size());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        MarkersIntersectingRange_IntersectingAfter) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 10));
 
-  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
-      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 0, 6);
+  SortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      SortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 0, 6);
   EXPECT_EQ(1u, markers_intersecting_range.size());
 
   EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
   EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest,
+TEST_F(SortedDocumentMarkerListEditorTest,
        MarkersIntersectingRange_IntersectingBefore) {
-  DocumentMarkerListEditor::MarkerList markers;
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 10));
 
-  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
-      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 9, 15);
+  SortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      SortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 9, 15);
   EXPECT_EQ(1u, markers_intersecting_range.size());
 
   EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
   EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_CollapsedRange) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest,
+       MarkersIntersectingRange_CollapsedRange) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(5, 10));
 
-  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
-      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 7, 7);
+  SortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      SortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 7, 7);
   EXPECT_EQ(1u, markers_intersecting_range.size());
 
   EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
   EXPECT_EQ(10u, markers_intersecting_range[0]->EndOffset());
 }
 
-TEST_F(DocumentMarkerListEditorTest, MarkersIntersectingRange_MultipleMarkers) {
-  DocumentMarkerListEditor::MarkerList markers;
+TEST_F(SortedDocumentMarkerListEditorTest,
+       MarkersIntersectingRange_MultipleMarkers) {
+  SortedDocumentMarkerListEditor::MarkerList markers;
   markers.push_back(CreateMarker(0, 5));
   markers.push_back(CreateMarker(5, 10));
   markers.push_back(CreateMarker(10, 15));
   markers.push_back(CreateMarker(15, 20));
   markers.push_back(CreateMarker(20, 25));
 
-  DocumentMarkerListEditor::MarkerList markers_intersecting_range =
-      DocumentMarkerListEditor::MarkersIntersectingRange(markers, 7, 17);
+  SortedDocumentMarkerListEditor::MarkerList markers_intersecting_range =
+      SortedDocumentMarkerListEditor::MarkersIntersectingRange(markers, 7, 17);
   EXPECT_EQ(3u, markers_intersecting_range.size());
 
   EXPECT_EQ(5u, markers_intersecting_range[0]->StartOffset());
