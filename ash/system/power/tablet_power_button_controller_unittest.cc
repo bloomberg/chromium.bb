@@ -742,4 +742,18 @@ TEST_F(TabletPowerButtonControllerTest, NonLockScreenContainersHideAnimation) {
   EXPECT_FALSE(lock_state_test_api_->is_animating_lock());
 }
 
+// Tests that updating power button behavior from tablet behavior to clamshell
+// behavior will initially enable the local state of touchscreen.
+TEST_F(TabletPowerButtonControllerTest, TouchscreenStatusClamshell) {
+  shell_delegate_->SetTouchscreenEnabledInPrefs(false,
+                                                true /* use_local_state */);
+  ASSERT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kForceClamshellPowerButton);
+  ResetTabletPowerButtonController();
+  SendAccelerometerUpdate(kSidewaysVector, kSidewaysVector);
+  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+}
+
 }  // namespace ash
