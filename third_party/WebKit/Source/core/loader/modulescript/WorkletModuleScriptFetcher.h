@@ -31,7 +31,6 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
  public:
   WorkletModuleScriptFetcher(const FetchParameters&,
                              ResourceFetcher*,
-                             Modulator*,
                              ModuleScriptFetcher::Client*,
                              WorkletModuleResponsesMapProxy*);
 
@@ -40,16 +39,12 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
 
   // Implements WorkletModuleResponsesMap::Client.
   void OnRead(const ModuleScriptCreationParams&) override;
-  void OnFetchNeeded() override;
   void OnFailed() override;
 
   DECLARE_TRACE();
 
  private:
-  void Finalize(const WTF::Optional<ModuleScriptCreationParams>&) override;
-
   Member<WorkletModuleResponsesMapProxy> module_responses_map_proxy_;
-  bool was_fetched_via_network_ = false;
 };
 
 }  // namespace blink

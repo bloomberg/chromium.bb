@@ -40,6 +40,19 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request)
       origin_restriction_(kUseDefaultOriginRestrictionForType),
       placeholder_image_request_type_(kDisallowPlaceholder) {}
 
+FetchParameters::FetchParameters(
+    std::unique_ptr<CrossThreadFetchParametersData> data)
+    : resource_request_(data->resource_request.get()),
+      decoder_options_(data->decoder_options),
+      options_(data->options),
+      speculative_preload_type_(data->speculative_preload_type),
+      preload_discovery_time_(data->preload_discovery_time),
+      defer_(data->defer),
+      origin_restriction_(data->origin_restriction),
+      resource_width_(data->resource_width),
+      client_hint_preferences_(data->client_hint_preferences),
+      placeholder_image_request_type_(data->placeholder_image_request_type) {}
+
 FetchParameters::FetchParameters(const ResourceRequest& resource_request,
                                  const ResourceLoaderOptions& options)
     : resource_request_(resource_request),
@@ -133,6 +146,22 @@ void FetchParameters::SetAllowImagePlaceholder() {
   // TODO(sclittle): Indicate somehow (e.g. through a new request bit) to the
   // embedder that it should return the full resource if the entire resource is
   // fresh in the cache.
+}
+
+std::unique_ptr<CrossThreadFetchParametersData> FetchParameters::CopyData()
+    const {
+  auto data = WTF::MakeUnique<CrossThreadFetchParametersData>();
+  data->resource_request = resource_request_.CopyData();
+  data->decoder_options = decoder_options_;
+  data->options = CrossThreadResourceLoaderOptionsData(options_);
+  data->speculative_preload_type = speculative_preload_type_;
+  data->preload_discovery_time = preload_discovery_time_;
+  data->defer = defer_;
+  data->origin_restriction = origin_restriction_;
+  data->resource_width = resource_width_;
+  data->client_hint_preferences = client_hint_preferences_;
+  data->placeholder_image_request_type = placeholder_image_request_type_;
+  return data;
 }
 
 }  // namespace blink

@@ -9,13 +9,8 @@
 #include "core/workers/WorkletModuleResponsesMap.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/heap/Heap.h"
-#include "platform/weborigin/KURL.h"
-#include "platform/wtf/Functional.h"
-#include "platform/wtf/Optional.h"
 
 namespace blink {
-
-class ModuleScriptCreationParams;
 
 // WorkletModuleResponsesMapProxy serves as a proxy to talk to
 // WorkletModuleResponsesMap on the main thread (outside_settings) from
@@ -32,9 +27,7 @@ class CORE_EXPORT WorkletModuleResponsesMapProxy
       RefPtr<WebTaskRunner> outside_settings_task_runner,
       RefPtr<WebTaskRunner> inside_settings_task_runner);
 
-  void ReadEntry(const KURL&, Client*);
-  void UpdateEntry(const KURL&, const ModuleScriptCreationParams&);
-  void InvalidateEntry(const KURL&);
+  void ReadEntry(const FetchParameters&, Client*);
 
   DECLARE_TRACE();
 
@@ -44,7 +37,8 @@ class CORE_EXPORT WorkletModuleResponsesMapProxy
       RefPtr<WebTaskRunner> outside_settings_task_runner,
       RefPtr<WebTaskRunner> inside_settings_task_runner);
 
-  void ReadEntryOnMainThread(const KURL&, Client*);
+  void ReadEntryOnMainThread(std::unique_ptr<CrossThreadFetchParametersData>,
+                             Client*);
 
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map_;
   RefPtr<WebTaskRunner> outside_settings_task_runner_;

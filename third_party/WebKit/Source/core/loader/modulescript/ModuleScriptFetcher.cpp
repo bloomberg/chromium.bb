@@ -59,11 +59,9 @@ bool WasModuleLoadSuccessful(Resource* resource,
 
 ModuleScriptFetcher::ModuleScriptFetcher(const FetchParameters& fetch_params,
                                          ResourceFetcher* fetcher,
-                                         Modulator* modulator,
                                          Client* client)
     : fetch_params_(fetch_params),
       fetcher_(fetcher),
-      modulator_(modulator),
       client_(client) {}
 
 void ModuleScriptFetcher::Fetch() {
@@ -75,7 +73,7 @@ void ModuleScriptFetcher::Fetch() {
   }
   if (!resource) {
     // ScriptResource::Fetch() has failed synchronously.
-    NotifyFinished(nullptr);
+    NotifyFinished(nullptr /* resource */);
     return;
   }
 
@@ -89,11 +87,7 @@ void ModuleScriptFetcher::NotifyFinished(Resource* resource) {
   ScriptResource* script_resource = ToScriptResource(resource);
   ConsoleMessage* error_message = nullptr;
   if (!WasModuleLoadSuccessful(script_resource, &error_message)) {
-    if (error_message) {
-      ExecutionContext::From(modulator_->GetScriptState())
-          ->AddConsoleMessage(error_message);
-    }
-    Finalize(WTF::nullopt);
+    Finalize(WTF::nullopt, error_message);
     return;
   }
 
@@ -101,18 +95,18 @@ void ModuleScriptFetcher::NotifyFinished(Resource* resource) {
       script_resource->GetResponse().Url(), script_resource->SourceText(),
       script_resource->GetResourceRequest().GetFetchCredentialsMode(),
       script_resource->CalculateAccessControlStatus());
-  Finalize(params);
+  Finalize(params, nullptr /* error_message */);
 }
 
 void ModuleScriptFetcher::Finalize(
-    const WTF::Optional<ModuleScriptCreationParams>& params) {
+    const WTF::Optional<ModuleScriptCreationParams>& params,
+    ConsoleMessage* error_message) {
   was_fetched_ = true;
-  client_->NotifyFetchFinished(params);
+  client_->NotifyFetchFinished(params, error_message);
 }
 
 DEFINE_TRACE(ModuleScriptFetcher) {
   visitor->Trace(fetcher_);
-  visitor->Trace(modulator_);
   visitor->Trace(client_);
   ResourceOwner<ScriptResource>::Trace(visitor);
 }

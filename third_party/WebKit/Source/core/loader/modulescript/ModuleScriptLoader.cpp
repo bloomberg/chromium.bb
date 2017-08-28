@@ -148,24 +148,33 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   if (execution_context->IsMainThreadWorkletGlobalScope()) {
     MainThreadWorkletGlobalScope* global_scope =
         ToMainThreadWorkletGlobalScope(execution_context);
-    module_fetcher_ =
-        new WorkletModuleScriptFetcher(fetch_params, fetcher, modulator_, this,
-                                       global_scope->ModuleResponsesMapProxy());
+    module_fetcher_ = new WorkletModuleScriptFetcher(
+        fetch_params, fetcher, this, global_scope->ModuleResponsesMapProxy());
   } else {
-    module_fetcher_ =
-        new ModuleScriptFetcher(fetch_params, fetcher, modulator_, this);
+    module_fetcher_ = new ModuleScriptFetcher(fetch_params, fetcher, this);
   }
   module_fetcher_->Fetch();
 }
 
 void ModuleScriptLoader::NotifyFetchFinished(
-    const WTF::Optional<ModuleScriptCreationParams>& params) {
+    const WTF::Optional<ModuleScriptCreationParams>& params,
+    ConsoleMessage* error_message) {
+  // [nospec] Abort the steps if the browsing context is discarded.
+  if (!modulator_->HasValidContext()) {
+    AdvanceState(State::kFinished);
+    return;
+  }
+
   // Note: "conditions" referred in Step 7 is implemented in
   // WasModuleLoadSuccessful() in ModuleScriptFetcher.cpp.
   // Step 7. If any of the following conditions are met, set moduleMap[url] to
   // null, asynchronously complete this algorithm with null, and abort these
   // steps.
   if (!params.has_value()) {
+    if (error_message) {
+      ExecutionContext::From(modulator_->GetScriptState())
+          ->AddConsoleMessage(error_message);
+    }
     AdvanceState(State::kFinished);
     return;
   }

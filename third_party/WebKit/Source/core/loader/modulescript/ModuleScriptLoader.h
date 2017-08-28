@@ -57,8 +57,8 @@ class CORE_EXPORT ModuleScriptLoader final
              ModuleGraphLevel);
 
   // Implements ModuleScriptFetcher::Client.
-  void NotifyFetchFinished(
-      const WTF::Optional<ModuleScriptCreationParams>&) override;
+  void NotifyFetchFinished(const WTF::Optional<ModuleScriptCreationParams>&,
+                           ConsoleMessage* error_message) override;
 
   bool IsInitialState() const { return state_ == State::kInitial; }
   bool HasFinished() const { return state_ == State::kFinished; }

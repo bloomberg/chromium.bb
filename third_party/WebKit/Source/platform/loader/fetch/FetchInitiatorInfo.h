@@ -57,7 +57,8 @@ struct CrossThreadFetchInitiatorInfoData {
         position(info.position),
         start_time(info.start_time),
         is_link_preload(info.is_link_preload),
-        imported_module_referrer(info.imported_module_referrer) {}
+        imported_module_referrer(info.imported_module_referrer.IsolatedCopy()) {
+  }
 
   operator FetchInitiatorInfo() const {
     FetchInitiatorInfo info;
