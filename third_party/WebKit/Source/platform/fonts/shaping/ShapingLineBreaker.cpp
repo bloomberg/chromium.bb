@@ -157,7 +157,7 @@ inline PassRefPtr<ShapeResult> ShapingLineBreaker::Shape(
     return shaper_->Shape(font_, direction, start, end);
 
   RefPtr<ShapeResult> result = shaper_->Shape(font_, direction, start, end);
-  result->ApplySpacing(*spacing_, direction);
+  result->ApplySpacing(*spacing_);
   return result;
 }
 
