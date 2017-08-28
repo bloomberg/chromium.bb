@@ -119,11 +119,6 @@ void TrayBluetoothHelper::ConnectToBluetoothDevice(const std::string& address) {
       device->IsConnected());
 }
 
-void TrayBluetoothHelper::ToggleBluetoothEnabled() {
-  adapter_->SetPowered(!adapter_->IsPowered(), base::Bind(&base::DoNothing),
-                       base::Bind(&base::DoNothing));
-}
-
 bool TrayBluetoothHelper::GetBluetoothAvailable() {
   return adapter_ && adapter_->IsPresent();
 }

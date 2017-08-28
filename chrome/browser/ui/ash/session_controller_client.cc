@@ -82,12 +82,15 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
     return nullptr;
 
   ash::mojom::UserSessionPtr session = ash::mojom::UserSession::New();
+  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
   session->session_id = user_session_id;
   session->user_info = ash::mojom::UserInfo::New();
   session->user_info->type = user.GetType();
   session->user_info->account_id = user.GetAccountId();
   session->user_info->display_name = base::UTF16ToUTF8(user.display_name());
   session->user_info->display_email = user.display_email();
+  if (profile)
+    session->user_info->is_new_profile = profile->IsNewProfile();
 
   session->user_info->avatar = user.GetImage();
   if (session->user_info->avatar.isNull()) {
@@ -97,7 +100,6 @@ ash::mojom::UserSessionPtr UserToUserSession(const User& user) {
   }
 
   if (user.IsSupervised()) {
-    Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
     if (profile) {
       SupervisedUserService* service =
           SupervisedUserServiceFactory::GetForProfile(profile);

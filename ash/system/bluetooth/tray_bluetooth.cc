@@ -12,8 +12,10 @@
 #include "ash/ash_view_ids.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/bluetooth/bluetooth_power_controller.h"
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
@@ -390,10 +392,12 @@ class BluetoothDetailedView : public TrayDetailsView {
                            const ui::Event& event) override {
     if (sender == toggle_) {
       TrayBluetoothHelper* helper = Shell::Get()->tray_bluetooth_helper();
+      BluetoothPowerController* power_controller =
+          Shell::Get()->bluetooth_power_controller();
       Shell::Get()->metrics()->RecordUserMetricsAction(
           helper->GetBluetoothEnabled() ? UMA_STATUS_AREA_BLUETOOTH_DISABLED
                                         : UMA_STATUS_AREA_BLUETOOTH_ENABLED);
-      helper->ToggleBluetoothEnabled();
+      power_controller->ToggleBluetoothEnabled();
     } else if (sender == settings_) {
       ShowSettings();
     } else {
@@ -538,8 +542,20 @@ TrayBluetooth::~TrayBluetooth() {
 
 views::View* TrayBluetooth::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == nullptr);
+  SessionController* session_controller = Shell::Get()->session_controller();
   default_ = new tray::BluetoothDefaultView(this);
-  default_->SetEnabled(status != LoginStatus::LOCKED);
+  if (!session_controller->IsActiveUserSessionStarted()) {
+    // Bluetooth power setting is always mutable in login screen before any
+    // user logs in. The changes will affect local state preferences.
+    default_->SetEnabled(true);
+  } else {
+    // The bluetooth setting should be mutable only if:
+    // * the active user is the primary user, and
+    // * the session is not in lock screen
+    // The changes will affect the primary user's preferences.
+    default_->SetEnabled(session_controller->IsUserPrimary() &&
+                         status != LoginStatus::LOCKED);
+  }
   default_->Update();
   return default_;
 }
