@@ -699,6 +699,7 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   Java_WebContentsAccessibility_setAccessibilityNodeInfoKitKatAttributes(
       env, obj, info, is_root, node->IsEditableText(),
       base::android::ConvertUTF16ToJavaString(env, node->GetRoleDescription()),
+      base::android::ConvertUTF16ToJavaString(env, node->GetHint()),
       node->GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START),
       node->GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END));
 
