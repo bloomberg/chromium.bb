@@ -86,6 +86,10 @@ if (window.location.hostname == "127.0.0.1") {
                   expected_base_url + '?iframe_fetch' in request_set,
                   'The fetch request from normal iframe should be handled by SW.');
               assert_true(
+                  expected_base_url + '?iframe_workerfetch' in request_set,
+                  'The fetch request from worker in normal iframe should be ' +
+                  'handled by SW.');
+              assert_true(
                   expected_base_url + '?iframe_iframe' in request_set,
                   'The request for normal iframe inside normal iframe should be ' +
                   'handled by SW.');
@@ -106,6 +110,10 @@ if (window.location.hostname == "127.0.0.1") {
                   expected_base_url + '?script_fetch' in request_set,
                   'The fetch request from sandboxed iframe with allow-scripts ' +
                   'flag should not be handled by SW.');
+              assert_false(
+                  expected_base_url + '?script_workerfetch' in request_set,
+                  'The fetch request from worker from sandboxed iframe with ' +
+                  'allow-scripts flag should not be handled by SW.');
               assert_false(
                   expected_base_url + '?script_iframe' in request_set,
                   'The request for normal iframe inside sandboxed iframe with ' +
@@ -128,6 +136,11 @@ if (window.location.hostname == "127.0.0.1") {
                   expected_base_url + '?script-origin_fetch' in request_set,
                   'The fetch request from sandboxed iframe with allow-scripts ' +
                   'and allow-same-origin flag should be handled by SW.');
+              assert_true(
+                  expected_base_url + '?script-origin_workerfetch' in request_set,
+                  'The fetch request from worker in sandboxed iframe with ' +
+                  'allow-scripts and allow-same-origin flag should be handled ' +
+                  'by SW.');
               assert_true(
                   expected_base_url + '?script-origin_iframe' in request_set,
                   'The request for normal iframe inside sandboxed iframe with ' +

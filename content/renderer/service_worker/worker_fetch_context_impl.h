@@ -38,7 +38,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
                                public mojom::ServiceWorkerWorkerClient {
  public:
   WorkerFetchContextImpl(
-      mojom::ServiceWorkerWorkerClientRequest request,
+      mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
       ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info);
   ~WorkerFetchContextImpl() override;
 
@@ -84,7 +84,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
 
   mojo::Binding<mojom::ServiceWorkerWorkerClient> binding_;
 
-  mojom::ServiceWorkerWorkerClientRequest request_;
+  mojom::ServiceWorkerWorkerClientRequest service_worker_client_request_;
   // Consumed on the worker thread to create |url_loader_factory_getter_|.
   ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info_;
 

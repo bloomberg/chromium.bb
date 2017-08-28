@@ -17,10 +17,10 @@
 namespace content {
 
 WorkerFetchContextImpl::WorkerFetchContextImpl(
-    mojom::ServiceWorkerWorkerClientRequest request,
+    mojom::ServiceWorkerWorkerClientRequest service_worker_client_request,
     ChildURLLoaderFactoryGetter::Info url_loader_factory_getter_info)
     : binding_(this),
-      request_(std::move(request)),
+      service_worker_client_request_(std::move(service_worker_client_request)),
       url_loader_factory_getter_info_(
           std::move(url_loader_factory_getter_info)),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()) {}
@@ -29,7 +29,6 @@ WorkerFetchContextImpl::~WorkerFetchContextImpl() {}
 
 void WorkerFetchContextImpl::InitializeOnWorkerThread(
     base::SingleThreadTaskRunner* loading_task_runner) {
-  DCHECK(request_.is_pending());
   DCHECK(loading_task_runner->RunsTasksInCurrentSequence());
   DCHECK(!resource_dispatcher_);
   DCHECK(!binding_.is_bound());
@@ -38,7 +37,8 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread(
 
   url_loader_factory_getter_ = url_loader_factory_getter_info_.Bind();
 
-  binding_.Bind(std::move(request_));
+  if (service_worker_client_request_.is_pending())
+    binding_.Bind(std::move(service_worker_client_request_));
 }
 
 std::unique_ptr<blink::WebURLLoader> WorkerFetchContextImpl::CreateURLLoader(
