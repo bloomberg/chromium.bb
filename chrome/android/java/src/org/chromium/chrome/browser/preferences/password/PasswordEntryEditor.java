@@ -11,9 +11,17 @@ import android.app.KeyguardManager;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,12 +33,16 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.PasswordUIView;
 import org.chromium.chrome.browser.PasswordUIView.PasswordListObserver;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
+import org.chromium.components.sync.AndroidSyncSettings;
+import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.widget.Toast;
 
 /**
@@ -133,8 +145,35 @@ public class PasswordEntryEditor extends Fragment {
                     hidePassword();
                     hookupPasswordButtons();
                 } else {
-                    mView.findViewById(R.id.password_title).setVisibility(View.GONE);
                     mView.findViewById(R.id.password_data).setVisibility(View.GONE);
+                    if (isPasswordSyncingUser()) {
+                        ForegroundColorSpan colorSpan =
+                                new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
+                                        getResources(), R.color.pref_accent_color));
+                        SpannableString passwordLink =
+                                SpanApplier.applySpans(getString(R.string.manage_passwords_text),
+                                        new SpanApplier.SpanInfo("<link>", "</link>", colorSpan));
+                        ClickableSpan clickableLink = new ClickableSpan() {
+                            @Override
+                            public void onClick(View textView) {
+                                Intent intent = new Intent(Intent.ACTION_VIEW,
+                                        Uri.parse(PasswordUIView.getAccountDashboardURL()));
+                                intent.setPackage(getActivity().getPackageName());
+                                getActivity().startActivity(intent);
+                            }
+
+                            @Override
+                            public void updateDrawState(TextPaint ds) {}
+                        };
+                        passwordLink.setSpan(clickableLink, 0, passwordLink.length(),
+                                Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                        TextView passwordsLinkTextView = mView.findViewById(R.id.passwords_link);
+                        passwordsLinkTextView.setVisibility(View.VISIBLE);
+                        passwordsLinkTextView.setText(passwordLink);
+                        passwordsLinkTextView.setMovementMethod(LinkMovementMethod.getInstance());
+                    } else {
+                        mView.findViewById(R.id.password_title).setVisibility(View.GONE);
+                    }
                 }
             }
         } else {
@@ -189,6 +228,12 @@ public class PasswordEntryEditor extends Fragment {
 
     private boolean isReauthenticationAvailable() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+    }
+
+    private boolean isPasswordSyncingUser() {
+        ProfileSyncService syncService = ProfileSyncService.get();
+        return (AndroidSyncSettings.isSyncEnabled(getActivity().getApplicationContext())
+                && syncService.isEngineInitialized() && !syncService.isUsingSecondaryPassphrase());
     }
 
     @Override
