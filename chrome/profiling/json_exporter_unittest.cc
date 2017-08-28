@@ -20,6 +20,11 @@ namespace profiling {
 
 namespace {
 
+const size_t kNoSizeThreshold = 0;
+const size_t kNoCountThreshold = 0;
+const size_t kSizeThreshold = 1500;
+const size_t kCountThreshold = 1000;
+
 using MemoryMap = std::vector<memory_instrumentation::mojom::VmRegionPtr>;
 
 static constexpr int kNoParent = -1;
@@ -152,7 +157,8 @@ TEST(ProfilingJsonExporterTest, Simple) {
   events.insert(AllocationEvent(Address(0x3), 20, bt1));
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(0x1234, events, MemoryMap(), stream, nullptr);
+  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr,
+                                 kNoSizeThreshold, kNoCountThreshold);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -249,6 +255,92 @@ TEST(ProfilingJsonExporterTest, Simple) {
   EXPECT_EQ(id3, backtraces->GetList()[node3].GetInt());
 }
 
+TEST(ProfilingJsonExporterTest, SimpleWithFilteredAllocations) {
+  BacktraceStorage backtrace_storage;
+
+  std::vector<Address> stack1;
+  stack1.push_back(Address(0x1234));
+  const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
+
+  std::vector<Address> stack2;
+  stack2.push_back(Address(0x5678));
+  const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
+
+  std::vector<Address> stack3;
+  stack3.push_back(Address(0x9999));
+  const Backtrace* bt3 = backtrace_storage.Insert(std::move(stack3));
+
+  AllocationEventSet events;
+  events.insert(AllocationEvent(Address(0x1), 16, bt1));
+  events.insert(AllocationEvent(Address(0x2), 32, bt1));
+  events.insert(AllocationEvent(Address(0x3), 1000, bt2));
+  events.insert(AllocationEvent(Address(0x4), 1000, bt2));
+  for (size_t i = 0; i < kCountThreshold + 1; ++i)
+    events.insert(AllocationEvent(Address(0x5 + i), 1, bt3));
+
+  // Validate filtering by size and count.
+  std::ostringstream stream;
+  ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr,
+                                 kSizeThreshold, kCountThreshold);
+  std::string json = stream.str();
+
+  // JSON should parse.
+  base::JSONReader reader(base::JSON_PARSE_RFC);
+  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+      << reader.GetErrorMessage();
+  ASSERT_TRUE(root);
+
+  // The trace array contains two items, a process_name one and a
+  // periodic_interval one. Find the latter.
+  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
+  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
+  const base::Value* heaps_v2 =
+      periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
+  ASSERT_TRUE(heaps_v2);
+  const base::Value* nodes = heaps_v2->FindPath({"maps", "nodes"});
+  const base::Value* strings = heaps_v2->FindPath({"maps", "strings"});
+  ASSERT_TRUE(nodes);
+  ASSERT_TRUE(strings);
+
+  // Validate the strings table.
+  EXPECT_EQ(3u, strings->GetList().size());
+  int sid_unknown = GetStringFromStringTable(strings, "[unknown]");
+  int sid_1234 = GetStringFromStringTable(strings, "pc:1234");
+  int sid_5678 = GetStringFromStringTable(strings, "pc:5678");
+  int sid_9999 = GetStringFromStringTable(strings, "pc:9999");
+  EXPECT_NE(-1, sid_unknown);
+  EXPECT_EQ(-1, sid_1234);  // Must be filtered.
+  EXPECT_NE(-1, sid_5678);
+  EXPECT_NE(-1, sid_9999);
+
+  // Validate the nodes table.
+  // Nodes should be a list with 4 items.
+  //   [0] => address: 5678  parent: none
+  //   [1] => address: 9999  parent: none
+  EXPECT_EQ(2u, nodes->GetList().size());
+  int id0 = GetNodeWithNameID(nodes, sid_5678);
+  int id1 = GetNodeWithNameID(nodes, sid_9999);
+  EXPECT_NE(-1, id0);
+  EXPECT_NE(-1, id1);
+  EXPECT_TRUE(IsBacktraceInList(nodes, id0, kNoParent));
+  EXPECT_TRUE(IsBacktraceInList(nodes, id1, kNoParent));
+
+  // Counts should be a list with one item. Items with |bt1| are filtered.
+  // For |stack2|, there are two allocations of 1000 bytes. which is above the
+  // 1500 bytes threshold. For |stack3|, there are 1001 allocations of 1 bytes,
+  // which is above the 1000 allocations threshold.
+  const base::Value* backtraces =
+      heaps_v2->FindPath({"allocators", "malloc", "nodes"});
+  ASSERT_TRUE(backtraces);
+  EXPECT_EQ(2u, backtraces->GetList().size());
+
+  int node_bt2 = GetOffsetForBacktraceID(backtraces, id0);
+  int node_bt3 = GetOffsetForBacktraceID(backtraces, id1);
+  EXPECT_NE(-1, node_bt2);
+  EXPECT_NE(-1, node_bt3);
+}
+
 TEST(ProfilingJsonExporterTest, MemoryMaps) {
   AllocationEventSet events;
   std::vector<memory_instrumentation::mojom::VmRegionPtr> memory_maps =
@@ -257,7 +349,8 @@ TEST(ProfilingJsonExporterTest, MemoryMaps) {
   ASSERT_GT(memory_maps.size(), 2u);
 
   std::ostringstream stream;
-  ExportAllocationEventSetToJSON(1234, events, memory_maps, stream, nullptr);
+  ExportAllocationEventSetToJSON(1234, events, memory_maps, stream, nullptr,
+                                 kNoSizeThreshold, kNoCountThreshold);
   std::string json = stream.str();
 
   // JSON should parse.
@@ -304,7 +397,8 @@ TEST(ProfilingJsonExporterTest, Metadata) {
 
   std::ostringstream stream;
   ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream,
-                                 std::move(metadata_dict));
+                                 std::move(metadata_dict), kNoSizeThreshold,
+                                 kNoCountThreshold);
   std::string json = stream.str();
 
   // JSON should parse.
