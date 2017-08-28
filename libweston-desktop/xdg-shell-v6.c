@@ -303,8 +303,7 @@ static const struct zxdg_positioner_v6_interface weston_desktop_xdg_positioner_i
 };
 
 static void
-weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface,
-					      bool force);
+weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface);
 
 static void
 weston_desktop_xdg_toplevel_ensure_added(struct weston_desktop_xdg_toplevel *toplevel)
@@ -314,7 +313,7 @@ weston_desktop_xdg_toplevel_ensure_added(struct weston_desktop_xdg_toplevel *top
 
 	weston_desktop_api_surface_added(toplevel->base.desktop,
 					 toplevel->base.desktop_surface);
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, true);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
 	toplevel->added = true;
 }
 
@@ -584,7 +583,7 @@ weston_desktop_xdg_toplevel_set_maximized(struct weston_desktop_surface *dsurfac
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
 	toplevel->pending.state.maximized = maximized;
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
 }
 
 static void
@@ -594,7 +593,7 @@ weston_desktop_xdg_toplevel_set_fullscreen(struct weston_desktop_surface *dsurfa
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
 	toplevel->pending.state.fullscreen = fullscreen;
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
 }
 
 static void
@@ -604,7 +603,7 @@ weston_desktop_xdg_toplevel_set_resizing(struct weston_desktop_surface *dsurface
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
 	toplevel->pending.state.resizing = resizing;
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
 }
 
 static void
@@ -614,7 +613,7 @@ weston_desktop_xdg_toplevel_set_activated(struct weston_desktop_surface *dsurfac
 	struct weston_desktop_xdg_toplevel *toplevel = user_data;
 
 	toplevel->pending.state.activated = activated;
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
 }
 
 static void
@@ -627,7 +626,7 @@ weston_desktop_xdg_toplevel_set_size(struct weston_desktop_surface *dsurface,
 	toplevel->pending.size.width = width;
 	toplevel->pending.size.height = height;
 
-	weston_desktop_xdg_surface_schedule_configure(&toplevel->base, false);
+	weston_desktop_xdg_surface_schedule_configure(&toplevel->base);
 }
 
 static void
@@ -807,7 +806,7 @@ static void
 weston_desktop_xdg_popup_committed(struct weston_desktop_xdg_popup *popup)
 {
 	if (!popup->committed)
-		weston_desktop_xdg_surface_schedule_configure(&popup->base, true);
+		weston_desktop_xdg_surface_schedule_configure(&popup->base);
 	popup->committed = true;
 	weston_desktop_xdg_popup_update_position(popup->base.desktop_surface,
 						 popup);
@@ -904,6 +903,9 @@ weston_desktop_xdg_surface_send_configure(void *user_data)
 static bool
 weston_desktop_xdg_toplevel_state_compare(struct weston_desktop_xdg_toplevel *toplevel)
 {
+	if (!toplevel->base.configured)
+		return false;
+
 	if (toplevel->pending.state.activated != toplevel->current.state.activated)
 		return false;
 	if (toplevel->pending.state.fullscreen != toplevel->current.state.fullscreen)
@@ -925,20 +927,18 @@ weston_desktop_xdg_toplevel_state_compare(struct weston_desktop_xdg_toplevel *to
 }
 
 static void
-weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface,
-					      bool force)
+weston_desktop_xdg_surface_schedule_configure(struct weston_desktop_xdg_surface *surface)
 {
 	struct wl_display *display = weston_desktop_get_display(surface->desktop);
 	struct wl_event_loop *loop = wl_display_get_event_loop(display);
-	bool pending_same = !force;
+	bool pending_same = false;
 
 	switch (surface->role) {
 	case WESTON_DESKTOP_XDG_SURFACE_ROLE_NONE:
 		assert(0 && "not reached");
 		break;
 	case WESTON_DESKTOP_XDG_SURFACE_ROLE_TOPLEVEL:
-		pending_same = pending_same &&
-			weston_desktop_xdg_toplevel_state_compare((struct weston_desktop_xdg_toplevel *) surface);
+		pending_same = weston_desktop_xdg_toplevel_state_compare((struct weston_desktop_xdg_toplevel *) surface);
 		break;
 	case WESTON_DESKTOP_XDG_SURFACE_ROLE_POPUP:
 		break;
