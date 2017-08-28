@@ -65,13 +65,12 @@
       }
 
       #name-and-version {
-        line-height: 15px;
+        @apply(--cr-primary-text);
         margin-bottom: 4px;
       }
 
       #name {
         -webkit-margin-end: 8px;
-        color: #333;
       }
 
       #description,
@@ -85,15 +84,17 @@
       #extension-id,
       #inspect-views,
       #button-strip {
+        /* TODO(dschuyler): use --cr-secondary-text. */
         color: var(--paper-grey-600);
+        font-weight: 400;
       }
 
       #button-strip {
         -webkit-padding-end: 4px;
-        -webkit-padding-start: 20px;
-        border-top: 1px solid var(--paper-grey-400);
+        -webkit-padding-start: var(--cr-section-padding);
+        border-top: var(--cr-separator-line);
         box-sizing: border-box;
-        height: 48px;
+        height: var(--cr-section-min-height);
         padding-bottom: 8px;
         padding-top: 8px;
       }
