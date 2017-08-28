@@ -1487,6 +1487,10 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
     if (http_server_properties_->GetSupportsQuic(&last_address) &&
         last_address == local_address_.address()) {
       require_confirmation_ = false;
+      // Clear the persisted IP address, in case the network no longer supports
+      // QUIC so the next restart will require confirmation. It will be
+      // re-persisted when the first job completes successfully.
+      http_server_properties_->SetSupportsQuic(false, last_address);
     }
   }
 

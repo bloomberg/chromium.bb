@@ -892,8 +892,13 @@ TEST_P(QuicStreamFactoryTest, RequireConfirmation) {
                             /*cert_verify_flags=*/0, url_, "GET", net_log_,
                             &net_error_details_, callback_.callback()));
 
+  IPAddress last_address;
+  EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
+
   crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
       QuicSession::HANDSHAKE_CONFIRMED);
+
+  EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
 
   EXPECT_THAT(callback_.WaitForResult(), IsOk());
   std::unique_ptr<HttpStream> stream = request.CreateStream();
@@ -927,11 +932,19 @@ TEST_P(QuicStreamFactoryTest, DontRequireConfirmationFromSameIP) {
                               &net_error_details_, callback_.callback()),
               IsOk());
 
+  IPAddress last_address;
+  EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
+
   std::unique_ptr<HttpStream> stream = request.CreateStream();
   EXPECT_TRUE(stream.get());
 
   QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
   EXPECT_FALSE(session->require_confirmation());
+
+  crypto_client_stream_factory_.last_stream()->SendOnCryptoHandshakeEvent(
+      QuicSession::HANDSHAKE_CONFIRMED);
+
+  EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
 }
 
 TEST_P(QuicStreamFactoryTest, CachedInitialRtt) {
@@ -1782,11 +1795,14 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
                                          net_log_, CompletionCallback()));
 
+  IPAddress last_address;
+  EXPECT_TRUE(http_server_properties_.GetSupportsQuic(&last_address));
   // Change the IP address and verify that stream saw the error.
   NotifyIPAddressChanged();
   EXPECT_EQ(ERR_NETWORK_CHANGED,
             stream->ReadResponseHeaders(callback_.callback()));
   EXPECT_TRUE(factory_->require_confirmation());
+  EXPECT_FALSE(http_server_properties_.GetSupportsQuic(&last_address));
 
   // Now attempting to request a stream to the same origin should create
   // a new session.
