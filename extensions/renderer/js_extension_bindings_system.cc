@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
+#include "base/timer/elapsed_timer.h"
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/extension.h"
@@ -158,6 +159,8 @@ void JsExtensionBindingsSystem::WillReleaseScriptContext(
 
 void JsExtensionBindingsSystem::UpdateBindingsForContext(
     ScriptContext* context) {
+  base::ElapsedTimer timer;
+
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
 
@@ -223,6 +226,8 @@ void JsExtensionBindingsSystem::UpdateBindingsForContext(
       break;
     }
   }
+
+  LogUpdateBindingsForContextTime(context->context_type(), timer.Elapsed());
 }
 
 void JsExtensionBindingsSystem::HandleResponse(int request_id,
