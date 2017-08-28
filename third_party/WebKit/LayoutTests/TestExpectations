@@ -1744,6 +1744,7 @@ crbug.com/761952 virtual/service-worker-script-streaming/external/wpt/service-wo
 crbug.com/761952 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/link-element-register-script.https.html [ Failure Pass ]
 crbug.com/761952 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/link-element-register-script-url.https.html [ Failure Pass ]
 crbug.com/761952 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/link-element-register-security-error.https.html [ Failure Pass ]
+crbug.com/761952 external/wpt/beacon/headers/header-content-type.html [ Failure Pass Timeout ]
 crbug.com/761952 virtual/service-worker-script-streaming/external/wpt/service-workers/service-worker/registration-mime-types.https.html [ Failure Pass ]
 crbug.com/761952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 
@@ -1833,7 +1834,6 @@ crbug.com/626703 external/wpt/css/css-fonts-3/font-weight-lighter-001.xht [ Skip
 crbug.com/626703 external/wpt/css/css-fonts-3/font-weight-normal-001.xht [ Skip ]
 crbug.com/626703 external/wpt/css/css-fonts-3/test-synthetic-bold.xht [ Skip ]
 crbug.com/626703 external/wpt/css/css-fonts-3/test-synthetic-italic.xht [ Skip ]
-crbug.com/626703 external/wpt/beacon/headers/header-content-type.html [ Pass Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/outline-004.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-001.html [ Pass Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-ui-3/text-overflow-002.html [ Pass Failure ]
