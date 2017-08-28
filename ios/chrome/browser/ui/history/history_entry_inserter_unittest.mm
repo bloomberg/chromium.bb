@@ -7,8 +7,8 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/browsing_history_service.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/history/history_entry.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -20,12 +20,14 @@
 #error "This file requires ARC support."
 #endif
 
+using history::BrowsingHistoryService;
+
 HistoryEntryItem* TestHistoryEntryItem(base::Time timestamp,
                                        const std::string& name) {
-  history::HistoryEntry entry = history::HistoryEntry(
-      history::HistoryEntry::LOCAL_ENTRY, GURL(("http://" + name).c_str()),
-      base::UTF8ToUTF16(name.c_str()), timestamp, std::string(), false,
-      base::string16(), false);
+  BrowsingHistoryService::HistoryEntry entry(
+      BrowsingHistoryService::HistoryEntry::LOCAL_ENTRY,
+      GURL(("http://" + name).c_str()), base::UTF8ToUTF16(name.c_str()),
+      timestamp, std::string(), false, base::string16(), false);
   return [[HistoryEntryItem alloc] initWithType:kItemTypeEnumZero
                                    historyEntry:entry
                                    browserState:nil

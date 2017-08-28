@@ -15,8 +15,6 @@ source_set("history") {
     "history_collection_view_controller.mm",
     "history_entries_status_item.h",
     "history_entries_status_item.mm",
-    "history_entry.cc",
-    "history_entry.h",
     "history_entry_inserter.h",
     "history_entry_inserter.mm",
     "history_entry_item.h",
@@ -27,11 +25,10 @@ source_set("history") {
     "history_search_view.mm",
     "history_search_view_controller.h",
     "history_search_view_controller.mm",
-    "history_service_facade.h",
-    "history_service_facade.mm",
-    "history_service_facade_delegate.h",
     "history_util.h",
     "history_util.mm",
+    "ios_browsing_history_driver.h",
+    "ios_browsing_history_driver.mm",
   ]
   deps = [
     "//base",
@@ -93,8 +90,6 @@ source_set("unit_tests") {
     "history_entry_inserter_unittest.mm",
     "history_entry_item_unittest.mm",
     "history_search_view_controller_unittest.mm",
-    "history_service_facade_unittest.mm",
-    "history_util_unittest.mm",
   ]
   deps = [
     ":history",

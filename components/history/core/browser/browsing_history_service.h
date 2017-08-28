@@ -107,17 +107,23 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
   // Contains information about a completed history query.
   struct QueryResultsInfo {
-    QueryResultsInfo();
     ~QueryResultsInfo();
 
     // The query search text.
     base::string16 search_text;
 
-    // Whether the query reached the beginning of the database.
-    bool reached_beginning;
+    // Whether the query reached the beginning of the local database.
+    bool reached_beginning_of_local = false;
 
-    // Whether the last call to Web History returned synced results.
-    bool has_synced_results;
+    // Whether the last call to Web History timed out.
+    bool sync_timed_out = false;
+
+    // Whether the last call to Web History returned successfully with a message
+    // body.
+    bool has_synced_results = false;
+
+    // Whether the query reached the beginning of the synced history results.
+    bool reached_beginning_of_sync = false;
 
     // The localized query start time.
     base::Time start_time;
@@ -235,6 +241,8 @@ class BrowsingHistoryService : public HistoryServiceObserver,
   ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
 
+  // TODO(skym): Why is this duplicated between this field and
+  // |query_results_info_.has_synced_results|? Can we simplify?
   // Whether the last call to Web History returned synced results.
   bool has_synced_results_;
 

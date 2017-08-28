@@ -88,9 +88,6 @@ bool BrowsingHistoryService::HistoryEntry::SortByTimeDescending(
   return entry1.time > entry2.time;
 }
 
-BrowsingHistoryService::QueryResultsInfo::QueryResultsInfo()
-    : reached_beginning(false), has_synced_results(false) {}
-
 BrowsingHistoryService::QueryResultsInfo::~QueryResultsInfo() {}
 
 BrowsingHistoryService::BrowsingHistoryService(
@@ -148,6 +145,8 @@ void BrowsingHistoryService::OnStateChanged(syncer::SyncService* sync) {
 
 void BrowsingHistoryService::WebHistoryTimeout() {
   has_synced_results_ = false;
+  query_results_info_.sync_timed_out = true;
+
   // TODO(dubroy): Communicate the failure to the front end.
   if (!query_task_tracker_.HasTrackedTasks())
     ReturnResultsToDriver();
@@ -162,8 +161,12 @@ void BrowsingHistoryService::QueryHistory(const base::string16& search_text,
   // Anything in-flight is invalid.
   query_task_tracker_.TryCancelAll();
   web_history_request_.reset();
-
   query_results_.clear();
+
+  // TODO(skym): Should |query_results_info_| be reset to default values
+  // instead?
+  // Set this to false until the results actually arrive.
+  query_results_info_.has_synced_results = false;
 
   if (local_history_) {
     local_history_->QueryHistory(
@@ -173,11 +176,10 @@ void BrowsingHistoryService::QueryHistory(const base::string16& search_text,
         &query_task_tracker_);
   }
 
-  WebHistoryService* web_history = driver_->GetWebHistoryService();
-
   // Set this to false until the results actually arrive.
   query_results_info_.has_synced_results = false;
 
+  WebHistoryService* web_history = driver_->GetWebHistoryService();
   if (web_history) {
     web_history_query_results_.clear();
 
@@ -395,7 +397,7 @@ void BrowsingHistoryService::QueryComplete(const base::string16& search_text,
   }
 
   query_results_info_.search_text = search_text;
-  query_results_info_.reached_beginning = results->reached_beginning();
+  query_results_info_.reached_beginning_of_local = results->reached_beginning();
   query_results_info_.start_time = options.begin_time;
   // TODO(skym): |end_time| doesn't seem to be used anymore, and this logic's
   // intention is very confusing. Consider removing.
@@ -517,8 +519,17 @@ void BrowsingHistoryService::WebHistoryQueryComplete(
       }
     }
   }
+
+  query_results_info_.sync_timed_out = false;
   has_synced_results_ = results_value != nullptr;
   query_results_info_.has_synced_results = has_synced_results_;
+
+  if (results_value) {
+    std::string continuation_token;
+    results_value->GetString("continuation_token", &continuation_token);
+    query_results_info_.reached_beginning_of_sync = continuation_token.empty();
+  }
+
   if (!query_task_tracker_.HasTrackedTasks())
     ReturnResultsToDriver();
 }

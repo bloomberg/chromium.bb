@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
+#include "components/history/core/browser/browsing_history_service.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/authentication_service_fake.h"
@@ -18,9 +19,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/browser/sync/sync_setup_service_mock.h"
-#import "ios/chrome/browser/ui/history/history_entry.h"
-#import "ios/chrome/browser/ui/history/history_service_facade.h"
-#import "ios/chrome/browser/ui/history/history_service_facade_delegate.h"
+#import "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/web/public/test/test_web_thread.h"
@@ -29,21 +28,25 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
+using base::Time;
+using base::TimeDelta;
+using history::BrowsingHistoryService;
+
 namespace {
 
-HistoryServiceFacade::QueryResult QueryResultWithVisits(
-    std::vector<std::pair<const GURL&, base::Time>> visits) {
-  std::vector<history::HistoryEntry> entries{};
-  for (std::pair<const GURL&, base::Time> visit : visits) {
-    history::HistoryEntry entry = history::HistoryEntry();
+const char kTestUrl1[] = "http://test1/";
+const char kTestUrl2[] = "http://test2/";
+
+std::vector<BrowsingHistoryService::HistoryEntry> QueryResultWithVisits(
+    std::vector<std::pair<const GURL&, Time>> visits) {
+  std::vector<BrowsingHistoryService::HistoryEntry> entries;
+  for (std::pair<const GURL&, Time> visit : visits) {
+    BrowsingHistoryService::HistoryEntry entry;
     entry.url = visit.first;
     entry.time = visit.second;
     entries.push_back(entry);
   }
-  HistoryServiceFacade::QueryResult result{};
-  result.entries = entries;
-  result.finished = true;
-  return result;
+  return entries;
 }
 
 std::unique_ptr<KeyedService> BuildMockSyncSetupService(
@@ -59,7 +62,7 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
 }  // namespace
 
 @interface HistoryCollectionViewController (
-    Testing)<HistoryServiceFacadeDelegate>
+    Testing)<BrowsingHistoryDriverDelegate>
 - (void)didPressClearBrowsingBar;
 @end
 
@@ -95,6 +98,16 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
     BlockCleanupTest::TearDown();
   }
 
+  void QueryHistory(std::vector<std::pair<const GURL&, Time>> visits) {
+    std::vector<BrowsingHistoryService::HistoryEntry> results =
+        QueryResultWithVisits(visits);
+    BrowsingHistoryService::QueryResultsInfo query_results_info;
+    query_results_info.reached_beginning_of_local = true;
+    [history_collection_view_controller_
+        onQueryCompleteWithResults:results
+                  queryResultsInfo:query_results_info];
+  }
+
  protected:
   web::TestWebThreadBundle thread_bundle_;
   id<UrlLoader> mock_url_loader_;
@@ -109,11 +122,7 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
 // Tests that hasHistoryEntries property returns YES after entries have been
 // received.
 TEST_F(HistoryCollectionViewControllerTest, HasHistoryEntries) {
-  GURL url_1("http://test1");
-  HistoryServiceFacade::QueryResult query_result =
-      QueryResultWithVisits({{url_1, base::Time::Now()}});
-  [history_collection_view_controller_ historyServiceFacade:nil
-                                      didReceiveQueryResult:query_result];
+  QueryHistory({{GURL(kTestUrl1), Time::Now()}});
   EXPECT_TRUE([history_collection_view_controller_ hasHistoryEntries]);
 }
 
@@ -122,30 +131,21 @@ TEST_F(HistoryCollectionViewControllerTest, HasHistoryEntries) {
 // This ensures that when HISTORY_DELETE_DIRECTIVES is disabled,
 // only local device history items are shown.
 TEST_F(HistoryCollectionViewControllerTest, HasHistoryEntriesWhenSyncEnabled) {
-  GURL url_1("http://test1");
   EXPECT_CALL(*sync_setup_service_mock_, IsSyncEnabled())
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*sync_setup_service_mock_,
               IsDataTypeEnabled(syncer::HISTORY_DELETE_DIRECTIVES))
       .WillRepeatedly(testing::Return(false));
 
-  HistoryServiceFacade::QueryResult query_result =
-      QueryResultWithVisits({{url_1, base::Time::Now()}});
-  [history_collection_view_controller_ historyServiceFacade:nil
-                                      didReceiveQueryResult:query_result];
+  QueryHistory({{GURL(kTestUrl1), Time::Now()}});
   EXPECT_TRUE([history_collection_view_controller_ hasHistoryEntries]);
 }
 
 // Tests adding two entries to history from the same day, then deleting the
 // first of them results in one history entry in the collection.
 TEST_F(HistoryCollectionViewControllerTest, DeleteSingleEntry) {
-  // Add history entries
-  GURL url_1("http://test1");
-  GURL url_2("http://test2");
-  HistoryServiceFacade::QueryResult query_result = QueryResultWithVisits(
-      {{url_1, base::Time::Now()}, {url_2, base::Time::Now()}});
-  [history_collection_view_controller_ historyServiceFacade:nil
-                                      didReceiveQueryResult:query_result];
+  QueryHistory(
+      {{GURL(kTestUrl1), Time::Now()}, {GURL(kTestUrl2), Time::Now()}});
 
   UICollectionView* collection_view =
       [history_collection_view_controller_ collectionView];
@@ -164,13 +164,8 @@ TEST_F(HistoryCollectionViewControllerTest, DeleteSingleEntry) {
 // Tests that adding two entries to history from the same day then deleting
 // both of them results in only the header section in the collection.
 TEST_F(HistoryCollectionViewControllerTest, DeleteMultipleEntries) {
-  // Add history entries.
-  GURL url_1("http://test1");
-  GURL url_2("http://test2");
-  HistoryServiceFacade::QueryResult query_result = QueryResultWithVisits(
-      {{url_1, base::Time::Now()}, {url_2, base::Time::Now()}});
-  [history_collection_view_controller_ historyServiceFacade:nil
-                                      didReceiveQueryResult:query_result];
+  QueryHistory(
+      {{GURL(kTestUrl1), Time::Now()}, {GURL(kTestUrl2), Time::Now()}});
 
   // Select history entries and tap delete.
   UICollectionView* collection_view =
@@ -195,14 +190,9 @@ TEST_F(HistoryCollectionViewControllerTest, DeleteMultipleEntries) {
 // Tests that adding two entries to history from different days then deleting
 // both of them results in only the header section in the collection.
 TEST_F(HistoryCollectionViewControllerTest, DeleteMultipleSections) {
-  GURL url_1("http://test1");
-  GURL url_2("http://test2");
+  QueryHistory({{GURL(kTestUrl1), Time::Now() - TimeDelta::FromDays(1)},
+                {GURL(kTestUrl2), Time::Now()}});
 
-  HistoryServiceFacade::QueryResult query_result = QueryResultWithVisits(
-      {{url_1, base::Time::Now() - base::TimeDelta::FromDays(1)},
-       {url_2, base::Time::Now()}});
-  [history_collection_view_controller_ historyServiceFacade:nil
-                                      didReceiveQueryResult:query_result];
   UICollectionView* collection_view =
       [history_collection_view_controller_ collectionView];
   // Expect two history sections in addition to the header section.

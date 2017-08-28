@@ -108,7 +108,7 @@ void BrowsingHistoryBridge::OnQueryComplete(
 
   Java_BrowsingHistoryBridge_onQueryHistoryComplete(
       env, j_history_service_obj_, j_query_result_obj_,
-      !(query_results_info.reached_beginning));
+      !(query_results_info.reached_beginning_of_local));
 }
 
 void BrowsingHistoryBridge::MarkItemForRemoval(
