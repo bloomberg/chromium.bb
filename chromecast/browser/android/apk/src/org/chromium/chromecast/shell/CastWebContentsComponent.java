@@ -62,8 +62,8 @@ public class CastWebContentsComponent {
         public void stop(Context context) {
             if (DEBUG) Log.d(TAG, "stop");
 
-            Intent intent = new Intent(
-                    CastWebContentsActivity.ACTION_STOP_ACTIVITY, getInstanceUri(mInstanceId));
+            Intent intent =
+                    new Intent(CastIntents.ACTION_STOP_ACTIVITY, getInstanceUri(mInstanceId));
             LocalBroadcastManager.getInstance(context).sendBroadcastSync(intent);
         }
     }

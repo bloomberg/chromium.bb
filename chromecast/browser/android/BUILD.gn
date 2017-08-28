@@ -34,11 +34,22 @@ android_resources("cast_shell_android_resources") {
   resource_dirs = [ "//chromecast/browser/android/apk/res" ]
 }
 
+android_library("cast_audio_manager_java") {
+  java_src_dir = "//chromecast/browser/android/apk/src"
+  java_files =
+      [ "$java_src_dir/org/chromium/chromecast/shell/CastAudioManager.java" ]
+}
+
+android_library("cast_intents_java") {
+  java_src_dir = "//chromecast/browser/android/apk/src"
+  java_files =
+      [ "$java_src_dir/org/chromium/chromecast/shell/CastIntents.java" ]
+}
+
 android_library("cast_shell_java") {
   java_src_dir = "//chromecast/browser/android/apk/src"
   java_files = [
     "$java_src_dir/org/chromium/chromecast/shell/CastApplication.java",
-    "$java_src_dir/org/chromium/chromecast/shell/CastAudioManager.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastBrowserHelper.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastContentWindowAndroid.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastCrashHandler.java",
@@ -56,6 +67,8 @@ android_library("cast_shell_java") {
   srcjar_deps = [ ":cast_shell_build_config_gen" ]
 
   deps = [
+    ":cast_audio_manager_java",
+    ":cast_intents_java",
     ":cast_shell_android_resources",
     ":cast_shell_manifest",
     "//base:base_java",
