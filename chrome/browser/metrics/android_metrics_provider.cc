@@ -27,6 +27,11 @@ int GetActivityFlag(int type_id) {
   return (1 << type);
 }
 
+void EmitLowRamDeviceHistogram() {
+  UMA_HISTOGRAM_BOOLEAN("MemoryAndroid.LowRamDevice",
+                        base::SysInfo::IsLowEndDevice());
+}
+
 }  // namespace
 
 AndroidMetricsProvider::AndroidMetricsProvider(PrefService* local_state)
@@ -40,18 +45,20 @@ AndroidMetricsProvider::~AndroidMetricsProvider() {
 void AndroidMetricsProvider::ProvidePreviousSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   ConvertStabilityPrefsToHistograms();
+  // The low-ram device status is unlikely to change between browser restarts.
+  // Hence, it's safe and useful to attach this status to a previous session
+  // log.
+  EmitLowRamDeviceHistogram();
 }
 
 void AndroidMetricsProvider::ProvideCurrentSessionData(
     metrics::ChromeUserMetricsExtension* uma_proto) {
   ConvertStabilityPrefsToHistograms();
+  EmitLowRamDeviceHistogram();
   UMA_HISTOGRAM_ENUMERATION(
       "CustomTabs.Visible",
       chrome::android::GetCustomTabsVisibleValue(),
       chrome::android::CUSTOM_TABS_VISIBILITY_MAX);
-  UMA_HISTOGRAM_BOOLEAN(
-      "MemoryAndroid.LowRamDevice",
-      base::SysInfo::IsLowEndDevice());
   UMA_HISTOGRAM_BOOLEAN(
       "Android.MultiWindowMode.Active",
       chrome::android::GetIsInMultiWindowModeValue());
