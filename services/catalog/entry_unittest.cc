@@ -58,12 +58,14 @@ TEST_F(EntryTest, Simple) {
   std::unique_ptr<Entry> entry = ReadEntry("simple", nullptr);
   EXPECT_EQ("foo", entry->name());
   EXPECT_EQ("Foo", entry->display_name());
+  EXPECT_EQ("none", entry->sandbox_type());
 }
 
 TEST_F(EntryTest, Instance) {
   std::unique_ptr<Entry> entry = ReadEntry("instance", nullptr);
   EXPECT_EQ("foo", entry->name());
   EXPECT_EQ("Foo", entry->display_name());
+  EXPECT_EQ("", entry->sandbox_type());
 }
 
 TEST_F(EntryTest, ConnectionSpec) {

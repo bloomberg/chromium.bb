@@ -158,6 +158,11 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
   }
   entry->set_display_name(std::move(display_name));
 
+  // Sandbox type, optional.
+  std::string sandbox_type;
+  if (value.GetString(Store::kSandboxTypeKey, &sandbox_type))
+    entry->set_sandbox_type(std::move(sandbox_type));
+
   // InterfaceProvider specs.
   const base::DictionaryValue* interface_provider_specs = nullptr;
   if (!value.GetDictionary(Store::kInterfaceProviderSpecsKey,
@@ -221,8 +226,8 @@ bool Entry::ProvidesCapability(const std::string& capability) const {
 }
 
 bool Entry::operator==(const Entry& other) const {
-  return other.name_ == name_ &&
-         other.display_name_ == display_name_ &&
+  return other.name_ == name_ && other.display_name_ == display_name_ &&
+         other.sandbox_type_ == sandbox_type_ &&
          other.interface_provider_specs_ == interface_provider_specs_;
 }
 

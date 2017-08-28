@@ -44,6 +44,11 @@ class Entry {
     display_name_ = std::move(display_name);
   }
 
+  const std::string& sandbox_type() const { return sandbox_type_; }
+  void set_sandbox_type(std::string sandbox_type) {
+    sandbox_type_ = std::move(sandbox_type);
+  }
+
   const Entry* parent() const { return parent_; }
   void set_parent(const Entry* parent) { parent_ = parent; }
 
@@ -71,6 +76,7 @@ class Entry {
   std::string name_;
   base::FilePath path_;
   std::string display_name_;
+  std::string sandbox_type_;
   service_manager::InterfaceProviderSpecMap interface_provider_specs_;
   std::map<std::string, base::FilePath> required_file_paths_;
   const Entry* parent_ = nullptr;
