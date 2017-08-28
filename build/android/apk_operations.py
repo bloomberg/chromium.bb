@@ -836,12 +836,12 @@ def Run(output_directory, apk_path, incremental_json, command_line_flags_file,
   constants.SetOutputDirectory(output_directory)
   devil_chromium.Initialize(output_directory=output_directory)
   parser = argparse.ArgumentParser()
+  exists_or_None = lambda p: p if p and os.path.exists(p) else None
   parser.set_defaults(
       command_line_flags_file=command_line_flags_file,
       target_cpu=target_cpu,
-      apk_path=apk_path if os.path.exists(apk_path) else None,
-      incremental_json=(
-          incremental_json if os.path.exists(incremental_json) else None))
+      apk_path=exists_or_None(apk_path),
+      incremental_json=exists_or_None(incremental_json))
   _RunInternal(parser, output_directory=output_directory)
 
 
