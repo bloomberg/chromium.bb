@@ -28,14 +28,26 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/service_process/service_process_control.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/cloud_print/cloud_print_proxy_info.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/service_messages.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "printing/backend/print_backend.h"
 
 using content::BrowserThread;
+
+namespace {
+
+void ForwardGetPrintersResult(
+    const CloudPrintProxyService::PrintersCallback& callback,
+    const std::vector<std::string>& printers) {
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            ServiceProcessControl::SERVICE_PRINTERS_REPLY,
+                            ServiceProcessControl::SERVICE_EVENT_MAX);
+  UMA_HISTOGRAM_COUNTS_10000("CloudPrint.AvailablePrinters", printers.size());
+  callback.Run(printers);
+}
+
+}  // namespace
 
 CloudPrintProxyService::CloudPrintProxyService(Profile* profile)
     : profile_(profile),
@@ -161,18 +173,25 @@ void CloudPrintProxyService::GetPrinters(const PrintersCallback& callback) {
 void CloudPrintProxyService::GetCloudPrintProxyPrinters(
     const PrintersCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            ServiceProcessControl::SERVICE_PRINTERS_REQUEST,
+                            ServiceProcessControl::SERVICE_EVENT_MAX);
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
-  process_control->GetPrinters(callback);
+  GetCloudPrintProxy().GetPrinters(
+      base::BindOnce(&ForwardGetPrintersResult, callback));
 }
 
 void CloudPrintProxyService::RefreshCloudPrintProxyStatus() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            ServiceProcessControl::SERVICE_EVENT_INFO_REQUEST,
+                            ServiceProcessControl::SERVICE_EVENT_MAX);
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
-  ServiceProcessControl::CloudPrintProxyInfoCallback callback = base::Bind(
-      &CloudPrintProxyService::ProxyInfoCallback, base::Unretained(this));
-  process_control->GetCloudPrintProxyInfo(callback);
+  auto callback = base::BindOnce(&CloudPrintProxyService::ProxyInfoCallback,
+                                 base::Unretained(this));
+  GetCloudPrintProxy().GetCloudPrintProxyInfo(std::move(callback));
 }
 
 void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
@@ -182,9 +201,9 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
     const base::DictionaryValue* user_preferences) {
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
-  process_control->Send(
-      new ServiceMsg_EnableCloudPrintProxyWithRobot(
-          robot_auth_code, robot_email, user_email, *user_preferences));
+  GetCloudPrintProxy().EnableCloudPrintProxyWithRobot(
+      robot_auth_code, robot_email, user_email,
+      user_preferences->CreateDeepCopy());
   // Assume the IPC worked.
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, user_email);
 }
@@ -192,17 +211,20 @@ void CloudPrintProxyService::EnableCloudPrintProxyWithRobot(
 void CloudPrintProxyService::DisableCloudPrintProxy() {
   ServiceProcessControl* process_control = GetServiceProcessControl();
   DCHECK(process_control->IsConnected());
-  process_control->Send(new ServiceMsg_DisableCloudPrintProxy);
+  GetCloudPrintProxy().DisableCloudPrintProxy();
   // Assume the IPC worked.
   profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail, std::string());
 }
 
-void CloudPrintProxyService::ProxyInfoCallback(
-    const cloud_print::CloudPrintProxyInfo& proxy_info) {
-  proxy_id_ = proxy_info.proxy_id;
-  profile_->GetPrefs()->SetString(
-      prefs::kCloudPrintEmail,
-      proxy_info.enabled ? proxy_info.email : std::string());
+void CloudPrintProxyService::ProxyInfoCallback(bool enabled,
+                                               const std::string& email,
+                                               const std::string& proxy_id) {
+  UMA_HISTOGRAM_ENUMERATION("CloudPrint.ServiceEvents",
+                            ServiceProcessControl::SERVICE_EVENT_INFO_REPLY,
+                            ServiceProcessControl::SERVICE_EVENT_MAX);
+  proxy_id_ = proxy_id;
+  profile_->GetPrefs()->SetString(prefs::kCloudPrintEmail,
+                                  enabled ? email : std::string());
   ApplyCloudPrintConnectorPolicy();
 }
 
@@ -213,4 +235,12 @@ bool CloudPrintProxyService::InvokeServiceTask(const base::Closure& task) {
 
 ServiceProcessControl* CloudPrintProxyService::GetServiceProcessControl() {
   return ServiceProcessControl::GetInstance();
+}
+
+cloud_print::mojom::CloudPrint& CloudPrintProxyService::GetCloudPrintProxy() {
+  if (!cloud_print_proxy_ || cloud_print_proxy_.encountered_error()) {
+    GetServiceProcessControl()->remote_interfaces().GetInterface(
+        &cloud_print_proxy_);
+  }
+  return *cloud_print_proxy_;
 }

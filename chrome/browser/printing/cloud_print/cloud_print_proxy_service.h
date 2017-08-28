@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chrome/common/cloud_print.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -21,10 +22,6 @@ class ServiceProcessControl;
 namespace base {
 class DictionaryValue;
 }  // namespace base
-
-namespace cloud_print {
-struct CloudPrintProxyInfo;
-}  // namespace cloud_print
 
 // Layer between the browser user interface and the cloud print proxy code
 // running in the service process.
@@ -73,8 +70,9 @@ class CloudPrintProxyService : public KeyedService {
   void DisableCloudPrintProxy();
 
   // Callback that gets the cloud print proxy info.
-  void ProxyInfoCallback(
-    const cloud_print::CloudPrintProxyInfo& proxy_info);
+  void ProxyInfoCallback(bool enabled,
+                         const std::string& email,
+                         const std::string& proxy_id);
 
   // Invoke a task that gets run after the service process successfully
   // launches. The task typically involves sending an IPC to the service
@@ -85,14 +83,18 @@ class CloudPrintProxyService : public KeyedService {
   // not set or the connector is not enabled).
   bool ApplyCloudPrintConnectorPolicy();
 
-  Profile* profile_;
-  std::string proxy_id_;
+  cloud_print::mojom::CloudPrint& GetCloudPrintProxy();
 
   // Virtual for testing.
   virtual ServiceProcessControl* GetServiceProcessControl();
 
+  Profile* profile_;
+  std::string proxy_id_;
+
   // For watching for connector policy changes.
   PrefChangeRegistrar pref_change_registrar_;
+
+  cloud_print::mojom::CloudPrintPtr cloud_print_proxy_;
 
   base::WeakPtrFactory<CloudPrintProxyService> weak_factory_;
 

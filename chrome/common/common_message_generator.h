@@ -22,10 +22,6 @@
 #include "chrome/common/extensions/mojom/inline_install_traits.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/common/service_messages.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_utility_printing_messages.h"
 #endif
