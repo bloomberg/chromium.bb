@@ -249,16 +249,15 @@ static INLINE int get_br_ctx(const tran_low_t *tcoeffs,
   return ctx;
 }
 
-#define SIG_REF_OFFSET_NUM 11
+#define SIG_REF_OFFSET_NUM 7
 static int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
-  { -2, -1 }, { -2, 0 }, { -2, 1 }, { -1, -2 }, { -1, -1 }, { -1, 0 },
-  { -1, 1 },  { 0, -2 }, { 0, -1 }, { 1, -2 },  { 1, -1 },
+  { -2, -1 }, { -2, 0 }, { -1, -2 }, { -1, -1 },
+  { -1, 0 },  { 0, -2 }, { 0, -1 },
 };
 
 static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
-                               int row, int col, const int16_t *iscan) {
+                               int row, int col) {
   int count = 0;
-  const int pos = (row << bwl) + col;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
     const int ref_row = row + sig_ref_offset[idx][0];
     const int ref_col = col + sig_ref_offset[idx][1];
@@ -266,7 +265,7 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
         ref_col >= (1 << bwl))
       continue;
     const int nb_pos = (ref_row << bwl) + ref_col;
-    if (iscan[nb_pos] < iscan[pos]) count += (tcoeffs[nb_pos] != 0);
+    count += (tcoeffs[nb_pos] != 0);
   }
   return count;
 }
@@ -288,10 +287,8 @@ static INLINE TX_CLASS get_tx_class(TX_TYPE tx_type) {
 // TODO(angiebird): optimize this function by generate a table that maps from
 // count to ctx
 static INLINE int get_nz_map_ctx_from_count(int count,
-                                            const tran_low_t *tcoeffs,
                                             int coeff_idx,  // raster order
-                                            int bwl, const int16_t *iscan,
-                                            TX_TYPE tx_type) {
+                                            int bwl, TX_TYPE tx_type) {
   (void)tx_type;
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
@@ -311,19 +308,12 @@ static INLINE int get_nz_map_ctx_from_count(int count,
 
   if (row == 0 && col == 0) return offset + 0;
 
-  if (row == 0 && col == 1) return offset + 1 + (tcoeffs[0] != 0);
+  if (row == 0 && col == 1) return offset + 1 + count;
 
-  if (row == 1 && col == 0) return offset + 3 + (tcoeffs[0] != 0);
+  if (row == 1 && col == 0) return offset + 3 + count;
 
   if (row == 1 && col == 1) {
-    int pos;
-    ctx = (tcoeffs[0] != 0);
-
-    if (iscan[1] < iscan[coeff_idx]) ctx += (tcoeffs[1] != 0);
-    pos = 1 << bwl;
-    if (iscan[pos] < iscan[coeff_idx]) ctx += (tcoeffs[pos] != 0);
-
-    ctx = (ctx + 1) >> 1;
+    ctx = (count + 1) >> 1;
 
     assert(5 + ctx <= 7);
 
@@ -333,33 +323,32 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   if (row == 0) {
     ctx = (count + 1) >> 1;
 
-    assert(ctx < 3);
+    assert(ctx < 2);
     return offset + 8 + ctx;
   }
 
   if (col == 0) {
     ctx = (count + 1) >> 1;
 
-    assert(ctx < 3);
-    return offset + 11 + ctx;
+    assert(ctx < 2);
+    return offset + 10 + ctx;
   }
 
   ctx = count >> 1;
 
-  assert(14 + ctx < 20);
+  assert(12 + ctx < 16);
 
-  return offset + 14 + ctx;
+  return offset + 12 + ctx;
 }
 
 static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
                                  const int coeff_idx,  // raster order
                                  const int bwl, const int height,
-                                 const int16_t *iscan, TX_TYPE tx_type) {
+                                 TX_TYPE tx_type) {
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
-  int count = get_nz_count(tcoeffs, bwl, height, row, col, iscan);
-  return get_nz_map_ctx_from_count(count, tcoeffs, coeff_idx, bwl, iscan,
-                                   tx_type);
+  int count = get_nz_count(tcoeffs, bwl, height, row, col);
+  return get_nz_map_ctx_from_count(count, coeff_idx, bwl, tx_type);
 }
 
 static INLINE int get_eob_ctx(const tran_low_t *tcoeffs,
