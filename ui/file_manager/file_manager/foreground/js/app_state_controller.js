@@ -28,7 +28,33 @@ function AppStateController(dialogType) {
    * @private
    */
   this.viewOptions_ = null;
+
+  /**
+   * Preferred sort field of file list. This will be ignored in the Recent
+   * folder, since it always uses descendant order of date-mofidied.
+   * @private {string}
+   */
+  this.fileListSortField_ = AppStateController.DEFAULT_SORT_FIELD;
+
+  /**
+   * Preferred sort direction of file list. This will be ignored in the Recent
+   * folder, since it always uses descendant order of date-mofidied.
+   * @private {string}
+   */
+  this.fileListSortDirection_ = AppStateController.DEFAULT_SORT_DIRECTION;
 };
+
+/**
+ * Default sort field of the file list.
+ * @const {string}
+ */
+AppStateController.DEFAULT_SORT_FIELD = 'modificationTime';
+
+/**
+ * Default sort direction of the file list.
+ * @const {string}
+ */
+AppStateController.DEFAULT_SORT_DIRECTION = 'desc';
 
 /**
  * @return {Promise}
@@ -82,16 +108,19 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
   ui.listContainer.table.addEventListener(
       'column-resize-end', this.saveViewOptions.bind(this));
   directoryModel.getFileList().addEventListener(
-      'permuted', this.saveViewOptions.bind(this));
+      'sorted', this.onFileListSorted_.bind(this));
   directoryModel.addEventListener(
       'directory-changed', this.onDirectoryChanged_.bind(this));
 
   // Restore preferences.
   this.ui_.setCurrentListType(
       this.viewOptions_.listType || ListContainer.ListType.DETAIL);
+  if (this.viewOptions_.sortField)
+    this.fileListSortField_ = this.viewOptions_.sortField;
+  if (this.viewOptions_.sortDirection)
+    this.fileListSortDirection_ = this.viewOptions_.sortDirection;
   this.directoryModel_.getFileList().sort(
-      this.viewOptions_.sortField || 'modificationTime',
-      this.viewOptions_.sortDirection || 'desc');
+      this.fileListSortField_, this.fileListSortDirection_);
   if (this.viewOptions_.columnConfig) {
     this.ui_.listContainer.table.columnModel.restoreColumnConfig(
         this.viewOptions_.columnConfig);
@@ -102,10 +131,9 @@ AppStateController.prototype.initialize = function(ui, directoryModel) {
  * Saves current view option.
  */
 AppStateController.prototype.saveViewOptions = function() {
-  var sortStatus = this.directoryModel_.getFileList().sortStatus;
   var prefs = {
-    sortField: sortStatus.field,
-    sortDirection: sortStatus.direction,
+    sortField: this.fileListSortField_,
+    sortDirection: this.fileListSortDirection_,
     columnConfig: {},
     listType: this.ui_.listContainer.currentListType,
   };
@@ -127,10 +155,46 @@ AppStateController.prototype.saveViewOptions = function() {
   }
 };
 
+AppStateController.prototype.onFileListSorted_ = function() {
+  var currentDirectory = this.directoryModel_.getCurrentDirEntry();
+  if (!currentDirectory)
+    return;
+
+  // Update preferred sort field and direction only when the current directory
+  // is not Recent folder.
+  if (!util.isRecentRoot(currentDirectory)) {
+    var currentSortStatus = this.directoryModel_.getFileList().sortStatus;
+    this.fileListSortField_ = currentSortStatus.field;
+    this.fileListSortDirection_ = currentSortStatus.direction;
+  }
+  this.saveViewOptions();
+};
+
 /**
+ * @param {Event} event
  * @private
  */
-AppStateController.prototype.onDirectoryChanged_ = function() {
+AppStateController.prototype.onDirectoryChanged_ = function(event) {
+  if (!event.newDirEntry)
+    return;
+
+  // Sort the file list by:
+  // 1) 'date-mofidied' and 'desc' order on Recent folder.
+  // 2) preferred field and direction on other folders.
+  var isOnRecent = util.isRecentRoot(event.newDirEntry);
+  var isOnRecentBefore =
+      event.previousDirEntry && util.isRecentRoot(event.previousDirEntry);
+  if (isOnRecent != isOnRecentBefore) {
+    if (isOnRecent) {
+      this.directoryModel_.getFileList().sort(
+          AppStateController.DEFAULT_SORT_FIELD,
+          AppStateController.DEFAULT_SORT_DIRECTION);
+    } else {
+      this.directoryModel_.getFileList().sort(
+          this.fileListSortField_, this.fileListSortDirection_);
+    }
+  }
+
   // TODO(mtomasz): Consider remembering the selection.
   util.updateAppState(
       this.directoryModel_.getCurrentDirEntry() ?
