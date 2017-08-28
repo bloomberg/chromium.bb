@@ -210,6 +210,10 @@ typedef enum ATTRIBUTE_PACKED {
 
 #define MAX_TX_DEPTH (TX_SIZES - TX_SIZE_CTX_MIN)
 
+#if CONFIG_CTX1D
+#define MAX_HVTX_SIZE (1 << 5)
+#endif  // CONFIG_CTX1D
+
 #define MAX_TX_SIZE_LOG2 (5 + CONFIG_TX64X64)
 #define MAX_TX_SIZE (1 << MAX_TX_SIZE_LOG2)
 #define MIN_TX_SIZE_LOG2 2

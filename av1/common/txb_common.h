@@ -367,11 +367,21 @@ static INLINE int get_eob_ctx(const tran_low_t *tcoeffs,
                               const int coeff_idx,  // raster order
                               const TX_SIZE txs_ctx, TX_TYPE tx_type) {
   (void)tcoeffs;
+  int offset = 0;
+#if CONFIG_CTX1D
+  TX_CLASS tx_class = get_tx_class(tx_type);
+  if (tx_class == TX_CLASS_VERT)
+    offset = EOB_COEF_CONTEXTS_2D;
+  else if (tx_class == TX_CLASS_HORIZ)
+    offset = EOB_COEF_CONTEXTS_2D + EOB_COEF_CONTEXTS_1D;
+#else
   (void)tx_type;
-  if (txs_ctx == TX_4X4) return av1_coeff_band_4x4[coeff_idx];
-  if (txs_ctx == TX_8X8) return av1_coeff_band_8x8[coeff_idx];
-  if (txs_ctx == TX_16X16) return av1_coeff_band_16x16[coeff_idx];
-  if (txs_ctx == TX_32X32) return av1_coeff_band_32x32[coeff_idx];
+#endif
+
+  if (txs_ctx == TX_4X4) return offset + av1_coeff_band_4x4[coeff_idx];
+  if (txs_ctx == TX_8X8) return offset + av1_coeff_band_8x8[coeff_idx];
+  if (txs_ctx == TX_16X16) return offset + av1_coeff_band_16x16[coeff_idx];
+  if (txs_ctx == TX_32X32) return offset + av1_coeff_band_32x32[coeff_idx];
 
   assert(0);
   return 0;
@@ -467,4 +477,78 @@ void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
                          unsigned int update_factor);
 
 void av1_init_lv_map(AV1_COMMON *cm);
+
+#if CONFIG_CTX1D
+static INLINE void get_eob_vert(int16_t *eob_ls, const tran_low_t *tcoeff,
+                                int w, int h) {
+  for (int c = 0; c < w; ++c) {
+    eob_ls[c] = 0;
+    for (int r = h - 1; r >= 0; --r) {
+      int coeff_idx = r * w + c;
+      if (tcoeff[coeff_idx] != 0) {
+        eob_ls[c] = r + 1;
+        break;
+      }
+    }
+  }
+}
+
+static INLINE void get_eob_horiz(int16_t *eob_ls, const tran_low_t *tcoeff,
+                                 int w, int h) {
+  for (int r = 0; r < h; ++r) {
+    eob_ls[r] = 0;
+    for (int c = w - 1; c >= 0; --c) {
+      int coeff_idx = r * w + c;
+      if (tcoeff[coeff_idx] != 0) {
+        eob_ls[r] = c + 1;
+        break;
+      }
+    }
+  }
+}
+
+static INLINE int get_empty_line_ctx(int line_idx, int16_t *eob_ls) {
+  if (line_idx > 0) {
+    int prev_eob = eob_ls[line_idx - 1];
+    if (prev_eob == 0) {
+      return 1;
+    } else if (prev_eob < 3) {
+      return 2;
+    } else if (prev_eob < 6) {
+      return 3;
+    } else {
+      return 4;
+    }
+  } else {
+    return 0;
+  }
+}
+
+#define MAX_POS_CTX 8
+static int pos_ctx[MAX_HVTX_SIZE] = {
+  0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5,
+  6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7,
+};
+static INLINE int get_hv_eob_ctx(int line_idx, int pos, int16_t *eob_ls) {
+  if (line_idx > 0) {
+    int prev_eob = eob_ls[line_idx - 1];
+    int diff = pos + 1 - prev_eob;
+    int abs_diff = abs(diff);
+    int ctx_idx = pos_ctx[abs_diff];
+    assert(ctx_idx < MAX_POS_CTX);
+    if (diff < 0) {
+      ctx_idx += MAX_POS_CTX;
+      assert(ctx_idx >= MAX_POS_CTX);
+      assert(ctx_idx < 2 * MAX_POS_CTX);
+    }
+    return ctx_idx;
+  } else {
+    int ctx_idx = MAX_POS_CTX + MAX_POS_CTX + pos_ctx[pos];
+    assert(ctx_idx < HV_EOB_CONTEXTS);
+    assert(HV_EOB_CONTEXTS == MAX_POS_CTX * 3);
+    return ctx_idx;
+  }
+}
+#endif  // CONFIG_CTX1D
+
 #endif  // AV1_COMMON_TXB_COMMON_H_

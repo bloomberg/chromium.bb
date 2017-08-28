@@ -322,6 +322,7 @@ EXPERIMENT_LIST="
     palette_throughput
     ref_adapt
     lv_map
+    ctx1d
     txk_sel
     mv_compress
     segment_zeromv
@@ -555,6 +556,8 @@ post_process_cmdline() {
     enabled mrc_tx && enable_feature var_tx
     enabled ext_delta_q && soft_enable delta_q
     enabled txk_sel && soft_enable lv_map
+    enabled ctx1d && soft_enable lv_map
+    enabled ctx1d && soft_enable ext_tx
     enabled compound_round && soft_enable convolve_round
     enabled intra_edge && enable_feature ext_intra
     enabled chroma_2x2 && disable_feature chroma_sub8x8

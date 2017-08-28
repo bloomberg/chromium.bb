@@ -880,6 +880,50 @@ int main(int argc, const char **argv) {
                      "default_coeff_br_cdf[TX_SIZES][PLANE_TYPES][BASE_RANGE_"
                      "SETS][LEVEL_CONTEXTS][CDF_SIZE(2)]");
 #endif  // BR_NODE
+
+#if CONFIG_CTX1D
+  cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = TX_CLASSES;
+  cts_each_dim[3] = 2;
+  optimize_entropy_table(&fc.eob_mode[0][0][0][0], probsfile, 4, cts_each_dim,
+                         NULL, 1,
+                         "static const aom_prob "
+                         "default_eob_mode[TX_SIZES][PLANE_TYPES][TX_CLASSES]");
+  optimize_cdf_table(&fc.eob_mode[0][0][0][0], probsfile, 4, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "default_eob_mode_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES]["
+                     "CDF_SIZE(2)]");
+
+  cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = TX_CLASSES;
+  cts_each_dim[3] = EMPTY_LINE_CONTEXTS;
+  cts_each_dim[4] = 2;
+  optimize_entropy_table(&fc.empty_line[0][0][0][0][0], probsfile, 5,
+                         cts_each_dim, NULL, 1,
+                         "static const aom_prob "
+                         "default_empty_line[TX_SIZES][PLANE_TYPES][TX_CLASSES]"
+                         "[EMPTY_LINE_CONTEXTS]");
+  optimize_cdf_table(&fc.empty_line[0][0][0][0][0], probsfile, 5, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "default_empty_line_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES]"
+                     "[EMPTY_LINE_CONTEXTS][CDF_SIZE(2)]");
+
+  cts_each_dim[0] = TX_SIZES;
+  cts_each_dim[1] = PLANE_TYPES;
+  cts_each_dim[2] = TX_CLASSES;
+  cts_each_dim[3] = HV_EOB_CONTEXTS;
+  cts_each_dim[4] = 2;
+  optimize_entropy_table(
+      &fc.hv_eob[0][0][0][0][0], probsfile, 5, cts_each_dim, NULL, 1,
+      "static const aom_prob "
+      "default_hv_eob[TX_SIZES][PLANE_TYPES][TX_CLASSES][HV_EOB_CONTEXTS]");
+  optimize_cdf_table(&fc.hv_eob[0][0][0][0][0], probsfile, 5, cts_each_dim,
+                     "static const aom_cdf_prob "
+                     "default_hv_eob_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES][HV_"
+                     "EOB_CONTEXTS][CDF_SIZE(2)]");
+#endif  // CONFIG_CTX1D
 #endif  // CONFIG_LV_MAP
 
   fclose(statsfile);

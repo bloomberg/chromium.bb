@@ -92,14 +92,176 @@ static void write_golomb(aom_writer *w, int level) {
   for (i = length - 1; i >= 0; --i) aom_write_bit(w, (x >> i) & 0x01);
 }
 
+static INLINE void write_nz_map(aom_writer *w, const tran_low_t *tcoeff,
+                                uint16_t eob, int plane, const int16_t *scan,
+                                TX_SIZE tx_size, TX_TYPE tx_type,
+                                FRAME_CONTEXT *fc) {
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int height = tx_size_high[tx_size];
+#if CONFIG_CTX1D
+  const int width = tx_size_wide[tx_size];
+  const int eob_offset = width + height;
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int seg_eob =
+      (tx_class == TX_CLASS_2D) ? tx_size_2d[tx_size] : eob_offset;
+#else
+  const int seg_eob = tx_size_2d[tx_size];
+#endif
+#if !LV_MAP_PROB
+  aom_prob *nz_map = fc->nz_map[txs_ctx][plane_type];
+  aom_prob *eob_flag = fc->eob_flag[txs_ctx][plane_type];
+#endif
+
+  for (int c = 0; c < eob; ++c) {
+    int coeff_ctx = get_nz_map_ctx(tcoeff, scan[c], bwl, height, tx_type);
+    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txs_ctx, tx_type);
+
+    tran_low_t v = tcoeff[scan[c]];
+    int is_nz = (v != 0);
+
+    if (c == seg_eob - 1) break;
+
+#if LV_MAP_PROB
+    aom_write_symbol(w, is_nz, fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx],
+                     2);
+#else
+    aom_write(w, is_nz, nz_map[coeff_ctx]);
+#endif
+
+    if (is_nz) {
+#if LV_MAP_PROB
+      aom_write_symbol(w, c == (eob - 1),
+                       fc->eob_flag_cdf[txs_ctx][plane_type][eob_ctx], 2);
+#else
+      aom_write(w, c == (eob - 1), eob_flag[eob_ctx]);
+#endif
+    }
+  }
+}
+
+#if CONFIG_CTX1D
+static INLINE void write_nz_map_vert(aom_writer *w, const tran_low_t *tcoeff,
+                                     uint16_t eob, int plane,
+                                     const int16_t *scan, TX_SIZE tx_size,
+                                     TX_TYPE tx_type, FRAME_CONTEXT *fc) {
+  (void)scan;
+  (void)eob;
+  const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  int16_t eob_ls[MAX_HVTX_SIZE];
+  get_eob_vert(eob_ls, tcoeff, width, height);
+#if !LV_MAP_PROB
+  aom_prob *nz_map = fc->nz_map[txs_ctx][plane_type];
+#endif
+  for (int c = 0; c < width; ++c) {
+    int16_t veob = eob_ls[c];
+    assert(veob <= height);
+    int el_ctx = get_empty_line_ctx(c, eob_ls);
+#if LV_MAP_PROB
+    aom_write_symbol(w, veob == 0,
+                     fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
+                     2);
+#else
+    aom_write(w, veob == 0,
+              fc->empty_line[txs_ctx][plane_type][tx_class][el_ctx]);
+#endif
+    if (veob) {
+      for (int r = 0; r < veob; ++r) {
+        int coeff_idx = r * width + c;
+        int is_nz = tcoeff[coeff_idx] != 0;
+        int coeff_ctx = get_nz_map_ctx(tcoeff, coeff_idx, bwl, height, tx_type);
+        if (r + 1 != height) {
+#if LV_MAP_PROB
+          aom_write_symbol(w, is_nz,
+                           fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2);
+#else
+          aom_write(w, is_nz, nz_map[coeff_ctx]);
+#endif
+          if (is_nz) {
+            int eob_ctx = get_hv_eob_ctx(c, r, eob_ls);
+#if LV_MAP_PROB
+            aom_write_symbol(
+                w, r == veob - 1,
+                fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx], 2);
+#else
+            aom_write(w, r == veob - 1,
+                      fc->hv_eob[txs_ctx][plane_type][tx_class][eob_ctx]);
+#endif
+          }
+        }
+      }
+    }
+  }
+}
+
+static INLINE void write_nz_map_horiz(aom_writer *w, const tran_low_t *tcoeff,
+                                      uint16_t eob, int plane,
+                                      const int16_t *scan, TX_SIZE tx_size,
+                                      TX_TYPE tx_type, FRAME_CONTEXT *fc) {
+  (void)scan;
+  (void)eob;
+  const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  int16_t eob_ls[MAX_HVTX_SIZE];
+  get_eob_horiz(eob_ls, tcoeff, width, height);
+#if !LV_MAP_PROB
+  aom_prob *nz_map = fc->nz_map[txs_ctx][plane_type];
+#endif
+  for (int r = 0; r < height; ++r) {
+    int16_t heob = eob_ls[r];
+    int el_ctx = get_empty_line_ctx(r, eob_ls);
+#if LV_MAP_PROB
+    aom_write_symbol(w, heob == 0,
+                     fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
+                     2);
+#else
+    aom_write(w, heob == 0,
+              fc->empty_line[txs_ctx][plane_type][tx_class][el_ctx]);
+#endif
+    if (heob) {
+      for (int c = 0; c < heob; ++c) {
+        int coeff_idx = r * width + c;
+        int is_nz = tcoeff[coeff_idx] != 0;
+        int coeff_ctx = get_nz_map_ctx(tcoeff, coeff_idx, bwl, height, tx_type);
+        if (c + 1 != width) {
+#if LV_MAP_PROB
+          aom_write_symbol(w, is_nz,
+                           fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2);
+#else
+          aom_write(w, is_nz, nz_map[coeff_ctx]);
+#endif
+          if (is_nz) {
+            int eob_ctx = get_hv_eob_ctx(r, c, eob_ls);
+#if LV_MAP_PROB
+            aom_write_symbol(
+                w, c == heob - 1,
+                fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx], 2);
+#else
+            aom_write(w, c == heob - 1,
+                      fc->hv_eob[txs_ctx][plane_type][tx_class][eob_ctx]);
+#endif
+          }
+        }
+      }
+    }
+  }
+}
+#endif
+
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                           aom_writer *w, int blk_row, int blk_col, int block,
                           int plane, TX_SIZE tx_size, const tran_low_t *tcoeff,
                           uint16_t eob, TXB_CTX *txb_ctx) {
-#if !LV_MAP_PROB
-  aom_prob *nz_map;
-  aom_prob *eob_flag;
-#endif
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE txs_ctx = get_txsize_context(tx_size);
@@ -108,10 +270,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
   int c;
-  int is_nz;
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   const int height = tx_size_high[tx_size];
-  const int seg_eob = tx_size_2d[tx_size];
   uint16_t update_eob = 0;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
@@ -131,36 +291,35 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                     get_min_tx_size(tx_size), w);
 #endif
 
-#if !LV_MAP_PROB
-  nz_map = ec_ctx->nz_map[txs_ctx][plane_type];
-  eob_flag = ec_ctx->eob_flag[txs_ctx][plane_type];
-#endif
-
-  for (c = 0; c < eob; ++c) {
-    int coeff_ctx = get_nz_map_ctx(tcoeff, scan[c], bwl, height, tx_type);
-    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txs_ctx, tx_type);
-
-    tran_low_t v = tcoeff[scan[c]];
-    is_nz = (v != 0);
-
-    if (c == seg_eob - 1) break;
-
+#if CONFIG_CTX1D
+  TX_CLASS tx_class = get_tx_class(tx_type);
+  if (tx_class == TX_CLASS_2D) {
+    write_nz_map(w, tcoeff, eob, plane, scan, tx_size, tx_type, ec_ctx);
+  } else {
+    const int width = tx_size_wide[tx_size];
+    const int eob_offset = width + height;
+    const int eob_mode = eob > eob_offset;
 #if LV_MAP_PROB
-    aom_write_symbol(w, is_nz,
-                     ec_ctx->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], 2);
+    aom_write_symbol(w, eob_mode,
+                     ec_ctx->eob_mode_cdf[txs_ctx][plane_type][tx_class], 2);
 #else
-    aom_write(w, is_nz, nz_map[coeff_ctx]);
+    aom_write(w, eob_mode, ec_ctx->eob_mode[txs_ctx][plane_type][tx_class]);
 #endif
-
-    if (is_nz) {
-#if LV_MAP_PROB
-      aom_write_symbol(w, c == (eob - 1),
-                       ec_ctx->eob_flag_cdf[txs_ctx][plane_type][eob_ctx], 2);
-#else
-      aom_write(w, c == (eob - 1), eob_flag[eob_ctx]);
-#endif
+    if (eob_mode == 0) {
+      write_nz_map(w, tcoeff, eob, plane, scan, tx_size, tx_type, ec_ctx);
+    } else {
+      assert(tx_class == TX_CLASS_VERT || tx_class == TX_CLASS_HORIZ);
+      if (tx_class == TX_CLASS_VERT)
+        write_nz_map_vert(w, tcoeff, eob, plane, scan, tx_size, tx_type,
+                          ec_ctx);
+      else
+        write_nz_map_horiz(w, tcoeff, eob, plane, scan, tx_size, tx_type,
+                           ec_ctx);
     }
   }
+#else
+  write_nz_map(w, tcoeff, eob, plane, scan, tx_size, tx_type, ec_ctx);
+#endif  // CONFIG_CTX1D
 
   int i;
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
@@ -388,6 +547,119 @@ static INLINE int get_base_cost(tran_low_t abs_qc, int ctx,
     return coeff_base[abs_qc == level];
 }
 
+int get_nz_eob_map_cost(const LV_MAP_COEFF_COST *coeff_costs,
+                        const tran_low_t *qcoeff, uint16_t eob, int plane,
+                        const int16_t *scan, TX_SIZE tx_size, TX_TYPE tx_type) {
+  (void)plane;
+  TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int height = tx_size_high[tx_size];
+#if CONFIG_CTX1D
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int width = tx_size_wide[tx_size];
+  const int eob_offset = width + height;
+  const int seg_eob =
+      (tx_class == TX_CLASS_2D) ? tx_size_2d[tx_size] : eob_offset;
+#else
+  const int seg_eob = tx_size_2d[tx_size];
+#endif
+  int cost = 0;
+  for (int c = 0; c < eob; ++c) {
+    tran_low_t v = qcoeff[scan[c]];
+    int is_nz = (v != 0);
+    if (c + 1 != seg_eob) {
+      int coeff_ctx = get_nz_map_ctx(qcoeff, scan[c], bwl, height, tx_type);
+      cost += coeff_costs->nz_map_cost[coeff_ctx][is_nz];
+      if (is_nz) {
+        int eob_ctx = get_eob_ctx(qcoeff, scan[c], txs_ctx, tx_type);
+        cost += coeff_costs->eob_cost[eob_ctx][c == (eob - 1)];
+      }
+    }
+  }
+  return cost;
+}
+
+#if CONFIG_CTX1D
+static INLINE int get_nz_eob_map_cost_vert(const LV_MAP_COEFF_COST *coeff_costs,
+                                           const tran_low_t *qcoeff,
+                                           uint16_t eob, int plane,
+                                           const int16_t *scan, TX_SIZE tx_size,
+                                           TX_TYPE tx_type) {
+  (void)tx_size;
+  (void)scan;
+  (void)eob;
+  (void)plane;
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  int16_t eob_ls[MAX_HVTX_SIZE];
+  get_eob_vert(eob_ls, qcoeff, width, height);
+  int cost = 0;
+  for (int c = 0; c < width; ++c) {
+    int16_t veob = eob_ls[c];
+    assert(veob <= height);
+    int el_ctx = get_empty_line_ctx(c, eob_ls);
+    cost += coeff_costs->empty_line_cost[tx_class][el_ctx][veob == 0];
+    if (veob) {
+      for (int r = 0; r < veob; ++r) {
+        if (r + 1 != height) {
+          int coeff_idx = r * width + c;
+          int is_nz = qcoeff[coeff_idx] != 0;
+          int coeff_ctx =
+              get_nz_map_ctx(qcoeff, coeff_idx, bwl, height, tx_type);
+          cost += coeff_costs->nz_map_cost[coeff_ctx][is_nz];
+          if (is_nz) {
+            int eob_ctx = get_hv_eob_ctx(c, r, eob_ls);
+            cost += coeff_costs->hv_eob_cost[tx_class][eob_ctx][r == veob - 1];
+          }
+        }
+      }
+    }
+  }
+  return cost;
+}
+
+static INLINE int get_nz_eob_map_cost_horiz(
+    const LV_MAP_COEFF_COST *coeff_costs, const tran_low_t *qcoeff,
+    uint16_t eob, int plane, const int16_t *scan, TX_SIZE tx_size,
+    TX_TYPE tx_type) {
+  (void)tx_size;
+  (void)scan;
+  (void)eob;
+  (void)plane;
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  int16_t eob_ls[MAX_HVTX_SIZE];
+  get_eob_horiz(eob_ls, qcoeff, width, height);
+  int cost = 0;
+  for (int r = 0; r < height; ++r) {
+    int16_t heob = eob_ls[r];
+    assert(heob <= width);
+    int el_ctx = get_empty_line_ctx(r, eob_ls);
+    cost += coeff_costs->empty_line_cost[tx_class][el_ctx][heob == 0];
+    if (heob) {
+      for (int c = 0; c < heob; ++c) {
+        if (c + 1 != width) {
+          int coeff_idx = r * width + c;
+          int is_nz = qcoeff[coeff_idx] != 0;
+          int coeff_ctx =
+              get_nz_map_ctx(qcoeff, coeff_idx, bwl, height, tx_type);
+          cost += coeff_costs->nz_map_cost[coeff_ctx][is_nz];
+          if (is_nz) {
+            int eob_ctx = get_hv_eob_ctx(r, c, eob_ls);
+            cost += coeff_costs->hv_eob_cost[tx_class][eob_ctx][c == heob - 1];
+          }
+        }
+      }
+    }
+  }
+  return cost;
+}
+#endif
+
 int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
                         int blk_row, int blk_col, int block, TX_SIZE tx_size,
                         TXB_CTX *txb_ctx) {
@@ -401,7 +673,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const int eob = p->eobs[block];
   const tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   int c, cost;
-  const int seg_eob = AOMMIN(eob, tx_size_2d[tx_size] - 1);
   int txb_skip_ctx = txb_ctx->txb_skip_ctx;
 
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
@@ -424,15 +695,38 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   cost += av1_tx_type_cost(cm, x, xd, mbmi->sb_type, plane, tx_size, tx_type);
 #endif
 
+#if CONFIG_CTX1D
+  TX_CLASS tx_class = get_tx_class(tx_type);
+  if (tx_class == TX_CLASS_2D) {
+    cost += get_nz_eob_map_cost(coeff_costs, qcoeff, eob, plane, scan, tx_size,
+                                tx_type);
+  } else {
+    const int width = tx_size_wide[tx_size];
+    const int eob_offset = width + height;
+    const int eob_mode = eob > eob_offset;
+    cost += coeff_costs->eob_mode_cost[tx_class][eob_mode];
+    if (eob_mode == 0) {
+      cost += get_nz_eob_map_cost(coeff_costs, qcoeff, eob, plane, scan,
+                                  tx_size, tx_type);
+    } else {
+      assert(tx_class == TX_CLASS_VERT || tx_class == TX_CLASS_HORIZ);
+      if (tx_class == TX_CLASS_VERT)
+        cost += get_nz_eob_map_cost_vert(coeff_costs, qcoeff, eob, plane, scan,
+                                         tx_size, tx_type);
+      else
+        cost += get_nz_eob_map_cost_horiz(coeff_costs, qcoeff, eob, plane, scan,
+                                          tx_size, tx_type);
+    }
+  }
+#else   // CONFIG_CTX1D
+  cost += get_nz_eob_map_cost(coeff_costs, qcoeff, eob, plane, scan, tx_size,
+                              tx_type);
+#endif  // CONFIG_CTX1D
+
   for (c = 0; c < eob; ++c) {
     tran_low_t v = qcoeff[scan[c]];
     int is_nz = (v != 0);
     int level = abs(v);
-
-    if (c < seg_eob) {
-      int coeff_ctx = get_nz_map_ctx(qcoeff, scan[c], bwl, height, tx_type);
-      cost += coeff_costs->nz_map_cost[coeff_ctx][is_nz];
-    }
 
     if (is_nz) {
       int ctx_ls[NUM_BASE_LEVELS] = { 0 };
@@ -495,11 +789,6 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
           for (ri = length - 1; ri >= 0; --ri)
             cost += av1_cost_bit(128, (r >> ri) & 0x01);
         }
-      }
-
-      if (c < seg_eob) {
-        int eob_ctx = get_eob_ctx(qcoeff, scan[c], txs_ctx, tx_type);
-        cost += coeff_costs->eob_cost[eob_ctx][c == (eob - 1)];
       }
     }
   }
@@ -1661,6 +1950,152 @@ void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
 }
 
+static INLINE void av1_update_nz_eob_counts(FRAME_CONTEXT *fc,
+                                            FRAME_COUNTS *counts, uint16_t eob,
+                                            const tran_low_t *tcoeff, int plane,
+                                            TX_SIZE tx_size, TX_TYPE tx_type,
+                                            const int16_t *scan) {
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int height = tx_size_high[tx_size];
+  TX_SIZE txsize_ctx = get_txsize_context(tx_size);
+#if CONFIG_CTX1D
+  const int width = tx_size_wide[tx_size];
+  const int eob_offset = width + height;
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int seg_eob =
+      (tx_class == TX_CLASS_2D) ? tx_size_2d[tx_size] : eob_offset;
+#else
+  const int seg_eob = tx_size_2d[tx_size];
+#endif
+  unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =
+      &counts->nz_map[txsize_ctx][plane_type];
+  for (int c = 0; c < eob; ++c) {
+    tran_low_t v = tcoeff[scan[c]];
+    int is_nz = (v != 0);
+    int coeff_ctx = get_nz_map_ctx(tcoeff, scan[c], bwl, height, tx_type);
+    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txsize_ctx, tx_type);
+
+    if (c == seg_eob - 1) break;
+
+    ++(*nz_map_count)[coeff_ctx][is_nz];
+#if LV_MAP_PROB
+    update_cdf(fc->nz_map_cdf[txsize_ctx][plane_type][coeff_ctx], is_nz, 2);
+#endif
+
+    if (is_nz) {
+      ++counts->eob_flag[txsize_ctx][plane_type][eob_ctx][c == (eob - 1)];
+#if LV_MAP_PROB
+      update_cdf(fc->eob_flag_cdf[txsize_ctx][plane_type][eob_ctx],
+                 c == (eob - 1), 2);
+#endif
+    }
+  }
+}
+
+#if CONFIG_CTX1D
+static INLINE void av1_update_nz_eob_counts_vert(
+    FRAME_CONTEXT *fc, FRAME_COUNTS *counts, uint16_t eob,
+    const tran_low_t *tcoeff, int plane, TX_SIZE tx_size, TX_TYPE tx_type,
+    const int16_t *scan) {
+  (void)eob;
+  (void)scan;
+  const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  int16_t eob_ls[MAX_HVTX_SIZE];
+  get_eob_vert(eob_ls, tcoeff, width, height);
+  unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =
+      &counts->nz_map[txs_ctx][plane_type];
+  for (int c = 0; c < width; ++c) {
+    int16_t veob = eob_ls[c];
+    assert(veob <= height);
+    int el_ctx = get_empty_line_ctx(c, eob_ls);
+    ++counts->empty_line[txs_ctx][plane_type][tx_class][el_ctx][veob == 0];
+#if LV_MAP_PROB
+    update_cdf(fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
+               veob == 0, 2);
+#endif
+    if (veob) {
+      for (int r = 0; r < veob; ++r) {
+        int coeff_idx = r * width + c;
+        int is_nz = tcoeff[coeff_idx] != 0;
+        if (r + 1 != height) {
+          int coeff_ctx =
+              get_nz_map_ctx(tcoeff, coeff_idx, bwl, height, tx_type);
+          ++(*nz_map_count)[coeff_ctx][is_nz];
+#if LV_MAP_PROB
+          update_cdf(fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], is_nz, 2);
+#endif
+          if (is_nz) {
+            int eob_ctx = get_hv_eob_ctx(c, r, eob_ls);
+            ++counts->hv_eob[txs_ctx][plane_type][tx_class][eob_ctx]
+                            [r == veob - 1];
+#if LV_MAP_PROB
+            update_cdf(fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx],
+                       r == veob - 1, 2);
+#endif
+          }
+        }
+      }
+    }
+  }
+}
+
+static INLINE void av1_update_nz_eob_counts_horiz(
+    FRAME_CONTEXT *fc, FRAME_COUNTS *counts, uint16_t eob,
+    const tran_low_t *tcoeff, int plane, TX_SIZE tx_size, TX_TYPE tx_type,
+    const int16_t *scan) {
+  (void)eob;
+  (void)scan;
+  const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const TX_CLASS tx_class = get_tx_class(tx_type);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int width = tx_size_wide[tx_size];
+  const int height = tx_size_high[tx_size];
+  int16_t eob_ls[MAX_HVTX_SIZE];
+  get_eob_horiz(eob_ls, tcoeff, width, height);
+  unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2] =
+      &counts->nz_map[txs_ctx][plane_type];
+  for (int r = 0; r < height; ++r) {
+    int16_t heob = eob_ls[r];
+    int el_ctx = get_empty_line_ctx(r, eob_ls);
+    ++counts->empty_line[txs_ctx][plane_type][tx_class][el_ctx][heob == 0];
+#if LV_MAP_PROB
+    update_cdf(fc->empty_line_cdf[txs_ctx][plane_type][tx_class][el_ctx],
+               heob == 0, 2);
+#endif
+    if (heob) {
+      for (int c = 0; c < heob; ++c) {
+        int coeff_idx = r * width + c;
+        int is_nz = tcoeff[coeff_idx] != 0;
+        if (c + 1 != width) {
+          int coeff_ctx =
+              get_nz_map_ctx(tcoeff, coeff_idx, bwl, height, tx_type);
+          ++(*nz_map_count)[coeff_ctx][is_nz];
+#if LV_MAP_PROB
+          update_cdf(fc->nz_map_cdf[txs_ctx][plane_type][coeff_ctx], is_nz, 2);
+#endif
+          if (is_nz) {
+            int eob_ctx = get_hv_eob_ctx(r, c, eob_ls);
+            ++counts->hv_eob[txs_ctx][plane_type][tx_class][eob_ctx]
+                            [c == heob - 1];
+#if LV_MAP_PROB
+            update_cdf(fc->hv_eob_cdf[txs_ctx][plane_type][tx_class][eob_ctx],
+                       c == heob - 1, 2);
+#endif
+          }
+        }
+      }
+    }
+  }
+}
+#endif  // CONFIG_CTX1D
+
 void av1_update_and_record_txb_context(int plane, int block, int blk_row,
                                        int blk_col, BLOCK_SIZE plane_bsize,
                                        TX_SIZE tx_size, void *arg) {
@@ -1690,12 +2125,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   const int height = tx_size_high[tx_size];
   int cul_level = 0;
-  unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2];
 
   TX_SIZE txsize_ctx = get_txsize_context(tx_size);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-
-  nz_map_count = &td->counts->nz_map[txsize_ctx][plane_type];
 
   memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
 
@@ -1718,27 +2150,38 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
                            mbmi->sb_type, get_min_tx_size(tx_size), td->counts);
 #endif
 
-  for (c = 0; c < eob; ++c) {
-    tran_low_t v = qcoeff[scan[c]];
-    int is_nz = (v != 0);
-    int coeff_ctx = get_nz_map_ctx(tcoeff, scan[c], bwl, height, tx_type);
-    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txsize_ctx, tx_type);
-
-    if (c == seg_eob - 1) break;
-
-    ++(*nz_map_count)[coeff_ctx][is_nz];
+#if CONFIG_CTX1D
+  TX_CLASS tx_class = get_tx_class(tx_type);
+  if (tx_class == TX_CLASS_2D) {
+    av1_update_nz_eob_counts(ec_ctx, td->counts, eob, tcoeff, plane, tx_size,
+                             tx_type, scan);
+  } else {
+    const int width = tx_size_wide[tx_size];
+    const int eob_offset = width + height;
+    const int eob_mode = eob > eob_offset;
+    const TX_SIZE txs_ctx = get_txsize_context(tx_size);
+    ++td->counts->eob_mode[txs_ctx][plane_type][tx_class][eob_mode];
 #if LV_MAP_PROB
-    update_cdf(ec_ctx->nz_map_cdf[txsize_ctx][plane_type][coeff_ctx], is_nz, 2);
+    update_cdf(ec_ctx->eob_mode_cdf[txs_ctx][plane_type][tx_class], eob_mode,
+               2);
 #endif
-
-    if (is_nz) {
-      ++td->counts->eob_flag[txsize_ctx][plane_type][eob_ctx][c == (eob - 1)];
-#if LV_MAP_PROB
-      update_cdf(ec_ctx->eob_flag_cdf[txsize_ctx][plane_type][eob_ctx],
-                 c == (eob - 1), 2);
-#endif
+    if (eob_mode == 0) {
+      av1_update_nz_eob_counts(ec_ctx, td->counts, eob, tcoeff, plane, tx_size,
+                               tx_type, scan);
+    } else {
+      assert(tx_class == TX_CLASS_VERT || tx_class == TX_CLASS_HORIZ);
+      if (tx_class == TX_CLASS_VERT)
+        av1_update_nz_eob_counts_vert(ec_ctx, td->counts, eob, tcoeff, plane,
+                                      tx_size, tx_type, scan);
+      else
+        av1_update_nz_eob_counts_horiz(ec_ctx, td->counts, eob, tcoeff, plane,
+                                       tx_size, tx_type, scan);
     }
   }
+#else   // CONFIG_CTX1D
+  av1_update_nz_eob_counts(ec_ctx, td->counts, eob, tcoeff, plane, tx_size,
+                           tx_type, scan);
+#endif  // CONFIG_CTX1D
 
   // Reverse process order to handle coefficient level and sign.
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {

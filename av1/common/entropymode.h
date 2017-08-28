@@ -172,6 +172,11 @@ typedef struct frame_contexts {
 #if BR_NODE
   aom_prob coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS];
 #endif
+#if CONFIG_CTX1D
+  aom_prob eob_mode[TX_SIZES][PLANE_TYPES][TX_CLASSES];
+  aom_prob empty_line[TX_SIZES][PLANE_TYPES][TX_CLASSES][EMPTY_LINE_CONTEXTS];
+  aom_prob hv_eob[TX_SIZES][PLANE_TYPES][TX_CLASSES][HV_EOB_CONTEXTS];
+#endif  // CONFIG_CTX1D
 
 #if LV_MAP_PROB
   aom_cdf_prob txb_skip_cdf[TX_SIZES][TXB_SKIP_CONTEXTS][CDF_SIZE(2)];
@@ -188,6 +193,13 @@ typedef struct frame_contexts {
   aom_cdf_prob coeff_br_cdf[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS]
                            [LEVEL_CONTEXTS][CDF_SIZE(2)];
 #endif
+#if CONFIG_CTX1D
+  aom_cdf_prob eob_mode_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES][CDF_SIZE(2)];
+  aom_cdf_prob empty_line_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES]
+                             [EMPTY_LINE_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob hv_eob_cdf[TX_SIZES][PLANE_TYPES][TX_CLASSES][HV_EOB_CONTEXTS]
+                         [CDF_SIZE(2)];
+#endif  // CONFIG_CTX1D
 #endif  // LV_MAP_PROB
 #endif
 
@@ -430,6 +442,12 @@ typedef struct FRAME_COUNTS {
   unsigned int coeff_lps[TX_SIZES][PLANE_TYPES][LEVEL_CONTEXTS][2];
   unsigned int coeff_br[TX_SIZES][PLANE_TYPES][BASE_RANGE_SETS][LEVEL_CONTEXTS]
                        [2];
+#if CONFIG_CTX1D
+  unsigned int eob_mode[TX_SIZES][PLANE_TYPES][TX_CLASSES][2];
+  unsigned int empty_line[TX_SIZES][PLANE_TYPES][TX_CLASSES]
+                         [EMPTY_LINE_CONTEXTS][2];
+  unsigned int hv_eob[TX_SIZES][PLANE_TYPES][TX_CLASSES][HV_EOB_CONTEXTS][2];
+#endif  // CONFIG_CTX1D
 #endif  // CONFIG_LV_MAP
 
   av1_blockz_count_model blockz_count[TX_SIZES][PLANE_TYPES];

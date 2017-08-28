@@ -172,6 +172,44 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
 #endif  // BR_NODE
     }
   }
+#if CONFIG_CTX1D
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class) {
+        fc->eob_mode_cdf[tx_size][plane][tx_class][0] = AOM_ICDF(
+            128 * (aom_cdf_prob)fc->eob_mode[tx_size][plane][tx_class]);
+        fc->eob_mode_cdf[tx_size][plane][tx_class][1] = AOM_ICDF(32768);
+        fc->eob_mode_cdf[tx_size][plane][tx_class][2] = AOM_ICDF(0);
+      }
+    }
+  }
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class) {
+        for (ctx = 0; ctx < EMPTY_LINE_CONTEXTS; ++ctx) {
+          fc->empty_line_cdf[tx_size][plane][tx_class][ctx][0] = AOM_ICDF(
+              128 *
+              (aom_cdf_prob)fc->empty_line[tx_size][plane][tx_class][ctx]);
+          fc->empty_line_cdf[tx_size][plane][tx_class][ctx][1] =
+              AOM_ICDF(32768);
+          fc->empty_line_cdf[tx_size][plane][tx_class][ctx][2] = AOM_ICDF(0);
+        }
+      }
+    }
+  }
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane) {
+      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class) {
+        for (ctx = 0; ctx < HV_EOB_CONTEXTS; ++ctx) {
+          fc->hv_eob_cdf[tx_size][plane][tx_class][ctx][0] = AOM_ICDF(
+              128 * (aom_cdf_prob)fc->hv_eob[tx_size][plane][tx_class][ctx]);
+          fc->hv_eob_cdf[tx_size][plane][tx_class][ctx][1] = AOM_ICDF(32768);
+          fc->hv_eob_cdf[tx_size][plane][tx_class][ctx][2] = AOM_ICDF(0);
+        }
+      }
+    }
+  }
+#endif  // CONFIG_CTX1D
 }
 #endif  // LV_MAP_PROB
 
@@ -239,6 +277,34 @@ void av1_adapt_txb_probs(AV1_COMMON *cm, unsigned int count_sat,
 #endif  // BR_NODE
     }
   }
+#if CONFIG_CTX1D
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane)
+      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
+        fc->eob_mode[tx_size][plane][tx_class] =
+            merge_probs(pre_fc->eob_mode[tx_size][plane][tx_class],
+                        counts->eob_mode[tx_size][plane][tx_class], count_sat,
+                        update_factor);
+  }
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane)
+      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
+        for (ctx = 0; ctx < EMPTY_LINE_CONTEXTS; ++ctx)
+          fc->empty_line[tx_size][plane][tx_class][ctx] =
+              merge_probs(pre_fc->empty_line[tx_size][plane][tx_class][ctx],
+                          counts->empty_line[tx_size][plane][tx_class][ctx],
+                          count_sat, update_factor);
+  }
+  for (tx_size = 0; tx_size < TX_SIZES; ++tx_size) {
+    for (plane = 0; plane < PLANE_TYPES; ++plane)
+      for (int tx_class = 0; tx_class < TX_CLASSES; ++tx_class)
+        for (ctx = 0; ctx < HV_EOB_CONTEXTS; ++ctx)
+          fc->hv_eob[tx_size][plane][tx_class][ctx] =
+              merge_probs(pre_fc->hv_eob[tx_size][plane][tx_class][ctx],
+                          counts->hv_eob[tx_size][plane][tx_class][ctx],
+                          count_sat, update_factor);
+  }
+#endif
 }
 
 void av1_init_lv_map(AV1_COMMON *cm) {
