@@ -473,15 +473,16 @@ bool Canvas2DLayerBridge::PrepareMailboxFromImage(
 
   mailbox_info->image_->EnsureMailbox(kUnverifiedSyncToken);
 
-  if (IsHidden()) {
-    // With hidden canvases, we release the SkImage immediately because
-    // there is no need for animations to be double buffered.
-    mailbox_info->image_ = nullptr;
-  }
-
   *out_mailbox =
       viz::TextureMailbox(mailbox_info->image_->GetMailbox(),
                           mailbox_info->image_->GetSyncToken(), GL_TEXTURE_2D);
+
+  if (IsHidden()) {
+    // With hidden canvases, we release the SkImage immediately because
+    // there is no need for animations to be double buffered. Deleteing
+    // the SkImage will resulting skia's copy-on-write being skipped.
+    mailbox_info->image_ = nullptr;
+  }
 
   gl->BindTexture(GL_TEXTURE_2D, 0);
   // Because we are changing the texture binding without going through skia,
