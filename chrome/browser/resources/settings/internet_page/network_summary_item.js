@@ -138,9 +138,12 @@ Polymer({
         this.deviceIsEnabled_(deviceState)) {
       return false;
     }
-    return deviceState.SimPresent === false ||
-        deviceState.SimLockType == CrOnc.LockType.PIN ||
-        deviceState.SimLockType == CrOnc.LockType.PUK;
+    if (deviceState.SIMPresent === false)
+      return true;
+    var simLockType =
+        deviceState.SIMLockStatus ? deviceState.SIMLockStatus.LockType : '';
+    return simLockType == CrOnc.LockType.PIN ||
+        simLockType == CrOnc.LockType.PUK;
   },
 
   /**
@@ -157,11 +160,8 @@ Polymer({
       GUID: '',
       Type: CrOnc.Type.CELLULAR,
       Cellular: {
-        SIMLockStatus: {
-          LockType: deviceState.SimLockType || '',
-          LockEnabled: deviceState.SimLockType != CrOnc.LockType.NONE,
-        },
-        SIMPresent: deviceState.SimPresent,
+        SIMLockStatus: deviceState.SIMLockStatus,
+        SIMPresent: deviceState.SIMPresent,
       },
     };
   },

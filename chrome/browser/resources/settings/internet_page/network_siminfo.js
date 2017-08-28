@@ -78,7 +78,7 @@ Polymer({
     var simLockStatus = this.networkProperties.Cellular.SIMLockStatus;
     this.pukRequired_ =
         !!simLockStatus && simLockStatus.LockType == CrOnc.LockType.PUK;
-    this.lockEnabled_ = simLockStatus.LockEnabled;
+    this.lockEnabled_ = !!simLockStatus && simLockStatus.LockEnabled;
   },
 
   /** @private */
@@ -164,7 +164,7 @@ Polymer({
   onChangePinTap_: function(event) {
     if (!this.networkProperties || !this.networkProperties.Cellular)
       return;
-    event.preventDefault();
+    event.stopPropagation();
     this.error_ = ErrorType.NONE;
     this.$.changePinOld.value = '';
     this.$.changePinNew1.value = '';
@@ -205,7 +205,7 @@ Polymer({
    * @private
    */
   onUnlockPinTap_: function(event) {
-    event.preventDefault();
+    event.stopPropagation();
     if (this.pukRequired_) {
       this.showUnlockPukDialog_();
     } else {
