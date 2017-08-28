@@ -130,6 +130,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   bool LockMouse() override;
   void UnlockMouse() override;
   viz::FrameSinkId GetFrameSinkId() override;
+  viz::LocalSurfaceId GetLocalSurfaceId() const override;
   void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event,
                             const ui::LatencyInfo& latency) override;
   void ProcessMouseEvent(const blink::WebMouseEvent& event,
@@ -247,7 +248,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   // Surface-related state.
   std::unique_ptr<viz::CompositorFrameSinkSupport> support_;
-  viz::LocalSurfaceId local_surface_id_;
+  viz::LocalSurfaceId last_received_local_surface_id_;
   uint32_t next_surface_sequence_;
   gfx::Size current_surface_size_;
   float current_surface_scale_factor_;

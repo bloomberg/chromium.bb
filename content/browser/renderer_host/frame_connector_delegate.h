@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 #define CONTENT_BROWSER_RENDERER_HOST_FRAME_CONNECTOR_DELEGATE_H_
 
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
@@ -128,6 +129,12 @@ class CONTENT_EXPORT FrameConnectorDelegate {
     return viewport_intersection_rect_;
   }
 
+  // Returns the viz::LocalSurfaceId propagated from the parent to be used by
+  // this child frame.
+  const viz::LocalSurfaceId& local_surface_id() const {
+    return local_surface_id_;
+  }
+
   // Determines whether the current view's content is inert, either because
   // an HTMLDialogElement is being modally displayed in a higher-level frame,
   // or because the inert attribute has been specified.
@@ -149,6 +156,8 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // This is here rather than in the implementation class so that
   // ViewportIntersection() can return a reference.
   gfx::Rect viewport_intersection_rect_;
+
+  viz::LocalSurfaceId local_surface_id_;
 };
 
 }  // namespace content

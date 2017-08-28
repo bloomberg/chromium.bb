@@ -255,8 +255,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   virtual void DidStopFlinging() {}
 
   // Returns the ID associated with the CompositorFrameSink of this view.
+  // TODO(fsamuel): Return by const ref.
   virtual viz::FrameSinkId GetFrameSinkId();
 
+  // Returns the LocalSurfaceId allocated by the parent client for this view.
+  // TODO(fsamuel): Return by const ref.
   virtual viz::LocalSurfaceId GetLocalSurfaceId() const;
 
   // When there are multiple RenderWidgetHostViews for a single page, input

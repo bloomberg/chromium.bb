@@ -123,11 +123,12 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   }
 
   viz::SurfaceId GetSurfaceId() const {
-    return viz::SurfaceId(view_->frame_sink_id_, view_->local_surface_id_);
+    return viz::SurfaceId(view_->frame_sink_id_,
+                          view_->last_received_local_surface_id_);
   }
 
   viz::LocalSurfaceId GetLocalSurfaceId() const {
-    return view_->local_surface_id_;
+    return view_->last_received_local_surface_id_;
   }
 
   void ClearCompositorSurfaceIfNecessary() {

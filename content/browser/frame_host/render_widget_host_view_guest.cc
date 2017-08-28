@@ -124,7 +124,7 @@ void RenderWidgetHostViewGuest::Show() {
     // Since we were last shown, our renderer may have had a different surface
     // set (e.g. showing an interstitial), so we resend our current surface to
     // the renderer.
-    if (local_surface_id_.is_valid())
+    if (last_received_local_surface_id_.is_valid())
       SendSurfaceInfoToEmbedder();
   }
   host_->WasShown(ui::LatencyInfo());
