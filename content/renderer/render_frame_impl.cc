@@ -3007,8 +3007,8 @@ RenderFrameImpl::CreateWorkerFetchContext() {
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           web_provider);
   mojom::ServiceWorkerWorkerClientRequest service_worker_client_request;
-  // Sandboxed iframes are not allowed to use service worker so don't have a
-  // real service worker provider, so the provider context is null.
+  // Some sandboxed iframes are not allowed to use service worker so don't have
+  // a real service worker provider, so the provider context is null.
   if (provider->context()) {
     service_worker_client_request =
         provider->context()->CreateWorkerClientRequest();
