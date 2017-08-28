@@ -66,18 +66,12 @@ class TabCaptureApiPixelTest : public TabCaptureApiTest {
 
  protected:
   bool IsTooIntensiveForThisPlatform() const {
-    // The tests are too slow to succeed with software GL on the bots.
-    if (UsingSoftwareGL())
-      return true;
-
 #if defined(NDEBUG)
-    return false;
+    // The tests are too slow to succeed with software GL on the bots.
+    return UsingSoftwareGL();
 #else
-    // TODO(miu): Look into enabling these tests for the Debug build bots once
-    // they prove to be stable again on the Release bots.
-    // http://crbug.com/396413
-    return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-        "run-tab-capture-api-pixel-tests");
+    // The tests only run on release builds.
+    return true;
 #endif
   }
 };
