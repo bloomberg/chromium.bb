@@ -5,6 +5,7 @@
 #include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wallpaper/wallpaper_controller.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -18,7 +19,7 @@ WallpaperControllerTestApi::~WallpaperControllerTestApi() {}
 
 SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
   const SkColor color = SkColorSetRGB(60, 40, 40);
-  const SkColor expected_color = SkColorSetRGB(30, 20, 20);
+  const SkColor expected_color = SkColorSetRGB(18, 12, 12);
 
   gfx::Canvas canvas(gfx::Size(5, 5), 1.0f, true);
   canvas.DrawColor(color);

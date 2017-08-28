@@ -148,8 +148,9 @@ SkColor GetBackgroundShieldColor(const std::vector<SkColor>& prominent_colors) {
       prominent_colors[static_cast<int>(ColorProfileType::DARK_MUTED)];
   if (SK_ColorTRANSPARENT == dark_muted)
     return app_list::AppListView::kDefaultBackgroundColor;
-  return color_utils::AlphaBlend(SK_ColorBLACK, dark_muted,
-                                 app_list::AppListView::kDarkMutedBlendAlpha);
+  return color_utils::GetResultingPaintColor(
+      SkColorSetA(SK_ColorBLACK, AppListView::kAppListColorDarkenAlpha),
+      dark_muted);
 }
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeWindowFromEventHandling, false);

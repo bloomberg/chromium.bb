@@ -59,7 +59,7 @@ ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;
 
 // The alpha value used to darken a colorized shelf when the shelf is
 // translucent.
-constexpr int kShelfTranslucentColorDarkenAlpha = 128;
+constexpr int kShelfTranslucentColorDarkenAlpha = 178;
 
 // The alpha vlaue usesd to darken a colorized shelf when the shelf is opaque.
 constexpr int kShelfOpaqueColorDarkenAlpha = 178;
