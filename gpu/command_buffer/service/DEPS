@@ -1,3 +1,5 @@
 include_rules = [
+  "+cc/paint",
   "+media/media_features.h",
+  "+third_party/skia",
 ]

@@ -167,6 +167,7 @@ target(link_target_type, "service_sources") {
     ":disk_cache_proto",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//cc/paint",
     "//crypto",
     "//gpu/command_buffer/client:client_sources",
     "//gpu/command_buffer/common:gles2_utils",

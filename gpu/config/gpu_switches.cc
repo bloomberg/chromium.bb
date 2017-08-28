@@ -19,6 +19,10 @@ const char kDisableGpuRasterization[] = "disable-gpu-rasterization";
 // impl-side painting.
 const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 
+// Turns on out of process raster for the renderer whenever gpu raster
+// would have been used.  Enables the chromium_raster_transport extension.
+const char kEnableOOPRasterization[] = "enable-oop-rasterization";
+
 // Passes active gpu vendor id from browser process to GPU process.
 const char kGpuActiveVendorID[] = "gpu-active-vendor-id";
 

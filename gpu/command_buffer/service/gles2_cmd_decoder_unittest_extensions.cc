@@ -1724,6 +1724,26 @@ TEST_P(GLES2DecoderTestWithCHROMIUMPathRendering,
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+class GLES2DecoderTestWithCHROMIUMRasterTransport : public GLES2DecoderTest {
+ public:
+  GLES2DecoderTestWithCHROMIUMRasterTransport() {}
+  void SetUp() override {
+    InitState init;
+    init.gl_version = "opengl es 2.0";
+    init.has_alpha = true;
+    init.has_depth = true;
+    init.request_alpha = true;
+    init.request_depth = true;
+    init.bind_generates_resource = true;
+    init.extensions = "chromium_raster_transport";
+    InitDecoder(init);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(Service,
+                        GLES2DecoderTestWithCHROMIUMRasterTransport,
+                        ::testing::Bool());
+
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_extensions_autogen.h"
 
 }  // namespace gles2

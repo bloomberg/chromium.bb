@@ -3289,4 +3289,39 @@ void LockDiscardableTextureCHROMIUM(GLuint texture_id) {
   }
 }
 
+void BeginRasterCHROMIUM(GLuint texture_id,
+                         GLuint sk_color,
+                         GLuint msaa_sample_count,
+                         GLboolean can_use_lcd_text,
+                         GLboolean use_distance_field_text,
+                         GLint pixel_config) {
+  gles2::cmds::BeginRasterCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::BeginRasterCHROMIUM>();
+  if (c) {
+    c->Init(texture_id, sk_color, msaa_sample_count, can_use_lcd_text,
+            use_distance_field_text, pixel_config);
+  }
+}
+
+void RasterCHROMIUM(uint32_t list_shm_id,
+                    uint32_t list_shm_offset,
+                    GLint x,
+                    GLint y,
+                    GLint w,
+                    GLint h,
+                    uint32_t data_size) {
+  gles2::cmds::RasterCHROMIUM* c = GetCmdSpace<gles2::cmds::RasterCHROMIUM>();
+  if (c) {
+    c->Init(list_shm_id, list_shm_offset, x, y, w, h, data_size);
+  }
+}
+
+void EndRasterCHROMIUM() {
+  gles2::cmds::EndRasterCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::EndRasterCHROMIUM>();
+  if (c) {
+    c->Init();
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

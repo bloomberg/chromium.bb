@@ -399,5 +399,8 @@
   GLES2_GET_FUN(UnlockDiscardableTextureCHROMIUM)
 #define glLockDiscardableTextureCHROMIUM \
   GLES2_GET_FUN(LockDiscardableTextureCHROMIUM)
+#define glBeginRasterCHROMIUM GLES2_GET_FUN(BeginRasterCHROMIUM)
+#define glRasterCHROMIUM GLES2_GET_FUN(RasterCHROMIUM)
+#define glEndRasterCHROMIUM GLES2_GET_FUN(EndRasterCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

@@ -26,7 +26,8 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
                           bool use_distance_field_text,
                           int gpu_rasterization_msaa_sample_count,
                           viz::ResourceFormat preferred_tile_format,
-                          bool async_worker_context_enabled);
+                          bool async_worker_context_enabled,
+                          bool enable_oop_rasterization);
   ~GpuRasterBufferProvider() override;
 
   // Overridden from RasterBufferProvider:
@@ -97,6 +98,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
   const int msaa_sample_count_;
   const viz::ResourceFormat preferred_tile_format_;
   const bool async_worker_context_enabled_;
+  const bool enable_oop_rasterization_;
 
   std::set<RasterBufferImpl*> pending_raster_buffers_;
 

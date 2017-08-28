@@ -1207,4 +1207,17 @@ bool GLES2InterfaceStub::LockDiscardableTextureCHROMIUM(
     GLuint /* texture_id */) {
   return 0;
 }
+void GLES2InterfaceStub::BeginRasterCHROMIUM(
+    GLuint /* texture_id */,
+    GLuint /* sk_color */,
+    GLuint /* msaa_sample_count */,
+    GLboolean /* can_use_lcd_text */,
+    GLboolean /* use_distance_field_text */,
+    GLint /* pixel_config */) {}
+void GLES2InterfaceStub::RasterCHROMIUM(const cc::DisplayItemList* /* list */,
+                                        GLint /* x */,
+                                        GLint /* y */,
+                                        GLint /* w */,
+                                        GLint /* h */) {}
+void GLES2InterfaceStub::EndRasterCHROMIUM() {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

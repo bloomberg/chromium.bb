@@ -5399,4 +5399,50 @@ TEST_F(GLES2FormatTest, LockDiscardableTextureCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(GLES2FormatTest, BeginRasterCHROMIUM) {
+  cmds::BeginRasterCHROMIUM& cmd = *GetBufferAs<cmds::BeginRasterCHROMIUM>();
+  void* next_cmd =
+      cmd.Set(&cmd, static_cast<GLuint>(11), static_cast<GLuint>(12),
+              static_cast<GLuint>(13), static_cast<GLboolean>(14),
+              static_cast<GLboolean>(15), static_cast<GLint>(16));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::BeginRasterCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLuint>(11), cmd.texture_id);
+  EXPECT_EQ(static_cast<GLuint>(12), cmd.sk_color);
+  EXPECT_EQ(static_cast<GLuint>(13), cmd.msaa_sample_count);
+  EXPECT_EQ(static_cast<GLboolean>(14), cmd.can_use_lcd_text);
+  EXPECT_EQ(static_cast<GLboolean>(15), cmd.use_distance_field_text);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.pixel_config);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, RasterCHROMIUM) {
+  cmds::RasterCHROMIUM& cmd = *GetBufferAs<cmds::RasterCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<uint32_t>(11),
+                           static_cast<uint32_t>(12), static_cast<GLint>(13),
+                           static_cast<GLint>(14), static_cast<GLint>(15),
+                           static_cast<GLint>(16), static_cast<uint32_t>(17));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::RasterCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<uint32_t>(11), cmd.list_shm_id);
+  EXPECT_EQ(static_cast<uint32_t>(12), cmd.list_shm_offset);
+  EXPECT_EQ(static_cast<GLint>(13), cmd.x);
+  EXPECT_EQ(static_cast<GLint>(14), cmd.y);
+  EXPECT_EQ(static_cast<GLint>(15), cmd.w);
+  EXPECT_EQ(static_cast<GLint>(16), cmd.h);
+  EXPECT_EQ(static_cast<uint32_t>(17), cmd.data_size);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, EndRasterCHROMIUM) {
+  cmds::EndRasterCHROMIUM& cmd = *GetBufferAs<cmds::EndRasterCHROMIUM>();
+  void* next_cmd = cmd.Set(&cmd);
+  EXPECT_EQ(static_cast<uint32_t>(cmds::EndRasterCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_TEST_AUTOGEN_H_

@@ -9,6 +9,10 @@
 
 #include "base/compiler_specific.h"
 
+namespace cc {
+class DisplayItemList;
+}
+
 extern "C" typedef struct _ClientBuffer* ClientBuffer;
 extern "C" typedef struct _GLColorSpace* GLColorSpace;
 

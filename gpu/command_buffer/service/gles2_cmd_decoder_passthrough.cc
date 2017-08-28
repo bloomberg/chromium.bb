@@ -304,6 +304,11 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     return false;
   }
 
+  if (attrib_helper.enable_oop_rasterization) {
+    Destroy(true);
+    return false;
+  }
+
   bind_generates_resource_ = group_->bind_generates_resource();
 
   resources_ = group_->passthrough_resources();
@@ -1254,6 +1259,15 @@ void GLES2DecoderPassthroughImpl::VerifyServiceTextureObjectsExist() {
   for (const auto& texture_mapping : resources_->texture_object_map) {
     DCHECK_EQ(GL_TRUE, glIsTexture(texture_mapping.second->service_id()));
   }
+}
+
+error::Error GLES2DecoderPassthroughImpl::HandleRasterCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  // TODO(enne): Add CHROMIUM_raster_transport extension support to the
+  // passthrough command buffer.
+  NOTIMPLEMENTED();
+  return error::kNoError;
 }
 
 #define GLES2_CMD_OP(name)                                               \

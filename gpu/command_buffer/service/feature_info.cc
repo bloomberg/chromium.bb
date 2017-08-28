@@ -251,6 +251,9 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
       (command_line->GetSwitchValueASCII(switches::kUseGL) ==
        gl::kGLImplementationSwiftShaderName);
 
+  feature_flags_.chromium_raster_transport =
+      command_line->HasSwitch(switches::kEnableOOPRasterization);
+
   // The shader translator is needed to translate from WebGL-conformant GLES SL
   // to normal GLES SL, enforce WebGL conformance, translate from GLES SL 1.0 to
   // target context GLSL, implement emulation of OpenGL ES features on OpenGL,

@@ -379,3 +379,7 @@ GL_APICALL void         GL_APIENTRY glInitializeDiscardableTextureCHROMIUM (GLui
 GL_APICALL void         GL_APIENTRY glUnlockDiscardableTextureCHROMIUM (GLuint texture_id);
 GL_APICALL bool         GL_APIENTRY glLockDiscardableTextureCHROMIUM (GLuint texture_id);
 
+// Extension CHROMIUM_raster_transport
+GL_APICALL void         GL_APIENTRY glBeginRasterCHROMIUM (GLuint texture_id, GLuint sk_color, GLuint msaa_sample_count, GLboolean can_use_lcd_text, GLboolean use_distance_field_text, GLint pixel_config);
+GL_APICALL void         GL_APIENTRY glRasterCHROMIUM (const cc::DisplayItemList* list, GLint x, GLint y, GLint w, GLint h);
+GL_APICALL void         GL_APIENTRY glEndRasterCHROMIUM (void);

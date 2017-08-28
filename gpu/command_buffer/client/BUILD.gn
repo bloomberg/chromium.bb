@@ -15,6 +15,13 @@ group("client") {
       ":client_sources",
     ]
   }
+
+  if (!is_nacl) {
+    deps = [
+      "//cc/paint",
+      "//skia",
+    ]
+  }
 }
 
 group("gles2_cmd_helper") {
