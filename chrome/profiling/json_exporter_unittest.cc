@@ -75,13 +75,51 @@ const base::Value* FindFirstRegionWithAnyName(
   return nullptr;
 }
 
+int GetStringFromStringTable(const base::Value* strings, const char* text) {
+  for (const auto& string : strings->GetList()) {
+    const base::Value* string_id =
+        string.FindKeyOfType("id", base::Value::Type::INTEGER);
+    const base::Value* string_text =
+        string.FindKeyOfType("string", base::Value::Type::STRING);
+    if (string_id != nullptr && string_text != nullptr &&
+        string_text->GetString() == text)
+      return string_id->GetInt();
+  }
+  return -1;
+}
+
+int GetNodeWithNameID(const base::Value* nodes, int sid) {
+  for (const auto& node : nodes->GetList()) {
+    const base::Value* node_id =
+        node.FindKeyOfType("id", base::Value::Type::INTEGER);
+    const base::Value* node_name_sid =
+        node.FindKeyOfType("name_sid", base::Value::Type::INTEGER);
+    if (node_id != nullptr && node_name_sid != nullptr &&
+        node_name_sid->GetInt() == sid)
+      return node_id->GetInt();
+  }
+  return -1;
+}
+
+int GetOffsetForBacktraceID(const base::Value* nodes, int id) {
+  int offset = 0;
+  for (const auto& node : nodes->GetList()) {
+    if (node.GetInt() == id)
+      return offset;
+    offset++;
+  }
+  return -1;
+}
+
 bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
   for (const auto& backtrace : backtraces->GetList()) {
     const base::Value* backtrace_id =
         backtrace.FindKeyOfType("id", base::Value::Type::INTEGER);
+    if (backtrace_id == nullptr)
+      continue;
+
     const base::Value* backtrace_parent =
         backtrace.FindKeyOfType("parent", base::Value::Type::INTEGER);
-
     int backtrace_parent_int = kNoParent;
     if (backtrace_parent)
       backtrace_parent_int = backtrace_parent->GetInt();
@@ -94,87 +132,121 @@ bool IsBacktraceInList(const base::Value* backtraces, int id, int parent) {
 
 }  // namespace
 
-// Test failing. crbug.com/759176
-TEST(ProfilingJsonExporterTest, DISABLED_Simple) {
+TEST(ProfilingJsonExporterTest, Simple) {
   BacktraceStorage backtrace_storage;
 
   std::vector<Address> stack1;
-  stack1.push_back(Address(1234));
-  stack1.push_back(Address(5678));
+  stack1.push_back(Address(0x1234));
+  stack1.push_back(Address(0x5678));
   const Backtrace* bt1 = backtrace_storage.Insert(std::move(stack1));
 
   std::vector<Address> stack2;
-  stack2.push_back(Address(1234));
-  stack2.push_back(Address(9012));
-  stack2.push_back(Address(9013));
+  stack2.push_back(Address(0x1234));
+  stack2.push_back(Address(0x9012));
+  stack2.push_back(Address(0x9013));
   const Backtrace* bt2 = backtrace_storage.Insert(std::move(stack2));
 
   AllocationEventSet events;
-  events.insert(AllocationEvent(Address(0x1), 16, bt1));
+  events.insert(AllocationEvent(Address(0x1), 20, bt1));
   events.insert(AllocationEvent(Address(0x2), 32, bt2));
-  events.insert(AllocationEvent(Address(0x3), 16, bt1));
+  events.insert(AllocationEvent(Address(0x3), 20, bt1));
 
-  {
-    std::ostringstream stream;
-    ExportAllocationEventSetToJSON(1234, events, MemoryMap(), stream, nullptr);
-    std::string json = stream.str();
+  std::ostringstream stream;
+  ExportAllocationEventSetToJSON(0x1234, events, MemoryMap(), stream, nullptr);
+  std::string json = stream.str();
 
-    // JSON should parse.
-    base::JSONReader reader(base::JSON_PARSE_RFC);
-    std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
-    ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
-        << reader.GetErrorMessage();
-    ASSERT_TRUE(root);
+  // JSON should parse.
+  base::JSONReader reader(base::JSON_PARSE_RFC);
+  std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
+  ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
+      << reader.GetErrorMessage();
+  ASSERT_TRUE(root);
 
-    // The trace array contains two items, a process_name one and a
-    // periodic_interval one. Find the latter.
-    const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
-    ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
+  // The trace array contains two items, a process_name one and a
+  // periodic_interval one. Find the latter.
+  const base::Value* periodic_interval = FindFirstPeriodicInterval(*root);
+  ASSERT_TRUE(periodic_interval) << "Array contains no periodic_interval";
 
-    const base::Value* heaps_v2 =
-        periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
-    ASSERT_TRUE(heaps_v2);
+  const base::Value* heaps_v2 =
+      periodic_interval->FindPath({"args", "dumps", "heaps_v2"});
+  ASSERT_TRUE(heaps_v2);
 
-    // Counts should be a list of two items, a 1 and a 2 (in either order). The
-    // two matching 16-byte allocations should be coalesced to produce the 2.
-    const base::Value* counts =
-        heaps_v2->FindPath({"allocators", "malloc", "counts"});
-    ASSERT_TRUE(counts);
-    EXPECT_EQ(2u, counts->GetList().size());
-    EXPECT_TRUE((counts->GetList()[0].GetInt() == 1 &&
-                 counts->GetList()[1].GetInt() == 2) ||
-                (counts->GetList()[0].GetInt() == 2 &&
-                 counts->GetList()[1].GetInt() == 1));
+  // Retrieve maps and validate their structure.
+  const base::Value* nodes = heaps_v2->FindPath({"maps", "nodes"});
+  const base::Value* strings = heaps_v2->FindPath({"maps", "strings"});
+  ASSERT_TRUE(nodes);
+  ASSERT_TRUE(strings);
 
-    // Nodes should be a list with 4 items.
-    //   [0] => address: 1234  parent: none
-    //   [1] => address: 5678  parent: 0
-    //   [2] => address: 9012  parent: 0
-    //   [3] => address: 9013  parent: 2
-    const base::Value* nodes = heaps_v2->FindPath({"maps", "nodes"});
-    ASSERT_TRUE(nodes);
-    EXPECT_EQ(4u, nodes->GetList().size());
-    EXPECT_TRUE(IsBacktraceInList(nodes, 0, kNoParent));
-    EXPECT_TRUE(IsBacktraceInList(nodes, 1, 0));
-    EXPECT_TRUE(IsBacktraceInList(nodes, 2, 0));
-    EXPECT_TRUE(IsBacktraceInList(nodes, 3, 2));
-  }
+  // Validate the strings table.
+  EXPECT_EQ(5u, strings->GetList().size());
+  int sid_unknown = GetStringFromStringTable(strings, "[unknown]");
+  int sid_1234 = GetStringFromStringTable(strings, "pc:1234");
+  int sid_5678 = GetStringFromStringTable(strings, "pc:5678");
+  int sid_9012 = GetStringFromStringTable(strings, "pc:9012");
+  int sid_9013 = GetStringFromStringTable(strings, "pc:9013");
+  EXPECT_NE(-1, sid_unknown);
+  EXPECT_NE(-1, sid_1234);
+  EXPECT_NE(-1, sid_5678);
+  EXPECT_NE(-1, sid_9012);
+  EXPECT_NE(-1, sid_9013);
 
-  // Check that ExportMemoryMapsAndV2StackTraceToJSON parses. Assume the
-  // contents is reasonable, given that it's nested in
-  // ExportAllocationEventSetToJSON.
-  {
-    std::ostringstream stream;
-    ExportMemoryMapsAndV2StackTraceToJSON(events, MemoryMap(), stream);
-    std::string json = stream.str();
+  // Validate the nodes table.
+  // Nodes should be a list with 4 items.
+  //   [0] => address: 1234  parent: none
+  //   [1] => address: 5678  parent: 0
+  //   [2] => address: 9012  parent: 0
+  //   [3] => address: 9013  parent: 2
+  EXPECT_EQ(4u, nodes->GetList().size());
+  int id0 = GetNodeWithNameID(nodes, sid_1234);
+  int id1 = GetNodeWithNameID(nodes, sid_5678);
+  int id2 = GetNodeWithNameID(nodes, sid_9012);
+  int id3 = GetNodeWithNameID(nodes, sid_9013);
+  EXPECT_NE(-1, id0);
+  EXPECT_NE(-1, id1);
+  EXPECT_NE(-1, id2);
+  EXPECT_NE(-1, id3);
+  EXPECT_TRUE(IsBacktraceInList(nodes, id0, kNoParent));
+  EXPECT_TRUE(IsBacktraceInList(nodes, id1, id0));
+  EXPECT_TRUE(IsBacktraceInList(nodes, id2, id0));
+  EXPECT_TRUE(IsBacktraceInList(nodes, id3, id2));
 
-    // JSON should parse.
-    base::JSONReader reader(base::JSON_PARSE_RFC);
-    std::unique_ptr<base::Value> root = reader.ReadToValue(stream.str());
-    ASSERT_EQ(base::JSONReader::JSON_NO_ERROR, reader.error_code())
-        << reader.GetErrorMessage();
-    ASSERT_TRUE(root);
-  }
+  // Retrieve the allocations and valid their structure.
+  const base::Value* counts =
+      heaps_v2->FindPath({"allocators", "malloc", "counts"});
+  const base::Value* types =
+      heaps_v2->FindPath({"allocators", "malloc", "types"});
+  const base::Value* sizes =
+      heaps_v2->FindPath({"allocators", "malloc", "sizes"});
+  const base::Value* backtraces =
+      heaps_v2->FindPath({"allocators", "malloc", "nodes"});
+
+  ASSERT_TRUE(counts);
+  ASSERT_TRUE(types);
+  ASSERT_TRUE(sizes);
+  ASSERT_TRUE(backtraces);
+
+  // Counts should be a list of two items, a 1 and a 2. The two matching 20-byte
+  // allocations should be coalesced to produce the 2.
+  EXPECT_EQ(2u, counts->GetList().size());
+  EXPECT_EQ(2u, types->GetList().size());
+  EXPECT_EQ(2u, sizes->GetList().size());
+
+  int node1 = GetOffsetForBacktraceID(backtraces, id1);
+  int node3 = GetOffsetForBacktraceID(backtraces, id3);
+  EXPECT_NE(-1, node1);
+  EXPECT_NE(-1, node3);
+
+  // Validate node allocated with |stack1|.
+  EXPECT_EQ(2, counts->GetList()[node1].GetInt());
+  EXPECT_EQ(0, types->GetList()[node1].GetInt());
+  EXPECT_EQ(20, sizes->GetList()[node1].GetInt());
+  EXPECT_EQ(id1, backtraces->GetList()[node1].GetInt());
+
+  // Validate node allocated with |stack2|.
+  EXPECT_EQ(1, counts->GetList()[node3].GetInt());
+  EXPECT_EQ(0, types->GetList()[node3].GetInt());
+  EXPECT_EQ(32, sizes->GetList()[node3].GetInt());
+  EXPECT_EQ(id3, backtraces->GetList()[node3].GetInt());
 }
 
 TEST(ProfilingJsonExporterTest, MemoryMaps) {
