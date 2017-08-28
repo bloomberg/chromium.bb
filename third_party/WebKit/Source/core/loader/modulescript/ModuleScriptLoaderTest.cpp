@@ -16,6 +16,7 @@
 #include "core/testing/DummyModulator.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
+#include "core/workers/MainThreadWorkletReportingProxy.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/testing/FetchTestingPlatformSupport.h"
@@ -131,6 +132,7 @@ class ModuleScriptLoaderTest : public ::testing::Test {
  protected:
   ScopedTestingPlatformSupport<FetchTestingPlatformSupport> platform_;
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
+  std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;
   Persistent<ResourceFetcher> fetcher_;
   Persistent<ModuleScriptLoaderTestModulator> modulator_;
   Persistent<MainThreadWorkletGlobalScope> global_scope_;
@@ -153,10 +155,12 @@ void ModuleScriptLoaderTest::InitializeForDocument() {
 }
 
 void ModuleScriptLoaderTest::InitializeForWorklet() {
+  reporting_proxy_ =
+      WTF::MakeUnique<MainThreadWorkletReportingProxy>(&GetDocument());
   global_scope_ = new MainThreadWorkletGlobalScope(
       &GetFrame(), KURL(kParsedURLString, "https://example.test/worklet.js"),
       "fake user agent", GetDocument().GetSecurityOrigin(),
-      ToIsolate(&GetDocument()));
+      ToIsolate(&GetDocument()), *reporting_proxy_);
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");
   global_scope_->SetModuleResponsesMapProxyForTesting(
       WorkletModuleResponsesMapProxy::Create(

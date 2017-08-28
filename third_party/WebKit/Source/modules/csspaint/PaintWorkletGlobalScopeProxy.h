@@ -7,6 +7,7 @@
 
 #include "core/workers/WorkletGlobalScopeProxy.h"
 
+#include "core/workers/MainThreadWorkletReportingProxy.h"
 #include "modules/ModulesExport.h"
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
 
@@ -45,6 +46,7 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;
   Member<PaintWorkletGlobalScope> global_scope_;
 };
 

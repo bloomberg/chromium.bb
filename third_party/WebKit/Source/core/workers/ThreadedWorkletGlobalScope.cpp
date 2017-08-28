@@ -28,23 +28,12 @@ ThreadedWorkletGlobalScope::ThreadedWorkletGlobalScope(
                          user_agent,
                          std::move(security_origin),
                          isolate,
-                         worker_clients),
+                         worker_clients,
+                         thread->GetWorkerReportingProxy()),
       thread_(thread) {}
 
 ThreadedWorkletGlobalScope::~ThreadedWorkletGlobalScope() {
   DCHECK(!thread_);
-}
-
-void ThreadedWorkletGlobalScope::ReportFeature(WebFeature feature) {
-  DCHECK(IsContextThread());
-  DCHECK(thread_);
-  thread_->GetWorkerReportingProxy().CountFeature(feature);
-}
-
-void ThreadedWorkletGlobalScope::ReportDeprecation(WebFeature feature) {
-  DCHECK(IsContextThread());
-  DCHECK(thread_);
-  thread_->GetWorkerReportingProxy().CountDeprecation(feature);
 }
 
 void ThreadedWorkletGlobalScope::Dispose() {

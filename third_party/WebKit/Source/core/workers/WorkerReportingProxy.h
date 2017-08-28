@@ -32,6 +32,7 @@
 #define WorkerReportingProxy_h
 
 #include <memory>
+#include "bindings/core/v8/SourceLocation.h"
 #include "core/CoreExport.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleTypes.h"
@@ -41,7 +42,6 @@
 
 namespace blink {
 
-class SourceLocation;
 class WorkerOrWorkletGlobalScope;
 
 // APIs used by workers to report console and worker activity.
