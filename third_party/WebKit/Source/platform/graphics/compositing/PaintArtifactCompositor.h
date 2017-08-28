@@ -31,6 +31,7 @@ class JSONObject;
 class PaintArtifact;
 class SynthesizedClip;
 class WebLayer;
+class WebLayerScrollClient;
 struct PaintChunk;
 
 // Responsible for managing compositing in terms of a PaintArtifact.
@@ -48,8 +49,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor
  public:
   ~PaintArtifactCompositor();
 
-  static std::unique_ptr<PaintArtifactCompositor> Create() {
-    return WTF::WrapUnique(new PaintArtifactCompositor());
+  static std::unique_ptr<PaintArtifactCompositor> Create(
+      WebLayerScrollClient& client) {
+    return WTF::WrapUnique(new PaintArtifactCompositor(client));
   }
 
   // Updates the layer tree to match the provided paint artifact.
@@ -122,7 +124,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor
     bool requires_own_layer;
   };
 
-  PaintArtifactCompositor();
+  PaintArtifactCompositor(WebLayerScrollClient&);
 
   void RemoveChildLayers();
 
@@ -196,6 +198,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor
       const ClipPaintPropertyNode*,
       CompositorElementId& mask_isolation_id,
       CompositorElementId& mask_effect_id) final;
+
+  // Provides a callback for notifying blink of composited scrolling.
+  WebLayerScrollClient& scroll_client_;
 
   bool tracks_raster_invalidations_;
 

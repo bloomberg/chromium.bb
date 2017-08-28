@@ -87,8 +87,7 @@ static bool UpdateScroll(
     const IntSize& bounds,
     bool user_scrollable_horizontal,
     bool user_scrollable_vertical,
-    MainThreadScrollingReasons main_thread_scrolling_reasons,
-    WebLayerScrollClient* scroll_client) {
+    MainThreadScrollingReasons main_thread_scrolling_reasons) {
   DCHECK(!RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   auto element_id = CompositorElementIdFromUniqueObjectId(
       frame_view.GetLayoutView()->UniqueId(),
@@ -97,14 +96,12 @@ static bool UpdateScroll(
     auto existing_reasons = existing_scroll->GetMainThreadScrollingReasons();
     existing_scroll->Update(
         std::move(parent), IntPoint(), clip, bounds, user_scrollable_horizontal,
-        user_scrollable_vertical, main_thread_scrolling_reasons, element_id,
-        scroll_client);
+        user_scrollable_vertical, main_thread_scrolling_reasons, element_id);
     return existing_reasons != main_thread_scrolling_reasons;
   }
   frame_view.SetScrollNode(ScrollPaintPropertyNode::Create(
       std::move(parent), IntPoint(), clip, bounds, user_scrollable_horizontal,
-      user_scrollable_vertical, main_thread_scrolling_reasons, element_id,
-      scroll_client));
+      user_scrollable_vertical, main_thread_scrolling_reasons, element_id));
   return true;
 }
 
@@ -195,8 +192,7 @@ void PaintPropertyTreeBuilder::UpdateProperties(
 
       full_context.force_subtree_update |= UpdateScroll(
           frame_view, context.current.scroll, scroll_clip, scroll_bounds,
-          user_scrollable_horizontal, user_scrollable_vertical, reasons,
-          frame_view.GetPage()->GetScrollingCoordinator());
+          user_scrollable_horizontal, user_scrollable_vertical, reasons);
     } else if (frame_view.ScrollNode()) {
       // Ensure pre-existing properties are cleared if there is no scrolling.
       frame_view.SetScrollNode(nullptr);
@@ -1026,8 +1022,7 @@ void PaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation(
       auto result = properties.UpdateScroll(
           context.current.scroll, bounds_offset, container_bounds,
           scroll_bounds, user_scrollable_horizontal, user_scrollable_vertical,
-          reasons, element_id,
-          object.GetFrameView()->GetPage()->GetScrollingCoordinator());
+          reasons, element_id);
       force_subtree_update |= result.NewNodeCreated();
     } else {
       // Ensure pre-existing properties are cleared.

@@ -18,7 +18,6 @@
 namespace blink {
 
 using MainThreadScrollingReasons = uint32_t;
-class WebLayerScrollClient;
 
 // A scroll node contains auxiliary scrolling information which includes how far
 // an area can be scrolled, main thread scrolling reasons, etc. Scroll nodes
@@ -46,12 +45,11 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
-      CompositorElementId compositor_element_id,
-      WebLayerScrollClient* scroll_client) {
+      CompositorElementId compositor_element_id) {
     return AdoptRef(new ScrollPaintPropertyNode(
         std::move(parent), bounds_offset, container_bounds, bounds,
         user_scrollable_horizontal, user_scrollable_vertical,
-        main_thread_scrolling_reasons, compositor_element_id, scroll_client));
+        main_thread_scrolling_reasons, compositor_element_id));
   }
 
   bool Update(PassRefPtr<const ScrollPaintPropertyNode> parent,
@@ -61,8 +59,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
               bool user_scrollable_horizontal,
               bool user_scrollable_vertical,
               MainThreadScrollingReasons main_thread_scrolling_reasons,
-              CompositorElementId compositor_element_id,
-              WebLayerScrollClient* scroll_client) {
+              CompositorElementId compositor_element_id) {
     bool parent_changed = PaintPropertyNode::Update(std::move(parent));
 
     if (bounds_offset == bounds_offset_ &&
@@ -70,8 +67,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         user_scrollable_horizontal == user_scrollable_horizontal_ &&
         user_scrollable_vertical == user_scrollable_vertical_ &&
         main_thread_scrolling_reasons == main_thread_scrolling_reasons_ &&
-        compositor_element_id_ == compositor_element_id &&
-        scroll_client == scroll_client_)
+        compositor_element_id_ == compositor_element_id)
       return parent_changed;
 
     SetChanged();
@@ -83,7 +79,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
     compositor_element_id_ = compositor_element_id;
     DCHECK(ElementIdNamespaceIsForScrolling());
-    scroll_client_ = scroll_client;
     return true;
   }
 
@@ -121,8 +116,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
     return compositor_element_id_;
   }
 
-  WebLayerScrollClient* ScrollClient() const { return scroll_client_; }
-
 #if DCHECK_IS_ON()
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // a scroll node before it has been updated, to later detect changes.
@@ -131,8 +124,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         AdoptRef(new ScrollPaintPropertyNode(
             Parent(), bounds_offset_, container_bounds_, bounds_,
             user_scrollable_horizontal_, user_scrollable_vertical_,
-            main_thread_scrolling_reasons_, compositor_element_id_,
-            scroll_client_));
+            main_thread_scrolling_reasons_, compositor_element_id_));
     return cloned;
   }
 
@@ -144,8 +136,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
            user_scrollable_horizontal_ == o.user_scrollable_horizontal_ &&
            user_scrollable_vertical_ == o.user_scrollable_vertical_ &&
            main_thread_scrolling_reasons_ == o.main_thread_scrolling_reasons_ &&
-           compositor_element_id_ == o.compositor_element_id_ &&
-           scroll_client_ == o.scroll_client_;
+           compositor_element_id_ == o.compositor_element_id_;
   }
 
   String ToTreeString() const;
@@ -162,8 +153,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
       bool user_scrollable_horizontal,
       bool user_scrollable_vertical,
       MainThreadScrollingReasons main_thread_scrolling_reasons,
-      CompositorElementId compositor_element_id,
-      WebLayerScrollClient* scroll_client)
+      CompositorElementId compositor_element_id)
       : PaintPropertyNode(std::move(parent)),
         bounds_offset_(bounds_offset),
         container_bounds_(container_bounds),
@@ -171,8 +161,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
         user_scrollable_horizontal_(user_scrollable_horizontal),
         user_scrollable_vertical_(user_scrollable_vertical),
         main_thread_scrolling_reasons_(main_thread_scrolling_reasons),
-        compositor_element_id_(compositor_element_id),
-        scroll_client_(scroll_client) {
+        compositor_element_id_(compositor_element_id) {
     DCHECK(ElementIdNamespaceIsForScrolling());
   }
 
@@ -191,9 +180,6 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
   // The scrolling element id is stored directly on the scroll node and not on
   // the associated TransformPaintPropertyNode used for scroll offset.
   CompositorElementId compositor_element_id_;
-  // TODO(pdr): This is the same on all scroll nodes. Refactor this to be stored
-  // in a more central place.
-  WebLayerScrollClient* scroll_client_;
 };
 
 // Redeclared here to avoid ODR issues.
