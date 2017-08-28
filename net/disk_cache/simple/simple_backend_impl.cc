@@ -92,9 +92,9 @@ base::LazyInstance<LeakySequencedWorkerPool>::Leaky g_sequenced_worker_pool =
     LAZY_INSTANCE_INITIALIZER;
 
 scoped_refptr<base::SequencedTaskRunner> FallbackToInternalIfNull(
-    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread) {
-  if (cache_thread)
-    return cache_thread;
+    const scoped_refptr<base::SequencedTaskRunner>& cache_runner) {
+  if (cache_runner)
+    return cache_runner;
   return base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
@@ -255,12 +255,12 @@ SimpleBackendImpl::SimpleBackendImpl(
     scoped_refptr<BackendCleanupTracker> cleanup_tracker,
     int max_bytes,
     net::CacheType cache_type,
-    const scoped_refptr<base::SingleThreadTaskRunner>& cache_thread,
+    const scoped_refptr<base::SequencedTaskRunner>& cache_runner,
     net::NetLog* net_log)
     : cleanup_tracker_(std::move(cleanup_tracker)),
       path_(path),
       cache_type_(cache_type),
-      cache_runner_(FallbackToInternalIfNull(cache_thread)),
+      cache_runner_(FallbackToInternalIfNull(cache_runner)),
       orig_max_size_(max_bytes),
       entry_operations_mode_(cache_type == net::DISK_CACHE
                                  ? SimpleEntryImpl::OPTIMISTIC_OPERATIONS
