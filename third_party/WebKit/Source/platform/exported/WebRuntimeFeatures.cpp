@@ -248,6 +248,10 @@ void WebRuntimeFeatures::EnablePermissionsAPI(bool enable) {
   RuntimeEnabledFeatures::SetPermissionsEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnablePreloadDefaultIsMetadata(bool enable) {
+  RuntimeEnabledFeatures::SetPreloadDefaultIsMetadataEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableScriptedSpeech(bool enable) {
   RuntimeEnabledFeatures::SetScriptedSpeechEnabled(enable);
 }

@@ -114,8 +114,8 @@ TEST_P(HTMLMediaElementTest, preloadType) {
       {false, false, true, TestURLScheme::kHttp, "auto", "metadata"},
       {false, false, true, TestURLScheme::kHttp, "scheme", "metadata"},
       {false, false, true, TestURLScheme::kHttp, "none", "none"},
-      // Tests that the preload is overriden to "auto"
-      {false, false, false, TestURLScheme::kHttp, "foo", "auto"},
+      // Tests that the preload is overriden to "metadata".
+      {false, false, false, TestURLScheme::kHttp, "foo", "metadata"},
   };
 
   int index = 0;
