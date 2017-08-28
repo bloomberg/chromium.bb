@@ -496,8 +496,9 @@ void WebViewGuest::GuestDestroyed() {
 void WebViewGuest::GuestReady() {
   // The guest RenderView should always live in an isolated guest process.
   CHECK(web_contents()->GetRenderProcessHost()->IsForGuestsOnly());
-  Send(new ExtensionMsg_SetFrameName(
-      web_contents()->GetRenderViewHost()->GetRoutingID(), name_));
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  main_frame->Send(
+      new ExtensionMsg_SetFrameName(main_frame->GetRoutingID(), name_));
 
   // We don't want to accidentally set the opacity of an interstitial page.
   // WebContents::GetRenderWidgetHostView will return the RWHV of an
@@ -1182,7 +1183,9 @@ void WebViewGuest::SetName(const std::string& name) {
     return;
   name_ = name;
 
-  Send(new ExtensionMsg_SetFrameName(routing_id(), name_));
+  content::RenderFrameHost* main_frame = web_contents()->GetMainFrame();
+  main_frame->Send(
+      new ExtensionMsg_SetFrameName(main_frame->GetRoutingID(), name_));
 }
 
 void WebViewGuest::SetZoom(double zoom_factor) {
