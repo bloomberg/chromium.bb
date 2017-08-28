@@ -21,10 +21,11 @@ import static android.support.annotation.RestrictTo.Scope.GROUP_ID;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RestrictTo;
 import android.support.design.R;
+import android.support.design.internal.BottomNavigationItemView;
+import android.support.design.internal.BottomNavigationPresenter;
 import android.support.v4.util.Pools;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.view.menu.MenuBuilder;
@@ -82,7 +83,12 @@ public class BottomNavigationMenuView extends ViewGroup implements MenuView {
         mOnClickListener = new OnClickListener() {
             @Override
             public void onClick(View v) {
-                final BottomNavigationItemView itemView = (BottomNavigationItemView) v;
+                BottomNavigationItemView itemView;
+                try {
+                    itemView = (BottomNavigationItemView) v;
+                } catch (ClassCastException e) {
+                    return;
+                }
                 final int itemPosition = itemView.getItemPosition();
                 if (!mMenu.performItemAction(itemView.getItemData(), mPresenter, 0)) {
                     activateNewButton(itemPosition);

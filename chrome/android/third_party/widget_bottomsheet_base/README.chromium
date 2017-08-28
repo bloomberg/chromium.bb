@@ -6,4 +6,5 @@ Description:
 Bottom navigation menu widget from Android SDK Sources 25.
 
 Local Modifications:
-* None.
+* Change package.
+* Removed unnecessary version check when creating animation helper in BottomNavigationMenuView.
