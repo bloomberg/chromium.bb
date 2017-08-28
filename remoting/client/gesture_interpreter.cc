@@ -13,7 +13,7 @@
 
 namespace {
 
-const float kOneFingerFlingTimeConstant = 325.f;
+const float kOneFingerFlingTimeConstant = 180.f;
 const float kScrollFlingTimeConstant = 250.f;
 
 }  // namespace

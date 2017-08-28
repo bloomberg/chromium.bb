@@ -14,15 +14,13 @@ const float kSecToMs = 0.001f;
 
 // TODO(yuweih): May need to tweak these numbers to get better smoothness.
 
-// Stop flinging if the speed drops below this.
-// 0.5px per 16ms. i.e. 0.5px/frame.
-// TODO(yuweih): The screen unit may not be in pixel. This needs to be
-//               normalized with the DPI.
-const float kMinTrackSpeed = 0.03125f;
+// Stop flinging if the speed drops below this. This is a small speed to make
+// sure the animation stops smoothly.
+const float kMinTrackSpeed = 0.01f;
 
 // The minimum displacement needed to trigger the fling animation. This is to
 // prevent unintentional fling with low velocity.
-const float kMinDisplacement = 50.f;
+const float kMinDisplacement = 20.f;
 
 float GetDisplacement(float time_constant,
                       float initial_speed_rate,
