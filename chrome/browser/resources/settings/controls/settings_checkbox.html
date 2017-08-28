@@ -20,6 +20,12 @@
       }
 
       paper-checkbox {
+        /* Handle overflow of subLabel when it is larger than one line. */
+        align-items: center;
+        display: flex;
+        /* Additional margin in case subLabel needs more than one line. */
+        margin-bottom: 4px;
+        margin-top: 4px;
         width: 100%;
       }
 
@@ -35,12 +41,15 @@
         @apply(--settings-checkbox-label);
       }
     </style>
-    <div id="outerRow" noSubLabel$="[[!subLabel]]">
+    <div id="outerRow" noSubLabel$="[[!hasSubLabel_(subLabel, subLabelHtml)]]">
       <paper-checkbox id="checkbox" checked="{{checked}}"
           on-change="notifyChangedByUserInteraction"
           disabled="[[controlDisabled_(disabled, pref.*)]]">
         <div class="label">[[label]] <slot></slot></div>
-        <div class="secondary label">[[subLabel]]</div>
+        <div class="secondary label">
+          <div inner-h-t-m-l="[[subLabelHtml]]"></div>
+          [[subLabel]]
+        </div>
       </paper-checkbox>
       <template is="dom-if" if="[[pref.controlledBy]]">
         <cr-policy-pref-indicator pref="[[pref]]" icon-aria-label="[[label]]">
