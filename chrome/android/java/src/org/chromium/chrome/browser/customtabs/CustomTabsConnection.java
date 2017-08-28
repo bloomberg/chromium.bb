@@ -958,12 +958,10 @@ public class CustomTabsConnection {
     boolean notifyNavigationEvent(CustomTabsSessionToken session, int navigationEvent) {
         CustomTabsCallback callback = mClientManager.getCallbackForSession(session);
         if (callback == null) return false;
-        // SystemClock.uptimeMillis() is used here as it (as of June 2017) uses the same system call
-        // as all the native side of Chrome, and this is the same clock used for page load metrics.
-        Bundle extras = new Bundle();
-        extras.putLong("timestampUptimeMillis", SystemClock.uptimeMillis());
+
         try {
-            callback.onNavigationEvent(navigationEvent, extras);
+            callback.onNavigationEvent(
+                    navigationEvent, getExtrasBundleForNavigationEventForSession(session));
         } catch (Exception e) {
             // Catching all exceptions is really bad, but we need it here,
             // because Android exposes us to client bugs by throwing a variety
@@ -972,6 +970,18 @@ public class CustomTabsConnection {
         }
         logCallback("onNavigationEvent()", navigationEvent);
         return true;
+    }
+
+    /**
+     * @return The {@link Bundle} to use as extra to
+     *         {@link CustomTabsCallback#onNavigationEvent(int, Bundle)}
+     */
+    protected Bundle getExtrasBundleForNavigationEventForSession(CustomTabsSessionToken session) {
+        // SystemClock.uptimeMillis() is used here as it (as of June 2017) uses the same system call
+        // as all the native side of Chrome, and this is the same clock used for page load metrics.
+        Bundle extras = new Bundle();
+        extras.putLong("timestampUptimeMillis", SystemClock.uptimeMillis());
+        return extras;
     }
 
     /**

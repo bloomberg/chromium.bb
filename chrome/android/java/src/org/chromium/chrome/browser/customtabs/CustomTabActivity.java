@@ -285,6 +285,14 @@ public class CustomTabActivity extends ChromeActivity {
     }
 
     /**
+     * @return The url for the page displayed using the current {@link CustomTabContentHandler}.
+     */
+    public static String getCurrentUrlForActiveCustomTabSession() {
+        if (sActiveContentHandler == null) return null;
+        return sActiveContentHandler.getCurrentUrl();
+    }
+
+    /**
      * Checks whether the active {@link CustomTabContentHandler} belongs to the given session, and
      * if true, update toolbar's custom button.
      * @param session     The {@link IBinder} that the calling client represents.
@@ -546,6 +554,11 @@ public class CustomTabActivity extends ChromeActivity {
                 if (mBottomBarDelegate == null) return false;
                 return mBottomBarDelegate.updateRemoteViews(remoteViews, clickableIDs,
                         pendingIntent);
+            }
+
+            @Override
+            public String getCurrentUrl() {
+                return getActivityTab() == null ? null : getActivityTab().getUrl();
             }
         };
         recordClientPackageName();
