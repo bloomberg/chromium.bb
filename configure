@@ -521,6 +521,7 @@ post_process_cmdline() {
     soft_enable compound_segment
     soft_enable interintra
     soft_enable one_sided_compound
+    soft_enable ext_comp_refs
     soft_enable smooth_hv
     soft_enable parallel_deblocking
     soft_enable rect_intra_pred
