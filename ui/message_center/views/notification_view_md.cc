@@ -75,6 +75,9 @@ const SkColor kActionButtonTextColor = SkColorSetRGB(0x33, 0x67, 0xD6);
 // Background color of the large image.
 const SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
+const SkColor kRegularTextColorMD = SkColorSetRGB(0x21, 0x21, 0x21);
+const SkColor kDimTextColorMD = SkColorSetRGB(0x75, 0x75, 0x75);
+
 // Max number of lines for message_view_.
 constexpr int kMaxLinesForMessageView = 1;
 constexpr int kMaxLinesForExpandedMessageView = 4;
@@ -119,7 +122,7 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   title->SetFontList(font_list);
   title->set_collapse_when_hidden(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title->SetEnabledColor(message_center::kRegularTextColor);
+  title->SetEnabledColor(message_center::kRegularTextColorMD);
   title->SetBackgroundColor(message_center::kDimTextBackgroundColor);
   AddChildView(title);
 
@@ -128,7 +131,7 @@ ItemView::ItemView(const message_center::NotificationItem& item) {
   message->SetFontList(font_list);
   message->set_collapse_when_hidden(true);
   message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  message->SetEnabledColor(message_center::kDimTextColor);
+  message->SetEnabledColor(kDimTextColorMD);
   message->SetBackgroundColor(message_center::kDimTextBackgroundColor);
   AddChildView(message);
 }
@@ -180,13 +183,13 @@ CompactTitleMessageView::CompactTitleMessageView() {
   title_view_ = new views::Label();
   title_view_->SetFontList(font_list);
   title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_view_->SetEnabledColor(message_center::kRegularTextColor);
+  title_view_->SetEnabledColor(kRegularTextColorMD);
   AddChildView(title_view_);
 
   message_view_ = new views::Label();
   message_view_->SetFontList(font_list);
   message_view_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-  message_view_->SetEnabledColor(message_center::kDimTextColor);
+  message_view_->SetEnabledColor(kDimTextColorMD);
   AddChildView(message_view_);
 }
 
@@ -616,7 +619,7 @@ void NotificationViewMD::CreateOrUpdateTitleView(
     title_view_ = new views::Label(title);
     title_view_->SetFontList(font_list);
     title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    title_view_->SetEnabledColor(message_center::kRegularTextColor);
+    title_view_->SetEnabledColor(kRegularTextColorMD);
     left_content_->AddChildView(title_view_);
   } else {
     title_view_->SetText(title);
@@ -642,8 +645,7 @@ void NotificationViewMD::CreateOrUpdateMessageView(
   if (!message_view_) {
     message_view_ = new BoundedLabel(text, font_list);
     message_view_->SetLineLimit(kMaxLinesForMessageView);
-    message_view_->SetColors(message_center::kDimTextColor,
-                             kContextTextBackgroundColor);
+    message_view_->SetColors(kDimTextColorMD, kContextTextBackgroundColor);
 
     // TODO(tetsui): Workaround https://crbug.com/682266 by explicitly setting
     // the width.
@@ -724,7 +726,7 @@ void NotificationViewMD::CreateOrUpdateProgressStatusView(
     status_view_ = new views::Label();
     status_view_->SetFontList(font_list);
     status_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    status_view_->SetEnabledColor(message_center::kDimTextColor);
+    status_view_->SetEnabledColor(kDimTextColorMD);
     status_view_->SetBorder(views::CreateEmptyBorder(kStatusTextPadding));
     left_content_->AddChildView(status_view_);
   }
