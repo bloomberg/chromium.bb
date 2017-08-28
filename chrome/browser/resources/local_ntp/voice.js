@@ -114,7 +114,7 @@ speech.messages = {
  */
 speech.State_ = {
   // Initial state of the controller. Is never re-entered.
-  // The only state from which the speech.init() method can be called.
+  // The only state from which the |speech.init()| method can be called.
   // The UI overlay is hidden, recognition is inactive.
   UNINITIALIZED: -1,
   // Represents a ready to be activated state. If voice search is unsuccessful
@@ -257,36 +257,75 @@ speech.recognition_;
 
 
 /**
- * Initializes the speech module.
- * @param {!Object} configData The NTP configuration.
+ * Initialize the speech module as part of the local NTP. Adds event handlers
+ * and shows the fakebox speech microphone icon.
+ * @param {!string} googleBaseUrl Base URL for sending queries to Search.
+ * @param {!Object} translatedStrings Dictionary of localized string messages.
+ * @param {!HTMLElement} fakeboxMicrophoneElem Fakebox microphone icon element.
+ * @param {!Object} searchboxApiHandle SearchBox API handle.
  */
-speech.init = function(configData) {
+speech.init = function(
+    googleBaseUrl, translatedStrings, fakeboxMicrophoneElem,
+    searchboxApiHandle) {
   if (speech.currentState_ != speech.State_.UNINITIALIZED) {
     throw new Error(
         'Trying to re-initialize speech when not in UNINITIALIZED state.');
   }
 
-  speech.googleBaseUrl_ = configData.googleBaseUrl;
-
-  // Set translations map.
-  speech.messages = {
-    audioError: configData.translatedStrings.audioError,
-    details: configData.translatedStrings.details,
-    languageError: configData.translatedStrings.languageError,
-    learnMore: configData.translatedStrings.learnMore,
-    listening: configData.translatedStrings.listening,
-    networkError: configData.translatedStrings.networkError,
-    noTranslation: configData.translatedStrings.noTranslation,
-    noVoice: configData.translatedStrings.noVoice,
-    permissionError: configData.translatedStrings.permissionError,
-    ready: configData.translatedStrings.ready,
-    tryAgain: configData.translatedStrings.tryAgain,
-    waiting: configData.translatedStrings.waiting,
+  // Initialize event handlers.
+  fakeboxMicrophoneElem.hidden = false;
+  fakeboxMicrophoneElem.title = translatedStrings.fakeboxMicrophoneTooltip;
+  fakeboxMicrophoneElem.onmouseup = function(event) {
+    // If propagated, closes the overlay (click on the background).
+    event.stopPropagation();
+    speech.toggleStartStop();
   };
+  window.addEventListener('keydown', speech.onKeyDown);
+  if (searchboxApiHandle.onfocuschange) {
+    throw new Error('OnFocusChange handler already set on searchbox.');
+  }
+  searchboxApiHandle.onfocuschange = speech.onOmniboxFocused;
 
+  // Initialize speech internal state.
+  speech.googleBaseUrl_ = googleBaseUrl;
+  speech.messages = {
+    audioError: translatedStrings.audioError,
+    details: translatedStrings.details,
+    languageError: translatedStrings.languageError,
+    learnMore: translatedStrings.learnMore,
+    listening: translatedStrings.listening,
+    networkError: translatedStrings.networkError,
+    noTranslation: translatedStrings.noTranslation,
+    noVoice: translatedStrings.noVoice,
+    permissionError: translatedStrings.permissionError,
+    ready: translatedStrings.ready,
+    tryAgain: translatedStrings.tryAgain,
+    waiting: translatedStrings.waiting,
+  };
   view.init(speech.onClick_);
   speech.initWebkitSpeech_();
   speech.reset_();
+};
+
+
+/**
+ * Resets the internal state of Voice Search and disables the speech
+ * recognition interface. Only used for testing.
+ * @param {HTMLElement} fakeboxMicrophoneElem Fakebox microphone icon element.
+ * @param {!Object} searchboxApiHandle SearchBox API handle.
+ * @private
+ */
+speech.uninit_ = function(fakeboxMicrophoneElem, searchboxApiHandle) {
+  speech.reset_();
+  speech.googleBaseUrl_ = null;
+  speech.messages = {};
+  speech.currentState_ = speech.State_.UNINITIALIZED;
+  fakeboxMicrophoneElem.hidden = true;
+  fakeboxMicrophoneElem.title = '';
+  fakeboxMicrophoneElem.onmouseup = null;
+  window.removeEventListener('keydown', speech.onKeyDown);
+  searchboxApiHandle.onfocuschange = null;
+  speech.recognition_ = null;
 };
 
 
@@ -381,10 +420,6 @@ speech.reset_ = function() {
   speech.interimResult_ = '';
   speech.finalResult_ = '';
   speech.currentState_ = speech.State_.READY;
-
-  // TODO(oskopek): Is this even needed? Avoid calling it twice
-  // on a |speech.abort_()| call.
-  speech.recognition_.abort();
 };
 
 

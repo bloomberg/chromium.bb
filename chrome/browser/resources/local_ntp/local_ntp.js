@@ -520,24 +520,9 @@ function init() {
         configData.translatedStrings.searchboxPlaceholder;
 
     if (configData.isVoiceSearchEnabled) {
-      $(IDS.FAKEBOX_SPEECH).hidden = false;
-      $(IDS.FAKEBOX_SPEECH).title =
-          configData.translatedStrings.fakeboxSpeechTooltip;
-
-      speech.init(configData);
-
-      $(IDS.FAKEBOX_SPEECH).onmouseup = function(event) {
-        // If propagated, closes the overlay (click on the background).
-        event.stopPropagation();
-        speech.toggleStartStop();
-      };
-      window.addEventListener('keydown', speech.onKeyDown);
-
-      if (searchboxApiHandle.onfocuschange) {
-        throw new Error('OnFocusChange handler already set on searchbox.');
-      }
-
-      searchboxApiHandle.onfocuschange = speech.onOmniboxFocused;
+      speech.init(
+          configData.googleBaseUrl, configData.translatedStrings,
+          $(IDS.FAKEBOX_SPEECH), searchboxApiHandle);
     }
 
     // Listener for updating the key capture state.
