@@ -4,10 +4,13 @@
 
 source_set("audio") {
   sources = [
+    "async_audio_frame_supplier.h",
+    "audio_frame_supplier.h",
     "audio_player.cc",
     "audio_player.h",
     "audio_player_android.cc",
     "audio_player_android.h",
+    "audio_stream_consumer.h",
   ]
 
   configs += [ "//remoting/build/config:version" ]
