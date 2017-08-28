@@ -2388,10 +2388,14 @@ SpdyStream* SpdySession::GetActivePushStream(const GURL& url) {
     return nullptr;
   }
 
+  SpdyStream* stream = active_it->second;
   net_log_.AddEvent(NetLogEventType::HTTP2_STREAM_ADOPTED_PUSH_STREAM,
                     base::Bind(&NetLogSpdyAdoptedPushStreamCallback,
-                               active_it->second->stream_id(), &url));
-  return active_it->second;
+                               stream->stream_id(), &url));
+  // A stream is in reserved remote state until response headers arrive.
+  UMA_HISTOGRAM_BOOLEAN("Net.PushedStreamAlreadyHasResponseHeaders",
+                        !stream->IsReservedRemote());
+  return stream;
 }
 
 void SpdySession::RecordPingRTTHistogram(base::TimeDelta duration) {
