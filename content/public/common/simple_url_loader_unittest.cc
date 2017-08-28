@@ -79,7 +79,6 @@ class WaitForStringHelper {
   void RunRequestForURL(mojom::URLLoaderFactory* url_loader_factory,
                         const GURL& url) {
     ResourceRequest resource_request;
-    resource_request.method = "GET";
     resource_request.url = url;
     RunRequest(url_loader_factory, resource_request);
   }
@@ -101,7 +100,6 @@ class WaitForStringHelper {
       const GURL& url,
       size_t max_size) {
     ResourceRequest resource_request;
-    resource_request.method = "GET";
     resource_request.url = url;
     RunRequestWithBoundedSize(url_loader_factory, resource_request, max_size);
   }
@@ -238,7 +236,6 @@ class SimpleURLLoaderTest : public testing::Test {
 
 TEST_F(SimpleURLLoaderTest, BasicRequest) {
   ResourceRequest resource_request;
-  resource_request.method = "GET";
   // Use a more interesting request than "/echo", just to verify more than the
   // request URL is hooked up.
   resource_request.url = test_server_.GetURL("/echoheader?foo");
@@ -255,7 +252,6 @@ TEST_F(SimpleURLLoaderTest, BasicRequest) {
 // Test that SimpleURLLoader handles data URLs, which don't have headers.
 TEST_F(SimpleURLLoaderTest, DataURL) {
   ResourceRequest resource_request;
-  resource_request.method = "GET";
   // Use a more interesting request than "/echo", just to verify more than the
   // request URL is hooked up.
   resource_request.url = GURL("data:text/plain,foo");
@@ -273,7 +269,6 @@ TEST_F(SimpleURLLoaderTest, DataURL) {
 // different.
 TEST_F(SimpleURLLoaderTest, GzipBody) {
   ResourceRequest resource_request;
-  resource_request.method = "GET";
   resource_request.url = test_server_.GetURL("/gzip-body?foo");
   WaitForStringHelper string_helper;
   string_helper.RunRequest(url_loader_factory_.get(), resource_request);
@@ -562,7 +557,6 @@ TEST_F(SimpleURLLoaderTest, TruncatedBodyWithPartialResults) {
 // before the request is even made, for that matter).
 TEST_F(SimpleURLLoaderTest, DestroyServiceBeforeResponseStarts) {
   ResourceRequest resource_request;
-  resource_request.method = "GET";
   resource_request.url = test_server_.GetURL("/hung");
   WaitForStringHelper string_helper;
   string_helper.simple_url_loader()
