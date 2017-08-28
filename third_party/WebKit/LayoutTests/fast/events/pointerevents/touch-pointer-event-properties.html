@@ -24,7 +24,7 @@ async_test(function() {
       assert_between_inclusive(event.pointerId, 1, POINTER_PROPERTIES.length);
       var pp = POINTER_PROPERTIES[event.pointerId-1];
       for (var i in pp)
-        assert_equals(event[i], pp[i], "" + i);
+        assert_equals(event[i], (event.type == "pointerup" && i == "pressure") ? 0 : pp[i], "" + i);
       assert_equals(event.view.name, "mainWindow");
     }, "Pointer event properties for pointer " + event.pointerId + " on " + event.type);
   }
