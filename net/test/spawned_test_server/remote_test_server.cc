@@ -139,22 +139,11 @@ bool RemoteTestServer::Start() {
     return false;
 
   // Start the Python test server on the remote machine.
-  uint16_t test_server_port;
-  if (!spawner_communicator_->StartServer(arguments_string,
-                                          &test_server_port)) {
-    return false;
-  }
-  if (0 == test_server_port)
+  std::string server_data;
+  if (!spawner_communicator_->StartServer(arguments_string, &server_data))
     return false;
 
-  // Construct server data to initialize BaseTestServer::server_data_.
-  base::DictionaryValue server_data_dict;
-  // At this point, the test server should be spawned on the host. Update the
-  // local port to real port of Python test server, which will be forwarded to
-  // the remote server.
-  server_data_dict.SetInteger("port", test_server_port);
-  std::string server_data;
-  base::JSONWriter::Write(server_data_dict, &server_data);
+  // Parse server_data.
   if (server_data.empty() || !ParseServerData(server_data)) {
     LOG(ERROR) << "Could not parse server_data: " << server_data;
     return false;
