@@ -1502,10 +1502,10 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
 
   codec_config_->media_crypto = std::move(media_crypto);
   codec_config_->requires_secure_codec = requires_secure_video_codec;
-  // Require a secure surface in all cases, even if we don't require a secure
-  // video codec.  This will send L3 content to a secure surface, if one is
-  // available, as well as L1.
+  // Request a secure surface in all cases.  For L3, it's okay if we fall back
+  // to SurfaceTexture rather than fail composition.  For L1, it's required.
   surface_chooser_state_.is_secure = true;
+  surface_chooser_state_.is_required = requires_secure_video_codec;
 
   // After receiving |media_crypto_| we can start with surface creation.
   StartSurfaceChooser();

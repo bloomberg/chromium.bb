@@ -44,7 +44,8 @@ void AndroidVideoSurfaceChooserImpl::Initialize(
   // Pre-M, we choose now.  This lets Choose() never worry about the pre-M path.
   if (!allow_dynamic_) {
     if (overlay_factory_ &&
-        (current_state_.is_fullscreen || current_state_.is_secure)) {
+        (current_state_.is_fullscreen || current_state_.is_secure ||
+         current_state_.is_required)) {
       SwitchToOverlay();
     } else {
       SwitchToSurfaceTexture();
@@ -106,6 +107,12 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   if (current_state_.is_fullscreen)
     new_overlay_state = kUsingOverlay;
 
+  // Try to use an overlay if possible for protected content.  If the compositor
+  // won't promote, though, it's okay if we switch out.  Set |is_required| in
+  // addition, if you don't want this behavior.
+  if (current_state_.is_secure)
+    new_overlay_state = kUsingOverlay;
+
   // If the compositor won't promote, then don't.
   if (!current_state_.is_compositor_promotable)
     new_overlay_state = kUsingSurfaceTexture;
@@ -117,15 +124,6 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   if (current_state_.is_expecting_relayout &&
       client_overlay_state_ != kUsingOverlay)
     new_overlay_state = kUsingSurfaceTexture;
-
-  // If we need a secure surface, then we must choose an overlay.  The only way
-  // we won't is if we don't have a factory or our request fails.  If the
-  // compositor won't promote, then we still use the overlay, since hopefully
-  // it's a temporary restriction.  If we drop the overlay, then playback will
-  // fail (L1) or be insecure on SurfaceTexture (L3).  For L3, that's still
-  // preferable to failing.
-  if (current_state_.is_secure)
-    new_overlay_state = kUsingOverlay;
 
   // If we're requesting an overlay, check that we haven't asked too recently
   // since the last failure.  This includes L1.  We don't bother to check for
@@ -141,6 +139,11 @@ void AndroidVideoSurfaceChooserImpl::Choose() {
   // If our frame is hidden, then don't use overlays.
   if (current_state_.is_frame_hidden)
     new_overlay_state = kUsingSurfaceTexture;
+
+  // If an overlay is required, then choose one.  The only way we won't is if we
+  // don't have a factory or our request fails.
+  if (current_state_.is_required)
+    new_overlay_state = kUsingOverlay;
 
   // If we have no factory, then we definitely don't want to use overlays.
   if (!overlay_factory_)
