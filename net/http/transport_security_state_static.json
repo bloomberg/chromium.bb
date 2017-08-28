@@ -34884,6 +34884,7 @@
       "expect_staple": true, "include_subdomains_for_expect_staple": true,
       "expect_staple_report_uri": "https://photistic.report-uri.io/r/default/staple/reportOnly"
     },
+    { "name": "ccu.plus", "include_subdomains": true, "mode": "force-https" },
     // END OF MANUAL ENTRIES
 
     // TODO(lgarron): hstspreload.org can't scan IPv6-only sites due to Google
