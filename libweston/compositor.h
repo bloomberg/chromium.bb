@@ -170,6 +170,7 @@ struct weston_head {
 	char *serial_number;		/**< monitor serial */
 	uint32_t subpixel;		/**< enum wl_output_subpixel */
 	bool connection_internal;	/**< embedded monitor (e.g. laptop) */
+	bool device_changed;		/**< monitor information has changed */
 
 	char *name;			/**< head name, e.g. connector name */
 	bool connected;			/**< is physically connected */
@@ -2043,6 +2044,12 @@ weston_head_is_connected(struct weston_head *head);
 
 bool
 weston_head_is_enabled(struct weston_head *head);
+
+bool
+weston_head_is_device_changed(struct weston_head *head);
+
+void
+weston_head_reset_device_changed(struct weston_head *head);
 
 const char *
 weston_head_get_name(struct weston_head *head);

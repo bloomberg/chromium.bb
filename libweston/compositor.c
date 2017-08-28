@@ -4721,6 +4721,28 @@ weston_head_release(struct weston_head *head)
 	wl_list_remove(&head->compositor_link);
 }
 
+static void
+weston_head_set_device_changed(struct weston_head *head)
+{
+	head->device_changed = true;
+
+	if (head->compositor)
+		weston_compositor_schedule_heads_changed(head->compositor);
+}
+
+/** String equal comparison with NULLs being equal */
+static bool
+str_null_eq(const char *a, const char *b)
+{
+	if (!a && !b)
+		return true;
+
+	if (!!a != !!b)
+		return false;
+
+	return strcmp(a, b) == 0;
+}
+
 /** Store monitor make, model and serial number
  *
  * \param head The head to modify.
@@ -4731,6 +4753,8 @@ weston_head_release(struct weston_head *head)
  * \param serialno The monitor serial number, a made-up string, or NULL for
  * none.
  *
+ * This may set the device_changed flag.
+ *
  * \memberof weston_head
  * \internal
  */
@@ -4740,6 +4764,11 @@ weston_head_set_monitor_strings(struct weston_head *head,
 				const char *model,
 				const char *serialno)
 {
+	if (str_null_eq(head->make, make) &&
+	    str_null_eq(head->model, model) &&
+	    str_null_eq(head->serial_number, serialno))
+		return;
+
 	free(head->make);
 	free(head->model);
 	free(head->serial_number);
@@ -4747,6 +4776,8 @@ weston_head_set_monitor_strings(struct weston_head *head,
 	head->make = make ? strdup(make) : NULL;
 	head->model = model ? strdup(model) : NULL;
 	head->serial_number = serialno ? strdup(serialno) : NULL;
+
+	weston_head_set_device_changed(head);
 }
 
 /** Store physical image size
@@ -4755,6 +4786,8 @@ weston_head_set_monitor_strings(struct weston_head *head,
  * \param mm_width Image area width in millimeters.
  * \param mm_height Image area height in millimeters.
  *
+ * This may set the device_changed flag.
+ *
  * \memberof weston_head
  * \internal
  */
@@ -4762,8 +4795,14 @@ WL_EXPORT void
 weston_head_set_physical_size(struct weston_head *head,
 			      int32_t mm_width, int32_t mm_height)
 {
+	if (head->mm_width == mm_width &&
+	    head->mm_height == mm_height)
+		return;
+
 	head->mm_width = mm_width;
 	head->mm_height = mm_height;
+
+	weston_head_set_device_changed(head);
 }
 
 /** Store monitor sub-pixel layout
@@ -4777,6 +4816,8 @@ weston_head_set_physical_size(struct weston_head *head,
  * - WL_OUTPUT_SUBPIXEL_VERTICAL_RGB,
  * - WL_OUTPUT_SUBPIXEL_VERTICAL_BGR
  *
+ * This may set the device_changed flag.
+ *
  * \memberof weston_head
  * \internal
  */
@@ -4784,7 +4825,12 @@ WL_EXPORT void
 weston_head_set_subpixel(struct weston_head *head,
 			 enum wl_output_subpixel sp)
 {
+	if (head->subpixel == sp)
+		return;
+
 	head->subpixel = sp;
+
+	weston_head_set_device_changed(head);
 }
 
 /** Mark the monitor as internal
@@ -4819,7 +4865,7 @@ weston_head_set_internal(struct weston_head *head)
  * connection to the parent display server.
  *
  * When the connection status changes, it schedules a call to the heads_changed
- * hook.
+ * hook and sets the device_changed flag.
  *
  * \sa weston_compositor_set_heads_changed_cb
  * \memberof weston_head
@@ -4833,8 +4879,7 @@ weston_head_set_connection_status(struct weston_head *head, bool connected)
 
 	head->connected = connected;
 
-	if (head->compositor)
-		weston_compositor_schedule_heads_changed(head->compositor);
+	weston_head_set_device_changed(head);
 }
 
 /** Is the head currently connected?
@@ -4876,6 +4921,44 @@ weston_head_is_enabled(struct weston_head *head)
 		return false;
 
 	return head->output->enabled;
+}
+
+/** Has the device information changed?
+ *
+ * \param head The head to query.
+ * \return True if the device information has changed since last reset.
+ *
+ * The information about the connected display device, e.g. a monitor, may
+ * change without being disconnected in between. Changing information
+ * causes a call to the heads_changed hook.
+ *
+ * The information includes make, model, serial number, physical size,
+ * and sub-pixel type. The connection status is also included.
+ *
+ * \sa weston_head_reset_device_changed, weston_compositor_set_heads_changed_cb
+ * \memberof weston_head
+ */
+WL_EXPORT bool
+weston_head_is_device_changed(struct weston_head *head)
+{
+	return head->device_changed;
+}
+
+/** Acknowledge device information change
+ *
+ * \param head The head to acknowledge.
+ *
+ * Clears the device changed flag on this head. When a compositor has processed
+ * device information, it should call this to be able to notice further
+ * changes.
+ *
+ * \sa weston_head_is_device_changed
+ * \memberof weston_head
+ */
+WL_EXPORT void
+weston_head_reset_device_changed(struct weston_head *head)
+{
+	head->device_changed = false;
 }
 
 /** Get the name of a head
