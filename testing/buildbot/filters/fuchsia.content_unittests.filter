@@ -1,6 +1,5 @@
 # Being ported, https://crbug.com/754861.
 
--AudioRendererMixerManagerTest.MixerParamsLatencyRtc
 -AudioRendererSinkCacheTest.SmokeTest
 -BaseFileTest.ReadonlyBaseFile
 -BaseFileTest.RenameWithError
