@@ -30,7 +30,7 @@ void TestWindowTreeClientSetup::InitForWindowManager(
   test_window_manager_client_ = base::MakeUnique<TestWindowManagerClient>();
   CommonInit(window_tree_delegate, window_manager_delegate);
   WindowTreeClientPrivate window_tree_client_private(window_tree_client_.get());
-  window_tree_client_private.SetTreeAndClientId(window_tree_.get(), 1);
+  window_tree_client_private.SetTree(window_tree_.get());
   window_tree_client_private.SetWindowManagerClient(
       test_window_manager_client_.get());
 }

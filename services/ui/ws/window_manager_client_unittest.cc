@@ -388,7 +388,8 @@ TEST_F(WindowServerTest, Embed) {
   // WindowTreeHost::window() is the single root of the embed.
   EXPECT_EQ(1u, embed_result->window_tree_client->GetRoots().size());
   EXPECT_EQ(embed_root, GetFirstRoot(embed_result->window_tree_client.get()));
-  EXPECT_EQ(server_id(window), server_id(embed_root));
+  EXPECT_EQ(LoWord(server_id(window)), LoWord(server_id(embed_root)));
+  EXPECT_NE(0u, server_id(embed_root) >> 16);
   EXPECT_EQ(nullptr, embed_root->parent());
   EXPECT_TRUE(embed_root->children().empty());
 }
@@ -401,7 +402,8 @@ TEST_F(WindowServerTest, EmbeddedDoesntSeeChild) {
   std::unique_ptr<EmbedResult> embed_result = Embed(window_manager(), window);
   ASSERT_TRUE(embed_result->IsValid());
   aura::Window* embed_root = embed_result->window_tree_host->window();
-  EXPECT_EQ(server_id(window), server_id(embed_root));
+  EXPECT_EQ(LoWord(server_id(window)), LoWord(server_id(embed_root)));
+  EXPECT_NE(0u, server_id(embed_root) >> 16);
   EXPECT_EQ(nullptr, embed_root->parent());
   EXPECT_TRUE(embed_root->children().empty());
 }
@@ -505,6 +507,10 @@ TEST_F(WindowServerTest, Reorder) {
   aura::Window* window12 = NewVisibleWindow(embed_root, embedded);
   ASSERT_TRUE(WaitForTreeSizeToMatch(window1, 3u));
 
+  // |embedded|'s WindowTree has an id_ of 2, so window11's client_id part
+  // should be 2 in the WindowTree for window_manager(). Similar for window12.
+  Id window11_in_wm = 2 << 16 | LoWord(server_id(window11));
+  Id window12_in_wm = 2 << 16 | LoWord(server_id(window12));
 
   {
     window11->parent()->StackChildAtTop(window11);
@@ -516,15 +522,15 @@ TEST_F(WindowServerTest, Reorder) {
 
     // The window_manager() tree is still not updated.
     EXPECT_EQ(window1->children().back(),
-              GetChildWindowByServerId(window_manager(), server_id(window12)));
+              GetChildWindowByServerId(window_manager(), window12_in_wm));
 
     // Wait until window_manager() tree is updated.
     ASSERT_TRUE(WaitForStackingOrderChange(
-        GetChildWindowByServerId(window_manager(), server_id(window11))));
+        GetChildWindowByServerId(window_manager(), window11_in_wm)));
     EXPECT_EQ(window1->children().front(),
-              GetChildWindowByServerId(window_manager(), server_id(window12)));
+              GetChildWindowByServerId(window_manager(), window12_in_wm));
     EXPECT_EQ(window1->children().back(),
-              GetChildWindowByServerId(window_manager(), server_id(window11)));
+              GetChildWindowByServerId(window_manager(), window11_in_wm));
   }
 
   {
@@ -537,13 +543,13 @@ TEST_F(WindowServerTest, Reorder) {
 
     // |window_manager()| is also eventually updated.
     EXPECT_EQ(window1->children().back(),
-              GetChildWindowByServerId(window_manager(), server_id(window11)));
+              GetChildWindowByServerId(window_manager(), window11_in_wm));
     ASSERT_TRUE(WaitForStackingOrderChange(
-        GetChildWindowByServerId(window_manager(), server_id(window11))));
+        GetChildWindowByServerId(window_manager(), window11_in_wm)));
     EXPECT_EQ(window1->children().front(),
-              GetChildWindowByServerId(window_manager(), server_id(window11)));
+              GetChildWindowByServerId(window_manager(), window11_in_wm));
     EXPECT_EQ(window1->children().back(),
-              GetChildWindowByServerId(window_manager(), server_id(window12)));
+              GetChildWindowByServerId(window_manager(), window12_in_wm));
   }
 }
 
@@ -770,9 +776,6 @@ TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
   window_tree_host_in_second_client.window()->Show();
   aura::Window* second_client_child = NewVisibleWindow(
       window_tree_host_in_second_client.window(), &second_client);
-  std::unique_ptr<aura::WindowPortMus> window_port_mus =
-      base::MakeUnique<aura::WindowPortMus>(&second_client,
-                                            aura::WindowMusType::LOCAL);
   // Create the transient without a parent, set transient parent, then add.
   aura::Window* transient = NewVisibleWindow(nullptr, &second_client);
   aura::client::TransientWindowClient* transient_window_client =

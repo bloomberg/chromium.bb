@@ -29,7 +29,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
                            const Properties& properties)
     : delegate_(delegate),
       id_(id),
-      frame_sink_id_(WindowIdToTransportId(id), 0),
+      frame_sink_id_((id_.client_id << 16) | id_.window_id, 0),
       parent_(nullptr),
       stacking_target_(nullptr),
       transient_parent_(nullptr),

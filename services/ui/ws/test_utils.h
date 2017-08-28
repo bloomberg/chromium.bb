@@ -358,7 +358,7 @@ class TestWindowManager : public mojom::WindowManager {
 
  private:
   // WindowManager:
-  void OnConnect(uint16_t client_id) override;
+  void OnConnect() override;
   void WmNewDisplayAdded(
       const display::Display& display,
       ui::mojom::WindowDataPtr root,
@@ -442,7 +442,6 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
  private:
   // WindowTreeClient:
   void OnEmbed(
-      uint16_t client_id,
       mojom::WindowDataPtr root,
       ui::mojom::WindowTreePtr tree,
       int64_t display_id,

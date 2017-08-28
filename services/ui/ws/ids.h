@@ -64,6 +64,8 @@ struct WindowId {
 // Used for ids assigned by the client.
 struct ClientWindowId {
   explicit ClientWindowId(Id id) : id(id) {}
+  ClientWindowId(ClientSpecificId client_id, ClientSpecificId window_id)
+      : ClientWindowId((client_id << 16) | window_id) {}
   ClientWindowId() : id(0u) {}
 
   bool operator==(const ClientWindowId& other) const { return other.id == id; }
@@ -79,9 +81,6 @@ struct ClientWindowId {
 
 inline WindowId WindowIdFromTransportId(Id id) {
   return WindowId(HiWord(id), LoWord(id));
-}
-inline Id WindowIdToTransportId(const WindowId& id) {
-  return (id.client_id << 16) | id.window_id;
 }
 
 // Returns a WindowId that is reserved to indicate no window. That is, no window
@@ -101,7 +100,7 @@ struct ClientWindowIdHash {
 
 struct WindowIdHash {
   size_t operator()(const WindowId& id) const {
-    return WindowIdToTransportId(id);
+    return (id.client_id << 16) | id.window_id;
   }
 };
 
