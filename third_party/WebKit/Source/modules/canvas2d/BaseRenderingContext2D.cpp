@@ -1650,22 +1650,23 @@ ImageData* BaseRenderingContext2D::getImageData(
 
   NeedsFinalizeFrame();
 
-  if (!color_management_enabled_) {
-    DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
-    return ImageData::Create(
-        image_data_rect.Size(),
-        NotShared<DOMUint8ClampedArray>(DOMUint8ClampedArray::Create(
-            array_buffer, 0, array_buffer->ByteLength())));
+  // Convert pixels to proper storage format if needed
+  if (color_management_enabled_ && PixelFormat() != kRGBA8CanvasPixelFormat) {
+    ImageDataStorageFormat storage_format =
+        ImageData::GetImageDataStorageFormat(color_settings.storageFormat());
+    DOMArrayBufferView* array_buffer_view =
+        ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
+            contents, PixelFormat(), storage_format);
+    return ImageData::Create(image_data_rect.Size(),
+                             NotShared<DOMArrayBufferView>(array_buffer_view),
+                             &color_settings);
   }
-
-  ImageDataStorageFormat storage_format =
-      ImageData::GetImageDataStorageFormat(color_settings.storageFormat());
-  DOMArrayBufferView* array_buffer_view =
-      ImageData::ConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat(
-          contents, PixelFormat(), storage_format);
-  return ImageData::Create(image_data_rect.Size(),
-                           NotShared<DOMArrayBufferView>(array_buffer_view),
-                           &color_settings);
+  DOMArrayBuffer* array_buffer = DOMArrayBuffer::Create(contents);
+  return ImageData::Create(
+      image_data_rect.Size(),
+      NotShared<DOMUint8ClampedArray>(DOMUint8ClampedArray::Create(
+          array_buffer, 0, array_buffer->ByteLength())),
+      &color_settings);
 }
 
 void BaseRenderingContext2D::putImageData(ImageData* data,
@@ -1742,7 +1743,12 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
   CheckOverdraw(dest_rect, 0, CanvasRenderingContext2DState::kNoImage,
                 kUntransformedUnclippedFill);
 
-  if (color_management_enabled_) {
+  // Color / format convert ImageData to canvas settings if needed
+  CanvasColorParams data_color_params = data->GetCanvasColorParams();
+  if (color_management_enabled_ &&
+      (ColorSpace() != data_color_params.color_space() ||
+       PixelFormat() != data_color_params.pixel_format() ||
+       PixelFormat() == kF16CanvasPixelFormat)) {
     unsigned data_length = data->width() * data->height() * 4;
     if (PixelFormat() == kF16CanvasPixelFormat)
       data_length *= 2;
