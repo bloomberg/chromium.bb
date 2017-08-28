@@ -1,0 +1,21 @@
+Tests that elements panel correctly displays DOM tree structure for bi-di pages.
+
+ویکی‌پدیا:خوش‌آمدید
+  <!DOCTYPE html>
+- <html>
+    - <head>
+          <meta charset="utf-8">
+          <script src="../../inspector/inspector-test.js"></script>
+          <script src="../../inspector/elements-test.js"></script>
+        - <script>
+              \nfunction test() {\n  // Warm up highlighter module.\n  runtime.loadModulePromise('source_frame').then(function() {\n    ElementsTestRunner.expandElementsTree(step1);\n  });\n\n  function step1() {\n    ElementsTestRunner.dumpElementsTree();\n    TestRunner.completeTest();\n  }\n}\n\n
+          </script>
+      </head>
+    - <body onload="runTest()">
+        - <p>
+              "\nTests that elements panel correctly displays DOM tree structure for bi-di pages.\n"
+          </p>
+          <div title="ویکی&zwnj;پدیا:خوش&zwnj;آمدید">ویکی&zwnj;پدیا:خوش&zwnj;آمدید</div>
+      </body>
+  </html>
+

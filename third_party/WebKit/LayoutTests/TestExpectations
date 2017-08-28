@@ -2344,7 +2344,8 @@ crbug.com/701047 [ Mac10.12 ] editing/style/block-styles-007.html [ Failure ]
 crbug.com/664873 http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 
-crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
+crbug.com/660295 http/tests/devtools/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
 crbug.com/735245 http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout ]
 crbug.com/735245 virtual/mojo-loading/http/tests/inspector/application-panel/storage-view-reports-quota.html [ Pass Timeout Failure ]
 
@@ -3038,7 +3039,8 @@ crbug.com/736177 [ Mac10.9 ] editing/selection/modify_move/move_left_right_chara
 crbug.com/736177 [ Mac10.9 ] external/wpt/css/css-writing-modes-3/bidi-isolate-override-007.html [ Skip ]
 crbug.com/736177 [ Mac10.9 ] fast/text/international/bidi-LDB-2-formatting-characters.html [ Skip ]
 crbug.com/736177 [ Mac10.9 ] fast/text/international/bidi-neutral-run.html [ Skip ]
-crbug.com/736177 [ Mac10.9 ] inspector/elements/bidi-dom-tree.html [ Skip ]
+crbug.com/736177 [ Mac10.9 ] http/tests/devtools/elements/bidi-dom-tree.html [ Skip ]
+crbug.com/667560 [ Mac10.9 ] virtual/mojo-loading/http/tests/devtools/elements/bidi-dom-tree.html [ Skip ]
 # fast/css/text-overflow-input.html test is flaky on all Mac platforms
 crbug.com/736177 [ Mac ] fast/css/text-overflow-input.html [ Failure Pass ]
 

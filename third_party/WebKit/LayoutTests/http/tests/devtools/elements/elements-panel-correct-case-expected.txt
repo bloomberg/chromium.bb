@@ -1,0 +1,26 @@
+Tests that elements panel shows all types of elements in the correct case.
+
+ 
+  <!DOCTYPE html>
+- <html>
+    - <head>
+          <link rel="stylesheet" type="text/css" href="resources/elements-panel-styles.css">
+          <script src="../../inspector/inspector-test.js"></script>
+          <script src="../../inspector/elements-test.js"></script>
+        - <script>
+              function test() {\n  ElementsTestRunner.expandElementsTree(step1);\n\n  function step1() {\n    ElementsTestRunner.dumpElementsTree();\n    TestRunner.completeTest();\n  }\n}\n
+          </script>
+      </head>
+    - <body onload="runTest()">
+          <p>\nTests that elements panel shows all types of elements in the correct case.\n</p>
+        - <svg>
+              <feComposite></feComposite>
+          </svg>
+        - <svg>
+              <circle></circle>
+          </svg>
+          <div></div>
+          <div></div>
+      </body>
+  </html>
+

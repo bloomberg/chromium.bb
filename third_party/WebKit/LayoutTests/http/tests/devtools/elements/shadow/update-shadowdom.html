@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+function updateShadowDOM()
+{
+    shadowRoot.removeChild(shadowRoot.firstChild);
+}
+
+function test() {
+  ElementsTestRunner.expandElementsTree(function() {
+    TestRunner.evaluateInPage('updateShadowDOM()', function() {
+      ElementsTestRunner.expandElementsTree(function() {
+        var containerElem = ElementsTestRunner.expandedNodeWithId('container');
+        ElementsTestRunner.dumpElementsTree(containerElem);
+        TestRunner.completeTest();
+      });
+    });
+  });
+}
+</script>
+</head>
+
+<body onload="runTest()">
+
+<p id="description">This test confirms that updating the shadow dom is reflected to the Inspector.</p>
+
+<div id="container">
+    <div id="host"></div>
+</div>
+
+<script>
+var shadowRoot = host.createShadowRoot();
+shadowRoot.innerHTML = "<div></div>";
+</script>
+
+</body>
+</html>
