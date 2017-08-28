@@ -544,13 +544,18 @@ def _evaluate_rare_non_inherited_group(all_properties, properties_ranking_file,
     properties_ranking = _get_properties_ranking(properties_ranking_file, partition_rule)
 
     for property_ in all_properties:
-        if property_["field_group"] is not None:
-            if "rare-non-inherited" in property_["field_group"] and property_["name"] in properties_ranking:
-                property_["field_group"] = "->".join(layers_name[0:properties_ranking[property_["name"]]])
-            elif "rare-non-inherited" in property_["field_group"] and property_["name"] not in properties_ranking:
-                group_tree = property_["field_group"].split("->")
-                group_tree = [layers_name[0]] + group_tree
-                property_["field_group"] = "->".join(group_tree)
+        if property_["field_group"] is not None and "*" in property_["field_group"] \
+           and not property_["inherited"] and property_["name"] in properties_ranking:
+
+            assert property_["field_group"] == "*", "The property " + property_["name"] \
+                + " will be automatically assigned a group, please put '*' as the field_group"
+
+            property_["field_group"] = "->".join(layers_name[0:properties_ranking[property_["name"]]])
+        elif property_["field_group"] is not None and "*" in property_["field_group"] \
+                and not property_["inherited"] and property_["name"] not in properties_ranking:
+            group_tree = property_["field_group"].split("->")[1:]
+            group_tree = [layers_name[0], layers_name[0] + "-sub"] + group_tree
+            property_["field_group"] = "->".join(group_tree)
 
 
 def _evaluate_rare_inherit_group(all_properties, properties_ranking_file,
@@ -570,14 +575,18 @@ def _evaluate_rare_inherit_group(all_properties, properties_ranking_file,
 
     assert number_of_layer == len(partition_rule), "Length of rule and number_of_layer mismatch"
 
-    layers_name = ["inherited-layer-" + str(i) for i in range(number_of_layer)]
+    layers_name = ["rare-inherited-layer-" + str(i) for i in range(number_of_layer)]
     properties_ranking = _get_properties_ranking(properties_ranking_file, partition_rule)
 
     for property_ in all_properties:
-        if property_["field_group"] is not None \
-           and "rare-inherited" in property_["field_group"] \
-           and property_["name"] in properties_ranking:
-            property_["field_group"] = "->".join(["rare-inherited"] + layers_name[1:properties_ranking[property_["name"]]])
+        if property_["field_group"] is not None and "*" in property_["field_group"] \
+           and property_["inherited"] and property_["name"] in properties_ranking:
+            property_["field_group"] = "->".join(layers_name[0:properties_ranking[property_["name"]]])
+        elif property_["field_group"] is not None and "*" in property_["field_group"] \
+                and property_["inherited"] and property_["name"] not in properties_ranking:
+            group_tree = property_["field_group"].split("->")[1:]
+            group_tree = [layers_name[0], layers_name[0] + "-sub"] + group_tree
+            property_["field_group"] = "->".join(group_tree)
 
 
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
@@ -627,12 +636,16 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         # Organise fields into a tree structure where the root group
         # is ComputedStyleBase.
 
-        # [0.134, 0.327, 1.0] is the best RareNonInherited partition parameter
-        # that was found by experiments
-        _evaluate_rare_non_inherited_group(all_properties, json5_file_paths[4], 3, [0.134, 0.327, 1.0])
-        # [0.4, 1.0] is the best RareInherited partition parameter that was
-        # found by experiments
-        _evaluate_rare_inherit_group(all_properties, json5_file_paths[4], 2, [0.4, 1.0])
+        group_parameters = dict([(conf["name"], conf["cumulative_distribution"]) for conf in
+                                 json5_generator.Json5File.load_from_files([json5_file_paths[5]]).name_dictionaries])
+
+        _evaluate_rare_non_inherited_group(all_properties, json5_file_paths[4],
+                                           len(group_parameters["rare_non_inherited_properties_rule"]),
+                                           group_parameters["rare_non_inherited_properties_rule"])
+
+        _evaluate_rare_inherit_group(all_properties, json5_file_paths[4],
+                                     len(group_parameters["rare_inherited_properties_rule"]),
+                                     group_parameters["rare_inherited_properties_rule"])
         self._root_group = _create_groups(all_properties)
         self._diff_functions_map = _create_diff_groups_map(json5_generator.Json5File.load_from_files(
             [json5_file_paths[2]]
