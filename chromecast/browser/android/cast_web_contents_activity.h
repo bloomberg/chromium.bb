@@ -25,7 +25,6 @@ class CastWebContentsActivity : public base::SupportsUserData::Data {
  public:
   ~CastWebContentsActivity() override;
 
-  static bool RegisterJni(JNIEnv* env);
   static CastWebContentsActivity* Get(content::WebContents* web_contents);
 
   base::android::ScopedJavaLocalRef<jobject> GetContentVideoViewEmbedder();

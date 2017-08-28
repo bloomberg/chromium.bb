@@ -48,8 +48,6 @@ class VolumeControlAndroid {
   VolumeControlAndroid();
   ~VolumeControlAndroid();
 
-  static bool RegisterJni(JNIEnv* env);
-
   void AddVolumeObserver(VolumeObserver* observer);
   void RemoveVolumeObserver(VolumeObserver* observer);
   float GetVolume(AudioContentType type);

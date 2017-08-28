@@ -41,8 +41,6 @@ class AudioSinkAndroidAudioTrackImpl : public AudioSinkAndroid {
   // buffer larger than this size and feed it in in smaller chunks.
   static const int kDirectBufferSize = 512 * 1024;
 
-  static bool RegisterJni(JNIEnv* env);
-
   // Gets the Android audio session ids used for media and communication (TTS)
   // tracks.
   // Set a return value pointer to null if that id is not needed.
