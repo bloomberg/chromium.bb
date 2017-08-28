@@ -16,6 +16,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -169,6 +170,22 @@ class MostVisitedSites : public history::TopSitesObserver,
                                    NTPTilesVector popular_tiles);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesTest,
+                           ShouldDeduplicateDomainWithNoWwwDomain);
+  FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesTest,
+                           ShouldDeduplicateDomainByRemovingMobilePrefixes);
+  FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesTest,
+                           ShouldDeduplicateDomainByReplacingMobilePrefixes);
+
+  // This function tries to match the given |host| to a close fit in
+  // |hosts_to_skip| by removing a prefix that is commonly used to redirect from
+  // or to mobile pages (m.xyz.com --> xyz.com).
+  // If this approach fails, the prefix is replaced by another prefix.
+  // That way, true is returned for m.x.com if www.x.com is in |hosts_to_skip|.
+  static bool IsHostOrMobilePageKnown(
+      const std::set<std::string>& hosts_to_skip,
+      const std::string& host);
+
   // Initialize the query to Top Sites. Called if the SuggestionsService
   // returned no data.
   void InitiateTopSitesQuery();

@@ -301,6 +301,24 @@ class PopularSitesFactoryForTest {
           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
       url_fetcher_factory_.SetFakeResponse(
+          GURL("https://www.gstatic.com/chrome/ntp/suggested_sites_US_5.json"),
+          R"([{
+                "title": "ESPN",
+                "url": "http://www.espn.com",
+                "favicon_url": "http://www.espn.com/favicon.ico"
+              }, {
+                "title": "Mobile",
+                "url": "http://www.mobile.de",
+                "favicon_url": "http://www.mobile.de/favicon.ico"
+              }, {
+                "title": "Google News",
+                "url": "http://news.google.com",
+                "favicon_url": "http://news.google.com/favicon.ico"
+              },
+             ])",
+          net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+      url_fetcher_factory_.SetFakeResponse(
           GURL("https://www.gstatic.com/chrome/ntp/suggested_sites_IN_6.json"),
           R"([{
                 "section": 1, // PERSONALIZED
@@ -385,6 +403,8 @@ class TopSitesCallbackList {
  private:
   std::vector<TopSites::GetMostVisitedURLsCallback> callbacks_;
 };
+
+}  // namespace
 
 // Param specifies whether Popular Sites is enabled via variations.
 class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
@@ -913,6 +933,44 @@ TEST_P(MostVisitedSitesTest, ShouldContainSiteExplorationsWhenFeatureEnabled) {
             Contains(Pair(_, IsEmpty()))));
 }
 
+TEST_P(MostVisitedSitesTest,
+       ShouldDeduplicatePopularSitesWithMostVisitedIffHostAndTitleMatches) {
+  pref_service_.SetString(prefs::kPopularSitesOverrideCountry, "US");
+  RecreateMostVisitedSites();  // Refills cache with ESPN and Google News.
+  DisableRemoteSuggestions();
+  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
+      .WillRepeatedly(InvokeCallbackArgument<0>(MostVisitedURLList{
+          MakeMostVisitedURL("ESPN", "http://espn.com/"),
+          MakeMostVisitedURL("Mobile", "http://m.mobile.de/"),
+          MakeMostVisitedURL("Google", "http://www.google.com/")}));
+  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
+  std::map<SectionType, NTPTilesVector> sections;
+  EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
+      .WillOnce(SaveArg<0>(&sections));
+
+  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
+                                                  /*num_sites=*/6);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_THAT(sections, Contains(Key(SectionType::PERSONALIZED)));
+  EXPECT_THAT(sections.at(SectionType::PERSONALIZED),
+              Contains(MatchesTile("Google", "http://www.google.com/",
+                                   TileSource::TOP_SITES)));
+  if (IsPopularSitesEnabledViaVariations()) {
+    EXPECT_THAT(sections.at(SectionType::PERSONALIZED),
+                Contains(MatchesTile("Google News", "http://news.google.com/",
+                                     TileSource::POPULAR)));
+  }
+  EXPECT_THAT(sections.at(SectionType::PERSONALIZED),
+              AllOf(Contains(MatchesTile("ESPN", "http://espn.com/",
+                                         TileSource::TOP_SITES)),
+                    Contains(MatchesTile("Mobile", "http://m.mobile.de/",
+                                         TileSource::TOP_SITES)),
+                    Not(Contains(MatchesTile("ESPN", "http://www.espn.com/",
+                                             TileSource::POPULAR))),
+                    Not(Contains(MatchesTile("Mobile", "http://www.mobile.de/",
+                                             TileSource::POPULAR)))));
+}
+
 TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
   // If cached, TopSites returns the tiles synchronously, running the callback
   // even before the function returns.
@@ -971,6 +1029,41 @@ TEST_P(MostVisitedSitesTest, ShouldHandleTopSitesCacheHit) {
 INSTANTIATE_TEST_CASE_P(MostVisitedSitesTest,
                         MostVisitedSitesTest,
                         ::testing::Bool());
+
+TEST(MostVisitedSitesTest, ShouldDeduplicateDomainWithNoWwwDomain) {
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"www.mobile.de"},
+                                                        "mobile.de"));
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"mobile.de"},
+                                                        "www.mobile.de"));
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"mobile.co.uk"},
+                                                        "www.mobile.co.uk"));
+}
+
+TEST(MostVisitedSitesTest, ShouldDeduplicateDomainByRemovingMobilePrefixes) {
+  EXPECT_TRUE(
+      MostVisitedSites::IsHostOrMobilePageKnown({"bbc.co.uk"}, "m.bbc.co.uk"));
+  EXPECT_TRUE(
+      MostVisitedSites::IsHostOrMobilePageKnown({"m.bbc.co.uk"}, "bbc.co.uk"));
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"cnn.com"},
+                                                        "edition.cnn.com"));
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"edition.cnn.com"},
+                                                        "cnn.com"));
+  EXPECT_TRUE(
+      MostVisitedSites::IsHostOrMobilePageKnown({"cnn.com"}, "mobile.cnn.com"));
+  EXPECT_TRUE(
+      MostVisitedSites::IsHostOrMobilePageKnown({"mobile.cnn.com"}, "cnn.com"));
+}
+
+TEST(MostVisitedSitesTest, ShouldDeduplicateDomainByReplacingMobilePrefixes) {
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"www.bbc.co.uk"},
+                                                        "m.bbc.co.uk"));
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"m.mobile.de"},
+                                                        "www.mobile.de"));
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"www.cnn.com"},
+                                                        "edition.cnn.com"));
+  EXPECT_TRUE(MostVisitedSites::IsHostOrMobilePageKnown({"mobile.cnn.com"},
+                                                        "www.cnn.com"));
+}
 
 class MostVisitedSitesWithCacheHitTest : public MostVisitedSitesTest {
  public:
@@ -1495,5 +1588,4 @@ TEST(MostVisitedSitesMergeTest, ShouldMergeTilesFavoringPersonalOverPopular) {
                       TileSource::POPULAR)));
 }
 
-}  // namespace
 }  // namespace ntp_tiles
