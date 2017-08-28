@@ -256,6 +256,7 @@ bool ExtensionFrameHelper::OnMessageReceived(const IPC::Message& message) {
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ExtensionMsg_Response, OnExtensionResponse)
     IPC_MESSAGE_HANDLER(ExtensionMsg_MessageInvoke, OnExtensionMessageInvoke)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_SetFrameName, OnSetFrameName)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -330,6 +331,10 @@ void ExtensionFrameHelper::OnExtensionMessageInvoke(
     const base::ListValue& args) {
   extension_dispatcher_->InvokeModuleSystemMethod(
       render_frame(), extension_id, module_name, function_name, args);
+}
+
+void ExtensionFrameHelper::OnSetFrameName(const std::string& name) {
+  render_frame()->GetWebFrame()->SetName(blink::WebString::FromUTF8(name));
 }
 
 void ExtensionFrameHelper::OnDestruct() {
