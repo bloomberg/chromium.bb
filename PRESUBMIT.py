@@ -442,6 +442,14 @@ _IPC_ENUM_TRAITS_DEPRECATED = (
     'See http://www.chromium.org/Home/chromium-security/education/security-tips-for-ipc')
 
 
+# These paths contain test data and other known invalid JSON files.
+_KNOWN_INVALID_JSON_FILE_PATTERNS = [
+    r'test[\\\/]data[\\\/]',
+    r'^components[\\\/]policy[\\\/]resources[\\\/]policy_templates\.json$',
+    r'^third_party[\\\/]protobuf[\\\/]',
+]
+
+
 _VALID_OS_MACROS = (
     # Please keep sorted.
     'OS_AIX',
@@ -1393,12 +1401,6 @@ def _CheckParseErrors(input_api, output_api):
     '.idl': _GetIDLParseError,
     '.json': _GetJSONParseError,
   }
-  # These paths contain test data and other known invalid JSON files.
-  excluded_patterns = [
-    r'test[\\\/]data[\\\/]',
-    r'^components[\\\/]policy[\\\/]resources[\\\/]policy_templates\.json$',
-    r'^third_party[\\\/]protobuf[\\\/]',
-  ]
   # Most JSON files are preprocessed and support comments, but these do not.
   json_no_comments_patterns = [
     r'^testing[\\\/]',
@@ -1413,23 +1415,17 @@ def _CheckParseErrors(input_api, output_api):
     filename = affected_file.LocalPath()
     return actions.get(input_api.os_path.splitext(filename)[1])
 
-  def MatchesFile(patterns, path):
-    for pattern in patterns:
-      if input_api.re.search(pattern, path):
-        return True
-    return False
-
   def FilterFile(affected_file):
     action = get_action(affected_file)
     if not action:
       return False
     path = affected_file.LocalPath()
 
-    if MatchesFile(excluded_patterns, path):
+    if _MatchesFile(input_api, _KNOWN_INVALID_JSON_FILE_PATTERNS, path):
       return False
 
     if (action == _GetIDLParseError and
-        not MatchesFile(idl_included_patterns, path)):
+        not _MatchesFile(input_api, idl_included_patterns, path)):
       return False
     return True
 
@@ -1439,7 +1435,8 @@ def _CheckParseErrors(input_api, output_api):
     action = get_action(affected_file)
     kwargs = {}
     if (action == _GetJSONParseError and
-        MatchesFile(json_no_comments_patterns, affected_file.LocalPath())):
+        _MatchesFile(input_api, json_no_comments_patterns,
+                     affected_file.LocalPath())):
       kwargs['eat_comments'] = False
     parse_error = action(input_api,
                          affected_file.AbsoluteLocalPath(),
@@ -1465,6 +1462,13 @@ def _CheckJavaStyle(input_api, output_api):
   return checkstyle.RunCheckstyle(
       input_api, output_api, 'tools/android/checkstyle/chromium-style-5.0.xml',
       black_list=_EXCLUDED_PATHS + input_api.DEFAULT_BLACK_LIST)
+
+
+def _MatchesFile(input_api, patterns, path):
+  for pattern in patterns:
+    if input_api.re.search(pattern, path):
+      return True
+  return False
 
 
 def _CheckIpcOwners(input_api, output_api):
@@ -1545,7 +1549,9 @@ def _CheckIpcOwners(input_api, output_api):
   for f in input_api.AffectedFiles(include_deletes=False):
     # Manifest files don't have a strong naming convention. Instead, scan
     # affected files for .json files and see if they look like a manifest.
-    if f.LocalPath().endswith('.json'):
+    if (f.LocalPath().endswith('.json') and
+        not _MatchesFile(input_api, _KNOWN_INVALID_JSON_FILE_PATTERNS,
+                         f.LocalPath())):
       json_comment_eater = _ImportJSONCommentEater(input_api)
       mostly_json_lines = '\n'.join(f.NewContents())
       # Comments aren't allowed in strict JSON, so filter them out.
