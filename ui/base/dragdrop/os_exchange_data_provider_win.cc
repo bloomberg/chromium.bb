@@ -108,9 +108,9 @@ class FormatEtcEnumerator final : public IEnumFORMATETC {
 
  private:
   // We are _forced_ to use a vector as our internal data model as Windows'
-  // retarded IEnumFORMATETC API assumes a deterministic ordering of elements
-  // through methods like Next and Skip. This exposes the underlying data
-  // structure to the user. Bah.
+  // IEnumFORMATETC API assumes a deterministic ordering of elements through
+  // methods like Next and Skip. This exposes the underlying data structure to
+  // the user. Bah.
   std::vector<std::unique_ptr<FORMATETC>> contents_;
 
   // The cursor of the active enumeration - an index into |contents_|.
