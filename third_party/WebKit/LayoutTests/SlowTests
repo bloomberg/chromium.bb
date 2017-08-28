@@ -163,7 +163,8 @@ crbug.com/451577 http/tests/inspector/resource-tree/resource-tree-frame-in-craft
 crbug.com/451577 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-frame-in-crafted-frame.html [ Slow ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
-crbug.com/510337 inspector/elements/styles-1/edit-value-url-with-color.html [ Slow ]
+crbug.com/510337 http/tests/devtools/elements/styles-1/edit-value-url-with-color.html [ Slow ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-1/edit-value-url-with-color.html [ Slow ]
 
 # This test is intentionally SLOW as we're waiting for a connection timeout.
 crbug.com/73609 http/tests/media/video-play-stall.html [ Slow ]
@@ -303,7 +304,8 @@ crbug.com/24182 [ Debug ] animations/interpolation/transform-interpolation.html 
 crbug.com/24182 [ Debug ] animations/interpolation/webkit-transform-interpolation.html [ Slow ]
 
 crbug.com/528419 [ Linux ] inspector/elements/shadow/shadow-host-display-modes.html [ Slow ]
-crbug.com/528419 inspector/elements/styles-2/pseudo-elements.html [ Slow ]
+crbug.com/528419 http/tests/devtools/elements/styles-2/pseudo-elements.html [ Slow ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-2/pseudo-elements.html [ Slow ]
 
 crbug.com/529345 [ Win10 ] paint/masks/fieldset-mask.html [ Slow ]
 crbug.com/552556 [ Win Linux ] virtual/threaded/fast/scroll-behavior/overflow-scroll-root-frame-animates.html [ Slow ]

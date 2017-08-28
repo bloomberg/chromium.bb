@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('box', step1);
+
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true, false);
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+<style>
+div {
+    border: 1px solid black;
+    background-color: white;
+    padding: 20px;
+}
+</style>
+</head>
+
+<body onload="runTest()">
+Tests that the inspected page does not crash after inspecting element with CSSOM added rules. <a href="http://crbug.com/373508">Bug 373508</a>
+<div id="box">Inspecting this element crashes DevTools</div>
+<script>
+var lastSheet = document.styleSheets[document.styleSheets.length - 1];
+var mediaIndex = lastSheet.insertRule('@media all { }', lastSheet.cssRules.length);
+var mediaRule = lastSheet.cssRules[mediaIndex];
+mediaRule.insertRule('#box { background: red; color: white; }', mediaRule.cssRules.length);
+</script>
+</body>
+</html>

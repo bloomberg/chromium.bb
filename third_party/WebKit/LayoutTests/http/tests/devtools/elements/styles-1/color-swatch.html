@@ -1,0 +1,70 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<style>
+#inspected {
+    color: red;
+    --variable: red;
+}
+</style>
+<script>
+function test() {
+  TestRunner.runTestSuite([
+    function selectNode(next) {
+      ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('inspected', next);
+    },
+
+    function testColorSwatchInMatchRules(next) {
+      var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
+      TestRunner.addResult('Initial color value: ' + treeItem.valueElement.textContent);
+      var swatch =
+          treeItem.valueElement.querySelector('span[is=color-swatch]').shadowRoot.querySelector('.color-swatch-inner');
+      swatch.dispatchEvent(createShiftClick());
+      TestRunner.addResult('After shift-click: ' + treeItem.valueElement.textContent);
+      TestRunner.addResult('Has popover before click: ' + popoverVisible());
+
+      swatch.click();
+      TestRunner.addResult('Has popover after click: ' + popoverVisible());
+      next();
+    },
+
+    function testColorSwatchInCustomProperty(next) {
+      var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('--variable');
+      var swatch = treeItem.valueElement.querySelector('span[is=color-swatch]');
+      TestRunner.addResult('Custom property has a color swatch: ' + !!swatch);
+      next();
+    },
+
+    function testColorSwatchInComputedRules(next) {
+      var computedProperty = ElementsTestRunner.findComputedPropertyWithName('color').title;
+      var computedPropertyValue = computedProperty.querySelector('.value');
+      TestRunner.addResult('Initial color value: ' + computedPropertyValue.textContent);
+      var swatch =
+          computedPropertyValue.querySelector('span[is=color-swatch]').shadowRoot.querySelector('.color-swatch-inner');
+      swatch.dispatchEvent(createShiftClick());
+      TestRunner.addResult('After shift-click color value: ' + computedPropertyValue.textContent);
+      next();
+    }
+  ]);
+
+  function createShiftClick() {
+    var event = document.createEvent('MouseEvent');
+    event.initMouseEvent('click', true, true, null, 1, 0, 0, 0, 0, false, false, true, false, 0, null);
+    return event;
+  }
+
+  function popoverVisible() {
+    return !!document.body.querySelector('* /deep/ .spectrum-color');
+  }
+}
+</script>
+</head>
+
+<body onload="runTest()">
+<p>The patch verifies that color swatch functions properly in matched and computed styles. crbug.com/461363</p>
+
+<div id="inspected">Inspected div</div>
+
+</body>
+</html>

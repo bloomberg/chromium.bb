@@ -1,0 +1,53 @@
+<html>
+<head>
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  var maxIndex = 11;
+  var idIndex = 1;
+
+  Common.Color.detectColorFormat = function() {
+    return Common.Color.Format.RGB;
+  };
+
+  selectDivAndEditValue();
+
+  function selectDivAndEditValue() {
+    ElementsTestRunner.selectNodeAndWaitForStyles('inspected' + idIndex++, editCallback);
+  }
+
+  function editCallback() {
+    var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem('background');
+    treeElement.startEditing(treeElement.valueElement);
+    TestRunner.addResult(treeElement.valueElement.textContent);
+    if (idIndex <= maxIndex)
+      selectDivAndEditValue();
+    else
+      TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that colors are not re-formatted inside url(...) when editing property values.
+</p>
+
+<div id="inspected1" style="background: white">"white" background</div>
+<div id="inspected2" style="background: url( white )">"url( white )" background</div>
+<div id="inspected3" style="background: url(white.png)">"url(white.png)" background</div>
+<div id="inspected4" style="background: url(../foo/white.png)">"url(../foo/white.png)" background</div>
+<div id="inspected5" style="background: green url(white)">"green url(white)" background</div>
+<div id="inspected6" style="background: url(white) green">"url(white) green" background</div>
+<div id="inspected7" style="background: url(white) green, url(green)">"url(white) green, url(green)" background</div>
+<div id="inspected8" style="background: url(white), url(green)">"url(white), url(green)" background</div>
+<div id="inspected9" style="background: hsl(0, 50%, 50%) url(white)">"hsl(0, 50%, 50%) url(white)" background</div>
+<div id="inspected10" style="background: url(white) hsl(0, 50%, 50%)">"url(white) hsl(0, 50%, 50%)" background</div>
+<div id="inspected11" style="background: url(../black/white.png)">"url(../black/white.png)" background</div>
+
+</body>
+</html>

@@ -723,7 +723,8 @@ crbug.com/667560 [ Mac ] virtual/mojo-loading/http/tests/devtools/sources/debugg
 crbug.com/498539 [ Win7 ] http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
 crbug.com/667560 [ Win7 ] virtual/mojo-loading/http/tests/devtools/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
 
-crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
+crbug.com/498539 [ Win7 ] http/tests/devtools/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
+crbug.com/667560 [ Win7 ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
 crbug.com/487281 [ Mac ] fast/forms/select/menulist-narrow-width.html [ Failure ]
 
@@ -1363,7 +1364,8 @@ crbug.com/491764 virtual/mojo-loading/http/tests/inspector/service-workers/user-
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]
 crbug.com/733494 [ Linux ] media/autoplay/document-user-activation.html [ Skip ]
-crbug.com/733495 [ Linux ] inspector/elements/styles-4/styles-history.html [ Skip ]
+crbug.com/733495 [ Linux ] http/tests/devtools/elements/styles-4/styles-history.html [ Skip ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-history.html [ Skip ]
 
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] fast/text/atsui-negative-spacing-features.html [ Failure ]
@@ -1470,7 +1472,8 @@ crbug.com/567230 [ Debug ] virtual/threaded/animations/stability/restart-not-vis
 
 crbug.com/747758 [ Mac Win ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-prevent-default.html [ Failure ]
 
-crbug.com/567419 inspector/elements/styles-2/metrics-box-sizing.html [ Skip ]
+crbug.com/567419 http/tests/devtools/elements/styles-2/metrics-box-sizing.html [ Skip ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-2/metrics-box-sizing.html [ Skip ]
 
 crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 crbug.com/457273 [ Mac ] virtual/mojo-loading/http/tests/websocket/close.html [ Pass Timeout ]
@@ -2440,7 +2443,8 @@ crbug.com/595993 virtual/mojo-blobs/external/wpt/service-workers/service-worker/
 
 crbug.com/619427 [ Mac Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
-crbug.com/667371 inspector/elements/styles-1/color-aware-property-value-edit.html [ Pass Failure ]
+crbug.com/667371 http/tests/devtools/elements/styles-1/color-aware-property-value-edit.html [ Pass Failure ]
+crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-1/color-aware-property-value-edit.html [ Pass Failure ]
 
 # [css-ui] Imported tests from W3C suite.
 crbug.com/669473 external/wpt/css/css-ui-3/box-sizing-014.html [ Failure ]
@@ -2498,7 +2502,8 @@ crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-m
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 
 # Possible duplicate of crbug.com/498539
-# crbug.com/664843 inspector/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
+# crbug.com/664843 http/tests/devtools/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
+# crbug.com/667560 virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
 
 crbug.com/664844 media/track/track-cue-rendering-tree-is-removed-properly.html [ Pass Failure ]
 crbug.com/664844 media/track/track-default-attribute.html [ Pass Failure ]
@@ -2906,7 +2911,8 @@ crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.h
 crbug.com/732103 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
 
 # Sheriff failures 2017-06-14
-crbug.com/733357 [ Win Mac ] inspector/elements/styles-4/styles-history.html [ Failure Pass ]
+crbug.com/733357 [ Win Mac ] http/tests/devtools/elements/styles-4/styles-history.html [ Failure Pass ]
+crbug.com/667560 [ Win Mac ] virtual/mojo-loading/http/tests/devtools/elements/styles-4/styles-history.html [ Failure Pass ]
 crbug.com/733448 virtual/mojo-loading/http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733448 http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733524 [ Mac ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/report-cross-origin-no-cookies.php [ Timeout Pass ]

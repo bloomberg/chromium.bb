@@ -1,0 +1,54 @@
+<html>
+<head>
+<style>
+@media all {
+    ::-moz-focus-inner {}
+}
+#main {
+    color: red;
+}
+</style>
+
+<style>
+@-webkit-region x {
+    x ? {}
+}
+#main {
+    color: blue;
+}
+</style>
+
+<style>
+@-webkit-region x {
+    ? {}
+}
+#main {
+    color: white;
+}
+</style>
+
+<script src="../../../inspector/inspector-test.js"></script>
+<script src="../../../inspector/elements-test.js"></script>
+<script>
+
+function test() {
+  ElementsTestRunner.selectNodeAndWaitForStyles('main', step1);
+
+  function step1() {
+    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    TestRunner.completeTest();
+  }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that invalid rule inside @-rule doesn't break source code matching (http://crbug.com/317499).
+</p>
+
+<div id="main"></div>
+
+</body>
+</html>
