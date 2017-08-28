@@ -310,6 +310,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[::chromeos::kSignedDataRoamingEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::ash::prefs::kUserBluetoothAdapterEnabled] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
   // Timezone settings.
   (*s_whitelist)[chromeos::kSystemTimezone] =

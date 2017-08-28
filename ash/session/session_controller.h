@@ -109,6 +109,18 @@ class ASH_EXPORT SessionController : public mojom::SessionController {
   // Returns true if the current user is a child account.
   bool IsUserChild() const;
 
+  // Returns the type of the current user, or empty if there is no current user
+  // logged in.
+  base::Optional<user_manager::UserType> GetUserType() const;
+
+  // Returns true if the current user is the primary user in a multi-profile
+  // scenario. This always return true if there is only one user logged in.
+  bool IsUserPrimary() const;
+
+  // Returns true if the current user has the profile newly created on the
+  // device (i.e. first time login on the device).
+  bool IsUserFirstLogin() const;
+
   // Returns true if the current user session is a kiosk session (either
   // chrome app kiosk or ARC kiosk).
   bool IsKioskSession() const;

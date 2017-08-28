@@ -104,7 +104,8 @@ void TestSessionControllerClient::AddUserSession(
     const std::string& display_email,
     user_manager::UserType user_type,
     bool enable_settings,
-    bool provide_pref_service) {
+    bool provide_pref_service,
+    bool is_new_profile) {
   auto account_id = AccountId::FromUserEmail(GetUserIdFromEmail(display_email));
   mojom::UserSessionPtr session = mojom::UserSession::New();
   session->session_id = ++fake_session_id_;
@@ -113,6 +114,7 @@ void TestSessionControllerClient::AddUserSession(
   session->user_info->account_id = account_id;
   session->user_info->display_name = "Über tray Über tray Über tray Über tray";
   session->user_info->display_email = display_email;
+  session->user_info->is_new_profile = is_new_profile;
   session->should_enable_settings = enable_settings;
   session->should_show_notification_tray = true;
   controller_->UpdateUserSession(std::move(session));

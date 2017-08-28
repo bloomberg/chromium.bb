@@ -79,6 +79,9 @@ namespace bluetoothPrivate {
     DOMString? name;
 
     // Whether or not the adapter has power.
+    // Setting the bluetooth power by setting this property is not recommended,
+    // instead a user pref (ash::prefs::kUserBluetoothAdapterEnabled) should be
+    // set.
     boolean? powered;
 
     // Whether the adapter is discoverable by other devices.
