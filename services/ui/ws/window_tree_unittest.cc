@@ -57,7 +57,7 @@ std::string ClientWindowIdToString(const ClientWindowId& id) {
 
 ClientWindowId BuildClientWindowId(WindowTree* tree,
                                    ClientSpecificId window_id) {
-  return ClientWindowId(WindowIdToTransportId(WindowId(tree->id(), window_id)));
+  return ClientWindowId(tree->id(), window_id);
 }
 
 // -----------------------------------------------------------------------------
@@ -282,7 +282,9 @@ TEST_F(WindowTreeTest, BasicInputEventTarget) {
   DispatchEventAndAckImmediately(CreatePointerDownEvent(21, 22));
   ASSERT_EQ(0u, wm_client()->tracker()->changes()->size());
   ASSERT_EQ(1u, embed_client->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=2,1 event_action=16",
+  // embed_client created this window that is receiving the event, so client_id
+  // part would be reset to 0 before sending back to clients.
+  EXPECT_EQ("InputEvent window=0,1 event_action=16",
             ChangesToDescription1(*embed_client->tracker()->changes())[0]);
 }
 
@@ -415,7 +417,9 @@ TEST_F(WindowTreeTest, StartPointerWatcherSendsOnce) {
   // watcher.
   DispatchEventAndAckImmediately(pointer_up);
   ASSERT_EQ(1u, client->tracker()->changes()->size());
-  EXPECT_EQ("InputEvent window=2,1 event_action=18 matches_pointer_watcher",
+  // clients that created this window is receiving the event, so client_id part
+  // would be reset to 0 before sending back to clients.
+  EXPECT_EQ("InputEvent window=0,1 event_action=18 matches_pointer_watcher",
             SingleChangeToDescription(*client->tracker()->changes()));
 }
 
@@ -449,6 +453,8 @@ TEST_F(WindowTreeTest, StartPointerWatcherKeyEventsDisallowed) {
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_pressed);
   EXPECT_EQ(0u, other_binding->client()->tracker()->changes()->size());
+  // clients that created this window is receiving the event, so client_id part
+  // would be reset to 0 before sending back to clients.
   EXPECT_EQ("InputEvent window=0,3 event_action=7",
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
 
@@ -461,6 +467,8 @@ TEST_F(WindowTreeTest, StartPointerWatcherKeyEventsDisallowed) {
 TEST_F(WindowTreeTest, KeyEventSentToWindowManagerWhenNothingFocused) {
   ui::KeyEvent key_pressed(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
   DispatchEventAndAckImmediately(key_pressed);
+  // clients that created this window is receiving the event, so client_id part
+  // would be reset to 0 before sending back to clients.
   EXPECT_EQ("InputEvent window=0,3 event_action=7",
             SingleChangeToDescription(*wm_client()->tracker()->changes()));
 }
@@ -634,6 +642,8 @@ TEST_F(WindowTreeTest, EventAck) {
   wm_client()->tracker()->changes()->clear();
   DispatchEventWithoutAck(CreateMouseMoveEvent(21, 22));
   ASSERT_EQ(1u, wm_client()->tracker()->changes()->size());
+  // clients that created this window is receiving the event, so client_id part
+  // would be reset to 0 before sending back to clients.
   EXPECT_EQ("InputEvent window=0,3 event_action=17",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   wm_client()->tracker()->changes()->clear();
@@ -834,16 +844,21 @@ TEST_F(WindowTreeTest, ExplicitSetCapture) {
   // Set capture.
   mojom::WindowTree* mojom_window_tree = static_cast<mojom::WindowTree*>(tree);
   uint32_t change_id = 42;
-  mojom_window_tree->SetCapture(change_id, WindowIdToTransportId(window->id()));
+  WindowId window_id = window->id();
+  mojom_window_tree->SetCapture(
+      change_id, ClientWindowId(window_id.client_id, window_id.window_id).id);
   Display* display = tree->GetDisplay(window);
   EXPECT_EQ(window, GetCaptureWindow(display));
 
   // Only the capture window should be able to release capture
-  mojom_window_tree->ReleaseCapture(++change_id,
-                                    WindowIdToTransportId(root_window->id()));
+  WindowId root_window_id = root_window->id();
+  mojom_window_tree->ReleaseCapture(
+      ++change_id,
+      ClientWindowId(root_window_id.client_id, root_window_id.window_id).id);
   EXPECT_EQ(window, GetCaptureWindow(display));
-  mojom_window_tree->ReleaseCapture(++change_id,
-                                    WindowIdToTransportId(window->id()));
+
+  mojom_window_tree->ReleaseCapture(
+      ++change_id, ClientWindowId(window_id.client_id, window_id.window_id).id);
   EXPECT_EQ(nullptr, GetCaptureWindow(display));
 }
 
@@ -1180,7 +1195,7 @@ TEST_F(WindowTreeTest, SetOpacityFailsOnUnknownWindow) {
   ASSERT_NE(new_opacity, unknown_window.opacity());
 
   EXPECT_FALSE(tree->SetWindowOpacity(
-      ClientWindowId(WindowIdToTransportId(window_id)), new_opacity));
+      ClientWindowId(window_id.client_id, window_id.window_id), new_opacity));
   EXPECT_NE(new_opacity, unknown_window.opacity());
 }
 

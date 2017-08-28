@@ -482,7 +482,9 @@ TEST_F(WindowManagerStateTest, DeleteNonRootTree) {
   DispatchInputEventToWindow(target, display->GetId(), key, accelerator.get());
   TestChangeTracker* tracker = embed_connection->tracker();
   ASSERT_EQ(1u, tracker->changes()->size());
-  EXPECT_EQ("InputEvent window=2,1 event_action=7",
+  // clients that created this window is receiving the event, so client_id part
+  // would be reset to 0 before sending back to clients.
+  EXPECT_EQ("InputEvent window=0,1 event_action=7",
             ChangesToDescription1(*tracker->changes())[0]);
   EXPECT_TRUE(wm_client()->tracker()->changes()->empty());
 
@@ -542,13 +544,13 @@ TEST_F(WindowManagerStateTest, AckTimeout) {
 TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
   WindowTree* embedder_tree = tree();
   ServerWindow* embedder_root = window();
-  const ClientWindowId embed_window_id(
-      WindowIdToTransportId(WindowId(embedder_tree->id(), 12)));
+  const ClientWindowId embed_window_id(embedder_tree->id(), 12);
   embedder_tree->NewWindow(embed_window_id, ServerWindow::Properties());
   ServerWindow* embedder_window =
       embedder_tree->GetWindowByClientId(embed_window_id);
+  WindowId embedder_root_id = embedder_root->id();
   ASSERT_TRUE(embedder_tree->AddWindow(
-      ClientWindowId(WindowIdToTransportId(embedder_root->id())),
+      ClientWindowId(embedder_root_id.client_id, embedder_root_id.window_id),
       embed_window_id));
 
   TestWindowTreeClient* embedder_client = wm_client();
@@ -604,11 +606,11 @@ TEST_F(WindowManagerStateTest, InterceptingEmbedderReceivesEvents) {
     embedder_client->tracker()->changes()->clear();
 
     // Embed another tree in the embedded tree.
-    const ClientWindowId nested_embed_window_id(
-        WindowIdToTransportId(WindowId(embed_tree->id(), 23)));
+    const ClientWindowId nested_embed_window_id(embed_tree->id(), 23);
     embed_tree->NewWindow(nested_embed_window_id, ServerWindow::Properties());
-    const ClientWindowId embed_root_id(
-        WindowIdToTransportId((*embed_tree->roots().begin())->id()));
+    WindowId embed_root_window_id = (*embed_tree->roots().begin())->id();
+    const ClientWindowId embed_root_id(embed_root_window_id.client_id,
+                                       embed_root_window_id.window_id);
     ASSERT_TRUE(embed_tree->AddWindow(embed_root_id, nested_embed_window_id));
 
     WindowTree* nested_embed_tree = nullptr;

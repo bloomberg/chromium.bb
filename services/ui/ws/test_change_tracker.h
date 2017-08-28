@@ -73,7 +73,6 @@ struct Change {
   ~Change();
 
   ChangeType type;
-  ClientSpecificId client_id;
   std::vector<TestWindow> windows;
   Id window_id;
   Id window_id2;
@@ -144,9 +143,7 @@ class TestChangeTracker {
 
   // Each of these functions generate a Change. There is one per
   // WindowTreeClient function.
-  void OnEmbed(ClientSpecificId client_id,
-               mojom::WindowDataPtr root,
-               bool drawn);
+  void OnEmbed(mojom::WindowDataPtr root, bool drawn);
   void OnEmbeddedAppDisconnected(Id window_id);
   void OnUnembed(Id window_id);
   void OnCaptureChanged(Id new_capture_window_id, Id old_capture_window_id);

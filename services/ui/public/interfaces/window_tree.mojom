@@ -23,7 +23,10 @@ import "ui/gfx/mojo/transform.mojom";
 import "ui/platform_window/mojo/text_input_state.mojom";
 
 // Windows are identified by a uint32. The upper 16 bits are the connection id,
-// and the lower 16 the id assigned by the client.
+// and the lower 16 the id assigned by the client. If it's a window created by
+// the client this WindowTree is associated with, the upper 16 bits are 0;
+// otherwise the upper 16 bits are the id of the WindowTree associated with the
+// other client that created this window.
 //
 // The root window is identified with a connection id of 0, and value of 1.
 //
@@ -339,8 +342,7 @@ interface WindowTreeClient {
   // drawn, see OnParentDrawnStateChanged() for details. |display_id| identifies
   // the display this root window is on. If the embedded window has a size,
   // |local_surface_id| identifies the ID to use to submit CompositorFrames.
-  OnEmbed(uint16 connection_id,
-          WindowData root,
+  OnEmbed(WindowData root,
           WindowTree? tree,
           int64 display_id,
           uint32 focused_window,

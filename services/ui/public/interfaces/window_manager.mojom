@@ -157,7 +157,7 @@ interface WindowManager {
   // End long lived properties. ------------------------------------------------
 
   // Called immediately when the WindowManager is obtained.
-  OnConnect(uint16 client_id);
+  OnConnect();
 
   // Called when a new display is added. |root| gives the root window specific
   // to this WindowManager for |display|. |local_surface_id| identifies the ID
