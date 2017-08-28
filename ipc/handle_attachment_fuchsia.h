@@ -22,12 +22,9 @@ class IPC_EXPORT HandleAttachmentFuchsia : public MessageAttachment {
   // result. Should only be called by the sender of a Chrome IPC message.
   explicit HandleAttachmentFuchsia(const mx_handle_t& handle);
 
-  enum FromWire {
-    FROM_WIRE,
-  };
   // This constructor takes ownership of |handle|. Should only be called by the
   // receiver of a Chrome IPC message.
-  HandleAttachmentFuchsia(const mx_handle_t& handle, FromWire from_wire);
+  explicit HandleAttachmentFuchsia(base::ScopedMxHandle handle);
 
   Type GetType() const override;
 

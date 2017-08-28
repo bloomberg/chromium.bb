@@ -13,13 +13,12 @@ namespace internal {
 HandleAttachmentFuchsia::HandleAttachmentFuchsia(const mx_handle_t& handle) {
   mx_status_t result =
       mx_handle_duplicate(handle, MX_RIGHT_SAME_RIGHTS, handle_.receive());
-  DLOG_IF(ERROR, result == MX_OK)
+  DLOG_IF(ERROR, result != MX_OK)
       << "mx_handle_duplicate: " << mx_status_get_string(result);
 }
 
-HandleAttachmentFuchsia::HandleAttachmentFuchsia(const mx_handle_t& handle,
-                                                 FromWire from_wire)
-    : handle_(handle) {}
+HandleAttachmentFuchsia::HandleAttachmentFuchsia(base::ScopedMxHandle handle)
+    : handle_(std::move(handle)) {}
 
 HandleAttachmentFuchsia::~HandleAttachmentFuchsia() {}
 
