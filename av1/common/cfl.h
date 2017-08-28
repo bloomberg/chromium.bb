@@ -14,6 +14,7 @@
 
 #include <assert.h>
 
+#include "av1/common/common.h"
 #include "av1/common/enums.h"
 
 // Forward declaration of AV1_COMMON, in order to avoid creating a cyclic
@@ -66,7 +67,8 @@ typedef struct {
 } CFL_CTX;
 
 static INLINE int get_scaled_luma_q0(int alpha_q3, int y_pix, int avg_q3) {
-  return (alpha_q3 * ((y_pix << 3) - avg_q3) + 32) >> 6;
+  int scaled_luma_q6 = alpha_q3 * ((y_pix << 3) - avg_q3);
+  return ROUND_POWER_OF_TWO_SIGNED(scaled_luma_q6, 6);
 }
 
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
