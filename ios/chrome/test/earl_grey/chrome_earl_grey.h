@@ -95,6 +95,14 @@ id ExecuteJavaScript(NSString* javascript,
 // Waits for there to be |count| number of incognito tabs. If the condition is
 // not met within a timeout, a GREYAssert is induced.
 + (void)waitForIncognitoTabCount:(NSUInteger)count;
+
+// Waits for there to be a web view containing a blocked |image_id|.  When
+// blocked, the image element will be smaller than the actual image size.
++ (void)waitForWebViewContainingBlockedImageElementWithID:(std::string)imageID;
+
+// Waits for there to be a web view containing loaded image with |image_id|.
+// When loaded, the image element will have the same size as actual image.
++ (void)waitForWebViewContainingLoadedImageElementWithID:(std::string)imageID;
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_
