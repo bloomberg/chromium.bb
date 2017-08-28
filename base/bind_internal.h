@@ -225,10 +225,24 @@ struct FunctorTraits<IgnoreResultHelper<T>> : FunctorTraits<T> {
   }
 };
 
-// For Callbacks.
-template <typename R, typename... Args,
-          CopyMode copy_mode, RepeatMode repeat_mode>
-struct FunctorTraits<Callback<R(Args...), copy_mode, repeat_mode>> {
+// For OnceCallbacks.
+template <typename R, typename... Args>
+struct FunctorTraits<OnceCallback<R(Args...)>> {
+  using RunType = R(Args...);
+  static constexpr bool is_method = false;
+  static constexpr bool is_nullable = true;
+
+  template <typename CallbackType, typename... RunArgs>
+  static R Invoke(CallbackType&& callback, RunArgs&&... args) {
+    DCHECK(!callback.is_null());
+    return std::forward<CallbackType>(callback).Run(
+        std::forward<RunArgs>(args)...);
+  }
+};
+
+// For RepeatingCallbacks.
+template <typename R, typename... Args>
+struct FunctorTraits<RepeatingCallback<R(Args...)>> {
   using RunType = R(Args...);
   static constexpr bool is_method = false;
   static constexpr bool is_nullable = true;

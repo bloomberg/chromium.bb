@@ -551,11 +551,19 @@ struct CallbackCancellationTraits<
 };
 
 // Specialization for a nested bind.
-template <typename Signature,
-          typename... BoundArgs,
-          internal::CopyMode copy_mode,
-          internal::RepeatMode repeat_mode>
-struct CallbackCancellationTraits<Callback<Signature, copy_mode, repeat_mode>,
+template <typename Signature, typename... BoundArgs>
+struct CallbackCancellationTraits<OnceCallback<Signature>,
+                                  std::tuple<BoundArgs...>> {
+  static constexpr bool is_cancellable = true;
+
+  template <typename Functor>
+  static bool IsCancelled(const Functor& functor, const BoundArgs&...) {
+    return functor.IsCancelled();
+  }
+};
+
+template <typename Signature, typename... BoundArgs>
+struct CallbackCancellationTraits<RepeatingCallback<Signature>,
                                   std::tuple<BoundArgs...>> {
   static constexpr bool is_cancellable = true;
 
