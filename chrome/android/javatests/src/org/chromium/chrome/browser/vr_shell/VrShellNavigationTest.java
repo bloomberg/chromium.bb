@@ -290,7 +290,7 @@ public class VrShellNavigationTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testBackDoesntBackgroundChrome()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
+            throws IllegalArgumentException, InterruptedException {
         Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
         mVrTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_CHROME_UI);
         Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
@@ -304,5 +304,33 @@ public class VrShellNavigationTest {
             }
         });
         Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+    }
+
+    /**
+     * Tests navigation from a fullscreened WebVR to a WebVR page.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testNavigationButtons() throws IllegalArgumentException, InterruptedException {
+        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse(
+                "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+        mVrTestRule.loadUrlInNewTab(getUrl(Page.PAGE_2D), false, TabLaunchType.FROM_CHROME_UI);
+        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse(
+                "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+        mVrTestRule.loadUrl(getUrl(Page.PAGE_WEBVR));
+        Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse(
+                "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+        VrTransitionUtils.navigateBack();
+        Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertTrue(
+                "Forward button isn't enabled.", VrTransitionUtils.isForwardButtonEnabled());
+        VrTransitionUtils.navigateForward();
+        Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
+        Assert.assertFalse(
+                "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
     }
 }
