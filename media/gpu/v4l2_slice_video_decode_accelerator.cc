@@ -30,7 +30,6 @@
 #include "media/base/media_switches.h"
 #include "media/gpu/shared_memory_region.h"
 #include "ui/gl/gl_context.h"
-#include "ui/gl/gl_image.h"
 #include "ui/gl/scoped_binders.h"
 
 #define LOGF(level) LOG(level) << __func__ << "(): "
@@ -65,15 +64,6 @@
   } while (0)
 
 namespace media {
-namespace {
-void DropGLImage(scoped_refptr<gl::GLImage> gl_image,
-                 BindGLImageCallback bind_image_cb,
-                 GLuint client_texture_id,
-                 GLuint texture_target) {
-  bind_image_cb.Run(client_texture_id, texture_target, nullptr, false);
-}
-
-}  // namespace
 
 // static
 const uint32_t V4L2SliceVideoDecodeAccelerator::supported_input_fourccs_[] = {
@@ -199,6 +189,7 @@ V4L2SliceVideoDecodeAccelerator::OutputRecord::OutputRecord()
       at_client(false),
       picture_id(-1),
       texture_id(0),
+      egl_image(EGL_NO_IMAGE_KHR),
       egl_sync(EGL_NO_SYNC_KHR),
       cleared(false) {}
 
@@ -468,7 +459,7 @@ V4L2VP9Picture::~V4L2VP9Picture() {}
 V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
     const scoped_refptr<V4L2Device>& device,
     EGLDisplay egl_display,
-    const BindGLImageCallback& bind_image_cb,
+    const GetGLContextCallback& get_gl_context_cb,
     const MakeGLContextCurrentCallback& make_context_current_cb)
     : input_planes_count_(0),
       output_planes_count_(0),
@@ -490,7 +481,7 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
       surface_set_change_pending_(false),
       picture_clearing_count_(0),
       egl_display_(egl_display),
-      bind_image_cb_(bind_image_cb),
+      get_gl_context_cb_(get_gl_context_cb),
       make_context_current_cb_(make_context_current_cb),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -1516,7 +1507,7 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
   if (output_buffer_map_.empty())
     return true;
 
-  for (auto& output_record : output_buffer_map_) {
+  for (const auto& output_record : output_buffer_map_) {
     DCHECK(!output_record.at_device);
 
     if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
@@ -1524,11 +1515,11 @@ bool V4L2SliceVideoDecodeAccelerator::DestroyOutputs(bool dismiss) {
         DVLOGF(1) << "eglDestroySyncKHR failed.";
     }
 
-    if (output_record.gl_image) {
+    if (output_record.egl_image != EGL_NO_IMAGE_KHR) {
       child_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&DropGLImage, std::move(output_record.gl_image),
-                                bind_image_cb_, output_record.client_texture_id,
-                                device_->GetTextureTarget()));
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&V4L2Device::DestroyEGLImage), device_,
+                     egl_display_, output_record.egl_image));
     }
 
     picture_buffers_to_dismiss.push_back(output_record.picture_id);
@@ -1642,7 +1633,7 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     OutputRecord& output_record = output_buffer_map_[i];
     DCHECK(!output_record.at_device);
     DCHECK(!output_record.at_client);
-    DCHECK(!output_record.gl_image);
+    DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
     DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
     DCHECK_EQ(output_record.picture_id, -1);
     DCHECK(output_record.dmabuf_fds.empty());
@@ -1652,10 +1643,6 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
     output_record.texture_id = buffers[i].service_texture_ids().empty()
                                    ? 0
                                    : buffers[i].service_texture_ids()[0];
-
-    output_record.client_texture_id = buffers[i].client_texture_ids().empty()
-                                          ? 0
-                                          : buffers[i].client_texture_ids()[0];
 
     // This will remain true until ImportBufferForPicture is called, either by
     // the client, or by ourselves, if we are allocating.
@@ -1688,11 +1675,10 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   ProcessPendingEventsIfNeeded();
 }
 
-void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
+void V4L2SliceVideoDecodeAccelerator::CreateEGLImageFor(
     size_t buffer_index,
     int32_t picture_buffer_id,
     std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds,
-    GLuint client_texture_id,
     GLuint texture_id,
     const gfx::Size& size,
     uint32_t fourcc) {
@@ -1700,41 +1686,42 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_NE(texture_id, 0u);
 
-  if (make_context_current_cb_.is_null()) {
-    DLOGF(ERROR) << "GL callbacks required for binding to GLImages";
+  if (get_gl_context_cb_.is_null() || make_context_current_cb_.is_null()) {
+    DLOGF(ERROR) << "GL callbacks required for binding to EGLImages";
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
-  if (!make_context_current_cb_.Run()) {
+
+  gl::GLContext* gl_context = get_gl_context_cb_.Run();
+  if (!gl_context || !make_context_current_cb_.Run()) {
     DLOGF(ERROR) << "No GL context";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
 
-  scoped_refptr<gl::GLImage> gl_image =
-      device_->CreateGLImage(size, fourcc, *passed_dmabuf_fds);
-  if (!gl_image) {
-    LOGF(ERROR) << "Could not create GLImage,"
+  gl::ScopedTextureBinder bind_restore(GL_TEXTURE_EXTERNAL_OES, 0);
+
+  EGLImageKHR egl_image =
+      device_->CreateEGLImage(egl_display_, gl_context->GetHandle(), texture_id,
+                              size, buffer_index, fourcc, *passed_dmabuf_fds);
+  if (egl_image == EGL_NO_IMAGE_KHR) {
+    LOGF(ERROR) << "Could not create EGLImageKHR,"
                 << " index=" << buffer_index << " texture_id=" << texture_id;
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
   }
-  gl::ScopedTextureBinder bind_restore(device_->GetTextureTarget(), texture_id);
-  bool ret = gl_image->BindTexImage(device_->GetTextureTarget());
-  DCHECK(ret);
-  bind_image_cb_.Run(client_texture_id, device_->GetTextureTarget(), gl_image,
-                     true);
+
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&V4L2SliceVideoDecodeAccelerator::AssignGLImage,
+      base::Bind(&V4L2SliceVideoDecodeAccelerator::AssignEGLImage,
                  base::Unretained(this), buffer_index, picture_buffer_id,
-                 gl_image, base::Passed(&passed_dmabuf_fds)));
+                 egl_image, base::Passed(&passed_dmabuf_fds)));
 }
 
-void V4L2SliceVideoDecodeAccelerator::AssignGLImage(
+void V4L2SliceVideoDecodeAccelerator::AssignEGLImage(
     size_t buffer_index,
     int32_t picture_buffer_id,
-    scoped_refptr<gl::GLImage> gl_image,
+    EGLImageKHR egl_image,
     std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds) {
   DVLOGF(3) << "index=" << buffer_index;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
@@ -1749,16 +1736,19 @@ void V4L2SliceVideoDecodeAccelerator::AssignGLImage(
   if (buffer_index >= output_buffer_map_.size() ||
       output_buffer_map_[buffer_index].picture_id != picture_buffer_id) {
     DVLOGF(3) << "Picture set already changed, dropping EGLImage";
+    child_task_runner_->PostTask(
+        FROM_HERE, base::Bind(base::IgnoreResult(&V4L2Device::DestroyEGLImage),
+                              device_, egl_display_, egl_image));
     return;
   }
 
   OutputRecord& output_record = output_buffer_map_[buffer_index];
-  DCHECK(!output_record.gl_image);
+  DCHECK_EQ(output_record.egl_image, EGL_NO_IMAGE_KHR);
   DCHECK_EQ(output_record.egl_sync, EGL_NO_SYNC_KHR);
   DCHECK(!output_record.at_client);
   DCHECK(!output_record.at_device);
 
-  output_record.gl_image = gl_image;
+  output_record.egl_image = egl_image;
   if (output_mode_ == Config::OutputMode::IMPORT) {
     DCHECK(output_record.dmabuf_fds.empty());
     output_record.dmabuf_fds = std::move(*passed_dmabuf_fds);
@@ -1833,15 +1823,21 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
   DCHECK(!iter->at_device);
   iter->at_client = false;
   if (iter->texture_id != 0) {
-    iter->gl_image = nullptr;
+    if (iter->egl_image != EGL_NO_IMAGE_KHR) {
+      child_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(base::IgnoreResult(&V4L2Device::DestroyEGLImage), device_,
+                     egl_display_, iter->egl_image));
+    }
+
     child_task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&V4L2SliceVideoDecodeAccelerator::CreateGLImageFor,
+        base::Bind(&V4L2SliceVideoDecodeAccelerator::CreateEGLImageFor,
                    weak_this_, index, picture_buffer_id,
-                   base::Passed(&passed_dmabuf_fds), iter->client_texture_id,
-                   iter->texture_id, coded_size_, output_format_fourcc_));
+                   base::Passed(&passed_dmabuf_fds), iter->texture_id,
+                   coded_size_, output_format_fourcc_));
   } else {
-    // No need for a GLImage, start using this buffer now.
+    // No need for an EGLImage, start using this buffer now.
     DCHECK_EQ(output_planes_count_, passed_dmabuf_fds->size());
     iter->dmabuf_fds.swap(*passed_dmabuf_fds);
     free_output_buffers_.push_back(index);

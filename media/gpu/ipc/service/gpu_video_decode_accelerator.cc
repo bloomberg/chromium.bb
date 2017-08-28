@@ -58,6 +58,8 @@ static bool MakeDecoderContextCurrent(
   return true;
 }
 
+#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || \
+    defined(OS_MACOSX) || defined(OS_WIN)
 static bool BindImage(const base::WeakPtr<gpu::GpuCommandBufferStub>& stub,
                       uint32_t client_texture_id,
                       uint32_t texture_target,
@@ -73,6 +75,7 @@ static bool BindImage(const base::WeakPtr<gpu::GpuCommandBufferStub>& stub,
                              can_bind_to_sampler);
   return true;
 }
+#endif
 
 static base::WeakPtr<gpu::gles2::GLES2Decoder> GetGLES2Decoder(
     const base::WeakPtr<gpu::GpuCommandBufferStub>& stub) {
@@ -164,7 +167,10 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
   get_gl_context_cb_ = base::Bind(&GetGLContext, stub_->AsWeakPtr());
   make_context_current_cb_ =
       base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
+#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || \
+    defined(OS_MACOSX) || defined(OS_WIN)
   bind_image_cb_ = base::Bind(&BindImage, stub_->AsWeakPtr());
+#endif
   get_gles2_decoder_cb_ = base::Bind(&GetGLES2Decoder, stub_->AsWeakPtr());
 }
 
