@@ -37,7 +37,8 @@ class CONTENT_EXPORT ServiceWorkerEventDispatcherHolder
   explicit ServiceWorkerEventDispatcherHolder(
       mojom::ServiceWorkerEventDispatcher* raw_ptr);
 
-  mojom::ServiceWorkerEventDispatcher* event_dispatcher_raw_ptr_for_testing_;
+  mojom::ServiceWorkerEventDispatcher* event_dispatcher_raw_ptr_for_testing_ =
+      nullptr;
   mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_;
 };
 

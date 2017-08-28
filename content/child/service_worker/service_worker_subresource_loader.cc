@@ -56,7 +56,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       blob_client_binding_(this),
       default_loader_factory_getter_(std::move(default_loader_factory_getter)),
       weak_factory_(this) {
-  DCHECK(event_dispatcher_);
+  DCHECK(event_dispatcher_ && event_dispatcher_->get());
   url_loader_binding_.set_connection_error_handler(base::BindOnce(
       &ServiceWorkerSubresourceLoader::DeleteSoon, weak_factory_.GetWeakPtr()));
   StartRequest(resource_request);
