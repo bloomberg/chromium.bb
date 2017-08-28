@@ -1,24 +1,24 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "Verify rotated blurry shadow 2"
-PASS Verify alpha shadow 1 
-PASS Verify alpha shadow 2 
-PASS Verify alpha shadow 3 
-PASS Verify alpha shadow 4 
-PASS Verify alpha shadow 5 
-PASS Verify blurry shadow 1 
-PASS Verify blurry shadow 2 
-PASS Verify blurry shadow 3 
-PASS Verify blurry shadow 4 
-PASS Verify blurry shadow 5 
-PASS Verify rotated alpha shadow 1 
-PASS Verify rotated alpha shadow 2 
-PASS Verify rotated alpha shadow 3 
-PASS Verify rotated alpha shadow 4 
-PASS Verify rotated alpha shadow 5 
-PASS Verify rotated blurry shadow 1 
-PASS Verify rotated blurry shadow 2 
-PASS Verify rotated blurry shadow 3 
-PASS Verify rotated blurry shadow 2 
-PASS Verify rotated blurry shadow 2 
+PASS Verify alpha shadow 1
+PASS Verify alpha shadow 2
+PASS Verify alpha shadow 3
+PASS Verify alpha shadow 4
+PASS Verify alpha shadow 5
+PASS Verify blurry shadow 1
+PASS Verify blurry shadow 2
+PASS Verify blurry shadow 3
+PASS Verify blurry shadow 4
+PASS Verify blurry shadow 5
+PASS Verify rotated alpha shadow 1
+PASS Verify rotated alpha shadow 2
+PASS Verify rotated alpha shadow 3
+PASS Verify rotated alpha shadow 4
+PASS Verify rotated alpha shadow 5
+PASS Verify rotated blurry shadow 1
+PASS Verify rotated blurry shadow 2
+PASS Verify rotated blurry shadow 3
+PASS Verify rotated blurry shadow 2
+PASS Verify rotated blurry shadow 2
 Harness: the test ran to completion.
 

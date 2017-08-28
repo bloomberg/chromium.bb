@@ -1,88 +1,88 @@
 This is a testharness.js-based test.
-FAIL Window interface: attribute performance assert_true: The prototype object must have a property "performance" expected true got false
-FAIL Window interface: window must inherit property "performance" with the proper type (0) assert_inherits: property "performance" found on object expected in prototype chain
-PASS PerformanceTiming interface: existence and properties of interface object 
-PASS PerformanceTiming interface object length 
-PASS PerformanceTiming interface object name 
-PASS PerformanceTiming interface: existence and properties of interface prototype object 
-PASS PerformanceTiming interface: existence and properties of interface prototype object's "constructor" property 
-PASS PerformanceTiming interface: attribute navigationStart 
-PASS PerformanceTiming interface: attribute unloadEventStart 
-PASS PerformanceTiming interface: attribute unloadEventEnd 
-PASS PerformanceTiming interface: attribute redirectStart 
-PASS PerformanceTiming interface: attribute redirectEnd 
-PASS PerformanceTiming interface: attribute fetchStart 
-PASS PerformanceTiming interface: attribute domainLookupStart 
-PASS PerformanceTiming interface: attribute domainLookupEnd 
-PASS PerformanceTiming interface: attribute connectStart 
-PASS PerformanceTiming interface: attribute connectEnd 
-PASS PerformanceTiming interface: attribute secureConnectionStart 
-PASS PerformanceTiming interface: attribute requestStart 
-PASS PerformanceTiming interface: attribute responseStart 
-PASS PerformanceTiming interface: attribute responseEnd 
-PASS PerformanceTiming interface: attribute domLoading 
-PASS PerformanceTiming interface: attribute domInteractive 
-PASS PerformanceTiming interface: attribute domContentLoadedEventStart 
-PASS PerformanceTiming interface: attribute domContentLoadedEventEnd 
-PASS PerformanceTiming interface: attribute domComplete 
-PASS PerformanceTiming interface: attribute loadEventStart 
-PASS PerformanceTiming interface: attribute loadEventEnd 
-PASS PerformanceTiming must be primary interface of window.performance.timing 
-PASS Stringification of window.performance.timing 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "navigationStart" with the proper type (0) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "unloadEventStart" with the proper type (1) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "unloadEventEnd" with the proper type (2) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "redirectStart" with the proper type (3) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "redirectEnd" with the proper type (4) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "fetchStart" with the proper type (5) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "domainLookupStart" with the proper type (6) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "domainLookupEnd" with the proper type (7) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "connectStart" with the proper type (8) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "connectEnd" with the proper type (9) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "secureConnectionStart" with the proper type (10) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "requestStart" with the proper type (11) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "responseStart" with the proper type (12) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "responseEnd" with the proper type (13) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "domLoading" with the proper type (14) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "domInteractive" with the proper type (15) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "domContentLoadedEventStart" with the proper type (16) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "domContentLoadedEventEnd" with the proper type (17) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "domComplete" with the proper type (18) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "loadEventStart" with the proper type (19) 
-PASS PerformanceTiming interface: window.performance.timing must inherit property "loadEventEnd" with the proper type (20) 
-PASS PerformanceNavigation interface: existence and properties of interface object 
-PASS PerformanceNavigation interface object length 
-PASS PerformanceNavigation interface object name 
-PASS PerformanceNavigation interface: existence and properties of interface prototype object 
-PASS PerformanceNavigation interface: existence and properties of interface prototype object's "constructor" property 
-PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object 
-PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface prototype object 
-PASS PerformanceNavigation interface: constant TYPE_RELOAD on interface object 
-PASS PerformanceNavigation interface: constant TYPE_RELOAD on interface prototype object 
-PASS PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface object 
-PASS PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface prototype object 
-PASS PerformanceNavigation interface: constant TYPE_RESERVED on interface object 
-PASS PerformanceNavigation interface: constant TYPE_RESERVED on interface prototype object 
-PASS PerformanceNavigation interface: attribute type 
-PASS PerformanceNavigation interface: attribute redirectCount 
-PASS PerformanceNavigation must be primary interface of window.performance.navigation 
-PASS Stringification of window.performance.navigation 
-PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_NAVIGATE" with the proper type (0) 
-PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RELOAD" with the proper type (1) 
-PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_BACK_FORWARD" with the proper type (2) 
-PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RESERVED" with the proper type (3) 
-PASS PerformanceNavigation interface: window.performance.navigation must inherit property "type" with the proper type (4) 
-PASS PerformanceNavigation interface: window.performance.navigation must inherit property "redirectCount" with the proper type (5) 
-FAIL Performance interface: existence and properties of interface object assert_equals: prototype of self's property "Performance" is not Function.prototype expected function "function () { [native code] }" but got function "function EventTarget() { [native code] }"
-PASS Performance interface object length 
-PASS Performance interface object name 
-FAIL Performance interface: existence and properties of interface prototype object assert_equals: prototype of Performance.prototype is not Object.prototype expected object "[object Object]" but got object "[object EventTarget]"
-PASS Performance interface: existence and properties of interface prototype object's "constructor" property 
-PASS Performance interface: attribute timing 
-PASS Performance interface: attribute navigation 
-PASS Performance must be primary interface of window.performance 
-PASS Stringification of window.performance 
-PASS Performance interface: window.performance must inherit property "timing" with the proper type (0) 
-PASS Performance interface: window.performance must inherit property "navigation" with the proper type (1) 
+FAIL Window interface: attribute performanceassert_true: The prototype object must have a property "performance" expected true got false
+FAIL Window interface: window must inherit property "performance" with the proper type (0)assert_inherits: property "performance" found on object expected in prototype chain
+PASS PerformanceTiming interface: existence and properties of interface object
+PASS PerformanceTiming interface object length
+PASS PerformanceTiming interface object name
+PASS PerformanceTiming interface: existence and properties of interface prototype object
+PASS PerformanceTiming interface: existence and properties of interface prototype object's "constructor" property
+PASS PerformanceTiming interface: attribute navigationStart
+PASS PerformanceTiming interface: attribute unloadEventStart
+PASS PerformanceTiming interface: attribute unloadEventEnd
+PASS PerformanceTiming interface: attribute redirectStart
+PASS PerformanceTiming interface: attribute redirectEnd
+PASS PerformanceTiming interface: attribute fetchStart
+PASS PerformanceTiming interface: attribute domainLookupStart
+PASS PerformanceTiming interface: attribute domainLookupEnd
+PASS PerformanceTiming interface: attribute connectStart
+PASS PerformanceTiming interface: attribute connectEnd
+PASS PerformanceTiming interface: attribute secureConnectionStart
+PASS PerformanceTiming interface: attribute requestStart
+PASS PerformanceTiming interface: attribute responseStart
+PASS PerformanceTiming interface: attribute responseEnd
+PASS PerformanceTiming interface: attribute domLoading
+PASS PerformanceTiming interface: attribute domInteractive
+PASS PerformanceTiming interface: attribute domContentLoadedEventStart
+PASS PerformanceTiming interface: attribute domContentLoadedEventEnd
+PASS PerformanceTiming interface: attribute domComplete
+PASS PerformanceTiming interface: attribute loadEventStart
+PASS PerformanceTiming interface: attribute loadEventEnd
+PASS PerformanceTiming must be primary interface of window.performance.timing
+PASS Stringification of window.performance.timing
+PASS PerformanceTiming interface: window.performance.timing must inherit property "navigationStart" with the proper type (0)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "unloadEventStart" with the proper type (1)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "unloadEventEnd" with the proper type (2)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "redirectStart" with the proper type (3)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "redirectEnd" with the proper type (4)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "fetchStart" with the proper type (5)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "domainLookupStart" with the proper type (6)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "domainLookupEnd" with the proper type (7)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "connectStart" with the proper type (8)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "connectEnd" with the proper type (9)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "secureConnectionStart" with the proper type (10)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "requestStart" with the proper type (11)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "responseStart" with the proper type (12)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "responseEnd" with the proper type (13)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "domLoading" with the proper type (14)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "domInteractive" with the proper type (15)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "domContentLoadedEventStart" with the proper type (16)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "domContentLoadedEventEnd" with the proper type (17)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "domComplete" with the proper type (18)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "loadEventStart" with the proper type (19)
+PASS PerformanceTiming interface: window.performance.timing must inherit property "loadEventEnd" with the proper type (20)
+PASS PerformanceNavigation interface: existence and properties of interface object
+PASS PerformanceNavigation interface object length
+PASS PerformanceNavigation interface object name
+PASS PerformanceNavigation interface: existence and properties of interface prototype object
+PASS PerformanceNavigation interface: existence and properties of interface prototype object's "constructor" property
+PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface object
+PASS PerformanceNavigation interface: constant TYPE_NAVIGATE on interface prototype object
+PASS PerformanceNavigation interface: constant TYPE_RELOAD on interface object
+PASS PerformanceNavigation interface: constant TYPE_RELOAD on interface prototype object
+PASS PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface object
+PASS PerformanceNavigation interface: constant TYPE_BACK_FORWARD on interface prototype object
+PASS PerformanceNavigation interface: constant TYPE_RESERVED on interface object
+PASS PerformanceNavigation interface: constant TYPE_RESERVED on interface prototype object
+PASS PerformanceNavigation interface: attribute type
+PASS PerformanceNavigation interface: attribute redirectCount
+PASS PerformanceNavigation must be primary interface of window.performance.navigation
+PASS Stringification of window.performance.navigation
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_NAVIGATE" with the proper type (0)
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RELOAD" with the proper type (1)
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_BACK_FORWARD" with the proper type (2)
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RESERVED" with the proper type (3)
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "type" with the proper type (4)
+PASS PerformanceNavigation interface: window.performance.navigation must inherit property "redirectCount" with the proper type (5)
+FAIL Performance interface: existence and properties of interface objectassert_equals: prototype of self's property "Performance" is not Function.prototype expected function "function () { [native code] }" but got function "function EventTarget() { [native code] }"
+PASS Performance interface object length
+PASS Performance interface object name
+FAIL Performance interface: existence and properties of interface prototype objectassert_equals: prototype of Performance.prototype is not Object.prototype expected object "[object Object]" but got object "[object EventTarget]"
+PASS Performance interface: existence and properties of interface prototype object's "constructor" property
+PASS Performance interface: attribute timing
+PASS Performance interface: attribute navigation
+PASS Performance must be primary interface of window.performance
+PASS Stringification of window.performance
+PASS Performance interface: window.performance must inherit property "timing" with the proper type (0)
+PASS Performance interface: window.performance must inherit property "navigation" with the proper type (1)
 Harness: the test ran to completion.
 

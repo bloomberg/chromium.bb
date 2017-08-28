@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Clicking on a notification displayed by a Service Worker the notificationclick event. assert_unreached: unexpected rejection: Test bug: need to pass exception to assert_throws() Reached unreachable code
+FAIL Clicking on a notification displayed by a Service Worker the notificationclick event.assert_unreached: unexpected rejection: Test bug: need to pass exception to assert_throws() Reached unreachable code
 Harness: the test ran to completion.
 

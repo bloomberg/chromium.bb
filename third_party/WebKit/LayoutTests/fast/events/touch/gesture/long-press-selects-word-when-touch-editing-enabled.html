@@ -25,7 +25,7 @@ function test()
         eventSender.gestureLongPress(x, y);
         var selectedText = document.getSelection();
         if (selectedText.toString().length > 0)
-            document.getElementById("result").innerHTML = "PASS"; 
+            document.getElementById("result").innerHTML = "PASS";
     } else {
         debug("gestureLongPress not implemented by this platform");
         return;

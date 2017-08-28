@@ -1,86 +1,86 @@
 This is a testharness.js-based test.
 Found 82 tests; 61 PASS, 21 FAIL, 0 TIMEOUT, 0 NOTRUN.
-PASS Test MediaDevices.enumerateDevices call and result. Types only. 
-PASS Navigator interface: attribute mediaDevices 
-PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback) 
-FAIL MediaStream interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
-PASS MediaStream interface object length 
-PASS MediaStream interface object name 
-FAIL MediaStream interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
-PASS MediaStream interface: existence and properties of interface prototype object's "constructor" property 
-PASS MediaStream interface: attribute id 
-PASS MediaStream interface: operation getAudioTracks() 
-PASS MediaStream interface: operation getVideoTracks() 
-PASS MediaStream interface: operation getTracks() 
-PASS MediaStream interface: operation getTrackById(DOMString) 
-PASS MediaStream interface: operation addTrack(MediaStreamTrack) 
-PASS MediaStream interface: operation removeTrack(MediaStreamTrack) 
-PASS MediaStream interface: operation clone() 
-PASS MediaStream interface: attribute active 
-PASS MediaStream interface: attribute onaddtrack 
-PASS MediaStream interface: attribute onremovetrack 
-FAIL MediaStreamTrack interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
-PASS MediaStreamTrack interface object length 
-PASS MediaStreamTrack interface object name 
-FAIL MediaStreamTrack interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
-PASS MediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property 
-PASS MediaStreamTrack interface: attribute kind 
-PASS MediaStreamTrack interface: attribute id 
-PASS MediaStreamTrack interface: attribute label 
-PASS MediaStreamTrack interface: attribute enabled 
-PASS MediaStreamTrack interface: attribute muted 
-PASS MediaStreamTrack interface: attribute onmute 
-PASS MediaStreamTrack interface: attribute onunmute 
-PASS MediaStreamTrack interface: attribute readyState 
-PASS MediaStreamTrack interface: attribute onended 
-PASS MediaStreamTrack interface: operation clone() 
-PASS MediaStreamTrack interface: operation stop() 
-PASS MediaStreamTrack interface: operation getCapabilities() 
-PASS MediaStreamTrack interface: operation getConstraints() 
-PASS MediaStreamTrack interface: operation getSettings() 
-PASS MediaStreamTrack interface: operation applyConstraints(MediaTrackConstraints) 
-FAIL MediaStreamTrack interface: attribute onoverconstrained assert_true: The prototype object must have a property "onoverconstrained" expected true got false
-FAIL MediaStreamTrackEvent interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
-PASS MediaStreamTrackEvent interface object length 
-PASS MediaStreamTrackEvent interface object name 
-FAIL MediaStreamTrackEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
-PASS MediaStreamTrackEvent interface: existence and properties of interface prototype object's "constructor" property 
-PASS MediaStreamTrackEvent interface: attribute track 
-FAIL OverconstrainedErrorEvent interface: existence and properties of interface object assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface object length assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface object name assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype object assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL OverconstrainedErrorEvent interface: attribute error assert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
-FAIL MediaDevices interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
-PASS MediaDevices interface object length 
-PASS MediaDevices interface object name 
-FAIL MediaDevices interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
-PASS MediaDevices interface: existence and properties of interface prototype object's "constructor" property 
-PASS MediaDevices interface: attribute ondevicechange 
-PASS MediaDevices interface: operation enumerateDevices() 
-PASS MediaDevices interface: operation getSupportedConstraints() 
-PASS MediaDevices interface: operation getUserMedia(MediaStreamConstraints) 
-PASS MediaDeviceInfo interface: existence and properties of interface object 
-PASS MediaDeviceInfo interface object length 
-PASS MediaDeviceInfo interface object name 
-PASS MediaDeviceInfo interface: existence and properties of interface prototype object 
-PASS MediaDeviceInfo interface: existence and properties of interface prototype object's "constructor" property 
-PASS MediaDeviceInfo interface: attribute deviceId 
-PASS MediaDeviceInfo interface: attribute kind 
-PASS MediaDeviceInfo interface: attribute label 
-PASS MediaDeviceInfo interface: attribute groupId 
-PASS MediaDeviceInfo must be primary interface of _mediaInfo 
-PASS Stringification of _mediaInfo 
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "deviceId" with the proper type 
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "kind" with the proper type 
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "label" with the proper type 
-PASS MediaDeviceInfo interface: _mediaInfo must inherit property "groupId" with the proper type 
-FAIL InputDeviceInfo interface: existence and properties of interface object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface object length assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface object name assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: existence and properties of interface prototype object assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
-FAIL InputDeviceInfo interface: operation getCapabilities() assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+PASS Test MediaDevices.enumerateDevices call and result. Types only.
+PASS Navigator interface: attribute mediaDevices
+PASS Navigator interface: operation getUserMedia(MediaStreamConstraints, NavigatorUserMediaSuccessCallback, NavigatorUserMediaErrorCallback)
+FAIL MediaStream interface: existence and properties of interface objectCannot read property 'has_extended_attribute' of undefined
+PASS MediaStream interface object length
+PASS MediaStream interface object name
+FAIL MediaStream interface: existence and properties of interface prototype objectCannot read property 'has_extended_attribute' of undefined
+PASS MediaStream interface: existence and properties of interface prototype object's "constructor" property
+PASS MediaStream interface: attribute id
+PASS MediaStream interface: operation getAudioTracks()
+PASS MediaStream interface: operation getVideoTracks()
+PASS MediaStream interface: operation getTracks()
+PASS MediaStream interface: operation getTrackById(DOMString)
+PASS MediaStream interface: operation addTrack(MediaStreamTrack)
+PASS MediaStream interface: operation removeTrack(MediaStreamTrack)
+PASS MediaStream interface: operation clone()
+PASS MediaStream interface: attribute active
+PASS MediaStream interface: attribute onaddtrack
+PASS MediaStream interface: attribute onremovetrack
+FAIL MediaStreamTrack interface: existence and properties of interface objectCannot read property 'has_extended_attribute' of undefined
+PASS MediaStreamTrack interface object length
+PASS MediaStreamTrack interface object name
+FAIL MediaStreamTrack interface: existence and properties of interface prototype objectCannot read property 'has_extended_attribute' of undefined
+PASS MediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property
+PASS MediaStreamTrack interface: attribute kind
+PASS MediaStreamTrack interface: attribute id
+PASS MediaStreamTrack interface: attribute label
+PASS MediaStreamTrack interface: attribute enabled
+PASS MediaStreamTrack interface: attribute muted
+PASS MediaStreamTrack interface: attribute onmute
+PASS MediaStreamTrack interface: attribute onunmute
+PASS MediaStreamTrack interface: attribute readyState
+PASS MediaStreamTrack interface: attribute onended
+PASS MediaStreamTrack interface: operation clone()
+PASS MediaStreamTrack interface: operation stop()
+PASS MediaStreamTrack interface: operation getCapabilities()
+PASS MediaStreamTrack interface: operation getConstraints()
+PASS MediaStreamTrack interface: operation getSettings()
+PASS MediaStreamTrack interface: operation applyConstraints(MediaTrackConstraints)
+FAIL MediaStreamTrack interface: attribute onoverconstrainedassert_true: The prototype object must have a property "onoverconstrained" expected true got false
+FAIL MediaStreamTrackEvent interface: existence and properties of interface objectCannot read property 'has_extended_attribute' of undefined
+PASS MediaStreamTrackEvent interface object length
+PASS MediaStreamTrackEvent interface object name
+FAIL MediaStreamTrackEvent interface: existence and properties of interface prototype objectCannot read property 'has_extended_attribute' of undefined
+PASS MediaStreamTrackEvent interface: existence and properties of interface prototype object's "constructor" property
+PASS MediaStreamTrackEvent interface: attribute track
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface objectassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface object lengthassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface object nameassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL OverconstrainedErrorEvent interface: attribute errorassert_own_property: self does not have own property "OverconstrainedErrorEvent" expected property "OverconstrainedErrorEvent" missing
+FAIL MediaDevices interface: existence and properties of interface objectCannot read property 'has_extended_attribute' of undefined
+PASS MediaDevices interface object length
+PASS MediaDevices interface object name
+FAIL MediaDevices interface: existence and properties of interface prototype objectCannot read property 'has_extended_attribute' of undefined
+PASS MediaDevices interface: existence and properties of interface prototype object's "constructor" property
+PASS MediaDevices interface: attribute ondevicechange
+PASS MediaDevices interface: operation enumerateDevices()
+PASS MediaDevices interface: operation getSupportedConstraints()
+PASS MediaDevices interface: operation getUserMedia(MediaStreamConstraints)
+PASS MediaDeviceInfo interface: existence and properties of interface object
+PASS MediaDeviceInfo interface object length
+PASS MediaDeviceInfo interface object name
+PASS MediaDeviceInfo interface: existence and properties of interface prototype object
+PASS MediaDeviceInfo interface: existence and properties of interface prototype object's "constructor" property
+PASS MediaDeviceInfo interface: attribute deviceId
+PASS MediaDeviceInfo interface: attribute kind
+PASS MediaDeviceInfo interface: attribute label
+PASS MediaDeviceInfo interface: attribute groupId
+PASS MediaDeviceInfo must be primary interface of _mediaInfo
+PASS Stringification of _mediaInfo
+PASS MediaDeviceInfo interface: _mediaInfo must inherit property "deviceId" with the proper type
+PASS MediaDeviceInfo interface: _mediaInfo must inherit property "kind" with the proper type
+PASS MediaDeviceInfo interface: _mediaInfo must inherit property "label" with the proper type
+PASS MediaDeviceInfo interface: _mediaInfo must inherit property "groupId" with the proper type
+FAIL InputDeviceInfo interface: existence and properties of interface objectassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface object lengthassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface object nameassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: existence and properties of interface prototype objectassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: existence and properties of interface prototype object's "constructor" propertyassert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
+FAIL InputDeviceInfo interface: operation getCapabilities()assert_own_property: self does not have own property "InputDeviceInfo" expected property "InputDeviceInfo" missing
 Harness: the test ran to completion.
 

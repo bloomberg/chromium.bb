@@ -1,12 +1,12 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "There should be only one entry"
-PASS There should be only one entry 
-PASS http://127.0.0.1:8000/w3c/webperf/resources/generate_resource.php?type=image&cacheable=1&id=cached is expected to have initiatorType img 
-PASS requestStart should non-zero on the same-origin request 
-PASS responseEnd should not be before startTime 
-PASS duration should not be negative 
-PASS There should be only one entry 
-PASS http://localhost:8000/w3c/webperf/resources/generate_resource.php?type=image&cacheable=1&id=cached should be present 
-PASS requestStart should be 0 on the cross-origin request 
+PASS There should be only one entry
+PASS http://127.0.0.1:8000/w3c/webperf/resources/generate_resource.php?type=image&cacheable=1&id=cached is expected to have initiatorType img
+PASS requestStart should non-zero on the same-origin request
+PASS responseEnd should not be before startTime
+PASS duration should not be negative
+PASS There should be only one entry
+PASS http://localhost:8000/w3c/webperf/resources/generate_resource.php?type=image&cacheable=1&id=cached should be present
+PASS requestStart should be 0 on the cross-origin request
 Harness: the test ran to completion.
 

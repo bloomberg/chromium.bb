@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL A constructed EventTarget can be used as expected Illegal constructor
-FAIL EventTarget can be subclassed Illegal constructor
+FAIL A constructed EventTarget can be used as expectedIllegal constructor
+FAIL EventTarget can be subclassedIllegal constructor
 Harness: the test ran to completion.
 

@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "XHR should pass on failed preflight (because no preflight is sent)"
-PASS XHR should pass on failed preflight (because no preflight is sent) 
-PASS XHR should pass on failed preflight (because no preflight is sent) 
-PASS XHR should pass on successful preflight 
+PASS XHR should pass on failed preflight (because no preflight is sent)
+PASS XHR should pass on failed preflight (because no preflight is sent)
+PASS XHR should pass on successful preflight
 Harness: the test ran to completion.
 

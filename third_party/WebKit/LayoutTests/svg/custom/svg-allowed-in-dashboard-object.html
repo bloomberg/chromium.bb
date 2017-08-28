@@ -7,12 +7,12 @@
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
     }
-    
+   
     function debug(str) {
         var c = document.getElementById('console')
         c.appendChild(document.createTextNode(str + '\n'));
     }
-    
+   
     function runTest() {
         try {
             var failed = false;
@@ -23,33 +23,33 @@
                 svgDoc = null;
             }
             if (svgDoc) {
-                debug("PASS: Loaded SVG document in <object> tag."); 
+                debug("PASS: Loaded SVG document in <object> tag.");
                 failed = true;
-            } else 
+            } else
                 debug("FAIL: Did not load SVG document in <object> tag");
-            
+           
             try {
                 svgDoc = document.getElementById('svgEmbed').getSVGDocument();
             } catch (e) {
                 svgDoc = null;
             }
             if (svgDoc) {
-                debug("PASS: Loaded SVG document in <element> tag."); 
+                debug("PASS: Loaded SVG document in <element> tag.");
                 failed = true;
-            } else 
+            } else
                 debug("FAIL: Did not load SVG document in <element> tag");
-            
+           
             try {
                 svgDoc = document.getElementById('svgIFrame').getSVGDocument();
             } catch (e) {
                 svgDoc = null;
             }
             if (svgDoc) {
-                debug("PASS: Loaded SVG document in <iframe> tag."); 
+                debug("PASS: Loaded SVG document in <iframe> tag.");
                 failed = true;
-            } else 
+            } else
                 debug("FAIL: Did not load SVG document in <iframe> tag");
-            
+           
             if (failed)
                 debug("PASS: SVG Documents were loaded");
             else
@@ -57,14 +57,14 @@
         } catch (e) {
             debug("FAIL: Exception thrown: " + e)
         }
-        if (window.testRunner) 
+        if (window.testRunner)
             testRunner.notifyDone();
     }
 </script>
-    
+   
    <object id="svgObject" data="../W3C-SVG-1.1/text-ws-02-t.svg" width="100px" height="100px"></object>
    <embed id="svgEmbed" src="../W3C-SVG-1.1/text-ws-02-t.svg" width="100px" height="100px"></embed>
    <iframe id="svgIFrame" src="../W3C-SVG-1.1/text-ws-02-t.svg" width="100px" height="100px"></iframe>
-   <pre id="console"></pre>    
+   <pre id="console"></pre>   
 </body>
 </html>

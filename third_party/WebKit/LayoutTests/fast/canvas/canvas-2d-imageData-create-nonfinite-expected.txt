@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Test the argument bounds of canvas createImageData. Test bug: need to pass exception to assert_throws()
+FAIL Test the argument bounds of canvas createImageData.Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

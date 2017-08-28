@@ -20,7 +20,7 @@
         function concludeTest()
         {
             var c = document.getElementById('console');
-            c.innerHTML = "window retains early properties: " + ((w.myProp && w.myProp=='1') ? "PASS" : "FAIL") + "<br>";  
+            c.innerHTML = "window retains early properties: " + ((w.myProp && w.myProp=='1') ? "PASS" : "FAIL") + "<br>"; 
             c.innerHTML +="document does not retain early properties: " + ((w.document.myProp) ? "FAIL" : "PASS") + "<br>";
 
             w.close();

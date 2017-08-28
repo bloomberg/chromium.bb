@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-PASS ForEach Check 
-FAIL For-of Check assert_array_equals: property 0, expected "y" but got "b"
-PASS empty 
+PASS ForEach Check
+FAIL For-of Checkassert_array_equals: property 0, expected "y" but got "b"
+PASS empty
 Harness: the test ran to completion.
 

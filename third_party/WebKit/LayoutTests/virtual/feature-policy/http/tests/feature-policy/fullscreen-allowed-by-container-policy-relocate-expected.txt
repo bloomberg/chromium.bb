@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
-PASS iframe relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowpaymentrequest = false allow = fullscreen is enabled by container policy. 
-PASS iframe relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowpaymentrequest = true allow = fullscreen is enabled by container policy. 
-PASS iframe relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowpaymentrequest = true allow = undefined is enabled by container policy. 
-PASS iframe relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowpaymentrequest = false allow = fullscreen is disabled by container policy. 
-PASS iframe relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowpaymentrequest = true allow = fullscreen is disabled by container policy. 
-PASS iframe relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowpaymentrequest = true allow = undefined is enabled by container policy. 
+PASS iframe relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowpaymentrequest = false allow = fullscreen is enabled by container policy.
+PASS iframe relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowpaymentrequest = true allow = fullscreen is enabled by container policy.
+PASS iframe relocated to URL: http://localhost:8000/feature-policy/resources/feature-policy-fullscreen.html with allowpaymentrequest = true allow = undefined is enabled by container policy.
+PASS iframe relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowpaymentrequest = false allow = fullscreen is disabled by container policy.
+PASS iframe relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowpaymentrequest = true allow = fullscreen is disabled by container policy.
+PASS iframe relocated to URL: resources/feature-policy-fullscreen-relocate.html with allowpaymentrequest = true allow = undefined is enabled by container policy.
 Harness: the test ran to completion.
 

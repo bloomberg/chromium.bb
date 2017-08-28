@@ -1,14 +1,14 @@
 This is a testharness.js-based test.
-FAIL signature, empty assert_unreached: track should fail to load Reached unreachable code
-PASS signature, formfeed 
-PASS signature, invalid whitespace 
-PASS signature, invalid 
-PASS signature, lowercase 
-PASS signature, missing whitespace 
-PASS signature, missing 
-PASS signature, null 
-PASS signature, partial 
-PASS signature, two boms 
-PASS signature, websrt 
+FAIL signature, emptyassert_unreached: track should fail to load Reached unreachable code
+PASS signature, formfeed
+PASS signature, invalid whitespace
+PASS signature, invalid
+PASS signature, lowercase
+PASS signature, missing whitespace
+PASS signature, missing
+PASS signature, null
+PASS signature, partial
+PASS signature, two boms
+PASS signature, websrt
 Harness: the test ran to completion.
 

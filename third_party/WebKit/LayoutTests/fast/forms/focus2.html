@@ -19,10 +19,10 @@ function description(element)
     var inputType = element.getAttribute('type');
     if (inputType)
         return inputType;
-        
+       
     if (element.toString().match(/iframe/i))
         return "IFRAME";
-    
+   
     if (element.toString().match(/javascript:/i))
         return "ANCHOR";
 
@@ -62,18 +62,18 @@ function addEventListeners(element)
 function addElements(parentElement)
 {
     var inputTypes = [
-        "BUTTON", 
-        "CHECKBOX", 
-        "FILE", 
-        "HIDDEN", 
-        "IMAGE", 
-        "ISINDEX", 
-        "PASSWORD", 
-        "RADIO", 
-        "RANGE", 
-        "RESET", 
-        "SEARCH", 
-        "SUBMIT", 
+        "BUTTON",
+        "CHECKBOX",
+        "FILE",
+        "HIDDEN",
+        "IMAGE",
+        "ISINDEX",
+        "PASSWORD",
+        "RADIO",
+        "RANGE",
+        "RESET",
+        "SEARCH",
+        "SUBMIT",
         "TEXT"
     ];
 
@@ -84,12 +84,12 @@ function addElements(parentElement)
         addEventListeners(input);
         parentElement.appendChild(input);
     }
-    
+   
     // Textarea
     var textarea = parentElement.ownerDocument.createElement('textarea');
     addEventListeners(textarea);
     parentElement.appendChild(textarea);
-    
+   
     // Contenteditable
     var div = parentElement.ownerDocument.createElement('div');
     div.contentEditable = true;

@@ -1,19 +1,19 @@
 This is a testharness.js-based test.
-PASS PerformanceNavigationTiming interface: existence and properties of interface object 
-PASS PerformanceNavigationTiming interface object length 
-PASS PerformanceNavigationTiming interface object name 
-FAIL PerformanceNavigationTiming interface: existence and properties of interface prototype object Cannot read property 'has_stringifier' of undefined
-PASS PerformanceNavigationTiming interface: existence and properties of interface prototype object's "constructor" property 
-PASS PerformanceNavigationTiming interface: attribute unloadEventStart 
-PASS PerformanceNavigationTiming interface: attribute unloadEventEnd 
-PASS PerformanceNavigationTiming interface: attribute domInteractive 
-PASS PerformanceNavigationTiming interface: attribute domContentLoadedEventStart 
-PASS PerformanceNavigationTiming interface: attribute domContentLoadedEventEnd 
-PASS PerformanceNavigationTiming interface: attribute domComplete 
-PASS PerformanceNavigationTiming interface: attribute loadEventStart 
-PASS PerformanceNavigationTiming interface: attribute loadEventEnd 
-PASS PerformanceNavigationTiming interface: attribute type 
-PASS PerformanceNavigationTiming interface: attribute redirectCount 
-FAIL PerformanceNavigationTiming interface: operation toJSON() undefined PerformanceEntry not found (inherited by PerformanceResourceTiming)
+PASS PerformanceNavigationTiming interface: existence and properties of interface object
+PASS PerformanceNavigationTiming interface object length
+PASS PerformanceNavigationTiming interface object name
+FAIL PerformanceNavigationTiming interface: existence and properties of interface prototype objectCannot read property 'has_stringifier' of undefined
+PASS PerformanceNavigationTiming interface: existence and properties of interface prototype object's "constructor" property
+PASS PerformanceNavigationTiming interface: attribute unloadEventStart
+PASS PerformanceNavigationTiming interface: attribute unloadEventEnd
+PASS PerformanceNavigationTiming interface: attribute domInteractive
+PASS PerformanceNavigationTiming interface: attribute domContentLoadedEventStart
+PASS PerformanceNavigationTiming interface: attribute domContentLoadedEventEnd
+PASS PerformanceNavigationTiming interface: attribute domComplete
+PASS PerformanceNavigationTiming interface: attribute loadEventStart
+PASS PerformanceNavigationTiming interface: attribute loadEventEnd
+PASS PerformanceNavigationTiming interface: attribute type
+PASS PerformanceNavigationTiming interface: attribute redirectCount
+FAIL PerformanceNavigationTiming interface: operation toJSON()undefined PerformanceEntry not found (inherited by PerformanceResourceTiming)
 Harness: the test ran to completion.
 

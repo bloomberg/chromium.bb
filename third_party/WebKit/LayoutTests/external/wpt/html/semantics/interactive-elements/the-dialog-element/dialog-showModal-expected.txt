@@ -1,12 +1,12 @@
 This is a testharness.js-based test.
-PASS dialog element: showModal() 
-PASS showModal() on a <dialog> that already has an open attribute throws an InvalidStateError exception 
-PASS showModal() on a <dialog> not in a Document throws an InvalidStateError exception 
-PASS when opening multiple dialogs, only the newest one is non-inert 
-FAIL opening dialog without focusable children assert_equals: expected Element node <dialog id="d6" open=""></dialog> but got Element node <body><div id="log"></div>
+PASS dialog element: showModal()
+PASS showModal() on a <dialog> that already has an open attribute throws an InvalidStateError exception
+PASS showModal() on a <dialog> not in a Document throws an InvalidStateError exception
+PASS when opening multiple dialogs, only the newest one is non-inert
+FAIL opening dialog without focusable childrenassert_equals: expected Element node <dialog id="d6" open=""></dialog> but got Element node <body><div id="log"></div>
 <button id="b0">OK</button>
 <d...
-PASS opening dialog with multiple focusable children 
-PASS opening dialog with multiple focusable children, one having the autofocus attribute 
+PASS opening dialog with multiple focusable children
+PASS opening dialog with multiple focusable children, one having the autofocus attribute
 Harness: the test ran to completion.
 

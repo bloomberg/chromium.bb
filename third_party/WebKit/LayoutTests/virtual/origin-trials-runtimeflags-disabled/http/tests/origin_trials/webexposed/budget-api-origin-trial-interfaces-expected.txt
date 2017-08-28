@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL Budget API related properties on interfaces in Origin-Trial enabled document. assert_equals: Property getBudget exists on BudgetService expected true but got false
-PASS Budget API related interfaces in SW - no origin trial. 
-PASS Budget API related interfaces in SW - origin trial enabled. 
-FAIL Budget API related properties on interfaces in Origin-Trial regular Service Worker. assert_equals: Property getBudget exists on BudgetService expected true but got false
-FAIL Budget API related properties on interfaces in Origin-Trial enabled Service Worker. assert_equals: Property getBudget exists on BudgetService expected true but got false
-Harness: the test ran to completion.
-

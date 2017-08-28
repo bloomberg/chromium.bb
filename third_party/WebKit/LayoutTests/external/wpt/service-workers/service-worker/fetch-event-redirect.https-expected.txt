@@ -1,57 +1,57 @@
 This is a testharness.js-based test.
-PASS Non-navigation, manual redirect, cors mode Request redirected to same-origin without credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, cors mode Request redirected to no-cors without credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, cors mode Request redirected to cors without credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, same-origin mode Request redirected to same-origin without credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, same-origin mode Request redirected to no-cors without credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, same-origin mode Request redirected to cors without credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, no-cors mode Request redirected to same-origin without credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, no-cors mode Request redirected to no-cors without credentials should succeed interception and response should not be redirected 
-PASS Non-navigation, manual redirect, no-cors mode Request redirected to cors without credentials should succeed interception and response should not be redirected 
-PASS Non-navigation, manual redirect, cors mode Request redirected to same-origin with credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, cors mode Request redirected to no-cors with credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, cors mode Request redirected to cors with credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, same-origin mode Request redirected to same-origin with credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, same-origin mode Request redirected to no-cors with credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, same-origin mode Request redirected to cors with credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, no-cors mode Request redirected to same-origin with credentials should fail opaqueredirect interception and response should not be redirected 
-PASS Non-navigation, manual redirect, no-cors mode Request redirected to no-cors with credentials should succeed interception and response should not be redirected 
-PASS Non-navigation, manual redirect, no-cors mode Request redirected to cors with credentials should succeed interception and response should not be redirected 
-PASS Non-navigation, follow redirect, cors mode Request redirected to same-origin without credentials should succeed interception and response should be redirected 
-PASS Non-navigation, follow redirect, cors mode Request redirected to no-cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, follow redirect, cors mode Request redirected to cors without credentials should succeed interception and response should be redirected 
-PASS Non-navigation, follow redirect, same-origin mode Request redirected to same-origin without credentials should succeed interception and response should be redirected 
-PASS Non-navigation, follow redirect, same-origin mode Request redirected to no-cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, follow redirect, same-origin mode Request redirected to cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, follow redirect, no-cors mode Request redirected to same-origin without credentials should succeed interception and response should be redirected 
-PASS Non-navigation, follow redirect, no-cors mode Request redirected to no-cors without credentials should succeed interception and response should not be redirected 
-PASS Non-navigation, follow redirect, no-cors mode Request redirected to cors without credentials should succeed interception and response should not be redirected 
-FAIL Non-navigation, follow redirect, cors mode Request redirected to same-origin with credentials should succeed interception and response should be redirected assert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
-PASS Non-navigation, follow redirect, cors mode Request redirected to no-cors with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, follow redirect, cors mode Request redirected to cors with credentials should fail interception and response should be redirected 
-FAIL Non-navigation, follow redirect, same-origin mode Request redirected to same-origin with credentials should succeed interception and response should be redirected assert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
-PASS Non-navigation, follow redirect, same-origin mode Request redirected to no-cors with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, follow redirect, same-origin mode Request redirected to cors with credentials should fail interception and response should not be redirected 
-FAIL Non-navigation, follow redirect, no-cors mode Request redirected to same-origin with credentials should succeed interception and response should be redirected assert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
-FAIL Non-navigation, follow redirect, no-cors mode Request redirected to no-cors with credentials should succeed interception and response should not be redirected assert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
-FAIL Non-navigation, follow redirect, no-cors mode Request redirected to cors with credentials should succeed interception and response should not be redirected assert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
-PASS Non-navigation, error redirect, cors mode Request redirected to same-origin without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, cors mode Request redirected to no-cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, cors mode Request redirected to cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, same-origin mode Request redirected to same-origin without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, same-origin mode Request redirected to no-cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, same-origin mode Request redirected to cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, no-cors mode Request redirected to same-origin without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, no-cors mode Request redirected to no-cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, no-cors mode Request redirected to cors without credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, cors mode Request redirected to same-origin with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, cors mode Request redirected to no-cors with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, cors mode Request redirected to cors with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, same-origin mode Request redirected to same-origin with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, same-origin mode Request redirected to no-cors with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, same-origin mode Request redirected to cors with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, no-cors mode Request redirected to same-origin with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, no-cors mode Request redirected to no-cors with credentials should fail interception and response should not be redirected 
-PASS Non-navigation, error redirect, no-cors mode Request redirected to cors with credentials should fail interception and response should not be redirected 
+PASS Non-navigation, manual redirect, cors mode Request redirected to same-origin without credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, cors mode Request redirected to no-cors without credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, cors mode Request redirected to cors without credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, same-origin mode Request redirected to same-origin without credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, same-origin mode Request redirected to no-cors without credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, same-origin mode Request redirected to cors without credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, no-cors mode Request redirected to same-origin without credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, no-cors mode Request redirected to no-cors without credentials should succeed interception and response should not be redirected
+PASS Non-navigation, manual redirect, no-cors mode Request redirected to cors without credentials should succeed interception and response should not be redirected
+PASS Non-navigation, manual redirect, cors mode Request redirected to same-origin with credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, cors mode Request redirected to no-cors with credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, cors mode Request redirected to cors with credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, same-origin mode Request redirected to same-origin with credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, same-origin mode Request redirected to no-cors with credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, same-origin mode Request redirected to cors with credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, no-cors mode Request redirected to same-origin with credentials should fail opaqueredirect interception and response should not be redirected
+PASS Non-navigation, manual redirect, no-cors mode Request redirected to no-cors with credentials should succeed interception and response should not be redirected
+PASS Non-navigation, manual redirect, no-cors mode Request redirected to cors with credentials should succeed interception and response should not be redirected
+PASS Non-navigation, follow redirect, cors mode Request redirected to same-origin without credentials should succeed interception and response should be redirected
+PASS Non-navigation, follow redirect, cors mode Request redirected to no-cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, follow redirect, cors mode Request redirected to cors without credentials should succeed interception and response should be redirected
+PASS Non-navigation, follow redirect, same-origin mode Request redirected to same-origin without credentials should succeed interception and response should be redirected
+PASS Non-navigation, follow redirect, same-origin mode Request redirected to no-cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, follow redirect, same-origin mode Request redirected to cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, follow redirect, no-cors mode Request redirected to same-origin without credentials should succeed interception and response should be redirected
+PASS Non-navigation, follow redirect, no-cors mode Request redirected to no-cors without credentials should succeed interception and response should not be redirected
+PASS Non-navigation, follow redirect, no-cors mode Request redirected to cors without credentials should succeed interception and response should not be redirected
+FAIL Non-navigation, follow redirect, cors mode Request redirected to same-origin with credentials should succeed interception and response should be redirectedassert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
+PASS Non-navigation, follow redirect, cors mode Request redirected to no-cors with credentials should fail interception and response should not be redirected
+PASS Non-navigation, follow redirect, cors mode Request redirected to cors with credentials should fail interception and response should be redirected
+FAIL Non-navigation, follow redirect, same-origin mode Request redirected to same-origin with credentials should succeed interception and response should be redirectedassert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
+PASS Non-navigation, follow redirect, same-origin mode Request redirected to no-cors with credentials should fail interception and response should not be redirected
+PASS Non-navigation, follow redirect, same-origin mode Request redirected to cors with credentials should fail interception and response should not be redirected
+FAIL Non-navigation, follow redirect, no-cors mode Request redirected to same-origin with credentials should succeed interception and response should be redirectedassert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
+FAIL Non-navigation, follow redirect, no-cors mode Request redirected to no-cors with credentials should succeed interception and response should not be redirectedassert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
+FAIL Non-navigation, follow redirect, no-cors mode Request redirected to cors with credentials should succeed interception and response should not be redirectedassert_unreached: unexpected rejection: TypeError: Failed to fetch Reached unreachable code
+PASS Non-navigation, error redirect, cors mode Request redirected to same-origin without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, cors mode Request redirected to no-cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, cors mode Request redirected to cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, same-origin mode Request redirected to same-origin without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, same-origin mode Request redirected to no-cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, same-origin mode Request redirected to cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, no-cors mode Request redirected to same-origin without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, no-cors mode Request redirected to no-cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, no-cors mode Request redirected to cors without credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, cors mode Request redirected to same-origin with credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, cors mode Request redirected to no-cors with credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, cors mode Request redirected to cors with credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, same-origin mode Request redirected to same-origin with credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, same-origin mode Request redirected to no-cors with credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, same-origin mode Request redirected to cors with credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, no-cors mode Request redirected to same-origin with credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, no-cors mode Request redirected to no-cors with credentials should fail interception and response should not be redirected
+PASS Non-navigation, error redirect, no-cors mode Request redirected to cors with credentials should fail interception and response should not be redirected
 Harness: the test ran to completion.
 

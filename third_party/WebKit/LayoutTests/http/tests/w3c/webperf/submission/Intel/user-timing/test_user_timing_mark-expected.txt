@@ -1,123 +1,123 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 9 duplicate test names: "entryType should be "mark".", "startTime should greater than 0.", "duration of mark should be 0.", "Entries in entrylist should be in order.", "Entry "" should be one that we have set.", "There should be 1 entries.", "Entry "1" should be one that we have set.", "Entry "abc" should be one that we have set.", "There should be 2 entries."
-PASS There should be 0 marks 
-PASS There should be 3 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "1" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "abc" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 1 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 1 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "1" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 1 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "abc" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 6 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "1" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "abc" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "1" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "abc" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 2 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 2 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "1" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "1" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 2 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "abc" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "abc" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 2 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 2 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "1" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "1" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS There should be 2 entries. 
-PASS Entries in entrylist should be in order. 
-PASS Entry "abc" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
-PASS Entry "abc" should be one that we have set. 
-PASS entryType should be "mark". 
-PASS startTime should greater than 0. 
-PASS duration of mark should be 0. 
+PASS There should be 0 marks
+PASS There should be 3 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "1" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "abc" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 1 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 1 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "1" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 1 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "abc" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 6 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "1" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "abc" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "1" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "abc" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 2 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 2 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "1" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "1" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 2 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "abc" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "abc" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 2 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 2 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "1" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "1" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS There should be 2 entries.
+PASS Entries in entrylist should be in order.
+PASS Entry "abc" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
+PASS Entry "abc" should be one that we have set.
+PASS entryType should be "mark".
+PASS startTime should greater than 0.
+PASS duration of mark should be 0.
 Harness: the test ran to completion.
 

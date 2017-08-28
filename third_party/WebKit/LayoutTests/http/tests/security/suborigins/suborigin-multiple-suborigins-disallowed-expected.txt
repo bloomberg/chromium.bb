@@ -1,7 +1,7 @@
 CONSOLE ERROR: Error with Suborigin header: Multiple Suborigin headers found. Ignoring all but the first.
 This is a testharness.js-based test.
-PASS 'foo' is the assigned suborigin 
-PASS 'bar' is not a valid suborigin 
-PASS Cannot access frame without suborigin 
+PASS 'foo' is the assigned suborigin
+PASS 'bar' is not a valid suborigin
+PASS Cannot access frame without suborigin
 Harness: the test ran to completion.
 

@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Canvas test: 2d.fillStyle.parse.css-color-4-hsl-5 assert_equals: Red channel of the pixel at (50, 25) expected 0 but got 255
+FAIL Canvas test: 2d.fillStyle.parse.css-color-4-hsl-5assert_equals: Red channel of the pixel at (50, 25) expected 0 but got 255
 Harness: the test ran to completion.
 

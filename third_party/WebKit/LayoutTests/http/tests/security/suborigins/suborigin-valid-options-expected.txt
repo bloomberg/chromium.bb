@@ -1,10 +1,10 @@
 CONSOLE ERROR: Error with Suborigin header: Ignoring unknown suborigin policy option 'unknown'.
 CONSOLE ERROR: Error with Suborigin header: Ignoring unknown suborigin policy option 'unknown'.
 This is a testharness.js-based test.
-PASS Single option 
-PASS Two options 
-PASS All options 
-PASS Unknown option 
-PASS Unknown option with valid options 
+PASS Single option
+PASS Two options
+PASS All options
+PASS Unknown option
+PASS Unknown option with valid options
 Harness: the test ran to completion.
 

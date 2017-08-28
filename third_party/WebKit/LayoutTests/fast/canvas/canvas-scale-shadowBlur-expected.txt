@@ -1,25 +1,25 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "Verify bottom right 2"
-PASS Verify top left 1 
-PASS Verify top left 2 
-PASS Verify top left 3 
-PASS Verify top left 4 
-PASS Verify top left 5 
-PASS Verify bottom left 1 
-PASS Verify bottom left 2 
-PASS Verify bottom left 3 
-PASS Verify bottom left 4 
-PASS Verify bottom left 5 
-PASS Verify bottom left 6 
-PASS Verify top right 1 
-PASS Verify top right 2 
-PASS Verify top right 3 
-PASS Verify top right 4 
-PASS Verify top right 5 
-PASS Verify bottom right 1 
-PASS Verify bottom right 2 
-PASS Verify bottom right 3 
-PASS Verify bottom right 2 
-PASS Verify bottom right 2 
+PASS Verify top left 1
+PASS Verify top left 2
+PASS Verify top left 3
+PASS Verify top left 4
+PASS Verify top left 5
+PASS Verify bottom left 1
+PASS Verify bottom left 2
+PASS Verify bottom left 3
+PASS Verify bottom left 4
+PASS Verify bottom left 5
+PASS Verify bottom left 6
+PASS Verify top right 1
+PASS Verify top right 2
+PASS Verify top right 3
+PASS Verify top right 4
+PASS Verify top right 5
+PASS Verify bottom right 1
+PASS Verify bottom right 2
+PASS Verify bottom right 3
+PASS Verify bottom right 2
+PASS Verify bottom right 2
 Harness: the test ran to completion.
 

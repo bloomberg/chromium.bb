@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-FAIL track element cloneNode, not loaded assert_equals: elm.readyState after setting mode expected 1 but got 0
-FAIL track element cloneNode, loading assert_equals: elm.readyState after setting mode expected 1 but got 0
-FAIL track element cloneNode, loaded assert_equals: elm.readyState after setting mode expected 1 but got 0
+FAIL track element cloneNode, not loadedassert_equals: elm.readyState after setting mode expected 1 but got 0
+FAIL track element cloneNode, loadingassert_equals: elm.readyState after setting mode expected 1 but got 0
+FAIL track element cloneNode, loadedassert_equals: elm.readyState after setting mode expected 1 but got 0
 Harness: the test ran to completion.
 

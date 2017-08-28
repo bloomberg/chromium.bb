@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-PASS window.performance is defined 
-PASS window.performance.getEntriesByType is defined 
+PASS window.performance is defined
+PASS window.performance.getEntriesByType is defined
 FAIL redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should be all returned as 0 when the Timing-Allow-Origin header value of the HTTP response is a space separated origin/wildcard list assert_equals: redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should be all returned as 0 when the Timing-Allow-Origin header value of the HTTP response is a space separated origin/wildcard list expected 0 but got 188.68
 Harness: the test ran to completion.
 

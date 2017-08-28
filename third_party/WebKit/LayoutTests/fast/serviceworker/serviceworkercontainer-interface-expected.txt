@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL ServiceWorkerContainer interface Test bug: need to pass exception to assert_throws()
+FAIL ServiceWorkerContainer interfaceTest bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

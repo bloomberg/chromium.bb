@@ -11,6 +11,6 @@ CONSOLE ERROR: Error with Suborigin header: Invalid character '-' in suborigin.
 CONSOLE ERROR: Error with Suborigin header: Invalid character '-' in suborigin. First character must be a lower case alphabetic character.
 CONSOLE ERROR: Error with Suborigin header: Invalid character '-' in suborigin.
 This is a testharness.js-based test.
-PASS Invalid suborigin names 
+PASS Invalid suborigin names
 Harness: the test ran to completion.
 

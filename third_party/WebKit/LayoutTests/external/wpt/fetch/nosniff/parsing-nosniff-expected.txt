@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
-FAIL URL query: first assert_unreached: Unexpected load event Reached unreachable code
-PASS URL query: uppercase 
-PASS URL query: last 
-PASS URL query: quoted 
-PASS URL query: quoted-single 
-PASS URL query: no-x 
+FAIL URL query: firstassert_unreached: Unexpected load event Reached unreachable code
+PASS URL query: uppercase
+PASS URL query: last
+PASS URL query: quoted
+PASS URL query: quoted-single
+PASS URL query: no-x
 Harness: the test ran to completion.
 

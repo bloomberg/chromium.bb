@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-FAIL CSSStyleDeclaration_accessible assert_own_property: expected property "style" missing
-FAIL read declaration is not defined
-FAIL csstext_write declaration is not defined
-FAIL property_write declaration is not defined
-FAIL shorthand_properties declaration is not defined
+FAIL CSSStyleDeclaration_accessibleassert_own_property: expected property "style" missing
+FAIL readdeclaration is not defined
+FAIL csstext_writedeclaration is not defined
+FAIL property_writedeclaration is not defined
+FAIL shorthand_propertiesdeclaration is not defined
 Harness: the test ran to completion.
 

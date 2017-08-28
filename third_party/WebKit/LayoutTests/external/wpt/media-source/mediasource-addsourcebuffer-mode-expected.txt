@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS addSourceBuffer() sets SourceBuffer.mode to 'segments' when the generate timestamps flag is false 
-FAIL addSourceBuffer() sets SourceBuffer.mode to 'sequence' when the generate timestamps flag is true assert_unreached: Browser does not support the audio/aac and audio/mpeg MIME types used in this test Reached unreachable code
+PASS addSourceBuffer() sets SourceBuffer.mode to 'segments' when the generate timestamps flag is false
+FAIL addSourceBuffer() sets SourceBuffer.mode to 'sequence' when the generate timestamps flag is trueassert_unreached: Browser does not support the audio/aac and audio/mpeg MIME types used in this test Reached unreachable code
 Harness: the test ran to completion.
 

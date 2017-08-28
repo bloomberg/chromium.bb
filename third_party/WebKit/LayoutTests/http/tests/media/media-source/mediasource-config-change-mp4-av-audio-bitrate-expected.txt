@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Tests mp4 audio bitrate changes in multiplexed content. assert_true: video/mp4;codecs="avc1.4D4001,mp4a.40.2" is supported. expected true got false
+FAIL Tests mp4 audio bitrate changes in multiplexed content.assert_true: video/mp4;codecs="avc1.4D4001,mp4a.40.2" is supported. expected true got false
 Harness: the test ran to completion.
 

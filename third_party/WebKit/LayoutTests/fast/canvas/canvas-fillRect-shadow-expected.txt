@@ -1,20 +1,20 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 4 duplicate test names: "testBlurryShadow 1", "testBlurryShadow 2", "testBlurryShadow 3", "testBlurryShadow 4"
-PASS testSolidShadow 1 
-PASS testSolidShadow 2 
-PASS testSolidShadow 3 
-PASS testSolidShadow 4 
-PASS testSolidAlphaShadow 1 
-PASS testSolidAlphaShadow 2 
-PASS testSolidAlphaShadow 3 
-PASS testSolidAlphaShadow 4 
-PASS testBlurryShadow 1 
-PASS testBlurryShadow 2 
-PASS testBlurryShadow 3 
-PASS testBlurryShadow 4 
-PASS testBlurryShadow 1 
-PASS testBlurryShadow 2 
-PASS testBlurryShadow 3 
-PASS testBlurryShadow 4 
+PASS testSolidShadow 1
+PASS testSolidShadow 2
+PASS testSolidShadow 3
+PASS testSolidShadow 4
+PASS testSolidAlphaShadow 1
+PASS testSolidAlphaShadow 2
+PASS testSolidAlphaShadow 3
+PASS testSolidAlphaShadow 4
+PASS testBlurryShadow 1
+PASS testBlurryShadow 2
+PASS testBlurryShadow 3
+PASS testBlurryShadow 4
+PASS testBlurryShadow 1
+PASS testBlurryShadow 2
+PASS testBlurryShadow 3
+PASS testBlurryShadow 4
 Harness: the test ran to completion.
 

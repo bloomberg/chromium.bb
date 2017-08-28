@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Test referer header https://web-platform.test:8444/beacon/resources/ 
-FAIL Test referer header http://web-platform.test:8001/beacon/resources/ assert_true: SendBeacon Succeeded expected true got false
+PASS Test referer header https://web-platform.test:8444/beacon/resources/
+FAIL Test referer header http://web-platform.test:8001/beacon/resources/assert_true: SendBeacon Succeeded expected true got false
 Harness: the test ran to completion.
 

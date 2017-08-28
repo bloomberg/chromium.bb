@@ -1,20 +1,20 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 6 duplicate test names: "eye", "face", "devicePixelRatio", "nose", "mouth", "null"
-PASS devicePixelRatio 
-PASS face 
-PASS nose 
-PASS mouth 
-PASS eye 
-PASS eye 
-PASS face 
-PASS null 
-PASS devicePixelRatio 
-PASS face 
-PASS nose 
-PASS mouth 
-PASS eye 
-PASS eye 
-PASS face 
-PASS null 
+PASS devicePixelRatio
+PASS face
+PASS nose
+PASS mouth
+PASS eye
+PASS eye
+PASS face
+PASS null
+PASS devicePixelRatio
+PASS face
+PASS nose
+PASS mouth
+PASS eye
+PASS eye
+PASS face
+PASS null
 Harness: the test ran to completion.
 

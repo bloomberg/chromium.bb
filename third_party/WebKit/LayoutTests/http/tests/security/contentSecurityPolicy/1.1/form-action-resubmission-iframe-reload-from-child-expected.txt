@@ -1,6 +1,6 @@
 CONSOLE ERROR: Refused to send form data to 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/form-action-none-and-reload.html' because it violates the following Content Security Policy directive: "form-action 'none'".
 
 This is a testharness.js-based test.
-PASS The form resubmission should be blocked by the iframe's CSP. 
+PASS The form resubmission should be blocked by the iframe's CSP.
 Harness: the test ran to completion.
 

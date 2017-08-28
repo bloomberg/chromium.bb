@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL Verify the behavior of a number of the DOM Canvas drawing methods when given 0, Infinity, or NaN as parameters. Test should not crash. Test bug: need to pass exception to assert_throws()
+FAIL Verify the behavior of a number of the DOM Canvas drawing methods when given 0, Infinity, or NaN as parameters. Test should not crash.Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

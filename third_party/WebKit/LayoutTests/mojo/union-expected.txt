@@ -1,10 +1,10 @@
 This is a testharness.js-based test.
-FAIL constructors Test bug: need to pass exception to assert_throws()
-FAIL basic encoding Test bug: need to pass exception to assert_throws()
-PASS unions in array encoding 
-PASS unions in map encoding 
-PASS nested unions encoding 
-PASS null union member validation 
-PASS null union validation 
+FAIL constructorsTest bug: need to pass exception to assert_throws()
+FAIL basic encodingTest bug: need to pass exception to assert_throws()
+PASS unions in array encoding
+PASS unions in map encoding
+PASS nested unions encoding
+PASS null union member validation
+PASS null union validation
 Harness: the test ran to completion.
 

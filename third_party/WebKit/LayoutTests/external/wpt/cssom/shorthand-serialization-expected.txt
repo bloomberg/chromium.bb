@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-PASS Shorthand serialization with shorthand and longhands mixed. 
-PASS Shorthand serialization with just longhands. 
-FAIL Shorthand serialization with variable and variable from other shorthand. assert_equals: expected "" but got "var(--a)"
+PASS Shorthand serialization with shorthand and longhands mixed.
+PASS Shorthand serialization with just longhands.
+FAIL Shorthand serialization with variable and variable from other shorthand.assert_equals: expected "" but got "var(--a)"
 Harness: the test ran to completion.
 

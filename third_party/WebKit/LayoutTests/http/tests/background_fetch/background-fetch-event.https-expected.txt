@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Background Fetch API: BackgroundFetchEvent tests 
-FAIL Verifies that the BackgroundFetchEvent can be constructed. Test bug: need to pass exception to assert_throws()
+PASS Background Fetch API: BackgroundFetchEvent tests
+FAIL Verifies that the BackgroundFetchEvent can be constructed.Test bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

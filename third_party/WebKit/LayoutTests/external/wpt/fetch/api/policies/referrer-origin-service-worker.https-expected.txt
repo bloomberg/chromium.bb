@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-PASS Fetch in service worker: referrer with no-referrer policy 
-PASS Request's referrer is origin 
-FAIL Cross-origin referrer is overridden by client origin promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'fetch' on 'ServiceWorkerGlobalScope': The origin of 'https://www.web-platform.test:8444/' should be same as 'https://web-platform.test:8444'"
+PASS Fetch in service worker: referrer with no-referrer policy
+PASS Request's referrer is origin
+FAIL Cross-origin referrer is overridden by client originpromise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'fetch' on 'ServiceWorkerGlobalScope': The origin of 'https://www.web-platform.test:8444/' should be same as 'https://web-platform.test:8444'"
 Harness: the test ran to completion.
 

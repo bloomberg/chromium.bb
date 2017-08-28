@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL General fetch abort tests in a service worker Failed to register a ServiceWorker: The script does not have a MIME type.
+FAIL General fetch abort tests in a service workerFailed to register a ServiceWorker: The script does not have a MIME type.
 Harness: the test ran to completion.
 

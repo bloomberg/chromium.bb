@@ -1,4 +1,4 @@
 This is a testharness.js-based test.
-FAIL BluetoothGATTRemoteServer IDL test Test bug: need to pass exception to assert_throws()
+FAIL BluetoothGATTRemoteServer IDL testTest bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 

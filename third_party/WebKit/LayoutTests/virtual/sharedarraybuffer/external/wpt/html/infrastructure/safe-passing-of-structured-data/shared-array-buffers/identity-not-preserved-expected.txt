@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-PASS postMessaging to this window does not give back the same SharedArrayBuffer (but does use the same backing block) 
-PASS postMessaging to a worker and back does not give back the same SharedArrayBuffer 
-PASS postMessaging to an iframe and back does not give back the same SharedArrayBuffer 
+PASS postMessaging to this window does not give back the same SharedArrayBuffer (but does use the same backing block)
+PASS postMessaging to a worker and back does not give back the same SharedArrayBuffer
+PASS postMessaging to an iframe and back does not give back the same SharedArrayBuffer
 Harness: the test ran to completion.
 

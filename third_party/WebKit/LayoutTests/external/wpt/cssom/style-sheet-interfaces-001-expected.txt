@@ -1,8 +1,8 @@
 This is a testharness.js-based test.
-FAIL sheet_property assert_own_property: expected property "sheet" missing
-FAIL CSSStyleSheet_properties Cannot read property 'hasOwnProperty' of undefined
-FAIL CSSStyleSheet_property_values Cannot read property 'ownerRule' of undefined
-FAIL StyleSheet_properties Cannot read property 'hasOwnProperty' of undefined
-FAIL StyleSheet_property_values Cannot read property 'type' of undefined
+FAIL sheet_propertyassert_own_property: expected property "sheet" missing
+FAIL CSSStyleSheet_propertiesCannot read property 'hasOwnProperty' of undefined
+FAIL CSSStyleSheet_property_valuesCannot read property 'ownerRule' of undefined
+FAIL StyleSheet_propertiesCannot read property 'hasOwnProperty' of undefined
+FAIL StyleSheet_property_valuesCannot read property 'type' of undefined
 Harness: the test ran to completion.
 

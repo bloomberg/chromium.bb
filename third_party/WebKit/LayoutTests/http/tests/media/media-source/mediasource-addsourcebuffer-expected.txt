@@ -1,16 +1,16 @@
 CONSOLE WARNING: line 16: Ignore this warning. See https://crbug.com/568704#c2
 This is a testharness.js-based test.
-PASS Test addSourceBuffer() in 'ended' state. 
-PASS Test addSourceBuffer() with empty type 
-PASS Test addSourceBuffer() with null 
-PASS Test addSourceBuffer() with unsupported type 
-PASS Test addSourceBuffer() with Vorbis and VP8 
-PASS Test addSourceBuffer() with Vorbis and VP8 in separate SourceBuffers 
-PASS Test addSourceBuffer() video only 
-PASS Test addSourceBuffer() audio only 
-FAIL Test addSourceBuffer() with AAC and H.264 assert_true: video/mp4;codecs="avc1.4D4001,mp4a.40.2" is supported expected true got false
-FAIL Test addSourceBuffer() with AAC and H.264 in separate SourceBuffers assert_true: video/mp4;codecs="avc1.4D4001" is supported expected true got false
-PASS Test addSourceBuffer() throws QuotaExceededError after MediaSource has completed init. 
-PASS Test addSourceBuffer() succeeds while incomplete init segment is appended, fails after MediaSource init completed. 
+PASS Test addSourceBuffer() in 'ended' state.
+PASS Test addSourceBuffer() with empty type
+PASS Test addSourceBuffer() with null
+PASS Test addSourceBuffer() with unsupported type
+PASS Test addSourceBuffer() with Vorbis and VP8
+PASS Test addSourceBuffer() with Vorbis and VP8 in separate SourceBuffers
+PASS Test addSourceBuffer() video only
+PASS Test addSourceBuffer() audio only
+FAIL Test addSourceBuffer() with AAC and H.264assert_true: video/mp4;codecs="avc1.4D4001,mp4a.40.2" is supported expected true got false
+FAIL Test addSourceBuffer() with AAC and H.264 in separate SourceBuffersassert_true: video/mp4;codecs="avc1.4D4001" is supported expected true got false
+PASS Test addSourceBuffer() throws QuotaExceededError after MediaSource has completed init.
+PASS Test addSourceBuffer() succeeds while incomplete init segment is appended, fails after MediaSource init completed.
 Harness: the test ran to completion.
 

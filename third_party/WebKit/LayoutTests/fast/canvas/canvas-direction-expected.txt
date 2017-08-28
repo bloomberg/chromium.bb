@@ -6,19 +6,19 @@ CONSOLE MESSAGE: line 74: [object Object]
 CONSOLE MESSAGE: line 74: [object Object]
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 2 duplicate test names: "DirectionAfterResetTest1", "DirectionAfterResetTest2"
-PASS Verify that canvas 2d context supports 'direction' attribute. 
-PASS DrawTextTest1 
-PASS DrawTextTest2 
-PASS DrawTextWithSpecifiedDirectionTest1 
-PASS DrawTextWithSpecifiedDirectionTest2 
-PASS DrawTextWithSpecifiedDirectionTest3 
-PASS DrawTextWithSpecifiedDirectionTest4 
-PASS DirectionAfterResetTest1 
-PASS DirectionAfterResetTest2 
-PASS DirectionAfterResetTest1 
-PASS DirectionAfterResetTest2 
-PASS InvalidDirectionTestRTL 
-PASS InvalidDirectionTestLTR 
-PASS InvalidDirectionTestINHERIT 
+PASS Verify that canvas 2d context supports 'direction' attribute.
+PASS DrawTextTest1
+PASS DrawTextTest2
+PASS DrawTextWithSpecifiedDirectionTest1
+PASS DrawTextWithSpecifiedDirectionTest2
+PASS DrawTextWithSpecifiedDirectionTest3
+PASS DrawTextWithSpecifiedDirectionTest4
+PASS DirectionAfterResetTest1
+PASS DirectionAfterResetTest2
+PASS DirectionAfterResetTest1
+PASS DirectionAfterResetTest2
+PASS InvalidDirectionTestRTL
+PASS InvalidDirectionTestLTR
+PASS InvalidDirectionTestINHERIT
 Harness: the test ran to completion.
 

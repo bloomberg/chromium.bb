@@ -1,29 +1,29 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 6 duplicate test names: "WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check", "WritableStreamDefaultWriter.prototype.closed enforces a brand check", "WritableStreamDefaultWriter.prototype.ready enforces a brand check", "WritableStreamDefaultWriter.prototype.abort enforces a brand check", "WritableStreamDefaultWriter.prototype.write enforces a brand check", "WritableStreamDefaultWriter.prototype.close enforces a brand check"
-PASS WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.closed enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.ready enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.abort enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.write enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.close enforces a brand check 
-PASS Untitled 
-PASS WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.closed enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.ready enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.abort enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.write enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.close enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.closed enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.ready enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.abort enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.write enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.close enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.closed enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.ready enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.abort enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.write enforces a brand check 
-PASS WritableStreamDefaultWriter.prototype.close enforces a brand check 
+PASS WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.closed enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.ready enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.abort enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.write enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.close enforces a brand check
+PASS Untitled
+PASS WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.closed enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.ready enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.abort enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.write enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.close enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.closed enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.ready enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.abort enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.write enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.close enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.desiredSize enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.closed enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.ready enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.abort enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.write enforces a brand check
+PASS WritableStreamDefaultWriter.prototype.close enforces a brand check
 Harness: the test ran to completion.
 

@@ -15,22 +15,22 @@ function shouldBe(description, actual, expected, useFuzzyMath)
 {
     if (useFuzzyMath) {
         if (Math.abs(expected - actual) < 20) { // >
-            print("PASS: " + description + " should be approximately " + expected + 
-                  " and is " + actual + "\n", 
+            print("PASS: " + description + " should be approximately " + expected +
+                  " and is " + actual + "\n",
                   "green");
         } else {
-            print("FAIL: " + description + " should be approximately " + expected + 
-                  " but instead is " + actual + "\n", 
+            print("FAIL: " + description + " should be approximately " + expected +
+                  " but instead is " + actual + "\n",
                   "red");
         }
     } else {
         if (expected === actual) {
-            print("PASS: " + description + " should be " + expected + 
-                  " and is\n", 
+            print("PASS: " + description + " should be " + expected +
+                  " and is\n",
                   "green");
         } else {
-            print("FAIL: " + description + " should be " + expected + 
-                  " but instead is " + actual + "\n", 
+            print("FAIL: " + description + " should be " + expected +
+                  " but instead is " + actual + "\n",
                   "red");
         }
     }
@@ -39,7 +39,7 @@ function shouldBe(description, actual, expected, useFuzzyMath)
 function listener(event)
 {
     document.getElementById("console").innerHTML = "";
-    
+   
     shouldBe("event target", document.getElementById('test'), event.target, false);
 
     var useFuzzyMath;
@@ -47,9 +47,9 @@ function listener(event)
         useFuzzyMath = false;
     else {
         // Use fuzzy math, because we can't predict exactly where the user will click
-        useFuzzyMath = true;        
+        useFuzzyMath = true;       
     }
-    
+   
     shouldBe("event.pageX", event.pageX, 175, useFuzzyMath);
     shouldBe("event.pageY", event.pageY, 105, useFuzzyMath);
     shouldBe("event.clientX", event.clientX, 175, useFuzzyMath);
@@ -75,7 +75,7 @@ function test() {
         eventSender.mouseDown();
         eventSender.mouseUp();
     }
-    
+   
     if (window.testRunner)
         testRunner.notifyDone();
 }

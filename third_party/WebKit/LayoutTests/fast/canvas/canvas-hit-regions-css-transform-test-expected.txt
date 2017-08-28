@@ -1,39 +1,39 @@
 This is a testharness.js-based test.
 Harness Error. harness_status.status = 1 , harness_status.message = 4 duplicate test names: "eye", "face", "nose", "mouth"
-PASS face 
-PASS nose 
-PASS mouth 
-PASS eye 
-PASS eye 
-PASS face 
-PASS HitRegion CSS Size/Transform Test 
-PASS face 
-PASS nose 
-PASS mouth 
-PASS eye 
-PASS eye 
-PASS face 
-PASS HitRegion CSS Size/Transform Test 1 
-PASS face 
-PASS nose 
-PASS mouth 
-PASS eye 
-PASS eye 
-PASS face 
-PASS HitRegion CSS Size/Transform Test 2 
-PASS face 
-PASS nose 
-PASS mouth 
-PASS eye 
-PASS eye 
-PASS face 
-PASS HitRegion CSS Size/Transform Test 3 
-PASS face 
-PASS nose 
-PASS mouth 
-PASS eye 
-PASS eye 
-PASS face 
-PASS HitRegion CSS Size/Transform Test 4 
+PASS face
+PASS nose
+PASS mouth
+PASS eye
+PASS eye
+PASS face
+PASS HitRegion CSS Size/Transform Test
+PASS face
+PASS nose
+PASS mouth
+PASS eye
+PASS eye
+PASS face
+PASS HitRegion CSS Size/Transform Test 1
+PASS face
+PASS nose
+PASS mouth
+PASS eye
+PASS eye
+PASS face
+PASS HitRegion CSS Size/Transform Test 2
+PASS face
+PASS nose
+PASS mouth
+PASS eye
+PASS eye
+PASS face
+PASS HitRegion CSS Size/Transform Test 3
+PASS face
+PASS nose
+PASS mouth
+PASS eye
+PASS eye
+PASS face
+PASS HitRegion CSS Size/Transform Test 4
 Harness: the test ran to completion.
 

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
-PASS window.performance is defined 
-PASS window.performance.getEntriesByType is defined 
-FAIL redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should not be all returned as 0 when the HTTP response has multiple Timing-Allow-Origin header fields and the subsequent field value is separated by a comma, i.e. TAO algorithm passes assert_true: redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should not be all returned as 0 when the HTTP response has multiple Timing-Allow-Origin header fields and the subsequent field value is separated by a comma, i.e. TAO algorithm passes expected true got false
+PASS window.performance is defined
+PASS window.performance.getEntriesByType is defined
+FAIL redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should not be all returned as 0 when the HTTP response has multiple Timing-Allow-Origin header fields and the subsequent field value is separated by a comma, i.e. TAO algorithm passesassert_true: redirectStart, redirectEnd, domainLookupStart, domainLookupEnd, connectStart, connectEnd, secureConnectionStart, requestStart, and responseStart -- should not be all returned as 0 when the HTTP response has multiple Timing-Allow-Origin header fields and the subsequent field value is separated by a comma, i.e. TAO algorithm passes expected true got false
 Harness: the test ran to completion.
 

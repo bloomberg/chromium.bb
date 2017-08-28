@@ -1,7 +1,7 @@
 This is a testharness.js-based test.
 FAIL Triggers ontrack when called with a remote description and the MSID of the stream is is parsed. assert_unreached: Error OperationError: TEST_ERROR Reached unreachable code
 FAIL Malformed SDP description should be rejected with RTCError RTCError is not defined
-PASS Invalid SDP type should be rejected with TypeError 
+PASS Invalid SDP type should be rejected with TypeError
 FAIL SDP type that is invalid for current signaling state should be rejected with InvalidStateError InvalidStateError is not defined
 Harness: the test ran to completion.
 

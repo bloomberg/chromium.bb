@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL Single valued CSSUnitValues can be retrieved from Computed StyleMap assert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
-FAIL Can retrieve list of CSSUnitValues from list-valued property assert_equals: expected 3 but got 1
+FAIL Single valued CSSUnitValues can be retrieved from Computed StyleMapassert_equals: expected "CSSUnitValue" but got "CSSStyleValue"
+FAIL Can retrieve list of CSSUnitValues from list-valued propertyassert_equals: expected 3 but got 1
 Harness: the test ran to completion.
 

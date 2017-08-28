@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL BluetoothDevice IDL test Test bug: need to pass exception to assert_throws()
-PASS BluetoothDevice attributes. 
-Harness: the test ran to completion.
-

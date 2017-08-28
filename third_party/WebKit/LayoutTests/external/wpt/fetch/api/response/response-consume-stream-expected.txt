@@ -1,12 +1,12 @@
 This is a testharness.js-based test.
-PASS Read empty text response's body as readableStream 
-PASS Read empty blob response's body as readableStream 
-PASS Read blob response's body as readableStream 
-PASS Read text response's body as readableStream 
-PASS Read URLSearchParams response's body as readableStream 
-PASS Read array buffer response's body as readableStream 
-FAIL Read form data response's body as readableStream assert_array_equals: Retrieve and verify stream lengths differ, expected 10 got 140
-PASS Getting an error Response stream 
-FAIL Getting a redirect Response stream assert_not_equals: got disallowed value undefined
+PASS Read empty text response's body as readableStream
+PASS Read empty blob response's body as readableStream
+PASS Read blob response's body as readableStream
+PASS Read text response's body as readableStream
+PASS Read URLSearchParams response's body as readableStream
+PASS Read array buffer response's body as readableStream
+FAIL Read form data response's body as readableStreamassert_array_equals: Retrieve and verify stream lengths differ, expected 10 got 140
+PASS Getting an error Response stream
+FAIL Getting a redirect Response streamassert_not_equals: got disallowed value undefined
 Harness: the test ran to completion.
 

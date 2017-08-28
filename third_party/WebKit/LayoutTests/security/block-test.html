@@ -9,7 +9,7 @@
 
       // Port numbers that we consider to be invalid due to being out of range.
       Math.pow(2, 16) - 1, Math.pow(2, 16), Math.pow(2, 32) - 1, Math.pow(2, 32),
-      
+     
       // We don't like FTP.
       "ftp://255.255.255.255/test.jpg",
       "ftp://255.255.255.255:21/test.jpg",
@@ -22,14 +22,14 @@
         testRunner.waitUntilDone();
         testRunner.dumpResourceLoadCallbacks();
     }
-    
+   
     function loadHandler(e) {
-        console.log("FAIL: load event fired for " + currentURL); 
+        console.log("FAIL: load event fired for " + currentURL);
         nextURL();
     }
-    
+   
     function errorHandler(e) {
-        console.log("PASS: error event fired for " + currentURL); 
+        console.log("PASS: error event fired for " + currentURL);
         nextURL();
     }
 
@@ -63,7 +63,7 @@
     function finishTesting() {
         if (window.testRunner) {
             testRunner.dumpAsText();
-            setTimeout("testRunner.notifyDone()", 0); 
+            setTimeout("testRunner.notifyDone()", 0);
         }
     }
 </script>

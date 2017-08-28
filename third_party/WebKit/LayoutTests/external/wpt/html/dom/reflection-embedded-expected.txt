@@ -23,29 +23,29 @@ PASS img.isMap: 33 tests
 PASS img.width: 9 tests
 PASS img.height: 9 tests
 PASS img.referrerPolicy: 27 tests
-FAIL img.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 3 tests
-FAIL img.referrerPolicy: setAttribute() to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 5 tests
-FAIL img.referrerPolicy: setAttribute() to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 3 tests
-FAIL img.referrerPolicy: setAttribute() to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 5 tests
-FAIL img.referrerPolicy: setAttribute() to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 3 tests
-FAIL img.referrerPolicy: setAttribute() to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 30 tests
-FAIL img.referrerPolicy: IDL set to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 3 tests
-FAIL img.referrerPolicy: IDL set to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 5 tests
-FAIL img.referrerPolicy: IDL set to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 3 tests
-FAIL img.referrerPolicy: IDL set to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 5 tests
-FAIL img.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 3 tests
-FAIL img.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS img.referrerPolicy: 5 tests
 PASS img.name: 32 tests
 PASS img.lowsrc: 38 tests
@@ -65,66 +65,66 @@ PASS iframe.src: 38 tests
 PASS iframe.srcdoc: 32 tests
 PASS iframe.name: 32 tests
 PASS iframe.allowFullscreen: 33 tests
-FAIL iframe.allowUserMedia: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
-FAIL iframe.allowUserMedia: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: setAttribute() to "allowUserMedia" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL iframe.allowUserMedia: IDL set to "" assert_equals: hasAttribute() expected false but got true
-FAIL iframe.allowUserMedia: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
-FAIL iframe.allowUserMedia: IDL set to undefined assert_equals: hasAttribute() expected false but got true
-FAIL iframe.allowUserMedia: IDL set to null assert_equals: hasAttribute() expected false but got true
-FAIL iframe.allowUserMedia: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
-FAIL iframe.allowUserMedia: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
-PASS iframe.allowUserMedia: IDL set to true 
-FAIL iframe.allowUserMedia: IDL set to false assert_equals: hasAttribute() expected false but got true
-FAIL iframe.allowUserMedia: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
-FAIL iframe.allowUserMedia: IDL set to NaN assert_equals: hasAttribute() expected false but got true
-FAIL iframe.allowUserMedia: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
-FAIL iframe.allowUserMedia: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
-FAIL iframe.allowUserMedia: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
-FAIL iframe.allowUserMedia: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
-FAIL iframe.allowUserMedia: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS iframe.allowPaymentRequest: 33 tests
 PASS iframe.width: 32 tests
 PASS iframe.height: 32 tests
 PASS iframe.referrerPolicy: 27 tests
-FAIL iframe.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 3 tests
-FAIL iframe.referrerPolicy: setAttribute() to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 5 tests
-FAIL iframe.referrerPolicy: setAttribute() to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 3 tests
-FAIL iframe.referrerPolicy: setAttribute() to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 5 tests
-FAIL iframe.referrerPolicy: setAttribute() to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 3 tests
-FAIL iframe.referrerPolicy: setAttribute() to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 30 tests
-FAIL iframe.referrerPolicy: IDL set to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 3 tests
-FAIL iframe.referrerPolicy: IDL set to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 5 tests
-FAIL iframe.referrerPolicy: IDL set to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 3 tests
-FAIL iframe.referrerPolicy: IDL set to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 5 tests
-FAIL iframe.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 3 tests
-FAIL iframe.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS iframe.referrerPolicy: 5 tests
 PASS iframe.align: 32 tests
 PASS iframe.scrolling: 32 tests
@@ -154,39 +154,39 @@ PASS object.accessKey: 32 tests
 PASS object.tabIndex: 24 tests
 PASS object.data: 38 tests
 PASS object.type: 32 tests
-FAIL object.typeMustMatch: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
-FAIL object.typeMustMatch: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: setAttribute() to "typeMustMatch" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
-FAIL object.typeMustMatch: IDL set to "" assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
-FAIL object.typeMustMatch: IDL set to undefined assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to null assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
-FAIL object.typeMustMatch: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
-PASS object.typeMustMatch: IDL set to true 
-FAIL object.typeMustMatch: IDL set to false assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
-FAIL object.typeMustMatch: IDL set to NaN assert_equals: hasAttribute() expected false but got true
-FAIL object.typeMustMatch: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
-FAIL object.typeMustMatch: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
-FAIL object.typeMustMatch: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
-FAIL object.typeMustMatch: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
-FAIL object.typeMustMatch: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS object.name: 32 tests
 PASS object.useMap: 32 tests
 PASS object.width: 32 tests
@@ -275,51 +275,51 @@ PASS canvas.hidden: 33 tests
 PASS canvas.accessKey: 32 tests
 PASS canvas.tabIndex: 24 tests
 PASS canvas.width: 18 tests
-FAIL canvas.width: setAttribute() to "\v7" assert_equals: IDL get expected 300 but got 7
+NOTRUN test
 PASS canvas.width: 6 tests
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" 
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-PASS canvas.width: setAttribute() to "᠎7" 
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-FAIL canvas.width: setAttribute() to " 7" assert_equals: IDL get expected 300 but got 7
-PASS canvas.width: setAttribute() to " 7" 
-FAIL canvas.width: setAttribute() to "　7" assert_equals: IDL get expected 300 but got 7
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS canvas.width: 16 tests
-FAIL canvas.width: IDL set to 2147483648 assert_equals: getAttribute() expected "300" but got "-2147483648"
-FAIL canvas.width: IDL set to 4294967295 assert_equals: getAttribute() expected "300" but got "-1"
+NOTRUN test
+NOTRUN test
 PASS canvas.height: 18 tests
-FAIL canvas.height: setAttribute() to "\v7" assert_equals: IDL get expected 150 but got 7
+NOTRUN test
 PASS canvas.height: 6 tests
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" 
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-PASS canvas.height: setAttribute() to "᠎7" 
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-FAIL canvas.height: setAttribute() to " 7" assert_equals: IDL get expected 150 but got 7
-PASS canvas.height: setAttribute() to " 7" 
-FAIL canvas.height: setAttribute() to "　7" assert_equals: IDL get expected 150 but got 7
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
+NOTRUN test
 PASS canvas.height: 16 tests
-FAIL canvas.height: IDL set to 2147483648 assert_equals: getAttribute() expected "150" but got "-2147483648"
-FAIL canvas.height: IDL set to 4294967295 assert_equals: getAttribute() expected "150" but got "-1"
+NOTRUN test
+NOTRUN test
 PASS map.title: 32 tests
 PASS map.lang: 32 tests
 PASS map.dir: 62 tests
@@ -343,29 +343,29 @@ PASS area.download: 32 tests
 PASS area.ping: 32 tests
 PASS area.rel: 32 tests
 PASS area.referrerPolicy: 27 tests
-FAIL area.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 3 tests
-FAIL area.referrerPolicy: setAttribute() to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 5 tests
-FAIL area.referrerPolicy: setAttribute() to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 3 tests
-FAIL area.referrerPolicy: setAttribute() to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 5 tests
-FAIL area.referrerPolicy: setAttribute() to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 3 tests
-FAIL area.referrerPolicy: setAttribute() to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 30 tests
-FAIL area.referrerPolicy: IDL set to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 3 tests
-FAIL area.referrerPolicy: IDL set to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 5 tests
-FAIL area.referrerPolicy: IDL set to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 3 tests
-FAIL area.referrerPolicy: IDL set to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 5 tests
-FAIL area.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 3 tests
-FAIL area.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+NOTRUN test
 PASS area.referrerPolicy: 5 tests
 PASS area.href: 38 tests
 PASS area.noHref: 33 tests

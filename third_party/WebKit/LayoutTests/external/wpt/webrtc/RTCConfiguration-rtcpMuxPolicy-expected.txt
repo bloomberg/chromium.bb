@@ -1,17 +1,17 @@
 This is a testharness.js-based test.
-FAIL new RTCPeerConnection() should have default rtcpMuxPolicy require pc.getConfiguration is not a function
-FAIL new RTCPeerConnection({ rtcpMuxPolicy: undefined }) should have default rtcpMuxPolicy require pc.getConfiguration is not a function
-FAIL new RTCPeerConnection({ rtcpMuxPolicy: 'require' }) should succeed pc.getConfiguration is not a function
-FAIL new RTCPeerConnection({ rtcpMuxPolicy: 'negotiate' }) may succeed or throw NotSupportedError pc.getConfiguration is not a function
-PASS new RTCPeerConnection(config) - with { rtcpMuxPolicy: null } should throw TypeError 
-PASS setConfiguration(config) - with { rtcpMuxPolicy: null } should throw TypeError 
-PASS new RTCPeerConnection(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError 
-PASS setConfiguration(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError 
-FAIL setConfiguration({ rtcpMuxPolicy: 'negotiate' }) with initial rtcpMuxPolicy require should throw InvalidModificationError assert_throws: function "() =>
+FAIL new RTCPeerConnection() should have default rtcpMuxPolicy requirepc.getConfiguration is not a function
+FAIL new RTCPeerConnection({ rtcpMuxPolicy: undefined }) should have default rtcpMuxPolicy requirepc.getConfiguration is not a function
+FAIL new RTCPeerConnection({ rtcpMuxPolicy: 'require' }) should succeedpc.getConfiguration is not a function
+FAIL new RTCPeerConnection({ rtcpMuxPolicy: 'negotiate' }) may succeed or throw NotSupportedErrorpc.getConfiguration is not a function
+PASS new RTCPeerConnection(config) - with { rtcpMuxPolicy: null } should throw TypeError
+PASS setConfiguration(config) - with { rtcpMuxPolicy: null } should throw TypeError
+PASS new RTCPeerConnection(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError
+PASS setConfiguration(config) - with { rtcpMuxPolicy: 'invalid' } should throw TypeError
+FAIL setConfiguration({ rtcpMuxPolicy: 'negotiate' }) with initial rtcpMuxPolicy require should throw InvalidModificationErrorassert_throws: function "() =>
       pc.setConfiguration({ rtcpMuxPolicy: 'negotiate' })" did not throw
-FAIL setConfiguration({ rtcpMuxPolicy: 'require' }) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError assert_throws: function "() =>
+FAIL setConfiguration({ rtcpMuxPolicy: 'require' }) with initial rtcpMuxPolicy negotiate should throw InvalidModificationErrorassert_throws: function "() =>
       pc.setConfiguration({ rtcpMuxPolicy: 'require' })" did not throw
-FAIL setConfiguration({}) with initial rtcpMuxPolicy negotiate should throw InvalidModificationError assert_throws: function "() =>
+FAIL setConfiguration({}) with initial rtcpMuxPolicy negotiate should throw InvalidModificationErrorassert_throws: function "() =>
       pc.setConfiguration({})" did not throw
 Harness: the test ran to completion.
 

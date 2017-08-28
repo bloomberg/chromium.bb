@@ -1,11 +1,11 @@
 This is a testharness.js-based test.
-PASS bar 
-PASS foo 
-PASS named region 
-PASS single boolean struct 
-PASS types 
-PASS align 
-PASS utf8 
-FAIL typed pointer validation Test bug: need to pass exception to assert_throws()
+PASS bar
+PASS foo
+PASS named region
+PASS single boolean struct
+PASS types
+PASS align
+PASS utf8
+FAIL typed pointer validationTest bug: need to pass exception to assert_throws()
 Harness: the test ran to completion.
 
