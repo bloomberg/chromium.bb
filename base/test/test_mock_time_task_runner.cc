@@ -295,6 +295,7 @@ bool TestMockTimeTaskRunner::PostDelayedTask(
   tasks_.push(TestOrderedPendingTask(from_here, std::move(task), now_ticks_,
                                      delay, next_task_ordinal_++,
                                      TestPendingTask::NESTABLE));
+  tasks_lock_cv_.Signal();
   return true;
 }
 

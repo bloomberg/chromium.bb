@@ -7,7 +7,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -176,6 +178,22 @@ TEST(TestMockTimeTaskRunnerTest, RunLoopDriveableWhenBound) {
   expected_value += 1024;
   expected_value += 4096;
   EXPECT_EQ(expected_value, counter);
+}
+
+// Regression test that receiving the quit-when-idle signal when already empty
+// works as intended (i.e. that |TestMockTimeTaskRunner::tasks_lock_cv| is
+// properly signaled).
+TEST(TestMockTimeTaskRunnerTest, RunLoopQuitFromIdle) {
+  auto bound_mock_time_task_runner = MakeRefCounted<TestMockTimeTaskRunner>(
+      TestMockTimeTaskRunner::Type::kBoundToThread);
+
+  Thread quitting_thread("quitting thread");
+  quitting_thread.Start();
+
+  RunLoop run_loop;
+  quitting_thread.task_runner()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitWhenIdleClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
 }
 
 }  // namespace base
