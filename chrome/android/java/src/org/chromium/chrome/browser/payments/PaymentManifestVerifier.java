@@ -102,6 +102,9 @@ public class PaymentManifestVerifier
     private static final String TAG = "PaymentManifest";
     private static final String ALL_ORIGINS_SUPPORTED_INDICATOR = "*";
 
+    /** The hostname used by the embedded test server in testing. */
+    private static final String LOCALHOST_FOR_TEST = "127.0.0.1";
+
     /**
      * The payment method name that's being verified. The corresponding payment method manifest
      * and default web app manifests will be downloaded, parsed, and cached.
@@ -168,7 +171,7 @@ public class PaymentManifestVerifier
             PackageManagerDelegate packageManagerDelegate, ManifestVerifyCallback callback) {
         assert methodName.isAbsolute();
         assert UrlConstants.HTTPS_SCHEME.equals(methodName.getScheme())
-                || (UriUtils.LOCALHOST_FOR_TEST.equals(methodName.getHost())
+                || (LOCALHOST_FOR_TEST.equals(methodName.getHost())
                            && UrlConstants.HTTP_SCHEME.equals(methodName.getScheme()));
 
         mMethodName = methodName;
