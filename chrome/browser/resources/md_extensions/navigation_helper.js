@@ -47,13 +47,9 @@ cr.define('extensions', function() {
      *     forward in history; called with the new active page.
      */
     constructor(onHistoryChange) {
-      this.onHistoryChange_ = onHistoryChange;
-      window.addEventListener('popstate', this.onPopState_.bind(this));
-    }
-
-    /** @private */
-    onPopState_() {
-      this.onHistoryChange_(this.getCurrentPage());
+      window.addEventListener('popstate', () => {
+        onHistoryChange(this.getCurrentPage());
+      });
     }
 
     /**

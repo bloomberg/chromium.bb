@@ -140,19 +140,6 @@ cr.define('extensions', function() {
       this.navigationHelper_ = new extensions.NavigationHelper(newPage => {
         this.changePage(newPage, true);
       });
-      this.optionsDialog.addEventListener('close', () => {
-        // We update the page when the options dialog closes, but only if we're
-        // still on the details page. We could be on a different page if the
-        // user hit back while the options dialog was visible; in that case, the
-        // new page is already correct.
-        if (this.currentPage_ && this.currentPage_.page == Page.DETAILS) {
-          // This will update the currentPage_ and the NavigationHelper; since
-          // the active page is already the details page, no main page
-          // transition occurs.
-          this.changePage(
-              {page: Page.DETAILS, extensionId: this.currentPage_.extensionId});
-        }
-      });
     },
 
     get keyboardShortcuts() {
@@ -173,14 +160,6 @@ cr.define('extensions', function() {
 
     get errorPage() {
       return this.$['error-page'];
-    },
-
-    /**
-     * Shows the details view for a given item.
-     * @param {!chrome.developerPrivate.ExtensionInfo} data
-     */
-    showItemDetails: function(data) {
-      this.changePage({page: Page.DETAILS, extensionId: data.id});
     },
 
     /**
@@ -388,7 +367,7 @@ cr.define('extensions', function() {
      * @private
      */
     onShouldShowItemDetails_: function(e) {
-      this.showItemDetails(e.detail.data);
+      this.changePage({page: Page.DETAILS, extensionId: e.detail.data.id});
     },
 
     /**
@@ -417,6 +396,21 @@ cr.define('extensions', function() {
     /** @private */
     onPackTap_: function() {
       this.$['pack-dialog'].show();
+    },
+
+    /** @private */
+    onOptionsDialogClose_: function() {
+      // We update the page when the options dialog closes, but only if we're
+      // still on the details page. We could be on a different page if the
+      // user hit back while the options dialog was visible; in that case, the
+      // new page is already correct.
+      if (this.currentPage_ && this.currentPage_.page == Page.DETAILS) {
+        // This will update the currentPage_ and the NavigationHelper; since
+        // the active page is already the details page, no main page
+        // transition occurs.
+        this.changePage(
+            {page: Page.DETAILS, extensionId: this.currentPage_.extensionId});
+      }
     },
 
     /**

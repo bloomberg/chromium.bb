@@ -173,7 +173,10 @@ cr.define('extension_manager_tests', function() {
       manager.addItem(extension);
       manager.addItem(secondExtension);
       var data = manager.extensions[0];
-      manager.showItemDetails(extension);
+      // TODO(scottchen): maybe testing too many things in a single unit test.
+      manager.$['items-list'].fire(
+          'extension-item-show-details', {data: extension});
+      Polymer.dom.flush();
       var detailsView = manager.$['details-view'];
       expectEquals(extension.id, detailsView.data.id);
       expectEquals(oldDescription, detailsView.data.description);
