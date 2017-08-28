@@ -83,6 +83,8 @@
 #define GBM_BO_USE_CURSOR GBM_BO_USE_CURSOR_64X64
 #endif
 
+#define MAX_CLONED_CONNECTORS 1
+
 /**
  * Represents the values of an enum-type KMS property
  */
@@ -400,6 +402,13 @@ struct drm_plane {
 	uint32_t formats[];
 };
 
+struct drm_head {
+	struct weston_head base;
+	struct drm_backend *backend;
+
+	struct drm_output *output; /* XXX: temporary */
+};
+
 struct drm_output {
 	struct weston_output base;
 	drmModeConnector *connector;
@@ -473,6 +482,12 @@ wl_array_remove_uint32(struct wl_array *array, uint32_t elm)
 		memmove(pos, pos + 1, (char *) end -  (char *) (pos + 1));
 		break;
 	}
+}
+
+static inline struct drm_head *
+to_drm_head(struct weston_head *base)
+{
+	return container_of(base, struct drm_head, base);
 }
 
 static inline struct drm_output *
@@ -4394,6 +4409,16 @@ setup_output_seat_constraint(struct drm_backend *b,
 }
 
 static int
+drm_output_attach_head(struct weston_output *output_base,
+		       struct weston_head *head_base)
+{
+	if (wl_list_length(&output_base->head_list) >= MAX_CLONED_CONNECTORS)
+		return -1;
+
+	return 0;
+}
+
+static int
 parse_gbm_format(const char *s, uint32_t default_value, uint32_t *gbm_format)
 {
 	int ret = 0;
@@ -4811,10 +4836,14 @@ drm_output_deinit(struct weston_output *base)
 }
 
 static void
+drm_head_destroy(struct drm_head *head);
+
+static void
 drm_output_destroy(struct weston_output *base)
 {
 	struct drm_output *output = to_drm_output(base);
 	struct drm_backend *b = to_drm_backend(base->compositor);
+	struct weston_head *head = weston_output_get_first_head(base);
 
 	if (output->page_flip_pending || output->vblank_pending ||
 	    output->atomic_complete_pending) {
@@ -4845,6 +4874,10 @@ drm_output_destroy(struct weston_output *base)
 	drm_output_state_free(output->state_cur);
 
 	free(output);
+
+	/* XXX: temporary */
+	if (head)
+		drm_head_destroy(to_drm_head(head));
 }
 
 static int
@@ -4866,6 +4899,19 @@ drm_output_disable(struct weston_output *base)
 	output->disable_pending = 0;
 
 	return 0;
+}
+
+static struct weston_output *
+drm_output_create(struct weston_compositor *compositor, const char *name)
+{
+	struct drm_head *head;
+
+	/* XXX: Temporary until we can have heads without an output */
+	wl_list_for_each(head, &compositor->head_list, base.compositor_link)
+		if (strcmp(name, head->base.name) == 0)
+			return &head->output->base;
+
+	return NULL;
 }
 
 /**
@@ -4914,6 +4960,71 @@ drm_backend_update_unused_outputs(struct drm_backend *b, drmModeRes *resources)
 }
 
 /**
+ * Create a Weston head for a connector
+ *
+ * Given a DRM connector, create a matching drm_head structure and add it
+ * to Weston's head list.
+ *
+ * @param b Weston backend structure
+ * @param connector_id DRM connector ID for the head
+ * @param drm_device udev device pointer
+ * @returns The new head, or NULL on failure.
+ */
+static struct drm_head *
+drm_head_create(struct drm_backend *backend, uint32_t connector_id,
+		struct udev_device *drm_device)
+{
+	struct drm_head *head;
+	drmModeConnector *connector;
+	char *name;
+
+	head = zalloc(sizeof *head);
+	if (!head)
+		return NULL;
+
+	connector = drmModeGetConnector(backend->drm.fd, connector_id);
+	if (!connector)
+		goto err_alloc;
+
+	name = make_connector_name(connector);
+	if (!name)
+		goto err_alloc;
+
+	weston_head_init(&head->base, name);
+	free(name);
+
+	head->backend = backend;
+
+	/* Unknown connection status is assumed disconnected. */
+	weston_head_set_connection_status(&head->base,
+				connector->connection == DRM_MODE_CONNECTED);
+
+	weston_compositor_add_head(backend->compositor, &head->base);
+	drmModeFreeConnector(connector);
+
+	weston_log("DRM: found head '%s', connector %d %s.\n",
+		   head->base.name, connector_id,
+		   head->base.connected ? "connected" : "disconnected");
+
+	return head;
+
+err_alloc:
+	if (connector)
+		drmModeFreeConnector(connector);
+
+	free(head);
+
+	return NULL;
+}
+
+static void
+drm_head_destroy(struct drm_head *head)
+{
+	weston_head_release(&head->base);
+	free(head);
+}
+
+/**
  * Create a Weston output structure
  *
  * Given a DRM connector, create a matching drm_output structure and add it
@@ -4933,7 +5044,7 @@ create_output_for_connector(struct drm_backend *b,
 			    struct udev_device *drm_device)
 {
 	struct drm_output *output;
-	struct weston_head *head;
+	struct drm_head *head;
 	drmModeObjectPropertiesPtr props;
 	struct drm_mode *drm_mode;
 	char *name;
@@ -4956,9 +5067,16 @@ create_output_for_connector(struct drm_backend *b,
 	weston_output_init(&output->base, b->compositor, name);
 	free(name);
 
+	/* XXX: temporary */
+	head = drm_head_create(b, connector->connector_id, drm_device);
+	if (!head)
+		abort();
+	head->output = output;
+
 	output->base.enable = drm_output_enable;
 	output->base.destroy = drm_output_destroy;
 	output->base.disable = drm_output_disable;
+	output->base.attach_head = drm_output_attach_head;
 
 	output->destroy_pending = 0;
 	output->disable_pending = 0;
@@ -4974,23 +5092,22 @@ create_output_for_connector(struct drm_backend *b,
 	}
 	drm_property_info_populate(b, connector_props, output->props_conn,
 				   WDRM_CONNECTOR__COUNT, props);
-	head = &output->base.head;
 	find_and_parse_output_edid(b, output, props,
 				   &make, &model, &serial_number);
-	weston_head_set_monitor_strings(head, make, model, serial_number);
-	weston_head_set_subpixel(head,
+	weston_head_set_monitor_strings(&head->base, make, model, serial_number);
+	weston_head_set_subpixel(&head->base,
 		drm_subpixel_to_wayland(output->connector->subpixel));
 
 	drmModeFreeObjectProperties(props);
 
 	if (output->connector->connector_type == DRM_MODE_CONNECTOR_LVDS ||
 	    output->connector->connector_type == DRM_MODE_CONNECTOR_eDP)
-		weston_head_set_internal(head);
+		weston_head_set_internal(&head->base);
 
 	if (drm_output_init_gamma_size(output) < 0)
 		goto err_output;
 
-	weston_head_set_physical_size(head, output->connector->mmWidth,
+	weston_head_set_physical_size(&head->base, output->connector->mmWidth,
 				      output->connector->mmHeight);
 
 	output->state_cur = drm_output_state_alloc(output, NULL);
@@ -5008,6 +5125,7 @@ create_output_for_connector(struct drm_backend *b,
 	return 0;
 
 err_output:
+	drm_head_destroy(head);
 	drm_output_destroy(&output->base);
 	return -1;
 	/* no fallthrough! */
@@ -5189,6 +5307,7 @@ static void
 drm_destroy(struct weston_compositor *ec)
 {
 	struct drm_backend *b = to_drm_backend(ec);
+	struct weston_head *base, *next;
 
 	udev_input_destroy(&b->input);
 
@@ -5200,6 +5319,9 @@ drm_destroy(struct weston_compositor *ec)
 	destroy_sprites(b);
 
 	weston_compositor_shutdown(ec);
+
+	wl_list_for_each_safe(base, next, &ec->head_list, compositor_link)
+		drm_head_destroy(to_drm_head(base));
 
 	if (b->gbm)
 		gbm_device_destroy(b->gbm);
@@ -5718,6 +5840,7 @@ drm_backend_create(struct weston_compositor *compositor,
 	b->base.repaint_begin = drm_repaint_begin;
 	b->base.repaint_flush = drm_repaint_flush;
 	b->base.repaint_cancel = drm_repaint_cancel;
+	b->base.create_output = drm_output_create;
 
 	weston_setup_vt_switch_bindings(compositor);
 
