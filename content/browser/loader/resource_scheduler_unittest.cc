@@ -57,11 +57,14 @@ const int kRouteId2 = 67;
 const int kBackgroundChildId = 35;
 const int kBackgroundRouteId = 43;
 
+// Sync below with cc file.
 const char kPrioritySupportedRequestsDelayable[] =
     "PrioritySupportedRequestsDelayable";
-
+const char kHeadPrioritySupportedRequestsDelayable[] =
+    "HeadPriorityRequestsDelayable";
 const char kNetworkSchedulerYielding[] = "NetworkSchedulerYielding";
-const int kMaxRequestsBeforeYielding = 5;  // sync with .cc.
+const int kMaxRequestsBeforeYielding = 5;
+const size_t kMaxNumDelayableRequestsPerHostPerClient = 6;
 
 class TestRequest : public ResourceThrottle::Delegate {
  public:
@@ -682,6 +685,220 @@ TEST_F(ResourceSchedulerTest,
   high.reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(low2->started());
+  EXPECT_TRUE(low_spdy->started());
+}
+
+TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenNotDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("",
+                                          kPrioritySupportedRequestsDelayable);
+
+  InitializeScheduler();
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
+
+  // No throttling.
+  for (const auto& request : requests)
+    EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      kPrioritySupportedRequestsDelayable,
+      kHeadPrioritySupportedRequestsDelayable);
+
+  InitializeScheduler();
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Body has been reached.
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
+
+  // Only kMaxNumDelayableRequestsPerHostPerClient in body.
+  for (size_t i = 0; i < requests.size(); ++i) {
+    if (i < kMaxNumDelayableRequestsPerHostPerClient)
+      EXPECT_TRUE(requests[i]->started());
+    else
+      EXPECT_FALSE(requests[i]->started());
+  }
+}
+
+TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyWhenHeadDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      kHeadPrioritySupportedRequestsDelayable,
+      kPrioritySupportedRequestsDelayable);
+
+  InitializeScheduler();
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Body has been reached.
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
+
+  // No throttling.
+  for (const auto& request : requests)
+    EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, ThrottlesHeadWhenHeadDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      kHeadPrioritySupportedRequestsDelayable,
+      kPrioritySupportedRequestsDelayable);
+
+  InitializeScheduler();
+  http_server_properties_.SetSupportsSpdy(
+      url::SchemeHostPort("https", "spdyhost", 443), true);
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("https://spdyhost/low", net::LOWEST));
+
+  // While in head, only one low-priority request is allowed.
+  for (size_t i = 0u; i < requests.size(); ++i) {
+    if (i == 0u)
+      EXPECT_TRUE(requests[i]->started());
+    else
+      EXPECT_FALSE(requests[i]->started());
+  }
+
+  // Body has been reached.
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
+  base::RunLoop().RunUntilIdle();
+
+  // No throttling.
+  for (const auto& request : requests)
+    EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenNotDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("",
+                                          kPrioritySupportedRequestsDelayable);
+
+  InitializeScheduler();
+
+  // Body has been reached.
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("http://host/low", net::LOWEST));
+
+  // Now the scheduler realizes these requests are for a spdy proxy.
+  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
+  base::RunLoop().RunUntilIdle();
+
+  // No throttling.
+  for (const auto& request : requests)
+    EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      kPrioritySupportedRequestsDelayable,
+      kHeadPrioritySupportedRequestsDelayable);
+
+  InitializeScheduler();
+
+  // Body has been reached.
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("http://host/low", net::LOWEST));
+
+  // Now the scheduler realizes these requests are for a spdy proxy.
+  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
+  base::RunLoop().RunUntilIdle();
+
+  // Only kMaxNumDelayableRequestsPerHostPerClient in body.
+  for (size_t i = 0; i < requests.size(); ++i) {
+    if (i < kMaxNumDelayableRequestsPerHostPerClient)
+      EXPECT_TRUE(requests[i]->started());
+    else
+      EXPECT_FALSE(requests[i]->started());
+  }
+}
+
+TEST_F(ResourceSchedulerTest, MaxRequestsPerHostForSpdyProxyWhenHeadDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      kHeadPrioritySupportedRequestsDelayable,
+      kPrioritySupportedRequestsDelayable);
+
+  InitializeScheduler();
+
+  // Body has been reached.
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("http://host/low", net::LOWEST));
+
+  // Now the scheduler realizes these requests are for a spdy proxy.
+  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
+  base::RunLoop().RunUntilIdle();
+
+  // No throttling.
+  for (const auto& request : requests)
+    EXPECT_TRUE(request->started());
+}
+
+TEST_F(ResourceSchedulerTest, ThrottlesHeadForSpdyProxyWhenHeadDelayable) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      kHeadPrioritySupportedRequestsDelayable,
+      kPrioritySupportedRequestsDelayable);
+
+  InitializeScheduler();
+
+  // Add more than max-per-host low-priority requests.
+  std::vector<std::unique_ptr<TestRequest>> requests;
+  for (size_t i = 0; i < kMaxNumDelayableRequestsPerHostPerClient + 1; ++i)
+    requests.push_back(NewRequest("http://host/low", net::LOWEST));
+
+  // Now the scheduler realizes these requests are for a spdy proxy.
+  scheduler()->OnReceivedSpdyProxiedHttpResponse(kChildId, kRouteId);
+  base::RunLoop().RunUntilIdle();
+
+  // While in head, only one low-priority request is allowed.
+  for (size_t i = 0u; i < requests.size(); ++i) {
+    if (i == 0u)
+      EXPECT_TRUE(requests[i]->started());
+    else
+      EXPECT_FALSE(requests[i]->started());
+  }
+
+  // Body has been reached.
+  scheduler()->OnWillInsertBody(kChildId, kRouteId);
+  base::RunLoop().RunUntilIdle();
+
+  // No throttling.
+  for (const auto& request : requests)
+    EXPECT_TRUE(request->started());
 }
 
 TEST_F(ResourceSchedulerTest, SpdyLowBlocksOtherLowUntilBodyInserted) {

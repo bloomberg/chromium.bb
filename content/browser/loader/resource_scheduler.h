@@ -222,6 +222,10 @@ class CONTENT_EXPORT ResourceScheduler {
   // be delayed.
   bool priority_requests_delayable_;
 
+  // True if requests to servers that support priorities (e.g., H2/QUIC) can
+  // be delayed while the parser is in head.
+  bool head_priority_requests_delayable_;
+
   // True if the scheduler should yield between several successive calls to
   // start resource requests.
   bool yielding_scheduler_enabled_;
