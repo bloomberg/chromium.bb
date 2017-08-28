@@ -7,6 +7,7 @@ import("//build/util/process_version.gni")
 import("//headless/headless.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//printing/features/features.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
@@ -115,17 +116,30 @@ mojom("headless_render_frame_controller") {
   ]
 }
 
+service_manifest("headless_browser_manifest_overlay") {
+  source = "lib/browser/headless_browser_manifest_overlay.json"
+}
+
+service_manifest("headless_packaged_services_manifest_overlay") {
+  source = "lib/browser/headless_packaged_services_manifest_overlay.json"
+  packaged_services =
+      [ "//components/printing/service:pdf_compositor_manifest" ]
+}
+
 grit("resources") {
   source = "lib/resources/headless_lib_resources.grd"
   outputs = [
     "grit/headless_lib_resources.h",
     "$root_gen_dir/headless/headless_lib_resources.pak",
   ]
+  source_is_generated = true
   grit_flags = [
     "-E",
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
+    ":headless_browser_manifest_overlay",
+    ":headless_packaged_services_manifest_overlay",
     ":headless_render_frame_controller_js",
     ":tab_socket_js",
   ]
@@ -393,6 +407,8 @@ component("headless") {
       "lib/renderer/headless_render_frame_controller_impl.h",
       "lib/renderer/headless_tab_socket_bindings.cc",
       "lib/renderer/headless_tab_socket_bindings.h",
+      "lib/utility/headless_content_utility_client.cc",
+      "lib/utility/headless_content_utility_client.h",
     ]
 
     deps += [
@@ -414,6 +430,8 @@ component("headless") {
       deps += [
         "//components/printing/browser",
         "//components/printing/renderer",
+        "//components/printing/service/public/cpp:factory",
+        "//components/printing/service/public/interfaces",
       ]
     }
   }
@@ -510,6 +528,8 @@ test("headless_unittests") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/utility/headless_content_utility_client.cc",
+      "lib/utility/headless_content_utility_client.h",
     ]
   }
 
@@ -535,7 +555,11 @@ test("headless_unittests") {
 
   if (enable_basic_printing) {
     sources += [ "lib/browser/headless_printing_unittest.cc" ]
-    deps += [ "//components/printing/browser" ]
+    deps += [
+      "//components/printing/browser",
+      "//components/printing/service/public/cpp:factory",
+      "//third_party/WebKit/public:blink",
+    ]
   }
 }
 
@@ -659,6 +683,8 @@ test("headless_browsertests") {
     sources += [
       "lib/browser/headless_content_browser_client.cc",
       "lib/browser/headless_content_browser_client.h",
+      "lib/utility/headless_content_utility_client.cc",
+      "lib/utility/headless_content_utility_client.h",
     ]
   }
 
@@ -688,6 +714,7 @@ test("headless_browsertests") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/browser",
+      "//components/printing/service/public/cpp:factory",
       "//pdf",
     ]
   }
@@ -761,6 +788,8 @@ if (is_win) {
         "lib/headless_content_main_delegate.cc",
         "lib/headless_content_main_delegate.h",
         "lib/headless_content_main_delegate_win.cc",
+        "lib/utility/headless_content_utility_client.cc",
+        "lib/utility/headless_content_utility_client.h",
       ]
       deps += [ "//third_party/WebKit/public:blink_headers" ]
     }
@@ -781,6 +810,8 @@ static_library("headless_shell_lib") {
     "app/shell_navigation_request.h",
     "lib/browser/headless_content_browser_client.cc",
     "lib/browser/headless_content_browser_client.h",
+    "lib/utility/headless_content_utility_client.cc",
+    "lib/utility/headless_content_utility_client.h",
     "public/headless_shell.h",
   ]
 
@@ -801,6 +832,7 @@ static_library("headless_shell_lib") {
     deps += [
       "//components/printing/browser",
       "//components/printing/renderer",
+      "//components/printing/service/public/cpp:factory",
     ]
   }
 

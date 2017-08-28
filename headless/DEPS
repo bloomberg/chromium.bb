@@ -1,6 +1,8 @@
 include_rules = [
   "+components/crash/content/app",
   "+components/crash/content/browser",
+  "+components/printing/service/public/cpp",
+  "+components/printing/service/public/interfaces",
   "+content/public/app",
   "+content/public/browser",
   "+content/public/renderer",
@@ -8,6 +10,7 @@ include_rules = [
   "+content/public/test",
   "+mojo/public",
   "+net",
+  "+printing/features",
   "+ui/base",
   "+ui/base/resource",
   "+ui/display",
