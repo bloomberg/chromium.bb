@@ -52,6 +52,7 @@ inline HTMLLinkElement::HTMLLinkElement(Document& document,
                                         bool created_by_parser)
     : HTMLElement(linkTag, document),
       link_loader_(LinkLoader::Create(this)),
+      referrer_policy_(kReferrerPolicyDefault),
       sizes_(DOMTokenList::Create(*this, HTMLNames::sizesAttr)),
       rel_list_(RelList::Create(this)),
       created_by_parser_(created_by_parser) {}
@@ -82,7 +83,6 @@ void HTMLLinkElement::ParseAttribute(
     as_ = value;
     Process();
   } else if (name == referrerpolicyAttr) {
-    referrer_policy_ = kReferrerPolicyDefault;
     if (!value.IsNull()) {
       SecurityPolicy::ReferrerPolicyFromString(
           value, kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy_);
