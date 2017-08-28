@@ -5,7 +5,6 @@
 #include "services/resource_coordinator/coordination_unit/metrics_collector.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_impl.h"
 #include "services/resource_coordinator/coordination_unit/coordination_unit_manager.h"
 #include "services/resource_coordinator/coordination_unit/frame_coordination_unit_impl.h"
@@ -25,7 +24,13 @@ namespace resource_coordinator {
 
 const size_t kDefaultMaxCPUUsageMeasurements = 30u;
 
-constexpr base::TimeDelta kMaxAudioSlientTime = base::TimeDelta::FromMinutes(1);
+// Audio is considered to have started playing if the tab has never
+// previously played audio, or has been silent for at least one minute.
+const base::TimeDelta kMaxAudioSlientTimeout = base::TimeDelta::FromMinutes(1);
+// Delay the metrics report from GRC to UMA/UKM for 5 minutes from when the main
+// frame navigation is committed.
+const base::TimeDelta kMetricsReportDelayTimeout =
+    base::TimeDelta::FromMinutes(5);
 
 const char kTabFromBackgroundedToFirstAlertFiredUMA[] =
     "TabManager.Heuristics.FromBackgroundedToFirstAlertFired";
@@ -71,6 +76,14 @@ bool MetricsCollector::ShouldObserve(
          coordination_unit->id().type == CoordinationUnitType::kWebContents;
 }
 
+void MetricsCollector::OnCoordinationUnitCreated(
+    const CoordinationUnitImpl* coordination_unit) {
+  if (coordination_unit->id().type == CoordinationUnitType::kWebContents) {
+    metrics_report_record_map_.emplace(coordination_unit->id(),
+                                       MetricsReportRecord());
+  }
+}
+
 void MetricsCollector::OnBeforeCoordinationUnitDestroyed(
     const CoordinationUnitImpl* coordination_unit) {
   if (coordination_unit->id().type == CoordinationUnitType::kFrame) {
@@ -96,31 +109,22 @@ void MetricsCollector::OnFramePropertyChanged(
     }
     auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
     // Only record metrics while it is backgrounded.
-    if (!web_contents_cu || web_contents_cu->IsVisible())
+    if (!web_contents_cu || web_contents_cu->IsVisible() ||
+        !ShouldReportMetrics(web_contents_cu)) {
       return;
+    }
     // Audio is considered to have started playing if the tab has never
     // previously played audio, or has been silent for at least one minute.
     auto now = clock_->NowTicks();
-    if (frame_data.last_audible_time + kMaxAudioSlientTime < now) {
+    if (frame_data.last_audible_time + kMaxAudioSlientTimeout < now) {
       MetricsReportRecord& record =
-          metrics_report_record_map_[web_contents_cu->id()];
+          metrics_report_record_map_.find(web_contents_cu->id())->second;
       auto duration =
           now -
           web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
-
-      if (!record.first_audible_after_backgrounded_reported) {
-        HEURISTICS_HISTOGRAM(kTabFromBackgroundedToFirstAudioStartsUMA,
-                             duration);
-        record.first_audible_after_backgrounded_reported = true;
-      }
-
-      bool is_main_frame = frame_cu->IsMainFrame();
-      ReportAudibilityUKMIfNeeded(
-          web_contents_cu,
-          is_main_frame
-              ? &record.main_frame_first_audible_after_backgrounded_reported
-              : &record.child_frame_first_audible_after_backgrounded_reported,
-          is_main_frame, duration);
+      record.first_audible.OnSignalReceived(
+          frame_cu->IsMainFrame(), duration,
+          coordination_unit_manager().ukm_recorder());
     }
   }
 }
@@ -147,8 +151,10 @@ void MetricsCollector::OnWebContentsPropertyChanged(
     }
   } else if (property_type == mojom::PropertyType::kUKMSourceId) {
     ukm::SourceId ukm_source_id = value;
-
     UpdateUkmSourceIdForWebContents(web_contents_cu_id, ukm_source_id);
+    MetricsReportRecord& record =
+        metrics_report_record_map_.find(web_contents_cu_id)->second;
+    record.UpdateUKMSourceID(ukm_source_id);
   }
 }
 
@@ -158,37 +164,33 @@ void MetricsCollector::OnFrameEventReceived(
   if (event == mojom::Event::kAlertFired) {
     auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
     // Only record metrics while it is backgrounded.
-    if (!web_contents_cu || web_contents_cu->IsVisible())
+    if (!web_contents_cu || web_contents_cu->IsVisible() ||
+        !ShouldReportMetrics(web_contents_cu)) {
       return;
-    auto now = clock_->NowTicks();
-    MetricsReportRecord& record =
-        metrics_report_record_map_[web_contents_cu->id()];
-    if (!record.first_alert_fired_after_backgrounded_reported) {
-      const WebContentsData& web_contents_data =
-          web_contents_data_map_[web_contents_cu->id()];
-      HEURISTICS_HISTOGRAM(kTabFromBackgroundedToFirstAlertFiredUMA,
-                           now - web_contents_data.last_invisible_time);
-      record.first_alert_fired_after_backgrounded_reported = true;
     }
+    auto duration =
+        clock_->NowTicks() -
+        web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
+    MetricsReportRecord& record =
+        metrics_report_record_map_.find(web_contents_cu->id())->second;
+    record.first_alert_fired.OnSignalReceived(
+        frame_cu->IsMainFrame(), duration,
+        coordination_unit_manager().ukm_recorder());
   } else if (event == mojom::Event::kNonPersistentNotificationCreated) {
     auto* web_contents_cu = frame_cu->GetWebContentsCoordinationUnit();
     // Only record metrics while it is backgrounded.
-    if (!web_contents_cu || web_contents_cu->IsVisible())
+    if (!web_contents_cu || web_contents_cu->IsVisible() ||
+        !ShouldReportMetrics(web_contents_cu)) {
       return;
-    auto now = clock_->NowTicks();
-    MetricsReportRecord& record =
-        metrics_report_record_map_[web_contents_cu->id()];
-    if (!record
-             .first_non_persistent_notification_created_after_backgrounded_reported) {
-      const WebContentsData web_contents_data =
-          web_contents_data_map_[web_contents_cu->id()];
-      HEURISTICS_HISTOGRAM(
-          kTabFromBackgroundedToFirstNonPersistentNotificationCreatedUMA,
-          now - web_contents_data.last_invisible_time);
-      record
-          .first_non_persistent_notification_created_after_backgrounded_reported =
-          true;
     }
+    auto duration =
+        clock_->NowTicks() -
+        web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
+    MetricsReportRecord& record =
+        metrics_report_record_map_.find(web_contents_cu->id())->second;
+    record.first_non_persistent_notification_created.OnSignalReceived(
+        frame_cu->IsMainFrame(), duration,
+        coordination_unit_manager().ukm_recorder());
   }
 }
 
@@ -197,33 +199,37 @@ void MetricsCollector::OnWebContentsEventReceived(
     const mojom::Event event) {
   if (event == mojom::Event::kTitleUpdated) {
     // Only record metrics while it is backgrounded.
-    if (web_contents_cu->IsVisible())
+    if (web_contents_cu->IsVisible() || !ShouldReportMetrics(web_contents_cu))
       return;
-    auto now = clock_->NowTicks();
+    auto duration =
+        clock_->NowTicks() -
+        web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
     MetricsReportRecord& record =
-        metrics_report_record_map_[web_contents_cu->id()];
-    if (!record.first_title_updated_after_backgrounded_reported) {
-      const WebContentsData& web_contents_data =
-          web_contents_data_map_[web_contents_cu->id()];
-      HEURISTICS_HISTOGRAM(kTabFromBackgroundedToFirstTitleUpdatedUMA,
-                           now - web_contents_data.last_invisible_time);
-      record.first_title_updated_after_backgrounded_reported = true;
-    }
+        metrics_report_record_map_.find(web_contents_cu->id())->second;
+    record.first_title_updated.OnSignalReceived(
+        true, duration, coordination_unit_manager().ukm_recorder());
   } else if (event == mojom::Event::kFaviconUpdated) {
     // Only record metrics while it is backgrounded.
-    if (web_contents_cu->IsVisible())
+    if (web_contents_cu->IsVisible() || !ShouldReportMetrics(web_contents_cu))
       return;
-    auto now = clock_->NowTicks();
+    auto duration =
+        clock_->NowTicks() -
+        web_contents_data_map_[web_contents_cu->id()].last_invisible_time;
     MetricsReportRecord& record =
-        metrics_report_record_map_[web_contents_cu->id()];
-    if (!record.first_favicon_updated_after_backgrounded_reported) {
-      const WebContentsData& web_contents_data =
-          web_contents_data_map_[web_contents_cu->id()];
-      HEURISTICS_HISTOGRAM(kTabFromBackgroundedToFirstFaviconUpdatedUMA,
-                           now - web_contents_data.last_invisible_time);
-      record.first_favicon_updated_after_backgrounded_reported = true;
-    }
+        metrics_report_record_map_.find(web_contents_cu->id())->second;
+    record.first_favicon_updated.OnSignalReceived(
+        true, duration, coordination_unit_manager().ukm_recorder());
+  } else if (event == mojom::Event::kNavigationCommitted) {
+    web_contents_data_map_[web_contents_cu->id()].navigation_finished_time =
+        clock_->NowTicks();
   }
+}
+
+bool MetricsCollector::ShouldReportMetrics(
+    const WebContentsCoordinationUnitImpl* web_contents_cu) {
+  return clock_->NowTicks() - web_contents_data_map_[web_contents_cu->id()]
+                                  .navigation_finished_time >
+         kMetricsReportDelayTimeout;
 }
 
 bool MetricsCollector::IsCollectingCPUUsageForUkm(
@@ -249,25 +255,6 @@ void MetricsCollector::RecordCPUUsageForUkm(
       .Record(coordination_unit_manager().ukm_recorder());
 }
 
-void MetricsCollector::ReportAudibilityUKMIfNeeded(
-    const WebContentsCoordinationUnitImpl* web_contents_cu,
-    bool* reported,
-    bool is_main_frame,
-    base::TimeDelta duration) {
-  if (*reported)
-    return;
-  int64_t ukm_source_id = -1;
-  if (!web_contents_cu->GetProperty(mojom::PropertyType::kUKMSourceId,
-                                    &ukm_source_id)) {
-    return;
-  }
-  ukm::builders::TabManager_Background_FirstAudioStarts(ukm_source_id)
-      .SetIsMainFrame(is_main_frame)
-      .SetTimeFromBackgrounded(duration.InMilliseconds())
-      .Record(coordination_unit_manager().ukm_recorder());
-  *reported = true;
-}
-
 void MetricsCollector::UpdateUkmSourceIdForWebContents(
     const CoordinationUnitID& web_contents_cu_id,
     ukm::SourceId ukm_source_id) {
@@ -290,30 +277,31 @@ void MetricsCollector::UpdateWithFieldTrialParams() {
 }
 
 void MetricsCollector::ResetMetricsReportRecord(CoordinationUnitID cu_id) {
-  auto metrics_report_record_iter = metrics_report_record_map_.find(cu_id);
-  if (metrics_report_record_iter == metrics_report_record_map_.end())
-    return;
-  metrics_report_record_iter->second.Reset();
+  DCHECK(metrics_report_record_map_.find(cu_id) !=
+         metrics_report_record_map_.end());
+  metrics_report_record_map_.find(cu_id)->second.Reset();
 }
 
-MetricsCollector::MetricsReportRecord::MetricsReportRecord()
-    : first_alert_fired_after_backgrounded_reported(false),
-      first_audible_after_backgrounded_reported(false),
-      first_favicon_updated_after_backgrounded_reported(false),
-      first_non_persistent_notification_created_after_backgrounded_reported(
-          false),
-      first_title_updated_after_backgrounded_reported(false),
-      main_frame_first_audible_after_backgrounded_reported(false),
-      child_frame_first_audible_after_backgrounded_reported(false) {}
+MetricsCollector::MetricsReportRecord::MetricsReportRecord() = default;
+
+MetricsCollector::MetricsReportRecord::MetricsReportRecord(
+    const MetricsReportRecord& other) = default;
+
+void MetricsCollector::MetricsReportRecord::UpdateUKMSourceID(
+    int64_t ukm_source_id) {
+  first_alert_fired.SetUKMSourceID(ukm_source_id);
+  first_audible.SetUKMSourceID(ukm_source_id);
+  first_favicon_updated.SetUKMSourceID(ukm_source_id);
+  first_non_persistent_notification_created.SetUKMSourceID(ukm_source_id);
+  first_title_updated.SetUKMSourceID(ukm_source_id);
+}
 
 void MetricsCollector::MetricsReportRecord::Reset() {
-  first_alert_fired_after_backgrounded_reported = false;
-  first_audible_after_backgrounded_reported = false;
-  first_favicon_updated_after_backgrounded_reported = false;
-  first_non_persistent_notification_created_after_backgrounded_reported = false;
-  first_title_updated_after_backgrounded_reported = false;
-  main_frame_first_audible_after_backgrounded_reported = false;
-  child_frame_first_audible_after_backgrounded_reported = false;
+  first_alert_fired.Reset();
+  first_audible.Reset();
+  first_favicon_updated.Reset();
+  first_non_persistent_notification_created.Reset();
+  first_title_updated.Reset();
 }
 
 }  // namespace resource_coordinator
