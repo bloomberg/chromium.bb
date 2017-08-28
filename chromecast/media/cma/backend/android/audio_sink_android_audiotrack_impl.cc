@@ -157,11 +157,6 @@ void AudioSinkAndroidAudioTrackImpl::PreventDelegateCalls() {
   weak_factory_.InvalidateWeakPtrs();
 }
 
-// static
-bool AudioSinkAndroidAudioTrackImpl::RegisterJni(JNIEnv* env) {
-  return RegisterNativesImpl(env);
-}
-
 void AudioSinkAndroidAudioTrackImpl::CacheDirectBufferAddress(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
