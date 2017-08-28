@@ -1165,10 +1165,6 @@ void FrameSelection::ClearDocumentCachedRange() {
   selection_editor_->ClearDocumentCachedRange();
 }
 
-std::pair<int, int> FrameSelection::LayoutSelectionStartEnd() {
-  return layout_selection_->SelectionStartEnd();
-}
-
 base::Optional<int> FrameSelection::LayoutSelectionStart() const {
   return layout_selection_->SelectionStart();
 }

@@ -307,13 +307,6 @@ static void SetShouldInvalidateSelection(const SelectionMarkingRange& new_range,
     layout_block->SetShouldInvalidateSelection();
 }
 
-std::pair<int, int> LayoutSelection::SelectionStartEnd() {
-  DCHECK(!HasPendingSelection());
-  if (paint_range_.IsNull())
-    return std::make_pair(-1, -1);
-  return std::make_pair(paint_range_.StartOffset(), paint_range_.EndOffset());
-}
-
 base::Optional<int> LayoutSelection::SelectionStart() const {
   DCHECK(!HasPendingSelection());
   if (paint_range_.IsNull())

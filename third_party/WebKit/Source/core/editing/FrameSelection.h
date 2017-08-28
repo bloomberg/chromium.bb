@@ -219,7 +219,6 @@ class CORE_EXPORT FrameSelection final
 
   FrameCaret& FrameCaretForTesting() const { return *frame_caret_; }
 
-  std::pair<int, int> LayoutSelectionStartEnd();
   base::Optional<int> LayoutSelectionStart() const;
   base::Optional<int> LayoutSelectionEnd() const;
   void ClearLayoutSelection();

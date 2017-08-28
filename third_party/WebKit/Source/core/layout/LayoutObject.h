@@ -1518,8 +1518,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool WillRenderImage() final;
   bool GetImageAnimationPolicy(ImageAnimationPolicy&) final;
 
-  std::pair<int, int> SelectionStartEnd() const;
-
   void Remove() {
     if (Parent())
       Parent()->RemoveChild(this);
