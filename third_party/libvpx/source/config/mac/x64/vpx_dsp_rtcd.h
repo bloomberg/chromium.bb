@@ -3695,13 +3695,35 @@ void vpx_highbd_idct32x32_1024_add_c(const tran_low_t* input,
                                      uint16_t* dest,
                                      int stride,
                                      int bd);
-#define vpx_highbd_idct32x32_1024_add vpx_highbd_idct32x32_1024_add_c
+void vpx_highbd_idct32x32_1024_add_sse2(const tran_low_t* input,
+                                        uint16_t* dest,
+                                        int stride,
+                                        int bd);
+void vpx_highbd_idct32x32_1024_add_sse4_1(const tran_low_t* input,
+                                          uint16_t* dest,
+                                          int stride,
+                                          int bd);
+RTCD_EXTERN void (*vpx_highbd_idct32x32_1024_add)(const tran_low_t* input,
+                                                  uint16_t* dest,
+                                                  int stride,
+                                                  int bd);
 
 void vpx_highbd_idct32x32_135_add_c(const tran_low_t* input,
                                     uint16_t* dest,
                                     int stride,
                                     int bd);
-#define vpx_highbd_idct32x32_135_add vpx_highbd_idct32x32_135_add_c
+void vpx_highbd_idct32x32_135_add_sse2(const tran_low_t* input,
+                                       uint16_t* dest,
+                                       int stride,
+                                       int bd);
+void vpx_highbd_idct32x32_135_add_sse4_1(const tran_low_t* input,
+                                         uint16_t* dest,
+                                         int stride,
+                                         int bd);
+RTCD_EXTERN void (*vpx_highbd_idct32x32_135_add)(const tran_low_t* input,
+                                                 uint16_t* dest,
+                                                 int stride,
+                                                 int bd);
 
 void vpx_highbd_idct32x32_1_add_c(const tran_low_t* input,
                                   uint16_t* dest,
@@ -3717,7 +3739,18 @@ void vpx_highbd_idct32x32_34_add_c(const tran_low_t* input,
                                    uint16_t* dest,
                                    int stride,
                                    int bd);
-#define vpx_highbd_idct32x32_34_add vpx_highbd_idct32x32_34_add_c
+void vpx_highbd_idct32x32_34_add_sse2(const tran_low_t* input,
+                                      uint16_t* dest,
+                                      int stride,
+                                      int bd);
+void vpx_highbd_idct32x32_34_add_sse4_1(const tran_low_t* input,
+                                        uint16_t* dest,
+                                        int stride,
+                                        int bd);
+RTCD_EXTERN void (*vpx_highbd_idct32x32_34_add)(const tran_low_t* input,
+                                                uint16_t* dest,
+                                                int stride,
+                                                int bd);
 
 void vpx_highbd_idct4x4_16_add_c(const tran_low_t* input,
                                  uint16_t* dest,
@@ -7218,6 +7251,15 @@ static void setup_rtcd_internal(void) {
   vpx_highbd_idct16x16_38_add = vpx_highbd_idct16x16_38_add_sse2;
   if (flags & HAS_SSE4_1)
     vpx_highbd_idct16x16_38_add = vpx_highbd_idct16x16_38_add_sse4_1;
+  vpx_highbd_idct32x32_1024_add = vpx_highbd_idct32x32_1024_add_sse2;
+  if (flags & HAS_SSE4_1)
+    vpx_highbd_idct32x32_1024_add = vpx_highbd_idct32x32_1024_add_sse4_1;
+  vpx_highbd_idct32x32_135_add = vpx_highbd_idct32x32_135_add_sse2;
+  if (flags & HAS_SSE4_1)
+    vpx_highbd_idct32x32_135_add = vpx_highbd_idct32x32_135_add_sse4_1;
+  vpx_highbd_idct32x32_34_add = vpx_highbd_idct32x32_34_add_sse2;
+  if (flags & HAS_SSE4_1)
+    vpx_highbd_idct32x32_34_add = vpx_highbd_idct32x32_34_add_sse4_1;
   vpx_highbd_idct4x4_16_add = vpx_highbd_idct4x4_16_add_sse2;
   if (flags & HAS_SSE4_1)
     vpx_highbd_idct4x4_16_add = vpx_highbd_idct4x4_16_add_sse4_1;
