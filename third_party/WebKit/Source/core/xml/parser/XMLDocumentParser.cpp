@@ -1393,9 +1393,9 @@ static size_t ConvertUTF16EntityToUTF8(const UChar* utf16_entity,
   if (conversion_result != WTF::Unicode::kConversionOK)
     return 0;
 
+  DCHECK_GT(target, original_target);
   // Even though we must pass the length, libxml expects the entity string to be
   // null terminated.
-  DCHECK_GT(target, original_target + 1);
   *target = '\0';
   return target - original_target;
 }
