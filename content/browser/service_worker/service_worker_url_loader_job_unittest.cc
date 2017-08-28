@@ -262,10 +262,10 @@ class ServiceWorkerURLLoaderJobTest
     // Start a ServiceWorkerURLLoaderJob. It should return a
     // StartLoaderCallback.
     StartLoaderCallback callback;
-    auto job = base::MakeUnique<ServiceWorkerURLLoaderJob>(
+    job_ = base::MakeUnique<ServiceWorkerURLLoaderJob>(
         base::BindOnce(&ReceiveStartLoaderCallback, &callback), this, request,
         GetBlobStorageContext());
-    job->ForwardToServiceWorker();
+    job_->ForwardToServiceWorker();
     base::RunLoop().RunUntilIdle();
     if (!callback)
       return JobResult::kDidNotHandleRequest;
@@ -318,6 +318,7 @@ class ServiceWorkerURLLoaderJobTest
   storage::BlobStorageContext blob_context_;
   TestURLLoaderClient client_;
   bool was_main_resource_load_failed_called_ = false;
+  std::unique_ptr<ServiceWorkerURLLoaderJob> job_;
 };
 
 TEST_F(ServiceWorkerURLLoaderJobTest, Basic) {
@@ -383,6 +384,10 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse) {
   EXPECT_EQ(200, info.headers->response_code());
   ExpectFetchedViaServiceWorker(info);
 
+  // TODO(falken): This should be true since the worker is still streaming the
+  // response body. See https://crbug.com/758455
+  EXPECT_FALSE(version_->HasWork());
+
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
   MojoResult mojo_result = data_pipe.producer_handle->WriteData(
@@ -434,6 +439,53 @@ TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponse_Abort) {
   EXPECT_TRUE(mojo::common::BlockingCopyToString(
       client_.response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
+}
+
+// Test when the job is cancelled while a stream response is being written.
+TEST_F(ServiceWorkerURLLoaderJobTest, StreamResponseAndCancel) {
+  // Construct the Stream to respond with.
+  const char kResponseBody[] = "Here is sample text for the Stream.";
+  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::DataPipe data_pipe;
+  helper_->RespondWithStream(mojo::MakeRequest(&stream_callback),
+                             std::move(data_pipe.consumer_handle));
+
+  // Perform the request.
+  JobResult result = TestRequest();
+  EXPECT_EQ(JobResult::kHandledRequest, result);
+  const ResourceResponseHead& info = client_.response_head();
+  EXPECT_EQ(200, info.headers->response_code());
+  ExpectFetchedViaServiceWorker(info);
+
+  // Start writing the body stream, then cancel the job before finishing.
+  uint32_t written_bytes = sizeof(kResponseBody) - 1;
+  MojoResult mojo_result = data_pipe.producer_handle->WriteData(
+      kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  ASSERT_EQ(MOJO_RESULT_OK, mojo_result);
+  EXPECT_EQ(sizeof(kResponseBody) - 1, written_bytes);
+  EXPECT_TRUE(data_pipe.producer_handle.is_valid());
+  EXPECT_FALSE(job_->WasCanceled());
+  // TODO(falken): This should be true since the worker is still streaming the
+  // response body. See https://crbug.com/758455
+  EXPECT_FALSE(version_->HasWork());
+  job_->Cancel();
+  EXPECT_TRUE(job_->WasCanceled());
+  EXPECT_FALSE(version_->HasWork());
+
+  // Although ServiceworkerURLLoaderJob resets its URLLoaderClient pointer in
+  // Cancel(), the URLLoaderClient still exists. In this test, it is |client_|
+  // which owns the data pipe, so it's still valid to write data to it.
+  mojo_result = data_pipe.producer_handle->WriteData(
+      kResponseBody, &written_bytes, MOJO_WRITE_DATA_FLAG_NONE);
+  // TODO(falken): This should probably be an error.
+  EXPECT_EQ(MOJO_RESULT_OK, mojo_result);
+
+  stream_callback->OnAborted();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(data_pipe.consumer_handle.is_valid());
+  // TODO(falken): This should be an error, see https://crbug.com/758455
+  EXPECT_EQ(net::OK, client_.completion_status().error_code);
 }
 
 // Test when the service worker responds with network fallback.
