@@ -150,8 +150,7 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   Optional<IntRect> crop_rect,
-                                  const ImageBitmapOptions&,
-                                  ExceptionState&) override;
+                                  const ImageBitmapOptions&) override;
 
   void Trace(Visitor*);
 

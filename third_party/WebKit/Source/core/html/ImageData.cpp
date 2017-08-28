@@ -28,9 +28,8 @@
 
 #include "core/html/ImageData.h"
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Uint8ClampedArray.h"
-#include "core/dom/ExceptionCode.h"
+#include "core/dom/DOMException.h"
 #include "core/imagebitmap/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -463,22 +462,13 @@ ImageData* ImageData::CropRect(const IntRect& crop_rect, bool flip_y) {
 ScriptPromise ImageData::CreateImageBitmap(ScriptState* script_state,
                                            EventTarget& event_target,
                                            Optional<IntRect> crop_rect,
-                                           const ImageBitmapOptions& options,
-                                           ExceptionState& exception_state) {
-  if ((crop_rect &&
-       !ImageBitmap::IsSourceSizeValid(crop_rect->Width(), crop_rect->Height(),
-                                       exception_state)) ||
-      !ImageBitmap::IsSourceSizeValid(BitmapSourceSize().Width(),
-                                      BitmapSourceSize().Height(),
-                                      exception_state))
-    return ScriptPromise();
+                                           const ImageBitmapOptions& options) {
   if (data()->BufferBase()->IsNeutered()) {
-    exception_state.ThrowDOMException(kInvalidStateError,
-                                      "The source data has been neutered.");
-    return ScriptPromise();
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kInvalidStateError,
+                             "The source data has been detached."));
   }
-  if (!ImageBitmap::IsResizeOptionValid(options, exception_state))
-    return ScriptPromise();
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, ImageBitmap::Create(this, crop_rect, options));
 }

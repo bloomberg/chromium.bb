@@ -354,30 +354,6 @@ sk_sp<SkImage> ImageBitmap::GetSkImageFromDecoder(
   return frame->FinalizePixelsAndGetImage();
 }
 
-bool ImageBitmap::IsResizeOptionValid(const ImageBitmapOptions& options,
-                                      ExceptionState& exception_state) {
-  if ((options.hasResizeWidth() && options.resizeWidth() == 0) ||
-      (options.hasResizeHeight() && options.resizeHeight() == 0)) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        "The resizeWidth or/and resizeHeight is equal to 0.");
-    return false;
-  }
-  return true;
-}
-
-bool ImageBitmap::IsSourceSizeValid(int source_width,
-                                    int source_height,
-                                    ExceptionState& exception_state) {
-  if (!source_width || !source_height) {
-    exception_state.ThrowDOMException(
-        kIndexSizeError, String::Format("The source %s provided is 0.",
-                                        source_width ? "height" : "width"));
-    return false;
-  }
-  return true;
-}
-
 static RefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
     RefPtr<Image>&& image,
     ImageBitmap::ParsedOptions& parsed_options,
@@ -515,7 +491,6 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video,
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
                          Optional<IntRect> crop_rect,
                          const ImageBitmapOptions& options) {
-  DCHECK(canvas->IsPaintable());
   SourceImageStatus status;
   RefPtr<Image> image_input = canvas->GetSourceImageForCanvas(
       &status, kPreferAcceleration, kSnapshotReasonCreateImageBitmap,
@@ -950,17 +925,11 @@ IntSize ImageBitmap::Size() const {
   return IntSize(image_->width(), image_->height());
 }
 
-ScriptPromise ImageBitmap::CreateImageBitmap(ScriptState* script_state,
-                                             EventTarget& event_target,
-                                             Optional<IntRect> crop_rect,
-                                             const ImageBitmapOptions& options,
-                                             ExceptionState& exception_state) {
-  if ((crop_rect && !IsSourceSizeValid(crop_rect->Width(), crop_rect->Height(),
-                                       exception_state)) ||
-      !IsSourceSizeValid(width(), height(), exception_state))
-    return ScriptPromise();
-  if (!IsResizeOptionValid(options, exception_state))
-    return ScriptPromise();
+ScriptPromise ImageBitmap::CreateImageBitmap(
+    ScriptState* script_state,
+    EventTarget& event_target,
+    Optional<IntRect> crop_rect,
+    const ImageBitmapOptions& options) {
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, Create(this, crop_rect, options));
 }
