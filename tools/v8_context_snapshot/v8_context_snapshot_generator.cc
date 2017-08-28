@@ -65,5 +65,9 @@ int main(int argc, char** argv) {
 
   delete[] blob.data;
 
-  return 0;
+  // v8::SnapshotCreator used in WebV8ContextSnapshot makes it complex how to
+  // manage lifetime of v8::Isolate, gin::IsolateHolder, and
+  // blink::V8PerIsolateData. Now we complete all works at this point, and can
+  // exit without releasing all those instances correctly.
+  _exit(0);
 }
