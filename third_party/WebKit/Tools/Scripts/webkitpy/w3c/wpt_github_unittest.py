@@ -147,3 +147,34 @@ class WPTGitHubTest(unittest.TestCase):
             MockHost(), position='refs/heads/master@{#10}')
         pull_request = self.wpt_github.pr_for_chromium_commit(chromium_commit)
         self.assertEqual(pull_request.number, 1)
+
+    def test_pr_for_chromium_commit_multiple_change_ids(self):
+        self.wpt_github.all_pull_requests = lambda: [
+            PullRequest('PR1', 1, 'body\nChange-Id: I00c0ffee\nChange-Id: I00decade', 'open', []),
+        ]
+
+        chromium_commit = MockChromiumCommit(
+            MockHost(), change_id='I00c0ffee', position='refs/heads/master@{#10}')
+        pull_request = self.wpt_github.pr_for_chromium_commit(chromium_commit)
+        self.assertEqual(pull_request.number, 1)
+
+        chromium_commit = MockChromiumCommit(
+            MockHost(), change_id='I00decade', position='refs/heads/master@{#33}')
+        pull_request = self.wpt_github.pr_for_chromium_commit(chromium_commit)
+        self.assertEqual(pull_request.number, 1)
+
+    def test_pr_for_chromium_commit_multiple_commit_positions(self):
+        self.wpt_github.all_pull_requests = lambda: [
+            PullRequest('PR1', 1, 'body\nCr-Commit-Position: refs/heads/master@{#10}\n'
+                        'Cr-Commit-Position: refs/heads/master@{#33}', 'open', []),
+        ]
+
+        chromium_commit = MockChromiumCommit(
+            MockHost(), position='refs/heads/master@{#10}')
+        pull_request = self.wpt_github.pr_for_chromium_commit(chromium_commit)
+        self.assertEqual(pull_request.number, 1)
+
+        chromium_commit = MockChromiumCommit(
+            MockHost(), position='refs/heads/master@{#33}')
+        pull_request = self.wpt_github.pr_for_chromium_commit(chromium_commit)
+        self.assertEqual(pull_request.number, 1)
