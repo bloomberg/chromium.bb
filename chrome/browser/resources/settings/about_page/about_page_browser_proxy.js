@@ -48,6 +48,7 @@ var AboutPageUpdateInfo;
  */
 var BrowserChannel = {
   BETA: 'beta-channel',
+  CANARY: 'canary-channel',
   DEV: 'dev-channel',
   STABLE: 'stable-channel',
 };
@@ -102,6 +103,8 @@ cr.define('settings', function() {
     switch (channel) {
       case BrowserChannel.BETA:
         return 'aboutChannelBeta';
+      case BrowserChannel.CANARY:
+        return 'aboutChannelCanary';
       case BrowserChannel.DEV:
         return 'aboutChannelDev';
       case BrowserChannel.STABLE:
@@ -120,6 +123,7 @@ cr.define('settings', function() {
   function isTargetChannelMoreStable(currentChannel, targetChannel) {
     // List of channels in increasing stability order.
     var channelList = [
+      BrowserChannel.CANARY,
       BrowserChannel.DEV,
       BrowserChannel.BETA,
       BrowserChannel.STABLE,

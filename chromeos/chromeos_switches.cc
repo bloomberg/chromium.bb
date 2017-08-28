@@ -202,9 +202,6 @@ const char kDisableMultiDisplayLayout[] = "disable-multi-display-layout";
 const char kDisableNetworkPortalNotification[] =
     "disable-network-portal-notification";
 
-// Disables new channel switcher UI.
-const char kDisableNewChannelSwitcherUI[] = "disable-new-channel-switcher-ui";
-
 // Disables the new Korean IME in chrome://settings/languages.
 const char kDisableNewKoreanIme[] = "disable-new-korean-ime";
 

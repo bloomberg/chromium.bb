@@ -5,12 +5,6 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_HELP_HELP_UTILS_CHROMEOS_H_
 #define CHROME_BROWSER_UI_WEBUI_HELP_HELP_UTILS_CHROMEOS_H_
 
-#include "base/strings/string16.h"
-
-namespace chromeos {
-class NetworkState;
-}
-
 namespace help_utils_chromeos {
 
 // Returns true if updates over cellular networks are allowed. If |interactive|
@@ -19,9 +13,6 @@ namespace help_utils_chromeos {
 // updates over cellular may be allowed by default for the device type, or by
 // policy.
 bool IsUpdateOverCellularAllowed(bool interactive);
-
-// Returns localized name for the connection |type|.
-base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network);
 
 }  // namespace help_utils_chromeos
 
