@@ -43,10 +43,30 @@ CWV_EXPORT
 // Whether or not this web view is loading a page. KVO compliant.
 @property(nonatomic, readonly, getter=isLoading) BOOL loading;
 
-// The URL displayed in the url bar. KVO Compliant.
+// The URL displayed in the URL bar. KVO Compliant.
+//
+// You should use |lastCommittedURL| instead for most of purposes other than
+// rendering the URL bar.
+//
+// |visibleURL| and |lastCommittedURL| are the same in most cases, but with
+// these exceptions:
+//
+// - The request was made by -loadRequest: method.
+//   |visibleURL| changes to the requested URL immediately when -loadRequest:
+//   was called. |lastCommittedURL| changes only after the navigation is
+//   committed (i.e., the server started to respond with data and the displayed
+//   page has actually changed.)
+//
+// - It has navigated to a page with a bad SSL certificate.
+//   (not implemented for CWVWebView)
+//   |visibleURL| is the bad cert page URL. |lastCommittedURL| is the previous
+//   page URL.
 @property(nonatomic, readonly) NSURL* visibleURL;
 
 // The URL of the current document. KVO Compliant.
+//
+// See the comment of |visibleURL| above for the difference between |visibleURL|
+// and |lastCommittedURL|.
 @property(nonatomic, readonly) NSURL* lastCommittedURL;
 
 // The current page title. KVO compliant.
