@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/features/feature.h"
 
 namespace base {
 class ListValue;
@@ -75,6 +77,11 @@ class ExtensionBindingsSystem {
   // availability depends on the installed extensions and the active URL (in the
   // case of extensions communicating with external websites).
   static bool IsRuntimeAvailableToContext(ScriptContext* context);
+
+  // Logs the amount of time taken to update the bindings for a given context
+  // (i.e., UpdateBindingsForContext()).
+  static void LogUpdateBindingsForContextTime(Feature::Context context_type,
+                                              base::TimeDelta elapsed);
 
   // The APIs that could potentially be available to webpage-like contexts.
   // This is the list of possible features; most web pages will not have access

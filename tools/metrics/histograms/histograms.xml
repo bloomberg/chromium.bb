@@ -20617,6 +20617,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.Bindings.NativeBindingCreationTime"
+    units="microseconds">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The elapsed time to create a new full instance of an extension API's
+    bindings using native bindings.
+  </summary>
+</histogram>
+
+<histogram name="Extensions.Bindings.UpdateBindingsForContextTime"
+    units="microseconds">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The elapsed time to update the bindings for a new or existing v8::Context.
+    The suffix indicates which type of context the bindings are for.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.BookmarkAppLaunchContainer"
     enum="AppLaunchContainer">
   <owner>benwells@chromium.org</owner>
@@ -94254,6 +94272,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Expected Queueing Time less than 450ms."/>
   <affected-histogram
       name="RendererScheduler.QueueingDurationWhenExpectedQueueingTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="ExtensionContextType" separator=".">
+  <suffix name="BlessedExtensionContext" label="Blessed Extension Context"/>
+  <suffix name="BlessedWebPageContext" label="Blessed Web Page Context"/>
+  <suffix name="ContentScriptContext" label="Content Script Context"/>
+  <suffix name="LockScreenExtensionContext"
+      label="Lock Screen Extension Context"/>
+  <suffix name="WebPageContext" label="(unblessed) Web Page Context"/>
+  <suffix name="ServiceWorkerContext" label="Service Worker Context"/>
+  <suffix name="UnblessedExtensionContext" label="Unblessed Extension Context"/>
+  <suffix name="WebUIContext" label="WebUI Context"/>
+  <affected-histogram name="Extensions.Bindings.UpdateBindingsForContextTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExtensionFunctionExecutionTime" separator=".">
