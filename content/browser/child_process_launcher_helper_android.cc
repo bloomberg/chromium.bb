@@ -9,6 +9,7 @@
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
+#include "content/browser/child_process_launcher.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
 #include "content/browser/posix_file_descriptor_info_impl.h"
@@ -170,14 +171,12 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
 
 void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
-    bool background,
-    bool boost_for_pending_views,
-    ChildProcessImportance importance) {
+    const ChildProcessLauncherPriority& priority) {
   JNIEnv* env = AttachCurrentThread();
   DCHECK(env);
   return Java_ChildProcessLauncherHelper_setPriority(
-      env, java_peer_, process.Handle(), !background, boost_for_pending_views,
-      static_cast<jint>(importance));
+      env, java_peer_, process.Handle(), !priority.background,
+      priority.boost_for_pending_views, static_cast<jint>(priority.importance));
 }
 
 // static

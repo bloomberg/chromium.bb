@@ -15,6 +15,7 @@
 #include "base/process/kill.h"
 #include "base/process/process_handle.h"
 #include "base/supports_user_data.h"
+#include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -48,8 +49,11 @@ class RenderProcessHostObserver;
 class RenderWidgetHost;
 class RendererAudioOutputStreamFactoryContext;
 class StoragePartition;
-enum class ChildProcessImportance;
 struct GlobalRequestID;
+
+#if defined(OS_ANDROID)
+enum class ChildProcessImportance;
+#endif
 
 namespace mojom {
 class Renderer;
@@ -229,9 +233,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void AddWidget(RenderWidgetHost* widget) = 0;
   virtual void RemoveWidget(RenderWidgetHost* widget) = 0;
 
+#if defined(OS_ANDROID)
   // Called by an already added widget when its importance changes.
   virtual void UpdateWidgetImportance(ChildProcessImportance old_value,
                                       ChildProcessImportance new_value) = 0;
+#endif
 
   // Sets a flag indicating that the process can be abnormally terminated.
   virtual void SetSuddenTerminationAllowed(bool allowed) = 0;

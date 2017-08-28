@@ -22,7 +22,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
-#include "content/browser/child_process_importance.h"
 #include "content/browser/child_process_launcher.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/renderer_host/frame_sink_provider_impl.h"
@@ -56,6 +55,7 @@
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/synchronous_compositor_browser_filter.h"
+#include "content/public/browser/android/child_process_importance.h"
 #endif
 
 namespace base {
@@ -174,8 +174,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RemovePendingView() override;
   void AddWidget(RenderWidgetHost* widget) override;
   void RemoveWidget(RenderWidgetHost* widget) override;
+#if defined(OS_ANDROID)
   void UpdateWidgetImportance(ChildProcessImportance old_value,
                               ChildProcessImportance new_value) override;
+#endif
   void SetSuddenTerminationAllowed(bool enabled) override;
   bool SuddenTerminationAllowed() const override;
   IPC::ChannelProxy* GetChannel() override;
@@ -384,8 +386,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // globally-used spare RenderProcessHost at any time.
   static RenderProcessHost* GetSpareRenderProcessHostForTesting();
 
+#if defined(OS_ANDROID)
   // Test-only method to get the importance of this process.
   ChildProcessImportance GetWidgetImportanceForTesting();
+#endif
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
@@ -482,8 +486,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // change.
   void UpdateProcessPriority();
 
+#if defined(OS_ANDROID)
   // Helper method to compute importance from |widget_importance_counts_|.
   ChildProcessImportance ComputeEffectiveImportance();
+#endif
 
   // Creates a PersistentMemoryAllocator and shares it with the renderer
   // process for it to store histograms from that process. The allocator is
@@ -597,26 +603,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // backgrounded.
   int32_t visible_widgets_;
 
+#if defined(OS_ANDROID)
   // Track count of number of widgets with each possible ChildProcessImportance
   // value.
   int32_t widget_importance_counts_[static_cast<size_t>(
       ChildProcessImportance::COUNT)] = {0};
 
-  // Highest importance of any widget in the process. Note this is the
-  // importance last passed to |child_process_launcher_|, which means this may
-  // be out of date in comparison to |widget_importance_counts_|.
-  ChildProcessImportance effective_importance_ = ChildProcessImportance::NORMAL;
+#endif
 
   // The set of widgets in this RenderProcessHostImpl.
   std::set<RenderWidgetHostImpl*> widgets_;
 
-  // Whether this process currently has backgrounded priority. Tracked so that
-  // UpdateProcessPriority() can avoid redundantly setting the priority.
-  bool is_process_backgrounded_;
-  // Same as |pending_views_| but keep this in sync with value passed to
-  // |child_process_launcher_|, so need a separate state. This is used to
-  // compute process priority on some platforms.
-  bool boost_priority_for_pending_views_;
+  ChildProcessLauncherPriority priority_;
 
   // Used to allow a RenderWidgetHost to intercept various messages on the
   // IO thread.

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/process/launch.h"
+#include "content/browser/child_process_launcher.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
 namespace content {
@@ -13,9 +14,7 @@ namespace internal {
 
 void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
-    bool background,
-    bool boost_for_pending_views,
-    ChildProcessImportance importance) {
+    const ChildProcessLauncherPriority& priority) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   // TODO(fuchsia): Implement this. (crbug.com/707031)
   NOTIMPLEMENTED();

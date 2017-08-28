@@ -173,11 +173,11 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
 
 void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
-    bool background,
-    bool boost_for_pending_views,
-    ChildProcessImportance importance) {
-  if (process.CanBackgroundProcesses())
-    process.SetProcessBackgrounded(MachBroker::GetInstance(), background);
+    const ChildProcessLauncherPriority& priority) {
+  if (process.CanBackgroundProcesses()) {
+    process.SetProcessBackgrounded(MachBroker::GetInstance(),
+                                   priority.background);
+  }
 }
 
 // static
