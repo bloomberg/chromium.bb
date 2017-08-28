@@ -291,7 +291,7 @@ Polymer({
   },
 
   /**
-   * Occurs when the drop down arrow is tapped.
+   * Toggles whether the folder is open.
    * @private
    * @param {!Event} e
    */

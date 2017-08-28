@@ -81,6 +81,7 @@
     <div id="container"
         class="v-centered"
         on-tap="selectFolder_"
+        on-dblclick="toggleFolder_"
         on-contextmenu="onContextMenu_"
         tabindex$="[[getTabIndex_(isSelectedFolder_)]]"
         hidden="[[isRootFolder_(depth)]]"
