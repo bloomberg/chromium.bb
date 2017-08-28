@@ -18,6 +18,10 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}  // namespace user_prefs
+
 @class BookmarkTableView;
 
 // Delegate to handle actions on the table.
@@ -34,6 +38,15 @@ class ChromeBrowserState;
 - (void)bookmarkTableView:(BookmarkTableView*)view
     selectedNodesForDeletion:
         (const std::set<const bookmarks::BookmarkNode*>&)nodes;
+
+// Returns true if a bookmarks promo cell should be shown.
+- (BOOL)bookmarkTableViewShouldShowPromoCell:(BookmarkTableView*)view;
+
+// Shows a sign-in view controller.
+- (void)bookmarkTableViewShowSignIn:(BookmarkTableView*)view;
+
+// Dismisses the promo.
+- (void)bookmarkTableViewDismissPromo:(BookmarkTableView*)view;
 
 @end
 
@@ -54,6 +67,12 @@ class ChromeBrowserState;
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)init NS_UNAVAILABLE;
 + (instancetype) new NS_UNAVAILABLE;
+
+// Registers the feature preferences.
++ (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
+
+// Called when something outside the view causes the promo state to change.
+- (void)promoStateChangedAnimated:(BOOL)animated;
 
 @end
 
