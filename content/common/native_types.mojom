@@ -79,3 +79,18 @@ enum TouchState;
 
 [Native]
 struct DidOverscrollParams;
+
+[Native]
+struct SyntheticSmoothDrag;
+
+[Native]
+struct SyntheticSmoothScroll;
+
+[Native]
+struct SyntheticPinch;
+
+[Native]
+struct SyntheticTap;
+
+[Native]
+struct SyntheticPointerAction;

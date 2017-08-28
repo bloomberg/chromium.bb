@@ -32,7 +32,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/drag_messages.h"
-#include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input_messages.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/swapped_out_messages.h"
@@ -628,8 +627,6 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(InputMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(InputMsg_SetFocus, OnSetFocus)
-    IPC_MESSAGE_HANDLER(InputMsg_SyntheticGestureCompleted,
-                        OnSyntheticGestureCompleted)
     IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     IPC_MESSAGE_HANDLER(ViewMsg_Close, OnClose)
     IPC_MESSAGE_HANDLER(ViewMsg_Resize, OnResize)
@@ -1551,19 +1548,6 @@ void RenderWidget::CloseWidgetSoon() {
       FROM_HERE, base::Bind(&RenderWidget::DoDeferredClose, this));
 }
 
-void RenderWidget::QueueSyntheticGesture(
-    std::unique_ptr<SyntheticGestureParams> gesture_params,
-    const SyntheticGestureCompletionCallback& callback) {
-  DCHECK(!callback.is_null());
-
-  pending_synthetic_gesture_callbacks_.push(callback);
-
-  SyntheticGesturePacket gesture_packet;
-  gesture_packet.set_gesture_params(std::move(gesture_params));
-
-  Send(new InputHostMsg_QueueSyntheticGesture(routing_id_, gesture_packet));
-}
-
 void RenderWidget::Close() {
   screen_metrics_emulator_.reset();
   WillCloseLayerTreeView();
@@ -1776,13 +1760,6 @@ void RenderWidget::OnRepaint(gfx::Size size_to_paint) {
   set_next_paint_is_repaint_ack();
   if (compositor_)
     compositor_->SetNeedsRedrawRect(gfx::Rect(size_to_paint));
-}
-
-void RenderWidget::OnSyntheticGestureCompleted() {
-  DCHECK(!pending_synthetic_gesture_callbacks_.empty());
-
-  pending_synthetic_gesture_callbacks_.front().Run();
-  pending_synthetic_gesture_callbacks_.pop();
 }
 
 void RenderWidget::OnSetTextDirection(WebTextDirection direction) {

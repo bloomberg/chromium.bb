@@ -30,7 +30,6 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
 #include "content/common/features.h"
-#include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
@@ -350,15 +349,6 @@ class CONTENT_EXPORT RenderWidget
 
   void SetHandlingInputEventForTesting(bool handling_input_event);
 
-  // Callback for use with synthetic gestures (e.g. BeginSmoothScroll).
-  typedef base::Callback<void()> SyntheticGestureCompletionCallback;
-
-  // Send a synthetic gesture to the browser to be queued to the synthetic
-  // gesture controller.
-  void QueueSyntheticGesture(
-      std::unique_ptr<SyntheticGestureParams> gesture_params,
-      const SyntheticGestureCompletionCallback& callback);
-
   // Deliveres |message| together with compositor state change updates. The
   // exact behavior depends on |policy|.
   // This mechanism is not a drop-in replacement for IPC: messages sent this way
@@ -548,7 +538,6 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnDeviceScaleFactorChanged();
 
   void OnRepaint(gfx::Size size_to_paint);
-  void OnSyntheticGestureCompleted();
   void OnSetTextDirection(blink::WebTextDirection direction);
   void OnGetFPS();
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
@@ -789,12 +778,6 @@ class CONTENT_EXPORT RenderWidget
   // The device scale factor. This value is computed from the DPI entries in
   // |screen_info_| on some platforms, and defaults to 1 on other platforms.
   float device_scale_factor_;
-
-  // State associated with synthetic gestures. Synthetic gestures are processed
-  // in-order, so a queue is sufficient to identify the correct state for a
-  // completed gesture.
-  std::queue<SyntheticGestureCompletionCallback>
-      pending_synthetic_gesture_callbacks_;
 
   // True if the IME requests updated composition info.
   bool monitor_composition_info_;

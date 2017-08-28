@@ -18,7 +18,6 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/input_param_traits.h"
-#include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
 #include "content/common/input/synthetic_pointer_action_list_params.h"
@@ -309,17 +308,12 @@ IPC_MESSAGE_ROUTED2(InputMsg_RequestCompositionUpdates,
                     bool /* immediate_request */,
                     bool /* monitor_updates */)
 
-IPC_MESSAGE_ROUTED0(InputMsg_SyntheticGestureCompleted)
-
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 
 // Acknowledges receipt of a InputMsg_HandleInputEvent message.
 IPC_MESSAGE_ROUTED1(InputHostMsg_HandleInputEvent_ACK,
                     content::InputEventAck /* ack */)
-
-IPC_MESSAGE_ROUTED1(InputHostMsg_QueueSyntheticGesture,
-                    content::SyntheticGesturePacket)
 
 // Notifies the allowed touch actions for a new touch point.
 IPC_MESSAGE_ROUTED1(InputHostMsg_SetTouchAction,

@@ -15,18 +15,6 @@
 #include "ui/events/blink/web_input_event_traits.h"
 
 namespace IPC {
-namespace {
-template <typename GestureType>
-std::unique_ptr<content::SyntheticGestureParams> ReadGestureParams(
-    const base::Pickle* m,
-    base::PickleIterator* iter) {
-  std::unique_ptr<GestureType> gesture_params(new GestureType);
-  if (!ReadParam(m, iter, gesture_params.get()))
-    return std::unique_ptr<content::SyntheticGestureParams>();
-
-  return std::move(gesture_params);
-}
-}  // namespace
 
 void ParamTraits<ui::WebScopedInputEvent>::GetSize(base::PickleSizer* s,
                                                    const param_type& p) {
@@ -62,105 +50,6 @@ bool ParamTraits<ui::WebScopedInputEvent>::Read(const base::Pickle* m,
 void ParamTraits<ui::WebScopedInputEvent>::Log(const param_type& p,
                                                std::string* l) {
   LogParam(static_cast<WebInputEventPointer>(p.get()), l);
-}
-
-void ParamTraits<content::SyntheticGesturePacket>::Write(base::Pickle* m,
-                                                         const param_type& p) {
-  DCHECK(p.gesture_params());
-  WriteParam(m, p.gesture_params()->GetGestureType());
-  switch (p.gesture_params()->GetGestureType()) {
-    case content::SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
-      WriteParam(m, *content::SyntheticSmoothScrollGestureParams::Cast(
-          p.gesture_params()));
-      break;
-    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
-      WriteParam(m, *content::SyntheticSmoothDragGestureParams::Cast(
-                 p.gesture_params()));
-      break;
-    case content::SyntheticGestureParams::PINCH_GESTURE:
-      WriteParam(m, *content::SyntheticPinchGestureParams::Cast(
-          p.gesture_params()));
-      break;
-    case content::SyntheticGestureParams::TAP_GESTURE:
-      WriteParam(m, *content::SyntheticTapGestureParams::Cast(
-          p.gesture_params()));
-      break;
-    case content::SyntheticGestureParams::POINTER_ACTION_LIST:
-      WriteParam(m, *content::SyntheticPointerActionListParams::Cast(
-                        p.gesture_params()));
-      break;
-  }
-}
-
-bool ParamTraits<content::SyntheticGesturePacket>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* p) {
-  content::SyntheticGestureParams::GestureType gesture_type;
-  if (!ReadParam(m, iter, &gesture_type))
-    return false;
-  std::unique_ptr<content::SyntheticGestureParams> gesture_params;
-  switch (gesture_type) {
-    case content::SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
-      gesture_params =
-          ReadGestureParams<content::SyntheticSmoothScrollGestureParams>(m,
-                                                                         iter);
-      break;
-    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
-      gesture_params =
-          ReadGestureParams<content::SyntheticSmoothDragGestureParams>(m, iter);
-      break;
-    case content::SyntheticGestureParams::PINCH_GESTURE:
-      gesture_params =
-          ReadGestureParams<content::SyntheticPinchGestureParams>(m, iter);
-      break;
-    case content::SyntheticGestureParams::TAP_GESTURE:
-      gesture_params =
-          ReadGestureParams<content::SyntheticTapGestureParams>(m, iter);
-      break;
-    case content::SyntheticGestureParams::POINTER_ACTION_LIST:
-      gesture_params =
-          ReadGestureParams<content::SyntheticPointerActionListParams>(m, iter);
-      break;
-    default:
-      return false;
-  }
-
-  p->set_gesture_params(std::move(gesture_params));
-  return p->gesture_params() != NULL;
-}
-
-void ParamTraits<content::SyntheticGesturePacket>::Log(const param_type& p,
-                                                       std::string* l) {
-  DCHECK(p.gesture_params());
-  switch (p.gesture_params()->GetGestureType()) {
-    case content::SyntheticGestureParams::SMOOTH_SCROLL_GESTURE:
-      LogParam(
-          *content::SyntheticSmoothScrollGestureParams::Cast(
-              p.gesture_params()),
-          l);
-      break;
-    case content::SyntheticGestureParams::SMOOTH_DRAG_GESTURE:
-      LogParam(
-          *content::SyntheticSmoothDragGestureParams::Cast(p.gesture_params()),
-          l);
-      break;
-    case content::SyntheticGestureParams::PINCH_GESTURE:
-      LogParam(
-          *content::SyntheticPinchGestureParams::Cast(p.gesture_params()),
-          l);
-      break;
-    case content::SyntheticGestureParams::TAP_GESTURE:
-      LogParam(
-          *content::SyntheticTapGestureParams::Cast(p.gesture_params()),
-          l);
-      break;
-    case content::SyntheticGestureParams::POINTER_ACTION_LIST:
-      LogParam(
-          *content::SyntheticPointerActionListParams::Cast(p.gesture_params()),
-          l);
-      break;
-  }
 }
 
 }  // namespace IPC

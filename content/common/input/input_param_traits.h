@@ -10,7 +10,6 @@
 
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits_macros.h"
-#include "content/common/input/synthetic_gesture_packet.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
 namespace IPC {
@@ -19,16 +18,6 @@ template <>
 struct CONTENT_EXPORT ParamTraits<ui::WebScopedInputEvent> {
   typedef ui::WebScopedInputEvent param_type;
   static void GetSize(base::PickleSizer* s, const param_type& p);
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template<>
-struct CONTENT_EXPORT ParamTraits<content::SyntheticGesturePacket> {
-  typedef content::SyntheticGesturePacket param_type;
   static void Write(base::Pickle* m, const param_type& p);
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,

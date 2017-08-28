@@ -127,6 +127,9 @@
           // TODO(beng): figure out how to overlay test interfaces like this.
           "content::mojom::BrowserTarget",
 
+          // InputInjector is only exposed when gpu benchmarking is enabled.
+          "content::mojom::InputInjector",
+
           "content::mojom::RendererAudioOutputStreamFactory",
           "device::mojom::Geolocation",
           "device::mojom::GeolocationService",
