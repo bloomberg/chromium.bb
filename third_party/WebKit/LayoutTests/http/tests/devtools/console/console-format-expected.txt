@@ -212,10 +212,10 @@ console-format.html:7 -Infinity
 console-format.html:8 [-Infinity]
 globals[20]
 -Infinity
-console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
+console-format.html:7 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
 console-format.html:8 [Array(10)]
 globals[21]
-(10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
+(10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
 console-format.html:7 {}
 console-format.html:8 [{…}]
 globals[22]
@@ -249,10 +249,10 @@ console-format.html:7 ƒ Object() { [native code] }
 console-format.html:8 [ƒ]
 globals[29]
 ƒ Object() { [native code] }
-console-format.html:7 {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+console-format.html:7 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
 console-format.html:8 [{…}]
 globals[30]
-{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+{constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
 console-format.html:7 ƒ ( /**/ foo/**/, /*/**/bar,
     /**/baz) {}
 console-format.html:8 [ƒ]
@@ -263,10 +263,10 @@ console-format.html:7 Number {[[PrimitiveValue]]: 42}
 console-format.html:8 [Number]
 globals[32]
 Number {[[PrimitiveValue]]: 42}
-console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+console-format.html:7 String {[[PrimitiveValue]]: "abc"}
 console-format.html:8 [String]
 globals[33]
-String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+String {[[PrimitiveValue]]: "abc"}
 console-format.html:7 Uint16Array(3) [1, 2, 3]
 console-format.html:8 [Uint16Array(3)]
 globals[34]
@@ -500,7 +500,7 @@ console-format.html:8 [-Infinity]
     __proto__: Array(0)
 globals[20]
 -Infinity
-console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
+console-format.html:7 (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
@@ -508,11 +508,11 @@ console-format.html:7 (10) ["test", "test2", undefined × 2, "test4", undefined 
     length: 10
     __proto__: Array(0)
 console-format.html:8 [Array(10)]
-    0: (10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
+    0: (10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     length: 1
     __proto__: Array(0)
 globals[21]
-(10) ["test", "test2", undefined × 2, "test4", undefined × 5, foo: {…}]
+(10) ["test", "test2", empty × 2, "test4", empty × 5, foo: {…}]
     0: "test"
     1: "test2"
     4: "test4"
@@ -608,7 +608,7 @@ console-format.html:8 [ƒ]
     __proto__: Array(0)
 globals[29]
 ƒ Object() { [native code] }
-console-format.html:7 {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+console-format.html:7 {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
     constructor: ƒ Object()
     hasOwnProperty: ƒ hasOwnProperty()
     isPrototypeOf: ƒ isPrototypeOf()
@@ -623,11 +623,11 @@ console-format.html:7 {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnPropert
     get __proto__: ƒ __proto__()
     set __proto__: ƒ __proto__()
 console-format.html:8 [{…}]
-    0: {__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+    0: {constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
     length: 1
     __proto__: Array(0)
 globals[30]
-{__defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, __lookupSetter__: ƒ, …}
+{constructor: ƒ, __defineGetter__: ƒ, __defineSetter__: ƒ, hasOwnProperty: ƒ, __lookupGetter__: ƒ, …}
     constructor: ƒ Object()
     hasOwnProperty: ƒ hasOwnProperty()
     isPrototypeOf: ƒ isPrototypeOf()
@@ -661,7 +661,7 @@ globals[32]
 Number {[[PrimitiveValue]]: 42}
     __proto__: Number
     [[PrimitiveValue]]: 42
-console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+console-format.html:7 String {[[PrimitiveValue]]: "abc"}
     0: "a"
     1: "b"
     2: "c"
@@ -669,11 +669,11 @@ console-format.html:7 String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValu
     __proto__: String
     [[PrimitiveValue]]: "abc"
 console-format.html:8 [String]
-    0: String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+    0: String {[[PrimitiveValue]]: "abc"}
     length: 1
     __proto__: Array(0)
 globals[33]
-String {0: "a", 1: "b", 2: "c", length: 3, [[PrimitiveValue]]: "abc"}
+String {[[PrimitiveValue]]: "abc"}
     0: "a"
     1: "b"
     2: "c"
