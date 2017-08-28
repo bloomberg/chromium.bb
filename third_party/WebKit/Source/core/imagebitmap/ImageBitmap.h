@@ -91,10 +91,6 @@ class CORE_EXPORT ImageBitmap final
       ScriptState*,
       const ImageBitmapOptions& = ImageBitmapOptions());
   static sk_sp<SkImage> GetSkImageFromDecoder(std::unique_ptr<ImageDecoder>);
-  static bool IsResizeOptionValid(const ImageBitmapOptions&, ExceptionState&);
-  static bool IsSourceSizeValid(int source_width,
-                                int source_height,
-                                ExceptionState&);
 
   // Type and helper function required by CallbackPromiseAdapter:
   using WebType = sk_sp<SkImage>;
@@ -138,8 +134,7 @@ class CORE_EXPORT ImageBitmap final
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   Optional<IntRect>,
-                                  const ImageBitmapOptions&,
-                                  ExceptionState&) override;
+                                  const ImageBitmapOptions&) override;
 
   struct ParsedOptions {
     bool flip_y = false;

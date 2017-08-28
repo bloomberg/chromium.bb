@@ -214,8 +214,7 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
   ScriptPromise CreateImageBitmap(ScriptState*,
                                   EventTarget&,
                                   Optional<IntRect> crop_rect,
-                                  const ImageBitmapOptions&,
-                                  ExceptionState&) override;
+                                  const ImageBitmapOptions&) override;
 
   // OffscreenCanvasPlaceholder implementation.
   void SetPlaceholderFrame(RefPtr<StaticBitmapImage>,

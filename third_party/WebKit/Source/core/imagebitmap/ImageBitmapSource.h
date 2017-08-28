@@ -25,8 +25,7 @@ class CORE_EXPORT ImageBitmapSource {
   virtual ScriptPromise CreateImageBitmap(ScriptState*,
                                           EventTarget&,
                                           Optional<IntRect>,
-                                          const ImageBitmapOptions&,
-                                          ExceptionState&);
+                                          const ImageBitmapOptions&);
 
   virtual bool IsBlob() const { return false; }
 

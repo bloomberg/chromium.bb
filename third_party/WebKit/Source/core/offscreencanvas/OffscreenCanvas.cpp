@@ -146,17 +146,7 @@ ScriptPromise OffscreenCanvas::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget&,
     Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options,
-    ExceptionState& exception_state) {
-  if ((crop_rect &&
-       !ImageBitmap::IsSourceSizeValid(crop_rect->Width(), crop_rect->Height(),
-                                       exception_state)) ||
-      !ImageBitmap::IsSourceSizeValid(BitmapSourceSize().Width(),
-                                      BitmapSourceSize().Height(),
-                                      exception_state))
-    return ScriptPromise();
-  if (!ImageBitmap::IsResizeOptionValid(options, exception_state))
-    return ScriptPromise();
+    const ImageBitmapOptions& options) {
   return ImageBitmapSource::FulfillImageBitmap(
       script_state,
       IsPaintable() ? ImageBitmap::Create(this, crop_rect, options) : nullptr);

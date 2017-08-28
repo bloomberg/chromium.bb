@@ -9,10 +9,10 @@ PASS [Worker] reason instanceof Error is true
 [Worker] TypeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': The provided value is not of type '(HTMLImageElement or SVGImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap or OffscreenCanvas)'
 PASS [Worker] Rejected as expected: invalid area
 PASS [Worker] reason instanceof Error is true
-[Worker] IndexSizeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': The source height provided is 0.
+[Worker] RangeError: The crop rect height is 0.
 PASS [Worker] Rejected as expected: invalid area
 PASS [Worker] reason instanceof Error is true
-[Worker] IndexSizeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': The source width provided is 0.
+[Worker] RangeError: The crop rect width is 0.
 PASS successfullyParsed is true
 
 TEST COMPLETE

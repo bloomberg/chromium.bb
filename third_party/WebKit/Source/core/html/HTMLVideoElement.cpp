@@ -26,12 +26,11 @@
 #include "core/html/HTMLVideoElement.h"
 
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/UserGestureIndicator.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -481,29 +480,22 @@ ScriptPromise HTMLVideoElement::CreateImageBitmap(
     ScriptState* script_state,
     EventTarget& event_target,
     Optional<IntRect> crop_rect,
-    const ImageBitmapOptions& options,
-    ExceptionState& exception_state) {
+    const ImageBitmapOptions& options) {
   DCHECK(event_target.ToLocalDOMWindow());
   if (getNetworkState() == HTMLMediaElement::kNetworkEmpty) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError, "The provided element has not retrieved data.");
-    return ScriptPromise();
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(kInvalidStateError,
+                             "The provided element has not retrieved data."));
   }
   if (getReadyState() <= HTMLMediaElement::kHaveMetadata) {
-    exception_state.ThrowDOMException(
-        kInvalidStateError,
-        "The provided element's player has no current data.");
-    return ScriptPromise();
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        DOMException::Create(
+            kInvalidStateError,
+            "The provided element's player has no current data."));
   }
-  if ((crop_rect &&
-       !ImageBitmap::IsSourceSizeValid(crop_rect->Width(), crop_rect->Height(),
-                                       exception_state)) ||
-      !ImageBitmap::IsSourceSizeValid(BitmapSourceSize().Width(),
-                                      BitmapSourceSize().Height(),
-                                      exception_state))
-    return ScriptPromise();
-  if (!ImageBitmap::IsResizeOptionValid(options, exception_state))
-    return ScriptPromise();
+
   return ImageBitmapSource::FulfillImageBitmap(
       script_state, ImageBitmap::Create(
                         this, crop_rect,

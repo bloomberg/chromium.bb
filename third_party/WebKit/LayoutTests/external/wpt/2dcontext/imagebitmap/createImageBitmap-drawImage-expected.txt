@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-PASS createImageBitmap from a HTMLImageElement, and drawImage on the created ImageBitmap
-PASS createImageBitmap from a Blob, and drawImage on the created ImageBitmap
-FAIL createImageBitmap from a HTMLCanvasElement, and drawImage on the created ImageBitmapassert_not_equals: got disallowed value undefined
-PASS createImageBitmap from an ImageBitmap, and drawImage on the created ImageBitmap
-PASS createImageBitmap from an ImageData, and drawImage on the created ImageBitmap
-PASS createImageBitmap from a HTMLVideoElement, and drawImage on the created ImageBitmap
-Harness: the test ran to completion.
-
