@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">Ak chcete nájsť zariadenia v okolí, zapnite Bluetooth</translation>
 <translation id="2352467521400612932">Nastavenia dotykového pera</translation>
 <translation id="2354174487190027830">Aktivujte sa sieť <ph name="NAME" /></translation>
+<translation id="2365393535144473978">Zapnutím mobilných dát aktivujete Bluetooth.</translation>
 <translation id="2391579633712104609">180 °</translation>
 <translation id="2429753432712299108">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania. Skôr ako žiadosti vyhoviete, overte, či sa na danom zariadení zobrazuje nasledujúci prístupový kľúč: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">Vyskytla sa chyba</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">Prebieha prenášanie na neznámy prijímač</translation>
 <translation id="5947494881799873997">Vrátiť</translation>
 <translation id="595202126637698455">Sledovanie výkonnosti je povolené</translation>
+<translation id="5957083217255311415">Mobilné dáta sú vypnuté.</translation>
 <translation id="5958529069007801266">Kontrolovaný používateľ</translation>
 <translation id="5977415296283489383">Slúchadlo</translation>
 <translation id="5978382165065462689">Ovládanie obrazovky sa zdieľa prostredníctvom Vzdialenej pomoci.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Hľadať+Shift+H</translation>
 <translation id="6700713906295497288">Tlačidlo ponuky IME</translation>
 <translation id="6713285437468012787">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> bolo spárované a je k dispozícii pre všetkých používateľov. Párovanie môžete zrušiť pomocou ponuky Nastavenia.</translation>
+<translation id="6715542151869432661">Neboli nájdené žiadne mobilné zariadenia.</translation>
 <translation id="6785414152754474415">Batéria je nabitá na <ph name="PERCENTAGE" /> % a nabíja sa.</translation>
 <translation id="6803622936009808957">Obraz na monitoroch sa nedá zrkadliť, pretože sa nenašli podporované rozlíšenia. Namiesto toho sa spustil režim rozšírenej pracovnej plochy.</translation>
 <translation id="683971173229319003">Hľadať+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90 °</translation>
 <translation id="8850991929411075241">Hľadať+Esc</translation>
 <translation id="8878886163241303700">Rozšírenie obrazovky</translation>
+<translation id="8921624153894383499">Asistent Google nehovorí týmto jazykom.</translation>
 <translation id="8938800817013097409">Zariadenie USB-C (pravý port vzadu)</translation>
 <translation id="8940956008527784070">Kapacita batérie je nízka (<ph name="PERCENTAGE" /> %)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

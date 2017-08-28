@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">Čakanje na povezavo ...</translation>
 <translation id="153384715582417236">To je vse za zdaj</translation>
 <translation id="1549470594296187301">Če želite uporabljati to funkcijo, mora biti omogočen JavaScript.</translation>
-<translation id="1555130319947370107">Modra</translation>
 <translation id="1559528461873125649">Taka datoteka ali imenik ne obstaja</translation>
 <translation id="1583429793053364125">Med prikazom spletne strani je prišlo do napake.</translation>
 <translation id="1592005682883173041">Dostop do lokalnih podatkov</translation>
 <translation id="1594030484168838125">Izberi</translation>
-<translation id="161042844686301425">Cianova</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1629803312968146339">Ali želite, da Chrome shrani to kartico?</translation>
 <translation id="1639239467298939599">Nalaganje</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
 <translation id="2710942282213947212">Programska oprema v računalniku Chromiumu preprečuje vzpostavitev varne povezave s spletom</translation>
 <translation id="2712173769900027643">Zahtevaj dovoljenje</translation>
-<translation id="2713444072780614174">Bela</translation>
 <translation id="2720342946869265578">V bližini</translation>
 <translation id="2721148159707890343">Zahteva je uspela</translation>
 <translation id="2728127805433021124">Strežnikovo potrdilo je podpisano s šibkim podpisnim algoritmom.</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">Ni rezultatov iskanja</translation>
 <translation id="3305707030755673451">Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />. Vnesite ga, če želite začeti sinhronizacijo.</translation>
 <translation id="3320021301628644560">Dodajanje naslova za izstavitev računa</translation>
-<translation id="3329013043687509092">Nasičenost</translation>
 <translation id="333371639341676808">Tej strani preprečite, da bi ustvarila dodatna pogovorna okna.</translation>
 <translation id="3338095232262050444">Varno</translation>
 <translation id="3340978935015468852">nastavitve</translation>
@@ -413,7 +409,6 @@
 <translation id="4103249731201008433">Neveljavna serijska številka naprave</translation>
 <translation id="410351446219883937">Samodejno predvajanje</translation>
 <translation id="4103763322291513355">Na &lt;strong&gt;chrome://policy&lt;/strong&gt; si lahko ogledate seznam blokiranih URL-jev in drugih pravilnikov, ki jih uveljavlja skrbnik sistema.</translation>
-<translation id="4115378294792113321">Škrlatna</translation>
 <translation id="4116663294526079822">Vedno dovoli na tem spletnem mestu</translation>
 <translation id="4117700440116928470">Obseg pravilnika ni podprt.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{in še 1 drug}one{in še # drug}two{in še # druga}few{in še # drugi}other{in še # drugih}}</translation>
@@ -624,7 +619,6 @@
 <translation id="5869522115854928033">Shranjena gesla</translation>
 <translation id="5872918882028971132">Predlogi staršev</translation>
 <translation id="5893752035575986141">Sprejema kreditne kartice.</translation>
-<translation id="5901630391730855834">Rumena</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sinhronizirano)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 v uporabi}one{# v uporabi}two{# v uporabi}few{# v uporabi}other{# v uporabi}}</translation>
 <translation id="5959728338436674663">Samodejno pošlji Googlu nekatere <ph name="BEGIN_WHITEPAPER_LINK" />sistemske podatke in vsebino strani<ph name="END_WHITEPAPER_LINK" /> zaradi zaznavanja nevarnih aplikacij in spletnih mest. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -635,12 +629,10 @@
 <translation id="5990559369517809815">Zahteve za strežnik je blokirala razširitev.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Stran 1}one{Stran #}two{Stran #}few{Stran #}other{Stran #}}</translation>
-<translation id="6017514345406065928">Zelena</translation>
 <translation id="6017850046339264347">Napadalci na spletnem mestu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> bi lahko namestili zavajajoče aplikacije, ki se pretvarjajo, da so nekaj drugega, ali zbirajo podatke, s katerimi vas lahko spremljajo. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sinhronizirano)</translation>
 <translation id="6027201098523975773">Vnesite ime</translation>
 <translation id="6040143037577758943">Zapri</translation>
-<translation id="6042308850641462728">Več</translation>
 <translation id="6047233362582046994">Če se zavedate varnostnega tveganja, lahko <ph name="BEGIN_LINK" />obiščete to spletno mesto<ph name="END_LINK" />, preden bodo škodljive aplikacije odstranjene.</translation>
 <translation id="6047927260846328439">Ta vsebina vas morda poskuša zavesti, da namestite programsko opremo ali razkrijete osebne podatke. <ph name="BEGIN_LINK" />Vseeno prikaži<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, ker uporablja pripenjanje potrdil. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
@@ -717,7 +709,6 @@
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="6710594484020273272">&lt;Vnesite iskalno poizvedbo&gt;</translation>
 <translation id="6711464428925977395">Nekaj je narobe s strežnikom proxy ali pa naslov ni pravilen.</translation>
-<translation id="6727102863431372879">Nastavi</translation>
 <translation id="674375294223700098">Neznana napaka potrdila strežnika.</translation>
 <translation id="6753269504797312559">Vrednost pravilnika</translation>
 <translation id="6757797048963528358">Naprava je preklopila v stanje pripravljenosti.</translation>
@@ -801,7 +792,6 @@
 <translation id="7518003948725431193">Za ta spletni naslov in bilo mogoče najti nobene spletne strani:<ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">Povezava s tem mestom ni zasebna</translation>
-<translation id="7535087603100972091">Vrednost</translation>
 <translation id="7537536606612762813">Obvezen</translation>
 <translation id="7542403920425041731">Ko potrdite, bodo temu spletnemu mestu razkriti podatki o kartici.</translation>
 <translation id="7542995811387359312">Samodejno izpolnjevanje podatkov o kreditni kartici je onemogočeno, ker ta obrazec ne uporablja varne povezave.</translation>
@@ -812,7 +802,6 @@
 <translation id="7567204685887185387">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo je bilo morda izdano z goljufijo. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="7568593326407688803">Ta stran je v jeziku:<ph name="ORIGINAL_LANGUAGE" />Jo želite prevesti?</translation>
 <translation id="7569952961197462199">Želite odstraniti kreditno kartico iz Chroma?</translation>
-<translation id="7569983096843329377">Črna</translation>
 <translation id="7578104083680115302">Hitro plačevanje na spletnih mestih in v aplikacijah v vseh napravah s karticami, ki ste jih shranili v Googlu.</translation>
 <translation id="7588950540487816470">Fizični splet</translation>
 <translation id="7592362899630581445">Strežnikovo potrdilo krši omejitve imen.</translation>
@@ -864,7 +853,6 @@
 <translation id="79338296614623784">Vnesite veljavno telefonsko številko</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Potrdilo strežnika še ni veljavno.</translation>
-<translation id="7942349550061667556">Rdeča</translation>
 <translation id="7947285636476623132">Preverite leto poteka veljavnosti in poskusite znova</translation>
 <translation id="7951415247503192394">(32-bitno)</translation>
 <translation id="7956713633345437162">Zaznamki mobilne naprave</translation>
@@ -957,7 +945,6 @@
 <translation id="8870413625673593573">Nedavno zaprto</translation>
 <translation id="8874824191258364635">Vnesite veljavno številko kartice</translation>
 <translation id="8876793034577346603">Omrežne konfiguracije ni bilo mogoče razčleniti.</translation>
-<translation id="8889402386540077796">Odtenek</translation>
 <translation id="8891727572606052622">Neveljaven način strežnika proxy.</translation>
 <translation id="889901481107108152">Oprostite, ta poskus ni na voljo za vaše okolje.</translation>
 <translation id="8903921497873541725">Povečaj</translation>
@@ -966,7 +953,6 @@
 <translation id="8938939909778640821">Sprejete kreditne in predplačniške kartice</translation>
 <translation id="8957210676456822347">Odobritev prestreznega portala</translation>
 <translation id="8971063699422889582">Potrdilo strežnika je poteklo.</translation>
-<translation id="8986494364107987395">Samodejno pošlji statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Pozor: Spletno mesto vsebuje škodljive programe.</translation>
 <translation id="8997023839087525404">Strežnik je posredoval potrdilo, ki ni bilo javno razkrito na podlagi pravilnika o preglednosti potrdila. To je obvezno za nekatera potrdila zaradi zagotavljanja, da so zaupanja vredna in ščitijo pred napadalci.</translation>
@@ -982,7 +968,6 @@
 <translation id="9049981332609050619">Skušali ste dostopati do domene <ph name="DOMAIN" />, vendar je strežnik predložil neveljavno potrdilo.</translation>
 <translation id="9050666287014529139">Geslo</translation>
 <translation id="9065203028668620118">Uredi</translation>
-<translation id="9068849894565669697">Izbira barve</translation>
 <translation id="9069693763241529744">Blokirala razširitev</translation>
 <translation id="9076283476770535406">Morda vsebuje vsebino za odrasle</translation>
 <translation id="9078964945751709336">Vnesti morate več podatkov</translation>

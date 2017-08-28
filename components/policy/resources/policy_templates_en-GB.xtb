@@ -746,6 +746,11 @@ If you enable this setting, <ph name="PRODUCT_NAME" /> will always check on star
 If this setting is disabled, <ph name="PRODUCT_NAME" /> will never check if it is the default browser and will disable user controls for setting this option.
 
 If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to control whether it is the default browser and whether user notifications should be shown when it isn't.</translation>
+<translation id="379602782757302612">Allows you to specify which extensions the users can NOT install. Extensions already installed will be disabled if blacklisted, without a way for the user to enable them. Once a disabled, blacklisted extension is removed, it will automatically get re-enabled.
+
+          A blacklist value of '*' means all extensions are blacklisted unless they are explicitly listed in the whitelist.
+
+          If this policy is left 'not set' the user can install any extension in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3800626789999016379">Configures the directory that <ph name="PRODUCT_NAME" /> will use for downloading files.
 
       If you set this policy, <ph name="PRODUCT_NAME" /> will use the provided directory regardless of whether the user has specified one or enabled the flag to be prompted for download location every time.
@@ -1102,6 +1107,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5056708224511062314">Screen magnifier disabled</translation>
 <translation id="5067143124345820993">Login user white list</translation>
+<translation id="5068140065960598044"><ph name="PRODUCT_NAME" /> cloud policy overrides Machine policy.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
 <translation id="5130288486815037971">Whether RC4 cipher suites in TLS are enabled</translation>
@@ -1579,6 +1585,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If you set this policy, users cannot change or override it.
 
           If this policy is left unset, spoken feedback is disabled initially but can be enabled by the user at any time.</translation>
+<translation id="6922040258551909078">
+      If the policy is set to true, cloud policy takes precedence if it conflicts with machine policy.
+      If the policy is set to false or not configured, machine policy takes precedence if it conflicts with cloud policy.
+      For more details about policy priority, please visit: https://support.google.com/chrome?p=set_chrome_policies_for_devices
+
+      This policy is not available on Window instances that are not joined to a <ph name="MS_AD_NAME" /> domain.
+      </translation>
 <translation id="6922884955650325312">Block the <ph name="FLASH_PLUGIN_NAME" /> plug-in</translation>
 <translation id="6923366716660828830">Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
 

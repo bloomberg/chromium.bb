@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">Activa el Bluetooth per detectar dispositius propers</translation>
 <translation id="2352467521400612932">Configuració del llapis òptic</translation>
 <translation id="2354174487190027830">S'està activant <ph name="NAME" /></translation>
+<translation id="2365393535144473978">En activar les dades mòbils s'activarà el Bluetooth.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Abans d'acceptar, comproveu que aquesta clau d'accés es mostri al dispositiu: <ph name="PASSKEY" />.</translation>
 <translation id="2475982808118771221">S'ha produït un error</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">S'està emetent a un receptor desconegut</translation>
 <translation id="5947494881799873997">Reverteix</translation>
 <translation id="595202126637698455">Seguiment del rendiment activat</translation>
+<translation id="5957083217255311415">Les dades mòbils estan desactivades.</translation>
 <translation id="5958529069007801266">Usuari supervisat</translation>
 <translation id="5977415296283489383">Auricular</translation>
 <translation id="5978382165065462689">Es comparteix el control de la pantalla mitjançant l'Assistència remota.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Cerca+Maj+H</translation>
 <translation id="6700713906295497288">Botó del menú d'IME</translation>
 <translation id="6713285437468012787">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" s'ha emparellat i ja està disponible per a tots els usuaris. Podeu eliminar l'emparellament a la Configuració.</translation>
+<translation id="6715542151869432661">No s'ha trobat cap dispositiu mòbil.</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE" />% i s'està carregant.</translation>
 <translation id="6803622936009808957">No s'ha pogut fer la rèplica de les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>
 <translation id="683971173229319003">Cerca + L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Cerca + Esc</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>
+<translation id="8921624153894383499">L'Assistent de Google no parla aquest idioma.</translation>
 <translation id="8938800817013097409">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="8940956008527784070">Bateria baixa (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">Bluetooth</translation>

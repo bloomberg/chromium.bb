@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">आस-पास के डिवाइस खोजने के लिए ब्लूटूथ चालू करें</translation>
 <translation id="2352467521400612932">स्टाइलस की सेटिंग</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> सक्रिय हो रहा है</translation>
+<translation id="2365393535144473978">मोबाइल डेटा सक्षम करने से ब्लूटूथ सक्षम हो जाएगा.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. स्वीकार करने से पहले, कृपया दुबारा पूछें कि यह पासकुंजी उस डिवाइस पर दिखाई जा रही है: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">कोई गड़बड़ी आई</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">किसी अज्ञात प्राप्तकर्ता को कास्ट कर रहा है</translation>
 <translation id="5947494881799873997">वापस लाएं</translation>
 <translation id="595202126637698455">निष्पादन ट्रेसिंग सक्षम है</translation>
+<translation id="5957083217255311415">मोबाइल डेटा बंद कर दिया गया है.</translation>
 <translation id="5958529069007801266">निगरानी में रखा गया उपयोगकर्ता</translation>
 <translation id="5977415296283489383">हेडफ़ोन</translation>
 <translation id="5978382165065462689">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायका के द्वारा साझा किया जा रहा है.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6700713906295497288">IME मेनू बटन</translation>
 <translation id="6713285437468012787">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" यु्ग्मित हो गया है और अब वह सभी उपयोगकर्ताओं के लिए उपलब्ध है. आप सेटिंग का उपयोग करके इस युग्मन को निकाल सकते हैं.</translation>
+<translation id="6715542151869432661">कोई मोबाइल डिवाइस नहीं मिला.</translation>
 <translation id="6785414152754474415">बैटरी <ph name="PERCENTAGE" />% भरी हुई है और चार्ज हो रही है.</translation>
 <translation id="6803622936009808957">प्रदर्शनों को मिरर नहीं किया जा सका क्योंकि कोई समर्थित रिज़ॉल्यूशन नहीं मिला. इसके बजाय विस्तारित डेस्कटॉप में चला गया है.</translation>
 <translation id="683971173229319003">Search+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">स्क्रीन का विस्तार करना</translation>
+<translation id="8921624153894383499">Google Assistant सेवा इस भाषा में उपलब्ध नहीं है.</translation>
 <translation id="8938800817013097409">USB-C डिवाइस (पीछे की ओर दायां पोर्ट)</translation>
 <translation id="8940956008527784070">बैटरी कम (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">ब्लूटूथ</translation>

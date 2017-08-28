@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">En attente de connexion…</translation>
 <translation id="153384715582417236">C'est tout !</translation>
 <translation id="1549470594296187301">Vous devez activer JavaScript pour utiliser cette fonctionnalité.</translation>
-<translation id="1555130319947370107">Bleu</translation>
 <translation id="1559528461873125649">Fichier ou répertoire inexistant</translation>
 <translation id="1583429793053364125">Une erreur s'est produite lors de l'affichage de la page Web.</translation>
 <translation id="1592005682883173041">Accès aux données locales</translation>
 <translation id="1594030484168838125">Sélectionner</translation>
-<translation id="161042844686301425">Cyan</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1629803312968146339">Voulez-vous que cette carte soit enregistrée dans Chrome ?</translation>
 <translation id="1639239467298939599">Chargement en cours</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">Saisie automatique</translation>
 <translation id="2710942282213947212">Un logiciel installé sur votre ordinateur empêche Chromium de se connecter au Web de manière sécurisée</translation>
 <translation id="2712173769900027643">Demander l'autorisation</translation>
-<translation id="2713444072780614174">Blanc</translation>
 <translation id="2720342946869265578">À proximité</translation>
 <translation id="2721148159707890343">Demande réussie.</translation>
 <translation id="2728127805433021124">Le certificat du serveur a été signé avec un algorithme de signature faible.</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">Aucun résultat de recherche n'a été trouvé.</translation>
 <translation id="3305707030755673451">Vos données ont été chiffrées avec votre phrase secrète de synchronisation le <ph name="TIME" />. Saisissez-la pour lancer la synchronisation.</translation>
 <translation id="3320021301628644560">Ajouter une adresse de facturation</translation>
-<translation id="3329013043687509092">Saturation</translation>
 <translation id="333371639341676808">Empêcher cette page de générer des boîtes de dialogue supplémentaires</translation>
 <translation id="3338095232262050444">Sécurisé</translation>
 <translation id="3340978935015468852">paramètres</translation>
@@ -413,7 +409,6 @@
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="410351446219883937">Lecture automatique</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
-<translation id="4115378294792113321">Magenta</translation>
 <translation id="4116663294526079822">Toujours autoriser sur ce site</translation>
 <translation id="4117700440116928470">La portée de la règle n'est pas compatible.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 autre}one{# autre}other{# autres}}</translation>
@@ -624,7 +619,6 @@
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
 <translation id="5872918882028971132">Suggestions des parents</translation>
 <translation id="5893752035575986141">Les cartes de crédit sont acceptées.</translation>
-<translation id="5901630391730855834">Jaune</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronisés)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 en cours d'utilisation}one{# en cours d'utilisation}other{# en cours d'utilisation}}</translation>
 <translation id="5959728338436674663">Envoyer automatiquement <ph name="BEGIN_WHITEPAPER_LINK" />des informations système et du contenu de page<ph name="END_WHITEPAPER_LINK" /> à Google afin de faciliter la détection d'applications et de sites dangereux. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -635,12 +629,10 @@
 <translation id="5990559369517809815">Les requêtes vers le serveur ont été bloquées par une extension.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Page 1}one{Page #}other{Page #}}</translation>
-<translation id="6017514345406065928">Vert</translation>
 <translation id="6017850046339264347">Les pirates informatiques qui contrôlent le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> peuvent installer des applications trompeuses se faisant passer pour d'autres, ou collecter des données afin de vous surveiller. <ph name="BEGIN_LEARN_MORE_LINK" />En savoir plus<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronisés)</translation>
 <translation id="6027201098523975773">Saisissez un nom</translation>
 <translation id="6040143037577758943">Fermer</translation>
-<translation id="6042308850641462728">Plus</translation>
 <translation id="6047233362582046994">Si vous êtes conscient des risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK" />consulter ce site<ph name="END_LINK" /> avant que les applications dangereuses aient été supprimées.</translation>
 <translation id="6047927260846328439">Ce contenu peut vous inciter à installer un logiciel ou vous soutirer des informations personnelles. <ph name="BEGIN_LINK" />Je souhaite y accéder malgré tout.<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Le site <ph name="SITE" /> est actuellement inaccessible, car il utilise l'épinglage des certificats. Les erreurs réseau et les attaques sont généralement temporaires. Vous devriez donc pouvoir accéder à cette page plus tard.</translation>
@@ -717,7 +709,6 @@
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6710594484020273272">&lt;Saisissez le terme de recherche&gt;</translation>
 <translation id="6711464428925977395">Le serveur proxy présente une erreur, ou l'adresse est incorrecte.</translation>
-<translation id="6727102863431372879">Définir</translation>
 <translation id="674375294223700098">Erreur inconnue liée au certificat du serveur.</translation>
 <translation id="6753269504797312559">Valeur de la règle</translation>
 <translation id="6757797048963528358">Votre appareil s'est mis en veille.</translation>
@@ -801,7 +792,6 @@
 <translation id="7518003948725431193">Aucune page Web trouvée à l'adresse :<ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">Votre connexion à ce site n'est pas privée</translation>
-<translation id="7535087603100972091">Valeur</translation>
 <translation id="7537536606612762813">Obligatoire</translation>
 <translation id="7542403920425041731">Une fois la validation terminée, les informations relatives à votre carte seront partagées avec ce site.</translation>
 <translation id="7542995811387359312">La saisie automatique des numéros de carte de paiement est désactivée, car la connexion utilisée par ce formulaire n'est pas sécurisée.</translation>
@@ -812,7 +802,6 @@
 <translation id="7567204685887185387">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />. Il se peut que son certificat de sécurité ait été émis de manière frauduleuse. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="7568593326407688803">Cette page est en<ph name="ORIGINAL_LANGUAGE" />Voulez-vous la traduire ?</translation>
 <translation id="7569952961197462199">Supprimer les données de carte de paiement de Chrome ?</translation>
-<translation id="7569983096843329377">Noir</translation>
 <translation id="7578104083680115302">Payez rapidement sur des sites et dans des applications sur tous vos appareils au moyen de cartes que vous avez enregistrées sur Google.</translation>
 <translation id="7588950540487816470">Web physique</translation>
 <translation id="7592362899630581445">Le certificat du serveur ne respecte pas les restrictions de noms.</translation>
@@ -864,7 +853,6 @@
 <translation id="79338296614623784">Saisissez un numéro de téléphone valide</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Le certificat du serveur n'est pas encore valide.</translation>
-<translation id="7942349550061667556">Rouge</translation>
 <translation id="7947285636476623132">Veuillez vérifier l'année d'expiration, puis réessayer</translation>
 <translation id="7951415247503192394">(32 bits)</translation>
 <translation id="7956713633345437162">Favoris sur mobile</translation>
@@ -957,7 +945,6 @@
 <translation id="8870413625673593573">Récemment fermés</translation>
 <translation id="8874824191258364635">Saisissez un numéro de carte valide</translation>
 <translation id="8876793034577346603">Échec de l'analyse de la configuration du réseau.</translation>
-<translation id="8889402386540077796">Teinte</translation>
 <translation id="8891727572606052622">Mode proxy non valide.</translation>
 <translation id="889901481107108152">Désolé, cette fonctionnalité expérimentale n'est pas disponible pour votre plate-forme.</translation>
 <translation id="8903921497873541725">Zoom avant</translation>
@@ -966,7 +953,6 @@
 <translation id="8938939909778640821">Cartes de crédit et cartes prépayées acceptées</translation>
 <translation id="8957210676456822347">Autorisation du portail captif</translation>
 <translation id="8971063699422889582">Le certificat du serveur a expiré.</translation>
-<translation id="8986494364107987395">Envoyer automatiquement les statistiques d'utilisation et les rapports d'erreur à Google</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Le site Web que vous allez ouvrir contient des programmes dangereux</translation>
 <translation id="8997023839087525404">Le certificat présenté par le serveur n'a pas été communiqué au public. Selon les règles de transparence des certificats, certains certificats doivent obligatoirement être communiqués publiquement pour garantir qu'ils sont dignes de confiance et qu'ils protègent contre les individus malveillants.</translation>
@@ -982,7 +968,6 @@
 <translation id="9049981332609050619">Vous avez tenté de contacter <ph name="DOMAIN" />, mais le certificat présenté par le serveur est incorrect.</translation>
 <translation id="9050666287014529139">Phrase secrète</translation>
 <translation id="9065203028668620118">Modifier</translation>
-<translation id="9068849894565669697">Sélectionner couleur</translation>
 <translation id="9069693763241529744">Bloqué par une extension</translation>
 <translation id="9076283476770535406">Il est possible qu'il comporte du contenu réservé aux adultes</translation>
 <translation id="9078964945751709336">Veuillez fournir d'autres informations</translation>

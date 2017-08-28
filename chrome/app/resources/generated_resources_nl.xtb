@@ -1646,7 +1646,6 @@ van <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="3480892288821151001">Venster links koppelen</translation>
 <translation id="3481915276125965083">De volgende pop-ups zijn op deze pagina geblokkeerd:</translation>
-<translation id="3482214069979148937">Houd |<ph name="ACCELERATOR" />| ingedrukt om volledig scherm af te sluiten</translation>
 <translation id="3484273680291419129">Schadelijke software verwijderen...</translation>
 <translation id="3484869148456018791">Nieuw certificaat ophalen</translation>
 <translation id="3487007233252413104">anonieme functie</translation>
@@ -2370,7 +2369,7 @@ Druk op een toets om door te gaan met verkennen.</translation>
 <translation id="4664482161435122549">Fout bij exporteren van PKCS #12</translation>
 <translation id="466481852929361583">De beveiligde module wordt ingesteld. Even geduld, dit kan enkele minuten duren.</translation>
 <translation id="4665014895760275686">Fabrikant</translation>
-<translation id="466506872045057845">Chrome stelt de machtigingen terug naar de standaardwaarden</translation>
+<translation id="466506872045057845">Chrome reset de machtigingen naar de standaardwaarden</translation>
 <translation id="4667176955651319626">Indirecte cookies en sitegegevens blokkeren</translation>
 <translation id="4668721319092543482">Klik om <ph name="PLUGIN_NAME" /> in te schakelen</translation>
 <translation id="4668954208278016290">Er is een probleem opgetreden tijdens het uitpakken van de kopie naar de computer.</translation>

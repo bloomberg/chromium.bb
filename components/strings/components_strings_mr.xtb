@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">कनेक्शनची वाट पाहत आहे...</translation>
 <translation id="153384715582417236">सध्या इतकेच</translation>
 <translation id="1549470594296187301">हे वैशिष्‍ट्य वापरण्‍यासाठी JavaScript सक्षम करणे आवश्‍यक आहे.</translation>
-<translation id="1555130319947370107">निळा</translation>
 <translation id="1559528461873125649">अशी कोणतीही फाइल किंवा निर्देशिका नाही</translation>
 <translation id="1583429793053364125">हे वेबपृष्‍ठ प्रदर्शित करताना काहीतरी चूक झाली.</translation>
 <translation id="1592005682883173041">स्थानिक डेटा प्रवेश</translation>
 <translation id="1594030484168838125">निवडा</translation>
-<translation id="161042844686301425">निळसर</translation>
 <translation id="1620510694547887537">कॅमेरा</translation>
 <translation id="1629803312968146339">Chrome ने हे कार्ड जतन करावे असे आपण इच्छिता?</translation>
 <translation id="1639239467298939599">लोड करीत आहे</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="2710942282213947212">तुमच्या काँप्युटरवरील सॉफ्टवेअर Chromium ला वेबशी सुरक्षितपणे कनेक्ट होण्यापासून थांबवत आहे</translation>
 <translation id="2712173769900027643">परवानगी मागा</translation>
-<translation id="2713444072780614174">पांढरा</translation>
 <translation id="2720342946869265578">जवळपास</translation>
 <translation id="2721148159707890343">विनंती यशस्वी</translation>
 <translation id="2728127805433021124">सर्व्हरचे प्रमाणपत्र कमकुवत स्वाक्षरी अल्गोरिदम वापरून स्वाक्षरित केले आहे.</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">कोणतेही शोध परिणाम आढळले नाहीत</translation>
 <translation id="3305707030755673451">आपला डेटा आपल्या संकालन सांकेतिक वाक्यांशासह <ph name="TIME" /> वाजता कूटबद्ध केला होता. संकालन सुरु करण्यासाठी तो प्रविष्ट करा.</translation>
 <translation id="3320021301628644560">बिलिंग पत्ता जोडा</translation>
-<translation id="3329013043687509092">संपृक्तता</translation>
 <translation id="333371639341676808">अतिरिक्त संवाद तयार करण्यापासून या पृष्ठाला प्रतिबंधित करा.</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
 <translation id="3340978935015468852">सेटिंग्ज</translation>
@@ -413,7 +409,6 @@
 <translation id="4103249731201008433">डीव्हाइस सिरीयल क्रमांक अवैध आहे</translation>
 <translation id="410351446219883937">ऑटोप्ले</translation>
 <translation id="4103763322291513355">आपल्या सिस्टीम प्रशासकाद्वारे प्रवर्तित काळ्यासूचीतील URLs आणि अन्य धोरणांची सूची पाहण्यासाठी &lt;strong&gt;chrome://policy&lt;/strong&gt; ला भेट द्या.</translation>
-<translation id="4115378294792113321">किरमिजी</translation>
 <translation id="4116663294526079822">या साइटवर नेहमी अनुमती द्या</translation>
 <translation id="4117700440116928470">धोरण कक्षा समर्थित नाही.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{अन्य 1}one{अन्य #}other{अन्य #}}</translation>
@@ -624,7 +619,6 @@
 <translation id="5869522115854928033">जतन केलेले संकेतशब्द</translation>
 <translation id="5872918882028971132">पालक सूचना</translation>
 <translation id="5893752035575986141">क्रेडिट कार्डे स्वीकारली जातात.</translation>
-<translation id="5901630391730855834">पिवळा</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक केलेले)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 वापरात आहे}one{# वापरात आहे}other{# वापरात आहेत}}</translation>
 <translation id="5959728338436674663">धोकादायक अॅप्स आणि साइट शोधण्यात मदत करण्‍यासाठी काही <ph name="BEGIN_WHITEPAPER_LINK" />सिस्टीम माहिती आणि पृष्ठ सामग्री<ph name="END_WHITEPAPER_LINK" /> स्वयंचलितपणे Google कडे पाठवा. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -635,12 +629,10 @@
 <translation id="5990559369517809815">सर्व्हरला केल्या जाणार्‍या विनंत्या एका विस्ताराने अवरोधित केल्या गेल्या आहेत.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{पृष्ठ 1}one{पृष्ठ #}other{पृष्ठे #}}</translation>
-<translation id="6017514345406065928">हिरवा</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />वर असलेले आक्रमणकर्ता फसवणारे अॅप्स इंस्टॉल करू शकतात जे दुसरे काहीतरी असल्याचे भासवू शकतात किंवा तुम्हाला शोधण्यासाठी डेटा वापरू शकतात. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (सिंक केलेले)</translation>
 <translation id="6027201098523975773">नाव प्रविष्ट करा</translation>
 <translation id="6040143037577758943">बंद करा</translation>
-<translation id="6042308850641462728">अधिक</translation>
 <translation id="6047233362582046994">तुम्हाला तुमच्या सुरक्षेला असणारा धोका समजत असल्यास, हानिकारक अॅप्स काढले जाण्यापूर्वी तुम्ही <ph name="BEGIN_LINK" />या साइटला भेट देऊ शकता<ph name="END_LINK" />.</translation>
 <translation id="6047927260846328439">हा आशय तुम्हाला सॉफ्टवेअर इंस्टॉल करण्याचा किंवा वैयक्तिक माहिती उघड करण्याचा फसवा प्रयत्न करू शकेल. <ph name="BEGIN_LINK" />तरीही दाखवा<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">ही वेबसाइट प्रमाणपत्र पिनिंग वापरत असल्यामुळे तुम्ही आत्ता <ph name="SITE" /> पाहू शकणार नाही. नेटवर्क एरर आणि आक्रमणे शक्यतो तात्पुरती असतात, त्यामुळे हे पेज नंतर पाहता येईल.</translation>
@@ -718,7 +710,6 @@
 <translation id="6710213216561001401">मागील</translation>
 <translation id="6710594484020273272">&lt;शोध संज्ञा प्रविष्ट करा&gt;</translation>
 <translation id="6711464428925977395">प्रॉक्सी सर्व्हरमध्ये काहीतरी चुकीचे आहे किंवा पत्ता चुकीचा आहे.</translation>
-<translation id="6727102863431372879">सेट करा</translation>
 <translation id="674375294223700098">अज्ञात सर्व्हर प्रमाणपत्र त्रुटी.</translation>
 <translation id="6753269504797312559">धोरण मूल्य</translation>
 <translation id="6757797048963528358">आपले डीव्हाइस निष्क्रीय झाले.</translation>
@@ -802,7 +793,6 @@
 <translation id="7518003948725431193">या वेबपत्त्यासाठी वेबपृष्ठ आढळले नाही: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">या साइटवर तुमचे कनेक्शन खाजगी नाही</translation>
-<translation id="7535087603100972091">मूल्य</translation>
 <translation id="7537536606612762813">अनिवार्य</translation>
 <translation id="7542403920425041731">तुम्ही निश्चित केल्यावर, तुमचे कार्ड तपशील या साइटसह शेअर केले जातील.</translation>
 <translation id="7542995811387359312">स्वयंचलित क्रेडिट कार्ड भरणे अक्षम झाले आहे कारण हा फॉर्म सुरक्षित कनेक्शन वापरत नाही.</translation>
@@ -813,7 +803,6 @@
 <translation id="7567204685887185387">हा सर्व्हर हे <ph name="DOMAIN" /> असल्याचे सिद्ध करू शकला नाही; त्याचे सुरक्षितता प्रमाणपत्र कदाचित लबाडीने जारी केले असावे. हे कदाचित एका चुकीच्या कॉन्फिगरेशनमुळे किंवा आक्रमणकर्त्याने आपले कनेक्शन आंतरखंडित केल्यामुळे झाले असू शकते.</translation>
 <translation id="7568593326407688803">हे पृष्ठ<ph name="ORIGINAL_LANGUAGE" />मध्ये आहे आपण याचा भाषांतर करु इच्छिता?</translation>
 <translation id="7569952961197462199">Chrome मधून क्रेडिट कार्ड काढायचे?</translation>
-<translation id="7569983096843329377">काळा</translation>
 <translation id="7578104083680115302">आपण Google सह जतन केलेल्या कार्डचा वापर करून डिव्‍हाइसेसवरून द्रुतपणे साइट आणि अॅप्सवर देय द्या.</translation>
 <translation id="7588950540487816470">भौतिक वेब</translation>
 <translation id="7592362899630581445">सर्व्हरचे प्रमाणपत्र नाव मर्यादांचे उल्लंघन करते.</translation>
@@ -865,7 +854,6 @@
 <translation id="79338296614623784">वैध फोन नंबर प्रविष्ट करा</translation>
 <translation id="7935318582918952113">DOM डिस्टिलर</translation>
 <translation id="7938958445268990899">सर्व्हरचे प्रमाणपत्र अद्याप वैध नाही.</translation>
-<translation id="7942349550061667556">लाल</translation>
 <translation id="7947285636476623132">आपले कालबाह्यता वर्ष तपासा आणि पुन्हा प्रयत्न करा</translation>
 <translation id="7951415247503192394">(32-बिट)</translation>
 <translation id="7956713633345437162">Mobile बुकमार्क</translation>
@@ -958,7 +946,6 @@
 <translation id="8870413625673593573">अलीकडे बंद</translation>
 <translation id="8874824191258364635">वैध कार्ड नंबर प्रविष्ट करा</translation>
 <translation id="8876793034577346603">विश्लेषण करण्यात नेटवर्क कॉन्फिगरेशन अयशस्वी.</translation>
-<translation id="8889402386540077796">रंगछटा</translation>
 <translation id="8891727572606052622">अवैध प्रॉक्सी मोड.</translation>
 <translation id="889901481107108152">क्षमस्व, हा प्रयोग आपल्या प्लॅटफॉर्मवर उपलब्ध नाही.</translation>
 <translation id="8903921497873541725">झूम वाढवा</translation>
@@ -967,7 +954,6 @@
 <translation id="8938939909778640821">स्वीकारलेली क्रेडिट आणि प्रीपेड कार्डे</translation>
 <translation id="8957210676456822347">बंद पोर्टल प्राधिकृतता</translation>
 <translation id="8971063699422889582">सर्व्हरचे प्रमाणपत्र कालबाह्य झाले आहे.</translation>
-<translation id="8986494364107987395">Google ला वापर आकडेवारी आणि क्रॅश अहवाल स्वयंचलितपणे पाठवा</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">पुढे असणार्‍या साइटमध्ये हानिकारक प्रोग्राम आहेत</translation>
 <translation id="8997023839087525404">सर्व्हरने प्रमाणपत्र पारदर्शकता धोरणाचा वापर करून सार्वजनिकरीत्या उघड न केलेले एक प्रमाणपत्र सादर केले. काही प्रमाणपत्रे विश्वसनीय आहेत आणि आक्रमणकर्त्यांविरूद्ध संरक्षण करतात हे सुनिश्चित करण्‍यासाठी त्यांच्यासाठी ही एक आवश्यकता आहे.</translation>
@@ -983,7 +969,6 @@
 <translation id="9049981332609050619">आपण <ph name="DOMAIN" /> वर पोहोचण्याचा प्रयत्न केला, परंतु सर्व्हरने अवैध प्रमाणपत्र सादर केले आहे.</translation>
 <translation id="9050666287014529139">सांकेतिक वाक्यांश</translation>
 <translation id="9065203028668620118">संपादन</translation>
-<translation id="9068849894565669697">रंग निवडा</translation>
 <translation id="9069693763241529744">एक विस्ताराने ब्लॉक केलेले</translation>
 <translation id="9076283476770535406">कदाचित तिच्यामध्ये प्रौढ सामग्री असू शकते</translation>
 <translation id="9078964945751709336">अधिक माहिती आवश्यक आहे</translation>

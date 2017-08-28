@@ -55,6 +55,7 @@
 <translation id="2338501278241028356">அருகிலுள்ள சாதனங்களைக் கண்டறிய, புளூடூத்தை இயக்கவும்</translation>
 <translation id="2352467521400612932">ஸ்டைலஸ் அமைப்புகள்</translation>
 <translation id="2354174487190027830"><ph name="NAME" /> ஐச் செயல்படுத்துகிறது</translation>
+<translation id="2365393535144473978">மொபைல் டேட்டாவை இயக்கினால், புளூடூத் இயக்கப்படும்.</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2429753432712299108">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. ஏற்றுக்கொள்வதற்கு முன்னர், இந்தக் கடவுச்சொல் அந்தச் சாதனத்தில் காண்பிக்கப்பட்டது என்பதை உறுதிப்படுத்தவும்: <ph name="PASSKEY" /></translation>
 <translation id="2475982808118771221">ஒரு பிழை ஏற்பட்டது</translation>
@@ -171,6 +172,7 @@
 <translation id="5927132638760172455">தெரியாத ரிசீவருக்கு அனுப்புகிறது</translation>
 <translation id="5947494881799873997">மாற்றியமை</translation>
 <translation id="595202126637698455">செயல்திறனைத் தடமறிதல் இயக்கப்பட்டுள்ளது</translation>
+<translation id="5957083217255311415">மொபைல் டேட்டா முடக்கப்பட்டது.</translation>
 <translation id="5958529069007801266">கண்காணிக்கப்படும் பயனர்</translation>
 <translation id="5977415296283489383">ஹெட்ஃபோன்</translation>
 <translation id="5978382165065462689">தொலைநிலை உதவி மூலம் உங்கள் திரையின் கட்டுப்பாட்டைப் பகிர்கிறது.</translation>
@@ -204,6 +206,7 @@
 <translation id="6691659475504239918">தேடல்+ஷிஃப்ட்+H</translation>
 <translation id="6700713906295497288">IME மெனு பொத்தான்</translation>
 <translation id="6713285437468012787">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />" ஆனது இணைக்கப்பட்டது மற்றும் இப்போது எல்லா பயனர்களுக்கும் கிடைக்கக்கூடியதாக உள்ளது. அமைப்புகளைப் பயன்படுத்தி இந்த இணைத்தலை நீங்கள் அகற்றலாம்.</translation>
+<translation id="6715542151869432661">மொபைல் சாதனங்கள் எதுவுமில்லை.</translation>
 <translation id="6785414152754474415">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியது, மேலும் சார்ஜ் ஆகிறது.</translation>
 <translation id="6803622936009808957">ஆதரிக்கும் தெளிவுகள் கிடைக்காததால் காட்சிகளைப் பிரதிபலிக்க முடியவில்லை. பதிலாக நீட்டிக்கப்பட்ட டெஸ்க்டாப்பிற்குச் சென்றது.</translation>
 <translation id="683971173229319003">Search+L</translation>
@@ -269,6 +272,7 @@
 <translation id="8828714802988429505">90°</translation>
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8878886163241303700">திரையை விரிவாக்குகிறது</translation>
+<translation id="8921624153894383499">Google அசிஸ்டண்ட், இந்த மொழியை ஆதரிக்கவில்லை.</translation>
 <translation id="8938800817013097409">USB-C சாதனம் (பின்பக்கம் உள்ள வலது போர்ட்)</translation>
 <translation id="8940956008527784070">பேட்டரி குறைவு (<ph name="PERCENTAGE" />%)</translation>
 <translation id="9074739597929991885">புளூடூத்</translation>

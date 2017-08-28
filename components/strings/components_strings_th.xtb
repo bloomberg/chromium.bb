@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">กำลังรอการเชื่อมต่อ…</translation>
 <translation id="153384715582417236">เสร็จเรียบร้อย</translation>
 <translation id="1549470594296187301">ต้องเปิดใช้ JavaScript เพื่อใช้ฟีเจอร์นี้</translation>
-<translation id="1555130319947370107">สีน้ำเงิน</translation>
 <translation id="1559528461873125649">ไม่มีไฟล์หรือไดเรกทอรีดังกล่าว</translation>
 <translation id="1583429793053364125">มีสิ่งผิดปกติเกิดขึ้นในขณะที่แสดงหน้าเว็บนี้</translation>
 <translation id="1592005682883173041">การเข้าถึงข้อมูลในเครื่อง</translation>
 <translation id="1594030484168838125">เลือก</translation>
-<translation id="161042844686301425">สีฟ้า</translation>
 <translation id="1620510694547887537">กล้องถ่ายรูป</translation>
 <translation id="1629803312968146339">คุณต้องการให้ Chrome บันทึกบัตรนี้ไหม</translation>
 <translation id="1639239467298939599">กำลังโหลด</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">ป้อนอัตโนมัติ</translation>
 <translation id="2710942282213947212">ซอฟต์แวร์ในคอมพิวเตอร์ของคุณทำให้ Chromium ไม่สามารถเชื่อมต่อกับเว็บอย่างปลอดภัย</translation>
 <translation id="2712173769900027643">ขออนุญาต</translation>
-<translation id="2713444072780614174">สีขาว</translation>
 <translation id="2720342946869265578">ใกล้เคียง</translation>
 <translation id="2721148159707890343">คำขอสำเร็จ</translation>
 <translation id="2728127805433021124">ใบรับรองของเซิร์ฟเวอร์ถูกเซ็นชื่อด้วยอัลกอริทึมลายเซ็นที่ไม่รัดกุม</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">ไม่พบผลการค้นหา</translation>
 <translation id="3305707030755673451">ข้อมูลของคุณได้รับการเข้ารหัสด้วยรหัสผ่านการซิงค์เมื่อวันที่ <ph name="TIME" /> โปรดป้อนรหัสผ่านเพื่อเริ่มซิงค์</translation>
 <translation id="3320021301628644560">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>
-<translation id="3329013043687509092">ความอิ่มตัวของสี</translation>
 <translation id="333371639341676808">ป้องกันหน้านี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
 <translation id="3338095232262050444">ปลอดภัย</translation>
 <translation id="3340978935015468852">การตั้งค่า</translation>
@@ -413,7 +409,6 @@
 <translation id="4103249731201008433">หมายเลขซีเรียลของอุปกรณ์ไม่ถูกต้อง</translation>
 <translation id="410351446219883937">เล่นอัตโนมัติ</translation>
 <translation id="4103763322291513355">ไปที่ &lt;strong&gt;chrome://policy&lt;/strong&gt; เพื่อดูรายการของ URL ที่ไม่ได้รับอนุญาต และนโยบายอื่นๆ ที่ผู้ดูแลระบบของคุณบังคับใช้</translation>
-<translation id="4115378294792113321">สีม่วงแดง</translation>
 <translation id="4116663294526079822">อนุญาตบนไซต์นี้เสมอ</translation>
 <translation id="4117700440116928470">ขอบข่ายนโยบายไม่ได้รับการสนับสนุน</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{อีก 1 รายการ}other{อีก # รายการ}}</translation>
@@ -624,7 +619,6 @@
 <translation id="5869522115854928033">รหัสผ่านที่บันทึกไว้</translation>
 <translation id="5872918882028971132">คำแนะนำระดับบนสุด</translation>
 <translation id="5893752035575986141">รับบัตรเครดิต</translation>
-<translation id="5901630391730855834">สีเหลือง</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (ซิงค์แล้ว)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{ใช้งานอยู่ 1 รายการ}other{ใช้งานอยู่ # รายการ}}</translation>
 <translation id="5959728338436674663">ส่ง<ph name="BEGIN_WHITEPAPER_LINK" />ข้อมูลบางอย่างของระบบและเนื้อหาของหน้าเว็บ<ph name="END_WHITEPAPER_LINK" />ไปยัง Google เพื่อช่วยตรวจหาแอปและเว็บไซต์ที่เป็นอันตรายโดยอัตโนมัติ<ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -635,12 +629,10 @@
 <translation id="5990559369517809815">คำขอไปยังเซิร์ฟเวอร์ถูกบล็อกโดยส่วนขยาย</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{หน้า 1}other{หน้า #}}</translation>
-<translation id="6017514345406065928">สีเขียว</translation>
 <translation id="6017850046339264347">ผู้โจมตี <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> สามารถติดตั้งแอปที่หลอกลวงซึ่งปลอมเป็นเนื้อหาอย่างอื่นหรือรวบรวมข้อมูลที่อาจนำไปใช้ติดตามคุณ <ph name="BEGIN_LEARN_MORE_LINK" />เรียนรู้เพิ่มเติม<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" /> <ph name="TYPE_2" /> <ph name="TYPE_3" /> (ซิงค์แล้ว)</translation>
 <translation id="6027201098523975773">ป้อนชื่อ</translation>
 <translation id="6040143037577758943">ปิด</translation>
-<translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="6047233362582046994">หากคุณเข้าใจความเสี่ยงต่อความปลอดภัย คุณสามารถ<ph name="BEGIN_LINK" />ไปยังไซต์นี้<ph name="END_LINK" />ก่อนที่จะมีการนำแอปอันตรายออก</translation>
 <translation id="6047927260846328439">เนื้อหานี้อาจพยายามหลอกล่อให้คุณติดตั้งซอฟต์แวร์หรือเปิดเผยข้อมูลส่วนบุคคล <ph name="BEGIN_LINK" />แสดงเนื้อหา<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">คุณไม่สามารถไปที่ <ph name="SITE" /> ได้ในขณะนี้เนื่องจากเว็บไซต์ใช้การตรึงใบรับรอง โดยปกติข้อผิดพลาดของเครือข่ายและการโจมตีจะเกิดขึ้นเพียงชั่วคราว หน้านี้จึงอาจใช้งานได้ในภายหลัง</translation>
@@ -717,7 +709,6 @@
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6710594484020273272">&lt;พิมพ์ข้อความค้นหา&gt;</translation>
 <translation id="6711464428925977395">พร็อกซีเซิร์ฟเวอร์ผิดปกติหรือที่อยู่ไม่ถูกต้อง</translation>
-<translation id="6727102863431372879">ตั้งค่า</translation>
 <translation id="674375294223700098">ข้อผิดพลาดใบรับรองของเซิร์ฟเวอร์ที่ไม่รู้จัก</translation>
 <translation id="6753269504797312559">ค่านโยบาย</translation>
 <translation id="6757797048963528358">อุปกรณ์ของคุณเข้าสู่โหมดสลีปแล้ว</translation>
@@ -801,7 +792,6 @@
 <translation id="7518003948725431193">ไม่พบหน้าเว็บสำหรับที่อยู่เว็บ: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">การเชื่อมต่อกับไซต์นี้ไม่เป็นส่วนตัว</translation>
-<translation id="7535087603100972091">ราคา</translation>
 <translation id="7537536606612762813">จำเป็น</translation>
 <translation id="7542403920425041731">เมื่อคุณยืนยันแล้ว จะมีการแชร์รายละเอียดบัตรของคุณกับไซต์นี้</translation>
 <translation id="7542995811387359312">การป้อนหมายเลขบัตรเครดิตอัตโนมัติถูกปิดใช้งานเนื่องจากฟอร์มนี้ไม่ได้ใช้การเชื่อมต่อที่ปลอดภัย</translation>
@@ -812,7 +802,6 @@
 <translation id="7567204685887185387">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะอาจมีการออกใบรับรองความปลอดภัยปลอม โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="7568593326407688803">หน้าเว็บนี้เป็น<ph name="ORIGINAL_LANGUAGE" />คุณต้องการแปลหรือไม่</translation>
 <translation id="7569952961197462199">นำบัตรเครดิตออกจาก Chrome ไหม</translation>
-<translation id="7569983096843329377">สีดำ</translation>
 <translation id="7578104083680115302">ชำระเงินบนเว็บไซต์และแอปในอุปกรณ์ต่างๆ ได้อย่างรวดเร็วด้วยบัตรที่คุณได้บันทึกไว้กับ Google</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7592362899630581445">ใบรับรองของเซิร์ฟเวอร์ละเมิดข้อกำหนดชื่อ</translation>
@@ -864,7 +853,6 @@
 <translation id="79338296614623784">ป้อนหมายเลขโทรศัพท์ที่ถูกต้อง</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">ใบรับรองของเซิร์ฟเวอร์ยังไม่ถูกต้อง</translation>
-<translation id="7942349550061667556">สีแดง</translation>
 <translation id="7947285636476623132">ตรวจสอบปีหมดอายุแล้วลองอีกครั้ง</translation>
 <translation id="7951415247503192394">(32 บิต)</translation>
 <translation id="7956713633345437162">บุ๊กมาร์กบนมือถือ</translation>
@@ -958,7 +946,6 @@
 <translation id="8870413625673593573">เพิ่งปิด</translation>
 <translation id="8874824191258364635">ป้อนหมายเลขบัตรที่ถูกต้อง</translation>
 <translation id="8876793034577346603">ไม่สามารถแยกวิเคราะห์การกำหนดค่าเครือข่าย</translation>
-<translation id="8889402386540077796">โทนสี</translation>
 <translation id="8891727572606052622">โหมดพร็อกซีไม่ถูกต้อง</translation>
 <translation id="889901481107108152">ขออภัย การทดลองนี้ไม่สามารถใช้ได้กับแพลตฟอร์มของคุณ</translation>
 <translation id="8903921497873541725">ขยาย</translation>
@@ -967,7 +954,6 @@
 <translation id="8938939909778640821">บัตรเครดิตและบัตรเติมเงินที่ยอมรับ</translation>
 <translation id="8957210676456822347">การให้สิทธิ์แคปทีฟพอร์ทัล</translation>
 <translation id="8971063699422889582">ใบรับรองของเซิร์ฟเวอร์หมดอายุแล้ว</translation>
-<translation id="8986494364107987395">ส่งสถิติการใช้งานและรายงานข้อขัดข้องไปยัง Google โดยอัตโนมัติ</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">ไซต์ที่จะเปิดมีโปรแกรมที่เป็นอันตราย</translation>
 <translation id="8997023839087525404">เซิร์ฟเวอร์แสดงใบรับรองที่ไม่มีการเปิดเผยต่อสาธารณะโดยใช้นโยบายความโปร่งใสของใบรับรอง ซึ่งเป็นข้อกำหนดสำหรับใบรับรองบางรายการ เพื่อยืนยันว่าเชื่อถือได้และป้องกันการจู่โจม</translation>
@@ -983,7 +969,6 @@
 <translation id="9049981332609050619">คุณพยายามเข้าถึง <ph name="DOMAIN" /> แต่เซิร์ฟเวอร์แสดงใบรับรองที่ไม่ถูกต้อง</translation>
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>
 <translation id="9065203028668620118">แก้ไข</translation>
-<translation id="9068849894565669697">เลือกสี</translation>
 <translation id="9069693763241529744">ถูกบล็อกโดยส่วนขยาย</translation>
 <translation id="9076283476770535406">เว็บไซต์นี้อาจมีเนื้อหาสำหรับผู้ใหญ่</translation>
 <translation id="9078964945751709336">ต้องระบุข้อมูลเพิ่มเติม</translation>

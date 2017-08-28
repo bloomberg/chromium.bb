@@ -1645,7 +1645,6 @@
 <translation id="3479552764303398839">ಈಗ ಬೇಡ</translation>
 <translation id="3480892288821151001">ವಿಂಡೋದ ಎಡಕ್ಕೆ ಡಾಕ್ ಮಾಡಿ</translation>
 <translation id="3481915276125965083">ಕೆಳಗಿನ ಪಾಪ್-ಅಪ್‌ಗಳನ್ನು ಈ ಪುಟದಲ್ಲಿ ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ:</translation>
-<translation id="3482214069979148937">ಪೂರ್ಣಪರದೆಯಿಂದ ನಿರ್ಗಮಿಸಲು |<ph name="ACCELERATOR" />| ಹೋಲ್ಡ್ ಮಾಡಿ</translation>
 <translation id="3484273680291419129">ಹಾನಿಕಾರಕ ಸಾಫ್ಟ್‌ವೇರ್ ಅನ್ನು ತೆಗೆದುಹಾಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3484869148456018791">ಹೊಸ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="3487007233252413104">ಅನಾಮಧೇಯ ಕಾರ್ಯ</translation>
@@ -3989,10 +3988,10 @@
 <translation id="7170041865419449892">ವ್ಯಾಪ್ತಿಯ ಹೊರಗೆ</translation>
 <translation id="7173917244679555">ಆ ಹೆಸರಿನ ಮೂಲಕ ನೀವು ಈಗಾಗಲೇ ಬಳಕೆದಾರರನ್ನು ನಿರ್ವಹಿಸುತ್ತಿರುವಂತೆ ತೋರುತ್ತಿದೆ. ಈ ಸಾಧನಕ್ಕೆ <ph name="BEGIN_LINK" />ಆಮದು ಮಾಡಲು <ph name="PROFILE_NAME" /><ph name="END_LINK" /> ನೀವು ಬಯಸಿರುವಿರಾ?</translation>
 <translation id="7175353351958621980">ಇದರಿಂದ ಲೋಡ್ ಮಾಡಲಾಗಿದೆ:</translation>
-<translation id="7180611975245234373">ರೀಫ್ರೆಶ್ ಮಾಡಿ</translation>
+<translation id="7180611975245234373">ರಿಫ್ರೆಶ್ ಮಾಡಿ</translation>
 <translation id="7180865173735832675">ಕಸ್ಟಮೈಸ್</translation>
 <translation id="7186088072322679094">ಪರಿಕರಪಟ್ಟಿಯಲ್ಲಿ ಇರಿಸು</translation>
-<translation id="7191159667348037">ಅಜ್ಞಾತ ಪ್ರಿಂಟರ್ (USB)</translation>
+<translation id="7191159667348037">ಅಪರಿಚಿತ ಪ್ರಿಂಟರ್ (USB)</translation>
 <translation id="7191454237977785534">ಇದರಂತೆ ಫೈಲ್ ಉಳಿಸಿ</translation>
 <translation id="7196835305346730603">ಹತ್ತಿರದ Chromeboxes ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="7199158086730159431">ಸಹಾಯ ಪಡೆಯಿರಿ</translation>

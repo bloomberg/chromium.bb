@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">કનેક્શનની રાહ જોઈ રહ્યાં છીએ...</translation>
 <translation id="153384715582417236">હમણાં માટે બસ આટલું પૂરતું છે</translation>
 <translation id="1549470594296187301">આ સુવિધાનો ઉપયોગ કરવા માટે JavaScript સક્ષમ કરેલ હોવી આવશ્યક છે.</translation>
-<translation id="1555130319947370107">વાદળી</translation>
 <translation id="1559528461873125649">આવી કોઈ ફાઇલ અથવા નિર્દેશિકા નથી</translation>
 <translation id="1583429793053364125">આ વેબપૃષ્ઠ પ્રદર્શિત કરતી વખતે કંઇક ખોટું થયું.</translation>
 <translation id="1592005682883173041">સ્થાનિક ડેટા ઍક્સેસ</translation>
 <translation id="1594030484168838125">પસંદ કરો</translation>
-<translation id="161042844686301425">સ્યાન</translation>
 <translation id="1620510694547887537">કૅમેરો</translation>
 <translation id="1629803312968146339">શું તમે ઇચ્છો છો કે Chrome આ કાર્ડ સાચવે?</translation>
 <translation id="1639239467298939599">લોડ કરી રહ્યું છે</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">સ્વતઃભરો</translation>
 <translation id="2710942282213947212">તમારા કમ્પ્યુટરમાંનું સૉફ્ટવેર Chromiumને સુરક્ષિત રીતે વેબ સાથે કનેક્ટ થવાથી રોકી રહ્યું છે</translation>
 <translation id="2712173769900027643">પરવાનગી માગો</translation>
-<translation id="2713444072780614174">શ્વેત</translation>
 <translation id="2720342946869265578">નજીકના</translation>
 <translation id="2721148159707890343">વિનંતી સફળ થઇ</translation>
 <translation id="2728127805433021124">સર્વરનું પ્રમાણપત્ર એક નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું છે.</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">કોઈ શોધ પરિણામો મળ્યાં નથી</translation>
 <translation id="3305707030755673451">તમારો ડેટા <ph name="TIME" /> ના રોજ તમારા સમન્વયન પાસફ્રેઝ સાથે એન્ક્રિપ્ટ કરવામાં આવ્યો હતો. સમન્વયન શરૂ કરવા માટે તે દાખલ કરો.</translation>
 <translation id="3320021301628644560">બિલિંગ સરનામું ઉમેરો</translation>
-<translation id="3329013043687509092">સંતૃપ્તતા</translation>
 <translation id="333371639341676808">આ પૃષ્ઠને વધારાનાં સંવાદો બનાવવાથી રોકો.</translation>
 <translation id="3338095232262050444">સુરક્ષિત</translation>
 <translation id="3340978935015468852">સેટિંગ્સ</translation>
@@ -413,7 +409,6 @@
 <translation id="4103249731201008433">ઉપકરણ અનુક્ર્માંક નંબર અમાન્ય છે</translation>
 <translation id="410351446219883937">ઑટોપ્લે</translation>
 <translation id="4103763322291513355">બ્લેકલિસ્ટ કરેલા URL ની સૂચિ અને તમારા સિસ્ટમ વ્યવસ્થાપક દ્વારા લાગુ અન્ય નીતિઓ જોવા માટે &lt;strong&gt;chrome://policy&lt;/strong&gt; ની મુલાકાત લો.</translation>
-<translation id="4115378294792113321">કિરમજી</translation>
 <translation id="4116663294526079822">હંમેશા આ સાઇટ પર મંજૂરી આપો</translation>
 <translation id="4117700440116928470">નીતિ મર્યાદા સમર્થિત નથી.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 અન્ય}one{# અન્ય}other{# અન્ય}}</translation>
@@ -624,7 +619,6 @@
 <translation id="5869522115854928033">સાચવેલા પાસવર્ડ્સ</translation>
 <translation id="5872918882028971132">પેરેન્ટ સૂચનો</translation>
 <translation id="5893752035575986141">ક્રેડિટ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
-<translation id="5901630391730855834">પીળો</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (સમન્વયિત)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 ઉપયોગમાં છે}one{# ઉપયોગમાં છે}other{# ઉપયોગમાં છે}}</translation>
 <translation id="5959728338436674663">જોખમી અ‍ૅપ્લિકેશનો અને સાઇટ્સ શોધવામાં સહાય કરવા માટે Google ને કેટલીક <ph name="BEGIN_WHITEPAPER_LINK" />સિસ્ટમ માહિતી અને પૃષ્ઠ સામગ્રી<ph name="END_WHITEPAPER_LINK" /> આપમેળે મોકલો. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -635,12 +629,10 @@
 <translation id="5990559369517809815">સર્વર પરની વિનંતિઓને એક્સ્ટેંશન દ્વારા અવરોધિત કરવામાં આવી છે.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{પૃષ્ઠ 1}one{પૃષ્ઠ #}other{પૃષ્ઠ #}}</translation>
-<translation id="6017514345406065928">લીલો</translation>
 <translation id="6017850046339264347">હુમલાખોરો <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પર ભ્રામક ઍપ્લિકેશન ઇન્સ્ટૉલ કરી શકે છે જે કંઈક બીજું હોવાનો ડોળ કરે છે અથવા તમને ટ્રૅક કરવા માટે ઉપયોગમાં લઈ શકાય તેવો ડેટા એકત્રિત કરી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (સમન્વયિત)</translation>
 <translation id="6027201098523975773">એક નામ દાખલ કરો</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
-<translation id="6042308850641462728">વધુ</translation>
 <translation id="6047233362582046994">જો તમે તમારી સુરક્ષાના જોખમોને સમજો છો, તો તમે જોખમકારક ઍપ્લિકેશનો દૂર કરતા પહેલા <ph name="BEGIN_LINK" />આ સાઇટની મુલાકાત<ph name="END_LINK" /> લઈ શકો છો.</translation>
 <translation id="6047927260846328439">આ કન્ટેન્ટ કદાચ સૉફ્ટવેર ઇન્સ્ટૉલ કરવા માટે અથવા વ્યક્તિગત માહિતી કઢાવવા માટે તમારી સાથે કપટ કરવાનો પ્રયાસ કરી શકે છે. <ph name="BEGIN_LINK" />છતાં પણ બતાવો<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">તમે અત્યારે આ <ph name="SITE" />ની મુલાકાત લઈ શકતાં નથી કારણ કે આ વેબસાઇટ પ્રમાણપત્ર પિનિંગનો ઉપયોગ કરે છે. નેટવર્કમાં ભૂલ આવવી અને હુમલા થવા સામાન્ય રીતે અસ્થાયી હોય છે, તેથી આ પેજ સંભવિત રૂપે થોડા સમય પછી કાર્ય કરશે.</translation>
@@ -717,7 +709,6 @@
 <translation id="6710213216561001401">પહેલાનું</translation>
 <translation id="6710594484020273272">&lt;શોધ શબ્દ લખો&gt;</translation>
 <translation id="6711464428925977395">પ્રોક્સી સર્વરમાં કંઈક ખોટું થયું છે અથવા તો સરનામું ખોટું છે.</translation>
-<translation id="6727102863431372879">સેટ કરો</translation>
 <translation id="674375294223700098">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ.</translation>
 <translation id="6753269504797312559">નીતિ મૂલ્ય</translation>
 <translation id="6757797048963528358">તમારું ઉપકરણ નિષ્ક્રિય થઈ ગયું હતું.</translation>
@@ -801,7 +792,6 @@
 <translation id="7518003948725431193">વેબ સરનામાં માટે કોઈ વેબપેજ મળ્યું નથી: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">આ સાઇટ પરનું તમારું કનેક્શન ખાનગી નથી</translation>
-<translation id="7535087603100972091">મૂલ્ય</translation>
 <translation id="7537536606612762813">ફરજિયાત</translation>
 <translation id="7542403920425041731">એકવાર તમે પુષ્ટિ કરી લો તે પછી, આ સાઇટ સાથે તમારા કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="7542995811387359312">આપમેળે ક્રેડિટ કાર્ડ ભરણ અક્ષમ કર્યું છે કારણ કે આ ફોર્મ સુરક્ષિત કનેક્શનનો ઉપયોગ કરતું નથી.</translation>
@@ -812,7 +802,6 @@
 <translation id="7567204685887185387">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર કપટપૂર્વક રજૂ કરવામાં આવેલ હોઈ શકે છે. આ કોઈ ખોટી ગોઠવણીને કારણે થયું હશે અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો છે.</translation>
 <translation id="7568593326407688803">આ પૃષ્ઠ<ph name="ORIGINAL_LANGUAGE" />માં છે શું તમે તેને અનુવાદિત કરવા માંગો છો?</translation>
 <translation id="7569952961197462199">Chrome માંથી ક્રેડિટ કાર્ડ દૂર કરીએ?</translation>
-<translation id="7569983096843329377">શ્યામ</translation>
 <translation id="7578104083680115302">તમે Google સાથે સાચવ્યાં છે તે કાર્ડ્સનો ઉપયોગ કરીને સમગ્ર ઉપકરણોમાં સાઇટ્સ અને ઍપ્લિકેશનો પર ઝડપથી ચુકવણી કરો.</translation>
 <translation id="7588950540487816470">વાસ્તવિક વેબ</translation>
 <translation id="7592362899630581445">સર્વરનું પ્રમાણપત્ર, નામ નિગ્રહોનું ઉલ્લંઘન કરે છે.</translation>
@@ -864,7 +853,6 @@
 <translation id="79338296614623784">એક માન્ય ફોન નંબર દાખલ કરો</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">સર્વરનું પ્રમાણપત્ર હજી માન્ય નથી.</translation>
-<translation id="7942349550061667556">લાલ</translation>
 <translation id="7947285636476623132">તમારું સમાપ્તિ વર્ષ તપાસો અને ફરી પ્રયાસ કરો</translation>
 <translation id="7951415247503192394">(32-બિટ)</translation>
 <translation id="7956713633345437162">મોબાઇલ બુકમાર્ક્સ</translation>
@@ -957,7 +945,6 @@
 <translation id="8870413625673593573">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="8874824191258364635">એક માન્ય કાર્ડ નંબર દાખલ કરો</translation>
 <translation id="8876793034577346603">નેટવર્ક ગોઠવણી વિશ્લેષિત થવામાં નિષ્ફળ થઇ.</translation>
-<translation id="8889402386540077796">હ્યુ</translation>
 <translation id="8891727572606052622">અમાન્ય પ્રોક્સી મોડ.</translation>
 <translation id="889901481107108152">માફ કરશો, આ પ્રયોગ તમારા પ્લેટફોર્મ પર ઉપલબ્ધ નથી.</translation>
 <translation id="8903921497873541725">ઝૂમ વધારો</translation>
@@ -966,7 +953,6 @@
 <translation id="8938939909778640821">સ્વીકૃત ક્રેડિટ અને પ્રીપેઇડ કાર્ડ</translation>
 <translation id="8957210676456822347">કૅપ્ટિવ પોર્ટલ અધિકૃતતા</translation>
 <translation id="8971063699422889582">સર્વરના પ્રમાણપત્રની સમયસીમા સમાપ્ત થઈ છે.</translation>
-<translation id="8986494364107987395">ઉપયોગિતા આંકડાઓ અને ક્રેશ રિપોર્ટ્સ Google ને આપમેળે મોકલો</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">સાઇટમાં આગળ હાનિકારક પ્રોગ્રામ્સ છે</translation>
 <translation id="8997023839087525404">સર્વરે એવું પ્રમાણપત્ર પ્રસ્તુત કર્યું કે જે પ્રમાણપત્ર પારદર્શિતા નીતિનો ઉપયોગ કરીને સાર્વજનિક રીતે જાહેર કર્યું ન હતું. આ કેટલાક પ્રમાણપત્રો માટે એ ખાતરી કરવા હેતુ આવશ્યક છે કે તેઓ વિશ્વસનીય છે અને હુમલાખારો સામે રક્ષણ કરે છે.</translation>
@@ -982,7 +968,6 @@
 <translation id="9049981332609050619">તમે <ph name="DOMAIN" /> સુધી પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે અમાન્ય પ્રમાણપત્ર પ્રસ્તુત કર્યું. </translation>
 <translation id="9050666287014529139">પાસફ્રેઝ</translation>
 <translation id="9065203028668620118">સંપાદન</translation>
-<translation id="9068849894565669697">રંગ પસંદ કરો</translation>
 <translation id="9069693763241529744">એક્સ્ટેન્શન દ્વારા અવરોધિત કરેલ છે</translation>
 <translation id="9076283476770535406">તેમાં વયસ્ક સામગ્રી હોઈ શકે છે</translation>
 <translation id="9078964945751709336">વધુ માહિતી આવશ્યક</translation>

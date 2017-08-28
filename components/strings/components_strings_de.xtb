@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">Warten auf Verbindung…</translation>
 <translation id="153384715582417236">Das ist im Moment alles</translation>
 <translation id="1549470594296187301">Für diese Funktion muss JavaScript aktiviert sein.</translation>
-<translation id="1555130319947370107">Blau</translation>
 <translation id="1559528461873125649">Datei oder Verzeichnis nicht vorhanden</translation>
 <translation id="1583429793053364125">Fehler beim Anzeigen dieser Webseite.</translation>
 <translation id="1592005682883173041">Zugriff auf lokale Daten</translation>
 <translation id="1594030484168838125">Auswählen</translation>
-<translation id="161042844686301425">Cyan</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1629803312968146339">Möchten Sie, dass Chrome diese Karte speichert?</translation>
 <translation id="1639239467298939599">Wird geladen...</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">AutoFill</translation>
 <translation id="2710942282213947212">Software auf Ihrem Computer verhindert, dass Chromium eine sichere Internetverbindung herstellt</translation>
 <translation id="2712173769900027643">Berechtigung anfordern</translation>
-<translation id="2713444072780614174">Weiß</translation>
 <translation id="2720342946869265578">In der Nähe</translation>
 <translation id="2721148159707890343">Anfrage erfolgreich</translation>
 <translation id="2728127805433021124">Das Serverzertifikat ist mit einem schwachen Signaturalgorithmus signiert.</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">Keine Suchergebnisse gefunden</translation>
 <translation id="3305707030755673451">Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase verschlüsselt. Geben Sie diese ein, um die Synchronisierung zu starten.</translation>
 <translation id="3320021301628644560">Rechnungsadresse hinzufügen</translation>
-<translation id="3329013043687509092">Sättigung</translation>
 <translation id="333371639341676808">Diese Seite am Erstellen zusätzlicher Dialoge hindern</translation>
 <translation id="3338095232262050444">Sicher</translation>
 <translation id="3340978935015468852">Einstellungen</translation>
@@ -412,7 +408,6 @@
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
 <translation id="410351446219883937">Autoplay</translation>
 <translation id="4103763322291513355">Unter &lt;strong&gt;chrome://policy&lt;/strong&gt; finden Sie eine Liste der blockierten URLs und andere Richtlinien, die durch Ihren Systemadministrator erzwungen werden.</translation>
-<translation id="4115378294792113321">Magenta</translation>
 <translation id="4116663294526079822">Auf dieser Website immer zulassen</translation>
 <translation id="4117700440116928470">Richtlinienbereich wird nicht unterstützt.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 weiterer}other{# weitere}}</translation>
@@ -601,7 +596,7 @@
 <translation id="5631439013527180824">Ungültiges Management-Token für das Gerät</translation>
 <translation id="5633066919399395251">Zurzeit auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> befindliche Hacker könnten versuchen, gefährliche Programme auf Ihrem Computer zu installieren, um Daten wie Fotos, Passwörter, Nachrichten und Kreditkartendaten zu stehlen oder zu löschen. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Betrügerische Inhalte blockiert.</translation>
-<translation id="5646376287012673985">Speicherort</translation>
+<translation id="5646376287012673985">Standort</translation>
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5669703222995421982">Personalisierte Inhalte erhalten</translation>
 <translation id="5675650730144413517">Diese Seite funktioniert nicht</translation>
@@ -623,7 +618,6 @@
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5872918882028971132">Vorschläge für Eltern</translation>
 <translation id="5893752035575986141">Kreditkarten werden akzeptiert.</translation>
-<translation id="5901630391730855834">Gelb</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (synchronisiert)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 wird verwendet}other{# werden verwendet}}</translation>
 <translation id="5959728338436674663"><ph name="BEGIN_WHITEPAPER_LINK" />Ich möchte automatisch einige Systeminformationen und Seiteninhalte an Google senden<ph name="END_WHITEPAPER_LINK" />, um bei der Erfassung schädlicher Apps und Websites zu helfen. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -634,12 +628,10 @@
 <translation id="5990559369517809815">Anfragen an den Server wurden durch eine Erweiterung blockiert.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Seite 1}other{Seite #}}</translation>
-<translation id="6017514345406065928">Grün</translation>
 <translation id="6017850046339264347">Angreifer auf der Website <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> könnten betrügerische Apps installieren, die scheinbar einem anderen Zweck dienen oder Daten sammeln, um Sie auszuspionieren. <ph name="BEGIN_LEARN_MORE_LINK" />Weitere Informationen<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (synchronisiert)</translation>
 <translation id="6027201098523975773">Geben Sie einen Namen ein</translation>
 <translation id="6040143037577758943">Schließen</translation>
-<translation id="6042308850641462728">Mehr</translation>
 <translation id="6047233362582046994">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese Website aufrufen<ph name="END_LINK" />, bevor die schädlichen Apps entfernt wurden.</translation>
 <translation id="6047927260846328439">Mit diesen Inhalten wird möglicherweise versucht, Sie zu täuschen und so zur Installation von Software oder der Offenlegung personenbezogener Daten zu bringen. <ph name="BEGIN_LINK" />Trotzdem anzeigen<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Sie können <ph name="SITE" /> zurzeit nicht aufrufen, weil die Website das Zertifikats-Pinning nutzt. Netzwerkfehler und Angriffe sind in der Regel nur vorübergehend, sodass die Seite wahrscheinlich später wieder funktioniert.</translation>
@@ -716,7 +708,6 @@
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6710594484020273272">&lt;Suchbegriff eingeben&gt;</translation>
 <translation id="6711464428925977395">Mit dem Proxyserver ist ein Problem aufgetreten oder die Adresse ist falsch.</translation>
-<translation id="6727102863431372879">Festlegen</translation>
 <translation id="674375294223700098">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="6753269504797312559">Wert der Richtlinie</translation>
 <translation id="6757797048963528358">Ihr Gerät ist im Ruhemodus.</translation>
@@ -800,7 +791,6 @@
 <translation id="7518003948725431193">Für folgende Webadresse wurde keine Webseite gefunden: <ph name="URL" />.</translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">Die Verbindung zu dieser Website ist nicht sicher</translation>
-<translation id="7535087603100972091">Wert</translation>
 <translation id="7537536606612762813">Verbindlich</translation>
 <translation id="7542403920425041731">Nach erfolgter Bestätigung werden die Kartendetails an diese Website weitergegeben.</translation>
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
@@ -811,7 +801,6 @@
 <translation id="7567204685887185387">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat wurde möglicherweise in betrügerischer Absicht ausgegeben. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="7568593326407688803">Diese Seite ist auf<ph name="ORIGINAL_LANGUAGE" />Soll sie übersetzt werden?</translation>
 <translation id="7569952961197462199">Kreditkarte aus Chrome entfernen?</translation>
-<translation id="7569983096843329377">Schwarz</translation>
 <translation id="7578104083680115302">Mit Karten, die Sie bei Google gespeichert haben, können Sie schnell und geräteübergreifend auf Websites und in Apps bezahlen.</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7592362899630581445">Das Serverzertifikat verstößt gegen Namensbeschränkungen.</translation>
@@ -863,7 +852,6 @@
 <translation id="79338296614623784">Geben Sie eine gültige Telefonnummer ein</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Serverzertifikat ist noch nicht gültig.</translation>
-<translation id="7942349550061667556">Rot</translation>
 <translation id="7947285636476623132">Prüfen Sie Ihr Ablaufjahr und versuchen Sie es dann erneut</translation>
 <translation id="7951415247503192394">(32-Bit)</translation>
 <translation id="7956713633345437162">Mobile Lesezeichen</translation>
@@ -957,7 +945,6 @@
 <translation id="8870413625673593573">Kürzlich geschlossen</translation>
 <translation id="8874824191258364635">Geben Sie eine gültige Kartennummer ein</translation>
 <translation id="8876793034577346603">Fehler beim Parsen der Netzwerkkonfiguration</translation>
-<translation id="8889402386540077796">Farbton</translation>
 <translation id="8891727572606052622">Ungültiger Proxy-Modus</translation>
 <translation id="889901481107108152">Leider steht dieses Experiment auf Ihrer Plattform nicht zur Verfügung.</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
@@ -966,7 +953,6 @@
 <translation id="8938939909778640821">Akzeptierte Kredit- und Prepaidkarten</translation>
 <translation id="8957210676456822347">Erfassungsportal-Autorisierung</translation>
 <translation id="8971063699422889582">Das Serverzertifikat ist abgelaufen.</translation>
-<translation id="8986494364107987395">Nutzungsstatistiken und Absturzberichte automatisch an Google senden</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Die Website, die Sie aufrufen möchten, enthält schädliche Programme.</translation>
 <translation id="8997023839087525404">Der Server präsentierte ein Zertifikat, das nicht gemäß der Richtlinie zur Zertifikatstransparenz öffentlich offengelegt wurde. Dies ist für einige Zertifikate jedoch eine Voraussetzung, mit der sichergestellt wird, dass sie vertrauenswürdig sind und vor Angriffen schützen.</translation>
@@ -982,7 +968,6 @@
 <translation id="9049981332609050619">Sie haben versucht, auf <ph name="DOMAIN" /> zuzugreifen, der Server hat sich jedoch mit einem ungültigen Zertifikat ausgewiesen.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9065203028668620118">Bearbeiten</translation>
-<translation id="9068849894565669697">Farbe auswählen</translation>
 <translation id="9069693763241529744">Von einer Erweiterung blockiert</translation>
 <translation id="9076283476770535406">Eventuell enthält sie nicht jugendfreie Inhalte</translation>
 <translation id="9078964945751709336">Weitere Informationen erforderlich</translation>

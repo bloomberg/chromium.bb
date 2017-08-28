@@ -87,7 +87,7 @@
 <translation id="1128591060186966949">修改搜索引擎</translation>
 <translation id="1128987120443782698">该存储设备的容量为 <ph name="DEVICE_CAPACITY" />。请插入容量至少为 4 GB 的 SD 卡或 USB 记忆棒。</translation>
 <translation id="1131167343343087859">Google Payments 中存储的信用卡和地址信息。</translation>
-<translation id="1134009406053225289">在隐身窗口中打开</translation>
+<translation id="1134009406053225289">在无痕式窗口中打开</translation>
 <translation id="1140351953533677694">访问您的蓝牙和串行设备</translation>
 <translation id="114140604515785785">扩展程序根目录：</translation>
 <translation id="1143142264369994168">证书签名人</translation>
@@ -1639,7 +1639,6 @@
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3480892288821151001">将窗口固定到左侧</translation>
 <translation id="3481915276125965083">已拦截此网页上的下列弹出式窗口：</translation>
-<translation id="3482214069979148937">按住 |<ph name="ACCELERATOR" />| 即可退出全屏模式</translation>
 <translation id="3484273680291419129">正在移除有害软件…</translation>
 <translation id="3484869148456018791">获取新的证书</translation>
 <translation id="3487007233252413104">匿名函数</translation>

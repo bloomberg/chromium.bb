@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">In attesa di connessione…</translation>
 <translation id="153384715582417236">Per il momento è tutto</translation>
 <translation id="1549470594296187301">JavaScript deve essere attivato per utilizzare questa funzione.</translation>
-<translation id="1555130319947370107">Blu</translation>
 <translation id="1559528461873125649">Nessun file o directory corrispondente</translation>
 <translation id="1583429793053364125">Si è verificato un problema durante la visualizzazione della pagina web.</translation>
 <translation id="1592005682883173041">Accesso ai dati locali</translation>
 <translation id="1594030484168838125">Scegli</translation>
-<translation id="161042844686301425">Ciano</translation>
 <translation id="1620510694547887537">Videocamera</translation>
 <translation id="1629803312968146339">Vuoi che Chrome salvi questa carta?</translation>
 <translation id="1639239467298939599">Caricamento</translation>
@@ -218,9 +216,8 @@
 <translation id="2704951214193499422">Al momento non è possibile confermare la carta in Chromium. Riprova più tardi.</translation>
 <translation id="2705137772291741111">La copia del sito salvata (nella cache) era illeggibile.</translation>
 <translation id="2709516037105925701">Compilazione automatica</translation>
-<translation id="2710942282213947212">Il software installato sul computer sta impedendo a Chromium di connettersi in sicurezza a Internet.</translation>
+<translation id="2710942282213947212">Il software installato sul computer sta impedendo a Chromium di connettersi in sicurezza a Internet</translation>
 <translation id="2712173769900027643">Chiedi autorizzazione</translation>
-<translation id="2713444072780614174">Bianco</translation>
 <translation id="2720342946869265578">Qui vicino</translation>
 <translation id="2721148159707890343">Richiesta riuscita</translation>
 <translation id="2728127805433021124">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole.</translation>
@@ -299,7 +296,6 @@
 <translation id="3303855915957856445">Nessun risultato di ricerca trovato</translation>
 <translation id="3305707030755673451">I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in data <ph name="TIME" />. Inseriscila per avviare la sincronizzazione.</translation>
 <translation id="3320021301628644560">Aggiungi l'indirizzo di fatturazione</translation>
-<translation id="3329013043687509092">Saturazione</translation>
 <translation id="333371639341676808">Impedisci alla pagina di creare altre finestre di dialogo.</translation>
 <translation id="3338095232262050444">Sicuro</translation>
 <translation id="3340978935015468852">impostazioni</translation>
@@ -410,7 +406,6 @@
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
 <translation id="410351446219883937">Riproduzione automatica</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; per visualizzare l'elenco di URL inseriti nella blacklist e altre norme applicate dall'amministratore di sistema.</translation>
-<translation id="4115378294792113321">Magenta</translation>
 <translation id="4116663294526079822">Consenti sempre su questo sito</translation>
 <translation id="4117700440116928470">L'ambito della norma non è supportato.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 altro}other{# altri}}</translation>
@@ -621,7 +616,6 @@
 <translation id="5869522115854928033">Password salvate</translation>
 <translation id="5872918882028971132">Suggerimenti per i genitori</translation>
 <translation id="5893752035575986141">Le carte di credito sono accettate.</translation>
-<translation id="5901630391730855834">Giallo</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizzati)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 in uso}other{# in uso}}</translation>
 <translation id="5959728338436674663">Invia automaticamente a Google <ph name="BEGIN_WHITEPAPER_LINK" />alcune informazioni sul sistema e alcuni contenuti delle pagine<ph name="END_WHITEPAPER_LINK" /> per contribuire a rilevare app e siti pericolosi. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -632,12 +626,10 @@
 <translation id="5990559369517809815">Le richieste al server sono state bloccate da un'estensione.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{Pagina 1}other{Pagina #}}</translation>
-<translation id="6017514345406065928">Verde</translation>
 <translation id="6017850046339264347">Gli utenti malintenzionati presenti sul sito <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> potrebbero installare app ingannevoli che si spacciano per qualcos'altro o raccolgono dati che potrebbero essere usati per monitorare la tua attività. <ph name="BEGIN_LEARN_MORE_LINK" />Ulteriori informazioni<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (sincronizzati)</translation>
 <translation id="6027201098523975773">Inserisci un nome</translation>
 <translation id="6040143037577758943">Chiudi</translation>
-<translation id="6042308850641462728">Più</translation>
 <translation id="6047233362582046994">Se sei consapevole dei rischi per la tua sicurezza, potresti <ph name="BEGIN_LINK" />visitare questo sito<ph name="END_LINK" /> senza aspettare che vengano rimosse le app dannose.</translation>
 <translation id="6047927260846328439">Questi contenuti potrebbero cercare di indurti con l'inganno a installare software o a rivelare informazioni personali. <ph name="BEGIN_LINK" />Mostra comunque<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">Al momento non puoi visitare il sito web <ph name="SITE" /> perché utilizza il blocco dei certificati. In genere gli errori di rete e gli attacchi sono temporanei, pertanto questa pagina potrebbe funzionare più tardi.</translation>
@@ -713,7 +705,6 @@
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="6710594484020273272">&lt;Digita un termine di ricerca&gt;</translation>
 <translation id="6711464428925977395">Si è verificato un problema con il server proxy oppure l'indirizzo non è corretto.</translation>
-<translation id="6727102863431372879">Imposta</translation>
 <translation id="674375294223700098">Errore sconosciuto del certificato del server.</translation>
 <translation id="6753269504797312559">Valore norma</translation>
 <translation id="6757797048963528358">Il dispositivo è entrato in modalità sospensione.</translation>
@@ -797,7 +788,6 @@
 <translation id="7518003948725431193">Nessuna pagina web trovata per l'indirizzo web: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">La connessione a questo sito non è privata</translation>
-<translation id="7535087603100972091">Valore</translation>
 <translation id="7537536606612762813">Obbligatoria</translation>
 <translation id="7542403920425041731">Dopo essere stati confermati, i dati della carta saranno condivisi con questo sito.</translation>
 <translation id="7542995811387359312">La compilazione automatica della carta di credito è disattivata perché questo modulo non utilizza una connessione sicura.</translation>
@@ -808,7 +798,6 @@
 <translation id="7567204685887185387">Questo server non è riuscito a dimostrare che si tratta di <ph name="DOMAIN" />; il relativo certificato di sicurezza potrebbe essere stato emesso in modo fraudolento. Il problema potrebbe essere dovuto a un'errata configurazione o a un malintenzionato che intercetta la connessione.</translation>
 <translation id="7568593326407688803">Questa pagina è in<ph name="ORIGINAL_LANGUAGE" />Vuoi tradurla?</translation>
 <translation id="7569952961197462199">Rimuovere la carta di credito da Chrome?</translation>
-<translation id="7569983096843329377">Nero</translation>
 <translation id="7578104083680115302">Paga velocemente su siti e app su più dispositivi utilizzando le carte salvate su Google.</translation>
 <translation id="7588950540487816470">Physical Web</translation>
 <translation id="7592362899630581445">Il certificato del server vìola i vincoli relativi ai nomi.</translation>
@@ -860,7 +849,6 @@
 <translation id="79338296614623784">Inserisci un numero di telefono valido</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Il certificato del server non è ancora valido.</translation>
-<translation id="7942349550061667556">Rosso</translation>
 <translation id="7947285636476623132">Controlla l'anno di scadenza e riprova</translation>
 <translation id="7951415247503192394">(a 32 bit)</translation>
 <translation id="7956713633345437162">Preferiti su disp. mobili</translation>
@@ -953,7 +941,6 @@
 <translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="8874824191258364635">Inserisci un numero di carta di credito valido</translation>
 <translation id="8876793034577346603">Analisi della configurazione di rete non riuscita.</translation>
-<translation id="8889402386540077796">Tonalità</translation>
 <translation id="8891727572606052622">Modalità proxy non valida.</translation>
 <translation id="889901481107108152">Spiacenti, questo esperimento non è disponibile sulla tua piattaforma.</translation>
 <translation id="8903921497873541725">Aumenta lo zoom</translation>
@@ -962,7 +949,6 @@
 <translation id="8938939909778640821">Carte di credito e prepagate accettate</translation>
 <translation id="8957210676456822347">Autorizzazione Captive Portal</translation>
 <translation id="8971063699422889582">Il certificato del server è scaduto.</translation>
-<translation id="8986494364107987395">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">Il sito che stai per visitare contiene programmi dannosi</translation>
 <translation id="8997023839087525404">Il server ha presentato un certificato che non è stato reso pubblico tramite le norme di Certificate Transparency, la cui applicazione costituisce un requisito di alcuni certificati al fine di garantire la loro attendibilità nonché la sicurezza nei confronti dei malintenzionati.</translation>
@@ -978,7 +964,6 @@
 <translation id="9049981332609050619">Hai tentato di connetterti a <ph name="DOMAIN" />, ma il server ha presentato un certificato scaduto.</translation>
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9065203028668620118">Modifica</translation>
-<translation id="9068849894565669697">Seleziona colore</translation>
 <translation id="9069693763241529744">Bloccata da un'estensione</translation>
 <translation id="9076283476770535406">Può includere contenuti per adulti</translation>
 <translation id="9078964945751709336">Sono necessarie maggiori informazioni</translation>

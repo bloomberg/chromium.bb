@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">कनेक्‍शन के इंतज़ार में…</translation>
 <translation id="153384715582417236">अभी के लिए हो गया</translation>
 <translation id="1549470594296187301">इस सुविधा का उपयोग करने के लिए JavaScript को सक्षम किया जाना चाहिए.</translation>
-<translation id="1555130319947370107">नीला</translation>
 <translation id="1559528461873125649">कोई ऐसी फ़ाइल या निर्देशिका नहीं है</translation>
 <translation id="1583429793053364125">यह वेबपेज प्रदर्शित करते समय कोई समस्या हुई.</translation>
 <translation id="1592005682883173041">स्थानीय डेटा एक्सेस</translation>
 <translation id="1594030484168838125">चुनें</translation>
-<translation id="161042844686301425">स्यान</translation>
 <translation id="1620510694547887537">कैमरा</translation>
 <translation id="1629803312968146339">क्या आप चाहते हैं कि Chrome इस कार्ड को सहेजे?</translation>
 <translation id="1639239467298939599">लोड हो रहा है</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">ऑटोमैटिक भरना</translation>
 <translation id="2710942282213947212">आपके कंप्यूटर पर मौजूद सॉफ़्टवेयर क्रोमियम को सुरक्षित तरीके से वेब से जुड़ने से रोक रहा है</translation>
 <translation id="2712173769900027643">अनुमति मांगें</translation>
-<translation id="2713444072780614174">सफ़ेद</translation>
 <translation id="2720342946869265578">आस-पास</translation>
 <translation id="2721148159707890343">अनुरोध सफल रहा</translation>
 <translation id="2728127805433021124">सर्वर का प्रमाणपत्र एक कमज़ोर हस्ताक्षर एल्गोरिदम का उपयोग करके हस्ताक्षरित किया गया है.</translation>
@@ -302,7 +299,6 @@
 <translation id="3303855915957856445">कोई खोज परिणाम नहीं मिला</translation>
 <translation id="3305707030755673451">आपका डेटा आपके समन्वयन पासफ़्रेज़ के साथ <ph name="TIME" /> को एन्क्रिप्ट किया गया था. समन्वयन शुरू करने के लिए इसे डालें.</translation>
 <translation id="3320021301628644560">बिलिंग पता जोड़ें</translation>
-<translation id="3329013043687509092">संतृप्तता</translation>
 <translation id="333371639341676808">इस पेज को अतिरिक्त ब्लॉग बनाने से रोकें.</translation>
 <translation id="3338095232262050444">सुरक्षित</translation>
 <translation id="3340978935015468852">सेटिंग</translation>
@@ -413,7 +409,6 @@
 <translation id="4103249731201008433">डिवाइस की क्रम संख्या अमान्य है</translation>
 <translation id="410351446219883937">स्वतः चलाएं</translation>
 <translation id="4103763322291513355">काली सूची में डाले गए URL तथा आपके सिस्टम व्यवस्थापक द्वारा लागू की गई अन्य नीतियों को देखने के लिए &lt;strong&gt;chrome://policy&lt;/strong&gt; पर जाएं.</translation>
-<translation id="4115378294792113321">मैजेंटा</translation>
 <translation id="4116663294526079822">इस साइट पर हमेशा अनुमति दें</translation>
 <translation id="4117700440116928470">नीति क्षेत्र समर्थित नहीं है.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 अन्य}one{# अन्‍य}other{# अन्‍य}}</translation>
@@ -624,7 +619,6 @@
 <translation id="5869522115854928033">सहेजे गए पासवर्ड</translation>
 <translation id="5872918882028971132">अभिभावक सुझाव</translation>
 <translation id="5893752035575986141">क्रेडिट कार्ड स्वीकार किए जाते हैं.</translation>
-<translation id="5901630391730855834">पीला</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (सिंक किया गया)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 उपयोग में है}one{# उपयोग में हैं}other{# उपयोग में हैं}}</translation>
 <translation id="5959728338436674663">Google को कुछ <ph name="BEGIN_WHITEPAPER_LINK" />सिस्टम संबंधी जानकारी और पेज सामग्री<ph name="END_WHITEPAPER_LINK" /> अपने आप भेजें ताकि खतरनाक ऐप्लिकेशन और साइटों का पता लगाने में सहायता मिल सके. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -635,12 +629,10 @@
 <translation id="5990559369517809815">सर्वर से किए गए अनुरोधों को एक्‍सटेंशन द्वारा अवरुद्ध कर दिया गया है.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{पेज 1}one{पेज #}other{पेज #}}</translation>
-<translation id="6017514345406065928">हरा</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> पर मौजूद हमलावर ऐसे भ्रामक ऐप्लिकेशन इंस्टॉल कर सकते हैं जो कुछ और होने का दावा करते हैं या ऐसा डेटा एकत्रित करते हैं जिसका उपयोग आप पर नज़र रखने के लिए किया जा सके. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जानें<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (सिंक किए गए)</translation>
 <translation id="6027201098523975773">नाम डालें</translation>
 <translation id="6040143037577758943">बंद करें</translation>
-<translation id="6042308850641462728">अधिक</translation>
 <translation id="6047233362582046994">अगर आप अपनी सुरक्षा में होने वाले जोखिमों को समझते हैं, तो खतरनाक ऐप्लिकेशन निकाले जाने से पहले आप <ph name="BEGIN_LINK" />इस साइट पर जा<ph name="END_LINK" /> सकते हैं.</translation>
 <translation id="6047927260846328439">यह सामग्री आपसे धोखे से सॉफ़्टवेयर इंस्‍टॉल करवाने या व्यक्तिगत जानकारी का खुलासा करवाने की कोशिश कर सकती है. <ph name="BEGIN_LINK" />फिर भी दिखाएं<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923">आप इस समय <ph name="SITE" /> पर नहीं जा सकते हैं क्योंकि वेबसाइट प्रमाणपत्र पिनिंग का उपयोग करती है. नेटवर्क की गड़बड़ियां और हमले आमतौर पर कुछ देर के लिए होते हैं, इसलिए यह पेज शायद बाद में ठीक से काम करेगा.</translation>
@@ -717,7 +709,6 @@
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6710594484020273272">&lt;खोज शब्द लिखें&gt;</translation>
 <translation id="6711464428925977395">प्रॉक्सी सर्वर के साथ कुछ गलत है या पता गलत है.</translation>
-<translation id="6727102863431372879">सेट करें</translation>
 <translation id="674375294223700098">अज्ञात सर्वर प्रमाणपत्र गड़बड़ी.</translation>
 <translation id="6753269504797312559">नीति मान</translation>
 <translation id="6757797048963528358">आपका डिवाइस निष्क्रिय हो गया है.</translation>
@@ -801,7 +792,6 @@
 <translation id="7518003948725431193">इस वेब पते के लिए कोई वेब पेज नहीं मिला था: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">इस साइट से आपका कनेक्‍शन निजी नहीं है</translation>
-<translation id="7535087603100972091">मान</translation>
 <translation id="7537536606612762813">आवश्यक</translation>
 <translation id="7542403920425041731">आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ साझा किए जाएंगे.</translation>
 <translation id="7542995811387359312">स्वतः क्रेडिट कार्ड भरना अक्षम किया गया है क्योंकि यह फ़ॉर्म किसी सुरक्षित कनेक्शन का उपयोग नहीं करता है.</translation>
@@ -812,7 +802,6 @@
 <translation id="7567204685887185387">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; हो सकता है इसका सुरक्षा प्रमाणपत्र धोखे से जारी किया गया हो. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="7568593326407688803">यह पृष्ठ<ph name="ORIGINAL_LANGUAGE" />में है क्या आप इसका अनुवाद करना चाहेंगे?</translation>
 <translation id="7569952961197462199">Chrome से क्रेडिट कार्ड निकालें?</translation>
-<translation id="7569983096843329377">काला</translation>
 <translation id="7578104083680115302">Google के साथ सहेजे गए कार्ड का उपयोग करके डिवाइसों में मौजूद साइटों और ऐप्‍स पर तुरंत भुगतान करें.</translation>
 <translation id="7588950540487816470">जीता-जागता वेब</translation>
 <translation id="7592362899630581445">सर्वर का प्रमाणपत्र नाम संबंधी प्रतिबंधों का उल्लंघन करता है.</translation>
@@ -864,7 +853,6 @@
 <translation id="79338296614623784">मान्य फ़ोन नंबर डालें</translation>
 <translation id="7935318582918952113">DOM डिस्टिलर</translation>
 <translation id="7938958445268990899">सर्वर का प्रमाणपत्र अभी तक मान्य नहीं है.</translation>
-<translation id="7942349550061667556">लाल</translation>
 <translation id="7947285636476623132">अपना समाप्ति वर्ष जांचें और फिर से कोशिश करें</translation>
 <translation id="7951415247503192394">(32-बिट)</translation>
 <translation id="7956713633345437162">मोबाइल बुकमार्क</translation>
@@ -958,7 +946,6 @@
 <translation id="8870413625673593573">हाल ही में बंद किए गए</translation>
 <translation id="8874824191258364635">मान्य कार्ड संख्या डालें</translation>
 <translation id="8876793034577346603">नेटवर्क कॉन्फ़िगरेशन पार्स होने में विफल रहा.</translation>
-<translation id="8889402386540077796">रंग</translation>
 <translation id="8891727572606052622">अमान्य प्रॉक्सी मोड.</translation>
 <translation id="889901481107108152">क्षमा करें, यह प्रयोग आपके प्‍लेटफ़ॉर्म पर उपलब्ध नहीं है.</translation>
 <translation id="8903921497873541725">ज़ूम इन करें</translation>
@@ -967,7 +954,6 @@
 <translation id="8938939909778640821">स्वीकृत क्रेडिट और प्रीपेड कार्ड</translation>
 <translation id="8957210676456822347">कैप्‍टिव पोर्टल प्राधिकरण</translation>
 <translation id="8971063699422889582">सर्वर के प्रमाणपत्र की समय-सीमा समाप्त हो चुकी है.</translation>
-<translation id="8986494364107987395">उपयोग संबंधी आंकड़े और क्रैश रिपोर्ट अपने आप Google को भेजने की अनुमति दें</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">साइट में आगे हानिकारक प्रोग्राम हैं</translation>
 <translation id="8997023839087525404">सर्वर ने एक प्रमाणपत्र प्रस्तुत किया है, जिसे प्रमाणपत्र पारदर्शिता पॉलिसी का उपयोग करके सार्वजनिक रूप से प्रकट नहीं किया गया था. कुछ प्रमाणपत्रों के लिए यह सुनिश्चित करना आवश्यक है कि वे विश्वसनीय हैं और आक्रमणकर्ताओं से रक्षा करते हैं.</translation>
@@ -983,7 +969,6 @@
 <translation id="9049981332609050619">आपने <ph name="DOMAIN" /> पर पहुंचने का प्रयास किया, लेकिन सर्वर ने एक अमान्‍य प्रमाणपत्र प्रस्तुत किया.</translation>
 <translation id="9050666287014529139">पासफ़्रेज़</translation>
 <translation id="9065203028668620118">संपादित करें</translation>
-<translation id="9068849894565669697">रंग चुनें</translation>
 <translation id="9069693763241529744">किसी एक्सटेंशन से अवरोधित है</translation>
 <translation id="9076283476770535406">इसमें वयस्क सामग्री हो सकती है</translation>
 <translation id="9078964945751709336">अधिक जानकारी की आवश्यकता है</translation>

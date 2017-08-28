@@ -67,6 +67,7 @@
 <translation id="1110155001042129815">待機</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{ダウンロードを続ける}other{ダウンロードを続ける}}</translation>
 <translation id="1110772031432362678">ネットワークが見つかりません。</translation>
+<translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" />（USB）</translation>
 <translation id="1114202307280046356">ひし形</translation>
 <translation id="1114335938027186412">ご使用のパソコンには Trusted Platform Module（TPM）セキュリティ デバイスが組み込まれています。これは Chrome OS の多くの重要なセキュリティ機能を実装するために使用されます。詳しくは Chromebook ヘルプセンター（https://support.google.com/chromebook/?p=tpm）をご覧ください。</translation>
 <translation id="1114525161406758033">ディスプレイを閉じたときにスリープ状態にする</translation>
@@ -887,6 +888,7 @@
 <translation id="2378982052244864789">拡張機能のディレクトリを選択してください。</translation>
 <translation id="2379281330731083556">システム ダイアログを使用して印刷... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">送信する前に確認する（推奨）</translation>
+<translation id="2384436799579181135">エラーが発生しました。プリンタを確認してもう一度お試しください。</translation>
 <translation id="2385700042425247848">サービス名:</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> 件の新しい写真が見つかりました
     <ph name="LINE_BREAK1" />
@@ -1252,6 +1254,7 @@
 <translation id="2897878306272793870"><ph name="TAB_COUNT" /> 個のタブが開きます。本当によろしいですか？</translation>
 <translation id="290105521672621980">サポートされていない機能がファイルで使用されています</translation>
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> はこのプリンタと通信できませんでした。プリンタが接続されていることを確認して、もう一度お試しください。</translation>
+<translation id="2902312830803030883">その他の操作</translation>
 <translation id="2903457445916429186">選択したアイテムを開く</translation>
 <translation id="2903493209154104877">住所</translation>
 <translation id="290444763029043472"><ph name="DOWNLOADED_AMOUNT_MB" /> MB / <ph name="TOTAL_AMOUNT_MB" /> MB をダウンロード完了</translation>
@@ -1364,6 +1367,7 @@
 <translation id="3065041951436100775">タブの強制終了に関するフィードバック。</translation>
 <translation id="3065140616557457172">キーワードを入力して検索するか、直接 URL を入力してください。</translation>
 <translation id="3067198360141518313">このプラグインを実行する</translation>
+<translation id="3071624960923923138">ここをクリックすると新しいタブが開きます</translation>
 <translation id="3074037959626057712">ログインして同期を有効にしました</translation>
 <translation id="3075874217500066906">Powerwash を開始するには再起動が必要です。再起動後、続行の確認メッセージが表示されます。</translation>
 <translation id="3076677906922146425">だれでも Chrome にユーザーを追加できるようにする</translation>
@@ -1642,7 +1646,6 @@
 <translation id="3479552764303398839">後で</translation>
 <translation id="3480892288821151001">ウィンドウを左に固定</translation>
 <translation id="3481915276125965083">このページの次のポップアップがブロックされました:</translation>
-<translation id="3482214069979148937">全画面表示を終了するには |<ph name="ACCELERATOR" />| を押し続けます</translation>
 <translation id="3484273680291419129">有害なソフトウェアを削除しています...</translation>
 <translation id="3484869148456018791">新しい証明書を取得</translation>
 <translation id="3487007233252413104">無名関数</translation>
@@ -2265,6 +2268,7 @@
 <translation id="450099669180426158">感嘆符アイコン</translation>
 <translation id="4501530680793980440">削除の確認</translation>
 <translation id="4504940961672722399">この拡張機能を使用するには、このアイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
+<translation id="4508051413094283164">すべてをシークレット ウィンドウで開く</translation>
 <translation id="4508265954913339219">起動に失敗しました</translation>
 <translation id="4508765956121923607">ソースを表示(&amp;O)</translation>
 <translation id="4509017836361568632">写真を破棄</translation>
@@ -2365,6 +2369,7 @@
 <translation id="4664482161435122549">PKCS #12 エクスポート エラー</translation>
 <translation id="466481852929361583">セキュア モジュールをセットアップしています。しばらくお待ちください。これには数分かかることがあります。</translation>
 <translation id="4665014895760275686">メーカー</translation>
+<translation id="466506872045057845">サイトの権限はデフォルトに戻ります</translation>
 <translation id="4667176955651319626">サードパーティの Cookie とサイト データをブロックする</translation>
 <translation id="4668721319092543482">クリックして <ph name="PLUGIN_NAME" /> を有効にします</translation>
 <translation id="4668954208278016290">パソコンにイメージを展開中に問題が発生しました。</translation>
@@ -2530,6 +2535,7 @@
 <translation id="4903369323166982260">Chrome クリーンアップ ツールを実行</translation>
 <translation id="4907161631261076876">このファイルは一般的にダウンロードされているファイルではなく、危害を及ぼす可能性があります。</translation>
 <translation id="4907306957610201395">権限のカテゴリ</translation>
+<translation id="4908811072292128752">新しいタブを開いて 2 つのサイトを同時に閲覧できます</translation>
 <translation id="4909038193460299775">このアカウントは <ph name="DOMAIN" /> で管理されているため、ブックマーク、履歴、パスワードなどの設定はこの端末から消去されます。ただし、データは Google アカウントに保存され、<ph name="BEGIN_LINK" />Google ダッシュボード<ph name="END_LINK" />で管理できます。</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">どの拡張機能にもキーボード ショートカットは割り当てられていません。</translation>
@@ -2718,6 +2724,7 @@
 <translation id="521582610500777512">写真を破棄しました</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5225324770654022472">アプリのショートカットを表示</translation>
+<translation id="5225360179303283478">サイトの設定をリセット</translation>
 <translation id="5227536357203429560">プライベート ネットワークを追加...</translation>
 <translation id="5227679487546032910">デフォルトの青緑のアバター</translation>
 <translation id="5227808808023563348">1 つ前のテキストを表示する</translation>
@@ -3594,6 +3601,7 @@
 <translation id="655384502888039633">ユーザー数: <ph name="USER_COUNT" /> 人</translation>
 <translation id="6555432686520421228">すべてのユーザー アカウントを削除し、<ph name="IDS_SHORT_PRODUCT_NAME" /> デバイスを出荷時と同じ状態にリセットします。</translation>
 <translation id="6556866813142980365">やり直す</translation>
+<translation id="6558280019477628686">エラーが発生しました。一部の項目が削除されていない可能性があります。</translation>
 <translation id="6559580823502247193">（このデバイスの既存ユーザー）</translation>
 <translation id="6561726789132298588">Enter</translation>
 <translation id="6562437808764959486">リカバリ イメージを展開しています...</translation>
@@ -3665,6 +3673,7 @@
 <translation id="6664237456442406323">パソコンに設定されているハードウェア ID の形式が正しくありません。このため、Chrome OS に最新のセキュリティ修正を適用することができません。お使いのパソコンは、<ph name="BEGIN_BOLD" />悪意のある攻撃を受けやすくなる可能性があります<ph name="END_BOLD" />。</translation>
 <translation id="6664774537677393800">プロフィールを開こうとして問題が発生しました。ログアウトしてから再度ログインしてください。</translation>
 <translation id="6666647326143344290">Google アカウントを使用</translation>
+<translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" />（USB）</translation>
 <translation id="667517062706956822">Google でこのページを <ph name="SOURCE_LANGUAGE" /> から <ph name="TARGET_LANGUAGE" /> に翻訳しますか？</translation>
 <translation id="6675665718701918026">ポインティング デバイスが接続されました</translation>
 <translation id="6677037229676347494">期待される ID は「<ph name="EXPECTED_ID" />」ですが、「<ph name="NEW_ID" />」になっています。</translation>
@@ -3696,6 +3705,7 @@
 <translation id="6716704051134091292">PDF 変換</translation>
 <translation id="6718273304615422081">圧縮しています...</translation>
 <translation id="671928215901716392">画面をロック</translation>
+<translation id="67211069045302358">このサイトの設定をリセットしますか？</translation>
 <translation id="6721972322305477112">ファイル(&amp;F)</translation>
 <translation id="672213144943476270">ゲストとしてブラウジングするにはまずプロフィールのロックを解除してください。</translation>
 <translation id="6723354935081862304">Google ドキュメントなどのクラウド上で印刷します。Google クラウド プリントで印刷するには、<ph name="BEGIN_LINK" />ログイン<ph name="END_LINK" />が必要です。</translation>
@@ -3873,6 +3883,7 @@
 <translation id="7005848115657603926">ページ範囲が無効です。<ph name="EXAMPLE_PAGE_RANGE" /> の範囲で指定してください。</translation>
 <translation id="7006634003215061422">下余白</translation>
 <translation id="7006844981395428048">$1 音声</translation>
+<translation id="7007648447224463482">すべてを新しいウィンドウで開く</translation>
 <translation id="7008270479623533562">この拡張機能を実行するにはページを更新する必要があります。拡張機能アイコンを右クリックして、この拡張機能をこのサイトで自動的に実行するよう指定できます。</translation>
 <translation id="701080569351381435">ソースを表示</translation>
 <translation id="7012372675181957985">Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります</translation>
@@ -3977,6 +3988,7 @@
 <translation id="7180611975245234373">更新</translation>
 <translation id="7180865173735832675">カスタマイズ</translation>
 <translation id="7186088072322679094">ツールバーに残す</translation>
+<translation id="7191159667348037">不明なプリンタ（USB）</translation>
 <translation id="7191454237977785534">名前を付けて保存</translation>
 <translation id="7196835305346730603">近くの Chromebox を検索しています...</translation>
 <translation id="7199158086730159431">ヘルプ(&amp;E)</translation>

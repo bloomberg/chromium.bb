@@ -1643,7 +1643,6 @@
 <translation id="3479552764303398839">ليس الآن</translation>
 <translation id="3480892288821151001">إرساء النافذة لليسار</translation>
 <translation id="3481915276125965083">تم منع عرض النوافذ المنبثقة التالية في هذه الصفحة:</translation>
-<translation id="3482214069979148937">اضغط مع الاستمرار على |<ph name="ACCELERATOR" />| للخروج من وضع ملء الشاشة</translation>
 <translation id="3484273680291419129">جارٍ إزالة البرامج الضارة...</translation>
 <translation id="3484869148456018791">الحصول على شهادة جديدة</translation>
 <translation id="3487007233252413104">وظيفة مجهولة</translation>
@@ -2642,7 +2641,7 @@
 <translation id="5098647635849512368">لا يمكن العثور على المسار المطلق للدليل للحزمة.</translation>
 <translation id="5099354524039520280">لأعلى</translation>
 <translation id="5100114659116077956">‏لكي تحصل على أحدث العناصر، يلزم تحديث Chromebox.</translation>
-<translation id="5101042277149003567">فتح  جميع الإشارات</translation>
+<translation id="5101042277149003567">فتح  جميع الإشارات المرجعية</translation>
 <translation id="5105855035535475848">تثبيت علامات التبويب</translation>
 <translation id="5108967062857032718">‏الإعدادات - إزالة تطبيقات Android</translation>
 <translation id="5109044022078737958">Mia</translation>

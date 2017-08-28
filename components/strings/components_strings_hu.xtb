@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">Várakozás a kapcsolódásra…</translation>
 <translation id="153384715582417236">Egyelőre ennyi</translation>
 <translation id="1549470594296187301">A funkció használatához engedélyezni kell a JavaScriptet.</translation>
-<translation id="1555130319947370107">Kék</translation>
 <translation id="1559528461873125649">Nincs ilyen fájl vagy könyvtár</translation>
 <translation id="1583429793053364125">Valami nem sikerült a weboldal megjelenítése során.</translation>
 <translation id="1592005682883173041">Helyi adatok elérése</translation>
 <translation id="1594030484168838125">Kiválaszt</translation>
-<translation id="161042844686301425">Cián</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1629803312968146339">Szeretné, hogy a Chrome mentse ezt a kártyát?</translation>
 <translation id="1639239467298939599">Betöltés</translation>
@@ -220,7 +218,6 @@
 <translation id="2709516037105925701">Automatikus kitöltés</translation>
 <translation id="2710942282213947212">A számítógépen található valamelyik szoftver megakadályozza a Chromiumot abban, hogy biztonságosan csatlakozzon az internethez</translation>
 <translation id="2712173769900027643">Engedély kérése</translation>
-<translation id="2713444072780614174">Fehér</translation>
 <translation id="2720342946869265578">A közelben</translation>
 <translation id="2721148159707890343">Sikeres kérés</translation>
 <translation id="2728127805433021124">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva.</translation>
@@ -300,7 +297,6 @@
 <translation id="3303855915957856445">Nincs találat</translation>
 <translation id="3305707030755673451">Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a következő időpontban: <ph name="TIME" />. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="3320021301628644560">Számlázási cím hozzáadása</translation>
-<translation id="3329013043687509092">Telítettség</translation>
 <translation id="333371639341676808">Ez az oldal ne nyisson meg további párbeszédablakokat.</translation>
 <translation id="3338095232262050444">Biztonságos</translation>
 <translation id="3340978935015468852">beállítások</translation>
@@ -411,7 +407,6 @@
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
 <translation id="410351446219883937">Automatikus lejátszás</translation>
 <translation id="4103763322291513355">Látogasson el a &lt;strong&gt;chrome://policy&lt;/strong&gt; oldalra a feketelistán lévő URL-ek és egyéb, a rendszergazda által előírt szabályok megtekintéséhez.</translation>
-<translation id="4115378294792113321">Magenta</translation>
 <translation id="4116663294526079822">Mindig engedélyezze ezen az oldalon</translation>
 <translation id="4117700440116928470">Az irányelv hatásköre nem támogatott.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 egyéb}other{# egyéb}}</translation>
@@ -622,7 +617,6 @@
 <translation id="5869522115854928033">Mentett jelszavak</translation>
 <translation id="5872918882028971132">Szülői javaslatok</translation>
 <translation id="5893752035575986141">Elfogadott hitelkártyák.</translation>
-<translation id="5901630391730855834">Sárga</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (szinkronizálva)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 van használatban}other{# van használatban}}</translation>
 <translation id="5959728338436674663">Bizonyos <ph name="BEGIN_WHITEPAPER_LINK" />rendszer-információk és oldaltartalmak<ph name="END_WHITEPAPER_LINK" /> automatikus küldése a Google-nak a veszélyes alkalmazások és webhelyek felderítése érdekében. <ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -633,12 +627,10 @@
 <translation id="5990559369517809815">A szerver felé irányuló kéréseket egy bővítmény blokkolja.</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{1. oldal}other{#. oldal}}</translation>
-<translation id="6017514345406065928">Zöld</translation>
 <translation id="6017850046339264347">A(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhelyen lévő támadók megtévesztő alkalmazásokat telepíthetnek, amelyek más alkalmazásnak tettethetik magukat, illetve az Ön nyomon követésére alkalmas adatokat gyűjthetnek. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /> (szinkronizálva)</translation>
 <translation id="6027201098523975773">Adjon meg nevet</translation>
 <translation id="6040143037577758943">Bezárás</translation>
-<translation id="6042308850641462728">Hosszabban</translation>
 <translation id="6047233362582046994">Ha tisztában van a biztonságát fenyegető kockázatokkal, a káros alkalmazások eltávolítása előtt is <ph name="BEGIN_LINK" />felkeresheti ezt a webhelyet<ph name="END_LINK" />.</translation>
 <translation id="6047927260846328439">Lehet, hogy ez a tartalom megpróbálja rávenni Önt szoftver telepítésére vagy személyes adatok kiadására. <ph name="BEGIN_LINK" />Megjelenítés mindenképpen<ph name="END_LINK" />.</translation>
 <translation id="6051221802930200923">Pillanatnyilag nem tudja felkeresni a(z) <ph name="SITE" /> webhelyet, mivel a webhely tanúsítványrögzítést használ. A hálózati hibák és támadások rendszerint átmenetiek, ezért az említett oldal működése később valószínűleg helyreáll.</translation>
@@ -715,7 +707,6 @@
 <translation id="6710213216561001401">Előző</translation>
 <translation id="6710594484020273272">&lt;Írja be a keresési kifejezést&gt;</translation>
 <translation id="6711464428925977395">Valami gond van a proxyszerverrel, vagy a cím nem megfelelő.</translation>
-<translation id="6727102863431372879">Beállítás</translation>
 <translation id="674375294223700098">Ismeretlen szervertanúsítvány-hiba.</translation>
 <translation id="6753269504797312559">Házirend értéke</translation>
 <translation id="6757797048963528358">Eszköze alvó üzemmódba váltott.</translation>
@@ -799,7 +790,6 @@
 <translation id="7518003948725431193">Nem található weboldal az internetcímen:<ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7526934274050461096">A webhellyel való kapcsolata nem privát</translation>
-<translation id="7535087603100972091">Érték</translation>
 <translation id="7537536606612762813">Kötelező</translation>
 <translation id="7542403920425041731">Az igazolást követően a böngésző megosztja kártyaadatait a webhellyel.</translation>
 <translation id="7542995811387359312">Az automatikus bankkártya-kitöltés le van tiltva, mivel ez az űrlap nem biztonságos kapcsolatot használ.</translation>
@@ -810,7 +800,6 @@
 <translation id="7567204685887185387">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványát csalással állíthatták ki. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="7568593326407688803">Az oldal nyelve<ph name="ORIGINAL_LANGUAGE" />Kívánja lefordítani?</translation>
 <translation id="7569952961197462199">Eltávolítja a hitelkártyát a Chrome-ból?</translation>
-<translation id="7569983096843329377">Fekete</translation>
 <translation id="7578104083680115302">A Google rendszerében mentett kártyákkal gyorsan fizethet webhelyeken és alkalmazásokban bármelyik eszközén.</translation>
 <translation id="7588950540487816470">Fizikai web</translation>
 <translation id="7592362899630581445">A szervertanúsítvány sérti a névre vonatkozó megkötéseket.</translation>
@@ -862,7 +851,6 @@
 <translation id="79338296614623784">Érvényes telefonszámot adjon meg</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">A szerver tanúsítványa még nem érvényes.</translation>
-<translation id="7942349550061667556">Piros</translation>
 <translation id="7947285636476623132">Ellenőrizze a lejárati évet, majd próbálja újra</translation>
 <translation id="7951415247503192394">(32 bites)</translation>
 <translation id="7956713633345437162">Mobil könyvjelzők</translation>
@@ -956,7 +944,6 @@
 <translation id="8870413625673593573">Mostanában bezárt</translation>
 <translation id="8874824191258364635">Érvényes kártyaszámot adjon meg</translation>
 <translation id="8876793034577346603">A hálózati konfiguráció előfeldolgozása sikertelen.</translation>
-<translation id="8889402386540077796">Színárnyalat</translation>
 <translation id="8891727572606052622">Érvénytelen proxymód.</translation>
 <translation id="889901481107108152">Sajnos ez a kísérlet nem érhető el az Ön operációs rendszerén.</translation>
 <translation id="8903921497873541725">Nagyítás</translation>
@@ -965,7 +952,6 @@
 <translation id="8938939909778640821">Elfogadott hitel- és feltöltőkártyák</translation>
 <translation id="8957210676456822347">Hitelesítés hitelesítési portállal</translation>
 <translation id="8971063699422889582">A szerver tanúsítványa lejárt.</translation>
-<translation id="8986494364107987395">Használati statisztikák és hibajelentések automatikus küldése a Google-nak</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">A felkeresni kívánt webhely ártalmas programokat tartalmaz</translation>
 <translation id="8997023839087525404">A szerver olyan tanúsítványt mutatott be, amelyet nem A tanúsítványok átláthatósága keretrendszer segítségével hoztak nyilvánosságra. Ez egyes tanúsítványoknál követelmény annak biztosítása érdekében, hogy az adott tanúsítványok megbízhatók, és védelmet nyújtanak a támadók ellen.</translation>
@@ -981,7 +967,6 @@
 <translation id="9049981332609050619">Megpróbálta elérni a(z) <ph name="DOMAIN" /> webhelyet, de a szerver érvénytelen tanúsítványt mutatott be.</translation>
 <translation id="9050666287014529139">Összetett jelszó</translation>
 <translation id="9065203028668620118">Szerkesztés</translation>
-<translation id="9068849894565669697">Szín kiválasztása</translation>
 <translation id="9069693763241529744">Bővítmény tiltja</translation>
 <translation id="9076283476770535406">Lehet, hogy felnőtt tartalommal rendelkezik</translation>
 <translation id="9078964945751709336">Több információra van szükség</translation>

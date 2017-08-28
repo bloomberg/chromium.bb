@@ -73,12 +73,10 @@
 <translation id="1527263332363067270">接続を待機しています…</translation>
 <translation id="153384715582417236">現時点では他にありません</translation>
 <translation id="1549470594296187301">この機能を使用するには JavaScript を有効にする必要があります。</translation>
-<translation id="1555130319947370107">青</translation>
 <translation id="1559528461873125649">該当するファイルまたはディレクトリがありません</translation>
 <translation id="1583429793053364125">このウェブページを表示中に問題が発生しました。</translation>
 <translation id="1592005682883173041">ローカルデータへのアクセス</translation>
 <translation id="1594030484168838125">選択</translation>
-<translation id="161042844686301425">シアン</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1629803312968146339">Chrome にこのカードを保存しますか？</translation>
 <translation id="1639239467298939599">読み込み中</translation>
@@ -218,8 +216,8 @@
 <translation id="2704951214193499422">Chromium でカードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="2705137772291741111">このサイトの保存（キャッシュ）されたコピーを読み取れませんでした。</translation>
 <translation id="2709516037105925701">自動入力</translation>
+<translation id="2710942282213947212">パソコンにインストールされているソフトウェアが原因で、Chromium からインターネットに安全に接続することができません</translation>
 <translation id="2712173769900027643">権限をリクエスト</translation>
-<translation id="2713444072780614174">白</translation>
 <translation id="2720342946869265578">周辺</translation>
 <translation id="2721148159707890343">リクエストを正常に送信しました</translation>
 <translation id="2728127805433021124">サーバーの証明書は脆弱な署名アルゴリズムを使用して署名されています。</translation>
@@ -301,7 +299,6 @@
 <translation id="3303855915957856445">一致する結果は見つかりませんでした</translation>
 <translation id="3305707030755673451">データは <ph name="TIME" /> に同期パスフレーズで暗号化されました。同期を開始するには、同期パスフレーズを入力してください。</translation>
 <translation id="3320021301628644560">請求先住所を追加</translation>
-<translation id="3329013043687509092">彩度</translation>
 <translation id="333371639341676808">このページでこれ以上ダイアログボックスを生成しない</translation>
 <translation id="3338095232262050444">保護された通信</translation>
 <translation id="3340978935015468852">設定</translation>
@@ -412,7 +409,6 @@
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
 <translation id="410351446219883937">自動再生</translation>
 <translation id="4103763322291513355">&lt;strong&gt;chrome://policy&lt;/strong&gt; にアクセスして、ブラックリストに登録されている URL とシステム管理者が設定した他のポリシーを確認できます。</translation>
-<translation id="4115378294792113321">マゼンタ</translation>
 <translation id="4116663294526079822">このサイトでは常に許可</translation>
 <translation id="4117700440116928470">ポリシーの適用範囲がサポートされていません。</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{他 1 件}other{他 # 件}}</translation>
@@ -623,7 +619,6 @@
 <translation id="5869522115854928033">保存したパスワード</translation>
 <translation id="5872918882028971132">保護者からのおすすめ</translation>
 <translation id="5893752035575986141">クレジット カードをご利用いただけます。</translation>
-<translation id="5901630391730855834">黄</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（同期済み）</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 個が使用中}other{# 個が使用中}}</translation>
 <translation id="5959728338436674663">危険なアプリやサイトの検出に役立てるために一部の<ph name="BEGIN_WHITEPAPER_LINK" />システム情報やページのコンテンツ<ph name="END_WHITEPAPER_LINK" />を Google に自動送信する。<ph name="PRIVACY_PAGE_LINK" /></translation>
@@ -634,12 +629,10 @@
 <translation id="5990559369517809815">サーバーへのリクエストは拡張機能によってブロックされています。</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{ページ 1}other{ページ #}}</translation>
-<translation id="6017514345406065928">緑</translation>
 <translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって詐欺的なアプリ（他のものに成りすましたり、ユーザーの追跡などに使用可能なデータを収集したりするアプリ）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" />（同期済み）</translation>
 <translation id="6027201098523975773">名前を入力してください</translation>
 <translation id="6040143037577758943">閉じる</translation>
-<translation id="6042308850641462728">もっと見る</translation>
 <translation id="6047233362582046994">有害なアプリがまだ存在する可能性があるにもかかわらず<ph name="BEGIN_LINK" />このサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上の危険性をあらかじめご認識ください。</translation>
 <translation id="6047927260846328439">アクセス先のコンテンツは、ユーザーをだましてソフトウェアをインストールさせようとしたり、個人情報を危険にさらしたりする可能性があります。<ph name="BEGIN_LINK" />危険性を理解したうえで表示する<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923"><ph name="SITE" /> では証明書ピンニングが使用されているため、現在アクセスできません。通常、ネットワーク エラーやネットワークへの攻撃は一時的なものです。しばらくするとページにアクセスできるようになります。</translation>
@@ -716,7 +709,6 @@
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="6711464428925977395">プロキシ サーバーに問題がある、またはアドレスが正しくありません。</translation>
-<translation id="6727102863431372879">設定</translation>
 <translation id="674375294223700098">不明なサーバー証明書エラー</translation>
 <translation id="6753269504797312559">ポリシーの値</translation>
 <translation id="6757797048963528358">デバイスがスリープ状態です。</translation>
@@ -800,7 +792,6 @@
 <translation id="7518003948725431193">次の URL のウェブページは見つかりませんでした:<ph name="URL" /></translation>
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7526934274050461096">このサイトへの接続ではプライバシーが保護されません</translation>
-<translation id="7535087603100972091">値</translation>
 <translation id="7537536606612762813">必須</translation>
 <translation id="7542403920425041731">確認すると、カードの情報がこのサイトに共有されます。</translation>
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
@@ -811,7 +802,6 @@
 <translation id="7567204685887185387">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は不正に発行されたものである可能性があります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="7568593326407688803">これは<ph name="ORIGINAL_LANGUAGE" />のページです。翻訳しますか？</translation>
 <translation id="7569952961197462199">Chrome からクレジット カードを削除してもよろしいですか？</translation>
-<translation id="7569983096843329377">黒</translation>
 <translation id="7578104083680115302">どの端末でも、Google に保存したカードを使ってサイトやアプリの支払いをすばやく行うことができます。</translation>
 <translation id="7588950540487816470">フィジカルウェブ</translation>
 <translation id="7592362899630581445">サーバーの証明書が名前の制約に違反しています。</translation>
@@ -863,7 +853,6 @@
 <translation id="79338296614623784">有効な電話番号を入力してください</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">サーバーの証明書が有効になっていません。</translation>
-<translation id="7942349550061667556">赤</translation>
 <translation id="7947285636476623132">有効期限の「年」を確認してもう一度お試しください</translation>
 <translation id="7951415247503192394">（32 ビット）</translation>
 <translation id="7956713633345437162">モバイルのブックマーク</translation>
@@ -957,7 +946,6 @@
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8874824191258364635">有効なクレジット カード番号を入力してください</translation>
 <translation id="8876793034577346603">ネットワーク設定を解析できませんでした。</translation>
-<translation id="8889402386540077796">色調</translation>
 <translation id="8891727572606052622">プロキシ モードが無効です。</translation>
 <translation id="889901481107108152">この試験運用機能は、お使いのプラットフォームでは利用できません。</translation>
 <translation id="8903921497873541725">拡大する</translation>
@@ -966,7 +954,6 @@
 <translation id="8938939909778640821">利用可能なクレジット カードとプリペイド カード</translation>
 <translation id="8957210676456822347">キャプティブ ポータル認証</translation>
 <translation id="8971063699422889582">サーバーの証明書の有効期限が切れています。</translation>
-<translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信する</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION" /> [<ph name="COUNTRY" />]</translation>
 <translation id="8996941253935762404">この先のサイトには有害なプログラムがあります</translation>
 <translation id="8997023839087525404">サーバーから提示された証明書は、証明書の透明性ポリシーを介して公開されていません。一部の証明書は、信頼性の確保と攻撃者からの保護のため、証明書の透明性ポリシーを介して公開されることが要件となっています。</translation>
@@ -982,7 +969,6 @@
 <translation id="9049981332609050619"><ph name="DOMAIN" /> にアクセスしようとしましたが、サーバーから無効な証明書が提示されました。</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9065203028668620118">編集</translation>
-<translation id="9068849894565669697">色の選択</translation>
 <translation id="9069693763241529744">拡張機能によってブロック</translation>
 <translation id="9076283476770535406">成人向けコンテンツが含まれている可能性があります</translation>
 <translation id="9078964945751709336">その他の情報が必要です</translation>

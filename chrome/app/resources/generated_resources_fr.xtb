@@ -1645,7 +1645,6 @@ Domaine d'origine : <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3479552764303398839">Pas maintenant</translation>
 <translation id="3480892288821151001">Ancrer la fenêtre à gauche</translation>
 <translation id="3481915276125965083">Les fenêtres pop-up suivantes ont été bloquées sur cette page :</translation>
-<translation id="3482214069979148937">Appuyez sur |<ph name="ACCELERATOR" />| pour quitter le mode plein écran.</translation>
 <translation id="3484273680291419129">Suppression du logiciel malveillant…</translation>
 <translation id="3484869148456018791">Obtenir un nouveau certificat</translation>
 <translation id="3487007233252413104">fonction anonyme</translation>
@@ -2534,7 +2533,7 @@ Pour poursuivre l'exploration, appuyez sur n'importe quelle touche.</translation
 <translation id="4903369323166982260">Exécuter l'outil de nettoyage Chrome</translation>
 <translation id="4907161631261076876">Ce fichier n'étant pas souvent téléchargé, il peut présenter un danger.</translation>
 <translation id="4907306957610201395">Catégorie d'autorisation</translation>
-<translation id="4908811072292128752">Ouvrez un onglet pour naviguer sur deux sites Web en même temps</translation>
+<translation id="4908811072292128752">Ouvrez un nouvel onglet pour naviguer sur deux sites Web en même temps</translation>
 <translation id="4909038193460299775">Étant donné que ce compte est géré par <ph name="DOMAIN" />, vos favoris, votre historique, vos mots de passe et les autres paramètres sont effacés de cet appareil. Cependant, vos données restent stockées dans votre compte Google et peuvent être gérées dans le <ph name="BEGIN_LINK" />Google Dashboard<ph name="END_LINK" />.</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Aucune extension n'est associée à des raccourcis clavier</translation>

@@ -1647,7 +1647,6 @@
 <translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="3480892288821151001">Αγκύρωση παραθύρου αριστερά</translation>
 <translation id="3481915276125965083">Έγινε αποκλεισμός των ακόλουθων αναδυόμενων παραθύρων σε αυτήν τη σελίδα:</translation>
-<translation id="3482214069979148937">Πατήστε το |<ph name="ACCELERATOR" />| παρατεταμένα για να εξέλθετε από την πλήρη οθόνη</translation>
 <translation id="3484273680291419129">Κατάργηση επιβλαβούς λογισμικού…</translation>
 <translation id="3484869148456018791">Λήψη νέου πιστοποιητικού</translation>
 <translation id="3487007233252413104">ανώνυμη λειτουργία</translation>
@@ -3388,7 +3387,7 @@
 <translation id="6247802389331535091">Σύστημα: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="624789221780392884">Έτοιμη ενημέρωση</translation>
 <translation id="6248400709929739064">Ενεργοποίηση υπότιτλων</translation>
-<translation id="6248988683584659830">Ρυθμίσεις αναζήτησης</translation>
+<translation id="6248988683584659830">Αναζήτηση ρυθμίσεων</translation>
 <translation id="6251870443722440887">Χειρισμοί GDI</translation>
 <translation id="6251889282623539337">Όροι Παροχής Υπηρεσιών <ph name="DOMAIN" /></translation>
 <translation id="6254503684448816922">Παραβίαση κλειδιού</translation>

@@ -565,6 +565,7 @@
 <translation id="1856715684130786728">Add location...</translation>
 <translation id="1858585891038687145">Trust this certificate for identifying software makers</translation>
 <translation id="1859234291848436338">Writing Direction</translation>
+<translation id="1862553255006737600">This name is too long and exceeds $1 character length limit.</translation>
 <translation id="1864111464094315414">Login</translation>
 <translation id="1864400682872660285">Cooler</translation>
 <translation id="1864676585353837027">Change how these files are shared</translation>
@@ -891,6 +892,7 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
 <translation id="2384436799579181135">An error has occurred. Please check your printer and try again.</translation>
 <translation id="2385700042425247848">Service name:</translation>
+<translation id="2387458720915042159">Proxy connection type</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> new photos found
     <ph name="LINE_BREAK1" />
     Not enough space on device.
@@ -957,6 +959,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2489428929217601177">the past day</translation>
 <translation id="2489918096470125693">Add &amp;Folder...</translation>
 <translation id="249113932447298600">Sorry, the device <ph name="DEVICE_LABEL" /> is not supported at this time.</translation>
+<translation id="2492711144692806453">Renaming finished</translation>
 <translation id="2493021387995458222">Select "word at a time"</translation>
 <translation id="249303669840926644">Could not complete registration</translation>
 <translation id="2495777824269688114">Discover more features or get answers. Select '?' for help.</translation>
@@ -1280,6 +1283,7 @@ I don't think this site should be blocked!</translation>
 <translation id="2938225289965773019">Open <ph name="PROTOCOL" /> links</translation>
 <translation id="2939938020978911855">Show available Bluetooth devices</translation>
 <translation id="2941112035454246133">Low</translation>
+<translation id="2942560570858569904">Waiting...</translation>
 <translation id="2943400156390503548">Slides</translation>
 <translation id="2946119680249604491">Add connection</translation>
 <translation id="2948300991547862301">Go to <ph name="PAGE_TITLE" /></translation>
@@ -1336,6 +1340,7 @@ I don't think this site should be blocked!</translation>
 <translation id="302014277942214887">Enter application ID or web store URL.</translation>
 <translation id="3020990233660977256">Serial Number: <ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021678814754966447">&amp;View Frame Source</translation>
+<translation id="3022978424994383087">Didn't get that.</translation>
 <translation id="3024374909719388945">Use 24-hour clock</translation>
 <translation id="302781076327338683">Reload bypassing cache</translation>
 <translation id="3030243755303701754">A supervised user can explore the web with your guidance. As the manager of a supervised user in Chrome, you can:
@@ -1417,6 +1422,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for these and further ins
 <translation id="3135204511829026971">Rotate screen</translation>
 <translation id="3139925690611372679">Default yellow avatar</translation>
 <translation id="3140353188828248647">Focus address bar</translation>
+<translation id="3141318088920353606">Listening...</translation>
 <translation id="3141917231319778873">The given request is not supported to: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="3144126448740580210">DONE</translation>
 <translation id="3144135466825225871">Failed to replace crx file. Check to see if the file is in use.</translation>
@@ -1646,7 +1652,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3480892288821151001">Dock window left</translation>
 <translation id="3481915276125965083">The following pop-ups were blocked on this page:</translation>
-<translation id="3482214069979148937">Hold |<ph name="ACCELERATOR" />| to exit full screen</translation>
 <translation id="3484273680291419129">Removing harmful software...</translation>
 <translation id="3484869148456018791">Get new certificate</translation>
 <translation id="3487007233252413104">anonymous function</translation>
@@ -1758,6 +1763,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Selected radio button</translation>
 <translation id="3649138363871392317">Photo was captured</translation>
 <translation id="3651488188562686558">Disconnect from Wi-Fi</translation>
+<translation id="3652817283076144888">Initialising</translation>
 <translation id="3653999333232393305">Continue allowing <ph name="HOST" /> to access your microphone</translation>
 <translation id="3654045516529121250">Read your accessibility settings</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{It has permanent access to one file.}other{It has permanent access to # files.}}</translation>
@@ -1853,6 +1859,7 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3790909017043401679">Enter SIM card PIN</translation>
 <translation id="3792890930871100565">Disconnect printers</translation>
 <translation id="379422718204375917">Use Smart Lock to sign in to your account</translation>
+<translation id="3794595850995182458">Exit page</translation>
 <translation id="3796648294839530037">Favourite Networks:</translation>
 <translation id="3797900183766075808">&amp;Search <ph name="SEARCH_ENGINE" /> for “<ph name="SEARCH_TERMS" />”</translation>
 <translation id="3798325802885154040">Allows you to enable/disable tap-to-click</translation>
@@ -2480,6 +2487,7 @@ Press any key to continue exploring.</translation>
 <translation id="4837952862063191349">To unlock and restore your local data, please enter your old <ph name="DEVICE_TYPE" /> password.</translation>
 <translation id="4839303808932127586">Sa&amp;ve video as...</translation>
 <translation id="4839847978919684242"><ph name="SELCTED_FILES_COUNT" /> items selected</translation>
+<translation id="4840259661446092445">Can't remove harmful software.</translation>
 <translation id="4842976633412754305">This page is trying to load scripts from unauthenticated sources.</translation>
 <translation id="4844333629810439236">Other keyboards</translation>
 <translation id="4846680374085650406">You are following the administrator's recommendation for this setting.</translation>
@@ -2572,6 +2580,7 @@ Press any key to continue exploring.</translation>
 <translation id="4967749818080339523">Select an account</translation>
 <translation id="496888482094675990">The Files app provides quick access to files that you've saved on Google Drive, external storage or your Chrome OS device.</translation>
 <translation id="4969785127455456148">Album</translation>
+<translation id="4971078675931090428">The renaming process can take a couple of seconds. Please wait.</translation>
 <translation id="4971412780836297815">Open when done</translation>
 <translation id="4972129977812092092">Edit printer</translation>
 <translation id="4973307593867026061">Add printers</translation>
@@ -2594,6 +2603,7 @@ Press any key to continue exploring.</translation>
 <translation id="4994474651455208930">Allow sites to ask to become default handlers for protocols</translation>
 <translation id="4994754230098574403">Setting up</translation>
 <translation id="4996978546172906250">Share via</translation>
+<translation id="4997086284911172121">No Internet connection.</translation>
 <translation id="4998873842614926205">Confirm Changes</translation>
 <translation id="499955951116857523">File manager</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
@@ -2951,6 +2961,7 @@ Press any key to continue exploring.</translation>
 <translation id="5534520101572674276">Calculating size</translation>
 <translation id="5535941515421698170">Also remove your existing data from this device</translation>
 <translation id="5537725057119320332">Cast</translation>
+<translation id="5539221284352502426">The password that you entered was rejected by the server. Possible reasons include: The password is too short. The password must include numbers or symbols. The password must be different from previous passwords.</translation>
 <translation id="5541687815721799001">Use app</translation>
 <translation id="5542132724887566711">Profile</translation>
 <translation id="5543983818738093899">Checking for status...</translation>
@@ -3092,6 +3103,7 @@ Press any key to continue exploring.</translation>
 <translation id="5765491088802881382">No networks are available</translation>
 <translation id="5765780083710877561">Description:</translation>
 <translation id="5771816112378578655">Setup in progress...</translation>
+<translation id="5772265531560382923">{NUM_PAGES,plural, =1{You can wait for it to become responsive or exit the page.}other{You can wait for them to become responsive or exit the pages.}}</translation>
 <translation id="577322787686508614">Read operation is not permitted on: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="5774295353725270860">Open Files app</translation>
 <translation id="5774515636230743468">Manifest:</translation>
@@ -3198,6 +3210,7 @@ Press any key to continue exploring.</translation>
 <translation id="5921745308587794300">Rotate window</translation>
 <translation id="5924047253200400718">Get help<ph name="SCANNING_STATUS" /></translation>
 <translation id="5925147183566400388">Certification Practice Statement Pointer</translation>
+<translation id="5927692884057333064">Renaming...</translation>
 <translation id="592880897588170157">Download PDF files instead of automatically opening them in Chrome</translation>
 <translation id="5931146425219109062">Read and change all your data on the websites that you visit</translation>
 <translation id="5932881020239635062">Serial</translation>
@@ -3242,6 +3255,7 @@ Press any key to continue exploring.</translation>
 <translation id="6005695835120147974">Media Router</translation>
 <translation id="6006484371116297560">Classic</translation>
 <translation id="6007237601604674381">Move failed. <ph name="ERROR_MESSAGE" /></translation>
+<translation id="6007240208646052708">Voice search in your language is not available.</translation>
 <translation id="6010869025736512584">Accessing video input</translation>
 <translation id="6011193465932186973">Fingerprint</translation>
 <translation id="6011449291337289699">Clear site data</translation>
@@ -3289,6 +3303,7 @@ Press any key to continue exploring.</translation>
 <translation id="6075907793831890935">Exchange data with the device named <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Include this screenshot</translation>
 <translation id="6077131872140550515">Remove from preferred</translation>
+<translation id="6078752646384677957">Please check your microphone and audio levels.</translation>
 <translation id="6080689532560039067">Check your system time</translation>
 <translation id="6082651258230788217">Show in toolbar</translation>
 <translation id="6086814797483779854">Run on Click</translation>
@@ -3339,6 +3354,7 @@ Press any key to continue exploring.</translation>
 <translation id="6164005077879661055">All files and local data associated with the supervised user will be permanently deleted once this supervised user is removed. Visited websites and settings for this supervised user may still be visible by the manager at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6166185671393271715">Import Passwords To Chrome</translation>
+<translation id="6169040057125497443">Please check your microphone.</translation>
 <translation id="6169666352732958425">Unable to cast desktop.</translation>
 <translation id="6171948306033499786">Pause printing</translation>
 <translation id="6175314957787328458">Microsoft Domain GUID</translation>
@@ -3378,6 +3394,7 @@ Press any key to continue exploring.</translation>
 <translation id="6237816943013845465">Allows you to adjust your screen resolution</translation>
 <translation id="6238923052227198598">Keep latest note on lock screen</translation>
 <translation id="6239558157302047471">Reload &amp;frame</translation>
+<translation id="624022915548992686">Exit Page</translation>
 <translation id="6241530762627360640">Access information about Bluetooth devices paired with your system and discover nearby Bluetooth devices.</translation>
 <translation id="6243774244933267674">Server unavailable</translation>
 <translation id="6245220622116401744">Allow sites to run Flash</translation>
@@ -3728,6 +3745,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="6746124502594467657">Move down</translation>
 <translation id="674632704103926902">Enable tap dragging</translation>
 <translation id="6746392203843147041">vol. up</translation>
+<translation id="6748217015615267851">Renderer: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">You may proceed, but only your synced data and settings will be restored. All local data will be lost.</translation>
 <translation id="6748775883310276718">Single App Kiosk</translation>
 <translation id="6751256176799620176">1 folder selected</translation>
@@ -3801,6 +3819,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="6869402422344886127">Ticked checkbox</translation>
 <translation id="6870888490422746447">Choose an app to share to:</translation>
 <translation id="6871644448911473373">OCSP Responder: <ph name="LOCATION" /></translation>
+<translation id="6872781471649843364">The password that you entered was rejected by the server.</translation>
 <translation id="6874681241562738119">Sign-in Error</translation>
 <translation id="687588960939994211">Also clear your history, bookmarks, settings and other Chrome data stored on this device.</translation>
 <translation id="6880587130513028875">Images were blocked on this page.</translation>
@@ -4015,6 +4034,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7228479291753472782">Manipulate settings that specify whether websites can use features such as geo-location, microphone, camera, etc.</translation>
 <translation id="7229570126336867161">Need EVDO</translation>
 <translation id="7230787553283372882">Customise your text size</translation>
+<translation id="7232750842195536390">Renaming failed</translation>
 <translation id="7238585580608191973">SHA-256 Fingerprint</translation>
 <translation id="7240120331469437312">Certificate Subject Alternative Name</translation>
 <translation id="7240339475467890413">Connect to new hotspot?</translation>
@@ -4142,6 +4162,7 @@ Only use this feature with accounts that you trust.</translation>
 <translation id="7427348830195639090">Background Page: <ph name="BACKGROUND_PAGE_URL" /></translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Open All in &amp;New Window}=1{Open in &amp;New Window}other{Open All (#) in &amp;New Window}}</translation>
 <translation id="7434509671034404296">Developer</translation>
+<translation id="7436921188514130341">Oh no! There was an error during renaming.</translation>
 <translation id="743823505716061814">Search queries will be tied to your Google Account. You can view and delete them in your <ph name="BEGIN_LINK" />Account History<ph name="END_LINK" />.</translation>
 <translation id="7438940380767210568">Set up printer...</translation>
 <translation id="7439964298085099379">You have High Contrast mode enabled. Would you like to install our High Contrast extension and a dark theme?</translation>
@@ -4651,6 +4672,7 @@ Calculating remaining time</translation>
 <translation id="8217399928341212914">Continue blocking automatic downloads of multiple files</translation>
 <translation id="8222121761382682759">Uninstall...</translation>
 <translation id="8223479393428528563">To save these files for offline use, get back online, right-click the files and select the <ph name="OFFLINE_CHECKBOX_NAME" /> option.</translation>
+<translation id="8225316208047679293">Renaming finished successfully!</translation>
 <translation id="8226222018808695353">Forbidden</translation>
 <translation id="8226619461731305576">Queue</translation>
 <translation id="8226742006292257240">Below is the randomly generated TPM password that has been assigned to your computer:</translation>
@@ -4951,6 +4973,7 @@ Calculating time until full</translation>
 <translation id="8710187907779883426">short (1s)</translation>
 <translation id="8711402221661888347">Ketchup</translation>
 <translation id="8713570323158206935">Send <ph name="BEGIN_LINK1" />system information<ph name="END_LINK1" /></translation>
+<translation id="8714154114375107944">End of support</translation>
 <translation id="871476437400413057">Google saved passwords</translation>
 <translation id="8714838604780058252">Background graphics</translation>
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> download failed</translation>
@@ -4992,6 +5015,7 @@ Calculating time until full</translation>
 <translation id="8775404590947523323">Your edits are saved automatically.<ph name="BREAKS" />To keep a copy of the original image, untick "Overwrite original"</translation>
 <translation id="8777218413579204310">Detect content</translation>
 <translation id="8777628254805677039">root password</translation>
+<translation id="8780443667474968681">Voice search has been turned off.</translation>
 <translation id="878069093594050299">This certificate has been verified for the following usages:</translation>
 <translation id="8781980678064919987">Shut down when lid is closed</translation>
 <translation id="8782565991310229362">Kiosk application launch cancelled.</translation>

@@ -67,6 +67,7 @@
 <translation id="1110155001042129815">Vent</translation>
 <translation id="1110753181581583968">{NUM_DOWNLOAD,plural, =1{Fortsett nedlastingen}other{Fortsett nedlastingene}}</translation>
 <translation id="1110772031432362678">Finner ingen nettverk.</translation>
+<translation id="1114102982691049955"><ph name="PRINTER_MANUFACTURER" /> <ph name="PRINTER_MODEL" /> (USB)</translation>
 <translation id="1114202307280046356">Diamant</translation>
 <translation id="1114335938027186412">Datamaskinen din inneholder en TPM-sikkerhetsenhet (Trusted Platform Module) som brukes til å implementere mange viktige sikkerhetsfunksjoner i Chrome OS. Gå til Chromebook-brukerstøtten for å finne ut mer: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="1114525161406758033">Gå i hvilemodus når maskinen lukkes</translation>
@@ -883,6 +884,7 @@ Når du har opprettet en ny administrert bruker, kan du når som helst – og fr
 <translation id="2378982052244864789">Velg katalog for utvidelsen.</translation>
 <translation id="2379281330731083556">Skriv ut med systemdialogen <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Spør før noe sendes (anbefales).</translation>
+<translation id="2384436799579181135">Det har oppstått en feil. Sjekk skriveren og prøv på nytt.</translation>
 <translation id="2385700042425247848">Tjenestenavn:</translation>
 <translation id="2391243203977115091"><ph name="FILE_COUNT" /> nye bilder ble funnet
     <ph name="LINE_BREAK1" />
@@ -1247,6 +1249,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2897878306272793870">Er du sikker på at du vil åpne <ph name="TAB_COUNT" /> faner?</translation>
 <translation id="290105521672621980">Filen bruker funksjoner som ikke støttes</translation>
 <translation id="2902127500170292085"><ph name="EXTENSION_NAME" /> kunne ikke kommunisere med denne skriveren. Sørg for at skriveren er koblet til, og prøv igjen.</translation>
+<translation id="2902312830803030883">Flere handlinger</translation>
 <translation id="2903457445916429186">Åpne de valgte elementene</translation>
 <translation id="2903493209154104877">Adresser</translation>
 <translation id="290444763029043472"><ph name="DOWNLOADED_AMOUNT_MB" /> MB / <ph name="TOTAL_AMOUNT_MB" /> MB nedlastet</translation>
@@ -1359,6 +1362,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3065041951436100775">Tilbakemelding for lukket fane.</translation>
 <translation id="3065140616557457172">Skriv inn det du vil søke etter – eller en nettadresse du vil gå til. Begge deler fungerer!</translation>
 <translation id="3067198360141518313">Kjør dette programtillegget</translation>
+<translation id="3071624960923923138">Du kan klikke her for å åpne en ny fane</translation>
 <translation id="3074037959626057712">Du har logget på og slått på synkronisering</translation>
 <translation id="3075874217500066906">Du må starte enheten på nytt for å starte powerwash-prosessen. Når enheten er startet på nytt, blir du bedt om å bekrefte at du vil fortsette.</translation>
 <translation id="3076677906922146425">La hvem som helst legge til folk i Chrome</translation>
@@ -1636,7 +1640,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3479552764303398839">Ikke nå</translation>
 <translation id="3480892288821151001">Forankre vinduet til venstre</translation>
 <translation id="3481915276125965083">Følgende forgrunnsvinduer er blokkert på siden:</translation>
-<translation id="3482214069979148937">Hold |<ph name="ACCELERATOR" />| for å avslutte fullskjerm</translation>
 <translation id="3484273680291419129">Fjerner den skadelige programvaren …</translation>
 <translation id="3484869148456018791">Hent nytt sertifikat</translation>
 <translation id="3487007233252413104">anonym funksjon</translation>
@@ -2257,6 +2260,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="450099669180426158">Utropstegnikon</translation>
 <translation id="4501530680793980440">Bekreftelse av fjerning</translation>
 <translation id="4504940961672722399">Bruk denne utvidelsen ved å klikke på ikonet eller trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
+<translation id="4508051413094283164">Åpne alt i et inkognitovindu</translation>
 <translation id="4508265954913339219">Aktiveringen mislyktes</translation>
 <translation id="4508765956121923607">Vis &amp;kilde</translation>
 <translation id="4509017836361568632">Slett bilde</translation>
@@ -2357,6 +2361,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4664482161435122549">Eksportfeil for PKCS #12</translation>
 <translation id="466481852929361583">Den sikre modulen konfigureres. Dette kan ta noen få minutter.</translation>
 <translation id="4665014895760275686">Produsent</translation>
+<translation id="466506872045057845">Chrome tilbakestiller tillatelsene til standardinnstillingene</translation>
 <translation id="4667176955651319626">Blokkér informasjonskapsler og nettstedsdata fra tredjeparter</translation>
 <translation id="4668721319092543482">Klikk for å slå på <ph name="PLUGIN_NAME" /></translation>
 <translation id="4668954208278016290">Det oppstod et problem når bildet skulle pakkes ut på maskinen.</translation>
@@ -2522,6 +2527,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="4903369323166982260">Kjør opprydningsverktøyet for Chrome</translation>
 <translation id="4907161631261076876">Denne filen lastes sjelden ned, og den kan være farlig.</translation>
 <translation id="4907306957610201395">Tillatelseskategori</translation>
+<translation id="4908811072292128752">Åpne en ny fane for å surfe på to nettsteder samtidig</translation>
 <translation id="4909038193460299775">Siden denne kontoen administreres av <ph name="DOMAIN" />, slettes bokmerkene, loggen, passordene og andre innstillinger du har, fra denne enheten. Data du har lagret i Google-kontoen din, blir imidlertid værende og kan administreres ved hjelp av <ph name="BEGIN_LINK" />Google Oversikt<ph name="END_LINK" />.</translation>
 <translation id="4910021444507283344">WebGL</translation>
 <translation id="4911714727432509308">Ingen utvidelser har tildelte hurtigtaster.</translation>
@@ -2707,6 +2713,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="521582610500777512">Bildet er forkastet</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="5225324770654022472">Vis appsnarveien</translation>
+<translation id="5225360179303283478">Tilbakestill innstillingene for nettstedet</translation>
 <translation id="5227536357203429560">Legg til privat nettverk</translation>
 <translation id="5227679487546032910">Blågrønt standardbrukerbilde</translation>
 <translation id="5227808808023563348">Finn forrige tekst</translation>
@@ -3582,6 +3589,7 @@ Trykk på en tast for å fortsette økten.</translation>
 <translation id="655384502888039633"><ph name="USER_COUNT" /> brukere</translation>
 <translation id="6555432686520421228">Fjern alle brukerkontoer og tilbakestill <ph name="IDS_SHORT_PRODUCT_NAME" />-enheten din til fabrikkstandard.</translation>
 <translation id="6556866813142980365">Gjør om</translation>
+<translation id="6558280019477628686">Det oppsto en feil. Enkelte elementer ble muligens ikke slettet.</translation>
 <translation id="6559580823502247193">(er allerede på denne enheten)</translation>
 <translation id="6561726789132298588">enter</translation>
 <translation id="6562437808764959486">Pakker ut gjenopprettingsbilde …</translation>
@@ -3653,6 +3661,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="6664237456442406323">Dessverre er datamaskinen konfigurert med en feilformatert maskinvare-ID. Dette hindrer Chrome OS fra å oppdatere til de siste sikkerhetsoppdateringene, og datamaskinen din <ph name="BEGIN_BOLD" />kan utsettes for skadelige angrep<ph name="END_BOLD" />.</translation>
 <translation id="6664774537677393800">Det oppsto en feil ved åpning av profilen din. Logg av og på igjen.</translation>
 <translation id="6666647326143344290">med Google-kontoen din</translation>
+<translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Vil du at Google skal oversette denne siden fra <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">En pekeenhet er koblet til</translation>
 <translation id="6677037229676347494">Den forventede ID-en var «<ph name="EXPECTED_ID" />», men den faktiske ID-en var «<ph name="NEW_ID" />».</translation>
@@ -3684,6 +3693,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="6716704051134091292">PDF Convertor</translation>
 <translation id="6718273304615422081">Zipper ...</translation>
 <translation id="671928215901716392">Lås skjerm</translation>
+<translation id="67211069045302358">Vil du tilbakestille innstillingene for dette nettstedet?</translation>
 <translation id="6721972322305477112">&amp;Fil</translation>
 <translation id="672213144943476270">Du må låse opp profilen din før du kan surfe som gjest.</translation>
 <translation id="6723354935081862304">Skriv ut til Google Dokumenter og andre destinasjoner i nettskyen. <ph name="BEGIN_LINK" />Logg på<ph name="END_LINK" /> for å skrive ut med Google Cloud Print.</translation>
@@ -3860,6 +3870,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7005848115657603926">Ugyldig sideområde. Bruk <ph name="EXAMPLE_PAGE_RANGE" /></translation>
 <translation id="7006634003215061422">Bunnmarg</translation>
 <translation id="7006844981395428048">$1-lyd</translation>
+<translation id="7007648447224463482">Åpne alt i et nytt vindu</translation>
 <translation id="7008270479623533562">For å kjøre denne utvidelsen må du laste inn siden på nytt. Du kan kjøre denne utvidelsen automatisk på dette nettstedet ved å høyreklikke på ikonet for utvidelsen.</translation>
 <translation id="701080569351381435">Se kilde</translation>
 <translation id="7012372675181957985">Google-kontoen din kan ha andre typer nettlesingslogger på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
@@ -3964,6 +3975,7 @@ Du bør bare bruke denne funksjonen med kontoer du stoler på.</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7180865173735832675">Tilpass</translation>
 <translation id="7186088072322679094">Behold i verktøyraden</translation>
+<translation id="7191159667348037">Ukjent skriver (USB)</translation>
 <translation id="7191454237977785534">Lagre filen som</translation>
 <translation id="7196835305346730603">Søker etter Chromebox-enheter i nærheten …</translation>
 <translation id="7199158086730159431">Få hjelp</translation>
