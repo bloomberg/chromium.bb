@@ -75,15 +75,10 @@ _DEFAULT_OUTPUT_FORMAT = 'emacs'
 # checked, this list should normally include only rules that begin
 # with a "-" sign.
 _BASE_FILTER_RULES = [
-    '-build/endif_comment',
     '-build/include_what_you_use',  # <string> for std::string
-    '-build/storage_class',  # const static
     '-legal/copyright',
-    '-readability/multiline_comment',
-    '-readability/braces',  # int foo() {};
     '-readability/fn_size',
     '-readability/casting',
-    '-readability/function',
     '-runtime/arrays',  # variable length array
     '-runtime/casting',
     '-runtime/sizeof',
@@ -91,7 +86,6 @@ _BASE_FILTER_RULES = [
     '-runtime/virtual',  # virtual dtor
     '-runtime/printf',
     '-runtime/threadsafe_fn',
-    '-runtime/rtti',
     # List Python pep8 categories last.
     #
     # Because much of WebKit's Python code base does not abide by the
