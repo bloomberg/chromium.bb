@@ -1539,17 +1539,18 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestDeclarativeWebRequestAPI) {
              NEEDS_TEST_SERVER);
 }
 
-// Very flaky on Mac: http://crbug.com/614377
-#ifdef OS_MAC
-#define MAYBE_Shim_TestDeclarativeWebRequestAPISendMessage DISABLED_Shim_TestDeclarativeWebRequestAPISendMessage
-#else
-#define MAYBE_Shim_TestDeclarativeWebRequestAPISendMessage Shim_TestDeclarativeWebRequestAPISendMessage
-#endif
 IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestDeclarativeWebRequestAPISendMessage) {
   TestHelper("testDeclarativeWebRequestAPISendMessage",
              "web_view/shim",
              NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_P(
+    WebViewTest,
+    Shim_TestDeclarativeWebRequestAPISendMessageSecondWebView) {
+  TestHelper("testDeclarativeWebRequestAPISendMessageSecondWebView",
+             "web_view/shim", NEEDS_TEST_SERVER);
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPI) {
