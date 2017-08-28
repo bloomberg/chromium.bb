@@ -33,7 +33,7 @@ struct CONTENT_EXPORT ResourceRequest {
   ~ResourceRequest();
 
   // The request method: GET, POST, etc.
-  std::string method;
+  std::string method = "GET";
 
   // The absolute requested URL encoded in ASCII per the rules of RFC-2396.
   GURL url;
