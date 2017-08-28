@@ -1,21 +1,16 @@
-Tests that cache content is marked dirty if it is modified.
+Tests that cache view updates when the cache is changed.
 
 Dumping CacheStorage tree:
     (empty)
 Dumping CacheStorage tree:
     cache: testCache1 - http://127.0.0.1:8000
         (cache empty)
-Cache marked dirty = false
 Added entry
-Cache marked dirty = true
 Dumping CacheStorage tree:
     cache: testCache1 - http://127.0.0.1:8000
         1
-Cache marked dirty = false
 Deleted entry
-Cache marked dirty = true
 Dumping CacheStorage tree:
     cache: testCache1 - http://127.0.0.1:8000
         (cache empty)
-Cache marked dirty = false
 
