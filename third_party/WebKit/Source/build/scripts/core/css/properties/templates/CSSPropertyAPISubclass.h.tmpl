@@ -39,6 +39,9 @@ class {{api_classname}} : public CSSPropertyAPI {
   {% if is_descriptor %}
   bool IsDescriptor() const override { return true; }
   {% endif %}
+  {% if supports_percentage %}
+  bool SupportsPercentage() const override { return true; }
+  {% endif %}
 };
 
 }  // namespace blink
