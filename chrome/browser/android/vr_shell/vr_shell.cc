@@ -342,6 +342,8 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (metrics_helper_)
     metrics_helper_->SetVRActive(false);
   SetIsInVR(GetNonNativePageWebContents(), false);
+
+  poll_capturing_media_task_.Cancel();
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -351,6 +353,8 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (metrics_helper_)
     metrics_helper_->SetVRActive(true);
   SetIsInVR(GetNonNativePageWebContents(), true);
+
+  PollMediaAccessFlag();
 }
 
 void VrShell::SetSurface(JNIEnv* env,
