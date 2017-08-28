@@ -12,7 +12,7 @@
 #include "base/process/kill.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
-#include "content/browser/child_process_importance.h"
+#include "content/public/browser/android/child_process_importance.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/result_codes.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -45,6 +45,7 @@ namespace content {
 
 class ChildProcessLauncher;
 class SandboxedProcessLauncherDelegate;
+struct ChildProcessLauncherPriority;
 
 #if defined(OS_POSIX)
 class PosixFileDescriptorInfo;
@@ -160,10 +161,9 @@ class ChildProcessLauncherHelper :
   static void ForceNormalProcessTerminationAsync(
       ChildProcessLauncherHelper::Process process);
 
-  void SetProcessPriorityOnLauncherThread(base::Process process,
-                                          bool background,
-                                          bool boost_for_pending_views,
-                                          ChildProcessImportance importance);
+  void SetProcessPriorityOnLauncherThread(
+      base::Process process,
+      const ChildProcessLauncherPriority& priority);
 
   static void SetRegisteredFilesForService(
       const std::string& service_name,

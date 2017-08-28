@@ -722,6 +722,7 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   WasResized();
 }
 
+#if defined(OS_ANDROID)
 void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   if (importance_ == importance)
     return;
@@ -729,6 +730,7 @@ void RenderWidgetHostImpl::SetImportance(ChildProcessImportance importance) {
   importance_ = importance;
   process_->UpdateWidgetImportance(old, importance_);
 }
+#endif
 
 bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
   *resize_params = ResizeParams();

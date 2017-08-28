@@ -129,12 +129,10 @@ void ChildProcessLauncherHelper::ForceNormalProcessTerminationSync(
 
 void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
     base::Process process,
-    bool background,
-    bool boost_for_pending_views,
-    ChildProcessImportance importance) {
+    const ChildProcessLauncherPriority& priority) {
   DCHECK_CURRENTLY_ON(BrowserThread::PROCESS_LAUNCHER);
   if (process.CanBackgroundProcesses())
-    process.SetProcessBackgrounded(background);
+    process.SetProcessBackgrounded(priority.background);
 }
 
 // static

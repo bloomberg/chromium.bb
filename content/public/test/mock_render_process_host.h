@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/observer_list.h"
+#include "build/build_config.h"
 #include "components/viz/service/display_embedder/shared_bitmap_allocation_notifier_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_factory.h"
@@ -85,8 +86,10 @@ class MockRenderProcessHost : public RenderProcessHost {
   void RemovePendingView() override;
   void AddWidget(RenderWidgetHost* widget) override;
   void RemoveWidget(RenderWidgetHost* widget) override;
+#if defined(OS_ANDROID)
   void UpdateWidgetImportance(ChildProcessImportance old_value,
                               ChildProcessImportance new_value) override;
+#endif
   void SetSuddenTerminationAllowed(bool allowed) override;
   bool SuddenTerminationAllowed() const override;
   BrowserContext* GetBrowserContext() const override;

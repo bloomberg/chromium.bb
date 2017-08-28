@@ -1549,6 +1549,7 @@ void WebContentsImpl::WasHidden() {
   should_normally_be_visible_ = false;
 }
 
+#if defined(OS_ANDROID)
 void WebContentsImpl::SetImportance(ChildProcessImportance importance) {
   // Not calling GetRenderWidgetHostView since importance should be set on both
   // the interstitial and underlying page.
@@ -1567,6 +1568,7 @@ void WebContentsImpl::SetImportance(ChildProcessImportance importance) {
   // TODO(boliu): If this is ever used on platforms other than Android, make
   // sure to also update inner WebContents.
 }
+#endif
 
 bool WebContentsImpl::IsVisible() const {
   return should_normally_be_visible_;
@@ -2993,10 +2995,12 @@ void WebContentsImpl::AttachInterstitialPage(
     }
   }
 
+#if defined(OS_ANDROID)
   // Update importance of the interstitial.
   static_cast<RenderFrameHostImpl*>(interstitial_page_->GetMainFrame())
       ->GetRenderWidgetHost()
       ->SetImportance(GetMainFrame()->GetRenderWidgetHost()->importance());
+#endif
 }
 
 void WebContentsImpl::DidProceedOnInterstitial() {
@@ -4486,6 +4490,7 @@ void WebContentsImpl::NotifyViewSwapped(RenderViewHost* old_host,
 
 void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
                                          RenderFrameHost* new_host) {
+#if defined(OS_ANDROID)
   // Try to copy importance from either |old_host| or parent of |new_host|.
   // If both are null, then this is the very first frame host created from Init.
   // There is no need to pass importance in this case because there is no chance
@@ -4497,6 +4502,7 @@ void WebContentsImpl::NotifyFrameSwapped(RenderFrameHost* old_host,
         ->GetRenderWidgetHost()
         ->SetImportance(importance_host->GetRenderWidgetHost()->importance());
   }
+#endif
   for (auto& observer : observers_)
     observer.RenderFrameHostChanged(old_host, new_host);
 }
