@@ -385,6 +385,9 @@ typedef struct AV1_COMP {
   QUANTS quants;
   ThreadData td;
   MB_MODE_INFO_EXT *mbmi_ext_base;
+#if CONFIG_LV_MAP
+  CB_COEFF_BUFFER *coeff_buffer_base;
+#endif
   Dequants dequants;
   AV1_COMMON common;
   AV1EncoderConfig oxcf;

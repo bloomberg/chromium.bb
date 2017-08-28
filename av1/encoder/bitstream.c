@@ -2847,6 +2847,7 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
                supertx_enabled,
 #endif
                mi_row, mi_col);
+
 #if CONFIG_MOTION_VAR && (CONFIG_NCOBMC || CONFIG_NCOBMC_ADAPT_WEIGHT)
   (void)tok;
   (void)tok_end;

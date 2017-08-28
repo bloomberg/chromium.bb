@@ -273,6 +273,7 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
   const int mi_height = mi_size_high[bsize];
 
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
+
   set_skip_context(xd, mi_row, mi_col);
 #if CONFIG_VAR_TX
   xd->above_txfm_context =
@@ -2038,7 +2039,16 @@ static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
                          get_frame_new_buffer(&cpi->common), mi_row, mi_col);
   }
 #endif
+
+#if CONFIG_LV_MAP
+  av1_set_coeff_buffer(cpi, x, mi_row, mi_col);
+#endif
   encode_superblock(cpi, td, tp, dry_run, mi_row, mi_col, bsize, rate);
+
+#if CONFIG_LV_MAP
+  if (dry_run == 0)
+    x->cb_offset += block_size_wide[bsize] * block_size_high[bsize];
+#endif
 
   if (!dry_run) {
 #if CONFIG_EXT_DELTA_Q
@@ -4389,6 +4399,9 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     if (bsize == cm->sb_size) {
 #if CONFIG_MOTION_VAR && CONFIG_NCOBMC
       set_mode_info_sb(cpi, td, tile_info, tp, mi_row, mi_col, bsize, pc_tree);
+#endif
+#if CONFIG_LV_MAP
+      x->cb_offset = 0;
 #endif
       encode_sb(cpi, td, tile_info, tp, mi_row, mi_col, OUTPUT_ENABLED, bsize,
                 pc_tree, NULL);

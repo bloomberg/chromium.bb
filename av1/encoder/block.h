@@ -75,6 +75,15 @@ typedef struct {
   int base_cost[NUM_BASE_LEVELS][COEFF_BASE_CONTEXTS][2];
   int lps_cost[LEVEL_CONTEXTS][2];
 } LV_MAP_COEFF_COST;
+
+typedef struct {
+  tran_low_t tcoeff[MAX_MB_PLANE][MAX_SB_SQUARE];
+  uint16_t eobs[MAX_MB_PLANE][MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  uint8_t txb_skip_ctx[MAX_MB_PLANE]
+                      [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  int dc_sign_ctx[MAX_MB_PLANE]
+                 [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+} CB_COEFF_BUFFER;
 #endif
 
 typedef struct {
@@ -82,12 +91,10 @@ typedef struct {
   int16_t mode_context[MODE_CTX_REF_FRAMES];
 #if CONFIG_LV_MAP
   // TODO(angiebird): Reduce the buffer size according to sb_type
-  tran_low_t tcoeff[MAX_MB_PLANE][MAX_SB_SQUARE];
-  uint16_t eobs[MAX_MB_PLANE][MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
-  uint8_t txb_skip_ctx[MAX_MB_PLANE]
-                      [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
-  int dc_sign_ctx[MAX_MB_PLANE]
-                 [MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
+  tran_low_t *tcoeff[MAX_MB_PLANE];
+  uint16_t *eobs[MAX_MB_PLANE];
+  uint8_t *txb_skip_ctx[MAX_MB_PLANE];
+  int *dc_sign_ctx[MAX_MB_PLANE];
 #endif
   uint8_t ref_mv_count[MODE_CTX_REF_FRAMES];
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
@@ -179,6 +186,7 @@ struct macroblock {
 
 #if CONFIG_LV_MAP
   LV_MAP_COEFF_COST coeff_costs[TX_SIZES][PLANE_TYPES];
+  uint16_t cb_offset;
 #endif
 
   av1_coeff_cost token_head_costs[TX_SIZES];

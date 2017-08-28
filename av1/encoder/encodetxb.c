@@ -38,7 +38,13 @@ void av1_alloc_txb_buf(AV1_COMP *cpi) {
         aom_malloc(sizeof(*cpi->tcoeff_buf[i]) * pixel_stride * pixel_height));
   }
 #else
-  (void)cpi;
+  AV1_COMMON *cm = &cpi->common;
+  int size = ((cm->mi_rows >> MAX_MIB_SIZE_LOG2) + 1) *
+             ((cm->mi_cols >> MAX_MIB_SIZE_LOG2) + 1);
+
+  // TODO(jingning): This should be further reduced.
+  CHECK_MEM_ERROR(cm, cpi->coeff_buffer_base,
+                  aom_malloc(sizeof(*cpi->coeff_buffer_base) * size));
 #endif
 }
 
@@ -49,8 +55,25 @@ void av1_free_txb_buf(AV1_COMP *cpi) {
     aom_free(cpi->tcoeff_buf[i]);
   }
 #else
-  (void)cpi;
+  aom_free(cpi->coeff_buffer_base);
 #endif
+}
+
+void av1_set_coeff_buffer(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                          int mi_row, int mi_col) {
+  int stride = (cpi->common.mi_cols >> MAX_MIB_SIZE_LOG2) + 1;
+  int offset =
+      (mi_row >> MAX_MIB_SIZE_LOG2) * stride + (mi_col >> MAX_MIB_SIZE_LOG2);
+  CB_COEFF_BUFFER *coeff_buf = &cpi->coeff_buffer_base[offset];
+  const int txb_offset = x->cb_offset / (TX_SIZE_W_MIN * TX_SIZE_H_MIN);
+  for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
+    x->mbmi_ext->tcoeff[plane] = coeff_buf->tcoeff[plane] + x->cb_offset;
+    x->mbmi_ext->eobs[plane] = coeff_buf->eobs[plane] + txb_offset;
+    x->mbmi_ext->txb_skip_ctx[plane] =
+        coeff_buf->txb_skip_ctx[plane] + txb_offset;
+    x->mbmi_ext->dc_sign_ctx[plane] =
+        coeff_buf->dc_sign_ctx[plane] + txb_offset;
+  }
 }
 
 static void write_golomb(aom_writer *w, int level) {
