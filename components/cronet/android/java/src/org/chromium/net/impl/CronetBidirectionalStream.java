@@ -602,7 +602,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
                     new QuicExceptionImpl("Exception in BidirectionalStream: " + errorString,
                             nativeError, nativeQuicError));
         } else {
-            failWithException(new BidirectionalStreamNetworkException(
+            failWithException(new NetworkExceptionImpl(
                     "Exception in BidirectionalStream: " + errorString, errorCode, nativeError));
         }
     }

@@ -130,8 +130,6 @@ public abstract class org.chromium.net.NetworkException extends org.chromium.net
   public static final int ERROR_ADDRESS_UNREACHABLE;
   public static final int ERROR_QUIC_PROTOCOL_FAILED;
   public static final int ERROR_OTHER;
-  public static final int ERROR_HTTP2_PING_FAILED;
-  public static final int ERROR_QUIC_HANDSHAKE_FAILED;
   protected org.chromium.net.NetworkException(java.lang.String, java.lang.Throwable);
   public abstract int getErrorCode();
   public abstract int getCronetInternalErrorCode();

@@ -11,7 +11,7 @@ import org.chromium.net.NetworkException;
  */
 public class NetworkExceptionImpl extends NetworkException {
     // Error code, one of ERROR_*
-    protected final int mErrorCode;
+    private final int mErrorCode;
     // Cronet internal error code.
     private final int mCronetInternalErrorCode;
 
