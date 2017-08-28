@@ -41021,6 +41021,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.PushedStreamAlreadyHasResponseHeaders" enum="Boolean">
+  <owner>bnc@chromium.org</owner>
+  <summary>
+    Records whether HTTP/2 response headers have already arrived on a pushed
+    stream at the time the stream is matched up with a request. See
+    https://crbug.com/554220.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicActiveSessions">
   <owner>rch@chromium.org</owner>
   <summary>
