@@ -26,11 +26,9 @@ class MappedFileWriterTest : public testing::Test {
 };
 
 TEST_F(MappedFileWriterTest, ErrorCreating) {
-  // Opening |file| in write mode causes failure of |file_writer| with same
-  // path.
-  base::File file(file_path_, base::File::FLAG_CREATE_ALWAYS |
-                                  base::File::FLAG_READ |
-                                  base::File::FLAG_WRITE);
+  // Create a directory |file_path_|, so |file_writer| fails when it tries to
+  // open a file with the same name for write.
+  ASSERT_TRUE(base::CreateDirectory(file_path_));
   {
     MappedFileWriter file_writer(file_path_, 10);
     EXPECT_FALSE(file_writer.IsValid());
