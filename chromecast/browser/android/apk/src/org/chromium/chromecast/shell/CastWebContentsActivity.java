@@ -60,11 +60,6 @@ public class CastWebContentsActivity extends Activity {
 
     private static final int TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS = 300;
 
-    public static final String ACTION_STOP_ACTIVITY =
-            "com.google.android.apps.castshell.intent.action.STOP_ACTIVITY";
-    public static final String ACTION_SCREEN_OFF =
-            "com.google.android.apps.castshell.intent.action.ACTION_SCREEN_OFF";
-
     /*
      * Intended to be called from "onStop" to determine if this is a "legitimate" stop or not.
      * When starting CastShellActivity from the TV in sleep mode, an extra onPause/onStop will be
@@ -146,7 +141,7 @@ public class CastWebContentsActivity extends Activity {
         windowDestroyedIntentFilter.addDataScheme(intent.getData().getScheme());
         windowDestroyedIntentFilter.addDataAuthority(intent.getData().getAuthority(), null);
         windowDestroyedIntentFilter.addDataPath(mInstanceId, PatternMatcher.PATTERN_LITERAL);
-        windowDestroyedIntentFilter.addAction(ACTION_STOP_ACTIVITY);
+        windowDestroyedIntentFilter.addAction(CastIntents.ACTION_STOP_ACTIVITY);
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mWindowDestroyedBroadcastReceiver, windowDestroyedIntentFilter);
 
@@ -163,7 +158,7 @@ public class CastWebContentsActivity extends Activity {
         };
 
         IntentFilter screenOffIntentFilter = new IntentFilter();
-        screenOffIntentFilter.addAction(ACTION_SCREEN_OFF);
+        screenOffIntentFilter.addAction(CastIntents.ACTION_SCREEN_OFF);
         LocalBroadcastManager.getInstance(this).registerReceiver(
                 mScreenOffBroadcastReceiver, screenOffIntentFilter);
 
