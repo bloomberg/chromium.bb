@@ -144,7 +144,7 @@ class PasswordManagerTest : public testing::Test {
 
     manager_.reset(new PasswordManager(&client_));
     password_autofill_manager_.reset(
-        new PasswordAutofillManager(client_.GetDriver(), nullptr));
+        new PasswordAutofillManager(client_.GetDriver(), nullptr, &client_));
 
     EXPECT_CALL(driver_, GetPasswordManager())
         .WillRepeatedly(Return(manager_.get()));

@@ -15,6 +15,10 @@ bool PasswordManagerClient::IsFillingEnabledForCurrentPage() const {
   return true;
 }
 
+bool PasswordManagerClient::IsFillingFallbackEnabledForCurrentPage() const {
+  return true;
+}
+
 void PasswordManagerClient::PostHSTSQueryForHost(
     const GURL& origin,
     const HSTSCallback& callback) const {
