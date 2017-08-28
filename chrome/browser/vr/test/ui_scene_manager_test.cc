@@ -33,29 +33,32 @@ void UiSceneManagerTest::MakeAutoPresentedManager() {
       kNotInWebVr, kAutopresented);
 }
 
-bool UiSceneManagerTest::IsVisible(UiElementDebugId debug_id) const {
-  UiElement* element = scene_->GetUiElementByDebugId(debug_id);
+bool UiSceneManagerTest::IsVisible(UiElementName name) const {
+  UiElement* element = scene_->GetUiElementByName(name);
   return element ? element->visible() : false;
 }
 
 void UiSceneManagerTest::VerifyElementsVisible(
     const std::string& debug_name,
-    const std::set<UiElementDebugId>& debug_ids) const {
+    const std::set<UiElementName>& names) const {
   SCOPED_TRACE(debug_name);
-  for (const auto& element : scene_->GetUiElements()) {
-    SCOPED_TRACE(element->debug_id());
-    bool should_be_visible =
-        debug_ids.find(element->debug_id()) != debug_ids.end();
-    EXPECT_EQ(should_be_visible, element->visible());
+  for (auto name : names) {
+    SCOPED_TRACE(name);
+    auto* element = scene_->GetUiElementByName(name);
+    EXPECT_NE(nullptr, element);
+    EXPECT_TRUE(element->visible());
   }
 }
 
-bool UiSceneManagerTest::VerifyVisibility(
-    const std::set<UiElementDebugId>& debug_ids,
-    bool visible) const {
-  for (const auto& element : scene_->GetUiElements()) {
-    if (debug_ids.find(element->debug_id()) != debug_ids.end() &&
-        element->visible() != visible) {
+bool UiSceneManagerTest::VerifyVisibility(const std::set<UiElementName>& names,
+                                          bool visible) const {
+  for (auto name : names) {
+    SCOPED_TRACE(name);
+    auto* element = scene_->GetUiElementByName(name);
+    if (!element && visible) {
+      return false;
+    }
+    if (element && element->visible() != visible) {
       return false;
     }
   }
@@ -83,7 +86,7 @@ bool UiSceneManagerTest::IsAnimating(UiElement* element,
 
 SkColor UiSceneManagerTest::GetBackgroundColor() const {
   Rect* front =
-      static_cast<Rect*>(scene_->GetUiElementByDebugId(kBackgroundFront));
+      static_cast<Rect*>(scene_->GetUiElementByName(kBackgroundFront));
   EXPECT_NE(nullptr, front);
   if (!front)
     return SK_ColorBLACK;
@@ -92,10 +95,9 @@ SkColor UiSceneManagerTest::GetBackgroundColor() const {
 
   // While returning background color, ensure that all background panel elements
   // share the same color.
-  for (auto debug_id : {kBackgroundFront, kBackgroundLeft, kBackgroundBack,
-                        kBackgroundRight, kBackgroundTop, kBackgroundBottom}) {
-    const Rect* panel =
-        static_cast<Rect*>(scene_->GetUiElementByDebugId(debug_id));
+  for (auto name : {kBackgroundFront, kBackgroundLeft, kBackgroundBack,
+                    kBackgroundRight, kBackgroundTop, kBackgroundBottom}) {
+    const Rect* panel = static_cast<Rect*>(scene_->GetUiElementByName(name));
     EXPECT_NE(nullptr, panel);
     if (!panel)
       return SK_ColorBLACK;

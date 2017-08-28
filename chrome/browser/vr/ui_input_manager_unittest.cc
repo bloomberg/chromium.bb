@@ -38,7 +38,7 @@ TEST_F(UiInputManagerTest, NoMouseMovesDuringClick) {
   // mock out the underlying sensor data. For now, we will hallucinate
   // parameters to HandleInput.
   UiElement* content_quad =
-      scene_->GetUiElementByDebugId(UiElementDebugId::kContentQuad);
+      scene_->GetUiElementByName(UiElementName::kContentQuad);
   gfx::Point3F content_quad_center;
   content_quad->world_space_transform().TransformPoint(&content_quad_center);
   gfx::Point3F origin;
@@ -51,8 +51,7 @@ TEST_F(UiInputManagerTest, NoMouseMovesDuringClick) {
 
   // We should have hit the content quad if our math was correct.
   ASSERT_NE(nullptr, out_reticle_render_target);
-  EXPECT_EQ(UiElementDebugId::kContentQuad,
-            out_reticle_render_target->debug_id());
+  EXPECT_EQ(UiElementName::kContentQuad, out_reticle_render_target->name());
 
   // Unless we suppress content move events during clicks, this will cause us to
   // call OnContentMove on the delegate. We should do this suppression, so we

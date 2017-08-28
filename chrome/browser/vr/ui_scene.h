@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/vr/color_scheme.h"
-#include "chrome/browser/vr/elements/ui_element_debug_id.h"
+#include "chrome/browser/vr/elements/ui_element_name.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace base {
@@ -44,7 +44,7 @@ class UiScene {
   UiScene();
   virtual ~UiScene();
 
-  void AddUiElement(std::unique_ptr<UiElement> element);
+  void AddUiElement(UiElementName parent, std::unique_ptr<UiElement> element);
 
   void RemoveUiElement(int element_id);
 
@@ -64,10 +64,10 @@ class UiScene {
   // frame lifecycle. After this function, no element should be dirtied.
   void PrepareToDraw();
 
-  const std::vector<std::unique_ptr<UiElement>>& GetUiElements() const;
+  UiElement& root_element();
 
   UiElement* GetUiElementById(int element_id) const;
-  UiElement* GetUiElementByDebugId(UiElementDebugId debug_id) const;
+  UiElement* GetUiElementByName(UiElementName name) const;
 
   std::vector<const UiElement*> GetWorldElements() const;
   std::vector<const UiElement*> GetOverlayElements() const;
@@ -99,7 +99,7 @@ class UiScene {
   void Animate(const base::TimeTicks& current_time);
   void ApplyRecursiveTransforms(UiElement* element);
 
-  std::vector<std::unique_ptr<UiElement>> ui_elements_;
+  std::unique_ptr<UiElement> root_element_;
   ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 
   float background_distance_ = 10.0f;

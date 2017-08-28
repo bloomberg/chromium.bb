@@ -20,13 +20,13 @@ LinearLayout::~LinearLayout() {}
 
 void LinearLayout::LayOutChildren() {
   float total_extent = -margin_;
-  for (auto* child : children()) {
+  for (auto& child : children()) {
     if (child->visible())
       total_extent += GetExtent(*child, direction_) + margin_;
   }
 
   float offset = -0.5 * total_extent;
-  for (auto* child : children()) {
+  for (auto& child : children()) {
     if (!child->visible())
       continue;
     float extent = GetExtent(*child, direction_);

@@ -69,12 +69,6 @@ class UiInputManager {
                               gfx::Point3F* out_target_point,
                               UiElement** out_target_element,
                               gfx::PointF* out_target_local_point) const;
-  bool GetTargetLocalPoint(const gfx::Vector3dF& eye_to_target,
-                           const UiElement& element,
-                           float max_distance_to_plane,
-                           gfx::PointF* out_target_local_point,
-                           gfx::Point3F* out_target_point,
-                           float* out_distance_to_plane) const;
 
   UiScene* scene_;
   // TODO(mthiesse): We need to handle elements being removed, and update this

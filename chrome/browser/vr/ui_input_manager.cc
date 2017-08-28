@@ -44,6 +44,65 @@ bool IsScrollEvent(const GestureList& list) {
   return false;
 }
 
+bool GetTargetLocalPoint(const gfx::Vector3dF& eye_to_target,
+                         const UiElement& element,
+                         float max_distance_to_plane,
+                         gfx::PointF* out_target_local_point,
+                         gfx::Point3F* out_target_point,
+                         float* out_distance_to_plane) {
+  if (!element.GetRayDistance(kOrigin, eye_to_target, out_distance_to_plane)) {
+    return false;
+  }
+
+  if (*out_distance_to_plane < 0 ||
+      *out_distance_to_plane >= max_distance_to_plane) {
+    return false;
+  }
+
+  *out_target_point =
+      GetRayPoint(kOrigin, eye_to_target, *out_distance_to_plane);
+  gfx::PointF unit_xy_point =
+      element.GetUnitRectangleCoordinates(*out_target_point);
+
+  out_target_local_point->set_x(0.5f + unit_xy_point.x());
+  out_target_local_point->set_y(0.5f - unit_xy_point.y());
+  return true;
+}
+
+void HitTestElements(UiElement* element,
+                     gfx::Vector3dF* out_eye_to_target,
+                     float* out_closest_element_distance,
+                     gfx::Point3F* out_target_point,
+                     UiElement** out_target_element,
+                     gfx::PointF* out_target_local_point) {
+  for (auto& child : element->children()) {
+    HitTestElements(child.get(), out_eye_to_target,
+                    out_closest_element_distance, out_target_point,
+                    out_target_element, out_target_local_point);
+  }
+
+  if (!element->IsHitTestable()) {
+    return;
+  }
+
+  gfx::PointF local_point;
+  gfx::Point3F plane_intersection_point;
+  float distance_to_plane;
+  if (!GetTargetLocalPoint(*out_eye_to_target, *element,
+                           *out_closest_element_distance, &local_point,
+                           &plane_intersection_point, &distance_to_plane)) {
+    return;
+  }
+  if (!element->HitTest(local_point)) {
+    return;
+  }
+
+  *out_closest_element_distance = distance_to_plane;
+  *out_target_point = plane_intersection_point;
+  *out_target_element = element;
+  *out_target_local_point = local_point;
+}
+
 }  // namespace
 
 UiInputManager::UiInputManager(UiScene* scene) : scene_(scene) {}
@@ -236,7 +295,7 @@ void UiInputManager::SendHoverMove(const gfx::PointF& target_point) {
   // moves for how noisy the controller is. It's almost impossible to click a
   // link without unintentionally starting a drag event. For this reason we
   // disable mouse moves, only delivering a down and up event.
-  if (hover_target_->debug_id() == kContentQuad && in_click_) {
+  if (hover_target_->name() == kContentQuad && in_click_) {
     return;
   }
 
@@ -311,52 +370,9 @@ void UiInputManager::GetVisualTargetElement(
   // and the controller target position.
   float closest_element_distance = (*out_target_point - kOrigin).Length();
 
-  for (auto& element : scene_->GetUiElements()) {
-    if (!element->IsHitTestable()) {
-      continue;
-    }
-    gfx::PointF local_point;
-    gfx::Point3F plane_intersection_point;
-    float distance_to_plane;
-    if (!GetTargetLocalPoint(*out_eye_to_target, *element.get(),
-                             closest_element_distance, &local_point,
-                             &plane_intersection_point, &distance_to_plane)) {
-      continue;
-    }
-    if (!element->HitTest(local_point)) {
-      continue;
-    }
-
-    closest_element_distance = distance_to_plane;
-    *out_target_point = plane_intersection_point;
-    *out_target_element = element.get();
-    *out_target_local_point = local_point;
-  }
-}
-
-bool UiInputManager::GetTargetLocalPoint(const gfx::Vector3dF& eye_to_target,
-                                         const UiElement& element,
-                                         float max_distance_to_plane,
-                                         gfx::PointF* out_target_local_point,
-                                         gfx::Point3F* out_target_point,
-                                         float* out_distance_to_plane) const {
-  if (!element.GetRayDistance(kOrigin, eye_to_target, out_distance_to_plane)) {
-    return false;
-  }
-
-  if (*out_distance_to_plane < 0 ||
-      *out_distance_to_plane >= max_distance_to_plane) {
-    return false;
-  }
-
-  *out_target_point =
-      GetRayPoint(kOrigin, eye_to_target, *out_distance_to_plane);
-  gfx::PointF unit_xy_point =
-      element.GetUnitRectangleCoordinates(*out_target_point);
-
-  out_target_local_point->set_x(0.5f + unit_xy_point.x());
-  out_target_local_point->set_y(0.5f - unit_xy_point.y());
-  return true;
+  HitTestElements(&scene_->root_element(), out_eye_to_target,
+                  &closest_element_distance, out_target_point,
+                  out_target_element, out_target_local_point);
 }
 
 }  // namespace vr
