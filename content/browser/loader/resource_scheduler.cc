@@ -43,6 +43,11 @@ namespace {
 const base::Feature kPrioritySupportedRequestsDelayable{
     "PrioritySupportedRequestsDelayable", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, low-priority H2 and QUIC requests are throttled, but only
+// when the parser is in head.
+const base::Feature kHeadPrioritySupportedRequestsDelayable{
+    "HeadPriorityRequestsDelayable", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // In the event that many resource requests are started quickly, this feature
 // will periodically yield (e.g., delaying starting of requests) by posting a
 // task and waiting for the task to run to resume. This allows other
@@ -398,6 +403,7 @@ void ResourceScheduler::RequestQueue::Insert(
 class ResourceScheduler::Client {
  public:
   Client(bool priority_requests_delayable,
+         bool head_priority_requests_delayable,
          bool yielding_scheduler_enabled,
          int max_requests_before_yielding,
          const net::NetworkQualityEstimator* const network_quality_estimator,
@@ -408,6 +414,7 @@ class ResourceScheduler::Client {
         in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
         priority_requests_delayable_(priority_requests_delayable),
+        head_priority_requests_delayable_(head_priority_requests_delayable),
         num_skipped_scans_due_to_scheduled_start_(0),
         started_requests_since_yielding_(0),
         did_scheduler_yield_(false),
@@ -667,7 +674,8 @@ class ResourceScheduler::Client {
       attributes |= kAttributeLayoutBlocking;
     } else if (request->url_request()->priority() <
                kDelayablePriorityThreshold) {
-      if (priority_requests_delayable_) {
+      if (priority_requests_delayable_ ||
+          (head_priority_requests_delayable_ && !has_html_body_)) {
         // Resources below the delayable priority threshold that are considered
         // delayable.
         attributes |= kAttributeDelayable;
@@ -782,7 +790,11 @@ class ResourceScheduler::Client {
 
     const net::HostPortPair& host_port_pair = request->host_port_pair();
 
-    if (!priority_requests_delayable_) {
+    bool priority_delayable =
+        priority_requests_delayable_ ||
+        (head_priority_requests_delayable_ && !has_html_body_);
+
+    if (!priority_delayable) {
       if (using_spdy_proxy_ && url_request.url().SchemeIs(url::kHttpScheme))
         return ShouldStartOrYieldRequest();
 
@@ -948,6 +960,10 @@ class ResourceScheduler::Client {
   // be delayed.
   bool priority_requests_delayable_;
 
+  // True if requests to servers that support priorities (e.g., H2/QUIC) can
+  // be delayed while the parser is in head.
+  bool head_priority_requests_delayable_;
+
   // The number of LoadAnyStartablePendingRequests scans that were skipped due
   // to smarter task scheduling around reprioritization.
   int num_skipped_scans_due_to_scheduled_start_;
@@ -984,12 +1000,18 @@ class ResourceScheduler::Client {
 ResourceScheduler::ResourceScheduler()
     : priority_requests_delayable_(
           base::FeatureList::IsEnabled(kPrioritySupportedRequestsDelayable)),
+      head_priority_requests_delayable_(base::FeatureList::IsEnabled(
+          kHeadPrioritySupportedRequestsDelayable)),
       yielding_scheduler_enabled_(
           base::FeatureList::IsEnabled(kNetworkSchedulerYielding)),
       max_requests_before_yielding_(base::GetFieldTrialParamByFeatureAsInt(
           kNetworkSchedulerYielding,
           kMaxRequestsBeforeYieldingParam,
-          kMaxRequestsBeforeYieldingDefault)) {}
+          kMaxRequestsBeforeYieldingDefault)) {
+  // Don't run the two experiments together.
+  if (priority_requests_delayable_ && head_priority_requests_delayable_)
+    priority_requests_delayable_ = false;
+}
 
 ResourceScheduler::~ResourceScheduler() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -1050,8 +1072,9 @@ void ResourceScheduler::OnClientCreated(
   DCHECK(!base::ContainsKey(client_map_, client_id));
 
   Client* client = new Client(
-      priority_requests_delayable_, yielding_scheduler_enabled_,
-      max_requests_before_yielding_, network_quality_estimator, this);
+      priority_requests_delayable_, head_priority_requests_delayable_,
+      yielding_scheduler_enabled_, max_requests_before_yielding_,
+      network_quality_estimator, this);
   client_map_[client_id] = client;
 }
 
