@@ -620,7 +620,7 @@ For example, consider the following Mojom definitions:
 ```cpp
 union Value {
   int64 int_value;
-  float32 float_vlaue;
+  float32 float_value;
   string string_value;
 };
 
