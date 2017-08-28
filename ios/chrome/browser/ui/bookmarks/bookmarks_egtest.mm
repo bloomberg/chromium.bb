@@ -9,7 +9,6 @@
 #import <XCTest/XCTest.h>
 
 #include "base/strings/sys_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/titled_url_match.h"
 #include "components/prefs/pref_service.h"
@@ -91,6 +90,11 @@ id<GREYMatcher> BookmarksDoneButton() {
   return grey_allOf(
       ButtonWithAccessibilityLabelId(IDS_IOS_BOOKMARK_DONE_BUTTON),
       grey_not(grey_accessibilityTrait(UIAccessibilityTraitKeyboardKey)), nil);
+}
+
+// Matcher for the Delete button on the bookmarks UI.
+id<GREYMatcher> BookmarksDeleteSwipeButton() {
+  return ButtonWithAccessibilityLabel(@"Delete");
 }
 
 // Matcher for the More Menu.
@@ -345,6 +349,34 @@ id<GREYMatcher> ActionSheet(Action action) {
   };
   GREYAssert(testing::WaitUntilConditionOrTimeout(10, condition),
              @"Waiting for bookmark to go away");
+
+  // Press undo
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
+      performAction:grey_tap()];
+
+  // Verify it's back.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Second URL")]
+      assertWithMatcher:grey_notNil()];
+}
+
+- (void)testUndoDeleteBookmarkFromSwipe {
+  if (!base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+    EARL_GREY_TEST_SKIPPED(@"Only enabled with new UI.");
+  }
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Swipe action on the URL.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Second URL")]
+      performAction:grey_swipeFastInDirection(kGREYDirectionLeft)];
+
+  // Delete it.
+  [[EarlGrey selectElementWithMatcher:BookmarksDeleteSwipeButton()]
+      performAction:grey_tap()];
+
+  // Wait until it's gone.
+  [BookmarksTestCase waitForDeletionOfBookmarkWithTitle:@"Second URL"];
 
   // Press undo
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Undo")]
@@ -1115,6 +1147,10 @@ id<GREYMatcher> ActionSheet(Action action) {
 
 // Tests that tapping No thanks on the promo make it disappear.
 - (void)testPromoNoThanksMakeItDisappear {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+    EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
+  }
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openTopLevelBookmarksFolder];
 
@@ -1144,9 +1180,12 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Tests that tapping Sign in on the promo make the Sign in sheet appear and
 // the promo still appears after dismissing the Sign in sheet.
 - (void)testUIPromoSignIn {
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+    EARL_GREY_TEST_SKIPPED(@"Only enabled with old UI.");
+  }
   [BookmarksTestCase setupStandardBookmarks];
   [BookmarksTestCase openTopLevelBookmarksFolder];
-
   // Set up a fake identity.
   ChromeIdentity* identity =
       [FakeChromeIdentity identityWithEmail:@"fakefoo@egmail.com"
@@ -1324,6 +1363,28 @@ id<GREYMatcher> ActionSheet(Action action) {
       performAction:grey_tap()];
 }
 
+// Tests that the bookmark context bar is shown in MobileBookmarks.
+- (void)testBookmarkContextBarShown {
+  if (!base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+    EARL_GREY_TEST_SKIPPED(@"Only enabled with new UI.");
+  }
+  [BookmarksTestCase setupStandardBookmarks];
+  [BookmarksTestCase openMobileBookmarks];
+
+  // Verify the context bar is shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Context Bar")]
+      assertWithMatcher:grey_notNil()];
+
+  // Verify the context bar's leading and trailing buttons are shown.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"Context Bar Leading Button")]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          @"Context Bar Trailing Button")]
+      assertWithMatcher:grey_notNil()];
+}
+
 #pragma mark Helper Methods
 
 // Navigates to the bookmark manager UI.
@@ -1344,6 +1405,16 @@ id<GREYMatcher> ActionSheet(Action action) {
 // Navigates to the bookmark manager UI, and selects |bookmarkFolder|.
 + (void)openBookmarkFolder:(NSString*)bookmarkFolder {
   [BookmarksTestCase openBookmarks];
+  if (base::FeatureList::IsEnabled(
+          bookmark_new_generation::features::kBookmarkNewGeneration)) {
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(grey_kindOfClass(NSClassFromString(
+                                                @"UITableViewCell")),
+                                            grey_descendant(
+                                                grey_text(@"Mobile Bookmarks")),
+                                            nil)] performAction:grey_tap()];
+    return;
+  }
   if (IsCompact()) {
     // Opens the bookmark manager sidebar on handsets.
     [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Menu")]
