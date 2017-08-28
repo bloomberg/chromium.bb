@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/run_loop.h"
 #include "base/strings/pattern.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/tracing/background_tracing_manager_impl.h"

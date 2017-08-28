@@ -20,6 +20,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/md5.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"

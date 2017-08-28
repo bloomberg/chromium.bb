@@ -9,6 +9,7 @@
 #import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "ui/base/hit_test.h"
 #import "ui/base/test/nswindow_fullscreen_notification_waiter.h"
 #include "ui/base/test/ui_controls.h"

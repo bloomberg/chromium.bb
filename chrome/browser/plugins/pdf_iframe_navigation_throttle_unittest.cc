@@ -4,6 +4,7 @@
 
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 
+#include "base/run_loop.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_handle.h"

@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/clipboard_messages.h"

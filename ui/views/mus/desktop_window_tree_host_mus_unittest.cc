@@ -5,6 +5,7 @@
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 
 #include "base/debug/stack_trace.h"
+#include "base/run_loop.h"
 
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/cursor_client.h"

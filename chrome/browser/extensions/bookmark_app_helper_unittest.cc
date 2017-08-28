@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/bookmark_app_helper.h"
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/extensions/convert_web_app.h"

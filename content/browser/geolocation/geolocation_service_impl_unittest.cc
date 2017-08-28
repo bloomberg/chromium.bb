@@ -4,6 +4,7 @@
 
 #include "content/browser/geolocation/geolocation_service_impl.h"
 
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"

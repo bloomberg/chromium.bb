@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"

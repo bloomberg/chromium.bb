@@ -13,6 +13,7 @@
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"

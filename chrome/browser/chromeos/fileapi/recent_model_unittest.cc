@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chromeos/fileapi/recent_file.h"
 #include "chrome/browser/chromeos/fileapi/recent_model.h"

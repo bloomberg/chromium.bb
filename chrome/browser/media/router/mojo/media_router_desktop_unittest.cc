@@ -11,6 +11,7 @@
 
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"
 
+#include "base/run_loop.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"

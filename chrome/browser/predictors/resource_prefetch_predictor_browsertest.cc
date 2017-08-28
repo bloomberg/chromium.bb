@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"

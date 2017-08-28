@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/test/scoped_task_environment.h"
 #include "mojo/common/data_pipe_drainer.h"

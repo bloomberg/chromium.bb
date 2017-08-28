@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
 #include "base/timer/mock_timer.h"

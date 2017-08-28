@@ -5,6 +5,7 @@
 #include "extensions/renderer/api_activity_logger.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "content/public/test/mock_render_thread.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"

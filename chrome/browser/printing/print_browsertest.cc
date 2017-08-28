@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/auto_reset.h"
+#include "base/run_loop.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"

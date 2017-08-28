@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/url_request.h"

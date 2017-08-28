@@ -20,6 +20,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
+#include "base/run_loop.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 

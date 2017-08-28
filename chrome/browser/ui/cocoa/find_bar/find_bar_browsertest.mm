@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/mac/foundation_util.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"

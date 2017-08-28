@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
+#include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/renderer_host/mock_widget_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"

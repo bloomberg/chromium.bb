@@ -5,6 +5,7 @@
 #include <memory>
 #include <tuple>
 
+#include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"

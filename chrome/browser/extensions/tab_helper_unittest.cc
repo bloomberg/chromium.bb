@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/tab_helper.h"
 
+#include "base/run_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
 #include "chrome/browser/profiles/profile.h"

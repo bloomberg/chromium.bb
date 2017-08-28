@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"

@@ -4,6 +4,7 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"

@@ -19,6 +19,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/pattern.h"
