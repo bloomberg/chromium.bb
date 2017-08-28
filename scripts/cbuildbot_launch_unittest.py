@@ -302,6 +302,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     """Test CleanBuildRoot with a change in branches."""
     self.populateBuildroot('2 branchA')
     self.mock_repo.branch = 'branchB'
+    m = self.PatchObject(cros_build_lib, 'CleanupChrootMount')
 
     cbuildbot_launch.CleanBuildRoot(
         self.root, self.mock_repo, self.metrics)
@@ -310,6 +311,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     self.assertExists(self.repo)
     self.assertNotExists(self.chroot)
     self.assertExists(self.general)
+    m.assert_called()
 
   def testBuildrootBranchMatch(self):
     """Test CleanBuildRoot with no change in branch."""

@@ -161,6 +161,9 @@ def CleanBuildRoot(root, repo, metrics_fields):
     logging.PrintBuildbotStepText('Unknown layout: Wiping buildroot.')
     metrics.Counter(METRIC_CLOBBER).increment(
         field(metrics_fields, reason='layout_change'))
+    chroot_dir = os.path.join(root, 'chroot')
+    if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
+      cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
     osutils.RmDir(root, ignore_missing=True, sudo=True)
   else:
     if old_branch != repo.branch:
@@ -170,8 +173,10 @@ def CleanBuildRoot(root, repo, metrics_fields):
           field(metrics_fields, old_branch=old_branch))
 
       logging.info('Remove Chroot.')
-      osutils.RmDir(os.path.join(repo.directory, 'chroot'),
-                    ignore_missing=True, sudo=True)
+      chroot_dir = os.path.join(repo.directory, 'chroot')
+      if os.path.exists(chroot_dir) or os.path.exists(chroot_dir + '.img'):
+        cros_build_lib.CleanupChrootMount(chroot_dir, delete_image=True)
+      osutils.RmDir(chroot_dir, ignore_missing=True, sudo=True)
 
       logging.info('Remove Chrome checkout.')
       osutils.RmDir(os.path.join(repo.directory, '.cache', 'distfiles'),

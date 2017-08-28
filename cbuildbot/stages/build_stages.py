@@ -62,14 +62,13 @@ class CleanUpStage(generic_stages.BuilderStage):
   def _DeleteChroot(self):
     logging.info('Deleting chroot.')
     chroot = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
-    if os.path.exists(chroot):
+    if os.path.exists(chroot) or os.path.exists(chroot + '.img'):
       # At this stage, it's not safe to run the cros_sdk inside the buildroot
       # itself because we haven't sync'd yet, and the version of the chromite
       # in there might be broken. Since we've already unmounted everything in
       # there, we can just remove it using rm -rf.
+      cros_build_lib.CleanupChrootMount(chroot, delete_image=True)
       osutils.RmDir(chroot, ignore_missing=True, sudo=True)
-      # Also remove the image file so that it doesn't get re-mounted later.
-      osutils.SafeUnlink(chroot + '.img')
 
   def _DeleteArchivedTrybotImages(self):
     """Clear all previous archive images to save space."""

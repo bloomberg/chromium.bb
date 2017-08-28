@@ -9,11 +9,12 @@ from __future__ import print_function
 import os
 
 from chromite.cbuildbot import chroot_lib
+from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
 
-class TestChrootManager(cros_test_lib.TempDirTestCase):
+class TestChrootManager(cros_test_lib.MockTempDirTestCase):
   """Class that tests the ChrootManager."""
 
   def setUp(self):
@@ -54,6 +55,8 @@ class TestChrootManager(cros_test_lib.TempDirTestCase):
   def testUseFreshChroot(self):
     """Tests that EnsureChrootAtVersion succeeds with invalid chroot."""
     chroot = os.path.join(self.tempdir, 'chroot')
+    m = self.PatchObject(cros_build_lib, 'CleanupChrootMount')
     fresh_chroot = self.chroot_manager.EnsureChrootAtVersion('foo')
     self.assertEquals(self.chroot_manager.GetChrootVersion(chroot), None)
     self.assertTrue(fresh_chroot)
+    m.asset_called()
