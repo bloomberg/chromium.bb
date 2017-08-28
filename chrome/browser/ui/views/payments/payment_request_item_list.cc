@@ -63,7 +63,8 @@ void PaymentRequestItemList::Item::Init() {
   std::unique_ptr<views::View> content =
       CreateContentView(&accessible_item_description_);
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
 
   // Add a column for the item's content view.
   views::ColumnSet* columns = layout->AddColumnSet(0);

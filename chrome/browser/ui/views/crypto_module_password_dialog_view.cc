@@ -27,8 +27,6 @@ CryptoModulePasswordDialogView::CryptoModulePasswordDialogView(
     const std::string& hostname,
     const CryptoModulePasswordCallback& callback)
     : callback_(callback) {
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
   Init(hostname, slot_name, reason);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CRYPTO_PASSWORD);
 }
@@ -127,7 +125,7 @@ void CryptoModulePasswordDialogView::Init(const std::string& hostname,
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
 
   views::ColumnSet* reason_column_set = layout->AddColumnSet(0);
   reason_column_set->AddColumn(

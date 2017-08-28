@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/confirm_bubble.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
-#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/ui_features.h"
 #include "ui/views/controls/label.h"
@@ -20,9 +19,7 @@
 ConfirmBubbleViews::ConfirmBubbleViews(
     std::unique_ptr<ConfirmBubbleModel> model)
     : model_(std::move(model)), link_(NULL) {
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = views::GridLayout::CreatePanel(this);
 
   // Use a fixed maximum message width, so longer messages will wrap.
   const int kMaxMessageWidth = 400;

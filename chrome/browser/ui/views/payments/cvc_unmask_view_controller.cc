@@ -155,7 +155,8 @@ base::string16 CvcUnmaskViewController::GetSheetTitle() {
 }
 
 void CvcUnmaskViewController::FillContentView(views::View* content_view) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(content_view);
+  std::unique_ptr<views::GridLayout> layout =
+      base::MakeUnique<views::GridLayout>(content_view);
   content_view->SetBorder(views::CreateEmptyBorder(
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
       kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets));
@@ -271,6 +272,8 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   error_label->SetVisible(false);
 
   layout->AddView(error_label.release());
+
+  content_view->SetLayoutManager(layout.release());
 }
 
 std::unique_ptr<views::Button> CvcUnmaskViewController::CreatePrimaryButton() {

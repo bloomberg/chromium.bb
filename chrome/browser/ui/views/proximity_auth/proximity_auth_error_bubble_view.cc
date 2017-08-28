@@ -94,7 +94,7 @@ void ProximityAuthErrorBubbleView::Init() {
   // ----------------------------
   // | icon | padding | message |
   // ----------------------------
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  std::unique_ptr<views::GridLayout> layout(new views::GridLayout(this));
   views::ColumnSet* columns = layout->AddColumnSet(0);
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
                      views::GridLayout::USE_PREF, 0, 0);
@@ -120,6 +120,7 @@ void ProximityAuthErrorBubbleView::Init() {
   layout->StartRow(0, 0);
   layout->AddView(warning_icon.release());
   layout->AddView(label.release());
+  SetLayoutManager(layout.release());
 }
 
 ProximityAuthErrorBubbleView::~ProximityAuthErrorBubbleView() {}

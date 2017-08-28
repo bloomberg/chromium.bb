@@ -159,7 +159,8 @@ MessageCenterButtonBar::MessageCenterButtonBar(
 }
 
 void MessageCenterButtonBar::ViewVisibilityChanged() {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
   views::ColumnSet* column = layout->AddColumnSet(0);
   constexpr int kFooterLeftMargin = 4;
   column->AddPaddingColumn(0, kFooterLeftMargin);

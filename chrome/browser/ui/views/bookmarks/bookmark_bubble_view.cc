@@ -296,7 +296,8 @@ void BookmarkBubbleView::Init() {
 
   SetLayoutManager(new views::FillLayout());
   bookmark_contents_view_ = new views::View();
-  GridLayout* layout = GridLayout::CreateAndInstall(bookmark_contents_view_);
+  GridLayout* layout = new GridLayout(bookmark_contents_view_);
+  bookmark_contents_view_->SetLayoutManager(layout);
 
   // This column set is used for the labels and textfields.
   constexpr int kColumnId = 0;
