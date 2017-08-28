@@ -85,6 +85,17 @@ if (is_win) {
     ]
   }
 
+  # This source set contains the include file that declares the export thunks.
+  # Any target that gets compiled into both test and release code needs to
+  # depend on this for the include alone. The binary it's linked into then needs
+  # to depend on either :crash_export_thunks or :test_support, or in the case of
+  # release binaries, on //chrome_elf, which re-exports the thunks.
+  source_set("crash_export_thunk_include") {
+    sources = [
+      "crash_export_thunks.h",
+    ]
+  }
+
   # This source set contains a set of functions that allow using the crashpad
   # handler across a module boundary. The intent is for these functions to be
   # built into a dynamic library, which the user of the crashpad handler then
@@ -96,6 +107,23 @@ if (is_win) {
   source_set("crash_export_thunks") {
     sources = [
       "crash_export_thunks.cc",
+      "crash_export_thunks.h",
+    ]
+
+    deps = [
+      ":app",
+      "//base",
+      "//third_party/crashpad/crashpad/client",
+    ]
+  }
+
+  # This source set contains a set of test stubs for the functions above.
+  # time.
+  source_set("crash_export_stubs") {
+    testonly = true
+
+    sources = [
+      "crash_export_stubs.cc",
       "crash_export_thunks.h",
     ]
 
@@ -116,7 +144,7 @@ source_set("test_support") {
   ]
 
   if (is_win) {
-    deps += [ ":crash_export_thunks" ]
+    deps += [ ":crash_export_stubs" ]
   }
 }
 
