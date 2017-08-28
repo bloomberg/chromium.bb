@@ -222,12 +222,7 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
   friend class EventListenerIterator;
 };
 
-// EventTargetData is a GCed object, so it should not be used as a part of
-// object. However, we intentionally use it as a part of object for performance,
-// assuming that no one extracts a pointer of
-// EventTargetWithInlineData::m_eventTargetData and store it to a Member etc.
-class GC_PLUGIN_IGNORE("513199") CORE_EXPORT EventTargetWithInlineData
-    : public EventTarget {
+class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
  public:
   ~EventTargetWithInlineData() override {}
 
@@ -246,7 +241,11 @@ class GC_PLUGIN_IGNORE("513199") CORE_EXPORT EventTargetWithInlineData
   EventTargetData& EnsureEventTargetData() final { return event_target_data_; }
 
  private:
-  EventTargetData event_target_data_;
+  // EventTargetData is a GCed object, so it should not be used as a part of
+  // object. However, we intentionally use it as a part of object for
+  // performance, assuming that no one extracts a pointer of
+  // EventTargetWithInlineData::m_eventTargetData and store it to a Member etc.
+  GC_PLUGIN_IGNORE("513199") EventTargetData event_target_data_;
 };
 
 // FIXME: These macros should be split into separate DEFINE and DECLARE
