@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/task_scheduler/task_scheduler.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +41,8 @@ class MAYBE_OneShotAccessibilityTreeSearchTest : public testing::Test {
  protected:
   void SetUp() override;
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   std::unique_ptr<BrowserAccessibilityManager> tree_;
 
  private:
@@ -48,14 +50,6 @@ class MAYBE_OneShotAccessibilityTreeSearchTest : public testing::Test {
 };
 
 void MAYBE_OneShotAccessibilityTreeSearchTest::SetUp() {
-  // In order to mock TestBrowserAccessibilityManager, we need to also make sure
-  // there is a TaskScheduler started.  This is because
-  // BrowserAccessibilityStateImpl posts a few tasks which will assert if there
-  // isn't a TaskScheduler.
-  // See: BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl().
-  base::TaskScheduler::CreateAndStartWithDefaultParams(
-      "OneShotAccessibilityTreeSearchTest");
-
   ui::AXNodeData root;
   root.id = 1;
   root.SetName("Document");
