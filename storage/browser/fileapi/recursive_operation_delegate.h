@@ -133,7 +133,7 @@ class STORAGE_EXPORT RecursiveOperationDelegate
   void DidProcessDirectory(base::File::Error error);
   void DidReadDirectory(const FileSystemURL& parent,
                         base::File::Error error,
-                        const FileEntryList& entries,
+                        FileEntryList entries,
                         bool has_more);
   void ProcessPendingFiles();
   void DidProcessFile(const FileSystemURL& url, base::File::Error error);

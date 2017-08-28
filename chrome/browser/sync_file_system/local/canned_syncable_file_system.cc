@@ -138,16 +138,16 @@ void OnCreateSnapshotFile(
 }
 
 void OnReadDirectory(CannedSyncableFileSystem::FileEntryList* entries_out,
-                     const CannedSyncableFileSystem::StatusCallback& callback,
+                     CannedSyncableFileSystem::StatusCallback callback,
                      base::File::Error error,
-                     const storage::FileSystemOperation::FileEntryList& entries,
+                     storage::FileSystemOperation::FileEntryList entries,
                      bool has_more) {
   DCHECK(entries_out);
   entries_out->reserve(entries_out->size() + entries.size());
   std::copy(entries.begin(), entries.end(), std::back_inserter(*entries_out));
 
   if (!has_more)
-    callback.Run(error);
+    std::move(callback).Run(error);
 }
 
 class WriteHelper {
@@ -634,7 +634,7 @@ void CannedSyncableFileSystem::DoReadDirectory(
   EXPECT_TRUE(io_task_runner_->RunsTasksInCurrentSequence());
   EXPECT_TRUE(is_filesystem_opened_);
   operation_runner()->ReadDirectory(
-      url, base::Bind(&OnReadDirectory, entries, callback));
+      url, base::BindRepeating(&OnReadDirectory, entries, callback));
 }
 
 void CannedSyncableFileSystem::DoWrite(

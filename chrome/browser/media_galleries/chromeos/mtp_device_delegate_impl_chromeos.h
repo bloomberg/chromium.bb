@@ -206,7 +206,7 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
       const bool exclusive,
       const CreateDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
-      const storage::AsyncFileUtil::EntryList& entries,
+      storage::AsyncFileUtil::EntryList entries,
       const bool has_more);
 
   // Called when ReadDirectory succeeds.
@@ -383,10 +383,9 @@ class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
                       const base::File::Info& file_info, int bytes_read);
 
   // Called when FillFileCache() succeeds.
-  void OnDidFillFileCache(
-      const base::FilePath& path,
-      const storage::AsyncFileUtil::EntryList& /* entries */,
-      bool has_more);
+  void OnDidFillFileCache(const base::FilePath& path,
+                          storage::AsyncFileUtil::EntryList /* entries */,
+                          bool has_more);
 
   // Called when FillFileCache() fails.
   void OnFillFileCacheFailed(base::File::Error error);

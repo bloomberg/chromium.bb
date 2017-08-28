@@ -70,7 +70,7 @@ class EventLogger {
   }
 
   void OnReadDirectory(base::File::Error error,
-                       const storage::AsyncFileUtil::EntryList& file_list,
+                       storage::AsyncFileUtil::EntryList file_list,
                        bool has_more) {
     result_.reset(new base::File::Error(error));
   }

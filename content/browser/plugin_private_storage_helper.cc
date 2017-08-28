@@ -86,7 +86,7 @@ class PluginPrivateDataByOriginChecker {
   void OnFileSystemOpened(base::File::Error result);
   void OnDirectoryRead(const std::string& root,
                        base::File::Error result,
-                       const storage::AsyncFileUtil::EntryList& file_list,
+                       storage::AsyncFileUtil::EntryList file_list,
                        bool has_more);
   void OnFileInfo(const std::string& file_name,
                   base::File::Error result,
@@ -150,14 +150,14 @@ void PluginPrivateDataByOriginChecker::OnFileSystemOpened(
           filesystem_context_);
   file_util->ReadDirectory(
       std::move(operation_context), filesystem_context_->CrackURL(GURL(root)),
-      base::Bind(&PluginPrivateDataByOriginChecker::OnDirectoryRead,
-                 base::Unretained(this), root));
+      base::BindRepeating(&PluginPrivateDataByOriginChecker::OnDirectoryRead,
+                          base::Unretained(this), root));
 }
 
 void PluginPrivateDataByOriginChecker::OnDirectoryRead(
     const std::string& root,
     base::File::Error result,
-    const storage::AsyncFileUtil::EntryList& file_list,
+    storage::AsyncFileUtil::EntryList file_list,
     bool has_more) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(3) << __func__ << " result: " << result

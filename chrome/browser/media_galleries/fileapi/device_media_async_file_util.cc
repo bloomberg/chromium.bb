@@ -71,9 +71,9 @@ void OnDidCheckMediaForGetFileInfo(
 void OnDidCheckMediaForReadDirectory(
     const AsyncFileUtil::ReadDirectoryCallback& callback,
     bool has_more,
-    const AsyncFileUtil::EntryList& file_list) {
+    AsyncFileUtil::EntryList file_list) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  callback.Run(base::File::FILE_OK, file_list, has_more);
+  callback.Run(base::File::FILE_OK, std::move(file_list), has_more);
 }
 
 // Called when CreateDirectory method call failed.
@@ -649,21 +649,19 @@ void DeviceMediaAsyncFileUtil::OnDidGetFileInfo(
 void DeviceMediaAsyncFileUtil::OnDidReadDirectory(
     base::SequencedTaskRunner* task_runner,
     const AsyncFileUtil::ReadDirectoryCallback& callback,
-    const AsyncFileUtil::EntryList& file_list,
+    AsyncFileUtil::EntryList file_list,
     bool has_more) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!validate_media_files()) {
-    OnDidCheckMediaForReadDirectory(callback, has_more, file_list);
+    OnDidCheckMediaForReadDirectory(callback, has_more, std::move(file_list));
     return;
   }
 
   base::PostTaskAndReplyWithResult(
-      task_runner,
-      FROM_HERE,
-      base::Bind(&MediaPathFilterWrapper::FilterMediaEntries,
-                 media_path_filter_wrapper_,
-                 file_list),
-      base::Bind(&OnDidCheckMediaForReadDirectory, callback, has_more));
+      task_runner, FROM_HERE,
+      base::BindOnce(&MediaPathFilterWrapper::FilterMediaEntries,
+                     media_path_filter_wrapper_, std::move(file_list)),
+      base::BindOnce(&OnDidCheckMediaForReadDirectory, callback, has_more));
 }
 
 void DeviceMediaAsyncFileUtil::OnDidCopyFileLocal(

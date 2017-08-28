@@ -98,16 +98,14 @@ void RecursiveOperationDelegate::DidProcessDirectory(
   const FileSystemURL& parent = pending_directory_stack_.top().front();
   pending_directory_stack_.push(std::queue<FileSystemURL>());
   operation_runner()->ReadDirectory(
-      parent,
-      base::Bind(&RecursiveOperationDelegate::DidReadDirectory,
-                 AsWeakPtr(), parent));
+      parent, base::BindRepeating(&RecursiveOperationDelegate::DidReadDirectory,
+                                  AsWeakPtr(), parent));
 }
 
-void RecursiveOperationDelegate::DidReadDirectory(
-    const FileSystemURL& parent,
-    base::File::Error error,
-    const FileEntryList& entries,
-    bool has_more) {
+void RecursiveOperationDelegate::DidReadDirectory(const FileSystemURL& parent,
+                                                  base::File::Error error,
+                                                  FileEntryList entries,
+                                                  bool has_more) {
   DCHECK(!pending_directory_stack_.empty());
 
   if (canceled_ || error != base::File::FILE_OK) {

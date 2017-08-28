@@ -509,7 +509,7 @@ class DeveloperPrivateLoadDirectoryFunction
       const base::FilePath& project_path,
       const base::FilePath& destination_path,
       base::File::Error result,
-      const storage::FileSystemOperation::FileEntryList& file_list,
+      storage::FileSystemOperation::FileEntryList file_list,
       bool has_more);
 
   void SnapshotFileCallback(

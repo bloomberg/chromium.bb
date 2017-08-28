@@ -227,15 +227,14 @@ OperationID FileSystemOperationRunner::ReadDirectory(
   OperationHandle handle =
       BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
-    DidReadDirectory(handle, callback, error, std::vector<DirectoryEntry>(),
-                     false);
+    DidReadDirectory(handle, std::move(callback), error,
+                     std::vector<DirectoryEntry>(), false);
     return handle.id;
   }
   PrepareForRead(handle.id, url);
   operation_raw->ReadDirectory(
-      url,
-      base::Bind(&FileSystemOperationRunner::DidReadDirectory, AsWeakPtr(),
-                 handle, callback));
+      url, base::BindRepeating(&FileSystemOperationRunner::DidReadDirectory,
+                               AsWeakPtr(), handle, callback));
   return handle.id;
 }
 
@@ -588,17 +587,17 @@ void FileSystemOperationRunner::DidReadDirectory(
     const OperationHandle& handle,
     const ReadDirectoryCallback& callback,
     base::File::Error rv,
-    const std::vector<DirectoryEntry>& entries,
+    std::vector<DirectoryEntry> entries,
     bool has_more) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&FileSystemOperationRunner::DidReadDirectory,
-                              AsWeakPtr(), handle, callback, rv,
-                              entries, has_more));
+        FROM_HERE, base::BindOnce(&FileSystemOperationRunner::DidReadDirectory,
+                                  AsWeakPtr(), handle, callback, rv,
+                                  std::move(entries), has_more));
     return;
   }
-  callback.Run(rv, entries, has_more);
+  callback.Run(rv, std::move(entries), has_more);
   if (rv != base::File::FILE_OK || !has_more)
     FinishOperation(handle.id);
 }

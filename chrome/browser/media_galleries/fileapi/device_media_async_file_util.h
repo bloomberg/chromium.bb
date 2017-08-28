@@ -164,11 +164,10 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
   // |file_list| will have only a subset of all contents (the subsets reported
   // in any two calls are disjoint), and |has_more| will be true, except for
   // the last chunk.
-  void OnDidReadDirectory(
-      base::SequencedTaskRunner* task_runner,
-      const ReadDirectoryCallback& callback,
-      const EntryList& file_list,
-      bool has_more);
+  void OnDidReadDirectory(base::SequencedTaskRunner* task_runner,
+                          const ReadDirectoryCallback& callback,
+                          EntryList file_list,
+                          bool has_more);
 
   // Called when MoveFileLocal method call succeeds. |callback| is invoked to
   // complete the MoveFileLocal request.

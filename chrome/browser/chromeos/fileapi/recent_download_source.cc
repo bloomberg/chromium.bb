@@ -27,12 +27,13 @@ namespace {
 void OnReadDirectoryOnIOThread(
     const storage::FileSystemOperation::ReadDirectoryCallback& callback,
     base::File::Error result,
-    const storage::FileSystemOperation::FileEntryList& entries,
+    storage::FileSystemOperation::FileEntryList entries,
     bool has_more) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::BindOnce(callback, result, entries, has_more));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(callback, result, std::move(entries), has_more));
 }
 
 void ReadDirectoryOnIOThread(
@@ -42,7 +43,7 @@ void ReadDirectoryOnIOThread(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   file_system_context->operation_runner()->ReadDirectory(
-      url, base::Bind(&OnReadDirectoryOnIOThread, callback));
+      url, base::BindRepeating(&OnReadDirectoryOnIOThread, callback));
 }
 
 void OnGetMetadataOnIOThread(
@@ -118,7 +119,7 @@ void RecentDownloadSource::ScanDirectory(const base::FilePath& path) {
 void RecentDownloadSource::OnReadDirectory(
     const base::FilePath& path,
     base::File::Error result,
-    const storage::FileSystemOperation::FileEntryList& entries,
+    storage::FileSystemOperation::FileEntryList entries,
     bool has_more) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(params_.has_value());
