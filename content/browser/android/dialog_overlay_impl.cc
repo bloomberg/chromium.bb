@@ -73,10 +73,17 @@ void DialogOverlayImpl::CompleteInit(JNIEnv* env,
                                      const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  WebContentsDelegate* delegate = web_contents()->GetDelegate();
+
+  if (!delegate) {
+    Stop();
+    return;
+  }
+
   // Note: It's ok to call SetOverlayMode() directly here, because there can be
   // at most one overlay alive at the time. This logic needs to be updated if
   // ever AndroidOverlayProviderImpl.MAX_OVERLAYS > 1.
-  web_contents()->GetDelegate()->SetOverlayMode(true);
+  delegate->SetOverlayMode(true);
 
   // Send the initial token, if there is one.  The observer will notify us about
   // changes only.
@@ -134,7 +141,9 @@ void DialogOverlayImpl::UnregisterForTokensIfNeeded() {
   // We clear overlay mode here rather than in Destroy(), because we may have
   // been called via a WebContentsDestroyed() event, and this might be the last
   // opportunity we have to access web_contents().
-  web_contents()->GetDelegate()->SetOverlayMode(false);
+  WebContentsDelegate* delegate = web_contents()->GetDelegate();
+  if (delegate)
+    delegate->SetOverlayMode(false);
 
   cvc_->RemoveObserver(this);
   cvc_ = nullptr;
