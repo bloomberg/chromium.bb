@@ -18,7 +18,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_views_presenter.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
@@ -749,8 +748,13 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
   // Convert the point to the container view's frame, and adjust for animation.
   NSPoint anchorInContainer =
       [containerView_ convertPoint:anchor fromView:view];
-  anchorInContainer.x -= NSMinX([containerView_ frame]) -
-      NSMinX([containerView_ animationEndFrame]);
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+    anchorInContainer.x += NSMaxX([containerView_ frame]) -
+                           NSMaxX([containerView_ animationEndFrame]);
+  } else {
+    anchorInContainer.x -= NSMinX([containerView_ frame]) -
+                           NSMinX([containerView_ animationEndFrame]);
+  }
 
   return [containerView_ convertPoint:anchorInContainer toView:nil];
 }
