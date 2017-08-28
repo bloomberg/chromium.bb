@@ -72,6 +72,8 @@ class UiSceneManager {
   void OnExitPromptChoiceForTesting(bool chose_exit);
 
  private:
+  void Create2dBrowsingSubtreeRoots();
+  void CreateWebVrRoot();
   void CreateScreenDimmer();
   void CreateSecurityWarnings();
   void CreateSystemIndicators();
@@ -97,7 +99,6 @@ class UiSceneManager {
   void OnExitPromptBackplaneClicked();
   void OnCloseButtonClicked();
   void OnUnsupportedMode(UiUnsupportedMode mode);
-  int AllocateId();
   ColorScheme::Mode mode() const;
   const ColorScheme& color_scheme() const;
 
@@ -119,7 +120,6 @@ class UiSceneManager {
   UiElement* screen_capture_indicator_ = nullptr;
   UiElement* location_access_indicator_ = nullptr;
   UiElement* screen_dimmer_ = nullptr;
-  UiElement* viewport_aware_root_ = nullptr;
   Rect* ceiling_ = nullptr;
   Grid* floor_ = nullptr;
   UiElement* close_button_ = nullptr;
@@ -150,8 +150,6 @@ class UiSceneManager {
   bool location_access_ = false;
   bool bluetooth_connected_ = false;
   UiUnsupportedMode exit_vr_prompt_reason_ = UiUnsupportedMode::kCount;
-
-  int next_available_id_ = 1;
 
   std::vector<Rect*> background_panels_;
   std::vector<UiElement*> content_elements_;

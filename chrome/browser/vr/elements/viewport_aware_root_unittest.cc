@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/vr/elements/draw_phase.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -50,7 +51,11 @@ void RotateAboutYAxis(float degrees, gfx::Vector3dF* out) {
 }
 
 void CheckRotateClockwiseAndReverse(const gfx::Vector3dF& initial_look_at) {
-  ViewportAwareRoot root;
+  UiScene scene;
+
+  auto element = base::MakeUnique<ViewportAwareRoot>();
+  ViewportAwareRoot& root = *element;
+  scene.AddUiElement(kRoot, std::move(element));
   gfx::Vector3dF look_at(initial_look_at);
   gfx::Transform expected;
 
@@ -108,29 +113,28 @@ TEST(ViewportAwareRoot, TestAdjustRotationForHeadPose) {
 TEST(ViewportAwareRoot, ChildElementsRepositioned) {
   UiScene scene;
 
-  auto root = base::MakeUnique<ViewportAwareRoot>();
-  root->set_id(0);
-  root->set_draw_phase(0);
-  scene.AddUiElement(std::move(root));
+  auto viewport_aware_root = base::MakeUnique<ViewportAwareRoot>();
+  ViewportAwareRoot& root = *viewport_aware_root;
+  root.set_draw_phase(kPhaseForeground);
+  scene.AddUiElement(kRoot, std::move(viewport_aware_root));
 
   auto element = base::MakeUnique<UiElement>();
-  element->set_id(1);
+  UiElement& child = *element;
   element->set_viewport_aware(true);
-  element->set_draw_phase(0);
+  element->set_draw_phase(kPhaseForeground);
   element->SetTranslate(0.f, 0.f, -1.f);
-  scene.GetUiElementById(0)->AddChild(element.get());
-  scene.AddUiElement(std::move(element));
+  root.AddChild(std::move(element));
 
   gfx::Vector3dF look_at{0.f, 0.f, -1.f};
   scene.OnBeginFrame(MicrosecondsToTicks(0), look_at);
-  EXPECT_TRUE(Point3FAreNearlyEqual(gfx::Point3F(0.f, 0.f, -1.f),
-                                    scene.GetUiElementById(1)->GetCenter()));
+  EXPECT_TRUE(
+      Point3FAreNearlyEqual(gfx::Point3F(0.f, 0.f, -1.f), child.GetCenter()));
 
   // This should trigger reposition of viewport aware elements.
   RotateAboutYAxis(90.f, &look_at);
   scene.OnBeginFrame(MicrosecondsToTicks(10), look_at);
-  EXPECT_TRUE(Point3FAreNearlyEqual(gfx::Point3F(-1.f, 0.f, 0.f),
-                                    scene.GetUiElementById(1)->GetCenter()));
+  EXPECT_TRUE(
+      Point3FAreNearlyEqual(gfx::Point3F(-1.f, 0.f, 0.f), child.GetCenter()));
 }
 
 }  // namespace vr

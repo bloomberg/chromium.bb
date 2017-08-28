@@ -2,40 +2,44 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_DEBUG_ID_H_
-#define CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_DEBUG_ID_H_
+#ifndef CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_NAME_H_
+#define CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_NAME_H_
 
 namespace vr {
 
 // These identifiers serve as stable, semantic identifiers for UI elements.
-//
-// TODO(vollick): This should become UiElementName. These identifiers will be
-// useful outside of testing and debugging code. Named as it is today, it sounds
-// as if this can be done away with in release builds, which is not true.
-enum UiElementDebugId {
+enum UiElementName {
   kNone = 0,
+  kRoot,
+  k2dBrowsingRoot,
+  k2dBrowsingBackground,
+  k2dBrowsingForeground,
+  k2dBrowsingViewportAwareRoot,
+  kWebVrRoot,
   kWebVrPermanentHttpSecurityWarning,
   kWebVrTransientHttpSecurityWarning,
+  kWebVrViewportAwareRoot,
   kContentQuad,
   kBackplane,
   kCeiling,
   kFloor,
   kUrlBar,
-  kLoadingIndicator,
+  kIndicatorLayout,
   kAudioCaptureIndicator,
   kVideoCaptureIndicator,
   kScreenCaptureIndicator,
+  kLocationAccessIndicator,
+  kBluetoothConnectedIndicator,
+  kLoadingIndicator,
   kCloseButton,
   kScreenDimmer,
   kExitWarning,
   kExitPrompt,
   kExitPromptBackplane,
   kWebVrUrlToast,
-  kLocationAccessIndicator,
   kExclusiveScreenToast,
   kExclusiveScreenToastViewportAware,
   kSplashScreenText,
-  kBluetoothConnectedIndicator,
   kBackgroundFront,
   kBackgroundLeft,
   kBackgroundBack,
@@ -47,4 +51,4 @@ enum UiElementDebugId {
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_DEBUG_ID_H_
+#endif  // CHROME_BROWSER_VR_ELEMENTS_UI_ELEMENT_NAME_H_

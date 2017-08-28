@@ -14,7 +14,8 @@
 #include "cc/animation/transform_operations.h"
 #include "chrome/browser/vr/animation_player.h"
 #include "chrome/browser/vr/color_scheme.h"
-#include "chrome/browser/vr/elements/ui_element_debug_id.h"
+#include "chrome/browser/vr/elements/draw_phase.h"
+#include "chrome/browser/vr/elements/ui_element_name.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -101,7 +102,6 @@ class UiElement : public cc::AnimationTarget {
   virtual bool HitTest(const gfx::PointF& point) const;
 
   int id() const { return id_; }
-  void set_id(int id) { id_ = id; }
 
   // If true, this object will be visible.
   bool visible() const { return visible_; }
@@ -187,8 +187,8 @@ class UiElement : public cc::AnimationTarget {
   void set_dirty(bool dirty) { dirty_ = dirty; }
 
   // A flag usable during transformation calculates to avoid duplicate work.
-  UiElementDebugId debug_id() const { return debug_id_; }
-  void set_debug_id(UiElementDebugId debug_id) { debug_id_ = debug_id; }
+  UiElementName name() const { return name_; }
+  void set_name(UiElementName name) { name_ = name; }
 
   // By default, sets an element to be visible or not. This may be overridden to
   // allow finer control of element visibility.
@@ -205,10 +205,9 @@ class UiElement : public cc::AnimationTarget {
   }
 
   // Transformations are applied relative to the parent element, rather than
-  // absolutely. You cannot currently unparent elements.
-  // TODO(vollick): elements should own their children. UiScene can turn into
-  // recursive operations on the UiElement tree.
-  void AddChild(UiElement* child);
+  // absolutely.
+  void AddChild(std::unique_ptr<UiElement> child);
+  void RemoveChild(UiElement* child);
   UiElement* parent() { return parent_; }
 
   gfx::Point3F GetCenter() const;
@@ -258,10 +257,13 @@ class UiElement : public cc::AnimationTarget {
   // or right where the head is pointing.
   virtual void AdjustRotationForHeadPose(const gfx::Vector3dF& look_at);
 
+  std::vector<std::unique_ptr<UiElement>>& children() { return children_; }
+  const std::vector<std::unique_ptr<UiElement>>& children() const {
+    return children_;
+  }
+
  protected:
   virtual void OnSetMode();
-
-  std::vector<UiElement*>& children() { return children_; }
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
 
@@ -306,7 +308,7 @@ class UiElement : public cc::AnimationTarget {
 
   AnimationPlayer animation_player_;
 
-  int draw_phase_ = -1;
+  int draw_phase_ = kPhaseNone;
 
   // This is the time as of the last call to |Animate|. It is needed when
   // reversing transitions.
@@ -319,7 +321,7 @@ class UiElement : public cc::AnimationTarget {
   bool dirty_ = false;
 
   // An identifier used for testing and debugging, in lieu of a string.
-  UiElementDebugId debug_id_ = UiElementDebugId::kNone;
+  UiElementName name_ = UiElementName::kNone;
 
   // This local transform operations. They are inherited by descendants and are
   // stored as a list of operations rather than a baked transform to make
@@ -337,7 +339,7 @@ class UiElement : public cc::AnimationTarget {
   ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 
   UiElement* parent_ = nullptr;
-  std::vector<UiElement*> children_;
+  std::vector<std::unique_ptr<UiElement>> children_;
 
   DISALLOW_COPY_AND_ASSIGN(UiElement);
 };

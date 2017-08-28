@@ -19,8 +19,16 @@ ViewportAwareRoot::~ViewportAwareRoot() = default;
 
 void ViewportAwareRoot::AdjustRotationForHeadPose(
     const gfx::Vector3dF& look_at) {
-  // This must be a top level element.
-  DCHECK(!parent());
+  // We must not inherit a transform.
+  //
+  // TODO(vollick): ensure that this check happens at the right time in the
+  // frame lifecycle. More precisely, once we've made ApplyRecursiveTransforms a
+  // recursive function on the UiElement tree, we can do this check there.
+  // Presently, we're checking our parent's transform from last frame. The
+  // transform from last frame should also be the identity, of course, so the
+  // check is valid, but we'd prefer to check the transform for the current
+  // frame.
+  DCHECK(parent()->world_space_transform().IsIdentity());
   DCHECK(viewport_aware());
 
   gfx::Vector3dF rotated_center_vector{0.f, 0.f, -1.0f};
