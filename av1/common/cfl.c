@@ -29,6 +29,33 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
 #endif  // CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
 }
 
+static INLINE void cfl_luma_subsampling_420(const uint8_t *y_pix,
+                                            uint8_t *output, int width,
+                                            int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      int top = i << 1;
+      int bot = top + MAX_SB_SIZE;
+      int sum = y_pix[top] + y_pix[top + 1] + y_pix[bot] + y_pix[bot + 1];
+      output[i] = (sum + 2) >> 2;
+    }
+    y_pix += MAX_SB_SIZE << 1;
+    output += MAX_SB_SIZE;
+  }
+}
+
+static INLINE void cfl_luma_subsampling_444(const uint8_t *y_pix,
+                                            uint8_t *output, int width,
+                                            int height) {
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      output[i] = y_pix[i];
+    }
+    y_pix += MAX_SB_SIZE;
+    output += MAX_SB_SIZE;
+  }
+}
+
 // Load from the CfL pixel buffer into output
 static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
   const int sub_x = cfl->subsampling_x;
@@ -36,41 +63,19 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
   const int off_log2 = tx_size_wide_log2[0];
 
   // TODO(ltrudeau) convert to uint16 to add HBD support
-  const uint8_t *y_pix;
-  // TODO(ltrudeau) convert to uint16 to add HBD support
   uint8_t *output = cfl->y_down_pix;
-
-  int pred_row_offset = 0;
-  int output_row_offset = 0;
 
   // TODO(ltrudeau) should be faster to downsample when we store the values
   // TODO(ltrudeau) add support for 4:2:2
   if (sub_y == 0 && sub_x == 0) {
-    y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << off_log2];
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        // In 4:4:4, pixels match 1 to 1
-        output[output_row_offset + i] = y_pix[pred_row_offset + i];
-      }
-      pred_row_offset += MAX_SB_SIZE;
-      output_row_offset += MAX_SB_SIZE;
-    }
+    // TODO(ltrudeau) convert to uint16 to add HBD support
+    const uint8_t *y_pix = cfl->y_pix + ((row * MAX_SB_SIZE + col) << off_log2);
+    cfl_luma_subsampling_444(y_pix, output, width, height);
   } else if (sub_y == 1 && sub_x == 1) {
-    y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << (off_log2 + sub_y)];
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i++) {
-        int top_left = (pred_row_offset + i) << sub_y;
-        int bot_left = top_left + MAX_SB_SIZE;
-        // In 4:2:0, average pixels in 2x2 grid
-        output[output_row_offset + i] = OD_SHR_ROUND(
-            y_pix[top_left] + y_pix[top_left + 1]        // Top row
-                + y_pix[bot_left] + y_pix[bot_left + 1]  // Bottom row
-            ,
-            2);
-      }
-      pred_row_offset += MAX_SB_SIZE;
-      output_row_offset += MAX_SB_SIZE;
-    }
+    // TODO(ltrudeau) convert to uint16 to add HBD support
+    const uint8_t *y_pix =
+        cfl->y_pix + ((row * MAX_SB_SIZE + col) << (off_log2 + sub_y));
+    cfl_luma_subsampling_420(y_pix, output, width, height);
   } else {
     assert(0);  // Unsupported chroma subsampling
   }
@@ -90,7 +95,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
 
   if (diff_width > 0) {
     int last_pixel;
-    output_row_offset = width - diff_width;
+    int output_row_offset = width - diff_width;
 
     for (int j = 0; j < height; j++) {
       last_pixel = output_row_offset - 1;
@@ -102,7 +107,7 @@ static void cfl_load(CFL_CTX *cfl, int row, int col, int width, int height) {
   }
 
   if (diff_height > 0) {
-    output_row_offset = (height - diff_height) * MAX_SB_SIZE;
+    int output_row_offset = (height - diff_height) * MAX_SB_SIZE;
     const int last_row_offset = output_row_offset - MAX_SB_SIZE;
 
     for (int j = 0; j < diff_height; j++) {
