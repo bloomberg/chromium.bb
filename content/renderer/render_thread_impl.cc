@@ -121,6 +121,8 @@
 #include "content/renderer/media/midi_message_filter.h"
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/mus/render_widget_window_tree_client_factory.h"
+#include "content/renderer/mus/renderer_window_tree_client.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -156,6 +158,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -168,7 +171,6 @@
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
-#include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -213,11 +215,6 @@
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
 #include "v8/src/third_party/vtune/v8-vtune.h"
 #endif
-
-#include "content/public/common/service_manager_connection.h"
-#include "content/renderer/mus/render_widget_window_tree_client_factory.h"
-#include "content/renderer/mus/renderer_window_tree_client.h"
-#include "services/ui/public/cpp/gpu/gpu.h"
 
 #if defined(ENABLE_IPC_FUZZER)
 #include "content/common/external_ipc_dumper.h"

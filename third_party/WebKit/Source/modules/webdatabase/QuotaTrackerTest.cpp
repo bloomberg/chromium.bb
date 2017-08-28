@@ -16,9 +16,6 @@ TEST(QuotaTrackerTest, UpdateAndGetSizeAndSpaceAvailable) {
   RefPtr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("file:///a/b/c");
 
-  const unsigned long long kSpaceAvailable = 12345678ULL;
-  tracker.UpdateSpaceAvailableToOrigin(origin.Get(), kSpaceAvailable);
-
   const String database_name = "db";
   const unsigned long long kDatabaseSize = 1234ULL;
   tracker.UpdateDatabaseSize(origin.Get(), database_name, kDatabaseSize);
@@ -29,16 +26,13 @@ TEST(QuotaTrackerTest, UpdateAndGetSizeAndSpaceAvailable) {
                                                    &used, &available);
 
   EXPECT_EQ(used, kDatabaseSize);
-  EXPECT_EQ(available, kSpaceAvailable);
+  EXPECT_EQ(available, 0UL);
 }
 
 TEST(QuotaTrackerTest, LocalAccessBlocked) {
   QuotaTracker& tracker = QuotaTracker::Instance();
   RefPtr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("file:///a/b/c");
-
-  const unsigned long long kSpaceAvailable = 12345678ULL;
-  tracker.UpdateSpaceAvailableToOrigin(origin.Get(), kSpaceAvailable);
 
   const String database_name = "db";
   const unsigned long long kDatabaseSize = 1234ULL;
@@ -53,7 +47,7 @@ TEST(QuotaTrackerTest, LocalAccessBlocked) {
                                                    &used, &available);
 
   EXPECT_EQ(used, kDatabaseSize);
-  EXPECT_EQ(available, kSpaceAvailable);
+  EXPECT_EQ(available, 0UL);
 }
 
 }  // namespace
