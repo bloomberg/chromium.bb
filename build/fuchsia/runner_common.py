@@ -242,30 +242,40 @@ def _SymbolizeEntries(entries):
   # consistent output in that case, with the cannot-symbolize case.
   addr2line_output = None
   if entries[0].has_key('debug_binary'):
-    addr2line_output = subprocess.check_output(
-        ['addr2line', '-Cipf', '-p', '--exe=' + entries[0]['debug_binary']] +
-        map(lambda entry: entry['pc_offset'], entries)).splitlines()
+    addr2line_args = (['addr2line', '-Cipf', '-p',
+                      '--exe=' + entries[0]['debug_binary']] +
+                      map(lambda entry: entry['pc_offset'], entries))
+    addr2line_output = subprocess.check_output(addr2line_args).splitlines()
     assert addr2line_output
 
   # Collate a set of |(frame_id, result)| pairs from the output lines.
   results = {}
-  for i in xrange(len(entries)):
-    entry = entries[i]
+  for entry in entries:
     raw, frame_id = entry['raw'], entry['frame_id']
     prefix = '#%s: ' % frame_id
 
-    if addr2line_output:
+    if not addr2line_output:
+      # Either there was no addr2line output, or too little of it.
+      filtered_line = raw
+    else:
+      output_line = addr2line_output.pop(0)
+
       # Relativize path to DIR_SOURCE_ROOT if we see a filename.
       def RelativizePath(m):
         relpath = os.path.relpath(os.path.normpath(m.group(1)), DIR_SOURCE_ROOT)
         return 'at ' + relpath + ':' + m.group(2)
-      filtered_line = filename_re.sub(RelativizePath, addr2line_output[i])
+      filtered_line = filename_re.sub(RelativizePath, output_line)
 
-      # If symbolization fails just output the raw backtrace.
       if '??' in filtered_line:
+        # If symbolization fails just output the raw backtrace.
         filtered_line = raw
-    else:
-      filtered_line = raw
+      else:
+        # Release builds may inline things, resulting in "(inlined by)" lines.
+        inlined_by_prefix = " (inlined by)"
+        while (addr2line_output and
+               addr2line_output[0].startswith(inlined_by_prefix)):
+          inlined_by_line = '\n' + (' ' * len(prefix)) + addr2line_output.pop(0)
+          filtered_line += filename_re.sub(RelativizePath, inlined_by_line)
 
     results[entry['frame_id']] = prefix + filtered_line
 
