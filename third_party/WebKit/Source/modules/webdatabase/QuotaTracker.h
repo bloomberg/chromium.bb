@@ -56,15 +56,11 @@ class MODULES_EXPORT QuotaTracker {
   void UpdateDatabaseSize(SecurityOrigin*,
                           const String& database_name,
                           unsigned long long database_size);
-  void UpdateSpaceAvailableToOrigin(SecurityOrigin*,
-                                    unsigned long long space_available);
-  void ResetSpaceAvailableToOrigin(SecurityOrigin*);
 
  private:
   QuotaTracker() {}
 
   typedef HashMap<String, unsigned long long> SizeMap;
-  SizeMap space_available_to_origins_;
   HashMap<String, SizeMap> database_sizes_;
   Mutex data_guard_;
 };

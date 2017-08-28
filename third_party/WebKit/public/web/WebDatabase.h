@@ -43,9 +43,6 @@ class WebDatabase {
   BLINK_EXPORT static void UpdateDatabaseSize(const WebSecurityOrigin&,
                                               const WebString& name,
                                               long long size);
-  BLINK_EXPORT static void UpdateSpaceAvailable(const WebSecurityOrigin&,
-                                                long long space_available);
-  BLINK_EXPORT static void ResetSpaceAvailable(const WebSecurityOrigin&);
 
   BLINK_EXPORT static void CloseDatabaseImmediately(
       const WebSecurityOrigin&,

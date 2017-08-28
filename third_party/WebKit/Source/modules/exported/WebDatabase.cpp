@@ -44,16 +44,6 @@ void WebDatabase::UpdateDatabaseSize(const WebSecurityOrigin& origin,
   QuotaTracker::Instance().UpdateDatabaseSize(origin.Get(), name, size);
 }
 
-void WebDatabase::UpdateSpaceAvailable(const WebSecurityOrigin& origin,
-                                       long long space_available) {
-  QuotaTracker::Instance().UpdateSpaceAvailableToOrigin(origin.Get(),
-                                                        space_available);
-}
-
-void WebDatabase::ResetSpaceAvailable(const WebSecurityOrigin& origin) {
-  QuotaTracker::Instance().ResetSpaceAvailableToOrigin(origin.Get());
-}
-
 void WebDatabase::CloseDatabaseImmediately(const WebSecurityOrigin& origin,
                                            const WebString& database_name) {
   DatabaseTracker::Tracker().CloseDatabasesImmediately(origin.Get(),
