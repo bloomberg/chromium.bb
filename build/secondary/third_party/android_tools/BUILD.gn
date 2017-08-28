@@ -59,6 +59,7 @@ android_aar_prebuilt("android_support_design_java") {
   ]
   _lib_name = "design"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_transition_java") {
@@ -67,10 +68,12 @@ android_aar_prebuilt("android_support_transition_java") {
   ]
   _lib_name = "transition"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_multidex_java") {
   aar_path = "$lib_path/multidex/1.0.1/multidex-1.0.1.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_java_prebuilt("android_support_annotations_java") {
@@ -94,6 +97,7 @@ android_aar_prebuilt("android_support_compat_java") {
   ]
   _lib_name = "support-compat"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
   ignore_aidl = true  # We don't appear to need these currently.
 }
 
@@ -103,6 +107,7 @@ android_aar_prebuilt("android_support_core_ui_java") {
   ]
   _lib_name = "support-core-ui"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_core_utils_java") {
@@ -111,6 +116,7 @@ android_aar_prebuilt("android_support_core_utils_java") {
   ]
   _lib_name = "support-core-utils"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_fragment_java") {
@@ -122,6 +128,7 @@ android_aar_prebuilt("android_support_fragment_java") {
   ]
   _lib_name = "support-fragment"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_media_compat_java") {
@@ -130,6 +137,7 @@ android_aar_prebuilt("android_support_media_compat_java") {
   ]
   _lib_name = "support-media-compat"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
   ignore_aidl = true  # We don't appear to need these currently.
 }
 
@@ -139,6 +147,7 @@ android_aar_prebuilt("android_support_v13_java") {
   ]
   _lib_name = "support-v13"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_vector_drawable_java") {
@@ -147,6 +156,7 @@ android_aar_prebuilt("android_support_vector_drawable_java") {
   ]
   _lib_name = "support-vector-drawable"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_v7_appcompat_java_internal") {
@@ -155,6 +165,7 @@ android_aar_prebuilt("android_support_v7_appcompat_java_internal") {
   ]
   _lib_name = "appcompat-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 java_group("android_support_v7_appcompat_java") {
@@ -172,6 +183,7 @@ android_aar_prebuilt("android_support_v7_gridlayout_java") {
   ]
   _lib_name = "gridlayout-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_v7_mediarouter_java") {
@@ -181,6 +193,7 @@ android_aar_prebuilt("android_support_v7_mediarouter_java") {
   ]
   _lib_name = "mediarouter-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_v7_recyclerview_java") {
@@ -191,6 +204,7 @@ android_aar_prebuilt("android_support_v7_recyclerview_java") {
   ]
   _lib_name = "recyclerview-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_v7_palette_java") {
@@ -200,6 +214,7 @@ android_aar_prebuilt("android_support_v7_palette_java") {
   ]
   _lib_name = "palette-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_v7_preference_java") {
@@ -210,6 +225,7 @@ android_aar_prebuilt("android_support_v7_preference_java") {
   ]
   _lib_name = "preference-v7"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_v14_preference_java") {
@@ -221,6 +237,7 @@ android_aar_prebuilt("android_support_v14_preference_java") {
   ]
   _lib_name = "preference-v14"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_v17_leanback_java") {
@@ -230,6 +247,7 @@ android_aar_prebuilt("android_support_v17_leanback_java") {
   ]
   _lib_name = "leanback-v17"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("android_support_v17_preference_java") {
@@ -243,6 +261,7 @@ android_aar_prebuilt("android_support_v17_preference_java") {
   ]
   _lib_name = "preference-leanback-v17"
   aar_path = "$lib_path/$_lib_name/$lib_version/$_lib_name-$lib_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_library("android_support_chromium_java") {
@@ -282,6 +301,7 @@ android_aar_prebuilt("google_play_services_basement_java") {
   ]
   _lib_name = "play-services-basement"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
   input_jars_paths = [ "$android_sdk/optional/org.apache.http.legacy.jar" ]
 }
 
@@ -291,6 +311,7 @@ android_aar_prebuilt("google_play_services_tasks_java") {
   ]
   _lib_name = "play-services-tasks"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_base_java") {
@@ -301,6 +322,7 @@ android_aar_prebuilt("google_play_services_base_java") {
   ]
   _lib_name = "play-services-base"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_auth_base_java") {
@@ -310,6 +332,7 @@ android_aar_prebuilt("google_play_services_auth_base_java") {
   ]
   _lib_name = "play-services-auth-base"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_auth_java") {
@@ -320,6 +343,7 @@ android_aar_prebuilt("google_play_services_auth_java") {
   ]
   _lib_name = "play-services-auth"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_cast_java") {
@@ -330,6 +354,7 @@ android_aar_prebuilt("google_play_services_cast_java") {
   ]
   _lib_name = "play-services-cast"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_iid_java") {
@@ -339,6 +364,7 @@ android_aar_prebuilt("google_play_services_iid_java") {
   ]
   _lib_name = "play-services-iid"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_gcm_java") {
@@ -349,6 +375,7 @@ android_aar_prebuilt("google_play_services_gcm_java") {
   ]
   _lib_name = "play-services-gcm"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_location_java") {
@@ -358,6 +385,7 @@ android_aar_prebuilt("google_play_services_location_java") {
   ]
   _lib_name = "play-services-location"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_nearby_java") {
@@ -367,6 +395,7 @@ android_aar_prebuilt("google_play_services_nearby_java") {
   ]
   _lib_name = "play-services-nearby"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 android_aar_prebuilt("google_play_services_vision_java") {
@@ -376,6 +405,7 @@ android_aar_prebuilt("google_play_services_vision_java") {
   ]
   _lib_name = "play-services-vision"
   aar_path = "$gms_path/$_lib_name/$gms_version/$_lib_name-$gms_version.aar"
+  info_path = "//build/secondary/third_party/android_tools/$target_name.info"
 }
 
 # TODO(paulmiller): Replace this with a proper target after rolling to a GMS
