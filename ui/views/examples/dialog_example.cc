@@ -133,7 +133,8 @@ void DialogExample::CreateExampleView(View* container) {
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   const int horizontal_spacing =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
-  GridLayout* layout = GridLayout::CreateAndInstall(container);
+  GridLayout* layout = GridLayout::CreatePanel(container);
+  container->SetLayoutManager(layout);
   ColumnSet* column_set = layout->AddColumnSet(kFieldsColumnId);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, kFixed,
                         GridLayout::USE_PREF, 0, 0);

@@ -223,8 +223,6 @@ bool HungRendererDialogView::IsFrameActive(WebContents* contents) {
 
 HungRendererDialogView::HungRendererDialogView()
     : info_label_(nullptr), hung_pages_table_(nullptr), initialized_(false) {
-  set_margins(ChromeLayoutProvider::Get()->GetInsetsMetric(
-      views::INSETS_DIALOG_CONTENTS));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::HUNG_RENDERER);
 }
 
@@ -417,7 +415,7 @@ void HungRendererDialogView::Init() {
 
   using views::GridLayout;
 
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   constexpr int kColumnSetId = 0;

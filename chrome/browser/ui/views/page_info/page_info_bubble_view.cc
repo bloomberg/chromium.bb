@@ -137,7 +137,8 @@ views::View* CreateInspectLinkSection(const gfx::ImageSkia& image_icon,
                                       views::Link* link) {
   views::View* new_view = new views::View();
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(new_view);
+  views::GridLayout* layout = new views::GridLayout(new_view);
+  new_view->SetLayoutManager(layout);
 
   const int column = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column);
@@ -259,7 +260,8 @@ BubbleHeaderView::BubbleHeaderView(
       password_reuse_button_container_(nullptr),
       change_password_button_(nullptr),
       whitelist_password_reuse_button_(nullptr) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
 
   const int label_column_status = 1;
   AddColumnWithSideMargin(layout, side_margin, label_column_status);
@@ -513,7 +515,8 @@ PageInfoBubbleView::PageInfoBubbleView(
   // below the dialog title.
   set_margins(gfx::Insets(0, 0, margins().bottom(), 0));
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
 
   // Use a single ColumnSet here. Otherwise the preferred width doesn't properly
   // propagate up to the dialog width.
@@ -694,8 +697,8 @@ void PageInfoBubbleView::SetPermissionInfo(
   }
 
   permissions_view_ = new views::View();
-  views::GridLayout* layout =
-      views::GridLayout::CreateAndInstall(permissions_view_);
+  views::GridLayout* layout = new views::GridLayout(permissions_view_);
+  permissions_view_->SetLayoutManager(layout);
 
   site_settings_view_->AddChildView(permissions_view_);
 

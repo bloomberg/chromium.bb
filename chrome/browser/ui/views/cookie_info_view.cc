@@ -146,7 +146,8 @@ void CookieInfoView::Init() {
       l10n_util::GetStringUTF16(IDS_COOKIES_COOKIE_EXPIRES_LABEL));
   expires_value_field_ = new views::Textfield;
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const gfx::Insets& dialog_insets =
       provider->GetInsetsMetric(views::INSETS_DIALOG);

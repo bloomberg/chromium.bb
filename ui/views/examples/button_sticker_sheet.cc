@@ -31,7 +31,7 @@ GridLayout* MakeStretchyGridLayout(View* host, int ncols) {
   const GridLayout::SizeType kColumnUsesFixedSize = GridLayout::FIXED;
   const int kColumnWidth = 96;
 
-  GridLayout* layout = GridLayout::CreateAndInstall(host);
+  GridLayout* layout = new GridLayout(host);
   ColumnSet* columns = layout->AddColumnSet(kStretchyGridColumnSetId);
   for (int i = 0; i < ncols; ++i) {
     if (i != 0)
@@ -89,6 +89,7 @@ ButtonStickerSheet::~ButtonStickerSheet() {}
 
 void ButtonStickerSheet::CreateExampleView(View* container) {
   GridLayout* layout = MakeStretchyGridLayout(container, 3);
+  container->SetLayoutManager(layout);
 
   if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     const char* kNeedsMdWarning =

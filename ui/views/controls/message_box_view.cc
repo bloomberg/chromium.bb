@@ -14,7 +14,6 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -179,9 +178,6 @@ const char* MessageBoxView::GetClassName() const {
 // MessageBoxView, private:
 
 void MessageBoxView::Init(const InitParams& params) {
-  SetBorder(CreateEmptyBorder(
-      LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_CONTENTS)));
-
   if (params.options & DETECT_DIRECTIONALITY) {
     std::vector<base::string16> texts;
     SplitStringIntoParagraphs(params.message, &texts);
@@ -217,7 +213,8 @@ void MessageBoxView::Init(const InitParams& params) {
 
 void MessageBoxView::ResetLayoutManager() {
   // Initialize the Grid Layout Manager used for this dialog box.
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout = GridLayout::CreatePanel(this);
+  SetLayoutManager(layout);
 
   // Add the column set for the message displayed at the top of the dialog box.
   const int message_column_view_set_id = 0;

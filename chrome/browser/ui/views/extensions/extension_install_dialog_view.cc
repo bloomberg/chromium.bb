@@ -156,7 +156,8 @@ class CustomScrollableView : public views::View {
 }  // namespace
 
 BulletedView::BulletedView(views::View* view) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
   views::ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddColumn(views::GridLayout::CENTER,
                         views::GridLayout::LEADING,
@@ -289,8 +290,8 @@ void ExtensionInstallDialogView::InitView() {
   // Create the scrollable view which will contain the permissions and retained
   // files/devices. It will span the full content width.
   CustomScrollableView* scrollable = new CustomScrollableView();
-  views::GridLayout* scroll_layout =
-      views::GridLayout::CreateAndInstall(scrollable);
+  views::GridLayout* scroll_layout = new views::GridLayout(scrollable);
+  scrollable->SetLayoutManager(scroll_layout);
 
   views::ColumnSet* scrollable_column_set =
       scroll_layout->AddColumnSet(column_set_id);
@@ -454,7 +455,8 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   // done so that the extension icon can be shown on the right of the dialog
   // title, but on the same y-axis, and the scroll view used to contain other
   // content can have its scrollbar aligned with the right edge of the dialog.
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(container_);
+  views::GridLayout* layout = new views::GridLayout(container_);
+  container_->SetLayoutManager(layout);
   container_->SetBorder(views::CreateEmptyBorder(0, content_insets.left(),
                                                  content_insets.bottom(), 0));
   AddChildView(container_);
@@ -628,7 +630,9 @@ void ExtensionInstallDialogView::UpdateInstallResultHistogram(bool accepted)
 
 ExpandableContainerView::DetailsView::DetailsView(int horizontal_space,
                                                   bool parent_bulleted)
-    : layout_(views::GridLayout::CreateAndInstall(this)), state_(0) {
+    : layout_(new views::GridLayout(this)),
+      state_(0) {
+  SetLayoutManager(layout_);
   views::ColumnSet* column_set = layout_->AddColumnSet(0);
   const int padding = GetLeftPaddingForBulletedItems(parent_bulleted);
   column_set->AddPaddingColumn(0, padding);
@@ -671,7 +675,8 @@ ExpandableContainerView::ExpandableContainerView(
       more_details_(NULL),
       arrow_toggle_(NULL),
       expanded_(false) {
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
   int column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,

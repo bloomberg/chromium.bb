@@ -55,7 +55,8 @@ SadTabView::SadTabView(content::WebContents* web_contents,
   SetBackground(views::CreateThemedSolidBackground(
       this, ui::NativeTheme::kColorId_DialogBackground));
 
-  views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
 
   const int column_set_id = 0;
   views::ColumnSet* columns = layout->AddColumnSet(column_set_id);

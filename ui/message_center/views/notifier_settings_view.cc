@@ -362,7 +362,8 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
   using views::ColumnSet;
   using views::GridLayout;
 
-  GridLayout* layout = GridLayout::CreateAndInstall(this);
+  GridLayout* layout = new GridLayout(this);
+  SetLayoutManager(layout);
   ColumnSet* cs = layout->AddColumnSet(0);
   // Add a column for the checkbox.
   cs->AddPaddingColumn(0, kInnateCheckboxRightPadding);
