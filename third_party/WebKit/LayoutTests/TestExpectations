@@ -1748,6 +1748,7 @@ crbug.com/761952 virtual/service-worker-script-streaming/external/wpt/service-wo
 crbug.com/761952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/audio-output/setSinkId-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-response/complete-method-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-response/methodName-attribute-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-response/payerEmail-attribute-manual.https.html [ Skip ]
