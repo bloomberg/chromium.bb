@@ -1581,7 +1581,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * that the compositor's surface should support alpha and not be marked as opaque.
      */
     public void setOverlayMode(boolean useOverlayMode) {
-        mCompositorViewHolder.setOverlayMode(useOverlayMode);
+        if (mCompositorViewHolder != null) mCompositorViewHolder.setOverlayMode(useOverlayMode);
     }
 
     /**
