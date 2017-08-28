@@ -16,7 +16,7 @@ source_set("tests") {
     "//media/capture/mojo:capture_types",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/viz/public/interfaces/compositing",
+    "//services/viz/public/interfaces",
     "//testing/gtest",
     "//ui/gfx:test_support",
   ]
