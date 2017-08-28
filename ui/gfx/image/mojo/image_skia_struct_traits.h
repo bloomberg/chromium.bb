@@ -58,9 +58,7 @@ template <>
 struct StructTraits<gfx::mojom::ImageSkiaDataView, gfx::ImageSkia> {
   static std::vector<gfx::ImageSkiaRep> image_reps(const gfx::ImageSkia& input);
 
-  static bool IsNull(const gfx::ImageSkia& input) {
-    return input.image_reps().empty();
-  }
+  static bool IsNull(const gfx::ImageSkia& input) { return input.isNull(); }
   static void SetToNull(gfx::ImageSkia* out) { *out = gfx::ImageSkia(); }
 
   static bool Read(gfx::mojom::ImageSkiaDataView data, gfx::ImageSkia* out);
