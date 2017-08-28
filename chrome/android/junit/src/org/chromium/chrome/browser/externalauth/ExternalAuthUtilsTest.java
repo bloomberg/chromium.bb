@@ -50,8 +50,6 @@ public class ExternalAuthUtilsTest {
     public void testCanUseGooglePlayServicesSuccess() {
         when(mExternalAuthUtils.canUseGooglePlayServices(any(Context.class),
                 any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
-        when(mExternalAuthUtils.canUseGooglePlayServicesResultCode(any(Context.class),
-                any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
         when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(
                 ConnectionResult.SUCCESS);
         assertTrue(mExternalAuthUtils.canUseGooglePlayServices(
@@ -73,8 +71,6 @@ public class ExternalAuthUtilsTest {
     public void testCanUseGooglePlayServicesNonUserRecoverableFailure() {
         when(mExternalAuthUtils.canUseGooglePlayServices(any(Context.class),
                 any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
-        when(mExternalAuthUtils.canUseGooglePlayServicesResultCode(any(Context.class),
-                any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
         when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(ERR);
         when(mExternalAuthUtils.isUserRecoverableError(ERR)).thenReturn(false);  // Non-recoverable
         assertFalse(mExternalAuthUtils.canUseGooglePlayServices(
@@ -94,8 +90,6 @@ public class ExternalAuthUtilsTest {
     @Feature({"GooglePlayServices"})
     public void testCanUseGooglePlayServicesUserRecoverableFailure() {
         when(mExternalAuthUtils.canUseGooglePlayServices(any(Context.class),
-                any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
-        when(mExternalAuthUtils.canUseGooglePlayServicesResultCode(any(Context.class),
                 any(UserRecoverableErrorHandler.class))).thenCallRealMethod();
         doNothing().when(mUserRecoverableErrorHandler).handleError(mContext, ERR);
         when(mExternalAuthUtils.checkGooglePlayServicesAvailable(mContext)).thenReturn(ERR);
