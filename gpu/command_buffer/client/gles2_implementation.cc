@@ -29,6 +29,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gpu_control.h"
@@ -46,6 +47,10 @@
 #if defined(GPU_CLIENT_DEBUG)
 #include "base/command_line.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
+#endif
+
+#if !defined(OS_NACL)
+#include "cc/paint/display_item_list.h"  // nogncheck
 #endif
 
 #if !defined(__native_client__)
@@ -7129,6 +7134,73 @@ void GLES2Implementation::Viewport(GLint x,
   state_.SetViewport(x, y, width, height);
   helper_->Viewport(x, y, width, height);
   CheckGLError();
+}
+
+void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
+                                         GLint x,
+                                         GLint y,
+                                         GLint w,
+                                         GLint h) {
+#if defined(OS_NACL)
+  NOTREACHED();
+#else
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glRasterChromium(" << list << ", "
+                     << x << ", " << y << ", " << w << ", " << h << ")");
+
+  // TODO(enne): tune these numbers
+  // TODO(enne): convert these types here and in transfer buffer to be size_t.
+  static constexpr unsigned int kMinAlloc = 16 * 1024;
+  static constexpr unsigned int kBlockAlloc = 512 * 1024;
+
+  unsigned int free_size = std::max(transfer_buffer_->GetFreeSize(), kMinAlloc);
+  ScopedTransferBufferPtr buffer(free_size, helper_, transfer_buffer_);
+  DCHECK(buffer.valid());
+
+  char* memory = static_cast<char*>(buffer.address());
+  size_t written_bytes = 0;
+  size_t free_bytes = buffer.size();
+
+  cc::PaintOp::SerializeOptions options;
+
+  // TODO(enne): need to implement alpha folding optimization from POB.
+  // TODO(enne): don't access private members of DisplayItemList.
+  gfx::Rect playback_rect(x, y, w, h);
+  std::vector<size_t> indices = list->rtree_.Search(playback_rect);
+  for (cc::PaintOpBuffer::FlatteningIterator iter(&list->paint_op_buffer_,
+                                                  &indices);
+       iter; ++iter) {
+    const cc::PaintOp* op = *iter;
+    size_t size = op->Serialize(memory + written_bytes, free_bytes, options);
+    if (!size) {
+      buffer.Shrink(written_bytes);
+      helper_->RasterCHROMIUM(buffer.shm_id(), buffer.offset(), x, y, w, h,
+                              written_bytes);
+      buffer.Reset(kBlockAlloc);
+      memory = static_cast<char*>(buffer.address());
+      written_bytes = 0;
+      free_bytes = buffer.size();
+
+      size = op->Serialize(memory + written_bytes, free_bytes, options);
+    }
+    DCHECK_GE(size, 4u);
+    DCHECK_EQ(size % cc::PaintOpBuffer::PaintOpAlign, 0u);
+    DCHECK_LE(size, free_bytes);
+    DCHECK_EQ(free_bytes + written_bytes, buffer.size());
+
+    written_bytes += size;
+    free_bytes -= size;
+  }
+
+  buffer.Shrink(written_bytes);
+
+  if (!written_bytes)
+    return;
+  helper_->RasterCHROMIUM(buffer.shm_id(), buffer.offset(), x, y, w, h,
+                          buffer.size());
+
+  CheckGLError();
+#endif
 }
 
 // Include the auto-generated part of this file. We split this because it means

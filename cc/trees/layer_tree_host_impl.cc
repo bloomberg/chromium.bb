@@ -2393,7 +2393,8 @@ void LayerTreeHostImpl::CreateResourceAndRasterBufferProvider(
         compositor_context_provider, worker_context_provider,
         resource_provider_.get(), settings_.use_distance_field_text,
         msaa_sample_count, settings_.preferred_tile_format,
-        settings_.async_worker_context_enabled);
+        settings_.async_worker_context_enabled,
+        settings_.enable_oop_rasterization);
     return;
   }
 

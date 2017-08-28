@@ -16138,4 +16138,169 @@ static_assert(
     offsetof(LockDiscardableTextureCHROMIUM, texture_id) == 4,
     "offset of LockDiscardableTextureCHROMIUM texture_id should be 4");
 
+struct BeginRasterCHROMIUM {
+  typedef BeginRasterCHROMIUM ValueType;
+  static const CommandId kCmdId = kBeginRasterCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _texture_id,
+            GLuint _sk_color,
+            GLuint _msaa_sample_count,
+            GLboolean _can_use_lcd_text,
+            GLboolean _use_distance_field_text,
+            GLint _pixel_config) {
+    SetHeader();
+    texture_id = _texture_id;
+    sk_color = _sk_color;
+    msaa_sample_count = _msaa_sample_count;
+    can_use_lcd_text = _can_use_lcd_text;
+    use_distance_field_text = _use_distance_field_text;
+    pixel_config = _pixel_config;
+  }
+
+  void* Set(void* cmd,
+            GLuint _texture_id,
+            GLuint _sk_color,
+            GLuint _msaa_sample_count,
+            GLboolean _can_use_lcd_text,
+            GLboolean _use_distance_field_text,
+            GLint _pixel_config) {
+    static_cast<ValueType*>(cmd)->Init(_texture_id, _sk_color,
+                                       _msaa_sample_count, _can_use_lcd_text,
+                                       _use_distance_field_text, _pixel_config);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t texture_id;
+  uint32_t sk_color;
+  uint32_t msaa_sample_count;
+  uint32_t can_use_lcd_text;
+  uint32_t use_distance_field_text;
+  int32_t pixel_config;
+};
+
+static_assert(sizeof(BeginRasterCHROMIUM) == 28,
+              "size of BeginRasterCHROMIUM should be 28");
+static_assert(offsetof(BeginRasterCHROMIUM, header) == 0,
+              "offset of BeginRasterCHROMIUM header should be 0");
+static_assert(offsetof(BeginRasterCHROMIUM, texture_id) == 4,
+              "offset of BeginRasterCHROMIUM texture_id should be 4");
+static_assert(offsetof(BeginRasterCHROMIUM, sk_color) == 8,
+              "offset of BeginRasterCHROMIUM sk_color should be 8");
+static_assert(offsetof(BeginRasterCHROMIUM, msaa_sample_count) == 12,
+              "offset of BeginRasterCHROMIUM msaa_sample_count should be 12");
+static_assert(offsetof(BeginRasterCHROMIUM, can_use_lcd_text) == 16,
+              "offset of BeginRasterCHROMIUM can_use_lcd_text should be 16");
+static_assert(
+    offsetof(BeginRasterCHROMIUM, use_distance_field_text) == 20,
+    "offset of BeginRasterCHROMIUM use_distance_field_text should be 20");
+static_assert(offsetof(BeginRasterCHROMIUM, pixel_config) == 24,
+              "offset of BeginRasterCHROMIUM pixel_config should be 24");
+
+struct RasterCHROMIUM {
+  typedef RasterCHROMIUM ValueType;
+  static const CommandId kCmdId = kRasterCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(uint32_t _list_shm_id,
+            uint32_t _list_shm_offset,
+            GLint _x,
+            GLint _y,
+            GLint _w,
+            GLint _h,
+            uint32_t _data_size) {
+    SetHeader();
+    list_shm_id = _list_shm_id;
+    list_shm_offset = _list_shm_offset;
+    x = _x;
+    y = _y;
+    w = _w;
+    h = _h;
+    data_size = _data_size;
+  }
+
+  void* Set(void* cmd,
+            uint32_t _list_shm_id,
+            uint32_t _list_shm_offset,
+            GLint _x,
+            GLint _y,
+            GLint _w,
+            GLint _h,
+            uint32_t _data_size) {
+    static_cast<ValueType*>(cmd)->Init(_list_shm_id, _list_shm_offset, _x, _y,
+                                       _w, _h, _data_size);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t list_shm_id;
+  uint32_t list_shm_offset;
+  int32_t x;
+  int32_t y;
+  int32_t w;
+  int32_t h;
+  uint32_t data_size;
+};
+
+static_assert(sizeof(RasterCHROMIUM) == 32,
+              "size of RasterCHROMIUM should be 32");
+static_assert(offsetof(RasterCHROMIUM, header) == 0,
+              "offset of RasterCHROMIUM header should be 0");
+static_assert(offsetof(RasterCHROMIUM, list_shm_id) == 4,
+              "offset of RasterCHROMIUM list_shm_id should be 4");
+static_assert(offsetof(RasterCHROMIUM, list_shm_offset) == 8,
+              "offset of RasterCHROMIUM list_shm_offset should be 8");
+static_assert(offsetof(RasterCHROMIUM, x) == 12,
+              "offset of RasterCHROMIUM x should be 12");
+static_assert(offsetof(RasterCHROMIUM, y) == 16,
+              "offset of RasterCHROMIUM y should be 16");
+static_assert(offsetof(RasterCHROMIUM, w) == 20,
+              "offset of RasterCHROMIUM w should be 20");
+static_assert(offsetof(RasterCHROMIUM, h) == 24,
+              "offset of RasterCHROMIUM h should be 24");
+static_assert(offsetof(RasterCHROMIUM, data_size) == 28,
+              "offset of RasterCHROMIUM data_size should be 28");
+
+struct EndRasterCHROMIUM {
+  typedef EndRasterCHROMIUM ValueType;
+  static const CommandId kCmdId = kEndRasterCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+static_assert(sizeof(EndRasterCHROMIUM) == 4,
+              "size of EndRasterCHROMIUM should be 4");
+static_assert(offsetof(EndRasterCHROMIUM, header) == 0,
+              "offset of EndRasterCHROMIUM header should be 0");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

@@ -1,3 +1,5 @@
 include_rules = [
   "+ui/latency",
+  "+cc/paint",
+  "+third_party/skia",
 ]

@@ -143,6 +143,10 @@ class CC_EXPORT LayerTreeSettings {
   // which LayerTreeHost synchronizes. If |true| LayerTreeHostImpl
   // produces the active tree as its 'sync tree'.
   bool commit_to_active_tree = true;
+
+  // Whether to use out of process raster.  If true, whenever gpu raster
+  // would have been used, out of process gpu raster will be used instead.
+  bool enable_oop_rasterization = false;
 };
 
 }  // namespace cc

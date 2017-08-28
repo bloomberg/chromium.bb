@@ -113,6 +113,10 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   virtual sk_sp<SkPicture> GetFlattenedPicture();
   virtual size_t GetMemoryUsage() const;
 
+  const DisplayItemList* display_list() const { return display_list_.get(); }
+
+  SkColor background_color() const { return background_color_; }
+
  protected:
   // RecordingSource is the only class that can create a raster source.
   friend class RecordingSource;

@@ -988,3 +988,10 @@ error::Error DoSetDrawRectangleCHROMIUM(GLint x,
                                         GLint width,
                                         GLint height);
 error::Error DoSetEnableDCLayersCHROMIUM(GLboolean enable);
+error::Error DoBeginRasterCHROMIUM(GLuint texture_id,
+                                   GLuint sk_color,
+                                   GLuint msaa_sample_count,
+                                   GLboolean can_use_lcd_text,
+                                   GLboolean use_distance_field_text,
+                                   GLint pixel_config);
+error::Error DoEndRasterCHROMIUM();

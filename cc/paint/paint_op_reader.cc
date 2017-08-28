@@ -280,8 +280,19 @@ void PaintOpReader::Read(sk_sp<PaintShader>* shader) {
 
   // We don't write the cached shader, so don't attempt to read it either.
 
-  if (!(*shader)->IsValid())
+  // TODO(vmpstr): add serialization of these shader types.  For the moment
+  // pretend that these shaders don't exist and that the serialization is
+  // successful.  Valid ops pre-serialization should not cause deserialization
+  // failures.
+  if (shader_type == PaintShader::Type::kPaintRecord ||
+      shader_type == PaintShader::Type::kImage) {
+    *shader = nullptr;
+    return;
+  }
+
+  if (!(*shader)->IsValid()) {
     valid_ = false;
+  }
 }
 
 bool PaintOpReader::AlignMemory(size_t alignment) {

@@ -256,6 +256,8 @@ class CC_EXPORT ResourceProvider
       has_sync_token_ = true;
     }
 
+    GrPixelConfig PixelConfig() const;
+
     void set_synchronized() { synchronized_ = true; }
 
     // Returns texture id on compositor context, allocating if necessary.

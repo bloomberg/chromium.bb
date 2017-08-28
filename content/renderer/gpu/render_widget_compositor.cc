@@ -429,6 +429,8 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       base::FeatureList::IsEnabled(features::kColorCorrectRendering);
   settings.resource_settings.buffer_to_texture_target_map =
       compositor_deps->GetBufferToTextureTargetMap();
+  settings.enable_oop_rasterization =
+      cmd.HasSwitch(switches::kEnableOOPRasterization);
 
   // Build LayerTreeSettings from command line args.
   LayerTreeSettingsFactory::SetBrowserControlsSettings(settings, cmd);

@@ -1896,24 +1896,7 @@ bool IsWebGL2OrES3ContextType(ContextType context_type) {
   return false;
 }
 
-ContextCreationAttribHelper::ContextCreationAttribHelper()
-    : gpu_preference(gl::PreferIntegratedGpu),
-      alpha_size(-1),
-      blue_size(-1),
-      green_size(-1),
-      red_size(-1),
-      depth_size(-1),
-      stencil_size(-1),
-      samples(-1),
-      sample_buffers(-1),
-      buffer_preserved(true),
-      bind_generates_resource(true),
-      fail_if_major_perf_caveat(false),
-      lose_context_when_out_of_memory(false),
-      should_use_native_gmb_for_backbuffer(false),
-      own_offscreen_surface(false),
-      single_buffer(false),
-      context_type(CONTEXT_TYPE_OPENGLES2) {}
+ContextCreationAttribHelper::ContextCreationAttribHelper() = default;
 
 ContextCreationAttribHelper::ContextCreationAttribHelper(
     const ContextCreationAttribHelper& other) = default;

@@ -895,4 +895,16 @@ void SetEnableDCLayersCHROMIUM(GLboolean enabled) override;
 void InitializeDiscardableTextureCHROMIUM(GLuint texture_id) override;
 void UnlockDiscardableTextureCHROMIUM(GLuint texture_id) override;
 bool LockDiscardableTextureCHROMIUM(GLuint texture_id) override;
+void BeginRasterCHROMIUM(GLuint texture_id,
+                         GLuint sk_color,
+                         GLuint msaa_sample_count,
+                         GLboolean can_use_lcd_text,
+                         GLboolean use_distance_field_text,
+                         GLint pixel_config) override;
+void RasterCHROMIUM(const cc::DisplayItemList* list,
+                    GLint x,
+                    GLint y,
+                    GLint w,
+                    GLint h) override;
+void EndRasterCHROMIUM() override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_AUTOGEN_H_

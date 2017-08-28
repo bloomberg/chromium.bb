@@ -922,4 +922,16 @@ virtual void SetEnableDCLayersCHROMIUM(GLboolean enabled) = 0;
 virtual void InitializeDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
 virtual void UnlockDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
 virtual bool LockDiscardableTextureCHROMIUM(GLuint texture_id) = 0;
+virtual void BeginRasterCHROMIUM(GLuint texture_id,
+                                 GLuint sk_color,
+                                 GLuint msaa_sample_count,
+                                 GLboolean can_use_lcd_text,
+                                 GLboolean use_distance_field_text,
+                                 GLint pixel_config) = 0;
+virtual void RasterCHROMIUM(const cc::DisplayItemList* list,
+                            GLint x,
+                            GLint y,
+                            GLint w,
+                            GLint h) = 0;
+virtual void EndRasterCHROMIUM() = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_
