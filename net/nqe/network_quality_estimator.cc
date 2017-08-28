@@ -405,8 +405,10 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
 
   // Duration between when the resource was requested and when the response
   // headers were received.
-  base::TimeDelta observed_http_rtt =
+  const base::TimeDelta observed_http_rtt =
       load_timing_info.receive_headers_end - load_timing_info.send_start;
+  if (observed_http_rtt <= base::TimeDelta())
+    return;
   DCHECK_GE(observed_http_rtt, base::TimeDelta());
   if (observed_http_rtt < peak_network_quality_.http_rtt() ||
       peak_network_quality_.http_rtt() == nqe::internal::InvalidRTT()) {
