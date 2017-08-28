@@ -426,7 +426,7 @@ VideoCodecProfile H264Parser::ProfileIDCToVideoCodecProfile(int profile_idc) {
     case H264SPS::kProfileIDSMultiviewHigh:
       return H264PROFILE_MULTIVIEWHIGH;
   }
-  NOTREACHED() << "unknown video profile: " << profile_idc;
+  DVLOG(1) << "unknown video profile: " << profile_idc;
   return VIDEO_CODEC_PROFILE_UNKNOWN;
 }
 

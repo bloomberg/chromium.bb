@@ -491,10 +491,18 @@ bool EsParserH264::UpdateVideoDecoderConfig(const H264SPS* sps,
   if (natural_size.width() == 0)
     return false;
 
+  VideoCodecProfile profile =
+      H264Parser::ProfileIDCToVideoCodecProfile(sps->profile_idc);
+  if (profile == VIDEO_CODEC_PROFILE_UNKNOWN) {
+    DVLOG(1) << "Unrecognized SPS profile_idc 0x" << std::hex
+             << sps->profile_idc;
+    return false;
+  }
+
   VideoDecoderConfig video_decoder_config(
-      kCodecH264, H264Parser::ProfileIDCToVideoCodecProfile(sps->profile_idc),
-      PIXEL_FORMAT_YV12, COLOR_SPACE_HD_REC709, coded_size.value(),
-      visible_rect.value(), natural_size, EmptyExtraData(), scheme);
+      kCodecH264, profile, PIXEL_FORMAT_YV12, COLOR_SPACE_HD_REC709,
+      coded_size.value(), visible_rect.value(), natural_size, EmptyExtraData(),
+      scheme);
 
   if (!video_decoder_config.Matches(last_video_decoder_config_)) {
     DVLOG(1) << "Profile IDC: " << sps->profile_idc;
