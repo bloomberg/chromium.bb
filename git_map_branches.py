@@ -269,7 +269,10 @@ class BranchMapper(object):
 
     # The subject of the most recent commit on the branch.
     if self.show_subject:
-      line.append(run('log', '-n1', '--format=%s', branch, '--'))
+      if branch:
+        line.append(run('log', '-n1', '--format=%s', branch, '--'))
+      else:
+        line.append('')
 
     self.output.append(line)
 
