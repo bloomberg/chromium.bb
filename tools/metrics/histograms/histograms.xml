@@ -40041,6 +40041,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.JobControllerSet.CountOfNonPreconnectAltJob"
     units="alt_jobs">
+  <obsolete>
+    Deprecated 08/2017.
+  </obsolete>
   <owner>zhongyi@chromium.org</owner>
   <summary>
     This counts number of alternative jobs which are still alive.
@@ -40049,6 +40052,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.JobControllerSet.CountOfNonPreconnectMainJob"
     units="main_jobs">
+  <obsolete>
+    Deprecated 08/2017.
+  </obsolete>
   <owner>zhongyi@chromium.org</owner>
   <summary>This counts number of main jobs which are still alive.</summary>
 </histogram>
