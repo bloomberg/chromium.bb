@@ -1900,7 +1900,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Still adding previous site
       </message>
       <message name="IDS_NOTIFICATION_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that the adding of a WebAPK is in progress.">
-        Adding <ph name="WEBAPK_NAME">%1$s<ex>Progressive Web Apps</ex></ph> ...
+        Adding <ph name="WEBAPK_NAME">%1$s<ex>Progressive Web Apps</ex></ph>...
       </message>
       <message name="IDS_NOTIFICATION_WEBAPK_INSTALLED" desc="Indicates that a WebAPK has been successfully added to home screen.">
         Added to home screen.
@@ -2987,7 +2987,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
         <ph name="WEB_APP_NAME">%1$s<ex>Twitter</ex></ph> runs in Chrome
       </message>
       <message name="IDS_WEBAPK_OFFLINE_DIALOG" desc="The message on the dialog shown when launching a WebAPK needs network connection.">
-        To use <ph name="APP_NAME">%1$s<ex>PWA List</ex></ph> for the first time, please connect to the internet
+        To use <ph name="APP_NAME">%1$s<ex>PWA List</ex></ph> for the first time, please connect to the internet.
       </message>
       <message name="IDS_WEBAPK_OFFLINE_DIALOG_QUIT_BUTTON" desc="The text on the quit button on the dialog shown when launching a WebAPK needs network connection.">
         OK
