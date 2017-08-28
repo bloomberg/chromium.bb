@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "tools/traffic_annotation/auditor/traffic_annotation_file_filter.h"
@@ -46,6 +47,18 @@ struct AnnotationID {
   int hash;
   AnnotationInstance* instance;
 };
+
+// Removes all occurances of a charcter from a string and returns the modified
+// string.
+std::string RemoveChar(const std::string& source, char removee) {
+  std::string output;
+  output.reserve(source.length());
+  for (const char* current = source.data(); *current; current++) {
+    if (*current != removee)
+      output += *current;
+  }
+  return output;
+}
 
 const std::string kBlockTypes[] = {"ASSIGNMENT", "ANNOTATION", "CALL"};
 
@@ -165,12 +178,15 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
   if (!safe_list_loaded_ && !LoadSafeList())
     return false;
   // Remove possible carriage return characters before splitting lines.
-  base::RemoveChars(clang_tool_raw_output_, "\r", &clang_tool_raw_output_);
+  // Not using base::RemoveChars as the input is ~47M and the implementation is
+  // too slow for it.
   std::vector<std::string> lines =
-      base::SplitString(clang_tool_raw_output_, "\n", base::KEEP_WHITESPACE,
-                        base::SPLIT_WANT_ALL);
+      base::SplitString(RemoveChar(clang_tool_raw_output_, '\r'), "\n",
+                        base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
   for (unsigned int current = 0; current < lines.size(); current++) {
-    if (lines[current].empty())
+    // All blocks reported by clang tool start with '====', so we can ignore
+    // all lines that do not start with a '='.
+    if (lines[current].empty() || lines[current][0] != '=')
       continue;
 
     std::string block_type;
@@ -184,10 +200,9 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
       }
     }
 
-    if (block_type.empty()) {
-      LOG(ERROR) << "Unexpected token at line: " << current;
-      return false;
-    }
+    // If not starting a valid block, ignore the line.
+    if (block_type.empty())
+      continue;
 
     // Get the block.
     current++;
@@ -473,9 +488,15 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
   std::string gn_output;
   if (gn_file_for_test_.empty()) {
     // Check if the file including this function is part of Chrome build.
-    const base::CommandLine::CharType* args[] = {FILE_PATH_LITERAL("gn"),
-                                                 FILE_PATH_LITERAL("refs"),
-                                                 FILE_PATH_LITERAL("--all")};
+    const base::CommandLine::CharType* args[] = {
+#if defined(OS_WIN)
+      FILE_PATH_LITERAL("gn.bat"),
+#else
+      FILE_PATH_LITERAL("gn"),
+#endif
+      FILE_PATH_LITERAL("refs"),
+      FILE_PATH_LITERAL("--all")
+    };
 
     base::CommandLine cmdline(3, args);
     cmdline.AppendArgPath(build_path_);
@@ -484,12 +505,10 @@ bool TrafficAnnotationAuditor::CheckIfCallCanBeUnannotated(
     base::FilePath original_path;
     base::GetCurrentDirectory(&original_path);
     base::SetCurrentDirectory(source_path_);
-
     if (!base::GetAppOutput(cmdline, &gn_output)) {
       LOG(ERROR) << "Could not run gn to get dependencies.";
       gn_output.clear();
     }
-
     base::SetCurrentDirectory(original_path);
   } else {
     if (!base::ReadFileToString(gn_file_for_test_, &gn_output)) {
