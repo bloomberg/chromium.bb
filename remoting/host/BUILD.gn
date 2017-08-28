@@ -464,6 +464,7 @@ source_set("unit_tests") {
     "desktop_process_unittest.cc",
     "desktop_session_agent_unittest.cc",
     "file_proxy_wrapper_linux_unittest.cc",
+    "file_transfer_message_handler_unittest.cc",
     "gcd_rest_client_unittest.cc",
     "gcd_state_updater_unittest.cc",
     "heartbeat_sender_unittest.cc",
