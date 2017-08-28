@@ -15,6 +15,8 @@
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 
+// TODO(crbug.com/753599) : Delete this file after new bookmarks ui is launched.
+
 @class BookmarkCollectionView;
 class GURL;
 @protocol UrlLoader;
