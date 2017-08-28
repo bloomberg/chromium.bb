@@ -160,7 +160,7 @@ void ModuleScriptLoaderTest::InitializeForWorklet() {
   global_scope_->ScriptController()->InitializeContextIfNeeded("Dummy Context");
   global_scope_->SetModuleResponsesMapProxyForTesting(
       WorkletModuleResponsesMapProxy::Create(
-          new WorkletModuleResponsesMap,
+          new WorkletModuleResponsesMap(Fetcher()),
           TaskRunnerHelper::Get(TaskType::kUnspecedLoading, &GetDocument()),
           TaskRunnerHelper::Get(TaskType::kUnspecedLoading, global_scope_)));
   modulator_ = new ModuleScriptLoaderTestModulator(

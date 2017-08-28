@@ -9,6 +9,8 @@
 #include "core/loader/modulescript/ModuleScriptCreationParams.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapAllocator.h"
+#include "platform/loader/fetch/FetchParameters.h"
+#include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KURLHash.h"
 
@@ -18,35 +20,34 @@ namespace blink {
 // "fetch a worklet script" algorithm:
 // https://drafts.css-houdini.org/worklets/#module-responses-map
 // https://drafts.css-houdini.org/worklets/#fetch-a-worklet-script
+//
+// This acts as a cache for creation params (including source code) of module
+// scripts, but also performs fetch when needed. The creation params are added
+// and retrieved using ReadEntry(). If a module script for a given URL has
+// already been fetched, ReadEntry() returns the cached creation params.
+// Otherwise, ReadEntry() internally creates ModuleScriptFetcher with the
+// ResourceFetcher that is given to its ctor. Once the module script is fetched,
+// its creation params are cached and ReadEntry() returns it.
 class CORE_EXPORT WorkletModuleResponsesMap
     : public GarbageCollectedFinalized<WorkletModuleResponsesMap> {
  public:
-  // Used for notifying results of ReadOrCreateEntry(). See comments on the
-  // function for details.
+  // Used for notifying results of ReadEntry(). See comments on the function for
+  // details.
   class CORE_EXPORT Client : public GarbageCollectedMixin {
    public:
     virtual ~Client() {}
     virtual void OnRead(const ModuleScriptCreationParams&) = 0;
-    virtual void OnFetchNeeded() = 0;
     virtual void OnFailed() = 0;
   };
 
-  WorkletModuleResponsesMap() = default;
+  explicit WorkletModuleResponsesMap(ResourceFetcher*);
 
-  // Reads an entry for a given URL, or creates a placeholder entry:
-  // 1) If an entry is already fetched, synchronously calls Client::OnRead().
-  // 2) If an entry is now being fetched, pushes a given client into the entry's
-  //    waiting queue and asynchronously calls Client::OnRead() on the
-  //    completion of the fetch.
-  // 3) If an entry doesn't exist, creates a placeholder entry and synchronously
-  //    calls Client::OnFetchNeeded. A caller is required to fetch a module
-  //    script and update the entry via UpdateEntry().
-  void ReadOrCreateEntry(const KURL&, Client*);
+  // Reads an entry for the given URL. If the entry is already fetched,
+  // synchronously calls Client::OnRead(). Otherwise, it's called on the
+  // completion of the fetch. See also the class-level comment.
+  void ReadEntry(const FetchParameters&, Client*);
 
-  // Updates an entry in 'fetching' state to 'fetched'.
-  void UpdateEntry(const KURL&, const ModuleScriptCreationParams&);
-
-  // Marks an entry as "failed" state and calls OnFailed() for waiting clients.
+  // Invalidates the entry and calls OnFailed() for waiting clients.
   void InvalidateEntry(const KURL&);
 
   // Called when the associated document is destroyed. Aborts all waiting
@@ -60,6 +61,8 @@ class CORE_EXPORT WorkletModuleResponsesMap
   class Entry;
 
   bool is_available_ = true;
+
+  Member<ResourceFetcher> fetcher_;
 
   // TODO(nhiroki): Keep the insertion order of top-level modules to replay
   // addModule() calls for a newly created global scope.
