@@ -212,6 +212,11 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
+#if defined(OS_MACOSX)
+#include "content/public/browser/browser_plugin_guest_manager.h"
+#include "extensions/browser/process_manager.h"
+#endif
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
@@ -1326,6 +1331,29 @@ void Browser::MoveValidationMessage(content::WebContents* web_contents,
 
 bool Browser::PreHandleGestureEvent(content::WebContents* source,
                                     const blink::WebGestureEvent& event) {
+#if defined(OS_MACOSX)
+  // Disable "smart zoom" (double-tap with two fingers on Mac trackpad)
+  // for the PDF viewer, otherwise the viewer's controls will be scaled off
+  // screen.
+  // TODO(mcnee): Investigate having the PDF viewer handle the gesture
+  // once it is a service. crbug.com/757541
+  if (event.GetType() == blink::WebInputEvent::kGestureDoubleTap) {
+    content::BrowserPluginGuestManager* guest_manager =
+        source->GetBrowserContext()->GetGuestManager();
+    if (guest_manager) {
+      const content::WebContents* guest_contents =
+          guest_manager->GetFullPageGuest(source);
+      if (guest_contents) {
+        const extensions::Extension* extension =
+            extensions::ProcessManager::Get(guest_contents->GetBrowserContext())
+                ->GetExtensionForWebContents(guest_contents);
+        if (extension && extension->id() == extension_misc::kPdfExtensionId)
+          return true;
+      }
+    }
+  }
+#endif  // defined(OS_MACOSX)
+
   // Disable pinch zooming in undocked dev tools window due to poor UX.
   if (app_name() == DevToolsWindow::kDevToolsApp)
     return blink::WebInputEvent::IsPinchGestureEventType(event.GetType());
