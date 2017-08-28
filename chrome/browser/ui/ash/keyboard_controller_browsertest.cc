@@ -247,12 +247,10 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardStateTest, OpenAndCloseAndOpen) {
 
   controller->HideKeyboard(keyboard::KeyboardController::HIDE_REASON_AUTOMATIC);
   EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::HIDING);
-  WaitControllerStateChangesTo(keyboard::KeyboardControllerState::HIDDEN);
+            keyboard::KeyboardControllerState::HIDDEN);
 
   controller->ShowKeyboard(false);
   // The extension already has been loaded. Hence SHOWING.
   EXPECT_EQ(controller->GetStateForTest(),
-            keyboard::KeyboardControllerState::SHOWING);
-  WaitControllerStateChangesTo(keyboard::KeyboardControllerState::SHOWN);
+            keyboard::KeyboardControllerState::SHOWN);
 }

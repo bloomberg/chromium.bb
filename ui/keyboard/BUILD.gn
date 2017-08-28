@@ -43,6 +43,7 @@ component("keyboard") {
     "//ui/events:events_base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/wm",
   ]
 
   if (use_ozone) {
