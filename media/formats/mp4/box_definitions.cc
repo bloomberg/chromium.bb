@@ -733,6 +733,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       video_codec = kCodecH264;
       video_codec_profile = H264Parser::ProfileIDCToVideoCodecProfile(
           avcConfig->profile_indication);
+
       frame_bitstream_converter =
           make_scoped_refptr(new AVCBitstreamConverter(std::move(avcConfig)));
 #if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
@@ -821,6 +822,11 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
                                             << " unsupported video format "
                                             << FourCCToString(actual_format);
       return false;
+  }
+
+  if (video_codec_profile == VIDEO_CODEC_PROFILE_UNKNOWN) {
+    MEDIA_LOG(ERROR, reader->media_log()) << "Unrecognized video codec profile";
+    return false;
   }
 
   return true;
