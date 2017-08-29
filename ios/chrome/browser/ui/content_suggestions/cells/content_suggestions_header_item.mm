@@ -25,6 +25,7 @@
 - (void)configureCell:(ContentSuggestionsHeaderCell*)cell {
   [super configureCell:cell];
   [cell setHeaderView:self.view];
+  cell.accessibilityIdentifier = @"CSHeaderIdentifier";
 }
 
 @end
