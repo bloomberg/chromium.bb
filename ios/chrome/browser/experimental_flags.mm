@@ -31,8 +31,6 @@
 
 namespace {
 
-NSString* const kEnableAlertOnBackgroundUpload =
-    @"EnableAlertsOnBackgroundUpload";
 NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 NSString* const kEnableStartupCrash = @"EnableStartupCrash";
 NSString* const kEnableViewCopyPasswords = @"EnableViewCopyPasswords";
@@ -85,11 +83,6 @@ WhatsNewPromoStatus GetWhatsNewPromoStatus() {
     [defaults setInteger:status forKey:kWhatsNewPromoStatus];
   }
   return static_cast<WhatsNewPromoStatus>(status);
-}
-
-bool IsAlertOnBackgroundUploadEnabled() {
-  return [[NSUserDefaults standardUserDefaults]
-      boolForKey:kEnableAlertOnBackgroundUpload];
 }
 
 bool IsAutoReloadEnabled() {

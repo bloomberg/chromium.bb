@@ -39,9 +39,6 @@ std::string GetOriginServerHost();
 // If |WHATS_NEW_DEFAULT| is returned, no promo is force enabled.
 WhatsNewPromoStatus GetWhatsNewPromoStatus();
 
-// Whether background crash report upload should generate a local notification.
-bool IsAlertOnBackgroundUploadEnabled();
-
 // Whether auto-reload is enabled.
 bool IsAutoReloadEnabled();
 
