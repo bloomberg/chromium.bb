@@ -374,6 +374,9 @@ bool MovieHeader::Parse(BoxReader* reader) {
            reader->Read4Into8(&duration));
   }
 
+  RCHECK_MEDIA_LOGGED(timescale > 0, reader->media_log(),
+                      "Movie header's timescale must not be 0");
+
   RCHECK(reader->Read4s(&rate) &&
          reader->Read2s(&volume) &&
          reader->SkipBytes(10) &&  // reserved
@@ -1054,6 +1057,10 @@ bool MediaHeader::Parse(BoxReader* reader) {
            reader->Read4(&timescale) && reader->Read4Into8(&duration) &&
            reader->Read2(&language_code));
   }
+
+  RCHECK_MEDIA_LOGGED(timescale > 0, reader->media_log(),
+                      "Track media header's timescale must not be 0");
+
   // ISO 639-2/T language code only uses 15 lower bits, so reset the 16th bit.
   language_code &= 0x7fff;
   // Skip playback quality information
