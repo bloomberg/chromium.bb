@@ -268,7 +268,7 @@ MediaStreamVideoWebRtcSink::MediaStreamVideoWebRtcSink(
 
   rtc::Optional<bool> needs_denoising =
       ToRtcOptional(video_track->noise_reduction());
-  bool is_screencast = is_screencast = video_track->is_screencast();
+  bool is_screencast = video_track->is_screencast();
   base::Optional<double> min_frame_rate = video_track->min_frame_rate();
   base::Optional<double> max_frame_rate = video_track->max_frame_rate();
 
