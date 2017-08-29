@@ -70,7 +70,6 @@ void UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   ForAllElements(root_element_.get(), [current_time](UiElement* element) {
     // Process all animations before calculating object transforms.
     element->Animate(current_time);
-    element->set_dirty(true);
   });
 
   ForAllElements(root_element_.get(), [look_at](UiElement* element) {
@@ -78,9 +77,7 @@ void UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     element->AdjustRotationForHeadPose(look_at);
   });
 
-  ForAllElements(root_element_.get(), [this](UiElement* element) {
-    this->ApplyRecursiveTransforms(element);
-  });
+  root_element_->UpdateInheritedProperties();
 }
 
 void UiScene::PrepareToDraw() {
@@ -146,36 +143,6 @@ UiScene::UiScene() {
 }
 
 UiScene::~UiScene() = default;
-
-void UiScene::ApplyRecursiveTransforms(UiElement* element) {
-  if (!element->dirty())
-    return;
-
-  UiElement* parent = element->parent();
-
-  gfx::Transform transform;
-  transform.Scale(element->size().width(), element->size().height());
-  element->set_computed_opacity(element->opacity());
-  element->set_computed_viewport_aware(element->viewport_aware());
-
-  // Compute an inheritable transformation that can be applied to this element,
-  // and it's children, if applicable.
-  gfx::Transform inheritable = element->LocalTransform();
-
-  if (parent) {
-    ApplyRecursiveTransforms(parent);
-    inheritable.ConcatTransform(parent->inheritable_transform());
-
-    element->set_computed_opacity(element->computed_opacity() *
-                                  parent->opacity());
-    element->set_computed_viewport_aware(parent->viewport_aware());
-  }
-
-  transform.ConcatTransform(inheritable);
-  element->set_world_space_transform(transform);
-  element->set_inheritable_transform(inheritable);
-  element->set_dirty(false);
-}
 
 // TODO(vollick): we should bind to gl-initialized state. Elements will
 // initialize when the binding fires, automatically.
