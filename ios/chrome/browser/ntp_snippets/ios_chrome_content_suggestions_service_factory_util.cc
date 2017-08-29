@@ -182,6 +182,8 @@ void RegisterRemoteSuggestionsProvider(ContentSuggestionsService* service,
       base::Bind(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
       service->user_classifier());
 
+  // This pref is also used for logging. If it is changed, change it in the
+  // other places.
   std::string pref_name = prefs::kSearchSuggestEnabled;
   auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
       service, prefs, GetApplicationContext()->GetApplicationLocale(),

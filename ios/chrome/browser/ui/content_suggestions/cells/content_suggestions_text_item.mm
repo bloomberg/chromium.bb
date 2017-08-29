@@ -18,6 +18,7 @@
 @synthesize text = _text;
 @synthesize detailText = _detailText;
 @synthesize suggestionIdentifier = _suggestionIdentifier;
+@synthesize metricsRecorded = _metricsRecorded;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];

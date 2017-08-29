@@ -17,6 +17,8 @@ source_set("content_suggestions") {
     "content_suggestions_header_view_controller.mm",
     "content_suggestions_mediator.h",
     "content_suggestions_mediator.mm",
+    "content_suggestions_metrics_recorder.h",
+    "content_suggestions_metrics_recorder.mm",
     "content_suggestions_service_bridge_observer.h",
     "content_suggestions_service_bridge_observer.mm",
     "mediator_util.h",

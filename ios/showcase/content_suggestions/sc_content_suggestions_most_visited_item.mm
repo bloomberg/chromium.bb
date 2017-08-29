@@ -16,6 +16,7 @@
 @synthesize attributes;
 @synthesize suggestionIdentifier;
 @synthesize title;
+@synthesize metricsRecorded;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
