@@ -8,6 +8,7 @@
 #include "ash/metrics/task_switch_source.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
@@ -73,7 +74,8 @@ void WindowCycleController::StartCycling() {
     return !state->IsUserPositionable() || state->is_dragged() ||
            window->GetRootWindow()
                ->GetChildById(kShellWindowId_AppListContainer)
-               ->Contains(window);
+               ->Contains(window) ||
+           !window->GetProperty(kShowInOverviewKey);
   };
   window_list.erase(std::remove_if(window_list.begin(), window_list.end(),
                                    window_is_ineligible),
