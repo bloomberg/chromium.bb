@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.suggestions;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
-
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -31,12 +29,13 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.content.browser.test.util.TestTouchUtils;
+import org.chromium.ui.test.util.UiRestriction;
 
 /**
  * Instrumentation tests for {@link SuggestionsBottomSheetContent}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class SuggestionsBottomSheetTest {
     @Rule
     public BottomSheetTestRule mActivityRule = new BottomSheetTestRule();

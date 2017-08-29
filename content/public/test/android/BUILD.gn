@@ -27,6 +27,7 @@ android_library("content_java_test_support") {
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit:junit",
     "//ui/android:ui_java",
+    "//ui/android:ui_java_test_support",
   ]
   java_files = [
     "javatests/src/org/chromium/content/browser/test/ChildProcessAllocatorSettings.java",

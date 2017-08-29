@@ -255,6 +255,21 @@ android_library("ui_full_java") {
   ]
 }
 
+android_library("ui_java_test_support") {
+  testonly = true
+  java_files = [
+    "javatests/src/org/chromium/ui/test/util/UiDisableIf.java",
+    "javatests/src/org/chromium/ui/test/util/UiDisableIfSkipCheck.java",
+    "javatests/src/org/chromium/ui/test/util/UiRestriction.java",
+    "javatests/src/org/chromium/ui/test/util/UiRestrictionSkipCheck.java",
+  ]
+  deps = [
+    ":ui_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+  ]
+}
+
 junit_binary("ui_junit_tests") {
   java_files = [
     "junit/src/org/chromium/ui/base/ClipboardTest.java",

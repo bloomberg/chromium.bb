@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
@@ -34,6 +33,7 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPage
 import org.chromium.content.browser.test.util.TestWebContentsObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,7 +65,7 @@ public class ToolbarProgressBarTest {
     @Test
     @Feature({"Android-Toolbar"})
     @MediumTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testToolbarTraversesScreenOnce() throws InterruptedException, TimeoutException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
@@ -126,7 +126,7 @@ public class ToolbarProgressBarTest {
     @Test
     @Feature({"Android-Toolbar"})
     @MediumTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testProgressBarDisappearsAfterFastShowHide() throws InterruptedException {
         // onAnimationEnd will be signaled on progress bar showing/hiding animation end.
         final Object onAnimationEnd = new Object();

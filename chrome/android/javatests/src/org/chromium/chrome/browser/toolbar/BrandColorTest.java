@@ -33,11 +33,11 @@ import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.DisableInTabbedMode;
 import org.chromium.content.browser.InterstitialPageDelegateAndroid;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 
@@ -121,7 +121,7 @@ public class BrandColorTest {
      */
     @Test
     @SmallTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testNoBrandColor() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(""));
@@ -133,7 +133,7 @@ public class BrandColorTest {
      */
     @Test
     @SmallTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testBrandColorNoAlpha() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
@@ -145,7 +145,7 @@ public class BrandColorTest {
      */
     @Test
     @SmallTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testImmediateColorChange() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
@@ -169,7 +169,7 @@ public class BrandColorTest {
      */
     @Test
     @SmallTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testBrandColorWithLoadStarted() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
@@ -191,7 +191,7 @@ public class BrandColorTest {
      */
     @Test
     @SmallTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testNavigatingToNewBrandColor() throws InterruptedException {
         startMainActivityWithURL(getUrlWithBrandColor(BRAND_COLOR_1));
@@ -206,7 +206,7 @@ public class BrandColorTest {
      */
     @Test
     @SmallTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Omnibox"})
     public void testNavigatingToBrandColorAndBack() throws InterruptedException {
         startMainActivityWithURL("about:blank");
@@ -238,7 +238,7 @@ public class BrandColorTest {
      */
     @Test
     @SmallTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @DisableInTabbedMode
     @Feature({"Omnibox"})
     public void testBrandColorInterstitial() throws InterruptedException {

@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.TabStripUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -38,6 +37,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.LocalizationUtils;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -66,7 +66,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testInitialState() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -79,7 +79,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip", "Main"})
     public void testNewTabButtonWithOneTab() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -104,7 +104,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     @FlakyTest(message = "crbug.com/592961")
     public void testNewTabButtonWithManyTabs() throws Exception {
@@ -139,7 +139,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testNewTabFromMenu() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -159,7 +159,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testNewIncognitoTabFromMenuAtNormalStrip() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -183,7 +183,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testSelectWithTwoTabs() throws Exception {
         ChromeTabUtils.newTabFromMenu(
@@ -204,7 +204,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testSelectWithManyTabs() throws Exception {
         ChromeTabUtils.newTabsFromMenu(
@@ -228,7 +228,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testCloseTabWithTwoTabs() throws Exception {
         ChromeTabUtils.newTabFromMenu(
@@ -256,7 +256,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testCloseTabWithManyTabs() throws Exception {
         ChromeTabUtils.newTabsFromMenu(
@@ -286,7 +286,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testCloseSelectedTab() throws Exception {
         ChromeTabUtils.newTabFromMenu(
@@ -315,7 +315,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testCloseAllTabsFromTabMenuClosesAllTabs() throws Exception {
         // 1. Create a second tab
@@ -359,7 +359,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testTabMenuDismissedOnOrientationChange() throws Exception {
         // 1. Set orientation to portrait
@@ -395,7 +395,7 @@ public class TabStripTest {
 
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testToggleIncognitoMode() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -424,7 +424,7 @@ public class TabStripTest {
     @Test
     @LargeTest
     @Feature({"TabStrip"})
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     public void testCloseLastIncognitoTab() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         Assert.assertFalse("Expected normal strip to be selected",
@@ -453,7 +453,7 @@ public class TabStripTest {
     @Test
     @LargeTest
     @Feature({"TabStrip"})
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     public void testCloseAllIncognitoTabsFromTabMenu() throws Exception {
         //1. Create two incognito tabs
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -502,7 +502,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testTabSelectionViewDoesNotBreakModelSwitch() throws Exception {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -530,7 +530,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testSwitchStripStackersWithIncognito() throws Exception {
         // Open an incognito tab to switch to the incognito model.
@@ -581,7 +581,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testSwitchStripStackersWithLastTabSelected() throws Exception {
         // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
@@ -603,7 +603,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testSwitchStripStackersWithFirstTabSelected() throws Exception {
         // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
@@ -641,7 +641,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testSwitchStripStackersWithMiddleTabSelected() throws Exception {
         // Open enough regular tabs to cause the tabs to cascade or the strip to scroll depending
@@ -667,7 +667,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testScrollingStripStackerFadeOpacity() throws Exception {
         // Switch to the ScrollingStripStacker.
@@ -711,7 +711,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testScrollingStripStackerScrollsToSelectedTab() throws Exception {
         // Switch to the ScrollingStripStacker.
@@ -750,7 +750,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip"})
     public void testScrollingStripStackerTabOffsets() throws Exception {
         // Switch to the ScrollingStripStacker.
@@ -825,7 +825,7 @@ public class TabStripTest {
      */
     @Test
     @LargeTest
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_TABLET)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_TABLET)
     @Feature({"TabStrip", "IME"})
     public void testSwitchingTabsHidesKeyboard() throws Throwable {
         mActivityTestRule.loadUrl("data:text/html;charset=utf-8,<html><head></head><body><form>"

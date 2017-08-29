@@ -1,15 +1,15 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.test.util;
+package org.chromium.ui.test.util;
 
 /**
- * Disable if enums that are usable with the @DisableIf but in the chrome/ layer.
+ * Disable if enums that are usable with the @DisableIf in layers depending on //ui.
  *
- * e.g. @DisableIf.Device({ChromeDisableIf.PHONE})
+ * e.g. @DisableIf.Device(type = {UiDisableIf.PHONE})
  */
-public final class ChromeDisableIf {
+public final class UiDisableIf {
     /** Specifies the test is disabled if on phone form factors. */
     public static final String PHONE = "Phone";
     /** Specifies the test is disabled if on tablet form factors. */

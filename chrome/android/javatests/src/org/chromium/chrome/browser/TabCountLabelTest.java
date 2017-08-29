@@ -23,8 +23,8 @@ import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.ui.test.util.UiRestriction;
 
 /**
  * Test suite for the tab count widget on the phone toolbar.
@@ -59,7 +59,7 @@ public class TabCountLabelTest {
     @Test
     @MediumTest
     @Feature({"Browser", "Main"})
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @RetryOnFailure
     public void testTabCountLabel() throws InterruptedException {
         final int tabCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();

@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.RouterTestUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -38,6 +37,7 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.StringWriter;
 import java.util.concurrent.TimeoutException;
@@ -210,7 +210,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @Test
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testBasic() throws InterruptedException, TimeoutException {
@@ -232,7 +232,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @Test
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testSendAndOnMessage() throws InterruptedException, TimeoutException {
@@ -252,7 +252,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @Test
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
@@ -274,7 +274,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @Test
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
@@ -293,7 +293,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @Test
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testFailCreateRoute() throws InterruptedException, TimeoutException {
@@ -311,7 +311,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @Test
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
@@ -339,7 +339,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @Test
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure
@@ -365,7 +365,7 @@ public class MediaRouterIntegrationTest {
     }
 
     @Test
-    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     @RetryOnFailure

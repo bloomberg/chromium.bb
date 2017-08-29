@@ -11,10 +11,6 @@ package org.chromium.chrome.test.util;
 public final class ChromeRestriction {
     /** Specifies the test is only valid on a device that has up to date play services. */
     public static final String RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES = "Google_Play_Services";
-    /** Specifies the test is only valid on phone form factors. */
-    public static final String RESTRICTION_TYPE_PHONE = "Phone";
-    /** Specifies the test is only valid on tablet form factors. */
-    public static final String RESTRICTION_TYPE_TABLET = "Tablet";
     /** Specifies the test is only valid on official build. */
     public static final String RESTRICTION_TYPE_OFFICIAL_BUILD = "Official_Build";
     /** Specifies the test is only valid on a Daydream-ready device */

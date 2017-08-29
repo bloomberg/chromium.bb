@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirectio
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OverviewModeBehaviorWatcher;
 import org.chromium.content.browser.ContentViewCore;
@@ -37,6 +36,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayDeque;
 
@@ -96,7 +96,7 @@ public class ContentViewFocusTest {
      * @throws Exception
      * @MediumTest
      * @Feature({"TabContents"})
-     * @Restriction(RESTRICTION_TYPE_PHONE)
+     * @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
      */
     @Test
     @FlakyTest(message = "http://crbug.com/172473")
@@ -163,7 +163,7 @@ public class ContentViewFocusTest {
     @Test
     @MediumTest
     @Feature({"TabContents"})
-    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testHideSelectionOnPhoneTabSwitcher() throws Exception {
         // Setup
         OverviewModeBehaviorWatcher showWatcher = new OverviewModeBehaviorWatcher(

@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_PHONE;
-
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -26,12 +24,13 @@ import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.test.BottomSheetTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.TimeoutException;
 
 /** This class tests the functionality of the {@link BottomSheetObserver}. */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Restriction(RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
+@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE) // ChromeHome is only enabled on phones
 public class BottomSheetObserverTest {
     @Rule
     public BottomSheetTestRule mBottomSheetTestRule = new BottomSheetTestRule();
