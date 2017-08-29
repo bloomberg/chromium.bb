@@ -285,19 +285,19 @@ void WimaxConfigView::Init() {
     passphrase_visible_button_->SetImage(
         views::ImageButton::STATE_NORMAL,
         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_NETWORK_SHOW_PASSWORD));
+            IDR_SHOW_PASSWORD));
     passphrase_visible_button_->SetImage(
         views::ImageButton::STATE_HOVERED,
         *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_NETWORK_SHOW_PASSWORD_HOVER));
+            IDR_SHOW_PASSWORD_HOVER));
     passphrase_visible_button_->SetToggledImage(
         views::ImageButton::STATE_NORMAL,
-        ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_HIDE_PASSWORD));
+        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_HIDE_PASSWORD));
     passphrase_visible_button_->SetToggledImage(
         views::ImageButton::STATE_HOVERED,
-        ResourceBundle::GetSharedInstance().
-        GetImageSkiaNamed(IDR_NETWORK_HIDE_PASSWORD_HOVER));
+        ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_HIDE_PASSWORD_HOVER));
     passphrase_visible_button_->SetImageAlignment(
         views::ImageButton::ALIGN_CENTER, views::ImageButton::ALIGN_MIDDLE);
     layout->AddView(passphrase_visible_button_);
