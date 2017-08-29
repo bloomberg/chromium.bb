@@ -1311,6 +1311,33 @@ STDMETHODIMP AXPlatformNodeWin::get_relations(LONG max_relations,
   return S_OK;
 }
 
+STDMETHODIMP AXPlatformNodeWin::get_groupPosition(LONG* group_level,
+                                                  LONG* similar_items_in_group,
+                                                  LONG* position_in_group) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_GROUP_POSITION);
+  COM_OBJECT_VALIDATE_3_ARGS(group_level, similar_items_in_group,
+                             position_in_group);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  *group_level = GetIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL);
+  *similar_items_in_group = GetIntAttribute(ui::AX_ATTR_SET_SIZE);
+  *position_in_group = GetIntAttribute(ui::AX_ATTR_POS_IN_SET);
+
+  if (*group_level == *similar_items_in_group == *position_in_group == 0)
+    return S_FALSE;
+  return S_OK;
+}
+
+STDMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
+    BSTR* localized_extended_role) {
+  WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_EXTENDED_ROLE);
+  COM_OBJECT_VALIDATE_1_ARG(localized_extended_role);
+  AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
+
+  return GetStringAttributeAsBstr(ui::AX_ATTR_ROLE_DESCRIPTION,
+                                  localized_extended_role);
+}
+
 //
 // IAccessible2 methods not implemented.
 //
@@ -1330,17 +1357,6 @@ STDMETHODIMP AXPlatformNodeWin::scrollToPoint(
     enum IA2CoordinateType coordinate_type,
     LONG x,
     LONG y) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP AXPlatformNodeWin::get_groupPosition(LONG* group_level,
-                                                  LONG* similar_items_in_group,
-                                                  LONG* position_in_group) {
-  return E_NOTIMPL;
-}
-
-STDMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
-    BSTR* localized_extended_role) {
   return E_NOTIMPL;
 }
 

@@ -2053,4 +2053,37 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleTable2GetSelectedChildren) {
   CheckIUnknownHasName(table_cell_4, L"4");
 }
 
+TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetGroupPosition) {
+  AXNodeData root;
+  root.id = 1;
+  root.AddIntAttribute(AX_ATTR_HIERARCHICAL_LEVEL, 1);
+  root.AddIntAttribute(AX_ATTR_SET_SIZE, 1);
+  root.AddIntAttribute(AX_ATTR_POS_IN_SET, 1);
+  Init(root);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ScopedComPtr<IAccessible2> iaccessible2 = ToIAccessible2(root_obj);
+  LONG level, similar, position;
+  EXPECT_EQ(S_OK, iaccessible2->get_groupPosition(&level, &similar, &position));
+  EXPECT_EQ(1, level);
+  EXPECT_EQ(1, similar);
+  EXPECT_EQ(1, position);
+
+  EXPECT_EQ(E_INVALIDARG,
+            iaccessible2->get_groupPosition(nullptr, nullptr, nullptr));
+}
+
+TEST_F(AXPlatformNodeWinTest, TestIAccessible2GetLocalizedExtendedRole) {
+  AXNodeData root;
+  root.id = 1;
+  root.AddStringAttribute(AX_ATTR_ROLE_DESCRIPTION, "extended role");
+  Init(root);
+
+  ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());
+  ScopedComPtr<IAccessible2> iaccessible2 = ToIAccessible2(root_obj);
+  ScopedBstr role;
+  EXPECT_EQ(S_OK, iaccessible2->get_localizedExtendedRole(role.Receive()));
+  EXPECT_STREQ(L"extended role", role);
+}
+
 }  // namespace ui

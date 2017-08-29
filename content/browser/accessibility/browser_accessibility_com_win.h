@@ -107,14 +107,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
                 LONG x,
                 LONG y) override;
 
-  CONTENT_EXPORT STDMETHODIMP
-  get_groupPosition(LONG* group_level,
-                    LONG* similar_items_in_group,
-                    LONG* position_in_group) override;
-
-  CONTENT_EXPORT STDMETHODIMP
-  get_localizedExtendedRole(BSTR* localized_extended_role) override;
-
   //
   // IAccessibleApplication methods.
   //
