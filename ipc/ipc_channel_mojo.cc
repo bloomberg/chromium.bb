@@ -286,7 +286,7 @@ std::unique_ptr<ChannelMojo> ChannelMojo::Create(
 std::unique_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
     mojo::ScopedMessagePipeHandle handle,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
-  return base::MakeUnique<MojoChannelFactory>(
+  return std::make_unique<MojoChannelFactory>(
       std::move(handle), Channel::MODE_SERVER, ipc_task_runner);
 }
 
@@ -294,7 +294,7 @@ std::unique_ptr<ChannelFactory> ChannelMojo::CreateServerFactory(
 std::unique_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
     mojo::ScopedMessagePipeHandle handle,
     const scoped_refptr<base::SingleThreadTaskRunner>& ipc_task_runner) {
-  return base::MakeUnique<MojoChannelFactory>(
+  return std::make_unique<MojoChannelFactory>(
       std::move(handle), Channel::MODE_CLIENT, ipc_task_runner);
 }
 
@@ -424,9 +424,10 @@ ChannelMojo::GetAssociatedInterfaceSupport() { return this; }
 
 std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>
 ChannelMojo::CreateThreadSafeChannel() {
-  return base::MakeUnique<mojo::ThreadSafeForwarder<mojom::Channel>>(
-      task_runner_, base::Bind(&ChannelMojo::ForwardMessageFromThreadSafePtr,
-                               weak_factory_.GetWeakPtr()),
+  return std::make_unique<mojo::ThreadSafeForwarder<mojom::Channel>>(
+      task_runner_,
+      base::Bind(&ChannelMojo::ForwardMessageFromThreadSafePtr,
+                 weak_factory_.GetWeakPtr()),
       base::Bind(&ChannelMojo::ForwardMessageWithResponderFromThreadSafePtr,
                  weak_factory_.GetWeakPtr()),
       *bootstrap_->GetAssociatedGroup());

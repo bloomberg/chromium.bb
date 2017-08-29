@@ -18,7 +18,7 @@ IPCChannelMojoTestBase::~IPCChannelMojoTestBase() = default;
 
 void IPCChannelMojoTestBase::Init(const std::string& test_client_name) {
   InitWithCustomMessageLoop(test_client_name,
-                            base::MakeUnique<base::MessageLoop>());
+                            std::make_unique<base::MessageLoop>());
 }
 
 void IPCChannelMojoTestBase::InitWithCustomMessageLoop(
