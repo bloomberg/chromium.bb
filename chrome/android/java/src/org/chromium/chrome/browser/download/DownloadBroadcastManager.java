@@ -110,6 +110,7 @@ public class DownloadBroadcastManager extends Service {
         if (!immediateNotificationUpdateNeeded(action)) return;
 
         final DownloadSharedPreferenceEntry entry = getDownloadEntryFromIntent(intent);
+        if (entry == null) return;
 
         switch (action) {
             case ACTION_DOWNLOAD_PAUSE:
