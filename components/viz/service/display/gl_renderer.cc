@@ -213,14 +213,16 @@ struct DrawRenderPassDrawQuadParams {
   sk_sp<SkImage> filter_image;
 
   // The original contents, bound for sampling.
-  std::unique_ptr<cc::ResourceProvider::ScopedSamplerGL> contents_resource_lock;
+  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL>
+      contents_resource_lock;
 
   // A mask to be applied when drawing the RPDQ.
-  std::unique_ptr<cc::ResourceProvider::ScopedSamplerGL> mask_resource_lock;
+  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL>
+      mask_resource_lock;
 
   // Original background texture.
   std::unique_ptr<cc::ScopedResource> background_texture;
-  std::unique_ptr<cc::ResourceProvider::ScopedSamplerGL>
+  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL>
       shader_background_sampler_lock;
 
   // Backdrop bounding box.
@@ -1299,9 +1301,10 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
 void GLRenderer::UpdateRPDQTexturesForSampling(
     DrawRenderPassDrawQuadParams* params) {
   if (params->quad->mask_resource_id()) {
-    params->mask_resource_lock.reset(new cc::ResourceProvider::ScopedSamplerGL(
-        resource_provider_, params->quad->mask_resource_id(), GL_TEXTURE1,
-        GL_LINEAR));
+    params->mask_resource_lock.reset(
+        new cc::DisplayResourceProvider::ScopedSamplerGL(
+            resource_provider_, params->quad->mask_resource_id(), GL_TEXTURE1,
+            GL_LINEAR));
   }
 
   if (params->filter_image) {
@@ -1320,7 +1323,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
     params->source_needs_flip = kBottomLeft_GrSurfaceOrigin == origin;
   } else {
     params->contents_resource_lock =
-        base::MakeUnique<cc::ResourceProvider::ScopedSamplerGL>(
+        base::MakeUnique<cc::DisplayResourceProvider::ScopedSamplerGL>(
             resource_provider_, params->contents_texture->id(), GL_LINEAR);
     DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               params->contents_resource_lock->target());
@@ -1473,7 +1476,7 @@ void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
     }
     if (params->background_texture) {
       params->shader_background_sampler_lock =
-          base::MakeUnique<cc::ResourceProvider::ScopedSamplerGL>(
+          base::MakeUnique<cc::DisplayResourceProvider::ScopedSamplerGL>(
               resource_provider_, params->background_texture->id(),
               GL_TEXTURE0 + last_texture_unit, GL_LINEAR);
       DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
@@ -1952,7 +1955,7 @@ void GLRenderer::DrawContentQuadAA(const cc::ContentDrawQuadBase* quad,
   float edge[24];
   SetupQuadForClippingAndAntialiasing(device_transform, quad, &aa_quad,
                                       clip_region, &local_quad, edge);
-  cc::ResourceProvider::ScopedSamplerGL quad_resource_lock(
+  cc::DisplayResourceProvider::ScopedSamplerGL quad_resource_lock(
       resource_provider_, resource_id,
       quad->nearest_neighbor ? GL_NEAREST : GL_LINEAR);
   SamplerType sampler =
@@ -2025,8 +2028,8 @@ void GLRenderer::DrawContentQuadNoAA(const cc::ContentDrawQuadBase* quad,
                       ? GL_LINEAR
                       : GL_NEAREST;
 
-  cc::ResourceProvider::ScopedSamplerGL quad_resource_lock(resource_provider_,
-                                                           resource_id, filter);
+  cc::DisplayResourceProvider::ScopedSamplerGL quad_resource_lock(
+      resource_provider_, resource_id, filter);
   SamplerType sampler =
       SamplerTypeFromTextureTarget(quad_resource_lock.target());
 
@@ -2146,27 +2149,27 @@ void GLRenderer::DrawYUVVideoQuad(const cc::YUVVideoDrawQuad* quad,
   // The source color space should never be RGB.
   DCHECK_NE(src_color_space, src_color_space.GetAsFullRangeRGB());
 
-  cc::ResourceProvider::ScopedSamplerGL y_plane_lock(
+  cc::DisplayResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
   if (base::FeatureList::IsEnabled(media::kVideoColorManagement))
     DCHECK_EQ(src_color_space, y_plane_lock.color_space());
-  cc::ResourceProvider::ScopedSamplerGL u_plane_lock(
+  cc::DisplayResourceProvider::ScopedSamplerGL u_plane_lock(
       resource_provider_, quad->u_plane_resource_id(), GL_TEXTURE2, GL_LINEAR);
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
   DCHECK_EQ(y_plane_lock.color_space(), u_plane_lock.color_space());
   // TODO(jbauman): Use base::Optional when available.
-  std::unique_ptr<cc::ResourceProvider::ScopedSamplerGL> v_plane_lock;
+  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL> v_plane_lock;
 
   if (uv_texture_mode == UV_TEXTURE_MODE_U_V) {
-    v_plane_lock.reset(new cc::ResourceProvider::ScopedSamplerGL(
+    v_plane_lock.reset(new cc::DisplayResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->v_plane_resource_id(), GL_TEXTURE3,
         GL_LINEAR));
     DCHECK_EQ(y_plane_lock.target(), v_plane_lock->target());
     DCHECK_EQ(y_plane_lock.color_space(), v_plane_lock->color_space());
   }
-  std::unique_ptr<cc::ResourceProvider::ScopedSamplerGL> a_plane_lock;
+  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL> a_plane_lock;
   if (alpha_texture_mode == YUV_HAS_ALPHA_TEXTURE) {
-    a_plane_lock.reset(new cc::ResourceProvider::ScopedSamplerGL(
+    a_plane_lock.reset(new cc::DisplayResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->a_plane_resource_id(), GL_TEXTURE4,
         GL_LINEAR));
     DCHECK_EQ(y_plane_lock.target(), a_plane_lock->target());
@@ -2352,7 +2355,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   SetBlendEnabled(draw_cache_.needs_blending);
 
   // Assume the current active textures is 0.
-  cc::ResourceProvider::ScopedSamplerGL locked_quad(
+  cc::DisplayResourceProvider::ScopedSamplerGL locked_quad(
       resource_provider_, draw_cache_.resource_id,
       draw_cache_.nearest_neighbor ? GL_NEAREST : GL_LINEAR);
 

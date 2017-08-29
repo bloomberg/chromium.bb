@@ -208,6 +208,25 @@ DisplayResourceProvider::GetChildToParentMap(int child) const {
   return it->second.child_to_parent_map;
 }
 
+DisplayResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
+    DisplayResourceProvider* resource_provider,
+    viz::ResourceId resource_id,
+    GLenum filter)
+    : resource_lock_(resource_provider, resource_id),
+      unit_(GL_TEXTURE0),
+      target_(resource_provider->BindForSampling(resource_id, unit_, filter)) {}
+
+DisplayResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
+    DisplayResourceProvider* resource_provider,
+    viz::ResourceId resource_id,
+    GLenum unit,
+    GLenum filter)
+    : resource_lock_(resource_provider, resource_id),
+      unit_(unit),
+      target_(resource_provider->BindForSampling(resource_id, unit_, filter)) {}
+
+DisplayResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() {}
+
 DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     DisplayResourceProvider* resource_provider,
     viz::ResourceId resource_id)

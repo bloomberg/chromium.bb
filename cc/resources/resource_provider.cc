@@ -1030,25 +1030,6 @@ ResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
   resource_provider_->UnlockForRead(resource_id_);
 }
 
-ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
-    ResourceProvider* resource_provider,
-    viz::ResourceId resource_id,
-    GLenum filter)
-    : resource_lock_(resource_provider, resource_id),
-      unit_(GL_TEXTURE0),
-      target_(resource_provider->BindForSampling(resource_id, unit_, filter)) {}
-
-ResourceProvider::ScopedSamplerGL::ScopedSamplerGL(
-    ResourceProvider* resource_provider,
-    viz::ResourceId resource_id,
-    GLenum unit,
-    GLenum filter)
-    : resource_lock_(resource_provider, resource_id),
-      unit_(unit),
-      target_(resource_provider->BindForSampling(resource_id, unit_, filter)) {}
-
-ResourceProvider::ScopedSamplerGL::~ScopedSamplerGL() {}
-
 ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
     ResourceProvider* resource_provider,
     viz::ResourceId resource_id)
