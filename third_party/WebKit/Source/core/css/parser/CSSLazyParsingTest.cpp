@@ -60,6 +60,21 @@ TEST_F(CSSLazyParsingTest, DontLazyParseEmpty) {
       rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
 }
 
+// Avoid parsing rules with ::before or ::after to avoid causing
+// collectFeatures() when we trigger parsing for attr();
+TEST_F(CSSLazyParsingTest, DontLazyParseBeforeAfter) {
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+
+  String sheet_text =
+      "p::before { content: 'foo' } p .class::after { content: 'bar' } ";
+  CSSParser::ParseSheet(context, style_sheet, sheet_text,
+                        true /* lazy parse */);
+
+  EXPECT_TRUE(HasParsedProperties(RuleAt(style_sheet, 0)));
+  EXPECT_TRUE(HasParsedProperties(RuleAt(style_sheet, 1)));
+}
+
 // Test for crbug.com/664115 where |shouldConsiderForMatchingRules| would flip
 // from returning false to true if the lazy property was parsed. This is a
 // dangerous API because callers will expect the set of matching rules to be
@@ -83,6 +98,22 @@ TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesDoesntChange1) {
   // Now, we should still consider this for matching rules even if it is empty.
   EXPECT_TRUE(HasParsedProperties(rule));
   EXPECT_TRUE(
+      rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
+}
+
+// Test the same thing as above, with a property that does not get lazy parsed,
+// to ensure that we perform the optimization where possible.
+TEST_F(CSSLazyParsingTest, ShouldConsiderForMatchingRulesSimple) {
+  CSSParserContext* context = CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* style_sheet = StyleSheetContents::Create(context);
+
+  String sheet_text = "p::before { ,badness, } ";
+  CSSParser::ParseSheet(context, style_sheet, sheet_text,
+                        true /* lazy parse */);
+
+  StyleRule* rule = RuleAt(style_sheet, 0);
+  EXPECT_TRUE(HasParsedProperties(rule));
+  EXPECT_FALSE(
       rule->ShouldConsiderForMatchingRules(false /* includeEmptyRules */));
 }
 
