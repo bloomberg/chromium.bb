@@ -37,13 +37,12 @@ public class WebappSplashScreenBackgroundColorTest {
     @SmallTest
     @Feature({"Webapps"})
     public void testShowBackgroundColorAndRecordUma() throws Exception {
-        mActivityTestRule.startWebappActivity(
+        ViewGroup splashScreen = mActivityTestRule.startWebappActivityAndWaitForSplashScreen(
                 mActivityTestRule
                         .createIntent()
                         // This is setting Color.GREEN with 50% opacity.
                         .putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, 0x8000FF00L));
 
-        ViewGroup splashScreen = mActivityTestRule.waitUntilSplashScreenAppears();
         ColorDrawable background = (ColorDrawable) splashScreen.getBackground();
 
         Assert.assertEquals(Color.GREEN, background.getColor());

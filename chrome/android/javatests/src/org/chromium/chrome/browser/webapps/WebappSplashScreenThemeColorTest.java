@@ -19,7 +19,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.metrics.WebappUma;
@@ -44,9 +43,9 @@ public class WebappSplashScreenThemeColorTest {
 
     @Before
     public void setUp() throws Exception {
-        mActivityTestRule.startWebappActivity(
-                mActivityTestRule.createIntent()
-                        .putExtra(ShortcutHelper.EXTRA_URL, "http://localhost")
+        mActivityTestRule.startWebappActivityAndWaitForSplashScreen(
+                mActivityTestRule
+                        .createIntent()
                         // This is setting Color.Magenta with 50% opacity.
                         .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, 0x80FF00FFL));
     }
@@ -66,7 +65,6 @@ public class WebappSplashScreenThemeColorTest {
     @SmallTest
     @Feature({"Webapps"})
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    @RetryOnFailure
     public void testThemeColorNotUsedIfPagesHasOne() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
