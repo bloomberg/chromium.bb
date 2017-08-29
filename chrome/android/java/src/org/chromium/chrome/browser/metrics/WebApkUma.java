@@ -4,6 +4,14 @@
 
 package org.chromium.chrome.browser.metrics;
 
+import android.content.ContentResolver;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Environment;
+import android.os.StatFs;
+import android.provider.Settings;
+
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -140,5 +148,88 @@ public class WebApkUma {
     public static void recordLaunchInterval(long intervalMs) {
         RecordHistogram.recordCustomTimesHistogram("WebApk.LaunchInterval", intervalMs,
                 TimeUnit.HOURS.toMillis(1), TimeUnit.DAYS.toMillis(30), TimeUnit.MILLISECONDS, 50);
+    }
+
+    /**
+     * Log the estimated amount of space above the minimum free space threshold that can be used
+     * for WebAPK installation in UMA.
+     */
+    @SuppressWarnings("deprecation")
+    public static void logAvailableSpaceAboveLowSpaceLimitInUMA(boolean installSucceeded) {
+        StatFs partitionStats = new StatFs(Environment.getDataDirectory().getAbsolutePath());
+        long partitionAvailableBytes;
+        long partitionTotalBytes;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            partitionAvailableBytes = partitionStats.getAvailableBytes();
+            partitionTotalBytes = partitionStats.getTotalBytes();
+        } else {
+            long blockSize = partitionStats.getBlockSize(); // deprecated in API level 18.
+            partitionAvailableBytes = blockSize
+                    * (long) partitionStats.getAvailableBlocks(); // deprecated in API level 18.
+            partitionTotalBytes = blockSize * (long) partitionStats.getBlockCount();
+        }
+
+        // ContentResolver APIs are usually heavy, do it in AsyncTask.
+        new AsyncTask<Void, Void, Long>() {
+            @Override
+            protected Long doInBackground(Void... params) {
+                return getLowSpaceLimitBytes(partitionTotalBytes);
+            }
+
+            @Override
+            protected void onPostExecute(Long minimumFreeBytes) {
+                long availableBytesForInstallation = partitionAvailableBytes - minimumFreeBytes;
+                int availableSpaceMb = (int) (availableBytesForInstallation / 1024L / 1024L);
+                // Bound the number to [-1000, 500] and round down to the nearest multiple of 10MB
+                // to avoid exploding the histogram.
+                availableSpaceMb = Math.max(-1000, availableSpaceMb);
+                availableSpaceMb = Math.min(500, availableSpaceMb);
+                availableSpaceMb = availableSpaceMb / 10 * 10;
+
+                if (installSucceeded) {
+                    RecordHistogram.recordSparseSlowlyHistogram(
+                            "WebApk.Install.AvailableSpace.Success", availableSpaceMb);
+                } else {
+                    RecordHistogram.recordSparseSlowlyHistogram(
+                            "WebApk.Install.AvailableSpace.Fail", availableSpaceMb);
+                }
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Mirror the system-derived calculation of reserved bytes and return that value.
+     */
+    private static long getLowSpaceLimitBytes(long partitionTotalBytes) {
+        // Copied from android/os/storage/StorageManager.java
+        final int defaultThresholdPercentage = 10;
+        // Copied from android/os/storage/StorageManager.java
+        final long defaultThresholdMaxBytes = 500 * 1024 * 1024;
+        // Copied from android/provider/Settings.java
+        final String sysStorageThresholdPercentage = "sys_storage_threshold_percentage";
+        // Copied from android/provider/Settings.java
+        final String sysStorageThresholdMaxBytes = "sys_storage_threshold_max_bytes";
+
+        ContentResolver resolver = ContextUtils.getApplicationContext().getContentResolver();
+        int minFreePercent = 0;
+        long minFreeBytes = 0;
+
+        // Retrieve platform-appropriate values first
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            minFreePercent = Settings.Global.getInt(
+                    resolver, sysStorageThresholdPercentage, defaultThresholdPercentage);
+            minFreeBytes = Settings.Global.getLong(
+                    resolver, sysStorageThresholdMaxBytes, defaultThresholdMaxBytes);
+        } else {
+            minFreePercent = Settings.Secure.getInt(
+                    resolver, sysStorageThresholdPercentage, defaultThresholdPercentage);
+            minFreeBytes = Settings.Secure.getLong(
+                    resolver, sysStorageThresholdMaxBytes, defaultThresholdMaxBytes);
+        }
+
+        long minFreePercentInBytes = (partitionTotalBytes * minFreePercent) / 100;
+
+        return Math.min(minFreeBytes, minFreePercentInBytes);
     }
 }
