@@ -30,8 +30,10 @@
 
 #include "core/editing/iterators/TextIterator.h"
 
+#include "core/dom/Document.h"
 #include "core/editing/EditingTestBase.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/html/TextControlElement.h"
 
 namespace blink {
 
@@ -939,6 +941,90 @@ TEST_F(TextIteratorTest, VisitsDisplayContentsChildren) {
 
   EXPECT_EQ("[Hello, ][text][iterator.]", Iterate<DOMTree>());
   EXPECT_EQ("[Hello, ][text][iterator.]", Iterate<FlatTree>());
+}
+
+TEST_F(TextIteratorTest, BasicIterationEmptyContent) {
+  SetBodyContent("");
+  EXPECT_EQ("", Iterate<DOMTree>());
+}
+
+TEST_F(TextIteratorTest, BasicIterationSingleCharacter) {
+  SetBodyContent("a");
+  EXPECT_EQ("[a]", Iterate<DOMTree>());
+}
+
+TEST_F(TextIteratorTest, BasicIterationSingleDiv) {
+  SetBodyContent("<div>a</div>");
+  EXPECT_EQ("[a]", Iterate<DOMTree>());
+}
+
+TEST_F(TextIteratorTest, BasicIterationMultipleDivs) {
+  SetBodyContent("<div>a</div><div>b</div>");
+  EXPECT_EQ("[a][\n][b]", Iterate<DOMTree>());
+}
+
+TEST_F(TextIteratorTest, BasicIterationMultipleDivsWithStyle) {
+  SetBodyContent(
+      "<div style='line-height: 18px; min-height: 436px; '>"
+        "debugging this note"
+      "</div>");
+  EXPECT_EQ("[debugging this note]", Iterate<DOMTree>());
+}
+
+TEST_F(TextIteratorTest, BasicIterationMultipleDivsWithChildren) {
+  SetBodyContent("<div>Hello<div><br><span></span></div></div>");
+  EXPECT_EQ("[Hello][\n][\n]", Iterate<DOMTree>());
+}
+
+TEST_F(TextIteratorTest, BasicIterationOnChildrenWithStyle) {
+  SetBodyContent(
+      "<div style='left:22px'>"
+      "</div>"
+      "\t\t\n"
+      "<div style='left:26px'>"
+      "</div>"
+      "\t\t\n\n"
+      "<div>"
+        "\t\t\t\n"
+        "<div>"
+          "\t\t\t\t\n"
+          "<div>"
+            "\t\t\t\t\t\n"
+            "<div contenteditable style='line-height: 20px; min-height: 580px; '>"
+              "hey"
+            "</div>"
+            "\t\t\t\t\n"
+          "</div>"
+          "\t\t\t\n"
+        "</div>"
+        "\t\t\n"
+      "</div>"
+      "\n\t\n");
+  EXPECT_EQ("[hey]", Iterate<DOMTree>());
+}
+
+TEST_F(TextIteratorTest, BasicIterationInput) {
+  SetBodyContent("<input id='a' value='b'>");
+  TextControlElement* input_element =
+      ToTextControlElement(GetDocument().getElementById("a"));
+  const ShadowRoot* shadow_root = input_element->UserAgentShadowRoot();
+  const Position start = Position::FirstPositionInNode(*shadow_root);
+  const Position end = Position::LastPositionInNode(*shadow_root);
+  EXPECT_EQ("[b]", IteratePartial<DOMTree>(start, end));
+}
+
+TEST_F(TextIteratorTest, BasicIterationInputiWithBr) {
+  SetBodyContent("<input id='a' value='b'>");
+  TextControlElement* input_element =
+      ToTextControlElement(GetDocument().getElementById("a"));
+  Element* inner_editor = input_element->InnerEditorElement();
+  Element* br = GetDocument().createElement("br");
+  inner_editor->AppendChild(br);
+  const ShadowRoot* shadow_root = input_element->UserAgentShadowRoot();
+  const Position start = Position::FirstPositionInNode(*shadow_root);
+  const Position end = Position::LastPositionInNode(*shadow_root);
+  GetDocument().UpdateStyleAndLayout();
+  EXPECT_EQ("[b]", IteratePartial<DOMTree>(start, end));
 }
 
 }  // namespace blink
