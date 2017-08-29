@@ -47,6 +47,9 @@ struct ScriptsRunInfo {
   // true, this also informs the browser of the script run.
   void LogRun(bool send_script_activity);
 
+  static void LogLongInjectionTaskTime(UserScript::RunLocation run_location,
+                                       const base::TimeDelta& elapsed);
+
  private:
   // The routinig id to use to notify the browser of any injections. Since the
   // frame may be deleted in injection, we don't hold on to a reference to it

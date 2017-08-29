@@ -6,6 +6,7 @@
 #define EXTENSIONS_RENDERER_ASYNC_SCRIPTS_RUN_INFO_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 
 #include "extensions/common/user_script.h"
 
@@ -17,7 +18,8 @@ class AsyncScriptsRunInfo : public base::RefCounted<AsyncScriptsRunInfo> {
  public:
   AsyncScriptsRunInfo(UserScript::RunLocation location);
   void WillExecute(const base::TimeTicks& timestamp);
-  void OnCompleted(const base::TimeTicks& timestamp);
+  void OnCompleted(const base::TimeTicks& timestamp,
+                   base::Optional<base::TimeDelta> elapsed);
 
  private:
   friend class base::RefCounted<AsyncScriptsRunInfo>;
