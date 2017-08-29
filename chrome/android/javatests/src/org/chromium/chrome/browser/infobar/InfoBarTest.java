@@ -28,6 +28,7 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
@@ -205,9 +206,12 @@ public class InfoBarTest {
 
     /**
      * Verify Geolocation creates an InfoBar.
+     *
+     * TODO(timloh): Remove this once we only use modals for permission prompts.
      */
     @Test
     @MediumTest
+    @CommandLineFlags.Add("disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @Feature({"Browser", "Main"})
     @RetryOnFailure
     public void testInfoBarForGeolocation() throws InterruptedException, TimeoutException {
@@ -226,12 +230,14 @@ public class InfoBarTest {
         Assert.assertTrue("Wrong infobar count", mActivityTestRule.getInfoBars().isEmpty());
     }
 
-
     /**
      * Verify Geolocation creates an InfoBar and that it's destroyed when navigating back.
+     *
+     * TODO(timloh): Use a different InfoBar type once we only use modals for permission prompts.
      */
     @Test
     @MediumTest
+    @CommandLineFlags.Add("disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @Feature({"Browser"})
     @RetryOnFailure
     public void testInfoBarForGeolocationDisappearsOnBack()
@@ -553,9 +559,12 @@ public class InfoBarTest {
 
     /**
      * Verify InfoBarContainers swap the WebContents they are monitoring properly.
+     *
+     * TODO(timloh): Use a different InfoBar type once we only use modals for permission prompts.
      */
     @Test
     @MediumTest
+    @CommandLineFlags.Add("disable-features=" + ChromeFeatureList.MODAL_PERMISSION_PROMPTS)
     @Feature({"Browser", "Main"})
     @RetryOnFailure
     public void testInfoBarContainerSwapsWebContents()

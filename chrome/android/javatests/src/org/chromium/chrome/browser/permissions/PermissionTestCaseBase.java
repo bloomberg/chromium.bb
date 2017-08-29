@@ -12,6 +12,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -44,14 +45,9 @@ import java.util.concurrent.ExecutionException;
  * JS call with a gesture, and whether an infobar or a dialog is expected.
  */
 public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeActivity> {
-    protected static final String MODAL_FLAG = "ModalPermissionPrompts";
+    protected static final String MODAL_FLAG = ChromeFeatureList.MODAL_PERMISSION_PROMPTS;
     protected static final String TOGGLE_FLAG = "DisplayPersistenceToggleInPermissionPrompts";
     protected static final String MODAL_TOGGLE_FLAG = MODAL_FLAG + "," + TOGGLE_FLAG;
-    protected static final String NO_GESTURE_FEATURE =
-            "enable-features=ModalPermissionPrompts<ModalPrompts";
-    protected static final String FORCE_FIELDTRIAL = "force-fieldtrials=ModalPrompts/Group1";
-    protected static final String FORCE_FIELDTRIAL_PARAMS =
-            "force-fieldtrial-params=ModalPrompts.Group1:require_gesture/false";
     protected static final String PERMISSION_REQUEST_MANAGER_FLAG = "UseGroupedPermissionInfobars";
 
     private InfoBarTestAnimationListener mListener;

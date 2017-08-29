@@ -62,7 +62,7 @@ class PermissionDialogDelegate : public content::WebContentsObserver {
 
   // Returns true if we should show the user a modal permission prompt rather
   // than an infobar.
-  static bool ShouldShowDialog(bool has_user_gesture);
+  static bool ShouldShowDialog();
 
   // JNI methods.
   void Accept(JNIEnv* env, const JavaParamRef<jobject>& obj, jboolean persist);
