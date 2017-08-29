@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_FLAG_DESCRIPTIONS_H_
 
 // Includes needed for macros allowing conditional compilation of some strings.
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/common/features.h"
@@ -1278,6 +1279,11 @@ extern const char kUseWinrtMidiApiDescription[];
 
 extern const char kWindows10CustomTitlebarName[];
 extern const char kWindows10CustomTitlebarDescription[];
+
+#if DCHECK_IS_ON() && defined(SYZYASAN)
+extern const char kSyzyAsanDcheckIsFatalName[];
+extern const char kSyzyAsanDcheckIsFatalDescription[];
+#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
 
 #endif  // defined(OS_WIN)
 

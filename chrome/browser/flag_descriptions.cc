@@ -2099,6 +2099,13 @@ const char kWindows10CustomTitlebarDescription[] =
     "If enabled, Chrome will draw the titlebar and caption buttons instead of "
     "deferring to Windows.";
 
+#if DCHECK_IS_ON() && defined(SYZYASAN)
+extern const char kSyzyAsanDcheckIsFatalName[] = "DCHECKs are fatal";
+extern const char kSyzyAsanDcheckIsFatalDescription[] =
+    "By default Chrome will evaluate DCHECKs in SyzyASAN builds, but only log "
+    "failed DCHECKs. If enabled, DCHECKs will crash the calling process.";
+#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
+
 #endif  // defined(OS_WIN)
 
 // Mac -------------------------------------------------------------------------
