@@ -126,6 +126,10 @@ namespace autotestPrivate {
     // |right|: if set, swap the primary mouse button.
     static void setPrimaryButtonRight(boolean right);
 
+    // Turn on/off reverse scrolling for mice.
+    // |enabled|: if set, enable reverse scrolling.
+    static void setMouseReverseScroll(boolean enabled);
+
     // Get visible notifications on the system.
     static void getVisibleNotifications(NotificationArrayCallback callback);
 

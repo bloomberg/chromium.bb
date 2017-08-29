@@ -43,6 +43,7 @@ class InputDeviceController : public mojom::InputDeviceController {
   void SetNaturalScroll(bool enabled) override;
   void SetMouseSensitivity(int32_t value) override;
   void SetPrimaryButtonRight(bool right) override;
+  void SetMouseReverseScroll(bool enabled) override;
   void GetTouchDeviceStatus(GetTouchDeviceStatusCallback callback) override;
   void GetTouchEventLog(const base::FilePath& out_dir,
                         GetTouchEventLogCallback callback) override;

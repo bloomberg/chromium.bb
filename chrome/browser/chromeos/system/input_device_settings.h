@@ -88,6 +88,10 @@ class MouseSettings {
   bool GetPrimaryButtonRight() const;
   bool IsPrimaryButtonRightSet() const;
 
+  void SetReverseScroll(bool enabled);
+  bool GetReverseScroll() const;
+  bool IsReverseScrollSet() const;
+
   // Updates |this| with |settings|. If at least one setting was updated returns
   // true.
   bool Update(const MouseSettings& settings);
@@ -99,6 +103,7 @@ class MouseSettings {
  private:
   base::Optional<int> sensitivity_;
   base::Optional<bool> primary_button_right_;
+  base::Optional<bool> reverse_scroll_;
 };
 
 // Interface for configuring input device settings.
@@ -190,6 +195,9 @@ class CHROMEOS_EXPORT InputDeviceSettings {
 
   // Sets the primary mouse button to the right button if |right| is true.
   virtual void SetPrimaryButtonRight(bool right) = 0;
+
+  // Turns mouse reverse scrolling on/off.
+  virtual void SetMouseReverseScroll(bool enabled) = 0;
 
   // Reapplies previously set touchpad settings.
   virtual void ReapplyTouchpadSettings() = 0;

@@ -130,6 +130,7 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   IntegerPrefMember mouse_sensitivity_;
   IntegerPrefMember touchpad_sensitivity_;
   BooleanPrefMember primary_mouse_button_right_;
+  BooleanPrefMember mouse_reverse_scroll_;
   FilePathPrefMember download_default_directory_;
   BooleanPrefMember touch_hud_projection_enabled_;
 

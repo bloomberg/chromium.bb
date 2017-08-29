@@ -206,6 +206,7 @@ extern const char kTapDraggingEnabled[];
 extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kNaturalScroll[];
 extern const char kPrimaryMouseButtonRight[];
+extern const char kMouseReverseScroll[];
 extern const char kMouseSensitivity[];
 extern const char kTouchpadSensitivity[];
 extern const char kUse24HourClock[];

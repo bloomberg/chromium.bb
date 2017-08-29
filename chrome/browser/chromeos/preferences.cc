@@ -174,6 +174,9 @@ void Preferences::RegisterProfilePrefs(
       prefs::kPrimaryMouseButtonRight,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kMouseReverseScroll, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
 
@@ -413,6 +416,7 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   touchpad_sensitivity_.Init(prefs::kTouchpadSensitivity, prefs, callback);
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
+  mouse_reverse_scroll_.Init(prefs::kMouseReverseScroll, prefs, callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
                                    prefs, callback);
   touch_hud_projection_enabled_.Init(prefs::kTouchHudProjectionEnabled,
@@ -642,6 +646,16 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       if (prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight) != right)
         prefs->SetBoolean(prefs::kOwnerPrimaryMouseButtonRight, right);
     }
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kMouseReverseScroll) {
+    const bool enabled = mouse_reverse_scroll_.GetValue();
+    if (user_is_active)
+      mouse_settings.SetReverseScroll(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kDownloadDefaultDirectory) {

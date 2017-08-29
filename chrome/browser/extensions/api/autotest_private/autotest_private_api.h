@@ -159,6 +159,17 @@ class AutotestPrivateSetPrimaryButtonRightFunction
   ResponseAction Run() override;
 };
 
+class AutotestPrivateSetMouseReverseScrollFunction
+    : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setMouseReverseScroll",
+                             AUTOTESTPRIVATE_SETMOUSEREVERSESCROLL)
+
+ private:
+  ~AutotestPrivateSetMouseReverseScrollFunction() override {}
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateGetVisibleNotificationsFunction
     : public UIThreadExtensionFunction {
  public:
