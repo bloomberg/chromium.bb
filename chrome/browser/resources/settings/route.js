@@ -79,6 +79,7 @@
  *   SITE_SETTINGS_PDF_DOCUMENTS: (undefined|!settings.Route),
  *   SITE_SETTINGS_POPUPS: (undefined|!settings.Route),
  *   SITE_SETTINGS_PROTECTED_CONTENT: (undefined|!settings.Route),
+ *   SITE_SETTINGS_SITE_DATA: (undefined|!settings.Route),
  *   SITE_SETTINGS_SITE_DETAILS: (undefined|!settings.Route),
  *   SITE_SETTINGS_UNSANDBOXED_PLUGINS: (undefined|!settings.Route),
  *   SITE_SETTINGS_USB_DEVICES: (undefined|!settings.Route),
@@ -263,7 +264,7 @@ cr.define('settings', function() {
     r.POWER = r.DEVICE.createChild('/power');
     // </if>
 
-    // Advacned Routes
+    // Advanced Routes
     if (pageVisibility.advancedSettings !== false) {
       r.ADVANCED = new Route('/advanced');
 
@@ -299,8 +300,10 @@ cr.define('settings', function() {
           r.SITE_SETTINGS.createChild('backgroundSync');
       r.SITE_SETTINGS_CAMERA = r.SITE_SETTINGS.createChild('camera');
       r.SITE_SETTINGS_COOKIES = r.SITE_SETTINGS.createChild('cookies');
+      r.SITE_SETTINGS_SITE_DATA =
+          r.SITE_SETTINGS_COOKIES.createChild('/siteData');
       r.SITE_SETTINGS_DATA_DETAILS =
-          r.SITE_SETTINGS_COOKIES.createChild('/cookies/detail');
+          r.SITE_SETTINGS_SITE_DATA.createChild('/cookies/detail');
       r.SITE_SETTINGS_IMAGES = r.SITE_SETTINGS.createChild('images');
       r.SITE_SETTINGS_JAVASCRIPT = r.SITE_SETTINGS.createChild('javascript');
       r.SITE_SETTINGS_SOUND = r.SITE_SETTINGS.createChild('sound');

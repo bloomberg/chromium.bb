@@ -253,6 +253,11 @@ Polymer({
   },
 
   /** @private */
+  onSiteDataTap_: function() {
+    settings.navigateTo(settings.routes.SITE_SETTINGS_SITE_DATA);
+  },
+
+  /** @private */
   onSiteSettingsTap_: function() {
     settings.navigateTo(settings.routes.SITE_SETTINGS);
   },
