@@ -31,6 +31,7 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
+#include "platform/wtf/ThreadSpecific.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
@@ -85,6 +86,7 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
   USING_FAST_MALLOC(WebCORSPreflightResultCache);
 
  public:
+  // Returns a WebCORSPreflightResultCache which is shared in the same thread.
   static WebCORSPreflightResultCache& Shared();
 
   void AppendEntry(const WebString& origin,
@@ -97,6 +99,8 @@ class BLINK_PLATFORM_EXPORT WebCORSPreflightResultCache {
                         const HTTPHeaderMap& request_headers);
 
  protected:
+  friend class WTF::ThreadSpecific<WebCORSPreflightResultCache>;
+
   // Protected for tests:
   WebCORSPreflightResultCache() {}
 

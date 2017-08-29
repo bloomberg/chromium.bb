@@ -32,6 +32,7 @@
 #include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
+#include "platform/wtf/ThreadSpecific.h"
 #include "public/platform/WebCORS.h"
 
 namespace blink {
@@ -204,17 +205,15 @@ bool WebCORSPreflightResultCacheItem::AllowsRequest(
 }
 
 WebCORSPreflightResultCache& WebCORSPreflightResultCache::Shared() {
-  DEFINE_STATIC_LOCAL(WebCORSPreflightResultCache, cache, ());
-  DCHECK(IsMainThread());
-  return cache;
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WebCORSPreflightResultCache>,
+                                  cache, ());
+  return *cache;
 }
 
 void WebCORSPreflightResultCache::AppendEntry(
     const WebString& origin,
     const WebURL& url,
     std::unique_ptr<WebCORSPreflightResultCacheItem> preflight_result) {
-  DCHECK(IsMainThread());
-
   preflight_hash_map_[origin.Ascii()][url.GetString().Ascii()] =
       std::move(preflight_result);
 }
@@ -225,8 +224,6 @@ bool WebCORSPreflightResultCache::CanSkipPreflight(
     WebURLRequest::FetchCredentialsMode credentials_mode,
     const WebString& method,
     const HTTPHeaderMap& request_headers) {
-  DCHECK(IsMainThread());
-
   std::string origin(web_origin.Ascii());
   std::string url(web_url.GetString().Ascii());
 
