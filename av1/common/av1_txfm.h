@@ -272,9 +272,24 @@ static INLINE int av1_rotate_tx_type(int tx_type) {
 #endif  // CONFIG_TXMG
 
 #if CONFIG_MRC_TX
-static INLINE int get_mrc_mask_inter(const uint8_t *pred, int pred_stride,
-                                     int *mask, int mask_stride, int width,
-                                     int height) {
+static INLINE int get_mrc_diff_mask_inter(const int16_t *diff, int diff_stride,
+                                          uint8_t *mask, int mask_stride,
+                                          int width, int height) {
+  // placeholder mask generation function
+  assert(SIGNAL_MRC_MASK_INTER);
+  int n_masked_vals = 0;
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      mask[i * mask_stride + j] = diff[i * diff_stride + j] > 100 ? 1 : 0;
+      n_masked_vals += mask[i * mask_stride + j];
+    }
+  }
+  return n_masked_vals;
+}
+
+static INLINE int get_mrc_pred_mask_inter(const uint8_t *pred, int pred_stride,
+                                          uint8_t *mask, int mask_stride,
+                                          int width, int height) {
   // placeholder mask generation function
   int n_masked_vals = 0;
   for (int i = 0; i < height; ++i) {
@@ -286,9 +301,24 @@ static INLINE int get_mrc_mask_inter(const uint8_t *pred, int pred_stride,
   return n_masked_vals;
 }
 
-static INLINE int get_mrc_mask_intra(const uint8_t *pred, int pred_stride,
-                                     int *mask, int mask_stride, int width,
-                                     int height) {
+static INLINE int get_mrc_diff_mask_intra(const int16_t *diff, int diff_stride,
+                                          uint8_t *mask, int mask_stride,
+                                          int width, int height) {
+  // placeholder mask generation function
+  assert(SIGNAL_MRC_MASK_INTRA);
+  int n_masked_vals = 0;
+  for (int i = 0; i < height; ++i) {
+    for (int j = 0; j < width; ++j) {
+      mask[i * mask_stride + j] = diff[i * diff_stride + j] > 100 ? 1 : 0;
+      n_masked_vals += mask[i * mask_stride + j];
+    }
+  }
+  return n_masked_vals;
+}
+
+static INLINE int get_mrc_pred_mask_intra(const uint8_t *pred, int pred_stride,
+                                          uint8_t *mask, int mask_stride,
+                                          int width, int height) {
   // placeholder mask generation function
   int n_masked_vals = 0;
   for (int i = 0; i < height; ++i) {
@@ -300,17 +330,33 @@ static INLINE int get_mrc_mask_intra(const uint8_t *pred, int pred_stride,
   return n_masked_vals;
 }
 
-static INLINE int get_mrc_mask(const uint8_t *pred, int pred_stride, int *mask,
-                               int mask_stride, int width, int height,
-                               int is_inter) {
+static INLINE int get_mrc_diff_mask(const int16_t *diff, int diff_stride,
+                                    uint8_t *mask, int mask_stride, int width,
+                                    int height, int is_inter) {
   if (is_inter) {
     assert(USE_MRC_INTER && "MRC invalid for inter blocks");
-    return get_mrc_mask_inter(pred, pred_stride, mask, mask_stride, width,
-                              height);
+    assert(SIGNAL_MRC_MASK_INTER);
+    return get_mrc_diff_mask_inter(diff, diff_stride, mask, mask_stride, width,
+                                   height);
   } else {
     assert(USE_MRC_INTRA && "MRC invalid for intra blocks");
-    return get_mrc_mask_intra(pred, pred_stride, mask, mask_stride, width,
-                              height);
+    assert(SIGNAL_MRC_MASK_INTRA);
+    return get_mrc_diff_mask_intra(diff, diff_stride, mask, mask_stride, width,
+                                   height);
+  }
+}
+
+static INLINE int get_mrc_pred_mask(const uint8_t *pred, int pred_stride,
+                                    uint8_t *mask, int mask_stride, int width,
+                                    int height, int is_inter) {
+  if (is_inter) {
+    assert(USE_MRC_INTER && "MRC invalid for inter blocks");
+    return get_mrc_pred_mask_inter(pred, pred_stride, mask, mask_stride, width,
+                                   height);
+  } else {
+    assert(USE_MRC_INTRA && "MRC invalid for intra blocks");
+    return get_mrc_pred_mask_intra(pred, pred_stride, mask, mask_stride, width,
+                                   height);
   }
 }
 

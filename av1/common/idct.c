@@ -1556,15 +1556,23 @@ static void imrc32x32_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 #endif
 
   const int eob = txfm_param->eob;
+  int n_masked_vals = 0;
+  uint8_t *mask;
+  uint8_t mask_tmp[32 * 32];
   if (eob == 1) {
     aom_idct32x32_1_add_c(input, dest, stride);
   } else {
-    int mask[32 * 32];
-    int n_masked_vals = get_mrc_mask(txfm_param->dst, txfm_param->stride, mask,
-                                     32, 32, 32, txfm_param->is_inter);
-
-    if (!is_valid_mrc_mask(n_masked_vals, 32, 32))
-      assert(0 && "Invalid MRC mask");
+    if ((txfm_param->is_inter && SIGNAL_MRC_MASK_INTER) ||
+        (!txfm_param->is_inter && SIGNAL_MRC_MASK_INTRA)) {
+      mask = txfm_param->mask;
+    } else {
+      n_masked_vals =
+          get_mrc_pred_mask(txfm_param->dst, txfm_param->stride, mask_tmp, 32,
+                            32, 32, txfm_param->is_inter);
+      if (!is_valid_mrc_mask(n_masked_vals, 32, 32))
+        assert(0 && "Invalid MRC mask");
+      mask = mask_tmp;
+    }
     if (eob <= quarter)
       // non-zero coeff only in upper-left 8x8
       aom_imrc32x32_34_add_c(input, dest, stride, mask);
@@ -2286,6 +2294,9 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
 #if CONFIG_LGT
                                  PREDICTION_MODE mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                                 uint8_t *mrc_mask,
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                  TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
                                  int stride, int eob) {
   if (!eob) return;
@@ -2308,6 +2319,9 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
   txfm_param.is_inter = is_inter_block(&xd->mi[0]->mbmi);
   txfm_param.dst = dst;
   txfm_param.stride = stride;
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+  txfm_param.mask = mrc_mask;
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
 #if CONFIG_LGT
   txfm_param.mode = mode;
 #endif  // CONFIG_LGT
@@ -2346,6 +2360,9 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
                                         int blk_row, int blk_col, int eob) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const TX_TYPE tx_type =
@@ -2357,6 +2374,9 @@ void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
 #if CONFIG_LGT
                               xd->mi[0]->mbmi.mode,
 #endif  // CONFIG_LGT
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                              mrc_mask,
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               tx_type, tx_size, dst, dst_stride, eob);
 }
 

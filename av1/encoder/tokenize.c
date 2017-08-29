@@ -382,44 +382,65 @@ static void get_palette_params(const MACROBLOCK *const x, int plane,
                            &params->rows, &params->cols);
 }
 
-#if CONFIG_MRC_TX
-static void get_mrc_params(const MACROBLOCK *const x, int plane,
-                           BLOCK_SIZE bsize, Av1ColorMapParam *params) {
-  // TODO(sarahparker)
-  (void)x;
-  (void)plane;
-  (void)bsize;
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+static void get_mrc_params(const MACROBLOCK *const x, int block,
+                           TX_SIZE tx_size, Av1ColorMapParam *params) {
   memset(params, 0, sizeof(*params));
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const int is_inter = is_inter_block(mbmi);
+  params->color_map = BLOCK_OFFSET(xd->mrc_mask, block);
+  params->map_cdf = is_inter ? xd->tile_ctx->mrc_mask_inter_cdf
+                             : xd->tile_ctx->mrc_mask_intra_cdf;
+  params->color_cost =
+      is_inter ? &x->mrc_mask_inter_cost : &x->mrc_mask_intra_cost;
+  params->n_colors = 2;
+  params->plane_width = tx_size_wide[tx_size];
+  params->rows = tx_size_high[tx_size];
+  params->cols = tx_size_wide[tx_size];
 }
-#endif  // CONFIG_MRC_TX
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
 
 static void get_color_map_params(const MACROBLOCK *const x, int plane,
-                                 BLOCK_SIZE bsize, COLOR_MAP_TYPE type,
+                                 int block, BLOCK_SIZE bsize, TX_SIZE tx_size,
+                                 COLOR_MAP_TYPE type,
                                  Av1ColorMapParam *params) {
+  (void)block;
+  (void)tx_size;
   memset(params, 0, sizeof(*params));
   switch (type) {
     case PALETTE_MAP: get_palette_params(x, plane, bsize, params); break;
-#if CONFIG_MRC_TX
-    case MRC_MAP: get_mrc_params(x, plane, bsize, params); break;
-#endif  // CONFIG_MRC_TX
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+    case MRC_MAP: get_mrc_params(x, block, tx_size, params); break;
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
     default: assert(0 && "Invalid color map type"); return;
   }
 }
 
-int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
-                       COLOR_MAP_TYPE type) {
+int av1_cost_color_map(const MACROBLOCK *const x, int plane, int block,
+                       BLOCK_SIZE bsize, TX_SIZE tx_size, COLOR_MAP_TYPE type) {
   assert(plane == 0 || plane == 1);
   Av1ColorMapParam color_map_params;
-  get_color_map_params(x, plane, bsize, type, &color_map_params);
+  get_color_map_params(x, plane, block, bsize, tx_size, type,
+                       &color_map_params);
   return cost_and_tokenize_map(&color_map_params, NULL, 1);
 }
 
-void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
-                            TOKENEXTRA **t, BLOCK_SIZE bsize,
+void av1_tokenize_color_map(const MACROBLOCK *const x, int plane, int block,
+                            TOKENEXTRA **t, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             COLOR_MAP_TYPE type) {
   assert(plane == 0 || plane == 1);
+#if CONFIG_MRC_TX
+  if (type == MRC_MAP) {
+    const int is_inter = is_inter_block(&x->e_mbd.mi[0]->mbmi);
+    if ((is_inter && !SIGNAL_MRC_MASK_INTER) ||
+        (!is_inter && !SIGNAL_MRC_MASK_INTRA))
+      return;
+  }
+#endif  // CONFIG_MRC_TX
   Av1ColorMapParam color_map_params;
-  get_color_map_params(x, plane, bsize, type, &color_map_params);
+  get_color_map_params(x, plane, block, bsize, tx_size, type,
+                       &color_map_params);
   // The first color index does not use context or entropy.
   (*t)->token = color_map_params.color_map[0];
   (*t)->color_map_cdf = NULL;
@@ -519,6 +540,11 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   scan = scan_order->scan;
   nb = scan_order->neighbors;
   c = 0;
+
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+  if (tx_type == MRC_DCT)
+    av1_tokenize_color_map(x, plane, block, &t, plane_bsize, tx_size, MRC_MAP);
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
 
   if (eob == 0)
     add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt], 1,

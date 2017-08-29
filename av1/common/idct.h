@@ -62,6 +62,9 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
 #if CONFIG_LGT
                                  PREDICTION_MODE mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                                 uint8_t *mrc_mask,
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                  TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
                                  int stride, int eob);
 void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,

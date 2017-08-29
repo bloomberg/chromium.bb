@@ -612,6 +612,9 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   txfm_param.stride = dst_stride;
 #if CONFIG_MRC_TX
   txfm_param.valid_mask = &mbmi->valid_mrc_mask;
+#if SIGNAL_ANY_MRC_MASK
+  txfm_param.mask = BLOCK_OFFSET(xd->mrc_mask, block);
+#endif  // SIGNAL_ANY_MRC_MASK
 #endif  // CONFIG_MRC_TX
 #endif  // CONFIG_MRC_TX || CONFIG_LGT
 #if CONFIG_LGT
@@ -689,6 +692,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   uint8_t *dst;
 #if !CONFIG_PVQ
   ENTROPY_CONTEXT *a, *l;
@@ -742,16 +748,20 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
 
   if (x->pvq_skip[plane]) return;
 #endif
-  TX_TYPE tx_type =
-      av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, block, tx_size);
 #if CONFIG_LGT
   PREDICTION_MODE mode = xd->mi[0]->mbmi.mode;
-  av1_inverse_transform_block(xd, dqcoeff, mode, tx_type, tx_size, dst,
-                              pd->dst.stride, p->eobs[block]);
-#else
-  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst,
-                              pd->dst.stride, p->eobs[block]);
-#endif
+#endif  // CONFIG_LGT
+  TX_TYPE tx_type =
+      av1_get_tx_type(pd->plane_type, xd, blk_row, blk_col, block, tx_size);
+  av1_inverse_transform_block(xd, dqcoeff,
+#if CONFIG_LGT
+                              mode,
+#endif  // CONFIG_LGT
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                              mrc_mask,
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                              tx_type, tx_size, dst, pd->dst.stride,
+                              p->eobs[block]);
 }
 
 #if CONFIG_VAR_TX
@@ -1054,6 +1064,9 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   struct macroblock_plane *const p = &x->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
@@ -1089,6 +1102,9 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 #if CONFIG_LGT
                               xd->mi[0]->mbmi.mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                              mrc_mask,
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               tx_type, tx_size, dst, dst_stride, *eob);
 #if !CONFIG_PVQ
   if (*eob) *(args->skip) = 0;

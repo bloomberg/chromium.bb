@@ -75,11 +75,11 @@ void av1_tokenize_sb_vartx(const struct AV1_COMP *cpi, struct ThreadData *td,
                            int mi_col, BLOCK_SIZE bsize, int *rate);
 #endif
 
-int av1_cost_color_map(const MACROBLOCK *const x, int plane, BLOCK_SIZE bsize,
-                       COLOR_MAP_TYPE type);
+int av1_cost_color_map(const MACROBLOCK *const x, int plane, int block,
+                       BLOCK_SIZE bsize, TX_SIZE tx_size, COLOR_MAP_TYPE type);
 
-void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
-                            TOKENEXTRA **t, BLOCK_SIZE bsize,
+void av1_tokenize_color_map(const MACROBLOCK *const x, int plane, int block,
+                            TOKENEXTRA **t, BLOCK_SIZE bsize, TX_SIZE tx_size,
                             COLOR_MAP_TYPE type);
 
 void av1_tokenize_sb(const struct AV1_COMP *cpi, struct ThreadData *td,

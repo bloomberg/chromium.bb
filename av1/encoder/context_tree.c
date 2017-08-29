@@ -101,7 +101,7 @@ static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
   }
 #if CONFIG_MRC_TX
   aom_free(ctx->mrc_mask);
-  ctx->mrc_mask[i] = 0;
+  ctx->mrc_mask = 0;
 #endif  // CONFIG_MRC_TX
 }
 

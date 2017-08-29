@@ -1625,6 +1625,21 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
 #if !CONFIG_LV_MAP
   (void)blk_row;
   (void)blk_col;
+#if CONFIG_MRC_TX
+  const MACROBLOCKD *xd = &x->e_mbd;
+  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  const TX_TYPE tx_type = av1_get_tx_type(xd->plane[plane].plane_type, xd,
+                                          blk_row, blk_col, block, tx_size);
+  const int is_inter = is_inter_block(mbmi);
+  if (tx_type == MRC_DCT && ((is_inter && SIGNAL_MRC_MASK_INTER) ||
+                             (!is_inter && SIGNAL_MRC_MASK_INTRA))) {
+    const int mrc_mask_cost =
+        av1_cost_color_map(x, plane, block, mbmi->sb_type, tx_size, MRC_MAP);
+    return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
+                       use_fast_coef_costing) +
+           mrc_mask_cost;
+  }
+#endif
   return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
                      use_fast_coef_costing);
 #else  // !CONFIG_LV_MAP
@@ -1911,6 +1926,9 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         (void)dst;
 #endif  // !CONFIG_PVQ
 
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+        uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
         const PLANE_TYPE plane_type = get_plane_type(plane);
         TX_TYPE tx_type =
             av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
@@ -1918,6 +1936,9 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #if CONFIG_LGT
                                     xd->mi[0]->mbmi.mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                                    mrc_mask,
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                     tx_type, tx_size, recon, MAX_TX_SIZE, eob);
 
 #if CONFIG_DIST_8X8
@@ -3106,7 +3127,8 @@ static int rd_pick_palette_intra_sby(const AV1_COMP *const cpi, MACROBLOCK *x,
                                                     color_cache, n_cache,
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
                                                     cpi->common.bit_depth);
-      palette_mode_cost += av1_cost_color_map(x, 0, bsize, PALETTE_MAP);
+      palette_mode_cost +=
+          av1_cost_color_map(x, 0, 0, bsize, mbmi->tx_size, PALETTE_MAP);
       this_model_rd = intra_model_yrd(cpi, x, bsize, palette_mode_cost);
       if (*best_model_rd != INT64_MAX &&
           this_model_rd > *best_model_rd + (*best_model_rd >> 1))
@@ -3309,6 +3331,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if CONFIG_LGT
                                           mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                                          BLOCK_OFFSET(xd->mrc_mask, block),
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                           DCT_DCT, tx_size, dst, dst_stride,
                                           p->eobs[block]);
           } else {
@@ -3362,6 +3387,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if CONFIG_LGT
                                           mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                                          BLOCK_OFFSET(xd->mrc_mask, block),
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                           tx_type, tx_size, dst, dst_stride,
                                           p->eobs[block]);
             cpi->fn_ptr[sub_bsize].vf(src, src_stride, dst, dst_stride, &tmp);
@@ -3548,6 +3576,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if CONFIG_LGT
                                         mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                                        BLOCK_OFFSET(xd->mrc_mask, block),
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                         tx_type, tx_size, dst, dst_stride,
                                         p->eobs[block]);
           unsigned int tmp;
@@ -3566,6 +3597,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #if CONFIG_LGT
                                         mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                                        BLOCK_OFFSET(xd->mrc_mask, block),
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                         DCT_DCT, tx_size, dst, dst_stride,
                                         p->eobs[block]);
         }
@@ -4398,6 +4432,9 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 
   int64_t tmp;
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+  uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
@@ -4515,6 +4552,9 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 #if CONFIG_LGT
                               xd->mi[0]->mbmi.mode,
 #endif
+#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
+                              mrc_mask,
+#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                               tx_type, tx_size, rec_buffer, MAX_TX_SIZE, eob);
   if (eob > 0) {
 #if CONFIG_DIST_8X8
@@ -5635,7 +5675,8 @@ static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
                                              color_cache, n_cache,
 #endif  // CONFIG_PALETTE_DELTA_ENCODING
                                              cpi->common.bit_depth);
-      this_rate += av1_cost_color_map(x, 1, bsize, PALETTE_MAP);
+      this_rate +=
+          av1_cost_color_map(x, 1, 0, bsize, mbmi->tx_size, PALETTE_MAP);
       this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
       if (this_rd < *best_rd) {
         *best_rd = this_rd;

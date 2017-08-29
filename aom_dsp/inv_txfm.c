@@ -1275,7 +1275,7 @@ void aom_idct32_c(const tran_low_t *input, tran_low_t *output) {
 
 #if CONFIG_MRC_TX
 void aom_imrc32x32_1024_add_c(const tran_low_t *input, uint8_t *dest,
-                              int stride, int *mask) {
+                              int stride, uint8_t *mask) {
   tran_low_t out[32 * 32];
   tran_low_t *outptr = out;
   int i, j;
@@ -1316,7 +1316,7 @@ void aom_imrc32x32_1024_add_c(const tran_low_t *input, uint8_t *dest,
 }
 
 void aom_imrc32x32_135_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                             int *mask) {
+                             uint8_t *mask) {
   tran_low_t out[32 * 32] = { 0 };
   tran_low_t *outptr = out;
   int i, j;
@@ -1346,7 +1346,7 @@ void aom_imrc32x32_135_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 void aom_imrc32x32_34_add_c(const tran_low_t *input, uint8_t *dest, int stride,
-                            int *mask) {
+                            uint8_t *mask) {
   tran_low_t out[32 * 32] = { 0 };
   tran_low_t *outptr = out;
   int i, j;
