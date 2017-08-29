@@ -584,17 +584,43 @@ void DisplaySRTPromptForTesting(const base::FilePath& download_path) {
 
 namespace {
 
-void ScanAndPrompt(const SwReporterInvocation& reporter_invocation) {
-  if (g_testing_delegate_) {
-    g_testing_delegate_->TriggerPrompt();
-    return;
-  }
-
+// Scans and shows the Chrome Cleaner UI if the user has not already been
+// prompted in the current prompt wave.
+void MaybeScanAndPrompt(const SwReporterInvocation& reporter_invocation) {
   ChromeCleanerController* cleaner_controller =
       ChromeCleanerController::GetInstance();
 
   if (cleaner_controller->state() != ChromeCleanerController::State::kIdle) {
     RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_NOT_ON_IDLE_STATE);
+    return;
+  }
+
+  Browser* browser = chrome::FindLastActive();
+  if (!browser) {
+    RecordReporterStepHistogram(SW_REPORTER_NO_BROWSER);
+    return;
+  }
+
+  Profile* profile = browser->profile();
+  DCHECK(profile);
+  PrefService* prefs = profile->GetPrefs();
+  DCHECK(prefs);
+
+  // Don't show the prompt again if it's been shown before for this profile and
+  // for the current variations seed.
+  const std::string incoming_seed = GetIncomingSRTSeed();
+  const std::string old_seed = prefs->GetString(prefs::kSwReporterPromptSeed);
+  if (!incoming_seed.empty() && incoming_seed == old_seed) {
+    RecordReporterStepHistogram(SW_REPORTER_ALREADY_PROMPTED);
+    RecordPromptNotShownWithReasonHistogram(NO_PROMPT_REASON_ALREADY_PROMPTED);
+    return;
+  }
+
+  if (!incoming_seed.empty() && incoming_seed != old_seed)
+    prefs->SetString(prefs::kSwReporterPromptSeed, incoming_seed);
+
+  if (g_testing_delegate_) {
+    g_testing_delegate_->TriggerPrompt();
     return;
   }
 
@@ -805,7 +831,7 @@ class ReporterRunner : public chrome::BrowserListObserver {
     // SRTPromptFieldTrial. If it is enabled, no attempt will be made to show
     // the old SRT prompt.
     if (base::FeatureList::IsEnabled(kInBrowserCleanerUIFeature)) {
-      ScanAndPrompt(finished_invocation);
+      MaybeScanAndPrompt(finished_invocation);
       return;
     }
 
