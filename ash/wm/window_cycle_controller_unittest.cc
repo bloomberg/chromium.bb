@@ -11,6 +11,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
@@ -256,6 +257,20 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
+
+  modal_window.reset();
+  std::unique_ptr<Window> skip_overview_window(
+      CreateTestWindowInShellWithId(-3));
+  skip_overview_window->SetProperty(kShowInOverviewKey, false);
+  wm::ActivateWindow(window0.get());
+  wm::ActivateWindow(skip_overview_window.get());
+  wm::ActivateWindow(window1.get());
+  EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
+  controller->HandleCycleWindow(WindowCycleController::FORWARD);
+  controller->CompleteCycling();
+  EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(skip_overview_window.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
 }
 
 // Cycles between a maximized and normal window.
