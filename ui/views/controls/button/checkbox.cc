@@ -27,6 +27,8 @@
 
 namespace views {
 
+constexpr int kFocusRingThicknessDip = 2;
+
 // View used to paint the focus ring around the Checkbox icon.
 // The icon is painted separately.
 class IconFocusRing : public View {
@@ -50,7 +52,7 @@ IconFocusRing::IconFocusRing(Checkbox* checkbox) : checkbox_(checkbox) {
 
 void IconFocusRing::Layout() {
   gfx::Rect focus_bounds = checkbox_->image()->bounds();
-  focus_bounds.Inset(gfx::Insets(-2.f));
+  focus_bounds.Inset(-kFocusRingThicknessDip, -kFocusRingThicknessDip);
   SetBoundsRect(focus_bounds);
 }
 
@@ -248,7 +250,9 @@ void Checkbox::SetCustomImage(bool checked,
 void Checkbox::PaintFocusRing(View* view,
                               gfx::Canvas* canvas,
                               const cc::PaintFlags& flags) {
-  canvas->DrawRoundRect(view->GetLocalBounds(), 2.f, flags);
+  gfx::RectF bounds(view->GetLocalBounds());
+  bounds.Inset(kFocusRingThicknessDip, kFocusRingThicknessDip);
+  canvas->DrawRoundRect(bounds, kFocusRingThicknessDip, flags);
 }
 
 const gfx::VectorIcon& Checkbox::GetVectorIcon() const {
