@@ -1236,7 +1236,8 @@ void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {
 void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
   if (CanvasHeuristicParameters::kEnableAccelerationToAvoidReadbacks &&
       SharedGpuContext::AllowSoftwareToAcceleratedCanvasUpgrade() &&
-      source->IsAccelerated() && !GetOrCreateImageBuffer()->IsAccelerated() &&
+      source->IsAccelerated() && GetOrCreateImageBuffer() &&
+      !GetImageBuffer()->IsAccelerated() &&
       ShouldAccelerate(kIgnoreResourceLimitCriteria)) {
     OpacityMode opacity_mode =
         context_->CreationAttributes().alpha() ? kNonOpaque : kOpaque;

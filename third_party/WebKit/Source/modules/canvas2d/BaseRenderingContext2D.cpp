@@ -1229,9 +1229,10 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   FloatSize default_object_size(Width(), Height());
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   if (!image_source->IsVideoElement()) {
-    AccelerationHint hint = GetImageBuffer()->IsAccelerated()
-                                ? kPreferAcceleration
-                                : kPreferNoAcceleration;
+    AccelerationHint hint =
+        (GetImageBuffer() && GetImageBuffer()->IsAccelerated())
+            ? kPreferAcceleration
+            : kPreferNoAcceleration;
     image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
                                                   kSnapshotReasonDrawImage,
                                                   default_object_size);
