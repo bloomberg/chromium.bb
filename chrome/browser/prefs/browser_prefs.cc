@@ -313,6 +313,18 @@ constexpr char kDistroRlzPingDelay[] = "ping_delay";
 // Preferences files added here 2/2017.
 constexpr char kDistroDict[] = "distribution";
 
+#if defined(OS_ANDROID)
+// Deprecated 8/2017.
+const char kStabilityForegroundActivityType[] =
+    "user_experience_metrics.stability.current_foreground_activity_type";
+const char kStabilityLaunchedActivityFlags[] =
+    "user_experience_metrics.stability.launched_activity_flags";
+const char kStabilityLaunchedActivityCounts[] =
+    "user_experience_metrics.stability.launched_activity_counts";
+const char kStabilityCrashedActivityCounts[] =
+    "user_experience_metrics.stability.crashed_activity_counts";
+#endif  // defined(OS_ANDROID)
+
 }  // namespace
 
 namespace chrome {
@@ -361,6 +373,12 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_ANDROID)
   ::android::RegisterPrefs(registry);
+
+  // Obsolete activity prefs. See MigrateObsoleteBrowserPrefs().
+  registry->RegisterIntegerPref(kStabilityForegroundActivityType, 0);
+  registry->RegisterIntegerPref(kStabilityLaunchedActivityFlags, 0);
+  registry->RegisterListPref(kStabilityLaunchedActivityCounts);
+  registry->RegisterListPref(kStabilityCrashedActivityCounts);
 #endif
 
 #if !defined(OS_ANDROID)
@@ -700,6 +718,14 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
   local_state->ClearPref(prefs::kTouchscreenEnabled);
   local_state->ClearPref(prefs::kTouchpadEnabled);
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+  // Added 8/2017.
+  local_state->ClearPref(kStabilityForegroundActivityType);
+  local_state->ClearPref(kStabilityLaunchedActivityFlags);
+  local_state->ClearPref(kStabilityLaunchedActivityCounts);
+  local_state->ClearPref(kStabilityCrashedActivityCounts);
+#endif  // defined(OS_ANDROID)
 }
 
 // This method should be periodically pruned of year+ old migrations.

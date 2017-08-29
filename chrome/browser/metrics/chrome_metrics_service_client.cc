@@ -379,10 +379,6 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
 
   metrics::RegisterMetricsReportingStatePrefs(registry);
 
-#if defined(OS_ANDROID)
-  AndroidMetricsProvider::RegisterPrefs(registry);
-#endif  // defined(OS_ANDROID)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginMetricsProvider::RegisterPrefs(registry);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
@@ -600,8 +596,7 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 
 #if defined(OS_ANDROID)
   metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(
-          new AndroidMetricsProvider(local_state)));
+      std::unique_ptr<metrics::MetricsProvider>(new AndroidMetricsProvider()));
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(new PageLoadMetricsProvider()));
 #endif  // defined(OS_ANDROID)
