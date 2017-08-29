@@ -85,18 +85,14 @@ void ReadDirectoryOnUIThread(
   ArcDocumentsProviderRootMap* roots =
       ArcDocumentsProviderRootMap::GetForArcBrowserContext();
   if (!roots) {
-    OnReadDirectoryOnUIThread(
-        callback, base::File::FILE_ERROR_SECURITY,
-        std::vector<ArcDocumentsProviderRoot::ThinFileInfo>());
+    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_SECURITY, {});
     return;
   }
 
   base::FilePath path;
   ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
   if (!root) {
-    OnReadDirectoryOnUIThread(
-        callback, base::File::FILE_ERROR_NOT_FOUND,
-        std::vector<ArcDocumentsProviderRoot::ThinFileInfo>());
+    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND, {});
     return;
   }
 
