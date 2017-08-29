@@ -5653,6 +5653,11 @@ weston_compositor_load_backend(struct weston_compositor *compositor,
 	int (*backend_init)(struct weston_compositor *c,
 			    struct weston_backend_config *config_base);
 
+	if (compositor->backend) {
+		weston_log("Error: attempt to load a backend when one is already loaded\n");
+		return -1;
+	}
+
 	if (backend >= ARRAY_LENGTH(backend_map))
 		return -1;
 
@@ -5660,7 +5665,12 @@ weston_compositor_load_backend(struct weston_compositor *compositor,
 	if (!backend_init)
 		return -1;
 
-	return backend_init(compositor, config_base);
+	if (backend_init(compositor, config_base) < 0) {
+		compositor->backend = NULL;
+		return -1;
+	}
+
+	return 0;
 }
 
 WL_EXPORT int
