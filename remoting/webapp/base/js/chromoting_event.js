@@ -269,7 +269,7 @@ remoting.ChromotingEvent.ScreenResolution = function(width, height, dpi) {
  */
 remoting.ChromotingEvent.ChromotingDotComMigration = function(event, phase) {
   /** @type {!remoting.ChromotingEvent.ChromotingDotComMigration.Event} */
-  this.event = event;
+  this.event_type = event;
   /** @type {!remoting.ChromotingEvent.ChromotingDotComMigration.Phase} */
   this.phase = phase;
 };
