@@ -501,18 +501,6 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
   // it to avoid a compiler warning.
   (void)cm;
 #endif
-
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  MOTION_MODE last_motion_mode_allowed =
-      motion_mode_allowed_wrapper(0,
-#if CONFIG_GLOBAL_MOTION
-                                  0, cm->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION
-#if CONFIG_WARPED_MOTION
-                                  xd,
-#endif
-                                  mi);
-#else
   MOTION_MODE last_motion_mode_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION
       0, cm->global_motion,
@@ -521,7 +509,6 @@ static void write_motion_mode(const AV1_COMMON *cm, MACROBLOCKD *xd,
       xd,
 #endif
       mi);
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   if (last_motion_mode_allowed == SIMPLE_TRANSLATION) return;
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
   if (last_motion_mode_allowed == OBMC_CAUSAL) {

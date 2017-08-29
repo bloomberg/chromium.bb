@@ -8430,20 +8430,6 @@ static int64_t motion_mode_rd(
 #endif  // CONFIG_WARPED_MOTION
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   rate2_nocoeff = rd_stats->rate;
-#if CONFIG_NCOBMC_ADAPT_WEIGHT
-  // We cannot estimate the rd cost for the motion mode NCOBMC_ADAPT_WEIGHT
-  // right now since it requires mvs from all neighboring blocks. We will
-  // check if this mode is beneficial after all the mv's in the current
-  // superblock are selected.
-  last_motion_mode_allowed = motion_mode_allowed_wrapper(1,
-#if CONFIG_GLOBAL_MOTION
-                                                         0, xd->global_motion,
-#endif  // CONFIG_GLOBAL_MOTION
-#if CONFIG_WARPED_MOTION
-                                                         xd,
-#endif
-                                                         mi);
-#else
   last_motion_mode_allowed = motion_mode_allowed(
 #if CONFIG_GLOBAL_MOTION
       0, xd->global_motion,
@@ -8452,7 +8438,6 @@ static int64_t motion_mode_rd(
       xd,
 #endif
       mi);
-#endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
   base_mbmi = *mbmi;
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
@@ -8469,6 +8454,14 @@ static int64_t motion_mode_rd(
 #else
     int tmp_rate2 = rate2_nocoeff;
 #endif  // CONFIG_EXT_INTER
+
+#if CONFIG_NCOBMC_ADAPT_WEIGHT
+    // We cannot estimate the rd cost for the motion mode NCOBMC_ADAPT_WEIGHT
+    // right now since it requires mvs from all neighboring blocks. We will
+    // check if this mode is beneficial after all the mv's in the current
+    // superblock are selected.
+    if (motion_mode == NCOBMC_ADAPT_WEIGHT) continue;
+#endif
 
     *mbmi = base_mbmi;
     mbmi->motion_mode = motion_mode;
