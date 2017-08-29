@@ -64,8 +64,8 @@ constexpr int kDragBufferPx = 20;
 // Padding space in pixels between pages.
 constexpr int kPagePadding = 40;
 
-// Extra page padding which ensures that the page break space for apps are 48px.
-constexpr int kExtraPagePdding = 36;
+// Padding space in pixels between pages for fullscreen launcher.
+constexpr int kPagePaddingFullscreen = 48;
 
 // Preferred tile size when showing in fixed layout.
 constexpr int kPreferredTileWidth = 100;
@@ -1454,7 +1454,7 @@ const gfx::Vector2d AppsGridView::CalculateTransitionOffset(
       }
     }
   } else {
-    const int page_height = grid_size.height();
+    const int page_height = grid_size.height() + kPagePaddingFullscreen;
     if (page_of_view < current_page)
       y_offset = -page_height;
     else if (page_of_view > current_page)
@@ -1491,26 +1491,21 @@ void AppsGridView::CalculateIdealBounds() {
     const int col = view_index.slot % cols_;
     gfx::Rect tile_slot = GetExpectedTileBounds(row, col);
     gfx::Vector2d offset = CalculateTransitionOffset(view_index.page);
-    const PaginationModel::Transition& transition =
-        pagination_model_.transition();
-    if (is_fullscreen_app_list_enabled_ && transition.progress > 0) {
+    if (is_fullscreen_app_list_enabled_) {
+      // For |current_page|'s neighbor pages, do adjustments to ensure page
+      // break space.
       const int current_page = pagination_model_.selected_page();
-      const bool forward = transition.target_page > current_page ? true : false;
-      // When transiting to previous page, ensure 48px page break space from
-      // just previous page since only the previous page could be visiable;
-      // and vice versa.
-      if (!forward && view_index.page == current_page - 1) {
+      if (view_index.page == current_page - 1) {
         if (view_index.page == 0) {
           offset.set_y(offset.y() + GetHeightOnTopOfAllAppsTiles(0) -
-                       GetHeightOnTopOfAllAppsTiles(1) -
-                       2 * kTileVerticalPadding - kExtraPagePdding);
+                       GetHeightOnTopOfAllAppsTiles(1));
         } else {
-          offset.set_y(offset.y() + GetHeightOnTopOfAllAppsTiles(current_page) -
-                       kExtraPagePdding);
+          offset.set_y(offset.y() + GetHeightOnTopOfAllAppsTiles(current_page) +
+                       2 * kTileVerticalPadding);
         }
-      } else if (forward && view_index.page == current_page + 1) {
-        offset.set_y(offset.y() - GetHeightOnTopOfAllAppsTiles(current_page) +
-                     kExtraPagePdding);
+      } else if (view_index.page == current_page + 1) {
+        offset.set_y(offset.y() - GetHeightOnTopOfAllAppsTiles(current_page) -
+                     2 * kTileVerticalPadding);
       }
     }
     tile_slot.Offset(offset.x(), offset.y());
