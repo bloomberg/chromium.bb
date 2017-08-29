@@ -499,6 +499,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       var PASSWORD = 'bAn@n@5';
       var item = FakeDataMaker.passwordEntry('goo.gl', 'bart', PASSWORD.length);
       var passwordListItem = createPasswordListItem(item);
+      // Hidden passwords should be disabled.
+      assertTrue(passwordListItem.$$('#password').disabled);
 
       passwordListItem.password = PASSWORD;
       Polymer.dom.flush();
@@ -506,6 +508,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       assertEquals(PASSWORD, passwordListItem.$$('#password').value);
       // Password should be visible.
       assertEquals('text', passwordListItem.$$('#password').type);
+      // Visible passwords should not be disabled.
+      assertFalse(passwordListItem.$$('#password').disabled);
 
       // Hide Password Button should be shown.
       assertTrue(passwordListItem.$$('#showPasswordButton')
