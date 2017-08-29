@@ -75242,6 +75242,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>The outcome of Entry::ReadData in the simple cache.</summary>
 </histogram>
 
+<histogram base="true" name="SimpleCache.ReadStream1FromPrefetched"
+    enum="Boolean">
+  <owner>morlovich@chromium.org</owner>
+  <summary>
+    Whether a read from stream 1 (conventionally used for payload body) was
+    satisfied from prefetched data. Reported only on the first read operation on
+    the stream (including if there are multiple readers, or even some writers).
+  </summary>
+</histogram>
+
 <histogram base="true" name="SimpleCache.StaleIndexExtraEntryCount"
     units="entries">
   <owner>gavinp@chromium.org</owner>
@@ -75321,6 +75331,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The result of the the key SHA256 check done when opening stream 0 for each
     entry.
+  </summary>
+</histogram>
+
+<histogram base="true" name="SimpleCache.SyncOpenDidPrefetch" enum="Boolean">
+  <owner>morlovich@chromium.org</owner>
+  <summary>
+    Whether an attempt was made to prefetch the entire file when executing
+    disk_cache::Backend::OpenEntry.
   </summary>
 </histogram>
 
@@ -92666,6 +92684,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="SimpleCache.QueueLatency.OpenEntry"/>
   <affected-histogram name="SimpleCache.ReadIsParallelizable"/>
   <affected-histogram name="SimpleCache.ReadResult"/>
+  <affected-histogram name="SimpleCache.ReadStream1FromPrefetched"/>
   <affected-histogram name="SimpleCache.StaleIndexExtraEntryCount"/>
   <affected-histogram name="SimpleCache.StaleIndexMissedEntryCount"/>
   <affected-histogram name="SimpleCache.StaleIndexQuality"/>
@@ -92680,6 +92699,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="SimpleCache.SyncCreateResult_WithIndex"/>
   <affected-histogram name="SimpleCache.SyncCreateResult_WithoutIndex"/>
   <affected-histogram name="SimpleCache.SyncKeySHA256Result"/>
+  <affected-histogram name="SimpleCache.SyncOpenDidPrefetch"/>
   <affected-histogram name="SimpleCache.SyncOpenEntryAge"/>
   <affected-histogram name="SimpleCache.SyncOpenPlatformFileError"/>
   <affected-histogram name="SimpleCache.SyncOpenPlatformFileError_WithIndex"/>
