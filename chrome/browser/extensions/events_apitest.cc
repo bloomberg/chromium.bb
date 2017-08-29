@@ -270,11 +270,6 @@ class ChromeUpdatesEventsApiTest : public EventsApiTest,
       if (extension)
         observed_extension_names_.insert(extension->name());
     }
-
-    updates_listener_ =
-        base::MakeUnique<ExtensionTestMessageListener>("update event", false);
-    failure_listener_ =
-        base::MakeUnique<ExtensionTestMessageListener>("not listening", false);
   }
 
   void TearDownOnMainThread() override {
@@ -288,20 +283,11 @@ class ChromeUpdatesEventsApiTest : public EventsApiTest,
     observed_extension_names_.insert(host->extension()->name());
   }
 
-  ExtensionTestMessageListener* updates_listener() {
-    return updates_listener_.get();
-  }
-  ExtensionTestMessageListener* failure_listener() {
-    return failure_listener_.get();
-  }
   const std::set<std::string> observed_extension_names() const {
     return observed_extension_names_;
   }
 
  private:
-  std::unique_ptr<ExtensionTestMessageListener> updates_listener_;
-  std::unique_ptr<ExtensionTestMessageListener> failure_listener_;
-
   std::set<std::string> observed_extension_names_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeUpdatesEventsApiTest);
@@ -332,17 +318,15 @@ IN_PROC_BROWSER_TEST_F(ChromeUpdatesEventsApiTest, ChromeUpdates) {
   ChromeExtensionTestNotificationObserver(browser())
       .WaitForExtensionViewsToLoad();
 
+  content::RunAllPendingInMessageLoop();
+  content::RunAllBlockingPoolTasksUntilIdle();
+
   // "chrome updates listener" registerd a listener for the onInstalled event,
   // whereas "chrome updates non listener" did not. Only the
   // "chrome updates listener" extension should have been woken up for the
   // chrome update event.
   EXPECT_TRUE(observed_extension_names().count("chrome updates listener"));
   EXPECT_FALSE(observed_extension_names().count("chrome updates non listener"));
-
-  EXPECT_TRUE(updates_listener()->WaitUntilSatisfied());
-  content::RunAllPendingInMessageLoop();
-  content::RunAllBlockingPoolTasksUntilIdle();
-  EXPECT_FALSE(failure_listener()->was_satisfied());
 }
 
 }  // namespace extensions
