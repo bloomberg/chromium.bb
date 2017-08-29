@@ -410,13 +410,6 @@ void NetworkQualityEstimator::NotifyHeadersReceived(const URLRequest& request) {
   if (observed_http_rtt <= base::TimeDelta())
     return;
   DCHECK_GE(observed_http_rtt, base::TimeDelta());
-  if (observed_http_rtt < peak_network_quality_.http_rtt() ||
-      peak_network_quality_.http_rtt() == nqe::internal::InvalidRTT()) {
-    peak_network_quality_ = nqe::internal::NetworkQuality(
-        observed_http_rtt, peak_network_quality_.transport_rtt(),
-        peak_network_quality_.downstream_throughput_kbps());
-  }
-
   Observation http_rtt_observation(observed_http_rtt.InMilliseconds(),
                                    tick_clock_->NowTicks(), signal_strength_,
                                    NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
@@ -765,7 +758,6 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
 
   // Clear the local state.
   last_connection_change_ = tick_clock_->NowTicks();
-  peak_network_quality_ = nqe::internal::NetworkQuality();
   downstream_throughput_kbps_observations_.Clear();
   rtt_ms_observations_.Clear();
 
@@ -854,20 +846,6 @@ void NetworkQualityEstimator::UpdateSignalStrength() {
 
 void NetworkQualityEstimator::RecordMetricsOnConnectionTypeChanged() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (peak_network_quality_.http_rtt() != nqe::internal::InvalidRTT()) {
-    base::HistogramBase* rtt_histogram =
-        GetHistogram("FastestRTT.", current_network_id_.type, 10 * 1000);
-    rtt_histogram->Add(peak_network_quality_.http_rtt().InMilliseconds());
-  }
-
-  if (peak_network_quality_.downstream_throughput_kbps() !=
-      nqe::internal::kInvalidThroughput) {
-    base::HistogramBase* downstream_throughput_histogram =
-        GetHistogram("PeakKbps.", current_network_id_.type, 1000 * 1000);
-    downstream_throughput_histogram->Add(
-        peak_network_quality_.downstream_throughput_kbps());
-  }
-
   base::TimeDelta rtt;
   if (GetRecentHttpRTT(base::TimeTicks(), &rtt)) {
     // Add the 50th percentile value.
@@ -928,10 +906,6 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
     // Add the 50th percentile value.
     UMA_HISTOGRAM_TIMES("NQE.MainFrame.RTT.Percentile50",
                         estimated_quality_at_last_main_frame_.http_rtt());
-    base::HistogramBase* rtt_percentile = GetHistogram(
-        "MainFrame.RTT.Percentile50.", current_network_id_.type, 10 * 1000);
-    rtt_percentile->Add(
-        estimated_quality_at_last_main_frame_.http_rtt().InMilliseconds());
   }
   UMA_HISTOGRAM_BOOLEAN("NQE.EstimateAvailable.MainFrame.RTT",
                         estimated_quality_at_last_main_frame_.http_rtt() !=
@@ -942,11 +916,6 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
     // Add the 50th percentile value.
     UMA_HISTOGRAM_TIMES("NQE.MainFrame.TransportRTT.Percentile50",
                         estimated_quality_at_last_main_frame_.transport_rtt());
-    base::HistogramBase* transport_rtt_percentile =
-        GetHistogram("MainFrame.TransportRTT.Percentile50.",
-                     current_network_id_.type, 10 * 1000);
-    transport_rtt_percentile->Add(
-        estimated_quality_at_last_main_frame_.transport_rtt().InMilliseconds());
   }
   UMA_HISTOGRAM_BOOLEAN("NQE.EstimateAvailable.MainFrame.TransportRTT",
                         estimated_quality_at_last_main_frame_.transport_rtt() !=
@@ -958,10 +927,6 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
     UMA_HISTOGRAM_COUNTS_1M(
         "NQE.MainFrame.Kbps.Percentile50",
         estimated_quality_at_last_main_frame_.downstream_throughput_kbps());
-    base::HistogramBase* throughput_percentile = GetHistogram(
-        "MainFrame.Kbps.Percentile50.", current_network_id_.type, 1000 * 1000);
-    throughput_percentile->Add(
-        estimated_quality_at_last_main_frame_.downstream_throughput_kbps());
   }
   UMA_HISTOGRAM_BOOLEAN(
       "NQE.EstimateAvailable.MainFrame.Kbps",
@@ -971,17 +936,6 @@ void NetworkQualityEstimator::RecordMetricsOnMainFrameRequest() const {
   UMA_HISTOGRAM_ENUMERATION("NQE.MainFrame.EffectiveConnectionType",
                             effective_connection_type_at_last_main_frame_,
                             EFFECTIVE_CONNECTION_TYPE_LAST);
-  base::HistogramBase* effective_connection_type_histogram =
-      base::Histogram::FactoryGet(
-          std::string("NQE.MainFrame.EffectiveConnectionType.") +
-              NetworkQualityEstimatorParams::GetNameForConnectionType(
-                  current_network_id_.type),
-          0, EFFECTIVE_CONNECTION_TYPE_LAST,
-          EFFECTIVE_CONNECTION_TYPE_LAST /* Number of buckets */,
-          base::HistogramBase::kUmaTargetedHistogramFlag);
-
-  effective_connection_type_histogram->Add(
-      effective_connection_type_at_last_main_frame_);
 }
 
 void NetworkQualityEstimator::ComputeBandwidthDelayProduct() {
@@ -1724,13 +1678,6 @@ void NetworkQualityEstimator::OnNewThroughputObservationAvailable(
 
   DCHECK_NE(nqe::internal::kInvalidThroughput, downstream_kbps);
 
-  if (downstream_kbps > peak_network_quality_.downstream_throughput_kbps() ||
-      peak_network_quality_.downstream_throughput_kbps() ==
-          nqe::internal::kInvalidThroughput) {
-    peak_network_quality_ = nqe::internal::NetworkQuality(
-        peak_network_quality_.http_rtt(), peak_network_quality_.transport_rtt(),
-        downstream_kbps);
-  }
   Observation throughput_observation(downstream_kbps, tick_clock_->NowTicks(),
                                      signal_strength_,
                                      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
