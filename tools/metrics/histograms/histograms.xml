@@ -102014,36 +102014,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="ExperimentGroup1"/>
   <suffix name="ExperimentGroup2"/>
   <suffix name="ExperimentGroup3"/>
-  <affected-histogram name="WebRTC.Video.Decoded.Vp8.Qp"/>
-  <affected-histogram name="WebRTC.Video.EndToEndDelayInMs"/>
-  <affected-histogram name="WebRTC.Video.EndToEndDelayMaxInMs"/>
-  <affected-histogram name="WebRTC.Video.InterframeDelayInMs"/>
-  <affected-histogram name="WebRTC.Video.InterframeDelayMaxInMs"/>
-  <affected-histogram name="WebRTC.Video.KeyFramesReceivedInPermille"/>
-  <affected-histogram name="WebRTC.Video.MediaBitrateReceivedInKbps"/>
-  <affected-histogram name="WebRTC.Video.ReceivedHeightInPixels"/>
-  <affected-histogram name="WebRTC.Video.ReceivedPacketsLostInPercent"/>
-  <affected-histogram name="WebRTC.Video.ReceivedWidthInPixels"/>
-  <affected-histogram name="WebRTC.Video.ReceiveStreamLifetimeInSeconds"/>
-  <affected-histogram name="WebRTC.Video.Screenshare.Decoded.Vp8.Qp"/>
-  <affected-histogram name="WebRTC.Video.Screenshare.EndToEndDelayInMs"/>
-  <affected-histogram name="WebRTC.Video.Screenshare.EndToEndDelayMaxInMs"/>
-  <affected-histogram name="WebRTC.Video.Screenshare.InterframeDelayInMs"/>
-  <affected-histogram name="WebRTC.Video.Screenshare.InterframeDelayMaxInMs"/>
-  <affected-histogram
-      name="WebRTC.Video.Screenshare.KeyFramesReceivedInPermille"/>
-  <affected-histogram
-      name="WebRTC.Video.Screenshare.MediaBitrateReceivedInKbps"/>
-  <affected-histogram name="WebRTC.Video.Screenshare.ReceivedHeightInPixels"/>
-  <affected-histogram
-      name="WebRTC.Video.Screenshare.ReceivedPacketsLostInPercent"/>
-  <affected-histogram name="WebRTC.Video.Screenshare.ReceivedWidthInPixels"/>
-  <affected-histogram
-      name="WebRTC.Video.Screenshare.ReceiveStreamLifetimeInSeconds"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="WebRTCVideoSimulcastId" separator=".">
-  <owner>ilnik@chromium.org</owner>
   <suffix name="S0"/>
   <suffix name="S1"/>
   <suffix name="S2"/>
@@ -102052,6 +102022,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="WebRTC.Video.EndToEndDelayMaxInMs"/>
   <affected-histogram name="WebRTC.Video.InterframeDelayInMs"/>
   <affected-histogram name="WebRTC.Video.InterframeDelayMaxInMs"/>
+  <affected-histogram name="WebRTC.Video.KeyFramesReceivedInPermille"/>
   <affected-histogram name="WebRTC.Video.MediaBitrateReceivedInKbps"/>
   <affected-histogram name="WebRTC.Video.ReceivedHeightInPixels"/>
   <affected-histogram name="WebRTC.Video.ReceivedWidthInPixels"/>
@@ -102060,6 +102031,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="WebRTC.Video.Screenshare.EndToEndDelayMaxInMs"/>
   <affected-histogram name="WebRTC.Video.Screenshare.InterframeDelayInMs"/>
   <affected-histogram name="WebRTC.Video.Screenshare.InterframeDelayMaxInMs"/>
+  <affected-histogram
+      name="WebRTC.Video.Screenshare.KeyFramesReceivedInPermille"/>
   <affected-histogram
       name="WebRTC.Video.Screenshare.MediaBitrateReceivedInKbps"/>
   <affected-histogram name="WebRTC.Video.Screenshare.ReceivedHeightInPixels"/>
