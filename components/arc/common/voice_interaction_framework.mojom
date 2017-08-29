@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 10
+// Next MinVersion: 11
 
 module arc.mojom;
 
@@ -53,7 +53,7 @@ struct VoiceInteractionStatus {
 };
 
 // Connects with Android system server.
-// Next method ID: 9
+// Next method ID: 10
 interface VoiceInteractionFrameworkInstance {
   Init@0(VoiceInteractionFrameworkHost host_ptr);
 
@@ -80,6 +80,9 @@ interface VoiceInteractionFrameworkInstance {
 
   // Starts the voice interaction setup wizard in container.
   [MinVersion=5] StartVoiceInteractionSetupWizard@6();
+
+  // Starts the voice interaction setup wizard in container.
+  [MinVersion=10] ShowVoiceInteractionSettings@9();
 
   // Queries voice interaction settings status.
   [MinVersion=7] GetVoiceInteractionSettings@7() =>
