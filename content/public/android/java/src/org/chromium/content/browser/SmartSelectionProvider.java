@@ -4,19 +4,30 @@
 
 package org.chromium.content.browser;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.LocaleList;
+import android.support.annotation.IntDef;
 import android.view.View.OnClickListener;
+import android.view.textclassifier.TextClassification;
+import android.view.textclassifier.TextClassificationManager;
+import android.view.textclassifier.TextClassifier;
+import android.view.textclassifier.TextSelection;
 
-import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.ui.base.WindowAndroid;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Locale;
 
 /**
- * The interface that controls Smart Text selection.
+ * Controls Smart Text selection. Talks to the Android TextClassificationManager API.
  */
-@SuppressFBWarnings("UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD")
-public interface SmartSelectionProvider {
+public class SmartSelectionProvider {
     /**
      * The result of the text analysis.
      */
@@ -72,48 +83,148 @@ public interface SmartSelectionProvider {
         void onClassified(Result result);
     }
 
-    /**
-     * Sends asynchronous request to obtain the selection, analyze its type and suggest
-     * better selection boundaries.
-     * @param text  The textual context that encloses the selected text.
-     * @param start The start index of the selected text inside the textual context.
-     * @param end   The index pointing to the first character that comes after
-     *              the selected text inside the textual context.
-     */
+    private static final String TAG = "SmartSelProvider";
+
+    @IntDef({CLASSIFY, SUGGEST_AND_CLASSIFY})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface RequestType {}
+
+    private static final int CLASSIFY = 0;
+    private static final int SUGGEST_AND_CLASSIFY = 1;
+
+    private ResultCallback mResultCallback;
+    private WindowAndroid mWindowAndroid;
+    private ClassificationTask mClassificationTask;
+    private TextClassifier mTextClassifier;
+
+    private Handler mHandler;
+    private Runnable mFailureResponseRunnable;
+
+    public SmartSelectionProvider(ResultCallback callback, WindowAndroid windowAndroid) {
+        mResultCallback = callback;
+        mWindowAndroid = windowAndroid;
+        mHandler = new Handler();
+        mFailureResponseRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mResultCallback.onClassified(new Result());
+            }
+        };
+    }
+
     public void sendSuggestAndClassifyRequest(
-            CharSequence text, int start, int end, Locale[] locales);
+            CharSequence text, int start, int end, Locale[] locales) {
+        sendSmartSelectionRequest(SUGGEST_AND_CLASSIFY, text, start, end, locales);
+    }
 
-    /**
-     * Sends asynchronous request to obtain the selection and analyze its type.
-     * @param text  The textual context that encloses the selected text.
-     * @param start The start index of the selected text inside the textual context.
-     * @param end   The index pointing to the first character that comes after
-     *              the selected text inside the textual context.
-     */
-    public void sendClassifyRequest(CharSequence text, int start, int end, Locale[] locales);
+    public void sendClassifyRequest(CharSequence text, int start, int end, Locale[] locales) {
+        sendSmartSelectionRequest(CLASSIFY, text, start, end, locales);
+    }
 
-    /**
-     * Cancel all asynchronous requests.
-     */
-    public void cancelAllRequests();
+    public void cancelAllRequests() {
+        if (mClassificationTask != null) {
+            mClassificationTask.cancel(false);
+            mClassificationTask = null;
+        }
+    }
 
-    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
-    /**
-     * Sets TextClassifier for Smart Text selection.
-     */
-    public void setTextClassifier(Object textClassifier);
+    public void setTextClassifier(TextClassifier textClassifier) {
+        mTextClassifier = textClassifier;
+    }
 
-    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
-    /**
-     * Returns TextClassifier used for Smart Text selection.
-     * If the user sets non-null text classifier object, returns that object. Otherwise returns
-     * the system classifier obtained from the TextClassificationManager service.
-     */
-    public Object getTextClassifier();
+    // TODO(crbug.com/739746): Remove suppression when this constant is added to lint.
+    @SuppressLint("WrongConstant")
+    public TextClassifier getTextClassifier() {
+        if (mTextClassifier != null) return mTextClassifier;
 
-    // TODO(timav): Use |TextClassifier| instead of |Object| after we switch to Android SDK 26.
-    /**
-     * Returns TextClassifier object if the one has been set with setTextClassifier(), or null.
-     */
-    public Object getCustomTextClassifier();
+        Context context = mWindowAndroid.getContext().get();
+        if (context == null) return null;
+
+        return ((TextClassificationManager) context.getSystemService(
+                        Context.TEXT_CLASSIFICATION_SERVICE))
+                .getTextClassifier();
+    }
+
+    public TextClassifier getCustomTextClassifier() {
+        return mTextClassifier;
+    }
+
+    private void sendSmartSelectionRequest(
+            @RequestType int requestType, CharSequence text, int start, int end, Locale[] locales) {
+        TextClassifier classifier = (TextClassifier) getTextClassifier();
+        if (classifier == null || classifier == TextClassifier.NO_OP) {
+            mHandler.post(mFailureResponseRunnable);
+            return;
+        }
+
+        if (mClassificationTask != null) {
+            mClassificationTask.cancel(false);
+            mClassificationTask = null;
+        }
+
+        mClassificationTask =
+                new ClassificationTask(classifier, requestType, text, start, end, locales);
+        mClassificationTask.execute();
+    }
+
+    private class ClassificationTask extends AsyncTask<Void, Void, Result> {
+        private final TextClassifier mTextClassifier;
+        private final int mRequestType;
+        private final CharSequence mText;
+        private final int mOriginalStart;
+        private final int mOriginalEnd;
+        private final Locale[] mLocales;
+
+        ClassificationTask(TextClassifier classifier, @RequestType int requestType,
+                CharSequence text, int start, int end, Locale[] locales) {
+            mTextClassifier = classifier;
+            mRequestType = requestType;
+            mText = text;
+            mOriginalStart = start;
+            mOriginalEnd = end;
+            mLocales = locales;
+        }
+
+        @Override
+        protected Result doInBackground(Void... params) {
+            int start = mOriginalStart;
+            int end = mOriginalEnd;
+
+            if (mRequestType == SUGGEST_AND_CLASSIFY) {
+                TextSelection suggested = mTextClassifier.suggestSelection(
+                        mText, start, end, makeLocaleList(mLocales));
+                start = Math.max(0, suggested.getSelectionStartIndex());
+                end = Math.min(mText.length(), suggested.getSelectionEndIndex());
+                if (isCancelled()) return new Result();
+            }
+
+            TextClassification tc =
+                    mTextClassifier.classifyText(mText, start, end, makeLocaleList(mLocales));
+            return makeResult(start, end, tc);
+        }
+
+        @SuppressLint("NewApi")
+        private LocaleList makeLocaleList(Locale[] locales) {
+            if (locales == null || locales.length == 0) return null;
+            return new LocaleList(locales);
+        }
+
+        private Result makeResult(int start, int end, TextClassification tc) {
+            Result result = new Result();
+
+            result.startAdjust = start - mOriginalStart;
+            result.endAdjust = end - mOriginalEnd;
+            result.label = tc.getLabel();
+            result.icon = tc.getIcon();
+            result.intent = tc.getIntent();
+            result.onClickListener = tc.getOnClickListener();
+
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Result result) {
+            mResultCallback.onClassified(result);
+        }
+    }
 }
